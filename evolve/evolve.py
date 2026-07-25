@@ -21,6 +21,7 @@ import os
 import re
 import subprocess
 import sys
+import time
 from datetime import datetime
 from pathlib import Path
 
@@ -38,6 +39,12 @@ GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.0-flash")
 GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent"
 
 ITERATIONS_PER_RUN = int(os.environ.get("ITERATIONS_PER_RUN", "5"))
+
+# El nivel gratuito de Gemini limita peticiones POR MINUTO, no solo por
+# día. Espaciamos cada llamada para no pasarnos (ajustable por si Google
+# cambia el límite; 15s es conservador para la mayoría de los free tiers).
+SECONDS_BETWEEN_REQUESTS = int(os.environ.get("SECONDS_BETWEEN_REQUESTS", "15"))
+MAX_RETRIES_ON_RATE_LIMIT = 3
 
 FILE_BLOCK_RE = re.compile(r"```(?:python)?\s*#\s*FILE:\s*(.+?)\n(.*?)```", re.DOTALL)
 
@@ -91,22 +98,32 @@ def call_gemini(prompt: str) -> str | None:
     if not GEMINI_API_KEY:
         log("ERROR: falta GEMINI_API_KEY en el entorno.")
         return None
-    try:
-        resp = requests.post(
-            GEMINI_URL,
-            params={"key": GEMINI_API_KEY},
-            json={"contents": [{"parts": [{"text": prompt}]}]},
-            timeout=60,
-        )
-        resp.raise_for_status()
-        data = resp.json()
-        return data["candidates"][0]["content"]["parts"][0]["text"]
-    except requests.RequestException as e:
-        log(f"ERROR llamando a Gemini: {e}")
-        return None
-    except (KeyError, IndexError):
-        log("ERROR: respuesta de Gemini con formato inesperado.")
-        return None
+
+    for attempt in range(1, MAX_RETRIES_ON_RATE_LIMIT + 1):
+        try:
+            resp = requests.post(
+                GEMINI_URL,
+                params={"key": GEMINI_API_KEY},
+                json={"contents": [{"parts": [{"text": prompt}]}]},
+                timeout=60,
+            )
+            if resp.status_code == 429:
+                wait = int(resp.headers.get("Retry-After", 20 * attempt))
+                log(f"Rate limit de Gemini (intento {attempt}/{MAX_RETRIES_ON_RATE_LIMIT}). Esperando {wait}s...")
+                time.sleep(wait)
+                continue
+            resp.raise_for_status()
+            data = resp.json()
+            return data["candidates"][0]["content"]["parts"][0]["text"]
+        except requests.RequestException as e:
+            log(f"ERROR llamando a Gemini: {e}")
+            return None
+        except (KeyError, IndexError):
+            log("ERROR: respuesta de Gemini con formato inesperado.")
+            return None
+
+    log("Se agotaron los reintentos por rate limit. Se salta esta iteración.")
+    return None
 
 
 def extract_file_change(response_text: str) -> tuple[str, str] | None:
@@ -139,7 +156,8 @@ def try_one_improvement(state) -> None:
 
     prompt = build_prompt(read_mission(), target)
     response = call_gemini(prompt)
-    register_request(state)
+    register_request(state)  # cuenta el intento, haya salido bien o mal
+    time.sleep(SECONDS_BETWEEN_REQUESTS)  # respetar el límite por minuto antes de la próxima
 
     if response is None:
         return
