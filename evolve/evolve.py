@@ -1,4 +1,4 @@
-"""
+﻿"""
 evolve.py — el "portero + mensajero" del bucle autónomo.
 
 Cada corrida (disparada por GitHub Actions cada N minutos, ver
