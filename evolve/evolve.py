@@ -44,7 +44,15 @@ ITERATIONS_PER_RUN = int(os.environ.get("ITERATIONS_PER_RUN", "5"))
 # día. Espaciamos cada llamada para no pasarnos (ajustable por si Google
 # cambia el límite; 15s es conservador para la mayoría de los free tiers).
 SECONDS_BETWEEN_REQUESTS = int(os.environ.get("SECONDS_BETWEEN_REQUESTS", "15"))
-MAX_RETRIES_ON_RATE_LIMIT = 3
+MAX_RETRIES_ON_RATE_LIMIT = 2
+MAX_WAIT_SECONDS = 30  # nunca esperar más que esto por un solo reintento
+# Si Google pide esperar más que esto, asumimos que es la cuota DIARIA
+# agotada (no por minuto) y no tiene sentido insistir en esta corrida.
+QUOTA_EXHAUSTED_WAIT_THRESHOLD = 60
+# Corte de seguridad propio: el job de GitHub Actions tiene 30 min de
+# límite. Nos cortamos solos a los 15 para siempre dejar tiempo de
+# terminar prolijo y commitear lo que se haya logrado hasta ahí.
+RUN_DEADLINE_SECONDS = int(os.environ.get("RUN_DEADLINE_SECONDS", "900"))
 
 FILE_BLOCK_RE = re.compile(r"```(?:python)?\s*#\s*FILE:\s*(.+?)\n(.*?)```", re.DOTALL)
 
@@ -109,6 +117,10 @@ def call_gemini(prompt: str) -> str | None:
             )
             if resp.status_code == 429:
                 wait = int(resp.headers.get("Retry-After", 20 * attempt))
+                if wait > QUOTA_EXHAUSTED_WAIT_THRESHOLD:
+                    log(f"Gemini pide esperar {wait}s: parece cuota DIARIA agotada, no vale la pena reintentar hoy.")
+                    return "QUOTA_EXHAUSTED"
+                wait = min(wait, MAX_WAIT_SECONDS)
                 log(f"Rate limit de Gemini (intento {attempt}/{MAX_RETRIES_ON_RATE_LIMIT}). Esperando {wait}s...")
                 time.sleep(wait)
                 continue
@@ -144,11 +156,12 @@ def run_tests() -> bool:
     return result.returncode == 0
 
 
-def try_one_improvement(state) -> None:
+def try_one_improvement(state) -> str:
+    """Devuelve 'ok', 'quota_exhausted', o 'no_response' según cómo salió."""
     files = list_editable_files()
     if not files:
         log("No hay archivos editables en app/.")
-        return
+        return "no_response"
 
     # elegir el archivo modificado hace más tiempo (round-robin simple)
     target = min(files, key=lambda p: p.stat().st_mtime)
@@ -157,15 +170,19 @@ def try_one_improvement(state) -> None:
     prompt = build_prompt(read_mission(), target)
     response = call_gemini(prompt)
     register_request(state)  # cuenta el intento, haya salido bien o mal
+
+    if response == "QUOTA_EXHAUSTED":
+        return "quota_exhausted"
+
     time.sleep(SECONDS_BETWEEN_REQUESTS)  # respetar el límite por minuto antes de la próxima
 
     if response is None:
-        return
+        return "no_response"
 
     change = extract_file_change(response)
     if change is None:
         log(f"Gemini no devolvió un bloque de archivo válido para {target.name}.")
-        return
+        return "no_response"
 
     _, new_content = change
     target.write_text(new_content, encoding="utf-8")
@@ -176,9 +193,11 @@ def try_one_improvement(state) -> None:
     else:
         target.write_text(original_content, encoding="utf-8")
         log(f"❌ Mejora descartada en {target.name} (no pasó los tests), se revirtió.")
+    return "ok"
 
 
 def main() -> None:
+    start_time = time.monotonic()
     state = load_state()
     if not can_make_request(state):
         log(f"Presupuesto diario agotado ({state.requests_used} usados). Corte hasta mañana.")
@@ -187,10 +206,16 @@ def main() -> None:
     log(f"Arrancando corrida. Quedan hoy ~{remaining_today(state)} peticiones objetivo.")
 
     for i in range(ITERATIONS_PER_RUN):
+        if time.monotonic() - start_time > RUN_DEADLINE_SECONDS:
+            log(f"Corte de seguridad: se alcanzó el límite de {RUN_DEADLINE_SECONDS}s para esta corrida. Termino prolijo.")
+            break
         if not can_make_request(state):
             log("Tope duro de presupuesto alcanzado en medio de la corrida. Freno.")
             break
-        try_one_improvement(state)
+        result = try_one_improvement(state)
+        if result == "quota_exhausted":
+            log("Cortando la corrida: cuota diaria de Gemini agotada. Reintentamos en la próxima corrida programada.")
+            break
 
     log(f"Corrida terminada. Total usado hoy: {state.requests_used}.")
 
