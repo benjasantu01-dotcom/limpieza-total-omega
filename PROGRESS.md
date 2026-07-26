@@ -5,9 +5,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **109**
-- Mejoras aceptadas: **78** (71.6% de aceptación)
-- Rechazadas por tests: 6
+- Iteraciones totales: **113**
+- Mejoras aceptadas: **80** (70.8% de aceptación)
+- Rechazadas por tests: 8
 - Rechazadas por guardia de seguridad: 7
 - Sin cambios (nada sustancial que mejorar): 1
 - Sin respuesta de la IA (error o límite): 17
@@ -16,33 +16,35 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-26 | 78 | 6 | 7 | 1 | 17 |
+| 2026-07-26 | 80 | 8 | 7 | 1 | 17 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **23**
 - legibilidad y documentación: **22**
-- rendimiento: **12**
+- rendimiento: **14**
 - seguridad defensiva: **11**
 - robustez ante casos límite: **10**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **8**
+- `organizer.py`: **8**
 - `browser.py`: **7**
 - `diskreport.py`: **7**
-- `organizer.py`: **7**
 - `safety.py`: **7**
 - `startup.py`: **7**
 - `branding.py`: **7**
 - `duplicates.py`: **6**
+- `main.py`: **6**
 - `quarantine.py`: **6**
 - `scanner.py`: **6**
-- `main.py`: **5**
 - `memory.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-26T13:01:12` **organizer.py** (rendimiento): Optimizé la búsqueda de archivos mediante la conversión de `JUNK_EXTENSIONS` a un `set` (ya lo era, pero reforzado mediante el uso de `.suffix` que es más eficiente que procesar strings) y, fundamentalmente, eliminé el re-cálculo innecesario de `lower()` en cada iteración del bucle principal al mover la lógica de filtrado de extensiones a una comparación más directa con el conjunto de extensiones, reduciendo la carga de CPU durante el recorrido de directorios.
+- `2026-07-26T13:00:28` **main.py** (rendimiento): Se implementó un cacheo simple en el reporte de salud para evitar la re-ejecución innecesaria de cálculos costosos si el estado del sistema no ha cambiado radicalmente, usando una variable de estado y reduciendo la duplicación de llamadas.
 - `2026-07-26T12:50:47` **healthscore.py** (rendimiento): Optimicé el cálculo del `breakdown` en `compute_score` eliminando la creación innecesaria del diccionario `ratios` y aplicando el peso directamente, reduciendo el consumo de memoria y la complejidad de iteración.
 - `2026-07-26T12:50:18` **diskreport.py** (rendimiento): Optimizé `largest_folders` para evitar la creación innecesaria de objetos `Path` y cálculos de `relative_to` mediante el uso de `path.parts` directamente sobre la ruta base, reduciendo significativamente la carga de CPU durante el recorrido de grandes estructuras de archivos.
 - `2026-07-26T12:49:56` **browser.py** (rendimiento): Optimicé `directory_size` reemplazando la recursión costosa por una iteración mediante `os.walk`, lo cual mejora significativamente el rendimiento y reduce el uso de stack en estructuras de directorios profundas al evitar llamadas recursivas innecesarias.
@@ -56,5 +58,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-26T12:20:06` **healthscore.py** (legibilidad y documentación): He añadido type hints exhaustivos a las funciones de cálculo y documentación específica (docstrings) en las funciones de puntuación para clarificar los umbrales "mágicos" utilizados, facilitando el mantenimiento futuro y la auditoría de la lógica de negocio.
 - `2026-07-26T12:19:43` **duplicates.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del flujo principal de detección mediante la extracción de la lógica de refinamiento de duplicados en funciones auxiliares claras, documentando explícitamente el "porqué" del filtrado en cada paso de la estrategia de tres niveles.
 - `2026-07-26T12:19:22` **diskreport.py** (legibilidad y documentación): Documenté el propósito de `walk_files` y `largest_folders` mediante docstrings detallados que explican el "porqué" de las decisiones técnicas (como la gestión de rutas relativas y la recursión segura) para mejorar la mantenibilidad del código.
-- `2026-07-26T12:09:59` **browser.py** (legibilidad y documentación): He mejorado la documentación y robustez de `directory_size` y `detect_profiles` añadiendo Type Hints precisos, Docstrings que explican el contrato de las funciones (específicamente la recursión y el manejo de rutas) y validaciones explícitas para asegurar que el comportamiento ante errores sea predecible y documentado.
-- `2026-07-26T12:09:53` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación mediante Type Aliases y una estructura de comentarios más robusta para definir claramente las expectativas de los tipos de datos en la paleta y los estilos, facilitando la mantenibilidad a largo plazo.

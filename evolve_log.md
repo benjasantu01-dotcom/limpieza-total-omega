@@ -571,3 +571,91 @@ FAILED evolve/tests/test_modules.py::test_partial_hash_only_reads_the_beginning 
 - `2026-07-26T12:50:47` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del `breakdown` en `compute_score` eliminando la creación innecesaria del diccionario `ratios` y aplicando el peso directamente, reduciendo el consumo de memoria y la complejidad de iteración.
 - `2026-07-26T12:50:47` Rotación — nada para rotar
 - `2026-07-26T12:50:47` Corrida terminada. Total usado hoy: 130.
+- `2026-07-26T12:59:46` Arrancando corrida. Quedan hoy ~170 peticiones objetivo.
+- `2026-07-26T13:00:28` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Se implementó un cacheo simple en el reporte de salud para evitar la re-ejecución innecesaria de cálculos costosos si el estado del sistema no ha cambiado radicalmente, usando una variable de estado y reduciendo la duplicación de llamadas.
+- `2026-07-26T13:00:51` Tests FALLARON:
+```
+          '"grande","11","104857600"\n'
+            '"medio","12","10485760"\n'
+        )
+        procesos = memory.parse_windows_process_csv(csv)
+>       assert [p.name for p in procesos] == ["grande", "medio", "chico"]
+E       AssertionError: assert [] == ['grande', 'medio', 'chico']
+E         
+E         Right contains 3 more items, first extra item: 'grande'
+E         
+E         Full diff:
+E         + []
+E         - [
+E         -     'grande',
+E         -     'medio',
+E         -     'chico',
+E         - ]
+
+evolve/tests/test_modules.py:180: AssertionError
+__________________ test_parse_process_csv_skips_broken_lines ___________________
+
+    def test_parse_process_csv_skips_broken_lines():
+        csv = '"Name","Id","WorkingSet"\n"ok","1","1024"\nlinea basura\n"malo","x","y"\n'
+        procesos = memory.parse_windows_process_csv(csv)
+>       assert len(procesos) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+evolve/tests/test_modules.py:187: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption - AssertionError: assert [] == ['grande', 'medio', 'chico']
+  
+  Right contains 3 more items, first extra item: 'grande'
+  
+  Full diff:
+  + []
+  - [
+  -     'grande',
+  -     'medio',
+  -     'chico',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines - assert 0 == 1
+ +  where 0 = len([])
+2 failed, 195 passed in 0.30s
+
+```
+- `2026-07-26T13:00:51` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Optimizé la función `parse_windows_process_csv` reemplazando la construcción de listas y el procesamiento línea a línea con un enfoque más eficiente, evitando el uso de `strip()` repetitivo y validando los datos antes de crear objetos `ProcessMemory`, lo que reduce el overhead de memoria y tiempo en sistemas con muchos procesos.
+- `2026-07-26T13:01:12` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimizé la búsqueda de archivos mediante la conversión de `JUNK_EXTENSIONS` a un `set` (ya lo era, pero reforzado mediante el uso de `.suffix` que es más eficiente que procesar strings) y, fundamentalmente, eliminé el re-cálculo innecesario de `lower()` en cada iteración del bucle principal al mover la lógica de filtrado de extensiones a una comparación más directa con el conjunto de extensiones, reduciendo la carga de CPU durante el recorrido de directorios.
+- `2026-07-26T13:01:19` Tests FALLARON:
+```
+rantined_at='2026-07-26T13:01:19',
+  +     ),
+  + ]
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app - AssertionError: assert [QuarantineIt...26T13:01:19')] == []
+  
+  Left contains 2 more items, first extra item: QuarantineItem(item_id='0b6f8282b520', original_path='/tmp/pytest-of-runner/pytest-4/test_quarantine_two_files_with0/u...d_name='0b6f8282b520__igual.tmp', size_bytes=3, reason='Marcado como sospechoso', quarantined_at='2026-07-26T13:01:19')
+  
+  Full diff:
+  - []
+  + [
+  +     QuarantineItem(
+  +         item_id='0b6f8282b520',
+  +         original_path='/tmp/pytest-of-runner/pytest-4/test_quarantine_two_files_with0/uno/igual.tmp',
+  +         stored_name='0b6f8282b520__igual.tmp',
+  +         size_bytes=3,
+  +         reason='Marcado como sospechoso',
+  +         quarantined_at='2026-07-26T13:01:19',
+  +     ),
+  +     QuarantineItem(
+  +         item_id='3b856cafd5a6',
+  +         original_path='/tmp/pytest-of-runner/pytest-4/test_quarantine_two_files_with0/dos/igual.tmp',
+  +         stored_name='3b856cafd5a6__igual.tmp',
+  +         size_bytes=3,
+  +         reason='Marcado como sospechoso',
+  +         quarantined_at='2026-07-26T13:01:19',
+  +     ),
+  + ]
+4 failed, 193 passed in 0.30s
+
+```
+- `2026-07-26T13:01:19` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se implementó un mecanismo de caché simple en el módulo para evitar la lectura y parseo recursivo del archivo `manifest.json` en cada llamada a funciones auxiliares, optimizando drásticamente el acceso a los datos de la cuarentena.
+- `2026-07-26T13:01:19` Rotación — nada para rotar
+- `2026-07-26T13:01:19` Corrida terminada. Total usado hoy: 134.

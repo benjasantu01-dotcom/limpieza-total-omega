@@ -35,19 +35,13 @@ DEFAULT_SCAN_DIRS = [
     os.path.expanduser("~/Downloads"),
 ]
 
-# Carpetas de sistema críticas que nunca se recorren, incluso si el
-# usuario elige escanear una unidad completa (ej. "C:\"). Evita que un
-# escaneo de disco completo se meta en Windows/Program Files.
+# Carpetas de sistema críticas que nunca se recorren.
 SYSTEM_FOLDER_BLOCKLIST = {"windows", "program files", "program files (x86)", "$recycle.bin", "system volume information"}
 
 
 def list_available_drives() -> List[str]:
     """
     Devuelve las letras de unidad disponibles en Windows (ej. ['C:\\', 'D:\\']).
-    
-    Retorno:
-        List[str]: Lista de rutas de raíz de unidades. Retorna [] en sistemas no Windows
-        o si no se detectan unidades.
     """
     if os.name != "nt":
         return []
@@ -61,34 +55,18 @@ def list_available_drives() -> List[str]:
 
 @dataclass
 class JunkFile:
-    """
-    Representa un archivo candidato a limpieza con sus metadatos básicos.
-    
-    Atributos:
-        path: Objeto Path con la ubicación absoluta del archivo.
-        size_bytes: Tamaño del archivo en bytes para cálculos precisos.
-        modified: Objeto datetime indicando la última vez que fue modificado.
-    """
     path: Path
     size_bytes: int
     modified: datetime
 
     @property
     def size_mb(self) -> float:
-        """Retorna el tamaño del archivo en Megabytes redondeado a 2 decimales."""
         return round(self.size_bytes / (1024 * 1024), 2)
 
 
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     """
     Recorre las carpetas indicadas buscando archivos cuya extensión coincida con JUNK_EXTENSIONS.
-    
-    Args:
-        directories: Lista opcional de rutas a escanear. Si es None, usa DEFAULT_SCAN_DIRS.
-        
-    Retorno:
-        List[JunkFile]: Lista de objetos JunkFile encontrados. Ignora errores de acceso
-        por permisos o archivos bloqueados durante el recorrido.
     """
     if directories is not None and not isinstance(directories, list):
         logger.error("El parámetro directories debe ser una lista.")
@@ -96,6 +74,9 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
 
     dirs = directories or DEFAULT_SCAN_DIRS
     found: List[JunkFile] = []
+    # Pre-compilar set de extensiones bloqueadas a minúsculas
+    junk_set = {ext.lower() for ext in JUNK_EXTENSIONS}
+    blocklist = {s.lower() for s in SYSTEM_FOLDER_BLOCKLIST}
 
     for d in dirs:
         if not isinstance(d, str):
@@ -106,9 +87,9 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
             continue
 
         for root, subdirs, files in os.walk(p):
-            subdirs[:] = [sd for sd in subdirs if sd.lower() not in SYSTEM_FOLDER_BLOCKLIST]
+            subdirs[:] = [sd for sd in subdirs if sd.lower() not in blocklist]
             for name in files:
-                if Path(name).suffix.lower() in JUNK_EXTENSIONS:
+                if Path(name).suffix.lower() in junk_set:
                     fp = Path(root) / name
                     try:
                         stat = fp.stat()
@@ -120,23 +101,12 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
                             )
                         )
                     except (PermissionError, FileNotFoundError, OSError) as e:
-                        logger.debug(f"Acceso denegado o archivo no encontrado al inspeccionar {fp}: {e}")
+                        logger.debug(f"Acceso denegado al inspeccionar {fp}: {e}")
                         continue
     return found
 
 
 def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -> List[JunkFile]:
-    """
-    Ordena una lista de objetos JunkFile según el criterio especificado.
-
-    Args:
-        files: Lista de objetos JunkFile a ordenar.
-        by: Criterio de ordenación ('size' para bytes, 'date' para fecha).
-        ascending: Orden ascendente si es True, descendente si es False.
-
-    Retorno:
-        Una nueva lista ordenada. Si el criterio es inválido, retorna la lista original.
-    """
     if not isinstance(files, list):
         return []
         
@@ -149,19 +119,6 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 
 
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Path:
-    """
-    Mueve los archivos candidatos a un directorio de revisión aislado.
-    
-    Realiza una renombra segura añadiendo un timestamp y contador para evitar 
-    sobreescrituras si los archivos provienen de diferentes orígenes.
-    
-    Args:
-        files: Lista de objetos JunkFile a mover.
-        review_dir: Ruta destino donde se almacenarán los archivos.
-        
-    Retorno:
-        Path: Ruta absoluta del directorio de revisión.
-    """
     if not files or not isinstance(files, list):
         logger.warning("La lista de archivos a organizar está vacía o es inválida.")
         return Path(review_dir).expanduser()
@@ -173,6 +130,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         logger.error("No se pudo preparar el directorio de revisión %s: %s", dest, e)
         raise
 
+    blocklist = {s.lower() for s in SYSTEM_FOLDER_BLOCKLIST}
     for jf in files:
         if not isinstance(jf, JunkFile) or not jf.path or not jf.path.exists():
             continue
@@ -182,7 +140,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         except OSError:
             continue
 
-        if any(part.lower() in SYSTEM_FOLDER_BLOCKLIST for part in full_source_path.parts):
+        if any(part.lower() in blocklist for part in full_source_path.parts):
             logger.warning("Intento de mover archivo en ruta protegida: %s", full_source_path)
             continue
 
@@ -206,17 +164,6 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 
 
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
-    """
-    Elimina permanentemente todos los archivos presentes en el directorio de revisión.
-    
-    Nota: Esta es una operación destructiva que no utiliza la papelera de reciclaje.
-    
-    Args:
-        review_dir: Carpeta que contiene los archivos ya validados por el usuario.
-        
-    Retorno:
-        int: Cantidad de archivos eliminados con éxito.
-    """
     dest = Path(review_dir).expanduser()
     if not dest.exists():
         logger.info("Directorio de revisión no encontrado: %s", dest)

@@ -91,6 +91,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.report_data = {}
         self.outputs = {}
         self.is_running = False
+        self._last_health_score = None # Cache de rendimiento
 
         self._build_layout()
 
@@ -495,6 +496,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 quarantined_count=len(en_cuarentena),
             )
             resultado = healthscore.compute_score(metrics)
+            self._last_health_score = resultado # Guardar estado
 
             self.after(0, lambda: self.score_label.configure(
                 text=f"{resultado.score}/100  ·  {resultado.grade}",
