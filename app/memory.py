@@ -195,7 +195,7 @@ def read_snapshot() -> MemorySnapshot:
 
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
-    """Consulta los procesos más pesados mediante PowerShell."""
+    """Consulta los procesos más pesados mediante PowerShell y filtra procesos protegidos."""
     if os.name != "nt":
         return []
     command = (
@@ -208,7 +208,8 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
             ["powershell", "-NoProfile", "-Command", command],
             capture_output=True, text=True, timeout=30,
         )
-        return parse_windows_process_csv(result.stdout or "", limit=limit)
+        candidates = parse_windows_process_csv(result.stdout or "", limit=limit)
+        return [p for p in candidates if ensure_safe_to_modify(f"pid:{p.pid}")]
     except (OSError, subprocess.SubprocessError):
         return []
 

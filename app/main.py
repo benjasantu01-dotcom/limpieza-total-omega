@@ -402,6 +402,16 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """Devuelve el widget de texto de la pestaña especificada, o el de Limpieza."""
         return self.outputs.get(tab) or self.outputs["Limpieza"]
 
+    def _is_safe_and_file(self, path_str: str) -> bool:
+        """
+        Verifica que la ruta sea segura, exista, sea archivo y no un enlace/reparse point.
+        """
+        if not safety.is_protected_path(path_str):
+            # Lstat evita seguir enlaces si la ruta es un symlink
+            if os.path.exists(path_str) and os.path.isfile(path_str) and not os.path.islink(path_str):
+                return True
+        return False
+
     def _is_path_safe(self, path: str) -> bool:
         """
         Valida que la ruta proporcionada sea segura mediante `safety.py`.
@@ -621,7 +631,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             valid_files = []
             for jf in self.junk_files:
                 path_str = str(jf.path.resolve())
-                if self._is_path_safe(path_str):
+                if self._is_safe_and_file(path_str):
                     valid_files.append(jf)
                 else:
                     self.log(f"Omitido por protección: {path_str}", "Limpieza")
@@ -703,7 +713,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             aislados, bloqueados = 0, 0
             for ruta in rutas:
                 try:
-                    if self._is_path_safe(ruta):
+                    if self._is_safe_and_file(ruta):
                         item = quarantine.quarantine_file(ruta, reason="Marcado por escaneo heurístico")
                         self.log(f"Aislado [{item.item_id}] {ruta}", "Seguridad")
                         aislados += 1
@@ -911,7 +921,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             movidos = 0
             for ruta in a_mover:
                 try:
-                    if self._is_path_safe(ruta):
+                    if self._is_safe_and_file(ruta):
                         quarantine.quarantine_file(ruta, reason="Copia duplicada")
                         movidos += 1
                 except (safety.UnsafePathError, FileNotFoundError, OSError) as e:

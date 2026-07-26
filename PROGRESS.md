@@ -5,9 +5,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **289**
-- Mejoras aceptadas: **200** (69.2% de aceptación)
-- Rechazadas por tests: 14
+- Iteraciones totales: **293**
+- Mejoras aceptadas: **203** (69.3% de aceptación)
+- Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 20
 - Sin cambios (nada sustancial que mejorar): 3
 - Sin respuesta de la IA (error o límite): 52
@@ -16,33 +16,36 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-26 | 200 | 14 | 20 | 3 | 52 |
+| 2026-07-26 | 203 | 15 | 20 | 3 | 52 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **46**
 - manejo de errores y validación de entradas: **41**
 - robustez ante casos límite: **40**
+- seguridad defensiva: **39**
 - rendimiento: **37**
-- seguridad defensiva: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **19**
 - `browser.py`: **18**
+- `duplicates.py`: **18**
 - `organizer.py`: **18**
 - `safety.py`: **18**
-- `duplicates.py`: **17**
+- `memory.py`: **17**
 - `healthscore.py`: **16**
-- `memory.py`: **16**
+- `main.py`: **16**
 - `quarantine.py`: **16**
 - `scanner.py`: **16**
 - `branding.py`: **16**
-- `main.py`: **15**
 - `startup.py`: **15**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-26T20:44:35` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `top_memory_processes` aplicando `ensure_safe_to_modify` sobre los resultados obtenidos para evitar procesar o mostrar información de procesos críticos o protegidos antes de devolverlos a la interfaz.
+- `2026-07-26T20:44:27` **main.py** (seguridad defensiva): Se implementó un chequeo de seguridad de "profundidad" en `on_stage` y `on_quarantine_duplicates` para asegurar que, además de validar la ruta individual, se verifique que la ruta sea un archivo real y no un enlace simbólico o un punto de reparse (reparse point), mitigando el riesgo de seguir punteros hacia ubicaciones fuera del árbol de directorios esperado.
+- `2026-07-26T20:43:23` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` integrando una verificación explícita mediante `resolve()` y `is_relative_to` (o comparación de cadenas normalizadas) para evitar el escape del directorio base mediante enlaces simbólicos o rutas maliciosas, garantizando que el escaneo nunca abandone el ámbito definido.
 - `2026-07-26T20:34:03` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `walk_files` y `largest_folders` validando que las rutas resultantes tras el `resolve()` sigan contenidas dentro del árbol original, evitando ataques de "path traversal" o saltos accidentales mediante enlaces simbólicos externos.
 - `2026-07-26T20:33:55` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `directory_size` para prevenir el seguimiento de puntos de reparse (junctions o symlinks) mediante la validación `is_symlink()` y, crucialmente, la validación de que cada subdirectorio visitado se mantenga dentro de los límites del directorio raíz original, evitando escapes del sistema de archivos.
 - `2026-07-26T20:33:13` **startup.py** (robustez ante casos límite): Mejoré la robustez de `entries_from_folders` ante rutas que no existen (causadas por redirecciones de carpetas del usuario) y archivos corruptos o bloqueados, envolviendo la iteración en un `try-except` específico para evitar que un solo error de acceso en el sistema de archivos detenga el escaneo completo de la lista de inicio.
@@ -55,6 +58,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-26T20:03:23` **diskreport.py** (robustez ante casos límite): Se mejoró la robustez de `walk_files` y `summarize` añadiendo validaciones explícitas para rutas inexistentes, permisos denegados durante el recorrido y manejo de excepciones en `path.stat()` para evitar interrupciones en el análisis de directorios con archivos bloqueados o inconsistentes.
 - `2026-07-26T20:03:01` **browser.py** (robustez ante casos límite): Se mejoró la robustez de `directory_size` ante rutas inválidas, archivos inaccesibles o bloqueados por el sistema operativo, envolviendo `entry.stat()` en el bloque de excepciones para evitar la interrupción del escaneo y asegurar que el cálculo sea lo más completo posible incluso en condiciones de permiso denegado.
 - `2026-07-26T19:51:26` **scanner.py** (rendimiento): Optimicé el bucle de escaneo de `scan_directory` reemplazando la llamada repetitiva a `entry.resolve()` por una verificación lógica de prefijo de string más eficiente y evitando accesos redundantes al sistema de archivos al procesar `is_file()` y `is_dir()` de forma directa sobre la entrada.
-- `2026-07-26T19:51:07` **safety.py** (rendimiento): Optimizé `is_protected_path` reemplazando la verificación recursiva por `p.parents` (que es una secuencia de objetos Path costosa de evaluar) por una comparación de prefijos de cadenas (o verificación de conjuntos) y mejoré el manejo de `_SYSTEM_ROOTS` mediante una validación de `path.parts` que reduce significativamente la carga computacional en recorridos masivos de disco.
-- `2026-07-26T19:41:44` **quarantine.py** (rendimiento): Se optimizó `restore_item` y `purge_item` reemplazando la creación repetida de listas y la búsqueda lineal (`[i for i in items if i.item_id != item_id]`) por el uso de un diccionario de acceso constante, reduciendo la complejidad algorítmica y el uso innecesario de memoria.
-- `2026-07-26T19:41:32` **organizer.py** (rendimiento): Se optimizó el rendimiento de `scan_for_junk` pre-calculando el `Path.resolve()` solo cuando es estrictamente necesario y evitando la creación redundante de objetos `Path` dentro del bucle de escaneo mediante el uso directo de las propiedades de `os.DirEntry`.

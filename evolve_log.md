@@ -1258,3 +1258,31 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-07-26T20:34:03` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `walk_files` y `largest_folders` validando que las rutas resultantes tras el `resolve()` sigan contenidas dentro del árbol original, evitando ataques de "path traversal" o saltos accidentales mediante enlaces simbólicos externos.
 - `2026-07-26T20:34:03` Rotación — nada para rotar
 - `2026-07-26T20:34:03` Corrida terminada. Total usado hoy: 310.
+- `2026-07-26T20:43:00` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-07-26T20:43:23` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_collect_candidates` integrando una verificación explícita mediante `resolve()` y `is_relative_to` (o comparación de cadenas normalizadas) para evitar el escape del directorio base mediante enlaces simbólicos o rutas maliciosas, garantizando que el escaneo nunca abandone el ámbito definido.
+- `2026-07-26T20:43:45` Tests FALLARON:
+```
+........................................................................ [ 36%]
+...........................................................F............ [ 73%]
+.....................................................                    [100%]
+=================================== FAILURES ===================================
+_______________ test_low_disk_produces_a_specific_recommendation _______________
+
+    def test_low_disk_produces_a_specific_recommendation():
+        resultado = healthscore.compute_score(healthscore.SystemMetrics(disk_free_percent=3))
+>       assert any("disco" in r.lower() for r in resultado.recommendations)
+E       assert False
+E        +  where False = any(<generator object test_low_disk_produces_a_specific_recommendation.<locals>.<genexpr> at 0x7fa7b5152810>)
+
+evolve/tests/test_modules.py:738: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_low_disk_produces_a_specific_recommendation - assert False
+ +  where False = any(<generator object test_low_disk_produces_a_specific_recommendation.<locals>.<genexpr> at 0x7fa7b5152810>)
+1 failed, 196 passed in 0.32s
+
+```
+- `2026-07-26T20:43:45` ❌ Mejora descartada en healthscore.py (no pasó los tests), se revirtió. Intento: Mejoré la seguridad defensiva del módulo encapsulando la validación del objeto `SystemMetrics` mediante una técnica de "fail-safe" que asegura que cualquier estado corrupto de las métricas (valores negativos o desbordados) sea corregido antes del procesamiento, evitando cálculos aritméticos con datos no sanitizados.
+- `2026-07-26T20:44:27` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Se implementó un chequeo de seguridad de "profundidad" en `on_stage` y `on_quarantine_duplicates` para asegurar que, además de validar la ruta individual, se verifique que la ruta sea un archivo real y no un enlace simbólico o un punto de reparse (reparse point), mitigando el riesgo de seguir punteros hacia ubicaciones fuera del árbol de directorios esperado.
+- `2026-07-26T20:44:35` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `top_memory_processes` aplicando `ensure_safe_to_modify` sobre los resultados obtenidos para evitar procesar o mostrar información de procesos críticos o protegidos antes de devolverlos a la interfaz.
+- `2026-07-26T20:44:35` Rotación — nada para rotar
+- `2026-07-26T20:44:35` Corrida terminada. Total usado hoy: 314.

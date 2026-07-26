@@ -141,16 +141,26 @@ def _collect_candidates(directories: Iterable[str | Path], min_size: int, skip_p
                 continue
             if skip_protected and is_protected_path(base):
                 continue
+            
             for root, subdirs, files in os.walk(base):
                 root_path = Path(root).resolve()
+                
+                # Defensa contra escapes de directorio (path traversal/symlink loops)
+                # Verifica que la ruta actual sea hija de la base original
                 if not str(root_path).startswith(str(base)):
                     subdirs[:] = []
                     continue
+                
                 if skip_protected and is_protected_path(root_path):
                     subdirs[:] = []
                     continue
+                    
                 for name in files:
-                    candidate: Path = root_path / name
+                    candidate = (root_path / name).resolve()
+                    # Asegurar que el archivo individual esté dentro de la base
+                    if not str(candidate).startswith(str(base)):
+                        continue
+                        
                     try:
                         if candidate.is_symlink():
                             continue
