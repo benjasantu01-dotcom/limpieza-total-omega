@@ -69,27 +69,17 @@ SENSITIVE_EXTENSIONS = frozenset({
 
 
 def normalize(path: str | os.PathLike) -> Path:
-    """Devuelve una ruta absoluta y resuelta, sin fallar si no existe.
-
-    Se resuelve para neutralizar cosas como "carpeta/../../otra" antes de
-    cualquier comparación de seguridad: comparar rutas sin resolver es
-    justamente el agujero que permite escapar de una carpeta permitida.
-    """
+    """Devuelve una ruta absoluta y resuelta, sin fallar si no existe."""
+    if not isinstance(path, (str, os.PathLike)):
+        raise TypeError(f"Entrada inválida en normalize: se esperaba str o PathLike, recibió {type(path)}")
     try:
         return Path(path).expanduser().resolve()
     except (OSError, RuntimeError):
-        # Rutas inválidas o enlaces circulares: se cae a una versión
-        # absoluta sin resolver, que igual se valida más abajo.
         return Path(os.path.abspath(os.path.expanduser(str(path))))
 
 
 def is_drive_root(path: str | os.PathLike) -> bool:
-    """True si la ruta es la raíz de una unidad o del sistema de archivos.
-
-    Se trata aparte porque una operación destructiva sobre "C:\\" o "/"
-    sería catastrófica, y `is_protected_path` por sí sola no la detectaría
-    (la raíz no contiene ningún nombre de carpeta protegida).
-    """
+    """True si la ruta es la raíz de una unidad o del sistema de archivos."""
     p = normalize(path)
     return p.parent == p or str(p) == p.anchor
 
@@ -102,7 +92,6 @@ def is_protected_path(path: str | os.PathLike) -> bool:
     parts_lower = [part.lower() for part in p.parts]
     if any(part in PROTECTED_DIR_NAMES for part in parts_lower):
         return True
-    # Rutas críticas conocidas del entorno (por si Windows no está en C:).
     for env_var in ("SystemRoot", "windir", "ProgramFiles", "ProgramFiles(x86)", "ProgramData"):
         root = os.environ.get(env_var)
         if root and is_within_directory(p, root, allow_equal=True):
@@ -115,13 +104,11 @@ def is_within_directory(
     parent: str | os.PathLike,
     allow_equal: bool = False,
 ) -> bool:
-    """True si `child` está realmente contenido en `parent`.
-
-    Compara rutas ya resueltas, que es lo que evita que un nombre como
-    "../../Windows/System32" se cuele en una operación que debería estar
-    limitada a una sola carpeta.
-    """
-    c, p = normalize(child), normalize(parent)
+    """True si `child` está realmente contenido en `parent`."""
+    try:
+        c, p = normalize(child), normalize(parent)
+    except TypeError:
+        return False
     if c == p:
         return allow_equal
     try:
@@ -137,12 +124,7 @@ def is_sensitive_file(path: str | os.PathLike) -> bool:
 
 
 def ensure_safe_to_modify(path: str | os.PathLike, *, allow_sensitive: bool = False) -> Path:
-    """Valida que se pueda modificar/borrar la ruta, o lanza UnsafePathError.
-
-    Es la única puerta que deberían usar las operaciones destructivas. Se
-    lanza una excepción en vez de devolver False para que un olvido de
-    chequear el resultado no se traduzca en un borrado.
-    """
+    """Valida que se pueda modificar/borrar la ruta, o lanza UnsafePathError."""
     p = normalize(path)
     if is_drive_root(p):
         raise UnsafePathError(f"Operación bloqueada: '{p}' es la raíz de una unidad.")
@@ -156,28 +138,24 @@ def ensure_safe_to_modify(path: str | os.PathLike, *, allow_sensitive: bool = Fa
 
 
 def filter_safe_paths(paths, *, allow_sensitive: bool = False) -> list[Path]:
-    """Filtra una lista dejando solo las rutas seguras de modificar.
-
-    Se usa para el camino inverso al de `ensure_safe_to_modify`: cuando hay
-    que procesar un lote y conviene descartar lo riesgoso en silencio en vez
-    de abortar todo el lote por un solo archivo.
-    """
+    """Filtra una lista dejando solo las rutas seguras de modificar."""
     safe: list[Path] = []
+    if not paths:
+        return safe
     for candidate in paths:
         try:
             safe.append(ensure_safe_to_modify(candidate, allow_sensitive=allow_sensitive))
-        except UnsafePathError:
+        except (UnsafePathError, TypeError):
             continue
     return safe
 
 
 def describe_protection(path: str | os.PathLike) -> str:
-    """Explica en una línea por qué una ruta está o no protegida.
-
-    Pensado para mostrarle al usuario el motivo en la interfaz, en vez de
-    un "no se pudo" sin explicación.
-    """
-    p = normalize(path)
+    """Explica en una línea por qué una ruta está o no protegida."""
+    try:
+        p = normalize(path)
+    except TypeError:
+        return "Ruta mal formada: no se puede analizar."
     if is_drive_root(p):
         return f"'{p}' es la raíz de una unidad: nunca se modifica."
     if is_protected_path(p):

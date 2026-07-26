@@ -5,10 +5,10 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **9**
-- Mejoras aceptadas: **8** (88.9% de aceptación)
+- Iteraciones totales: **13**
+- Mejoras aceptadas: **11** (84.6% de aceptación)
 - Rechazadas por tests: 1
-- Rechazadas por guardia de seguridad: 0
+- Rechazadas por guardia de seguridad: 1
 - Sin cambios (nada sustancial que mejorar): 0
 - Sin respuesta de la IA (error o límite): 0
 
@@ -16,11 +16,11 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-26 | 8 | 1 | 0 | 0 | 0 |
+| 2026-07-26 | 11 | 1 | 1 | 0 | 0 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **8**
+- manejo de errores y validación de entradas: **11**
 
 ## Mejoras aceptadas por archivo
 
@@ -32,9 +32,15 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **1**
 - `organizer.py`: **1**
 - `quarantine.py`: **1**
+- `safety.py`: **1**
+- `scanner.py`: **1**
+- `startup.py`: **1**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-26T08:41:20` **startup.py** (manejo de errores y validación de entradas): Se implementó un manejo de errores robusto en `parse_registry_csv` y `entries_from_registry` para validar las entradas del registro, previniendo fallos ante datos malformados o vacíos, y se añadió una validación de tipo en `estimate_impact` para asegurar la estabilidad del cómputo.
+- `2026-07-26T08:41:14` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `scan_directory` y `scan_file` mediante la validación explícita de entradas (`None` o tipos incorrectos) y el manejo de excepciones de acceso al sistema de archivos, asegurando que las funciones no fallen ante rutas mal formadas o problemas de permisos durante el recorrido recursivo.
+- `2026-07-26T08:40:54` **safety.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de errores en `normalize` y `is_within_directory` mediante la validación de tipos (`isinstance`) y la captura de `TypeError` frente a entradas mal formadas, evitando que la aplicación colapse ante parámetros inesperados en tiempo de ejecución.
 - `2026-07-26T08:31:36` **quarantine.py** (manejo de errores y validación de entradas): Mejora la robustez de `quarantine_file` añadiendo una verificación crítica: se asegura de que el archivo no esté siendo utilizado por otro proceso antes de intentar el `shutil.move`, evitando errores de `PermissionError` y bloqueos de E/S.
 - `2026-07-26T08:31:28` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` validando que la lista de archivos no sea nula o vacía antes de proceder y encapsulé la lógica de creación de destino para prevenir errores de escritura en disco, cumpliendo con el enfoque de manejo de errores y validación.
 - `2026-07-26T08:31:07` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` validando estrictamente el PID para evitar llamadas con valores inválidos o negativos que podrían causar errores inesperados en las APIs de Windows, además de capturar errores específicos al invocar `psapi` para mejorar la trazabilidad sin depender de excepciones genéricas.

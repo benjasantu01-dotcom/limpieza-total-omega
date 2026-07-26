@@ -65,6 +65,8 @@ class StartupEntry:
         Los comandos de arranque suelen venir con argumentos y comillas;
         esto se queda con la primera parte para poder mostrarla corta.
         """
+        if not self.command:
+            return ""
         cmd = self.command.strip()
         if cmd.startswith('"'):
             end = cmd.find('"', 1)
@@ -116,12 +118,16 @@ def parse_registry_csv(text: str, source: str = "registro") -> list[StartupEntry
     internas de PowerShell (PS*) porque no son programas de arranque.
     """
     entries: list[StartupEntry] = []
+    if not text:
+        return entries
+        
     for line in text.splitlines():
         line = line.strip()
         if not line:
             continue
+        # Split solo en la primera coma para separar Name y Value
         parts = [p.strip().strip('"') for p in line.split(",", 1)]
-        if len(parts) < 2:
+        if len(parts) < 2 or not parts[0]:
             continue
         name, value = parts[0], parts[1]
         if name.lower() == "name" or name.startswith("PS"):
@@ -146,9 +152,10 @@ def entries_from_registry(keys=REGISTRY_RUN_KEYS) -> list[StartupEntry]:
                 ["powershell", "-NoProfile", "-Command", command],
                 capture_output=True, text=True, timeout=30,
             )
+            if result.returncode == 0 and result.stdout:
+                entries.extend(parse_registry_csv(result.stdout, source=key))
         except (OSError, subprocess.SubprocessError):
             continue
-        entries.extend(parse_registry_csv(result.stdout or "", source=key))
     return entries
 
 
@@ -172,7 +179,15 @@ def estimate_impact(entries) -> str:
     Es una heurística por cantidad, no una medición real de tiempo: se
     aclara así para no dar una cifra falsa de "segundos de arranque".
     """
-    total = len(list(entries))
+    if entries is None:
+        return "ok"
+    
+    # Aseguramos iterable y calculamos total
+    try:
+        total = len(list(entries))
+    except (TypeError, ValueError):
+        return "ok"
+
     if total == 0:
         return "ok"
     if total <= 5:
@@ -188,9 +203,9 @@ def summarize(entries=None) -> list[str]:
     """Resumen legible del arranque, con la advertencia de cómo desactivar."""
     if entries is None:
         entries = list_startup_entries()
-    entries = list(entries)
-    lines = [f"Programas que arrancan con el sistema: {len(entries)}"]
-    nivel = estimate_impact(entries)
+    entries_list = list(entries)
+    lines = [f"Programas que arrancan con el sistema: {len(entries_list)}"]
+    nivel = estimate_impact(entries_list)
     mensajes = {
         "ok": "Arranque liviano: no hay mucho para ganar acá.",
         "info": "Cantidad normal de programas al inicio.",
@@ -199,10 +214,10 @@ def summarize(entries=None) -> list[str]:
     }
     lines.append(mensajes.get(nivel, ""))
     lines.append("")
-    for entry in entries:
+    for entry in entries_list:
         lines.append(f"  {entry.name:<28} [{entry.source}]")
         if entry.executable:
             lines.append(f"      {entry.executable}")
-    if entries:
+    if entries_list:
         lines.extend(["", HOW_TO_DISABLE])
     return lines
