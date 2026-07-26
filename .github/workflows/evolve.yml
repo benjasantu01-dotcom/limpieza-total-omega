@@ -1,18 +1,38 @@
 name: Evolve (bucle autónomo)
 
+# CÓMO SE MANTIENE VIVO ESTE BUCLE
+#
+# El cron de GitHub Actions resultó poco confiable en la práctica: sobre
+# ~10 horas con cron activo solo disparó 1 vez de las ~19 esperadas.
+# GitHub avisa que el evento `schedule` se atrasa o se descarta con carga
+# alta, y no hay forma de forzarlo.
+#
+# Por eso el workflow se RE-DISPARA A SÍ MISMO al terminar cada corrida
+# (paso "Re-disparar la cadena"), logrando un latido propio de ~10 minutos
+# independiente del cron. El cron queda solo como reinicio de respaldo por
+# si la cadena se corta.
+#
+# CÓMO FRENARLO (tres formas, de la más rápida a la más suave):
+#   1. Actions -> Evolve (bucle autónomo) -> "..." -> Disable workflow.
+#   2. Borrar el secreto SELF_TRIGGER_TOKEN (sin token no se re-dispara).
+#   3. Crear un archivo vacío llamado STOP_CHAIN en la raíz del repo.
+#
+# FRENOS AUTOMÁTICOS ya incorporados:
+#   - Tope de 200 eslabones por día (evolve/chain.py).
+#   - No re-dispara si ya hay otra corrida en curso o en cola, para que el
+#     cron y la cadena no generen cadenas paralelas que se multipliquen.
+#   - Presupuesto de peticiones a Gemini (tope duro 350/día, evolve/budget.py):
+#     aunque la cadena siga viva, deja de gastar cuota.
+
 on:
   schedule:
-    # Cada 10 minutos. OJO: el cron de GitHub Actions no es puntual — con
-    # alta carga las corridas programadas se atrasan o se descartan, y no
-    # hay forma de forzarlas. Por eso cada corrida hace VARIAS mejoras
-    # (ITERATIONS_PER_RUN) en vez de una: así, si GitHub se saltea corridas,
-    # el progreso diario no se derrumba. El techo real lo pone el
-    # presupuesto de evolve/budget.py (tope duro 350/día), no el cron.
+    # Respaldo únicamente: si la cadena se corta, esto la vuelve a arrancar.
     - cron: "*/10 * * * *"
-  workflow_dispatch: {}  # también se puede disparar a mano desde GitHub
+  workflow_dispatch: {}
 
 permissions:
   contents: write
+  actions: write
 
 concurrency:
   group: evolve-loop
@@ -21,9 +41,17 @@ concurrency:
 jobs:
   evolve:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
+    # A nivel de job a propósito: el `env` de un paso NO está disponible en
+    # el `if` de ese mismo paso, así que si se declarara ahí la condición
+    # sería siempre falsa y la cadena nunca se re-dispararía.
+    env:
+      SELF_TRIGGER_TOKEN: ${{ secrets.SELF_TRIGGER_TOKEN }}
     steps:
       - uses: actions/checkout@v4
+
+      - name: Marcar inicio del ciclo
+        run: echo "CYCLE_START=$(date +%s)" >> "$GITHUB_ENV"
 
       - uses: actions/setup-python@v5
         with:
@@ -35,23 +63,30 @@ jobs:
       - name: Correr el bucle de mejoras
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          # 4 mejoras por corrida (~90s de job). Si el cron dispara todas,
-          # el presupuesto diario corta en 350; si GitHub se saltea la
-          # mayoría, igual se avanza 4 por corrida en vez de 1.
+          # 4 mejoras por corrida. El techo diario real lo pone el
+          # presupuesto de evolve/budget.py, no la cantidad de corridas.
           ITERATIONS_PER_RUN: "4"
         run: python evolve/evolve.py
+
+      - name: Decidir si la cadena sigue
+        id: chain
+        run: |
+          decision=$(python evolve/chain.py)
+          echo "decision=$decision" >> "$GITHUB_OUTPUT"
+          echo "Decisión de la cadena: $decision"
 
       - name: Commitear cambios aceptados
         run: |
           git config user.name "limpieza-total-omega-bot"
           git config user.email "bot@users.noreply.github.com"
-          git add app/ evolve/budget_state.json evolve/cycle_state.json evolve/metrics.jsonl evolve_log.md PROGRESS.md
+          git add app/ evolve/budget_state.json evolve/cycle_state.json \
+                  evolve/chain_state.json evolve/metrics.jsonl evolve_log.md PROGRESS.md
           if git diff --cached --quiet; then
             echo "No hay cambios para commitear."
             exit 0
           fi
           git commit -m "Auto-mejora aceptada por el bucle evolve"
-          # Reintentar con rebase: si empujaste algo a mano mientras el bot
+          # Reintentar con rebase: si se empujó algo a mano mientras el bot
           # trabajaba, sin esto el push falla y la mejora se pierde.
           for attempt in 1 2 3; do
             if git pull --rebase --autostash origin main && git push origin main; then
@@ -63,3 +98,41 @@ jobs:
           done
           echo "No se pudo empujar después de 3 intentos."
           exit 1
+
+      - name: Esperar para completar el ciclo de ~10 minutos
+        if: steps.chain.outputs.decision == 'go' && env.SELF_TRIGGER_TOKEN != ''
+        env:
+          CYCLE_SECONDS: "600"
+        run: |
+          elapsed=$(( $(date +%s) - CYCLE_START ))
+          remaining=$(( CYCLE_SECONDS - elapsed ))
+          if [ "$remaining" -gt 0 ]; then
+            echo "Trabajo hecho en ${elapsed}s. Esperando ${remaining}s para mantener el ritmo."
+            sleep "$remaining"
+          else
+            echo "El trabajo tomó ${elapsed}s, ya se pasó del ciclo. Sigo sin esperar."
+          fi
+
+      - name: Re-disparar la cadena
+        if: steps.chain.outputs.decision == 'go' && env.SELF_TRIGGER_TOKEN != ''
+        env:
+          GH_TOKEN: ${{ env.SELF_TRIGGER_TOKEN }}
+        run: |
+          # Antipileup: si ya hay otra corrida en curso (además de esta) o
+          # alguna en cola, NO re-disparamos. Sin este chequeo, el cron y la
+          # cadena podrían generar cadenas paralelas que se multiplican.
+          queued=$(gh run list --workflow evolve.yml --status queued --json databaseId --limit 20 | jq 'length')
+          running=$(gh run list --workflow evolve.yml --status in_progress --json databaseId --limit 20 | jq 'length')
+          echo "En cola: $queued | En curso (incluye esta): $running"
+          if [ "$queued" -gt 0 ] || [ "$running" -gt 1 ]; then
+            echo "Ya hay otra corrida pendiente. No re-disparo para evitar cadenas duplicadas."
+            exit 0
+          fi
+          gh workflow run evolve.yml --ref main
+          echo "Cadena re-disparada."
+
+      - name: Aviso si falta el token de la cadena
+        if: steps.chain.outputs.decision == 'go' && env.SELF_TRIGGER_TOKEN == ''
+        run: |
+          echo "::warning::Falta el secreto SELF_TRIGGER_TOKEN, así que la cadena no se re-dispara."
+          echo "El bucle depende solo del cron de GitHub, que es poco confiable."
