@@ -16,7 +16,7 @@ Este módulo convierte el cuidado en una regla que se puede verificar:
 Los tests de `evolve/tests/` verifican estas reglas. Si la IA borrara o
 debilitara estas funciones, los tests fallan y el cambio se rechaza; y si
 intentara eliminarlas, la guardia AST de `evolve/guards.py` lo bloquea por
-pérdida de símbolos. Es decir: esta protección no depende del criterio del
+perdida de símbolos. Es decir: esta protección no depende del criterio del
 modelo, está clavada en el proceso.
 """
 
@@ -78,19 +78,27 @@ def normalize(path: PathLike) -> Path:
         raise TypeError(f"Entrada inválida en normalize: se esperaba str o PathLike, recibió {type(path)}")
     try:
         return Path(path).expanduser().resolve()
-    except (OSError, RuntimeError):
+    except (OSError, RuntimeError, ValueError):
+        # Fallback si resolve() falla por rutas inexistentes o dispositivos inaccesibles
         return Path(os.path.abspath(os.path.expanduser(str(path))))
 
 
 def is_drive_root(path: PathLike) -> bool:
     """True si la ruta es la raíz de una unidad o del sistema de archivos."""
-    p = normalize(path)
-    return p.parent == p or str(p) == p.anchor
+    try:
+        p = normalize(path)
+        return p.parent == p or str(p) == p.anchor
+    except Exception:
+        return False
 
 
 def is_protected_path(path: PathLike) -> bool:
     """True si la ruta cae dentro de una carpeta de sistema protegida."""
-    p = normalize(path)
+    try:
+        p = normalize(path)
+    except Exception:
+        return True # Por seguridad ante rutas corruptas, denegar acceso
+        
     if is_drive_root(p):
         return True
     
@@ -114,7 +122,7 @@ def is_within_directory(
     """True si `child` está realmente contenido en `parent`."""
     try:
         c, p = normalize(child), normalize(parent)
-    except TypeError:
+    except Exception:
         return False
     if c == p:
         return allow_equal
@@ -127,7 +135,10 @@ def is_within_directory(
 
 def is_sensitive_file(path: PathLike) -> bool:
     """True si la extensión del archivo lo hace peligroso de borrar."""
-    return normalize(path).suffix.lower() in SENSITIVE_EXTENSIONS
+    try:
+        return normalize(path).suffix.lower() in SENSITIVE_EXTENSIONS
+    except Exception:
+        return True # Denegar por defecto ante errores de lectura
 
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> Path:
@@ -138,7 +149,11 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
         UnsafePathError: Si la ruta es raíz, está protegida o es sensible.
         TypeError: Si el tipo de entrada no es compatible con Path.
     """
-    p = normalize(path)
+    try:
+        p = normalize(path)
+    except Exception as e:
+        raise UnsafePathError(f"Ruta inaccesible o mal formada: {path}") from e
+
     if is_drive_root(p):
         raise UnsafePathError(f"Operación bloqueada: '{p}' es la raíz de una unidad.")
     if is_protected_path(p):
@@ -165,7 +180,7 @@ def describe_protection(path: PathLike) -> str:
     """Explica en una línea por qué una ruta está o no protegida."""
     try:
         p = normalize(path)
-    except TypeError:
+    except Exception:
         return "Ruta mal formada: no se puede analizar."
     if is_drive_root(p):
         return f"'{p}' es la raíz de una unidad: nunca se modifica."

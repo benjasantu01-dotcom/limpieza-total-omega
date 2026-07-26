@@ -112,6 +112,9 @@ def scan_directory(directory: str | Path) -> list[Suspicion]:
             
         for p in root.rglob("*"):
             try:
+                # Evitar seguir enlaces simbólicos o puntos de reparse (Junctions)
+                if p.is_symlink():
+                    continue
                 if p.is_file():
                     results.extend(scan_file(p))
             except (PermissionError, OSError) as e:

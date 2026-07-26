@@ -71,8 +71,8 @@ class StartupEntry:
         cmd = self.command.strip()
         if cmd.startswith('"'):
             end = cmd.find('"', 1)
-            if end > 0:
-                return cmd[1:end]
+            # Si no hay comilla de cierre, se asume toda la cadena como ejecutable
+            return cmd[1:end] if end > 0 else cmd[1:]
         return cmd.split(" ")[0] if cmd else ""
 
 
@@ -129,12 +129,16 @@ def parse_registry_csv(text: str, source: str = "registro") -> list[StartupEntry
         line = line.strip()
         if not line:
             continue
-        # Split solo en la primera coma para separar Name y Value
-        parts = [p.strip().strip('"') for p in line.split(",", 1)]
-        if len(parts) < 2 or not parts[0]:
+        # Split conservador: el registro puede contener comas en los paths
+        parts = line.split(",", 1)
+        if len(parts) < 2:
             continue
-        name, value = parts[0], parts[1]
-        if name.lower() == "name" or name.startswith("PS"):
+            
+        # Limpieza robusta de las columnas CSV generadas por PowerShell
+        name = parts[0].strip().strip('"').strip("'")
+        value = parts[1].strip().strip('"').strip("'")
+        
+        if not name or name.lower() == "name" or name.startswith("PS"):
             continue
         entries.append(StartupEntry(name=name, command=value, source=source))
     return entries

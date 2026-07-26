@@ -385,3 +385,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-07-26T10:17:38` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-07-26T10:17:38` Rotación — nada para rotar
 - `2026-07-26T10:17:38` Corrida terminada. Total usado hoy: 70.
+- `2026-07-26T10:27:00` Arrancando corrida. Quedan hoy ~230 peticiones objetivo.
+- `2026-07-26T10:27:21` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Mejoré la robustez de `is_within_directory` y `normalize` ante rutas mal formadas, dispositivos no válidos o errores de permisos que pueden ocurrir al trabajar con el sistema de archivos real, asegurando que las validaciones de seguridad no fallen silenciosamente ante excepciones inesperadas del SO.
+- `2026-07-26T10:27:41` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). He mejorado la robustez de `scan_directory` implementando un manejo explícito para enlaces simbólicos y puntos de reparse (junctions) mediante `is_symlink()`, evitando así recursiones infinitas y escaneos innecesarios en ubicaciones fuera del árbol de directorios previsto, cumpliendo con las directrices de seguridad.
+- `2026-07-26T10:28:02` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Mejora la robustez del parseo del registro ante valores malformados o comillas desbalanceadas en la salida de PowerShell, asegurando que la aplicación no falle al encontrar entradas con rutas truncadas o nombres inesperados.
+- `2026-07-26T10:28:09` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva de `save_logo_svg` incorporando una validación explícita mediante `app.safety.ensure_safe_to_modify` antes de cualquier operación de escritura en disco, cumpliendo con la política de seguridad centralizada del proyecto.
+- `2026-07-26T10:28:09` Rotación — nada para rotar
+- `2026-07-26T10:28:09` Corrida terminada. Total usado hoy: 74.

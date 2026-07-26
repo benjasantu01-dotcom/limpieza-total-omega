@@ -17,6 +17,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Final
 from functools import lru_cache
+from app.safety import ensure_safe_to_modify
 
 APP_NAME: Final = "Limpieza Total Omega"
 APP_SHORT_NAME: Final = "Omega"
@@ -132,9 +133,11 @@ def logo_svg(size: int = 128) -> str:
 
 
 def save_logo_svg(destination: str | Path) -> Path | None:
-    """Guarda el logo SVG en disco, capturando errores de IO."""
+    """Guarda el logo SVG en disco, capturando errores de IO y validando seguridad."""
     try:
-        path = Path(destination).expanduser()
+        path = Path(destination).expanduser().resolve()
+        if not ensure_safe_to_modify(path):
+            return None
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(logo_svg(), encoding="utf-8")
         return path
