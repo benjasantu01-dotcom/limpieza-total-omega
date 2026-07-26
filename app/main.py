@@ -781,11 +781,18 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         if not raw.isdigit():
             messagebox.showinfo("PID inválido", "Escribí el número de PID de un proceso.")
             return
+        
+        pid = int(raw)
+        # Seguridad: evitar tocar procesos de sistema conocidos (ej. System, Idle)
+        if pid < 100:
+            messagebox.showwarning("Bloqueo de seguridad", "No se permite manipular procesos del sistema.")
+            return
+
         if not self._confirm("Liberar working set", memory_mod.TRIM_WARNING + "\n\n¿Seguimos?"):
             return
 
         def task():
-            ok, mensaje = memory_mod.trim_working_set(int(raw))
+            ok, mensaje = memory_mod.trim_working_set(pid)
             self.log(("OK: " if ok else "Sin efecto: ") + mensaje, "Memoria")
 
         self.run_async(task)

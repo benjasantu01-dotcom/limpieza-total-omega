@@ -76,16 +76,17 @@ class HealthResult:
 
 
 def _clamp(value: float, low: float = 0.0, high: float = 1.0) -> float:
-    """Acota un valor al rango [low, high] y maneja NaN."""
-    if not math.isfinite(value):
+    """Acota un valor al rango [low, high] y maneja NaN e infinito."""
+    if not isinstance(value, (int, float)) or not math.isfinite(value):
         return low
-    return max(low, min(high, value))
+    return max(low, min(high, float(value)))
 
 
 def _to_float(value: Any, default: float = 0.0) -> float:
     """Convierte de forma segura a float evitando excepciones por None."""
     try:
-        return float(value) if value is not None else default
+        val = float(value) if value is not None else default
+        return val if math.isfinite(val) else default
     except (TypeError, ValueError):
         return default
 
@@ -122,7 +123,7 @@ def score_memory(available_percent: float) -> float:
     Se espera un 35% de margen operativo saludable. Valores mayores a 35%
     otorgan el puntaje máximo tras el acotado.
     """
-    val = max(0.0, min(100.0, _to_float(available_percent, 0.0)))
+    val = max(0.0, _to_float(available_percent, 0.0))
     return _clamp(val / 35.0)
 
 
@@ -132,7 +133,7 @@ def score_disk(free_percent: float) -> float:
     El umbral de eficiencia es 25% de espacio libre total. Menos de eso
     comienza a reducir proporcionalmente el puntaje.
     """
-    val = max(0.0, min(100.0, _to_float(free_percent, 0.0)))
+    val = max(0.0, _to_float(free_percent, 0.0))
     return _clamp(val / 25.0)
 
 

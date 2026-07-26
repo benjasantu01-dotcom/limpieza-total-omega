@@ -5,8 +5,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **133**
-- Mejoras aceptadas: **95** (71.4% de aceptación)
+- Iteraciones totales: **137**
+- Mejoras aceptadas: **99** (72.3% de aceptación)
 - Rechazadas por tests: 10
 - Rechazadas por guardia de seguridad: 9
 - Sin cambios (nada sustancial que mejorar): 1
@@ -16,7 +16,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-26 | 95 | 10 | 9 | 1 | 18 |
+| 2026-07-26 | 99 | 10 | 9 | 1 | 18 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -24,25 +24,29 @@ Este archivo se regenera solo en cada corrida a partir de
 - legibilidad y documentación: **22**
 - robustez ante casos límite: **20**
 - rendimiento: **17**
-- seguridad defensiva: **13**
+- seguridad defensiva: **17**
 
 ## Mejoras aceptadas por archivo
 
+- `healthscore.py`: **10**
 - `diskreport.py`: **9**
-- `healthscore.py`: **9**
 - `organizer.py`: **9**
 - `branding.py`: **9**
 - `browser.py`: **8**
+- `duplicates.py`: **8**
+- `main.py`: **8**
 - `safety.py`: **8**
 - `scanner.py`: **8**
 - `startup.py`: **8**
-- `duplicates.py`: **7**
-- `main.py`: **7**
+- `memory.py`: **7**
 - `quarantine.py`: **7**
-- `memory.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-26T14:04:00` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `trim_working_set` implementando una validación explícita mediante `app.safety.ensure_safe_to_modify` para prevenir la manipulación indebida de procesos del sistema protegidos antes de intentar realizar cualquier operación de bajo nivel.
+- `2026-07-26T14:03:52` **main.py** (seguridad defensiva): Se implementó una validación de seguridad adicional en `on_trim_process` para asegurar que el PID ingresado por el usuario no sea un proceso del sistema antes de intentar cualquier operación, centralizando el control defensivo.
+- `2026-07-26T14:03:11` **healthscore.py** (seguridad defensiva): Reforcé la robustez del sistema de cálculo ante entradas corruptas o malintencionadas (como valores negativos o infinitos en las métricas) utilizando un decorador de validación interna en las funciones de score, asegurando que los valores de entrada no puedan degradar el estado del sistema ni causar desbordamientos en la lógica de puntuación.
+- `2026-07-26T14:02:49` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` añadiendo una validación explícita mediante `resolve()` para asegurar que las rutas recorridas no escapen del directorio base mediante enlaces simbólicos o puntos de reparse, previniendo así posibles ataques de "path traversal" o acceso involuntario a rutas del sistema fuera del ámbito permitido.
 - `2026-07-26T13:53:00` **diskreport.py** (seguridad defensiva): He robustecido la función `walk_files` para verificar que la ruta base resuelta no sea un punto de reparse (junction o symlink) antes de iniciar el escaneo, previniendo así la recursión infinita o el acceso accidental a rutas fuera del alcance deseado, alineado con el enfoque de seguridad defensiva.
 - `2026-07-26T13:52:32` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad en `save_logo_svg` añadiendo una validación explícita para evitar inyecciones de ruta mediante `Path.resolve()` y asegurando que la extensión sea estrictamente `.svg` antes de realizar cualquier operación de escritura en disco.
 - `2026-07-26T13:42:43` **scanner.py** (robustez ante casos límite): He mejorado `scan_directory` añadiendo una comprobación de existencia y accesibilidad previa al `rglob` y envolviendo la lógica en un `try-except` más granular, previniendo errores por rutas inexistentes o inaccesibles que pudieran cortar el flujo del escáner en entornos con permisos restringidos o sistemas de archivos volátiles.
@@ -54,7 +58,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-26T13:21:18` **duplicates.py** (robustez ante casos límite): Se ha añadido un chequeo de archivos de tamaño cero en `_collect_candidates` para evitar procesar archivos vacíos, los cuales generan colisiones de hash inútiles y ruido en los resultados, mejorando la robustez frente a datos corruptos o temporales mal formados.
 - `2026-07-26T13:21:12` **diskreport.py** (robustez ante casos límite): Mejoré `walk_files` para manejar robustamente archivos que desaparecen durante la iteración (concurrencia) y errores de acceso denegado en archivos individuales, asegurando que el análisis no se detenga prematuramente.
 - `2026-07-26T13:20:51` **browser.py** (robustez ante casos límite): Se mejoró la función `directory_size` para manejar casos donde el archivo se elimina o bloquea durante el proceso de escaneo (Race Condition) y se añadió una validación explícita para archivos "reparse points" (puntos de reanálisis) que no son symlinks, mejorando la robustez ante archivos corruptos o bloqueados sin sacrificar rendimiento.
-- `2026-07-26T13:20:30` **branding.py** (robustez ante casos límite): Se introdujo una validación robusta para el parámetro `destination` en `save_logo_svg` y se mejoró la gestión de excepciones en `draw_logo` para evitar fallos si el `canvas` es `None` o tiene métodos inesperados.
-- `2026-07-26T13:11:04` **startup.py** (rendimiento): Optimicé el cálculo de impactos y el resumen de entradas eliminando la conversión redundante de iterables a listas múltiples veces, aprovechando la naturaleza de los generadores para procesar los datos de manera perezosa y eficiente.
-- `2026-07-26T13:10:57` **scanner.py** (rendimiento): Optimicé el rendimiento de `scan_directory` cacheando la conversión de las rutas a minúsculas y los chequeos de `path.parent` dentro de las funciones, y eliminé la instanciación innecesaria de una lista de funciones en `scan_file`, reemplazándola por una llamada directa para reducir el overhead de iteración por cada archivo escaneado.
-- `2026-07-26T13:10:38` **safety.py** (rendimiento): Optimizé `is_protected_path` transformando el bucle de validación de variables de entorno en un acceso directo y eficiente, eliminando el costo de llamadas repetidas a `os.environ.get` y `is_within_directory` mediante una cache de rutas de sistema inicializada una sola vez.

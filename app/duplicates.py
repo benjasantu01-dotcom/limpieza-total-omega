@@ -113,22 +113,25 @@ def _collect_candidates(directories: Iterable[str | Path], min_size: int, skip_p
         if not directory:
             continue
         try:
-            base = Path(directory).expanduser()
+            base = Path(directory).expanduser().resolve()
             if not base.is_dir():
                 continue
             if skip_protected and is_protected_path(base):
                 continue
             for root, subdirs, files in os.walk(base):
-                if skip_protected and is_protected_path(root):
+                root_path = Path(root).resolve()
+                if not str(root_path).startswith(str(base)):
+                    subdirs[:] = []
+                    continue
+                if skip_protected and is_protected_path(root_path):
                     subdirs[:] = []
                     continue
                 for name in files:
-                    candidate = Path(root) / name
+                    candidate = root_path / name
                     try:
                         if candidate.is_symlink() or (skip_protected and is_protected_path(candidate)):
                             continue
                         stats = candidate.stat()
-                        # Ignorar archivos vacíos y aquellos por debajo del umbral
                         if stats.st_size >= max(min_size, 1):
                             candidates.append(candidate)
                     except (OSError, PermissionError):

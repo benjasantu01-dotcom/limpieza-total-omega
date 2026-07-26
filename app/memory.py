@@ -28,6 +28,7 @@ import re
 import subprocess
 from dataclasses import dataclass, field
 from typing import List, Tuple, Optional
+from app.safety import ensure_safe_to_modify
 
 __all__ = [
     "MemorySnapshot",
@@ -276,6 +277,11 @@ def trim_working_set(pid: int) -> Tuple[bool, str]:
         target_pid = int(pid)
         if target_pid <= 0:
             return False, "PID inválido proporcionado."
+        
+        # Seguridad: verificar que no estemos intentando manipular procesos críticos del sistema
+        if not ensure_safe_to_modify(f"pid:{target_pid}"):
+            return False, "Operación rechazada: el proceso está protegido por seguridad."
+
     except (ValueError, TypeError):
         return False, "El PID debe ser un número entero."
 
