@@ -141,44 +141,33 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         raise
 
     for jf in files:
-        if not isinstance(jf, JunkFile) or not jf.path:
+        if not isinstance(jf, JunkFile) or not hasattr(jf, 'path') or not jf.path:
             continue
             
         try:
             full_source_path = jf.path.resolve()
-            if not full_source_path.exists():
+            if not full_source_path.exists() or not full_source_path.is_file():
                 continue
             
-            # Validación de seguridad: Verificar si la operación está permitida
             if not ensure_safe_to_modify(full_source_path):
                 continue
-        except (OSError, RuntimeError) as e:
-            logger.debug("Error validando ruta %s: %s", jf.path, e)
-            continue
-
-        # Evitar mover archivos que ya están en el directorio de destino para prevenir ciclos
-        try:
+                
             if dest in full_source_path.parents or full_source_path.parent == dest:
                 continue
-        except Exception:
-            continue
 
-        base_name = jf.path.stem
-        ext = jf.path.suffix
-        timestamp = int(jf.modified.timestamp())
-        
-        # Resolución de colisiones: Se añade un sufijo numérico al nombre si el archivo
-        # ya existe en destino para preservar la integridad de archivos con igual nombre pero distinto origen.
-        target = dest / f"{base_name}_{timestamp}{ext}"
-        counter = 1
-        while target.exists():
-            target = dest / f"{base_name}_{timestamp}_{counter}{ext}"
-            counter += 1
+            base_name = jf.path.stem
+            ext = jf.path.suffix
+            timestamp = int(jf.modified.timestamp())
+            
+            target = dest / f"{base_name}_{timestamp}{ext}"
+            counter = 1
+            while target.exists():
+                target = dest / f"{base_name}_{timestamp}_{counter}{ext}"
+                counter += 1
 
-        try:
             shutil.move(str(full_source_path), str(target))
         except (PermissionError, FileNotFoundError, shutil.Error, OSError) as e:
-            logger.error("Error moviendo archivo %s hacia %s: %s", jf.path, target, e)
+            logger.error("Error procesando archivo %s: %s", jf.path, e)
             continue
     return dest
 

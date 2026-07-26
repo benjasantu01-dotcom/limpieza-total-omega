@@ -173,24 +173,27 @@ def quarantine_file(
     
     try:
         shutil.move(str(origin), str(destination))
-        file_hash = _get_sha256(destination)
-        
-        item = QuarantineItem(
-            item_id=item_id,
-            original_path=str(origin),
-            stored_name=stored_name,
-            size_bytes=size,
-            reason=reason,
-            quarantined_at=datetime.now().isoformat(timespec="seconds"),
-            sha256=file_hash,
-        )
-        items = load_manifest(base)
-        items.append(item)
-        save_manifest(items, base)
-        return item
+        try:
+            file_hash = _get_sha256(destination)
+            item = QuarantineItem(
+                item_id=item_id,
+                original_path=str(origin),
+                stored_name=stored_name,
+                size_bytes=size,
+                reason=reason,
+                quarantined_at=datetime.now().isoformat(timespec="seconds"),
+                sha256=file_hash,
+            )
+            items = load_manifest(base)
+            items.append(item)
+            save_manifest(items, base)
+            return item
+        except Exception as e:
+            # Revertir el movimiento si el manifiesto falla para evitar inconsistencia
+            if destination.exists():
+                shutil.move(str(destination), str(origin))
+            raise RuntimeError(f"Error al actualizar manifiesto, archivo restaurado: {e}")
     except (OSError, PermissionError) as e:
-        if destination.exists() and not origin.exists():
-            shutil.move(str(destination), str(origin))
         raise RuntimeError(f"Falla crítica al mover archivo a cuarentena: {e}")
 
 
@@ -205,8 +208,8 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
     """
     Restaura un archivo a su ruta original tras verificar su integridad.
     """
-    if not item_id:
-        raise ValueError("El ID del elemento no puede estar vacío.")
+    if not item_id or not isinstance(item_id, str):
+        raise ValueError("El ID del elemento debe ser una cadena válida.")
 
     items = load_manifest(base)
     item_map = {i.item_id: i for i in items}
@@ -241,7 +244,7 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
 
 def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> bool:
     """Borra físicamente un archivo de la cuarentena y actualiza el manifiesto."""
-    if not item_id:
+    if not item_id or not isinstance(item_id, str):
         return False
     items = load_manifest(base)
     item_map = {i.item_id: i for i in items}

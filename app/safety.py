@@ -149,9 +149,10 @@ def is_within_directory(
         c, p = normalize(child), normalize(parent)
         if c == p:
             return allow_equal
+        # relative_to lanza ValueError si no es subdirectorio
         c.relative_to(p)
         return True
-    except (ValueError, OSError, RuntimeError):
+    except (ValueError, TypeError, OSError, RuntimeError):
         return False
 
 
@@ -159,7 +160,7 @@ def is_sensitive_file(path: PathLike) -> bool:
     """Verifica si el archivo tiene una extensión en SENSITIVE_EXTENSIONS."""
     try:
         return normalize(path).suffix.lower() in SENSITIVE_EXTENSIONS
-    except Exception:
+    except (TypeError, ValueError, Exception):
         return True 
 
 
@@ -168,12 +169,12 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
     Valida que una ruta pueda ser modificada (borrada o movida).
     """
     if path is None:
-        raise ValueError("No se puede validar una ruta None.")
+        raise UnsafePathError("No se puede validar una ruta None.")
         
     try:
         p = normalize(path)
     except (TypeError, ValueError) as e:
-        raise UnsafePathError(f"Ruta inválida: {path}") from e
+        raise UnsafePathError(f"Ruta mal formada: {path}") from e
     except Exception as e:
         raise UnsafePathError(f"Ruta inaccesible: {path}") from e
 
@@ -209,7 +210,7 @@ def describe_protection(path: PathLike) -> str:
     """Genera un diagnóstico textual de por qué una ruta está protegida o si es segura."""
     try:
         p = normalize(path)
-    except Exception:
+    except (TypeError, ValueError, Exception):
         return "Ruta mal formada: no se puede analizar."
     if is_drive_root(p):
         return f"'{p}' es la raíz de una unidad: nunca se modifica."
