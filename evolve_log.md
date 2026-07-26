@@ -1128,3 +1128,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-07-26T19:10:48` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
 - `2026-07-26T19:10:48` Rotación — nada para rotar
 - `2026-07-26T19:10:48` Corrida terminada. Total usado hoy: 278.
+- `2026-07-26T19:19:45` Arrancando corrida. Quedan hoy ~22 peticiones objetivo.
+- `2026-07-26T19:20:07` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Mejora de la legibilidad y mantenimiento mediante la adición de Type Hints detallados, documentación estructurada (docstrings con secciones "Args" y "Returns") y la clarificación de las responsabilidades de las funciones, facilitando la comprensión del flujo de seguridad para el equipo.
+- `2026-07-26T19:20:27` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y el tipado de `scan_directory` para clarificar la lógica de exclusión de enlaces simbólicos y rutas fuera de alcance, asegurando que el propósito de las validaciones de seguridad sea evidente para futuros desarrolladores.
+- `2026-07-26T19:20:50` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante docstrings más precisos, añadí type hints faltantes en diccionarios y colecciones, y renombré variables internas para reflejar mejor su propósito (ej. `parts` a `csv_row_parts`), mejorando la legibilidad del código sin alterar su lógica.
+- `2026-07-26T19:20:56` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-07-26T19:20:56` Rotación — nada para rotar
+- `2026-07-26T19:20:56` Corrida terminada. Total usado hoy: 282.

@@ -114,18 +114,20 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
         if not root.exists() or not root.is_dir():
             return []
             
-        # Uso de pila para evitar la sobrecarga de rglob y optimizar recursos en recorridos profundos
-        queue = [root]
+        # Pila de directorios pendientes de escaneo (DFS para eficiencia en I/O)
+        queue: List[Path] = [root]
         while queue:
             current_dir = queue.pop()
             try:
                 for entry in current_dir.iterdir():
-                    # Validación de seguridad: no procesar nada fuera del árbol raíz
+                    # Validación de seguridad: Prevenir 'path traversal' y seguir únicamente subdirectorios
+                    # dentro del árbol raíz (root) definido por el usuario.
                     resolved_entry = entry.resolve()
                     if root not in resolved_entry.parents and resolved_entry != root:
                         continue
 
                     if entry.is_dir():
+                        # No seguir enlaces simbólicos (junctions/links) para evitar ciclos o escapes de scope
                         if not entry.is_symlink():
                             queue.append(entry)
                     elif entry.is_file():

@@ -20,7 +20,7 @@ import os
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, Optional, Iterator, List, Tuple
+from typing import Iterable, Optional, Iterator, List, Tuple, Dict
 from app.safety import ensure_safe_to_modify
 
 __all__ = [
@@ -55,38 +55,35 @@ HOW_TO_DISABLE: str = (
 
 @dataclass
 class StartupEntry:
-    """Un programa configurado para arrancar con el sistema."""
+    """Representa una entrada de inicio (programa) detectada en el sistema."""
     name: str
     command: str
-    source: str  # "carpeta" o el nombre de la clave del registro
+    source: str  # Indica si proviene de una carpeta o una ruta de registro específica
 
     @property
     def executable(self) -> str:
-        """Extrae el ejecutable del comando de inicio.
+        """Extrae la ruta base del ejecutable a partir de la línea de comando.
         
-        Maneja casos con comillas (típicos de rutas con espacios) y 
-        argumentos adicionales descartando todo lo que sigue al ejecutable.
-        Valida que el resultado sea una ruta o nombre de archivo válido.
+        Elimina comillas, ignora argumentos adicionales y retorna el token inicial,
+        que es el ejecutable propiamente dicho. Retorna cadena vacía si no hay comando.
         """
         if not self.command:
             return ""
         
         cmd: str = self.command.strip()
-        # Eliminar comillas externas si existen
         cmd = cmd.strip('"')
         
         if not cmd:
             return ""
             
-        # Si el comando original tenía comillas, el ejecutable termina en la siguiente comilla
+        # Si el comando original estaba entre comillas, extraemos el contenido hasta la segunda comilla
         if self.command.strip().startswith('"'):
-            end: int = self.command.find('"', 1)
-            return self.command[1:end] if end > 0 else self.command[1:]
+            end_quote_idx: int = self.command.find('"', 1)
+            return self.command[1:end_quote_idx] if end_quote_idx > 0 else self.command[1:]
         
-        # Si no hay comillas, extraemos el primer token (posible ejecutable)
-        # Filtramos posibles restos de rutas UNC o espacios múltiples
-        parts = cmd.split()
-        return parts[0] if parts else ""
+        # Caso sin comillas: el ejecutable es el primer segmento de la ruta o comando
+        tokens = cmd.split()
+        return tokens[0] if tokens else ""
 
 
 def startup_folders() -> List[Path]:
@@ -104,10 +101,10 @@ def startup_folders() -> List[Path]:
 
 
 def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> List[StartupEntry]:
-    """Escanea carpetas en busca de archivos (acceso directo o ejecutables).
+    """Escanea las carpetas de inicio en busca de archivos (accesos directos o ejecutables).
     
-    Aplica `ensure_safe_to_modify` preventivamente y valida que los archivos
-    estén contenidos físicamente dentro de la carpeta base.
+    Aplica `ensure_safe_to_modify` para cumplir con las políticas de seguridad
+    y filtra archivos de sistema irrelevantes como 'desktop.ini'.
     """
     if folders is None:
         folders = startup_folders()
@@ -122,7 +119,7 @@ def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> List[Start
         try:
             for item in base_path.iterdir():
                 if item.is_file() and item.name.lower() != "desktop.ini":
-                    # Validación de seguridad: el archivo debe estar bajo el path base
+                    # Validación de seguridad: confirma que el objeto está bajo la ruta base
                     if base_path in item.resolve().parents:
                         found_entries.append(StartupEntry(name=item.stem, command=str(item), source="carpeta"))
         except (OSError, PermissionError):
@@ -131,28 +128,27 @@ def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> List[Start
 
 
 def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry]:
-    """Procesa el volcado CSV de PowerShell hacia una lista de StartupEntry.
+    """Procesa el volcado CSV de PowerShell a objetos StartupEntry.
     
-    Elimina cabeceras de PowerShell y limpia comillas excedentes de las 
-    propiedades del registro.
+    Elimina cabeceras de PowerShell y limpia los valores obtenidos del registro.
     """
     parsed_entries: List[StartupEntry] = []
     if not text:
         return parsed_entries
         
     for line in text.splitlines():
-        line = line.strip()
-        if not line:
+        clean_line = line.strip()
+        if not clean_line:
             continue
-        # Split en la primera coma: la primera parte es el nombre (Key), el resto es el valor
-        parts: List[str] = line.split(",", 1)
-        if len(parts) < 2:
+        # La estructura CSV esperada es: "NombrePropiedad","Valor"
+        csv_row_parts: List[str] = clean_line.split(",", 1)
+        if len(csv_row_parts) < 2:
             continue
             
-        name: str = parts[0].strip().strip('"').strip("'")
-        value: str = parts[1].strip().strip('"').strip("'")
+        name: str = csv_row_parts[0].strip().strip('"').strip("'")
+        value: str = csv_row_parts[1].strip().strip('"').strip("'")
         
-        # Filtra metadatos de PowerShell
+        # Omite metadatos propios del formato de salida de PowerShell
         if not name or name.lower() == "name" or name.startswith("PS"):
             continue
         parsed_entries.append(StartupEntry(name=name, command=value, source=source))
@@ -160,23 +156,23 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
 
 
 def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[StartupEntry]:
-    """Obtiene programas de inicio consultando el registro mediante PowerShell.
+    """Obtiene programas de inicio consultando las llaves del Registro vía PowerShell.
     
-    Usa el comando ForEach-Object para asegurar que cada propiedad de la clave 
-    Run sea extraída correctamente incluso si contiene caracteres especiales.
+    Construye un comando de PowerShell para leer propiedades como objetos y 
+    convertirlos a CSV para facilitar su parseo posterior.
     """
     if os.name != "nt":
         return []
     all_entries: List[StartupEntry] = []
     for key in keys:
-        command: str = (
+        ps_cmd: str = (
             f"if (Test-Path '{key}') {{ (Get-Item '{key}').Property | ForEach-Object "
             f"{{ [PSCustomObject]@{{ Name = $_; Value = (Get-ItemProperty '{key}').$_ }} }} | "
             "ConvertTo-Csv -NoTypeInformation }"
         )
         try:
             result = subprocess.run(
-                ["powershell", "-NoProfile", "-Command", command],
+                ["powershell", "-NoProfile", "-Command", ps_cmd],
                 capture_output=True, text=True, timeout=30,
             )
             if result.returncode == 0 and result.stdout:
@@ -221,7 +217,7 @@ def summarize(entries: Optional[Iterable[StartupEntry]] = None) -> List[str]:
         
     lines: List[str] = [f"Programas que arrancan con el sistema: {len(entries_list)}"]
     impact_level: str = estimate_impact(entries_list)
-    impact_messages: dict[str, str] = {
+    impact_messages: Dict[str, str] = {
         "ok": "Arranque liviano: no hay mucho para ganar acá.",
         "info": "Cantidad normal de programas al inicio.",
         "warning": "Bastantes programas al inicio; revisá si los usás todos.",
