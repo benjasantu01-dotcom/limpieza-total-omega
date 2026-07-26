@@ -371,3 +371,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-07-26T09:54:01` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se ha robustecido la función `directory_size` para manejar casos límite como puntos de reparse (symlinks, junctions) y accesos denegados mediante la validación explícita de `is_symlink` y la gestión de excepciones en `entry.stat()`, garantizando que el escaneo sea seguro y no entre en bucles infinitos o falle ante rutas protegidas.
 - `2026-07-26T09:54:01` Rotación — nada para rotar
 - `2026-07-26T09:54:01` Corrida terminada. Total usado hoy: 62.
+- `2026-07-26T10:03:50` Arrancando corrida. Quedan hoy ~238 peticiones objetivo.
+- `2026-07-26T10:04:12` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: robustez ante casos límite).
+- `2026-07-26T10:04:32` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de existencia previo al cálculo de `st_size` y `st_mtime` dentro de `suggest_keeper` y `group_by_size`, previniendo errores por condiciones de carrera (Race Conditions) donde el archivo podría ser eliminado o bloqueado por otro proceso entre la recolección inicial y el procesamiento.
+- `2026-07-26T10:04:54` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Introduje validación defensiva en `compute_score` y funciones auxiliares para manejar casos de `None` o valores numéricos infinitos/NaN que podrían romper el cálculo de métricas o el redondeo de los resultados.
+- `2026-07-26T10:05:19` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `main.py` ante errores de concurrencia y limpieza de recursos, implementando un mecanismo de bandera de estado (`self.is_running`) que evita que el usuario lance tareas asíncronas múltiples de forma simultánea, lo cual podría corromper el estado interno de la aplicación o saturar el hilo principal.
+- `2026-07-26T10:05:19` Rotación — nada para rotar
+- `2026-07-26T10:05:19` Corrida terminada. Total usado hoy: 66.

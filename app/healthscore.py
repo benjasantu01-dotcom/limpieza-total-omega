@@ -14,7 +14,8 @@ vive en los otros módulos; acá solo se puntúa.
 
 from __future__ import annotations
 from dataclasses import dataclass, field
-from typing import Dict, List
+from typing import Dict, List, Any
+import math
 
 __all__ = [
     "SystemMetrics",
@@ -75,13 +76,24 @@ class HealthResult:
 
 
 def _clamp(value: float, low: float = 0.0, high: float = 1.0) -> float:
-    """Acota un valor al rango [low, high]."""
+    """Acota un valor al rango [low, high] y maneja NaN."""
+    if not math.isfinite(value):
+        return low
     return max(low, min(high, value))
+
+
+def _to_float(value: Any, default: float = 0.0) -> float:
+    """Convierte de forma segura a float evitando excepciones por None."""
+    try:
+        return float(value) if value is not None else default
+    except (TypeError, ValueError):
+        return default
 
 
 def score_junk(junk_mb: float) -> float:
     """Puntúa la basura. 0 MB es perfecto; 5 GB (5000 MB) es el umbral crítico."""
-    return _clamp(1.0 - (max(0.0, float(junk_mb)) / 5000.0))
+    val = _to_float(junk_mb)
+    return _clamp(1.0 - (max(0.0, val) / 5000.0))
 
 
 def score_security(suspicious_count: int, warnings: int = 0) -> float:
@@ -91,39 +103,34 @@ def score_security(suspicious_count: int, warnings: int = 0) -> float:
     cada advertencia lo hace en 25%, priorizando la detección de amenazas
     sobre la simple acumulación de logs.
     """
-    penalty = max(0, int(suspicious_count)) * 0.05 + max(0, int(warnings)) * 0.25
+    s_count = int(suspicious_count) if suspicious_count is not None else 0
+    w_count = int(warnings) if warnings is not None else 0
+    penalty = max(0, s_count) * 0.05 + max(0, w_count) * 0.25
     return _clamp(1.0 - penalty)
 
 
 def score_memory(available_percent: float) -> float:
-    """Puntúa la memoria por disponibilidad.
-    
-    El umbral de 35% se basa en el punto de saturación donde los sistemas 
-    operativos modernos comienzan a recurrir a paginación agresiva, 
-    degradando la experiencia del usuario.
-    """
-    return _clamp(max(0.0, float(available_percent)) / 35.0)
+    """Puntúa la memoria por disponibilidad."""
+    val = _to_float(available_percent, 0.0)
+    return _clamp(max(0.0, val) / 35.0)
 
 
 def score_disk(free_percent: float) -> float:
-    """Puntúa el espacio libre en disco. 
-    
-    25% es el punto de referencia: debajo de esto, el sistema operativo 
-    comienza a tener dificultades para la expansión de archivos temporales.
-    """
-    return _clamp(max(0.0, float(free_percent)) / 25.0)
+    """Puntúa el espacio libre en disco."""
+    val = _to_float(free_percent, 0.0)
+    return _clamp(max(0.0, val) / 25.0)
 
 
 def score_duplicates(duplicate_mb: float) -> float:
     """Puntúa espacio perdido. 2 GB (2000 MB) representa una pérdida ineficiente."""
-    return _clamp(1.0 - (max(0.0, float(duplicate_mb)) / 2000.0))
+    val = _to_float(duplicate_mb)
+    return _clamp(1.0 - (max(0.0, val) / 2000.0))
 
 
 def score_startup(startup_count: int) -> float:
-    """Puntúa el arranque. 20 aplicaciones es el límite tolerable para 
-    evitar tiempos de inicio excesivos.
-    """
-    return _clamp(1.0 - (max(0, int(startup_count)) / 20.0))
+    """Puntúa el arranque. 20 aplicaciones es el límite tolerable."""
+    s_count = int(startup_count) if startup_count is not None else 0
+    return _clamp(1.0 - (max(0, s_count) / 20.0))
 
 
 def grade_for_score(score: int) -> str:
@@ -144,7 +151,6 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Datos de entrada inválidos."])
 
-    ratios = {}
     try:
         ratios = {
             "seguridad": score_security(metrics.suspicious_count, metrics.suspicious_warnings),
@@ -154,10 +160,10 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
             "duplicados": score_duplicates(metrics.duplicate_mb),
             "arranque": score_startup(metrics.startup_count),
         }
-    except (ValueError, TypeError, ZeroDivisionError):
-        return HealthResult(0, "F", {}, ["Error: Las métricas contienen valores corruptos."])
+    except Exception:
+        return HealthResult(0, "F", {}, ["Error inesperado al calcular las métricas."])
 
-    breakdown = {area: int(round(ratio * WEIGHTS[area])) for area, ratio in ratios.items()}
+    breakdown = {area: int(round(_clamp(ratio, 0.0, 1.0) * WEIGHTS[area])) for area, ratio in ratios.items()}
     total = min(100, max(0, sum(breakdown.values())))
 
     recommendations: List[str] = []
@@ -168,7 +174,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         )
     if ratios["disco"] < 0.6:
         recommendations.append(
-            f"Queda {round(float(metrics.disk_free_percent), 1)}% de disco libre. "
+            f"Queda {round(_to_float(metrics.disk_free_percent), 1)}% de disco libre. "
             "Mirá el análisis de disco para ver qué ocupa más."
         )
     if ratios["memoria"] < 0.6:
@@ -178,11 +184,11 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         )
     if ratios["basura"] < 0.8:
         recommendations.append(
-            f"Hay unos {round(float(metrics.junk_mb))} MB de archivos temporales para revisar."
+            f"Hay unos {round(_to_float(metrics.junk_mb))} MB de archivos temporales para revisar."
         )
     if ratios["duplicados"] < 0.8:
         recommendations.append(
-            f"Podrías recuperar ~{round(float(metrics.duplicate_mb))} MB eliminando copias duplicadas."
+            f"Podrías recuperar ~{round(_to_float(metrics.duplicate_mb))} MB eliminando copias duplicadas."
         )
     if ratios["arranque"] < 0.6:
         recommendations.append(

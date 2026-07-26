@@ -186,6 +186,8 @@ def suggest_keeper(group: DuplicateGroup) -> Path | None:
 
     def sort_key(path: Path):
         try:
+            if not path.exists():
+                return (float("inf"), float("inf"))
             mtime = path.stat().st_mtime
         except (OSError, PermissionError):
             mtime = float("inf")

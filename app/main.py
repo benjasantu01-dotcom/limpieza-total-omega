@@ -90,6 +90,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.analysis_folder = None
         self.report_data = {}
         self.outputs = {}
+        self.is_running = False
 
         self._build_layout()
 
@@ -405,7 +406,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def run_async(self, fn: Callable) -> None:
         """Ejecuta una función en un hilo daemonizado para mantener la UI responsiva."""
+        if self.is_running:
+            return
+
         def wrapper():
+            self.is_running = True
             try:
                 fn()
             except safety.UnsafePathError as e:
@@ -423,6 +428,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 logging.exception("Error inesperado en tarea asíncrona: %s", e)
                 self.log(f"Error inesperado: {type(e).__name__}", self._current_tab())
             finally:
+                self.is_running = False
                 self.set_status("Listo.")
 
         threading.Thread(target=wrapper, daemon=True).start()
