@@ -920,3 +920,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-07-26T16:06:16` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé `largest_files` y `usage_by_extension` para utilizar una estructura `heapq` en lugar de ordenar toda la lista de archivos, evitando así un costo computacional de O(N log N) innecesario cuando solo se requiere un subconjunto de elementos.
 - `2026-07-26T16:06:16` Rotación — nada para rotar
 - `2026-07-26T16:06:16` Corrida terminada. Total usado hoy: 206.
+- `2026-07-26T16:15:15` Arrancando corrida. Quedan hoy ~94 peticiones objetivo.
+- `2026-07-26T16:15:37` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé la función `group_by_size` para que no reconstruya innecesariamente la lista de rutas, evitando el overhead de creación de objetos `Path` y procesamiento redundante al recibir una lista ya filtrada en `find_duplicates`.
+- `2026-07-26T16:15:58` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del puntaje pre-computando el desglose de pesos de `SystemMetrics` mediante una estructura de acceso directo, evitando llamadas repetitivas y diccionarios dinámicos dentro de `compute_score`.
+- `2026-07-26T16:16:38` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Optimicé el renderizado de listas grandes en las pestañas (`refresh_list` y la inserción de reportes) reemplazando la inserción de líneas una a una (que provoca múltiples llamadas a `see` y refrescos de UI) por una única operación de inserción de un bloque de texto consolidado, reduciendo significativamente la carga sobre el hilo principal y mejorando la respuesta de la interfaz.
+- `2026-07-26T16:16:46` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimizé `parse_windows_process_csv` para evitar iteraciones redundantes y realizar conversiones de tipo solo cuando es estrictamente necesario, mejorando la eficiencia al procesar la salida de PowerShell.
+- `2026-07-26T16:16:46` Rotación — nada para rotar
+- `2026-07-26T16:16:46` Corrida terminada. Total usado hoy: 210.

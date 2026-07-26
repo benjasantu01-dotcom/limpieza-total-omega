@@ -86,20 +86,13 @@ def partial_hash(path: str | os.PathLike, read_bytes: int = PARTIAL_READ_BYTES) 
         return None
 
 
-def group_by_size(paths: list[str | Path]) -> dict[int, list[Path]]:
-    """Agrupa rutas por tamaño exacto, descartando las inaccesibles."""
-    if not paths:
-        return {}
+def group_by_size(paths: Iterable[Path]) -> dict[int, list[Path]]:
+    """Agrupa rutas por tamaño exacto, asumiendo validación previa."""
     groups: dict[int, list[Path]] = defaultdict(list)
-    for raw in paths:
-        if not raw:
-            continue
+    for p in paths:
         try:
-            p = Path(raw)
-            if not p.is_file() or is_protected_path(p):
-                continue
             groups[p.stat().st_size].append(p)
-        except (OSError, PermissionError, TypeError):
+        except (OSError, PermissionError):
             continue
     return dict(groups)
 
@@ -176,7 +169,7 @@ def find_duplicates(
     size_map = group_by_size(candidates)
     
     for size, same_size in size_map.items():
-        if not same_size or len(same_size) < 2:
+        if len(same_size) < 2:
             continue
             
         # Paso 2: Hash parcial para descartar archivos que difieren en el encabezado

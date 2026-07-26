@@ -132,12 +132,13 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
     Parsea salida CSV cruda de PowerShell (Name,Id,WorkingSet).
     Filtra entradas inválidas y retorna lista ordenada por consumo.
     """
-    processes: List[ProcessMemory] = []
-    
     if not text:
-        return processes
+        return []
 
-    for line in text.splitlines():
+    processes: List[ProcessMemory] = []
+    lines = text.splitlines()
+
+    for line in lines:
         line = line.strip()
         if not line:
             continue
@@ -146,22 +147,20 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
         if len(parts) < 3:
             continue
         
-        # Saltamos la cabecera del comando de PowerShell
-        if parts[0].lower() in {"name", "processname"}:
+        name, raw_pid, raw_ws = parts[0], parts[1], parts[2]
+        
+        if name.lower() in {"name", "processname"} or not raw_pid or not raw_ws:
             continue
             
         try:
-            if not parts[1] or not parts[2]:
-                continue
-                
-            pid = int(parts[1])
-            working_set = int(float(parts[2]))
+            pid = int(raw_pid)
+            working_set = int(float(raw_ws))
             
             if pid < 0 or working_set < 0:
                 continue
                 
             processes.append(ProcessMemory(
-                name=parts[0] if parts[0] else "Unknown", 
+                name=name if name else "Unknown", 
                 pid=pid, 
                 working_set=working_set
             ))

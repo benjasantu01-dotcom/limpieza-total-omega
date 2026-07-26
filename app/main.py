@@ -422,11 +422,16 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def log_lines(self, lines: List[str], tab: str) -> None:
         """Vacía una pestaña y escribe una lista de líneas; actualiza cache del reporte."""
-        self.clear(tab)
-        for line in lines:
-            self.log(line, tab)
-        # Se guarda la copia de los datos crudos en la estructura TypedDict
+        text_block = "\n".join(lines) + "\n"
         self.report_data[tab.lower()] = list(lines)
+        
+        def update_ui():
+            box = self._box(tab)
+            box.delete("1.0", "end")
+            box.insert("1.0", text_block)
+            box.see("end")
+            
+        self.after(0, update_ui)
 
     def run_async(self, fn: Callable) -> None:
         """Ejecuta una función en un hilo daemonizado para mantener la UI responsiva."""
@@ -572,11 +577,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         ordered = sort_junk(self.junk_files, by=self.sort_by.get())
         lines = [f"{jf.size_mb:>8} MB  |  {jf.modified:%Y-%m-%d}  |  {jf.path}" for jf in ordered]
         self.report_data["limpieza"] = lines
+        text_block = "\n".join(lines)
 
         def update_ui():
             box = self._box("Limpieza")
             box.delete("1.0", "end")
-            box.insert("1.0", "\n".join(lines))
+            box.insert("1.0", text_block)
 
         self.after(0, update_ui)
 
@@ -639,14 +645,13 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 self.log("Sin hallazgos sospechosos.", "Seguridad")
                 self.report_data["seguridad"] = ["Sin hallazgos sospechosos."]
                 return
-            lineas = []
+            lineas = [f"{len(self.suspicions)} hallazgo(s):", ""]
             for r in self.suspicions:
                 etiqueta = branding.severity_label(r.severity)
                 lineas.append(f"[{etiqueta}] {r.path} — {r.reason}")
-            self.log_lines([f"{len(self.suspicions)} hallazgo(s):", ""] + lineas, "Seguridad")
-            self.log("", "Seguridad")
-            self.log("Recordá: son señales, no una condena. Usá 'Aislar hallazgos' "
-                     "para moverlos a cuarentena sin borrarlos.", "Seguridad")
+            lineas.extend(["", "Recordá: son señales, no una condena. Usá 'Aislar hallazgos' "
+                             "para moverlos a cuarentena sin borrarlos."])
+            self.log_lines(lineas, "Seguridad")
 
         self.run_async(task)
 
