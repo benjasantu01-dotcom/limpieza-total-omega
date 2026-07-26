@@ -134,14 +134,17 @@ def save_logo_svg(destination: str | Path) -> Path | None:
         return None
     try:
         path = Path(destination).expanduser().resolve()
-        # Seguridad defensiva: forzar extensión y validar ruta contra bloqueos
-        if path.suffix.lower() != ".svg" or not ensure_safe_to_modify(path):
+        # Seguridad defensiva: validar extensión y ruta contra bloqueos
+        if path.suffix.lower() != ".svg":
+            return None
+        if not ensure_safe_to_modify(path) or not ensure_safe_to_modify(path.parent):
             return None
             
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(logo_svg(), encoding="utf-8")
         return path
-    except (OSError, PermissionError, TypeError, RuntimeError):
+    except (OSError, PermissionError, TypeError):
+        # Excepciones específicas capturadas ante fallos de I/O o tipos inválidos
         return None
 
 

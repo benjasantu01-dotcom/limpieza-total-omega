@@ -5,22 +5,22 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **153**
-- Mejoras aceptadas: **104** (68.0% de aceptación)
+- Iteraciones totales: **157**
+- Mejoras aceptadas: **105** (66.9% de aceptación)
 - Rechazadas por tests: 10
 - Rechazadas por guardia de seguridad: 10
 - Sin cambios (nada sustancial que mejorar): 1
-- Sin respuesta de la IA (error o límite): 28
+- Sin respuesta de la IA (error o límite): 31
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-26 | 104 | 10 | 10 | 1 | 28 |
+| 2026-07-26 | 105 | 10 | 10 | 1 | 31 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **23**
+- manejo de errores y validación de entradas: **24**
 - legibilidad y documentación: **22**
 - seguridad defensiva: **22**
 - robustez ante casos límite: **20**
@@ -30,11 +30,11 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `healthscore.py`: **10**
 - `organizer.py`: **10**
+- `branding.py`: **10**
 - `diskreport.py`: **9**
 - `safety.py`: **9**
 - `scanner.py`: **9**
 - `startup.py`: **9**
-- `branding.py`: **9**
 - `browser.py`: **8**
 - `duplicates.py`: **8**
 - `main.py`: **8**
@@ -43,6 +43,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-26T14:56:39` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` capturando excepciones de forma granular y añadiendo una validación explícita para asegurar que el directorio destino no sea una ruta de sistema, evitando fallos silenciosos durante la escritura en disco.
 - `2026-07-26T14:23:30` **startup.py** (seguridad defensiva): Se introdujo una validación defensiva en `entries_from_folders` utilizando `app.safety.ensure_safe_to_modify` para garantizar que cualquier ruta analizada cumpla con las políticas de seguridad antes de ser procesada, previniendo posibles accesos a rutas fuera del alcance permitido.
 - `2026-07-26T14:23:08` **scanner.py** (seguridad defensiva): Se ha integrado una validación de seguridad obligatoria en `scan_directory` utilizando `safety.ensure_safe_to_modify` para prevenir el escaneo accidental o malintencionado de rutas críticas del sistema, garantizando que el escáner se mantenga dentro de los límites seguros definidos en el proyecto.
 - `2026-07-26T14:13:48` **safety.py** (seguridad defensiva): Se añadió la validación `p.is_block_device()` y `p.is_char_device()` en `ensure_safe_to_modify` para evitar que la aplicación intente interactuar con dispositivos especiales del sistema (como `\\.\PhysicalDrive0` o `NUL`), reforzando la seguridad defensiva frente a rutas maliciosas o periféricos.
@@ -57,4 +58,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-26T13:42:43` **scanner.py** (robustez ante casos límite): He mejorado `scan_directory` añadiendo una comprobación de existencia y accesibilidad previa al `rglob` y envolviendo la lógica en un `try-except` más granular, previniendo errores por rutas inexistentes o inaccesibles que pudieran cortar el flujo del escáner en entornos con permisos restringidos o sistemas de archivos volátiles.
 - `2026-07-26T13:41:59` **quarantine.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `restore_item` que verifica si el archivo en cuarentena existe físicamente antes de intentar moverlo, evitando errores de excepción al procesar manifiestos desincronizados.
 - `2026-07-26T13:31:54` **organizer.py** (robustez ante casos límite): He mejorado la robustez de `stage_for_review` añadiendo una validación explícita para evitar mover archivos que ya se encuentran dentro del propio directorio de destino, previniendo así un bucle recursivo o errores de "archivo en uso" por colisiones de ruta.
-- `2026-07-26T13:31:49` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez de `parse_windows_process_csv` ante casos límite en la salida de PowerShell, asegurando que el parser ignore líneas malformadas o encabezados inesperados sin detener el proceso ni generar excepciones.
