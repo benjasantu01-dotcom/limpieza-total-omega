@@ -445,11 +445,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             except safety.UnsafePathError as e:
                 self.log(f"Bloqueado por seguridad: {e}", self._current_tab())
             except PermissionError:
-                self.log("Error: permiso denegado. Probá ejecutar como administrador.",
-                         self._current_tab())
+                self.log("Error: permiso denegado. Ejecutá la app como administrador.", self._current_tab())
             except FileNotFoundError as e:
-                self.log(f"Error: no se encontró la ruta: {getattr(e, 'filename', e)}",
-                         self._current_tab())
+                self.log(f"Error: ruta no encontrada: {getattr(e, 'filename', e)}", self._current_tab())
             except OSError as e:
                 logging.error("Error de sistema: %s", e)
                 self.log(f"Error de sistema ({e.errno}): {e.strerror}", self._current_tab())

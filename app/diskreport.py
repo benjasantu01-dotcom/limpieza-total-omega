@@ -222,10 +222,12 @@ def largest_folders(directory: str | os.PathLike, limit: int = 10, skip_protecte
     folder_map: dict[Path, FolderUsage] = {}
     
     for path, size in walk_files(base, skip_protected):
-        # Determinar el nivel inmediato bajo la carpeta base
         relative_path = path.relative_to(base)
-        # Si es un archivo en la raíz de 'base', se agrupa en 'base' misma o carpeta propia
-        top_level = base / relative_path.parts[0]
+        # Manejo robusto: si relative_path está vacío (archivo en raíz), top_level es base
+        if not relative_path.parts:
+            top_level = base
+        else:
+            top_level = base / relative_path.parts[0]
         
         if top_level not in folder_map:
             folder_map[top_level] = FolderUsage(path=top_level, size_bytes=0, file_count=0)

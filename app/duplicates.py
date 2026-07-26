@@ -91,7 +91,8 @@ def group_by_size(paths: Iterable[Path]) -> dict[int, list[Path]]:
     groups: dict[int, list[Path]] = defaultdict(list)
     for p in paths:
         try:
-            groups[p.stat().st_size].append(p)
+            if p.exists():
+                groups[p.stat().st_size].append(p)
         except (OSError, PermissionError):
             continue
     return dict(groups)
@@ -126,7 +127,9 @@ def _collect_candidates(directories: Iterable[str | Path], min_size: int, skip_p
                 for name in files:
                     candidate = root_path / name
                     try:
-                        if candidate.is_symlink() or (skip_protected and is_protected_path(candidate)):
+                        if not candidate.exists() or candidate.is_symlink():
+                            continue
+                        if skip_protected and is_protected_path(candidate):
                             continue
                         stats = candidate.stat()
                         if stats.st_size >= max(min_size, 1):

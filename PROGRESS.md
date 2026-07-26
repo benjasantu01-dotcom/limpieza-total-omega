@@ -5,8 +5,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **197**
-- Mejoras aceptadas: **139** (70.6% de aceptación)
+- Iteraciones totales: **201**
+- Mejoras aceptadas: **143** (71.1% de aceptación)
 - Rechazadas por tests: 11
 - Rechazadas por guardia de seguridad: 13
 - Sin cambios (nada sustancial que mejorar): 1
@@ -16,26 +16,26 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-26 | 139 | 11 | 13 | 1 | 33 |
+| 2026-07-26 | 143 | 11 | 13 | 1 | 33 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **34**
 - manejo de errores y validación de entradas: **32**
 - rendimiento: **29**
-- robustez ante casos límite: **22**
+- robustez ante casos límite: **26**
 - seguridad defensiva: **22**
 
 ## Mejoras aceptadas por archivo
 
+- `diskreport.py`: **13**
+- `healthscore.py`: **13**
 - `organizer.py`: **13**
 - `branding.py`: **13**
 - `browser.py`: **12**
-- `diskreport.py`: **12**
-- `healthscore.py`: **12**
+- `duplicates.py`: **12**
+- `main.py`: **12**
 - `safety.py`: **12**
-- `duplicates.py`: **11**
-- `main.py`: **11**
 - `quarantine.py`: **11**
 - `scanner.py`: **11**
 - `startup.py`: **11**
@@ -43,6 +43,10 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-26T16:47:21` **main.py** (robustez ante casos límite): Se ha mejorado la robustez de las operaciones asíncronas añadiendo un manejo de excepciones específico para `PermissionError` y `FileNotFoundError` directamente dentro de `run_async`, evitando que fallos de acceso en hilos secundarios silencien el error o dejen la bandera `is_running` en un estado inconsistente.
+- `2026-07-26T16:46:54` **healthscore.py** (robustez ante casos límite): Introduje validación defensiva en las funciones de cálculo (`score_*`) para manejar casos de valores negativos o inesperados de forma explícita, asegurando que `compute_score` siempre produzca un resultado consistente ante datos de telemetría corruptos o incompletos.
+- `2026-07-26T16:46:34` **duplicates.py** (robustez ante casos límite): Se mejora la robustez de `_collect_candidates` ante archivos que desaparecen entre la obtención de metadatos y la recolección, añadiendo una validación explícita de existencia mediante `exists()` antes de procesar para evitar excepciones innecesarias en sistemas de archivos dinámicos.
+- `2026-07-26T16:46:13` **diskreport.py** (robustez ante casos límite): Se añadió un control robusto en `largest_folders` para manejar rutas cuya profundidad relativa no permite extraer una carpeta de nivel superior, evitando errores `IndexError` ante archivos sueltos en la raíz analizada.
 - `2026-07-26T16:36:46` **browser.py** (robustez ante casos límite): Mejoré la robustez de `directory_size` ante permisos denegados, archivos bloqueados y rutas inaccesibles al reemplazar el `os.walk` estándar con un manejo de excepciones explícito por archivo, garantizando que el cálculo de tamaño no se detenga prematuramente si un archivo individual dentro de la caché está bloqueado por el sistema.
 - `2026-07-26T16:36:41` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` y `draw_logo` ante entradas inválidas o entornos de ejecución inestables, aplicando validaciones de tipo y manejo de errores más específico para evitar cierres inesperados de la aplicación.
 - `2026-07-26T16:36:19` **startup.py** (rendimiento): Optimizé `entries_from_folders` para evitar la llamada innecesaria a `item.resolve()` (que accede al disco y sigue punteros) dentro del bucle, confiando en `base_path` para la validación de pertenencia.
@@ -54,7 +58,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-26T16:16:38` **main.py** (rendimiento): Optimicé el renderizado de listas grandes en las pestañas (`refresh_list` y la inserción de reportes) reemplazando la inserción de líneas una a una (que provoca múltiples llamadas a `see` y refrescos de UI) por una única operación de inserción de un bloque de texto consolidado, reduciendo significativamente la carga sobre el hilo principal y mejorando la respuesta de la interfaz.
 - `2026-07-26T16:15:58` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje pre-computando el desglose de pesos de `SystemMetrics` mediante una estructura de acceso directo, evitando llamadas repetitivas y diccionarios dinámicos dentro de `compute_score`.
 - `2026-07-26T16:15:37` **duplicates.py** (rendimiento): Optimizé la función `group_by_size` para que no reconstruya innecesariamente la lista de rutas, evitando el overhead de creación de objetos `Path` y procesamiento redundante al recibir una lista ya filtrada en `find_duplicates`.
-- `2026-07-26T16:06:16` **diskreport.py** (rendimiento): Optimizé `largest_files` y `usage_by_extension` para utilizar una estructura `heapq` en lugar de ordenar toda la lista de archivos, evitando así un costo computacional de O(N log N) innecesario cuando solo se requiere un subconjunto de elementos.
-- `2026-07-26T16:06:08` **browser.py** (rendimiento): Optimicé el cálculo de `directory_size` utilizando `os.walk` en lugar de la recursividad manual para mejorar la eficiencia en profundidad, y añadí un mecanismo de caché simple (`lru_cache`) para evitar recalculaciones redundantes si se solicita el tamaño de una misma ruta varias veces durante el mismo ciclo.
-- `2026-07-26T16:05:48` **branding.py** (rendimiento): Optimicé el acceso a los datos de configuración convirtiendo los diccionarios `PALETTE`, `FONT_SIZES`, `SEVERITY_STYLES` y `GRADE_COLORS` a `MappingProxyType` para garantizar inmutabilidad y mejorar el rendimiento de lectura mediante el uso de estructuras de datos optimizadas para solo lectura.
-- `2026-07-26T16:05:27` **startup.py** (legibilidad y documentación): Mejora la legibilidad y la robustez del código mediante la adición de docstrings técnicos (explicando la lógica de parseo en PowerShell y el filtrado por seguridad) y aplicando type hinting más preciso en los métodos de `StartupEntry` y las funciones de escaneo.

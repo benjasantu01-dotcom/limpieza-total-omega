@@ -101,11 +101,13 @@ def score_security(suspicious_count: int, warnings: int = 0) -> float:
 
 
 def score_memory(available_percent: float) -> float:
-    return _clamp(max(0.0, _to_float(available_percent, 0.0)) / 35.0)
+    val = _to_float(available_percent)
+    return _clamp(max(0.0, val) / 35.0)
 
 
 def score_disk(free_percent: float) -> float:
-    return _clamp(max(0.0, _to_float(free_percent, 0.0)) / 25.0)
+    val = _to_float(free_percent)
+    return _clamp(max(0.0, val) / 25.0)
 
 
 def score_duplicates(duplicate_mb: float) -> float:
