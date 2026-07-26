@@ -5,10 +5,10 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **97**
-- Mejoras aceptadas: **68** (70.1% de aceptación)
+- Iteraciones totales: **101**
+- Mejoras aceptadas: **71** (70.3% de aceptación)
 - Rechazadas por tests: 5
-- Rechazadas por guardia de seguridad: 6
+- Rechazadas por guardia de seguridad: 7
 - Sin cambios (nada sustancial que mejorar): 1
 - Sin respuesta de la IA (error o límite): 17
 
@@ -16,12 +16,12 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-26 | 68 | 5 | 6 | 1 | 17 |
+| 2026-07-26 | 71 | 5 | 7 | 1 | 17 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **23**
-- legibilidad y documentación: **16**
+- legibilidad y documentación: **19**
 - seguridad defensiva: **11**
 - robustez ante casos límite: **10**
 - rendimiento: **8**
@@ -29,20 +29,23 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **7**
+- `organizer.py`: **7**
 - `browser.py`: **6**
 - `diskreport.py`: **6**
 - `duplicates.py`: **6**
-- `organizer.py`: **6**
+- `quarantine.py`: **6**
 - `safety.py`: **6**
 - `startup.py`: **6**
 - `branding.py`: **6**
 - `main.py`: **5**
-- `quarantine.py`: **5**
+- `memory.py`: **5**
 - `scanner.py`: **5**
-- `memory.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-26T12:30:20` **quarantine.py** (legibilidad y documentación): He mejorado la documentación interna y la claridad del código añadiendo *type hints* faltantes en los parámetros de tipo `List`/`Union`, y he refactorizado la lógica de validación de archivos en `quarantine_file` extrayéndola a una función interna (`_is_file_locked`) con un nombre auto-explicativo, eliminando el uso de `with open...` que resultaba confuso para el lector y poco idiomático.
+- `2026-07-26T12:29:58` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la inclusión de docstrings detallados que especifican las precondiciones, el propósito de los parámetros y el comportamiento ante errores, facilitando el mantenimiento y la comprensión del flujo de trabajo del módulo.
+- `2026-07-26T12:29:36` **memory.py** (legibilidad y documentación): He mejorado la documentación del código añadiendo docstrings descriptivos a las funciones de bajo nivel y detallando las unidades y el comportamiento de los parámetros, lo cual facilita el mantenimiento y la comprensión de las interacciones con la API de Windows y `procfs`.
 - `2026-07-26T12:20:06` **healthscore.py** (legibilidad y documentación): He añadido type hints exhaustivos a las funciones de cálculo y documentación específica (docstrings) en las funciones de puntuación para clarificar los umbrales "mágicos" utilizados, facilitando el mantenimiento futuro y la auditoría de la lógica de negocio.
 - `2026-07-26T12:19:43` **duplicates.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del flujo principal de detección mediante la extracción de la lógica de refinamiento de duplicados en funciones auxiliares claras, documentando explícitamente el "porqué" del filtrado en cada paso de la estrategia de tres niveles.
 - `2026-07-26T12:19:22` **diskreport.py** (legibilidad y documentación): Documenté el propósito de `walk_files` y `largest_folders` mediante docstrings detallados que explican el "porqué" de las decisiones técnicas (como la gestión de rutas relativas y la recursión segura) para mejorar la mantenibilidad del código.
@@ -55,6 +58,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-26T11:59:00` **organizer.py** (manejo de errores y validación de entradas): Se reforzó la robustez del módulo integrando validaciones de entrada (`isinstance`, checks de tipos) en `scan_for_junk` y `sort_junk`, además de mejorar el manejo de errores en `stage_for_review` asegurando la integridad de los parámetros antes de operar sobre el sistema de archivos.
 - `2026-07-26T11:50:02` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `parse_windows_process_csv` añadiendo validaciones estrictas ante entradas malformadas, entradas con valores no numéricos en columnas críticas y manejo seguro de desbordamientos al convertir el consumo de memoria, evitando que una línea corrupta invalide el análisis completo.
 - `2026-07-26T11:49:55` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `on_restore_quarantine` validando la existencia de la ruta de origen mediante `os.path.exists` antes de intentar la restauración, evitando errores de sistema innecesarios y proveyendo feedback claro al usuario si el archivo original ya fue movido o borrado fuera de la aplicación.
-- `2026-07-26T11:49:12` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` mediante una validación estricta de los tipos de datos en los parámetros de `SystemMetrics` y agregué un manejo de errores defensivo en el cálculo del desglose, asegurando que cualquier entrada corrupta o inesperada resulte en una degradación elegante del puntaje en lugar de fallos inesperados.
-- `2026-07-26T11:48:50` **duplicates.py** (manejo de errores y validación de entradas): Reforcé la robustez de `suggest_keeper` y `reclaimable_bytes` validando la integridad del objeto `DuplicateGroup` y sus atributos, asegurando que ante listas vacías o grupos malformados el sistema retorne valores seguros sin levantar excepciones inesperadas.
-- `2026-07-26T11:40:06` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `largest_folders` agregando un manejo de excepciones más granular durante el procesamiento del árbol de archivos y validando la integridad de los resultados antes de la ordenación, evitando que errores silenciosos en la acumulación de datos afecten el reporte final.

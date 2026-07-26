@@ -521,3 +521,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-07-26T12:20:44` ERROR llamando a Gemini: 503 Server Error: Service Unavailable for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=AQ.Ab8RN6LPuEsogsQBCXLadE4HRmufGPj0yP-0iUrwywshL5_T8Q
 - `2026-07-26T12:20:44` Rotación — nada para rotar
 - `2026-07-26T12:20:44` Corrida terminada. Total usado hoy: 118.
+- `2026-07-26T12:29:11` Arrancando corrida. Quedan hoy ~182 peticiones objetivo.
+- `2026-07-26T12:29:36` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). He mejorado la documentación del código añadiendo docstrings descriptivos a las funciones de bajo nivel y detallando las unidades y el comportamiento de los parámetros, lo cual facilita el mantenimiento y la comprensión de las interacciones con la API de Windows y `procfs`.
+- `2026-07-26T12:29:58` ✅ Mejora aceptada en organizer.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante la inclusión de docstrings detallados que especifican las precondiciones, el propósito de los parámetros y el comportamiento ante errores, facilitando el mantenimiento y la comprensión del flujo de trabajo del módulo.
+- `2026-07-26T12:30:20` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). He mejorado la documentación interna y la claridad del código añadiendo *type hints* faltantes en los parámetros de tipo `List`/`Union`, y he refactorizado la lógica de validación de archivos en `quarantine_file` extrayéndola a una función interna (`_is_file_locked`) con un nombre auto-explicativo, eliminando el uso de `with open...` que resultaba confuso para el lector y poco idiomático.
+- `2026-07-26T12:30:24` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 110): unterminated string literal (detected at line 110)
+- `2026-07-26T12:30:24` Rotación — nada para rotar
+- `2026-07-26T12:30:24` Corrida terminada. Total usado hoy: 122.

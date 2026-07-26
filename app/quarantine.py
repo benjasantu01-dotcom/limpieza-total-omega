@@ -23,7 +23,6 @@ from __future__ import annotations
 import json
 import shutil
 import uuid
-import os
 from dataclasses import dataclass, asdict
 from datetime import datetime
 from pathlib import Path
@@ -75,18 +74,27 @@ class QuarantineItem:
         return asdict(self)
 
 
-def quarantine_dir(base: str | Path = DEFAULT_QUARANTINE_DIR) -> Path:
+def _is_file_locked(path: Path) -> bool:
+    """Verifica si un archivo está bloqueado intentando renombrarlo sobre sí mismo."""
+    try:
+        path.rename(path)
+        return False
+    except OSError:
+        return True
+
+
+def quarantine_dir(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
     """Devuelve la carpeta de cuarentena, creándola si no existe."""
     path = Path(base).expanduser()
     path.mkdir(parents=True, exist_ok=True)
     return path
 
 
-def _manifest_path(base: str | Path = DEFAULT_QUARANTINE_DIR) -> Path:
+def _manifest_path(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
     return quarantine_dir(base) / MANIFEST_NAME
 
 
-def load_manifest(base: str | Path = DEFAULT_QUARANTINE_DIR) -> list[QuarantineItem]:
+def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
     """Lee el manifiesto. Devuelve lista vacía si no existe o está corrupto.
 
     Un manifiesto ilegible no debe impedir usar la app: se prefiere perder
@@ -99,7 +107,7 @@ def load_manifest(base: str | Path = DEFAULT_QUARANTINE_DIR) -> list[QuarantineI
         raw = json.loads(path.read_text(encoding="utf-8"))
     except (json.JSONDecodeError, OSError):
         return []
-    items: list[QuarantineItem] = []
+    items: List[QuarantineItem] = []
     for entry in raw if isinstance(raw, list) else []:
         try:
             items.append(QuarantineItem(**entry))
@@ -108,7 +116,7 @@ def load_manifest(base: str | Path = DEFAULT_QUARANTINE_DIR) -> list[QuarantineI
     return items
 
 
-def save_manifest(items: List[QuarantineItem], base: str | Path = DEFAULT_QUARANTINE_DIR) -> Path:
+def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
     """Serializa la lista de items a JSON y guarda el archivo de manifiesto en disco."""
     path = _manifest_path(base)
     path.write_text(
@@ -119,19 +127,16 @@ def save_manifest(items: List[QuarantineItem], base: str | Path = DEFAULT_QUARAN
 
 
 def quarantine_file(
-    source: str | Path,
+    source: Union[str, Path],
     reason: str = "Marcado como sospechoso",
-    base: str | Path = DEFAULT_QUARANTINE_DIR,
+    base: Union[str, Path] = DEFAULT_QUARANTINE_DIR,
 ) -> QuarantineItem:
     """Mueve un archivo a la cuarentena y lo anota en el manifiesto."""
     origin = normalize(source)
     if not origin.is_file():
         raise FileNotFoundError(f"No existe el archivo a poner en cuarentena: {origin}")
     
-    try:
-        with open(origin, "ab"):
-            pass
-    except IOError:
+    if _is_file_locked(origin):
         raise IOError(f"El archivo está en uso por otro proceso: {origin}")
 
     ensure_safe_to_modify(origin, allow_sensitive=True)
@@ -167,14 +172,14 @@ def quarantine_file(
         raise RuntimeError(f"Falla crítica al mover archivo a cuarentena: {e}")
 
 
-def list_items(base: str | Path = DEFAULT_QUARANTINE_DIR) -> list[QuarantineItem]:
+def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
     """Archivos actualmente en cuarentena, del más reciente al más viejo."""
     items = load_manifest(base)
     items.sort(key=lambda i: i.quarantined_at, reverse=True)
     return items
 
 
-def restore_item(item_id: str, base: str | Path = DEFAULT_QUARANTINE_DIR) -> Path:
+def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
     """Devuelve un archivo a su ubicación original y lo saca del manifiesto."""
     items = load_manifest(base)
     match = next((i for i in items if i.item_id == item_id), None)
@@ -201,7 +206,7 @@ def restore_item(item_id: str, base: str | Path = DEFAULT_QUARANTINE_DIR) -> Pat
     return destination
 
 
-def purge_item(item_id: str, base: str | Path = DEFAULT_QUARANTINE_DIR) -> bool:
+def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> bool:
     """Borra definitivamente UN elemento de la cuarentena."""
     items = load_manifest(base)
     match = next((i for i in items if i.item_id == item_id), None)
@@ -219,7 +224,7 @@ def purge_item(item_id: str, base: str | Path = DEFAULT_QUARANTINE_DIR) -> bool:
     return True
 
 
-def purge_all(base: str | Path = DEFAULT_QUARANTINE_DIR) -> int:
+def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     """Vacía la cuarentena eliminando todos los archivos registrados."""
     root = quarantine_dir(base)
     items = load_manifest(base)
@@ -238,12 +243,12 @@ def purge_all(base: str | Path = DEFAULT_QUARANTINE_DIR) -> int:
     return borrados
 
 
-def total_quarantined_bytes(base: str | Path = DEFAULT_QUARANTINE_DIR) -> int:
+def total_quarantined_bytes(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     """Calcula el peso total en bytes de todos los archivos aislados."""
     return sum(item.size_bytes for item in load_manifest(base))
 
 
-def summarize(base: str | Path = DEFAULT_QUARANTINE_DIR) -> list[str]:
+def summarize(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[str]:
     """Genera una lista de cadenas con el reporte legible de la cuarentena."""
     items = list_items(base)
     if not items:
