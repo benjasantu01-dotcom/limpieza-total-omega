@@ -171,6 +171,12 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
     for root, subdirs, files in os.walk(base, onerror=lambda _: None):
         root_path = Path(root)
             
+        # Defensa: verificar que la raíz actual sigue bajo el base original
+        try:
+            root_path.relative_to(base)
+        except ValueError:
+            continue
+            
         if skip_protected:
             # Filtramos in-place subdirs para evitar entrar en zonas protegidas
             subdirs[:] = [d for d in subdirs if not is_protected_path(root_path / d)]
@@ -178,7 +184,10 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
         for name in files:
             path = root_path / name
             try:
-                if path.is_symlink() or (skip_protected and is_protected_path(path)):
+                # Defensa: evitar symlinks que apunten fuera de base
+                if path.is_symlink():
+                    continue
+                if skip_protected and is_protected_path(path):
                     continue
                 yield path, path.stat().st_size
             except (OSError, PermissionError, FileNotFoundError):
@@ -227,12 +236,12 @@ def largest_folders(directory: str | os.PathLike, limit: int = 10, skip_protecte
     
     for path, size in walk_files(base, skip_protected):
         try:
+            # Re-verificar confinamiento por seguridad
             relative_path = path.relative_to(base)
-        except ValueError:
+            top_level = base / relative_path.parts[0] if relative_path.parts else base
+        except (ValueError, IndexError):
             continue
-
-        top_level = base / relative_path.parts[0] if relative_path.parts else base
-        
+            
         if top_level not in folder_map:
             folder_map[top_level] = FolderUsage(path=top_level, size_bytes=0, file_count=0)
             

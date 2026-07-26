@@ -1251,3 +1251,10 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-07-26T20:23:46` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se reforzó la resiliencia del módulo ante accesos concurrentes o permisos denegados durante la iteración del sistema de archivos, añadiendo bloques `try-except` granulares en `scan_file` para evitar que el proceso falle ante metadatos corruptos o bloqueos de acceso durante la lectura de atributos.
 - `2026-07-26T20:23:46` Rotación — nada para rotar
 - `2026-07-26T20:23:46` Corrida terminada. Total usado hoy: 306.
+- `2026-07-26T20:32:50` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-07-26T20:33:13` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Mejoré la robustez de `entries_from_folders` ante rutas que no existen (causadas por redirecciones de carpetas del usuario) y archivos corruptos o bloqueados, envolviendo la iteración en un `try-except` específico para evitar que un solo error de acceso en el sistema de archivos detenga el escaneo completo de la lista de inicio.
+- `2026-07-26T20:33:34` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-07-26T20:33:55` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `directory_size` para prevenir el seguimiento de puntos de reparse (junctions o symlinks) mediante la validación `is_symlink()` y, crucialmente, la validación de que cada subdirectorio visitado se mantenga dentro de los límites del directorio raíz original, evitando escapes del sistema de archivos.
+- `2026-07-26T20:34:03` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `walk_files` y `largest_folders` validando que las rutas resultantes tras el `resolve()` sigan contenidas dentro del árbol original, evitando ataques de "path traversal" o saltos accidentales mediante enlaces simbólicos externos.
+- `2026-07-26T20:34:03` Rotación — nada para rotar
+- `2026-07-26T20:34:03` Corrida terminada. Total usado hoy: 310.

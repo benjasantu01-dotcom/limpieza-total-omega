@@ -113,15 +113,20 @@ def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> List[Start
         try:
             ensure_safe_to_modify(folder)
             base_path: Path = folder.resolve()
-        except (ValueError, PermissionError):
+            if not base_path.exists():
+                continue
+        except (ValueError, PermissionError, OSError):
             continue
 
         try:
             for item in base_path.iterdir():
-                if item.is_file() and item.name.lower() != "desktop.ini":
-                    # Validación de seguridad: confirma que el objeto está bajo la ruta base
-                    if base_path in item.resolve().parents:
-                        found_entries.append(StartupEntry(name=item.stem, command=str(item), source="carpeta"))
+                try:
+                    if item.is_file() and item.name.lower() != "desktop.ini":
+                        # Validación de seguridad: confirma que el objeto está bajo la ruta base
+                        if base_path in item.resolve().parents:
+                            found_entries.append(StartupEntry(name=item.stem, command=str(item), source="carpeta"))
+                except (OSError, PermissionError):
+                    continue
         except (OSError, PermissionError):
             continue
     return found_entries

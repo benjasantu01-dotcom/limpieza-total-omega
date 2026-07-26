@@ -87,12 +87,14 @@ def base_directories() -> list[Path]:
 def directory_size(path: str | os.PathLike) -> int:
     """
     Calcula el tamaño total de una carpeta usando os.scandir para eficiencia.
+    Verifica que no se sigan enlaces simbólicos para prevenir escape de ruta.
     """
-    if not path or not os.path.isdir(path):
+    base_path = Path(path).resolve()
+    if not base_path.is_dir():
         return 0
     
     total = 0
-    stack = [path]
+    stack = [base_path]
     
     while stack:
         current_dir = stack.pop()
@@ -100,13 +102,19 @@ def directory_size(path: str | os.PathLike) -> int:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
+                        # Seguridad defensiva: ignorar links y validar contención
                         if entry.is_symlink():
                             continue
+                        
+                        entry_path = Path(entry.path).resolve()
+                        if not entry_path.is_relative_to(base_path):
+                            continue
+                            
                         if entry.is_dir():
-                            stack.append(entry.path)
+                            stack.append(entry_path)
                         elif entry.is_file():
                             total += entry.stat().st_size
-                    except (OSError, PermissionError):
+                    except (OSError, PermissionError, ValueError):
                         continue
         except (OSError, PermissionError):
             continue
