@@ -20,6 +20,7 @@ import os
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Iterable, Optional
 
 __all__ = [
     "StartupEntry",
@@ -89,10 +90,13 @@ def startup_folders() -> list[Path]:
     return [c for c in candidates if c.is_dir()]
 
 
-def entries_from_folders(folders=None) -> list[StartupEntry]:
-    """Lee los accesos directos de las carpetas de inicio.
+def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> list[StartupEntry]:
+    """Escanea las carpetas de inicio en busca de accesos directos (.lnk).
 
-    `folders` se puede inyectar para testear con carpetas temporales.
+    Args:
+        folders: Lista opcional de rutas Path para inyectar directorios
+            personalizados en entornos de prueba o entornos controlados.
+            Si es None, usa las rutas por defecto del sistema operativo.
     """
     if folders is None:
         folders = startup_folders()
@@ -136,7 +140,7 @@ def parse_registry_csv(text: str, source: str = "registro") -> list[StartupEntry
     return entries
 
 
-def entries_from_registry(keys=REGISTRY_RUN_KEYS) -> list[StartupEntry]:
+def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> list[StartupEntry]:
     """Lee las claves Run del registro. Solo lectura, vía PowerShell."""
     if os.name != "nt":
         return []
@@ -173,7 +177,7 @@ def list_startup_entries() -> list[StartupEntry]:
     return unicos
 
 
-def estimate_impact(entries) -> str:
+def estimate_impact(entries: Iterable[StartupEntry]) -> str:
     """Estima el impacto del arranque según la cantidad de programas.
 
     Es una heurística por cantidad, no una medición real de tiempo: se
@@ -199,7 +203,7 @@ def estimate_impact(entries) -> str:
     return "danger"
 
 
-def summarize(entries=None) -> list[str]:
+def summarize(entries: Optional[Iterable[StartupEntry]] = None) -> list[str]:
     """Resumen legible del arranque, con la advertencia de cómo desactivar."""
     if entries is None:
         entries = list_startup_entries()

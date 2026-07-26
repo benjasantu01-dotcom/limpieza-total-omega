@@ -5,8 +5,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **25**
-- Mejoras aceptadas: **21** (84.0% de aceptación)
+- Iteraciones totales: **29**
+- Mejoras aceptadas: **25** (86.2% de aceptación)
 - Rechazadas por tests: 2
 - Rechazadas por guardia de seguridad: 2
 - Sin cambios (nada sustancial que mejorar): 0
@@ -16,16 +16,18 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-26 | 21 | 2 | 2 | 0 | 0 |
+| 2026-07-26 | 25 | 2 | 2 | 0 | 0 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **11**
-- legibilidad y documentación: **10**
+- legibilidad y documentación: **11**
+- rendimiento: **3**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **2**
+- `diskreport.py`: **3**
+- `browser.py`: **2**
 - `duplicates.py`: **2**
 - `healthscore.py`: **2**
 - `main.py`: **2**
@@ -34,12 +36,15 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **2**
 - `safety.py`: **2**
 - `scanner.py`: **2**
-- `browser.py`: **1**
-- `startup.py`: **1**
-- `branding.py`: **1**
+- `startup.py`: **2**
+- `branding.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-26T09:23:25` **diskreport.py** (rendimiento): Optimicé `largest_folders` para evitar la redundancia algorítmica: anteriormente llamaba a `walk_files` (que recorre recursivamente toda la estructura) para cada subcarpeta individual, resultando en una complejidad innecesaria; ahora el análisis se realiza en una sola pasada lógica sobre el árbol de archivos.
+- `2026-07-26T09:23:18` **browser.py** (rendimiento): Optimicé `directory_size` utilizando `os.scandir` en lugar de `os.walk`, lo cual reduce drásticamente el número de llamadas al sistema y la creación de objetos `Path` innecesarios durante el recorrido recursivo de directorios.
+- `2026-07-26T09:22:58` **branding.py** (rendimiento): Optimicé el rendimiento de `branding.py` mediante la implementación de *memoization* (cacheo) en las funciones que generan estructuras complejas (`logo_svg` y `logo_ascii`), evitando la regeneración de cadenas largas en cada llamado y mejorando la eficiencia al acceder a configuraciones recurrentes.
+- `2026-07-26T09:22:37` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints detallados en funciones críticas y la sustitución de un `docstring` genérico por uno más preciso en `entries_from_folders`, clarificando cómo interactúa la inyección de dependencias con la lógica de escaneo.
 - `2026-07-26T09:12:50` **scanner.py** (legibilidad y documentación): Introduje Type Hints de retorno y docstrings detallados en `scan_directory` y `run_windows_defender_quick_scan` para mejorar la claridad de la interfaz y la mantenibilidad del código, documentando explícitamente las limitaciones y requisitos de ejecución de cada función.
 - `2026-07-26T09:12:45` **safety.py** (legibilidad y documentación): Mejora la legibilidad técnica y mantenibilidad del módulo mediante la adición de Type Hints detallados (incluyendo generics y alias de tipo) y la implementación de un docstring con "Raises" claro en la función crítica `ensure_safe_to_modify`, facilitando la auditoría de seguridad del código.
 - `2026-07-26T09:12:05` **quarantine.py** (legibilidad y documentación): Se mejoró la documentación interna mediante la adición de Type Hints en la firma de `save_manifest` y se añadieron docstrings detallados en funciones clave que carecían de ellos, clarificando las precondiciones y el comportamiento ante errores.
@@ -51,7 +56,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-26T08:51:30` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica y la legibilidad mediante la adición de Type Hints en las funciones críticas de análisis (`walk_files`, `largest_files`, `usage_by_extension`, `largest_folders`, `total_size`), clarificando los contratos de datos y facilitando la mantenibilidad futura.
 - `2026-07-26T08:50:48` **branding.py** (legibilidad y documentación): He mejorado la robustez y legibilidad del módulo mediante la adición de Type Hints en todas las funciones y la centralización de los tipos de datos de entrada/salida, asegurando que las funciones de acceso como `color` y `font_size` documenten claramente su comportamiento ante claves ausentes.
 - `2026-07-26T08:41:20` **startup.py** (manejo de errores y validación de entradas): Se implementó un manejo de errores robusto en `parse_registry_csv` y `entries_from_registry` para validar las entradas del registro, previniendo fallos ante datos malformados o vacíos, y se añadió una validación de tipo en `estimate_impact` para asegurar la estabilidad del cómputo.
-- `2026-07-26T08:41:14` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `scan_directory` y `scan_file` mediante la validación explícita de entradas (`None` o tipos incorrectos) y el manejo de excepciones de acceso al sistema de archivos, asegurando que las funciones no fallen ante rutas mal formadas o problemas de permisos durante el recorrido recursivo.
-- `2026-07-26T08:40:54` **safety.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de errores en `normalize` y `is_within_directory` mediante la validación de tipos (`isinstance`) y la captura de `TypeError` frente a entradas mal formadas, evitando que la aplicación colapse ante parámetros inesperados en tiempo de ejecución.
-- `2026-07-26T08:31:36` **quarantine.py** (manejo de errores y validación de entradas): Mejora la robustez de `quarantine_file` añadiendo una verificación crítica: se asegura de que el archivo no esté siendo utilizado por otro proceso antes de intentar el `shutil.move`, evitando errores de `PermissionError` y bloqueos de E/S.
-- `2026-07-26T08:31:28` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` validando que la lista de archivos no sea nula o vacía antes de proceder y encapsulé la lógica de creación de destino para prevenir errores de escritura en disco, cumpliendo con el enfoque de manejo de errores y validación.

@@ -81,24 +81,19 @@ def base_directories() -> list[Path]:
 
 
 def directory_size(path: str | os.PathLike) -> int:
-    """Tamaño total de una carpeta, saltando lo que no se pueda leer."""
-    if not path:
-        return 0
+    """Tamaño total de una carpeta usando os.scandir para mayor rendimiento."""
     total = 0
     try:
-        base = Path(path)
-        if not base.is_dir():
-            return 0
-        for root, _, files in os.walk(base):
-            for name in files:
+        with os.scandir(path) as it:
+            for entry in it:
                 try:
-                    candidate = Path(root) / name
-                    if candidate.is_symlink():
-                        continue
-                    total += candidate.stat().st_size
+                    if entry.is_file(follow_symlinks=False):
+                        total += entry.stat().st_size
+                    elif entry.is_dir(follow_symlinks=False):
+                        total += directory_size(entry.path)
                 except (OSError, PermissionError):
                     continue
-    except (ValueError, TypeError):
+    except (OSError, ValueError, TypeError):
         return 0
     return total
 

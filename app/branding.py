@@ -15,12 +15,13 @@ la letra omega abajo: las dos mitades del producto en una sola marca.
 
 from __future__ import annotations
 from pathlib import Path
-from typing import Any
+from typing import Any, Final
+from functools import lru_cache
 
-APP_NAME = "Limpieza Total Omega"
-APP_SHORT_NAME = "Omega"
-APP_TAGLINE = "Limpieza y seguridad, en un solo lugar"
-APP_VERSION = "2.0.0"
+APP_NAME: Final = "Limpieza Total Omega"
+APP_SHORT_NAME: Final = "Omega"
+APP_TAGLINE: Final = "Limpieza y seguridad, en un solo lugar"
+APP_VERSION: Final = "2.0.0"
 
 # Paleta oscura con acento cian. Las claves describen el USO, no el color,
 # así se puede cambiar la paleta entera sin renombrar nada en la interfaz.
@@ -71,15 +72,13 @@ def app_title() -> str:
     return f"{APP_NAME} v{APP_VERSION}"
 
 
+@lru_cache(maxsize=8)
 def color(name: str) -> str:
-    """Color de la paleta, con gris neutro de respaldo.
-
-    Devuelve un respaldo en vez de lanzar excepción para que un nombre mal
-    escrito en la interfaz no tire abajo la app entera.
-    """
+    """Color de la paleta, con gris neutro de respaldo."""
     return PALETTE.get(name, "#808080")
 
 
+@lru_cache(maxsize=8)
 def font_size(name: str) -> int:
     """Tamaño de la escala tipográfica, con respaldo al tamaño de cuerpo."""
     return FONT_SIZES.get(name, FONT_SIZES["body"])
@@ -102,12 +101,9 @@ def grade_color(grade: str) -> str:
     return GRADE_COLORS.get(str(grade).upper()[:1], color("text_muted"))
 
 
+@lru_cache(maxsize=4)
 def logo_svg(size: int = 128) -> str:
-    """Logo como SVG en texto plano, sin dependencias.
-
-    Escala con `size` sobre un viewBox de 128x128, así el mismo trazado
-    sirve para un ícono chico o para una portada grande.
-    """
+    """Logo como SVG en texto plano, sin dependencias."""
     accent = PALETTE["accent"]
     surface = PALETTE["surface"]
     text = PALETTE["text"]
@@ -137,6 +133,7 @@ def save_logo_svg(destination: str | Path) -> Path:
     return path
 
 
+@lru_cache(maxsize=1)
 def logo_ascii() -> str:
     """Logo en ASCII, para la consola o el README."""
     return r"""
@@ -149,28 +146,22 @@ def logo_ascii() -> str:
 
 
 def draw_logo(canvas: Any, size: int = 56, x: int = 0, y: int = 0) -> None:
-    """Dibuja el logo sobre un canvas de Tkinter ya existente.
-
-    Se dibuja con primitivas en vez de cargar una imagen para no depender
-    de Pillow ni de archivos externos. El canvas llega por parámetro (no se
-    crea acá) para que este módulo se pueda importar en entornos sin
-    pantalla, como el runner de CI.
-    """
-    s = size / 128  # escala respecto del viewBox del SVG
+    """Dibuja el logo sobre un canvas de Tkinter ya existente."""
+    s = size / 128
 
     def pts(*coords: float) -> list[float]:
         return [x + c * s if i % 2 == 0 else y + c * s for i, c in enumerate(coords)]
 
     canvas.create_polygon(
         pts(64, 20, 98, 32, 98, 66, 88, 88, 64, 108, 40, 88, 30, 66, 30, 32),
-        fill=PALETTE["accent"], outline="",
+        fill=color("accent"), outline="",
     )
     canvas.create_line(
-        *pts(42, 74, 74, 42), fill=PALETTE["text"],
+        *pts(42, 74, 74, 42), fill=color("text"),
         width=max(2, int(7 * s)), capstyle="round",
     )
-    canvas.create_polygon(pts(74, 42, 87, 39, 90, 52), fill=PALETTE["text"], outline="")
+    canvas.create_polygon(pts(74, 42, 87, 39, 90, 52), fill=color("text"), outline="")
     canvas.create_text(
-        *pts(64, 94), text="\u03a9", fill=PALETTE["text"],
+        *pts(64, 94), text="\u03a9", fill=color("text"),
         font=("Segoe UI", max(8, int(21 * s)), "bold"),
     )

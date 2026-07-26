@@ -194,24 +194,29 @@ def largest_folders(directory: str | os.PathLike, limit: int = 10, skip_protecte
     """Las subcarpetas directas más pesadas, contando su contenido completo."""
     if not directory:
         return []
-    base = Path(directory).expanduser()
+    base = Path(directory).expanduser().resolve()
     if not base.exists() or not base.is_dir():
         return []
-    results: list[FolderUsage] = []
+
+    folder_map: dict[Path, FolderUsage] = {}
     try:
-        children = [c for c in base.iterdir() if c.is_dir()]
-    except (OSError, PermissionError):
-        return []
-    for child in children:
-        if skip_protected and is_protected_path(child):
-            continue
-        size = 0
-        count = 0
-        for _, file_size in walk_files(child, skip_protected):
-            size += file_size
-            count += 1
-        results.append(FolderUsage(path=child, size_bytes=size, file_count=count))
-    results.sort(key=lambda f: f.size_bytes, reverse=True)
+        for path, size in walk_files(base, skip_protected):
+            relative = path.relative_to(base)
+            if len(relative.parts) > 1:
+                top_folder = base / relative.parts[0]
+            else:
+                continue
+            
+            if top_folder not in folder_map:
+                folder_map[top_folder] = FolderUsage(path=top_folder, size_bytes=0, file_count=0)
+            
+            usage = folder_map[top_folder]
+            usage.size_bytes += size
+            usage.file_count += 1
+    except (OSError, PermissionError, ValueError):
+        pass
+
+    results = sorted(folder_map.values(), key=lambda f: f.size_bytes, reverse=True)
     return results[:limit]
 
 
