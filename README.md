@@ -1,29 +1,67 @@
 # Limpieza Total Omega
 
-Proyecto de demostración: una app de escritorio para Windows 11 que
-organiza archivos basura y hace un escaneo heurístico de seguridad,
-combinada con un bucle autónomo en la nube que mejora el código solo,
-usando la API gratuita de Gemini (Google AI Studio).
+Suite de mantenimiento y seguridad para Windows 11: limpieza, antivirus
+heurístico, diagnóstico de RAM, análisis de disco, duplicados, arranque,
+cachés de navegador y cuarentena reversible, en una sola app con pestañas.
+Además trae un bucle autónomo en la nube que mejora su propio código, usando
+la API gratuita de Gemini (Google AI Studio).
 
 ## Estructura
 
 ```
-app/          → la app de escritorio (la corrés vos, manualmente, en tu PC)
-  organizer.py  → busca y organiza archivos basura (nunca borra sin confirmación)
-  scanner.py    → escaneo heurístico + integración con Windows Defender real
-  main.py       → interfaz gráfica (customtkinter), con selector de disco/carpeta
+app/            → la app de escritorio (la corrés vos, en tu PC)
+  safety.py       → capa de seguridad: bloquea rutas de sistema (base de todo)
+  branding.py     → nombre, paleta, tipografía y logo generado por código
+  main.py         → interfaz con pestañas (customtkinter)
+  organizer.py    → busca basura y la mueve a revisión (nunca borra solo)
+  scanner.py      → escaneo heurístico + Windows Defender real
+  quarantine.py   → aísla archivos sospechosos y los puede restaurar
+  memory.py       → diagnóstico honesto de RAM (no es un "limpiador de RAM")
+  duplicates.py   → duplicados por hash en 3 pasos (solo lectura)
+  diskreport.py   → uso de disco por unidad, extensión y carpeta (solo lectura)
+  startup.py      → inventario de programas de arranque (solo lectura)
+  browser.py      → detecta y mide cachés de navegador (solo lectura)
+  healthscore.py  → combina todo en un puntaje 0-100 (función pura)
+  reporting.py    → informe unificado en texto y Markdown
 
-evolve/       → el bucle autónomo (corre en GitHub Actions, en la nube)
-  evolve.py     → llama a Gemini, propone un cambio, lo valida, y commitea si pasa
-  guards.py     → validaciones previas a los tests (sintaxis, pérdida de código)
-  budget.py     → controla que no se pase del límite diario gratis
-  tracking.py   → rotación persistente de archivo/enfoque + métricas
-  tests/        → tests que un cambio debe pasar para ser aceptado
+evolve/         → el bucle autónomo (corre en GitHub Actions, en la nube)
+  evolve.py       → llama a Gemini, propone un cambio, lo valida y commitea
+  guards.py       → validaciones previas a los tests (sintaxis, pérdida de código)
+  budget.py       → controla que no se pase del límite diario gratis
+  tracking.py     → rotación persistente de archivo/enfoque + métricas
+  chain.py        → frenos de la cadena de auto-disparo
+  logrotate.py    → recorta y archiva los logs para que el repo no se infle
+  tests/          → 197 tests que un cambio debe pasar para ser aceptado
 
-MISSION.md    → la "guía" que le decís al bucle en qué enfocarse esta semana
-evolve_log.md → se genera solo, historial cronológico de cada decisión
-PROGRESS.md   → se genera solo, resumen con métricas por día/enfoque/archivo
+MISSION.md      → la guía que le decís al bucle: reglas fijas + roadmap por módulo
+evolve_log.md   → se genera solo, historial cronológico de cada decisión
+PROGRESS.md     → se genera solo, resumen con métricas por día/enfoque/archivo
 ```
+
+## Qué hace la app
+
+| Pestaña | Qué hace | Modifica el disco |
+|---|---|---|
+| **Salud** | Puntaje 0-100 combinando todas las áreas, con recomendaciones | no |
+| **Limpieza** | Busca temporales, los mueve a revisión, y borra si vos lo pedís | sí, con confirmación |
+| **Seguridad** | Heurísticas de archivos sospechosos + Windows Defender | no |
+| **Cuarentena** | Aísla lo sospechoso y lo restaura a su ruta original | sí, reversible |
+| **Memoria** | Estado real de la RAM y qué procesos consumen | no |
+| **Disco** | En qué se fue el espacio: unidades, extensiones, carpetas | no |
+| **Duplicados** | Encuentra copias idénticas y sugiere cuál conservar | no |
+| **Navegadores** | Mide la caché de Chrome, Edge, Brave, Opera, Vivaldi | no |
+| **Inicio** | Qué arranca con Windows y cuánto pesa el arranque | no |
+| **Informe** | Exporta todo lo analizado a .txt o .md | solo el archivo que elegís |
+
+### Sobre los "limpiadores de RAM"
+
+La pestaña de Memoria **no** libera RAM a la fuerza, y es a propósito. Las
+apps que prometen eso llaman a `EmptyWorkingSet` sobre todos los procesos:
+el número de "memoria libre" sube, pero el rendimiento empeora, porque
+Windows tiene que releer del disco lo que acaba de descartar. En un sistema
+moderno la RAM ocupada como caché es lo que hace que los programas abran
+rápido. Así que acá se mide, se explica y se muestra qué conviene cerrar.
+El trim manual existe, pero limitado a un PID y con la advertencia puesta.
 
 ## Cómo trabaja el bucle
 
@@ -31,7 +69,7 @@ Cada 5 minutos, GitHub Actions dispara una corrida que hace **una** mejora:
 
 1. Chequea el presupuesto diario (tope 350, objetivo 300 de las 500 gratis).
 2. Elige qué archivo y con qué enfoque, rotando sistemáticamente sobre las
-   18 combinaciones posibles (3 archivos × 6 enfoques), así ninguno queda sin
+   78 combinaciones posibles (13 módulos × 6 enfoques), así ninguno queda sin
    recibir todos los enfoques.
 3. Le pide a Gemini una mejora sustancial, con una justificación de una línea.
    En el enfoque de "funcionalidad incremental" además puede buscar en la web
@@ -46,30 +84,69 @@ rendimiento, casos límite, seguridad defensiva, y funcionalidad incremental
 
 ## Diseño de seguridad (léelo antes de la demo)
 
-1. **El bucle autónomo solo edita código dentro del repo.** Nunca ejecuta
-   comandos de limpieza reales ni toca tu PC directamente.
-2. **Tres capas de validación antes de aceptar un cambio**, porque los tests
-   solos no alcanzan:
+El problema de fondo: una IA reescribe `app/*.py` sin supervisión durante
+días, y esos módulos borran archivos. "Que la IA tenga cuidado" no es una
+defensa. Así que la seguridad está puesta como **estructura**, en capas que
+la IA no puede sacar sin que el cambio se rechace.
+
+### En la app
+
+1. **`app/safety.py` es la única puerta de las operaciones destructivas.**
+   Bloquea la raíz de cualquier unidad, cualquier ruta que contenga una
+   carpeta de sistema (Windows, System32, Program Files, ProgramData,
+   WinSxS, `$RECYCLE.BIN`, `.ssh`, y ~40 más), y las extensiones sensibles
+   (`.sys`, `.dll`, `.exe`, `.pem`...). Lanza excepción en vez de devolver
+   `False`, para que un olvido de chequear el resultado no termine en un
+   borrado.
+2. **Las rutas se resuelven antes de compararse.** Es lo que impide que un
+   `carpeta/../../Windows/System32` se cuele en una operación que debería
+   estar limitada a una carpeta.
+3. **Destruir es reversible o no se hace.** Lo sospechoso va a cuarentena
+   (`app/quarantine.py`), que guarda la ruta original en un manifiesto y
+   puede devolver el archivo exactamente a su lugar. Restaurar hacia una
+   ruta de sistema está bloqueado, y vaciar la cuarentena verifica que cada
+   archivo esté realmente dentro de ella antes de borrarlo.
+4. **8 de los 13 módulos no modifican nada.** Memoria, disco, duplicados,
+   arranque y navegadores son de solo lectura: informan y explican.
+5. **Nada se borra sin dos pasos.** Un diálogo que dice exactamente qué va a
+   pasar, más la validación de `safety.py`.
+
+### En el bucle autónomo
+
+6. **El bucle solo edita archivos de texto dentro del repo.** Nunca ejecuta
+   comandos de limpieza ni toca tu PC.
+7. **Cuatro capas de validación antes de aceptar un cambio**, porque los
+   tests solos no alcanzan:
    - *Archivo correcto*: si la respuesta viene etiquetada con otro archivo,
-     se descarta (evita mezclar dos módulos).
-   - *Guardias* (`evolve/guards.py`): valida la sintaxis con AST, rechaza
-     encogimientos sospechosos del archivo, y rechaza si desapareció alguna
-     función, clase o método que existía antes. Esto es lo único que protege
-     a `app/main.py`, que ningún test puede importar en CI (necesita
-     customtkinter y una pantalla real).
-   - *Tests* (`evolve/tests/`): 30 pruebas de comportamiento real sobre
-     `organizer` y `scanner`, más las de las propias guardias y la rotación.
-3. **Si algo falla, se revierte solo** y queda logueado con el motivo exacto.
+     se descarta.
+   - *Guardias de integridad* (`evolve/guards.py`): sintaxis vía AST,
+     rechazo de encogimientos sospechosos, y rechazo si desapareció alguna
+     función, clase o método. Esto es lo único que protege a `app/main.py`,
+     que ningún test puede importar en CI (necesita customtkinter y pantalla).
+   - *Guardias de seguridad*: `safety.py` y `quarantine.py` están marcados
+     como módulos críticos y no pueden perder sus funciones clave. Además
+     las listas de protección **solo pueden crecer**: si la IA "simplifica"
+     `PROTECTED_DIR_NAMES` sacando carpetas, el cambio se rechaza.
+   - *Tests* (`evolve/tests/`): 197 pruebas, de las cuales las de
+     `test_safety.py` son un contrato de seguridad, no de funcionalidad.
+     Verifican que un archivo de sistema nunca se mueva, que la cuarentena
+     no pueda borrar fuera de sí misma, y que un manifiesto manipulado no
+     pueda escribir en `System32`.
+8. **Si algo falla, se revierte solo** y queda logueado con el motivo exacto.
 4. **Presupuesto diario controlado** (`evolve/budget.py`): objetivo de 300
    peticiones/día con tope duro de 350, sobre una cuota gratuita real de 500.
    Además espacia las llamadas para respetar el límite por minuto, y detecta
    cuando la cuota diaria se agotó para no insistir al vacío.
 5. **Corte de tiempo propio** por corrida, para terminar prolijo y alcanzar a
    commitear siempre, en vez de que GitHub mate el job a mitad de camino.
-6. **La app de escritorio nunca borra nada directamente.** Mueve candidatos a
-   una carpeta `_Para_Revisar`; el borrado real es un botón aparte que el
-   usuario aprieta a propósito. Un test verifica que nunca aparezca un borrado
-   masivo en el código, ni siquiera introducido por la IA.
+11. **La limpieza nunca borra directamente.** Mueve candidatos a
+    `_Para_Revisar`; el borrado real es un botón aparte que el usuario
+    aprieta a propósito. Un test verifica que `shutil.rmtree` no aparezca en
+    ningún módulo, ni siquiera introducido por la IA.
+12. **Rotación de logs** (`evolve/logrotate.py`): recorta `evolve_log.md` y
+    `metrics.jsonl` dejando lo reciente y archivando el resto, así una semana
+    de corridas no infla el repo. Solo borra dentro de `evolve/archive/`, y
+    verifica la contención de rutas antes de cada borrado.
 
 ## Cómo arrancar
 

@@ -31,6 +31,7 @@ import requests
 
 from budget import load_state, save_state, can_make_request, register_request, remaining_today
 from guards import validate_change
+from logrotate import rotate_all, summarize as summarize_rotation
 from tracking import (
     next_iteration,
     pick_assignment,
@@ -407,6 +408,13 @@ def main() -> None:
         regenerate_progress()
     except OSError as e:
         log(f"No se pudo regenerar PROGRESS.md: {e}")
+
+    # Rotación de logs: sin esto, una semana de corridas deja un evolve_log.md
+    # de megas que se vuelve a subir entero en cada commit del bot.
+    try:
+        log(summarize_rotation(rotate_all(ROOT)))
+    except OSError as e:
+        log(f"No se pudo rotar los logs: {e}")
 
     log(f"Corrida terminada. Total usado hoy: {state.requests_used}.")
 
