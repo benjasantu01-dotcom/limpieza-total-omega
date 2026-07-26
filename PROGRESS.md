@@ -5,23 +5,23 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **297**
-- Mejoras aceptadas: **206** (69.4% de aceptación)
+- Iteraciones totales: **301**
+- Mejoras aceptadas: **208** (69.1% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 21
 - Sin cambios (nada sustancial que mejorar): 3
-- Sin respuesta de la IA (error o límite): 52
+- Sin respuesta de la IA (error o límite): 54
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-26 | 206 | 15 | 21 | 3 | 52 |
+| 2026-07-26 | 208 | 15 | 21 | 3 | 54 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **46**
-- seguridad defensiva: **42**
+- seguridad defensiva: **44**
 - manejo de errores y validación de entradas: **41**
 - robustez ante casos límite: **40**
 - rendimiento: **37**
@@ -35,14 +35,16 @@ Este archivo se regenera solo en cada corrida a partir de
 - `duplicates.py`: **18**
 - `memory.py`: **17**
 - `quarantine.py`: **17**
+- `scanner.py`: **17**
 - `healthscore.py`: **16**
 - `main.py`: **16**
-- `scanner.py`: **16**
+- `startup.py`: **16**
 - `branding.py`: **16**
-- `startup.py`: **15**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-26T21:04:17` **startup.py** (seguridad defensiva): Mejoré la seguridad en la ejecución del comando PowerShell al prevenir la inyección de parámetros mediante la validación estricta de las claves de registro (`REGISTRY_RUN_KEYS`) contra una lista permitida antes de pasarlas al shell, eliminando el riesgo de que una ruta maliciosa en `keys` escape del contexto esperado.
+- `2026-07-26T21:03:55` **scanner.py** (seguridad defensiva): Se ha implementado una validación de seguridad defensiva en `scan_file` invocando `ensure_safe_to_modify` para cada archivo procesado, asegurando que el motor de escaneo no pueda acceder o analizar rutas fuera de los límites permitidos, mitigando riesgos de traversal.
 - `2026-07-26T20:54:35` **safety.py** (seguridad defensiva): Se implementó una validación en `ensure_safe_to_modify` para detectar y rechazar rutas UNC (`\\servidor\recurso`), evitando que la aplicación intente realizar operaciones de archivo en recursos de red remotos, lo cual es un vector de riesgo y comportamiento no definido.
 - `2026-07-26T20:54:10` **quarantine.py** (seguridad defensiva): Se añadió una validación explícita en `restore_item` para asegurar que el directorio padre de la ruta original no sea una ruta protegida mediante `is_protected_path`, reforzando el blindaje contra la inyección de rutas en el manifiesto.
 - `2026-07-26T20:53:45` **organizer.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `stage_for_review` validando que la ruta destino (`dest`) esté efectivamente contenida dentro del sistema de archivos permitido, previniendo posibles ataques de trayectoria o intentos de mover archivos fuera de las áreas controladas mediante rutas relativas maliciosas.
@@ -56,5 +58,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-26T20:23:42` **safety.py** (robustez ante casos límite): Mejora la robustez de `is_within_directory` y `is_protected_path` ante rutas que no existen o tienen permisos denegados, añadiendo manejo específico de excepciones de sistema (`PermissionError`, `OSError`) que ocurren comúnmente al intentar resolver rutas inexistentes o inaccesibles, evitando falsos negativos o caídas inesperadas durante la inspección.
 - `2026-07-26T20:13:56` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `stage_for_review` ante condiciones de carrera y archivos inaccesibles mediante la verificación explícita de `is_file()` bajo un bloque `try-except` más granular, y añadiendo una validación de `os.access(..., os.R_OK)` para garantizar que el archivo pueda ser leído antes de intentar moverlo.
 - `2026-07-26T20:13:51` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez de `parse_windows_process_csv` ante casos límite como datos corruptos o valores numéricos inesperados al procesar el CSV, asegurando que la función siempre retorne una lista válida incluso ante entradas malformadas.
-- `2026-07-26T20:13:28` **main.py** (robustez ante casos límite): Mejoré la robustez de `main.py` ante hilos huérfanos o cierres inesperados de la ventana, asegurando que la bandera `is_running` se resetee correctamente incluso ante excepciones graves, y mejorando la gestión de estados de la UI mediante un manejo más preciso de los hilos de `threading`.
-- `2026-07-26T20:03:30` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez de `_collect_candidates` ante archivos que desaparecen entre el momento de la enumeración (`os.walk`) y el acceso para `stat()`, evitando excepciones innecesarias en entornos de alta concurrencia.

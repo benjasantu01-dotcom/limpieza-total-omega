@@ -81,12 +81,14 @@ def check_system_lookalike(path: Path) -> Optional[Suspicion]:
 def scan_file(path: Path) -> List[Suspicion]:
     """
     Ejecuta el conjunto de chequeos heurísticos sobre un archivo individual.
+    Verifica la seguridad de la ruta antes de proceder al análisis.
     """
     try:
-        # Verificación de existencia y tipo con tolerancia a condiciones de carrera
+        # Validación de seguridad defensiva antes de procesar
+        ensure_safe_to_modify(path)
         if not path.is_file():
             return []
-    except (OSError, PermissionError):
+    except (OSError, PermissionError, ValueError):
         return []
 
     results: List[Suspicion] = []

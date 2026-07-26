@@ -163,13 +163,17 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
 def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[StartupEntry]:
     """Obtiene programas de inicio consultando las llaves del Registro vía PowerShell.
     
-    Construye un comando de PowerShell para leer propiedades como objetos y 
-    convertirlos a CSV para facilitar su parseo posterior.
+    Valida las llaves contra una lista permitida antes de ejecutar el comando.
     """
     if os.name != "nt":
         return []
     all_entries: List[StartupEntry] = []
+    allowed_keys = set(REGISTRY_RUN_KEYS)
+    
     for key in keys:
+        if key not in allowed_keys:
+            continue
+            
         ps_cmd: str = (
             f"if (Test-Path '{key}') {{ (Get-Item '{key}').Property | ForEach-Object "
             f"{{ [PSCustomObject]@{{ Name = $_; Value = (Get-ItemProperty '{key}').$_ }} }} | "
