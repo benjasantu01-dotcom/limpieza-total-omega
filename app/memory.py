@@ -27,6 +27,7 @@ import os
 import re
 import subprocess
 from dataclasses import dataclass, field
+from typing import List, Tuple, Optional
 
 __all__ = [
     "MemorySnapshot",
@@ -106,50 +107,50 @@ def format_bytes(num: int | float) -> str:
 
 
 def parse_linux_meminfo(text: str) -> MemorySnapshot:
-    """Interpreta el contenido de /proc/meminfo (valores en kB).
-
-    Se separa del acceso al archivo para poder testear el parseo con datos
-    fijos, sin depender de la máquina donde corren los tests.
-    """
+    """Interpreta el contenido de /proc/meminfo (valores en kB)."""
     values: dict[str, int] = {}
     for line in text.splitlines():
         match = re.match(r"^(\w+):\s+(\d+)", line)
         if match:
             values[match.group(1)] = int(match.group(2)) * 1024
     total = values.get("MemTotal", 0)
-    # MemAvailable es la estimación correcta de "cuánto puede pedir una app
-    # sin empezar a swapear"; MemFree subestima porque ignora la caché.
     available = values.get("MemAvailable", values.get("MemFree", 0))
     cached = values.get("Cached", 0)
     return MemorySnapshot(total=total, available=available, cached=cached)
 
 
-def parse_windows_process_csv(text: str, limit: int = 10) -> list[ProcessMemory]:
-    """Interpreta la salida CSV de PowerShell con procesos y su working set.
-
-    Formato esperado (encabezado incluido): Name,Id,WorkingSet
-    Las líneas que no se puedan interpretar se saltan en silencio: un
-    proceso raro no debe romper todo el listado.
-    """
-    processes: list[ProcessMemory] = []
+def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]:
+    """Interpreta la salida CSV de PowerShell (columnas: Name,Id,WorkingSet)."""
+    processes: List[ProcessMemory] = []
     lines = [line.strip() for line in text.splitlines() if line.strip()]
+    
     for line in lines:
+        # Se espera que el CSV sea: Name,Id,WorkingSet
         parts = [p.strip().strip('"') for p in line.split(",")]
         if len(parts) < 3:
             continue
+        
         name, pid_raw, ws_raw = parts[0], parts[1], parts[2]
+        
+        # Saltamos la línea de encabezado de PowerShell
         if name.lower() in {"name", "processname"}:
-            continue  # encabezado
+            continue
+            
         try:
-            processes.append(ProcessMemory(name=name, pid=int(pid_raw), working_set=int(float(ws_raw))))
+            processes.append(ProcessMemory(
+                name=name, 
+                pid=int(pid_raw), 
+                working_set=int(float(ws_raw))
+            ))
         except ValueError:
             continue
+            
     processes.sort(key=lambda p: p.working_set, reverse=True)
     return processes[:limit]
 
 
 def _read_windows_snapshot() -> MemorySnapshot:
-    """Lee la memoria en Windows con GlobalMemoryStatusEx (sin dependencias)."""
+    """Lee la memoria en Windows con GlobalMemoryStatusEx."""
     import ctypes
 
     class MEMORYSTATUSEX(ctypes.Structure):
@@ -173,11 +174,7 @@ def _read_windows_snapshot() -> MemorySnapshot:
 
 
 def read_snapshot() -> MemorySnapshot:
-    """Estado actual de la memoria, en el sistema donde se esté corriendo.
-
-    Devuelve un snapshot vacío en vez de fallar si no se puede leer: la app
-    debe poder mostrar el resto de los paneles igual.
-    """
+    """Captura el estado actual de la memoria del sistema."""
     try:
         if os.name == "nt":
             return _read_windows_snapshot()
@@ -190,12 +187,8 @@ def read_snapshot() -> MemorySnapshot:
     return MemorySnapshot(total=0, available=0)
 
 
-def top_memory_processes(limit: int = 10) -> list[ProcessMemory]:
-    """Procesos que más memoria consumen, ordenados de mayor a menor.
-
-    Solo lectura: nunca cierra ni modifica procesos. En sistemas que no
-    sean Windows devuelve lista vacía en vez de fallar.
-    """
+def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
+    """Obtiene los procesos más pesados mediante PowerShell (solo Windows)."""
     if os.name != "nt":
         return []
     command = (
@@ -214,11 +207,7 @@ def top_memory_processes(limit: int = 10) -> list[ProcessMemory]:
 
 
 def pressure_level(snapshot: MemorySnapshot) -> str:
-    """Clasifica la presión de memoria: 'ok', 'info', 'warning' o 'danger'.
-
-    Los umbrales están sobre memoria DISPONIBLE, no sobre memoria usada,
-    porque es lo que determina si el sistema va a empezar a ir al disco.
-    """
+    """Clasifica la presión según el porcentaje de RAM disponible."""
     if snapshot.total <= 0:
         return "info"
     available = snapshot.available_percent
@@ -231,8 +220,8 @@ def pressure_level(snapshot: MemorySnapshot) -> str:
     return "danger"
 
 
-def diagnose(snapshot: MemorySnapshot, processes: list[ProcessMemory] | None = None) -> list[str]:
-    """Diagnóstico en lenguaje claro, con la explicación honesta incluida."""
+def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] = None) -> List[str]:
+    """Genera un reporte textual descriptivo sobre el estado de la memoria."""
     if snapshot.total <= 0:
         return ["No se pudo leer el estado de la memoria en este sistema."]
 
@@ -243,26 +232,14 @@ def diagnose(snapshot: MemorySnapshot, processes: list[ProcessMemory] | None = N
         f"Disponible: {format_bytes(snapshot.available)} ({snapshot.available_percent}%)",
     ]
 
-    if level == "ok":
-        lines.append(
-            "Estado: holgado. No hace falta 'liberar' nada: la memoria ocupada "
-            "por caché es la que hace que los programas abran rápido."
-        )
-    elif level == "info":
-        lines.append(
-            "Estado: normal. Windows está usando la memoria como corresponde. "
-            "Liberarla a la fuerza no mejoraría el rendimiento."
-        )
-    elif level == "warning":
-        lines.append(
-            "Estado: ajustado. Conviene cerrar programas que no estés usando; "
-            "eso sí libera memoria de verdad, a diferencia de un 'limpiador'."
-        )
-    else:
-        lines.append(
-            "Estado: crítico. El sistema probablemente esté yendo al disco. "
-            "Cerrá los procesos más pesados de la lista o considerá más RAM."
-        )
+    diagnosticos = {
+        "ok": "Estado: holgado. No hace falta 'liberar' nada: la memoria ocupada por caché es la que hace que los programas abran rápido.",
+        "info": "Estado: normal. Windows está usando la memoria como corresponde. Liberarla a la fuerza no mejoraría el rendimiento.",
+        "warning": "Estado: ajustado. Conviene cerrar programas que no estés usando; eso sí libera memoria de verdad, a diferencia de un 'limpiador'.",
+        "danger": "Estado: crítico. El sistema probablemente esté yendo al disco. Cerrá los procesos más pesados de la lista o considerá más RAM."
+    }
+    
+    lines.append(diagnosticos.get(level, ""))
 
     for proc in (processes or [])[:3]:
         lines.append(f"  Mayor consumo: {proc.name} (PID {proc.pid}) — {proc.working_set_mb} MB")
@@ -270,14 +247,8 @@ def diagnose(snapshot: MemorySnapshot, processes: list[ProcessMemory] | None = N
     return lines
 
 
-def trim_working_set(pid: int) -> tuple[bool, str]:
-    """Libera el working set de UN proceso puntual. Acción manual y explícita.
-
-    Se limita a un PID a propósito: hacerlo sobre todos los procesos es lo
-    que hacen los "limpiadores de RAM" y es justamente lo que degrada el
-    rendimiento. Devuelve (éxito, mensaje) en vez de lanzar excepción para
-    que la interfaz pueda mostrar el resultado sin envolver la llamada.
-    """
+def trim_working_set(pid: int) -> Tuple[bool, str]:
+    """Libera el working set de un proceso específico si el sistema lo permite."""
     if os.name != "nt":
         return False, "Solo disponible en Windows."
     
@@ -300,7 +271,6 @@ def trim_working_set(pid: int) -> tuple[bool, str]:
             return False, f"No se pudo abrir el proceso {target_pid} (¿permisos insuficientes?)."
         
         try:
-            # EmptyWorkingSet devuelve un valor distinto de cero en caso de éxito
             if not ctypes.windll.psapi.EmptyWorkingSet(handle):
                 error_code = ctypes.GetLastError()
                 return False, f"Windows rechazó la operación (código: {error_code})."

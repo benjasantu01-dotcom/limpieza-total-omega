@@ -17,6 +17,7 @@ import logging
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
+from typing import List, Optional
 
 # Configuración de log para seguimiento de errores no críticos
 logging.basicConfig(level=logging.INFO)
@@ -40,7 +41,7 @@ DEFAULT_SCAN_DIRS = [
 SYSTEM_FOLDER_BLOCKLIST = {"windows", "program files", "program files (x86)", "$recycle.bin", "system volume information"}
 
 
-def list_available_drives() -> list[str]:
+def list_available_drives() -> List[str]:
     """Devuelve las letras de unidad disponibles en Windows (ej. ['C:\\\\', 'D:\\\\']),
     para que el usuario pueda elegir en qué disco buscar además de las
     carpetas por defecto. No falla en sistemas no-Windows: devuelve lista vacía."""
@@ -67,16 +68,17 @@ class JunkFile:
         return round(self.size_bytes / (1024 * 1024), 2)
 
 
-def scan_for_junk(directories: list[str] | None = None) -> list[JunkFile]:
+def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     """
     Recorre las carpetas indicadas y devuelve candidatos a basura.
-    No modifica nada en el disco. Si una de las 'directories' es la raíz
-    de una unidad (ej. 'D:\\'), se recorre completa salvo las carpetas
-    de sistema críticas listadas en SYSTEM_FOLDER_BLOCKLIST.
-    Omite directorios o archivos sin permisos de lectura sin interrumpir el proceso.
+    
+    El proceso es no destructivo: solo inspecciona metadatos. Si se detecta una
+    ruta crítica (definida en SYSTEM_FOLDER_BLOCKLIST), se ignora durante el walk.
+    En caso de error de acceso (PermissionError), el archivo se omite silenciosamente
+    y se registra a nivel debug para mantener la robustez del escaneo.
     """
     dirs = directories or DEFAULT_SCAN_DIRS
-    found: list[JunkFile] = []
+    found: List[JunkFile] = []
 
     for d in dirs:
         p = Path(d).expanduser()
@@ -107,7 +109,7 @@ def scan_for_junk(directories: list[str] | None = None) -> list[JunkFile]:
     return found
 
 
-def sort_junk(files: list[JunkFile], by: str = "size", ascending: bool = True) -> list[JunkFile]:
+def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -> List[JunkFile]:
     """
     Ordena la lista de JunkFile por tamaño ('size') o fecha de modificación ('date').
     Retorna una nueva lista ordenada sin modificar la original.
@@ -120,10 +122,14 @@ def sort_junk(files: list[JunkFile], by: str = "size", ascending: bool = True) -
     return sorted(files, key=key_func, reverse=not ascending)
 
 
-def stage_for_review(files: list[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Path:
+def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Path:
     """
-    Mueve los archivos encontrados a una carpeta de revisión.
-    Preserva el nombre original agregando un timestamp para evitar colisiones.
+    Mueve archivos candidatos a una carpeta de cuarentena/revisión.
+    
+    Implementa una estrategia de nombrado basada en el timestamp de modificación
+    para asegurar que archivos con mismo nombre pero distinto origen no colisionen.
+    Si el movimiento falla (ej. archivo bloqueado por el sistema), la excepción es
+    capturada para permitir que el resto de la lista continúe siendo procesada.
     """
     if not files:
         logger.warning("La lista de archivos a organizar está vacía.")
@@ -137,6 +143,7 @@ def stage_for_review(files: list[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         raise
 
     for jf in files:
+        # Validación de integridad del objeto JunkFile antes de operar
         if jf is None or not isinstance(jf.path, Path) or not jf.path.exists():
             continue
 

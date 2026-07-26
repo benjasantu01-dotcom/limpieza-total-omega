@@ -14,6 +14,7 @@ vive en los otros módulos; acá solo se puntúa.
 
 from __future__ import annotations
 from dataclasses import dataclass, field
+from typing import Dict, List
 
 __all__ = [
     "SystemMetrics",
@@ -33,7 +34,7 @@ __all__ = [
 # Cuánto pesa cada área en el puntaje final. Suman 100.
 # Seguridad pesa más que limpieza a propósito: un archivo sospechoso es un
 # problema real, unos MB de basura no.
-WEIGHTS = {
+WEIGHTS: Dict[str, int] = {
     "seguridad": 30,
     "disco": 20,
     "memoria": 18,
@@ -65,8 +66,8 @@ class HealthResult:
     """Resultado del cálculo: puntaje, nota, desglose y recomendaciones."""
     score: int
     grade: str
-    breakdown: dict[str, int] = field(default_factory=dict)
-    recommendations: list[str] = field(default_factory=list)
+    breakdown: Dict[str, int] = field(default_factory=dict)
+    recommendations: List[str] = field(default_factory=list)
 
     @property
     def is_healthy(self) -> bool:
@@ -79,15 +80,16 @@ def _clamp(value: float, low: float = 0.0, high: float = 1.0) -> float:
 
 
 def score_junk(junk_mb: float) -> float:
-    """Puntúa la basura acumulada. 0 MB es perfecto; 5 GB es el piso."""
+    """Puntúa la basura. 0 MB es perfecto; 5 GB (5000 MB) es el umbral crítico."""
     return _clamp(1.0 - (max(0.0, float(junk_mb)) / 5000.0))
 
 
 def score_security(suspicious_count: int, warnings: int = 0) -> float:
     """Puntúa los hallazgos de seguridad.
-
-    Las advertencias pesan mucho más que los informativos: un ejecutable
-    recién descargado es normal, una doble extensión no lo es.
+    
+    Penalty logic: Cada ítem sospechoso reduce el score en 5%, mientras que
+    cada advertencia lo hace en 25%, priorizando la detección de amenazas
+    sobre la simple acumulación de logs.
     """
     penalty = max(0, int(suspicious_count)) * 0.05 + max(0, int(warnings)) * 0.25
     return _clamp(1.0 - penalty)
@@ -95,25 +97,32 @@ def score_security(suspicious_count: int, warnings: int = 0) -> float:
 
 def score_memory(available_percent: float) -> float:
     """Puntúa la memoria por disponibilidad.
-
-    Se considera óptimo a partir del 35% disponible; no se premia tener
-    MÁS libre que eso, porque RAM libre de sobra no aporta rendimiento.
+    
+    El umbral de 35% se basa en el punto de saturación donde los sistemas 
+    operativos modernos comienzan a recurrir a paginación agresiva, 
+    degradando la experiencia del usuario.
     """
     return _clamp(max(0.0, float(available_percent)) / 35.0)
 
 
 def score_disk(free_percent: float) -> float:
-    """Puntúa el espacio libre en disco. Se considera óptimo desde 25%."""
+    """Puntúa el espacio libre en disco. 
+    
+    25% es el punto de referencia: debajo de esto, el sistema operativo 
+    comienza a tener dificultades para la expansión de archivos temporales.
+    """
     return _clamp(max(0.0, float(free_percent)) / 25.0)
 
 
 def score_duplicates(duplicate_mb: float) -> float:
-    """Puntúa el espacio desperdiciado en duplicados. 2 GB es el piso."""
+    """Puntúa espacio perdido. 2 GB (2000 MB) representa una pérdida ineficiente."""
     return _clamp(1.0 - (max(0.0, float(duplicate_mb)) / 2000.0))
 
 
 def score_startup(startup_count: int) -> float:
-    """Puntúa el arranque por cantidad de programas. 20 o más es el piso."""
+    """Puntúa el arranque. 20 aplicaciones es el límite tolerable para 
+    evitar tiempos de inicio excesivos.
+    """
     return _clamp(1.0 - (max(0, int(startup_count)) / 20.0))
 
 
@@ -151,7 +160,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     breakdown = {area: int(round(ratio * WEIGHTS[area])) for area, ratio in ratios.items()}
     total = min(100, max(0, sum(breakdown.values())))
 
-    recommendations: list[str] = []
+    recommendations: List[str] = []
     if ratios["seguridad"] < 0.9:
         recommendations.append(
             f"Revisá los {metrics.suspicious_count} hallazgo(s) de seguridad; "
@@ -195,7 +204,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     )
 
 
-def summarize(result: HealthResult) -> list[str]:
+def summarize(result: HealthResult) -> List[str]:
     """Resumen legible del puntaje, con desglose y recomendaciones."""
     lines = [
         f"Salud del sistema: {result.score}/100  (nota {result.grade})",
