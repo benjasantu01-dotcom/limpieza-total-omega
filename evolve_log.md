@@ -132,3 +132,25 @@
 - `2026-07-25T20:45:17` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-07-25T20:45:32` Corte de seguridad: se alcanzó el límite de 900s para esta corrida. Termino prolijo.
 - `2026-07-25T20:45:32` Corrida terminada. Total usado hoy: 68.
+- `2026-07-26T00:21:08` Arrancando corrida. Quedan hoy ~450 peticiones objetivo.
+- `2026-07-26T00:21:27` ✅ Mejora aceptada en main.py.
+- `2026-07-26T00:21:45` ✅ Mejora aceptada en organizer.py.
+- `2026-07-26T00:22:04` ✅ Mejora aceptada en scanner.py.
+- `2026-07-26T00:22:23` ✅ Mejora aceptada en main.py.
+- `2026-07-26T00:22:41` ✅ Mejora aceptada en organizer.py.
+- `2026-07-26T00:23:00` ✅ Mejora aceptada en scanner.py.
+- `2026-07-26T00:23:20` ✅ Mejora aceptada en main.py.
+- `2026-07-26T00:23:38` ✅ Mejora aceptada en organizer.py.
+- `2026-07-26T00:23:57` ✅ Mejora aceptada en scanner.py.
+- `2026-07-26T00:24:17` ✅ Mejora aceptada en main.py.
+- `2026-07-26T00:24:36` ✅ Mejora aceptada en organizer.py.
+- `2026-07-26T00:24:54` ✅ Mejora aceptada en scanner.py.
+- `2026-07-26T00:25:14` ✅ Mejora aceptada en main.py.
+- `2026-07-26T00:25:32` ✅ Mejora aceptada en organizer.py.
+- `2026-07-26T00:25:51` ✅ Mejora aceptada en scanner.py.
+- `2026-07-26T00:26:10` ✅ Mejora aceptada en main.py.
+- `2026-07-26T00:26:29` ✅ Mejora aceptada en organizer.py.
+- `2026-07-26T00:26:47` ✅ Mejora aceptada en scanner.py.
+- `2026-07-26T00:27:07` ✅ Mejora aceptada en main.py.
+- `2026-07-26T00:27:26` ✅ Mejora aceptada en organizer.py.
+- `2026-07-26T00:27:26` Corrida terminada. Total usado hoy: 20.
