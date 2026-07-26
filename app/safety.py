@@ -99,7 +99,7 @@ def is_drive_root(path: PathLike) -> bool:
     try:
         p = normalize(path)
         return p.parent == p or str(p) == p.anchor
-    except Exception:
+    except (ValueError, TypeError):
         return False
 
 
@@ -113,7 +113,7 @@ def is_protected_path(path: PathLike) -> bool:
         if raw_p.is_symlink() or (hasattr(raw_p, 'is_junction') and raw_p.is_junction()):
             return True
         p = normalize(path)
-    except (PermissionError, OSError):
+    except (PermissionError, OSError, ValueError, TypeError):
         return True 
         
     if is_drive_root(p):
@@ -148,7 +148,7 @@ def is_within_directory(
             return allow_equal
         c.relative_to(p)
         return True
-    except (ValueError, TypeError, OSError, RuntimeError, PermissionError):
+    except (ValueError, TypeError, OSError):
         return False
 
 
@@ -156,7 +156,7 @@ def is_sensitive_file(path: PathLike) -> bool:
     """Verifica si el archivo tiene una extensión en SENSITIVE_EXTENSIONS."""
     try:
         return normalize(path).suffix.lower() in SENSITIVE_EXTENSIONS
-    except (TypeError, ValueError, Exception):
+    except (TypeError, ValueError, OSError):
         return True 
 
 
@@ -178,8 +178,6 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
         p = normalize(path)
     except (TypeError, ValueError) as e:
         raise UnsafePathError(f"Ruta mal formada: {path}") from e
-    except Exception as e:
-        raise UnsafePathError(f"Ruta inaccesible: {path}") from e
 
     # Detección de rutas UNC (recursos de red)
     if str(p).startswith(("\\\\", "//")):
@@ -216,7 +214,7 @@ def describe_protection(path: PathLike) -> str:
     """Genera un diagnóstico textual de por qué una ruta está protegida."""
     try:
         p = normalize(path)
-    except (TypeError, ValueError, Exception):
+    except (TypeError, ValueError):
         return "Ruta mal formada: no se puede analizar."
     if str(p).startswith(("\\\\", "//")):
         return f"'{p}' es una ruta de red: no se permite la modificación."

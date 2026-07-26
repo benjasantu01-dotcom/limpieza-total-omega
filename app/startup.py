@@ -150,13 +150,13 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
         if len(csv_row_parts) < 2:
             continue
             
-        name: str = csv_row_parts[0].strip().strip('"').strip("'")
-        value: str = csv_row_parts[1].strip().strip('"').strip("'")
+        name_raw: str = csv_row_parts[0].strip().strip('"').strip("'")
+        value_raw: str = csv_row_parts[1].strip().strip('"').strip("'")
         
         # Omite metadatos propios del formato de salida de PowerShell
-        if not name or name.lower() == "name" or name.startswith("PS"):
+        if not name_raw or name_raw.lower() == "name" or name_raw.startswith("PS"):
             continue
-        parsed_entries.append(StartupEntry(name=name, command=value, source=source))
+        parsed_entries.append(StartupEntry(name=name_raw, command=value_raw, source=source))
     return parsed_entries
 
 

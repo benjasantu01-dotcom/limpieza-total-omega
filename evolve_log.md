@@ -1387,3 +1387,10 @@ FAILED evolve/tests/test_modules.py::test_low_disk_produces_a_specific_recommend
 - `2026-07-26T21:56:09` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: manejo de errores y validación de entradas).
 - `2026-07-26T21:56:09` Rotación — nada para rotar
 - `2026-07-26T21:56:09` Corrida terminada. Total usado hoy: 342.
+- `2026-07-26T22:04:53` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-07-26T22:05:12` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-07-26T22:05:34` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se ha robustecido el manejo de errores en `is_within_directory` y `is_sensitive_file` eliminando el uso de `Exception` genérica (que podía ocultar errores de lógica) y reemplazándolo por un filtrado estricto de tipos y excepciones específicas, garantizando que el sistema sea más predecible ante entradas inválidas.
+- `2026-07-26T22:05:53` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las funciones de chequeo individual (`check_recent_executable_in_downloads` y `check_system_lookalike`) capturando explícitamente posibles valores de entrada malformados (como rutas no resolubles o errores de acceso) mediante validación defensiva, asegurando que `scan_file` reciba siempre datos consistentes y no falle ante excepciones no controladas.
+- `2026-07-26T22:06:00` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez del parseo de registros mediante la validación del formato CSV de PowerShell, añadiendo una comprobación explícita para evitar errores de índice al procesar entradas malformadas o inesperadas que podrían causar una excepción `IndexError`.
+- `2026-07-26T22:06:00` Rotación — nada para rotar
+- `2026-07-26T22:06:00` Corrida terminada. Total usado hoy: 346.
