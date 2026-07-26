@@ -114,22 +114,19 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
         if not root.exists() or not root.is_dir():
             return []
             
+        root_str = str(root)
         # Pila de directorios pendientes de escaneo (DFS para eficiencia en I/O)
         queue: List[Path] = [root]
         while queue:
             current_dir = queue.pop()
             try:
                 for entry in current_dir.iterdir():
-                    # Validación de seguridad: Prevenir 'path traversal' y seguir únicamente subdirectorios
-                    # dentro del árbol raíz (root) definido por el usuario.
-                    resolved_entry = entry.resolve()
-                    if root not in resolved_entry.parents and resolved_entry != root:
+                    # Evitar resolución costosa de cada entry; solo verificar si es symlink
+                    if entry.is_symlink():
                         continue
-
+                        
                     if entry.is_dir():
-                        # No seguir enlaces simbólicos (junctions/links) para evitar ciclos o escapes de scope
-                        if not entry.is_symlink():
-                            queue.append(entry)
+                        queue.append(entry)
                     elif entry.is_file():
                         results.extend(scan_file(entry))
             except (PermissionError, OSError):

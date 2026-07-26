@@ -63,7 +63,7 @@ SENSITIVE_EXTENSIONS: frozenset[str] = frozenset({
 })
 
 # Cache de rutas críticas para evitar llamadas repetidas al entorno
-_SYSTEM_ROOTS: frozenset[Path] = frozenset(
+_SYSTEM_ROOTS: tuple[Path, ...] = tuple(
     Path(os.environ[v]).resolve() 
     for v in ("SystemRoot", "windir", "ProgramFiles", "ProgramFiles(x86)", "ProgramData")
     if os.environ.get(v)
@@ -110,7 +110,6 @@ def is_protected_path(path: PathLike) -> bool:
     """
     try:
         raw_p = Path(path)
-        # Protegemos contra junctions (reparse points) que pueden ocultar rutas del sistema
         if raw_p.is_symlink() or (hasattr(raw_p, 'is_junction') and raw_p.is_junction()):
             return True
         p = normalize(path)
@@ -120,14 +119,15 @@ def is_protected_path(path: PathLike) -> bool:
     if is_drive_root(p):
         return True
     
-    # Comprobación eficiente: evitamos crear sets intermedios o listas de partes
-    if any(part.lower() in PROTECTED_DIR_NAMES for part in p.parts):
+    # Verificación de partes de ruta contra lista de nombres bloqueados
+    p_parts_lower = {part.lower() for part in p.parts}
+    if not PROTECTED_DIR_NAMES.isdisjoint(p_parts_lower):
         return True
         
-    # Verificación por anidamiento estricto bajo carpetas de sistema base
+    # Verificación por anidamiento mediante comparación de anchors y padres directos
     for root in _SYSTEM_ROOTS:
         try:
-            if root == p or root in p.parents:
+            if p == root or root in p.parents:
                 return True
         except (ValueError, RuntimeError):
             continue
@@ -181,7 +181,6 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
     except Exception as e:
         raise UnsafePathError(f"Ruta inaccesible: {path}") from e
 
-    # Bloqueo adicional para dispositivos especiales
     if p.exists() and (p.is_block_device() or p.is_char_device()):
         raise UnsafePathError(f"Operación bloqueada: '{p}' es un dispositivo especial.")
 

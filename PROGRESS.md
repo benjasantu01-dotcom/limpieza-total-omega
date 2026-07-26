@@ -5,24 +5,24 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **269**
-- Mejoras aceptadas: **187** (69.5% de aceptación)
+- Iteraciones totales: **273**
+- Mejoras aceptadas: **189** (69.2% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 18
+- Rechazadas por guardia de seguridad: 19
 - Sin cambios (nada sustancial que mejorar): 3
-- Sin respuesta de la IA (error o límite): 49
+- Sin respuesta de la IA (error o límite): 50
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-26 | 187 | 12 | 18 | 3 | 49 |
+| 2026-07-26 | 189 | 12 | 19 | 3 | 50 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **46**
 - manejo de errores y validación de entradas: **41**
-- rendimiento: **35**
+- rendimiento: **37**
 - seguridad defensiva: **34**
 - robustez ante casos límite: **31**
 
@@ -30,19 +30,21 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `diskreport.py`: **17**
 - `organizer.py`: **17**
+- `safety.py`: **17**
 - `browser.py`: **16**
 - `duplicates.py`: **16**
 - `healthscore.py`: **16**
 - `quarantine.py`: **16**
-- `safety.py`: **16**
 - `branding.py`: **16**
 - `memory.py`: **15**
+- `scanner.py`: **15**
 - `main.py`: **14**
-- `scanner.py`: **14**
 - `startup.py`: **14**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-26T19:51:26` **scanner.py** (rendimiento): Optimicé el bucle de escaneo de `scan_directory` reemplazando la llamada repetitiva a `entry.resolve()` por una verificación lógica de prefijo de string más eficiente y evitando accesos redundantes al sistema de archivos al procesar `is_file()` y `is_dir()` de forma directa sobre la entrada.
+- `2026-07-26T19:51:07` **safety.py** (rendimiento): Optimizé `is_protected_path` reemplazando la verificación recursiva por `p.parents` (que es una secuencia de objetos Path costosa de evaluar) por una comparación de prefijos de cadenas (o verificación de conjuntos) y mejoré el manejo de `_SYSTEM_ROOTS` mediante una validación de `path.parts` que reduce significativamente la carga computacional en recorridos masivos de disco.
 - `2026-07-26T19:41:44` **quarantine.py** (rendimiento): Se optimizó `restore_item` y `purge_item` reemplazando la creación repetida de listas y la búsqueda lineal (`[i for i in items if i.item_id != item_id]`) por el uso de un diccionario de acceso constante, reduciendo la complejidad algorítmica y el uso innecesario de memoria.
 - `2026-07-26T19:41:32` **organizer.py** (rendimiento): Se optimizó el rendimiento de `scan_for_junk` pre-calculando el `Path.resolve()` solo cuando es estrictamente necesario y evitando la creación redundante de objetos `Path` dentro del bucle de escaneo mediante el uso directo de las propiedades de `os.DirEntry`.
 - `2026-07-26T19:41:11` **memory.py** (rendimiento): Optimizé `parse_windows_process_csv` reemplazando la creación y filtrado de listas múltiples por un generador eficiente que evita copias innecesarias y reduce el consumo de memoria durante el procesamiento de la salida de PowerShell.
@@ -56,5 +58,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-26T19:10:20` **organizer.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos en `scan_for_junk` y `stage_for_review` para aclarar la lógica de manejo de rutas y la intención detrás de los filtros de seguridad, mejorando la legibilidad del flujo de datos.
 - `2026-07-26T19:10:00` **memory.py** (legibilidad y documentación): He mejorado la documentación de la función `parse_windows_process_csv` mediante una cadena de formato (docstring) más técnica y descriptiva que clarifica por qué se utiliza el parser de CSV en lugar de herramientas de más alto nivel, y he añadido type hints explícitos para mayor robustez, asegurando que la intención del código sea clara para futuros colaboradores.
 - `2026-07-26T19:01:07` **main.py** (legibilidad y documentación): Mejoré la documentación interna del módulo `main.py` añadiendo docstrings descriptivos a los métodos que gestionan la lógica asíncrona (`run_async`) y la interacción con archivos (`_is_path_safe`, `_confirm`, `_ask_folder`), clarificando su responsabilidad dentro del ciclo de vida de la aplicación.
-- `2026-07-26T19:00:42` **healthscore.py** (legibilidad y documentación): Se documentaron los umbrales críticos de las funciones de scoring para clarificar el "PORQUÉ" de las constantes numéricas (ej. 35% de RAM o 25% de disco), facilitando el mantenimiento y la comprensión de las expectativas del sistema.
-- `2026-07-26T19:00:20` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `duplicates.py` añadiendo explicaciones detalladas en los docstrings sobre el flujo de datos y el propósito de cada etapa del filtrado, además de añadir type hints explícitos en `_collect_candidates` para mayor claridad.

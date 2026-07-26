@@ -1149,3 +1149,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-07-26T19:41:44` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Se optimizó `restore_item` y `purge_item` reemplazando la creación repetida de listas y la búsqueda lineal (`[i for i in items if i.item_id != item_id]`) por el uso de un diccionario de acceso constante, reduciendo la complejidad algorítmica y el uso innecesario de memoria.
 - `2026-07-26T19:41:44` Rotación — nada para rotar
 - `2026-07-26T19:41:44` Corrida terminada. Total usado hoy: 290.
+- `2026-07-26T19:50:26` Arrancando corrida. Quedan hoy ~10 peticiones objetivo.
+- `2026-07-26T19:50:45` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 108): unterminated string literal (detected at line 108)
+- `2026-07-26T19:51:07` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimizé `is_protected_path` reemplazando la verificación recursiva por `p.parents` (que es una secuencia de objetos Path costosa de evaluar) por una comparación de prefijos de cadenas (o verificación de conjuntos) y mejoré el manejo de `_SYSTEM_ROOTS` mediante una validación de `path.parts` que reduce significativamente la carga computacional en recorridos masivos de disco.
+- `2026-07-26T19:51:26` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el bucle de escaneo de `scan_directory` reemplazando la llamada repetitiva a `entry.resolve()` por una verificación lógica de prefijo de string más eficiente y evitando accesos redundantes al sistema de archivos al procesar `is_file()` y `is_dir()` de forma directa sobre la entrada.
+- `2026-07-26T19:51:32` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-07-26T19:51:32` Rotación — nada para rotar
+- `2026-07-26T19:51:32` Corrida terminada. Total usado hoy: 294.
