@@ -35,7 +35,7 @@ MISSION_FILE = ROOT / "MISSION.md"
 LOG_FILE = ROOT / "evolve_log.md"
 
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
-GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.0-flash")
+GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.1-flash-lite")
 GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent"
 
 ITERATIONS_PER_RUN = int(os.environ.get("ITERATIONS_PER_RUN", "5"))
