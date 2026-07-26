@@ -745,30 +745,25 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def on_restore_quarantine(self) -> None:
         item_id = self.quarantine_id.get().strip()
         if not item_id:
-            messagebox.showinfo("Falta el ID", "Pegá el ID del archivo que querés restaurar.")
+            messagebox.showwarning("Falta el ID", "Pegá el ID del archivo que querés restaurar.")
             return
 
         def task():
-            try:
-                item = quarantine.get_manifest_item(item_id)
-                if not item:
-                    self.log(f"ID no encontrado: {item_id}", "Cuarentena")
-                    return
-                
-                if not self._is_path_safe(item.original_path):
-                    return
+            item = quarantine.get_manifest_item(item_id)
+            if not item:
+                self.log(f"ID no encontrado: {item_id}", "Cuarentena")
+                return
+            
+            if not self._is_path_safe(item.original_path):
+                return
 
-                parent_dir = os.path.dirname(item.original_path)
-                if not os.path.exists(parent_dir):
-                    self.log(f"Error: La carpeta original '{parent_dir}' ya no existe.", "Cuarentena")
-                    return
+            parent_dir = os.path.dirname(item.original_path)
+            if not os.path.exists(parent_dir):
+                self.log(f"Error: La carpeta original '{parent_dir}' ya no existe.", "Cuarentena")
+                return
 
-                destino = quarantine.restore_item(item_id)
-                self.log(f"Restaurado en: {destino}", "Cuarentena")
-            except (KeyError, FileNotFoundError, safety.UnsafePathError) as e:
-                self.log(f"No se pudo restaurar: {e}", "Cuarentena")
-            except Exception as e:
-                self.log(f"Error inesperado al restaurar: {e}", "Cuarentena")
+            destino = quarantine.restore_item(item_id)
+            self.log(f"Restaurado en: {destino}", "Cuarentena")
 
         self.run_async(task)
 
@@ -817,10 +812,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def on_trim_process(self) -> None:
         raw = self.pid_entry.get().strip()
         if not raw:
-            messagebox.showinfo("PID vacío", "Escribí el número de PID.")
+            messagebox.showwarning("PID vacío", "Escribí el número de PID.")
             return
         if not raw.isdigit():
-            messagebox.showinfo("PID inválido", "El PID debe ser un número entero.")
+            messagebox.showerror("PID inválido", "El PID debe ser un número entero.")
             return
         
         pid = int(raw)

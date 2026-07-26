@@ -142,10 +142,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         return Path(review_dir).expanduser()
 
     dest = Path(review_dir).expanduser().resolve()
-    # Seguridad: Validar que el directorio de destino sea seguro para modificar
-    if not ensure_safe_to_modify(dest):
-        raise PermissionError(f"El directorio de destino no es seguro: {dest}")
-
+    
     try:
         dest.mkdir(parents=True, exist_ok=True)
     except OSError as e:
@@ -159,14 +156,12 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         try:
             full_source_path = jf.path.resolve()
             
-            # Verificación de robustez: existencia, tipo y permisos antes de mover
+            # Verificación de robustez: existencia, tipo y permisos
             if not full_source_path.exists() or not full_source_path.is_file():
                 continue
-            if not os.access(full_source_path, os.R_OK):
-                continue
             
-            # Impedir mover archivos fuera de los límites de seguridad definidos
-            if not ensure_safe_to_modify(full_source_path):
+            # Seguridad: Verificar que tanto origen como destino estén permitidos
+            if not ensure_safe_to_modify(full_source_path) or not ensure_safe_to_modify(dest):
                 continue
                 
             # Evitar bucles o recursión sobre la propia carpeta de destino
@@ -192,8 +187,8 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
     dest = Path(review_dir).expanduser()
-    if not dest.exists():
-        logger.info("Directorio de revisión no encontrado: %s", dest)
+    if not dest.exists() or not dest.is_dir():
+        logger.info("Directorio de revisión no encontrado o inválido: %s", dest)
         return 0
 
     count = 0

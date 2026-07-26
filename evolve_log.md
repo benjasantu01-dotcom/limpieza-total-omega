@@ -1380,3 +1380,10 @@ FAILED evolve/tests/test_modules.py::test_low_disk_produces_a_specific_recommend
 - `2026-07-26T21:45:34` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `SystemMetrics.validate` y `compute_score` asegurando que las métricas crudas se traten como valores numéricos válidos antes de procesarlas, evitando posibles errores de desbordamiento o tipos inesperados durante el cálculo de ratios.
 - `2026-07-26T21:45:34` Rotación — nada para rotar
 - `2026-07-26T21:45:34` Corrida terminada. Total usado hoy: 338.
+- `2026-07-26T21:54:35` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-07-26T21:55:17` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Se introdujo una validación robusta de tipos y valores en las entradas de usuario (`on_trim_process` y `on_restore_quarantine`) y se mejoró el manejo de errores al consolidar la validación de rutas mediante `is_path_safe` antes de intentar cualquier operación destructiva, asegurando que las entradas vacías o no válidas no disparen tareas asíncronas fallidas.
+- `2026-07-26T21:55:40` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `parse_windows_process_csv` implementando validaciones más estrictas sobre la estructura de los datos CSV y manejo de errores específico para el parsing, evitando que entradas mal formadas o valores fuera de rango afecten el resultado del reporte.
+- `2026-07-26T21:56:01` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez del manejo de archivos en `stage_for_review` y `delete_reviewed` mediante la validación estricta de rutas, comprobación de errores específicos durante el movimiento/borrado y el uso de `pathlib` de forma consistente para evitar inconsistencias entre `str` y `Path`.
+- `2026-07-26T21:56:09` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: manejo de errores y validación de entradas).
+- `2026-07-26T21:56:09` Rotación — nada para rotar
+- `2026-07-26T21:56:09` Corrida terminada. Total usado hoy: 342.

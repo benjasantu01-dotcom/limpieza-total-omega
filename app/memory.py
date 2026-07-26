@@ -133,22 +133,24 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
     """
     def _generator() -> Iterator[ProcessMemory]:
         for line in text.splitlines():
-            line = line.strip()
-            if not line: continue
+            clean_line = line.strip()
+            if not clean_line: continue
             
-            parts = [p.strip().strip('"') for p in line.split(",", 2)]
-            if len(parts) < 3: continue
+            parts = [p.strip().strip('"') for p in clean_line.split(",", 2)]
+            # Esperamos Name, Id, WorkingSet
+            if len(parts) != 3: continue
             
-            # Validar encabezado
+            # Saltar encabezado PowerShell
             if parts[0].lower() in {"name", "processname"}: continue
                 
             try:
-                # El WorkingSet suele venir en bytes como flotante o entero
-                working_set_val = int(float(parts[2]))
-                pid_val = int(parts[1])
+                name, pid_str, ws_str = parts
+                pid_val = int(pid_str)
+                # PowerShell puede devolver WorkingSet como float (ej. 1.23E+7)
+                working_set_val = int(float(ws_str))
                 
-                if working_set_val >= 0 and pid_val >= 0:
-                    yield ProcessMemory(name=parts[0], pid=pid_val, working_set=working_set_val)
+                if pid_val >= 0 and working_set_val >= 0:
+                    yield ProcessMemory(name=name, pid=pid_val, working_set=working_set_val)
             except (ValueError, TypeError, OverflowError): 
                 continue
 
