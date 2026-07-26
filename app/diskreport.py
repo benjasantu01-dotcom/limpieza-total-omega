@@ -165,7 +165,6 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
         return
     for root, subdirs, files in os.walk(base):
         root_path = Path(root)
-        # Seguridad: verificar que no hayamos escapado del base (ej. symlink malicioso)
         if not str(root_path).startswith(str(base)):
             continue
             
@@ -206,10 +205,8 @@ def largest_folders(directory: str | os.PathLike, limit: int = 10, skip_protecte
     """
     Calcula el peso acumulado de las subcarpetas directas de `directory`.
 
-    Utiliza una estrategia de agregación basada en `relative_to` para agrupar 
-    ficheros en su directorio de nivel superior inmediato. Esto evita 
-    complejidad algorítmica cuadrática y permite obtener resultados precisos 
-    solo con un pase sobre el árbol de archivos.
+    Utiliza una estrategia de agregación basada en el índice de partes para 
+    evitar el costo recursivo de Path.relative_to en cada iteración del walk.
     """
     if not directory:
         return []
@@ -222,23 +219,18 @@ def largest_folders(directory: str | os.PathLike, limit: int = 10, skip_protecte
         return []
 
     folder_map: dict[Path, FolderUsage] = {}
+    base_parts_len = len(base.parts)
     
     for path, size in walk_files(base, skip_protected):
-        try:
-            relative = path.relative_to(base)
-            if len(relative.parts) > 1:
-                top_folder = base / relative.parts[0]
-            else:
-                continue
-            
+        parts = path.parts
+        if len(parts) > base_parts_len + 1:
+            top_folder = base / parts[base_parts_len]
             if top_folder not in folder_map:
                 folder_map[top_folder] = FolderUsage(path=top_folder, size_bytes=0, file_count=0)
             
             usage = folder_map[top_folder]
             usage.size_bytes += size
             usage.file_count += 1
-        except (ValueError, OSError):
-            continue
 
     results = sorted(folder_map.values(), key=lambda f: f.size_bytes, reverse=True)
     return results[:limit]

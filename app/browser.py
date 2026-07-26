@@ -84,29 +84,25 @@ def base_directories() -> list[Path]:
 
 def directory_size(path: str | os.PathLike) -> int:
     """
-    Calcula el tamaño total de una carpeta de forma recursiva.
+    Calcula el tamaño total de una carpeta de forma iterativa.
     
     Ignora enlaces simbólicos para evitar bucles infinitos. Captura errores de
     permisos (PermissionError) silenciándolos, ya que es esperable al escanear
-    perfiles de usuario, retornando el acumulado parcial posible.
+    perfiles de usuario.
     """
     total = 0
     try:
-        path_obj = Path(path)
-        if not path_obj.is_dir():
-            return 0
-        with os.scandir(path_obj) as it:
-            for entry in it:
+        for root, dirs, files in os.walk(path):
+            # Filtrar directorios para no seguir symlinks
+            dirs[:] = [d for d in dirs if not os.path.islink(os.path.join(root, d))]
+            for f in files:
                 try:
-                    if entry.is_symlink():
-                        continue
-                    if entry.is_file():
-                        total += entry.stat().st_size
-                    elif entry.is_dir():
-                        total += directory_size(entry.path)
+                    fp = os.path.join(root, f)
+                    if not os.path.islink(fp):
+                        total += os.path.getsize(fp)
                 except (OSError, PermissionError):
                     continue
-    except (OSError, ValueError, TypeError):
+    except (OSError, PermissionError):
         return 0
     return total
 

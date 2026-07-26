@@ -535,3 +535,39 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-07-26T12:40:37` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimicé el acceso a los datos de estilo convirtiendo `SEVERITY_STYLES` y `GRADE_COLORS` a diccionarios de acceso directo e integrando la lógica de validación dentro de las funciones de consulta, eliminando llamadas innecesarias a `color()` dentro de funciones que se ejecutan frecuentemente durante el renderizado de la UI.
 - `2026-07-26T12:40:37` Rotación — nada para rotar
 - `2026-07-26T12:40:37` Corrida terminada. Total usado hoy: 126.
+- `2026-07-26T12:49:35` Arrancando corrida. Quedan hoy ~174 peticiones objetivo.
+- `2026-07-26T12:49:56` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé `directory_size` reemplazando la recursión costosa por una iteración mediante `os.walk`, lo cual mejora significativamente el rendimiento y reduce el uso de stack en estructuras de directorios profundas al evitar llamadas recursivas innecesarias.
+- `2026-07-26T12:50:18` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé `largest_folders` para evitar la creación innecesaria de objetos `Path` y cálculos de `relative_to` mediante el uso de `path.parts` directamente sobre la ruta base, reduciendo significativamente la carga de CPU durante el recorrido de grandes estructuras de archivos.
+- `2026-07-26T12:50:39` Tests FALLARON:
+```
+rotected_path(path):
+                       ^^^^^^^^^^^^^^^^^
+E       NameError: name 'is_protected_path' is not defined
+
+app/duplicates.py:78: NameError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_finds_identical_files - NameError: name 'is_protected_path' is not defined
+FAILED evolve/tests/test_modules.py::test_ignores_files_with_different_content - NameError: name 'is_protected_path' is not defined
+FAILED evolve/tests/test_modules.py::test_finds_duplicates_across_subfolders - NameError: name 'is_protected_path' is not defined
+FAILED evolve/tests/test_modules.py::test_min_size_filters_out_tiny_files - NameError: name 'is_protected_path' is not defined
+FAILED evolve/tests/test_modules.py::test_never_scans_system_folders - NameError: name 'is_protected_path' is not defined
+FAILED evolve/tests/test_modules.py::test_group_by_size_separates_by_exact_size - assert [2] == [1, 2]
+  
+  At index 0 diff: 2 != 1
+  Right contains one more item: 2
+  
+  Full diff:
+    [
+  -     1,
+        2,
+    ]
+FAILED evolve/tests/test_modules.py::test_hash_of_identical_content_matches - NameError: name 'is_protected_path' is not defined
+FAILED evolve/tests/test_modules.py::test_hash_of_missing_file_returns_none - NameError: name 'is_protected_path' is not defined
+FAILED evolve/tests/test_modules.py::test_partial_hash_only_reads_the_beginning - NameError: name 'is_protected_path' is not defined
+9 failed, 188 passed in 0.48s
+
+```
+- `2026-07-26T12:50:39` ❌ Mejora descartada en duplicates.py (no pasó los tests), se revirtió. Intento: Optimicé `group_by_size` para evitar una doble llamada a `Path.stat()` al procesar los archivos, eliminando el re-mapeo redundante de listas y mejorando la eficiencia del bucle principal al trabajar directamente sobre los objetos recolectados.
+- `2026-07-26T12:50:47` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del `breakdown` en `compute_score` eliminando la creación innecesaria del diccionario `ratios` y aplicando el peso directamente, reduciendo el consumo de memoria y la complejidad de iteración.
+- `2026-07-26T12:50:47` Rotación — nada para rotar
+- `2026-07-26T12:50:47` Corrida terminada. Total usado hoy: 130.
