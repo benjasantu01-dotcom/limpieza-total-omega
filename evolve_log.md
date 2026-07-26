@@ -482,3 +482,14 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-07-26T11:32:11` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-07-26T11:32:11` Rotación — nada para rotar
 - `2026-07-26T11:32:11` Corrida terminada. Total usado hoy: 98.
+- `2026-07-26T11:38:12` Arrancando corrida. Quedan hoy ~202 peticiones objetivo.
+- `2026-07-26T11:38:14` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-07-26T11:38:14` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-07-26T11:38:34` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-07-26T11:38:34` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-07-26T11:39:04` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-07-26T11:39:39` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save_logo_svg` y `draw_logo` validando parámetros y agregando manejo de excepciones específico (como `AttributeError` en el canvas o `ValueError` en rutas), asegurando que el sistema no falle ante entradas inesperadas sin sacrificar la funcionalidad actual.
+- `2026-07-26T11:39:59` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Se mejoró la robustez de `directory_size` y `detect_profiles` añadiendo validaciones de tipo y capturas de excepciones específicas para manejar correctamente rutas inexistentes, valores `None` inesperados y errores de acceso al sistema de archivos, asegurando que el módulo no falle ante entradas malformadas.
+- `2026-07-26T11:40:06` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `largest_folders` agregando un manejo de excepciones más granular durante el procesamiento del árbol de archivos y validando la integridad de los resultados antes de la ordenación, evitando que errores silenciosos en la acumulación de datos afecten el reporte final.
+- `2026-07-26T11:40:06` Rotación — nada para rotar
+- `2026-07-26T11:40:06` Corrida terminada. Total usado hoy: 102.

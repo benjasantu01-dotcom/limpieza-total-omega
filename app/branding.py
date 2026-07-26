@@ -133,7 +133,9 @@ def logo_svg(size: int = 128) -> str:
 
 
 def save_logo_svg(destination: str | Path) -> Path | None:
-    """Guarda el logo SVG en disco, capturando errores de IO y validando seguridad."""
+    """Guarda el logo SVG en disco, validando seguridad y rutas."""
+    if not destination:
+        return None
     try:
         path = Path(destination).expanduser().resolve()
         if not ensure_safe_to_modify(path):
@@ -141,7 +143,7 @@ def save_logo_svg(destination: str | Path) -> Path | None:
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(logo_svg(), encoding="utf-8")
         return path
-    except (OSError, PermissionError, TypeError):
+    except (OSError, PermissionError, TypeError, RuntimeError):
         return None
 
 
@@ -158,22 +160,28 @@ def logo_ascii() -> str:
 
 
 def draw_logo(canvas: Any, size: int = 56, x: int = 0, y: int = 0) -> None:
-    """Dibuja el logo sobre un canvas de Tkinter ya existente."""
+    """Dibuja el logo sobre un canvas de Tkinter, validando el objeto canvas."""
+    if not hasattr(canvas, "create_polygon"):
+        return
+
     s = size / 128
 
     def pts(*coords: float) -> list[float]:
         return [x + c * s if i % 2 == 0 else y + c * s for i, c in enumerate(coords)]
 
-    canvas.create_polygon(
-        pts(64, 20, 98, 32, 98, 66, 88, 88, 64, 108, 40, 88, 30, 66, 30, 32),
-        fill=color("accent"), outline="",
-    )
-    canvas.create_line(
-        *pts(42, 74, 74, 42), fill=color("text"),
-        width=max(2, int(7 * s)), capstyle="round",
-    )
-    canvas.create_polygon(pts(74, 42, 87, 39, 90, 52), fill=color("text"), outline="")
-    canvas.create_text(
-        *pts(64, 94), text="\u03a9", fill=color("text"),
-        font=("Segoe UI", max(8, int(21 * s)), "bold"),
-    )
+    try:
+        canvas.create_polygon(
+            pts(64, 20, 98, 32, 98, 66, 88, 88, 64, 108, 40, 88, 30, 66, 30, 32),
+            fill=color("accent"), outline="",
+        )
+        canvas.create_line(
+            *pts(42, 74, 74, 42), fill=color("text"),
+            width=max(2, int(7 * s)), capstyle="round",
+        )
+        canvas.create_polygon(pts(74, 42, 87, 39, 90, 52), fill=color("text"), outline="")
+        canvas.create_text(
+            *pts(64, 94), text="\u03a9", fill=color("text"),
+            font=("Segoe UI", max(8, int(21 * s)), "bold"),
+        )
+    except (ValueError, TypeError, AttributeError):
+        pass

@@ -82,12 +82,16 @@ def base_directories() -> list[Path]:
 
 def directory_size(path: str | os.PathLike) -> int:
     """Tamaño total de una carpeta usando os.scandir para mayor rendimiento."""
+    if not path:
+        return 0
     total = 0
     try:
-        with os.scandir(path) as it:
+        path_obj = Path(path)
+        if not path_obj.is_dir():
+            return 0
+        with os.scandir(path_obj) as it:
             for entry in it:
                 try:
-                    # No seguir enlaces simbólicos ni puntos de reparse para evitar bucles
                     if entry.is_symlink():
                         continue
                     if entry.is_file():
@@ -102,11 +106,7 @@ def directory_size(path: str | os.PathLike) -> int:
 
 
 def detect_profiles(bases=None, cache_paths=None) -> list[BrowserCache]:
-    """Detecta cachés de navegador existentes y mide su tamaño.
-
-    `bases` y `cache_paths` se pueden inyectar para testear con una
-    estructura de carpetas simulada, sin navegadores instalados.
-    """
+    """Detecta cachés de navegador existentes y mide su tamaño."""
     if bases is None:
         bases = base_directories()
     if cache_paths is None:
@@ -117,30 +117,33 @@ def detect_profiles(bases=None, cache_paths=None) -> list[BrowserCache]:
         return []
 
     for base in bases:
-        if not isinstance(base, (str, Path)):
+        if not base or not isinstance(base, (str, Path)):
             continue
         
-        base_path = Path(base).resolve()
-        for browser, relative in cache_paths.items():
-            # Se normaliza el separador para que las rutas con "\" también
-            # funcionen cuando los tests corren en Linux.
-            try:
-                candidate = base_path.joinpath(*str(relative).replace("\\", "/").split("/")).resolve()
+        try:
+            base_path = Path(base).resolve()
+            if not base_path.is_dir():
+                continue
+            
+            for browser, relative in cache_paths.items():
+                if not isinstance(relative, str):
+                    continue
+
+                candidate = base_path.joinpath(*relative.replace("\\", "/").split("/")).resolve()
                 
-                # Validación de seguridad defensiva: el candidato debe estar contenido en base_path
                 if not str(candidate).startswith(str(base_path)):
                     continue
                 
                 if candidate.name.lower() in NEVER_TOUCH:
-                    continue  # nunca reportar carpetas de datos del usuario
+                    continue
                 if candidate.is_dir():
                     found.append(BrowserCache(
                         browser=browser,
                         path=candidate,
                         size_bytes=directory_size(candidate),
                     ))
-            except (OSError, ValueError, TypeError):
-                continue
+        except (OSError, RuntimeError):
+            continue
                 
     found.sort(key=lambda c: c.size_bytes, reverse=True)
     return found
@@ -150,16 +153,14 @@ def total_cache_bytes(caches=None) -> int:
     """Suma el tamaño de todas las cachés detectadas."""
     if caches is None:
         caches = detect_profiles()
-    return sum(cache.size_bytes for cache in caches) if caches else 0
+    return sum(cache.size_bytes for cache in caches) if isinstance(caches, list) else 0
 
 
 def summarize(caches=None) -> list[str]:
     """Resumen legible de las cachés de navegador encontradas."""
-    if caches is None:
-        caches = detect_profiles()
+    current_caches = caches if caches is not None else detect_profiles()
     
-    current_caches = list(caches) if caches is not None else []
-    if not current_caches:
+    if not current_caches or not isinstance(current_caches, list):
         return ["No se detectaron cachés de navegador en este sistema."]
         
     total_mb = round(total_cache_bytes(current_caches) / (1024 * 1024), 2)
