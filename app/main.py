@@ -573,16 +573,21 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
         def task():
             self.set_status("Moviendo a revisión...")
-            seguros = safety.filter_safe_paths([jf.path for jf in self.junk_files])
-            permitidos = {str(p) for p in seguros}
-            descartados = len(self.junk_files) - len(permitidos)
-            aptos = [jf for jf in self.junk_files if str(jf.path.resolve()) in permitidos
-                     or str(jf.path) in permitidos]
-            if descartados:
-                self.log(f"{descartados} archivo(s) se omitieron por estar en rutas protegidas.",
-                         "Limpieza")
-            dest = stage_for_review(aptos)
-            self.log(f"Movidos {len(aptos)} archivos a: {dest}", "Limpieza")
+            # Filtro adicional de seguridad: re-validar que no sean rutas protegidas antes de mover
+            valid_files = []
+            for jf in self.junk_files:
+                path_str = str(jf.path.resolve())
+                if not safety.is_protected_path(path_str):
+                    valid_files.append(jf)
+                else:
+                    self.log(f"Omitido por protección: {path_str}", "Limpieza")
+            
+            if not valid_files:
+                self.log("Ningún archivo es apto para moverse.", "Limpieza")
+                return
+
+            dest = stage_for_review(valid_files)
+            self.log(f"Movidos {len(valid_files)} archivos a: {dest}", "Limpieza")
             self.junk_files = []
 
         self.run_async(task)

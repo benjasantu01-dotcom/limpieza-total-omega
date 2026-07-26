@@ -183,8 +183,9 @@ def restore_item(item_id: str, base: str | Path = DEFAULT_QUARANTINE_DIR) -> Pat
         raise KeyError(f"No hay ningún elemento en cuarentena con id '{item_id}'.")
 
     stored = quarantine_dir(base) / match.stored_name
-    if not stored.exists():
-        raise FileNotFoundError(f"El archivo en cuarentena ya no está: {stored}")
+    # Validación de seguridad defensiva: el archivo debe existir y no ser un link simbólico
+    if not stored.is_file() or stored.is_symlink():
+        raise FileNotFoundError(f"El archivo en cuarentena es inválido o fue manipulado: {stored}")
 
     destination = normalize(match.original_path)
     if destination.exists():

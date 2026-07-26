@@ -5,18 +5,18 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **57**
-- Mejoras aceptadas: **45** (78.9% de aceptación)
+- Iteraciones totales: **61**
+- Mejoras aceptadas: **48** (78.7% de aceptación)
 - Rechazadas por tests: 5
 - Rechazadas por guardia de seguridad: 4
 - Sin cambios (nada sustancial que mejorar): 1
-- Sin respuesta de la IA (error o límite): 2
+- Sin respuesta de la IA (error o límite): 3
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-26 | 45 | 5 | 4 | 1 | 2 |
+| 2026-07-26 | 48 | 5 | 4 | 1 | 3 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -24,25 +24,28 @@ Este archivo se regenera solo en cada corrida a partir de
 - legibilidad y documentación: **11**
 - robustez ante casos límite: **10**
 - rendimiento: **8**
-- seguridad defensiva: **5**
+- seguridad defensiva: **8**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **5**
+- `organizer.py`: **5**
 - `browser.py`: **4**
 - `diskreport.py`: **4**
 - `duplicates.py`: **4**
-- `organizer.py`: **4**
+- `main.py`: **4**
+- `quarantine.py`: **4**
 - `safety.py`: **4**
 - `startup.py`: **4**
 - `branding.py`: **4**
-- `main.py`: **3**
 - `memory.py`: **3**
-- `quarantine.py`: **3**
 - `scanner.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-26T10:48:54` **quarantine.py** (seguridad defensiva): Se implementó un mecanismo de verificación de integridad en la función `restore_item` para asegurar que el archivo a restaurar no haya sido alterado o reemplazado por un enlace simbólico, previniendo así posibles ataques de "Time-of-check to time-of-use" (TOCTOU) antes de realizar el movimiento físico.
+- `2026-07-26T10:48:46` **organizer.py** (seguridad defensiva): Se ha añadido una validación de seguridad en `stage_for_review` para impedir que archivos fuera de la jerarquía de directorios permitida o archivos que apunten a rutas críticas sean movidos, previniendo así posibles ataques de escalada de privilegios o daños accidentales al sistema.
+- `2026-07-26T10:48:03` **main.py** (seguridad defensiva): Se implementó una validación de seguridad adicional en `on_stage` para asegurar que las rutas candidatas a moverse a revisión sigan siendo seguras (no estén protegidas) justo antes de iniciar la operación, y se añadió la normalización de rutas mediante `resolve()` para prevenir ataques de bypass por rutas relativas o aliases.
 - `2026-07-26T10:38:20` **healthscore.py** (seguridad defensiva): Se introdujo una validación defensiva estricta en `score_memory` y `score_disk` para prevenir condiciones de borde (como valores de porcentaje negativos o desbordados) que podrían corromper la lógica de cálculo del puntaje, asegurando que las métricas de entrada se mantengan siempre dentro de límites coherentes antes de procesar el puntaje.
 - `2026-07-26T10:38:13` **duplicates.py** (seguridad defensiva): He mejorado la seguridad defensiva incorporando `is_protected_path` en las funciones de acceso a archivos (`hash_file`, `partial_hash` y `group_by_size`) para garantizar que el módulo no procese accidentalmente archivos protegidos, incluso si son invocadas externamente sin validación previa.
 - `2026-07-26T10:37:52` **diskreport.py** (seguridad defensiva): He mejorado `walk_files` y `largest_folders` para incluir una validación estricta de que cualquier ruta procesada sea un subdirectorio real de la base (`is_relative_to`), evitando ataques de "path traversal" o seguimientos no deseados si `is_protected_path` fallara por un error de resolución de rutas.
@@ -55,6 +58,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-26T10:17:11` **organizer.py** (robustez ante casos límite): He mejorado la robustez de `stage_for_review` añadiendo una verificación de colisiones para evitar sobrescrituras accidentales en el destino, y asegurando que las rutas de origen sean absolutas para prevenir errores ante cambios inesperados en el directorio de trabajo del proceso.
 - `2026-07-26T10:05:19` **main.py** (robustez ante casos límite): Se ha mejorado la robustez de `main.py` ante errores de concurrencia y limpieza de recursos, implementando un mecanismo de bandera de estado (`self.is_running`) que evita que el usuario lance tareas asíncronas múltiples de forma simultánea, lo cual podría corromper el estado interno de la aplicación o saturar el hilo principal.
 - `2026-07-26T10:04:54` **healthscore.py** (robustez ante casos límite): Introduje validación defensiva en `compute_score` y funciones auxiliares para manejar casos de `None` o valores numéricos infinitos/NaN que podrían romper el cálculo de métricas o el redondeo de los resultados.
-- `2026-07-26T10:04:32` **duplicates.py** (robustez ante casos límite): Se ha añadido un chequeo de existencia previo al cálculo de `st_size` y `st_mtime` dentro de `suggest_keeper` y `group_by_size`, previniendo errores por condiciones de carrera (Race Conditions) donde el archivo podría ser eliminado o bloqueado por otro proceso entre la recolección inicial y el procesamiento.
-- `2026-07-26T09:54:01` **browser.py** (robustez ante casos límite): Se ha robustecido la función `directory_size` para manejar casos límite como puntos de reparse (symlinks, junctions) y accesos denegados mediante la validación explícita de `is_symlink` y la gestión de excepciones en `entry.stat()`, garantizando que el escaneo sea seguro y no entre en bucles infinitos o falle ante rutas protegidas.
-- `2026-07-26T09:53:56` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` y `severity_color` manejando explícitamente rutas inválidas/permisos denegados (usando `try/except`) y entradas malformadas, evitando que la aplicación falle al intentar escribir en directorios bloqueados o al recibir parámetros inesperados.

@@ -399,3 +399,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-07-26T10:38:20` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se introdujo una validación defensiva estricta en `score_memory` y `score_disk` para prevenir condiciones de borde (como valores de porcentaje negativos o desbordados) que podrían corromper la lógica de cálculo del puntaje, asegurando que las métricas de entrada se mantengan siempre dentro de límites coherentes antes de procesar el puntaje.
 - `2026-07-26T10:38:20` Rotación — nada para rotar
 - `2026-07-26T10:38:20` Corrida terminada. Total usado hoy: 78.
+- `2026-07-26T10:47:20` Arrancando corrida. Quedan hoy ~222 peticiones objetivo.
+- `2026-07-26T10:48:03` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Se implementó una validación de seguridad adicional en `on_stage` para asegurar que las rutas candidatas a moverse a revisión sigan siendo seguras (no estén protegidas) justo antes de iniciar la operación, y se añadió la normalización de rutas mediante `resolve()` para prevenir ataques de bypass por rutas relativas o aliases.
+- `2026-07-26T10:48:25` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
+- `2026-07-26T10:48:46` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se ha añadido una validación de seguridad en `stage_for_review` para impedir que archivos fuera de la jerarquía de directorios permitida o archivos que apunten a rutas críticas sean movidos, previniendo así posibles ataques de escalada de privilegios o daños accidentales al sistema.
+- `2026-07-26T10:48:54` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se implementó un mecanismo de verificación de integridad en la función `restore_item` para asegurar que el archivo a restaurar no haya sido alterado o reemplazado por un enlace simbólico, previniendo así posibles ataques de "Time-of-check to time-of-use" (TOCTOU) antes de realizar el movimiento físico.
+- `2026-07-26T10:48:54` Rotación — nada para rotar
+- `2026-07-26T10:48:54` Corrida terminada. Total usado hoy: 82.

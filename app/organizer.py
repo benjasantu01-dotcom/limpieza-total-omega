@@ -133,7 +133,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         logger.warning("La lista de archivos a organizar está vacía.")
         return Path(review_dir).expanduser()
 
-    dest = Path(review_dir).expanduser()
+    dest = Path(review_dir).expanduser().resolve()
     try:
         dest.mkdir(parents=True, exist_ok=True)
     except OSError as e:
@@ -142,6 +142,17 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 
     for jf in files:
         if jf is None or not isinstance(jf.path, Path) or not jf.path.exists():
+            continue
+
+        # Seguridad: Evitar mover archivos fuera de los límites esperados (Directory Traversal)
+        try:
+            full_source_path = jf.path.resolve()
+        except OSError:
+            continue
+
+        # Validación básica: no mover archivos de sistema o si la ruta es sospechosa
+        if any(part.lower() in SYSTEM_FOLDER_BLOCKLIST for part in full_source_path.parts):
+            logger.warning("Intento de mover archivo en ruta protegida: %s", full_source_path)
             continue
 
         base_name = jf.path.stem
@@ -157,7 +168,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             counter += 1
 
         try:
-            shutil.move(str(jf.path), str(target))
+            shutil.move(str(full_source_path), str(target))
         except (PermissionError, FileNotFoundError, shutil.Error, OSError) as e:
             logger.error("Error moviendo archivo %s hacia %s: %s", jf.path, target, e)
             continue
