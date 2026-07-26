@@ -85,7 +85,9 @@ def color(name: str) -> HexColor:
     Returns:
         Hexadecimal de color si existe, o un gris neutro de respaldo.
     """
-    return PALETTE.get(name, "#808080")
+    if isinstance(name, str) and name in PALETTE:
+        return PALETTE[name]
+    return "#808080"
 
 
 @lru_cache(maxsize=16)
@@ -98,7 +100,9 @@ def font_size(name: str) -> int:
     Returns:
         Valor entero en puntos, o tamaño de 'body' si la clave no se encuentra.
     """
-    return FONT_SIZES.get(name, FONT_SIZES["body"])
+    if isinstance(name, str) and name in FONT_SIZES:
+        return FONT_SIZES[name]
+    return FONT_SIZES["body"]
 
 
 def severity_color(severity: str | None) -> HexColor:
