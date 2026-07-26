@@ -1121,3 +1121,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-07-26T19:01:07` ✅ Mejora aceptada en main.py (enfoque: legibilidad y documentación). Mejoré la documentación interna del módulo `main.py` añadiendo docstrings descriptivos a los métodos que gestionan la lógica asíncrona (`run_async`) y la interacción con archivos (`_is_path_safe`, `_confirm`, `_ask_folder`), clarificando su responsabilidad dentro del ciclo de vida de la aplicación.
 - `2026-07-26T19:01:07` Rotación — nada para rotar
 - `2026-07-26T19:01:07` Corrida terminada. Total usado hoy: 274.
+- `2026-07-26T19:09:35` Arrancando corrida. Quedan hoy ~26 peticiones objetivo.
+- `2026-07-26T19:10:00` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). He mejorado la documentación de la función `parse_windows_process_csv` mediante una cadena de formato (docstring) más técnica y descriptiva que clarifica por qué se utiliza el parser de CSV en lugar de herramientas de más alto nivel, y he añadido type hints explícitos para mayor robustez, asegurando que la intención del código sea clara para futuros colaboradores.
+- `2026-07-26T19:10:20` ✅ Mejora aceptada en organizer.py (enfoque: legibilidad y documentación). Se introdujeron type hints más precisos y docstrings explicativos en `scan_for_junk` y `stage_for_review` para aclarar la lógica de manejo de rutas y la intención detrás de los filtros de seguridad, mejorando la legibilidad del flujo de datos.
+- `2026-07-26T19:10:44` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Mejora de la legibilidad y mantenimiento mediante la adición de docstrings técnicos detallados y type hinting explícito, clarificando las precondiciones y el flujo de estados en las funciones críticas de `quarantine.py`.
+- `2026-07-26T19:10:48` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
+- `2026-07-26T19:10:48` Rotación — nada para rotar
+- `2026-07-26T19:10:48` Corrida terminada. Total usado hoy: 278.

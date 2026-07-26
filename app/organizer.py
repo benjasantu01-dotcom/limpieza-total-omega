@@ -67,7 +67,10 @@ class JunkFile:
 
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     """
-    Recorre las carpetas indicadas buscando archivos cuya extensión coincida con JUNK_EXTENSIONS.
+    Recorre jerárquicamente las rutas proporcionadas en busca de archivos basura.
+    
+    Aplica filtros de seguridad para ignorar carpetas críticas (blocklist)
+    y verificar la integridad de la ruta mediante ensure_safe_to_modify.
     """
     if directories is not None and not isinstance(directories, list):
         logger.error("El parámetro directories debe ser una lista.")
@@ -89,7 +92,7 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
                         elif entry.is_file(follow_symlinks=False):
                             if Path(entry.name).suffix.lower() in junk_set:
                                 full_path = Path(entry.path).resolve()
-                                # Seguridad: Solo añadir si es una ruta segura para manipular
+                                # Seguridad: Solo añadir si la ruta pasa el filtro de app/safety.py
                                 if ensure_safe_to_modify(full_path):
                                     stat = entry.stat()
                                     found.append(
@@ -129,6 +132,11 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 
 
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Path:
+    """
+    Mueve los archivos detectados a una ubicación de cuarentena para su validación manual.
+    
+    Evita colisiones de nombres añadiendo un timestamp y un contador secuencial.
+    """
     if not files or not isinstance(files, list):
         logger.warning("La lista de archivos a organizar está vacía o es inválida.")
         return Path(review_dir).expanduser()
@@ -141,7 +149,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         raise
 
     for jf in files:
-        if not isinstance(jf, JunkFile) or not hasattr(jf, 'path') or not jf.path:
+        if not isinstance(jf, JunkFile) or not jf.path:
             continue
             
         try:
@@ -149,9 +157,11 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             if not full_source_path.exists() or not full_source_path.is_file():
                 continue
             
+            # Impedir mover archivos fuera de los límites de seguridad definidos
             if not ensure_safe_to_modify(full_source_path):
                 continue
                 
+            # Evitar bucles o recursión sobre la propia carpeta de destino
             if dest in full_source_path.parents or full_source_path.parent == dest:
                 continue
 
@@ -182,7 +192,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     for f in dest.iterdir():
         try:
             if f.is_file():
-                # Validación de seguridad antes de borrar
+                # Validación de seguridad antes de ejecutar el borrado real
                 if ensure_safe_to_modify(f):
                     f.unlink()
                     count += 1

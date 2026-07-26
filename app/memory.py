@@ -129,8 +129,12 @@ def parse_linux_meminfo(text: str) -> MemorySnapshot:
 
 def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]:
     """
-    Parsea salida CSV cruda de PowerShell (Name,Id,WorkingSet).
-    Maneja comas en nombres de procesos mediante división limitada.
+    Parsea la salida de texto plano estructurada como CSV proveniente de PowerShell.
+    
+    Técnica: Dado que PowerShell puede incluir comas en el nombre de los procesos 
+    si no se invocan parámetros complejos, esta función divide la línea por comas
+    limitando el resultado a 3 columnas (Name, Id, WorkingSet) y limpia el 
+    enmarcado de comillas extraído por el formato CSV nativo de Windows.
     """
     if not text:
         return []
@@ -143,18 +147,20 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
             continue
         
         # PowerShell CSV escapa comillas con "" y encierra valores en ""
-        parts = [p.strip().strip('"') for p in line.split(",", 2)]
+        parts: List[str] = [p.strip().strip('"') for p in line.split(",", 2)]
         if len(parts) < 3 or not all(parts):
             continue
         
-        name, raw_pid, raw_ws = parts[0], parts[1], parts[2]
+        name: str = parts[0]
+        raw_pid: str = parts[1]
+        raw_ws: str = parts[2]
         
         if name.lower() in {"name", "processname"}:
             continue
             
         try:
-            pid = int(raw_pid)
-            working_set = int(float(raw_ws))
+            pid: int = int(raw_pid)
+            working_set: int = int(float(raw_ws))
             
             if pid < 0 or working_set < 0:
                 continue
