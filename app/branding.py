@@ -28,8 +28,7 @@ APP_SHORT_NAME: Final = "Omega"
 APP_TAGLINE: Final = "Limpieza y seguridad, en un solo lugar"
 APP_VERSION: Final = "2.0.0"
 
-# Paleta oscura con acento cian. Las claves describen el USO, no el color,
-# así se puede cambiar la paleta entera sin renombrar nada en la interfaz.
+# Paleta oscura con acento cian.
 PALETTE: dict[str, HexColor] = {
     "background": "#0f1419",
     "surface": "#1a2028",
@@ -53,17 +52,15 @@ FONT_SIZES: dict[str, int] = {
     "caption": 10,
 }
 
-# Severidad -> (color, etiqueta legible). Lo usan todos los módulos que
-# reportan hallazgos, para que la interfaz los pinte de forma uniforme.
-SEVERITY_STYLES: dict[str, SeverityTuple] = {
+# Diccionarios de mapeo directo para evitar lógica repetitiva y búsquedas extra
+SEVERITY_STYLES: Final[dict[str, SeverityTuple]] = {
     "ok": ("#00d4aa", "Correcto"),
     "info": ("#58a6ff", "Informativo"),
     "warning": ("#f5a623", "Advertencia"),
     "danger": ("#e5484d", "Peligro"),
 }
 
-# Grado de salud -> color, para el panel que combina todos los módulos.
-GRADE_COLORS: dict[str, HexColor] = {
+GRADE_COLORS: Final[dict[str, HexColor]] = {
     "A": "#00d4aa",
     "B": "#58a6ff",
     "C": "#f5a623",
@@ -77,67 +74,62 @@ def app_title() -> str:
     return f"{APP_NAME} v{APP_VERSION}"
 
 
-@lru_cache(maxsize=8)
+@lru_cache(maxsize=16)
 def color(name: str) -> HexColor:
     """Obtiene un color de la paleta. Si el nombre no existe, devuelve gris neutro."""
     return PALETTE.get(name, "#808080")
 
 
-@lru_cache(maxsize=8)
+@lru_cache(maxsize=16)
 def font_size(name: str) -> int:
     """Tamaño de la escala tipográfica, con respaldo al tamaño de cuerpo."""
     return FONT_SIZES.get(name, FONT_SIZES["body"])
 
 
 def severity_color(severity: str | None) -> HexColor:
-    """Retorna el color asignado a una severidad. Si es nulo o inválido, usa color de texto silenciado."""
-    if severity is None:
-        return color("text_muted")
-    style = SEVERITY_STYLES.get(str(severity).lower())
-    return style[0] if style else color("text_muted")
+    """Retorna el color asignado a una severidad."""
+    if severity and (style := SEVERITY_STYLES.get(severity.lower())):
+        return style[0]
+    return PALETTE["text_muted"]
 
 
 def severity_label(severity: str | None) -> str:
-    """Retorna la etiqueta legible para una severidad. Si es nulo, retorna 'Desconocido'."""
-    if severity is None:
-        return "Desconocido"
-    style = SEVERITY_STYLES.get(str(severity).lower())
-    return style[1] if style else str(severity).upper()
+    """Retorna la etiqueta legible para una severidad."""
+    if severity and (style := SEVERITY_STYLES.get(severity.lower())):
+        return style[1]
+    return str(severity).upper() if severity else "Desconocido"
 
 
 def grade_color(grade: str | None) -> HexColor:
     """Retorna el color para una letra de grado de salud (A-F)."""
-    if not grade:
-        return color("text_muted")
-    return GRADE_COLORS.get(str(grade).upper()[:1], color("text_muted"))
+    if grade and (c := GRADE_COLORS.get(grade.upper()[:1])):
+        return c
+    return PALETTE["text_muted"]
 
 
 @lru_cache(maxsize=4)
 def logo_svg(size: int = 128) -> str:
-    """Genera el logo como string SVG. Utiliza los colores definidos en PALETTE."""
-    accent = PALETTE["accent"]
-    surface = PALETTE["surface"]
-    text = PALETTE["text"]
+    """Genera el logo como string SVG."""
     return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{size}" height="{size}" viewBox="0 0 128 128">
   <defs>
     <linearGradient id="omegaShield" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="{accent}"/>
+      <stop offset="0%" stop-color="{PALETTE['accent']}"/>
       <stop offset="100%" stop-color="#0891b2"/>
     </linearGradient>
   </defs>
-  <rect width="128" height="128" rx="28" fill="{surface}"/>
+  <rect width="128" height="128" rx="28" fill="{PALETTE['surface']}"/>
   <path d="M64 20 L98 32 V66 C98 88 82 102 64 108 C46 102 30 88 30 66 V32 Z"
         fill="url(#omegaShield)"/>
-  <path d="M42 74 L74 42" stroke="{text}" stroke-width="7" stroke-linecap="round"/>
-  <path d="M74 42 L87 39 L90 52 Z" fill="{text}"/>
+  <path d="M42 74 L74 42" stroke="{PALETTE['text']}" stroke-width="7" stroke-linecap="round"/>
+  <path d="M74 42 L87 39 L90 52 Z" fill="{PALETTE['text']}"/>
   <text x="64" y="96" font-family="Segoe UI, Arial, sans-serif" font-size="24"
-        font-weight="bold" fill="{text}" text-anchor="middle">&#937;</text>
+        font-weight="bold" fill="{PALETTE['text']}" text-anchor="middle">&#937;</text>
 </svg>
 """
 
 
 def save_logo_svg(destination: str | Path) -> Path | None:
-    """Guarda el logo SVG en disco, validando permisos mediante `safety.ensure_safe_to_modify`."""
+    """Guarda el logo SVG en disco, validando permisos."""
     if not destination:
         return None
     try:
@@ -164,30 +156,26 @@ def logo_ascii() -> str:
 
 
 def draw_logo(canvas: Any, size: int = 56, x: int = 0, y: int = 0) -> None:
-    """
-    Dibuja el logo en un widget de tipo tkinter.Canvas.
-    Calcula dinámicamente las coordenadas basadas en el parámetro `size` (escala 128x128 base).
-    """
+    """Dibuja el logo en un widget de tipo tkinter.Canvas."""
     if not hasattr(canvas, "create_polygon"):
         return
 
     s = size / 128
-
     def pts(*coords: float) -> list[float]:
         return [x + c * s if i % 2 == 0 else y + c * s for i, c in enumerate(coords)]
 
     try:
         canvas.create_polygon(
             pts(64, 20, 98, 32, 98, 66, 88, 88, 64, 108, 40, 88, 30, 66, 30, 32),
-            fill=color("accent"), outline="",
+            fill=PALETTE["accent"], outline="",
         )
         canvas.create_line(
-            *pts(42, 74, 74, 42), fill=color("text"),
+            *pts(42, 74, 74, 42), fill=PALETTE["text"],
             width=max(2, int(7 * s)), capstyle="round",
         )
-        canvas.create_polygon(pts(74, 42, 87, 39, 90, 52), fill=color("text"), outline="")
+        canvas.create_polygon(pts(74, 42, 87, 39, 90, 52), fill=PALETTE["text"], outline="")
         canvas.create_text(
-            *pts(64, 94), text="\u03a9", fill=color("text"),
+            *pts(64, 94), text="\u03a9", fill=PALETTE["text"],
             font=("Segoe UI", max(8, int(21 * s)), "bold"),
         )
     except (ValueError, TypeError, AttributeError):

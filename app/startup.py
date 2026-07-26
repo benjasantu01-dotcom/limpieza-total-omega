@@ -20,7 +20,7 @@ import os
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, Optional, Iterator
+from typing import Iterable, Optional, Iterator, List
 
 __all__ = [
     "StartupEntry",
@@ -76,7 +76,7 @@ class StartupEntry:
         return cmd.split(" ")[0] if cmd else ""
 
 
-def startup_folders() -> list[Path]:
+def startup_folders() -> List[Path]:
     """Carpetas 'Inicio' existentes: la del usuario y la de todos los usuarios."""
     if os.name != "nt":
         return []
@@ -90,7 +90,7 @@ def startup_folders() -> list[Path]:
     return [c for c in candidates if c.is_dir()]
 
 
-def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> list[StartupEntry]:
+def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> List[StartupEntry]:
     """Escanea las carpetas de inicio en busca de accesos directos (.lnk).
 
     Args:
@@ -100,32 +100,35 @@ def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> list[Start
     """
     if folders is None:
         folders = startup_folders()
-    entries: list[StartupEntry] = []
+    found_entries: List[StartupEntry] = []
     for folder in folders:
-        base = Path(folder).resolve()
-        if not base.is_dir():
+        base_path = Path(folder).resolve()
+        if not base_path.is_dir():
             continue
         try:
-            children = sorted(base.iterdir())
+            items = sorted(base_path.iterdir())
         except (OSError, PermissionError):
             continue
-        for item in children:
+        for item in items:
             if item.is_file() and item.name.lower() != "desktop.ini":
                 # Validación de seguridad: el ítem DEBE residir físicamente en 'base'
-                if base in item.resolve().parents:
-                    entries.append(StartupEntry(name=item.stem, command=str(item), source="carpeta"))
-    return entries
+                if base_path in item.resolve().parents:
+                    found_entries.append(StartupEntry(name=item.stem, command=str(item), source="carpeta"))
+    return found_entries
 
 
-def parse_registry_csv(text: str, source: str = "registro") -> list[StartupEntry]:
+def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry]:
     """Interpreta la salida CSV de PowerShell con las claves Run.
 
-    Formato esperado: Name,Value (con encabezado). Se ignoran las entradas
-    internas de PowerShell (PS*) porque no son programas de arranque.
+    Args:
+        text: Salida cruda del comando 'ConvertTo-Csv' de PowerShell.
+        source: Identificador del origen (usualmente la ruta de la clave).
+
+    Formato esperado: Name,Value. Se ignoran entradas internas de PowerShell (PS*).
     """
-    entries: list[StartupEntry] = []
+    parsed_entries: List[StartupEntry] = []
     if not text:
-        return entries
+        return parsed_entries
         
     for line in text.splitlines():
         line = line.strip()
@@ -142,15 +145,15 @@ def parse_registry_csv(text: str, source: str = "registro") -> list[StartupEntry
         
         if not name or name.lower() == "name" or name.startswith("PS"):
             continue
-        entries.append(StartupEntry(name=name, command=value, source=source))
-    return entries
+        parsed_entries.append(StartupEntry(name=name, command=value, source=source))
+    return parsed_entries
 
 
-def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> list[StartupEntry]:
+def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[StartupEntry]:
     """Lee las claves Run del registro. Solo lectura, vía PowerShell."""
     if os.name != "nt":
         return []
-    entries: list[StartupEntry] = []
+    all_entries: List[StartupEntry] = []
     for key in keys:
         command = (
             f"if (Test-Path '{key}') {{ (Get-Item '{key}').Property | ForEach-Object "
@@ -163,27 +166,27 @@ def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> list[Start
                 capture_output=True, text=True, timeout=30,
             )
             if result.returncode == 0 and result.stdout:
-                entries.extend(parse_registry_csv(result.stdout, source=key))
+                all_entries.extend(parse_registry_csv(result.stdout, source=key))
         except (OSError, subprocess.SubprocessError):
             continue
-    return entries
+    return all_entries
 
 
-def list_startup_entries() -> list[StartupEntry]:
+def list_startup_entries() -> List[StartupEntry]:
     """Todos los programas de arranque detectados, sin duplicados por nombre."""
-    vistos: set[str] = set()
-    unicos: list[StartupEntry] = []
+    seen_names: set[str] = set()
+    unique_entries: List[StartupEntry] = []
     
     def _gen_entries() -> Iterator[StartupEntry]:
         yield from entries_from_folders()
         yield from entries_from_registry()
 
     for entry in _gen_entries():
-        clave = entry.name.lower()
-        if clave not in vistos:
-            vistos.add(clave)
-            unicos.append(entry)
-    return unicos
+        key = entry.name.lower()
+        if key not in seen_names:
+            seen_names.add(key)
+            unique_entries.append(entry)
+    return unique_entries
 
 
 def estimate_impact(entries: Optional[Iterable[StartupEntry]]) -> str:
@@ -191,24 +194,23 @@ def estimate_impact(entries: Optional[Iterable[StartupEntry]]) -> str:
     if entries is None:
         return "ok"
     
-    # Validar que sea un contenedor calculable
     try:
-        items = list(entries)
-        total = len(items)
+        entry_list = list(entries)
+        total_count = len(entry_list)
     except (TypeError, ValueError, AttributeError):
         return "ok"
 
-    if total <= 5:
+    if total_count <= 5:
         return "ok"
-    if total <= 10:
+    if total_count <= 10:
         return "info"
-    if total <= 18:
+    if total_count <= 18:
         return "warning"
     return "danger"
 
 
-def summarize(entries: Optional[Iterable[StartupEntry]] = None) -> list[str]:
-    """Resumen legible del arranque, con la advertencia de cómo desactivar."""
+def summarize(entries: Optional[Iterable[StartupEntry]] = None) -> List[str]:
+    """Genera un reporte legible de los programas de inicio y su impacto."""
     if entries is None:
         entries = list_startup_entries()
         
@@ -218,14 +220,14 @@ def summarize(entries: Optional[Iterable[StartupEntry]] = None) -> list[str]:
         return ["Error: No se pudieron procesar las entradas de inicio."]
 
     lines = [f"Programas que arrancan con el sistema: {len(entries_list)}"]
-    nivel = estimate_impact(entries_list)
-    mensajes = {
+    impact_level = estimate_impact(entries_list)
+    impact_messages = {
         "ok": "Arranque liviano: no hay mucho para ganar acá.",
         "info": "Cantidad normal de programas al inicio.",
         "warning": "Bastantes programas al inicio; revisá si los usás todos.",
         "danger": "Muchos programas al inicio: es probable que el arranque sea lento.",
     }
-    lines.append(mensajes.get(nivel, ""))
+    lines.append(impact_messages.get(impact_level, ""))
     lines.append("")
     for entry in entries_list:
         lines.append(f"  {entry.name:<28} [{entry.source}]")

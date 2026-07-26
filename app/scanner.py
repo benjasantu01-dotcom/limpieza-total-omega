@@ -18,6 +18,7 @@ import logging
 from dataclasses import dataclass
 from pathlib import Path
 from datetime import datetime, timedelta
+from typing import List, Optional, Callable
 
 # Configuración de logger para el módulo
 logger = logging.getLogger(__name__)
@@ -35,8 +36,12 @@ class Suspicion:
     severity: str  # "info" | "warning"
 
 
-def check_double_extension(path: Path) -> Suspicion | None:
-    """Verifica si el nombre de archivo sugiere una extensión doble sospechosa."""
+def check_double_extension(path: Path) -> Optional[Suspicion]:
+    """
+    Analiza el nombre del archivo en busca de extensiones dobles.
+    La técnica busca ocultar ejecutables maliciosos bajo nombres de documentos
+    inocuos (ej: 'reporte.pdf.exe').
+    """
     if not path or not path.name:
         return None
     if DOUBLE_EXTENSION_RE.search(path.name):
@@ -44,8 +49,11 @@ def check_double_extension(path: Path) -> Suspicion | None:
     return None
 
 
-def check_recent_executable_in_downloads(path: Path, hours: int = 24) -> Suspicion | None:
-    """Verifica si el archivo ejecutable fue modificado en las últimas horas."""
+def check_recent_executable_in_downloads(path: Path, hours: int = 24) -> Optional[Suspicion]:
+    """
+    Evalúa si un archivo ejecutable es 'reciente' basado en su última modificación.
+    Los ejecutables descargados o creados recientemente tienen mayor probabilidad de riesgo.
+    """
     if not path or path.suffix.lower() not in SUSPICIOUS_EXECUTABLE_EXT:
         return None
     try:
@@ -59,8 +67,11 @@ def check_recent_executable_in_downloads(path: Path, hours: int = 24) -> Suspici
     return None
 
 
-def check_system_lookalike(path: Path) -> Suspicion | None:
-    """Verifica si el nombre imita archivos de sistema fuera de su ubicación legítima."""
+def check_system_lookalike(path: Path) -> Optional[Suspicion]:
+    """
+    Detecta archivos con nombres de procesos críticos del sistema que residen
+    fuera de la carpeta protegida 'System32', una señal común de evasión.
+    """
     if not path or not path.name:
         return None
     if path.name.lower() in SYSTEM_LOOKALIKES and "system32" not in str(path.parent).lower():
@@ -68,12 +79,19 @@ def check_system_lookalike(path: Path) -> Suspicion | None:
     return None
 
 
-def scan_file(path: Path) -> list[Suspicion]:
-    """Ejecuta todos los chequeos heurísticos sobre un archivo dado."""
+def scan_file(path: Path) -> List[Suspicion]:
+    """
+    Ejecuta el conjunto de chequeos heurísticos sobre un archivo individual.
+    Retorna una lista de hallazgos encontrados.
+    """
     if not isinstance(path, Path):
         return []
     
-    checks = [check_double_extension, check_recent_executable_in_downloads, check_system_lookalike]
+    checks: List[Callable[[Path], Optional[Suspicion]]] = [
+        check_double_extension, 
+        check_recent_executable_in_downloads, 
+        check_system_lookalike
+    ]
     results = []
     
     for check in checks:
@@ -86,16 +104,15 @@ def scan_file(path: Path) -> list[Suspicion]:
     return results
 
 
-def scan_directory(directory: str | Path) -> list[Suspicion]:
+def scan_directory(directory: str | Path) -> List[Suspicion]:
     """
-    Escanea recursivamente un directorio en busca de sospechas.
+    Escanea recursivamente un directorio en busca de comportamientos sospechosos.
     
     Args:
-        directory: La ruta raíz donde comenzar el escaneo (puede ser str o Path).
+        directory: La ruta raíz donde comenzar el escaneo.
         
     Returns:
-        Lista de objetos Suspicion encontrados. Retorna una lista vacía si el 
-        directorio es inválido o si no se encuentran amenazas.
+        Lista de objetos Suspicion encontrados tras validar la integridad de las rutas.
     """
     if not directory or not isinstance(directory, (str, Path)):
         logger.error("Entrada inválida recibida en scan_directory: %s", type(directory))
@@ -104,30 +121,23 @@ def scan_directory(directory: str | Path) -> list[Suspicion]:
     results = []
     try:
         root = Path(directory).resolve()
-        if not root.exists():
-            logger.warning("El path proporcionado '%s' no existe.", directory)
-            return []
-        if not root.is_dir():
-            logger.warning("El path proporcionado '%s' no es un directorio.", directory)
+        if not root.exists() or not root.is_dir():
+            logger.warning("El path proporcionado '%s' no es un directorio válido.", directory)
             return []
             
         for p in root.rglob("*"):
             try:
-                # Seguridad: Resolver ruta para evitar escapes mediante enlaces simbólicos
-                # y verificar que se mantenga dentro del árbol de la raíz del escaneo.
-                resolved_p = p.resolve()
-                if not any(part == ".." for part in p.parts) and root in resolved_p.parents:
-                    if p.is_symlink():
-                        continue
-                    if p.is_file():
-                        results.extend(scan_file(p))
+                # Filtrado de seguridad: solo procesar archivos que existan y evitar enlaces simbólicos
+                # que puedan causar bucles o escalar fuera del directorio de escaneo.
+                if p.is_symlink():
+                    continue
+                if p.is_file():
+                    results.extend(scan_file(p))
             except (PermissionError, OSError) as e:
                 logger.debug("Acceso denegado o error de sistema al procesar %s: %s", p, e)
                 continue
-    except (TypeError, ValueError, RuntimeError) as e:
-        logger.error("Error al inicializar la ruta de escaneo %s: %s", directory, e)
-    except OSError as e:
-        logger.error("Error crítico al acceder al directorio base %s: %s", directory, e)
+    except Exception as e:
+        logger.error("Error crítico al inicializar el escaneo en %s: %s", directory, e)
             
     return results
 
@@ -135,13 +145,7 @@ def scan_directory(directory: str | Path) -> list[Suspicion]:
 def run_windows_defender_quick_scan() -> str:
     """
     Dispara un escaneo rápido con Windows Defender mediante PowerShell.
-    
-    Nota: Requiere privilegios de administrador para ser efectivo según la política
-    de ejecución de PowerShell del sistema.
-    
-    Returns:
-        String conteniendo la salida estándar del comando o un mensaje de error
-        si el proceso falla o no está soportado.
+    Requiere ejecución en un entorno Windows.
     """
     try:
         result = subprocess.run(

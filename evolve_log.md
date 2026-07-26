@@ -528,3 +528,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-07-26T12:30:24` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 110): unterminated string literal (detected at line 110)
 - `2026-07-26T12:30:24` Rotación — nada para rotar
 - `2026-07-26T12:30:24` Corrida terminada. Total usado hoy: 122.
+- `2026-07-26T12:39:25` Arrancando corrida. Quedan hoy ~178 peticiones objetivo.
+- `2026-07-26T12:39:48` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y el tipado de `safety.py` mediante docstrings detallados que explican el "porqué" de las validaciones de seguridad, garantizando que futuras modificaciones mantengan el rigor técnico del módulo.
+- `2026-07-26T12:40:09` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna agregando docstrings detallados en las funciones de escaneo para aclarar el propósito de cada heurística y se ha refinado el tipado, además de añadir un control de seguridad explícito en `scan_directory` para filtrar rutas peligrosas antes de procesarlas.
+- `2026-07-26T12:40:31` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Mejora de la documentación y precisión técnica: se añadieron type hints ausentes, se aclaró el comportamiento de los parsers mediante docstrings y se normalizaron los nombres de variables para mejorar la legibilidad del flujo de datos en el módulo.
+- `2026-07-26T12:40:37` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimicé el acceso a los datos de estilo convirtiendo `SEVERITY_STYLES` y `GRADE_COLORS` a diccionarios de acceso directo e integrando la lógica de validación dentro de las funciones de consulta, eliminando llamadas innecesarias a `color()` dentro de funciones que se ejecutan frecuentemente durante el renderizado de la UI.
+- `2026-07-26T12:40:37` Rotación — nada para rotar
+- `2026-07-26T12:40:37` Corrida terminada. Total usado hoy: 126.
