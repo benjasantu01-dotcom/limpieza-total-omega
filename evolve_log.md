@@ -1135,3 +1135,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-07-26T19:20:56` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
 - `2026-07-26T19:20:56` Rotación — nada para rotar
 - `2026-07-26T19:20:56` Corrida terminada. Total usado hoy: 282.
+- `2026-07-26T19:29:56` Arrancando corrida. Quedan hoy ~18 peticiones objetivo.
+- `2026-07-26T19:30:18` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Se optimizó `directory_size` para reducir llamadas a `os.path.getsize` utilizando `os.scandir`, que es significativamente más eficiente que `os.walk` al obtener información de metadatos directamente del sistema operativo sin necesidad de llamadas extra a `stat` por archivo.
+- `2026-07-26T19:30:40` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé la función `summarize` para realizar una única iteración de `walk_files` mediante un generador centralizado, evitando múltiples recorridos redundantes del sistema de archivos al invocar `total_size`, `usage_by_extension` y `largest_files` por separado.
+- `2026-07-26T19:31:03` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé `group_by_size` para realizar una única llamada a `os.scandir` en lugar de múltiples llamadas a `os.path.getsize` y `os.path.exists`, reduciendo drásticamente las syscalls y mejorando el rendimiento en directorios con muchos archivos.
+- `2026-07-26T19:31:08` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: SystemMetrics.validate
+- `2026-07-26T19:31:08` Rotación — nada para rotar
+- `2026-07-26T19:31:08` Corrida terminada. Total usado hoy: 286.

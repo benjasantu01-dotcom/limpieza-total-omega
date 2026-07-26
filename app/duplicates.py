@@ -106,16 +106,17 @@ def partial_hash(path: str | os.PathLike, read_bytes: int = PARTIAL_READ_BYTES) 
 
 def group_by_size(paths: Iterable[Path]) -> dict[int, list[Path]]:
     """
-    Organiza una lista de rutas de archivo en un diccionario donde la clave es el
-    tamaño del archivo (en bytes) y el valor es una lista de rutas que comparten ese tamaño.
+    Organiza una lista de rutas de archivo en un diccionario usando
+    estadísticas de archivo para evitar accesos redundantes al sistema.
     """
     if paths is None:
         return {}
     groups: dict[int, list[Path]] = defaultdict(list)
     for p in paths:
         try:
-            if isinstance(p, (str, Path)) and os.path.exists(p) and not is_protected_path(p):
-                groups[os.path.getsize(p)].append(Path(p))
+            stats = p.stat()
+            if not is_protected_path(p):
+                groups[stats.st_size].append(p)
         except (OSError, PermissionError):
             continue
     return dict(groups)

@@ -262,21 +262,41 @@ def total_size(directory: str | os.PathLike, skip_protected: bool = True) -> tup
 
 
 def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list[str]:
-    """Resumen legible del uso de disco de una carpeta."""
+    """Resumen legible del uso de disco de una carpeta, realizando un solo recorrido."""
     if not directory or not os.path.exists(str(directory)):
         return ["Error: Carpeta inválida o inaccesible."]
         
-    total, count = total_size(directory, skip_protected)
+    total = 0
+    count = 0
+    extension_data: dict[str, dict] = defaultdict(lambda: {"size": 0, "count": 0})
+    largest_files_heap: list[tuple[int, Path]] = []
+    
+    for path, size in walk_files(directory, skip_protected):
+        total += size
+        count += 1
+        
+        ext = path.suffix.lower() or "(sin extensión)"
+        extension_data[ext]["size"] += size
+        extension_data[ext]["count"] += 1
+        
+        heapq.heappush(largest_files_heap, (size, path))
+        if len(largest_files_heap) > 8:
+            heapq.heappop(largest_files_heap)
+            
     lines = [
         f"Carpeta analizada: {directory}",
         f"Total: {format_size(total)} en {count} archivos",
         "",
         "Por tipo de archivo:",
     ]
-    for usage in usage_by_extension(directory, limit=8, skip_protected=skip_protected):
-        lines.append(f"  {usage.extension:<18} {format_size(usage.size_bytes):>10}  ({usage.count} archivos)")
+    
+    sorted_exts = heapq.nlargest(8, extension_data.items(), key=lambda x: x[1]["size"])
+    for ext, data in sorted_exts:
+        lines.append(f"  {ext:<18} {format_size(data['size']):>10}  ({data['count']} archivos)")
+        
     lines.append("")
     lines.append("Archivos más grandes:")
-    for entry in largest_files(directory, limit=8, skip_protected=skip_protected):
-        lines.append(f"  {format_size(entry.size_bytes):>10}  {entry.path}")
+    for size, path in sorted(largest_files_heap, key=lambda x: x[0], reverse=True):
+        lines.append(f"  {format_size(size):>10}  {path}")
+        
     return lines
