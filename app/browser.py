@@ -120,11 +120,17 @@ def detect_profiles(bases=None, cache_paths=None) -> list[BrowserCache]:
         if not isinstance(base, (str, Path)):
             continue
         
+        base_path = Path(base).resolve()
         for browser, relative in cache_paths.items():
             # Se normaliza el separador para que las rutas con "\" también
             # funcionen cuando los tests corren en Linux.
             try:
-                candidate = Path(base).joinpath(*str(relative).replace("\\", "/").split("/"))
+                candidate = base_path.joinpath(*str(relative).replace("\\", "/").split("/")).resolve()
+                
+                # Validación de seguridad defensiva: el candidato debe estar contenido en base_path
+                if not str(candidate).startswith(str(base_path)):
+                    continue
+                
                 if candidate.name.lower() in NEVER_TOUCH:
                     continue  # nunca reportar carpetas de datos del usuario
                 if candidate.is_dir():

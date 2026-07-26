@@ -157,10 +157,15 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
     if skip_protected and is_protected_path(base):
         return
     for root, subdirs, files in os.walk(base):
+        root_path = Path(root)
+        # Seguridad: verificar que no hayamos escapado del base (ej. symlink malicioso)
+        if not str(root_path).startswith(str(base)):
+            continue
+            
         if skip_protected:
-            subdirs[:] = [d for d in subdirs if not is_protected_path(Path(root) / d)]
+            subdirs[:] = [d for d in subdirs if not is_protected_path(root_path / d)]
         for name in files:
-            path = Path(root) / name
+            path = root_path / name
             try:
                 if path.is_symlink():
                     continue
@@ -201,7 +206,12 @@ def largest_folders(directory: str | os.PathLike, limit: int = 10, skip_protecte
     folder_map: dict[Path, FolderUsage] = {}
     try:
         for path, size in walk_files(base, skip_protected):
-            relative = path.relative_to(base)
+            # Seguridad: forzar la ruta relativa para asegurar aislamiento
+            try:
+                relative = path.relative_to(base)
+            except ValueError:
+                continue
+            
             if len(relative.parts) > 1:
                 top_folder = base / relative.parts[0]
             else:

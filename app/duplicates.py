@@ -66,7 +66,7 @@ def hash_file(path: str | os.PathLike, chunk_size: int = 1024 * 1024) -> str | N
     devuelve None en lugar de propagar el error para que un solo archivo
     inaccesible no aborte todo el escaneo.
     """
-    if not path:
+    if not path or is_protected_path(path):
         return None
     digest = hashlib.sha256()
     try:
@@ -80,7 +80,7 @@ def hash_file(path: str | os.PathLike, chunk_size: int = 1024 * 1024) -> str | N
 
 def partial_hash(path: str | os.PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> str | None:
     """Hash de los primeros bytes del archivo. None si no se pudo leer."""
-    if not path:
+    if not path or is_protected_path(path):
         return None
     try:
         with open(path, "rb") as f:
@@ -97,7 +97,7 @@ def group_by_size(paths: list[str | Path]) -> dict[int, list[Path]]:
     for raw in paths:
         try:
             p = Path(raw)
-            if not p.is_file():
+            if not p.is_file() or is_protected_path(p):
                 continue
             groups[p.stat().st_size].append(p)
         except (OSError, PermissionError, TypeError):
@@ -124,7 +124,7 @@ def _collect_candidates(directories: Iterable[str | Path], min_size: int, skip_p
                 for name in files:
                     candidate = Path(root) / name
                     try:
-                        if candidate.is_symlink():
+                        if candidate.is_symlink() or (skip_protected and is_protected_path(candidate)):
                             continue
                         if candidate.stat().st_size >= min_size:
                             candidates.append(candidate)

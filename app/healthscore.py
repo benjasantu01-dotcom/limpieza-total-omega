@@ -110,15 +110,15 @@ def score_security(suspicious_count: int, warnings: int = 0) -> float:
 
 
 def score_memory(available_percent: float) -> float:
-    """Puntúa la memoria por disponibilidad."""
-    val = _to_float(available_percent, 0.0)
-    return _clamp(max(0.0, val) / 35.0)
+    """Puntúa la memoria por disponibilidad, acotando el input a [0, 100]."""
+    val = max(0.0, min(100.0, _to_float(available_percent, 0.0)))
+    return _clamp(val / 35.0)
 
 
 def score_disk(free_percent: float) -> float:
-    """Puntúa el espacio libre en disco."""
-    val = _to_float(free_percent, 0.0)
-    return _clamp(max(0.0, val) / 25.0)
+    """Puntúa el espacio libre en disco, acotando el input a [0, 100]."""
+    val = max(0.0, min(100.0, _to_float(free_percent, 0.0)))
+    return _clamp(val / 25.0)
 
 
 def score_duplicates(duplicate_mb: float) -> float:
