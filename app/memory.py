@@ -136,21 +136,20 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
         return []
 
     processes: List[ProcessMemory] = []
-    lines = text.splitlines()
-
-    for line in lines:
+    
+    for line in text.splitlines():
         line = line.strip()
         if not line:
             continue
         
         # PowerShell CSV escapa comillas con "" y encierra valores en ""
         parts = [p.strip().strip('"') for p in line.split(",", 2)]
-        if len(parts) < 3:
+        if len(parts) < 3 or not all(parts):
             continue
         
         name, raw_pid, raw_ws = parts[0], parts[1], parts[2]
         
-        if name.lower() in {"name", "processname"} or not raw_pid or not raw_ws:
+        if name.lower() in {"name", "processname"}:
             continue
             
         try:
@@ -161,7 +160,7 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
                 continue
                 
             processes.append(ProcessMemory(
-                name=name if name else "Unknown", 
+                name=name, 
                 pid=pid, 
                 working_set=working_set
             ))

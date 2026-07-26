@@ -70,7 +70,7 @@ def hash_file(path: str | os.PathLike, chunk_size: int = 1024 * 1024) -> str | N
         with open(path, "rb") as f:
             while chunk := f.read(chunk_size):
                 digest.update(chunk)
-    except (OSError, PermissionError, ValueError):
+    except (OSError, PermissionError, ValueError, TypeError):
         return None
     return digest.hexdigest()
 
@@ -81,18 +81,21 @@ def partial_hash(path: str | os.PathLike, read_bytes: int = PARTIAL_READ_BYTES) 
         return None
     try:
         with open(path, "rb") as f:
-            return hashlib.sha256(f.read(read_bytes)).hexdigest()
-    except (OSError, PermissionError, ValueError):
+            content = f.read(read_bytes)
+            return hashlib.sha256(content).hexdigest()
+    except (OSError, PermissionError, ValueError, TypeError):
         return None
 
 
 def group_by_size(paths: Iterable[Path]) -> dict[int, list[Path]]:
     """Agrupa rutas por tamaño exacto, asumiendo validación previa."""
+    if paths is None:
+        return {}
     groups: dict[int, list[Path]] = defaultdict(list)
     for p in paths:
         try:
-            if p.exists() and not is_protected_path(p):
-                groups[p.stat().st_size].append(p)
+            if isinstance(p, (str, Path)) and os.path.exists(p) and not is_protected_path(p):
+                groups[os.path.getsize(p)].append(Path(p))
         except (OSError, PermissionError):
             continue
     return dict(groups)
@@ -146,6 +149,8 @@ def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[str | Path], str
     Aplica una función de hash a una lista de archivos para agruparlos.
     Retorna solo aquellos grupos donde existan 2 o más archivos con el mismo hash.
     """
+    if paths is None:
+        return {}
     by_hash: dict[str, list[Path]] = defaultdict(list)
     for path in paths:
         if digest := hash_func(path):
@@ -197,7 +202,7 @@ def find_duplicates(
 
 def reclaimable_bytes(groups: list[DuplicateGroup]) -> int:
     """Espacio total que se liberaría dejando una copia de cada grupo."""
-    if not groups or not isinstance(groups, list):
+    if not isinstance(groups, list):
         return 0
     return sum(g.wasted_bytes for g in groups if isinstance(g, DuplicateGroup))
 
