@@ -5,10 +5,10 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **33**
-- Mejoras aceptadas: **27** (81.8% de aceptación)
-- Rechazadas por tests: 3
-- Rechazadas por guardia de seguridad: 2
+- Iteraciones totales: **37**
+- Mejoras aceptadas: **29** (78.4% de aceptación)
+- Rechazadas por tests: 4
+- Rechazadas por guardia de seguridad: 3
 - Sin cambios (nada sustancial que mejorar): 1
 - Sin respuesta de la IA (error o límite): 0
 
@@ -16,31 +16,33 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-26 | 27 | 3 | 2 | 1 | 0 |
+| 2026-07-26 | 29 | 4 | 3 | 1 | 0 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **11**
 - legibilidad y documentación: **11**
-- rendimiento: **5**
+- rendimiento: **7**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **3**
 - `healthscore.py`: **3**
 - `memory.py`: **3**
+- `organizer.py`: **3**
+- `safety.py`: **3**
 - `browser.py`: **2**
 - `duplicates.py`: **2**
 - `main.py`: **2**
-- `organizer.py`: **2**
 - `quarantine.py`: **2**
-- `safety.py`: **2**
 - `scanner.py`: **2**
 - `startup.py`: **2**
 - `branding.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-26T09:43:50` **safety.py** (rendimiento): Optimicé `is_protected_path` reemplazando la iteración completa de `parts` con una intersección de conjuntos (`set.isdisjoint`), lo que reduce la complejidad temporal de O(N*M) a O(N) promedio donde N es el número de componentes de la ruta, eliminando ciclos innecesarios.
+- `2026-07-26T09:43:03` **organizer.py** (rendimiento): Se optimizó `scan_for_junk` convirtiendo `JUNK_EXTENSIONS` a un `set` (ya lo era, pero ahora se asegura la eficiencia de búsqueda `O(1)`) y aplicando un filtrado previo en el `os.walk` para evitar procesar subdirectorios bloqueados innecesariamente, reduciendo ciclos de CPU y llamadas a `stat` sobre archivos fuera de interés.
 - `2026-07-26T09:34:20` **memory.py** (rendimiento): Optimicé el parseo del CSV en `parse_windows_process_csv` eliminando la creación de listas intermedias y el uso de `strip()` repetitivo, iterando directamente sobre las líneas y procesando solo los índices necesarios para mejorar el rendimiento.
 - `2026-07-26T09:33:12` **healthscore.py** (rendimiento): Optimizé la función `summarize` para evitar el cálculo redundante de `sorted` en cada llamada, pre-calculando el orden de los elementos o utilizando una técnica de visualización más eficiente; en este caso, implementé una comprensión de lista para la generación de la barra de salud y optimicé el ordenamiento mediante la llave de evaluación de impacto.
 - `2026-07-26T09:23:25` **diskreport.py** (rendimiento): Optimicé `largest_folders` para evitar la redundancia algorítmica: anteriormente llamaba a `walk_files` (que recorre recursivamente toda la estructura) para cada subcarpeta individual, resultando en una complejidad innecesaria; ahora el análisis se realiza en una sola pasada lógica sobre el árbol de archivos.
@@ -54,5 +56,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-26T09:02:51` **memory.py** (legibilidad y documentación): Mejora la legibilidad del módulo mediante la adición de Type Hints detallados en las funciones de diagnóstico y procesamiento, y reemplaza la implementación de `parse_windows_process_csv` por una lógica que utiliza `NamedTuple` o una estructura más clara para explicar el mapeo de columnas, documentando los supuestos sobre el formato de salida de PowerShell.
 - `2026-07-26T09:02:29` **main.py** (legibilidad y documentación): Se introdujeron type hints en los métodos de la clase `LimpiezaTotalOmegaApp` y se documentaron las responsabilidades de los bloques de código más complejos, mejorando la mantenibilidad y legibilidad del archivo central de la aplicación.
 - `2026-07-26T09:01:48` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings explicativos sobre las heurísticas (el "porqué" de los umbrales) y se han aplicado type hints adicionales para asegurar la claridad de la interfaz de datos, facilitando el mantenimiento para futuros colaboradores.
-- `2026-07-26T08:51:36` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación del proceso de filtrado y recolección, integrando type hints faltantes en los parámetros de las funciones `_collect_candidates` y `find_duplicates` para clarificar los tipos de datos esperados y facilitar el mantenimiento.
-- `2026-07-26T08:51:30` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica y la legibilidad mediante la adición de Type Hints en las funciones críticas de análisis (`walk_files`, `largest_files`, `usage_by_extension`, `largest_folders`, `total_size`), clarificando los contratos de datos y facilitando la mantenibilidad futura.

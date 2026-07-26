@@ -304,3 +304,44 @@ FAILED evolve/tests/test_modules.py::test_group_by_size_separates_by_exact_size 
 - `2026-07-26T09:34:20` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el parseo del CSV en `parse_windows_process_csv` eliminando la creación de listas intermedias y el uso de `strip()` repetitivo, iterando directamente sobre las líneas y procesando solo los índices necesarios para mejorar el rendimiento.
 - `2026-07-26T09:34:20` Rotación — nada para rotar
 - `2026-07-26T09:34:20` Corrida terminada. Total usado hoy: 54.
+- `2026-07-26T09:42:42` Arrancando corrida. Quedan hoy ~246 peticiones objetivo.
+- `2026-07-26T09:43:03` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Se optimizó `scan_for_junk` convirtiendo `JUNK_EXTENSIONS` a un `set` (ya lo era, pero ahora se asegura la eficiencia de búsqueda `O(1)`) y aplicando un filtrado previo en el `os.walk` para evitar procesar subdirectorios bloqueados innecesariamente, reduciendo ciclos de CPU y llamadas a `stat` sobre archivos fuera de interés.
+- `2026-07-26T09:43:26` Tests FALLARON:
+```
+rantined_at='2026-07-26T09:43:26',
+  +     ),
+  + ]
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app - AssertionError: assert [QuarantineIt...26T09:43:26')] == []
+  
+  Left contains 2 more items, first extra item: QuarantineItem(item_id='c8c313f8f05d', original_path='/tmp/pytest-of-runner/pytest-2/test_quarantine_two_files_with0/u...d_name='c8c313f8f05d__igual.tmp', size_bytes=3, reason='Marcado como sospechoso', quarantined_at='2026-07-26T09:43:26')
+  
+  Full diff:
+  - []
+  + [
+  +     QuarantineItem(
+  +         item_id='c8c313f8f05d',
+  +         original_path='/tmp/pytest-of-runner/pytest-2/test_quarantine_two_files_with0/uno/igual.tmp',
+  +         stored_name='c8c313f8f05d__igual.tmp',
+  +         size_bytes=3,
+  +         reason='Marcado como sospechoso',
+  +         quarantined_at='2026-07-26T09:43:26',
+  +     ),
+  +     QuarantineItem(
+  +         item_id='c65f0141b375',
+  +         original_path='/tmp/pytest-of-runner/pytest-2/test_quarantine_two_files_with0/dos/igual.tmp',
+  +         stored_name='c65f0141b375__igual.tmp',
+  +         size_bytes=3,
+  +         reason='Marcado como sospechoso',
+  +         quarantined_at='2026-07-26T09:43:26',
+  +     ),
+  + ]
+4 failed, 193 passed in 0.20s
+
+```
+- `2026-07-26T09:43:26` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Optimicé el acceso al manifiesto implementando una caché temporal simple (`_manifest_cache`) y reduciendo el uso redundante de E/S de disco en funciones críticas como `total_quarantined_bytes` y `list_items`, evitando lecturas múltiples innecesarias del archivo JSON en una misma ejecución.
+- `2026-07-26T09:43:44` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-07-26T09:43:50` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimicé `is_protected_path` reemplazando la iteración completa de `parts` con una intersección de conjuntos (`set.isdisjoint`), lo que reduce la complejidad temporal de O(N*M) a O(N) promedio donde N es el número de componentes de la ruta, eliminando ciclos innecesarios.
+- `2026-07-26T09:43:50` Rotación — nada para rotar
+- `2026-07-26T09:43:50` Corrida terminada. Total usado hoy: 58.

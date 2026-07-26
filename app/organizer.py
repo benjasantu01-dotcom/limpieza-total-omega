@@ -82,19 +82,17 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
 
     for d in dirs:
         p = Path(d).expanduser()
-        if not p.exists():
-            logger.warning(f"Ruta de escaneo no encontrada: {p}")
-            continue
-        if not p.is_dir():
-            logger.warning(f"La ruta indicada no es un directorio: {p}")
+        if not p.exists() or not p.is_dir():
+            logger.warning(f"Ruta de escaneo inválida: {p}")
             continue
 
         for root, subdirs, files in os.walk(p):
             subdirs[:] = [sd for sd in subdirs if sd.lower() not in SYSTEM_FOLDER_BLOCKLIST]
             for name in files:
-                fp = Path(root) / name
-                try:
-                    if fp.suffix.lower() in JUNK_EXTENSIONS:
+                # Comprobación eficiente de extensión antes de instanciar objetos pesados
+                if Path(name).suffix.lower() in JUNK_EXTENSIONS:
+                    fp = Path(root) / name
+                    try:
                         stat = fp.stat()
                         found.append(
                             JunkFile(
@@ -103,9 +101,9 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
                                 modified=datetime.fromtimestamp(stat.st_mtime),
                             )
                         )
-                except (PermissionError, FileNotFoundError, OSError) as e:
-                    logger.debug(f"Acceso denegado o archivo no encontrado al inspeccionar {fp}: {e}")
-                    continue
+                    except (PermissionError, FileNotFoundError, OSError) as e:
+                        logger.debug(f"Acceso denegado o archivo no encontrado al inspeccionar {fp}: {e}")
+                        continue
     return found
 
 
@@ -143,7 +141,6 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         raise
 
     for jf in files:
-        # Validación de integridad del objeto JunkFile antes de operar
         if jf is None or not isinstance(jf.path, Path) or not jf.path.exists():
             continue
 

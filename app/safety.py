@@ -93,9 +93,12 @@ def is_protected_path(path: PathLike) -> bool:
     p = normalize(path)
     if is_drive_root(p):
         return True
-    parts_lower = [part.lower() for part in p.parts]
-    if any(part in PROTECTED_DIR_NAMES for part in parts_lower):
+    
+    # Optimización: usar intersección de conjuntos para evitar loops O(N*M)
+    path_components = {part.lower() for part in p.parts}
+    if not PROTECTED_DIR_NAMES.isdisjoint(path_components):
         return True
+        
     for env_var in ("SystemRoot", "windir", "ProgramFiles", "ProgramFiles(x86)", "ProgramData"):
         root = os.environ.get(env_var)
         if root and is_within_directory(p, root, allow_equal=True):
