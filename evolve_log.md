@@ -976,3 +976,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-07-26T17:29:19` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se implementó una validación de seguridad adicional en `restore_item` para asegurar que el destino de restauración no sea una ruta protegida mediante `ensure_safe_to_modify`, unificando el criterio de seguridad aplicado durante la cuarentena.
 - `2026-07-26T17:29:19` Rotación — nada para rotar
 - `2026-07-26T17:29:19` Corrida terminada. Total usado hoy: 238.
+- `2026-07-26T17:37:49` Arrancando corrida. Quedan hoy ~62 peticiones objetivo.
+- `2026-07-26T17:38:08` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-07-26T17:38:30` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `is_protected_path` añadiendo una comprobación explícita mediante `is_junction()` (disponible en Windows) para evitar seguir puntos de reparse que podrían llevar a zonas protegidas del sistema o bucles infinitos, reforzando la seguridad defensiva contra redirecciones inesperadas.
+- `2026-07-26T17:38:50` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `scan_directory` validando explícitamente que cada entrada de archivo procesada permanezca dentro de la jerarquía del directorio base (`root`) antes de su análisis, evitando posibles escapes de ruta mediante enlaces simbólicos o manipulaciones externas durante el recorrido.
+- `2026-07-26T17:38:57` ✅ Mejora aceptada en startup.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva de `entries_from_folders` añadiendo una validación explícita mediante `Path.resolve()` contra la carpeta base para prevenir ataques de trayectoria (path traversal), asegurando que los archivos detectados realmente residan dentro de las rutas autorizadas.
+- `2026-07-26T17:38:57` Rotación — nada para rotar
+- `2026-07-26T17:38:57` Corrida terminada. Total usado hoy: 242.

@@ -106,8 +106,8 @@ def startup_folders() -> List[Path]:
 def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> List[StartupEntry]:
     """Escanea carpetas en busca de archivos (acceso directo o ejecutables).
     
-    Aplica `ensure_safe_to_modify` preventivamente para asegurar que la ruta
-    no sea un punto de reparse malicioso o una ruta de sistema prohibida.
+    Aplica `ensure_safe_to_modify` preventivamente y valida que los archivos
+    estén contenidos físicamente dentro de la carpeta base.
     """
     if folders is None:
         folders = startup_folders()
@@ -122,7 +122,9 @@ def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> List[Start
         try:
             for item in base_path.iterdir():
                 if item.is_file() and item.name.lower() != "desktop.ini":
-                    found_entries.append(StartupEntry(name=item.stem, command=str(item), source="carpeta"))
+                    # Validación de seguridad: el archivo debe estar bajo el path base
+                    if base_path in item.resolve().parents:
+                        found_entries.append(StartupEntry(name=item.stem, command=str(item), source="carpeta"))
         except (OSError, PermissionError):
             continue
     return found_entries

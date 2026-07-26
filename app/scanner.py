@@ -120,6 +120,11 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
             current_dir = queue.pop()
             try:
                 for entry in current_dir.iterdir():
+                    # Validación de seguridad: no procesar nada fuera del árbol raíz
+                    resolved_entry = entry.resolve()
+                    if root not in resolved_entry.parents and resolved_entry != root:
+                        continue
+
                     if entry.is_dir():
                         if not entry.is_symlink():
                             queue.append(entry)
