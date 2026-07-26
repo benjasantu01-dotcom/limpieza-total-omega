@@ -2,11 +2,13 @@ name: Evolve (bucle autónomo)
 
 on:
   schedule:
-    # Cada 5 minutos = 288 corridas/día. Con ITERATIONS_PER_RUN=1 eso da
-    # ~288 peticiones/día, repartidas parejo en las 24hs (una cada 5 min),
-    # bien por debajo del objetivo de 300 y con margen amplio respecto
-    # al límite real de la cuota gratuita (500/día).
-    - cron: "*/5 * * * *"
+    # Cada 10 minutos. OJO: el cron de GitHub Actions no es puntual — con
+    # alta carga las corridas programadas se atrasan o se descartan, y no
+    # hay forma de forzarlas. Por eso cada corrida hace VARIAS mejoras
+    # (ITERATIONS_PER_RUN) en vez de una: así, si GitHub se saltea corridas,
+    # el progreso diario no se derrumba. El techo real lo pone el
+    # presupuesto de evolve/budget.py (tope duro 350/día), no el cron.
+    - cron: "*/10 * * * *"
   workflow_dispatch: {}  # también se puede disparar a mano desde GitHub
 
 permissions:
@@ -33,7 +35,10 @@ jobs:
       - name: Correr el bucle de mejoras
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          ITERATIONS_PER_RUN: "1"
+          # 4 mejoras por corrida (~90s de job). Si el cron dispara todas,
+          # el presupuesto diario corta en 350; si GitHub se saltea la
+          # mayoría, igual se avanza 4 por corrida en vez de 1.
+          ITERATIONS_PER_RUN: "4"
         run: python evolve/evolve.py
 
       - name: Commitear cambios aceptados
