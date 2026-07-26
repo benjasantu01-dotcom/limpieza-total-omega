@@ -5,8 +5,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **213**
-- Mejoras aceptadas: **153** (71.8% de aceptación)
+- Iteraciones totales: **217**
+- Mejoras aceptadas: **157** (72.4% de aceptación)
 - Rechazadas por tests: 11
 - Rechazadas por guardia de seguridad: 14
 - Sin cambios (nada sustancial que mejorar): 1
@@ -16,33 +16,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-26 | 153 | 11 | 14 | 1 | 34 |
+| 2026-07-26 | 157 | 11 | 14 | 1 | 34 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **34**
 - manejo de errores y validación de entradas: **32**
 - robustez ante casos límite: **31**
+- seguridad defensiva: **31**
 - rendimiento: **29**
-- seguridad defensiva: **27**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **14**
 - `healthscore.py`: **14**
+- `organizer.py`: **14**
 - `branding.py`: **14**
 - `browser.py`: **13**
 - `duplicates.py`: **13**
-- `organizer.py`: **13**
+- `main.py`: **13**
+- `quarantine.py`: **13**
 - `safety.py`: **13**
-- `main.py`: **12**
-- `quarantine.py`: **12**
+- `memory.py`: **12**
 - `scanner.py`: **12**
 - `startup.py`: **12**
-- `memory.py`: **11**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-26T17:29:19` **quarantine.py** (seguridad defensiva): Se implementó una validación de seguridad adicional en `restore_item` para asegurar que el destino de restauración no sea una ruta protegida mediante `ensure_safe_to_modify`, unificando el criterio de seguridad aplicado durante la cuarentena.
+- `2026-07-26T17:29:10` **organizer.py** (seguridad defensiva): Se añadió una validación explícita de `ensure_safe_to_modify` en `scan_for_junk` para asegurar que cada archivo identificado como "basura" sea legítimamente modificable antes de agregarlo a la lista de trabajo, previniendo así el procesamiento de archivos protegidos o fuera del alcance permitido desde el inicio del escaneo.
+- `2026-07-26T17:28:50` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva al invocar `trim_working_set` validando explícitamente el PID antes de intentar abrir el proceso, asegurando que no se pueda manipular inadvertidamente procesos del sistema (PID 0 o 4) ni otros fuera del alcance permitido.
+- `2026-07-26T17:28:23` **main.py** (seguridad defensiva): Se implementó un método `_is_path_safe` en la clase principal y se integró en todas las operaciones que aceptan rutas externas (escaneo de carpetas y restauración), asegurando que el programa no procese rutas que violen los filtros de seguridad de `safety.py` antes de iniciar cualquier tarea pesada.
 - `2026-07-26T17:17:39` **healthscore.py** (seguridad defensiva): Se ha robustecido el procesamiento de `SystemMetrics` mediante la validación estricta de tipos y valores, asegurando que los datos de entrada (que pueden provenir de fuentes externas o módulos con errores) no causen comportamientos inesperados o desbordamientos en el cálculo del puntaje final.
 - `2026-07-26T17:17:33` **duplicates.py** (seguridad defensiva): Se ha endurecido el filtrado de archivos durante el escaneo en `_collect_candidates`, asegurando que `is_protected_path` se verifique explícitamente antes de realizar cualquier operación de I/O sobre la ruta resultante (`candidate.stat()`), cumpliendo estrictamente con el enfoque de seguridad defensiva.
 - `2026-07-26T17:17:12` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `walk_files` y `largest_folders` añadiendo una validación explícita de `is_protected_path` sobre las rutas resultantes, previniendo el acceso accidental a directorios de sistema si una estructura de directorios cambiara inesperadamente durante la ejecución.
@@ -54,7 +58,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-26T16:57:09` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `quarantine_file` para evitar la pérdida de datos o estados inconsistentes ante fallos parciales durante la transferencia o el cálculo de hash, añadiendo una validación de existencia del archivo destino antes de proceder con el movimiento.
 - `2026-07-26T16:56:26` **memory.py** (robustez ante casos límite): Se añadió robustez en `parse_windows_process_csv` para manejar correctamente entradas CSV que contienen caracteres inesperados (como comas dentro de nombres de proceso, típicas en PowerShell) mediante un split limitado y limpieza de comillas envolventes, además de prevenir errores de desbordamiento en la conversión de valores numéricos de memoria.
 - `2026-07-26T16:47:21` **main.py** (robustez ante casos límite): Se ha mejorado la robustez de las operaciones asíncronas añadiendo un manejo de excepciones específico para `PermissionError` y `FileNotFoundError` directamente dentro de `run_async`, evitando que fallos de acceso en hilos secundarios silencien el error o dejen la bandera `is_running` en un estado inconsistente.
-- `2026-07-26T16:46:54` **healthscore.py** (robustez ante casos límite): Introduje validación defensiva en las funciones de cálculo (`score_*`) para manejar casos de valores negativos o inesperados de forma explícita, asegurando que `compute_score` siempre produzca un resultado consistente ante datos de telemetría corruptos o incompletos.
-- `2026-07-26T16:46:34` **duplicates.py** (robustez ante casos límite): Se mejora la robustez de `_collect_candidates` ante archivos que desaparecen entre la obtención de metadatos y la recolección, añadiendo una validación explícita de existencia mediante `exists()` antes de procesar para evitar excepciones innecesarias en sistemas de archivos dinámicos.
-- `2026-07-26T16:46:13` **diskreport.py** (robustez ante casos límite): Se añadió un control robusto en `largest_folders` para manejar rutas cuya profundidad relativa no permite extraer una carpeta de nivel superior, evitando errores `IndexError` ante archivos sueltos en la raíz analizada.
-- `2026-07-26T16:36:46` **browser.py** (robustez ante casos límite): Mejoré la robustez de `directory_size` ante permisos denegados, archivos bloqueados y rutas inaccesibles al reemplazar el `os.walk` estándar con un manejo de excepciones explícito por archivo, garantizando que el cálculo de tamaño no se detenga prematuramente si un archivo individual dentro de la caché está bloqueado por el sistema.

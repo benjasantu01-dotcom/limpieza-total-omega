@@ -226,8 +226,8 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
     if destination.exists():
         raise FileExistsError(f"Restauración abortada: El archivo ya existe en '{destination}'")
         
-    if is_protected_path(destination.parent):
-        raise UnsafePathError(f"Restauración bloqueada: '{destination.parent}' es ruta protegida.")
+    # Validar destino antes de restaurar
+    ensure_safe_to_modify(destination, allow_sensitive=False)
 
     try:
         destination.parent.mkdir(parents=True, exist_ok=True)

@@ -88,14 +88,17 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
                                 _walk_dir(Path(entry.path))
                         elif entry.is_file(follow_symlinks=False):
                             if Path(entry.name).suffix.lower() in junk_set:
-                                stat = entry.stat()
-                                found.append(
-                                    JunkFile(
-                                        path=Path(entry.path).resolve(),
-                                        size_bytes=stat.st_size,
-                                        modified=datetime.fromtimestamp(stat.st_mtime),
+                                full_path = Path(entry.path).resolve()
+                                # Seguridad: Solo añadir si es una ruta segura para manipular
+                                if ensure_safe_to_modify(full_path):
+                                    stat = entry.stat()
+                                    found.append(
+                                        JunkFile(
+                                            path=full_path,
+                                            size_bytes=stat.st_size,
+                                            modified=datetime.fromtimestamp(stat.st_mtime),
+                                        )
                                     )
-                                )
                     except (PermissionError, OSError):
                         continue
         except (PermissionError, OSError):

@@ -286,10 +286,11 @@ def trim_working_set(pid: int) -> Tuple[bool, str]:
     
     try:
         target_pid = int(pid)
-        if target_pid <= 0:
-            return False, "PID inválido proporcionado."
+        # Validación: PID 0 (System Idle) y PID 4 (System) son inmanipulables/críticos
+        if target_pid <= 4:
+            return False, "PID protegido: no es posible modificar procesos del sistema."
         
-        # Verificación de seguridad: no manipular procesos del núcleo o críticos
+        # Verificación de seguridad externa
         if not ensure_safe_to_modify(f"pid:{target_pid}"):
             return False, "Operación rechazada: el proceso está protegido por seguridad."
 

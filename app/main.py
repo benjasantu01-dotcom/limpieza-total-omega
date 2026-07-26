@@ -401,6 +401,16 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """Devuelve el widget de texto de la pestaña especificada, o el de Limpieza."""
         return self.outputs.get(tab) or self.outputs["Limpieza"]
 
+    def _is_path_safe(self, path: str) -> bool:
+        """Verifica si una ruta es segura para ser procesada o analizada."""
+        if safety.is_protected_path(path):
+            messagebox.showwarning(
+                "Acceso restringido",
+                f"La ruta '{path}' está protegida o es de sistema. Operación abortada."
+            )
+            return False
+        return True
+
     def log(self, text: str, tab: str = "Limpieza") -> None:
         """Escribe una línea en la pestaña indicada; operación segura para hilos."""
         box = self._box(tab)
@@ -472,12 +482,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         folder = filedialog.askdirectory(title=title)
         if not folder or not os.path.isdir(folder):
             return None
-        if safety.is_protected_path(folder):
-            messagebox.showwarning(
-                "Carpeta protegida",
-                safety.describe_protection(folder)
-                + "\n\nElegí una carpeta de usuario (Descargas, Documentos, etc.).",
-            )
+        if not self._is_path_safe(folder):
             return None
         return folder
 
@@ -601,7 +606,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             valid_files = []
             for jf in self.junk_files:
                 path_str = str(jf.path.resolve())
-                if not safety.is_protected_path(path_str):
+                if self._is_path_safe(path_str):
                     valid_files.append(jf)
                 else:
                     self.log(f"Omitido por protección: {path_str}", "Limpieza")
@@ -683,9 +688,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             aislados, bloqueados = 0, 0
             for ruta in rutas:
                 try:
-                    item = quarantine.quarantine_file(ruta, reason="Marcado por escaneo heurístico")
-                    self.log(f"Aislado [{item.item_id}] {ruta}", "Seguridad")
-                    aislados += 1
+                    if self._is_path_safe(ruta):
+                        item = quarantine.quarantine_file(ruta, reason="Marcado por escaneo heurístico")
+                        self.log(f"Aislado [{item.item_id}] {ruta}", "Seguridad")
+                        aislados += 1
+                    else:
+                        bloqueados += 1
                 except (safety.UnsafePathError, FileNotFoundError, OSError) as e:
                     self.log(f"No se aisló {ruta}: {e}", "Seguridad")
                     bloqueados += 1
@@ -722,6 +730,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                     self.log(f"ID no encontrado: {item_id}", "Cuarentena")
                     return
                 
+                if not self._is_path_safe(item.original_path):
+                    return
+
                 parent_dir = os.path.dirname(item.original_path)
                 if not os.path.exists(parent_dir):
                     self.log(f"Error: La carpeta original '{parent_dir}' ya no existe.", "Cuarentena")
@@ -885,8 +896,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             movidos = 0
             for ruta in a_mover:
                 try:
-                    quarantine.quarantine_file(ruta, reason="Copia duplicada")
-                    movidos += 1
+                    if self._is_path_safe(ruta):
+                        quarantine.quarantine_file(ruta, reason="Copia duplicada")
+                        movidos += 1
                 except (safety.UnsafePathError, FileNotFoundError, OSError) as e:
                     self.log(f"No se aisló {ruta}: {e}", "Duplicados")
             self.log(f"Aisladas {movidos} copia(s). Revisá la pestaña Cuarentena.", "Duplicados")
