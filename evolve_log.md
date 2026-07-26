@@ -666,3 +666,10 @@ FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app
 - `2026-07-26T13:11:04` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Optimicé el cálculo de impactos y el resumen de entradas eliminando la conversión redundante de iterables a listas múltiples veces, aprovechando la naturaleza de los generadores para procesar los datos de manera perezosa y eficiente.
 - `2026-07-26T13:11:04` Rotación — nada para rotar
 - `2026-07-26T13:11:04` Corrida terminada. Total usado hoy: 138.
+- `2026-07-26T13:20:07` Arrancando corrida. Quedan hoy ~162 peticiones objetivo.
+- `2026-07-26T13:20:30` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta para el parámetro `destination` en `save_logo_svg` y se mejoró la gestión de excepciones en `draw_logo` para evitar fallos si el `canvas` es `None` o tiene métodos inesperados.
+- `2026-07-26T13:20:51` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se mejoró la función `directory_size` para manejar casos donde el archivo se elimina o bloquea durante el proceso de escaneo (Race Condition) y se añadió una validación explícita para archivos "reparse points" (puntos de reanálisis) que no son symlinks, mejorando la robustez ante archivos corruptos o bloqueados sin sacrificar rendimiento.
+- `2026-07-26T13:21:12` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré `walk_files` para manejar robustamente archivos que desaparecen durante la iteración (concurrencia) y errores de acceso denegado en archivos individuales, asegurando que el análisis no se detenga prematuramente.
+- `2026-07-26T13:21:18` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de archivos de tamaño cero en `_collect_candidates` para evitar procesar archivos vacíos, los cuales generan colisiones de hash inútiles y ruido en los resultados, mejorando la robustez frente a datos corruptos o temporales mal formados.
+- `2026-07-26T13:21:18` Rotación — nada para rotar
+- `2026-07-26T13:21:18` Corrida terminada. Total usado hoy: 142.

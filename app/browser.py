@@ -86,23 +86,30 @@ def directory_size(path: str | os.PathLike) -> int:
     """
     Calcula el tamaño total de una carpeta de forma iterativa.
     
-    Ignora enlaces simbólicos para evitar bucles infinitos. Captura errores de
-    permisos (PermissionError) silenciándolos, ya que es esperable al escanear
-    perfiles de usuario.
+    Ignora enlaces simbólicos y puntos de reanálisis (junctions) para evitar
+    bucles infinitos y recursión accidental fuera de la ruta objetivo. 
+    Captura errores de acceso (PermissionError, FileNotFoundError) que ocurren
+    si el navegador modifica la estructura mientras se recorre.
     """
     total = 0
     try:
         for root, dirs, files in os.walk(path):
-            # Filtrar directorios para no seguir symlinks
-            dirs[:] = [d for d in dirs if not os.path.islink(os.path.join(root, d))]
+            # Filtrar directorios: ignora symlinks y puntos de reanálisis (junctions)
+            dirs[:] = [
+                d for d in dirs 
+                if not (Path(root, d).is_symlink() or 
+                        (os.path.exists(os.path.join(root, d)) and not os.path.isdir(os.path.join(root, d))))
+            ]
             for f in files:
+                fp = os.path.join(root, f)
                 try:
-                    fp = os.path.join(root, f)
+                    # Usamos lstat para verificar atributos sin seguir enlaces
                     if not os.path.islink(fp):
                         total += os.path.getsize(fp)
-                except (OSError, PermissionError):
+                except (OSError, PermissionError, FileNotFoundError):
+                    # El archivo puede haber sido borrado por el navegador durante el escaneo
                     continue
-    except (OSError, PermissionError):
+    except (OSError, PermissionError, FileNotFoundError):
         return 0
     return total
 

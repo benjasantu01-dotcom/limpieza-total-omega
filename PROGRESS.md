@@ -5,8 +5,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **117**
-- Mejoras aceptadas: **83** (70.9% de aceptación)
+- Iteraciones totales: **121**
+- Mejoras aceptadas: **87** (71.9% de aceptación)
 - Rechazadas por tests: 8
 - Rechazadas por guardia de seguridad: 8
 - Sin cambios (nada sustancial que mejorar): 1
@@ -16,33 +16,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-26 | 83 | 8 | 8 | 1 | 17 |
+| 2026-07-26 | 87 | 8 | 8 | 1 | 17 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **23**
 - legibilidad y documentación: **22**
 - rendimiento: **17**
+- robustez ante casos límite: **14**
 - seguridad defensiva: **11**
-- robustez ante casos límite: **10**
 
 ## Mejoras aceptadas por archivo
 
+- `browser.py`: **8**
+- `diskreport.py`: **8**
 - `healthscore.py`: **8**
 - `organizer.py`: **8**
 - `safety.py`: **8**
 - `startup.py`: **8**
-- `browser.py`: **7**
-- `diskreport.py`: **7**
+- `branding.py`: **8**
+- `duplicates.py`: **7**
 - `scanner.py`: **7**
-- `branding.py`: **7**
-- `duplicates.py`: **6**
 - `main.py`: **6**
 - `quarantine.py`: **6**
 - `memory.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-26T13:21:18` **duplicates.py** (robustez ante casos límite): Se ha añadido un chequeo de archivos de tamaño cero en `_collect_candidates` para evitar procesar archivos vacíos, los cuales generan colisiones de hash inútiles y ruido en los resultados, mejorando la robustez frente a datos corruptos o temporales mal formados.
+- `2026-07-26T13:21:12` **diskreport.py** (robustez ante casos límite): Mejoré `walk_files` para manejar robustamente archivos que desaparecen durante la iteración (concurrencia) y errores de acceso denegado en archivos individuales, asegurando que el análisis no se detenga prematuramente.
+- `2026-07-26T13:20:51` **browser.py** (robustez ante casos límite): Se mejoró la función `directory_size` para manejar casos donde el archivo se elimina o bloquea durante el proceso de escaneo (Race Condition) y se añadió una validación explícita para archivos "reparse points" (puntos de reanálisis) que no son symlinks, mejorando la robustez ante archivos corruptos o bloqueados sin sacrificar rendimiento.
+- `2026-07-26T13:20:30` **branding.py** (robustez ante casos límite): Se introdujo una validación robusta para el parámetro `destination` en `save_logo_svg` y se mejoró la gestión de excepciones en `draw_logo` para evitar fallos si el `canvas` es `None` o tiene métodos inesperados.
 - `2026-07-26T13:11:04` **startup.py** (rendimiento): Optimicé el cálculo de impactos y el resumen de entradas eliminando la conversión redundante de iterables a listas múltiples veces, aprovechando la naturaleza de los generadores para procesar los datos de manera perezosa y eficiente.
 - `2026-07-26T13:10:57` **scanner.py** (rendimiento): Optimicé el rendimiento de `scan_directory` cacheando la conversión de las rutas a minúsculas y los chequeos de `path.parent` dentro de las funciones, y eliminé la instanciación innecesaria de una lista de funciones en `scan_file`, reemplazándola por una llamada directa para reducir el overhead de iteración por cada archivo escaneado.
 - `2026-07-26T13:10:38` **safety.py** (rendimiento): Optimizé `is_protected_path` transformando el bucle de validación de variables de entorno en un acceso directo y eficiente, eliminando el costo de llamadas repetidas a `os.environ.get` y `is_within_directory` mediante una cache de rutas de sistema inicializada una sola vez.
@@ -54,7 +58,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-26T12:40:37` **branding.py** (rendimiento): Optimicé el acceso a los datos de estilo convirtiendo `SEVERITY_STYLES` y `GRADE_COLORS` a diccionarios de acceso directo e integrando la lógica de validación dentro de las funciones de consulta, eliminando llamadas innecesarias a `color()` dentro de funciones que se ejecutan frecuentemente durante el renderizado de la UI.
 - `2026-07-26T12:40:31` **startup.py** (legibilidad y documentación): Mejora de la documentación y precisión técnica: se añadieron type hints ausentes, se aclaró el comportamiento de los parsers mediante docstrings y se normalizaron los nombres de variables para mejorar la legibilidad del flujo de datos en el módulo.
 - `2026-07-26T12:40:09` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings detallados en las funciones de escaneo para aclarar el propósito de cada heurística y se ha refinado el tipado, además de añadir un control de seguridad explícito en `scan_directory` para filtrar rutas peligrosas antes de procesarlas.
-- `2026-07-26T12:39:48` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado de `safety.py` mediante docstrings detallados que explican el "porqué" de las validaciones de seguridad, garantizando que futuras modificaciones mantengan el rigor técnico del módulo.
-- `2026-07-26T12:30:20` **quarantine.py** (legibilidad y documentación): He mejorado la documentación interna y la claridad del código añadiendo *type hints* faltantes en los parámetros de tipo `List`/`Union`, y he refactorizado la lógica de validación de archivos en `quarantine_file` extrayéndola a una función interna (`_is_file_locked`) con un nombre auto-explicativo, eliminando el uso de `with open...` que resultaba confuso para el lector y poco idiomático.
-- `2026-07-26T12:29:58` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la inclusión de docstrings detallados que especifican las precondiciones, el propósito de los parámetros y el comportamiento ante errores, facilitando el mantenimiento y la comprensión del flujo de trabajo del módulo.
-- `2026-07-26T12:29:36` **memory.py** (legibilidad y documentación): He mejorado la documentación del código añadiendo docstrings descriptivos a las funciones de bajo nivel y detallando las unidades y el comportamiento de los parámetros, lo cual facilita el mantenimiento y la comprensión de las interacciones con la API de Windows y `procfs`.

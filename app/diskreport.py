@@ -147,10 +147,8 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
     """
     Genera pares (ruta, tamaño) de archivos bajo `directory`.
     
-    Implementa una recursión controlada mediante os.walk. La lógica de 
-    `subdirs[:]` permite podar el árbol de búsqueda en tiempo real si se 
-    encuentra un directorio protegido, evitando entrar en profundidades 
-    innecesarias y cumpliendo con las políticas de seguridad del proyecto.
+    Implementa una recursión controlada mediante os.walk con manejo de errores
+    para archivos bloqueados, inexistentes o con permisos restringidos.
     """
     if not directory:
         return
@@ -163,20 +161,20 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
         return
     if skip_protected and is_protected_path(base):
         return
-    for root, subdirs, files in os.walk(base):
+    
+    for root, subdirs, files in os.walk(base, onerror=lambda _: None):
         root_path = Path(root)
-        if not str(root_path).startswith(str(base)):
-            continue
             
         if skip_protected:
             subdirs[:] = [d for d in subdirs if not is_protected_path(root_path / d)]
+            
         for name in files:
             path = root_path / name
             try:
                 if path.is_symlink():
                     continue
                 yield path, path.stat().st_size
-            except (OSError, PermissionError):
+            except (OSError, PermissionError, FileNotFoundError):
                 continue
 
 
@@ -204,9 +202,6 @@ def usage_by_extension(directory: str | os.PathLike, limit: int = 15, skip_prote
 def largest_folders(directory: str | os.PathLike, limit: int = 10, skip_protected: bool = True) -> list[FolderUsage]:
     """
     Calcula el peso acumulado de las subcarpetas directas de `directory`.
-
-    Utiliza una estrategia de agregación basada en el índice de partes para 
-    evitar el costo recursivo de Path.relative_to en cada iteración del walk.
     """
     if not directory:
         return []

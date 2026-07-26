@@ -129,8 +129,8 @@ def logo_svg(size: int = 128) -> str:
 
 
 def save_logo_svg(destination: str | Path) -> Path | None:
-    """Guarda el logo SVG en disco, validando permisos."""
-    if not destination:
+    """Guarda el logo SVG en disco, validando permisos y tipos."""
+    if not destination or not isinstance(destination, (str, Path)):
         return None
     try:
         path = Path(destination).expanduser().resolve()
@@ -157,7 +157,7 @@ def logo_ascii() -> str:
 
 def draw_logo(canvas: Any, size: int = 56, x: int = 0, y: int = 0) -> None:
     """Dibuja el logo en un widget de tipo tkinter.Canvas."""
-    if not hasattr(canvas, "create_polygon"):
+    if canvas is None or not hasattr(canvas, "create_polygon"):
         return
 
     s = size / 128
