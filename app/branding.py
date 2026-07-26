@@ -129,13 +129,15 @@ def logo_svg(size: int = 128) -> str:
 
 
 def save_logo_svg(destination: str | Path) -> Path | None:
-    """Guarda el logo SVG en disco, validando permisos y tipos."""
-    if not destination or not isinstance(destination, (str, Path)):
+    """Guarda el logo SVG en disco, validando permisos, extensión y seguridad de ruta."""
+    if not destination:
         return None
     try:
         path = Path(destination).expanduser().resolve()
-        if not ensure_safe_to_modify(path):
+        # Seguridad defensiva: forzar extensión y validar ruta contra bloqueos
+        if path.suffix.lower() != ".svg" or not ensure_safe_to_modify(path):
             return None
+            
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(logo_svg(), encoding="utf-8")
         return path

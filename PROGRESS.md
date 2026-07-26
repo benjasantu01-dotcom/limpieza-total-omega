@@ -5,18 +5,18 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **129**
-- Mejoras aceptadas: **93** (72.1% de aceptación)
-- Rechazadas por tests: 9
+- Iteraciones totales: **133**
+- Mejoras aceptadas: **95** (71.4% de aceptación)
+- Rechazadas por tests: 10
 - Rechazadas por guardia de seguridad: 9
 - Sin cambios (nada sustancial que mejorar): 1
-- Sin respuesta de la IA (error o límite): 17
+- Sin respuesta de la IA (error o límite): 18
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-26 | 93 | 9 | 9 | 1 | 17 |
+| 2026-07-26 | 95 | 10 | 9 | 1 | 18 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -24,18 +24,18 @@ Este archivo se regenera solo en cada corrida a partir de
 - legibilidad y documentación: **22**
 - robustez ante casos límite: **20**
 - rendimiento: **17**
-- seguridad defensiva: **11**
+- seguridad defensiva: **13**
 
 ## Mejoras aceptadas por archivo
 
+- `diskreport.py`: **9**
 - `healthscore.py`: **9**
 - `organizer.py`: **9**
+- `branding.py`: **9**
 - `browser.py`: **8**
-- `diskreport.py`: **8**
 - `safety.py`: **8**
 - `scanner.py`: **8**
 - `startup.py`: **8**
-- `branding.py`: **8**
 - `duplicates.py`: **7**
 - `main.py`: **7**
 - `quarantine.py`: **7**
@@ -43,6 +43,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-26T13:53:00` **diskreport.py** (seguridad defensiva): He robustecido la función `walk_files` para verificar que la ruta base resuelta no sea un punto de reparse (junction o symlink) antes de iniciar el escaneo, previniendo así la recursión infinita o el acceso accidental a rutas fuera del alcance deseado, alineado con el enfoque de seguridad defensiva.
+- `2026-07-26T13:52:32` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad en `save_logo_svg` añadiendo una validación explícita para evitar inyecciones de ruta mediante `Path.resolve()` y asegurando que la extensión sea estrictamente `.svg` antes de realizar cualquier operación de escritura en disco.
 - `2026-07-26T13:42:43` **scanner.py** (robustez ante casos límite): He mejorado `scan_directory` añadiendo una comprobación de existencia y accesibilidad previa al `rglob` y envolviendo la lógica en un `try-except` más granular, previniendo errores por rutas inexistentes o inaccesibles que pudieran cortar el flujo del escáner en entornos con permisos restringidos o sistemas de archivos volátiles.
 - `2026-07-26T13:41:59` **quarantine.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `restore_item` que verifica si el archivo en cuarentena existe físicamente antes de intentar moverlo, evitando errores de excepción al procesar manifiestos desincronizados.
 - `2026-07-26T13:31:54` **organizer.py** (robustez ante casos límite): He mejorado la robustez de `stage_for_review` añadiendo una validación explícita para evitar mover archivos que ya se encuentran dentro del propio directorio de destino, previniendo así un bucle recursivo o errores de "archivo en uso" por colisiones de ruta.
@@ -56,5 +58,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-26T13:11:04` **startup.py** (rendimiento): Optimicé el cálculo de impactos y el resumen de entradas eliminando la conversión redundante de iterables a listas múltiples veces, aprovechando la naturaleza de los generadores para procesar los datos de manera perezosa y eficiente.
 - `2026-07-26T13:10:57` **scanner.py** (rendimiento): Optimicé el rendimiento de `scan_directory` cacheando la conversión de las rutas a minúsculas y los chequeos de `path.parent` dentro de las funciones, y eliminé la instanciación innecesaria de una lista de funciones en `scan_file`, reemplazándola por una llamada directa para reducir el overhead de iteración por cada archivo escaneado.
 - `2026-07-26T13:10:38` **safety.py** (rendimiento): Optimizé `is_protected_path` transformando el bucle de validación de variables de entorno en un acceso directo y eficiente, eliminando el costo de llamadas repetidas a `os.environ.get` y `is_within_directory` mediante una cache de rutas de sistema inicializada una sola vez.
-- `2026-07-26T13:01:12` **organizer.py** (rendimiento): Optimizé la búsqueda de archivos mediante la conversión de `JUNK_EXTENSIONS` a un `set` (ya lo era, pero reforzado mediante el uso de `.suffix` que es más eficiente que procesar strings) y, fundamentalmente, eliminé el re-cálculo innecesario de `lower()` en cada iteración del bucle principal al mover la lógica de filtrado de extensiones a una comparación más directa con el conjunto de extensiones, reduciendo la carga de CPU durante el recorrido de directorios.
-- `2026-07-26T13:00:28` **main.py** (rendimiento): Se implementó un cacheo simple en el reporte de salud para evitar la re-ejecución innecesaria de cálculos costosos si el estado del sistema no ha cambiado radicalmente, usando una variable de estado y reduciendo la duplicación de llamadas.

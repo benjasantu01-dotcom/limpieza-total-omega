@@ -157,7 +157,7 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
     except (OSError, RuntimeError):
         return
         
-    if not base.is_dir():
+    if not base.is_dir() or base.is_symlink():
         return
     if skip_protected and is_protected_path(base):
         return
@@ -210,7 +210,7 @@ def largest_folders(directory: str | os.PathLike, limit: int = 10, skip_protecte
     except (OSError, RuntimeError):
         return []
         
-    if not base.exists() or not base.is_dir():
+    if not base.exists() or not base.is_dir() or base.is_symlink():
         return []
 
     folder_map: dict[Path, FolderUsage] = {}

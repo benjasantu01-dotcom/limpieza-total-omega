@@ -711,3 +711,40 @@ FAILED evolve/tests/test_safety.py::test_filter_safe_paths_keeps_only_the_safe_o
 - `2026-07-26T13:42:43` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). He mejorado `scan_directory` añadiendo una comprobación de existencia y accesibilidad previa al `rglob` y envolviendo la lógica en un `try-except` más granular, previniendo errores por rutas inexistentes o inaccesibles que pudieran cortar el flujo del escáner en entornos con permisos restringidos o sistemas de archivos volátiles.
 - `2026-07-26T13:42:43` Rotación — nada para rotar
 - `2026-07-26T13:42:43` Corrida terminada. Total usado hoy: 150.
+- `2026-07-26T13:51:49` Arrancando corrida. Quedan hoy ~150 peticiones objetivo.
+- `2026-07-26T13:52:11` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-07-26T13:52:32` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad en `save_logo_svg` añadiendo una validación explícita para evitar inyecciones de ruta mediante `Path.resolve()` y asegurando que la extensión sea estrictamente `.svg` antes de realizar cualquier operación de escritura en disco.
+- `2026-07-26T13:52:53` Tests FALLARON:
+```
+........................................................................ [ 36%]
+.....................................F.................................. [ 73%]
+.....................................................                    [100%]
+=================================== FAILURES ===================================
+______________ test_detect_profiles_finds_injected_cache_folders _______________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-2/test_detect_profiles_finds_inj0')
+
+    def test_detect_profiles_finds_injected_cache_folders(tmp_path):
+        cache = tmp_path / "Navegador" / "Default" / "Cache"
+        cache.mkdir(parents=True)
+        (cache / "dato.bin").write_bytes(b"a" * 500)
+    
+        encontrados = browser.detect_profiles(
+            bases=[tmp_path],
+            cache_paths={"Navegador Falso": r"Navegador\Default\Cache"},
+        )
+>       assert len(encontrados) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+evolve/tests/test_modules.py:573: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_folders - assert 0 == 1
+ +  where 0 = len([])
+1 failed, 196 passed in 0.33s
+
+```
+- `2026-07-26T13:52:53` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad de `directory_size` utilizando `os.scandir` para minimizar el riesgo de condiciones de carrera (TOCTOU) y se implementó una validación estricta de rutas mediante `path.resolve()` en un contexto seguro para evitar que el escaneo acceda a directorios fuera del árbol del perfil.
+- `2026-07-26T13:53:00` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). He robustecido la función `walk_files` para verificar que la ruta base resuelta no sea un punto de reparse (junction o symlink) antes de iniciar el escaneo, previniendo así la recursión infinita o el acceso accidental a rutas fuera del alcance deseado, alineado con el enfoque de seguridad defensiva.
+- `2026-07-26T13:53:00` Rotación — nada para rotar
+- `2026-07-26T13:53:00` Corrida terminada. Total usado hoy: 154.
