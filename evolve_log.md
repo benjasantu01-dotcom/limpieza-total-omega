@@ -157,3 +157,23 @@
 - `2026-07-26T01:29:01` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
 - `2026-07-26T01:29:23` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Optimicé el método `refresh_list` para evitar la sobrecarga del hilo principal al realizar inserciones masivas en el widget `CTkTextbox`, consolidando toda la salida en una sola operación de texto tras procesar la lista en memoria.
 - `2026-07-26T01:29:23` Corrida terminada. Total usado hoy: 21.
+- `2026-07-26T02:10:42` Arrancando corrida. Quedan hoy ~279 peticiones objetivo.
+- `2026-07-26T02:10:48` Tests FALLARON:
+```
+....................F.........                                           [100%]
+=================================== FAILURES ===================================
+_____________ test_scanner_flags_system_lookalike_outside_system32 _____________
+
+    def test_scanner_flags_system_lookalike_outside_system32():
+        result = scanner.check_system_lookalike(Path(r"C:\Users\test\Downloads\svchost.exe"))
+>       assert result is not None
+E       assert None is not None
+
+evolve/tests/test_basic.py:198: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_scanner_flags_system_lookalike_outside_system32 - assert None is not None
+1 failed, 29 passed in 0.08s
+
+```
+- `2026-07-26T02:10:48` ❌ Mejora descartada en main.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `on_scan_junk` y `on_heuristic_scan` mediante la validación proactiva de rutas, asegurando que `os.path.exists` y `os.path.isdir` verifiquen la accesibilidad antes de iniciar operaciones asíncronas para evitar errores de sistema en tiempo de ejecución.
+- `2026-07-26T02:10:48` Corrida terminada. Total usado hoy: 22.
