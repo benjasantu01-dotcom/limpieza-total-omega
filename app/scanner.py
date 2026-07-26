@@ -27,6 +27,7 @@ logger = logging.getLogger(__name__)
 DOUBLE_EXTENSION_RE = re.compile(r"\.(pdf|jpg|png|docx|xlsx|txt)\.(exe|scr|bat|cmd|js|vbs)$", re.IGNORECASE)
 SUSPICIOUS_EXECUTABLE_EXT = {".exe", ".scr", ".bat", ".cmd", ".js", ".vbs", ".ps1"}
 SYSTEM_LOOKALIKES = {"svchost.exe", "explorer.exe", "csrss.exe", "winlogon.exe", "lsass.exe"}
+SYSTEM32_LOWER = "system32"
 
 
 @dataclass
@@ -69,7 +70,7 @@ def check_system_lookalike(path: Path) -> Optional[Suspicion]:
     Detecta archivos con nombres de procesos críticos del sistema que operan fuera 
     de System32, lo cual suele ser indicativo de técnicas de persistencia maliciosa.
     """
-    if path.name.lower() in SYSTEM_LOOKALIKES and "system32" not in str(path.parent).lower():
+    if path.name.lower() in SYSTEM_LOOKALIKES and SYSTEM32_LOWER not in str(path.parent).lower():
         return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
     return None
 
@@ -79,7 +80,6 @@ def scan_file(path: Path) -> List[Suspicion]:
     Ejecuta el conjunto de chequeos heurísticos sobre un archivo individual.
     """
     results: List[Suspicion] = []
-    # Ejecución directa para evitar overhead de creación de listas/iterables en cada archivo
     res = check_double_extension(path)
     if res: results.append(res)
     
@@ -102,18 +102,23 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
         
     try:
         root = Path(directory).resolve()
-        # Seguridad defensiva: verificar que la ruta sea segura antes de iniciar el escaneo
         ensure_safe_to_modify(root)
         
         results: List[Suspicion] = []
         if not root.exists() or not root.is_dir():
             return []
             
-        for p in root.rglob("*"):
+        # Uso de pila para evitar la sobrecarga de rglob y optimizar recursos en recorridos profundos
+        queue = [root]
+        while queue:
+            current_dir = queue.pop()
             try:
-                # Comprobación de acceso y tipo antes de procesar
-                if p.is_file() and not p.is_symlink():
-                    results.extend(scan_file(p))
+                for entry in current_dir.iterdir():
+                    if entry.is_dir():
+                        if not entry.is_symlink():
+                            queue.append(entry)
+                    elif entry.is_file():
+                        results.extend(scan_file(entry))
             except (PermissionError, OSError):
                 continue
         return results

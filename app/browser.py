@@ -86,15 +86,13 @@ def base_directories() -> list[Path]:
 @lru_cache(maxsize=32)
 def directory_size(path: str | os.PathLike) -> int:
     """
-    Calcula el tamaño total de una carpeta de forma iterativa segura.
-    
-    Usa os.walk para evitar la sobrecarga de recursividad manual y 
-    lru_cache para evitar re-escaneo innecesario.
+    Calcula el tamaño total de una carpeta de forma iterativa segura,
+    manejando permisos denegados y archivos en uso.
     """
     total = 0
     try:
         for root, dirs, files in os.walk(path):
-            # Modificamos dirs in-place para prevenir seguir enlaces simbólicos
+            # Filtrar enlaces simbólicos para no salir de la estructura de caché
             dirs[:] = [d for d in dirs if not os.path.islink(os.path.join(root, d))]
             for f in files:
                 filepath = os.path.join(root, f)
@@ -102,6 +100,7 @@ def directory_size(path: str | os.PathLike) -> int:
                     try:
                         total += os.path.getsize(filepath)
                     except (OSError, PermissionError):
+                        # Archivo inaccesible o bloqueado, omitir para no romper el cálculo
                         continue
     except (OSError, PermissionError, FileNotFoundError):
         return 0

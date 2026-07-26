@@ -155,7 +155,7 @@ def save_logo_svg(destination: str | Path) -> Path | None:
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(logo_svg(), encoding="utf-8")
         return path
-    except (OSError, PermissionError, TypeError):
+    except (OSError, PermissionError, TypeError, RuntimeError):
         return None
 
 
@@ -184,9 +184,13 @@ def draw_logo(canvas: Any, size: int = 56, x: int = 0, y: int = 0) -> None:
     if canvas is None or not hasattr(canvas, "create_polygon"):
         return
 
+    # Validar que los valores numéricos sean finitos y positivos para evitar errores de renderizado
+    if not isinstance(size, (int, float)) or size <= 0:
+        size = 56
+        
     s = size / 128
     def pts(*coords: float) -> list[float]:
-        return [x + c * s if i % 2 == 0 else y + c * s for i, c in enumerate(coords)]
+        return [x + c * s for c in coords]
 
     try:
         canvas.create_polygon(

@@ -104,19 +104,16 @@ def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> List[Start
     for folder in folders:
         try:
             ensure_safe_to_modify(folder)
+            base_path: Path = folder.resolve()
         except (ValueError, PermissionError):
             continue
 
-        base_path: Path = Path(folder).resolve()
         try:
-            items: List[Path] = sorted(base_path.iterdir())
+            for item in base_path.iterdir():
+                if item.is_file() and item.name.lower() != "desktop.ini":
+                    found_entries.append(StartupEntry(name=item.stem, command=str(item), source="carpeta"))
         except (OSError, PermissionError):
             continue
-        for item in items:
-            if item.is_file() and item.name.lower() != "desktop.ini":
-                # Verifica que el archivo resida efectivamente bajo el directorio base
-                if base_path in item.resolve().parents:
-                    found_entries.append(StartupEntry(name=item.stem, command=str(item), source="carpeta"))
     return found_entries
 
 
