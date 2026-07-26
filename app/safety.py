@@ -22,7 +22,11 @@ modelo, está clavada en el proceso.
 
 from __future__ import annotations
 import os
-from pathlib import Path, PurePath
+from pathlib import Path
+from typing import Union, Iterable, TypeAlias
+
+# Alias para facilitar la lectura de firmas de funciones que aceptan rutas
+PathLike: TypeAlias = Union[str, os.PathLike]
 
 __all__ = [
     "UnsafePathError",
@@ -46,7 +50,7 @@ class UnsafePathError(Exception):
 # Carpetas que nunca se recorren ni se modifican, en ningún sistema.
 # Se comparan en minúsculas contra cada componente de la ruta, así da igual
 # si la unidad es C:, D: o si el usuario tiene Windows en otra ubicación.
-PROTECTED_DIR_NAMES = frozenset({
+PROTECTED_DIR_NAMES: frozenset[str] = frozenset({
     # Windows
     "windows", "winnt", "system32", "syswow64", "system", "boot",
     "program files", "program files (x86)", "programdata",
@@ -62,13 +66,13 @@ PROTECTED_DIR_NAMES = frozenset({
 
 # Extensiones que no se tocan aunque estén en una carpeta permitida:
 # borrarlas puede dejar el sistema o un programa sin arrancar.
-SENSITIVE_EXTENSIONS = frozenset({
+SENSITIVE_EXTENSIONS: frozenset[str] = frozenset({
     ".sys", ".dll", ".exe", ".msi", ".drv", ".ocx", ".cpl", ".efi",
     ".reg", ".pol", ".key", ".pem", ".pfx", ".p12", ".crt", ".cer",
 })
 
 
-def normalize(path: str | os.PathLike) -> Path:
+def normalize(path: PathLike) -> Path:
     """Devuelve una ruta absoluta y resuelta, sin fallar si no existe."""
     if not isinstance(path, (str, os.PathLike)):
         raise TypeError(f"Entrada inválida en normalize: se esperaba str o PathLike, recibió {type(path)}")
@@ -78,13 +82,13 @@ def normalize(path: str | os.PathLike) -> Path:
         return Path(os.path.abspath(os.path.expanduser(str(path))))
 
 
-def is_drive_root(path: str | os.PathLike) -> bool:
+def is_drive_root(path: PathLike) -> bool:
     """True si la ruta es la raíz de una unidad o del sistema de archivos."""
     p = normalize(path)
     return p.parent == p or str(p) == p.anchor
 
 
-def is_protected_path(path: str | os.PathLike) -> bool:
+def is_protected_path(path: PathLike) -> bool:
     """True si la ruta cae dentro de una carpeta de sistema protegida."""
     p = normalize(path)
     if is_drive_root(p):
@@ -100,8 +104,8 @@ def is_protected_path(path: str | os.PathLike) -> bool:
 
 
 def is_within_directory(
-    child: str | os.PathLike,
-    parent: str | os.PathLike,
+    child: PathLike,
+    parent: PathLike,
     allow_equal: bool = False,
 ) -> bool:
     """True si `child` está realmente contenido en `parent`."""
@@ -118,13 +122,19 @@ def is_within_directory(
         return False
 
 
-def is_sensitive_file(path: str | os.PathLike) -> bool:
+def is_sensitive_file(path: PathLike) -> bool:
     """True si la extensión del archivo lo hace peligroso de borrar."""
     return normalize(path).suffix.lower() in SENSITIVE_EXTENSIONS
 
 
-def ensure_safe_to_modify(path: str | os.PathLike, *, allow_sensitive: bool = False) -> Path:
-    """Valida que se pueda modificar/borrar la ruta, o lanza UnsafePathError."""
+def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> Path:
+    """
+    Valida que se pueda modificar/borrar la ruta.
+
+    Raises:
+        UnsafePathError: Si la ruta es raíz, está protegida o es sensible.
+        TypeError: Si el tipo de entrada no es compatible con Path.
+    """
     p = normalize(path)
     if is_drive_root(p):
         raise UnsafePathError(f"Operación bloqueada: '{p}' es la raíz de una unidad.")
@@ -137,11 +147,9 @@ def ensure_safe_to_modify(path: str | os.PathLike, *, allow_sensitive: bool = Fa
     return p
 
 
-def filter_safe_paths(paths, *, allow_sensitive: bool = False) -> list[Path]:
+def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = False) -> list[Path]:
     """Filtra una lista dejando solo las rutas seguras de modificar."""
     safe: list[Path] = []
-    if not paths:
-        return safe
     for candidate in paths:
         try:
             safe.append(ensure_safe_to_modify(candidate, allow_sensitive=allow_sensitive))
@@ -150,7 +158,7 @@ def filter_safe_paths(paths, *, allow_sensitive: bool = False) -> list[Path]:
     return safe
 
 
-def describe_protection(path: str | os.PathLike) -> str:
+def describe_protection(path: PathLike) -> str:
     """Explica en una línea por qué una ruta está o no protegida."""
     try:
         p = normalize(path)

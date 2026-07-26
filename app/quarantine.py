@@ -27,6 +27,7 @@ import os
 from dataclasses import dataclass, asdict
 from datetime import datetime
 from pathlib import Path
+from typing import List, Union
 
 from safety import (
     UnsafePathError,
@@ -107,8 +108,8 @@ def load_manifest(base: str | Path = DEFAULT_QUARANTINE_DIR) -> list[QuarantineI
     return items
 
 
-def save_manifest(items, base: str | Path = DEFAULT_QUARANTINE_DIR) -> Path:
-    """Escribe el manifiesto completo y devuelve su ruta."""
+def save_manifest(items: List[QuarantineItem], base: str | Path = DEFAULT_QUARANTINE_DIR) -> Path:
+    """Serializa la lista de items a JSON y guarda el archivo de manifiesto en disco."""
     path = _manifest_path(base)
     path.write_text(
         json.dumps([item.to_dict() for item in items], indent=2, ensure_ascii=False),
@@ -125,8 +126,8 @@ def quarantine_file(
     """Mueve un archivo a la cuarentena y lo anota en el manifiesto.
 
     Lanza UnsafePathError si el origen está en una ruta protegida, y
-    FileNotFoundError si no existe. Se usa un nombre almacenado único para
-    que dos archivos con el mismo nombre no se pisen entre sí.
+    FileNotFoundError si no existe. Realiza un test de escritura para 
+    asegurar que el archivo no está bloqueado por otro proceso.
     """
     origin = normalize(source)
     if not origin.is_file():
@@ -199,11 +200,10 @@ def restore_item(item_id: str, base: str | Path = DEFAULT_QUARANTINE_DIR) -> Pat
 
 
 def purge_item(item_id: str, base: str | Path = DEFAULT_QUARANTINE_DIR) -> bool:
-    """Borra definitivamente UN elemento de la cuarentena. Acción explícita.
+    """Borra definitivamente UN elemento de la cuarentena.
 
-    Verifica que el archivo esté realmente dentro de la carpeta de
-    cuarentena antes de borrar, para que un manifiesto manipulado no pueda
-    usar esta función para borrar algo de otra parte del disco.
+    Verifica la integridad de la ruta para impedir desbordamientos fuera de 
+    la carpeta de cuarentena, incluso si el manifiesto fue corrompido.
     """
     items = load_manifest(base)
     match = next((i for i in items if i.item_id == item_id), None)
@@ -222,10 +222,10 @@ def purge_item(item_id: str, base: str | Path = DEFAULT_QUARANTINE_DIR) -> bool:
 
 
 def purge_all(base: str | Path = DEFAULT_QUARANTINE_DIR) -> int:
-    """Vacía la cuarentena. Devuelve cuántos archivos se borraron.
+    """Vacía la cuarentena eliminando todos los archivos registrados.
 
-    Solo borra archivos que estén dentro de la carpeta de cuarentena; el
-    manifiesto se conserva vacío para no perder la estructura.
+    Itera sobre el manifiesto y borra solo si la ruta confirmada pertenece 
+    a la carpeta de cuarentena. Devuelve el contador de eliminaciones.
     """
     root = quarantine_dir(base)
     items = load_manifest(base)
@@ -245,12 +245,12 @@ def purge_all(base: str | Path = DEFAULT_QUARANTINE_DIR) -> int:
 
 
 def total_quarantined_bytes(base: str | Path = DEFAULT_QUARANTINE_DIR) -> int:
-    """Espacio total ocupado por los archivos en cuarentena."""
+    """Calcula el peso total en bytes de todos los archivos aislados."""
     return sum(item.size_bytes for item in load_manifest(base))
 
 
 def summarize(base: str | Path = DEFAULT_QUARANTINE_DIR) -> list[str]:
-    """Resumen legible del estado de la cuarentena."""
+    """Genera una lista de cadenas con el reporte legible de la cuarentena."""
     items = list_items(base)
     if not items:
         return ["La cuarentena está vacía."]

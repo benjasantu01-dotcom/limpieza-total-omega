@@ -87,7 +87,16 @@ def scan_file(path: Path) -> list[Suspicion]:
 
 
 def scan_directory(directory: str | Path) -> list[Suspicion]:
-    """Escanea recursivamente un directorio en busca de sospechas."""
+    """
+    Escanea recursivamente un directorio en busca de sospechas.
+    
+    Args:
+        directory: La ruta raíz donde comenzar el escaneo (puede ser str o Path).
+        
+    Returns:
+        Lista de objetos Suspicion encontrados. Retorna una lista vacía si el 
+        directorio es inválido o si no se encuentran amenazas.
+    """
     if not directory:
         return []
         
@@ -117,8 +126,16 @@ def scan_directory(directory: str | Path) -> list[Suspicion]:
 
 
 def run_windows_defender_quick_scan() -> str:
-    """Dispara un escaneo rápido con Windows Defender (motor real).
-    Requiere PowerShell con permisos de administrador."""
+    """
+    Dispara un escaneo rápido con Windows Defender mediante PowerShell.
+    
+    Nota: Requiere privilegios de administrador para ser efectivo según la política
+    de ejecución de PowerShell del sistema.
+    
+    Returns:
+        String conteniendo la salida estándar del comando o un mensaje de error
+        si el proceso falla o no está soportado.
+    """
     try:
         result = subprocess.run(
             ["powershell", "-Command", "Start-MpScan -ScanType QuickScan"],
