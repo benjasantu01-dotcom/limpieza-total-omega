@@ -110,9 +110,11 @@ def is_protected_path(path: PathLike) -> bool:
     subdirectorio de las raíces críticas detectadas en el entorno (SYSTEM_ROOTS).
     """
     try:
-        p = normalize(path)
-        if p.is_symlink():
+        # Usamos path original para detectar links sin resolverlos prematuramente en algunos casos
+        raw_p = Path(path)
+        if raw_p.is_symlink():
             return True
+        p = normalize(path)
     except Exception:
         return True 
         

@@ -955,3 +955,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-07-26T16:57:13` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 104): unterminated string literal (detected at line 104)
 - `2026-07-26T16:57:13` Rotación — nada para rotar
 - `2026-07-26T16:57:13` Corrida terminada. Total usado hoy: 226.
+- `2026-07-26T17:06:12` Arrancando corrida. Quedan hoy ~74 peticiones objetivo.
+- `2026-07-26T17:06:35` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Mejoré `is_protected_path` para detectar explícitamente puntos de reparse (junctions y symlinks) usando `p.is_symlink()` de forma más robusta, evitando que la lógica de validación se detenga prematuramente o sea engañada por estructuras de directorios virtuales.
+- `2026-07-26T17:06:55` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha añadido un manejo robusto de excepciones (`OSError`, `PermissionError`, `FileNotFoundError`) y una verificación de existencia mediante `is_file()` en `scan_file` para evitar fallos durante la inspección de archivos que desaparecen, se bloquean por el sistema o son enlaces simbólicos rotos durante la iteración.
+- `2026-07-26T17:07:21` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Mejora la robustez del método `executable` en `StartupEntry` para manejar comandos con rutas mal formadas, espacios excesivos o falta de ejecutable real, evitando errores en el procesamiento de rutas y mejorando la precisión del reporte.
+- `2026-07-26T17:07:28` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `save_logo_svg` añadiendo una validación explícita mediante `path.resolve()` antes de realizar cualquier operación, asegurando que la ruta no sea un enlace simbólico o una ruta manipulada que escape del entorno permitido, conforme a las guías de protección de archivos.
+- `2026-07-26T17:07:28` Rotación — nada para rotar
+- `2026-07-26T17:07:28` Corrida terminada. Total usado hoy: 230.

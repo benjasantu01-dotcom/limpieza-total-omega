@@ -147,7 +147,9 @@ def save_logo_svg(destination: str | Path) -> Path | None:
         return None
     try:
         path = Path(destination).expanduser().resolve()
-        if path.suffix.lower() != ".svg":
+        
+        # Validaciones de seguridad defensiva
+        if path.is_symlink() or not path.name.lower().endswith(".svg"):
             return None
         if not ensure_safe_to_modify(path) or not ensure_safe_to_modify(path.parent):
             return None

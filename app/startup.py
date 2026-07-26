@@ -66,16 +66,27 @@ class StartupEntry:
         
         Maneja casos con comillas (típicos de rutas con espacios) y 
         argumentos adicionales descartando todo lo que sigue al ejecutable.
+        Valida que el resultado sea una ruta o nombre de archivo válido.
         """
         if not self.command:
             return ""
+        
         cmd: str = self.command.strip()
-        if cmd.startswith('"'):
-            # El ejecutable está delimitado por comillas: "C:\Path\App.exe"
-            end: int = cmd.find('"', 1)
-            return cmd[1:end] if end > 0 else cmd[1:]
-        # Si no hay comillas, el ejecutable es el primer token antes del primer espacio
-        return cmd.split(" ")[0] if cmd else ""
+        # Eliminar comillas externas si existen
+        cmd = cmd.strip('"')
+        
+        if not cmd:
+            return ""
+            
+        # Si el comando original tenía comillas, el ejecutable termina en la siguiente comilla
+        if self.command.strip().startswith('"'):
+            end: int = self.command.find('"', 1)
+            return self.command[1:end] if end > 0 else self.command[1:]
+        
+        # Si no hay comillas, extraemos el primer token (posible ejecutable)
+        # Filtramos posibles restos de rutas UNC o espacios múltiples
+        parts = cmd.split()
+        return parts[0] if parts else ""
 
 
 def startup_folders() -> List[Path]:

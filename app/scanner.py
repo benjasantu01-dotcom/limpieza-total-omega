@@ -79,6 +79,12 @@ def scan_file(path: Path) -> List[Suspicion]:
     """
     Ejecuta el conjunto de chequeos heurísticos sobre un archivo individual.
     """
+    try:
+        if not path.is_file():
+            return []
+    except (OSError, PermissionError):
+        return []
+
     results: List[Suspicion] = []
     res = check_double_extension(path)
     if res: results.append(res)
