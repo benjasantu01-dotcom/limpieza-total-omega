@@ -89,8 +89,13 @@ def directory_size(path: str | os.PathLike) -> int:
     Calcula el tamaño total de una carpeta usando os.scandir para eficiencia.
     Verifica que no se sigan enlaces simbólicos para prevenir escape de ruta.
     """
-    base_path = Path(path).resolve()
-    if not base_path.is_dir():
+    if not path:
+        return 0
+    try:
+        base_path = Path(path).resolve(strict=True)
+        if not base_path.is_dir():
+            return 0
+    except (OSError, RuntimeError):
         return 0
     
     total = 0
@@ -102,7 +107,6 @@ def directory_size(path: str | os.PathLike) -> int:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
-                        # Seguridad defensiva: ignorar links y validar contención
                         if entry.is_symlink():
                             continue
                         
@@ -114,7 +118,7 @@ def directory_size(path: str | os.PathLike) -> int:
                             stack.append(entry_path)
                         elif entry.is_file():
                             total += entry.stat().st_size
-                    except (OSError, PermissionError, ValueError):
+                    except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):
             continue
@@ -150,24 +154,21 @@ def detect_profiles(bases: Sequence[Path] | None = None,
             if not isinstance(relative, str):
                 continue
                 
-            candidate = base_path.joinpath(*relative.split("\\")).resolve()
-            
-            # Validación de seguridad defensiva: Verificar que candidate esté dentro de base_path
             try:
+                candidate = base_path.joinpath(*relative.split("\\")).resolve()
                 if not candidate.is_relative_to(base_path):
                     continue
-            except (ValueError, AttributeError):
-                continue
-            
-            if candidate.name.lower() in NEVER_TOUCH:
-                continue
                 
-            if candidate.is_dir():
+                if candidate.name.lower() in NEVER_TOUCH or not candidate.is_dir():
+                    continue
+                    
                 found.append(BrowserCache(
                     browser=browser,
                     path=candidate,
                     size_bytes=directory_size(str(candidate)),
                 ))
+            except (OSError, PermissionError, ValueError, AttributeError):
+                continue
                 
     found.sort(key=lambda c: c.size_bytes, reverse=True)
     return found

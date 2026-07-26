@@ -163,8 +163,8 @@ def _generate_recommendations(m: SystemMetrics, ratios: Dict[str, float]) -> Lis
 
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
-    if metrics is None or not isinstance(metrics, SystemMetrics):
-        return HealthResult(0, "F", {}, ["Error: Datos de entrada nulos o inválidos."])
+    if not isinstance(metrics, SystemMetrics):
+        return HealthResult(0, "F", {}, ["Error: Datos de entrada con formato inválido."])
 
     try:
         metrics.validate()
@@ -181,8 +181,8 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         breakdown = {k: int(round(ratios[k] * WEIGHTS[k])) for k in WEIGHTS}
         total = sum(breakdown.values())
 
-    except Exception:
-        return HealthResult(0, "F", {}, ["Error inesperado al calcular las métricas."])
+    except Exception as e:
+        return HealthResult(0, "F", {}, [f"Error inesperado al calcular las métricas: {str(e)}"])
 
     return HealthResult(
         score=max(0, min(100, total)),

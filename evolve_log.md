@@ -1373,3 +1373,10 @@ FAILED evolve/tests/test_modules.py::test_low_disk_produces_a_specific_recommend
 - `2026-07-26T21:37:38` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `color` y `font_size` implementando validación de tipo y manejo explícito de claves inexistentes para evitar errores en tiempo de ejecución, además de refactorizar el acceso a los datos mediante `MappingProxyType` para asegurar la integridad de la configuración.
 - `2026-07-26T21:37:38` Rotación — nada para rotar
 - `2026-07-26T21:37:38` Corrida terminada. Total usado hoy: 334.
+- `2026-07-26T21:44:23` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-07-26T21:44:44` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `directory_size` y `detect_profiles` mediante la validación explícita de tipos, el manejo seguro de estados de error en `os.scandir` y la consolidación de bloques `try-except` para prevenir fallos inesperados al acceder a rutas protegidas por el sistema operativo.
+- `2026-07-26T21:45:06` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: manejo de errores y validación de entradas).
+- `2026-07-26T21:45:27` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-07-26T21:45:34` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `SystemMetrics.validate` y `compute_score` asegurando que las métricas crudas se traten como valores numéricos válidos antes de procesarlas, evitando posibles errores de desbordamiento o tipos inesperados durante el cálculo de ratios.
+- `2026-07-26T21:45:34` Rotación — nada para rotar
+- `2026-07-26T21:45:34` Corrida terminada. Total usado hoy: 338.
