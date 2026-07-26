@@ -723,6 +723,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 self.log(f"Restaurado en: {destino}", "Cuarentena")
             except (KeyError, FileNotFoundError, safety.UnsafePathError) as e:
                 self.log(f"No se pudo restaurar: {e}", "Cuarentena")
+            except Exception as e:
+                self.log(f"Error inesperado al restaurar: {e}", "Cuarentena")
 
         self.run_async(task)
 
@@ -778,12 +780,14 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def on_trim_process(self) -> None:
         """Intento manual de reducir el working set de un proceso."""
         raw = self.pid_entry.get().strip()
+        if not raw:
+            messagebox.showinfo("PID vacío", "Escribí el número de PID.")
+            return
         if not raw.isdigit():
-            messagebox.showinfo("PID inválido", "Escribí el número de PID de un proceso.")
+            messagebox.showinfo("PID inválido", "El PID debe ser un número entero.")
             return
         
         pid = int(raw)
-        # Seguridad: evitar tocar procesos de sistema conocidos (ej. System, Idle)
         if pid < 100:
             messagebox.showwarning("Bloqueo de seguridad", "No se permite manipular procesos del sistema.")
             return

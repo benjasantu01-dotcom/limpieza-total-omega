@@ -5,8 +5,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **161**
-- Mejoras aceptadas: **108** (67.1% de aceptación)
+- Iteraciones totales: **165**
+- Mejoras aceptadas: **112** (67.9% de aceptación)
 - Rechazadas por tests: 10
 - Rechazadas por guardia de seguridad: 10
 - Sin cambios (nada sustancial que mejorar): 1
@@ -16,11 +16,11 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-26 | 108 | 10 | 10 | 1 | 32 |
+| 2026-07-26 | 112 | 10 | 10 | 1 | 32 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **27**
+- manejo de errores y validación de entradas: **31**
 - legibilidad y documentación: **22**
 - seguridad defensiva: **22**
 - robustez ante casos límite: **20**
@@ -28,21 +28,25 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Mejoras aceptadas por archivo
 
+- `organizer.py`: **11**
 - `diskreport.py`: **10**
 - `healthscore.py`: **10**
-- `organizer.py`: **10**
 - `branding.py`: **10**
 - `browser.py`: **9**
 - `duplicates.py`: **9**
+- `main.py`: **9**
+- `quarantine.py`: **9**
 - `safety.py`: **9**
 - `scanner.py`: **9**
 - `startup.py`: **9**
-- `main.py`: **8**
-- `quarantine.py`: **8**
-- `memory.py`: **7**
+- `memory.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-26T15:15:17` **quarantine.py** (manejo de errores y validación de entradas): He mejorado la robustez de `quarantine_file` y `restore_item` añadiendo validaciones de integridad de entrada y manejo específico de errores de sistema, asegurando que las operaciones críticas fallen con mensajes claros ante escenarios de disco lleno o permisos denegados.
+- `2026-07-26T15:15:10` **organizer.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `stage_for_review` mediante la validación proactiva de la integridad de los objetos `JunkFile` y la captura de errores en la resolución de rutas, asegurando que el proceso de organización no falle silenciosamente ante datos inconsistentes.
+- `2026-07-26T15:14:49` **memory.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `parse_windows_process_csv` mediante la validación estricta de la estructura de datos, asegurando que los valores numéricos sean procesables y manejando de forma segura posibles errores de formato en el CSV de PowerShell antes de procesar cada fila.
+- `2026-07-26T15:14:26` **main.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las validaciones de entrada en `on_trim_process` y `on_restore_quarantine`, evitando posibles errores de ejecución (como conversión de tipos o rutas inválidas) antes de procesar la lógica de negocio, alineándose con el enfoque de validación proactiva y manejo de errores.
 - `2026-07-26T15:04:33` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez de los iteradores y el manejo de parámetros en `find_duplicates` y `_collect_candidates`, validando explícitamente la integridad de las rutas para evitar excepciones al procesar iterables potencialmente vacíos o con elementos nulos.
 - `2026-07-26T15:04:12` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `largest_folders` añadiendo validaciones preventivas sobre la existencia y el tipo de los argumentos, asegurando que el código no falle silenciosamente al recibir rutas inexistentes o inválidas, alineado con el enfoque de manejo de errores y validación.
 - `2026-07-26T15:03:51` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `directory_size` y `detect_profiles` mediante validación explícita de entradas (`None` y tipos) y el uso de `os.scandir` en lugar de `os.walk` para manejar de forma más segura y eficiente las excepciones de acceso al sistema de archivos, alineándome con el enfoque de manejo de errores y validación de entradas.
@@ -54,7 +58,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-26T14:13:00` **organizer.py** (seguridad defensiva): He mejorado la seguridad defensiva integrando `safety.py` en `stage_for_review` para validar que las rutas de origen y destino sean seguras antes de realizar cualquier operación de movimiento, mitigando riesgos de manipulación de archivos en ubicaciones protegidas.
 - `2026-07-26T14:04:00` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `trim_working_set` implementando una validación explícita mediante `app.safety.ensure_safe_to_modify` para prevenir la manipulación indebida de procesos del sistema protegidos antes de intentar realizar cualquier operación de bajo nivel.
 - `2026-07-26T14:03:52` **main.py** (seguridad defensiva): Se implementó una validación de seguridad adicional en `on_trim_process` para asegurar que el PID ingresado por el usuario no sea un proceso del sistema antes de intentar cualquier operación, centralizando el control defensivo.
-- `2026-07-26T14:03:11` **healthscore.py** (seguridad defensiva): Reforcé la robustez del sistema de cálculo ante entradas corruptas o malintencionadas (como valores negativos o infinitos en las métricas) utilizando un decorador de validación interna en las funciones de score, asegurando que los valores de entrada no puedan degradar el estado del sistema ni causar desbordamientos en la lógica de puntuación.
-- `2026-07-26T14:02:49` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` añadiendo una validación explícita mediante `resolve()` para asegurar que las rutas recorridas no escapen del directorio base mediante enlaces simbólicos o puntos de reparse, previniendo así posibles ataques de "path traversal" o acceso involuntario a rutas del sistema fuera del ámbito permitido.
-- `2026-07-26T13:53:00` **diskreport.py** (seguridad defensiva): He robustecido la función `walk_files` para verificar que la ruta base resuelta no sea un punto de reparse (junction o symlink) antes de iniciar el escaneo, previniendo así la recursión infinita o el acceso accidental a rutas fuera del alcance deseado, alineado con el enfoque de seguridad defensiva.
-- `2026-07-26T13:52:32` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad en `save_logo_svg` añadiendo una validación explícita para evitar inyecciones de ruta mediante `Path.resolve()` y asegurando que la extensión sea estrictamente `.svg` antes de realizar cualquier operación de escritura en disco.

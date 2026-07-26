@@ -118,7 +118,7 @@ def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[Quara
     for entry in raw if isinstance(raw, list) else []:
         try:
             items.append(QuarantineItem(**entry))
-        except TypeError:
+        except (TypeError, ValueError):
             continue
     return items
 
@@ -139,6 +139,9 @@ def quarantine_file(
     base: Union[str, Path] = DEFAULT_QUARANTINE_DIR,
 ) -> QuarantineItem:
     """Mueve un archivo a la cuarentena y lo anota en el manifiesto."""
+    if not source:
+        raise ValueError("La ruta de origen no puede estar vacía.")
+    
     origin = normalize(source)
     if not origin.is_file():
         raise FileNotFoundError(f"No existe el archivo a poner en cuarentena: {origin}")
@@ -173,7 +176,7 @@ def quarantine_file(
         items.append(item)
         save_manifest(items, base)
         return item
-    except Exception as e:
+    except (OSError, PermissionError) as e:
         if destination.exists() and not origin.exists():
             shutil.move(str(destination), str(origin))
         raise RuntimeError(f"Falla crítica al mover archivo a cuarentena: {e}")
@@ -188,6 +191,9 @@ def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[Quaranti
 
 def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
     """Devuelve un archivo a su ubicación original y lo saca del manifiesto."""
+    if not item_id:
+        raise ValueError("El ID del elemento no puede estar vacío.")
+
     items = load_manifest(base)
     match = next((i for i in items if i.item_id == item_id), None)
     if match is None:
@@ -208,8 +214,11 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
     if is_protected_path(destination.parent):
         raise UnsafePathError(f"Restauración bloqueada: '{destination.parent}' es ruta protegida.")
 
-    destination.parent.mkdir(parents=True, exist_ok=True)
-    shutil.move(str(stored), str(destination))
+    try:
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.move(str(stored), str(destination))
+    except (OSError, PermissionError) as e:
+        raise RuntimeError(f"Error durante la restauración del archivo: {e}")
 
     save_manifest([i for i in items if i.item_id != item_id], base)
     return destination
@@ -217,6 +226,8 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
 
 def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> bool:
     """Borra definitivamente UN elemento de la cuarentena."""
+    if not item_id:
+        return False
     items = load_manifest(base)
     match = next((i for i in items if i.item_id == item_id), None)
     if match is None:

@@ -134,21 +134,28 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
     """
     processes: List[ProcessMemory] = []
     
+    if not text:
+        return processes
+
     for line in text.splitlines():
         line = line.strip()
         if not line:
             continue
         
         parts = [p.strip().strip('"') for p in line.split(",")]
-        # Validar longitud mínima y que contenga datos numéricos
+        # Validar longitud mínima: Name, Id, WorkingSet
         if len(parts) < 3:
             continue
         
-        # Ignorar cabeceras típicas de CSV
+        # Ignorar cabeceras del CSV
         if parts[0].lower() in {"name", "processname"}:
             continue
             
         try:
+            # Validar que los campos críticos contengan datos
+            if not parts[1] or not parts[2]:
+                continue
+                
             pid = int(parts[1])
             working_set = int(float(parts[2]))
             
@@ -156,11 +163,11 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
                 continue
                 
             processes.append(ProcessMemory(
-                name=parts[0] or "Unknown", 
+                name=parts[0] if parts[0] else "Unknown", 
                 pid=pid, 
                 working_set=working_set
             ))
-        except (ValueError, OverflowError, IndexError):
+        except (ValueError, OverflowError):
             continue
             
     processes.sort(key=lambda p: p.working_set, reverse=True)
@@ -219,9 +226,9 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
             ["powershell", "-NoProfile", "-Command", command],
             capture_output=True, text=True, timeout=30,
         )
+        return parse_windows_process_csv(result.stdout or "", limit=limit)
     except (OSError, subprocess.SubprocessError):
         return []
-    return parse_windows_process_csv(result.stdout or "", limit=limit)
 
 
 def pressure_level(snapshot: MemorySnapshot) -> str:

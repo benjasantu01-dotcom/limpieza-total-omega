@@ -132,19 +132,26 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         raise
 
     for jf in files:
-        if not isinstance(jf, JunkFile) or not jf.path or not jf.path.exists():
+        if not isinstance(jf, JunkFile) or not jf.path:
             continue
-
+            
         try:
             full_source_path = jf.path.resolve()
+            if not full_source_path.exists():
+                continue
+            
             # Validación de seguridad: Verificar si la operación está permitida
             if not ensure_safe_to_modify(full_source_path):
                 continue
-        except OSError:
+        except (OSError, RuntimeError) as e:
+            logger.debug("Error validando ruta %s: %s", jf.path, e)
             continue
 
         # Evitar mover archivos que ya están en el directorio de destino
-        if dest in full_source_path.parents or full_source_path.parent == dest:
+        try:
+            if dest in full_source_path.parents or full_source_path.parent == dest:
+                continue
+        except Exception:
             continue
 
         base_name = jf.path.stem

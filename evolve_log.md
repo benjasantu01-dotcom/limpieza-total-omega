@@ -849,3 +849,10 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_f
 - `2026-07-26T15:04:40` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: manejo de errores y validación de entradas).
 - `2026-07-26T15:04:40` Rotación — nada para rotar
 - `2026-07-26T15:04:40` Corrida terminada. Total usado hoy: 182.
+- `2026-07-26T15:13:40` Arrancando corrida. Quedan hoy ~118 peticiones objetivo.
+- `2026-07-26T15:14:26` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de las validaciones de entrada en `on_trim_process` y `on_restore_quarantine`, evitando posibles errores de ejecución (como conversión de tipos o rutas inválidas) antes de procesar la lógica de negocio, alineándose con el enfoque de validación proactiva y manejo de errores.
+- `2026-07-26T15:14:49` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `parse_windows_process_csv` mediante la validación estricta de la estructura de datos, asegurando que los valores numéricos sean procesables y manejando de forma segura posibles errores de formato en el CSV de PowerShell antes de procesar cada fila.
+- `2026-07-26T15:15:10` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `stage_for_review` mediante la validación proactiva de la integridad de los objetos `JunkFile` y la captura de errores en la resolución de rutas, asegurando que el proceso de organización no falle silenciosamente ante datos inconsistentes.
+- `2026-07-26T15:15:17` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). He mejorado la robustez de `quarantine_file` y `restore_item` añadiendo validaciones de integridad de entrada y manejo específico de errores de sistema, asegurando que las operaciones críticas fallen con mensajes claros ante escenarios de disco lleno o permisos denegados.
+- `2026-07-26T15:15:17` Rotación — nada para rotar
+- `2026-07-26T15:15:17` Corrida terminada. Total usado hoy: 186.
