@@ -106,7 +106,7 @@ def group_by_size(paths: list[str | Path]) -> dict[int, list[Path]]:
 
 def _collect_candidates(directories: Iterable[str | Path], min_size: int, skip_protected: bool) -> list[Path]:
     """Recorre las carpetas y junta archivos candidatos a comparar."""
-    if not directories:
+    if directories is None:
         return []
     candidates: list[Path] = []
     for directory in directories:
@@ -156,15 +156,22 @@ def find_duplicates(
     skip_protected: bool = True,
 ) -> list[DuplicateGroup]:
     """Busca duplicados en las carpetas indicadas aplicando la estrategia de 3 pasos."""
+    if not directories:
+        return []
+        
     candidates = _collect_candidates(directories, min_size, skip_protected)
     if not candidates:
         return []
 
     groups: list[DuplicateGroup] = []
     
-    # Paso 1: Filtrado por tamaño (ya realizado por group_by_size)
-    for size, same_size in group_by_size(candidates).items():
-        
+    # Paso 1: Filtrado por tamaño
+    size_map = group_by_size(candidates)
+    
+    for size, same_size in size_map.items():
+        if not same_size or len(same_size) < 2:
+            continue
+            
         # Paso 2: Hash parcial para descartar archivos que difieren en el encabezado
         by_partial = _refine_by_hash(same_size, partial_hash)
         
@@ -174,11 +181,12 @@ def find_duplicates(
             by_full = _refine_by_hash(partial_candidates, hash_file)
             
             for digest, confirmed in by_full.items():
-                groups.append(DuplicateGroup(
-                    digest=digest, 
-                    size_bytes=size, 
-                    paths=sorted(confirmed)
-                ))
+                if confirmed:
+                    groups.append(DuplicateGroup(
+                        digest=digest, 
+                        size_bytes=size, 
+                        paths=sorted(confirmed)
+                    ))
 
     groups.sort(key=lambda g: g.wasted_bytes, reverse=True)
     return groups
@@ -186,7 +194,7 @@ def find_duplicates(
 
 def reclaimable_bytes(groups: list[DuplicateGroup]) -> int:
     """Espacio total que se liberaría dejando una copia de cada grupo."""
-    if not groups:
+    if not groups or not isinstance(groups, list):
         return 0
     return sum(g.wasted_bytes for g in groups if isinstance(g, DuplicateGroup))
 

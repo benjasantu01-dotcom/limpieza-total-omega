@@ -84,30 +84,25 @@ def base_directories() -> list[Path]:
 
 def directory_size(path: str | os.PathLike) -> int:
     """
-    Calcula el tamaño total de una carpeta de forma iterativa.
+    Calcula el tamaño total de una carpeta de forma recursiva segura.
     
-    Ignora enlaces simbólicos y puntos de reanálisis (junctions) para evitar
-    bucles infinitos y recursión accidental fuera de la ruta objetivo. 
-    Captura errores de acceso (PermissionError, FileNotFoundError) que ocurren
-    si el navegador modifica la estructura mientras se recorre.
+    Usa scandir para mayor rendimiento y capturación granular de errores.
     """
+    if not path:
+        return 0
+        
     total = 0
     try:
-        for root, dirs, files in os.walk(path):
-            # Filtrar directorios: ignora symlinks y puntos de reanálisis (junctions)
-            dirs[:] = [
-                d for d in dirs 
-                if not (Path(root, d).is_symlink() or 
-                        (os.path.exists(os.path.join(root, d)) and not os.path.isdir(os.path.join(root, d))))
-            ]
-            for f in files:
-                fp = os.path.join(root, f)
+        with os.scandir(path) as it:
+            for entry in it:
                 try:
-                    # Usamos lstat para verificar atributos sin seguir enlaces
-                    if not os.path.islink(fp):
-                        total += os.path.getsize(fp)
-                except (OSError, PermissionError, FileNotFoundError):
-                    # El archivo puede haber sido borrado por el navegador durante el escaneo
+                    if entry.is_symlink():
+                        continue
+                    if entry.is_file():
+                        total += entry.stat().st_size
+                    elif entry.is_dir():
+                        total += directory_size(entry.path)
+                except (OSError, PermissionError):
                     continue
     except (OSError, PermissionError, FileNotFoundError):
         return 0
@@ -118,9 +113,6 @@ def detect_profiles(bases: Sequence[Path] | None = None,
                     cache_paths: dict[str, str] | None = None) -> list[BrowserCache]:
     """
     Explora los directorios base en busca de cachés definidas en cache_paths.
-    
-    Valida que las rutas resultantes no escapen del directorio base (prevención
-    de Path Traversal básico) y excluye elementos en NEVER_TOUCH.
     """
     if bases is None:
         bases = base_directories()
@@ -130,16 +122,22 @@ def detect_profiles(bases: Sequence[Path] | None = None,
     found: list[BrowserCache] = []
     
     for base in bases:
-        base_path = Path(base).resolve()
-        if not base_path.is_dir():
+        if not isinstance(base, Path):
+            base = Path(base)
+            
+        try:
+            base_path = base.resolve(strict=True)
+        except (OSError, RuntimeError):
             continue
-            
+
         for browser, relative in cache_paths.items():
-            # Construye ruta normalizando separadores según SO
-            candidate = base_path.joinpath(*relative.replace("\\", "/").split("/")).resolve()
+            candidate = base_path.joinpath(*relative.split("\\")).resolve()
             
-            # Seguridad: Verificar que el candidato siga bajo base_path
-            if not str(candidate).startswith(str(base_path)):
+            # Validación de seguridad: Path Traversal
+            try:
+                if not str(candidate).startswith(str(base_path)):
+                    continue
+            except Exception:
                 continue
             
             if candidate.name.lower() in NEVER_TOUCH:

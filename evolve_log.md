@@ -842,3 +842,10 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_f
 - `2026-07-26T14:56:39` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save_logo_svg` capturando excepciones de forma granular y añadiendo una validación explícita para asegurar que el directorio destino no sea una ruta de sistema, evitando fallos silenciosos durante la escritura en disco.
 - `2026-07-26T14:56:39` Rotación — nada para rotar
 - `2026-07-26T14:56:39` Corrida terminada. Total usado hoy: 178.
+- `2026-07-26T15:03:30` Arrancando corrida. Quedan hoy ~122 peticiones objetivo.
+- `2026-07-26T15:03:51` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `directory_size` y `detect_profiles` mediante validación explícita de entradas (`None` y tipos) y el uso de `os.scandir` en lugar de `os.walk` para manejar de forma más segura y eficiente las excepciones de acceso al sistema de archivos, alineándome con el enfoque de manejo de errores y validación de entradas.
+- `2026-07-26T15:04:12` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `largest_folders` añadiendo validaciones preventivas sobre la existencia y el tipo de los argumentos, asegurando que el código no falle silenciosamente al recibir rutas inexistentes o inválidas, alineado con el enfoque de manejo de errores y validación.
+- `2026-07-26T15:04:33` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de los iteradores y el manejo de parámetros en `find_duplicates` y `_collect_candidates`, validando explícitamente la integridad de las rutas para evitar excepciones al procesar iterables potencialmente vacíos o con elementos nulos.
+- `2026-07-26T15:04:40` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: manejo de errores y validación de entradas).
+- `2026-07-26T15:04:40` Rotación — nada para rotar
+- `2026-07-26T15:04:40` Corrida terminada. Total usado hoy: 182.

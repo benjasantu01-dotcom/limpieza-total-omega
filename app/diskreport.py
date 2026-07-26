@@ -115,6 +115,8 @@ def format_size(num: int | float) -> str:
 
 def drive_usage(mount: str | os.PathLike) -> DriveUsage | None:
     """Espacio de una unidad concreta. None si no se puede consultar."""
+    if not mount:
+        return None
     try:
         usage = shutil.disk_usage(str(mount))
     except (OSError, ValueError):
@@ -154,10 +156,12 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
         return
     try:
         base = Path(directory).expanduser().resolve()
+        if not base.exists() or not base.is_dir():
+            return
     except (OSError, RuntimeError):
         return
         
-    if not base.is_dir() or base.is_symlink():
+    if base.is_symlink():
         return
     if skip_protected and is_protected_path(base):
         return
@@ -207,10 +211,12 @@ def largest_folders(directory: str | os.PathLike, limit: int = 10, skip_protecte
         return []
     try:
         base = Path(directory).expanduser().resolve()
+        if not base.exists() or not base.is_dir():
+            return []
     except (OSError, RuntimeError):
         return []
         
-    if not base.exists() or not base.is_dir() or base.is_symlink():
+    if base.is_symlink():
         return []
 
     folder_map: dict[Path, FolderUsage] = {}
