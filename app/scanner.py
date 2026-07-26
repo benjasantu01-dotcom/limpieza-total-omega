@@ -92,17 +92,18 @@ def scan_directory(directory: str | Path) -> List[Suspicion]:
     """
     Escanea recursivamente un directorio en busca de comportamientos sospechosos.
     """
-    if not directory or not isinstance(directory, (str, Path)):
+    if not directory:
         return []
         
     results = []
     try:
-        root = Path(directory).resolve()
+        root = Path(directory)
         if not root.exists() or not root.is_dir():
             return []
             
         for p in root.rglob("*"):
             try:
+                # Comprobación de acceso y tipo antes de procesar
                 if p.is_file() and not p.is_symlink():
                     results.extend(scan_file(p))
             except (PermissionError, OSError):

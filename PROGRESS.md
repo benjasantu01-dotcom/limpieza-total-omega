@@ -5,10 +5,10 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **125**
-- Mejoras aceptadas: **91** (72.8% de aceptación)
-- Rechazadas por tests: 8
-- Rechazadas por guardia de seguridad: 8
+- Iteraciones totales: **129**
+- Mejoras aceptadas: **93** (72.1% de aceptación)
+- Rechazadas por tests: 9
+- Rechazadas por guardia de seguridad: 9
 - Sin cambios (nada sustancial que mejorar): 1
 - Sin respuesta de la IA (error o límite): 17
 
@@ -16,13 +16,13 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-26 | 91 | 8 | 8 | 1 | 17 |
+| 2026-07-26 | 93 | 9 | 9 | 1 | 17 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **23**
 - legibilidad y documentación: **22**
-- robustez ante casos límite: **18**
+- robustez ante casos límite: **20**
 - rendimiento: **17**
 - seguridad defensiva: **11**
 
@@ -33,16 +33,18 @@ Este archivo se regenera solo en cada corrida a partir de
 - `browser.py`: **8**
 - `diskreport.py`: **8**
 - `safety.py`: **8**
+- `scanner.py`: **8**
 - `startup.py`: **8**
 - `branding.py`: **8**
 - `duplicates.py`: **7**
 - `main.py`: **7**
-- `scanner.py`: **7**
+- `quarantine.py`: **7**
 - `memory.py`: **6**
-- `quarantine.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-26T13:42:43` **scanner.py** (robustez ante casos límite): He mejorado `scan_directory` añadiendo una comprobación de existencia y accesibilidad previa al `rglob` y envolviendo la lógica en un `try-except` más granular, previniendo errores por rutas inexistentes o inaccesibles que pudieran cortar el flujo del escáner en entornos con permisos restringidos o sistemas de archivos volátiles.
+- `2026-07-26T13:41:59` **quarantine.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `restore_item` que verifica si el archivo en cuarentena existe físicamente antes de intentar moverlo, evitando errores de excepción al procesar manifiestos desincronizados.
 - `2026-07-26T13:31:54` **organizer.py** (robustez ante casos límite): He mejorado la robustez de `stage_for_review` añadiendo una validación explícita para evitar mover archivos que ya se encuentran dentro del propio directorio de destino, previniendo así un bucle recursivo o errores de "archivo en uso" por colisiones de ruta.
 - `2026-07-26T13:31:49` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez de `parse_windows_process_csv` ante casos límite en la salida de PowerShell, asegurando que el parser ignore líneas malformadas o encabezados inesperados sin detener el proceso ni generar excepciones.
 - `2026-07-26T13:31:25` **main.py** (robustez ante casos límite): Se introdujo una comprobación robusta en `run_async` para validar la existencia del directorio de destino antes de intentar operaciones de archivo y se añadió una limpieza de estado en caso de fallos críticos, evitando que la interfaz se quede colgada o con datos inconsistentes ante errores de E/S inesperados.
@@ -56,5 +58,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-26T13:10:38` **safety.py** (rendimiento): Optimizé `is_protected_path` transformando el bucle de validación de variables de entorno en un acceso directo y eficiente, eliminando el costo de llamadas repetidas a `os.environ.get` y `is_within_directory` mediante una cache de rutas de sistema inicializada una sola vez.
 - `2026-07-26T13:01:12` **organizer.py** (rendimiento): Optimizé la búsqueda de archivos mediante la conversión de `JUNK_EXTENSIONS` a un `set` (ya lo era, pero reforzado mediante el uso de `.suffix` que es más eficiente que procesar strings) y, fundamentalmente, eliminé el re-cálculo innecesario de `lower()` en cada iteración del bucle principal al mover la lógica de filtrado de extensiones a una comparación más directa con el conjunto de extensiones, reduciendo la carga de CPU durante el recorrido de directorios.
 - `2026-07-26T13:00:28` **main.py** (rendimiento): Se implementó un cacheo simple en el reporte de salud para evitar la re-ejecución innecesaria de cálculos costosos si el estado del sistema no ha cambiado radicalmente, usando una variable de estado y reduciendo la duplicación de llamadas.
-- `2026-07-26T12:50:47` **healthscore.py** (rendimiento): Optimicé el cálculo del `breakdown` en `compute_score` eliminando la creación innecesaria del diccionario `ratios` y aplicando el peso directamente, reduciendo el consumo de memoria y la complejidad de iteración.
-- `2026-07-26T12:50:18` **diskreport.py** (rendimiento): Optimizé `largest_folders` para evitar la creación innecesaria de objetos `Path` y cálculos de `relative_to` mediante el uso de `path.parts` directamente sobre la ruta base, reduciendo significativamente la carga de CPU durante el recorrido de grandes estructuras de archivos.

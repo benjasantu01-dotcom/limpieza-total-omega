@@ -187,6 +187,11 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
         raise KeyError(f"No hay ningún elemento en cuarentena con id '{item_id}'.")
 
     stored = quarantine_dir(base) / match.stored_name
+    
+    # Verificar existencia física antes de operar
+    if not stored.exists():
+        raise FileNotFoundError(f"Archivo original en cuarentena no encontrado: {stored}")
+        
     if not stored.is_file() or stored.is_symlink():
         raise FileNotFoundError(f"El archivo en cuarentena es inválido o fue manipulado: {stored}")
 

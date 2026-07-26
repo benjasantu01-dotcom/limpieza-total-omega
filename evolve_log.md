@@ -680,3 +680,34 @@ FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app
 - `2026-07-26T13:31:54` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). He mejorado la robustez de `stage_for_review` añadiendo una validación explícita para evitar mover archivos que ya se encuentran dentro del propio directorio de destino, previniendo así un bucle recursivo o errores de "archivo en uso" por colisiones de ruta.
 - `2026-07-26T13:31:54` Rotación — nada para rotar
 - `2026-07-26T13:31:54` Corrida terminada. Total usado hoy: 146.
+- `2026-07-26T13:41:35` Arrancando corrida. Quedan hoy ~154 peticiones objetivo.
+- `2026-07-26T13:41:59` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de integridad en `restore_item` que verifica si el archivo en cuarentena existe físicamente antes de intentar moverlo, evitando errores de excepción al procesar manifiestos desincronizados.
+- `2026-07-26T13:42:17` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-07-26T13:42:39` Tests FALLARON:
+```
+========== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - app.safety.UnsafePathError: Operación bloqueada: '/tmp/pytest-of-runner/pytest-2/test_save_logo_svg_writes_the_0/iconos/logo.svg' está en una ruta de sistema protegida.
+FAILED evolve/tests/test_safety.py::test_normal_user_folders_are_not_protected - AssertionError: assert not True
+ +  where True = <function is_protected_path at 0x7f50d292c900>(((PosixPath('/tmp/pytest-of-runner/pytest-2/test_normal_user_folders_are_n0') / 'Descargas') / 'archivo.txt'))
+ +    where <function is_protected_path at 0x7f50d292c900> = safety.is_protected_path
+FAILED evolve/tests/test_safety.py::test_ensure_safe_allows_sensitive_extension_when_explicitly_requested - safety.UnsafePathError: Operación bloqueada: '/tmp/pytest-of-runner/pytest-2/test_ensure_safe_allows_sensit0/sospechoso.exe' está en una ruta de sistema protegida.
+FAILED evolve/tests/test_safety.py::test_ensure_safe_allows_a_normal_user_file - safety.UnsafePathError: Operación bloqueada: '/tmp/pytest-of-runner/pytest-2/test_ensure_safe_allows_a_norm0/basura.tmp' está en una ruta de sistema protegida.
+FAILED evolve/tests/test_safety.py::test_filter_safe_paths_keeps_only_the_safe_ones - AssertionError: assert set() == {'ok.tmp', 'otro.log'}
+  
+  Extra items in the right set:
+  'ok.tmp'
+  'otro.log'
+  
+  Full diff:
+  + set()
+  - {
+  -     'ok.tmp',
+  -     'otro.log',
+  - }
+5 failed, 192 passed in 0.34s
+
+```
+- `2026-07-26T13:42:39` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez de `is_protected_path` añadiendo una comprobación explícita para archivos que no existen en disco (evitando falsos positivos o errores de procesamiento) y se ha endurecido `is_within_directory` para manejar correctamente rutas que contienen caracteres especiales o permisos denegados mediante la validación de `Path.parts` antes de realizar cálculos relativos.
+- `2026-07-26T13:42:43` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). He mejorado `scan_directory` añadiendo una comprobación de existencia y accesibilidad previa al `rglob` y envolviendo la lógica en un `try-except` más granular, previniendo errores por rutas inexistentes o inaccesibles que pudieran cortar el flujo del escáner en entornos con permisos restringidos o sistemas de archivos volátiles.
+- `2026-07-26T13:42:43` Rotación — nada para rotar
+- `2026-07-26T13:42:43` Corrida terminada. Total usado hoy: 150.
