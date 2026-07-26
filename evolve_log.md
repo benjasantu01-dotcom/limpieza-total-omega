@@ -1052,3 +1052,14 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-07-26T18:12:29` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-07-26T18:12:29` Rotación — nada para rotar
 - `2026-07-26T18:12:29` Corrida terminada. Total usado hoy: 254.
+- `2026-07-26T18:18:36` Arrancando corrida. Quedan hoy ~46 peticiones objetivo.
+- `2026-07-26T18:18:37` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-07-26T18:18:37` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-07-26T18:18:57` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-07-26T18:18:57` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-07-26T18:19:27` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-07-26T18:20:04` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las funciones `severity_color`, `severity_label` y `grade_color` añadiendo validaciones estrictas de tipo y manejo de casos donde la entrada es un string vacío o un tipo de dato inesperado, asegurando que la interfaz no falle ante datos mal formados.
+- `2026-07-26T18:20:25` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `directory_size` y `detect_profiles` añadiendo validaciones explícitas de tipos y estados para evitar errores en tiempo de ejecución si se reciben parámetros inválidos o rutas inexistentes.
+- `2026-07-26T18:20:32` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Se reforzó la validación de entrada en la función `summarize` para evitar el procesamiento innecesario de rutas nulas o inexistentes, asegurando que la interfaz reciba una salida coherente ante parámetros inválidos.
+- `2026-07-26T18:20:32` Rotación — nada para rotar
+- `2026-07-26T18:20:32` Corrida terminada. Total usado hoy: 258.

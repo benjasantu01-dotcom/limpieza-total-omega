@@ -258,6 +258,9 @@ def total_size(directory: str | os.PathLike, skip_protected: bool = True) -> tup
 
 def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list[str]:
     """Resumen legible del uso de disco de una carpeta."""
+    if not directory or not os.path.exists(str(directory)):
+        return ["Error: Carpeta inválida o inaccesible."]
+        
     total, count = total_size(directory, skip_protected)
     lines = [
         f"Carpeta analizada: {directory}",

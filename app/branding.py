@@ -89,22 +89,27 @@ def font_size(name: str) -> int:
 
 def severity_color(severity: str | None) -> HexColor:
     """Retorna el color asignado a un nivel de severidad."""
-    if severity and (style := SEVERITY_STYLES.get(severity.lower())):
-        return style[0]
+    if isinstance(severity, str) and severity.strip():
+        if style := SEVERITY_STYLES.get(severity.lower()):
+            return style[0]
     return PALETTE["text_muted"]
 
 
 def severity_label(severity: str | None) -> str:
     """Retorna la etiqueta legible del nivel de severidad."""
-    if severity and (style := SEVERITY_STYLES.get(severity.lower())):
-        return style[1]
-    return str(severity).upper() if severity else "Desconocido"
+    if isinstance(severity, str) and severity.strip():
+        if style := SEVERITY_STYLES.get(severity.lower()):
+            return style[1]
+        return severity.upper()
+    return "Desconocido"
 
 
 def grade_color(grade: str | None) -> HexColor:
     """Retorna el color asociado a una letra de grado de salud (A-F)."""
-    if grade and (c := GRADE_COLORS.get(grade.upper()[:1])):
-        return c
+    if isinstance(grade, str) and grade.strip():
+        key = grade.upper()[0]
+        if key in GRADE_COLORS:
+            return GRADE_COLORS[key]
     return PALETTE["text_muted"]
 
 

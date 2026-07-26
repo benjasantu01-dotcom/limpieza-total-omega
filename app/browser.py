@@ -89,9 +89,16 @@ def directory_size(path: str | os.PathLike) -> int:
     Calcula el tamaño total de una carpeta de forma iterativa segura,
     manejando permisos denegados y archivos en uso.
     """
+    if not path:
+        return 0
+    
     total = 0
     try:
-        for root, dirs, files in os.walk(path):
+        path_obj = Path(path)
+        if not path_obj.is_dir():
+            return 0
+            
+        for root, dirs, files in os.walk(path_obj):
             # Filtrar enlaces simbólicos para no salir de la estructura de caché
             dirs[:] = [d for d in dirs if not os.path.islink(os.path.join(root, d))]
             for f in files:
@@ -100,7 +107,6 @@ def directory_size(path: str | os.PathLike) -> int:
                     try:
                         total += os.path.getsize(filepath)
                     except (OSError, PermissionError):
-                        # Archivo inaccesible o bloqueado, omitir para no romper el cálculo
                         continue
     except (OSError, PermissionError, FileNotFoundError):
         return 0
@@ -123,12 +129,18 @@ def detect_profiles(bases: Sequence[Path] | None = None,
     found: list[BrowserCache] = []
     
     for base in bases:
+        if not isinstance(base, Path):
+            continue
+            
         try:
             base_path = base.resolve(strict=True)
         except (OSError, RuntimeError):
             continue
 
         for browser, relative in cache_paths.items():
+            if not isinstance(relative, str):
+                continue
+                
             candidate = base_path.joinpath(*relative.split("\\")).resolve()
             
             # Validación de seguridad defensiva: Verificar que candidate esté dentro de base_path
