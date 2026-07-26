@@ -77,18 +77,36 @@ def app_title() -> str:
 
 @lru_cache(maxsize=16)
 def color(name: str) -> HexColor:
-    """Obtiene un código hexadecimal de la paleta. Retorna gris por defecto si no existe."""
+    """
+    Obtiene un código hexadecimal de la paleta.
+    
+    Args:
+        name: Clave del color en el diccionario PALETTE.
+    Returns:
+        Hexadecimal de color si existe, o un gris neutro de respaldo.
+    """
     return PALETTE.get(name, "#808080")
 
 
 @lru_cache(maxsize=16)
 def font_size(name: str) -> int:
-    """Obtiene el tamaño tipográfico. Si el nombre no existe, retorna el tamaño de cuerpo."""
+    """
+    Obtiene el tamaño tipográfico por nombre.
+    
+    Args:
+        name: Clave del tamaño en FONT_SIZES.
+    Returns:
+        Valor entero en puntos, o tamaño de 'body' si la clave no se encuentra.
+    """
     return FONT_SIZES.get(name, FONT_SIZES["body"])
 
 
 def severity_color(severity: str | None) -> HexColor:
-    """Retorna el color asignado a un nivel de severidad."""
+    """
+    Mapea un nivel de severidad al color hexadecimal correspondiente.
+    
+    El nivel es normalizado a minúsculas antes de la búsqueda.
+    """
     if isinstance(severity, str) and severity.strip():
         if style := SEVERITY_STYLES.get(severity.lower()):
             return style[0]
@@ -96,7 +114,11 @@ def severity_color(severity: str | None) -> HexColor:
 
 
 def severity_label(severity: str | None) -> str:
-    """Retorna la etiqueta legible del nivel de severidad."""
+    """
+    Obtiene la etiqueta legible para un nivel de severidad determinado.
+    
+    Si el nivel no es reconocido en SEVERITY_STYLES, retorna el string original en mayúsculas.
+    """
     if isinstance(severity, str) and severity.strip():
         if style := SEVERITY_STYLES.get(severity.lower()):
             return style[1]
@@ -105,7 +127,9 @@ def severity_label(severity: str | None) -> str:
 
 
 def grade_color(grade: str | None) -> HexColor:
-    """Retorna el color asociado a una letra de grado de salud (A-F)."""
+    """
+    Retorna el color asignado a una letra de calificación (A, B, C, D, F).
+    """
     if isinstance(grade, str) and grade.strip():
         key = grade.upper()[0]
         if key in GRADE_COLORS:
@@ -116,12 +140,12 @@ def grade_color(grade: str | None) -> HexColor:
 @lru_cache(maxsize=4)
 def logo_svg(size: int = 128) -> str:
     """
-    Genera el logo de la aplicación en formato SVG.
+    Genera el logo de la aplicación en formato SVG (XML plano).
     
     Args:
-        size: Tamaño en píxeles del logo cuadrado.
+        size: Tamaño en píxeles del lado del contenedor cuadrado.
     Returns:
-        String con el contenido XML del SVG.
+        String con el contenido del SVG listo para escribir a disco o incrustar.
     """
     return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{size}" height="{size}" viewBox="0 0 128 128">
   <defs>
@@ -143,10 +167,14 @@ def logo_svg(size: int = 128) -> str:
 
 def save_logo_svg(destination: str | Path) -> Path | None:
     """
-    Guarda el logo en disco tras validar seguridad y permisos.
+    Persiste el archivo SVG del logo tras validar permisos y seguridad.
     
+    Utiliza `ensure_safe_to_modify` para prevenir ataques de path traversal.
+    
+    Args:
+        destination: Ruta destino donde guardar el .svg.
     Returns:
-        La ruta del archivo guardado o None si falló por validación o permisos.
+        Objeto Path del archivo guardado, o None si la operación es inválida o falla.
     """
     if not destination:
         return None
@@ -180,13 +208,13 @@ def logo_ascii() -> str:
 
 def draw_logo(canvas: Any, size: int = 56, x: int = 0, y: int = 0) -> None:
     """
-    Dibuja el logo en un canvas de Tkinter.
+    Renderiza el logo en un widget canvas de Tkinter.
     
     Args:
-        canvas: Widget canvas de Tkinter.
+        canvas: Widget de tipo tkinter.Canvas.
         size: Tamaño base en píxeles.
-        x: Offset horizontal en canvas.
-        y: Offset vertical en canvas.
+        x: Coordenada inicial horizontal en el canvas.
+        y: Coordenada inicial vertical en el canvas.
     """
     if canvas is None or not hasattr(canvas, "create_polygon"):
         return

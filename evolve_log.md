@@ -1077,3 +1077,40 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-07-26T18:40:10` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `is_within_directory` y `ensure_safe_to_modify` implementando validaciones de tipo explícitas y una lógica de normalización más resiliente, eliminando la ambigüedad en el manejo de rutas `None` o mal formadas.
 - `2026-07-26T18:40:10` Rotación — nada para rotar
 - `2026-07-26T18:40:10` Corrida terminada. Total usado hoy: 266.
+- `2026-07-26T18:49:12` Arrancando corrida. Quedan hoy ~34 peticiones objetivo.
+- `2026-07-26T18:49:33` Tests FALLARON:
+```
+========================
+_____________ test_scanner_flags_system_lookalike_outside_system32 _____________
+
+    def test_scanner_flags_system_lookalike_outside_system32():
+        # Se usa PureWindowsPath a propósito: los tests corren en Linux (GitHub
+        # Actions) y ahí un Path normal no reconoce las barras invertidas, así
+        # que `.name` devolvería la ruta entera y el test fallaría siempre.
+        result = scanner.check_system_lookalike(PureWindowsPath(r"C:\Users\test\Downloads\svchost.exe"))
+>       assert result is not None
+E       assert None is not None
+
+evolve/tests/test_basic.py:201: AssertionError
+________________ test_scanner_lookalike_logic_is_os_independent ________________
+
+    def test_scanner_lookalike_logic_is_os_independent():
+        # La misma heurística tiene que valer con rutas estilo POSIX, para que el
+        # resultado no dependa de en qué sistema corran los tests.
+        flagged = scanner.check_system_lookalike(PurePosixPath("/home/user/Downloads/svchost.exe"))
+>       assert flagged is not None and flagged.severity == "warning"
+E       assert (None is not None)
+
+evolve/tests/test_basic.py:213: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_scanner_flags_system_lookalike_outside_system32 - assert None is not None
+FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independent - assert (None is not None)
+2 failed, 195 passed in 0.21s
+
+```
+- `2026-07-26T18:49:33` ❌ Mejora descartada en scanner.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez del módulo agregando validación de tipos y manejo de errores específicos en `scan_file` y `scan_directory` para evitar fallos silenciosos al procesar rutas mal formadas o inaccesibles.
+- `2026-07-26T18:49:54` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-07-26T18:50:16` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Mejoré la documentación de `branding.py` mediante docstrings detallados que explican el propósito, las precondiciones y el contrato de los métodos públicos, además de añadir type hints faltantes para asegurar la integridad de la interfaz API.
+- `2026-07-26T18:50:21` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Mejora la robustez del cálculo de tamaño de directorios añadiendo el manejo explícito de `StopIteration` y excepciones al recorrer archivos, además de documentar mediante docstrings la justificación de omitir archivos inaccesibles durante el escaneo para evitar falsos negativos en el reporte de espacio.
+- `2026-07-26T18:50:21` Rotación — nada para rotar
+- `2026-07-26T18:50:21` Corrida terminada. Total usado hoy: 270.

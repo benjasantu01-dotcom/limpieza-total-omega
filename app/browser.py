@@ -86,8 +86,12 @@ def base_directories() -> list[Path]:
 @lru_cache(maxsize=32)
 def directory_size(path: str | os.PathLike) -> int:
     """
-    Calcula el tamaño total de una carpeta de forma iterativa segura,
-    manejando permisos denegados y archivos en uso.
+    Calcula el tamaño total de una carpeta de forma iterativa segura.
+    
+    Por qué ignoramos errores: Durante el escaneo, es común encontrar
+    archivos bloqueados por procesos en ejecución o sin permisos de acceso.
+    Omitirlos permite reportar un tamaño parcial útil en lugar de fallar
+    completamente el análisis de disco.
     """
     if not path:
         return 0
@@ -107,6 +111,7 @@ def directory_size(path: str | os.PathLike) -> int:
                     try:
                         total += os.path.getsize(filepath)
                     except (OSError, PermissionError):
+                        # Ignorar archivos en uso o inaccesibles
                         continue
     except (OSError, PermissionError, FileNotFoundError):
         return 0
