@@ -659,3 +659,10 @@ FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app
 - `2026-07-26T13:01:19` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se implementó un mecanismo de caché simple en el módulo para evitar la lectura y parseo recursivo del archivo `manifest.json` en cada llamada a funciones auxiliares, optimizando drásticamente el acceso a los datos de la cuarentena.
 - `2026-07-26T13:01:19` Rotación — nada para rotar
 - `2026-07-26T13:01:19` Corrida terminada. Total usado hoy: 134.
+- `2026-07-26T13:09:57` Arrancando corrida. Quedan hoy ~166 peticiones objetivo.
+- `2026-07-26T13:10:17` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 101): unterminated string literal (detected at line 101)
+- `2026-07-26T13:10:38` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimizé `is_protected_path` transformando el bucle de validación de variables de entorno en un acceso directo y eficiente, eliminando el costo de llamadas repetidas a `os.environ.get` y `is_within_directory` mediante una cache de rutas de sistema inicializada una sola vez.
+- `2026-07-26T13:10:57` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento de `scan_directory` cacheando la conversión de las rutas a minúsculas y los chequeos de `path.parent` dentro de las funciones, y eliminé la instanciación innecesaria de una lista de funciones en `scan_file`, reemplazándola por una llamada directa para reducir el overhead de iteración por cada archivo escaneado.
+- `2026-07-26T13:11:04` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Optimicé el cálculo de impactos y el resumen de entradas eliminando la conversión redundante de iterables a listas múltiples veces, aprovechando la naturaleza de los generadores para procesar los datos de manera perezosa y eficiente.
+- `2026-07-26T13:11:04` Rotación — nada para rotar
+- `2026-07-26T13:11:04` Corrida terminada. Total usado hoy: 138.

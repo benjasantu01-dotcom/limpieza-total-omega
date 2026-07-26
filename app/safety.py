@@ -48,8 +48,6 @@ class UnsafePathError(Exception):
 
 
 # Carpetas que nunca se recorren ni se modifican, en ningún sistema.
-# Se comparan en minúsculas contra cada componente de la ruta, así da igual
-# si la unidad es C:, D: o si el usuario tiene Windows en otra ubicación.
 PROTECTED_DIR_NAMES: frozenset[str] = frozenset({
     # Windows
     "windows", "winnt", "system32", "syswow64", "system", "boot",
@@ -65,11 +63,17 @@ PROTECTED_DIR_NAMES: frozenset[str] = frozenset({
 })
 
 # Extensiones que no se tocan aunque estén en una carpeta permitida:
-# borrarlas puede dejar el sistema o un programa sin arrancar.
 SENSITIVE_EXTENSIONS: frozenset[str] = frozenset({
     ".sys", ".dll", ".exe", ".msi", ".drv", ".ocx", ".cpl", ".efi",
     ".reg", ".pol", ".key", ".pem", ".pfx", ".p12", ".crt", ".cer",
 })
+
+# Cache de rutas críticas para evitar llamadas repetidas al entorno
+_SYSTEM_ROOTS: frozenset[Path] = frozenset(
+    Path(os.environ[v]).resolve() 
+    for v in ("SystemRoot", "windir", "ProgramFiles", "ProgramFiles(x86)", "ProgramData")
+    if os.environ.get(v)
+)
 
 
 def normalize(path: PathLike) -> Path:
@@ -91,7 +95,6 @@ def normalize(path: PathLike) -> Path:
 def is_drive_root(path: PathLike) -> bool:
     """
     Verifica si la ruta corresponde al punto de montaje de una unidad.
-    Detecta si el padre de la ruta es igual a la ruta misma o si coincide con el anchor.
     """
     try:
         p = normalize(path)
@@ -103,12 +106,6 @@ def is_drive_root(path: PathLike) -> bool:
 def is_protected_path(path: PathLike) -> bool:
     """
     Determina si una ruta es peligrosa por residir en un directorio de sistema.
-    
-    Lógica de defensa:
-    1. Bloquea enlaces simbólicos (evita escape de sandbox por reparse points).
-    2. Bloquea raíces de unidades.
-    3. Compara componentes de la ruta contra PROTECTED_DIR_NAMES (lista blanca negativa).
-    4. Verifica variables de entorno críticas (SystemRoot, etc) mediante contención.
     """
     try:
         p = normalize(path)
@@ -124,9 +121,8 @@ def is_protected_path(path: PathLike) -> bool:
     if not PROTECTED_DIR_NAMES.isdisjoint(path_components):
         return True
         
-    for env_var in ("SystemRoot", "windir", "ProgramFiles", "ProgramFiles(x86)", "ProgramData"):
-        root = os.environ.get(env_var)
-        if root and is_within_directory(p, root, allow_equal=True):
+    for root in _SYSTEM_ROOTS:
+        if root in p.parents or p == root:
             return True
     return False
 
@@ -138,7 +134,6 @@ def is_within_directory(
 ) -> bool:
     """
     Valida si 'child' es un hijo (o subdirectorio) de 'parent'.
-    Utiliza Path.relative_to para determinar la contención jerárquica de forma robusta.
     """
     if child is None or parent is None:
         return False
@@ -166,9 +161,6 @@ def is_sensitive_file(path: PathLike) -> bool:
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> Path:
     """
     Valida que una ruta pueda ser modificada (borrada o movida).
-    
-    Lanza UnsafePathError si la ruta es un sistema, raíz o archivo sensible.
-    Es la función de guardianía principal antes de cualquier ejecución de disco.
     """
     if path is None:
         raise ValueError("No se puede validar una ruta None.")

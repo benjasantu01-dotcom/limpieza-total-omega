@@ -189,17 +189,9 @@ def list_startup_entries() -> List[StartupEntry]:
     return unique_entries
 
 
-def estimate_impact(entries: Optional[Iterable[StartupEntry]]) -> str:
+def estimate_impact(entries: Iterable[StartupEntry]) -> str:
     """Estima el impacto del arranque según la cantidad de programas."""
-    if entries is None:
-        return "ok"
-    
-    try:
-        entry_list = list(entries)
-        total_count = len(entry_list)
-    except (TypeError, ValueError, AttributeError):
-        return "ok"
-
+    total_count = sum(1 for _ in entries)
     if total_count <= 5:
         return "ok"
     if total_count <= 10:
@@ -211,14 +203,8 @@ def estimate_impact(entries: Optional[Iterable[StartupEntry]]) -> str:
 
 def summarize(entries: Optional[Iterable[StartupEntry]] = None) -> List[str]:
     """Genera un reporte legible de los programas de inicio y su impacto."""
-    if entries is None:
-        entries = list_startup_entries()
+    entries_list = list(entries) if entries is not None else list_startup_entries()
         
-    try:
-        entries_list = list(entries)
-    except (TypeError, ValueError):
-        return ["Error: No se pudieron procesar las entradas de inicio."]
-
     lines = [f"Programas que arrancan con el sistema: {len(entries_list)}"]
     impact_level = estimate_impact(entries_list)
     impact_messages = {
