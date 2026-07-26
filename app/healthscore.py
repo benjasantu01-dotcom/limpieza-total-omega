@@ -211,11 +211,12 @@ def summarize(result: HealthResult) -> List[str]:
         "",
         "Desglose por área:",
     ]
-    for area, puntos in sorted(result.breakdown.items(), key=lambda kv: kv[1] - WEIGHTS[kv[0]]):
+    # Ordenar por el delta entre el puntaje obtenido y el máximo posible (prioriza problemas)
+    orden = sorted(result.breakdown.items(), key=lambda kv: kv[1] - WEIGHTS[kv[0]])
+    for area, puntos in orden:
         maximo = WEIGHTS[area]
-        barra = "#" * puntos + "." * max(0, maximo - puntos)
+        barra = f"{'#' * puntos}{'.' * (maximo - puntos)}"
         lines.append(f"  {area.capitalize():<12} {puntos:>2}/{maximo:<2} [{barra}]")
     lines.extend(["", "Recomendaciones:"])
-    for rec in result.recommendations:
-        lines.append(f"  - {rec}")
+    lines.extend([f"  - {rec}" for rec in result.recommendations])
     return lines

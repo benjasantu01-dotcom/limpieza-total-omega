@@ -122,25 +122,24 @@ def parse_linux_meminfo(text: str) -> MemorySnapshot:
 def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]:
     """Interpreta la salida CSV de PowerShell (columnas: Name,Id,WorkingSet)."""
     processes: List[ProcessMemory] = []
-    lines = [line.strip() for line in text.splitlines() if line.strip()]
     
-    for line in lines:
-        # Se espera que el CSV sea: Name,Id,WorkingSet
+    for line in text.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        
         parts = [p.strip().strip('"') for p in line.split(",")]
         if len(parts) < 3:
             continue
         
-        name, pid_raw, ws_raw = parts[0], parts[1], parts[2]
-        
-        # Saltamos la línea de encabezado de PowerShell
-        if name.lower() in {"name", "processname"}:
+        if parts[0].lower() in {"name", "processname"}:
             continue
             
         try:
             processes.append(ProcessMemory(
-                name=name, 
-                pid=int(pid_raw), 
-                working_set=int(float(ws_raw))
+                name=parts[0], 
+                pid=int(parts[1]), 
+                working_set=int(float(parts[2]))
             ))
         except ValueError:
             continue

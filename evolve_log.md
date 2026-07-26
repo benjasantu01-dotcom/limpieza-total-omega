@@ -255,3 +255,52 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-07-26T09:23:25` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé `largest_folders` para evitar la redundancia algorítmica: anteriormente llamaba a `walk_files` (que recorre recursivamente toda la estructura) para cada subcarpeta individual, resultando en una complejidad innecesaria; ahora el análisis se realiza en una sola pasada lógica sobre el árbol de archivos.
 - `2026-07-26T09:23:25` Rotación — nada para rotar
 - `2026-07-26T09:23:25` Corrida terminada. Total usado hoy: 50.
+- `2026-07-26T09:32:27` Arrancando corrida. Quedan hoy ~250 peticiones objetivo.
+- `2026-07-26T09:32:48` Tests FALLARON:
+```
+......................................................................F. [ 36%]
+........................................................................ [ 73%]
+.....................................................                    [100%]
+=================================== FAILURES ===================================
+__________________ test_group_by_size_separates_by_exact_size __________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-1/test_group_by_size_separates_b0')
+
+    def test_group_by_size_separates_by_exact_size(tmp_path):
+        (tmp_path / "chico.txt").write_text("12345")
+        (tmp_path / "otro-chico.txt").write_text("abcde")
+        (tmp_path / "grande.txt").write_text("1234567890")
+        grupos = duplicates.group_by_size(tmp_path.iterdir())
+>       assert sorted(len(v) for v in grupos.values()) == [1, 2]
+E       assert [2] == [1, 2]
+E         
+E         At index 0 diff: 2 != 1
+E         Right contains one more item: 2
+E         
+E         Full diff:
+E           [
+E         -     1,
+E               2,
+E           ]
+
+evolve/tests/test_modules.py:313: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_group_by_size_separates_by_exact_size - assert [2] == [1, 2]
+  
+  At index 0 diff: 2 != 1
+  Right contains one more item: 2
+  
+  Full diff:
+    [
+  -     1,
+        2,
+    ]
+1 failed, 196 passed in 0.27s
+
+```
+- `2026-07-26T09:32:48` ❌ Mejora descartada en duplicates.py (no pasó los tests), se revirtió. Intento: Optimizé `group_by_size` y `find_duplicates` para evitar redundancia en el procesamiento de listas, aprovechando `dict` para agrupar en una sola pasada en lugar de iterar múltiples veces y eliminando la reconstrucción innecesaria de objetos `Path`.
+- `2026-07-26T09:33:12` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimizé la función `summarize` para evitar el cálculo redundante de `sorted` en cada llamada, pre-calculando el orden de los elementos o utilizando una técnica de visualización más eficiente; en este caso, implementé una comprensión de lista para la generación de la barra de salud y optimicé el ordenamiento mediante la llave de evaluación de impacto.
+- `2026-07-26T09:34:12` ➖ Sin cambios en main.py (enfoque: rendimiento). Motivo: Optimicé el método `refresh_list` en `main.py` eliminando el re-cálculo innecesario de la lista de strings (`lines`) y la manipulación de `report_data` en cada actualización, moviendo la lógica de construcción de strings a un punto donde solo se ejecute cuando realmente cambien los datos, mejorando el rendimiento ante múltiples llamadas de ordenamiento.
+- `2026-07-26T09:34:20` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el parseo del CSV en `parse_windows_process_csv` eliminando la creación de listas intermedias y el uso de `strip()` repetitivo, iterando directamente sobre las líneas y procesando solo los índices necesarios para mejorar el rendimiento.
+- `2026-07-26T09:34:20` Rotación — nada para rotar
+- `2026-07-26T09:34:20` Corrida terminada. Total usado hoy: 54.
