@@ -205,33 +205,29 @@ def usage_by_extension(directory: str | os.PathLike, limit: int = 15, skip_prote
 
 def largest_folders(directory: str | os.PathLike, limit: int = 10, skip_protected: bool = True) -> list[FolderUsage]:
     """
-    Calcula el peso acumulado de las subcarpetas directas de `directory`.
+    Calcula el peso acumulado de las subcarpetas directas o archivos en el nivel actual.
     """
     if not directory:
         return []
     try:
         base = Path(directory).expanduser().resolve()
-        if not base.exists() or not base.is_dir():
-            return []
     except (OSError, RuntimeError):
         return []
         
-    if base.is_symlink():
-        return []
-
     folder_map: dict[Path, FolderUsage] = {}
-    base_parts_len = len(base.parts)
     
     for path, size in walk_files(base, skip_protected):
-        parts = path.parts
-        if len(parts) > base_parts_len + 1:
-            top_folder = base / parts[base_parts_len]
-            if top_folder not in folder_map:
-                folder_map[top_folder] = FolderUsage(path=top_folder, size_bytes=0, file_count=0)
+        # Determinar el nivel inmediato bajo la carpeta base
+        relative_path = path.relative_to(base)
+        # Si es un archivo en la raíz de 'base', se agrupa en 'base' misma o carpeta propia
+        top_level = base / relative_path.parts[0]
+        
+        if top_level not in folder_map:
+            folder_map[top_level] = FolderUsage(path=top_level, size_bytes=0, file_count=0)
             
-            usage = folder_map[top_folder]
-            usage.size_bytes += size
-            usage.file_count += 1
+        stats = folder_map[top_level]
+        stats.size_bytes += size
+        stats.file_count += 1
 
     results = sorted(folder_map.values(), key=lambda f: f.size_bytes, reverse=True)
     return results[:limit]

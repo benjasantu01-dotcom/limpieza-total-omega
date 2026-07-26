@@ -892,3 +892,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-07-26T15:24:57` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
 - `2026-07-26T15:24:57` Rotación — nada para rotar
 - `2026-07-26T15:24:57` Corrida terminada. Total usado hoy: 190.
+- `2026-07-26T15:34:32` Arrancando corrida. Quedan hoy ~110 peticiones objetivo.
+- `2026-07-26T15:34:56` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante docstrings estructurados (con secciones `Args`, `Returns` y `Raises`) y type hints adicionales para clarificar la semántica de los parámetros, facilitando la mantenibilidad para futuros colaboradores.
+- `2026-07-26T15:35:16` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y la robustez del código mediante la adición de Type Hints detallados, la especificación del comportamiento frente a errores en `directory_size` y la clarificación del propósito del filtrado de seguridad en `detect_profiles`.
+- `2026-07-26T15:35:38` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `largest_folders` extrayendo la lógica de agregación de datos a una estructura de datos clara, lo que corrige un error de alcance donde los archivos dentro de la carpeta base no eran contados como peso de la misma, sino solo los de subcarpetas.
+- `2026-07-26T15:35:45` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Se ha mejorado la legibilidad del módulo mediante la adición de Type Hints precisos (reemplazando `callable` por `Callable[[str | Path], str | None]`) y la inclusión de docstrings explicativos en las funciones internas (`_collect_candidates`, `_refine_by_hash`), detallando el propósito de cada paso del procesamiento para facilitar el mantenimiento futuro.
+- `2026-07-26T15:35:45` Rotación — nada para rotar
+- `2026-07-26T15:35:45` Corrida terminada. Total usado hoy: 194.

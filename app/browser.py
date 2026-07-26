@@ -19,7 +19,7 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, Sequence
+from typing import Iterable, Sequence, Dict
 
 __all__ = [
     "BrowserCache",
@@ -35,7 +35,7 @@ __all__ = [
 
 # Rutas de caché relativas a LOCALAPPDATA (Windows). Solo datos
 # regenerables: si se borran, el navegador los vuelve a crear.
-BROWSER_CACHE_PATHS = {
+BROWSER_CACHE_PATHS: Dict[str, str] = {
     "Google Chrome": r"Google\Chrome\User Data\Default\Cache",
     "Microsoft Edge": r"Microsoft\Edge\User Data\Default\Cache",
     "Brave": r"BraveSoftware\Brave-Browser\User Data\Default\Cache",
@@ -86,7 +86,9 @@ def directory_size(path: str | os.PathLike) -> int:
     """
     Calcula el tamaño total de una carpeta de forma recursiva segura.
     
-    Usa scandir para mayor rendimiento y capturación granular de errores.
+    Usa os.scandir para evitar problemas de rendimiento con directorios 
+    grandes. Ignora errores de permiso o archivos inaccesibles, retornando 
+    el peso parcial acumulado hasta ese punto.
     """
     if not path:
         return 0
@@ -96,6 +98,8 @@ def directory_size(path: str | os.PathLike) -> int:
         with os.scandir(path) as it:
             for entry in it:
                 try:
+                    # Evitar seguir enlaces simbólicos para prevenir bucles 
+                    # o salidas del árbol de directorios esperado.
                     if entry.is_symlink():
                         continue
                     if entry.is_file():
@@ -113,6 +117,9 @@ def detect_profiles(bases: Sequence[Path] | None = None,
                     cache_paths: dict[str, str] | None = None) -> list[BrowserCache]:
     """
     Explora los directorios base en busca de cachés definidas en cache_paths.
+    
+    Aplica validación de 'Path Traversal' verificando que la ruta resuelta 
+    del caché permanezca estrictamente dentro de la jerarquía de la base.
     """
     if bases is None:
         bases = base_directories()
@@ -133,7 +140,8 @@ def detect_profiles(bases: Sequence[Path] | None = None,
         for browser, relative in cache_paths.items():
             candidate = base_path.joinpath(*relative.split("\\")).resolve()
             
-            # Validación de seguridad: Path Traversal
+            # Validación de seguridad: Prevenir escapes de ruta (Path Traversal)
+            # mediante la comparación de la ruta absoluta.
             try:
                 if not str(candidate).startswith(str(base_path)):
                     continue

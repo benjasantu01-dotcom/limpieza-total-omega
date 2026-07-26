@@ -21,7 +21,7 @@ import os
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable
+from typing import Iterable, Callable
 
 from safety import is_protected_path
 
@@ -105,7 +105,11 @@ def group_by_size(paths: list[str | Path]) -> dict[int, list[Path]]:
 
 
 def _collect_candidates(directories: Iterable[str | Path], min_size: int, skip_protected: bool) -> list[Path]:
-    """Recorre las carpetas y junta archivos candidatos a comparar."""
+    """
+    Recorre recursivamente los directorios buscando candidatos válidos.
+    Filtra por tamaño mínimo y omite rutas protegidas o symlinks para
+    evitar bucles infinitos o acceso a zonas del sistema.
+    """
     if directories is None:
         return []
     candidates: list[Path] = []
@@ -141,8 +145,11 @@ def _collect_candidates(directories: Iterable[str | Path], min_size: int, skip_p
     return candidates
 
 
-def _refine_by_hash(paths: Iterable[Path], hash_func: callable) -> dict[str, list[Path]]:
-    """Aplica una función de hash a una lista de archivos para agrupar por contenido."""
+def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[str | Path], str | None]) -> dict[str, list[Path]]:
+    """
+    Aplica una función de hash a una lista de archivos para agruparlos.
+    Retorna solo aquellos grupos donde existan 2 o más archivos con el mismo hash.
+    """
     by_hash: dict[str, list[Path]] = defaultdict(list)
     for path in paths:
         if digest := hash_func(path):

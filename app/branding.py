@@ -70,38 +70,38 @@ GRADE_COLORS: Final[dict[str, HexColor]] = {
 
 
 def app_title() -> str:
-    """Título con versión, para la barra de la ventana."""
+    """Retorna el nombre completo de la aplicación y su versión actual."""
     return f"{APP_NAME} v{APP_VERSION}"
 
 
 @lru_cache(maxsize=16)
 def color(name: str) -> HexColor:
-    """Obtiene un color de la paleta. Si el nombre no existe, devuelve gris neutro."""
+    """Obtiene un código hexadecimal de la paleta. Retorna gris por defecto si no existe."""
     return PALETTE.get(name, "#808080")
 
 
 @lru_cache(maxsize=16)
 def font_size(name: str) -> int:
-    """Tamaño de la escala tipográfica, con respaldo al tamaño de cuerpo."""
+    """Obtiene el tamaño tipográfico. Si el nombre no existe, retorna el tamaño de cuerpo."""
     return FONT_SIZES.get(name, FONT_SIZES["body"])
 
 
 def severity_color(severity: str | None) -> HexColor:
-    """Retorna el color asignado a una severidad."""
+    """Retorna el color asignado a un nivel de severidad."""
     if severity and (style := SEVERITY_STYLES.get(severity.lower())):
         return style[0]
     return PALETTE["text_muted"]
 
 
 def severity_label(severity: str | None) -> str:
-    """Retorna la etiqueta legible para una severidad."""
+    """Retorna la etiqueta legible del nivel de severidad."""
     if severity and (style := SEVERITY_STYLES.get(severity.lower())):
         return style[1]
     return str(severity).upper() if severity else "Desconocido"
 
 
 def grade_color(grade: str | None) -> HexColor:
-    """Retorna el color para una letra de grado de salud (A-F)."""
+    """Retorna el color asociado a una letra de grado de salud (A-F)."""
     if grade and (c := GRADE_COLORS.get(grade.upper()[:1])):
         return c
     return PALETTE["text_muted"]
@@ -109,7 +109,14 @@ def grade_color(grade: str | None) -> HexColor:
 
 @lru_cache(maxsize=4)
 def logo_svg(size: int = 128) -> str:
-    """Genera el logo como string SVG."""
+    """
+    Genera el logo de la aplicación en formato SVG.
+    
+    Args:
+        size: Tamaño en píxeles del logo cuadrado.
+    Returns:
+        String con el contenido XML del SVG.
+    """
     return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{size}" height="{size}" viewBox="0 0 128 128">
   <defs>
     <linearGradient id="omegaShield" x1="0" y1="0" x2="0" y2="1">
@@ -129,12 +136,16 @@ def logo_svg(size: int = 128) -> str:
 
 
 def save_logo_svg(destination: str | Path) -> Path | None:
-    """Guarda el logo SVG en disco, validando permisos, extensión y seguridad de ruta."""
+    """
+    Guarda el logo en disco tras validar seguridad y permisos.
+    
+    Returns:
+        La ruta del archivo guardado o None si falló por validación o permisos.
+    """
     if not destination:
         return None
     try:
         path = Path(destination).expanduser().resolve()
-        # Seguridad defensiva: validar extensión y ruta contra bloqueos
         if path.suffix.lower() != ".svg":
             return None
         if not ensure_safe_to_modify(path) or not ensure_safe_to_modify(path.parent):
@@ -144,13 +155,12 @@ def save_logo_svg(destination: str | Path) -> Path | None:
         path.write_text(logo_svg(), encoding="utf-8")
         return path
     except (OSError, PermissionError, TypeError):
-        # Excepciones específicas capturadas ante fallos de I/O o tipos inválidos
         return None
 
 
 @lru_cache(maxsize=1)
 def logo_ascii() -> str:
-    """Retorna la representación ASCII del logo para logs o consola."""
+    """Retorna una representación en arte ASCII para visualización en consola."""
     return r"""
    ___  __  __ ___ ___   _
   / _ \|  \/  | __/ __| /_\
@@ -161,7 +171,15 @@ def logo_ascii() -> str:
 
 
 def draw_logo(canvas: Any, size: int = 56, x: int = 0, y: int = 0) -> None:
-    """Dibuja el logo en un widget de tipo tkinter.Canvas."""
+    """
+    Dibuja el logo en un canvas de Tkinter.
+    
+    Args:
+        canvas: Widget canvas de Tkinter.
+        size: Tamaño base en píxeles.
+        x: Offset horizontal en canvas.
+        y: Offset vertical en canvas.
+    """
     if canvas is None or not hasattr(canvas, "create_polygon"):
         return
 
