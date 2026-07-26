@@ -15,6 +15,7 @@ la letra omega abajo: las dos mitades del producto en una sola marca.
 
 from __future__ import annotations
 from pathlib import Path
+from typing import Any
 
 APP_NAME = "Limpieza Total Omega"
 APP_SHORT_NAME = "Omega"
@@ -23,7 +24,7 @@ APP_VERSION = "2.0.0"
 
 # Paleta oscura con acento cian. Las claves describen el USO, no el color,
 # así se puede cambiar la paleta entera sin renombrar nada en la interfaz.
-PALETTE = {
+PALETTE: dict[str, str] = {
     "background": "#0f1419",
     "surface": "#1a2028",
     "surface_alt": "#232b35",
@@ -37,7 +38,7 @@ PALETTE = {
     "border": "#30363d",
 }
 
-FONT_SIZES = {
+FONT_SIZES: dict[str, int] = {
     "title": 24,
     "subtitle": 13,
     "heading": 15,
@@ -48,7 +49,7 @@ FONT_SIZES = {
 
 # Severidad -> (color, etiqueta legible). Lo usan todos los módulos que
 # reportan hallazgos, para que la interfaz los pinte de forma uniforme.
-SEVERITY_STYLES = {
+SEVERITY_STYLES: dict[str, tuple[str, str]] = {
     "ok": ("#00d4aa", "Correcto"),
     "info": ("#58a6ff", "Informativo"),
     "warning": ("#f5a623", "Advertencia"),
@@ -56,7 +57,7 @@ SEVERITY_STYLES = {
 }
 
 # Grado de salud -> color, para el panel que combina todos los módulos.
-GRADE_COLORS = {
+GRADE_COLORS: dict[str, str] = {
     "A": "#00d4aa",
     "B": "#58a6ff",
     "C": "#f5a623",
@@ -147,7 +148,7 @@ def logo_ascii() -> str:
 """
 
 
-def draw_logo(canvas, size: int = 56, x: int = 0, y: int = 0) -> None:
+def draw_logo(canvas: Any, size: int = 56, x: int = 0, y: int = 0) -> None:
     """Dibuja el logo sobre un canvas de Tkinter ya existente.
 
     Se dibuja con primitivas en vez de cargar una imagen para no depender

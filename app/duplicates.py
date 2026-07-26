@@ -21,6 +21,7 @@ import os
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Iterable
 
 from safety import is_protected_path
 
@@ -104,8 +105,8 @@ def group_by_size(paths: list[str | Path]) -> dict[int, list[Path]]:
     return dict(groups)
 
 
-def _collect_candidates(directories, min_size: int, skip_protected: bool) -> list[Path]:
-    """Recorre las carpetas y junta archivos candidatos a comparar."""
+def _collect_candidates(directories: Iterable[str | Path], min_size: int, skip_protected: bool) -> list[Path]:
+    """Recorre las carpetas y junta archivos candidatos a comparar (tamaño >= min_size)."""
     if not directories:
         return []
     candidates: list[Path] = []
@@ -135,11 +136,11 @@ def _collect_candidates(directories, min_size: int, skip_protected: bool) -> lis
 
 
 def find_duplicates(
-    directories,
+    directories: Iterable[str | Path],
     min_size: int = 1024,
     skip_protected: bool = True,
 ) -> list[DuplicateGroup]:
-    """Busca duplicados en las carpetas indicadas. No modifica nada."""
+    """Busca duplicados en las carpetas indicadas aplicando la estrategia de 3 pasos."""
     candidates = _collect_candidates(directories, min_size, skip_protected)
     if not candidates:
         return []

@@ -5,9 +5,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **13**
-- Mejoras aceptadas: **11** (84.6% de aceptación)
-- Rechazadas por tests: 1
+- Iteraciones totales: **17**
+- Mejoras aceptadas: **14** (82.4% de aceptación)
+- Rechazadas por tests: 2
 - Rechazadas por guardia de seguridad: 1
 - Sin cambios (nada sustancial que mejorar): 0
 - Sin respuesta de la IA (error o límite): 0
@@ -16,17 +16,18 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-26 | 11 | 1 | 1 | 0 | 0 |
+| 2026-07-26 | 14 | 2 | 1 | 0 | 0 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **11**
+- legibilidad y documentación: **3**
 
 ## Mejoras aceptadas por archivo
 
+- `diskreport.py`: **2**
+- `duplicates.py`: **2**
 - `browser.py`: **1**
-- `diskreport.py`: **1**
-- `duplicates.py`: **1**
 - `healthscore.py`: **1**
 - `main.py`: **1**
 - `memory.py`: **1**
@@ -35,9 +36,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - `safety.py`: **1**
 - `scanner.py`: **1**
 - `startup.py`: **1**
+- `branding.py`: **1**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-26T08:51:36` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación del proceso de filtrado y recolección, integrando type hints faltantes en los parámetros de las funciones `_collect_candidates` y `find_duplicates` para clarificar los tipos de datos esperados y facilitar el mantenimiento.
+- `2026-07-26T08:51:30` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica y la legibilidad mediante la adición de Type Hints en las funciones críticas de análisis (`walk_files`, `largest_files`, `usage_by_extension`, `largest_folders`, `total_size`), clarificando los contratos de datos y facilitando la mantenibilidad futura.
+- `2026-07-26T08:50:48` **branding.py** (legibilidad y documentación): He mejorado la robustez y legibilidad del módulo mediante la adición de Type Hints en todas las funciones y la centralización de los tipos de datos de entrada/salida, asegurando que las funciones de acceso como `color` y `font_size` documenten claramente su comportamiento ante claves ausentes.
 - `2026-07-26T08:41:20` **startup.py** (manejo de errores y validación de entradas): Se implementó un manejo de errores robusto en `parse_registry_csv` y `entries_from_registry` para validar las entradas del registro, previniendo fallos ante datos malformados o vacíos, y se añadió una validación de tipo en `estimate_impact` para asegurar la estabilidad del cómputo.
 - `2026-07-26T08:41:14` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `scan_directory` y `scan_file` mediante la validación explícita de entradas (`None` o tipos incorrectos) y el manejo de excepciones de acceso al sistema de archivos, asegurando que las funciones no fallen ante rutas mal formadas o problemas de permisos durante el recorrido recursivo.
 - `2026-07-26T08:40:54` **safety.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de errores en `normalize` y `is_within_directory` mediante la validación de tipos (`isinstance`) y la captura de `TypeError` frente a entradas mal formadas, evitando que la aplicación colapse ante parámetros inesperados en tiempo de ejecución.

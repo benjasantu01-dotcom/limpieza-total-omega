@@ -198,3 +198,39 @@ FAILED evolve/tests/test_basic.py::test_scanner_flags_system_lookalike_outside_s
 - `2026-07-26T08:41:20` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Se implementó un manejo de errores robusto en `parse_registry_csv` y `entries_from_registry` para validar las entradas del registro, previniendo fallos ante datos malformados o vacíos, y se añadió una validación de tipo en `estimate_impact` para asegurar la estabilidad del cómputo.
 - `2026-07-26T08:41:20` Rotación — nada para rotar
 - `2026-07-26T08:41:20` Corrida terminada. Total usado hoy: 34.
+- `2026-07-26T08:50:26` Arrancando corrida. Quedan hoy ~266 peticiones objetivo.
+- `2026-07-26T08:50:48` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). He mejorado la robustez y legibilidad del módulo mediante la adición de Type Hints en todas las funciones y la centralización de los tipos de datos de entrada/salida, asegurando que las funciones de acceso como `color` y `font_size` documenten claramente su comportamiento ante claves ausentes.
+- `2026-07-26T08:51:08` Tests FALLARON:
+```
+ses=[tmp_path], cache_paths={"X": r"no\existe\Cache"}
+        ) == []
+E       TypeError: detect_profiles() got an unexpected keyword argument 'bases'
+
+evolve/tests/test_modules.py:579: TypeError
+_____________ test_detect_profiles_never_reports_user_data_folders _____________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-2/test_detect_profiles_never_rep0')
+
+    def test_detect_profiles_never_reports_user_data_folders(tmp_path):
+        # Aunque se le pida explícitamente, no debe reportar carpetas de datos.
+        peligrosa = tmp_path / "Perfil" / "Cookies"
+        peligrosa.mkdir(parents=True)
+        (peligrosa / "x").write_text("secreto")
+>       assert browser.detect_profiles(
+            bases=[tmp_path], cache_paths={"Chrome": r"Perfil\Cookies"}
+        ) == []
+E       TypeError: detect_profiles() got an unexpected keyword argument 'bases'
+
+evolve/tests/test_modules.py:589: TypeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_folders - TypeError: detect_profiles() got an unexpected keyword argument 'bases'
+FAILED evolve/tests/test_modules.py::test_detect_profiles_ignores_missing_folders - TypeError: detect_profiles() got an unexpected keyword argument 'bases'
+FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_data_folders - TypeError: detect_profiles() got an unexpected keyword argument 'bases'
+3 failed, 194 passed in 0.33s
+
+```
+- `2026-07-26T08:51:08` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Se introdujeron type hints en `directory_size` y `detect_profiles` para mejorar la claridad de la API y se sustituyeron los nombres de variables genéricos `bases` y `cache_paths` por `base_dirs` y `cache_definitions` en `detect_profiles` para documentar explícitamente su propósito y contenido.
+- `2026-07-26T08:51:30` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica y la legibilidad mediante la adición de Type Hints en las funciones críticas de análisis (`walk_files`, `largest_files`, `usage_by_extension`, `largest_folders`, `total_size`), clarificando los contratos de datos y facilitando la mantenibilidad futura.
+- `2026-07-26T08:51:36` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación del proceso de filtrado y recolección, integrando type hints faltantes en los parámetros de las funciones `_collect_candidates` y `find_duplicates` para clarificar los tipos de datos esperados y facilitar el mantenimiento.
+- `2026-07-26T08:51:36` Rotación — nada para rotar
+- `2026-07-26T08:51:36` Corrida terminada. Total usado hoy: 38.

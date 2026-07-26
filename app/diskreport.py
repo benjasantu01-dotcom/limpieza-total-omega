@@ -21,6 +21,7 @@ import shutil
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Generator, Iterable
 
 from safety import is_protected_path
 
@@ -121,7 +122,7 @@ def drive_usage(mount: str | os.PathLike) -> DriveUsage | None:
     return DriveUsage(mount=str(mount), total=usage.total, used=usage.used, free=usage.free)
 
 
-def all_drives_usage(mounts=None) -> list[DriveUsage]:
+def all_drives_usage(mounts: Iterable[str] | None = None) -> list[DriveUsage]:
     """Espacio de todas las unidades disponibles.
 
     `mounts` se puede pasar explícitamente (útil para tests); si no, se
@@ -142,7 +143,7 @@ def all_drives_usage(mounts=None) -> list[DriveUsage]:
     return results
 
 
-def walk_files(directory: str | os.PathLike, skip_protected: bool = True):
+def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Generator[tuple[Path, int], None, None]:
     """Genera (ruta, tamaño) de cada archivo bajo `directory`."""
     if not directory:
         return
@@ -168,14 +169,14 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True):
                 continue
 
 
-def largest_files(directory, limit: int = 20, skip_protected: bool = True) -> list[FileEntry]:
+def largest_files(directory: str | os.PathLike, limit: int = 20, skip_protected: bool = True) -> list[FileEntry]:
     """Los archivos más grandes bajo una carpeta, de mayor a menor."""
     entries = [FileEntry(path=p, size_bytes=s) for p, s in walk_files(directory, skip_protected)]
     entries.sort(key=lambda e: e.size_bytes, reverse=True)
     return entries[:limit]
 
 
-def usage_by_extension(directory, limit: int = 15, skip_protected: bool = True) -> list[ExtensionUsage]:
+def usage_by_extension(directory: str | os.PathLike, limit: int = 15, skip_protected: bool = True) -> list[ExtensionUsage]:
     """Espacio agrupado por extensión, de mayor a menor."""
     sizes: dict[str, int] = defaultdict(int)
     counts: dict[str, int] = defaultdict(int)
@@ -189,7 +190,7 @@ def usage_by_extension(directory, limit: int = 15, skip_protected: bool = True) 
     return usage[:limit]
 
 
-def largest_folders(directory, limit: int = 10, skip_protected: bool = True) -> list[FolderUsage]:
+def largest_folders(directory: str | os.PathLike, limit: int = 10, skip_protected: bool = True) -> list[FolderUsage]:
     """Las subcarpetas directas más pesadas, contando su contenido completo."""
     if not directory:
         return []
@@ -214,7 +215,7 @@ def largest_folders(directory, limit: int = 10, skip_protected: bool = True) -> 
     return results[:limit]
 
 
-def total_size(directory, skip_protected: bool = True) -> tuple[int, int]:
+def total_size(directory: str | os.PathLike, skip_protected: bool = True) -> tuple[int, int]:
     """Devuelve (bytes totales, cantidad de archivos) bajo una carpeta."""
     total = 0
     count = 0
@@ -224,7 +225,7 @@ def total_size(directory, skip_protected: bool = True) -> tuple[int, int]:
     return total, count
 
 
-def summarize(directory, skip_protected: bool = True) -> list[str]:
+def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list[str]:
     """Resumen legible del uso de disco de una carpeta."""
     total, count = total_size(directory, skip_protected)
     lines = [
