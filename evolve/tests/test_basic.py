@@ -46,3 +46,15 @@ def test_organizer_never_exposes_a_direct_delete_all():
     import inspect
     source = inspect.getsource(organizer)
     assert "shutil.rmtree" not in source
+
+
+def test_list_available_drives_does_not_crash():
+    # No debe fallar sin importar el sistema operativo, solo puede
+    # devolver una lista vacía en no-Windows.
+    drives = organizer.list_available_drives()
+    assert isinstance(drives, list)
+
+
+def test_scan_for_junk_skips_system_folders():
+    assert "windows" in organizer.SYSTEM_FOLDER_BLOCKLIST
+    assert "program files" in organizer.SYSTEM_FOLDER_BLOCKLIST

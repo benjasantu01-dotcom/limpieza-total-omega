@@ -1,8 +1,8 @@
 ﻿"""
 budget.py
-Controla cuÃ¡ntas peticiones a Gemini se hicieron hoy, para no pasarse
-del lÃ­mite gratuito de Google AI Studio. Guarda el estado en un
-archivo JSON versionado en el repo, asÃ­ persiste entre corridas de
+Controla cuántas peticiones a Gemini se hicieron hoy, para no pasarse
+del límite gratuito de Google AI Studio. Guarda el estado en un
+archivo JSON versionado en el repo, así persiste entre corridas de
 GitHub Actions.
 """
 
@@ -14,8 +14,8 @@ from pathlib import Path
 
 STATE_FILE = Path(__file__).parent / "budget_state.json"
 
-DAILY_TARGET = 450    # objetivo de mensajes por dÃ­a
-DAILY_HARD_CAP = 490  # tope duro (margen de seguridad antes del lÃ­mite real de Google)
+DAILY_TARGET = 300    # objetivo de mensajes por día (cuota real: 500 RPD, dejamos margen amplio)
+DAILY_HARD_CAP = 350  # tope duro (margen de seguridad antes del límite real de Google)
 
 
 @dataclass
@@ -37,7 +37,7 @@ def load_state() -> BudgetState:
     data = json.loads(STATE_FILE.read_text())
     state = BudgetState(**data)
     if state.day != _today():
-        # nuevo dÃ­a, resetear contador
+        # nuevo día, resetear contador
         state = BudgetState(day=_today())
     return state
 

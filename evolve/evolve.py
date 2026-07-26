@@ -5,7 +5,9 @@ Cada corrida (disparada por GitHub Actions cada N minutos, ver
 .github/workflows/evolve.yml):
   1. Chequea el presupuesto diario (no pasarse del límite gratis de Gemini).
   2. Lee la misión actual desde MISSION.md (la "guía" que vos escribís).
-  3. Le pide a Gemini UNA mejora concreta y acotada a un archivo puntual.
+  3. Le pide a Gemini UNA mejora concreta y acotada a un archivo puntual,
+     rotando entre 6 categorías de enfoque (errores, legibilidad,
+     rendimiento, casos límite, seguridad, funcionalidad incremental).
   4. Aplica el cambio en un archivo temporal, corre los tests (pytest).
   5. Si pasan: reemplaza el archivo real y lo deja listo para commit.
      Si no pasan: descarta el cambio y lo deja logueado en evolve_log.md.
@@ -38,7 +40,7 @@ GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.1-flash-lite")
 GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent"
 
-ITERATIONS_PER_RUN = int(os.environ.get("ITERATIONS_PER_RUN", "5"))
+ITERATIONS_PER_RUN = int(os.environ.get("ITERATIONS_PER_RUN", "1"))
 
 # El nivel gratuito de Gemini limita peticiones POR MINUTO, no solo por
 # día. Espaciamos cada llamada para no pasarnos (ajustable por si Google
@@ -49,12 +51,18 @@ MAX_WAIT_SECONDS = 30  # nunca esperar más que esto por un solo reintento
 # Si Google pide esperar más que esto, asumimos que es la cuota DIARIA
 # agotada (no por minuto) y no tiene sentido insistir en esta corrida.
 QUOTA_EXHAUSTED_WAIT_THRESHOLD = 60
-# Corte de seguridad propio: el job de GitHub Actions tiene 30 min de
-# límite. Nos cortamos solos a los 15 para siempre dejar tiempo de
-# terminar prolijo y commitear lo que se haya logrado hasta ahí.
-RUN_DEADLINE_SECONDS = int(os.environ.get("RUN_DEADLINE_SECONDS", "900"))
+# Corte de seguridad propio: el job de GitHub Actions tiene un límite
+# duro. Nos cortamos solos antes para siempre dejar tiempo de terminar
+# prolijo y commitear lo que se haya logrado hasta ahí.
+RUN_DEADLINE_SECONDS = int(os.environ.get("RUN_DEADLINE_SECONDS", "480"))
 
 FILE_BLOCK_RE = re.compile(r"```(?:python)?\s*#\s*FILE:\s*(.+?)\n(.*?)```", re.DOTALL)
+RATIONALE_RE = re.compile(r"RATIONALE:\s*(.+)")
+
+
+def extract_rationale(response_text: str) -> str:
+    match = RATIONALE_RE.search(response_text)
+    return match.group(1).strip() if match else "(sin justificación provista)"
 
 
 def log(message: str) -> None:
@@ -75,48 +83,131 @@ def list_editable_files() -> list[Path]:
     return sorted(p for p in APP_DIR.glob("*.py"))
 
 
-def build_prompt(mission: str, target_file: Path) -> str:
+# Cada categoría trae: (técnicas de ejemplo, permite_comportamiento_nuevo,
+# usar_busqueda_web). Solo "funcionalidad incremental" puede agregar
+# comportamiento nuevo (siempre aditivo, nunca reemplazando lo existente)
+# y es la única que investiga en la web antes de proponer algo.
+IMPROVEMENT_CATEGORIES = {
+    "manejo de errores y validación de entradas": (
+        "capturar excepciones específicas en vez de genéricas, validar "
+        "parámetros antes de usarlos, agregar mensajes de error más "
+        "informativos, chequear valores None/vacíos antes de operar sobre ellos",
+        False, False,
+    ),
+    "legibilidad y documentación": (
+        "docstrings que expliquen el PORQUÉ de una decisión no obvia, "
+        "type hints donde falten, nombres de variables más descriptivos "
+        "cuando el actual sea ambiguo, extraer un bloque complejo a una función con nombre claro",
+        False, False,
+    ),
+    "rendimiento": (
+        "evitar recalcular o releer algo que ya se tiene, evitar loops "
+        "anidados innecesarios, usar estructuras de datos más eficientes "
+        "para el caso de uso (set en vez de list para búsquedas, etc.)",
+        False, False,
+    ),
+    "robustez ante casos límite": (
+        "rutas que no existen, permisos denegados, archivos vacíos o "
+        "corruptos, listas vacías, valores inesperados de configuración, "
+        "concurrencia entre hilos",
+        False, False,
+    ),
+    "seguridad defensiva": (
+        "validar que una ruta esté dentro de la carpeta esperada antes de "
+        "tocarla, evitar construir rutas o comandos a partir de datos sin "
+        "validar, evitar efectos secundarios si una operación falla a mitad de camino",
+        False, False,
+    ),
+    "funcionalidad incremental": (
+        "una función nueva y chica que sume valor real a la misión del "
+        "proyecto (ej: selección de disco/carpeta a escanear, una opción "
+        "de filtrado extra, un resumen de estadísticas). Antes de proponer, "
+        "buscá en la web cómo lo resuelven limpiadores/antivirus reales "
+        "(CCleaner, Windows Defender, BleachBit) para inspirarte. SIEMPRE "
+        "aditiva: no debe romper ni cambiar nada de lo que ya existe, solo sumar",
+        True, True,
+    ),
+}
+
+
+def build_prompt(mission: str, target_file: Path, category: str, techniques: str, allow_new_behavior: bool) -> str:
     current_code = target_file.read_text(encoding="utf-8")
-    return f"""Sos un colaborador de código cuidadoso trabajando en un proyecto Python real.
+    behavior_rule = (
+        "- PODÉS agregar funcionalidad nueva (una función, un parámetro opcional, etc.), "
+        "siempre que sea puramente ADITIVA: todo lo que ya existe debe seguir funcionando "
+        "exactamente igual que antes. No reemplaces ni cambies comportamiento existente."
+        if allow_new_behavior else
+        "- NO cambies el comportamiento observable del código (misma funcionalidad)."
+    )
+    return f"""Sos un colaborador de código senior, cuidadoso y exigente, trabajando en un
+proyecto Python real que se va a mostrar como demo técnica. Tu trabajo se
+evalúa TODOS LOS DÍAS por el dueño del proyecto: se espera progreso real
+y visible en cada corrida, no solo en las primeras.
 
 MISIÓN ACTUAL (definida por el dueño del proyecto):
 {mission}
 
-Tu tarea: proponer UNA SOLA mejora pequeña, segura y concreta al archivo
-"{target_file.name}" de abajo. Reglas estrictas:
-- NO cambies el comportamiento observable del código (misma funcionalidad).
+ENFOQUE DE ESTA MEJORA (obligatorio, no te desvíes a otra cosa): {category}
+Técnicas típicas de este enfoque (usalas como inspiración, no es una lista cerrada): {techniques}
+
+Tu tarea: proponer UNA SOLA mejora concreta y sustancial al archivo
+"{target_file.name}" de abajo, enfocada estrictamente en el enfoque de
+arriba. ESFORZATE EN SERIO antes de rendirte: releé el archivo completo
+buscando específicamente huecos relacionados a este enfoque — es muy raro
+que un archivo real no tenga NINGÚN margen de mejora en ninguna de las
+técnicas listadas arriba. Considerá al menos 2 o 3 opciones distintas
+internamente y elegí la más valiosa.
+
+Reglas estrictas (estas NO se negocian bajo ningún enfoque):
+{behavior_rule}
 - NO agregues borrado masivo de archivos ni nada destructivo.
 - NO agregues dependencias nuevas.
+- PROHIBIDO hacer cambios cosméticos: no renombres variables sin un motivo
+  funcional real, no reformatees espacios, no agregues comentarios que no
+  aporten información nueva.
+- Devolver el archivo SIN CAMBIOS solo está permitido como último recurso,
+  después de haber considerado en serio varias opciones y confirmar que
+  el archivo ya está sólido en este enfoque específico. Esto debería ser
+  la excepción, no la respuesta por defecto.
 - El código debe seguir siendo válido y ejecutable.
-- Devolvé el archivo COMPLETO y modificado, en un único bloque así:
+
+Formato de respuesta OBLIGATORIO, en este orden exacto:
+
+RATIONALE: <una sola oración explicando qué mejoraste y por qué, o "Sin cambios: <motivo específico y concreto>" si de verdad no hay nada que mejorar>
 
 ```python
 # FILE: {target_file.name}
 <contenido completo del archivo aca>
 ```
 
-No agregues explicación fuera del bloque.
+No agregues nada más fuera de esas dos partes.
 
 --- CONTENIDO ACTUAL DE {target_file.name} ---
 {current_code}
 """
 
 
-def call_gemini(prompt: str) -> str | None:
+def call_gemini(prompt: str, use_search: bool = False) -> str | None:
     if not GEMINI_API_KEY:
         log("ERROR: falta GEMINI_API_KEY en el entorno.")
         return None
+
+    payload = {"contents": [{"parts": [{"text": prompt}]}]}
+    if use_search:
+        payload["tools"] = [{"google_search": {}}]
 
     for attempt in range(1, MAX_RETRIES_ON_RATE_LIMIT + 1):
         try:
             resp = requests.post(
                 GEMINI_URL,
                 params={"key": GEMINI_API_KEY},
-                json={"contents": [{"parts": [{"text": prompt}]}]},
-                timeout=60,
+                json=payload,
+                timeout=90 if use_search else 60,
             )
             if resp.status_code == 429:
                 wait = int(resp.headers.get("Retry-After", 20 * attempt))
+                detail = resp.text[:300].replace("\n", " ")
+                log(f"Detalle del 429 de Gemini: {detail}")
                 if wait > QUOTA_EXHAUSTED_WAIT_THRESHOLD:
                     log(f"Gemini pide esperar {wait}s: parece cuota DIARIA agotada, no vale la pena reintentar hoy.")
                     return "QUOTA_EXHAUSTED"
@@ -126,7 +217,11 @@ def call_gemini(prompt: str) -> str | None:
                 continue
             resp.raise_for_status()
             data = resp.json()
-            return data["candidates"][0]["content"]["parts"][0]["text"]
+            parts = data["candidates"][0]["content"]["parts"]
+            text = "".join(p.get("text", "") for p in parts)
+            if not text.strip():
+                raise KeyError("respuesta sin texto")
+            return text
         except requests.RequestException as e:
             log(f"ERROR llamando a Gemini: {e}")
             return None
@@ -167,8 +262,12 @@ def try_one_improvement(state) -> str:
     target = min(files, key=lambda p: p.stat().st_mtime)
     original_content = target.read_text(encoding="utf-8")
 
-    prompt = build_prompt(read_mission(), target)
-    response = call_gemini(prompt)
+    # rotar el enfoque de la mejora según cuántas peticiones ya se hicieron hoy
+    categories_list = list(IMPROVEMENT_CATEGORIES.items())
+    category, (techniques, allow_new_behavior, use_search) = categories_list[state.requests_used % len(categories_list)]
+
+    prompt = build_prompt(read_mission(), target, category, techniques, allow_new_behavior)
+    response = call_gemini(prompt, use_search=use_search)
     register_request(state)  # cuenta el intento, haya salido bien o mal
 
     if response == "QUOTA_EXHAUSTED":
@@ -179,20 +278,27 @@ def try_one_improvement(state) -> str:
     if response is None:
         return "no_response"
 
+    rationale = extract_rationale(response)
     change = extract_file_change(response)
     if change is None:
-        log(f"Gemini no devolvió un bloque de archivo válido para {target.name}.")
+        log(f"Gemini no devolvió un bloque de archivo válido para {target.name} (enfoque: {category}).")
         return "no_response"
 
     _, new_content = change
+
+    if new_content.strip() == original_content.strip():
+        log(f"➖ Sin cambios en {target.name} (enfoque: {category}). Motivo: {rationale}")
+        target.touch()  # igual rota el round-robin, no insistir de nuevo enseguida
+        return "ok"
+
     target.write_text(new_content, encoding="utf-8")
 
     if run_tests():
-        log(f"✅ Mejora aceptada en {target.name}.")
+        log(f"✅ Mejora aceptada en {target.name} (enfoque: {category}). {rationale}")
         target.touch()  # actualiza mtime para el round-robin
     else:
         target.write_text(original_content, encoding="utf-8")
-        log(f"❌ Mejora descartada en {target.name} (no pasó los tests), se revirtió.")
+        log(f"❌ Mejora descartada en {target.name} (no pasó los tests), se revirtió. Intento: {rationale}")
     return "ok"
 
 

@@ -12,6 +12,7 @@ separada (ver delete_reviewed()).
 from __future__ import annotations
 import os
 import shutil
+import string
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -29,6 +30,20 @@ DEFAULT_SCAN_DIRS = [
 ]
 
 
+def list_available_drives() -> list[str]:
+    """Devuelve las letras de unidad disponibles en Windows (ej. ['C:\\\\', 'D:\\\\']),
+    para que el usuario pueda elegir en qué disco buscar además de las
+    carpetas por defecto. No falla en sistemas no-Windows: devuelve lista vacía."""
+    if os.name != "nt":
+        return []
+    drives = []
+    for letter in string.ascii_uppercase:
+        drive = f"{letter}:\\"
+        if os.path.exists(drive):
+            drives.append(drive)
+    return drives
+
+
 @dataclass
 class JunkFile:
     path: Path
@@ -40,9 +55,17 @@ class JunkFile:
         return round(self.size_bytes / (1024 * 1024), 2)
 
 
+# Carpetas de sistema críticas que nunca se recorren, incluso si el
+# usuario elige escanear una unidad completa (ej. "C:\"). Evita que un
+# escaneo de disco completo se meta en Windows/Program Files.
+SYSTEM_FOLDER_BLOCKLIST = {"windows", "program files", "program files (x86)", "$recycle.bin", "system volume information"}
+
+
 def scan_for_junk(directories: list[str] | None = None) -> list[JunkFile]:
     """Recorre las carpetas indicadas y devuelve candidatos a basura.
-    No modifica nada en el disco."""
+    No modifica nada en el disco. Si una de las 'directories' es la raíz
+    de una unidad (ej. 'D:\\'), se recorre completa salvo las carpetas
+    de sistema críticas listadas en SYSTEM_FOLDER_BLOCKLIST."""
     dirs = directories or DEFAULT_SCAN_DIRS
     found: list[JunkFile] = []
 
@@ -50,7 +73,8 @@ def scan_for_junk(directories: list[str] | None = None) -> list[JunkFile]:
         p = Path(d)
         if not p.exists():
             continue
-        for root, _, files in os.walk(p):
+        for root, subdirs, files in os.walk(p):
+            subdirs[:] = [sd for sd in subdirs if sd.lower() not in SYSTEM_FOLDER_BLOCKLIST]
             for name in files:
                 fp = Path(root) / name
                 try:

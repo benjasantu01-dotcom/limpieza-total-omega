@@ -2,10 +2,11 @@ name: Evolve (bucle autónomo)
 
 on:
   schedule:
-    # Cada 30 minutos = 48 corridas/día. Con ITERATIONS_PER_RUN=20
-    # eso da hasta ~960/día, bajo el objetivo de 1000 y con margen
-    # respecto al tope duro de 1500 definido en evolve/budget.py.
-    - cron: "*/30 * * * *"
+    # Cada 5 minutos = 288 corridas/día. Con ITERATIONS_PER_RUN=1 eso da
+    # ~288 peticiones/día, repartidas parejo en las 24hs (una cada 5 min),
+    # bien por debajo del objetivo de 300 y con margen amplio respecto
+    # al límite real de la cuota gratuita (500/día).
+    - cron: "*/5 * * * *"
   workflow_dispatch: {}  # también se puede disparar a mano desde GitHub
 
 permissions:
@@ -18,7 +19,7 @@ concurrency:
 jobs:
   evolve:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
 
@@ -32,7 +33,7 @@ jobs:
       - name: Correr el bucle de mejoras
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          ITERATIONS_PER_RUN: "20"
+          ITERATIONS_PER_RUN: "1"
         run: python evolve/evolve.py
 
       - name: Commitear cambios aceptados

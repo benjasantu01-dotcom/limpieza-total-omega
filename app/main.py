@@ -12,8 +12,9 @@ Ejecutar:
 """
 
 import threading
+from tkinter import filedialog
 import customtkinter as ctk
-from organizer import scan_for_junk, sort_junk, stage_for_review, delete_reviewed
+from organizer import scan_for_junk, sort_junk, stage_for_review, delete_reviewed, list_available_drives
 from scanner import scan_directory, run_windows_defender_quick_scan
 
 ctk.set_appearance_mode("dark")
@@ -27,6 +28,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.geometry("820x560")
 
         self.junk_files = []
+        self.scan_target = None  # None = usar carpetas por defecto (Temp/Descargas)
 
         self._build_layout()
 
@@ -47,6 +49,16 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         ctk.CTkButton(btn_frame, text="🛡️ Escaneo heurístico", command=self.on_heuristic_scan).grid(row=0, column=3, padx=8)
         ctk.CTkButton(btn_frame, text="🛡️ Defender (real)", command=self.on_defender_scan).grid(row=0, column=4, padx=8)
 
+        target_frame = ctk.CTkFrame(self, fg_color="transparent")
+        target_frame.pack(pady=(10, 0))
+        ctk.CTkLabel(target_frame, text="Buscar en:").grid(row=0, column=0, padx=6)
+        drive_options = ["Por defecto (Temp + Descargas)"] + list_available_drives() + ["Elegir carpeta..."]
+        self.target_choice = ctk.StringVar(value=drive_options[0])
+        ctk.CTkOptionMenu(target_frame, values=drive_options, variable=self.target_choice,
+                           command=self.on_target_choice_changed).grid(row=0, column=1, padx=6)
+        self.target_label = ctk.CTkLabel(target_frame, text="", text_color="gray")
+        self.target_label.grid(row=0, column=2, padx=6)
+
         sort_frame = ctk.CTkFrame(self, fg_color="transparent")
         sort_frame.pack(pady=(10, 0))
         ctk.CTkLabel(sort_frame, text="Ordenar por:").grid(row=0, column=0, padx=6)
@@ -64,10 +76,31 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def run_async(self, fn):
         threading.Thread(target=fn, daemon=True).start()
 
+    def on_target_choice_changed(self, choice: str):
+        if choice == "Elegir carpeta...":
+            folder = filedialog.askdirectory(title="Elegí una carpeta para escanear")
+            if folder:
+                self.scan_target = folder
+                self.target_label.configure(text=folder)
+            else:
+                # el usuario canceló el diálogo: volvemos a "por defecto"
+                self.target_choice.set("Por defecto (Temp + Descargas)")
+                self.scan_target = None
+                self.target_label.configure(text="")
+        elif choice == "Por defecto (Temp + Descargas)":
+            self.scan_target = None
+            self.target_label.configure(text="")
+        else:
+            # el usuario eligió una letra de unidad (ej. "D:\")
+            self.scan_target = choice
+            self.target_label.configure(text=f"Unidad completa: {choice}")
+
     def on_scan_junk(self):
         def task():
-            self.log("Buscando archivos basura...")
-            self.junk_files = scan_for_junk()
+            destino = self.scan_target or "carpetas por defecto (Temp/Descargas)"
+            self.log(f"Buscando archivos basura en: {destino}...")
+            directories = [self.scan_target] if self.scan_target else None
+            self.junk_files = scan_for_junk(directories)
             self.log(f"Encontrados {len(self.junk_files)} candidatos.")
             self.refresh_list()
         self.run_async(task)
