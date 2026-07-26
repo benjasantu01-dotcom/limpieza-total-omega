@@ -148,10 +148,11 @@ def all_drives_usage(mounts: Iterable[str] | None = None) -> list[DriveUsage]:
 
 def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Generator[tuple[Path, int], None, None]:
     """
-    Genera pares (ruta, tamaño) de archivos bajo `directory`.
+    Genera tuplas (ruta_absoluta, tamaño_en_bytes) para cada archivo encontrado.
     
-    Implementa una recursión controlada mediante os.walk con manejo de errores
-    para archivos bloqueados, inexistentes o con permisos restringidos.
+    El parámetro `skip_protected` evita la recursión en directorios bloqueados
+    o de sistema definidos en `safety.py`. Filtra enlaces simbólicos para 
+    prevenir ciclos o lecturas fuera del árbol deseado.
     """
     if not directory:
         return
@@ -171,12 +172,12 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
         root_path = Path(root)
             
         if skip_protected:
+            # Modificamos subdirs in-place para que os.walk ignore carpetas protegidas
             subdirs[:] = [d for d in subdirs if not is_protected_path(root_path / d)]
             
         for name in files:
             path = root_path / name
             try:
-                # Verificación de seguridad adicional por cada archivo hallado
                 if path.is_symlink() or (skip_protected and is_protected_path(path)):
                     continue
                 yield path, path.stat().st_size
@@ -211,7 +212,11 @@ def usage_by_extension(directory: str | os.PathLike, limit: int = 15, skip_prote
 
 def largest_folders(directory: str | os.PathLike, limit: int = 10, skip_protected: bool = True) -> list[FolderUsage]:
     """
-    Calcula el peso acumulado de las subcarpetas directas o archivos en el nivel actual.
+    Calcula el peso total de los elementos contenidos en cada carpeta de primer nivel.
+
+    Agrupa recursivamente todos los archivos encontrados bajo `directory` y suma sus 
+    pesos a la subcarpeta (o archivo raíz) que los contiene inmediatamente.
+    Esto permite identificar qué rama del árbol de archivos es la responsable del peso.
     """
     if not directory:
         return []
@@ -230,7 +235,7 @@ def largest_folders(directory: str | os.PathLike, limit: int = 10, skip_protecte
         except ValueError:
             continue
 
-        # Manejo robusto: si relative_path está vacío (archivo en raíz), top_level es base
+        # Si el archivo está en la raíz, se cuenta como parte del nivel base
         if not relative_path.parts:
             top_level = base
         else:

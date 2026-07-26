@@ -5,8 +5,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **249**
-- Mejoras aceptadas: **171** (68.7% de aceptación)
+- Iteraciones totales: **253**
+- Mejoras aceptadas: **175** (69.2% de aceptación)
 - Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 16
 - Sin cambios (nada sustancial que mejorar): 2
@@ -16,33 +16,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-26 | 171 | 12 | 16 | 2 | 48 |
+| 2026-07-26 | 175 | 12 | 16 | 2 | 48 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **41**
-- legibilidad y documentación: **36**
+- legibilidad y documentación: **40**
 - seguridad defensiva: **34**
 - robustez ante casos límite: **31**
 - rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
+- `diskreport.py`: **16**
+- `healthscore.py`: **16**
 - `branding.py`: **16**
 - `browser.py`: **15**
-- `diskreport.py`: **15**
-- `healthscore.py`: **15**
+- `duplicates.py`: **15**
 - `organizer.py`: **15**
 - `safety.py`: **15**
-- `duplicates.py`: **14**
+- `main.py`: **14**
 - `quarantine.py`: **14**
-- `main.py`: **13**
 - `memory.py`: **13**
 - `scanner.py`: **13**
 - `startup.py`: **13**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-26T19:01:07` **main.py** (legibilidad y documentación): Mejoré la documentación interna del módulo `main.py` añadiendo docstrings descriptivos a los métodos que gestionan la lógica asíncrona (`run_async`) y la interacción con archivos (`_is_path_safe`, `_confirm`, `_ask_folder`), clarificando su responsabilidad dentro del ciclo de vida de la aplicación.
+- `2026-07-26T19:00:42` **healthscore.py** (legibilidad y documentación): Se documentaron los umbrales críticos de las funciones de scoring para clarificar el "PORQUÉ" de las constantes numéricas (ej. 35% de RAM o 25% de disco), facilitando el mantenimiento y la comprensión de las expectativas del sistema.
+- `2026-07-26T19:00:20` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `duplicates.py` añadiendo explicaciones detalladas en los docstrings sobre el flujo de datos y el propósito de cada etapa del filtrado, además de añadir type hints explícitos en `_collect_candidates` para mayor claridad.
+- `2026-07-26T18:59:46` **diskreport.py** (legibilidad y documentación): Mejoré la documentación de `walk_files` y `largest_folders` incluyendo Type Hints detallados y docstrings que explican el "porqué" del filtrado de rutas y la lógica de agregación por `top_level`, mejorando la mantenibilidad para futuros colaboradores.
 - `2026-07-26T18:50:21` **browser.py** (legibilidad y documentación): Mejora la robustez del cálculo de tamaño de directorios añadiendo el manejo explícito de `StopIteration` y excepciones al recorrer archivos, además de documentar mediante docstrings la justificación de omitir archivos inaccesibles durante el escaneo para evitar falsos negativos en el reporte de espacio.
 - `2026-07-26T18:50:16` **branding.py** (legibilidad y documentación): Mejoré la documentación de `branding.py` mediante docstrings detallados que explican el propósito, las precondiciones y el contrato de los métodos públicos, además de añadir type hints faltantes para asegurar la integridad de la interfaz API.
 - `2026-07-26T18:40:10` **safety.py** (manejo de errores y validación de entradas): Mejora la robustez de `is_within_directory` y `ensure_safe_to_modify` implementando validaciones de tipo explícitas y una lógica de normalización más resiliente, eliminando la ambigüedad en el manejo de rutas `None` o mal formadas.
@@ -54,7 +58,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-26T18:20:32` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó la validación de entrada en la función `summarize` para evitar el procesamiento innecesario de rutas nulas o inexistentes, asegurando que la interfaz reciba una salida coherente ante parámetros inválidos.
 - `2026-07-26T18:20:25` **browser.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `directory_size` y `detect_profiles` añadiendo validaciones explícitas de tipos y estados para evitar errores en tiempo de ejecución si se reciben parámetros inválidos o rutas inexistentes.
 - `2026-07-26T18:20:04` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones `severity_color`, `severity_label` y `grade_color` añadiendo validaciones estrictas de tipo y manejo de casos donde la entrada es un string vacío o un tipo de dato inesperado, asegurando que la interfaz no falle ante datos mal formados.
-- `2026-07-26T17:38:57` **startup.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `entries_from_folders` añadiendo una validación explícita mediante `Path.resolve()` contra la carpeta base para prevenir ataques de trayectoria (path traversal), asegurando que los archivos detectados realmente residan dentro de las rutas autorizadas.
-- `2026-07-26T17:38:50` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `scan_directory` validando explícitamente que cada entrada de archivo procesada permanezca dentro de la jerarquía del directorio base (`root`) antes de su análisis, evitando posibles escapes de ruta mediante enlaces simbólicos o manipulaciones externas durante el recorrido.
-- `2026-07-26T17:38:30` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `is_protected_path` añadiendo una comprobación explícita mediante `is_junction()` (disponible en Windows) para evitar seguir puntos de reparse que podrían llevar a zonas protegidas del sistema o bucles infinitos, reforzando la seguridad defensiva contra redirecciones inesperadas.
-- `2026-07-26T17:29:19` **quarantine.py** (seguridad defensiva): Se implementó una validación de seguridad adicional en `restore_item` para asegurar que el destino de restauración no sea una ruta protegida mediante `ensure_safe_to_modify`, unificando el criterio de seguridad aplicado durante la cuarentena.

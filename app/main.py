@@ -402,7 +402,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         return self.outputs.get(tab) or self.outputs["Limpieza"]
 
     def _is_path_safe(self, path: str) -> bool:
-        """Verifica si una ruta es segura para ser procesada o analizada."""
+        """
+        Valida que la ruta proporcionada sea segura mediante `safety.py`.
+        Si la ruta es crítica o de sistema, alerta al usuario y bloquea la operación.
+        """
         if safety.is_protected_path(path):
             messagebox.showwarning(
                 "Acceso restringido",
@@ -444,7 +447,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.after(0, update_ui)
 
     def run_async(self, fn: Callable) -> None:
-        """Ejecuta una función en un hilo daemonizado para mantener la UI responsiva."""
+        """
+        Encapsula la ejecución de una tarea costosa en un hilo separado.
+        Gestiona el estado de bloqueo de la app, errores de sistema, validaciones
+        de seguridad y notificaciones de error para la UI.
+        """
         if self.is_running:
             return
 
@@ -478,7 +485,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return "Limpieza"
 
     def _ask_folder(self, title: str) -> Optional[str]:
-        """Abre un diálogo de selección de carpeta y valida seguridad."""
+        """
+        Abre un diálogo nativo de selección de carpetas.
+        Valida que la carpeta seleccionada no infrinja las reglas de seguridad.
+        """
         folder = filedialog.askdirectory(title=title)
         if not folder or not os.path.isdir(folder):
             return None
@@ -487,7 +497,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         return folder
 
     def _confirm(self, title: str, message: str) -> bool:
-        """Diálogo modal para validar acciones de escritura/modificación."""
+        """
+        Muestra un diálogo de confirmación modal para prevenir acciones destructivas.
+        Devuelve True solo si el usuario confirma explícitamente.
+        """
         return messagebox.askyesno(title, message, icon="warning")
 
     # ------------------------------------------------------------------
