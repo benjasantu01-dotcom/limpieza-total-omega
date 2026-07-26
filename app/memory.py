@@ -137,16 +137,22 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
             if not line: continue
             
             parts = [p.strip().strip('"') for p in line.split(",", 2)]
-            if len(parts) < 3 or not all(parts): continue
+            if len(parts) < 3: continue
             
+            # Validar encabezado
             if parts[0].lower() in {"name", "processname"}: continue
                 
             try:
-                yield ProcessMemory(name=parts[0], pid=int(parts[1]), working_set=int(float(parts[2])))
-            except (ValueError, OverflowError): continue
+                # El WorkingSet suele venir en bytes como flotante o entero
+                working_set_val = int(float(parts[2]))
+                pid_val = int(parts[1])
+                
+                if working_set_val >= 0 and pid_val >= 0:
+                    yield ProcessMemory(name=parts[0], pid=pid_val, working_set=working_set_val)
+            except (ValueError, TypeError, OverflowError): 
+                continue
 
-    processes = sorted([p for p in _generator() if p.pid >= 0 and p.working_set >= 0], 
-                       key=lambda p: p.working_set, reverse=True)
+    processes = sorted([p for p in _generator()], key=lambda p: p.working_set, reverse=True)
     return processes[:limit]
 
 

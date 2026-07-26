@@ -154,7 +154,11 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             
         try:
             full_source_path = jf.path.resolve()
+            
+            # Verificación de robustez: existencia, tipo y permisos antes de mover
             if not full_source_path.exists() or not full_source_path.is_file():
+                continue
+            if not os.access(full_source_path, os.R_OK):
                 continue
             
             # Impedir mover archivos fuera de los límites de seguridad definidos
@@ -176,7 +180,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
                 counter += 1
 
             shutil.move(str(full_source_path), str(target))
-        except (PermissionError, FileNotFoundError, shutil.Error, OSError) as e:
+        except (PermissionError, OSError, shutil.Error) as e:
             logger.error("Error procesando archivo %s: %s", jf.path, e)
             continue
     return dest

@@ -104,6 +104,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.outputs: Dict[str, ctk.CTkTextbox] = {}
         self.is_running = False
         self._last_health_score = None 
+        self._lock = threading.Lock()
 
         self._build_layout()
 
@@ -449,14 +450,14 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def run_async(self, fn: Callable) -> None:
         """
         Encapsula la ejecución de una tarea costosa en un hilo separado.
-        Gestiona el estado de bloqueo de la app, errores de sistema, validaciones
-        de seguridad y notificaciones de error para la UI.
+        Gestiona el estado de bloqueo de la app y errores de sistema.
         """
-        if self.is_running:
-            return
+        with self._lock:
+            if self.is_running:
+                return
+            self.is_running = True
 
         def wrapper():
-            self.is_running = True
             try:
                 fn()
             except safety.UnsafePathError as e:
@@ -472,7 +473,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 logging.exception("Error inesperado en tarea asíncrona: %s", e)
                 self.log(f"Error inesperado: {type(e).__name__}", self._current_tab())
             finally:
-                self.is_running = False
+                with self._lock:
+                    self.is_running = False
                 self.set_status("Listo.")
 
         threading.Thread(target=wrapper, daemon=True).start()

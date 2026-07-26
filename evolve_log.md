@@ -1203,3 +1203,10 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - NameEr
 - `2026-07-26T20:03:30` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_collect_candidates` ante archivos que desaparecen entre el momento de la enumeración (`os.walk`) y el acceso para `stat()`, evitando excepciones innecesarias en entornos de alta concurrencia.
 - `2026-07-26T20:03:30` Rotación — nada para rotar
 - `2026-07-26T20:03:30` Corrida terminada. Total usado hoy: 298.
+- `2026-07-26T20:12:26` Arrancando corrida. Quedan hoy ~2 peticiones objetivo.
+- `2026-07-26T20:12:48` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: robustez ante casos límite).
+- `2026-07-26T20:13:28` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Mejoré la robustez de `main.py` ante hilos huérfanos o cierres inesperados de la ventana, asegurando que la bandera `is_running` se resetee correctamente incluso ante excepciones graves, y mejorando la gestión de estados de la UI mediante un manejo más preciso de los hilos de `threading`.
+- `2026-07-26T20:13:51` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `parse_windows_process_csv` ante casos límite como datos corruptos o valores numéricos inesperados al procesar el CSV, asegurando que la función siempre retorne una lista válida incluso ante entradas malformadas.
+- `2026-07-26T20:13:56` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Mejoré la robustez de `stage_for_review` ante condiciones de carrera y archivos inaccesibles mediante la verificación explícita de `is_file()` bajo un bloque `try-except` más granular, y añadiendo una validación de `os.access(..., os.R_OK)` para garantizar que el archivo pueda ser leído antes de intentar moverlo.
+- `2026-07-26T20:13:56` Rotación — nada para rotar
+- `2026-07-26T20:13:56` Corrida terminada. Total usado hoy: 302.
