@@ -106,7 +106,7 @@ def _manifest_path(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
 
 
 def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
-    """Lee el manifiesto. Devuelve lista vacía si no existe o está corrupto."""
+    """Lee el manifiesto desde el disco y reconstruye los objetos QuarantineItem."""
     path = _manifest_path(base)
     if not path.exists():
         return []
@@ -138,7 +138,14 @@ def quarantine_file(
     reason: str = "Marcado como sospechoso",
     base: Union[str, Path] = DEFAULT_QUARANTINE_DIR,
 ) -> QuarantineItem:
-    """Mueve un archivo a la cuarentena y lo anota en el manifiesto."""
+    """
+    Aísla un archivo en la cuarentena tras validar que es seguro modificarlo.
+    
+    1. Normaliza la ruta y verifica su existencia.
+    2. Comprueba que el archivo no esté siendo utilizado por otro proceso.
+    3. Valida mediante `safety.ensure_safe_to_modify` para evitar sistemas.
+    4. Mueve físicamente el archivo y genera un registro en el manifiesto.
+    """
     if not source:
         raise ValueError("La ruta de origen no puede estar vacía.")
     
@@ -183,14 +190,19 @@ def quarantine_file(
 
 
 def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
-    """Archivos actualmente en cuarentena, del más reciente al más viejo."""
+    """Recupera todos los elementos en cuarentena, ordenados cronológicamente por inserción."""
     items = load_manifest(base)
     items.sort(key=lambda i: i.quarantined_at, reverse=True)
     return items
 
 
 def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
-    """Devuelve un archivo a su ubicación original y lo saca del manifiesto."""
+    """
+    Restaura un archivo a su ruta original tras verificar su integridad.
+    
+    Verifica que el archivo no haya sido alterado (comparando SHA-256) y que 
+    la carpeta de destino sea segura (no protegida).
+    """
     if not item_id:
         raise ValueError("El ID del elemento no puede estar vacío.")
 
@@ -225,7 +237,7 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
 
 
 def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> bool:
-    """Borra definitivamente UN elemento de la cuarentena."""
+    """Borra físicamente un archivo de la cuarentena y actualiza el manifiesto."""
     if not item_id:
         return False
     items = load_manifest(base)
@@ -245,7 +257,7 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
 
 
 def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
-    """Vacía la cuarentena eliminando todos los archivos registrados."""
+    """Elimina todos los archivos en cuarentena y resetea el manifiesto."""
     root = quarantine_dir(base)
     items = load_manifest(base)
     borrados = 0
@@ -269,7 +281,7 @@ def total_quarantined_bytes(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> 
 
 
 def summarize(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[str]:
-    """Genera una lista de cadenas con el reporte legible de la cuarentena."""
+    """Genera un reporte legible de los elementos aislados para la interfaz."""
     items = list_items(base)
     if not items:
         return ["La cuarentena está vacía."]

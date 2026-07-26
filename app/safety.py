@@ -106,9 +106,12 @@ def is_drive_root(path: PathLike) -> bool:
 def is_protected_path(path: PathLike) -> bool:
     """
     Determina si una ruta es peligrosa por residir en un directorio de sistema.
+    Valida tanto el nombre de carpetas críticas en el path, como si es 
+    subdirectorio de las raíces críticas detectadas en el entorno (SYSTEM_ROOTS).
     """
     try:
         p = normalize(path)
+        # Los enlaces simbólicos son un vector de ataque frecuente; los marcamos como inseguros
         if p.is_symlink():
             return True
     except Exception:
@@ -117,13 +120,16 @@ def is_protected_path(path: PathLike) -> bool:
     if is_drive_root(p):
         return True
     
+    # Verificación por nombre de componente (ej: "System32" en cualquier punto de la ruta)
     path_components = {part.lower() for part in p.parts}
     if not PROTECTED_DIR_NAMES.isdisjoint(path_components):
         return True
         
+    # Verificación por anidamiento estricto bajo carpetas de sistema base
     for root in _SYSTEM_ROOTS:
         try:
-            if root in p.parents or p == root:
+            # Compara si p es hijo de root, manejando excepciones de pathing
+            if root == p or root in p.parents:
                 return True
         except (ValueError, RuntimeError):
             continue
