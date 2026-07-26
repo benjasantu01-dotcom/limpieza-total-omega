@@ -27,7 +27,7 @@ import os
 import re
 import subprocess
 from dataclasses import dataclass, field
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Optional, Dict
 from app.safety import ensure_safe_to_modify
 
 __all__ = [
@@ -56,14 +56,14 @@ TRIM_WARNING = (
 
 @dataclass
 class MemorySnapshot:
-    """Estado de la memoria física del sistema en bytes."""
+    """Representa un instante de la memoria física del sistema."""
     total: int
     available: int
     cached: int = 0
 
     @property
     def used(self) -> int:
-        """Calcula los bytes en uso restando la memoria disponible de la total."""
+        """Cantidad de memoria en uso en bytes."""
         return max(0, self.total - self.available)
 
     @property
@@ -83,11 +83,11 @@ class MemorySnapshot:
 
 @dataclass
 class ProcessMemory:
-    """Datos de consumo de memoria de un proceso específico."""
+    """Información de consumo de memoria de un proceso específico."""
     name: str
     pid: int
-    working_set: int  # Memoria física ocupada en bytes
-    extra: dict = field(default_factory=dict)
+    working_set: int  # Memoria física residente (RSS) en bytes
+    extra: Dict[str, str] = field(default_factory=dict)
 
     @property
     def working_set_mb(self) -> float:
@@ -96,7 +96,7 @@ class ProcessMemory:
 
 
 def format_bytes(num: int | float) -> str:
-    """Convierte una cantidad de bytes a una cadena legible (ej. '1.5 GB')."""
+    """Convierte bytes a una cadena legible humanamente con unidades."""
     try:
         value = float(num)
     except (TypeError, ValueError):
@@ -113,10 +113,10 @@ def format_bytes(num: int | float) -> str:
 
 def parse_linux_meminfo(text: str) -> MemorySnapshot:
     """
-    Parsea el contenido crudo de /proc/meminfo.
-    Espera valores en kB y los convierte internamente a bytes.
+    Procesa el contenido de /proc/meminfo. 
+    Convierte valores expresados en kB a bytes.
     """
-    values: dict[str, int] = {}
+    values: Dict[str, int] = {}
     for line in text.splitlines():
         match = re.match(r"^(\w+):\s+(\d+)", line)
         if match:
@@ -129,8 +129,8 @@ def parse_linux_meminfo(text: str) -> MemorySnapshot:
 
 def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]:
     """
-    Parsea salida CSV proveniente de PowerShell.
-    Espera columnas Name,Id,WorkingSet y valida que los valores numéricos sean correctos.
+    Parsea salida CSV cruda de PowerShell (Name,Id,WorkingSet).
+    Filtra entradas inválidas y retorna lista ordenada por consumo.
     """
     processes: List[ProcessMemory] = []
     
@@ -143,16 +143,14 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
             continue
         
         parts = [p.strip().strip('"') for p in line.split(",")]
-        # Validar longitud mínima: Name, Id, WorkingSet
         if len(parts) < 3:
             continue
         
-        # Ignorar cabeceras del CSV
+        # Saltamos la cabecera del comando de PowerShell
         if parts[0].lower() in {"name", "processname"}:
             continue
             
         try:
-            # Validar que los campos críticos contengan datos
             if not parts[1] or not parts[2]:
                 continue
                 
@@ -175,7 +173,7 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
 
 
 def _read_windows_snapshot() -> MemorySnapshot:
-    """Accede a la API nativa de Windows mediante ctypes para obtener memoria física."""
+    """Llamada a la API nativa de Win32 GlobalMemoryStatusEx vía ctypes."""
     import ctypes
 
     class MEMORYSTATUSEX(ctypes.Structure):
@@ -213,7 +211,7 @@ def read_snapshot() -> MemorySnapshot:
 
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
-    """Obtiene los procesos más pesados mediante una consulta a PowerShell."""
+    """Consulta los procesos más pesados mediante PowerShell."""
     if os.name != "nt":
         return []
     command = (
@@ -232,7 +230,13 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
 
 
 def pressure_level(snapshot: MemorySnapshot) -> str:
-    """Clasifica el nivel de presión de RAM según umbrales de disponibilidad."""
+    """
+    Clasifica el estado de presión:
+    - >= 35% disponible: OK
+    - >= 20% disponible: Info
+    - >= 10% disponible: Warning
+    - < 10% disponible: Danger
+    """
     if snapshot.total <= 0:
         return "info"
     available = snapshot.available_percent
@@ -246,7 +250,7 @@ def pressure_level(snapshot: MemorySnapshot) -> str:
 
 
 def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] = None) -> List[str]:
-    """Genera un diagnóstico textual del estado de memoria para el usuario final."""
+    """Genera un reporte textual descriptivo basado en el estado actual."""
     if snapshot.total <= 0:
         return ["No se pudo leer el estado de la memoria en este sistema."]
 
@@ -274,8 +278,8 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
 
 def trim_working_set(pid: int) -> Tuple[bool, str]:
     """
-    Intenta reducir la memoria física asignada (Working Set) a un proceso.
-    Solo funciona en Windows usando EmptyWorkingSet de la librería psapi.
+    Ejecuta el trim (purga) del working set de un proceso en Windows.
+    Requiere validación de seguridad previa para evitar tocar procesos críticos.
     """
     if os.name != "nt":
         return False, "Solo disponible en Windows."
@@ -285,7 +289,7 @@ def trim_working_set(pid: int) -> Tuple[bool, str]:
         if target_pid <= 0:
             return False, "PID inválido proporcionado."
         
-        # Seguridad: verificar que no estemos intentando manipular procesos críticos del sistema
+        # Verificación de seguridad: no manipular procesos del núcleo o críticos
         if not ensure_safe_to_modify(f"pid:{target_pid}"):
             return False, "Operación rechazada: el proceso está protegido por seguridad."
 

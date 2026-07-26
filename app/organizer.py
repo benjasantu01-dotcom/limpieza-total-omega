@@ -88,6 +88,8 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
             continue
 
         for root, subdirs, files in os.walk(p):
+            # In-place modification de subdirs para prevenir la recursión en carpetas prohibidas
+            # mediante la comparación de nombres contra la blocklist predefinida.
             subdirs[:] = [sd for sd in subdirs if sd.lower() not in blocklist]
             for name in files:
                 if Path(name).suffix.lower() in junk_set:
@@ -147,7 +149,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             logger.debug("Error validando ruta %s: %s", jf.path, e)
             continue
 
-        # Evitar mover archivos que ya están en el directorio de destino
+        # Evitar mover archivos que ya están en el directorio de destino para prevenir ciclos
         try:
             if dest in full_source_path.parents or full_source_path.parent == dest:
                 continue
@@ -158,8 +160,9 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         ext = jf.path.suffix
         timestamp = int(jf.modified.timestamp())
         
+        # Resolución de colisiones: Se añade un sufijo numérico al nombre si el archivo
+        # ya existe en destino para preservar la integridad de archivos con igual nombre pero distinto origen.
         target = dest / f"{base_name}_{timestamp}{ext}"
-        
         counter = 1
         while target.exists():
             target = dest / f"{base_name}_{timestamp}_{counter}{ext}"

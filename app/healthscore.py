@@ -162,69 +162,52 @@ def grade_for_score(score: int) -> str:
     return "F"
 
 
+def _generate_recommendations(m: SystemMetrics, ratios: Dict[str, float]) -> List[str]:
+    """Genera una lista de recomendaciones basada en métricas y ratios calculados."""
+    recs: List[str] = []
+    if ratios["seguridad"] < 0.9:
+        recs.append(f"Revisá los {_to_int(m.suspicious_count)} hallazgo(s) de seguridad; podés aislarlos en cuarentena sin borrarlos.")
+    if ratios["disco"] < 0.6:
+        recs.append(f"Queda {round(_to_float(m.disk_free_percent), 1)}% de disco libre. Mirá el análisis de disco para ver qué ocupa más.")
+    if ratios["memoria"] < 0.6:
+        recs.append("Memoria disponible baja: cerrá programas que no uses. Ojo, 'liberar RAM' no sirve, cerrar procesos sí.")
+    if ratios["basura"] < 0.8:
+        recs.append(f"Hay unos {round(_to_float(m.junk_mb))} MB de archivos temporales para revisar.")
+    if ratios["duplicados"] < 0.8:
+        recs.append(f"Podrías recuperar ~{round(_to_float(m.duplicate_mb))} MB eliminando copias duplicadas.")
+    if ratios["arranque"] < 0.6:
+        recs.append(f"{_to_int(m.startup_count)} programas arrancan con Windows; desactivá los que no necesites desde el Administrador de tareas.")
+    if _to_int(m.quarantined_count) > 0:
+        recs.append(f"Tenés {m.quarantined_count} archivo(s) en cuarentena esperando tu decisión.")
+    if not recs:
+        recs.append("No hay nada urgente para hacer. El sistema está en buen estado.")
+    return recs
+
+
 def compute_score(metrics: SystemMetrics) -> HealthResult:
     """Calcula el puntaje de salud total combinando métricas ponderadas."""
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Datos de entrada inválidos."])
 
     try:
-        # Pre-calculamos los ratios para las recomendaciones
-        r_sec = score_security(metrics.suspicious_count, metrics.suspicious_warnings)
-        r_dis = score_disk(metrics.disk_free_percent)
-        r_mem = score_memory(metrics.memory_available_percent)
-        r_jun = score_junk(metrics.junk_mb)
-        r_dup = score_duplicates(metrics.duplicate_mb)
-        r_sta = score_startup(metrics.startup_count)
+        ratios = {
+            "seguridad": score_security(metrics.suspicious_count, metrics.suspicious_warnings),
+            "disco": score_disk(metrics.disk_free_percent),
+            "memoria": score_memory(metrics.memory_available_percent),
+            "basura": score_junk(metrics.junk_mb),
+            "duplicados": score_duplicates(metrics.duplicate_mb),
+            "arranque": score_startup(metrics.startup_count),
+        }
 
-        breakdown: Dict[str, int] = {
-            "seguridad": int(round(_clamp(r_sec) * WEIGHTS["seguridad"])),
-            "disco": int(round(_clamp(r_dis) * WEIGHTS["disco"])),
-            "memoria": int(round(_clamp(r_mem) * WEIGHTS["memoria"])),
-            "basura": int(round(_clamp(r_jun) * WEIGHTS["basura"])),
-            "duplicados": int(round(_clamp(r_dup) * WEIGHTS["duplicados"])),
-            "arranque": int(round(_clamp(r_sta) * WEIGHTS["arranque"])),
+        breakdown = {
+            k: int(round(_clamp(v) * WEIGHTS[k])) for k, v in ratios.items()
         }
             
     except Exception:
         return HealthResult(0, "F", {}, ["Error inesperado al calcular las métricas."])
 
     total = min(100, max(0, sum(breakdown.values())))
-
-    recommendations: List[str] = []
-    if r_sec < 0.9:
-        recommendations.append(
-            f"Revisá los {_to_int(metrics.suspicious_count)} hallazgo(s) de seguridad; "
-            "podés aislarlos en cuarentena sin borrarlos."
-        )
-    if r_dis < 0.6:
-        recommendations.append(
-            f"Queda {round(_to_float(metrics.disk_free_percent), 1)}% de disco libre. "
-            "Mirá el análisis de disco para ver qué ocupa más."
-        )
-    if r_mem < 0.6:
-        recommendations.append(
-            "Memoria disponible baja: cerrá programas que no uses. "
-            "Ojo, 'liberar RAM' no sirve, cerrar procesos sí."
-        )
-    if r_jun < 0.8:
-        recommendations.append(
-            f"Hay unos {round(_to_float(metrics.junk_mb))} MB de archivos temporales para revisar."
-        )
-    if r_dup < 0.8:
-        recommendations.append(
-            f"Podrías recuperar ~{round(_to_float(metrics.duplicate_mb))} MB eliminando copias duplicadas."
-        )
-    if r_sta < 0.6:
-        recommendations.append(
-            f"{_to_int(metrics.startup_count)} programas arrancan con Windows; "
-            "desactivá los que no necesites desde el Administrador de tareas."
-        )
-    if _to_int(metrics.quarantined_count) > 0:
-        recommendations.append(
-            f"Tenés {metrics.quarantined_count} archivo(s) en cuarentena esperando tu decisión."
-        )
-    if not recommendations:
-        recommendations.append("No hay nada urgente para hacer. El sistema está en buen estado.")
+    recommendations = _generate_recommendations(metrics, ratios)
 
     return HealthResult(
         score=total,
