@@ -111,7 +111,6 @@ def is_protected_path(path: PathLike) -> bool:
     """
     try:
         p = normalize(path)
-        # Los enlaces simbólicos son un vector de ataque frecuente; los marcamos como inseguros
         if p.is_symlink():
             return True
     except Exception:
@@ -120,15 +119,13 @@ def is_protected_path(path: PathLike) -> bool:
     if is_drive_root(p):
         return True
     
-    # Verificación por nombre de componente (ej: "System32" en cualquier punto de la ruta)
-    path_components = {part.lower() for part in p.parts}
-    if not PROTECTED_DIR_NAMES.isdisjoint(path_components):
+    # Comprobación eficiente: evitamos crear sets intermedios o listas de partes
+    if any(part.lower() in PROTECTED_DIR_NAMES for part in p.parts):
         return True
         
     # Verificación por anidamiento estricto bajo carpetas de sistema base
     for root in _SYSTEM_ROOTS:
         try:
-            # Compara si p es hijo de root, manejando excepciones de pathing
             if root == p or root in p.parents:
                 return True
         except (ValueError, RuntimeError):

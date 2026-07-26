@@ -75,37 +75,41 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
 
     dirs = directories or DEFAULT_SCAN_DIRS
     found: List[JunkFile] = []
-    # Pre-compilar set de extensiones bloqueadas a minúsculas
     junk_set = {ext.lower() for ext in JUNK_EXTENSIONS}
     blocklist = {s.lower() for s in SYSTEM_FOLDER_BLOCKLIST}
+
+    def _walk_dir(base_path: Path):
+        try:
+            with os.scandir(base_path) as it:
+                for entry in it:
+                    try:
+                        if entry.is_dir(follow_symlinks=False):
+                            if entry.name.lower() not in blocklist:
+                                _walk_dir(Path(entry.path))
+                        elif entry.is_file(follow_symlinks=False):
+                            if Path(entry.name).suffix.lower() in junk_set:
+                                stat = entry.stat()
+                                found.append(
+                                    JunkFile(
+                                        path=Path(entry.path).resolve(),
+                                        size_bytes=stat.st_size,
+                                        modified=datetime.fromtimestamp(stat.st_mtime),
+                                    )
+                                )
+                    except (PermissionError, OSError):
+                        continue
+        except (PermissionError, OSError):
+            pass
 
     for d in dirs:
         if not isinstance(d, str):
             continue
         p = Path(d).expanduser()
-        if not p.exists() or not p.is_dir():
+        if p.exists() and p.is_dir():
+            _walk_dir(p)
+        else:
             logger.warning(f"Ruta de escaneo inválida: {p}")
-            continue
-
-        for root, subdirs, files in os.walk(p):
-            # In-place modification de subdirs para prevenir la recursión en carpetas prohibidas
-            # mediante la comparación de nombres contra la blocklist predefinida.
-            subdirs[:] = [sd for sd in subdirs if sd.lower() not in blocklist]
-            for name in files:
-                if Path(name).suffix.lower() in junk_set:
-                    fp = Path(root) / name
-                    try:
-                        stat = fp.stat()
-                        found.append(
-                            JunkFile(
-                                path=fp.resolve(),
-                                size_bytes=stat.st_size,
-                                modified=datetime.fromtimestamp(stat.st_mtime),
-                            )
-                        )
-                    except (PermissionError, FileNotFoundError, OSError) as e:
-                        logger.debug(f"Acceso denegado al inspeccionar {fp}: {e}")
-                        continue
+            
     return found
 
 

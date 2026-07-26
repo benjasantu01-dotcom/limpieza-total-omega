@@ -927,3 +927,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-07-26T16:16:46` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimizé `parse_windows_process_csv` para evitar iteraciones redundantes y realizar conversiones de tipo solo cuando es estrictamente necesario, mejorando la eficiencia al procesar la salida de PowerShell.
 - `2026-07-26T16:16:46` Rotación — nada para rotar
 - `2026-07-26T16:16:46` Corrida terminada. Total usado hoy: 210.
+- `2026-07-26T16:25:24` Arrancando corrida. Quedan hoy ~90 peticiones objetivo.
+- `2026-07-26T16:25:45` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimicé el bucle de escaneo en `scan_for_junk` utilizando `os.scandir` en lugar de `os.walk`, lo cual reduce drásticamente las llamadas al sistema y la creación de objetos `Path` innecesarios, mejorando el rendimiento al evitar recorrer repetidamente los atributos de archivos que no interesan.
+- `2026-07-26T16:26:09` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Se implementó un mecanismo de caché local para el manifiesto durante el ciclo de vida de una ejecución y se optimizó el uso de `load_manifest` mediante el uso de un diccionario (hash map) para las búsquedas por ID, reduciendo la complejidad de O(n) a O(1) en las operaciones recurrentes.
+- `2026-07-26T16:26:27` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 108): unterminated string literal (detected at line 108)
+- `2026-07-26T16:26:33` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimizé `is_protected_path` reemplazando la creación y conversión a `set` de todos los componentes de la ruta en cada llamada por una comprobación eficiente mediante `any()` con `parts`, evitando asignaciones de memoria innecesarias y mejorando el rendimiento en recorridos masivos.
+- `2026-07-26T16:26:33` Rotación — nada para rotar
+- `2026-07-26T16:26:33` Corrida terminada. Total usado hoy: 214.

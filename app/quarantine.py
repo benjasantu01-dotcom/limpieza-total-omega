@@ -27,7 +27,7 @@ import hashlib
 from dataclasses import dataclass, asdict
 from datetime import datetime
 from pathlib import Path
-from typing import List, Union
+from typing import List, Union, Dict
 
 from safety import (
     UnsafePathError,
@@ -56,6 +56,7 @@ __all__ = [
 DEFAULT_QUARANTINE_DIR = "~/LimpiezaTotalOmega/_Cuarentena"
 MANIFEST_NAME = "manifest.json"
 
+_manifest_cache: Dict[str, List[QuarantineItem]] = {}
 
 @dataclass
 class QuarantineItem:
@@ -105,8 +106,12 @@ def _manifest_path(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
     return quarantine_dir(base) / MANIFEST_NAME
 
 
-def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
+def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload: bool = False) -> List[QuarantineItem]:
     """Lee el manifiesto desde el disco y reconstruye los objetos QuarantineItem."""
+    base_str = str(base)
+    if not force_reload and base_str in _manifest_cache:
+        return _manifest_cache[base_str]
+        
     path = _manifest_path(base)
     if not path.exists():
         return []
@@ -120,11 +125,13 @@ def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[Quara
             items.append(QuarantineItem(**entry))
         except (TypeError, ValueError):
             continue
+    _manifest_cache[base_str] = items
     return items
 
 
 def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
-    """Serializa la lista de items a JSON y guarda el archivo de manifiesto en disco."""
+    """Serializa la lista de items a JSON y actualiza el caché."""
+    _manifest_cache[str(base)] = items
     path = _manifest_path(base)
     path.write_text(
         json.dumps([item.to_dict() for item in items], indent=2, ensure_ascii=False),
@@ -140,11 +147,6 @@ def quarantine_file(
 ) -> QuarantineItem:
     """
     Aísla un archivo en la cuarentena tras validar que es seguro modificarlo.
-    
-    1. Normaliza la ruta y verifica su existencia.
-    2. Comprueba que el archivo no esté siendo utilizado por otro proceso.
-    3. Valida mediante `safety.ensure_safe_to_modify` para evitar sistemas.
-    4. Mueve físicamente el archivo y genera un registro en el manifiesto.
     """
     if not source:
         raise ValueError("La ruta de origen no puede estar vacía.")
@@ -191,7 +193,7 @@ def quarantine_file(
 
 def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
     """Recupera todos los elementos en cuarentena, ordenados cronológicamente por inserción."""
-    items = load_manifest(base)
+    items = list(load_manifest(base))
     items.sort(key=lambda i: i.quarantined_at, reverse=True)
     return items
 
@@ -199,15 +201,13 @@ def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[Quaranti
 def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
     """
     Restaura un archivo a su ruta original tras verificar su integridad.
-    
-    Verifica que el archivo no haya sido alterado (comparando SHA-256) y que 
-    la carpeta de destino sea segura (no protegida).
     """
     if not item_id:
         raise ValueError("El ID del elemento no puede estar vacío.")
 
     items = load_manifest(base)
-    match = next((i for i in items if i.item_id == item_id), None)
+    item_map = {i.item_id: i for i in items}
+    match = item_map.get(item_id)
     if match is None:
         raise KeyError(f"No hay ningún elemento en cuarentena con id '{item_id}'.")
 
@@ -241,7 +241,8 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
     if not item_id:
         return False
     items = load_manifest(base)
-    match = next((i for i in items if i.item_id == item_id), None)
+    item_map = {i.item_id: i for i in items}
+    match = item_map.get(item_id)
     if match is None:
         return False
 
