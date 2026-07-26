@@ -14,7 +14,7 @@ from pathlib import Path
 
 STATE_FILE = Path(__file__).parent / "budget_state.json"
 
-DAILY_TARGET = 1000    # objetivo de mensajes por dÃ­a
+DAILY_TARGET = 450    # objetivo de mensajes por dÃ­a
 DAILY_HARD_CAP = 490  # tope duro (margen de seguridad antes del lÃ­mite real de Google)
 
 
