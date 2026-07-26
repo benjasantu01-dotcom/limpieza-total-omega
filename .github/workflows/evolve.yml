@@ -40,6 +40,21 @@ jobs:
         run: |
           git config user.name "limpieza-total-omega-bot"
           git config user.email "bot@users.noreply.github.com"
-          git add app/ evolve/budget_state.json evolve_log.md
-          git diff --cached --quiet || git commit -m "Auto-mejora aceptada por el bucle evolve"
-          git push
+          git add app/ evolve/budget_state.json evolve/cycle_state.json evolve/metrics.jsonl evolve_log.md PROGRESS.md
+          if git diff --cached --quiet; then
+            echo "No hay cambios para commitear."
+            exit 0
+          fi
+          git commit -m "Auto-mejora aceptada por el bucle evolve"
+          # Reintentar con rebase: si empujaste algo a mano mientras el bot
+          # trabajaba, sin esto el push falla y la mejora se pierde.
+          for attempt in 1 2 3; do
+            if git pull --rebase --autostash origin main && git push origin main; then
+              echo "Push exitoso en el intento $attempt."
+              exit 0
+            fi
+            echo "Push falló en el intento $attempt, reintentando..."
+            sleep 5
+          done
+          echo "No se pudo empujar después de 3 intentos."
+          exit 1

@@ -30,6 +30,18 @@ from pathlib import Path
 import requests
 
 from budget import load_state, save_state, can_make_request, register_request, remaining_today
+from guards import validate_change
+from tracking import (
+    next_iteration,
+    pick_assignment,
+    record_metric,
+    regenerate_progress,
+    RESULT_ACCEPTED,
+    RESULT_REJECTED_TESTS,
+    RESULT_REJECTED_GUARD,
+    RESULT_NO_CHANGE,
+    RESULT_NO_RESPONSE,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
 APP_DIR = ROOT / "app"
@@ -66,11 +78,21 @@ def extract_rationale(response_text: str) -> str:
 
 
 def log(message: str) -> None:
+    """Escribe en evolve_log.md y en la consola.
+
+    El archivo siempre va en UTF-8, pero la consola puede no soportar
+    emojis (por ejemplo cp1252 en Windows): en ese caso se imprime una
+    versión degradada en vez de cortar la corrida por un error de encoding.
+    """
     timestamp = datetime.now().isoformat(timespec="seconds")
     line = f"- `{timestamp}` {message}\n"
     with LOG_FILE.open("a", encoding="utf-8") as f:
         f.write(line)
-    print(line.strip())
+    try:
+        print(line.strip())
+    except UnicodeEncodeError:
+        encoding = sys.stdout.encoding or "ascii"
+        print(line.strip().encode(encoding, errors="replace").decode(encoding, errors="replace"))
 
 
 def read_mission() -> str:
@@ -251,20 +273,33 @@ def run_tests() -> bool:
     return result.returncode == 0
 
 
-def try_one_improvement(state) -> str:
+def try_one_improvement(state, is_last_iteration: bool = False) -> str:
     """Devuelve 'ok', 'quota_exhausted', o 'no_response' según cómo salió."""
     files = list_editable_files()
     if not files:
         log("No hay archivos editables en app/.")
         return "no_response"
 
-    # elegir el archivo modificado hace más tiempo (round-robin simple)
-    target = min(files, key=lambda p: p.stat().st_mtime)
+    # Rotación persistente: recorre todas las combinaciones archivo × enfoque.
+    # Antes esto se hacía por fecha de modificación, pero el checkout de
+    # GitHub Actions reescribe los mtimes en cada corrida, así que la
+    # rotación se rompía entre corridas (ver evolve/tracking.py).
+    categories_list = list(IMPROVEMENT_CATEGORIES.items())
+    iteration = next_iteration()
+    target, (category, (techniques, allow_new_behavior, use_search)) = pick_assignment(
+        iteration, files, categories_list
+    )
     original_content = target.read_text(encoding="utf-8")
 
-    # rotar el enfoque de la mejora según cuántas peticiones ya se hicieron hoy
-    categories_list = list(IMPROVEMENT_CATEGORIES.items())
-    category, (techniques, allow_new_behavior, use_search) = categories_list[state.requests_used % len(categories_list)]
+    def finish(result: str, rationale: str) -> str:
+        record_metric(
+            iteration=iteration,
+            file_name=target.name,
+            category=category,
+            result=result,
+            rationale=rationale,
+        )
+        return "ok" if result != RESULT_NO_RESPONSE else "no_response"
 
     prompt = build_prompt(read_mission(), target, category, techniques, allow_new_behavior)
     response = call_gemini(prompt, use_search=use_search)
@@ -273,33 +308,49 @@ def try_one_improvement(state) -> str:
     if response == "QUOTA_EXHAUSTED":
         return "quota_exhausted"
 
-    time.sleep(SECONDS_BETWEEN_REQUESTS)  # respetar el límite por minuto antes de la próxima
+    # Espaciar solo si viene otra petición después: en la última iteración
+    # esperar es tiempo de runner pagado a cambio de nada.
+    if not is_last_iteration:
+        time.sleep(SECONDS_BETWEEN_REQUESTS)
 
     if response is None:
-        return "no_response"
+        return finish(RESULT_NO_RESPONSE, "sin respuesta utilizable de Gemini")
 
     rationale = extract_rationale(response)
     change = extract_file_change(response)
     if change is None:
         log(f"Gemini no devolvió un bloque de archivo válido para {target.name} (enfoque: {category}).")
-        return "no_response"
+        return finish(RESULT_NO_RESPONSE, "respuesta sin bloque de archivo válido")
 
-    _, new_content = change
+    returned_name, new_content = change
+
+    # El bloque debe corresponder al archivo que pedimos. Si la IA se
+    # confunde de archivo, escribir ese contenido acá mezclaría dos módulos.
+    if Path(returned_name).name != target.name:
+        log(f"🛑 Descartado: se pidió {target.name} pero la respuesta trae '{returned_name}'.")
+        return finish(RESULT_REJECTED_GUARD, f"archivo equivocado en la respuesta: '{returned_name}'")
 
     if new_content.strip() == original_content.strip():
         log(f"➖ Sin cambios en {target.name} (enfoque: {category}). Motivo: {rationale}")
-        target.touch()  # igual rota el round-robin, no insistir de nuevo enseguida
-        return "ok"
+        return finish(RESULT_NO_CHANGE, rationale)
+
+    # Guardias antes de tocar el disco: sintaxis, encogimiento sospechoso y
+    # pérdida de símbolos. Esto protege también a main.py, que ningún test
+    # puede importar en CI.
+    is_valid, reason = validate_change(original_content, new_content, target.name)
+    if not is_valid:
+        log(f"🛑 Propuesta bloqueada por la guardia en {target.name} (enfoque: {category}): {reason}")
+        return finish(RESULT_REJECTED_GUARD, f"{reason} | intento: {rationale}")
 
     target.write_text(new_content, encoding="utf-8")
 
     if run_tests():
         log(f"✅ Mejora aceptada en {target.name} (enfoque: {category}). {rationale}")
-        target.touch()  # actualiza mtime para el round-robin
-    else:
-        target.write_text(original_content, encoding="utf-8")
-        log(f"❌ Mejora descartada en {target.name} (no pasó los tests), se revirtió. Intento: {rationale}")
-    return "ok"
+        return finish(RESULT_ACCEPTED, rationale)
+
+    target.write_text(original_content, encoding="utf-8")
+    log(f"❌ Mejora descartada en {target.name} (no pasó los tests), se revirtió. Intento: {rationale}")
+    return finish(RESULT_REJECTED_TESTS, rationale)
 
 
 def main() -> None:
@@ -318,10 +369,17 @@ def main() -> None:
         if not can_make_request(state):
             log("Tope duro de presupuesto alcanzado en medio de la corrida. Freno.")
             break
-        result = try_one_improvement(state)
+        result = try_one_improvement(state, is_last_iteration=(i == ITERATIONS_PER_RUN - 1))
         if result == "quota_exhausted":
             log("Cortando la corrida: cuota diaria de Gemini agotada. Reintentamos en la próxima corrida programada.")
             break
+
+    # Reporte de avance regenerado en cada corrida, para poder puntuar el
+    # progreso diario sin leer todo el log a mano.
+    try:
+        regenerate_progress()
+    except OSError as e:
+        log(f"No se pudo regenerar PROGRESS.md: {e}")
 
     log(f"Corrida terminada. Total usado hoy: {state.requests_used}.")
 
