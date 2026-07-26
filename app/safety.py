@@ -96,6 +96,9 @@ def is_protected_path(path: PathLike) -> bool:
     """True si la ruta cae dentro de una carpeta de sistema protegida."""
     try:
         p = normalize(path)
+        # Seguridad defensiva: No seguir puntos de reparse/enlaces simbólicos
+        if p.is_symlink():
+            return True
     except Exception:
         return True # Por seguridad ante rutas corruptas, denegar acceso
         

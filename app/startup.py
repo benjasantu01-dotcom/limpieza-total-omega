@@ -102,7 +102,7 @@ def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> list[Start
         folders = startup_folders()
     entries: list[StartupEntry] = []
     for folder in folders:
-        base = Path(folder)
+        base = Path(folder).resolve()
         if not base.is_dir():
             continue
         try:
@@ -111,7 +111,9 @@ def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> list[Start
             continue
         for item in children:
             if item.is_file() and item.name.lower() != "desktop.ini":
-                entries.append(StartupEntry(name=item.stem, command=str(item), source="carpeta"))
+                # Validación de seguridad: el ítem DEBE residir físicamente en 'base'
+                if base in item.resolve().parents:
+                    entries.append(StartupEntry(name=item.stem, command=str(item), source="carpeta"))
     return entries
 
 

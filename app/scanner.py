@@ -102,7 +102,7 @@ def scan_directory(directory: str | Path) -> list[Suspicion]:
         
     results = []
     try:
-        root = Path(directory)
+        root = Path(directory).resolve()
         if not root.exists():
             logger.warning("El path proporcionado '%s' no existe.", directory)
             return []
@@ -112,11 +112,14 @@ def scan_directory(directory: str | Path) -> list[Suspicion]:
             
         for p in root.rglob("*"):
             try:
-                # Evitar seguir enlaces simbólicos o puntos de reparse (Junctions)
-                if p.is_symlink():
-                    continue
-                if p.is_file():
-                    results.extend(scan_file(p))
+                # Seguridad: Resolver ruta para evitar escapes mediante enlaces simbólicos
+                # y verificar que se mantenga dentro del árbol de la raíz del escaneo.
+                resolved_p = p.resolve()
+                if not any(part == ".." for part in p.parts) and root in resolved_p.parents:
+                    if p.is_symlink():
+                        continue
+                    if p.is_file():
+                        results.extend(scan_file(p))
             except (PermissionError, OSError) as e:
                 logger.debug("Acceso denegado o error de sistema al procesar %s: %s", p, e)
                 continue
