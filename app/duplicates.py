@@ -51,21 +51,18 @@ class DuplicateGroup:
 
     @property
     def count(self) -> int:
-        return len(self.paths)
+        return len(self.paths) if self.paths else 0
 
     @property
     def wasted_bytes(self) -> int:
         """Espacio recuperable: todas las copias menos una."""
-        return max(0, self.count - 1) * self.size_bytes
+        if not self.paths or self.count <= 1:
+            return 0
+        return (self.count - 1) * max(0, self.size_bytes)
 
 
 def hash_file(path: str | os.PathLike, chunk_size: int = 1024 * 1024) -> str | None:
-    """Hash completo del archivo (sha256). None si no se pudo leer.
-
-    Se lee por trozos para no cargar en memoria un archivo grande, y se
-    devuelve None en lugar de propagar el error para que un solo archivo
-    inaccesible no aborte todo el escaneo.
-    """
+    """Hash completo del archivo (sha256). None si no se pudo leer."""
     if not path or is_protected_path(path):
         return None
     digest = hashlib.sha256()
@@ -95,6 +92,8 @@ def group_by_size(paths: list[str | Path]) -> dict[int, list[Path]]:
         return {}
     groups: dict[int, list[Path]] = defaultdict(list)
     for raw in paths:
+        if not raw:
+            continue
         try:
             p = Path(raw)
             if not p.is_file() or is_protected_path(p):
@@ -106,11 +105,13 @@ def group_by_size(paths: list[str | Path]) -> dict[int, list[Path]]:
 
 
 def _collect_candidates(directories: Iterable[str | Path], min_size: int, skip_protected: bool) -> list[Path]:
-    """Recorre las carpetas y junta archivos candidatos a comparar (tamaño >= min_size)."""
+    """Recorre las carpetas y junta archivos candidatos a comparar."""
     if not directories:
         return []
     candidates: list[Path] = []
     for directory in directories:
+        if not directory:
+            continue
         try:
             base = Path(directory).expanduser()
             if not base.is_dir():
@@ -153,7 +154,7 @@ def find_duplicates(
         by_partial: dict[str, list[Path]] = defaultdict(list)
         for path in same_size:
             digest = partial_hash(path)
-            if digest is not None:
+            if digest:
                 by_partial[digest].append(path)
 
         for partial_candidates in by_partial.values():
@@ -162,7 +163,7 @@ def find_duplicates(
             by_full: dict[str, list[Path]] = defaultdict(list)
             for path in partial_candidates:
                 digest = hash_file(path)
-                if digest is not None:
+                if digest:
                     by_full[digest].append(path)
             for digest, duplicates in by_full.items():
                 if len(duplicates) > 1:
@@ -176,18 +177,16 @@ def reclaimable_bytes(groups: list[DuplicateGroup]) -> int:
     """Espacio total que se liberaría dejando una copia de cada grupo."""
     if not groups:
         return 0
-    return sum(group.wasted_bytes for group in groups)
+    return sum(g.wasted_bytes for g in groups if isinstance(g, DuplicateGroup))
 
 
 def suggest_keeper(group: DuplicateGroup) -> Path | None:
     """Sugiere qué copia conservar: la más antigua y de ruta más corta."""
-    if not group or not group.paths:
+    if not isinstance(group, DuplicateGroup) or not group.paths:
         return None
 
     def sort_key(path: Path):
         try:
-            if not path.exists():
-                return (float("inf"), float("inf"))
             mtime = path.stat().st_mtime
         except (OSError, PermissionError):
             mtime = float("inf")
@@ -198,7 +197,7 @@ def suggest_keeper(group: DuplicateGroup) -> Path | None:
 
 def format_group(group: DuplicateGroup) -> list[str]:
     """Formatea un grupo para mostrarlo, marcando la copia sugerida."""
-    if not group:
+    if not isinstance(group, DuplicateGroup) or not group.paths:
         return []
     keeper = suggest_keeper(group)
     mb = round(group.size_bytes / (1024 * 1024), 2)

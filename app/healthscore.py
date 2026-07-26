@@ -90,6 +90,14 @@ def _to_float(value: Any, default: float = 0.0) -> float:
         return default
 
 
+def _to_int(value: Any, default: int = 0) -> int:
+    """Convierte de forma segura a int evitando excepciones por None."""
+    try:
+        return int(value) if value is not None else default
+    except (TypeError, ValueError):
+        return default
+
+
 def score_junk(junk_mb: float) -> float:
     """Puntúa la basura. 0 MB es perfecto; 5 GB (5000 MB) es el umbral crítico."""
     val = _to_float(junk_mb)
@@ -103,8 +111,8 @@ def score_security(suspicious_count: int, warnings: int = 0) -> float:
     cada advertencia lo hace en 25%, priorizando la detección de amenazas
     sobre la simple acumulación de logs.
     """
-    s_count = int(suspicious_count) if suspicious_count is not None else 0
-    w_count = int(warnings) if warnings is not None else 0
+    s_count = _to_int(suspicious_count)
+    w_count = _to_int(warnings)
     penalty = max(0, s_count) * 0.05 + max(0, w_count) * 0.25
     return _clamp(1.0 - penalty)
 
@@ -129,7 +137,7 @@ def score_duplicates(duplicate_mb: float) -> float:
 
 def score_startup(startup_count: int) -> float:
     """Puntúa el arranque. 20 aplicaciones es el límite tolerable."""
-    s_count = int(startup_count) if startup_count is not None else 0
+    s_count = _to_int(startup_count)
     return _clamp(1.0 - (max(0, s_count) / 20.0))
 
 
@@ -160,16 +168,21 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
             "duplicados": score_duplicates(metrics.duplicate_mb),
             "arranque": score_startup(metrics.startup_count),
         }
+        
+        breakdown = {}
+        for area, ratio in ratios.items():
+            weight = WEIGHTS.get(area, 0)
+            breakdown[area] = int(round(_clamp(ratio, 0.0, 1.0) * weight))
+            
     except Exception:
         return HealthResult(0, "F", {}, ["Error inesperado al calcular las métricas."])
 
-    breakdown = {area: int(round(_clamp(ratio, 0.0, 1.0) * WEIGHTS[area])) for area, ratio in ratios.items()}
     total = min(100, max(0, sum(breakdown.values())))
 
     recommendations: List[str] = []
     if ratios["seguridad"] < 0.9:
         recommendations.append(
-            f"Revisá los {metrics.suspicious_count} hallazgo(s) de seguridad; "
+            f"Revisá los {_to_int(metrics.suspicious_count)} hallazgo(s) de seguridad; "
             "podés aislarlos en cuarentena sin borrarlos."
         )
     if ratios["disco"] < 0.6:
@@ -192,10 +205,10 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         )
     if ratios["arranque"] < 0.6:
         recommendations.append(
-            f"{metrics.startup_count} programas arrancan con Windows; "
+            f"{_to_int(metrics.startup_count)} programas arrancan con Windows; "
             "desactivá los que no necesites desde el Administrador de tareas."
         )
-    if metrics.quarantined_count:
+    if _to_int(metrics.quarantined_count) > 0:
         recommendations.append(
             f"Tenés {metrics.quarantined_count} archivo(s) en cuarentena esperando tu decisión."
         )
@@ -218,9 +231,9 @@ def summarize(result: HealthResult) -> List[str]:
         "Desglose por área:",
     ]
     # Ordenar por el delta entre el puntaje obtenido y el máximo posible (prioriza problemas)
-    orden = sorted(result.breakdown.items(), key=lambda kv: kv[1] - WEIGHTS[kv[0]])
+    orden = sorted(result.breakdown.items(), key=lambda kv: kv[1] - WEIGHTS.get(kv[0], 0))
     for area, puntos in orden:
-        maximo = WEIGHTS[area]
+        maximo = WEIGHTS.get(area, 0)
         barra = f"{'#' * puntos}{'.' * (maximo - puntos)}"
         lines.append(f"  {area.capitalize():<12} {puntos:>2}/{maximo:<2} [{barra}]")
     lines.extend(["", "Recomendaciones:"])

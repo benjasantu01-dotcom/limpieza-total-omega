@@ -5,8 +5,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **81**
-- Mejoras aceptadas: **54** (66.7% de aceptación)
+- Iteraciones totales: **85**
+- Mejoras aceptadas: **58** (68.2% de aceptación)
 - Rechazadas por tests: 5
 - Rechazadas por guardia de seguridad: 5
 - Sin cambios (nada sustancial que mejorar): 1
@@ -16,11 +16,11 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-26 | 54 | 5 | 5 | 1 | 16 |
+| 2026-07-26 | 58 | 5 | 5 | 1 | 16 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **14**
+- manejo de errores y validación de entradas: **18**
 - legibilidad y documentación: **11**
 - seguridad defensiva: **11**
 - robustez ante casos límite: **10**
@@ -28,21 +28,25 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Mejoras aceptadas por archivo
 
+- `healthscore.py`: **6**
 - `browser.py`: **5**
 - `diskreport.py`: **5**
-- `healthscore.py`: **5**
+- `duplicates.py`: **5**
+- `main.py`: **5**
 - `organizer.py`: **5**
 - `safety.py`: **5**
 - `startup.py`: **5**
 - `branding.py`: **5**
-- `duplicates.py`: **4**
-- `main.py`: **4**
+- `memory.py`: **4**
 - `quarantine.py`: **4**
 - `scanner.py`: **4**
-- `memory.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-26T11:50:02` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `parse_windows_process_csv` añadiendo validaciones estrictas ante entradas malformadas, entradas con valores no numéricos en columnas críticas y manejo seguro de desbordamientos al convertir el consumo de memoria, evitando que una línea corrupta invalide el análisis completo.
+- `2026-07-26T11:49:55` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `on_restore_quarantine` validando la existencia de la ruta de origen mediante `os.path.exists` antes de intentar la restauración, evitando errores de sistema innecesarios y proveyendo feedback claro al usuario si el archivo original ya fue movido o borrado fuera de la aplicación.
+- `2026-07-26T11:49:12` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` mediante una validación estricta de los tipos de datos en los parámetros de `SystemMetrics` y agregué un manejo de errores defensivo en el cálculo del desglose, asegurando que cualquier entrada corrupta o inesperada resulte en una degradación elegante del puntaje en lugar de fallos inesperados.
+- `2026-07-26T11:48:50` **duplicates.py** (manejo de errores y validación de entradas): Reforcé la robustez de `suggest_keeper` y `reclaimable_bytes` validando la integridad del objeto `DuplicateGroup` y sus atributos, asegurando que ante listas vacías o grupos malformados el sistema retorne valores seguros sin levantar excepciones inesperadas.
 - `2026-07-26T11:40:06` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `largest_folders` agregando un manejo de excepciones más granular durante el procesamiento del árbol de archivos y validando la integridad de los resultados antes de la ordenación, evitando que errores silenciosos en la acumulación de datos afecten el reporte final.
 - `2026-07-26T11:39:59` **browser.py** (manejo de errores y validación de entradas): Se mejoró la robustez de `directory_size` y `detect_profiles` añadiendo validaciones de tipo y capturas de excepciones específicas para manejar correctamente rutas inexistentes, valores `None` inesperados y errores de acceso al sistema de archivos, asegurando que el módulo no falle ante entradas malformadas.
 - `2026-07-26T11:39:39` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y `draw_logo` validando parámetros y agregando manejo de excepciones específico (como `AttributeError` en el canvas o `ValueError` en rutas), asegurando que el sistema no falle ante entradas inesperadas sin sacrificar la funcionalidad actual.
@@ -54,7 +58,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-26T10:48:03` **main.py** (seguridad defensiva): Se implementó una validación de seguridad adicional en `on_stage` para asegurar que las rutas candidatas a moverse a revisión sigan siendo seguras (no estén protegidas) justo antes de iniciar la operación, y se añadió la normalización de rutas mediante `resolve()` para prevenir ataques de bypass por rutas relativas o aliases.
 - `2026-07-26T10:38:20` **healthscore.py** (seguridad defensiva): Se introdujo una validación defensiva estricta en `score_memory` y `score_disk` para prevenir condiciones de borde (como valores de porcentaje negativos o desbordados) que podrían corromper la lógica de cálculo del puntaje, asegurando que las métricas de entrada se mantengan siempre dentro de límites coherentes antes de procesar el puntaje.
 - `2026-07-26T10:38:13` **duplicates.py** (seguridad defensiva): He mejorado la seguridad defensiva incorporando `is_protected_path` en las funciones de acceso a archivos (`hash_file`, `partial_hash` y `group_by_size`) para garantizar que el módulo no procese accidentalmente archivos protegidos, incluso si son invocadas externamente sin validación previa.
-- `2026-07-26T10:37:52` **diskreport.py** (seguridad defensiva): He mejorado `walk_files` y `largest_folders` para incluir una validación estricta de que cualquier ruta procesada sea un subdirectorio real de la base (`is_relative_to`), evitando ataques de "path traversal" o seguimientos no deseados si `is_protected_path` fallara por un error de resolución de rutas.
-- `2026-07-26T10:37:31` **browser.py** (seguridad defensiva): He implementado una validación de seguridad defensiva en `detect_profiles` para garantizar que la ruta resultante, tras unir el directorio base con la ruta relativa del navegador, resida efectivamente dentro del árbol del directorio base, previniendo ataques de "path traversal" mediante rutas relativas maliciosas.
-- `2026-07-26T10:28:09` **branding.py** (seguridad defensiva): Mejoré la seguridad defensiva de `save_logo_svg` incorporando una validación explícita mediante `app.safety.ensure_safe_to_modify` antes de cualquier operación de escritura en disco, cumpliendo con la política de seguridad centralizada del proyecto.
-- `2026-07-26T10:28:02` **startup.py** (robustez ante casos límite): Mejora la robustez del parseo del registro ante valores malformados o comillas desbalanceadas en la salida de PowerShell, asegurando que la aplicación no falle al encontrar entradas con rutas truncadas o nombres inesperados.

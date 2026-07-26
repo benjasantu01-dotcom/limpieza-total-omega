@@ -708,6 +708,18 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
         def task():
             try:
+                # Obtenemos info del ítem para validar existencia de ruta de destino
+                item = quarantine.get_manifest_item(item_id)
+                if not item:
+                    self.log(f"ID no encontrado: {item_id}", "Cuarentena")
+                    return
+                
+                # Pre-validación: verificar si la ruta de destino padre existe
+                parent_dir = os.path.dirname(item.original_path)
+                if not os.path.exists(parent_dir):
+                    self.log(f"Error: La carpeta original '{parent_dir}' ya no existe.", "Cuarentena")
+                    return
+
                 destino = quarantine.restore_item(item_id)
                 self.log(f"Restaurado en: {destino}", "Cuarentena")
             except (KeyError, FileNotFoundError, safety.UnsafePathError) as e:

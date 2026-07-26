@@ -129,19 +129,28 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
             continue
         
         parts = [p.strip().strip('"') for p in line.split(",")]
+        # Validar estructura mínima de CSV
         if len(parts) < 3:
             continue
         
+        # Omitir cabeceras de PowerShell
         if parts[0].lower() in {"name", "processname"}:
             continue
             
         try:
+            # Validar que los campos críticos sean numéricos válidos
+            pid = int(parts[1])
+            working_set = int(float(parts[2]))
+            
+            if pid < 0 or working_set < 0:
+                continue
+                
             processes.append(ProcessMemory(
-                name=parts[0], 
-                pid=int(parts[1]), 
-                working_set=int(float(parts[2]))
+                name=parts[0] or "Unknown", 
+                pid=pid, 
+                working_set=working_set
             ))
-        except ValueError:
+        except (ValueError, OverflowError):
             continue
             
     processes.sort(key=lambda p: p.working_set, reverse=True)
