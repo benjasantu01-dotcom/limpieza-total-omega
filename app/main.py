@@ -503,7 +503,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 lineas += ["", "Nota: los duplicados no se contaron todavía. "
                                "Corré la pestaña Duplicados para incluirlos."]
             self.log_lines(lineas, "Salud")
-            self.set_status(f"Salud: {resultado.score}/100 (nota {resultado.grade})")
 
         self.run_async(task)
 

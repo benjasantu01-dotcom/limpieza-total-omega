@@ -280,22 +280,33 @@ def trim_working_set(pid: int) -> tuple[bool, str]:
     """
     if os.name != "nt":
         return False, "Solo disponible en Windows."
+    
+    try:
+        target_pid = int(pid)
+        if target_pid <= 0:
+            return False, "PID inválido proporcionado."
+    except (ValueError, TypeError):
+        return False, "El PID debe ser un número entero."
+
     try:
         import ctypes
 
         PROCESS_SET_QUOTA = 0x0100
         PROCESS_QUERY_INFORMATION = 0x0400
         handle = ctypes.windll.kernel32.OpenProcess(
-            PROCESS_SET_QUOTA | PROCESS_QUERY_INFORMATION, False, int(pid)
+            PROCESS_SET_QUOTA | PROCESS_QUERY_INFORMATION, False, target_pid
         )
         if not handle:
-            return False, f"No se pudo abrir el proceso {pid} (¿permisos insuficientes?)."
+            return False, f"No se pudo abrir el proceso {target_pid} (¿permisos insuficientes?)."
+        
         try:
-            ok = ctypes.windll.psapi.EmptyWorkingSet(handle)
+            # EmptyWorkingSet devuelve un valor distinto de cero en caso de éxito
+            if not ctypes.windll.psapi.EmptyWorkingSet(handle):
+                error_code = ctypes.GetLastError()
+                return False, f"Windows rechazó la operación (código: {error_code})."
         finally:
             ctypes.windll.kernel32.CloseHandle(handle)
-        if ok:
-            return True, f"Working set del proceso {pid} liberado. {TRIM_WARNING}"
-        return False, f"Windows rechazó la operación sobre el proceso {pid}."
+        
+        return True, f"Working set del proceso {target_pid} liberado. {TRIM_WARNING}"
     except (OSError, AttributeError) as e:
-        return False, f"No se pudo completar la operación: {e}"
+        return False, f"Error al interactuar con el sistema: {e}"

@@ -125,15 +125,19 @@ def stage_for_review(files: list[JunkFile], review_dir: str = "~/LimpiezaTotalOm
     Mueve los archivos encontrados a una carpeta de revisión.
     Preserva el nombre original agregando un timestamp para evitar colisiones.
     """
+    if not files:
+        logger.warning("La lista de archivos a organizar está vacía.")
+        return Path(review_dir).expanduser()
+
     dest = Path(review_dir).expanduser()
     try:
         dest.mkdir(parents=True, exist_ok=True)
     except OSError as e:
-        logger.error("No se pudo crear el directorio de revisión %s: %s", dest, e)
+        logger.error("No se pudo preparar el directorio de revisión %s: %s", dest, e)
         raise
 
     for jf in files:
-        if not jf.path.exists():
+        if jf is None or not isinstance(jf.path, Path) or not jf.path.exists():
             continue
 
         target = dest / f"{jf.path.stem}_{int(jf.modified.timestamp())}{jf.path.suffix}"

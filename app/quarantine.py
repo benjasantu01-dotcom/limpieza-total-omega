@@ -23,6 +23,7 @@ from __future__ import annotations
 import json
 import shutil
 import uuid
+import os
 from dataclasses import dataclass, asdict
 from datetime import datetime
 from pathlib import Path
@@ -130,8 +131,14 @@ def quarantine_file(
     origin = normalize(source)
     if not origin.is_file():
         raise FileNotFoundError(f"No existe el archivo a poner en cuarentena: {origin}")
-    # Permite extensiones sensibles (un .exe sospechoso es justamente el caso
-    # de uso), pero nunca rutas de sistema.
+    
+    # Verificación de exclusividad: intentar abrir el archivo en modo exclusivo
+    try:
+        with open(origin, "ab"):
+            pass
+    except IOError:
+        raise IOError(f"El archivo está en uso por otro proceso: {origin}")
+
     ensure_safe_to_modify(origin, allow_sensitive=True)
 
     destination_dir = quarantine_dir(base)
