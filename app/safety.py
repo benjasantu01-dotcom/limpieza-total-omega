@@ -122,8 +122,11 @@ def is_protected_path(path: PathLike) -> bool:
         return True
         
     for root in _SYSTEM_ROOTS:
-        if root in p.parents or p == root:
-            return True
+        try:
+            if root in p.parents or p == root:
+                return True
+        except (ValueError, RuntimeError):
+            continue
     return False
 
 
@@ -139,14 +142,11 @@ def is_within_directory(
         return False
     try:
         c, p = normalize(child), normalize(parent)
-    except Exception:
-        return False
-    if c == p:
-        return allow_equal
-    try:
+        if c == p:
+            return allow_equal
         c.relative_to(p)
         return True
-    except ValueError:
+    except (ValueError, OSError, RuntimeError):
         return False
 
 

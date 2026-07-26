@@ -856,3 +856,39 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_f
 - `2026-07-26T15:15:17` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). He mejorado la robustez de `quarantine_file` y `restore_item` añadiendo validaciones de integridad de entrada y manejo específico de errores de sistema, asegurando que las operaciones críticas fallen con mensajes claros ante escenarios de disco lleno o permisos denegados.
 - `2026-07-26T15:15:17` Rotación — nada para rotar
 - `2026-07-26T15:15:17` Corrida terminada. Total usado hoy: 186.
+- `2026-07-26T15:23:50` Arrancando corrida. Quedan hoy ~114 peticiones objetivo.
+- `2026-07-26T15:24:10` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-07-26T15:24:31` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `is_within_directory` y `is_protected_path` al asegurar que las rutas sean comparables mediante la resolución de sus componentes absolutos, evitando errores en el manejo de `parents` cuando las rutas no tienen una estructura jerárquica compatible.
+- `2026-07-26T15:24:50` Tests FALLARON:
+```
+lo POSIX, para que el
+        # resultado no dependa de en qué sistema corran los tests.
+>       flagged = scanner.check_system_lookalike(PurePosixPath("/home/user/Downloads/svchost.exe"))
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+evolve/tests/test_basic.py:212: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = PurePosixPath('/home/user/Downloads/svchost.exe')
+
+    def check_system_lookalike(path: Path) -> Optional[Suspicion]:
+        """
+        Detecta archivos con nombres de procesos críticos fuera de System32.
+        """
+>       if path is None or not path.is_file():
+                               ^^^^^^^^^^^^
+E       AttributeError: 'PurePosixPath' object has no attribute 'is_file'
+
+app/scanner.py:71: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_scanner_double_extension_detection - assert None is not None
+FAILED evolve/tests/test_basic.py::test_scanner_flags_system_lookalike_outside_system32 - AttributeError: 'PureWindowsPath' object has no attribute 'is_file'
+FAILED evolve/tests/test_basic.py::test_scanner_does_not_flag_real_system_file - AttributeError: 'PureWindowsPath' object has no attribute 'is_file'
+FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independent - AttributeError: 'PurePosixPath' object has no attribute 'is_file'
+4 failed, 193 passed in 0.29s
+
+```
+- `2026-07-26T15:24:50` ❌ Mejora descartada en scanner.py (no pasó los tests), se revirtió. Intento: Se introdujo una validación explícita de tipos y estados para los parámetros `path` en `check_double_extension` y `check_system_lookalike` (verificando que existan y sean archivos), y se robusteció la lógica de `check_recent_executable_in_downloads` para manejar archivos inexistentes o sin permisos de forma más limpia, evitando el uso de bloques `try-except` innecesariamente amplios.
+- `2026-07-26T15:24:57` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-07-26T15:24:57` Rotación — nada para rotar
+- `2026-07-26T15:24:57` Corrida terminada. Total usado hoy: 190.
