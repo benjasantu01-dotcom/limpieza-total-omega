@@ -259,6 +259,11 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
         raise RuntimeError("Integridad comprometida: el archivo en cuarentena fue alterado.")
 
     destination = normalize(match.original_path)
+    
+    # Blindaje adicional: validar que la ruta restaurada no sea crítica
+    if is_protected_path(destination):
+        raise UnsafePathError(f"Restauración denegada: '{destination}' es una ruta protegida.")
+
     if destination.exists():
         raise FileExistsError(f"Restauración abortada: El archivo ya existe en '{destination}'")
         

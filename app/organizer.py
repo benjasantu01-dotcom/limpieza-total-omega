@@ -142,6 +142,10 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         return Path(review_dir).expanduser()
 
     dest = Path(review_dir).expanduser().resolve()
+    # Seguridad: Validar que el directorio de destino sea seguro para modificar
+    if not ensure_safe_to_modify(dest):
+        raise PermissionError(f"El directorio de destino no es seguro: {dest}")
+
     try:
         dest.mkdir(parents=True, exist_ok=True)
     except OSError as e:

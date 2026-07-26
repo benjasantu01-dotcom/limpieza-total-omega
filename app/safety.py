@@ -181,6 +181,10 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
     except Exception as e:
         raise UnsafePathError(f"Ruta inaccesible: {path}") from e
 
+    # Detección de rutas UNC (recursos de red)
+    if str(p).startswith(("\\\\", "//")):
+        raise UnsafePathError(f"Operación bloqueada: '{p}' es una ruta de red UNC.")
+
     if p.exists() and (p.is_block_device() or p.is_char_device()):
         raise UnsafePathError(f"Operación bloqueada: '{p}' es un dispositivo especial.")
 
@@ -214,6 +218,8 @@ def describe_protection(path: PathLike) -> str:
         p = normalize(path)
     except (TypeError, ValueError, Exception):
         return "Ruta mal formada: no se puede analizar."
+    if str(p).startswith(("\\\\", "//")):
+        return f"'{p}' es una ruta de red: no se permite la modificación."
     if is_drive_root(p):
         return f"'{p}' es la raíz de una unidad: nunca se modifica."
     if is_protected_path(p):
