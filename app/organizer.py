@@ -18,6 +18,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import List, Optional
+from app.safety import ensure_safe_to_modify
 
 # Configuración de log para seguimiento de errores no críticos
 logging.basicConfig(level=logging.INFO)
@@ -130,22 +131,20 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         logger.error("No se pudo preparar el directorio de revisión %s: %s", dest, e)
         raise
 
-    blocklist = {s.lower() for s in SYSTEM_FOLDER_BLOCKLIST}
     for jf in files:
         if not isinstance(jf, JunkFile) or not jf.path or not jf.path.exists():
             continue
 
         try:
             full_source_path = jf.path.resolve()
+            # Validación de seguridad: Verificar si la operación está permitida
+            if not ensure_safe_to_modify(full_source_path):
+                continue
         except OSError:
             continue
 
         # Evitar mover archivos que ya están en el directorio de destino
         if dest in full_source_path.parents or full_source_path.parent == dest:
-            continue
-
-        if any(part.lower() in blocklist for part in full_source_path.parts):
-            logger.warning("Intento de mover archivo en ruta protegida: %s", full_source_path)
             continue
 
         base_name = jf.path.stem
@@ -177,8 +176,10 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     for f in dest.iterdir():
         try:
             if f.is_file():
-                f.unlink()
-                count += 1
+                # Validación de seguridad antes de borrar
+                if ensure_safe_to_modify(f):
+                    f.unlink()
+                    count += 1
         except (PermissionError, OSError) as e:
             logger.error("No se pudo borrar permanentemente el archivo %s: %s", f, e)
             continue

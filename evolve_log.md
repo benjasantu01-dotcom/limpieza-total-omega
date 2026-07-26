@@ -755,3 +755,10 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_f
 - `2026-07-26T14:04:00` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `trim_working_set` implementando una validación explícita mediante `app.safety.ensure_safe_to_modify` para prevenir la manipulación indebida de procesos del sistema protegidos antes de intentar realizar cualquier operación de bajo nivel.
 - `2026-07-26T14:04:00` Rotación — nada para rotar
 - `2026-07-26T14:04:00` Corrida terminada. Total usado hoy: 158.
+- `2026-07-26T14:12:39` Arrancando corrida. Quedan hoy ~142 peticiones objetivo.
+- `2026-07-26T14:13:00` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). He mejorado la seguridad defensiva integrando `safety.py` en `stage_for_review` para validar que las rutas de origen y destino sean seguras antes de realizar cualquier operación de movimiento, mitigando riesgos de manipulación de archivos en ubicaciones protegidas.
+- `2026-07-26T14:13:23` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha implementado una validación de integridad en `restore_item` comparando el hash (SHA-256) del archivo en cuarentena contra el tamaño original y verificando que el archivo no haya sido alterado antes de restaurarlo, añadiendo una capa de seguridad defensiva ante manipulaciones externas.
+- `2026-07-26T14:13:41` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-07-26T14:13:48` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se añadió la validación `p.is_block_device()` y `p.is_char_device()` en `ensure_safe_to_modify` para evitar que la aplicación intente interactuar con dispositivos especiales del sistema (como `\\.\PhysicalDrive0` o `NUL`), reforzando la seguridad defensiva frente a rutas maliciosas o periféricos.
+- `2026-07-26T14:13:48` Rotación — nada para rotar
+- `2026-07-26T14:13:48` Corrida terminada. Total usado hoy: 162.

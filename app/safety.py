@@ -172,6 +172,10 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
     except Exception as e:
         raise UnsafePathError(f"Ruta inaccesible: {path}") from e
 
+    # Bloqueo adicional para dispositivos especiales
+    if p.exists() and (p.is_block_device() or p.is_char_device()):
+        raise UnsafePathError(f"Operación bloqueada: '{p}' es un dispositivo especial.")
+
     if is_drive_root(p):
         raise UnsafePathError(f"Operación bloqueada: '{p}' es la raíz de una unidad.")
     if is_protected_path(p):

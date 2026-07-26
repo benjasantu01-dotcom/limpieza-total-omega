@@ -23,6 +23,7 @@ from __future__ import annotations
 import json
 import shutil
 import uuid
+import hashlib
 from dataclasses import dataclass, asdict
 from datetime import datetime
 from pathlib import Path
@@ -65,6 +66,7 @@ class QuarantineItem:
     size_bytes: int
     reason: str
     quarantined_at: str
+    sha256: str = ""
 
     @property
     def size_mb(self) -> float:
@@ -72,6 +74,15 @@ class QuarantineItem:
 
     def to_dict(self) -> dict:
         return asdict(self)
+
+
+def _get_sha256(path: Path) -> str:
+    """Calcula el hash SHA-256 de un archivo para detectar alteraciones."""
+    sha256_hash = hashlib.sha256()
+    with open(path, "rb") as f:
+        for byte_block in iter(lambda: f.read(4096), b""):
+            sha256_hash.update(byte_block)
+    return sha256_hash.hexdigest()
 
 
 def _is_file_locked(path: Path) -> bool:
@@ -95,11 +106,7 @@ def _manifest_path(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
 
 
 def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
-    """Lee el manifiesto. Devuelve lista vacía si no existe o está corrupto.
-
-    Un manifiesto ilegible no debe impedir usar la app: se prefiere perder
-    el índice (los archivos siguen ahí) antes que romper la interfaz.
-    """
+    """Lee el manifiesto. Devuelve lista vacía si no existe o está corrupto."""
     path = _manifest_path(base)
     if not path.exists():
         return []
@@ -112,7 +119,7 @@ def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[Quara
         try:
             items.append(QuarantineItem(**entry))
         except TypeError:
-            continue  # entrada con formato viejo o inválido: se ignora
+            continue
     return items
 
 
@@ -143,7 +150,6 @@ def quarantine_file(
 
     destination_dir = quarantine_dir(base)
     item_id = uuid.uuid4().hex[:12]
-    # Sanitizar el nombre para evitar path traversal
     safe_filename = Path(origin.name).name
     stored_name = f"{item_id}__{safe_filename}"
     destination = destination_dir / stored_name
@@ -152,6 +158,7 @@ def quarantine_file(
     
     try:
         shutil.move(str(origin), str(destination))
+        file_hash = _get_sha256(destination)
         
         item = QuarantineItem(
             item_id=item_id,
@@ -160,13 +167,13 @@ def quarantine_file(
             size_bytes=size,
             reason=reason,
             quarantined_at=datetime.now().isoformat(timespec="seconds"),
+            sha256=file_hash,
         )
         items = load_manifest(base)
         items.append(item)
         save_manifest(items, base)
         return item
     except Exception as e:
-        # Revertir movimiento si el manifiesto falla o hay error crítico de disco
         if destination.exists() and not origin.exists():
             shutil.move(str(destination), str(origin))
         raise RuntimeError(f"Falla crítica al mover archivo a cuarentena: {e}")
@@ -188,21 +195,18 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
 
     stored = quarantine_dir(base) / match.stored_name
     
-    # Verificar existencia física antes de operar
     if not stored.exists():
         raise FileNotFoundError(f"Archivo original en cuarentena no encontrado: {stored}")
         
-    if not stored.is_file() or stored.is_symlink():
-        raise FileNotFoundError(f"El archivo en cuarentena es inválido o fue manipulado: {stored}")
+    if match.sha256 and _get_sha256(stored) != match.sha256:
+        raise RuntimeError("Integridad comprometida: el archivo en cuarentena fue alterado.")
 
     destination = normalize(match.original_path)
     if destination.exists():
         raise FileExistsError(f"Restauración abortada: El archivo ya existe en '{destination}'")
         
     if is_protected_path(destination.parent):
-        raise UnsafePathError(
-            f"Restauración bloqueada: '{destination.parent}' es una ruta de sistema protegida."
-        )
+        raise UnsafePathError(f"Restauración bloqueada: '{destination.parent}' es ruta protegida.")
 
     destination.parent.mkdir(parents=True, exist_ok=True)
     shutil.move(str(stored), str(destination))

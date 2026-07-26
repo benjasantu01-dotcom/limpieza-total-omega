@@ -5,10 +5,10 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **137**
-- Mejoras aceptadas: **99** (72.3% de aceptación)
+- Iteraciones totales: **141**
+- Mejoras aceptadas: **102** (72.3% de aceptación)
 - Rechazadas por tests: 10
-- Rechazadas por guardia de seguridad: 9
+- Rechazadas por guardia de seguridad: 10
 - Sin cambios (nada sustancial que mejorar): 1
 - Sin respuesta de la IA (error o límite): 18
 
@@ -16,33 +16,36 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-26 | 99 | 10 | 9 | 1 | 18 |
+| 2026-07-26 | 102 | 10 | 10 | 1 | 18 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **23**
 - legibilidad y documentación: **22**
 - robustez ante casos límite: **20**
+- seguridad defensiva: **20**
 - rendimiento: **17**
-- seguridad defensiva: **17**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **10**
+- `organizer.py`: **10**
 - `diskreport.py`: **9**
-- `organizer.py`: **9**
+- `safety.py`: **9**
 - `branding.py`: **9**
 - `browser.py`: **8**
 - `duplicates.py`: **8**
 - `main.py`: **8**
-- `safety.py`: **8**
+- `quarantine.py`: **8**
 - `scanner.py`: **8**
 - `startup.py`: **8**
 - `memory.py`: **7**
-- `quarantine.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-26T14:13:48` **safety.py** (seguridad defensiva): Se añadió la validación `p.is_block_device()` y `p.is_char_device()` en `ensure_safe_to_modify` para evitar que la aplicación intente interactuar con dispositivos especiales del sistema (como `\\.\PhysicalDrive0` o `NUL`), reforzando la seguridad defensiva frente a rutas maliciosas o periféricos.
+- `2026-07-26T14:13:23` **quarantine.py** (seguridad defensiva): Se ha implementado una validación de integridad en `restore_item` comparando el hash (SHA-256) del archivo en cuarentena contra el tamaño original y verificando que el archivo no haya sido alterado antes de restaurarlo, añadiendo una capa de seguridad defensiva ante manipulaciones externas.
+- `2026-07-26T14:13:00` **organizer.py** (seguridad defensiva): He mejorado la seguridad defensiva integrando `safety.py` en `stage_for_review` para validar que las rutas de origen y destino sean seguras antes de realizar cualquier operación de movimiento, mitigando riesgos de manipulación de archivos en ubicaciones protegidas.
 - `2026-07-26T14:04:00` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `trim_working_set` implementando una validación explícita mediante `app.safety.ensure_safe_to_modify` para prevenir la manipulación indebida de procesos del sistema protegidos antes de intentar realizar cualquier operación de bajo nivel.
 - `2026-07-26T14:03:52` **main.py** (seguridad defensiva): Se implementó una validación de seguridad adicional en `on_trim_process` para asegurar que el PID ingresado por el usuario no sea un proceso del sistema antes de intentar cualquier operación, centralizando el control defensivo.
 - `2026-07-26T14:03:11` **healthscore.py** (seguridad defensiva): Reforcé la robustez del sistema de cálculo ante entradas corruptas o malintencionadas (como valores negativos o infinitos en las métricas) utilizando un decorador de validación interna en las funciones de score, asegurando que los valores de entrada no puedan degradar el estado del sistema ni causar desbordamientos en la lógica de puntuación.
@@ -55,6 +58,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-26T13:31:49` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez de `parse_windows_process_csv` ante casos límite en la salida de PowerShell, asegurando que el parser ignore líneas malformadas o encabezados inesperados sin detener el proceso ni generar excepciones.
 - `2026-07-26T13:31:25` **main.py** (robustez ante casos límite): Se introdujo una comprobación robusta en `run_async` para validar la existencia del directorio de destino antes de intentar operaciones de archivo y se añadió una limpieza de estado en caso de fallos críticos, evitando que la interfaz se quede colgada o con datos inconsistentes ante errores de E/S inesperados.
 - `2026-07-26T13:30:44` **healthscore.py** (robustez ante casos límite): Reforcé la robustez de `compute_score` ante datos anómalos (como valores negativos en contadores o porcentajes fuera de rango) introduciendo validaciones explícitas en las funciones de puntuación, asegurando que el cálculo final sea consistente incluso si los módulos fuente reportan datos inesperados.
-- `2026-07-26T13:21:18` **duplicates.py** (robustez ante casos límite): Se ha añadido un chequeo de archivos de tamaño cero en `_collect_candidates` para evitar procesar archivos vacíos, los cuales generan colisiones de hash inútiles y ruido en los resultados, mejorando la robustez frente a datos corruptos o temporales mal formados.
-- `2026-07-26T13:21:12` **diskreport.py** (robustez ante casos límite): Mejoré `walk_files` para manejar robustamente archivos que desaparecen durante la iteración (concurrencia) y errores de acceso denegado en archivos individuales, asegurando que el análisis no se detenga prematuramente.
-- `2026-07-26T13:20:51` **browser.py** (robustez ante casos límite): Se mejoró la función `directory_size` para manejar casos donde el archivo se elimina o bloquea durante el proceso de escaneo (Race Condition) y se añadió una validación explícita para archivos "reparse points" (puntos de reanálisis) que no son symlinks, mejorando la robustez ante archivos corruptos o bloqueados sin sacrificar rendimiento.
