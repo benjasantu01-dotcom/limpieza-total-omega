@@ -144,7 +144,14 @@ def all_drives_usage(mounts: Iterable[str] | None = None) -> list[DriveUsage]:
 
 
 def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Generator[tuple[Path, int], None, None]:
-    """Genera (ruta, tamaño) de cada archivo bajo `directory`."""
+    """
+    Genera pares (ruta, tamaño) de archivos bajo `directory`.
+    
+    Implementa una recursión controlada mediante os.walk. La lógica de 
+    `subdirs[:]` permite podar el árbol de búsqueda en tiempo real si se 
+    encuentra un directorio protegido, evitando entrar en profundidades 
+    innecesarias y cumpliendo con las políticas de seguridad del proyecto.
+    """
     if not directory:
         return
     try:
@@ -196,7 +203,14 @@ def usage_by_extension(directory: str | os.PathLike, limit: int = 15, skip_prote
 
 
 def largest_folders(directory: str | os.PathLike, limit: int = 10, skip_protected: bool = True) -> list[FolderUsage]:
-    """Las subcarpetas directas más pesadas, contando su contenido completo."""
+    """
+    Calcula el peso acumulado de las subcarpetas directas de `directory`.
+
+    Utiliza una estrategia de agregación basada en `relative_to` para agrupar 
+    ficheros en su directorio de nivel superior inmediato. Esto evita 
+    complejidad algorítmica cuadrática y permite obtener resultados precisos 
+    solo con un pase sobre el árbol de archivos.
+    """
     if not directory:
         return []
     try:

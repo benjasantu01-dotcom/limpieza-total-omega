@@ -136,6 +136,15 @@ def _collect_candidates(directories: Iterable[str | Path], min_size: int, skip_p
     return candidates
 
 
+def _refine_by_hash(paths: Iterable[Path], hash_func: callable) -> dict[str, list[Path]]:
+    """Aplica una función de hash a una lista de archivos para agrupar por contenido."""
+    by_hash: dict[str, list[Path]] = defaultdict(list)
+    for path in paths:
+        if digest := hash_func(path):
+            by_hash[digest].append(path)
+    return {h: p for h, p in by_hash.items() if len(p) > 1}
+
+
 def find_duplicates(
     directories: Iterable[str | Path],
     min_size: int = 1024,
@@ -147,27 +156,24 @@ def find_duplicates(
         return []
 
     groups: list[DuplicateGroup] = []
+    
+    # Paso 1: Filtrado por tamaño (ya realizado por group_by_size)
     for size, same_size in group_by_size(candidates).items():
-        if len(same_size) < 2:
-            continue
-
-        by_partial: dict[str, list[Path]] = defaultdict(list)
-        for path in same_size:
-            digest = partial_hash(path)
-            if digest:
-                by_partial[digest].append(path)
-
+        
+        # Paso 2: Hash parcial para descartar archivos que difieren en el encabezado
+        by_partial = _refine_by_hash(same_size, partial_hash)
+        
         for partial_candidates in by_partial.values():
-            if len(partial_candidates) < 2:
-                continue
-            by_full: dict[str, list[Path]] = defaultdict(list)
-            for path in partial_candidates:
-                digest = hash_file(path)
-                if digest:
-                    by_full[digest].append(path)
-            for digest, duplicates in by_full.items():
-                if len(duplicates) > 1:
-                    groups.append(DuplicateGroup(digest=digest, size_bytes=size, paths=sorted(duplicates)))
+            
+            # Paso 3: Hash completo para confirmación definitiva de igualdad
+            by_full = _refine_by_hash(partial_candidates, hash_file)
+            
+            for digest, confirmed in by_full.items():
+                groups.append(DuplicateGroup(
+                    digest=digest, 
+                    size_bytes=size, 
+                    paths=sorted(confirmed)
+                ))
 
     groups.sort(key=lambda g: g.wasted_bytes, reverse=True)
     return groups

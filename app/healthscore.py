@@ -99,17 +99,16 @@ def _to_int(value: Any, default: int = 0) -> int:
 
 
 def score_junk(junk_mb: float) -> float:
-    """Puntúa la basura. 0 MB es perfecto; 5 GB (5000 MB) es el umbral crítico."""
+    """Puntúa la basura. Escala lineal donde 0 MB es 100% y 5000 MB es 0%."""
     val = _to_float(junk_mb)
     return _clamp(1.0 - (max(0.0, val) / 5000.0))
 
 
 def score_security(suspicious_count: int, warnings: int = 0) -> float:
-    """Puntúa los hallazgos de seguridad.
+    """Puntúa la seguridad penalizando hallazgos.
     
-    Penalty logic: Cada ítem sospechoso reduce el score en 5%, mientras que
-    cada advertencia lo hace en 25%, priorizando la detección de amenazas
-    sobre la simple acumulación de logs.
+    Cada ítem sospechoso reduce el score en 5% y cada advertencia en 25%.
+    La suma de penalizaciones se resta de la base 1.0.
     """
     s_count = _to_int(suspicious_count)
     w_count = _to_int(warnings)
@@ -118,25 +117,33 @@ def score_security(suspicious_count: int, warnings: int = 0) -> float:
 
 
 def score_memory(available_percent: float) -> float:
-    """Puntúa la memoria por disponibilidad, acotando el input a [0, 100]."""
+    """Puntúa la RAM disponible.
+    
+    Se espera un 35% de margen operativo saludable. Valores mayores a 35%
+    otorgan el puntaje máximo tras el acotado.
+    """
     val = max(0.0, min(100.0, _to_float(available_percent, 0.0)))
     return _clamp(val / 35.0)
 
 
 def score_disk(free_percent: float) -> float:
-    """Puntúa el espacio libre en disco, acotando el input a [0, 100]."""
+    """Puntúa el espacio libre.
+    
+    El umbral de eficiencia es 25% de espacio libre total. Menos de eso
+    comienza a reducir proporcionalmente el puntaje.
+    """
     val = max(0.0, min(100.0, _to_float(free_percent, 0.0)))
     return _clamp(val / 25.0)
 
 
 def score_duplicates(duplicate_mb: float) -> float:
-    """Puntúa espacio perdido. 2 GB (2000 MB) representa una pérdida ineficiente."""
+    """Puntúa ineficiencia por duplicados. 2000 MB (2 GB) marca el 0% de score."""
     val = _to_float(duplicate_mb)
     return _clamp(1.0 - (max(0.0, val) / 2000.0))
 
 
 def score_startup(startup_count: int) -> float:
-    """Puntúa el arranque. 20 aplicaciones es el límite tolerable."""
+    """Puntúa el arranque. 20 aplicaciones es el máximo tolerable antes de 0%."""
     s_count = _to_int(startup_count)
     return _clamp(1.0 - (max(0, s_count) / 20.0))
 
@@ -155,12 +162,12 @@ def grade_for_score(score: int) -> str:
 
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
-    """Calcula el puntaje de salud. Función pura: no toca el sistema."""
+    """Calcula el puntaje de salud total combinando métricas ponderadas."""
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Datos de entrada inválidos."])
 
     try:
-        ratios = {
+        ratios: Dict[str, float] = {
             "seguridad": score_security(metrics.suspicious_count, metrics.suspicious_warnings),
             "disco": score_disk(metrics.disk_free_percent),
             "memoria": score_memory(metrics.memory_available_percent),
@@ -169,7 +176,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
             "arranque": score_startup(metrics.startup_count),
         }
         
-        breakdown = {}
+        breakdown: Dict[str, int] = {}
         for area, ratio in ratios.items():
             weight = WEIGHTS.get(area, 0)
             breakdown[area] = int(round(_clamp(ratio, 0.0, 1.0) * weight))
