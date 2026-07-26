@@ -96,7 +96,7 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
                         stat = fp.stat()
                         found.append(
                             JunkFile(
-                                path=fp,
+                                path=fp.resolve(),
                                 size_bytes=stat.st_size,
                                 modified=datetime.fromtimestamp(stat.st_mtime),
                             )
@@ -144,7 +144,18 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         if jf is None or not isinstance(jf.path, Path) or not jf.path.exists():
             continue
 
-        target = dest / f"{jf.path.stem}_{int(jf.modified.timestamp())}{jf.path.suffix}"
+        base_name = jf.path.stem
+        ext = jf.path.suffix
+        timestamp = int(jf.modified.timestamp())
+        
+        target = dest / f"{base_name}_{timestamp}{ext}"
+        
+        # Prevenir colisión si ya existe un archivo con ese nombre exacto en el destino
+        counter = 1
+        while target.exists():
+            target = dest / f"{base_name}_{timestamp}_{counter}{ext}"
+            counter += 1
+
         try:
             shutil.move(str(jf.path), str(target))
         except (PermissionError, FileNotFoundError, shutil.Error, OSError) as e:

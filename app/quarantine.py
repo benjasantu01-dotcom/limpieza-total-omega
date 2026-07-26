@@ -187,6 +187,9 @@ def restore_item(item_id: str, base: str | Path = DEFAULT_QUARANTINE_DIR) -> Pat
         raise FileNotFoundError(f"El archivo en cuarentena ya no está: {stored}")
 
     destination = normalize(match.original_path)
+    if destination.exists():
+        raise FileExistsError(f"Restauración abortada: El archivo ya existe en '{destination}'")
+        
     if is_protected_path(destination.parent):
         raise UnsafePathError(
             f"Restauración bloqueada: '{destination.parent}' es una ruta de sistema protegida."

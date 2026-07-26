@@ -378,3 +378,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-07-26T10:05:19` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `main.py` ante errores de concurrencia y limpieza de recursos, implementando un mecanismo de bandera de estado (`self.is_running`) que evita que el usuario lance tareas asíncronas múltiples de forma simultánea, lo cual podría corromper el estado interno de la aplicación o saturar el hilo principal.
 - `2026-07-26T10:05:19` Rotación — nada para rotar
 - `2026-07-26T10:05:19` Corrida terminada. Total usado hoy: 66.
+- `2026-07-26T10:16:27` Arrancando corrida. Quedan hoy ~234 peticiones objetivo.
+- `2026-07-26T10:16:51` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-07-26T10:17:11` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). He mejorado la robustez de `stage_for_review` añadiendo una verificación de colisiones para evitar sobrescrituras accidentales en el destino, y asegurando que las rutas de origen sean absolutas para prevenir errores ante cambios inesperados en el directorio de trabajo del proceso.
+- `2026-07-26T10:17:34` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se añadió una validación crítica en `restore_item` para detectar conflictos de nombres (si el archivo ya existe en el destino original) antes de intentar la restauración, evitando así la sobrescritura silenciosa o errores de `shutil.move`.
+- `2026-07-26T10:17:38` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-07-26T10:17:38` Rotación — nada para rotar
+- `2026-07-26T10:17:38` Corrida terminada. Total usado hoy: 70.
