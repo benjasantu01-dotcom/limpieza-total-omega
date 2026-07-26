@@ -21,6 +21,7 @@ import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable, Optional, Iterator, List
+from app.safety import ensure_safe_to_modify
 
 __all__ = [
     "StartupEntry",
@@ -102,6 +103,12 @@ def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> List[Start
         folders = startup_folders()
     found_entries: List[StartupEntry] = []
     for folder in folders:
+        # Validación de seguridad: verificamos que la carpeta de inicio sea segura
+        try:
+            ensure_safe_to_modify(folder)
+        except (ValueError, PermissionError):
+            continue
+
         base_path = Path(folder).resolve()
         if not base_path.is_dir():
             continue

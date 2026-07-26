@@ -19,6 +19,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from datetime import datetime, timedelta
 from typing import List, Optional
+from app.safety import ensure_safe_to_modify
 
 # Configuración de logger para el módulo
 logger = logging.getLogger(__name__)
@@ -95,9 +96,12 @@ def scan_directory(directory: str | Path) -> List[Suspicion]:
     if not directory:
         return []
         
-    results = []
     try:
-        root = Path(directory)
+        root = Path(directory).resolve()
+        # Seguridad defensiva: verificar que la ruta sea segura antes de iniciar el escaneo
+        ensure_safe_to_modify(root)
+        
+        results = []
         if not root.exists() or not root.is_dir():
             return []
             
@@ -108,10 +112,10 @@ def scan_directory(directory: str | Path) -> List[Suspicion]:
                     results.extend(scan_file(p))
             except (PermissionError, OSError):
                 continue
+        return results
     except Exception as e:
         logger.error("Error crítico al inicializar el escaneo en %s: %s", directory, e)
-            
-    return results
+        return []
 
 
 def run_windows_defender_quick_scan() -> str:
