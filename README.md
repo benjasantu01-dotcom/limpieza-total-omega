@@ -83,19 +83,53 @@ python app/main.py
 1. En Google AI Studio, generá una `GEMINI_API_KEY`.
 2. En GitHub: Settings → Secrets and variables → Actions → agregá el
    secreto `GEMINI_API_KEY`.
-3. El workflow `.github/workflows/evolve.yml` ya corre cada 5 minutos
-   automáticamente. También se puede disparar a mano desde la pestaña
-   Actions ("Run workflow").
+3. Agregá el secreto `SELF_TRIGGER_TOKEN` (ver más abajo) para que el bucle
+   se mantenga vivo solo. Sin él funciona, pero depende del cron de GitHub,
+   que es poco confiable.
 4. Editá `MISSION.md` cuando quieras cambiar el foco de las mejoras.
 
-> **Importante sobre minutos de GitHub Actions:** en repositorios **privados**
-> el plan gratuito incluye 2.000 minutos/mes, y cada corrida se factura
-> redondeando hacia arriba al minuto. A una corrida cada 5 minutos son ~288
-> corridas/día, o sea que la cuota mensual se agota en menos de una semana y
-> los workflows dejan de correr. En repositorios **públicos** Actions es
-> gratis e ilimitado. Si querés que el bucle sostenga el ritmo 24/7 durante
-> toda la semana, la opción sin costo es tener el repo público (los secretos
-> siguen siendo privados: `GEMINI_API_KEY` no se expone).
+## Cómo se mantiene vivo 24/7 (y por qué no alcanza el cron)
+
+El cron de GitHub Actions no es puntual: GitHub avisa que el evento
+`schedule` se atrasa o se descarta cuando hay carga alta. En este repo,
+medido con la API, en las primeras ~10 horas con cron activo se ejecutó
+**1 sola** de las ~19 corridas esperadas.
+
+Por eso el workflow **se re-dispara a sí mismo** al terminar cada corrida,
+logrando un latido propio de ~10 minutos independiente del cron (que queda
+solo como reinicio de respaldo). Para eso necesita un token propio, porque
+el `GITHUB_TOKEN` por defecto no puede disparar nuevos workflows (GitHub lo
+bloquea justamente para evitar bucles infinitos).
+
+**Crear el token:** Settings de tu cuenta → Developer settings → Personal
+access tokens → Fine-grained tokens → Generate new token. Dale acceso solo
+a este repositorio, con permisos `Actions: Read and write` y
+`Contents: Read and write`. Copiá el token y guardalo en el repo como
+secreto `SELF_TRIGGER_TOKEN`.
+
+### Cómo frenar la cadena
+De la más rápida a la más suave:
+1. Actions → Evolve (bucle autónomo) → `...` → **Disable workflow**.
+2. Borrar el secreto `SELF_TRIGGER_TOKEN` (sin token no se re-dispara).
+3. Crear un archivo vacío llamado `STOP_CHAIN` en la raíz del repo.
+
+### Frenos automáticos ya puestos
+- **Tope de 200 eslabones por día** (`evolve/chain.py`). Al alcanzarlo la
+  cadena se detiene y el cron queda como reinicio.
+- **Antipileup**: antes de re-disparar, verifica que no haya otra corrida en
+  curso o en cola. Sin esto, el cron y la cadena podrían generar cadenas
+  paralelas que se multiplican.
+- **Presupuesto de Gemini** (tope duro 350/día): aunque la cadena siga viva,
+  deja de gastar cuota.
+- **Reinicio diario automático**: el contador de eslabones se resetea cada
+  día, así el bucle retoma solo.
+
+> **Sobre minutos de Actions:** en repos **privados** el plan gratuito da
+> 2.000 minutos/mes y cada corrida se factura redondeando al minuto, así que
+> un ritmo de 24/7 agota la cuota en menos de una semana. En repos
+> **públicos** Actions es gratis e ilimitado. Este repo es público por eso.
+> Los secretos siguen siendo privados: GitHub censura sus valores en los
+> logs, así que la `GEMINI_API_KEY` no queda expuesta.
 
 ### 3. Para la demo con tus compañeros
 - `PROGRESS.md` → el resumen ejecutivo: cuántas mejoras se aceptaron y
