@@ -124,10 +124,17 @@ def group_by_size(paths: Iterable[Path]) -> dict[int, list[Path]]:
 
 def _collect_candidates(directories: Iterable[str | Path], min_size: int, skip_protected: bool) -> list[Path]:
     """
-    Escaneo profundo de directorios para identificar archivos candidatos.
+    Realiza un rastreo recursivo del sistema de archivos para localizar archivos candidatos.
     
-    Realiza una búsqueda recursiva excluyendo rutas protegidas y symlinks para
-    garantizar que el conjunto de trabajo solo contenga archivos reales legibles.
+    Seguridad:
+    - Aplica filtros de `safety.is_protected_path` sobre carpetas y archivos.
+    - Ignora enlaces simbólicos (`symlinks`) para evitar recursión infinita o escapes.
+    - Valida que la ruta absoluta resultante esté confinada al directorio base original.
+    
+    Args:
+        directories: Lista de rutas raíz a escanear.
+        min_size: Tamaño mínimo en bytes para considerar un archivo como duplicado.
+        skip_protected: Flag para omitir rutas marcadas como críticas por `safety.py`.
     """
     if directories is None:
         return []
@@ -146,7 +153,6 @@ def _collect_candidates(directories: Iterable[str | Path], min_size: int, skip_p
                 root_path = Path(root).resolve()
                 
                 # Defensa contra escapes de directorio (path traversal/symlink loops)
-                # Verifica que la ruta actual sea hija de la base original
                 if not str(root_path).startswith(str(base)):
                     subdirs[:] = []
                     continue
@@ -157,7 +163,6 @@ def _collect_candidates(directories: Iterable[str | Path], min_size: int, skip_p
                     
                 for name in files:
                     candidate = (root_path / name).resolve()
-                    # Asegurar que el archivo individual esté dentro de la base
                     if not str(candidate).startswith(str(base)):
                         continue
                         
@@ -196,10 +201,14 @@ def find_duplicates(
     skip_protected: bool = True,
 ) -> list[DuplicateGroup]:
     """
-    Orquesta la estrategia de 3 pasos: 
-    1. Agrupación por tamaño (lista simple).
-    2. Refinamiento por hash parcial (reduce el conjunto de candidatos).
-    3. Confirmación por hash completo (identificación definitiva).
+    Orquesta la detección de archivos duplicados mediante un filtrado progresivo:
+    
+    1. Agrupación por tamaño (Fase rápida: O(N) stat calls).
+    2. Filtrado por `partial_hash` (Hash del encabezado: descarta archivos distintos rápidamente).
+    3. Validación por `hash_file` (Hash completo: garantiza identidad bit a bit).
+    
+    Returns:
+        Lista de `DuplicateGroup` ordenados de mayor a menor impacto (bytes desperdiciados).
     """
     if not directories:
         return []
@@ -210,19 +219,16 @@ def find_duplicates(
 
     groups: list[DuplicateGroup] = []
     
-    # Paso 1: Filtrado por tamaño
     size_map = group_by_size(candidates)
     
     for size, same_size in size_map.items():
         if len(same_size) < 2:
             continue
             
-        # Paso 2: Hash parcial para descartar archivos que difieren en el encabezado
         by_partial = _refine_by_hash(same_size, partial_hash)
         
         for partial_candidates in by_partial.values():
             
-            # Paso 3: Hash completo para confirmación definitiva de igualdad
             by_full = _refine_by_hash(partial_candidates, hash_file)
             
             for digest, confirmed in by_full.items():

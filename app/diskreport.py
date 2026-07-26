@@ -273,16 +273,21 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
         
     total = 0
     count = 0
-    extension_data: dict[str, dict] = defaultdict(lambda: {"size": 0, "count": 0})
+    # Usamos un dict para mapear extensiones a una instancia acumulativa de ExtensionUsage
+    extension_map: dict[str, ExtensionUsage] = {}
     largest_files_heap: list[tuple[int, Path]] = []
     
     for path, size in walk_files(directory, skip_protected):
         total += size
         count += 1
         
-        ext = path.suffix.lower() or "(sin extensión)"
-        extension_data[ext]["size"] += size
-        extension_data[ext]["count"] += 1
+        ext_name = path.suffix.lower() or "(sin extensión)"
+        if ext_name not in extension_map:
+            extension_map[ext_name] = ExtensionUsage(ext_name, 0, 0)
+            
+        ext_data = extension_map[ext_name]
+        ext_data.size_bytes += size
+        ext_data.count += 1
         
         heapq.heappush(largest_files_heap, (size, path))
         if len(largest_files_heap) > 8:
@@ -295,9 +300,9 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
         "Por tipo de archivo:",
     ]
     
-    sorted_exts = heapq.nlargest(8, extension_data.items(), key=lambda x: x[1]["size"])
-    for ext, data in sorted_exts:
-        lines.append(f"  {ext:<18} {format_size(data['size']):>10}  ({data['count']} archivos)")
+    sorted_exts = heapq.nlargest(8, extension_map.values(), key=lambda x: x.size_bytes)
+    for ext_data in sorted_exts:
+        lines.append(f"  {ext_data.extension:<18} {format_size(ext_data.size_bytes):>10}  ({ext_data.count} archivos)")
         
     lines.append("")
     lines.append("Archivos más grandes:")

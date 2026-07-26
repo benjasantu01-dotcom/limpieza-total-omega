@@ -15,14 +15,15 @@ la letra omega abajo: las dos mitades del producto en una sola marca.
 
 from __future__ import annotations
 from pathlib import Path
-from typing import Any, Final, TypeAlias
+from typing import Any, Final, TypeAlias, Literal, Mapping
 from types import MappingProxyType
 from functools import lru_cache
 from app.safety import ensure_safe_to_modify
 
 # Type Aliases para mejorar la legibilidad de la semántica de datos
 HexColor: TypeAlias = str
-SeverityTuple: TypeAlias = tuple[HexColor, str]  # (color, etiqueta)
+SeverityKey: TypeAlias = Literal["ok", "info", "warning", "danger"]
+GradeKey: TypeAlias = Literal["A", "B", "C", "D", "F"]
 
 APP_NAME: Final = "Limpieza Total Omega"
 APP_SHORT_NAME: Final = "Omega"
@@ -54,14 +55,14 @@ FONT_SIZES: Final = MappingProxyType({
 })
 
 # Diccionarios de mapeo directo para evitar lógica repetitiva y búsquedas extra
-SEVERITY_STYLES: Final = MappingProxyType({
+SEVERITY_STYLES: Final[Mapping[str, tuple[HexColor, str]]] = MappingProxyType({
     "ok": ("#00d4aa", "Correcto"),
     "info": ("#58a6ff", "Informativo"),
     "warning": ("#f5a623", "Advertencia"),
     "danger": ("#e5484d", "Peligro"),
 })
 
-GRADE_COLORS: Final = MappingProxyType({
+GRADE_COLORS: Final[Mapping[str, HexColor]] = MappingProxyType({
     "A": "#00d4aa",
     "B": "#58a6ff",
     "C": "#f5a623",
@@ -85,9 +86,7 @@ def color(name: str) -> HexColor:
     Returns:
         Hexadecimal de color si existe, o un gris neutro de respaldo.
     """
-    if isinstance(name, str) and name in PALETTE:
-        return PALETTE[name]
-    return "#808080"
+    return PALETTE.get(name, "#808080")
 
 
 @lru_cache(maxsize=16)
@@ -100,20 +99,20 @@ def font_size(name: str) -> int:
     Returns:
         Valor entero en puntos, o tamaño de 'body' si la clave no se encuentra.
     """
-    if isinstance(name, str) and name in FONT_SIZES:
-        return FONT_SIZES[name]
-    return FONT_SIZES["body"]
+    return FONT_SIZES.get(name, FONT_SIZES["body"])
 
 
 def severity_color(severity: str | None) -> HexColor:
     """
     Mapea un nivel de severidad al color hexadecimal correspondiente.
     
-    El nivel es normalizado a minúsculas antes de la búsqueda.
+    Args:
+        severity: String identificador (ej: 'ok', 'danger').
+    Returns:
+        Color hexadecimal definido en SEVERITY_STYLES o gris si es desconocido.
     """
-    if isinstance(severity, str) and severity.strip():
-        if style := SEVERITY_STYLES.get(severity.lower()):
-            return style[0]
+    if isinstance(severity, str) and (style := SEVERITY_STYLES.get(severity.lower())):
+        return style[0]
     return PALETTE["text_muted"]
 
 
@@ -121,7 +120,8 @@ def severity_label(severity: str | None) -> str:
     """
     Obtiene la etiqueta legible para un nivel de severidad determinado.
     
-    Si el nivel no es reconocido en SEVERITY_STYLES, retorna el string original en mayúsculas.
+    Args:
+        severity: String identificador. Si es inválido, retorna el input en mayúsculas.
     """
     if isinstance(severity, str) and severity.strip():
         if style := SEVERITY_STYLES.get(severity.lower()):
@@ -135,9 +135,7 @@ def grade_color(grade: str | None) -> HexColor:
     Retorna el color asignado a una letra de calificación (A, B, C, D, F).
     """
     if isinstance(grade, str) and grade.strip():
-        key = grade.upper()[0]
-        if key in GRADE_COLORS:
-            return GRADE_COLORS[key]
+        return GRADE_COLORS.get(grade.upper()[0], PALETTE["text_muted"])
     return PALETTE["text_muted"]
 
 
@@ -148,8 +146,6 @@ def logo_svg(size: int = 128) -> str:
     
     Args:
         size: Tamaño en píxeles del lado del contenedor cuadrado.
-    Returns:
-        String con el contenido del SVG listo para escribir a disco o incrustar.
     """
     return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{size}" height="{size}" viewBox="0 0 128 128">
   <defs>
@@ -173,19 +169,16 @@ def save_logo_svg(destination: str | Path) -> Path | None:
     """
     Persiste el archivo SVG del logo tras validar permisos y seguridad.
     
-    Utiliza `ensure_safe_to_modify` para prevenir ataques de path traversal.
+    Previene path traversal y valida que la extensión sea .svg.
     
-    Args:
-        destination: Ruta destino donde guardar el .svg.
     Returns:
-        Objeto Path del archivo guardado, o None si la operación es inválida o falla.
+        Path del archivo guardado, o None si la operación es inválida.
     """
     if not destination:
         return None
     try:
         path = Path(destination).expanduser().resolve()
         
-        # Validaciones de seguridad defensiva
         if path.is_symlink() or not path.name.lower().endswith(".svg"):
             return None
         if not ensure_safe_to_modify(path) or not ensure_safe_to_modify(path.parent):
@@ -200,7 +193,7 @@ def save_logo_svg(destination: str | Path) -> Path | None:
 
 @lru_cache(maxsize=1)
 def logo_ascii() -> str:
-    """Retorna una representación en arte ASCII para visualización en consola."""
+    """Retorna una representación en arte ASCII para logs o consola."""
     return r"""
    ___  __  __ ___ ___   _
   / _ \|  \/  | __/ __| /_\
@@ -215,15 +208,15 @@ def draw_logo(canvas: Any, size: int = 56, x: int = 0, y: int = 0) -> None:
     Renderiza el logo en un widget canvas de Tkinter.
     
     Args:
-        canvas: Widget de tipo tkinter.Canvas.
-        size: Tamaño base en píxeles.
-        x: Coordenada inicial horizontal en el canvas.
-        y: Coordenada inicial vertical en el canvas.
+        canvas: Objeto con método `create_polygon`.
+        size: Tamaño base del logo.
+        x: Offset X en el canvas.
+        y: Offset Y en el canvas.
     """
     if canvas is None or not hasattr(canvas, "create_polygon"):
         return
 
-    # Validar que los valores numéricos sean finitos y positivos para evitar errores de renderizado
+    # Normalización de tamaño para evitar desbordamiento gráfico
     if not isinstance(size, (int, float)) or size <= 0:
         size = 56
         
