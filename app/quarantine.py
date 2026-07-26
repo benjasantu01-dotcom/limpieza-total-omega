@@ -166,6 +166,9 @@ def quarantine_file(
     stored_name = f"{item_id}__{safe_filename}"
     destination = destination_dir / stored_name
 
+    if destination.exists():
+        raise FileExistsError(f"Colisión de nombre en cuarentena: {destination}")
+
     size = origin.stat().st_size
     
     try:

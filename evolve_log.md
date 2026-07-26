@@ -948,3 +948,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-07-26T16:47:21` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de las operaciones asíncronas añadiendo un manejo de excepciones específico para `PermissionError` y `FileNotFoundError` directamente dentro de `run_async`, evitando que fallos de acceso en hilos secundarios silencien el error o dejen la bandera `is_running` en un estado inconsistente.
 - `2026-07-26T16:47:21` Rotación — nada para rotar
 - `2026-07-26T16:47:21` Corrida terminada. Total usado hoy: 222.
+- `2026-07-26T16:56:01` Arrancando corrida. Quedan hoy ~78 peticiones objetivo.
+- `2026-07-26T16:56:26` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se añadió robustez en `parse_windows_process_csv` para manejar correctamente entradas CSV que contienen caracteres inesperados (como comas dentro de nombres de proceso, típicas en PowerShell) mediante un split limitado y limpieza de comillas envolventes, además de prevenir errores de desbordamiento en la conversión de valores numéricos de memoria.
+- `2026-07-26T16:56:46` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-07-26T16:57:09` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `quarantine_file` para evitar la pérdida de datos o estados inconsistentes ante fallos parciales durante la transferencia o el cálculo de hash, añadiendo una validación de existencia del archivo destino antes de proceder con el movimiento.
+- `2026-07-26T16:57:13` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 104): unterminated string literal (detected at line 104)
+- `2026-07-26T16:57:13` Rotación — nada para rotar
+- `2026-07-26T16:57:13` Corrida terminada. Total usado hoy: 226.

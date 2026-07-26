@@ -5,25 +5,25 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **201**
-- Mejoras aceptadas: **143** (71.1% de aceptación)
+- Iteraciones totales: **205**
+- Mejoras aceptadas: **145** (70.7% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 13
+- Rechazadas por guardia de seguridad: 14
 - Sin cambios (nada sustancial que mejorar): 1
-- Sin respuesta de la IA (error o límite): 33
+- Sin respuesta de la IA (error o límite): 34
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-26 | 143 | 11 | 13 | 1 | 33 |
+| 2026-07-26 | 145 | 11 | 14 | 1 | 34 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **34**
 - manejo de errores y validación de entradas: **32**
 - rendimiento: **29**
-- robustez ante casos límite: **26**
+- robustez ante casos límite: **28**
 - seguridad defensiva: **22**
 
 ## Mejoras aceptadas por archivo
@@ -35,14 +35,16 @@ Este archivo se regenera solo en cada corrida a partir de
 - `browser.py`: **12**
 - `duplicates.py`: **12**
 - `main.py`: **12**
+- `quarantine.py`: **12**
 - `safety.py`: **12**
-- `quarantine.py`: **11**
+- `memory.py`: **11**
 - `scanner.py`: **11**
 - `startup.py`: **11**
-- `memory.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-26T16:57:09` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `quarantine_file` para evitar la pérdida de datos o estados inconsistentes ante fallos parciales durante la transferencia o el cálculo de hash, añadiendo una validación de existencia del archivo destino antes de proceder con el movimiento.
+- `2026-07-26T16:56:26` **memory.py** (robustez ante casos límite): Se añadió robustez en `parse_windows_process_csv` para manejar correctamente entradas CSV que contienen caracteres inesperados (como comas dentro de nombres de proceso, típicas en PowerShell) mediante un split limitado y limpieza de comillas envolventes, además de prevenir errores de desbordamiento en la conversión de valores numéricos de memoria.
 - `2026-07-26T16:47:21` **main.py** (robustez ante casos límite): Se ha mejorado la robustez de las operaciones asíncronas añadiendo un manejo de excepciones específico para `PermissionError` y `FileNotFoundError` directamente dentro de `run_async`, evitando que fallos de acceso en hilos secundarios silencien el error o dejen la bandera `is_running` en un estado inconsistente.
 - `2026-07-26T16:46:54` **healthscore.py** (robustez ante casos límite): Introduje validación defensiva en las funciones de cálculo (`score_*`) para manejar casos de valores negativos o inesperados de forma explícita, asegurando que `compute_score` siempre produzca un resultado consistente ante datos de telemetría corruptos o incompletos.
 - `2026-07-26T16:46:34` **duplicates.py** (robustez ante casos límite): Se mejora la robustez de `_collect_candidates` ante archivos que desaparecen entre la obtención de metadatos y la recolección, añadiendo una validación explícita de existencia mediante `exists()` antes de procesar para evitar excepciones innecesarias en sistemas de archivos dinámicos.
@@ -56,5 +58,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-26T16:25:45` **organizer.py** (rendimiento): Optimicé el bucle de escaneo en `scan_for_junk` utilizando `os.scandir` en lugar de `os.walk`, lo cual reduce drásticamente las llamadas al sistema y la creación de objetos `Path` innecesarios, mejorando el rendimiento al evitar recorrer repetidamente los atributos de archivos que no interesan.
 - `2026-07-26T16:16:46` **memory.py** (rendimiento): Optimizé `parse_windows_process_csv` para evitar iteraciones redundantes y realizar conversiones de tipo solo cuando es estrictamente necesario, mejorando la eficiencia al procesar la salida de PowerShell.
 - `2026-07-26T16:16:38` **main.py** (rendimiento): Optimicé el renderizado de listas grandes en las pestañas (`refresh_list` y la inserción de reportes) reemplazando la inserción de líneas una a una (que provoca múltiples llamadas a `see` y refrescos de UI) por una única operación de inserción de un bloque de texto consolidado, reduciendo significativamente la carga sobre el hilo principal y mejorando la respuesta de la interfaz.
-- `2026-07-26T16:15:58` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje pre-computando el desglose de pesos de `SystemMetrics` mediante una estructura de acceso directo, evitando llamadas repetitivas y diccionarios dinámicos dentro de `compute_score`.
-- `2026-07-26T16:15:37` **duplicates.py** (rendimiento): Optimizé la función `group_by_size` para que no reconstruya innecesariamente la lista de rutas, evitando el overhead de creación de objetos `Path` y procesamiento redundante al recibir una lista ya filtrada en `find_duplicates`.
