@@ -15,9 +15,13 @@ la letra omega abajo: las dos mitades del producto en una sola marca.
 
 from __future__ import annotations
 from pathlib import Path
-from typing import Any, Final
+from typing import Any, Final, TypeAlias
 from functools import lru_cache
 from app.safety import ensure_safe_to_modify
+
+# Type Aliases para mejorar la legibilidad de la semántica de datos
+HexColor: TypeAlias = str
+SeverityTuple: TypeAlias = tuple[HexColor, str]  # (color, etiqueta)
 
 APP_NAME: Final = "Limpieza Total Omega"
 APP_SHORT_NAME: Final = "Omega"
@@ -26,7 +30,7 @@ APP_VERSION: Final = "2.0.0"
 
 # Paleta oscura con acento cian. Las claves describen el USO, no el color,
 # así se puede cambiar la paleta entera sin renombrar nada en la interfaz.
-PALETTE: dict[str, str] = {
+PALETTE: dict[str, HexColor] = {
     "background": "#0f1419",
     "surface": "#1a2028",
     "surface_alt": "#232b35",
@@ -51,7 +55,7 @@ FONT_SIZES: dict[str, int] = {
 
 # Severidad -> (color, etiqueta legible). Lo usan todos los módulos que
 # reportan hallazgos, para que la interfaz los pinte de forma uniforme.
-SEVERITY_STYLES: dict[str, tuple[str, str]] = {
+SEVERITY_STYLES: dict[str, SeverityTuple] = {
     "ok": ("#00d4aa", "Correcto"),
     "info": ("#58a6ff", "Informativo"),
     "warning": ("#f5a623", "Advertencia"),
@@ -59,7 +63,7 @@ SEVERITY_STYLES: dict[str, tuple[str, str]] = {
 }
 
 # Grado de salud -> color, para el panel que combina todos los módulos.
-GRADE_COLORS: dict[str, str] = {
+GRADE_COLORS: dict[str, HexColor] = {
     "A": "#00d4aa",
     "B": "#58a6ff",
     "C": "#f5a623",
@@ -74,8 +78,8 @@ def app_title() -> str:
 
 
 @lru_cache(maxsize=8)
-def color(name: str) -> str:
-    """Color de la paleta, con gris neutro de respaldo."""
+def color(name: str) -> HexColor:
+    """Obtiene un color de la paleta. Si el nombre no existe, devuelve gris neutro."""
     return PALETTE.get(name, "#808080")
 
 
@@ -85,8 +89,8 @@ def font_size(name: str) -> int:
     return FONT_SIZES.get(name, FONT_SIZES["body"])
 
 
-def severity_color(severity: str | None) -> str:
-    """Color asociado a una severidad de hallazgo, gestionando nulos."""
+def severity_color(severity: str | None) -> HexColor:
+    """Retorna el color asignado a una severidad. Si es nulo o inválido, usa color de texto silenciado."""
     if severity is None:
         return color("text_muted")
     style = SEVERITY_STYLES.get(str(severity).lower())
@@ -94,15 +98,15 @@ def severity_color(severity: str | None) -> str:
 
 
 def severity_label(severity: str | None) -> str:
-    """Etiqueta legible para una severidad, gestionando nulos."""
+    """Retorna la etiqueta legible para una severidad. Si es nulo, retorna 'Desconocido'."""
     if severity is None:
         return "Desconocido"
     style = SEVERITY_STYLES.get(str(severity).lower())
     return style[1] if style else str(severity).upper()
 
 
-def grade_color(grade: str | None) -> str:
-    """Color para una nota de salud del sistema, gestionando nulos."""
+def grade_color(grade: str | None) -> HexColor:
+    """Retorna el color para una letra de grado de salud (A-F)."""
     if not grade:
         return color("text_muted")
     return GRADE_COLORS.get(str(grade).upper()[:1], color("text_muted"))
@@ -110,7 +114,7 @@ def grade_color(grade: str | None) -> str:
 
 @lru_cache(maxsize=4)
 def logo_svg(size: int = 128) -> str:
-    """Logo como SVG en texto plano, sin dependencias."""
+    """Genera el logo como string SVG. Utiliza los colores definidos en PALETTE."""
     accent = PALETTE["accent"]
     surface = PALETTE["surface"]
     text = PALETTE["text"]
@@ -133,7 +137,7 @@ def logo_svg(size: int = 128) -> str:
 
 
 def save_logo_svg(destination: str | Path) -> Path | None:
-    """Guarda el logo SVG en disco, validando seguridad y rutas."""
+    """Guarda el logo SVG en disco, validando permisos mediante `safety.ensure_safe_to_modify`."""
     if not destination:
         return None
     try:
@@ -149,7 +153,7 @@ def save_logo_svg(destination: str | Path) -> Path | None:
 
 @lru_cache(maxsize=1)
 def logo_ascii() -> str:
-    """Logo en ASCII, para la consola o el README."""
+    """Retorna la representación ASCII del logo para logs o consola."""
     return r"""
    ___  __  __ ___ ___   _
   / _ \|  \/  | __/ __| /_\
@@ -160,7 +164,10 @@ def logo_ascii() -> str:
 
 
 def draw_logo(canvas: Any, size: int = 56, x: int = 0, y: int = 0) -> None:
-    """Dibuja el logo sobre un canvas de Tkinter, validando el objeto canvas."""
+    """
+    Dibuja el logo en un widget de tipo tkinter.Canvas.
+    Calcula dinámicamente las coordenadas basadas en el parámetro `size` (escala 128x128 base).
+    """
     if not hasattr(canvas, "create_polygon"):
         return
 

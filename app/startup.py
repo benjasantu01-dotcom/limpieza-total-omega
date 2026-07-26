@@ -186,23 +186,18 @@ def list_startup_entries() -> list[StartupEntry]:
     return unicos
 
 
-def estimate_impact(entries: Iterable[StartupEntry]) -> str:
-    """Estima el impacto del arranque según la cantidad de programas.
-
-    Es una heurística por cantidad, no una medición real de tiempo: se
-    aclara así para no dar una cifra falsa de "segundos de arranque".
-    """
+def estimate_impact(entries: Optional[Iterable[StartupEntry]]) -> str:
+    """Estima el impacto del arranque según la cantidad de programas."""
     if entries is None:
         return "ok"
     
-    # Aseguramos iterable y calculamos total
+    # Validar que sea un contenedor calculable
     try:
-        total = len(list(entries))
-    except (TypeError, ValueError):
+        items = list(entries)
+        total = len(items)
+    except (TypeError, ValueError, AttributeError):
         return "ok"
 
-    if total == 0:
-        return "ok"
     if total <= 5:
         return "ok"
     if total <= 10:
@@ -216,7 +211,12 @@ def summarize(entries: Optional[Iterable[StartupEntry]] = None) -> list[str]:
     """Resumen legible del arranque, con la advertencia de cómo desactivar."""
     if entries is None:
         entries = list_startup_entries()
-    entries_list = list(entries)
+        
+    try:
+        entries_list = list(entries)
+    except (TypeError, ValueError):
+        return ["Error: No se pudieron procesar las entradas de inicio."]
+
     lines = [f"Programas que arrancan con el sistema: {len(entries_list)}"]
     nivel = estimate_impact(entries_list)
     mensajes = {

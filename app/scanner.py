@@ -97,7 +97,8 @@ def scan_directory(directory: str | Path) -> list[Suspicion]:
         Lista de objetos Suspicion encontrados. Retorna una lista vacía si el 
         directorio es inválido o si no se encuentran amenazas.
     """
-    if not directory:
+    if not directory or not isinstance(directory, (str, Path)):
+        logger.error("Entrada inválida recibida en scan_directory: %s", type(directory))
         return []
         
     results = []
@@ -123,7 +124,7 @@ def scan_directory(directory: str | Path) -> list[Suspicion]:
             except (PermissionError, OSError) as e:
                 logger.debug("Acceso denegado o error de sistema al procesar %s: %s", p, e)
                 continue
-    except (TypeError, ValueError) as e:
+    except (TypeError, ValueError, RuntimeError) as e:
         logger.error("Error al inicializar la ruta de escaneo %s: %s", directory, e)
     except OSError as e:
         logger.error("Error crítico al acceder al directorio base %s: %s", directory, e)

@@ -19,6 +19,7 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Iterable, Sequence
 
 __all__ = [
     "BrowserCache",
@@ -69,11 +70,12 @@ class BrowserCache:
 
     @property
     def size_mb(self) -> float:
+        """Convierte bytes a MB con dos decimales de precisión."""
         return round(self.size_bytes / (1024 * 1024), 2)
 
 
 def base_directories() -> list[Path]:
-    """Carpetas base donde buscar perfiles de navegador."""
+    """Carpetas base donde buscar perfiles de navegador (solo Windows)."""
     if os.name != "nt":
         return []
     local = os.environ.get("LOCALAPPDATA")
@@ -81,9 +83,13 @@ def base_directories() -> list[Path]:
 
 
 def directory_size(path: str | os.PathLike) -> int:
-    """Tamaño total de una carpeta usando os.scandir para mayor rendimiento."""
-    if not path:
-        return 0
+    """
+    Calcula el tamaño total de una carpeta de forma recursiva.
+    
+    Ignora enlaces simbólicos para evitar bucles infinitos. Captura errores de
+    permisos (PermissionError) silenciándolos, ya que es esperable al escanear
+    perfiles de usuario, retornando el acumulado parcial posible.
+    """
     total = 0
     try:
         path_obj = Path(path)
@@ -105,62 +111,60 @@ def directory_size(path: str | os.PathLike) -> int:
     return total
 
 
-def detect_profiles(bases=None, cache_paths=None) -> list[BrowserCache]:
-    """Detecta cachés de navegador existentes y mide su tamaño."""
+def detect_profiles(bases: Sequence[Path] | None = None, 
+                    cache_paths: dict[str, str] | None = None) -> list[BrowserCache]:
+    """
+    Explora los directorios base en busca de cachés definidas en cache_paths.
+    
+    Valida que las rutas resultantes no escapen del directorio base (prevención
+    de Path Traversal básico) y excluye elementos en NEVER_TOUCH.
+    """
     if bases is None:
         bases = base_directories()
     if cache_paths is None:
         cache_paths = BROWSER_CACHE_PATHS
 
     found: list[BrowserCache] = []
-    if not isinstance(bases, (list, tuple)):
-        return []
-
+    
     for base in bases:
-        if not base or not isinstance(base, (str, Path)):
+        base_path = Path(base).resolve()
+        if not base_path.is_dir():
             continue
-        
-        try:
-            base_path = Path(base).resolve()
-            if not base_path.is_dir():
+            
+        for browser, relative in cache_paths.items():
+            # Construye ruta normalizando separadores según SO
+            candidate = base_path.joinpath(*relative.replace("\\", "/").split("/")).resolve()
+            
+            # Seguridad: Verificar que el candidato siga bajo base_path
+            if not str(candidate).startswith(str(base_path)):
                 continue
             
-            for browser, relative in cache_paths.items():
-                if not isinstance(relative, str):
-                    continue
-
-                candidate = base_path.joinpath(*relative.replace("\\", "/").split("/")).resolve()
+            if candidate.name.lower() in NEVER_TOUCH:
+                continue
                 
-                if not str(candidate).startswith(str(base_path)):
-                    continue
-                
-                if candidate.name.lower() in NEVER_TOUCH:
-                    continue
-                if candidate.is_dir():
-                    found.append(BrowserCache(
-                        browser=browser,
-                        path=candidate,
-                        size_bytes=directory_size(candidate),
-                    ))
-        except (OSError, RuntimeError):
-            continue
+            if candidate.is_dir():
+                found.append(BrowserCache(
+                    browser=browser,
+                    path=candidate,
+                    size_bytes=directory_size(candidate),
+                ))
                 
     found.sort(key=lambda c: c.size_bytes, reverse=True)
     return found
 
 
-def total_cache_bytes(caches=None) -> int:
+def total_cache_bytes(caches: Iterable[BrowserCache] | None = None) -> int:
     """Suma el tamaño de todas las cachés detectadas."""
     if caches is None:
         caches = detect_profiles()
-    return sum(cache.size_bytes for cache in caches) if isinstance(caches, list) else 0
+    return sum(cache.size_bytes for cache in caches)
 
 
-def summarize(caches=None) -> list[str]:
-    """Resumen legible de las cachés de navegador encontradas."""
+def summarize(caches: list[BrowserCache] | None = None) -> list[str]:
+    """Genera un reporte legible de las cachés encontradas y su peso total."""
     current_caches = caches if caches is not None else detect_profiles()
     
-    if not current_caches or not isinstance(current_caches, list):
+    if not current_caches:
         return ["No se detectaron cachés de navegador en este sistema."]
         
     total_mb = round(total_cache_bytes(current_caches) / (1024 * 1024), 2)
