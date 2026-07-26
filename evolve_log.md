@@ -154,3 +154,6 @@
 - `2026-07-26T00:27:07` ✅ Mejora aceptada en main.py.
 - `2026-07-26T00:27:26` ✅ Mejora aceptada en organizer.py.
 - `2026-07-26T00:27:26` Corrida terminada. Total usado hoy: 20.
+- `2026-07-26T01:29:01` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-07-26T01:29:23` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Optimicé el método `refresh_list` para evitar la sobrecarga del hilo principal al realizar inserciones masivas en el widget `CTkTextbox`, consolidando toda la salida en una sola operación de texto tras procesar la lista en memoria.
+- `2026-07-26T01:29:23` Corrida terminada. Total usado hoy: 21.

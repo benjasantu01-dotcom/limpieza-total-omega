@@ -136,11 +136,15 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.run_async(task)
 
     def refresh_list(self):
-        """Limpia y repuebla el cuadro de texto con los archivos encontrados."""
-        self.output.delete("1.0", "end")
+        """Limpia y repuebla el cuadro de texto con los archivos encontrados eficientemente."""
         ordered = sort_junk(self.junk_files, by=self.sort_by.get())
-        for jf in ordered:
-            self.log(f"{jf.size_mb:>8} MB  |  {jf.modified:%Y-%m-%d}  |  {jf.path}")
+        lines = [f"{jf.size_mb:>8} MB  |  {jf.modified:%Y-%m-%d}  |  {jf.path}" for jf in ordered]
+        
+        def update_ui():
+            self.output.delete("1.0", "end")
+            self.output.insert("1.0", "\n".join(lines))
+        
+        self.after(0, update_ui)
 
     def on_stage(self):
         """Mueve archivos encontrados a la zona de revisión."""
