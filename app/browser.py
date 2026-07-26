@@ -20,6 +20,7 @@ import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable, Sequence, Dict
+from functools import lru_cache
 
 __all__ = [
     "BrowserCache",
@@ -82,32 +83,26 @@ def base_directories() -> list[Path]:
     return [Path(local)] if local and Path(local).is_dir() else []
 
 
+@lru_cache(maxsize=32)
 def directory_size(path: str | os.PathLike) -> int:
     """
-    Calcula el tamaño total de una carpeta de forma recursiva segura.
+    Calcula el tamaño total de una carpeta de forma iterativa segura.
     
-    Usa os.scandir para evitar problemas de rendimiento con directorios 
-    grandes. Ignora errores de permiso o archivos inaccesibles, retornando 
-    el peso parcial acumulado hasta ese punto.
+    Usa os.walk para evitar la sobrecarga de recursividad manual y 
+    lru_cache para evitar re-escaneo innecesario.
     """
-    if not path:
-        return 0
-        
     total = 0
     try:
-        with os.scandir(path) as it:
-            for entry in it:
-                try:
-                    # Evitar seguir enlaces simbólicos para prevenir bucles 
-                    # o salidas del árbol de directorios esperado.
-                    if entry.is_symlink():
+        for root, dirs, files in os.walk(path):
+            # Modificamos dirs in-place para prevenir seguir enlaces simbólicos
+            dirs[:] = [d for d in dirs if not os.path.islink(os.path.join(root, d))]
+            for f in files:
+                filepath = os.path.join(root, f)
+                if not os.path.islink(filepath):
+                    try:
+                        total += os.path.getsize(filepath)
+                    except (OSError, PermissionError):
                         continue
-                    if entry.is_file():
-                        total += entry.stat().st_size
-                    elif entry.is_dir():
-                        total += directory_size(entry.path)
-                except (OSError, PermissionError):
-                    continue
     except (OSError, PermissionError, FileNotFoundError):
         return 0
     return total
@@ -141,7 +136,6 @@ def detect_profiles(bases: Sequence[Path] | None = None,
             candidate = base_path.joinpath(*relative.split("\\")).resolve()
             
             # Validación de seguridad: Prevenir escapes de ruta (Path Traversal)
-            # mediante la comparación de la ruta absoluta.
             try:
                 if not str(candidate).startswith(str(base_path)):
                     continue
@@ -155,7 +149,7 @@ def detect_profiles(bases: Sequence[Path] | None = None,
                 found.append(BrowserCache(
                     browser=browser,
                     path=candidate,
-                    size_bytes=directory_size(candidate),
+                    size_bytes=directory_size(str(candidate)),
                 ))
                 
     found.sort(key=lambda c: c.size_bytes, reverse=True)

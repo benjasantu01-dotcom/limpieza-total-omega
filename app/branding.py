@@ -16,6 +16,7 @@ la letra omega abajo: las dos mitades del producto en una sola marca.
 from __future__ import annotations
 from pathlib import Path
 from typing import Any, Final, TypeAlias
+from types import MappingProxyType
 from functools import lru_cache
 from app.safety import ensure_safe_to_modify
 
@@ -29,7 +30,7 @@ APP_TAGLINE: Final = "Limpieza y seguridad, en un solo lugar"
 APP_VERSION: Final = "2.0.0"
 
 # Paleta oscura con acento cian.
-PALETTE: dict[str, HexColor] = {
+PALETTE: Final = MappingProxyType({
     "background": "#0f1419",
     "surface": "#1a2028",
     "surface_alt": "#232b35",
@@ -41,32 +42,32 @@ PALETTE: dict[str, HexColor] = {
     "text": "#e6edf3",
     "text_muted": "#8b949e",
     "border": "#30363d",
-}
+})
 
-FONT_SIZES: dict[str, int] = {
+FONT_SIZES: Final = MappingProxyType({
     "title": 24,
     "subtitle": 13,
     "heading": 15,
     "body": 12,
     "mono": 11,
     "caption": 10,
-}
+})
 
 # Diccionarios de mapeo directo para evitar lógica repetitiva y búsquedas extra
-SEVERITY_STYLES: Final[dict[str, SeverityTuple]] = {
+SEVERITY_STYLES: Final = MappingProxyType({
     "ok": ("#00d4aa", "Correcto"),
     "info": ("#58a6ff", "Informativo"),
     "warning": ("#f5a623", "Advertencia"),
     "danger": ("#e5484d", "Peligro"),
-}
+})
 
-GRADE_COLORS: Final[dict[str, HexColor]] = {
+GRADE_COLORS: Final = MappingProxyType({
     "A": "#00d4aa",
     "B": "#58a6ff",
     "C": "#f5a623",
     "D": "#ff7b39",
     "F": "#e5484d",
-}
+})
 
 
 def app_title() -> str:

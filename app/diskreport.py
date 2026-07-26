@@ -18,6 +18,7 @@ mete en Windows ni en Program Files.
 from __future__ import annotations
 import os
 import shutil
+import heapq
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
@@ -184,9 +185,12 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
 
 def largest_files(directory: str | os.PathLike, limit: int = 20, skip_protected: bool = True) -> list[FileEntry]:
     """Los archivos más grandes bajo una carpeta, de mayor a menor."""
-    entries = [FileEntry(path=p, size_bytes=s) for p, s in walk_files(directory, skip_protected)]
-    entries.sort(key=lambda e: e.size_bytes, reverse=True)
-    return entries[:limit]
+    # Usamos nlargest para evitar ordenar toda la lista en memoria
+    return heapq.nlargest(
+        limit, 
+        (FileEntry(path=p, size_bytes=s) for p, s in walk_files(directory, skip_protected)),
+        key=lambda e: e.size_bytes
+    )
 
 
 def usage_by_extension(directory: str | os.PathLike, limit: int = 15, skip_protected: bool = True) -> list[ExtensionUsage]:
@@ -197,10 +201,11 @@ def usage_by_extension(directory: str | os.PathLike, limit: int = 15, skip_prote
         ext = path.suffix.lower() or "(sin extensión)"
         sizes[ext] += size
         counts[ext] += 1
-    usage = [ExtensionUsage(extension=ext, size_bytes=size, count=counts[ext])
-             for ext, size in sizes.items()]
-    usage.sort(key=lambda u: u.size_bytes, reverse=True)
-    return usage[:limit]
+    
+    usage_list = [ExtensionUsage(extension=ext, size_bytes=size, count=counts[ext])
+                  for ext, size in sizes.items()]
+    
+    return heapq.nlargest(limit, usage_list, key=lambda u: u.size_bytes)
 
 
 def largest_folders(directory: str | os.PathLike, limit: int = 10, skip_protected: bool = True) -> list[FolderUsage]:
@@ -229,8 +234,7 @@ def largest_folders(directory: str | os.PathLike, limit: int = 10, skip_protecte
         stats.size_bytes += size
         stats.file_count += 1
 
-    results = sorted(folder_map.values(), key=lambda f: f.size_bytes, reverse=True)
-    return results[:limit]
+    return heapq.nlargest(limit, folder_map.values(), key=lambda f: f.size_bytes)
 
 
 def total_size(directory: str | os.PathLike, skip_protected: bool = True) -> tuple[int, int]:
