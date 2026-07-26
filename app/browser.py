@@ -88,7 +88,7 @@ def directory_size(path: str | os.PathLike) -> int:
     """
     Calcula el tamaño total de una carpeta usando os.scandir para eficiencia.
     """
-    if not path:
+    if not path or not os.path.isdir(path):
         return 0
     
     total = 0

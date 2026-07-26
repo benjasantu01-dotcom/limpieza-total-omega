@@ -84,7 +84,7 @@ def hash_file(path: str | os.PathLike, chunk_size: int = 1024 * 1024) -> str | N
         with open(path, "rb") as f:
             while chunk := f.read(chunk_size):
                 digest.update(chunk)
-    except (OSError, PermissionError, ValueError, TypeError):
+    except (OSError, PermissionError, ValueError, TypeError, FileNotFoundError):
         return None
     return digest.hexdigest()
 
@@ -100,7 +100,7 @@ def partial_hash(path: str | os.PathLike, read_bytes: int = PARTIAL_READ_BYTES) 
         with open(path, "rb") as f:
             content = f.read(read_bytes)
             return hashlib.sha256(content).hexdigest()
-    except (OSError, PermissionError, ValueError, TypeError):
+    except (OSError, PermissionError, ValueError, TypeError, FileNotFoundError):
         return None
 
 
@@ -117,7 +117,7 @@ def group_by_size(paths: Iterable[Path]) -> dict[int, list[Path]]:
             stats = p.stat()
             if not is_protected_path(p):
                 groups[stats.st_size].append(p)
-        except (OSError, PermissionError):
+        except (OSError, PermissionError, FileNotFoundError):
             continue
     return dict(groups)
 
@@ -152,16 +152,16 @@ def _collect_candidates(directories: Iterable[str | Path], min_size: int, skip_p
                 for name in files:
                     candidate: Path = root_path / name
                     try:
-                        if not candidate.exists() or candidate.is_symlink():
+                        if candidate.is_symlink():
                             continue
                         if skip_protected and is_protected_path(candidate):
                             continue
                         stats = candidate.stat()
                         if stats.st_size >= max(min_size, 1):
                             candidates.append(candidate)
-                    except (OSError, PermissionError):
+                    except (OSError, PermissionError, FileNotFoundError):
                         continue
-        except (OSError, RuntimeError):
+        except (OSError, RuntimeError, FileNotFoundError):
             continue
     return candidates
 
@@ -245,7 +245,7 @@ def suggest_keeper(group: DuplicateGroup) -> Path | None:
     def sort_key(path: Path):
         try:
             mtime = path.stat().st_mtime
-        except (OSError, PermissionError):
+        except (OSError, PermissionError, FileNotFoundError):
             mtime = float("inf")
         return (mtime, len(str(path)))
 

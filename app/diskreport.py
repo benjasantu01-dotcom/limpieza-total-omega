@@ -157,7 +157,7 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
     if not directory:
         return
     try:
-        base = Path(directory).expanduser().resolve()
+        base = Path(directory).expanduser().resolve(strict=False)
         if not base.exists() or not base.is_dir():
             return
     except (OSError, RuntimeError):
@@ -172,7 +172,7 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
         root_path = Path(root)
             
         if skip_protected:
-            # Modificamos subdirs in-place para que os.walk ignore carpetas protegidas
+            # Filtramos in-place subdirs para evitar entrar en zonas protegidas
             subdirs[:] = [d for d in subdirs if not is_protected_path(root_path / d)]
             
         for name in files:
@@ -213,15 +213,11 @@ def usage_by_extension(directory: str | os.PathLike, limit: int = 15, skip_prote
 def largest_folders(directory: str | os.PathLike, limit: int = 10, skip_protected: bool = True) -> list[FolderUsage]:
     """
     Calcula el peso total de los elementos contenidos en cada carpeta de primer nivel.
-
-    Agrupa recursivamente todos los archivos encontrados bajo `directory` y suma sus 
-    pesos a la subcarpeta (o archivo raíz) que los contiene inmediatamente.
-    Esto permite identificar qué rama del árbol de archivos es la responsable del peso.
     """
     if not directory:
         return []
     try:
-        base = Path(directory).expanduser().resolve()
+        base = Path(directory).expanduser().resolve(strict=False)
         if skip_protected and is_protected_path(base):
             return []
     except (OSError, RuntimeError):
@@ -235,11 +231,7 @@ def largest_folders(directory: str | os.PathLike, limit: int = 10, skip_protecte
         except ValueError:
             continue
 
-        # Si el archivo está en la raíz, se cuenta como parte del nivel base
-        if not relative_path.parts:
-            top_level = base
-        else:
-            top_level = base / relative_path.parts[0]
+        top_level = base / relative_path.parts[0] if relative_path.parts else base
         
         if top_level not in folder_map:
             folder_map[top_level] = FolderUsage(path=top_level, size_bytes=0, file_count=0)
@@ -263,8 +255,12 @@ def total_size(directory: str | os.PathLike, skip_protected: bool = True) -> tup
 
 def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list[str]:
     """Resumen legible del uso de disco de una carpeta, realizando un solo recorrido."""
-    if not directory or not os.path.exists(str(directory)):
-        return ["Error: Carpeta inválida o inaccesible."]
+    if not directory:
+        return ["Error: Ruta vacía."]
+        
+    path_obj = Path(directory)
+    if not path_obj.exists():
+        return ["Error: La carpeta no existe."]
         
     total = 0
     count = 0

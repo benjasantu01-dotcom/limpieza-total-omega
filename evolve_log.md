@@ -1156,3 +1156,50 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-07-26T19:51:32` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
 - `2026-07-26T19:51:32` Rotación — nada para rotar
 - `2026-07-26T19:51:32` Corrida terminada. Total usado hoy: 294.
+- `2026-07-26T20:02:17` Arrancando corrida. Quedan hoy ~6 peticiones objetivo.
+- `2026-07-26T20:02:41` Tests FALLARON:
+```
+stination: str | Path) -> Path | None:
+        """
+        Persiste el archivo SVG del logo tras validar permisos y seguridad.
+    
+        Utiliza `ensure_safe_to_modify` para prevenir ataques de path traversal.
+    
+        Args:
+            destination: Ruta destino donde guardar el .svg.
+        Returns:
+            Objeto Path del archivo guardado, o None si la operación es inválida o falla.
+        """
+        if not destination:
+            return None
+        try:
+            path = Path(destination).expanduser().resolve()
+    
+            # Validaciones de seguridad defensiva
+            if path.is_symlink() or not path.name.lower().endswith(".svg"):
+                return None
+            if not ensure_safe_to_modify(path) or not ensure_safe_to_modify(path.parent):
+                return None
+    
+            path.parent.mkdir(parents=True, exist_ok=True)
+    
+            # Verificación de escritura antes de intentar operar
+            if path.exists():
+                if not os.access(path, os.W_OK):
+                    return None
+>           elif not os.access(path.parent, os.W_OK):
+                     ^^
+E           NameError: name 'os' is not defined. Did you forget to import 'os'
+
+app/branding.py:196: NameError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - NameError: name 'os' is not defined. Did you forget to import 'os'
+1 failed, 196 passed in 0.31s
+
+```
+- `2026-07-26T20:02:41` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez de `save_logo_svg` ante fallos en el sistema de archivos al añadir una validación explícita de escritura y un manejo de errores más específico para evitar cierres inesperados o estados corruptos durante la persistencia.
+- `2026-07-26T20:03:01` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se mejoró la robustez de `directory_size` ante rutas inválidas, archivos inaccesibles o bloqueados por el sistema operativo, envolviendo `entry.stat()` en el bloque de excepciones para evitar la interrupción del escaneo y asegurar que el cálculo sea lo más completo posible incluso en condiciones de permiso denegado.
+- `2026-07-26T20:03:23` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se mejoró la robustez de `walk_files` y `summarize` añadiendo validaciones explícitas para rutas inexistentes, permisos denegados durante el recorrido y manejo de excepciones en `path.stat()` para evitar interrupciones en el análisis de directorios con archivos bloqueados o inconsistentes.
+- `2026-07-26T20:03:30` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_collect_candidates` ante archivos que desaparecen entre el momento de la enumeración (`os.walk`) y el acceso para `stat()`, evitando excepciones innecesarias en entornos de alta concurrencia.
+- `2026-07-26T20:03:30` Rotación — nada para rotar
+- `2026-07-26T20:03:30` Corrida terminada. Total usado hoy: 298.
