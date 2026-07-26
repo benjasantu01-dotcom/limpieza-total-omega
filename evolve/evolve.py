@@ -263,14 +263,37 @@ def extract_file_change(response_text: str) -> tuple[str, str] | None:
     return filename, content
 
 
-def run_tests() -> bool:
+def run_tests(report_failure: bool = True) -> bool:
     result = subprocess.run(
         [sys.executable, "-m", "pytest", str(ROOT / "evolve" / "tests"), "-q"],
         cwd=ROOT, capture_output=True, text=True,
     )
-    if result.returncode != 0:
+    if result.returncode != 0 and report_failure:
         log(f"Tests FALLARON:\n```\n{result.stdout[-1500:]}\n```")
     return result.returncode == 0
+
+
+def tests_pass_before_any_change() -> bool:
+    """Verifica que la suite esté verde ANTES de pedirle algo a la IA.
+
+    Sin este chequeo, un test defectuoso (por ejemplo uno que solo funciona
+    en Windows cuando el runner es Linux) haría que TODA propuesta se
+    rechace "por no pasar los tests", durante días, sin que nadie note que
+    el problema está en el portero y no en las mejoras.
+    """
+    if run_tests(report_failure=False):
+        return True
+    result = subprocess.run(
+        [sys.executable, "-m", "pytest", str(ROOT / "evolve" / "tests"), "-q"],
+        cwd=ROOT, capture_output=True, text=True,
+    )
+    log(
+        "⛔ La suite de tests YA falla antes de tocar nada: el problema está en "
+        "los tests, no en las mejoras. Se corta la corrida para no descartar "
+        "propuestas buenas ni gastar cuota de Gemini. Arreglá evolve/tests/ "
+        f"y volvé a correr.\n```\n{result.stdout[-1500:]}\n```"
+    )
+    return False
 
 
 def try_one_improvement(state, is_last_iteration: bool = False) -> str:
@@ -361,6 +384,10 @@ def main() -> None:
         return
 
     log(f"Arrancando corrida. Quedan hoy ~{remaining_today(state)} peticiones objetivo.")
+
+    # El portero tiene que estar sano antes de juzgar a nadie.
+    if not tests_pass_before_any_change():
+        return
 
     for i in range(ITERATIONS_PER_RUN):
         if time.monotonic() - start_time > RUN_DEADLINE_SECONDS:

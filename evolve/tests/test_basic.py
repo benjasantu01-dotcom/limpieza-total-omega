@@ -14,7 +14,7 @@ tests, más confiable es el auto-mejorado.
 
 import sys
 from datetime import datetime, timedelta
-from pathlib import Path
+from pathlib import Path, PurePosixPath, PureWindowsPath
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "app"))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -194,13 +194,23 @@ def test_scanner_normal_file_is_clean():
 
 
 def test_scanner_flags_system_lookalike_outside_system32():
-    result = scanner.check_system_lookalike(Path(r"C:\Users\test\Downloads\svchost.exe"))
+    # Se usa PureWindowsPath a propósito: los tests corren en Linux (GitHub
+    # Actions) y ahí un Path normal no reconoce las barras invertidas, así
+    # que `.name` devolvería la ruta entera y el test fallaría siempre.
+    result = scanner.check_system_lookalike(PureWindowsPath(r"C:\Users\test\Downloads\svchost.exe"))
     assert result is not None
     assert result.severity == "warning"
 
 
 def test_scanner_does_not_flag_real_system_file():
-    assert scanner.check_system_lookalike(Path(r"C:\Windows\System32\svchost.exe")) is None
+    assert scanner.check_system_lookalike(PureWindowsPath(r"C:\Windows\System32\svchost.exe")) is None
+
+
+def test_scanner_lookalike_logic_is_os_independent():
+    # La misma heurística tiene que valer con rutas estilo POSIX, para que el
+    # resultado no dependa de en qué sistema corran los tests.
+    flagged = scanner.check_system_lookalike(PurePosixPath("/home/user/Downloads/svchost.exe"))
+    assert flagged is not None and flagged.severity == "warning"
 
 
 def test_scan_directory_returns_list_on_empty_folder(tmp_path):
