@@ -5,8 +5,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **209**
-- Mejoras aceptadas: **149** (71.3% de aceptación)
+- Iteraciones totales: **213**
+- Mejoras aceptadas: **153** (71.8% de aceptación)
 - Rechazadas por tests: 11
 - Rechazadas por guardia de seguridad: 14
 - Sin cambios (nada sustancial que mejorar): 1
@@ -16,7 +16,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-26 | 149 | 11 | 14 | 1 | 34 |
+| 2026-07-26 | 153 | 11 | 14 | 1 | 34 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -24,17 +24,17 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **32**
 - robustez ante casos límite: **31**
 - rendimiento: **29**
-- seguridad defensiva: **23**
+- seguridad defensiva: **27**
 
 ## Mejoras aceptadas por archivo
 
+- `diskreport.py`: **14**
+- `healthscore.py`: **14**
 - `branding.py`: **14**
-- `diskreport.py`: **13**
-- `healthscore.py`: **13**
+- `browser.py`: **13**
+- `duplicates.py`: **13**
 - `organizer.py`: **13**
 - `safety.py`: **13**
-- `browser.py`: **12**
-- `duplicates.py`: **12**
 - `main.py`: **12**
 - `quarantine.py`: **12**
 - `scanner.py`: **12**
@@ -43,6 +43,10 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-26T17:17:39` **healthscore.py** (seguridad defensiva): Se ha robustecido el procesamiento de `SystemMetrics` mediante la validación estricta de tipos y valores, asegurando que los datos de entrada (que pueden provenir de fuentes externas o módulos con errores) no causen comportamientos inesperados o desbordamientos en el cálculo del puntaje final.
+- `2026-07-26T17:17:33` **duplicates.py** (seguridad defensiva): Se ha endurecido el filtrado de archivos durante el escaneo en `_collect_candidates`, asegurando que `is_protected_path` se verifique explícitamente antes de realizar cualquier operación de I/O sobre la ruta resultante (`candidate.stat()`), cumpliendo estrictamente con el enfoque de seguridad defensiva.
+- `2026-07-26T17:17:12` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `walk_files` y `largest_folders` añadiendo una validación explícita de `is_protected_path` sobre las rutas resultantes, previniendo el acceso accidental a directorios de sistema si una estructura de directorios cambiara inesperadamente durante la ejecución.
+- `2026-07-26T17:16:50` **browser.py** (seguridad defensiva): He robustecido la validación de seguridad en `detect_profiles` reemplazando la comparación de strings (propensa a errores de normalización de rutas) por el uso de `pathlib.Path.is_relative_to`, garantizando que las rutas de caché detectadas pertenezcan estrictamente al árbol del perfil de usuario base.
 - `2026-07-26T17:07:28` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` añadiendo una validación explícita mediante `path.resolve()` antes de realizar cualquier operación, asegurando que la ruta no sea un enlace simbólico o una ruta manipulada que escape del entorno permitido, conforme a las guías de protección de archivos.
 - `2026-07-26T17:07:21` **startup.py** (robustez ante casos límite): Mejora la robustez del método `executable` en `StartupEntry` para manejar comandos con rutas mal formadas, espacios excesivos o falta de ejecutable real, evitando errores en el procesamiento de rutas y mejorando la precisión del reporte.
 - `2026-07-26T17:06:55` **scanner.py** (robustez ante casos límite): Se ha añadido un manejo robusto de excepciones (`OSError`, `PermissionError`, `FileNotFoundError`) y una verificación de existencia mediante `is_file()` en `scan_file` para evitar fallos durante la inspección de archivos que desaparecen, se bloquean por el sistema o son enlaces simbólicos rotos durante la iteración.
@@ -54,7 +58,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-26T16:46:34` **duplicates.py** (robustez ante casos límite): Se mejora la robustez de `_collect_candidates` ante archivos que desaparecen entre la obtención de metadatos y la recolección, añadiendo una validación explícita de existencia mediante `exists()` antes de procesar para evitar excepciones innecesarias en sistemas de archivos dinámicos.
 - `2026-07-26T16:46:13` **diskreport.py** (robustez ante casos límite): Se añadió un control robusto en `largest_folders` para manejar rutas cuya profundidad relativa no permite extraer una carpeta de nivel superior, evitando errores `IndexError` ante archivos sueltos en la raíz analizada.
 - `2026-07-26T16:36:46` **browser.py** (robustez ante casos límite): Mejoré la robustez de `directory_size` ante permisos denegados, archivos bloqueados y rutas inaccesibles al reemplazar el `os.walk` estándar con un manejo de excepciones explícito por archivo, garantizando que el cálculo de tamaño no se detenga prematuramente si un archivo individual dentro de la caché está bloqueado por el sistema.
-- `2026-07-26T16:36:41` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` y `draw_logo` ante entradas inválidas o entornos de ejecución inestables, aplicando validaciones de tipo y manejo de errores más específico para evitar cierres inesperados de la aplicación.
-- `2026-07-26T16:36:19` **startup.py** (rendimiento): Optimizé `entries_from_folders` para evitar la llamada innecesaria a `item.resolve()` (que accede al disco y sigue punteros) dentro del bucle, confiando en `base_path` para la validación de pertenencia.
-- `2026-07-26T16:35:58` **scanner.py** (rendimiento): Se precompiló la ruta del sistema en un `set` para búsquedas O(1) y se sustituyó el `rglob` recursivo por una iteración que aprovecha `os.scandir` (vía `path.iterdir`) para evitar el costo de instanciar objetos `Path` de forma redundante, optimizando significativamente la velocidad de escaneo sobre directorios extensos.
-- `2026-07-26T16:26:33` **safety.py** (rendimiento): Optimizé `is_protected_path` reemplazando la creación y conversión a `set` de todos los componentes de la ruta en cada llamada por una comprobación eficiente mediante `any()` con `parts`, evitando asignaciones de memoria innecesarias y mejorando el rendimiento en recorridos masivos.

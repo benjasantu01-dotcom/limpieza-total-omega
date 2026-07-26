@@ -176,7 +176,8 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
         for name in files:
             path = root_path / name
             try:
-                if path.is_symlink():
+                # Verificación de seguridad adicional por cada archivo hallado
+                if path.is_symlink() or (skip_protected and is_protected_path(path)):
                     continue
                 yield path, path.stat().st_size
             except (OSError, PermissionError, FileNotFoundError):
@@ -216,13 +217,19 @@ def largest_folders(directory: str | os.PathLike, limit: int = 10, skip_protecte
         return []
     try:
         base = Path(directory).expanduser().resolve()
+        if skip_protected and is_protected_path(base):
+            return []
     except (OSError, RuntimeError):
         return []
         
     folder_map: dict[Path, FolderUsage] = {}
     
     for path, size in walk_files(base, skip_protected):
-        relative_path = path.relative_to(base)
+        try:
+            relative_path = path.relative_to(base)
+        except ValueError:
+            continue
+
         # Manejo robusto: si relative_path está vacío (archivo en raíz), top_level es base
         if not relative_path.parts:
             top_level = base

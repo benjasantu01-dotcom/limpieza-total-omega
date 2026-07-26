@@ -123,9 +123,6 @@ def detect_profiles(bases: Sequence[Path] | None = None,
     found: list[BrowserCache] = []
     
     for base in bases:
-        if not isinstance(base, Path):
-            base = Path(base)
-            
         try:
             base_path = base.resolve(strict=True)
         except (OSError, RuntimeError):
@@ -134,11 +131,11 @@ def detect_profiles(bases: Sequence[Path] | None = None,
         for browser, relative in cache_paths.items():
             candidate = base_path.joinpath(*relative.split("\\")).resolve()
             
-            # Validación de seguridad: Prevenir escapes de ruta (Path Traversal)
+            # Validación de seguridad defensiva: Verificar que candidate esté dentro de base_path
             try:
-                if not str(candidate).startswith(str(base_path)):
+                if not candidate.is_relative_to(base_path):
                     continue
-            except Exception:
+            except (ValueError, AttributeError):
                 continue
             
             if candidate.name.lower() in NEVER_TOUCH:

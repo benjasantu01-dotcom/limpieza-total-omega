@@ -55,6 +55,15 @@ class SystemMetrics:
     startup_count: int = 0
     quarantined_count: int = 0
 
+    def validate(self) -> None:
+        """Asegura que todos los campos tengan valores numéricos finitos."""
+        for field_name, field_type in self.__annotations__.items():
+            val = getattr(self, field_name)
+            if field_type is float:
+                setattr(self, field_name, _to_float(val))
+            elif field_type is int:
+                setattr(self, field_name, _to_int(val))
+
 
 @dataclass
 class HealthResult:
@@ -152,6 +161,9 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         return HealthResult(0, "F", {}, ["Error: Datos de entrada inválidos."])
 
     try:
+        # Aseguramos integridad de los datos antes de operar
+        metrics.validate()
+        
         ratios = {
             "seguridad": score_security(metrics.suspicious_count, metrics.suspicious_warnings),
             "disco": score_disk(metrics.disk_free_percent),

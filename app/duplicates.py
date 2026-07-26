@@ -91,7 +91,7 @@ def group_by_size(paths: Iterable[Path]) -> dict[int, list[Path]]:
     groups: dict[int, list[Path]] = defaultdict(list)
     for p in paths:
         try:
-            if p.exists():
+            if p.exists() and not is_protected_path(p):
                 groups[p.stat().st_size].append(p)
         except (OSError, PermissionError):
             continue
