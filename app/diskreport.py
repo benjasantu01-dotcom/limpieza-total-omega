@@ -143,13 +143,14 @@ def all_drives_usage(mounts=None) -> list[DriveUsage]:
 
 
 def walk_files(directory: str | os.PathLike, skip_protected: bool = True):
-    """Genera (ruta, tamaño) de cada archivo bajo `directory`.
-
-    Es un generador para no cargar en memoria el listado completo de una
-    unidad entera. Saltea enlaces simbólicos para evitar ciclos, y carpetas
-    de sistema si `skip_protected` está activo.
-    """
-    base = Path(directory).expanduser()
+    """Genera (ruta, tamaño) de cada archivo bajo `directory`."""
+    if not directory:
+        return
+    try:
+        base = Path(directory).expanduser().resolve()
+    except (OSError, RuntimeError):
+        return
+        
     if not base.is_dir():
         return
     if skip_protected and is_protected_path(base):
@@ -190,8 +191,10 @@ def usage_by_extension(directory, limit: int = 15, skip_protected: bool = True) 
 
 def largest_folders(directory, limit: int = 10, skip_protected: bool = True) -> list[FolderUsage]:
     """Las subcarpetas directas más pesadas, contando su contenido completo."""
+    if not directory:
+        return []
     base = Path(directory).expanduser()
-    if not base.is_dir():
+    if not base.exists() or not base.is_dir():
         return []
     results: list[FolderUsage] = []
     try:

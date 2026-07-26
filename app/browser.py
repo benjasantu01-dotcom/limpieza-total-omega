@@ -82,19 +82,24 @@ def base_directories() -> list[Path]:
 
 def directory_size(path: str | os.PathLike) -> int:
     """Tamaño total de una carpeta, saltando lo que no se pueda leer."""
-    total = 0
-    base = Path(path)
-    if not base.is_dir():
+    if not path:
         return 0
-    for root, _, files in os.walk(base):
-        for name in files:
-            try:
-                candidate = Path(root) / name
-                if candidate.is_symlink():
+    total = 0
+    try:
+        base = Path(path)
+        if not base.is_dir():
+            return 0
+        for root, _, files in os.walk(base):
+            for name in files:
+                try:
+                    candidate = Path(root) / name
+                    if candidate.is_symlink():
+                        continue
+                    total += candidate.stat().st_size
+                except (OSError, PermissionError):
                     continue
-                total += candidate.stat().st_size
-            except (OSError, PermissionError):
-                continue
+    except (ValueError, TypeError):
+        return 0
     return total
 
 
@@ -110,19 +115,29 @@ def detect_profiles(bases=None, cache_paths=None) -> list[BrowserCache]:
         cache_paths = BROWSER_CACHE_PATHS
 
     found: list[BrowserCache] = []
+    if not isinstance(bases, (list, tuple)):
+        return []
+
     for base in bases:
+        if not isinstance(base, (str, Path)):
+            continue
+        
         for browser, relative in cache_paths.items():
             # Se normaliza el separador para que las rutas con "\" también
             # funcionen cuando los tests corren en Linux.
-            candidate = Path(base).joinpath(*str(relative).replace("\\", "/").split("/"))
-            if candidate.name.lower() in NEVER_TOUCH:
-                continue  # nunca reportar carpetas de datos del usuario
-            if candidate.is_dir():
-                found.append(BrowserCache(
-                    browser=browser,
-                    path=candidate,
-                    size_bytes=directory_size(candidate),
-                ))
+            try:
+                candidate = Path(base).joinpath(*str(relative).replace("\\", "/").split("/"))
+                if candidate.name.lower() in NEVER_TOUCH:
+                    continue  # nunca reportar carpetas de datos del usuario
+                if candidate.is_dir():
+                    found.append(BrowserCache(
+                        browser=browser,
+                        path=candidate,
+                        size_bytes=directory_size(candidate),
+                    ))
+            except (OSError, ValueError, TypeError):
+                continue
+                
     found.sort(key=lambda c: c.size_bytes, reverse=True)
     return found
 
@@ -131,19 +146,21 @@ def total_cache_bytes(caches=None) -> int:
     """Suma el tamaño de todas las cachés detectadas."""
     if caches is None:
         caches = detect_profiles()
-    return sum(cache.size_bytes for cache in caches)
+    return sum(cache.size_bytes for cache in caches) if caches else 0
 
 
 def summarize(caches=None) -> list[str]:
     """Resumen legible de las cachés de navegador encontradas."""
     if caches is None:
         caches = detect_profiles()
-    caches = list(caches)
-    if not caches:
+    
+    current_caches = list(caches) if caches is not None else []
+    if not current_caches:
         return ["No se detectaron cachés de navegador en este sistema."]
-    total_mb = round(total_cache_bytes(caches) / (1024 * 1024), 2)
-    lines = [f"Caché de navegadores: {total_mb} MB en {len(caches)} carpeta(s)", ""]
-    for cache in caches:
+        
+    total_mb = round(total_cache_bytes(current_caches) / (1024 * 1024), 2)
+    lines = [f"Caché de navegadores: {total_mb} MB en {len(current_caches)} carpeta(s)", ""]
+    for cache in current_caches:
         lines.append(f"  {cache.browser:<20} {cache.size_mb:>9} MB")
         lines.append(f"      {cache.path}")
     lines.extend(["", SAFETY_NOTE])

@@ -80,7 +80,7 @@ def _clamp(value: float, low: float = 0.0, high: float = 1.0) -> float:
 
 def score_junk(junk_mb: float) -> float:
     """Puntúa la basura acumulada. 0 MB es perfecto; 5 GB es el piso."""
-    return _clamp(1.0 - (max(0.0, junk_mb) / 5000.0))
+    return _clamp(1.0 - (max(0.0, float(junk_mb)) / 5000.0))
 
 
 def score_security(suspicious_count: int, warnings: int = 0) -> float:
@@ -89,7 +89,7 @@ def score_security(suspicious_count: int, warnings: int = 0) -> float:
     Las advertencias pesan mucho más que los informativos: un ejecutable
     recién descargado es normal, una doble extensión no lo es.
     """
-    penalty = max(0, suspicious_count) * 0.05 + max(0, warnings) * 0.25
+    penalty = max(0, int(suspicious_count)) * 0.05 + max(0, int(warnings)) * 0.25
     return _clamp(1.0 - penalty)
 
 
@@ -99,22 +99,22 @@ def score_memory(available_percent: float) -> float:
     Se considera óptimo a partir del 35% disponible; no se premia tener
     MÁS libre que eso, porque RAM libre de sobra no aporta rendimiento.
     """
-    return _clamp(max(0.0, available_percent) / 35.0)
+    return _clamp(max(0.0, float(available_percent)) / 35.0)
 
 
 def score_disk(free_percent: float) -> float:
     """Puntúa el espacio libre en disco. Se considera óptimo desde 25%."""
-    return _clamp(max(0.0, free_percent) / 25.0)
+    return _clamp(max(0.0, float(free_percent)) / 25.0)
 
 
 def score_duplicates(duplicate_mb: float) -> float:
     """Puntúa el espacio desperdiciado en duplicados. 2 GB es el piso."""
-    return _clamp(1.0 - (max(0.0, duplicate_mb) / 2000.0))
+    return _clamp(1.0 - (max(0.0, float(duplicate_mb)) / 2000.0))
 
 
 def score_startup(startup_count: int) -> float:
     """Puntúa el arranque por cantidad de programas. 20 o más es el piso."""
-    return _clamp(1.0 - (max(0, startup_count) / 20.0))
+    return _clamp(1.0 - (max(0, int(startup_count)) / 20.0))
 
 
 def grade_for_score(score: int) -> str:
@@ -132,14 +132,21 @@ def grade_for_score(score: int) -> str:
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
     """Calcula el puntaje de salud. Función pura: no toca el sistema."""
-    ratios = {
-        "seguridad": score_security(metrics.suspicious_count, metrics.suspicious_warnings),
-        "disco": score_disk(metrics.disk_free_percent),
-        "memoria": score_memory(metrics.memory_available_percent),
-        "basura": score_junk(metrics.junk_mb),
-        "duplicados": score_duplicates(metrics.duplicate_mb),
-        "arranque": score_startup(metrics.startup_count),
-    }
+    if not isinstance(metrics, SystemMetrics):
+        return HealthResult(0, "F", {}, ["Error: Datos de entrada inválidos."])
+
+    ratios = {}
+    try:
+        ratios = {
+            "seguridad": score_security(metrics.suspicious_count, metrics.suspicious_warnings),
+            "disco": score_disk(metrics.disk_free_percent),
+            "memoria": score_memory(metrics.memory_available_percent),
+            "basura": score_junk(metrics.junk_mb),
+            "duplicados": score_duplicates(metrics.duplicate_mb),
+            "arranque": score_startup(metrics.startup_count),
+        }
+    except (ValueError, TypeError, ZeroDivisionError):
+        return HealthResult(0, "F", {}, ["Error: Las métricas contienen valores corruptos."])
 
     breakdown = {area: int(round(ratio * WEIGHTS[area])) for area, ratio in ratios.items()}
     total = min(100, max(0, sum(breakdown.values())))
@@ -152,7 +159,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         )
     if ratios["disco"] < 0.6:
         recommendations.append(
-            f"Queda {round(metrics.disk_free_percent, 1)}% de disco libre. "
+            f"Queda {round(float(metrics.disk_free_percent), 1)}% de disco libre. "
             "Mirá el análisis de disco para ver qué ocupa más."
         )
     if ratios["memoria"] < 0.6:
@@ -162,11 +169,11 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         )
     if ratios["basura"] < 0.8:
         recommendations.append(
-            f"Hay unos {round(metrics.junk_mb)} MB de archivos temporales para revisar."
+            f"Hay unos {round(float(metrics.junk_mb))} MB de archivos temporales para revisar."
         )
     if ratios["duplicados"] < 0.8:
         recommendations.append(
-            f"Podrías recuperar ~{round(metrics.duplicate_mb)} MB eliminando copias duplicadas."
+            f"Podrías recuperar ~{round(float(metrics.duplicate_mb))} MB eliminando copias duplicadas."
         )
     if ratios["arranque"] < 0.6:
         recommendations.append(

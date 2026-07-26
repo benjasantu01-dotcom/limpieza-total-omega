@@ -65,61 +65,72 @@ def hash_file(path: str | os.PathLike, chunk_size: int = 1024 * 1024) -> str | N
     devuelve None en lugar de propagar el error para que un solo archivo
     inaccesible no aborte todo el escaneo.
     """
+    if not path:
+        return None
     digest = hashlib.sha256()
     try:
         with open(path, "rb") as f:
             while chunk := f.read(chunk_size):
                 digest.update(chunk)
-    except (OSError, PermissionError):
+    except (OSError, PermissionError, ValueError):
         return None
     return digest.hexdigest()
 
 
 def partial_hash(path: str | os.PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> str | None:
     """Hash de los primeros bytes del archivo. None si no se pudo leer."""
+    if not path:
+        return None
     try:
         with open(path, "rb") as f:
             return hashlib.sha256(f.read(read_bytes)).hexdigest()
-    except (OSError, PermissionError):
+    except (OSError, PermissionError, ValueError):
         return None
 
 
-def group_by_size(paths) -> dict[int, list[Path]]:
+def group_by_size(paths: list[str | Path]) -> dict[int, list[Path]]:
     """Agrupa rutas por tamaño exacto, descartando las inaccesibles."""
+    if not paths:
+        return {}
     groups: dict[int, list[Path]] = defaultdict(list)
     for raw in paths:
-        p = Path(raw)
         try:
+            p = Path(raw)
             if not p.is_file():
                 continue
             groups[p.stat().st_size].append(p)
-        except (OSError, PermissionError):
+        except (OSError, PermissionError, TypeError):
             continue
     return dict(groups)
 
 
 def _collect_candidates(directories, min_size: int, skip_protected: bool) -> list[Path]:
     """Recorre las carpetas y junta archivos candidatos a comparar."""
+    if not directories:
+        return []
     candidates: list[Path] = []
     for directory in directories:
-        base = Path(directory).expanduser()
-        if not base.is_dir():
-            continue
-        if skip_protected and is_protected_path(base):
-            continue
-        for root, subdirs, files in os.walk(base):
-            if skip_protected and is_protected_path(root):
-                subdirs[:] = []
+        try:
+            base = Path(directory).expanduser()
+            if not base.is_dir():
                 continue
-            for name in files:
-                candidate = Path(root) / name
-                try:
-                    if candidate.is_symlink():
-                        continue  # no seguir enlaces: evita ciclos y falsos duplicados
-                    if candidate.stat().st_size >= min_size:
-                        candidates.append(candidate)
-                except (OSError, PermissionError):
+            if skip_protected and is_protected_path(base):
+                continue
+            for root, subdirs, files in os.walk(base):
+                if skip_protected and is_protected_path(root):
+                    subdirs[:] = []
                     continue
+                for name in files:
+                    candidate = Path(root) / name
+                    try:
+                        if candidate.is_symlink():
+                            continue
+                        if candidate.stat().st_size >= min_size:
+                            candidates.append(candidate)
+                    except (OSError, PermissionError):
+                        continue
+        except (OSError, RuntimeError):
+            continue
     return candidates
 
 
@@ -128,27 +139,22 @@ def find_duplicates(
     min_size: int = 1024,
     skip_protected: bool = True,
 ) -> list[DuplicateGroup]:
-    """Busca duplicados en las carpetas indicadas. No modifica nada.
-
-    `min_size` evita reportar cientos de archivos vacíos o diminutos, que
-    son duplicados técnicamente pero no aportan espacio recuperable.
-    `skip_protected` mantiene el escaneo fuera de carpetas de sistema.
-    """
+    """Busca duplicados en las carpetas indicadas. No modifica nada."""
     candidates = _collect_candidates(directories, min_size, skip_protected)
+    if not candidates:
+        return []
 
     groups: list[DuplicateGroup] = []
     for size, same_size in group_by_size(candidates).items():
         if len(same_size) < 2:
             continue
 
-        # Paso 2: descarte barato por hash parcial.
         by_partial: dict[str, list[Path]] = defaultdict(list)
         for path in same_size:
             digest = partial_hash(path)
             if digest is not None:
                 by_partial[digest].append(path)
 
-        # Paso 3: confirmación con hash completo.
         for partial_candidates in by_partial.values():
             if len(partial_candidates) < 2:
                 continue
@@ -165,19 +171,16 @@ def find_duplicates(
     return groups
 
 
-def reclaimable_bytes(groups) -> int:
+def reclaimable_bytes(groups: list[DuplicateGroup]) -> int:
     """Espacio total que se liberaría dejando una copia de cada grupo."""
+    if not groups:
+        return 0
     return sum(group.wasted_bytes for group in groups)
 
 
 def suggest_keeper(group: DuplicateGroup) -> Path | None:
-    """Sugiere qué copia conservar: la más antigua y de ruta más corta.
-
-    La más antigua suele ser el original, y a igual antigüedad se prefiere
-    la ruta más corta porque tiende a ser la ubicación "principal" en vez
-    de una copia enterrada en subcarpetas.
-    """
-    if not group.paths:
+    """Sugiere qué copia conservar: la más antigua y de ruta más corta."""
+    if not group or not group.paths:
         return None
 
     def sort_key(path: Path):
@@ -192,6 +195,8 @@ def suggest_keeper(group: DuplicateGroup) -> Path | None:
 
 def format_group(group: DuplicateGroup) -> list[str]:
     """Formatea un grupo para mostrarlo, marcando la copia sugerida."""
+    if not group:
+        return []
     keeper = suggest_keeper(group)
     mb = round(group.size_bytes / (1024 * 1024), 2)
     lines = [f"{group.count} copias de {mb} MB (recuperable: {round(group.wasted_bytes / (1024 * 1024), 2)} MB)"]
