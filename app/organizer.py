@@ -81,17 +81,17 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     junk_set = {ext.lower() for ext in JUNK_EXTENSIONS}
     blocklist = {s.lower() for s in SYSTEM_FOLDER_BLOCKLIST}
 
-    def _walk_dir(base_path: Path):
+    def _walk_dir(base_path: str):
         try:
             with os.scandir(base_path) as it:
                 for entry in it:
                     try:
                         if entry.is_dir(follow_symlinks=False):
                             if entry.name.lower() not in blocklist:
-                                _walk_dir(Path(entry.path))
+                                _walk_dir(entry.path)
                         elif entry.is_file(follow_symlinks=False):
                             if Path(entry.name).suffix.lower() in junk_set:
-                                full_path = Path(entry.path).resolve()
+                                full_path = Path(entry.path)
                                 # Seguridad: Solo añadir si la ruta pasa el filtro de app/safety.py
                                 if ensure_safe_to_modify(full_path):
                                     stat = entry.stat()
@@ -112,7 +112,7 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
             continue
         p = Path(d).expanduser()
         if p.exists() and p.is_dir():
-            _walk_dir(p)
+            _walk_dir(str(p))
         else:
             logger.warning(f"Ruta de escaneo inválida: {p}")
             

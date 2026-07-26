@@ -245,8 +245,8 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
         raise ValueError("El ID del elemento debe ser una cadena válida.")
 
     items = load_manifest(base)
-    item_map = {i.item_id: i for i in items}
-    match = item_map.get(item_id)
+    item_dict = {i.item_id: i for i in items}
+    match = item_dict.get(item_id)
     if match is None:
         raise KeyError(f"No hay ningún elemento en cuarentena con id '{item_id}'.")
 
@@ -270,7 +270,8 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
     except (OSError, PermissionError) as e:
         raise RuntimeError(f"Error durante la restauración del archivo: {e}")
 
-    save_manifest([i for i in items if i.item_id != item_id], base)
+    items.remove(match)
+    save_manifest(items, base)
     return destination
 
 
@@ -279,8 +280,8 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
     if not item_id or not isinstance(item_id, str):
         return False
     items = load_manifest(base)
-    item_map = {i.item_id: i for i in items}
-    match = item_map.get(item_id)
+    item_dict = {i.item_id: i for i in items}
+    match = item_dict.get(item_id)
     if match is None:
         return False
 
@@ -291,7 +292,8 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
 
     if stored.is_file():
         stored.unlink()
-    save_manifest([i for i in items if i.item_id != item_id], base)
+    items.remove(match)
+    save_manifest(items, base)
     return True
 
 

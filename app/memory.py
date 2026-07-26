@@ -27,7 +27,7 @@ import os
 import re
 import subprocess
 from dataclasses import dataclass, field
-from typing import List, Tuple, Optional, Dict
+from typing import List, Tuple, Optional, Dict, Iterator
 from app.safety import ensure_safe_to_modify
 
 __all__ = [
@@ -130,50 +130,23 @@ def parse_linux_meminfo(text: str) -> MemorySnapshot:
 def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]:
     """
     Parsea la salida de texto plano estructurada como CSV proveniente de PowerShell.
-    
-    Técnica: Dado que PowerShell puede incluir comas en el nombre de los procesos 
-    si no se invocan parámetros complejos, esta función divide la línea por comas
-    limitando el resultado a 3 columnas (Name, Id, WorkingSet) y limpia el 
-    enmarcado de comillas extraído por el formato CSV nativo de Windows.
     """
-    if not text:
-        return []
-
-    processes: List[ProcessMemory] = []
-    
-    for line in text.splitlines():
-        line = line.strip()
-        if not line:
-            continue
-        
-        # PowerShell CSV escapa comillas con "" y encierra valores en ""
-        parts: List[str] = [p.strip().strip('"') for p in line.split(",", 2)]
-        if len(parts) < 3 or not all(parts):
-            continue
-        
-        name: str = parts[0]
-        raw_pid: str = parts[1]
-        raw_ws: str = parts[2]
-        
-        if name.lower() in {"name", "processname"}:
-            continue
+    def _generator() -> Iterator[ProcessMemory]:
+        for line in text.splitlines():
+            line = line.strip()
+            if not line: continue
             
-        try:
-            pid: int = int(raw_pid)
-            working_set: int = int(float(raw_ws))
+            parts = [p.strip().strip('"') for p in line.split(",", 2)]
+            if len(parts) < 3 or not all(parts): continue
             
-            if pid < 0 or working_set < 0:
-                continue
+            if parts[0].lower() in {"name", "processname"}: continue
                 
-            processes.append(ProcessMemory(
-                name=name, 
-                pid=pid, 
-                working_set=working_set
-            ))
-        except (ValueError, OverflowError):
-            continue
-            
-    processes.sort(key=lambda p: p.working_set, reverse=True)
+            try:
+                yield ProcessMemory(name=parts[0], pid=int(parts[1]), working_set=int(float(parts[2])))
+            except (ValueError, OverflowError): continue
+
+    processes = sorted([p for p in _generator() if p.pid >= 0 and p.working_set >= 0], 
+                       key=lambda p: p.working_set, reverse=True)
     return processes[:limit]
 
 
@@ -291,11 +264,9 @@ def trim_working_set(pid: int) -> Tuple[bool, str]:
     
     try:
         target_pid = int(pid)
-        # Validación: PID 0 (System Idle) y PID 4 (System) son inmanipulables/críticos
         if target_pid <= 4:
             return False, "PID protegido: no es posible modificar procesos del sistema."
         
-        # Verificación de seguridad externa
         if not ensure_safe_to_modify(f"pid:{target_pid}"):
             return False, "Operación rechazada: el proceso está protegido por seguridad."
 

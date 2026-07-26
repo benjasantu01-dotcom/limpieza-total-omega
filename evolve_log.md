@@ -1142,3 +1142,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-07-26T19:31:08` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: SystemMetrics.validate
 - `2026-07-26T19:31:08` Rotación — nada para rotar
 - `2026-07-26T19:31:08` Corrida terminada. Total usado hoy: 286.
+- `2026-07-26T19:40:08` Arrancando corrida. Quedan hoy ~14 peticiones objetivo.
+- `2026-07-26T19:40:48` ➖ Sin cambios en main.py (enfoque: rendimiento). Motivo: Optimicé el renderizado de listas en `refresh_list` y el reporte de duplicados utilizando `join` de strings y limitación de visualización, reduciendo significativamente la carga sobre el componente `Textbox` de `customtkinter` y evitando el crecimiento descontrolado de memoria al manipular grandes volúmenes de datos.
+- `2026-07-26T19:41:11` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimizé `parse_windows_process_csv` reemplazando la creación y filtrado de listas múltiples por un generador eficiente que evita copias innecesarias y reduce el consumo de memoria durante el procesamiento de la salida de PowerShell.
+- `2026-07-26T19:41:32` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Se optimizó el rendimiento de `scan_for_junk` pre-calculando el `Path.resolve()` solo cuando es estrictamente necesario y evitando la creación redundante de objetos `Path` dentro del bucle de escaneo mediante el uso directo de las propiedades de `os.DirEntry`.
+- `2026-07-26T19:41:44` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Se optimizó `restore_item` y `purge_item` reemplazando la creación repetida de listas y la búsqueda lineal (`[i for i in items if i.item_id != item_id]`) por el uso de un diccionario de acceso constante, reduciendo la complejidad algorítmica y el uso innecesario de memoria.
+- `2026-07-26T19:41:44` Rotación — nada para rotar
+- `2026-07-26T19:41:44` Corrida terminada. Total usado hoy: 290.
