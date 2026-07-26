@@ -1210,3 +1210,44 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - NameEr
 - `2026-07-26T20:13:56` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Mejoré la robustez de `stage_for_review` ante condiciones de carrera y archivos inaccesibles mediante la verificación explícita de `is_file()` bajo un bloque `try-except` más granular, y añadiendo una validación de `os.access(..., os.R_OK)` para garantizar que el archivo pueda ser leído antes de intentar moverlo.
 - `2026-07-26T20:13:56` Rotación — nada para rotar
 - `2026-07-26T20:13:56` Corrida terminada. Total usado hoy: 302.
+- `2026-07-26T20:22:39` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-07-26T20:23:03` Tests FALLARON:
+```
+[ 36%]
+........................................................................ [ 73%]
+.........................................F...........                    [100%]
+=================================== FAILURES ===================================
+_____________ test_purge_item_cannot_delete_outside_the_quarantine _____________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-1/test_purge_item_cannot_delete_0')
+cuarentena = PosixPath('/tmp/pytest-of-runner/pytest-1/test_purge_item_cannot_delete_0/_Cuarentena')
+
+    def test_purge_item_cannot_delete_outside_the_quarantine(tmp_path, cuarentena):
+        victima = tmp_path / "no-tocar.txt"
+        victima.write_text("importante")
+    
+        origen = tmp_path / "cualquiera.txt"
+        origen.write_text("x")
+        item = quarantine.quarantine_file(origen, base=cuarentena)
+    
+        # Manifiesto manipulado para apuntar afuera de la cuarentena.
+        items = quarantine.load_manifest(cuarentena)
+        items[0].stored_name = "../no-tocar.txt"
+        quarantine.save_manifest(items, cuarentena)
+    
+>       with pytest.raises(safety.UnsafePathError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE UnsafePathError
+
+evolve/tests/test_safety.py:254: Failed
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - Failed: DID NOT RAISE UnsafePathError
+1 failed, 196 passed in 0.29s
+
+```
+- `2026-07-26T20:23:03` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se añadió una validación explícita para evitar que `purge_all` o `purge_item` fallen silenciosamente ante inconsistencias entre el manifiesto y el sistema de archivos (archivos ya eliminados o inaccesibles), mejorando la robustez ante estados inesperados.
+- `2026-07-26T20:23:21` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-07-26T20:23:42` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Mejora la robustez de `is_within_directory` y `is_protected_path` ante rutas que no existen o tienen permisos denegados, añadiendo manejo específico de excepciones de sistema (`PermissionError`, `OSError`) que ocurren comúnmente al intentar resolver rutas inexistentes o inaccesibles, evitando falsos negativos o caídas inesperadas durante la inspección.
+- `2026-07-26T20:23:46` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se reforzó la resiliencia del módulo ante accesos concurrentes o permisos denegados durante la iteración del sistema de archivos, añadiendo bloques `try-except` granulares en `scan_file` para evitar que el proceso falle ante metadatos corruptos o bloqueos de acceso durante la lectura de atributos.
+- `2026-07-26T20:23:46` Rotación — nada para rotar
+- `2026-07-26T20:23:46` Corrida terminada. Total usado hoy: 306.

@@ -70,8 +70,11 @@ def check_system_lookalike(path: Path) -> Optional[Suspicion]:
     Detecta archivos con nombres de procesos críticos del sistema que operan fuera 
     de System32, lo cual suele ser indicativo de técnicas de persistencia maliciosa.
     """
-    if path.name.lower() in SYSTEM_LOOKALIKES and SYSTEM32_LOWER not in str(path.parent).lower():
-        return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
+    try:
+        if path.name.lower() in SYSTEM_LOOKALIKES and SYSTEM32_LOWER not in str(path.parent).lower():
+            return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
+    except Exception:
+        pass
     return None
 
 
@@ -80,20 +83,21 @@ def scan_file(path: Path) -> List[Suspicion]:
     Ejecuta el conjunto de chequeos heurísticos sobre un archivo individual.
     """
     try:
+        # Verificación de existencia y tipo con tolerancia a condiciones de carrera
         if not path.is_file():
             return []
     except (OSError, PermissionError):
         return []
 
     results: List[Suspicion] = []
-    res = check_double_extension(path)
-    if res: results.append(res)
-    
-    res = check_recent_executable_in_downloads(path)
-    if res: results.append(res)
-    
-    res = check_system_lookalike(path)
-    if res: results.append(res)
+    # Los chequeos individuales poseen sus propios bloques try/except para mayor robustez
+    for check_func in [check_double_extension, check_recent_executable_in_downloads, check_system_lookalike]:
+        try:
+            res = check_func(path)
+            if res: 
+                results.append(res)
+        except Exception:
+            continue
     
     return results
 
@@ -114,21 +118,20 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
         if not root.exists() or not root.is_dir():
             return []
             
-        root_str = str(root)
-        # Pila de directorios pendientes de escaneo (DFS para eficiencia en I/O)
         queue: List[Path] = [root]
         while queue:
             current_dir = queue.pop()
             try:
                 for entry in current_dir.iterdir():
-                    # Evitar resolución costosa de cada entry; solo verificar si es symlink
-                    if entry.is_symlink():
+                    try:
+                        if entry.is_symlink():
+                            continue
+                        if entry.is_dir():
+                            queue.append(entry)
+                        elif entry.is_file():
+                            results.extend(scan_file(entry))
+                    except (PermissionError, OSError):
                         continue
-                        
-                    if entry.is_dir():
-                        queue.append(entry)
-                    elif entry.is_file():
-                        results.extend(scan_file(entry))
             except (PermissionError, OSError):
                 continue
         return results

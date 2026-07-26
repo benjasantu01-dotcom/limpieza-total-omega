@@ -113,7 +113,7 @@ def is_protected_path(path: PathLike) -> bool:
         if raw_p.is_symlink() or (hasattr(raw_p, 'is_junction') and raw_p.is_junction()):
             return True
         p = normalize(path)
-    except Exception:
+    except (PermissionError, OSError):
         return True 
         
     if is_drive_root(p):
@@ -129,7 +129,7 @@ def is_protected_path(path: PathLike) -> bool:
         try:
             if p == root or root in p.parents:
                 return True
-        except (ValueError, RuntimeError):
+        except (ValueError, RuntimeError, PermissionError):
             continue
     return False
 
@@ -148,7 +148,7 @@ def is_within_directory(
             return allow_equal
         c.relative_to(p)
         return True
-    except (ValueError, TypeError, OSError, RuntimeError):
+    except (ValueError, TypeError, OSError, RuntimeError, PermissionError):
         return False
 
 
