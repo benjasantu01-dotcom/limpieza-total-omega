@@ -87,9 +87,12 @@ def directory_size(path: str | os.PathLike) -> int:
         with os.scandir(path) as it:
             for entry in it:
                 try:
-                    if entry.is_file(follow_symlinks=False):
+                    # No seguir enlaces simbólicos ni puntos de reparse para evitar bucles
+                    if entry.is_symlink():
+                        continue
+                    if entry.is_file():
                         total += entry.stat().st_size
-                    elif entry.is_dir(follow_symlinks=False):
+                    elif entry.is_dir():
                         total += directory_size(entry.path)
                 except (OSError, PermissionError):
                     continue

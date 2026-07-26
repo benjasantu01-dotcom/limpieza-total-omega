@@ -20,7 +20,7 @@ import os
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, Optional
+from typing import Iterable, Optional, Iterator
 
 __all__ = [
     "StartupEntry",
@@ -165,15 +165,18 @@ def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> list[Start
 
 def list_startup_entries() -> list[StartupEntry]:
     """Todos los programas de arranque detectados, sin duplicados por nombre."""
-    entries = entries_from_folders() + entries_from_registry()
     vistos: set[str] = set()
     unicos: list[StartupEntry] = []
-    for entry in entries:
+    
+    def _gen_entries() -> Iterator[StartupEntry]:
+        yield from entries_from_folders()
+        yield from entries_from_registry()
+
+    for entry in _gen_entries():
         clave = entry.name.lower()
-        if clave in vistos:
-            continue
-        vistos.add(clave)
-        unicos.append(entry)
+        if clave not in vistos:
+            vistos.add(clave)
+            unicos.append(entry)
     return unicos
 
 

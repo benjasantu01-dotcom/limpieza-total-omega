@@ -84,20 +84,26 @@ def font_size(name: str) -> int:
     return FONT_SIZES.get(name, FONT_SIZES["body"])
 
 
-def severity_color(severity: str) -> str:
-    """Color asociado a una severidad de hallazgo."""
+def severity_color(severity: str | None) -> str:
+    """Color asociado a una severidad de hallazgo, gestionando nulos."""
+    if severity is None:
+        return color("text_muted")
     style = SEVERITY_STYLES.get(str(severity).lower())
     return style[0] if style else color("text_muted")
 
 
-def severity_label(severity: str) -> str:
-    """Etiqueta legible para una severidad."""
+def severity_label(severity: str | None) -> str:
+    """Etiqueta legible para una severidad, gestionando nulos."""
+    if severity is None:
+        return "Desconocido"
     style = SEVERITY_STYLES.get(str(severity).lower())
     return style[1] if style else str(severity).upper()
 
 
-def grade_color(grade: str) -> str:
-    """Color para una nota de salud del sistema (A a F)."""
+def grade_color(grade: str | None) -> str:
+    """Color para una nota de salud del sistema, gestionando nulos."""
+    if not grade:
+        return color("text_muted")
     return GRADE_COLORS.get(str(grade).upper()[:1], color("text_muted"))
 
 
@@ -125,12 +131,15 @@ def logo_svg(size: int = 128) -> str:
 """
 
 
-def save_logo_svg(destination: str | Path) -> Path:
-    """Guarda el logo SVG en disco y devuelve la ruta escrita."""
-    path = Path(destination).expanduser()
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(logo_svg(), encoding="utf-8")
-    return path
+def save_logo_svg(destination: str | Path) -> Path | None:
+    """Guarda el logo SVG en disco, capturando errores de IO."""
+    try:
+        path = Path(destination).expanduser()
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(logo_svg(), encoding="utf-8")
+        return path
+    except (OSError, PermissionError, TypeError):
+        return None
 
 
 @lru_cache(maxsize=1)

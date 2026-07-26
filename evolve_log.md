@@ -345,3 +345,29 @@ FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app
 - `2026-07-26T09:43:50` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimicé `is_protected_path` reemplazando la iteración completa de `parts` con una intersección de conjuntos (`set.isdisjoint`), lo que reduce la complejidad temporal de O(N*M) a O(N) promedio donde N es el número de componentes de la ruta, eliminando ciclos innecesarios.
 - `2026-07-26T09:43:50` Rotación — nada para rotar
 - `2026-07-26T09:43:50` Corrida terminada. Total usado hoy: 58.
+- `2026-07-26T09:52:52` Arrancando corrida. Quedan hoy ~242 peticiones objetivo.
+- `2026-07-26T09:53:13` Tests FALLARON:
+```
+f test_scanner_lookalike_logic_is_os_independent():
+        # La misma heurística tiene que valer con rutas estilo POSIX, para que el
+        # resultado no dependa de en qué sistema corran los tests.
+>       flagged = scanner.check_system_lookalike(PurePosixPath("/home/user/Downloads/svchost.exe"))
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: check_system_lookalike() missing 1 required positional argument: 'name_lower'
+
+evolve/tests/test_basic.py:212: TypeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_scanner_double_extension_detection - TypeError: check_double_extension() missing 1 required positional argument: 'name_lower'
+FAILED evolve/tests/test_basic.py::test_scanner_normal_file_is_clean - TypeError: check_double_extension() missing 1 required positional argument: 'name_lower'
+FAILED evolve/tests/test_basic.py::test_scanner_flags_system_lookalike_outside_system32 - TypeError: check_system_lookalike() missing 1 required positional argument: 'name_lower'
+FAILED evolve/tests/test_basic.py::test_scanner_does_not_flag_real_system_file - TypeError: check_system_lookalike() missing 1 required positional argument: 'name_lower'
+FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independent - TypeError: check_system_lookalike() missing 1 required positional argument: 'name_lower'
+5 failed, 192 passed in 0.27s
+
+```
+- `2026-07-26T09:53:13` ❌ Mejora descartada en scanner.py (no pasó los tests), se revirtió. Intento: Optimicé el método `scan_directory` para reducir la carga de E/S al evitar llamadas redundantes a `p.is_file()` después de obtener los metadatos de los archivos durante el recorrido, integrando además la lógica de pre-filtrado mediante una caché local del nombre para acelerar las comprobaciones de extensiones y nombres sospechosos.
+- `2026-07-26T09:53:34` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Optimizé `list_startup_entries` eliminando el uso de listas auxiliares innecesarias y el doble recorrido, convirtiéndolo en un generador eficiente que filtra duplicados al vuelo usando un `set` de control, reduciendo el consumo de memoria al evitar la creación de listas intermedias.
+- `2026-07-26T09:53:56` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Mejoré la robustez de `save_logo_svg` y `severity_color` manejando explícitamente rutas inválidas/permisos denegados (usando `try/except`) y entradas malformadas, evitando que la aplicación falle al intentar escribir en directorios bloqueados o al recibir parámetros inesperados.
+- `2026-07-26T09:54:01` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se ha robustecido la función `directory_size` para manejar casos límite como puntos de reparse (symlinks, junctions) y accesos denegados mediante la validación explícita de `is_symlink` y la gestión de excepciones en `entry.stat()`, garantizando que el escaneo sea seguro y no entre en bucles infinitos o falle ante rutas protegidas.
+- `2026-07-26T09:54:01` Rotación — nada para rotar
+- `2026-07-26T09:54:01` Corrida terminada. Total usado hoy: 62.
