@@ -140,6 +140,10 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         except OSError:
             continue
 
+        # Evitar mover archivos que ya están en el directorio de destino
+        if dest in full_source_path.parents or full_source_path.parent == dest:
+            continue
+
         if any(part.lower() in blocklist for part in full_source_path.parts):
             logger.warning("Intento de mover archivo en ruta protegida: %s", full_source_path)
             continue

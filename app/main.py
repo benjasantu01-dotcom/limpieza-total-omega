@@ -339,7 +339,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
         self._hint(tab, "Compara por tamaño, después por hash parcial y por último por hash "
                         "completo, así no lee de más. 'Aislar copias extra' conserva una copia "
-                        "de cada grupo y manda el resto a cuarentena, no las borra.")
+                        "de cada grupo y manda el resto a cuarentena, no las borras.")
         self._make_output("Duplicados", tab)
 
     def _build_tab_navegadores(self) -> None:
@@ -444,7 +444,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _ask_folder(self, title: str) -> Optional[str]:
         """Abre un diálogo de selección de carpeta y valida seguridad."""
         folder = filedialog.askdirectory(title=title)
-        if not folder:
+        if not folder or not os.path.isdir(folder):
             return None
         if safety.is_protected_path(folder):
             messagebox.showwarning(
@@ -575,7 +575,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
         def task():
             self.set_status("Moviendo a revisión...")
-            # Filtro adicional de seguridad: re-validar que no sean rutas protegidas antes de mover
             valid_files = []
             for jf in self.junk_files:
                 path_str = str(jf.path.resolve())
@@ -710,13 +709,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
         def task():
             try:
-                # Obtenemos info del ítem para validar existencia de ruta de destino
                 item = quarantine.get_manifest_item(item_id)
                 if not item:
                     self.log(f"ID no encontrado: {item_id}", "Cuarentena")
                     return
                 
-                # Pre-validación: verificar si la ruta de destino padre existe
                 parent_dir = os.path.dirname(item.original_path)
                 if not os.path.exists(parent_dir):
                     self.log(f"Error: La carpeta original '{parent_dir}' ya no existe.", "Cuarentena")

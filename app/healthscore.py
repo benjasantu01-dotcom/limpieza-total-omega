@@ -100,8 +100,8 @@ def _to_int(value: Any, default: int = 0) -> int:
 
 def score_junk(junk_mb: float) -> float:
     """Puntúa la basura. Escala lineal donde 0 MB es 100% y 5000 MB es 0%."""
-    val = _to_float(junk_mb)
-    return _clamp(1.0 - (max(0.0, val) / 5000.0))
+    val = max(0.0, _to_float(junk_mb))
+    return _clamp(1.0 - (val / 5000.0))
 
 
 def score_security(suspicious_count: int, warnings: int = 0) -> float:
@@ -110,9 +110,9 @@ def score_security(suspicious_count: int, warnings: int = 0) -> float:
     Cada ítem sospechoso reduce el score en 5% y cada advertencia en 25%.
     La suma de penalizaciones se resta de la base 1.0.
     """
-    s_count = _to_int(suspicious_count)
-    w_count = _to_int(warnings)
-    penalty = max(0, s_count) * 0.05 + max(0, w_count) * 0.25
+    s_count = max(0, _to_int(suspicious_count))
+    w_count = max(0, _to_int(warnings))
+    penalty = (s_count * 0.05) + (w_count * 0.25)
     return _clamp(1.0 - penalty)
 
 
@@ -138,14 +138,14 @@ def score_disk(free_percent: float) -> float:
 
 def score_duplicates(duplicate_mb: float) -> float:
     """Puntúa ineficiencia por duplicados. 2000 MB (2 GB) marca el 0% de score."""
-    val = _to_float(duplicate_mb)
-    return _clamp(1.0 - (max(0.0, val) / 2000.0))
+    val = max(0.0, _to_float(duplicate_mb))
+    return _clamp(1.0 - (val / 2000.0))
 
 
 def score_startup(startup_count: int) -> float:
     """Puntúa el arranque. 20 aplicaciones es el máximo tolerable antes de 0%."""
-    s_count = _to_int(startup_count)
-    return _clamp(1.0 - (max(0, s_count) / 20.0))
+    s_count = max(0, _to_int(startup_count))
+    return _clamp(1.0 - (s_count / 20.0))
 
 
 def grade_for_score(score: int) -> str:

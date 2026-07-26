@@ -139,9 +139,11 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
             continue
         
         parts = [p.strip().strip('"') for p in line.split(",")]
+        # Validar longitud mínima y que contenga datos numéricos
         if len(parts) < 3:
             continue
         
+        # Ignorar cabeceras típicas de CSV
         if parts[0].lower() in {"name", "processname"}:
             continue
             
@@ -157,7 +159,7 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
                 pid=pid, 
                 working_set=working_set
             ))
-        except (ValueError, OverflowError):
+        except (ValueError, OverflowError, IndexError):
             continue
             
     processes.sort(key=lambda p: p.working_set, reverse=True)
