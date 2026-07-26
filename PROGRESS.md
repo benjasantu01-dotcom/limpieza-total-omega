@@ -5,10 +5,10 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **85**
-- Mejoras aceptadas: **58** (68.2% de aceptación)
+- Iteraciones totales: **89**
+- Mejoras aceptadas: **61** (68.5% de aceptación)
 - Rechazadas por tests: 5
-- Rechazadas por guardia de seguridad: 5
+- Rechazadas por guardia de seguridad: 6
 - Sin cambios (nada sustancial que mejorar): 1
 - Sin respuesta de la IA (error o límite): 16
 
@@ -16,11 +16,11 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-26 | 58 | 5 | 5 | 1 | 16 |
+| 2026-07-26 | 61 | 5 | 6 | 1 | 16 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **18**
+- manejo de errores y validación de entradas: **21**
 - legibilidad y documentación: **11**
 - seguridad defensiva: **11**
 - robustez ante casos límite: **10**
@@ -29,20 +29,23 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **6**
+- `organizer.py`: **6**
+- `safety.py`: **6**
 - `browser.py`: **5**
 - `diskreport.py`: **5**
 - `duplicates.py`: **5**
 - `main.py`: **5**
-- `organizer.py`: **5**
-- `safety.py`: **5**
+- `quarantine.py`: **5**
 - `startup.py`: **5**
 - `branding.py`: **5**
 - `memory.py`: **4**
-- `quarantine.py`: **4**
 - `scanner.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-26T11:59:48` **safety.py** (manejo de errores y validación de entradas): He robustecido la validación de `ensure_safe_to_modify` y `is_within_directory` mediante la detección explícita de valores `None` o vacíos, y he mejorado el manejo de excepciones en `is_within_directory` para asegurar que fallos en el sistema de archivos no resulten en una validación "segura" por omisión.
+- `2026-07-26T11:59:22` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` envolviendo la operación de movimiento (`shutil.move`) y la actualización del manifiesto en un bloque `try-except` para garantizar que, ante una falla de escritura, el estado del sistema no quede inconsistente, añadiendo además una validación explícita para evitar que `stored_name` sea un nombre de ruta relativo malicioso (path traversal).
+- `2026-07-26T11:59:00` **organizer.py** (manejo de errores y validación de entradas): Se reforzó la robustez del módulo integrando validaciones de entrada (`isinstance`, checks de tipos) en `scan_for_junk` y `sort_junk`, además de mejorar el manejo de errores en `stage_for_review` asegurando la integridad de los parámetros antes de operar sobre el sistema de archivos.
 - `2026-07-26T11:50:02` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `parse_windows_process_csv` añadiendo validaciones estrictas ante entradas malformadas, entradas con valores no numéricos en columnas críticas y manejo seguro de desbordamientos al convertir el consumo de memoria, evitando que una línea corrupta invalide el análisis completo.
 - `2026-07-26T11:49:55` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `on_restore_quarantine` validando la existencia de la ruta de origen mediante `os.path.exists` antes de intentar la restauración, evitando errores de sistema innecesarios y proveyendo feedback claro al usuario si el archivo original ya fue movido o borrado fuera de la aplicación.
 - `2026-07-26T11:49:12` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` mediante una validación estricta de los tipos de datos en los parámetros de `SystemMetrics` y agregué un manejo de errores defensivo en el cálculo del desglose, asegurando que cualquier entrada corrupta o inesperada resulte en una degradación elegante del puntaje en lugar de fallos inesperados.
@@ -55,6 +58,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-26T10:58:14` **safety.py** (seguridad defensiva): Se ha añadido la validación mediante `path.is_symlink()` en `is_protected_path` para prevenir el seguimiento de puntos de reparse (junctions o enlaces simbólicos) que podrían engañar a la lógica de validación de rutas y permitir el acceso accidental a ubicaciones protegidas fuera del árbol esperado.
 - `2026-07-26T10:48:54` **quarantine.py** (seguridad defensiva): Se implementó un mecanismo de verificación de integridad en la función `restore_item` para asegurar que el archivo a restaurar no haya sido alterado o reemplazado por un enlace simbólico, previniendo así posibles ataques de "Time-of-check to time-of-use" (TOCTOU) antes de realizar el movimiento físico.
 - `2026-07-26T10:48:46` **organizer.py** (seguridad defensiva): Se ha añadido una validación de seguridad en `stage_for_review` para impedir que archivos fuera de la jerarquía de directorios permitida o archivos que apunten a rutas críticas sean movidos, previniendo así posibles ataques de escalada de privilegios o daños accidentales al sistema.
-- `2026-07-26T10:48:03` **main.py** (seguridad defensiva): Se implementó una validación de seguridad adicional en `on_stage` para asegurar que las rutas candidatas a moverse a revisión sigan siendo seguras (no estén protegidas) justo antes de iniciar la operación, y se añadió la normalización de rutas mediante `resolve()` para prevenir ataques de bypass por rutas relativas o aliases.
-- `2026-07-26T10:38:20` **healthscore.py** (seguridad defensiva): Se introdujo una validación defensiva estricta en `score_memory` y `score_disk` para prevenir condiciones de borde (como valores de porcentaje negativos o desbordados) que podrían corromper la lógica de cálculo del puntaje, asegurando que las métricas de entrada se mantengan siempre dentro de límites coherentes antes de procesar el puntaje.
-- `2026-07-26T10:38:13` **duplicates.py** (seguridad defensiva): He mejorado la seguridad defensiva incorporando `is_protected_path` en las funciones de acceso a archivos (`hash_file`, `partial_hash` y `group_by_size`) para garantizar que el módulo no procese accidentalmente archivos protegidos, incluso si son invocadas externamente sin validación previa.

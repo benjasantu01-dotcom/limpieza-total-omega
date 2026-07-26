@@ -71,16 +71,17 @@ class JunkFile:
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     """
     Recorre las carpetas indicadas y devuelve candidatos a basura.
-    
-    El proceso es no destructivo: solo inspecciona metadatos. Si se detecta una
-    ruta crítica (definida en SYSTEM_FOLDER_BLOCKLIST), se ignora durante el walk.
-    En caso de error de acceso (PermissionError), el archivo se omite silenciosamente
-    y se registra a nivel debug para mantener la robustez del escaneo.
     """
+    if directories is not None and not isinstance(directories, list):
+        logger.error("El parámetro directories debe ser una lista.")
+        return []
+
     dirs = directories or DEFAULT_SCAN_DIRS
     found: List[JunkFile] = []
 
     for d in dirs:
+        if not isinstance(d, str):
+            continue
         p = Path(d).expanduser()
         if not p.exists() or not p.is_dir():
             logger.warning(f"Ruta de escaneo inválida: {p}")
@@ -89,7 +90,6 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
         for root, subdirs, files in os.walk(p):
             subdirs[:] = [sd for sd in subdirs if sd.lower() not in SYSTEM_FOLDER_BLOCKLIST]
             for name in files:
-                # Comprobación eficiente de extensión antes de instanciar objetos pesados
                 if Path(name).suffix.lower() in JUNK_EXTENSIONS:
                     fp = Path(root) / name
                     try:
@@ -110,8 +110,10 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
 def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -> List[JunkFile]:
     """
     Ordena la lista de JunkFile por tamaño ('size') o fecha de modificación ('date').
-    Retorna una nueva lista ordenada sin modificar la original.
     """
+    if not isinstance(files, list):
+        return []
+        
     if by not in ("size", "date"):
         logger.warning("Criterio de ordenación desconocido '%s', usando 'size' por defecto.", by)
         by = "size"
@@ -123,14 +125,9 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Path:
     """
     Mueve archivos candidatos a una carpeta de cuarentena/revisión.
-    
-    Implementa una estrategia de nombrado basada en el timestamp de modificación
-    para asegurar que archivos con mismo nombre pero distinto origen no colisionen.
-    Si el movimiento falla (ej. archivo bloqueado por el sistema), la excepción es
-    capturada para permitir que el resto de la lista continúe siendo procesada.
     """
-    if not files:
-        logger.warning("La lista de archivos a organizar está vacía.")
+    if not files or not isinstance(files, list):
+        logger.warning("La lista de archivos a organizar está vacía o es inválida.")
         return Path(review_dir).expanduser()
 
     dest = Path(review_dir).expanduser().resolve()
@@ -141,16 +138,14 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         raise
 
     for jf in files:
-        if jf is None or not isinstance(jf.path, Path) or not jf.path.exists():
+        if not isinstance(jf, JunkFile) or not jf.path or not jf.path.exists():
             continue
 
-        # Seguridad: Evitar mover archivos fuera de los límites esperados (Directory Traversal)
         try:
             full_source_path = jf.path.resolve()
         except OSError:
             continue
 
-        # Validación básica: no mover archivos de sistema o si la ruta es sospechosa
         if any(part.lower() in SYSTEM_FOLDER_BLOCKLIST for part in full_source_path.parts):
             logger.warning("Intento de mover archivo en ruta protegida: %s", full_source_path)
             continue
@@ -161,7 +156,6 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         
         target = dest / f"{base_name}_{timestamp}{ext}"
         
-        # Prevenir colisión si ya existe un archivo con ese nombre exacto en el destino
         counter = 1
         while target.exists():
             target = dest / f"{base_name}_{timestamp}_{counter}{ext}"
@@ -178,7 +172,6 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
     """
     Borra definitivamente los archivos contenidos en la carpeta de revisión.
-    Esta acción es destructiva y debe ser invocada explícitamente.
     """
     dest = Path(review_dir).expanduser()
     if not dest.exists():

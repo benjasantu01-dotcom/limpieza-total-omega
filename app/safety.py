@@ -74,6 +74,8 @@ SENSITIVE_EXTENSIONS: frozenset[str] = frozenset({
 
 def normalize(path: PathLike) -> Path:
     """Devuelve una ruta absoluta y resuelta, sin fallar si no existe."""
+    if path is None or (isinstance(path, str) and not path.strip()):
+        raise ValueError("La ruta proporcionada está vacía.")
     if not isinstance(path, (str, os.PathLike)):
         raise TypeError(f"Entrada inválida en normalize: se esperaba str o PathLike, recibió {type(path)}")
     try:
@@ -123,6 +125,8 @@ def is_within_directory(
     allow_equal: bool = False,
 ) -> bool:
     """True si `child` está realmente contenido en `parent`."""
+    if child is None or parent is None:
+        return False
     try:
         c, p = normalize(child), normalize(parent)
     except Exception:
@@ -150,12 +154,17 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
 
     Raises:
         UnsafePathError: Si la ruta es raíz, está protegida o es sensible.
-        TypeError: Si el tipo de entrada no es compatible con Path.
+        TypeError/ValueError: Si la entrada es inválida.
     """
+    if path is None:
+        raise ValueError("No se puede validar una ruta None.")
+        
     try:
         p = normalize(path)
+    except (TypeError, ValueError) as e:
+        raise UnsafePathError(f"Ruta inválida: {path}") from e
     except Exception as e:
-        raise UnsafePathError(f"Ruta inaccesible o mal formada: {path}") from e
+        raise UnsafePathError(f"Ruta inaccesible: {path}") from e
 
     if is_drive_root(p):
         raise UnsafePathError(f"Operación bloqueada: '{p}' es la raíz de una unidad.")
@@ -171,10 +180,12 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
 def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = False) -> list[Path]:
     """Filtra una lista dejando solo las rutas seguras de modificar."""
     safe: list[Path] = []
+    if paths is None:
+        return safe
     for candidate in paths:
         try:
             safe.append(ensure_safe_to_modify(candidate, allow_sensitive=allow_sensitive))
-        except (UnsafePathError, TypeError):
+        except (UnsafePathError, TypeError, ValueError):
             continue
     return safe
 
