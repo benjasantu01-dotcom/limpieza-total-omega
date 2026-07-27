@@ -611,3 +611,10 @@ assert '_confirm' in {'run_async'}
 - `2026-07-27T10:24:15` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). He mejorado la legibilidad y mantenibilidad del archivo añadiendo type hints faltantes en las funciones principales, completando docstrings para describir el propósito técnico (incluyendo excepciones lanzadas) y renombrando variables internas para reducir la ambigüedad en el manejo de rutas.
 - `2026-07-27T10:24:15` Rotación — nada para rotar
 - `2026-07-27T10:24:15` Corrida terminada. Total usado hoy: 116.
+- `2026-07-27T10:32:21` Arrancando corrida. Quedan hoy ~184 peticiones objetivo.
+- `2026-07-27T10:32:49` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 110): unterminated string literal (detected at line 110)
+- `2026-07-27T10:33:13` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y el manejo de tipos en `safety.py` mediante la implementación de Type Hints explícitos para las constantes globales y la adición de docstrings detallados en las funciones de validación para clarificar el comportamiento ante errores.
+- `2026-07-27T10:33:37` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación del módulo añadiendo type hints más precisos (especialmente en los retornos y colecciones) y enriqueciendo los docstrings para explicar el "por qué" de las validaciones de seguridad, facilitando el mantenimiento futuro y la legibilidad para otros colaboradores.
+- `2026-07-27T10:33:50` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Mejora la legibilidad y el mantenimiento de `validate()` mediante la extracción de la lógica de validación de tipos a funciones auxiliares dedicadas, documentando claramente el contrato de validación.
+- `2026-07-27T10:33:50` Rotación — nada para rotar
+- `2026-07-27T10:33:50` Corrida terminada. Total usado hoy: 120.

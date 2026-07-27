@@ -95,6 +95,25 @@ _NUMERIC_LIMITS: Final = {
 }
 
 
+def _coerce_bool(valor: Any) -> bool | None:
+    """Intenta convertir un valor a booleano, permitiendo cadenas de texto."""
+    if isinstance(valor, bool):
+        return valor
+    if isinstance(valor, str):
+        return valor.strip().lower() in ("1", "true", "si", "sí", "yes")
+    return None
+
+
+def _coerce_int(valor: Any, clave: str) -> int | None:
+    """Intenta convertir a entero respetando los límites definidos en _NUMERIC_LIMITS."""
+    try:
+        numero = int(valor)
+        minimo, maximo = _NUMERIC_LIMITS.get(clave, (0, 10**9))
+        return max(minimo, min(maximo, numero))
+    except (TypeError, ValueError):
+        return None
+
+
 def settings_path(base: str | Path | None = None) -> Path:
     """Ruta del archivo de configuración.
 
@@ -112,7 +131,6 @@ def validate(values: Any) -> dict[str, Any]:
 
     Nunca lanza excepción y nunca devuelve claves de más: lo que no se
     reconoce se descarta, lo que está mal se reemplaza por el valor de fábrica.
-    Es lo que permite que un config.json editado a mano no rompa la app.
     """
     limpio = dict(DEFAULTS)
     if not isinstance(values, dict):
@@ -121,40 +139,29 @@ def validate(values: Any) -> dict[str, Any]:
     for clave, defecto in DEFAULTS.items():
         if clave not in values:
             continue
+            
         valor = values[clave]
 
-        # Los booleanos aceptan también las cadenas típicas de un JSON a mano.
         if isinstance(defecto, bool):
-            if isinstance(valor, bool):
-                limpio[clave] = valor
-            elif isinstance(valor, str):
-                limpio[clave] = valor.strip().lower() in ("1", "true", "si", "sí", "yes")
-            continue
-
-        if isinstance(defecto, int) and not isinstance(valor, bool):
-            # Solo intentamos convertir si el valor no es un dict/lista.
-            if isinstance(valor, (int, float, str)):
-                try:
-                    numero = int(valor)
-                except (TypeError, ValueError):
+            coerced = _coerce_bool(valor)
+            if coerced is not None:
+                limpio[clave] = coerced
+        
+        elif isinstance(defecto, int) and not isinstance(valor, bool):
+            coerced = _coerce_int(valor, clave)
+            if coerced is not None:
+                limpio[clave] = coerced
+        
+        elif isinstance(defecto, str):
+            if isinstance(valor, str):
+                texto = valor.strip()
+                if clave == "tema" and texto.lower() not in VALID_THEMES:
                     continue
-                minimo, maximo = _NUMERIC_LIMITS.get(clave, (0, 10 ** 9))
-                limpio[clave] = max(minimo, min(maximo, numero))
-            continue
-
-        if isinstance(defecto, str):
-            if not isinstance(valor, str):
-                continue
-            texto = valor.strip()
-            if clave == "tema" and texto.lower() not in VALID_THEMES:
-                continue
-            if clave == "acento" and texto.lower() not in VALID_ACCENTS:
-                continue
-            if clave == "ultima_carpeta" and texto and not is_safe_to_modify(texto):
-                # Una carpeta protegida no se recuerda: si el usuario la
-                # eligió por error, no queremos ofrecérsela de nuevo.
-                continue
-            limpio[clave] = texto.lower() if clave in ("tema", "acento") else texto
+                if clave == "acento" and texto.lower() not in VALID_ACCENTS:
+                    continue
+                if clave == "ultima_carpeta" and texto and not is_safe_to_modify(texto):
+                    continue
+                limpio[clave] = texto.lower() if clave in ("tema", "acento") else texto
 
     return limpio
 
@@ -207,12 +214,7 @@ def get(key: str, base: str | Path | None = None) -> Any:
 
 
 def assistant_api_key(base: str | Path | None = None) -> str:
-    """Clave del asistente: primero el entorno, después el archivo.
-
-    Se prefiere la variable de entorno porque una clave en un JSON de texto
-    plano queda legible para cualquier programa del usuario y se filtra si la
-    carpeta termina sincronizada en la nube.
-    """
+    """Clave del asistente: primero el entorno, después el archivo."""
     desde_entorno = os.environ.get(API_KEY_ENV_VAR, "").strip()
     if desde_entorno:
         return desde_entorno
@@ -221,11 +223,7 @@ def assistant_api_key(base: str | Path | None = None) -> str:
 
 
 def assistant_enabled(base: str | Path | None = None) -> bool:
-    """True solo si el usuario lo activó Y hay una clave disponible.
-
-    Las dos condiciones son necesarias: activado sin clave no puede consultar,
-    y una clave presente sin activar no autoriza a mandar nada.
-    """
+    """True solo si el usuario lo activó Y hay una clave disponible."""
     return bool(load(base).get("asistente_activado")) and bool(assistant_api_key(base))
 
 
