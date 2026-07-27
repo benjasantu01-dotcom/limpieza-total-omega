@@ -539,3 +539,12 @@ FAILED evolve/tests/test_modules.py::test_score_color_survives_garbage - Asserti
 - `2026-07-27T09:32:59` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
 - `2026-07-27T09:32:59` Rotación — nada para rotar
 - `2026-07-27T09:32:59` Corrida terminada. Total usado hoy: 96.
+- `2026-07-27T09:41:22` Arrancando corrida. Quedan hoy ~204 peticiones objetivo.
+- `2026-07-27T09:41:48` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_generate_recommendations` mediante la validación explícita de valores (evitando divisiones por cero o comparaciones con `None` en casos de métricas corrompidas) y se refinó el manejo de errores en `compute_score` al asegurar que el objeto de métricas siempre tenga valores válidos antes del procesamiento.
+- `2026-07-27T09:41:48` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-07-27T09:42:51` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-07-27T09:43:28` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 1): unexpected indent
+- `2026-07-27T09:43:55` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: manejo de errores y validación de entradas).
+- `2026-07-27T09:44:11` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `stage_for_review` validando explícitamente la existencia de las rutas antes de cualquier operación y asegurando que las excepciones en `shutil.move` no interrumpan el procesamiento del resto de la lista.
+- `2026-07-27T09:44:11` Rotación — nada para rotar
+- `2026-07-27T09:44:11` Corrida terminada. Total usado hoy: 100.

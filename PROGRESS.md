@@ -5,24 +5,24 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **425**
-- Mejoras aceptadas: **247** (58.1% de aceptación)
+- Iteraciones totales: **429**
+- Mejoras aceptadas: **249** (58.0% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 26
+- Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 4
-- Sin respuesta de la IA (error o límite): 130
+- Sin respuesta de la IA (error o límite): 131
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
 | 2026-07-26 | 221 | 15 | 22 | 3 | 68 |
-| 2026-07-27 | 26 | 3 | 4 | 1 | 62 |
+| 2026-07-27 | 28 | 3 | 5 | 1 | 63 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **63**
-- manejo de errores y validación de entradas: **59**
+- manejo de errores y validación de entradas: **61**
 - seguridad defensiva: **45**
 - rendimiento: **40**
 - robustez ante casos límite: **40**
@@ -31,11 +31,11 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `browser.py`: **24**
 - `diskreport.py`: **24**
-- `organizer.py`: **22**
+- `organizer.py`: **23**
 - `safety.py`: **22**
+- `healthscore.py`: **21**
 - `branding.py`: **21**
 - `duplicates.py`: **20**
-- `healthscore.py`: **20**
 - `memory.py`: **20**
 - `scanner.py`: **20**
 - `quarantine.py`: **18**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-27T09:44:11` **organizer.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `stage_for_review` validando explícitamente la existencia de las rutas antes de cualquier operación y asegurando que las excepciones en `shutil.move` no interrumpan el procesamiento del resto de la lista.
+- `2026-07-27T09:41:48` **healthscore.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_generate_recommendations` mediante la validación explícita de valores (evitando divisiones por cero o comparaciones con `None` en casos de métricas corrompidas) y se refinó el manejo de errores en `compute_score` al asegurar que el objeto de métricas siempre tenga valores válidos antes del procesamiento.
 - `2026-07-27T09:32:52` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `walk_files` y `largest_folders` validando explícitamente que la entrada sea una ruta válida y convirtiendo entradas `None` o mal formadas en retornos seguros y silenciosos, evitando excepciones no controladas durante el inicio del escaneo.
 - `2026-07-27T09:32:25` **browser.py** (manejo de errores y validación de entradas): Mejora la robustez de `detect_profiles` y `directory_size` mediante la validación proactiva de parámetros de entrada, capturando excepciones específicas y manejando casos de rutas mal formadas para evitar fallos silenciosos o bloqueos inesperados.
 - `2026-07-27T09:24:43` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `build_context` implementando una validación explícita para los valores de `health` y `metrics` (usando `isinstance` y chequeos de existencia de atributos) para evitar errores en tiempo de ejecución si los objetos de origen no son los esperados, reemplazando el uso de `getattr` sobre objetos potencialmente nulos.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-27T07:39:21` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo integrando una tabla de referencia sobre las funciones de dibujo y añadiendo type hints más precisos para clarificar la semántica de las colecciones (mapeos de estilo).
 - `2026-07-27T07:29:24` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `is_within_directory` y `ensure_safe_to_modify` añadiendo validaciones preventivas de tipos y excepciones específicas para evitar errores en tiempo de ejecución al manipular objetos `Path` nulos o mal formados.
 - `2026-07-27T07:19:58` **quarantine.py** (manejo de errores y validación de entradas): Se mejora la robustez en `quarantine_file` y `restore_item` validando explícitamente que las rutas procesadas sean archivos reales y no directorios antes de operar sobre ellos, evitando excepciones genéricas de `shutil.move` en casos de directorios mal formados o enlaces simbólicos.
-- `2026-07-27T07:09:44` **healthscore.py** (manejo de errores y validación de entradas): Reforcé `SystemMetrics.validate` para que el acceso a atributos sea robusto ante la ausencia de campos en versiones antiguas o datos mal formados, garantizando que el cálculo no falle incluso si el objeto `SystemMetrics` tiene una estructura inesperada.
-- `2026-07-27T07:09:09` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `summarize` y `largest_folders` validando que la ruta proporcionada sea un directorio absoluto y accesible antes de comenzar el recorrido, evitando errores silenciosos al procesar entradas inválidas.

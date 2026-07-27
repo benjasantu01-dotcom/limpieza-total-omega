@@ -6,7 +6,7 @@ arranque, y las convierte en un puntaje de 0 a 100 con una nota de A a F y
 recomendaciones concretas.
 
 DECISIÓN DE DISEÑO: `compute_score` es una función pura — recibe un objeto
-con las mediciones y no toca el disco ni el sistema. Eso permite testear
+con las métricas y no toca el disco ni el sistema. Eso permite testear
 todos los casos límite (sistema impecable, sistema desastroso, datos
 faltantes) sin necesitar una PC sucia de verdad. La recolección de datos
 vive en los otros módulos; acá solo se puntúa.
@@ -151,20 +151,24 @@ def grade_for_score(score: int) -> str:
 def _generate_recommendations(m: SystemMetrics, ratios: Dict[str, float]) -> List[str]:
     """Genera una lista de acciones correctivas basadas en ratios bajos por área."""
     recs: List[str] = []
+    
+    # Usar .get con default 1.0 para evitar KeyError si el diccionario está incompleto
     if ratios.get("seguridad", 1.0) < 0.9:
         recs.append(f"Revisá los {m.suspicious_count} hallazgo(s) de seguridad; podés aislarlos en cuarentena sin borrarlos.")
     if ratios.get("disco", 1.0) < 0.6:
-        recs.append(f"Queda {round(m.disk_free_percent, 1)}% de disco libre. Mirá el análisis de disco para ver qué ocupa más.")
+        recs.append(f"Queda {round(float(m.disk_free_percent), 1)}% de disco libre. Mirá el análisis de disco para ver qué ocupa más.")
     if ratios.get("memoria", 1.0) < 0.6:
         recs.append("Memoria disponible baja: cerrá programas que no uses. Ojo, 'liberar RAM' no sirve, cerrar procesos sí.")
     if ratios.get("basura", 1.0) < 0.8:
-        recs.append(f"Hay unos {round(m.junk_mb)} MB de archivos temporales para revisar.")
+        recs.append(f"Hay unos {round(float(m.junk_mb))} MB de archivos temporales para revisar.")
     if ratios.get("duplicados", 1.0) < 0.8:
-        recs.append(f"Podrías recuperar ~{round(m.duplicate_mb)} MB eliminando copias duplicadas.")
+        recs.append(f"Podrías recuperar ~{round(float(m.duplicate_mb))} MB eliminando copias duplicadas.")
     if ratios.get("arranque", 1.0) < 0.6:
         recs.append(f"{m.startup_count} programas arrancan con Windows; desactivá los que no necesites desde el Administrador de tareas.")
+    
     if getattr(m, 'quarantined_count', 0) > 0:
         recs.append(f"Tenés {m.quarantined_count} archivo(s) en cuarentena esperando tu decisión.")
+    
     if not recs:
         recs.append("No hay nada urgente para hacer. El sistema está en buen estado.")
     return recs
@@ -188,11 +192,11 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         }
 
         # Aplica los pesos configurados en la constante global WEIGHTS
-        breakdown = {k: int(round(ratios[k] * WEIGHTS[k])) for k in WEIGHTS}
+        breakdown = {k: int(round(ratios.get(k, 0.0) * WEIGHTS.get(k, 0))) for k in WEIGHTS}
         total = sum(breakdown.values())
 
-    except Exception as e:
-        return HealthResult(0, "F", {}, [f"Error inesperado al calcular las métricas: {str(e)}"])
+    except (TypeError, ValueError, ZeroDivisionError) as e:
+        return HealthResult(0, "F", {}, [f"Error al procesar métricas: {str(e)}"])
 
     return HealthResult(
         score=max(0, min(100, total)),

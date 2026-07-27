@@ -146,16 +146,6 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Path:
     """
     Mueve los archivos detectados a una carpeta de cuarentena para revisión humana.
-    
-    Args:
-        files: Lista de objetos JunkFile a mover.
-        review_dir: Directorio de destino para la organización.
-
-    Returns:
-        Path: El directorio de revisión final utilizado.
-
-    Raises:
-        OSError: Si no es posible crear o acceder al directorio de revisión.
     """
     if not files or not isinstance(files, list):
         logger.warning("La lista de archivos a organizar está vacía o es inválida.")
@@ -176,6 +166,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         try:
             full_source_path = jf.path.resolve()
             if not full_source_path.exists() or not full_source_path.is_file():
+                logger.debug("Archivo inexistente o ya movido: %s", full_source_path)
                 continue
             
             if not is_safe_to_modify(full_source_path) or not is_safe_to_modify(dest):
@@ -197,7 +188,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 
             shutil.move(str(full_source_path), str(target))
         except (PermissionError, OSError, shutil.Error) as e:
-            logger.error("Error procesando archivo %s: %s", jf.path, e)
+            logger.error("Error moviendo archivo %s: %s", jf.path, e)
             continue
     return dest
 
@@ -205,9 +196,6 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
     """
     Elimina permanentemente los archivos dentro de la carpeta de revisión.
-
-    Returns:
-        int: Cantidad de archivos eliminados con éxito.
     """
     dest = Path(review_dir).expanduser()
     if not dest.exists() or not dest.is_dir():
