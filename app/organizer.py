@@ -68,6 +68,11 @@ class JunkFile:
         """Calcula el tamaño en Megabytes con dos decimales."""
         return round(self.size_bytes / (1024 * 1024), 2)
 
+    @property
+    def is_junk_extension(self) -> bool:
+        """Verifica si la extensión del archivo coincide con los criterios de basura."""
+        return self.path.suffix.lower() in {ext.lower() for ext in JUNK_EXTENSIONS}
+
 
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     """
@@ -85,11 +90,9 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
 
     dirs = directories or DEFAULT_SCAN_DIRS
     found: List[JunkFile] = []
-    junk_set = {ext.lower() for ext in JUNK_EXTENSIONS}
     blocklist = SYSTEM_FOLDER_BLOCKLIST
 
     def _walk_dir(base_path: str) -> None:
-        # Intenta recorrer el directorio; ignora errores si el acceso es denegado
         try:
             with os.scandir(base_path) as it:
                 for entry in it:
@@ -98,22 +101,22 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
                             if entry.name.lower() not in blocklist:
                                 _walk_dir(entry.path)
                         elif entry.is_file(follow_symlinks=False):
-                            if Path(entry.name).suffix.lower() in junk_set:
-                                full_path = Path(entry.path)
-                                if is_safe_to_modify(full_path):
-                                    stat = entry.stat()
-                                    found.append(
-                                        JunkFile(
-                                            path=full_path,
-                                            size_bytes=stat.st_size,
-                                            modified=datetime.fromtimestamp(stat.st_mtime),
-                                        )
+                            full_path = Path(entry.path)
+                            # Creamos instancia temporal para evaluar extensión y seguridad
+                            temp_junk = JunkFile(full_path, 0, datetime.now())
+                            
+                            if temp_junk.is_junk_extension and is_safe_to_modify(full_path):
+                                stat = entry.stat()
+                                found.append(
+                                    JunkFile(
+                                        path=full_path,
+                                        size_bytes=stat.st_size,
+                                        modified=datetime.fromtimestamp(stat.st_mtime),
                                     )
+                                )
                     except (PermissionError, OSError):
-                        # Se omite el archivo/directorio específico si falla el acceso
                         continue
         except (PermissionError, OSError):
-            # Se omite la carpeta base si falla el acceso
             pass
 
     for d in dirs:
@@ -131,6 +134,11 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
 def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -> List[JunkFile]:
     """
     Ordena una lista de archivos basura basándose en tamaño o fecha.
+    
+    Args:
+        files: Lista de objetos JunkFile.
+        by: Criterio de ordenación ('size' o 'date').
+        ascending: Orden ascendente si es True, descendente si es False.
     """
     if not isinstance(files, list):
         return []
@@ -166,11 +174,9 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         try:
             full_source_path = jf.path.resolve()
             if not full_source_path.exists() or not full_source_path.is_file():
-                logger.debug("Archivo inexistente o ya movido: %s", full_source_path)
                 continue
             
             if not is_safe_to_modify(full_source_path) or not is_safe_to_modify(dest):
-                logger.info("Omitido por seguridad: %s", full_source_path)
                 continue
                 
             if dest in full_source_path.parents or full_source_path.parent == dest:
@@ -196,6 +202,9 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
     """
     Elimina permanentemente los archivos dentro de la carpeta de revisión.
+    
+    Returns:
+        int: Cantidad de archivos eliminados exitosamente.
     """
     dest = Path(review_dir).expanduser()
     if not dest.exists() or not dest.is_dir():

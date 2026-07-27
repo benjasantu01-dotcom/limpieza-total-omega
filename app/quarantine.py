@@ -167,6 +167,7 @@ def quarantine_file(
 ) -> QuarantineItem:
     """
     Mueve un archivo a cuarentena tras validar seguridad y bloqueos.
+    Lanza ValueError, FileNotFoundError, IOError o RuntimeError en caso de fallo.
     """
     if not source:
         raise ValueError("La ruta de origen no puede estar vacía.")
@@ -180,16 +181,16 @@ def quarantine_file(
 
     ensure_safe_to_modify(origin, allow_sensitive=True)
 
-    destination_dir = quarantine_dir(base)
+    dest_dir = quarantine_dir(base)
     item_id = uuid.uuid4().hex[:12]
     safe_filename = Path(origin.name).name
     stored_name = f"{item_id}__{safe_filename}"
-    destination = destination_dir / stored_name
+    destination = dest_dir / stored_name
 
     if destination.exists():
         raise FileExistsError(f"Colisión de nombre en cuarentena: {destination}")
 
-    size = origin.stat().st_size
+    file_size = origin.stat().st_size
     
     try:
         shutil.move(str(origin), str(destination))
@@ -199,7 +200,7 @@ def quarantine_file(
                 item_id=item_id,
                 original_path=str(origin),
                 stored_name=stored_name,
-                size_bytes=size,
+                size_bytes=file_size,
                 reason=reason,
                 quarantined_at=datetime.now().isoformat(timespec="seconds"),
                 sha256=file_hash,
@@ -226,6 +227,7 @@ def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[Quaranti
 def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
     """
     Restaura un archivo a su ruta original tras verificar su integridad.
+    Lanza ValueError, KeyError, FileNotFoundError, RuntimeError o UnsafePathError.
     """
     if not item_id or not isinstance(item_id, str):
         raise ValueError("El ID del elemento debe ser una cadena válida.")
@@ -236,12 +238,12 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
     if match is None:
         raise KeyError(f"No hay ningún elemento en cuarentena con id '{item_id}'.")
 
-    stored = quarantine_dir(base) / match.stored_name
+    stored_file = quarantine_dir(base) / match.stored_name
     
-    if not stored.is_file():
-        raise FileNotFoundError(f"Archivo en cuarentena inexistente o directorio: {stored}")
+    if not stored_file.is_file():
+        raise FileNotFoundError(f"Archivo en cuarentena inexistente: {stored_file}")
         
-    if match.sha256 and _get_sha256(stored) != match.sha256:
+    if match.sha256 and _get_sha256(stored_file) != match.sha256:
         raise RuntimeError("Integridad comprometida: el archivo en cuarentena fue alterado.")
 
     destination = normalize(match.original_path)
@@ -256,7 +258,7 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
 
     try:
         destination.parent.mkdir(parents=True, exist_ok=True)
-        shutil.move(str(stored), str(destination))
+        shutil.move(str(stored_file), str(destination))
     except (OSError, PermissionError) as e:
         raise RuntimeError(f"Error durante la restauración del archivo: {e}")
 
@@ -266,7 +268,7 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
 
 
 def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> bool:
-    """Borra físicamente un archivo de la cuarentena y actualiza el manifiesto."""
+    """Borra físicamente un archivo de la cuarentena y actualiza el manifiesto. Retorna éxito."""
     if not item_id or not isinstance(item_id, str):
         return False
     items = load_manifest(base)
@@ -275,13 +277,14 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
     if match is None:
         return False
 
-    root = quarantine_dir(base)
-    stored = normalize(root / match.stored_name)
-    if not is_within_directory(stored, root):
-        raise UnsafePathError(f"Borrado bloqueado: '{stored}' está fuera de la cuarentena.")
+    quarantine_root = quarantine_dir(base)
+    stored_file = normalize(quarantine_root / match.stored_name)
+    
+    if not is_within_directory(stored_file, quarantine_root):
+        raise UnsafePathError(f"Borrado bloqueado: '{stored_file}' está fuera de la cuarentena.")
 
-    if stored.is_file():
-        stored.unlink()
+    if stored_file.is_file():
+        stored_file.unlink()
     items.remove(match)
     save_manifest(items, base)
     return True
@@ -290,23 +293,23 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
 def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     """
     Elimina todos los archivos en cuarentena y resetea el manifiesto.
-    Solo opera sobre archivos validados que residen estrictamente dentro del directorio de cuarentena.
+    Retorna la cantidad de archivos efectivamente eliminados.
     """
-    root = quarantine_dir(base)
+    quarantine_root = quarantine_dir(base)
     items = load_manifest(base)
-    borrados = 0
+    count = 0
     for item in items:
-        stored = normalize(root / item.stored_name)
-        if not is_within_directory(stored, root):
+        stored_file = normalize(quarantine_root / item.stored_name)
+        if not is_within_directory(stored_file, quarantine_root):
             continue
         try:
-            if stored.is_file():
-                stored.unlink()
-                borrados += 1
+            if stored_file.is_file():
+                stored_file.unlink()
+                count += 1
         except (OSError, PermissionError):
             continue
     save_manifest([], base)
-    return borrados
+    return count
 
 
 def total_quarantined_bytes(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:

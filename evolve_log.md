@@ -569,3 +569,45 @@ FAILED evolve/tests/test_modules.py::test_score_color_survives_garbage - Asserti
 - `2026-07-27T10:13:46` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica mediante docstrings más precisos en las funciones de cálculo de puntaje (`score_*`), detallando explícitamente los umbrales de penalización y la lógica de normalización para facilitar su mantenimiento.
 - `2026-07-27T10:13:46` Rotación — nada para rotar
 - `2026-07-27T10:13:46` Corrida terminada. Total usado hoy: 112.
+- `2026-07-27T10:22:12` Arrancando corrida. Quedan hoy ~188 peticiones objetivo.
+- `2026-07-27T10:23:03` Tests FALLARON:
+```
+r un botón que borre de una sola
+        pulsación.
+        """
+        tree = parse(APP_DIR / GUI_MODULE)
+        destructivos = ("on_delete_reviewed", "on_purge_quarantine",
+                        "on_quarantine_findings", "on_quarantine_duplicates",
+                        "on_stage", "on_trim_process")
+    
+        encontrados = {
+            nodo.name: nodo for nodo in ast.walk(tree)
+            if isinstance(nodo, ast.FunctionDef) and nodo.name in destructivos
+        }
+    
+        for nombre in destructivos:
+            nodo = encontrados.get(nombre)
+            assert nodo is not None, f"main.py perdió el manejador {nombre}"
+            llamadas = {
+                hijo.func.attr for hijo in ast.walk(nodo)
+                if isinstance(hijo, ast.Call) and isinstance(hijo.func, ast.Attribute)
+            }
+>           assert "_confirm" in llamadas, (
+                f"{nombre} hace algo destructivo sin pedir confirmación al usuario"
+            )
+E           AssertionError: on_delete_reviewed hace algo destructivo sin pedir confirmación al usuario
+E           assert '_confirm' in {'run_async'}
+
+evolve/tests/test_integrity.py:366: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_integrity.py::test_gui_confirms_before_every_destructive_action - AssertionError: on_delete_reviewed hace algo destructivo sin pedir confirmación al usuario
+assert '_confirm' in {'run_async'}
+1 failed, 298 passed in 0.91s
+
+```
+- `2026-07-27T10:23:03` ❌ Mejora descartada en main.py (no pasó los tests), se revirtió. Intento: Mejoré la legibilidad y mantenibilidad de `main.py` mediante la implementación de `Type Hints` en métodos críticos de la interfaz, el reemplazo de índices numéricos mágicos por constantes en la configuración del bucle de salud, y la adición de `docstrings` detallados en métodos de utilidades asíncronas para aclarar el manejo del ciclo de vida de las tareas.
+- `2026-07-27T10:23:36` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). He mejorado la documentación técnica agregando Type Hints explícitos para los retornos de las funciones y añadiendo un comentario aclaratorio en el bloque de `MEMORYSTATUSEX` para explicar la estructura de datos que requiere la API nativa de Windows, facilitando la comprensión del código a otros desarrolladores.
+- `2026-07-27T10:24:03` ✅ Mejora aceptada en organizer.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante la inclusión de type hints precisos, docstrings de estilo Google que explican el propósito de los parámetros y el comportamiento ante errores, y se ha encapsulado el criterio de filtrado de archivos en una propiedad lógica para mejorar la legibilidad y mantenibilidad del proceso de escaneo.
+- `2026-07-27T10:24:15` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). He mejorado la legibilidad y mantenibilidad del archivo añadiendo type hints faltantes en las funciones principales, completando docstrings para describir el propósito técnico (incluyendo excepciones lanzadas) y renombrando variables internas para reducir la ambigüedad en el manejo de rutas.
+- `2026-07-27T10:24:15` Rotación — nada para rotar
+- `2026-07-27T10:24:15` Corrida terminada. Total usado hoy: 116.

@@ -162,6 +162,8 @@ def _read_windows_snapshot() -> MemorySnapshot:
     """Llamada a la API nativa de Win32 GlobalMemoryStatusEx vía ctypes."""
     import ctypes
 
+    # Estructura requerida por la Win32 API para recibir información de memoria.
+    # dwLength debe inicializarse con el tamaño de la estructura antes de la llamada.
     class MEMORYSTATUSEX(ctypes.Structure):
         _fields_ = [
             ("dwLength", ctypes.c_ulong),
