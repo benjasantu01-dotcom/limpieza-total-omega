@@ -1088,8 +1088,14 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         def task():
-            destino = quarantine.restore_item(item_id)
-            self.log(f"Restaurado en: {destino}", "Cuarentena")
+            if not quarantine.item_exists(item_id):
+                self.log(f"Error: El ID '{item_id}' no existe en la cuarentena.", "Cuarentena")
+                return
+            try:
+                destino = quarantine.restore_item(item_id)
+                self.log(f"Restaurado en: {destino}", "Cuarentena")
+            except Exception as e:
+                self.log(f"Error al restaurar: {str(e)}", "Cuarentena")
 
         self.run_async(task)
 
@@ -1160,11 +1166,18 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         if not raw.isdigit():
             messagebox.showinfo("PID inválido", "Escribí el número de PID de un proceso.")
             return
+        
+        try:
+            pid = int(raw)
+        except ValueError:
+            messagebox.showerror("Error", "El PID debe ser un número entero.")
+            return
+
         if not self._confirm("Liberar working set", memory_mod.TRIM_WARNING + "\n\n¿Seguimos?"):
             return
 
         def task():
-            ok, mensaje = memory_mod.trim_working_set(int(raw))
+            ok, mensaje = memory_mod.trim_working_set(pid)
             self.log(("OK: " if ok else "Sin efecto: ") + mensaje, "Memoria")
 
         self.run_async(task)

@@ -1579,3 +1579,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-07-27T18:24:45` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
 - `2026-07-27T18:24:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-27T18:24:45` Corrida terminada. Total usado hoy: 304.
+- `2026-07-27T18:32:55` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-07-27T18:33:20` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: manejo de errores y validación de entradas).
+- `2026-07-27T18:33:42` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `suggest_keeper` y `reclaimable_bytes` validando la integridad del estado interno antes de procesar, y se reemplazó el uso de una lógica de comparación potencialmente inestable en `suggest_keeper` por un manejo de errores más explícito, asegurando que ante una excepción de acceso a metadatos el sistema devuelva un resultado seguro.
+- `2026-07-27T18:34:05` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `compute_score` validando explícitamente que los resultados de las funciones de puntuación (`ratios`) no sean valores `NaN` (causados por posibles divisiones por cero en futuras ediciones) y asegurando la integridad del diccionario `breakdown` mediante un acceso defensivo a `WEIGHTS`.
+- `2026-07-27T18:34:48` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `on_trim_process` y `on_restore_quarantine` validando los campos de entrada antes de operar y capturando errores de conversión o inexistencia, evitando que excepciones sin control lleguen a los hilos de ejecución.
+- `2026-07-27T18:34:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-27T18:34:48` Corrida terminada. Total usado hoy: 308.

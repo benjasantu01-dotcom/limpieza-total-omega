@@ -187,8 +187,12 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
             "arranque": lambda: score_startup(metrics.startup_count),
         }
 
-        ratios = {key: calculators[key]() for key in WEIGHTS}
-        breakdown = {key: int(round(ratios[key] * WEIGHTS[key])) for key in WEIGHTS}
+        ratios: Dict[str, float] = {}
+        for key in WEIGHTS:
+            val = calculators[key]()
+            ratios[key] = val if math.isfinite(val) else 0.0
+            
+        breakdown = {key: int(round(ratios[key] * WEIGHTS.get(key, 0))) for key in WEIGHTS}
         total = sum(breakdown.values())
 
     except (TypeError, ValueError, ZeroDivisionError, KeyError) as e:

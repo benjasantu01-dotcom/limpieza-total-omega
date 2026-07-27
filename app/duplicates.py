@@ -251,16 +251,20 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None
 
-    def sort_key(path: Path) -> tuple[float, int]:
+    valid_paths = []
+    for p in group.paths:
         try:
-            return (path.stat().st_mtime, len(str(path)))
+            mtime = p.stat().st_mtime
+            valid_paths.append((mtime, len(str(p)), p))
         except (OSError, PermissionError, FileNotFoundError):
-            return (float("inf"), len(str(path)))
+            continue
+            
+    if not valid_paths:
+        return group.paths[0] if group.paths else None
 
-    try:
-        return min(group.paths, key=sort_key)
-    except (ValueError, TypeError):
-        return None
+    # Ordenar por mtime (ascendente) y luego por longitud de ruta (ascendente)
+    best = min(valid_paths, key=lambda x: (x[0], x[1]))
+    return best[2]
 
 
 def format_group(group: DuplicateGroup) -> List[str]:
