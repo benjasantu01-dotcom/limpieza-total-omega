@@ -139,6 +139,10 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
     if directories is None:
         return []
     candidates: List[Path] = []
+    
+    def on_error(err: OSError):
+        pass
+
     for directory in directories:
         if not directory:
             continue
@@ -149,16 +153,16 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
             if skip_protected and is_protected_path(base):
                 continue
             
-            for root, subdirs, files in os.walk(base):
+            for root, subdirs, files in os.walk(base, onerror=on_error):
                 root_path = Path(root).resolve()
                 
                 # Defensa contra escapes de directorio y rutas protegidas
                 if not str(root_path).startswith(str(base)):
-                    subdirs[:] = []
+                    subdirs.clear()
                     continue
                 
                 if skip_protected and is_protected_path(root_path):
-                    subdirs[:] = []
+                    subdirs.clear()
                     continue
                     
                 for name in files:
@@ -213,7 +217,6 @@ def find_duplicates(
         return []
 
     groups: List[DuplicateGroup] = []
-    # Filtrar tamaños únicos desde el inicio para evitar procesar archivos sin duplicados
     size_map = {s: p for s, p in group_by_size(candidates).items() if len(p) > 1}
     
     for size, same_size in size_map.items():

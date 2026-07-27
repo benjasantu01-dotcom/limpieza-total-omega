@@ -149,17 +149,17 @@ def _generate_recommendations(m: SystemMetrics, ratios: Dict[str, float]) -> Lis
     """Genera una lista de acciones correctivas basadas en ratios bajos por área."""
     recs: List[str] = []
     
-    if ratios["seguridad"] < 0.9:
+    if ratios.get("seguridad", 1.0) < 0.9:
         recs.append(f"Revisá los {m.suspicious_count} hallazgo(s) de seguridad; podés aislarlos en cuarentena sin borrarlos.")
-    if ratios["disco"] < 0.6:
+    if ratios.get("disco", 1.0) < 0.6:
         recs.append(f"Queda {round(m.disk_free_percent, 1)}% de disco libre. Mirá el análisis de disco para ver qué ocupa más.")
-    if ratios["memoria"] < 0.6:
+    if ratios.get("memoria", 1.0) < 0.6:
         recs.append("Memoria disponible baja: cerrá programas que no uses. Ojo, 'liberar RAM' no sirve, cerrar procesos sí.")
-    if ratios["basura"] < 0.8:
+    if ratios.get("basura", 1.0) < 0.8:
         recs.append(f"Hay unos {int(m.junk_mb)} MB de archivos temporales para revisar.")
-    if ratios["duplicados"] < 0.8:
+    if ratios.get("duplicados", 1.0) < 0.8:
         recs.append(f"Podrías recuperar ~{int(m.duplicate_mb)} MB eliminando copias duplicadas.")
-    if ratios["arranque"] < 0.6:
+    if ratios.get("arranque", 1.0) < 0.6:
         recs.append(f"{m.startup_count} programas arrancan con Windows; desactivá los que no necesites desde el Administrador de tareas.")
     
     if m.quarantined_count > 0:
@@ -178,16 +178,17 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     try:
         metrics.validate()
         
-        ratios = {
-            "seguridad": score_security(metrics.suspicious_count, metrics.suspicious_warnings),
-            "disco": score_disk(metrics.disk_free_percent),
-            "memoria": score_memory(metrics.memory_available_percent),
-            "basura": score_junk(metrics.junk_mb),
-            "duplicados": score_duplicates(metrics.duplicate_mb),
-            "arranque": score_startup(metrics.startup_count),
+        calculators = {
+            "seguridad": lambda: score_security(metrics.suspicious_count, metrics.suspicious_warnings),
+            "disco": lambda: score_disk(metrics.disk_free_percent),
+            "memoria": lambda: score_memory(metrics.memory_available_percent),
+            "basura": lambda: score_junk(metrics.junk_mb),
+            "duplicados": lambda: score_duplicates(metrics.duplicate_mb),
+            "arranque": lambda: score_startup(metrics.startup_count),
         }
 
-        breakdown = {k: int(round(ratios[k] * WEIGHTS[k])) for k in WEIGHTS}
+        ratios = {key: calculators[key]() for key in WEIGHTS}
+        breakdown = {key: int(round(ratios[key] * WEIGHTS[key])) for key in WEIGHTS}
         total = sum(breakdown.values())
 
     except (TypeError, ValueError, ZeroDivisionError, KeyError) as e:

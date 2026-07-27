@@ -1195,7 +1195,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def on_disk_analysis(self):
         """Analiza profundamente una carpeta específica."""
         folder = self._ask_folder("Elegí una carpeta para analizar")
-        if not folder:
+        if not folder or not os.path.exists(folder):
             return
         self.analysis_folder = folder
 
@@ -1214,7 +1214,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def on_find_duplicates(self):
         """Busca archivos duplicados en la carpeta indicada."""
         folder = self._ask_folder("Elegí una carpeta donde buscar duplicados")
-        if not folder:
+        if not folder or not os.path.exists(folder):
             return
 
         def task():

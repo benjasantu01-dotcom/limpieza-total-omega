@@ -1278,3 +1278,13 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-07-27T15:50:53` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `directory_size` ante el acceso a rutas con permisos denegados o caracteres inválidos, y se mejoró `_is_valid_cache_path` para prevenir excepciones al manipular rutas que podrían ser inexistentes o inaccesibles antes de realizar la resolución física.
 - `2026-07-27T15:50:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-27T15:50:53` Corrida terminada. Total usado hoy: 244.
+- `2026-07-27T15:59:01` Arrancando corrida. Quedan hoy ~56 peticiones objetivo.
+- `2026-07-27T15:59:44` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: robustez ante casos límite).
+- `2026-07-27T16:00:08` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_collect_candidates` ante errores de permisos durante el `os.walk` mediante el manejo de `onerror`, evitando que el escaneo se detenga silenciosamente y garantizando que las excepciones de acceso no interrumpan la recolección de archivos.
+- `2026-07-27T16:00:45` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se mejora la robustez de `compute_score` frente a casos donde `WEIGHTS` podría ser modificado o contener claves inesperadas, asegurando que `breakdown` se calcule de forma segura y que la suma total sea consistente mediante una iteración sobre las claves validadas.
+- `2026-07-27T16:00:46` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-07-27T16:01:03` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-07-27T16:02:10` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-07-27T16:03:06` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se implementó un manejo de errores robusto en `on_disk_analysis` y `on_find_duplicates` para evitar que la app intente procesar rutas inválidas, vacías o bloqueadas mediante un chequeo previo de existencia, reforzando la seguridad ante entradas inesperadas del usuario.
+- `2026-07-27T16:03:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-27T16:03:06` Corrida terminada. Total usado hoy: 248.
