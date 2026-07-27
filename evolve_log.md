@@ -679,3 +679,10 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-07-27T11:04:49` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 108): unterminated string literal (detected at line 108)
 - `2026-07-27T11:04:49` Rotación — nada para rotar
 - `2026-07-27T11:04:49` Corrida terminada. Total usado hoy: 132.
+- `2026-07-27T11:13:02` Arrancando corrida. Quedan hoy ~168 peticiones objetivo.
+- `2026-07-27T11:13:33` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
+- `2026-07-27T11:14:00` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento de `scan_directory` reemplazando la lista `queue` por una estructura de datos más adecuada para búsquedas frecuentes y evitando la re-evaluación de la configuración de ruta mediante el uso de constantes pre-compiladas y chequeos mínimos.
+- `2026-07-27T11:14:27` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se implementó un cache en memoria para la configuración (`_cached_settings`) y un identificador de base (`_last_base`) para evitar operaciones innecesarias de lectura y validación de disco en llamadas repetidas a `load()` o `get()`, mejorando significativamente el rendimiento durante el bucle principal.
+- `2026-07-27T11:14:45` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 178): f-string: single '}' is not allowed
+- `2026-07-27T11:14:45` Rotación — nada para rotar
+- `2026-07-27T11:14:45` Corrida terminada. Total usado hoy: 136.

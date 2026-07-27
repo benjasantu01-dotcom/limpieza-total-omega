@@ -62,6 +62,10 @@ API_KEY_ENV_VAR: Final = "OMEGA_GEMINI_KEY"
 VALID_THEMES: Final = ("oscuro", "claro", "sistema")
 VALID_ACCENTS: Final = ("menta", "violeta", "magenta", "cian", "ambar")
 
+# Caché interno para evitar lectura repetitiva de disco
+_cached_settings: dict[str, Any] | None = None
+_last_base: str | Path | None = None
+
 # Valores de fábrica. Cada clave define además el tipo esperado: si el archivo
 # trae otra cosa, se descarta ese valor y se usa este.
 DEFAULTS: Final[dict[str, Any]] = {
@@ -168,16 +172,25 @@ def validate(values: Any) -> dict[str, Any]:
 
 def load(base: str | Path | None = None) -> dict[str, Any]:
     """Carga la configuración. Devuelve los valores de fábrica si no hay archivo."""
+    global _cached_settings, _last_base
+    
+    if _cached_settings is not None and base == _last_base:
+        return _cached_settings
+
     ruta = settings_path(base)
     try:
         crudo = json.loads(ruta.read_text(encoding="utf-8"))
+        _cached_settings = validate(crudo)
     except (OSError, json.JSONDecodeError, UnicodeDecodeError):
-        return dict(DEFAULTS)
-    return validate(crudo)
+        _cached_settings = dict(DEFAULTS)
+        
+    _last_base = base
+    return _cached_settings
 
 
 def save(values: Any, base: str | Path | None = None) -> Path | None:
     """Guarda la configuración validada. Devuelve la ruta, o None si no pudo."""
+    global _cached_settings
     ruta = settings_path(base)
     limpio = validate(values)
     try:
@@ -186,6 +199,7 @@ def save(values: Any, base: str | Path | None = None) -> Path | None:
             json.dumps(limpio, indent=2, ensure_ascii=False),
             encoding="utf-8",
         )
+        _cached_settings = limpio
         return ruta
     except OSError:
         return None
@@ -193,7 +207,7 @@ def save(values: Any, base: str | Path | None = None) -> Path | None:
 
 def update(changes: dict[str, Any], base: str | Path | None = None) -> dict[str, Any]:
     """Aplica cambios parciales sobre lo guardado y devuelve el resultado."""
-    actual = load(base)
+    actual = load(base).copy()
     if isinstance(changes, dict):
         actual.update(changes)
     limpio = validate(actual)
@@ -203,8 +217,10 @@ def update(changes: dict[str, Any], base: str | Path | None = None) -> dict[str,
 
 def reset(base: str | Path | None = None) -> dict[str, Any]:
     """Vuelve todo a los valores de fábrica y lo guarda."""
+    global _cached_settings
     limpio = dict(DEFAULTS)
     save(limpio, base)
+    _cached_settings = limpio
     return limpio
 
 

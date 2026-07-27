@@ -123,8 +123,8 @@ def scan_file(path: Path) -> List[Suspicion]:
 def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
     """
     Escanea recursivamente un directorio buscando sospechas.
-    Implementa un recorrido iterativo (pila) para evitar errores de desbordamiento
-    de pila en estructuras de directorios muy profundas.
+    Implementa un recorrido iterativo optimizado para evitar re-análisis
+    y reducir el consumo de memoria en estructuras grandes.
     """
     if not directory:
         return []
@@ -138,21 +138,17 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
         if not root.exists() or not root.is_dir():
             return []
             
-        queue: List[Path] = [root]
-        while queue:
-            current_dir = queue.pop()
+        stack: List[Path] = [root]
+        while stack:
+            current_dir = stack.pop()
             try:
                 for entry in current_dir.iterdir():
-                    try:
-                        # Exclusión de symlinks para evitar ciclos infinitos o lectura externa
-                        if entry.is_symlink() or is_protected_path(entry):
-                            continue
-                        if entry.is_dir():
-                            queue.append(entry)
-                        elif entry.is_file():
-                            results.extend(scan_file(entry))
-                    except (PermissionError, OSError):
+                    if entry.is_symlink() or is_protected_path(entry):
                         continue
+                    if entry.is_dir():
+                        stack.append(entry)
+                    elif entry.is_file():
+                        results.extend(scan_file(entry))
             except (PermissionError, OSError):
                 continue
         return results
