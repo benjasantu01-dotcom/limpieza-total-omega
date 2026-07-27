@@ -7,8 +7,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **273** (54.2% de aceptación)
-- Rechazadas por tests: 22
-- Rechazadas por guardia de seguridad: 32
+- Rechazadas por tests: 23
+- Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 4
 - Sin respuesta de la IA (error o límite): 173
 
@@ -16,36 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-26 | 194 | 12 | 20 | 2 | 68 |
-| 2026-07-27 | 79 | 10 | 12 | 2 | 105 |
+| 2026-07-26 | 192 | 11 | 19 | 2 | 68 |
+| 2026-07-27 | 81 | 12 | 12 | 2 | 105 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **64**
-- manejo de errores y validación de entradas: **59**
+- legibilidad y documentación: **65**
+- manejo de errores y validación de entradas: **60**
 - seguridad defensiva: **58**
 - robustez ante casos límite: **47**
-- rendimiento: **45**
+- rendimiento: **43**
 
 ## Mejoras aceptadas por archivo
 
-- `organizer.py`: **26**
 - `browser.py`: **26**
 - `diskreport.py`: **26**
-- `safety.py`: **24**
+- `organizer.py`: **25**
+- `safety.py`: **23**
 - `duplicates.py`: **22**
 - `scanner.py`: **22**
 - `healthscore.py`: **21**
+- `startup.py`: **20**
 - `branding.py`: **20**
-- `startup.py`: **19**
 - `main.py`: **19**
 - `quarantine.py`: **19**
 - `memory.py`: **19**
-- `assistant.py`: **6**
+- `assistant.py`: **7**
 - `settings.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-27T14:29:25` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad del código introduciendo Type Aliases para clarificar las estructuras de datos y añadí docstrings explicativos en las funciones internas (`numero` y `entero`) para detallar las políticas de saneamiento de datos en el motor de contexto.
+- `2026-07-27T14:28:58` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` y `entries_from_registry` mediante la validación proactiva de datos de entrada, evitando errores de desbordamiento o procesamiento de listas vacías y asegurando que las rutas de registro se procesen únicamente si tienen el formato esperado.
 - `2026-07-27T14:17:19` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` validando exhaustivamente la existencia de rutas, el estado del archivo y la jerarquía de directorios antes de cualquier operación, aplicando un enfoque preventivo ante condiciones de carrera o archivos inexistentes.
 - `2026-07-27T14:08:40` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez del manejo de entradas en `on_trim_process` y `on_save_settings`, añadiendo validaciones específicas para asegurar que los datos procesados (PID y valores numéricos) sean tipos válidos antes de proceder, evitando posibles excepciones de conversión o lógica incorrecta.
 - `2026-07-27T14:07:06` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez del procesamiento de rutas y la validación de tipos en `_collect_candidates` y `suggest_keeper`, capturando excepciones específicas y verificando la integridad de las entradas para evitar fallos durante la iteración en sistemas con permisos restrictivos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-27T12:24:57` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `quarantine_file` validando explícitamente que la carpeta destino (cuarentena) sea una ruta segura antes de realizar la operación de movimiento, evitando posibles inyecciones de rutas externas mediante el parámetro `base`.
 - `2026-07-27T12:16:41` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de `stage_for_review` al verificar que la ruta de origen sea una subruta efectiva dentro del contexto permitido, evitando movimientos involuntarios mediante ataques de recorrido de directorio (Path Traversal) o rutas ambiguas.
 - `2026-07-27T12:15:50` **main.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_ask_folder` reemplazando la verificación simple por `is_protected_path` con un chequeo robusto que utiliza `ensure_safe_to_modify` para evitar que la aplicación interactúe con rutas críticas, previniendo errores de permisos o modificaciones accidentales en directorios del sistema.
-- `2026-07-27T12:14:42` **healthscore.py** (seguridad defensiva): Se reforzó la robustez de `SystemMetrics.validate` y la seguridad de los cálculos numéricos ante entradas inesperadas, implementando una validación explícita para evitar estados inconsistentes en los contadores (`int`) que podrían corromper la lógica de `compute_score`.
-- `2026-07-27T12:06:11` **duplicates.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_collect_candidates` integrando una validación explícita mediante `is_protected_path` sobre la ruta resuelta antes de iterar, asegurando que no se acceda a directorios bloqueados a nivel de sistema incluso si los mismos no aparecen como enlaces simbólicos o jerarquías maliciosas.

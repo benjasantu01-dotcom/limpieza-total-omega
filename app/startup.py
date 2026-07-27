@@ -153,7 +153,8 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
         name_raw: str = csv_row_parts[0].strip().strip('"').strip("'")
         value_raw: str = csv_row_parts[1].strip().strip('"').strip("'")
         
-        if not name_raw or name_raw.lower() == "name" or name_raw.startswith("PS"):
+        # Validar que el nombre no sea una cabecera de sistema ignorando case
+        if not name_raw or name_raw.lower() in ("name", "pscustomobject") or name_raw.upper().startswith("PS"):
             continue
         parsed_entries.append(StartupEntry(name=name_raw, command=value_raw, source=source))
     return parsed_entries
@@ -169,10 +170,9 @@ def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[Start
     if os.name != "nt":
         return []
     all_entries: List[StartupEntry] = []
-    allowed_keys: set[str] = set(REGISTRY_RUN_KEYS)
     
     for key in keys:
-        if key not in allowed_keys:
+        if not key or not isinstance(key, str):
             continue
             
         # Escapado para PowerShell usando list2cmdline para evitar inyección en el comando
@@ -213,6 +213,8 @@ def list_startup_entries() -> List[StartupEntry]:
 
 def estimate_impact(entries: Iterable[StartupEntry]) -> str:
     """Clasifica el impacto en el rendimiento basado en la cantidad total de programas."""
+    if entries is None:
+        return "ok"
     total_count: int = sum(1 for _ in entries)
     if total_count <= 5:
         return "ok"

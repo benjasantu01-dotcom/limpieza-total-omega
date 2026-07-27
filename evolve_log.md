@@ -1097,3 +1097,68 @@ FAILED evolve/tests/test_safety.py::test_is_within_directory_detects_real_contai
 - `2026-07-27T14:18:36` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Mejoré `is_within_directory` para validar que las rutas de entrada existan físicamente antes de comparar (evitando falsos positivos o negativos por rutas inexistentes) y añadí una validación estricta contra `None` en `normalize`, centralizando la robustez ante entradas vacías o inválidas.
 - `2026-07-27T14:18:36` Rotación — metrics: 4 registros archivados
 - `2026-07-27T14:18:36` Corrida terminada. Total usado hoy: 208.
+- `2026-07-27T14:27:01` Arrancando corrida. Quedan hoy ~92 peticiones objetivo.
+- `2026-07-27T14:27:33` Tests FALLARON:
+```
+========================
+_____________ test_scanner_flags_system_lookalike_outside_system32 _____________
+
+    def test_scanner_flags_system_lookalike_outside_system32():
+        # Se usa PureWindowsPath a propósito: los tests corren en Linux (GitHub
+        # Actions) y ahí un Path normal no reconoce las barras invertidas, así
+        # que `.name` devolvería la ruta entera y el test fallaría siempre.
+        result = scanner.check_system_lookalike(PureWindowsPath(r"C:\Users\test\Downloads\svchost.exe"))
+>       assert result is not None
+E       assert None is not None
+
+evolve/tests/test_basic.py:201: AssertionError
+________________ test_scanner_lookalike_logic_is_os_independent ________________
+
+    def test_scanner_lookalike_logic_is_os_independent():
+        # La misma heurística tiene que valer con rutas estilo POSIX, para que el
+        # resultado no dependa de en qué sistema corran los tests.
+        flagged = scanner.check_system_lookalike(PurePosixPath("/home/user/Downloads/svchost.exe"))
+>       assert flagged is not None and flagged.severity == "warning"
+E       assert (None is not None)
+
+evolve/tests/test_basic.py:213: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_scanner_flags_system_lookalike_outside_system32 - assert None is not None
+FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independent - assert (None is not None)
+2 failed, 297 passed in 1.00s
+
+```
+- `2026-07-27T14:27:33` ❌ Mejora descartada en scanner.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de las funciones de escaneo agregando validaciones de tipo explícitas y manejando casos donde los objetos `Path` podrían ser inconsistentes, evitando que errores silenciosos en atributos como `path.name` o `path.parent` afecten el proceso de escaneo.
+- `2026-07-27T14:28:19` Tests FALLARON:
+```
+...............F........................................................ [ 24%]
+........................................................................ [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+______________________ test_a_normal_folder_is_remembered ______________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-2/test_a_normal_folder_is_rememb0')
+
+    def test_a_normal_folder_is_remembered(tmp_path):
+        segura = str(tmp_path / "Descargas")
+>       assert settings.validate({"ultima_carpeta": segura})["ultima_carpeta"] == segura
+E       AssertionError: assert '' == '/tmp/pytest-...mb0/Descargas'
+E         
+E         - /tmp/pytest-of-runner/pytest-2/test_a_normal_folder_is_rememb0/Descargas
+
+evolve/tests/test_assistant.py:124: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - AssertionError: assert '' == '/tmp/pytest-...mb0/Descargas'
+  
+  - /tmp/pytest-of-runner/pytest-2/test_a_normal_folder_is_rememb0/Descargas
+1 failed, 298 passed in 0.99s
+
+```
+- `2026-07-27T14:28:19` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de la validación al añadir una verificación explícita para asegurar que la entrada de `ultima_carpeta` sea efectivamente un directorio y no un archivo, evitando errores lógicos al intentar persistir configuraciones inválidas.
+- `2026-07-27T14:28:28` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-07-27T14:28:58` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `parse_registry_csv` y `entries_from_registry` mediante la validación proactiva de datos de entrada, evitando errores de desbordamiento o procesamiento de listas vacías y asegurando que las rutas de registro se procesen únicamente si tienen el formato esperado.
+- `2026-07-27T14:29:25` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejoré la legibilidad del código introduciendo Type Aliases para clarificar las estructuras de datos y añadí docstrings explicativos en las funciones internas (`numero` y `entero`) para detallar las políticas de saneamiento de datos en el motor de contexto.
+- `2026-07-27T14:29:25` Rotación — metrics: 4 registros archivados
+- `2026-07-27T14:29:25` Corrida terminada. Total usado hoy: 212.

@@ -45,7 +45,7 @@ import urllib.request
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Final
+from typing import Any, Final, TypeAlias
 
 import settings
 
@@ -64,6 +64,10 @@ __all__ = [
     "available",
     "explain_area",
 ]
+
+# Aliases de tipos para facilitar la lectura del flujo de datos
+MetricSource: TypeAlias = Any
+ScoreSource: TypeAlias = Any
 
 # Documentación ejecutable de lo que nunca sale del equipo. El test de
 # privacidad recorre esta lista, así que agregar algo acá lo protege de verdad.
@@ -156,7 +160,7 @@ class Answer:
         return self.source == "gemini"
 
 
-def build_context(metrics: Any = None, health: Any = None, **extra: Any) -> SystemContext:
+def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
     """Arma el contexto agregado a partir de los resultados ya calculados.
 
     Esta es la ÚNICA función que decide qué datos son visibles para el
@@ -167,10 +171,11 @@ def build_context(metrics: Any = None, health: Any = None, **extra: Any) -> Syst
     contexto = SystemContext()
 
     def numero(objeto: Any, nombre: str, defecto: float = 0.0, maximo: float = float('inf')) -> float:
-        """Extrae valor numérico, filtra nulos, valida tipo y asegura un máximo razonable."""
+        """Extrae un valor numérico de un objeto, ignorando tipos complejos y aplicando límites de seguridad."""
         if objeto is None: return defecto
         try:
             val = getattr(objeto, nombre, None)
+            # Bloqueamos estructuras no escalares para prevenir filtración de datos complejos
             if val is None or isinstance(val, (dict, list, set)): return defecto
             num = float(val)
             return max(0.0, min(num, float(maximo)))
@@ -178,7 +183,7 @@ def build_context(metrics: Any = None, health: Any = None, **extra: Any) -> Syst
             return defecto
 
     def entero(objeto: Any, nombre: str, defecto: int = 0) -> int:
-        """Extrae entero, filtrando negativos y errores de conversión."""
+        """Extrae un valor entero de un objeto, asegurando que solo valores numéricos positivos sean considerados."""
         if objeto is None: return defecto
         try:
             val = getattr(objeto, nombre, None)
