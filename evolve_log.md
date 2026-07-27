@@ -1234,3 +1234,14 @@ FAILED evolve/tests/test_modules.py::test_ring_ignores_garbage_percent_and_missi
 - `2026-07-27T15:20:02` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del puntaje en `compute_score` y la generación de recomendaciones pre-calculando los ratios una sola vez y evitando llamadas redundantes a métodos de dict, mejorando la eficiencia en el flujo principal.
 - `2026-07-27T15:20:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-27T15:20:02` Corrida terminada. Total usado hoy: 232.
+- `2026-07-27T15:28:27` Arrancando corrida. Quedan hoy ~68 peticiones objetivo.
+- `2026-07-27T15:29:41` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Optimicé el rendimiento de la pestaña `Salud` evitando la recarga innecesaria de elementos de la interfaz (`area_bars`) mediante el uso de referencias estáticas y mejorando el manejo de `ThreadPoolExecutor` al instanciarlo una sola vez en el `__init__`, reduciendo la carga de creación de hilos en cada corrida.
+- `2026-07-27T15:29:43` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-07-27T15:29:57` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-07-27T15:30:28` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: rendimiento).
+- `2026-07-27T15:30:57` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-07-27T15:31:07` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-07-27T15:31:48` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimicé el rendimiento del escaneo sustituyendo la llamada redundante a `Path(entry.name).suffix.lower()` por una simple operación de cadena sobre el nombre de entrada ya obtenido, evitando la creación innecesaria de miles de objetos `Path` en el bucle principal.
+- `2026-07-27T15:31:58` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el rendimiento de `quarantine_file` y `restore_item` eliminando la relectura completa del manifiesto desde el disco cuando ya está en el caché en memoria, manteniendo la consistencia de los datos.
+- `2026-07-27T15:31:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-27T15:31:58` Corrida terminada. Total usado hoy: 236.

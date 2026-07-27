@@ -207,12 +207,11 @@ def quarantine_file(
                 quarantined_at=datetime.now().isoformat(timespec="seconds"),
                 sha256=file_hash,
             )
-            items = load_manifest(base)
+            items = list(_manifest_cache.get(str(base)) or load_manifest(base))
             items.append(item)
             save_manifest(items, base)
             return item
         except Exception as e:
-            # Reversión de emergencia: intentar devolver el archivo si falló el manifiesto
             if destination.exists():
                 shutil.move(str(destination), str(origin))
             raise RuntimeError(f"Error al actualizar manifiesto: {e}")
@@ -235,7 +234,7 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
     if not item_id or not isinstance(item_id, str):
         raise ValueError("El ID del elemento debe ser una cadena válida.")
 
-    items = load_manifest(base)
+    items = list(_manifest_cache.get(str(base)) or load_manifest(base))
     match = next((i for i in items if i.item_id == item_id), None)
     if match is None:
         raise KeyError(f"No hay ningún elemento en cuarentena con id '{item_id}'.")

@@ -134,6 +134,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.cards = {}
         self.area_bars = {}
         self._tasks_running = 0
+        self._executor = concurrent.futures.ThreadPoolExecutor(max_workers=5)
 
         self._build_layout()
 
@@ -761,7 +762,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 self._set_busy(False)
                 self.set_status("Listo.")
 
-        threading.Thread(target=wrapper, daemon=True).start()
+        self._executor.submit(wrapper)
 
     def _current_tab(self) -> str:
         """Devuelve el nombre de la pestaña visible actualmente."""
@@ -814,18 +815,18 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 descargas = os.path.expanduser("~/Downloads")
                 return scan_directory(descargas) if os.path.isdir(descargas) else []
 
-            with concurrent.futures.ThreadPoolExecutor(max_workers=5) as pool:
-                f_basura = pool.submit(medir_basura)
-                f_sospechosos = pool.submit(medir_sospechosos)
-                f_memoria = pool.submit(memory_mod.read_snapshot)
-                f_disco = pool.submit(diskreport.drive_usage, os.path.expanduser("~"))
-                f_arranque = pool.submit(startup_mod.list_startup_entries)
+            # Usamos self._executor pre-instanciado en __init__
+            f_basura = self._executor.submit(medir_basura)
+            f_sospechosos = self._executor.submit(medir_sospechosos)
+            f_memoria = self._executor.submit(memory_mod.read_snapshot)
+            f_disco = self._executor.submit(diskreport.drive_usage, os.path.expanduser("~"))
+            f_arranque = self._executor.submit(startup_mod.list_startup_entries)
 
-                junk_mb = f_basura.result()
-                hallazgos = f_sospechosos.result()
-                snapshot = f_memoria.result()
-                unidad = f_disco.result()
-                arranque = f_arranque.result()
+            junk_mb = f_basura.result()
+            hallazgos = f_sospechosos.result()
+            snapshot = f_memoria.result()
+            unidad = f_disco.result()
+            arranque = f_arranque.result()
 
             advertencias = sum(1 for h in hallazgos if h.severity == "warning")
             libre_pct = (unidad.free / unidad.total * 100) if unidad and unidad.total else 100.0
@@ -884,10 +885,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                                    text_color=colores.get(clave, branding.color("accent")))
 
             for clave, (barra, valor) in self.area_bars.items():
-                puntos = resultado.breakdown.get(clave)
+                puntos = resultado.breakdown.get(clave, 0)
                 maximo = healthscore.WEIGHTS.get(clave, 1)
-                if puntos is None:
-                    continue
                 proporcion = puntos / maximo if maximo else 0
                 barra.set(proporcion)
                 barra.configure(progress_color=branding.score_color(proporcion * 100))

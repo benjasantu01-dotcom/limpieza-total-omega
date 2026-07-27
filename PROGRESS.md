@@ -16,15 +16,15 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-26 | 176 | 10 | 18 | 2 | 66 |
-| 2026-07-27 | 96 | 13 | 13 | 2 | 108 |
+| 2026-07-26 | 173 | 10 | 18 | 2 | 65 |
+| 2026-07-27 | 99 | 13 | 13 | 2 | 109 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **77**
 - manejo de errores y validación de entradas: **60**
-- seguridad defensiva: **53**
-- rendimiento: **45**
+- seguridad defensiva: **50**
+- rendimiento: **48**
 - robustez ante casos límite: **37**
 
 ## Mejoras aceptadas por archivo
@@ -37,15 +37,18 @@ Este archivo se regenera solo en cada corrida a partir de
 - `duplicates.py`: **21**
 - `healthscore.py`: **21**
 - `memory.py`: **20**
+- `startup.py`: **19**
 - `main.py`: **19**
 - `quarantine.py`: **19**
-- `startup.py`: **19**
 - `branding.py`: **18**
 - `assistant.py`: **8**
 - `settings.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-27T15:31:58` **quarantine.py** (rendimiento): Optimicé el rendimiento de `quarantine_file` y `restore_item` eliminando la relectura completa del manifiesto desde el disco cuando ya está en el caché en memoria, manteniendo la consistencia de los datos.
+- `2026-07-27T15:31:48` **organizer.py** (rendimiento): Optimicé el rendimiento del escaneo sustituyendo la llamada redundante a `Path(entry.name).suffix.lower()` por una simple operación de cadena sobre el nombre de entrada ya obtenido, evitando la creación innecesaria de miles de objetos `Path` en el bucle principal.
+- `2026-07-27T15:29:41` **main.py** (rendimiento): Optimicé el rendimiento de la pestaña `Salud` evitando la recarga innecesaria de elementos de la interfaz (`area_bars`) mediante el uso de referencias estáticas y mejorando el manejo de `ThreadPoolExecutor` al instanciarlo una sola vez en el `__init__`, reduciendo la carga de creación de hilos en cada corrida.
 - `2026-07-27T15:20:02` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje en `compute_score` y la generación de recomendaciones pre-calculando los ratios una sola vez y evitando llamadas redundantes a métodos de dict, mejorando la eficiencia en el flujo principal.
 - `2026-07-27T15:18:50` **browser.py** (rendimiento): Implementé la invalidación de caché de `directory_size` mediante un `cache_clear` explícito en `summarize` y `total_cache_bytes` para asegurar que los reportes reflejen el estado actual del disco sin sacrificar el rendimiento de las llamadas repetidas dentro de un mismo ciclo.
 - `2026-07-27T15:10:06` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` reemplazando los múltiples `if any(...)` que escaneaban la cadena de la pregunta en cada llamada por una búsqueda eficiente en un diccionario mapeado a funciones, reduciendo la complejidad algorítmica y mejorando la legibilidad.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-27T14:49:25` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo mediante la adición de Type Hints detallados en las funciones de diagnóstico y la formalización de los comentarios de estado, facilitando la comprensión del flujo de datos sin alterar la lógica.
 - `2026-07-27T14:48:56` **main.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo documentando mediante docstrings detallados la lógica interna de los métodos críticos de interfaz y estandarizando las anotaciones de tipo para los parámetros y retornos.
 - `2026-07-27T14:47:54` **healthscore.py** (legibilidad y documentación): He mejorado la legibilidad y la robustez del código mediante la adición de Type Hints en la función `summarize` y una corrección en `_generate_recommendations` para asegurar que el cálculo de `m.junk_mb` y `m.duplicate_mb` maneje correctamente la conversión a entero para evitar visualizaciones con decimales innecesarios, además de unificar los docstrings para cumplir con los estándares de documentación del proyecto.
-- `2026-07-27T14:40:05` **duplicates.py** (legibilidad y documentación): Se introdujeron type hints más precisos y se documentaron las excepciones manejadas en las funciones de hashing y recolección para mejorar la mantenibilidad y claridad sobre los puntos de fallo previstos.
-- `2026-07-27T14:39:49` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `diskreport.py` añadiendo docstrings detallados en funciones clave (`walk_files`, `summarize`) que explican la lógica de exclusión y gestión de errores, para facilitar el mantenimiento y la comprensión de las medidas de seguridad.
-- `2026-07-27T14:39:21` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica y la robustez del código añadiendo *docstrings* detallados en las funciones de procesamiento de perfiles y refinando el manejo de rutas para asegurar que `is_relative_to` no falle ante posibles errores de resolución de rutas en el sistema de archivos.

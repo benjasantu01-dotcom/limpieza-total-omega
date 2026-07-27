@@ -105,9 +105,9 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
                             if entry.name.lower() not in blocklist:
                                 _walk_dir(entry.path)
                         elif entry.is_file(follow_symlinks=False):
-                            # Validar extensión antes de instanciar JunkFile o llamar a stat()
-                            suffix = Path(entry.name).suffix.lower()
-                            if suffix in _LOWER_JUNK_EXTS:
+                            # Optimización: extracción de extensión mediante split en string
+                            _, ext = os.path.splitext(entry.name)
+                            if ext.lower() in _LOWER_JUNK_EXTS:
                                 full_path = Path(entry.path)
                                 if is_safe_to_modify(full_path):
                                     stat = entry.stat()
