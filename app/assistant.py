@@ -175,7 +175,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
             if objeto is None: return defecto
             try:
                 val = getattr(objeto, nombre, None)
-                if val is None or isinstance(val, (dict, list, set)): return defecto
+                if val is None or isinstance(val, (dict, list, set, tuple)): return defecto
                 num = float(val)
                 return max(0.0, min(num, float(maximo)))
             except (TypeError, ValueError):
@@ -185,7 +185,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
             if objeto is None: return defecto
             try:
                 val = getattr(objeto, nombre, None)
-                if val is None or isinstance(val, (dict, list, set)): return defecto
+                if val is None or isinstance(val, (dict, list, set, tuple)): return defecto
                 num = int(float(val))
                 return max(0, num)
             except (TypeError, ValueError):
@@ -203,16 +203,15 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
             contexto.analyzed = True
 
         if health is not None:
-            score_val = entero(health, "score")
-            contexto.score = max(0, min(score_val, 100))
+            contexto.score = entero(health, "score")
+            contexto.score = max(0, min(contexto.score, 100))
             grado = getattr(health, "grade", "")
             contexto.grade = str(grado) if isinstance(grado, (str, int, float)) else ""
             contexto.analyzed = True
 
-        # Endurecimiento: solo permitir números en **extra y validar contra campos definidos
+        # Endurecimiento: validar tipos y rangos de campos extra
         for clave, valor in extra.items():
             if hasattr(contexto, clave) and isinstance(valor, (int, float)):
-                # No permitir sobreescribir campos sensibles o de control
                 if clave not in ["analyzed", "grade"]:
                     setattr(contexto, clave, max(0.0, float(valor)))
     except Exception:
