@@ -175,9 +175,11 @@ def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[Start
         if key not in allowed_keys:
             continue
             
+        # Escapado para PowerShell usando list2cmdline para evitar inyección en el comando
+        safe_key: str = subprocess.list2cmdline([key])
         ps_cmd: str = (
-            f"if (Test-Path '{key}') {{ (Get-Item '{key}').Property | ForEach-Object "
-            f"{{ [PSCustomObject]@{{ Name = $_; Value = (Get-ItemProperty '{key}').$_ }} }} | "
+            f"if (Test-Path {safe_key}) {{ (Get-Item {safe_key}).Property | ForEach-Object "
+            f"{{ [PSCustomObject]@{{ Name = $_; Value = (Get-ItemProperty {safe_key}).$_ }} }} | "
             "ConvertTo-Csv -NoTypeInformation }"
         )
         try:

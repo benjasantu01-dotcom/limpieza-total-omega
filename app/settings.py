@@ -163,8 +163,14 @@ def validate(values: Any) -> dict[str, Any]:
                     continue
                 if clave == "acento" and texto.lower() not in VALID_ACCENTS:
                     continue
-                if clave == "ultima_carpeta" and texto and not is_safe_to_modify(texto):
-                    continue
+                if clave == "ultima_carpeta" and texto:
+                    try:
+                        ruta_candidata = Path(texto).expanduser().resolve()
+                        if not is_safe_to_modify(str(ruta_candidata)):
+                            continue
+                        texto = str(ruta_candidata)
+                    except (OSError, RuntimeError):
+                        continue
                 limpio[clave] = texto.lower() if clave in ("tema", "acento") else texto
 
     return limpio

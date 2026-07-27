@@ -5,25 +5,25 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **493**
-- Mejoras aceptadas: **292** (59.2% de aceptación)
+- Iteraciones totales: **497**
+- Mejoras aceptadas: **294** (59.2% de aceptación)
 - Rechazadas por tests: 22
 - Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 5
-- Sin respuesta de la IA (error o límite): 141
+- Sin respuesta de la IA (error o límite): 143
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
 | 2026-07-26 | 221 | 15 | 22 | 3 | 68 |
-| 2026-07-27 | 71 | 7 | 11 | 2 | 73 |
+| 2026-07-27 | 73 | 7 | 11 | 2 | 75 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **75**
 - manejo de errores y validación de entradas: **64**
-- seguridad defensiva: **56**
+- seguridad defensiva: **58**
 - rendimiento: **50**
 - robustez ante casos límite: **47**
 
@@ -39,13 +39,15 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **22**
 - `branding.py`: **22**
 - `quarantine.py`: **21**
+- `startup.py`: **21**
 - `main.py`: **20**
-- `startup.py`: **20**
 - `assistant.py`: **5**
-- `settings.py`: **3**
+- `settings.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-27T12:35:45` **startup.py** (seguridad defensiva): Se endureció la seguridad defensiva de `entries_from_registry` agregando una validación estricta del string `key` mediante `shlex.quote` (usando `subprocess.list2cmdline` por compatibilidad con estándar) para prevenir inyección de comandos en la ejecución de PowerShell, garantizando que el parámetro del registro sea tratado estrictamente como un dato y no como código ejecutable.
+- `2026-07-27T12:35:08` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `validate()` asegurando que la ruta `ultima_carpeta` no solo sea tratada por `is_safe_to_modify`, sino que se normalice a una ruta absoluta antes de guardarse, evitando riesgos de ambigüedad con rutas relativas o malformadas.
 - `2026-07-27T12:26:14` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `scan_directory` añadiendo una validación explícita mediante `is_protected_path` al procesar cada entrada (`entry`), asegurando que no se sigan rutas protegidas incluso si el usuario intenta escanear subdirectorios específicos.
 - `2026-07-27T12:26:01` **safety.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `safety.py` añadiendo la detección explícita de puntos de reparse (junctions y symlinks) en el método `is_within_directory` y en la lógica principal de `is_protected_path`, evitando así que la app sea engañada para seguir enlaces hacia carpetas de sistema fuera de los directorios permitidos.
 - `2026-07-27T12:24:57` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `quarantine_file` validando explícitamente que la carpeta destino (cuarentena) sea una ruta segura antes de realizar la operación de movimiento, evitando posibles inyecciones de rutas externas mediante el parámetro `base`.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-27T11:55:44` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva al sanear explícitamente el texto de la `question` antes de procesarlo, evitando que caracteres o secuencias maliciosas inyectadas por el usuario puedan alterar la lógica del flujo de control o afectar la legibilidad del motor local.
 - `2026-07-27T11:55:20` **startup.py** (robustez ante casos límite): Se reforzó la robustez de `entries_from_folders` añadiendo un filtro `item.is_symlink()` para ignorar enlaces simbólicos/junctions en las carpetas de inicio, previniendo recursión infinita o lecturas fuera de los directorios permitidos, y se mejoró el manejo de rutas malformadas en `executable` mediante una validación más estricta del índice de cierre de comillas.
 - `2026-07-27T11:45:17` **safety.py** (robustez ante casos límite): He mejorado `is_protected_path` para prevenir la recursión infinita o errores de permisos al resolver rutas, añadiendo una comprobación de existencia y un manejo de errores más robusto ante accesos denegados, lo que evita que el escáner colapse ante archivos o enlaces bloqueados por el sistema.
-- `2026-07-27T11:44:06` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de `stage_for_review` implementando una validación explícita para evitar que `shutil.move` intente realizar operaciones entre sistemas de archivos que puedan fallar silenciosamente o corromper datos al intentar mover archivos abiertos o con bloqueos de acceso, integrando un chequeo de existencia previo más estricto y un control de errores ante fallos en la transferencia.
-- `2026-07-27T11:37:32` **main.py** (robustez ante casos límite): Mejoré la robustez en `on_trim_process` y `on_restore_quarantine` validando los inputs de usuario antes de procesarlos y envolviendo las llamadas en el manejo de errores global, evitando que inputs inesperados rompan el hilo o la ejecución.
