@@ -1563,3 +1563,10 @@ FAILED evolve/tests/test_modules.py::test_low_disk_produces_a_specific_recommend
 - `2026-07-27T07:09:44` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Reforcé `SystemMetrics.validate` para que el acceso a atributos sea robusto ante la ausencia de campos en versiones antiguas o datos mal formados, garantizando que el cálculo no falle incluso si el objeto `SystemMetrics` tiene una estructura inesperada.
 - `2026-07-27T07:09:44` Rotación — nada para rotar
 - `2026-07-27T07:09:44` Corrida terminada. Total usado hoy: 40.
+- `2026-07-27T07:18:27` Arrancando corrida. Quedan hoy ~260 peticiones objetivo.
+- `2026-07-27T07:18:44` ERROR llamando a Gemini: 503 Server Error: Service Unavailable for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=AQ.Ab8RN6LPuEsogsQBCXLadE4HRmufGPj0yP-0iUrwywshL5_T8Q
+- `2026-07-27T07:19:06` ERROR llamando a Gemini: 503 Server Error: Service Unavailable for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=AQ.Ab8RN6LPuEsogsQBCXLadE4HRmufGPj0yP-0iUrwywshL5_T8Q
+- `2026-07-27T07:19:45` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-07-27T07:19:58` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se mejora la robustez en `quarantine_file` y `restore_item` validando explícitamente que las rutas procesadas sean archivos reales y no directorios antes de operar sobre ellos, evitando excepciones genéricas de `shutil.move` en casos de directorios mal formados o enlaces simbólicos.
+- `2026-07-27T07:19:58` Rotación — nada para rotar
+- `2026-07-27T07:19:58` Corrida terminada. Total usado hoy: 44.

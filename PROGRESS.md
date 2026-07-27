@@ -5,24 +5,24 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **369**
-- Mejoras aceptadas: **234** (63.4% de aceptación)
+- Iteraciones totales: **373**
+- Mejoras aceptadas: **235** (63.0% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 23
 - Sin cambios (nada sustancial que mejorar): 4
-- Sin respuesta de la IA (error o límite): 93
+- Sin respuesta de la IA (error o límite): 96
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
 | 2026-07-26 | 221 | 15 | 22 | 3 | 68 |
-| 2026-07-27 | 13 | 0 | 1 | 1 | 25 |
+| 2026-07-27 | 14 | 0 | 1 | 1 | 28 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **56**
-- manejo de errores y validación de entradas: **54**
+- manejo de errores y validación de entradas: **55**
 - seguridad defensiva: **44**
 - rendimiento: **40**
 - robustez ante casos límite: **40**
@@ -38,12 +38,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **19**
 - `memory.py`: **19**
 - `scanner.py`: **19**
+- `quarantine.py`: **18**
 - `startup.py`: **18**
 - `main.py`: **17**
-- `quarantine.py`: **17**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-27T07:19:58` **quarantine.py** (manejo de errores y validación de entradas): Se mejora la robustez en `quarantine_file` y `restore_item` validando explícitamente que las rutas procesadas sean archivos reales y no directorios antes de operar sobre ellos, evitando excepciones genéricas de `shutil.move` en casos de directorios mal formados o enlaces simbólicos.
 - `2026-07-27T07:09:44` **healthscore.py** (manejo de errores y validación de entradas): Reforcé `SystemMetrics.validate` para que el acceso a atributos sea robusto ante la ausencia de campos en versiones antiguas o datos mal formados, garantizando que el cálculo no falle incluso si el objeto `SystemMetrics` tiene una estructura inesperada.
 - `2026-07-27T07:09:09` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `summarize` y `largest_folders` validando que la ruta proporcionada sea un directorio absoluto y accesible antes de comenzar el recorrido, evitando errores silenciosos al procesar entradas inválidas.
 - `2026-07-27T07:08:45` **browser.py** (manejo de errores y validación de entradas): Mejora la robustez de `directory_size` y `detect_profiles` añadiendo validaciones explícitas de tipo y estado para prevenir excepciones en tiempo de ejecución al interactuar con rutas del sistema.
@@ -58,4 +59,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-27T05:38:20` **memory.py** (legibilidad y documentación): Mejoré la documentación de `trim_working_set` y las funciones de parsing añadiendo docstrings que explican el contexto técnico de los errores y las restricciones, además de incorporar type hints en parámetros para asegurar la calidad de entrada.
 - `2026-07-27T05:36:53` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `healthscore.py` añadiendo docstrings detallados a las funciones de puntuación, explicando explícitamente el criterio de penalización y los umbrales utilizados para garantizar que cualquier colaborador entienda la lógica de negocio detrás de cada métrica.
 - `2026-07-26T22:16:15` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `duplicates.py` mediante docstrings detallados en las funciones de procesamiento crítico (`_collect_candidates` y `find_duplicates`), aclarando los mecanismos de seguridad, las precondiciones y el flujo de los pasos de filtrado para facilitar el mantenimiento y la auditoría.
-- `2026-07-26T22:16:09` **diskreport.py** (legibilidad y documentación): Mejora de legibilidad y mantenibilidad en `summarize` mediante la sustitución del diccionario anidado por la clase `ExtensionUsage` existente, garantizando consistencia en el manejo de datos y eliminando la carga cognitiva de trabajar con estructuras de datos arbitrarias.

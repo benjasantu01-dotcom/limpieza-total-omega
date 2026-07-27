@@ -167,20 +167,13 @@ def quarantine_file(
 ) -> QuarantineItem:
     """
     Mueve un archivo a cuarentena tras validar seguridad y bloqueos.
-    
-    Proceso:
-    1. Valida ruta origen.
-    2. Comprueba si el archivo está bloqueado por el S.O.
-    3. Verifica que no sea una ruta protegida.
-    4. Mueve físicamente y registra el hash para integridad futura.
-    5. Actualiza el manifiesto persistente.
     """
     if not source:
         raise ValueError("La ruta de origen no puede estar vacía.")
     
     origin = normalize(source)
     if not origin.is_file():
-        raise FileNotFoundError(f"No existe el archivo a poner en cuarentena: {origin}")
+        raise FileNotFoundError(f"El objeto no es un archivo válido: {origin}")
     
     if _is_file_locked(origin):
         raise IOError(f"El archivo está en uso por otro proceso: {origin}")
@@ -216,7 +209,6 @@ def quarantine_file(
             save_manifest(items, base)
             return item
         except Exception as e:
-            # Revertir el movimiento si el manifiesto falla para evitar inconsistencia
             if destination.exists():
                 shutil.move(str(destination), str(origin))
             raise RuntimeError(f"Error al actualizar manifiesto, archivo restaurado: {e}")
@@ -234,12 +226,6 @@ def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[Quaranti
 def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
     """
     Restaura un archivo a su ruta original tras verificar su integridad.
-    
-    Valida:
-    1. Existencia del ítem en manifiesto.
-    2. Integridad del archivo vía hash SHA-256.
-    3. Que la ruta original no esté ocupada actualmente.
-    4. Que la ruta destino sea segura según `safety.py`.
     """
     if not item_id or not isinstance(item_id, str):
         raise ValueError("El ID del elemento debe ser una cadena válida.")
@@ -252,15 +238,14 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
 
     stored = quarantine_dir(base) / match.stored_name
     
-    if not stored.exists():
-        raise FileNotFoundError(f"Archivo original en cuarentena no encontrado: {stored}")
+    if not stored.is_file():
+        raise FileNotFoundError(f"Archivo en cuarentena inexistente o directorio: {stored}")
         
     if match.sha256 and _get_sha256(stored) != match.sha256:
         raise RuntimeError("Integridad comprometida: el archivo en cuarentena fue alterado.")
 
     destination = normalize(match.original_path)
     
-    # Blindaje adicional: validar que la ruta restaurada no sea crítica
     if is_protected_path(destination):
         raise UnsafePathError(f"Restauración denegada: '{destination}' es una ruta protegida.")
 
