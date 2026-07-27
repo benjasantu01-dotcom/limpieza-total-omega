@@ -1382,8 +1382,14 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 valores[clave] = variable.get()
             except Exception:
                 continue
-        valores["duplicados_tamano_minimo_kb"] = self.min_dup_entry.get().strip() or 64
-        valores["top_archivos"] = self.top_files_entry.get().strip() or 15
+        
+        # Validar y convertir valores numéricos para evitar errores de tipo
+        try:
+            valores["duplicados_tamano_minimo_kb"] = int(self.min_dup_entry.get().strip() or 64)
+            valores["top_archivos"] = int(self.top_files_entry.get().strip() or 15)
+        except ValueError:
+            pass
+            
         clave_api = self.api_key_entry.get().strip()
         if clave_api:
             valores["asistente_clave_api"] = clave_api

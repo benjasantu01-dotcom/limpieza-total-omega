@@ -118,9 +118,11 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
         return {}
     groups: Dict[int, List[Path]] = defaultdict(list)
     for p in paths:
+        if not isinstance(p, Path):
+            continue
         try:
             groups[p.stat().st_size].append(p)
-        except (OSError, PermissionError, FileNotFoundError):
+        except (OSError, PermissionError, FileNotFoundError, AttributeError):
             continue
     return dict(groups)
 
@@ -156,11 +158,10 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
                     continue
                     
                 for name in files:
-                    candidate = (root_path / name).resolve()
-                    if not str(candidate).startswith(str(base)):
-                        continue
-                        
                     try:
+                        candidate = (root_path / name).resolve()
+                        if not str(candidate).startswith(str(base)):
+                            continue
                         if candidate.is_symlink():
                             continue
                         if skip_protected and is_protected_path(candidate):
@@ -243,14 +244,16 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None
 
-    def sort_key(path: Path):
+    def sort_key(path: Path) -> tuple[float, int]:
         try:
-            mtime = path.stat().st_mtime
+            return (path.stat().st_mtime, len(str(path)))
         except (OSError, PermissionError, FileNotFoundError):
-            mtime = float("inf")
-        return (mtime, len(str(path)))
+            return (float("inf"), len(str(path)))
 
-    return min(group.paths, key=sort_key)
+    try:
+        return min(group.paths, key=sort_key)
+    except (ValueError, TypeError):
+        return None
 
 
 def format_group(group: DuplicateGroup) -> List[str]:

@@ -1035,3 +1035,34 @@ FAILED evolve/tests/test_modules.py::test_score_color_survives_garbage - Asserti
 - `2026-07-27T13:58:19` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `summarize` y `largest_folders` validando los parámetros de entrada y asegurando que las excepciones durante el recorrido no interrumpan la agregación, manteniendo la integridad del proceso incluso ante errores de acceso a archivos.
 - `2026-07-27T13:58:19` Rotación — metrics: 4 registros archivados
 - `2026-07-27T13:58:19` Corrida terminada. Total usado hoy: 200.
+- `2026-07-27T14:06:41` Arrancando corrida. Quedan hoy ~100 peticiones objetivo.
+- `2026-07-27T14:07:06` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez del procesamiento de rutas y la validación de tipos en `_collect_candidates` y `suggest_keeper`, capturando excepciones específicas y verificando la integridad de las entradas para evitar fallos durante la iteración en sistemas con permisos restrictivos.
+- `2026-07-27T14:07:36` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: manejo de errores y validación de entradas).
+- `2026-07-27T14:08:40` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez del manejo de entradas en `on_trim_process` y `on_save_settings`, añadiendo validaciones específicas para asegurar que los datos procesados (PID y valores numéricos) sean tipos válidos antes de proceder, evitando posibles excepciones de conversión o lógica incorrecta.
+- `2026-07-27T14:08:43` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-07-27T14:08:56` Tests FALLARON:
+```
+[ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_____________ test_diagnose_explains_that_free_ram_is_not_the_goal _____________
+
+    def test_diagnose_explains_that_free_ram_is_not_the_goal():
+        lineas = memory.diagnose(memory.MemorySnapshot(total=1000, available=500))
+        texto = " ".join(lineas).lower()
+        assert "memoria total" in texto
+        # El mensaje honesto tiene que estar: es la diferencia con un limpiador falso.
+>       assert "liberar" in texto or "caché" in texto
+E       AssertionError: assert ('liberar' in 'memoria total: 1000 b en uso: 500 b (50.0%) disponible: 500 b (50.0%) estado: holgado.' or 'caché' in 'memoria total: 1000 b en uso: 500 b (50.0%) disponible: 500 b (50.0%) estado: holgado.')
+
+evolve/tests/test_modules.py:381: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_diagnose_explains_that_free_ram_is_not_the_goal - AssertionError: assert ('liberar' in 'memoria total: 1000 b en uso: 500 b (50.0%) disponible: 500 b (50.0%) estado: holgado.' or 'caché' in 'memoria total: 1000 b en uso: 500 b (50.0%) disponible: 500 b (50.0%) estado: holgado.')
+1 failed, 298 passed in 0.77s
+
+```
+- `2026-07-27T14:08:56` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Mejora el manejo de errores en `trim_working_set` añadiendo validaciones de tipo/rango más rigurosas y capturando excepciones de importación, además de asegurar que `MemorySnapshot` no opere con valores negativos inesperados.
+- `2026-07-27T14:08:56` Rotación — metrics: 4 registros archivados
+- `2026-07-27T14:08:56` Corrida terminada. Total usado hoy: 204.
