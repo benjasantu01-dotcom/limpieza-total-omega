@@ -717,8 +717,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def log_lines(self, lines, tab: str):
         """Escribe una lista de líneas en una pestaña y la guarda para el informe."""
         self.clear(tab)
-        for line in lines:
-            self.log(line, tab)
+        box = self._box(tab)
+        self.after(0, lambda: (box.insert("1.0", "\n".join(lines)), box.see("1.0")))
         self.report_data[tab.lower()] = list(lines)
 
     def _set_busy(self, busy: bool):
@@ -943,13 +943,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         ordered = sort_junk(self.junk_files, by=self.sort_by.get())
         lines = [f"{jf.size_mb:>8} MB  |  {jf.modified:%Y-%m-%d}  |  {jf.path}" for jf in ordered]
         self.report_data["limpieza"] = lines
-
-        def update_ui():
-            box = self._box("Limpieza")
-            box.delete("1.0", "end")
-            box.insert("1.0", "\n".join(lines))
-
-        self.after(0, update_ui)
+        box = self._box("Limpieza")
+        self.after(0, lambda: (box.delete("1.0", "end"), box.insert("1.0", "\n".join(lines))))
 
     def on_stage(self):
         """Mueve los candidatos a la carpeta de revisión (no borra)."""

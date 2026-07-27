@@ -277,22 +277,29 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
     total_bytes: int = 0
     total_files: int = 0
     extension_map: dict[str, ExtensionUsage] = {}
-    # Estructura de almacenamiento temporal para reporte de archivos pesados
-    all_files_snapshot: list[tuple[int, Path]] = []
     
-    for path, size in walk_files(path_obj, skip_protected):
-        total_bytes += size
-        total_files += 1
-        
-        ext_name = path.suffix.lower() or "(sin extensión)"
-        if ext_name not in extension_map:
-            extension_map[ext_name] = ExtensionUsage(ext_name, 0, 0)
+    # Usamos un generador para mantener bajo consumo de memoria durante el proceso
+    files_gen = walk_files(path_obj, skip_protected)
+    
+    # Pasamos una referencia de los datos procesados para el top de archivos pesados
+    def process_files(gen):
+        for path, size in gen:
+            nonlocal total_bytes, total_files
+            total_bytes += size
+            total_files += 1
             
-        ext_data = extension_map[ext_name]
-        ext_data.size_bytes += size
-        ext_data.count += 1
-        
-        all_files_snapshot.append((size, path))
+            ext_name = path.suffix.lower() or "(sin extensión)"
+            if ext_name not in extension_map:
+                extension_map[ext_name] = ExtensionUsage(ext_name, 0, 0)
+            ext_data = extension_map[ext_name]
+            ext_data.size_bytes += size
+            ext_data.count += 1
+            yield (size, path)
+
+    all_files_snapshot = process_files(files_gen)
+    
+    # El uso de heapq.nlargest sobre el generador consume memoria constante (limitada a 8)
+    top_8_files = heapq.nlargest(8, all_files_snapshot, key=lambda x: x[0])
             
     lines = [
         f"Carpeta analizada: {path_obj}",
@@ -301,14 +308,13 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
         "Por tipo de archivo:",
     ]
     
-    # Procesar y ordenar resultados para mostrar los 8 elementos más significativos
     sorted_exts = heapq.nlargest(8, extension_map.values(), key=lambda x: x.size_bytes)
     for ext_data in sorted_exts:
         lines.append(f"  {ext_data.extension:<18} {format_size(ext_data.size_bytes):>10}  ({ext_data.count} archivos)")
         
     lines.append("")
     lines.append("Archivos más grandes:")
-    for size, path in heapq.nlargest(8, all_files_snapshot, key=lambda x: x[0]):
+    for size, path in top_8_files:
         lines.append(f"  {format_size(size):>10}  {path}")
         
     return lines

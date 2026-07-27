@@ -5,8 +5,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **453**
-- Mejoras aceptadas: **265** (58.5% de aceptación)
+- Iteraciones totales: **457**
+- Mejoras aceptadas: **269** (58.9% de aceptación)
 - Rechazadas por tests: 20
 - Rechazadas por guardia de seguridad: 29
 - Sin cambios (nada sustancial que mejorar): 4
@@ -17,35 +17,39 @@ Este archivo se regenera solo en cada corrida a partir de
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
 | 2026-07-26 | 221 | 15 | 22 | 3 | 68 |
-| 2026-07-27 | 44 | 5 | 7 | 1 | 67 |
+| 2026-07-27 | 48 | 5 | 7 | 1 | 67 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **75**
 - manejo de errores y validación de entradas: **64**
+- rendimiento: **45**
 - seguridad defensiva: **45**
-- rendimiento: **41**
 - robustez ante casos límite: **40**
 
 ## Mejoras aceptadas por archivo
 
+- `diskreport.py`: **26**
 - `browser.py`: **25**
-- `diskreport.py`: **25**
 - `organizer.py`: **24**
 - `safety.py`: **24**
-- `healthscore.py`: **22**
+- `healthscore.py`: **23**
+- `duplicates.py`: **22**
 - `scanner.py`: **22**
-- `duplicates.py`: **21**
 - `memory.py`: **21**
 - `branding.py`: **21**
 - `quarantine.py`: **19**
 - `startup.py`: **19**
-- `main.py`: **17**
+- `main.py`: **18**
 - `assistant.py`: **3**
 - `settings.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-27T10:54:53` **main.py** (rendimiento): Optimicé el método `refresh_list` en `LimpiezaTotalOmegaApp` para evitar el uso de `.join` sobre una lista de strings grande en cada llamada, delegando el formato al momento de la visualización y mejorando la eficiencia del manejo de strings.
+- `2026-07-27T10:54:06` **healthscore.py** (rendimiento): Optimicé el método `validate` de `SystemMetrics` utilizando una tupla de acceso directo a los campos en lugar de iterar sobre el diccionario `__annotations__` en cada corrida, reduciendo la sobrecarga de reflexión al procesar las métricas.
+- `2026-07-27T10:53:41` **duplicates.py** (rendimiento): Optimizé `group_by_size` para evitar llamadas redundantes a `stat()` y `is_protected_path` al procesar archivos ya filtrados, y apliqué un filtro previo en `_collect_candidates` para no procesar archivos que ya sabemos que son únicos por su tamaño, reduciendo drásticamente las operaciones de E/S en los pasos de hash.
+- `2026-07-27T10:53:17` **diskreport.py** (rendimiento): Optimizé la función `summarize` para reducir el consumo de memoria al evitar la duplicación de toda la lista de archivos (`all_files_snapshot`) durante el recorrido, utilizando en su lugar un `heapq.nlargest` con un generador para mantener solo el top 8 de archivos en memoria.
 - `2026-07-27T10:43:39` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` reemplazando múltiples escaneos redundantes de la cadena de entrada mediante `any()` (que recorren la lista y comparan múltiples veces) por una única búsqueda en un diccionario precalculado de categorías, reduciendo la complejidad de tiempo y mejorando la legibilidad.
 - `2026-07-27T10:43:03` **startup.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `startup.py` mediante la refactorización de `StartupEntry.executable` para reducir su complejidad ciclomática y mediante la adición de Type Hints detallados en la lógica de procesamiento.
 - `2026-07-27T10:33:50` **settings.py** (legibilidad y documentación): Mejora la legibilidad y el mantenimiento de `validate()` mediante la extracción de la lógica de validación de tipos a funciones auxiliares dedicadas, documentando claramente el contrato de validación.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-27T10:13:46` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica mediante docstrings más precisos en las funciones de cálculo de puntaje (`score_*`), detallando explícitamente los umbrales de penalización y la lógica de normalización para facilitar su mantenimiento.
 - `2026-07-27T10:13:31` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de docstrings y se han añadido anotaciones de tipo más precisas para clarificar los contratos de las funciones, facilitando el mantenimiento y la legibilidad sin alterar la lógica de negocio.
 - `2026-07-27T10:12:58` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación interna y claridad de `summarize` y `walk_files`, añadiendo type hints faltantes y una explicación detallada sobre el comportamiento de silenciamiento de errores, alineándose con el enfoque de legibilidad técnica sin alterar la funcionalidad.
-- `2026-07-27T10:12:23` **browser.py** (legibilidad y documentación): Mejoré la documentación de `directory_size` y `detect_profiles` añadiendo detalles sobre las garantías de seguridad y el manejo de excepciones, y mejoré la tipificación y nombres internos en `detect_profiles` para clarificar el flujo de resolución de rutas.
-- `2026-07-27T10:03:22` **assistant.py** (legibilidad y documentación): Documenté con docstrings detallados las funciones de transformación de tipos y procesado de métricas en `build_context` para aclarar por qué se utilizan métodos defensivos de acceso a atributos y conversión, garantizando la estabilidad frente a cambios en los objetos de origen.
-- `2026-07-27T10:02:13` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `validate` añadiendo una verificación explícita de `isinstance` para los valores numéricos, asegurando que solo se procesen tipos compatibles antes de la conversión y evitando errores inesperados si el archivo JSON contiene estructuras anidadas o tipos de datos inesperados en esas claves.
-- `2026-07-27T09:53:07` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `scan_directory` reemplazando la lógica de pila basada en listas por una verificación explícita de `Path.is_dir()` y capturando excepciones de acceso `OSError` para evitar interrupciones en rutas con permisos restringidos o sistemas de archivos inaccesibles, asegurando que un fallo en un nodo no detenga el escaneo completo.

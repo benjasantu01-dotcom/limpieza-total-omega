@@ -57,15 +57,18 @@ class SystemMetrics:
 
     def validate(self) -> None:
         """Normaliza los tipos de datos internos para evitar errores en cálculos matemáticos."""
-        for field_name, field_type in self.__annotations__.items():
-            try:
-                val = getattr(self, field_name, None)
-                if field_type is float:
-                    setattr(self, field_name, _to_float(val))
-                elif field_type is int:
-                    setattr(self, field_name, _to_int(val))
-            except AttributeError:
-                continue
+        # Tupla de campos con su tipo esperado para evitar reflexión constante
+        fields_to_fix = (
+            ('junk_mb', float), ('suspicious_count', int), ('suspicious_warnings', int),
+            ('memory_available_percent', float), ('disk_free_percent', float),
+            ('duplicate_mb', float), ('startup_count', int), ('quarantined_count', int)
+        )
+        for name, f_type in fields_to_fix:
+            val = getattr(self, name)
+            if f_type is float:
+                setattr(self, name, _to_float(val))
+            else:
+                setattr(self, name, _to_int(val))
 
 
 @dataclass
@@ -154,7 +157,6 @@ def _generate_recommendations(m: SystemMetrics, ratios: Dict[str, float]) -> Lis
     """Genera una lista de acciones correctivas basadas en ratios bajos por área."""
     recs: List[str] = []
     
-    # Usar .get con default 1.0 para evitar KeyError si el diccionario está incompleto
     if ratios.get("seguridad", 1.0) < 0.9:
         recs.append(f"Revisá los {m.suspicious_count} hallazgo(s) de seguridad; podés aislarlos en cuarentena sin borrarlos.")
     if ratios.get("disco", 1.0) < 0.6:
@@ -193,7 +195,6 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
             "arranque": score_startup(metrics.startup_count),
         }
 
-        # Aplica los pesos configurados en la constante global WEIGHTS
         breakdown = {k: int(round(ratios.get(k, 0.0) * WEIGHTS.get(k, 0))) for k in WEIGHTS}
         total = sum(breakdown.values())
 
@@ -211,7 +212,6 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
 def summarize(result: HealthResult) -> List[str]:
     """Genera un reporte visual legible para mostrar en la interfaz o logs."""
     lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
-    # Ordena por áreas con mayor desviación negativa respecto a su peso ideal
     orden = sorted(result.breakdown.items(), key=lambda kv: kv[1] - WEIGHTS.get(kv[0], 0))
     for area, puntos in orden:
         maximo = WEIGHTS.get(area, 0)

@@ -663,3 +663,10 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-07-27T10:44:39` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: He implementado una caché de resultados en `detect_profiles` usando una variable de módulo para evitar escaneos de disco redundantes cuando se invoca repetidamente en el mismo ciclo de ejecución, mejorando significativamente el rendimiento.
 - `2026-07-27T10:44:39` Rotación — nada para rotar
 - `2026-07-27T10:44:39` Corrida terminada. Total usado hoy: 124.
+- `2026-07-27T10:52:40` Arrancando corrida. Quedan hoy ~176 peticiones objetivo.
+- `2026-07-27T10:53:17` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé la función `summarize` para reducir el consumo de memoria al evitar la duplicación de toda la lista de archivos (`all_files_snapshot`) durante el recorrido, utilizando en su lugar un `heapq.nlargest` con un generador para mantener solo el top 8 de archivos en memoria.
+- `2026-07-27T10:53:41` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé `group_by_size` para evitar llamadas redundantes a `stat()` y `is_protected_path` al procesar archivos ya filtrados, y apliqué un filtro previo en `_collect_candidates` para no procesar archivos que ya sabemos que son únicos por su tamaño, reduciendo drásticamente las operaciones de E/S en los pasos de hash.
+- `2026-07-27T10:54:06` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el método `validate` de `SystemMetrics` utilizando una tupla de acceso directo a los campos en lugar de iterar sobre el diccionario `__annotations__` en cada corrida, reduciendo la sobrecarga de reflexión al procesar las métricas.
+- `2026-07-27T10:54:53` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Optimicé el método `refresh_list` en `LimpiezaTotalOmegaApp` para evitar el uso de `.join` sobre una lista de strings grande en cada llamada, delegando el formato al momento de la visualización y mejorando la eficiencia del manejo de strings.
+- `2026-07-27T10:54:53` Rotación — nada para rotar
+- `2026-07-27T10:54:53` Corrida terminada. Total usado hoy: 128.

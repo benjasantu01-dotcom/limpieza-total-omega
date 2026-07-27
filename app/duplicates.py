@@ -119,9 +119,7 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     groups: Dict[int, List[Path]] = defaultdict(list)
     for p in paths:
         try:
-            stats = p.stat()
-            if not is_protected_path(p):
-                groups[stats.st_size].append(p)
+            groups[p.stat().st_size].append(p)
         except (OSError, PermissionError, FileNotFoundError):
             continue
     return dict(groups)
@@ -210,24 +208,21 @@ def find_duplicates(
         return []
 
     groups: List[DuplicateGroup] = []
-    size_map = group_by_size(candidates)
+    # Filtrar tamaños únicos desde el inicio para evitar procesar archivos sin duplicados
+    size_map = {s: p for s, p in group_by_size(candidates).items() if len(p) > 1}
     
     for size, same_size in size_map.items():
-        if len(same_size) < 2:
-            continue
-            
         by_partial = _refine_by_hash(same_size, partial_hash)
         
         for partial_candidates in by_partial.values():
             by_full = _refine_by_hash(partial_candidates, hash_file)
             
             for digest, confirmed in by_full.items():
-                if confirmed:
-                    groups.append(DuplicateGroup(
-                        digest=digest, 
-                        size_bytes=size, 
-                        paths=sorted(confirmed)
-                    ))
+                groups.append(DuplicateGroup(
+                    digest=digest, 
+                    size_bytes=size, 
+                    paths=sorted(confirmed)
+                ))
 
     groups.sort(key=lambda g: g.wasted_bytes, reverse=True)
     return groups
