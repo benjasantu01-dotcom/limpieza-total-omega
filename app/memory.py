@@ -128,7 +128,8 @@ def parse_linux_meminfo(text: str) -> MemorySnapshot:
 
 def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]:
     """
-    Parsea la salida de texto plano estructurada como CSV proveniente de PowerShell.
+    Parsea la salida de texto plano (CSV) proveniente de PowerShell.
+    Espera formato: Name,Id,WorkingSet. Ignora cabeceras y líneas vacías.
     """
     def _generator() -> Iterator[ProcessMemory]:
         for line in text.splitlines():
@@ -196,7 +197,7 @@ def read_snapshot() -> MemorySnapshot:
 
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
-    """Consulta los procesos más pesados mediante PowerShell y filtra procesos protegidos."""
+    """Consulta los procesos más pesados mediante PowerShell."""
     if os.name != "nt":
         return []
     command = (
@@ -209,10 +210,6 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
             ["powershell", "-NoProfile", "-Command", command],
             capture_output=True, text=True, timeout=30,
         )
-        # Sin filtro de seguridad: esto solo LISTA procesos, no los toca. El
-        # filtro anterior pasaba la cadena "pid:1234" a `ensure_safe_to_modify`
-        # como si fuera una ruta de archivo: no validaba nada (una cadena sin
-        # extensión siempre pasa) y daba una falsa sensación de control.
         return parse_windows_process_csv(result.stdout or "", limit=limit)
     except (OSError, subprocess.SubprocessError):
         return []
@@ -220,11 +217,7 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
 
 def pressure_level(snapshot: MemorySnapshot) -> str:
     """
-    Clasifica el estado de presión:
-    - >= 35% disponible: OK
-    - >= 20% disponible: Info
-    - >= 10% disponible: Warning
-    - < 10% disponible: Danger
+    Clasifica el estado de presión basándose en el % de memoria disponible.
     """
     if snapshot.total <= 0:
         return "info"
@@ -265,23 +258,24 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
     return lines
 
 
-def trim_working_set(pid: int) -> Tuple[bool, str]:
+def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
-    Ejecuta el trim (purga) del working set de un proceso en Windows.
-    Requiere validación de seguridad previa para evitar tocar procesos críticos.
+    Ejecuta el trim (purga) del working set de un proceso en Windows usando
+    la API `EmptyWorkingSet`.
+    
+    Seguridad: Los PID menores o iguales a 4 (System, Idle) están bloqueados,
+    ya que no pueden ni deben ser manipulados. Se requiere handle con
+    permisos de consulta y seteo de cuota.
     """
     if os.name != "nt":
         return False, "Solo disponible en Windows."
     
     try:
         target_pid = int(pid)
-        # Esta es la protección real: los PID 0 y 4 son Idle y System, y
-        # tocarlos no tiene sentido. `ensure_safe_to_modify` no aplica acá,
-        # porque valida rutas de archivos, no procesos.
         if target_pid <= 4:
             return False, "PID protegido: no es posible modificar procesos del sistema."
     except (ValueError, TypeError):
-        return False, "El PID debe ser un número entero."
+        return False, "El PID debe ser un número entero válido."
 
     try:
         import ctypes

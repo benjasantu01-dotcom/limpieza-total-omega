@@ -101,39 +101,40 @@ def _to_int(value: Any, default: int = 0) -> int:
 
 
 def score_junk(junk_mb: float) -> float:
-    # Penaliza linealmente hasta 5GB (5000MB) de basura.
+    """Calcula el score de basura: penalización lineal donde 5GB (5000MB) implica 0 puntos."""
     return _clamp(1.0 - (max(0.0, _to_float(junk_mb)) / 5000.0))
 
 
 def score_security(suspicious_count: int, warnings: int = 0) -> float:
-    # Cada hallazgo sospechoso resta 0.05 y cada warning 0.25 del score base 1.0.
+    """Calcula el score de seguridad restando penalizaciones fijas por incidentes y advertencias."""
     penalty = (max(0, _to_int(suspicious_count)) * 0.05) + (max(0, _to_int(warnings)) * 0.25)
     return _clamp(1.0 - penalty)
 
 
 def score_memory(available_percent: float) -> float:
-    # Considera óptimo tener > 35% de RAM disponible.
+    """Calcula el score de memoria basándose en un 35% de disponibilidad como umbral óptimo."""
     val = _to_float(available_percent)
     return _clamp(max(0.0, val) / 35.0)
 
 
 def score_disk(free_percent: float) -> float:
-    # Considera óptimo tener > 25% de espacio libre en disco.
+    """Calcula el score de disco basándose en un 25% de espacio libre como umbral óptimo."""
     val = _to_float(free_percent)
     return _clamp(max(0.0, val) / 25.0)
 
 
 def score_duplicates(duplicate_mb: float) -> float:
-    # Penaliza linealmente hasta 2GB (2000MB) de archivos duplicados.
+    """Calcula el score de duplicados penalizando linealmente hasta alcanzar 2GB (2000MB)."""
     return _clamp(1.0 - (max(0.0, _to_float(duplicate_mb)) / 2000.0))
 
 
 def score_startup(startup_count: int) -> float:
-    # Penaliza el exceso de programas al inicio, considerando 20+ como estado crítico.
+    """Calcula el score de programas al inicio penalizando linealmente hasta 20 entradas."""
     return _clamp(1.0 - (max(0, _to_int(startup_count)) / 20.0))
 
 
 def grade_for_score(score: int) -> str:
+    """Mapea un puntaje numérico a una calificación de letra (A-F)."""
     if score >= 90: return "A"
     if score >= 80: return "B"
     if score >= 65: return "C"

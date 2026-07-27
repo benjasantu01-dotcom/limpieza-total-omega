@@ -42,7 +42,10 @@ SYSTEM_FOLDER_BLOCKLIST = {"windows", "program files", "program files (x86)", "$
 
 def list_available_drives() -> List[str]:
     """
-    Devuelve las letras de unidad disponibles en Windows (ej. ['C:\\', 'D:\\']).
+    Lista las unidades de disco montadas en el sistema.
+
+    Returns:
+        List[str]: Lista de rutas raíz (ej. ['C:\\', 'D:\\']). Retorna vacía en entornos no-NT.
     """
     if os.name != "nt":
         return []
@@ -62,15 +65,19 @@ class JunkFile:
 
     @property
     def size_mb(self) -> float:
+        """Calcula el tamaño en Megabytes con dos decimales."""
         return round(self.size_bytes / (1024 * 1024), 2)
 
 
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     """
-    Recorre jerárquicamente las rutas proporcionadas en busca de archivos basura.
-    
-    Aplica filtros de seguridad para ignorar carpetas críticas (blocklist)
-    y verificar la integridad de la ruta mediante ensure_safe_to_modify.
+    Realiza un escaneo recursivo en busca de archivos candidatos a limpieza.
+
+    Args:
+        directories: Lista de rutas a escanear. Si es None, usa DEFAULT_SCAN_DIRS.
+
+    Returns:
+        List[JunkFile]: Lista de objetos JunkFile encontrados y validados.
     """
     if directories is not None and not isinstance(directories, list):
         logger.error("El parámetro directories debe ser una lista.")
@@ -92,11 +99,6 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
                         elif entry.is_file(follow_symlinks=False):
                             if Path(entry.name).suffix.lower() in junk_set:
                                 full_path = Path(entry.path)
-                                # Seguridad: se usa la versión booleana para
-                                # SALTEAR lo inseguro. Con `ensure_safe_to_modify`
-                                # un solo archivo protegido abortaría todo el
-                                # escaneo, porque UnsafePathError no lo atrapa
-                                # el `except (PermissionError, OSError)` de abajo.
                                 if is_safe_to_modify(full_path):
                                     stat = entry.stat()
                                     found.append(
@@ -124,6 +126,9 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
 
 
 def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -> List[JunkFile]:
+    """
+    Ordena una lista de archivos basura basándose en tamaño o fecha.
+    """
     if not isinstance(files, list):
         return []
         
@@ -137,9 +142,17 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Path:
     """
-    Mueve los archivos detectados a una ubicación de cuarentena para su validación manual.
+    Mueve los archivos detectados a una carpeta de cuarentena para revisión humana.
     
-    Evita colisiones de nombres añadiendo un timestamp y un contador secuencial.
+    Args:
+        files: Lista de objetos JunkFile a mover.
+        review_dir: Directorio de destino para la organización.
+
+    Returns:
+        Path: El directorio de revisión final utilizado.
+
+    Raises:
+        OSError: Si no es posible crear o acceder al directorio de revisión.
     """
     if not files or not isinstance(files, list):
         logger.warning("La lista de archivos a organizar está vacía o es inválida.")
@@ -159,19 +172,13 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             
         try:
             full_source_path = jf.path.resolve()
-            
-            # Verificación de robustez: existencia, tipo y permisos
             if not full_source_path.exists() or not full_source_path.is_file():
                 continue
             
-            # Seguridad: origen y destino tienen que estar permitidos. Se usa
-            # la variante booleana porque acá queremos saltear este archivo y
-            # seguir con el resto, no cortar el movimiento de todos.
             if not is_safe_to_modify(full_source_path) or not is_safe_to_modify(dest):
                 logger.info("Omitido por seguridad: %s", full_source_path)
                 continue
                 
-            # Evitar bucles o recursión sobre la propia carpeta de destino
             if dest in full_source_path.parents or full_source_path.parent == dest:
                 continue
 
@@ -193,6 +200,12 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 
 
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
+    """
+    Elimina permanentemente los archivos dentro de la carpeta de revisión.
+
+    Returns:
+        int: Cantidad de archivos eliminados con éxito.
+    """
     dest = Path(review_dir).expanduser()
     if not dest.exists() or not dest.is_dir():
         logger.info("Directorio de revisión no encontrado o inválido: %s", dest)
@@ -202,9 +215,6 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     for f in dest.iterdir():
         try:
             if f.is_file():
-                # Validación antes del borrado real. Booleana a propósito: un
-                # archivo con extensión sensible se saltea, no rompe el vaciado
-                # de la carpeta entera.
                 if is_safe_to_modify(f):
                     f.unlink()
                     count += 1
