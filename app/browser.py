@@ -127,6 +127,15 @@ def directory_size(path: str | os.PathLike) -> int:
     return total
 
 
+def _is_valid_cache_path(candidate: Path, base_path: Path) -> bool:
+    """Verifica que la ruta sea segura, exista y no esté en la lista negra."""
+    return (
+        candidate.is_relative_to(base_path) and
+        candidate.is_dir() and
+        candidate.name.lower() not in NEVER_TOUCH
+    )
+
+
 def detect_profiles(bases: Sequence[Path] | None = None, 
                     cache_paths: Dict[str, str] | None = None) -> List[BrowserCache]:
     """
@@ -157,10 +166,7 @@ def detect_profiles(bases: Sequence[Path] | None = None,
                 
             try:
                 candidate = base_path.joinpath(*relative.split("\\")).resolve()
-                if not candidate.is_relative_to(base_path):
-                    continue
-                
-                if candidate.name.lower() in NEVER_TOUCH or not candidate.is_dir():
+                if not _is_valid_cache_path(candidate, base_path):
                     continue
                     
                 found.append(BrowserCache(

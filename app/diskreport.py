@@ -151,8 +151,9 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
     Genera tuplas (ruta_absoluta, tamaño_en_bytes) para cada archivo encontrado.
     
     El parámetro `skip_protected` evita la recursión en directorios bloqueados
-    o de sistema definidos en `safety.py`. Filtra enlaces simbólicos para 
-    prevenir ciclos o lecturas fuera del árbol deseado.
+    o de sistema. Los errores de lectura (permisos, archivos inexistentes) se 
+    silencian (`onerror` y `try-except`) para garantizar que el generador no se 
+    detenga durante el escaneo completo.
     """
     if not directory:
         return
@@ -171,20 +172,17 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
     for root, subdirs, files in os.walk(base, onerror=lambda _: None):
         root_path = Path(root)
             
-        # Defensa: verificar que la raíz actual sigue bajo el base original
         try:
             root_path.relative_to(base)
         except ValueError:
             continue
             
         if skip_protected:
-            # Filtramos in-place subdirs para evitar entrar en zonas protegidas
             subdirs[:] = [d for d in subdirs if not is_protected_path(root_path / d)]
             
         for name in files:
             path = root_path / name
             try:
-                # Defensa: evitar symlinks que apunten fuera de base
                 if path.is_symlink():
                     continue
                 if skip_protected and is_protected_path(path):
@@ -196,7 +194,6 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
 
 def largest_files(directory: str | os.PathLike, limit: int = 20, skip_protected: bool = True) -> list[FileEntry]:
     """Los archivos más grandes bajo una carpeta, de mayor a menor."""
-    # Usamos nlargest para evitar ordenar toda la lista en memoria
     return heapq.nlargest(
         limit, 
         (FileEntry(path=p, size_bytes=s) for p, s in walk_files(directory, skip_protected)),
@@ -238,7 +235,6 @@ def largest_folders(directory: str | os.PathLike, limit: int = 10, skip_protecte
     
     for path, size in walk_files(base, skip_protected):
         try:
-            # Re-verificar confinamiento por seguridad
             relative_path = path.relative_to(base)
             top_level = base / relative_path.parts[0] if relative_path.parts else base
         except (ValueError, IndexError):
@@ -276,8 +272,8 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
     except (OSError, RuntimeError):
         return ["Error: No se pudo acceder a la ruta."]
         
-    total = 0
-    count = 0
+    total: int = 0
+    count: int = 0
     extension_map: dict[str, ExtensionUsage] = {}
     all_files: list[tuple[int, Path]] = []
     
