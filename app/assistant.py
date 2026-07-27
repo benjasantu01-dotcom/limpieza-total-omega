@@ -166,14 +166,18 @@ def build_context(metrics: Any = None, health: Any = None, **extra: Any) -> Syst
     contexto = SystemContext()
 
     def numero(objeto: Any, nombre: str, defecto: float = 0.0) -> float:
+        if objeto is None: return defecto
         try:
-            return float(getattr(objeto, nombre, defecto) or defecto)
+            val = getattr(objeto, nombre, None)
+            return float(val) if val is not None else defecto
         except (TypeError, ValueError):
             return defecto
 
     def entero(objeto: Any, nombre: str, defecto: int = 0) -> int:
+        if objeto is None: return defecto
         try:
-            return int(getattr(objeto, nombre, defecto) or defecto)
+            val = getattr(objeto, nombre, None)
+            return int(val) if val is not None else defecto
         except (TypeError, ValueError):
             return defecto
 
@@ -309,7 +313,7 @@ def local_answer(question: str, context: SystemContext) -> Answer:
                           "mal, no solo a quedarse sin lugar. Es lo primero que "
                           "atendería.")
         partes.append("Empezá por Limpieza: mueve los candidatos a una carpeta de "
-                      "revisión, no los borra, así podés ver qué hay antes de decidir.")
+                          "revisión, no los borra, así podés ver qué hay antes de decidir.")
         return Answer(" ".join(partes), notice=OFFLINE_NOTICE)
 
     if any(p in texto for p in ("seguro", "virus", "sospechos", "borrar", "peligro")):

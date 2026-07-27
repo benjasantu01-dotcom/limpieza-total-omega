@@ -5,24 +5,24 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **417**
-- Mejoras aceptadas: **244** (58.5% de aceptación)
+- Iteraciones totales: **421**
+- Mejoras aceptadas: **245** (58.2% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 26
 - Sin cambios (nada sustancial que mejorar): 4
-- Sin respuesta de la IA (error o límite): 126
+- Sin respuesta de la IA (error o límite): 129
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
 | 2026-07-26 | 221 | 15 | 22 | 3 | 68 |
-| 2026-07-27 | 23 | 2 | 4 | 1 | 58 |
+| 2026-07-27 | 24 | 2 | 4 | 1 | 61 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **63**
-- manejo de errores y validación de entradas: **56**
+- manejo de errores y validación de entradas: **57**
 - seguridad defensiva: **45**
 - rendimiento: **40**
 - robustez ante casos límite: **40**
@@ -41,9 +41,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **18**
 - `startup.py`: **18**
 - `main.py`: **17**
+- `assistant.py`: **1**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-27T09:24:43` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `build_context` implementando una validación explícita para los valores de `health` y `metrics` (usando `isinstance` y chequeos de existencia de atributos) para evitar errores en tiempo de ejecución si los objetos de origen no son los esperados, reemplazando el uso de `getattr` sobre objetos potencialmente nulos.
 - `2026-07-27T08:00:28` **scanner.py** (seguridad defensiva): Se ha añadido una validación de seguridad mediante `is_protected_path` en `scan_directory` para garantizar que el escáner no procese directorios críticos del sistema, reforzando el enfoque de seguridad defensiva mediante la integración con las reglas de `safety.py`.
 - `2026-07-27T07:51:07` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `organizer.py` mediante la adición de Type Hints en la función recursiva `_walk_dir`, la documentación explícita de los bloques `try-except` para clarificar la resiliencia ante errores de sistema, y la conversión de los filtros de bloque de `set` a `frozenset` para garantizar su inmutabilidad durante la ejecución.
 - `2026-07-27T07:50:59` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints completos en las funciones que carecían de ellos y la inclusión de docstrings detallados que explican el propósito de las constantes y estructuras, cumpliendo así con los estándares de documentación exigidos para esta iteración.
@@ -58,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-27T07:09:09` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `summarize` y `largest_folders` validando que la ruta proporcionada sea un directorio absoluto y accesible antes de comenzar el recorrido, evitando errores silenciosos al procesar entradas inválidas.
 - `2026-07-27T07:08:45` **browser.py** (manejo de errores y validación de entradas): Mejora la robustez de `directory_size` y `detect_profiles` añadiendo validaciones explícitas de tipo y estado para prevenir excepciones en tiempo de ejecución al interactuar con rutas del sistema.
 - `2026-07-27T07:01:35` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` y `draw_logo` mediante la validación proactiva de parámetros de entrada, evitando errores en tiempo de ejecución al interactuar con el sistema de archivos o el canvas de Tkinter.
-- `2026-07-27T05:58:27` **diskreport.py** (rendimiento): Optimicé `summarize` para evitar redundancias eliminando el uso de `heapq.heappush` dentro del loop principal, reemplazándolo por una estructura de datos más eficiente y simple al final del procesamiento, reduciendo la carga de memoria y CPU en cada iteración.
