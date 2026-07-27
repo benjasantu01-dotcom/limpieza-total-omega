@@ -150,12 +150,13 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
     """
     Genera tuplas (ruta_absoluta, tamaño_en_bytes) para cada archivo encontrado.
     
-    Lógica de seguridad:
-    1. Resuelve la ruta base para evitar ataques de path traversal.
-    2. Ignora enlaces simbólicos y puntos de reparse (Windows junctions) para 
-       evitar bucles infinitos y escaneos fuera de la jerarquía deseada.
-    3. Aplica `is_protected_path` tanto a directorios como a archivos individuales
-       para garantizar que áreas del sistema no sean recorridas.
+    Lógica de seguridad y recursión:
+    1. Resuelve la ruta base para asegurar integridad frente a manipulaciones.
+    2. Utiliza `os.walk` sobre el sistema de archivos.
+    3. Para cada directorio, verifica `is_protected_path`. Si es bloqueado:
+       - Si estamos en `root`, vaciamos `subdirs` para frenar la recursión.
+       - Si estamos procesando subdirectorios, filtramos `subdirs` in-place.
+    4. Implementa protección contra bucles (reparse points) verificando `lstat`.
     """
     if not directory:
         return
@@ -175,7 +176,6 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
                 continue
 
             # Identificar reparse points / junctions en Windows
-            # st_reparse_tag != 0 indica que es un punto de reanálisis (junction, symlink, etc.)
             if root_path.is_symlink() or (os.name == 'nt' and root_path.stat().st_reparse_tag != 0):
                 subdirs.clear()
                 continue
@@ -190,8 +190,8 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
             for name in files:
                 try:
                     path = root_path / name
-                    # Validación defensiva de tipo para evitar seguir reparse points en archivos
                     st = path.lstat()
+                    # Validación defensiva: evitar seguir punteros de enlace o reparse points
                     if path.is_symlink() or (os.name == 'nt' and getattr(st, 'st_reparse_tag', 0) != 0):
                         continue
                     if skip_protected and is_protected_path(path):
@@ -273,9 +273,9 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
     """
     Genera un informe textual del uso de disco en el directorio especificado.
     
-    Esta función utiliza `process_files` como cierre (closure) para acumular 
-    métricas de archivos y extensiones en un único recorrido eficiente, 
-    minimizando el acceso a disco necesario.
+    Esta función utiliza una función generadora interna (`process_files`) para realizar
+    la acumulación de estadísticas en una sola pasada, evitando múltiples recorridos
+    de árbol de directorios que degradarían el rendimiento en discos mecánicos.
     """
     if not directory:
         return ["Error: Ruta vacía."]
@@ -291,9 +291,9 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
     total_files: int = 0
     extension_map: dict[str, ExtensionUsage] = {}
     
-    def process_files(gen):
+    def process_files(gen: Generator[tuple[Path, int], None, None]) -> Generator[tuple[int, Path], None, None]:
+        nonlocal total_bytes, total_files
         for path, size in gen:
-            nonlocal total_bytes, total_files
             total_bytes += size
             total_files += 1
             

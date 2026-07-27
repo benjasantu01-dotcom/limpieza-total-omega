@@ -161,12 +161,11 @@ class Answer:
 
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
-    """Arma el contexto agregado a partir de los resultados ya calculados.
-
-    Esta es la ÚNICA función que decide qué datos son visibles para el
-    asistente. Lee atributo por atributo en vez de copiar objetos enteros,
-    justamente para que agregar un campo con una ruta a `SystemMetrics` no lo
-    exponga por accidente.
+    """Arma el contexto agregado de forma defensiva filtrando tipos de datos.
+    
+    Esta función abstrae la extracción de datos evitando copiar objetos complejos.
+    Solo permite tipos numéricos básicos para asegurar que ninguna ruta de archivo 
+    escapa hacia el motor de IA.
     """
     contexto = SystemContext()
     
@@ -445,7 +444,12 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
 
 def ask(question: str, context: SystemContext | None = None,
         base: str | Path | None = None) -> Answer:  # noqa: F821
-    """Responde una pregunta, usando el motor en línea solo si está permitido."""
+    """Coordina el flujo de respuesta combinando motores locales y remotos.
+    
+    Esta función verifica la disponibilidad del asistente en ajustes y gestiona 
+    el envío de métricas de forma segura. Si el motor remoto no responde, 
+    degrada la experiencia silenciosamente al motor local.
+    """
     contexto = context if isinstance(context, SystemContext) else SystemContext()
     respaldo = local_answer(question, contexto)
 

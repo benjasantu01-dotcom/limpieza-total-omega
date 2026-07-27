@@ -88,6 +88,16 @@ def base_directories() -> List[Path]:
     return [path_local] if path_local.is_dir() else []
 
 
+def _is_safe_path(p: Path, base: Path) -> bool:
+    """Verifica que p sea un subdirectorio real bajo base, evitando escapes."""
+    try:
+        resolved_p = p.resolve(strict=True)
+        resolved_base = base.resolve(strict=True)
+        return resolved_base in resolved_p.parents or resolved_p == resolved_base
+    except (OSError, RuntimeError):
+        return False
+
+
 @lru_cache(maxsize=32)
 def directory_size(path: str | os.PathLike) -> int:
     """
@@ -116,16 +126,13 @@ def directory_size(path: str | os.PathLike) -> int:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
-                        # Verificación de aislamiento: el elemento debe seguir contenido en p
-                        # tras resolver enlaces (si los hubiera, aunque los bloqueamos abajo).
                         if entry.is_symlink():
                             continue
                         
                         if entry.is_dir(follow_symlinks=False):
-                            # Validar que el subdirectorio no escape al padre mediante resolución
-                            child_path = Path(entry.path).resolve()
-                            if p in child_path.parents or child_path == p:
-                                stack.append(child_path)
+                            child_path = Path(entry.path)
+                            if _is_safe_path(child_path, p):
+                                stack.append(child_path.resolve())
                         elif entry.is_file(follow_symlinks=False):
                             total_bytes += entry.stat().st_size
                     except (OSError, PermissionError):
@@ -144,12 +151,9 @@ def _is_valid_cache_path(candidate: Path, base_path: Path) -> bool:
     try:
         if not candidate.exists():
             return False
-        # Resolvemos rutas para comparar ubicaciones físicas reales y prevenir escapes
-        resolved = candidate.resolve(strict=True)
-        resolved_base = base_path.resolve(strict=True)
         return (
-            resolved.is_relative_to(resolved_base) and
-            resolved.is_dir() and
+            _is_safe_path(candidate, base_path) and
+            candidate.is_dir() and
             candidate.name.lower() not in NEVER_TOUCH
         )
     except (ValueError, OSError, RuntimeError):
