@@ -149,12 +149,6 @@ def all_drives_usage(mounts: Iterable[str] | None = None) -> list[DriveUsage]:
 def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Generator[tuple[Path, int], None, None]:
     """
     Genera tuplas (ruta_absoluta, tamaño_en_bytes) para cada archivo encontrado.
-    
-    El parámetro `skip_protected` evita la recursión en directorios bloqueados
-    o de sistema. La función ignora silenciosamente errores de acceso (como 
-    PermissionError o archivos inexistentes) mediante un manejo granular de 
-    excepciones, asegurando la continuidad del escaneo en sistemas con 
-    restricciones de lectura.
     """
     if not directory:
         return
@@ -164,34 +158,32 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
             return
     except (OSError, RuntimeError):
         return
-        
+    
     if base.is_symlink():
-        return
-    if skip_protected and is_protected_path(base):
         return
     
     for root, subdirs, files in os.walk(base, onerror=lambda _: None):
-        root_path = Path(root)
-            
         try:
-            root_path.relative_to(base)
-        except ValueError:
-            continue
-            
-        if skip_protected:
-            # Modificamos in-place 'subdirs' para evitar descender en rutas protegidas
-            subdirs[:] = [d for d in subdirs if not is_protected_path(root_path / d)]
-            
-        for name in files:
-            path = root_path / name
-            try:
-                if path.is_symlink():
-                    continue
-                if skip_protected and is_protected_path(path):
-                    continue
-                yield path, path.stat().st_size
-            except (OSError, PermissionError, FileNotFoundError):
+            root_path = Path(root)
+            if skip_protected and is_protected_path(root_path):
+                subdirs.clear()
                 continue
+                
+            if skip_protected:
+                subdirs[:] = [d for d in subdirs if not is_protected_path(root_path / d)]
+                
+            for name in files:
+                try:
+                    path = root_path / name
+                    if path.is_symlink():
+                        continue
+                    if skip_protected and is_protected_path(path):
+                        continue
+                    yield path, path.stat().st_size
+                except (OSError, PermissionError, FileNotFoundError):
+                    continue
+        except (OSError, PermissionError):
+            continue
 
 
 def largest_files(directory: str | os.PathLike, limit: int = 20, skip_protected: bool = True) -> list[FileEntry]:
@@ -219,9 +211,7 @@ def usage_by_extension(directory: str | os.PathLike, limit: int = 15, skip_prote
 
 
 def largest_folders(directory: str | os.PathLike, limit: int = 10, skip_protected: bool = True) -> list[FolderUsage]:
-    """
-    Calcula el peso total de los elementos contenidos en cada carpeta de primer nivel.
-    """
+    """Calcula el peso total de los elementos contenidos en cada carpeta de primer nivel."""
     if not directory:
         return []
     try:
@@ -235,10 +225,10 @@ def largest_folders(directory: str | os.PathLike, limit: int = 10, skip_protecte
     
     for path, size in walk_files(base, skip_protected):
         try:
-            relative_path = path.relative_to(base)
-            if not relative_path.parts:
+            rel = path.relative_to(base)
+            if not rel.parts:
                 continue
-            top_level = base / relative_path.parts[0]
+            top_level = base / rel.parts[0]
         except (ValueError, IndexError):
             continue
             
@@ -278,10 +268,6 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
     total_files: int = 0
     extension_map: dict[str, ExtensionUsage] = {}
     
-    # Usamos un generador para mantener bajo consumo de memoria durante el proceso
-    files_gen = walk_files(path_obj, skip_protected)
-    
-    # Pasamos una referencia de los datos procesados para el top de archivos pesados
     def process_files(gen):
         for path, size in gen:
             nonlocal total_bytes, total_files
@@ -296,9 +282,7 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
             ext_data.count += 1
             yield (size, path)
 
-    all_files_snapshot = process_files(files_gen)
-    
-    # El uso de heapq.nlargest sobre el generador consume memoria constante (limitada a 8)
+    all_files_snapshot = process_files(walk_files(path_obj, skip_protected))
     top_8_files = heapq.nlargest(8, all_files_snapshot, key=lambda x: x[0])
             
     lines = [

@@ -686,3 +686,10 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-07-27T11:14:45` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 178): f-string: single '}' is not allowed
 - `2026-07-27T11:14:45` Rotación — nada para rotar
 - `2026-07-27T11:14:45` Corrida terminada. Total usado hoy: 136.
+- `2026-07-27T11:23:14` Arrancando corrida. Quedan hoy ~164 peticiones objetivo.
+- `2026-07-27T11:23:49` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `build_context` ante valores corruptos o inesperados en los objetos de entrada, añadiendo validaciones de tipo y rango para asegurar que las métricas procesadas sean siempre seguras y representativas antes de llegar al asistente.
+- `2026-07-27T11:24:27` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-07-27T11:24:56` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `directory_size` ante el caso límite de archivos bloqueados o en uso (frecuentes en navegadores abiertos) mediante la captura explícita de excepciones durante el acceso a `stat()`, asegurando que el escaneo no se detenga y devuelva resultados parciales válidos en lugar de fallar o devolver cero.
+- `2026-07-27T11:25:13` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la robustez de `walk_files` y `largest_folders` añadiendo chequeos de errores ante rutas de longitud excesiva (`OSError` en Windows) o problemas de acceso durante la enumeración, evitando que el generador se detenga inesperadamente.
+- `2026-07-27T11:25:13` Rotación — nada para rotar
+- `2026-07-27T11:25:13` Corrida terminada. Total usado hoy: 140.

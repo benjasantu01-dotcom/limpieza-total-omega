@@ -165,24 +165,24 @@ def build_context(metrics: Any = None, health: Any = None, **extra: Any) -> Syst
     """
     contexto = SystemContext()
 
-    def numero(objeto: Any, nombre: str, defecto: float = 0.0) -> float:
-        """Intenta extraer un valor numérico y convertirlo a float.
-        Usa acceso seguro mediante getattr para evitar excepciones si el atributo falta."""
+    def numero(objeto: Any, nombre: str, defecto: float = 0.0, maximo: float = float('inf')) -> float:
+        """Extrae valor numérico, filtra nulos, valida tipo y asegura un máximo razonable."""
         if objeto is None: return defecto
         try:
             val = getattr(objeto, nombre, None)
-            return float(val) if val is not None else defecto
+            if val is None: return defecto
+            num = float(val)
+            return max(0.0, min(float(num), maximo))
         except (TypeError, ValueError):
             return defecto
 
     def entero(objeto: Any, nombre: str, defecto: int = 0) -> int:
-        """Intenta extraer un valor entero.
-        La conversión es estricta para asegurar que solo números integros (o casteables) 
-        entren en las métricas de conteo."""
+        """Extrae entero, filtrando negativos y errores de conversión."""
         if objeto is None: return defecto
         try:
             val = getattr(objeto, nombre, None)
-            return int(val) if val is not None else defecto
+            if val is None: return defecto
+            return max(0, int(val))
         except (TypeError, ValueError):
             return defecto
 
@@ -190,22 +190,23 @@ def build_context(metrics: Any = None, health: Any = None, **extra: Any) -> Syst
         contexto.junk_mb = numero(metrics, "junk_mb")
         contexto.suspicious_count = entero(metrics, "suspicious_count")
         contexto.suspicious_warnings = entero(metrics, "suspicious_warnings")
-        contexto.memory_available_percent = numero(metrics, "memory_available_percent")
-        contexto.disk_free_percent = numero(metrics, "disk_free_percent")
+        contexto.memory_available_percent = numero(metrics, "memory_available_percent", maximo=100.0)
+        contexto.disk_free_percent = numero(metrics, "disk_free_percent", maximo=100.0)
         contexto.duplicate_mb = numero(metrics, "duplicate_mb")
         contexto.startup_count = entero(metrics, "startup_count")
         contexto.quarantined_count = entero(metrics, "quarantined_count")
         contexto.analyzed = True
 
     if health is not None:
-        contexto.score = entero(health, "score", 0)
+        score_val = entero(health, "score")
+        contexto.score = max(0, min(score_val, 100))
         grado = getattr(health, "grade", "")
-        contexto.grade = grado if isinstance(grado, str) else ""
+        contexto.grade = str(grado) if isinstance(grado, (str, int, float)) else ""
         contexto.analyzed = True
 
     for clave, valor in extra.items():
         if hasattr(contexto, clave) and isinstance(valor, (int, float)):
-            setattr(contexto, clave, valor)
+            setattr(contexto, clave, max(0.0, float(valor)))
 
     return contexto
 

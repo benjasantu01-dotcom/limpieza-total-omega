@@ -91,7 +91,7 @@ def directory_size(path: str | os.PathLike) -> int:
     Usa un stack explícito para recorrer el árbol de archivos sin recursión,
     evitando el desbordamiento de pila en estructuras profundas. 
     IGNORA symlinks para evitar ciclos y escapes de directorio, y maneja 
-    excepciones de permisos de lectura por archivo de forma silenciosa.
+    excepciones de permisos de lectura y archivos bloqueados de forma silenciosa.
     """
     if not path:
         return 0
@@ -119,6 +119,7 @@ def directory_size(path: str | os.PathLike) -> int:
                         if entry.is_dir(follow_symlinks=False):
                             stack.append(Path(entry.path))
                         elif entry.is_file(follow_symlinks=False):
+                            # Capturamos OSError ante archivos bloqueados por el navegador
                             total_bytes += entry.stat().st_size
                     except (OSError, PermissionError):
                         continue
