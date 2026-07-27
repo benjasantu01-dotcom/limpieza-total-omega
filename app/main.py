@@ -47,6 +47,7 @@ from tkinter import filedialog, messagebox
 
 import customtkinter as ctk
 
+import assistant
 import branding
 import browser
 import diskreport
@@ -56,6 +57,7 @@ import memory as memory_mod
 import quarantine
 import reporting
 import safety
+import settings as settings_mod
 import startup as startup_mod
 from organizer import (
     scan_for_junk,
@@ -88,6 +90,8 @@ TABS = (
     "Navegadores",
     "Inicio",
     "Informe",
+    "Asistente",
+    "Ajustes",
 )
 
 # Áreas del puntaje de salud, con su etiqueta para la interfaz.
@@ -118,6 +122,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.scan_target = None  # None = carpetas por defecto (Temp/Descargas)
         self.analysis_folder = None
         self.report_data = {}
+        # Contexto agregado del último análisis, para que el asistente pueda
+        # responder sobre datos reales en vez de generalidades.
+        self.assistant_context = assistant.SystemContext()
+        self.settings = settings_mod.load()
+        self.setting_vars = {}
         self.outputs = {}
         self.tabs = {}
         self.cards = {}
@@ -164,6 +173,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._build_tab_navegadores()
         self._build_tab_inicio()
         self._build_tab_informe()
+        self._build_tab_asistente()
+        self._build_tab_ajustes()
 
         # Compatibilidad con el flujo original, que escribía en un solo cuadro.
         self.output = self.outputs["Limpieza"]
@@ -553,6 +564,129 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._hint(tab, "Junta todo lo que analizaste en esta sesión en un solo documento.")
         self._make_output("Informe", tab)
 
+    def _build_tab_asistente(self):
+        tab = self.tabs["Asistente"]
+        row = self._button_row(tab)
+        self._action(row, "Preguntar", self.on_ask_assistant, column=0)
+        self._action(row, "¿Qué arreglo primero?",
+                     lambda: self.on_ask_assistant("¿Qué es lo más urgente que debería arreglar?"),
+                     secondary=True, column=1)
+        self._action(row, "Limpiar charla", lambda: self.clear("Asistente"),
+                     secondary=True, column=2)
+
+        pregunta = ctk.CTkFrame(tab, fg_color="transparent")
+        pregunta.pack(fill="x", padx=12, pady=(12, 0))
+        pregunta.grid_columnconfigure(0, weight=1)
+        self.question_entry = self._entry(pregunta, "Escribí tu pregunta y apretá Enter", 600)
+        self.question_entry.grid(row=0, column=0, sticky="ew")
+        self.question_entry.bind("<Return>", lambda _e: self.on_ask_assistant())
+
+        # Preguntas sugeridas: dan un punto de partida sin tener que escribir.
+        sugeridas = ctk.CTkFrame(tab, fg_color="transparent")
+        sugeridas.pack(fill="x", padx=12, pady=(10, 0))
+        for i, texto in enumerate(assistant.SUGGESTED_QUESTIONS):
+            ctk.CTkButton(
+                sugeridas, text=texto, height=28, corner_radius=14,
+                fg_color=branding.color("surface_alt"),
+                hover_color=branding.color("surface_hover"),
+                text_color=branding.color("text_muted"),
+                font=ctk.CTkFont(size=branding.font_size("caption")),
+                command=lambda t=texto: self.on_ask_assistant(t),
+            ).grid(row=i // 3, column=i % 3, padx=4, pady=4, sticky="w")
+
+        self._hint(tab, "Funciona sin conexión con un motor local de reglas: no envía "
+                        "nada. El motor en línea es opcional y viene apagado; si lo "
+                        "activás en Ajustes, se envían solo números agregados (MB, "
+                        "porcentajes, cantidades). Nunca rutas, nombres ni contenido "
+                        "de archivos. El asistente solo aconseja: no borra ni mueve nada.")
+        self._make_output("Asistente", tab)
+
+    def _build_tab_ajustes(self):
+        tab = self.tabs["Ajustes"]
+        row = self._button_row(tab)
+        self._action(row, "Guardar ajustes", self.on_save_settings, column=0)
+        self._action(row, "Ver configuración", self.on_show_settings,
+                     secondary=True, column=1)
+        self._action(row, "Restaurar de fábrica", self.on_reset_settings,
+                     danger=True, column=2)
+
+        grilla = ctk.CTkFrame(tab, fg_color="transparent")
+        grilla.pack(fill="x", padx=12, pady=(14, 0))
+
+        def etiqueta(texto, fila, columna=0):
+            ctk.CTkLabel(grilla, text=texto, anchor="w",
+                         text_color=branding.color("text_muted"),
+                         font=ctk.CTkFont(size=branding.font_size("body"))
+                         ).grid(row=fila, column=columna, sticky="w", padx=(0, 10), pady=6)
+
+        def interruptor(clave, texto, fila, columna):
+            variable = ctk.BooleanVar(value=bool(self.settings.get(clave)))
+            self.setting_vars[clave] = variable
+            ctk.CTkSwitch(
+                grilla, text=texto, variable=variable,
+                progress_color=branding.color("accent"),
+                button_color=branding.color("text"),
+                text_color=branding.color("text"),
+                font=ctk.CTkFont(size=branding.font_size("body")),
+            ).grid(row=fila, column=columna, sticky="w", padx=(0, 24), pady=6)
+
+        etiqueta("Tema:", 0)
+        self.setting_vars["tema"] = ctk.StringVar(value=self.settings.get("tema", "oscuro"))
+        self._menu(grilla, list(settings_mod.VALID_THEMES),
+                   self.setting_vars["tema"], width=150).grid(row=0, column=1, sticky="w")
+
+        etiqueta("Acento:", 0, 2)
+        self.setting_vars["acento"] = ctk.StringVar(value=self.settings.get("acento", "menta"))
+        self._menu(grilla, list(settings_mod.VALID_ACCENTS),
+                   self.setting_vars["acento"], width=150).grid(row=0, column=3, sticky="w")
+
+        interruptor("mostrar_barras", "Barras visuales", 1, 0)
+        interruptor("analisis_en_paralelo", "Análisis en paralelo", 1, 1)
+        interruptor("recordar_ultima_carpeta", "Recordar última carpeta", 1, 2)
+
+        etiqueta("Duplicados desde (KB):", 2)
+        self.min_dup_entry = self._entry(grilla, "64", 100)
+        self.min_dup_entry.insert(0, str(self.settings.get("duplicados_tamano_minimo_kb", 64)))
+        self.min_dup_entry.grid(row=2, column=1, sticky="w")
+
+        etiqueta("Top de archivos:", 2, 2)
+        self.top_files_entry = self._entry(grilla, "15", 100)
+        self.top_files_entry.insert(0, str(self.settings.get("top_archivos", 15)))
+        self.top_files_entry.grid(row=2, column=3, sticky="w")
+
+        # Asistente: separado y con su advertencia, porque es el único ajuste
+        # que hace salir datos del equipo.
+        ctk.CTkLabel(
+            tab, text=f"{branding.icon('Asistente')}  Asistente en línea (opcional)",
+            anchor="w", text_color=branding.color("accent2"),
+            font=ctk.CTkFont(size=branding.font_size("heading"), weight="bold"),
+        ).pack(fill="x", padx=14, pady=(18, 0))
+
+        ia = ctk.CTkFrame(tab, fg_color="transparent")
+        ia.pack(fill="x", padx=12, pady=(6, 0))
+
+        self.setting_vars["asistente_activado"] = ctk.BooleanVar(
+            value=bool(self.settings.get("asistente_activado")))
+        ctk.CTkSwitch(
+            ia, text="Activar asistente en línea",
+            variable=self.setting_vars["asistente_activado"],
+            progress_color=branding.color("accent2"),
+            button_color=branding.color("text"),
+            text_color=branding.color("text"),
+        ).grid(row=0, column=0, sticky="w", padx=(0, 20), pady=6)
+
+        ctk.CTkLabel(ia, text="Clave de API:",
+                     text_color=branding.color("text_muted")).grid(row=0, column=1, padx=(0, 8))
+        self.api_key_entry = self._entry(ia, f"vacío = usar {settings_mod.API_KEY_ENV_VAR}", 260)
+        self.api_key_entry.configure(show="*")
+        self.api_key_entry.grid(row=0, column=2, sticky="w")
+
+        self._hint(tab, assistant.PRIVACY_NOTICE + "  Se recomienda dejar la clave vacía "
+                        f"acá y definir la variable de entorno {settings_mod.API_KEY_ENV_VAR}: "
+                        "una clave guardada en el archivo de configuración queda en texto "
+                        "plano y se copia si esa carpeta se sincroniza en la nube.")
+        self._make_output("Ajustes", tab)
+
     # ------------------------------------------------------------------
     # Utilidades
     # ------------------------------------------------------------------
@@ -712,6 +846,13 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 quarantined_count=len(en_cuarentena),
             )
             resultado = healthscore.compute_score(metrics)
+
+            # El asistente trabaja sobre estas métricas agregadas, nunca sobre
+            # las listas de archivos.
+            self.assistant_context = assistant.build_context(
+                metrics=metrics, health=resultado,
+                memory_total_gb=snapshot.total / (1024 ** 3) if snapshot.total else 0.0,
+            )
 
             self._update_health_visuals(resultado, junk_mb, len(hallazgos),
                                         snapshot.available_percent, libre_pct)
@@ -1204,6 +1345,102 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         def task():
             ruta = reporting.save_report(self.report_data, destino, as_markdown=as_markdown)
             self.log(f"Informe guardado en: {ruta}", "Informe")
+
+        self.run_async(task)
+
+    # ------------------------------------------------------------------
+    # Asistente
+    # ------------------------------------------------------------------
+
+    def on_ask_assistant(self, question: str | None = None):
+        """Consulta al asistente. Nunca ejecuta acciones, solo responde texto."""
+        texto = (question or self.question_entry.get()).strip()
+        if not texto:
+            messagebox.showinfo("Sin pregunta", "Escribí una pregunta o elegí una sugerida.")
+            return
+        if question is None:
+            self.question_entry.delete(0, "end")
+
+        def task():
+            self.set_status("Consultando al asistente...")
+            self.log(f"\n> {texto}", "Asistente")
+            respuesta = assistant.ask(texto, self.assistant_context)
+            origen = "en línea" if respuesta.is_online else "local"
+            self.log(f"[{origen}] {respuesta.text}", "Asistente")
+            if respuesta.notice:
+                self.log(f"    ({respuesta.notice})", "Asistente")
+
+        self.run_async(task)
+
+    # ------------------------------------------------------------------
+    # Ajustes
+    # ------------------------------------------------------------------
+
+    def _collect_settings(self) -> dict:
+        """Lee los controles de la pestaña de ajustes y arma el diccionario."""
+        valores = dict(self.settings)
+        for clave, variable in self.setting_vars.items():
+            try:
+                valores[clave] = variable.get()
+            except Exception:
+                continue
+        valores["duplicados_tamano_minimo_kb"] = self.min_dup_entry.get().strip() or 64
+        valores["top_archivos"] = self.top_files_entry.get().strip() or 15
+        clave_api = self.api_key_entry.get().strip()
+        if clave_api:
+            valores["asistente_clave_api"] = clave_api
+        return valores
+
+    def on_save_settings(self):
+        """Guarda los ajustes. Los valores inválidos se corrigen solos."""
+        propuestos = self._collect_settings()
+        if propuestos.get("asistente_activado") and not self.settings.get("asistente_activado"):
+            if not self._confirm(
+                "Activar asistente en línea",
+                assistant.PRIVACY_NOTICE + "\n\n¿Lo activamos?",
+            ):
+                self.setting_vars["asistente_activado"].set(False)
+                return
+
+        def task():
+            # `update` valida antes de escribir: un número fuera de rango se
+            # recorta y un tema inexistente vuelve al de fábrica, en vez de
+            # dejar la app con una configuración imposible.
+            self.settings = settings_mod.update(propuestos)
+            ruta = settings_mod.settings_path()
+            self.log_lines(
+                [f"Ajustes guardados en: {ruta}", ""] + settings_mod.describe(),
+                "Ajustes",
+            )
+            self.set_status("Ajustes guardados.")
+
+        self.run_async(task)
+
+    def on_show_settings(self):
+        """Muestra la configuración vigente y de dónde sale la clave."""
+        def task():
+            self.log_lines(settings_mod.describe(), "Ajustes")
+
+        self.run_async(task)
+
+    def on_reset_settings(self):
+        """Vuelve todos los ajustes a los valores de fábrica."""
+        if not self._confirm(
+            "Restaurar de fábrica",
+            "Se van a descartar todos tus ajustes, incluida la clave del "
+            "asistente si la guardaste acá.\n\n¿Confirmás?",
+        ):
+            return
+
+        def task():
+            self.settings = settings_mod.reset()
+            for clave, variable in self.setting_vars.items():
+                try:
+                    variable.set(settings_mod.DEFAULTS[clave])
+                except Exception:
+                    continue
+            self.log_lines(["Ajustes restaurados a los valores de fábrica.", ""]
+                           + settings_mod.describe(), "Ajustes")
 
         self.run_async(task)
 

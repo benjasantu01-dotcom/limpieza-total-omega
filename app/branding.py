@@ -94,7 +94,9 @@ ICONS: Final[Mapping[str, str]] = MappingProxyType({
     "Duplicados": "\u29c9",   
     "Navegadores": "\u25d0",  
     "Inicio": "\u23fb",       
-    "Informe": "\u2263",      
+    "Informe": "\u2263",      # ≣ líneas
+    "Asistente": "\u273b",    # ✻ destello de ayuda
+    "Ajustes": "\u2699",      # ⚙ engranaje      
 })
 
 GRADIENT_STOPS: Final = ("#00f0c0", "#7c5cff", "#ff2d78")

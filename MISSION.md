@@ -83,6 +83,8 @@ Módulos existentes en `app/`:
 | `browser.py` | Detecta y mide cachés de navegador | no |
 | `healthscore.py` | Combina todo en un puntaje 0-100 (función pura) | no |
 | `reporting.py` | Informe unificado en texto y Markdown | solo al guardar |
+| `settings.py` | Preferencias del usuario, validadas | solo su config.json |
+| `assistant.py` | Asistente: motor local + Gemini opcional | no, solo aconseja |
 
 ## Prioridades por módulo
 
@@ -137,7 +139,32 @@ limpiadores y antivirus reales). Siempre de forma aditiva:
 - Pesos configurables por el usuario.
 - Explicar qué acción concreta sube cada área del puntaje.
 
+**assistant.py** (asistente IA — prioridad alta, es lo más nuevo)
+- Más reglas en el motor local: es el que funciona sin conexión y sin enviar
+  nada, así que cada regla nueva sirve a todos los usuarios.
+- Reconocer más formas de preguntar lo mismo (sinónimos, errores de tipeo).
+- Memoria de conversación: recordar las últimas preguntas para dar contexto.
+- Explicar cada área con un ejemplo concreto de qué botón apretar.
+- Detectar preguntas que no se pueden responder con las métricas actuales y
+  decir exactamente qué análisis hay que correr antes.
+- Comparar contra el análisis anterior ("mejoraste 12 puntos desde ayer").
+- REGLAS QUE NO SE TOCAN: el asistente solo devuelve texto, nunca ejecuta
+  acciones. `build_context()` es la única función que decide qué sale del
+  equipo, y solo pueden salir números agregados. Nada de rutas, nombres ni
+  contenido de archivos. El motor en línea sigue apagado por defecto.
+
+**settings.py** (ajustes)
+- Más preferencias útiles: carpetas excluidas del escaneo, umbrales propios
+  del puntaje de salud, tamaño de fuente.
+- Perfiles guardados (por ejemplo "rápido" y "profundo").
+- Migración de versiones: si el archivo viene de una versión vieja, completar
+  las claves nuevas sin perder lo elegido.
+- REGLAS: todo valor se valida al cargar y un archivo corrupto nunca puede
+  dejar la app sin arrancar. Las carpetas pasan por `safety`. La clave de API
+  se prefiere desde la variable de entorno.
+
 **main.py**
+- Aplicar de verdad los ajustes de tema y acento a la interfaz.
 - Barra de progreso real en las tareas largas.
 - Botón de cancelar en los análisis que recorren disco.
 - Recordar la última carpeta usada entre sesiones.

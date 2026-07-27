@@ -45,6 +45,7 @@ GUI_MODULE = "main.py"
 # escritura: `ensure_safe_to_modify` rechaza extensiones sensibles y rutas de
 # sistema, que estos módulos necesitan poder *mirar*.
 READ_ONLY_MODULES = (
+    "assistant.py",
     "scanner.py",
     "startup.py",
     "memory.py",
