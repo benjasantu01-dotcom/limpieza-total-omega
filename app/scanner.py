@@ -62,6 +62,8 @@ def check_recent_executable_in_downloads(path: Path, hours: int = 24) -> Optiona
     try:
         # mtime se consulta directamente al FS; se encapsula en try/except 
         # para manejar archivos bloqueados por otros procesos.
+        if not path.is_file():
+            return None
         mtime = datetime.fromtimestamp(path.stat().st_mtime)
         if datetime.now() - mtime < timedelta(hours=hours):
             return Suspicion(path, f"Ejecutable reciente detectado (modificado hace menos de {hours}h)", "info")
@@ -146,14 +148,12 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
             current_dir = stack.pop()
             try:
                 for entry in current_dir.iterdir():
-                    # Filtrado de seguridad: se omiten symlinks y junctions (puntos de reparse)
-                    # usando lstat para evitar seguir punteros fuera de la ruta validada.
                     if is_protected_path(entry) or entry.is_symlink():
                         continue
                     
                     st = entry.lstat()
                     # 0x400 (FILE_ATTRIBUTE_REPARSE_POINT) verifica junctions de Windows
-                    if bool(st.st_file_attributes & 0x400):
+                    if hasattr(st, 'st_file_attributes') and bool(st.st_file_attributes & 0x400):
                         continue
                         
                     if entry.is_dir():

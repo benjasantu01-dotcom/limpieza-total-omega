@@ -141,7 +141,7 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
     del registro eliminando comillas de encapsulamiento.
     """
     parsed_entries: List[StartupEntry] = []
-    if not text:
+    if not isinstance(text, str) or not text.strip():
         return parsed_entries
         
     for line in text.splitlines():

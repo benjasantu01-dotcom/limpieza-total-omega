@@ -137,10 +137,7 @@ def _validate_str(clave: str, valor: str) -> str | None:
 
 
 def settings_path(base: str | Path | None = None) -> Path:
-    """Ruta del archivo de configuración.
-
-    Acepta una base para poder testear sin tocar la carpeta real del usuario.
-    """
+    """Ruta del archivo de configuración."""
     if base is not None:
         carpeta = Path(base)
     else:
@@ -149,11 +146,7 @@ def settings_path(base: str | Path | None = None) -> Path:
 
 
 def validate(values: Any) -> dict[str, Any]:
-    """Devuelve una configuración completa y sana a partir de datos crudos.
-
-    Nunca lanza excepción y nunca devuelve claves de más: lo que no se
-    reconoce se descarta, lo que está mal se reemplaza por el valor de fábrica.
-    """
+    """Devuelve una configuración completa y sana a partir de datos crudos."""
     limpio = dict(DEFAULTS)
     if not isinstance(values, dict):
         return limpio
@@ -183,7 +176,7 @@ def validate(values: Any) -> dict[str, Any]:
 
 
 def load(base: str | Path | None = None) -> dict[str, Any]:
-    """Carga la configuración. Devuelve los valores de fábrica si no hay archivo."""
+    """Carga la configuración. Devuelve valores de fábrica si el archivo es inválido."""
     global _cached_settings, _last_base
     
     if _cached_settings is not None and base == _last_base:
@@ -191,8 +184,14 @@ def load(base: str | Path | None = None) -> dict[str, Any]:
 
     ruta = settings_path(base)
     try:
-        crudo = json.loads(ruta.read_text(encoding="utf-8"))
-        _cached_settings = validate(crudo)
+        if ruta.exists():
+            contenido = ruta.read_text(encoding="utf-8").strip()
+            if not contenido:
+                _cached_settings = dict(DEFAULTS)
+            else:
+                _cached_settings = validate(json.loads(contenido))
+        else:
+            _cached_settings = dict(DEFAULTS)
     except (OSError, json.JSONDecodeError, UnicodeDecodeError):
         _cached_settings = dict(DEFAULTS)
         
@@ -205,16 +204,16 @@ def save(values: Any, base: str | Path | None = None) -> Path | None:
     global _cached_settings
     ruta = settings_path(base)
     
-    # Defensa: verificar que el directorio destino es seguro antes de intentar nada
+    # Validar que el directorio sea seguro y, si existe, que sea escribible
     if not is_safe_to_modify(str(ruta.parent)):
         return None
 
     limpio = validate(values)
     try:
         ruta.parent.mkdir(parents=True, exist_ok=True)
-        # Verificar permisos antes de intentar escribir sobre el archivo existente
         if ruta.exists() and not os.access(ruta, os.W_OK):
             return None
+            
         ruta.write_text(
             json.dumps(limpio, indent=2, ensure_ascii=False),
             encoding="utf-8",

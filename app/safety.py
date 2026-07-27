@@ -142,8 +142,7 @@ def is_within_directory(
         return False
     try:
         c, p = normalize(child), normalize(parent)
-        # Impedir traversal y verificar parentesco real resuelto
-        if ".." in str(child) or ".." in str(parent):
+        if not c.is_absolute() or not p.is_absolute():
             return False
         if any(part.is_symlink() for part in c.parents):
             return False
@@ -152,7 +151,7 @@ def is_within_directory(
             return allow_equal
         c.relative_to(p)
         return True
-    except (ValueError, TypeError, OSError, ValueError):
+    except (ValueError, TypeError, OSError):
         return False
 
 
@@ -179,8 +178,13 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
         raise UnsafePathError(f"Ruta mal formada: {path}") from e
 
     # Bloqueo estricto de rutas UNC o recursos de red
-    if str(p).startswith(("\\\\", "//")) or p.parts[0].endswith(":\\") and not p.parts[0][0].isalpha():
+    str_p = str(p)
+    if str_p.startswith(("\\\\", "//")):
         raise UnsafePathError("Operación bloqueada: rutas UNC o de red no permitidas.")
+    
+    # Validar partes de la ruta para evitar casos mal formados (ej. dispositivos)
+    if len(p.parts) == 0:
+        raise UnsafePathError("Ruta inválida: no contiene componentes.")
 
     try:
         if p.is_symlink():
