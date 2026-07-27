@@ -167,7 +167,17 @@ def is_sensitive_file(path: PathLike) -> bool:
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> Path:
     """
-    Valida si una ruta puede ser modificada. Lanza UnsafePathError ante cualquier riesgo.
+    Valida si una ruta puede ser modificada.
+    
+    Args:
+        path: Ruta a evaluar.
+        allow_sensitive: Si es True, permite extensiones en SENSITIVE_EXTENSIONS.
+        
+    Returns:
+        Path: Ruta normalizada y validada.
+        
+    Raises:
+        UnsafePathError: Si la ruta es insegura o mal formada.
     """
     if path is None:
         raise UnsafePathError("La ruta proporcionada es None.")

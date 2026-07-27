@@ -85,8 +85,8 @@ class QuarantineItem:
 
 def _get_sha256(path: Path) -> str:
     """
-    Calcula el hash SHA-256 de un archivo en bloques de 4KB para minimizar el uso de memoria.
-    Lanza OSError si el archivo no es accesible.
+    Calcula el hash SHA-256 de un archivo en bloques de 4KB.
+    Precondición: El archivo debe existir y ser legible.
     """
     sha256_hash = hashlib.sha256()
     with open(path, "rb") as f:
@@ -98,7 +98,7 @@ def _get_sha256(path: Path) -> str:
 def _is_file_locked(path: Path) -> bool:
     """
     Determina si un archivo está bloqueado intentando renombrarlo sobre sí mismo.
-    Retorna True si el sistema operativo deniega la operación (archivo en uso).
+    Retorna True si el sistema operativo deniega la operación.
     """
     try:
         path.rename(path)
@@ -109,7 +109,8 @@ def _is_file_locked(path: Path) -> bool:
 
 def quarantine_dir(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
     """
-    Normaliza la ruta de cuarentena y asegura su existencia en el sistema de archivos.
+    Normaliza la ruta de cuarentena y asegura su existencia en el sistema.
+    Retorna un objeto Path absoluto.
     """
     path = Path(base).expanduser()
     path.mkdir(parents=True, exist_ok=True)
@@ -124,7 +125,7 @@ def _manifest_path(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
 def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload: bool = False) -> List[QuarantineItem]:
     """
     Obtiene la lista de ítems en cuarentena desde el manifiesto JSON.
-    Usa un caché en memoria para evitar I/O redundante. Retorna lista vacía si el archivo no existe o está corrupto.
+    Usa un caché en memoria para minimizar I/O. Retorna lista vacía ante error o ausencia de archivo.
     """
     base_str = str(base)
     if not force_reload and base_str in _manifest_cache:
@@ -149,7 +150,7 @@ def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload:
 
 def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
     """
-    Persiste la lista de objetos QuarantineItem en un archivo JSON en disco.
+    Persiste la lista de objetos QuarantineItem en disco como un archivo JSON.
     """
     _manifest_cache[str(base)] = items
     path = _manifest_path(base)
@@ -167,8 +168,8 @@ def quarantine_file(
 ) -> QuarantineItem:
     """
     Mueve un archivo a cuarentena tras validar seguridad y bloqueos.
-    Lanza UnsafePathError (vía `ensure_safe_to_modify`), FileNotFoundError, 
-    IOError si está bloqueado, o RuntimeError si falla el movimiento físico.
+    Lanza: UnsafePathError (vía `ensure_safe_to_modify`), FileNotFoundError, 
+    IOError (si está bloqueado), o RuntimeError (fallo en I/O o manifiesto).
     """
     if not source:
         raise ValueError("La ruta de origen no puede estar vacía.")
@@ -185,11 +186,10 @@ def quarantine_file(
     dest_dir = quarantine_dir(base)
     ensure_safe_to_modify(dest_dir, allow_sensitive=False)
     
-    # Verificación preventiva de espacio libre antes de mover
     file_size = origin.stat().st_size
     usage = shutil.disk_usage(dest_dir)
     if usage.free < file_size:
-        raise OSError(f"No hay suficiente espacio en el disco de cuarentena: {dest_dir}")
+        raise OSError(f"No hay espacio suficiente en: {dest_dir}")
 
     item_id = uuid.uuid4().hex[:12]
     safe_filename = Path(origin.name).name
@@ -221,11 +221,11 @@ def quarantine_file(
                 shutil.move(str(destination), str(origin))
             raise RuntimeError(f"Error al actualizar manifiesto: {e}")
     except (OSError, PermissionError) as e:
-        raise RuntimeError(f"Falla crítica al mover archivo a cuarentena: {e}")
+        raise RuntimeError(f"Falla al mover archivo a cuarentena: {e}")
 
 
 def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
-    """Retorna todos los ítems en cuarentena, ordenados de forma descendente por fecha."""
+    """Retorna todos los ítems en cuarentena, ordenados cronológicamente descendente."""
     items = list(load_manifest(base))
     items.sort(key=lambda i: i.quarantined_at, reverse=True)
     return items
@@ -233,32 +233,32 @@ def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[Quaranti
 
 def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
     """
-    Restaura un archivo a su ubicación original validando su integridad mediante SHA-256.
-    Lanza UnsafePathError si la ruta original es protegida, o RuntimeError si la integridad falló.
+    Restaura un archivo a su ubicación original validando integridad.
+    Lanza: UnsafePathError (ruta protegida), RuntimeError (fallo de integridad/IO).
     """
     if not item_id or not isinstance(item_id, str):
-        raise ValueError("El ID del elemento debe ser una cadena válida.")
+        raise ValueError("El ID debe ser una cadena válida.")
 
     items = list(_manifest_cache.get(str(base)) or load_manifest(base))
     match = next((i for i in items if i.item_id == item_id), None)
     if match is None:
-        raise KeyError(f"No hay ningún elemento en cuarentena con id '{item_id}'.")
+        raise KeyError(f"No se encontró el ítem: {item_id}")
 
     stored_file = quarantine_dir(base) / match.stored_name
     
     if not stored_file.is_file():
-        raise FileNotFoundError(f"Archivo en cuarentena inexistente: {stored_file}")
+        raise FileNotFoundError(f"Archivo inexistente: {stored_file}")
         
     if match.sha256 and _get_sha256(stored_file) != match.sha256:
-        raise RuntimeError("Integridad comprometida: el archivo en cuarentena fue alterado.")
+        raise RuntimeError("Integridad comprometida (SHA256 mismatch).")
 
     destination = normalize(match.original_path)
     
     if is_protected_path(destination):
-        raise UnsafePathError(f"Restauración denegada: '{destination}' es una ruta protegida.")
+        raise UnsafePathError(f"Restauración denegada: {destination} protegida.")
 
     if destination.exists():
-        raise FileExistsError(f"Restauración abortada: El archivo ya existe en '{destination}'")
+        raise FileExistsError(f"El destino ya está ocupado: {destination}")
         
     ensure_safe_to_modify(destination, allow_sensitive=False)
 
@@ -266,7 +266,7 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.move(str(stored_file), str(destination))
     except (OSError, PermissionError) as e:
-        raise RuntimeError(f"Error durante la restauración del archivo: {e}")
+        raise RuntimeError(f"Fallo durante la restauración: {e}")
 
     items.remove(match)
     save_manifest(items, base)
@@ -276,7 +276,7 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
 def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> bool:
     """
     Elimina físicamente un archivo de la cuarentena. 
-    Lanza UnsafePathError si el archivo está fuera del directorio de cuarentena definido.
+    Retorna True si fue eliminado o False si no existe.
     """
     if not item_id or not isinstance(item_id, str):
         return False
@@ -289,7 +289,7 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
     stored_file = normalize(quarantine_root / match.stored_name)
     
     if not is_within_directory(stored_file, quarantine_root):
-        raise UnsafePathError(f"Borrado bloqueado: '{stored_file}' está fuera de la cuarentena.")
+        raise UnsafePathError(f"Intento de borrado fuera de cuarentena: {stored_file}")
 
     if stored_file.is_file():
         stored_file.unlink()
@@ -300,7 +300,8 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
 
 def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     """
-    Vacía la carpeta de cuarentena y resetea el manifiesto. Retorna el número de archivos borrados.
+    Vacía la carpeta de cuarentena y resetea el manifiesto. 
+    Retorna el conteo de archivos eliminados.
     """
     quarantine_root = quarantine_dir(base)
     items = load_manifest(base)
@@ -320,12 +321,12 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
 
 
 def total_quarantined_bytes(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
-    """Calcula el uso total de espacio (en bytes) de la cuarentena."""
+    """Calcula el uso total de espacio (bytes) ocupado en cuarentena."""
     return sum(item.size_bytes for item in load_manifest(base))
 
 
 def summarize(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[str]:
-    """Genera un reporte textual descriptivo de los ítems en cuarentena para la interfaz."""
+    """Genera un reporte descriptivo legible para la interfaz."""
     items = list_items(base)
     if not items:
         return ["La cuarentena está vacía."]
