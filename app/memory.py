@@ -270,7 +270,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     Ejecuta el trim (purga) del working set de un proceso en Windows usando
     la API `EmptyWorkingSet`.
     
-    Seguridad: Los PID <= 4 están protegidos contra manipulación.
+    Seguridad: Los PID <= 4 están protegidos y se solicita acceso restringido.
     Retorna (éxito, mensaje_explicativo).
     """
     if os.name != "nt":
@@ -286,10 +286,12 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     try:
         import ctypes
 
+        # Privilegios mínimos: solo requerimos SET_QUOTA (para EmptyWorkingSet) 
+        # y QUERY_LIMITED_INFORMATION para validar el handle.
         PROCESS_SET_QUOTA = 0x0100
-        PROCESS_QUERY_INFORMATION = 0x0400
+        PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
         handle = ctypes.windll.kernel32.OpenProcess(
-            PROCESS_SET_QUOTA | PROCESS_QUERY_INFORMATION, False, target_pid
+            PROCESS_SET_QUOTA | PROCESS_QUERY_LIMITED_INFORMATION, False, target_pid
         )
         if not handle:
             return False, f"No se pudo abrir el proceso {target_pid} (¿permisos insuficientes?)."

@@ -790,6 +790,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 "Esa carpeta es vital para el sistema y no puede ser analizada.\n\n"
                 "Elegí una carpeta de usuario (Descargas, Documentos, etc.).",
             )
+            # Limpiar estado de selección de carpeta si el target no es seguro
+            self.target_choice.set("Por defecto (Temp + Descargas)")
+            self.scan_target = None
+            self.target_label.configure(text="")
             return None
 
     def _confirm(self, title: str, message: str) -> bool:

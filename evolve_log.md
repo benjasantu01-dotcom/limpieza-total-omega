@@ -1309,3 +1309,41 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-07-27T16:31:08` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `walk_files` mediante la validación explícita de `st_reparse_tag` durante la iteración, asegurando que no se sigan puntos de reanálisis (junctions) que podrían apuntar a volúmenes críticos fuera de la ruta base, incluso si el SO reporta la entrada como un directorio estándar.
 - `2026-07-27T16:31:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-27T16:31:08` Corrida terminada. Total usado hoy: 260.
+- `2026-07-27T16:39:57` Arrancando corrida. Quedan hoy ~40 peticiones objetivo.
+- `2026-07-27T16:40:21` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha añadido una validación estricta en `group_by_size` y `_collect_candidates` para verificar que cada ruta sea un archivo regular antes de intentar obtener sus estadísticas, evitando así el procesamiento de dispositivos especiales o carpetas que podrían causar comportamientos inesperados durante el escaneo.
+- `2026-07-27T16:40:44` Tests FALLARON:
+```
+............ [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_________________ test_read_only_modules_never_delete_or_move __________________
+
+    def test_read_only_modules_never_delete_or_move():
+        """Ningún módulo de solo lectura puede borrar ni mover archivos."""
+        destructivos = {"unlink", "rmdir", "rmtree", "move", "remove", "rename", "replace"}
+        for nombre in READ_ONLY_MODULES:
+            archivo = APP_DIR / nombre
+            if not archivo.exists():
+                continue
+            usados = calls_and_imports(parse(archivo)) & destructivos
+>           assert not usados, (
+                f"{nombre} debería ser de solo lectura pero llama a "
+                f"{', '.join(sorted(usados))}"
+            )
+E           AssertionError: healthscore.py debería ser de solo lectura pero llama a replace
+E           assert not {'replace'}
+
+evolve/tests/test_integrity.py:294: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move - AssertionError: healthscore.py debería ser de solo lectura pero llama a replace
+assert not {'replace'}
+1 failed, 298 passed in 1.00s
+
+```
+- `2026-07-27T16:40:44` ❌ Mejora descartada en healthscore.py (no pasó los tests), se revirtió. Intento: Reforcé la integridad de las métricas mediante un mecanismo de validación de estado inicial defensivo en `compute_score`, asegurando que `SystemMetrics` no pueda ser manipulado externamente antes de su procesamiento y evitando posibles inyecciones de valores de punto flotante no finitos que podrían romper los cálculos de peso o generar errores en la UI.
+- `2026-07-27T16:41:40` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `_ask_folder` para que, en caso de que `safety.ensure_safe_to_modify` falle (indicando una ruta protegida), la aplicación no solo avise al usuario sino que también limpie correctamente el estado del campo de entrada para evitar inconsistencias en el flujo de trabajo.
+- `2026-07-27T16:41:50` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `trim_working_set` al restringir explícitamente el acceso a procesos mediante el uso de `PROCESS_QUERY_LIMITED_INFORMATION` (el mínimo necesario) y validando que el handle obtenido sea válido, evitando operaciones sobre procesos del sistema a los que el usuario no debería acceder incluso si el PID es mayor a 4.
+- `2026-07-27T16:41:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-27T16:41:50` Corrida terminada. Total usado hoy: 264.

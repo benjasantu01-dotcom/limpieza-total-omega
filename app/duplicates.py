@@ -122,7 +122,7 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
         return {}
     groups: Dict[int, List[Path]] = defaultdict(list)
     for p in paths:
-        if not isinstance(p, Path):
+        if not isinstance(p, Path) or not p.is_file():
             continue
         try:
             groups[p.stat().st_size].append(p)
@@ -170,7 +170,7 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
                         candidate = (root_path / name).resolve()
                         if not str(candidate).startswith(str(base)):
                             continue
-                        if candidate.is_symlink():
+                        if candidate.is_symlink() or not candidate.is_file():
                             continue
                         if skip_protected and is_protected_path(candidate):
                             continue
