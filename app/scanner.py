@@ -18,15 +18,15 @@ import logging
 from dataclasses import dataclass
 from pathlib import Path
 from datetime import datetime, timedelta
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Final
 
 # Configuración de logger para el módulo
 logger = logging.getLogger(__name__)
 
-DOUBLE_EXTENSION_RE = re.compile(r"\.(pdf|jpg|png|docx|xlsx|txt)\.(exe|scr|bat|cmd|js|vbs)$", re.IGNORECASE)
-SUSPICIOUS_EXECUTABLE_EXT = {".exe", ".scr", ".bat", ".cmd", ".js", ".vbs", ".ps1"}
-SYSTEM_LOOKALIKES = {"svchost.exe", "explorer.exe", "csrss.exe", "winlogon.exe", "lsass.exe"}
-SYSTEM32_LOWER = "system32"
+DOUBLE_EXTENSION_RE: Final = re.compile(r"\.(pdf|jpg|png|docx|xlsx|txt)\.(exe|scr|bat|cmd|js|vbs)$", re.IGNORECASE)
+SUSPICIOUS_EXECUTABLE_EXT: Final = {".exe", ".scr", ".bat", ".cmd", ".js", ".vbs", ".ps1"}
+SYSTEM_LOOKALIKES: Final = {"svchost.exe", "explorer.exe", "csrss.exe", "winlogon.exe", "lsass.exe"}
+SYSTEM32_LOWER: Final = "system32"
 
 
 @dataclass
@@ -61,6 +61,7 @@ def check_recent_executable_in_downloads(path: Path, hours: int = 24) -> Optiona
         if datetime.now() - mtime < timedelta(hours=hours):
             return Suspicion(path, f"Ejecutable reciente detectado (modificado hace menos de {hours}h)", "info")
     except (FileNotFoundError, PermissionError, OSError):
+        # Fallo silencioso: el archivo es inaccesible, por lo tanto no es un riesgo analizable
         pass
     return None
 
@@ -85,17 +86,11 @@ def check_system_lookalike(path: Path) -> Optional[Suspicion]:
 def scan_file(path: Path) -> List[Suspicion]:
     """
     Ejecuta el conjunto de chequeos heurísticos sobre un archivo individual.
-    Verifica la seguridad de la ruta antes de proceder al análisis.
+    Verifica la accesibilidad del archivo antes de aplicar las reglas.
     """
     if path is None:
         return []
         
-    # OJO: acá NO va `ensure_safe_to_modify`. Este módulo solo LEE, nunca
-    # borra ni mueve. Ese chequeo rechaza las extensiones sensibles (.exe,
-    # .dll...), que son exactamente las que un escáner heurístico tiene que
-    # poder mirar. Ponerlo acá hacía que el escaneo abortara al encontrar el
-    # primer ejecutable, y como lanza UnsafePathError, el `except` de abajo
-    # tampoco lo atrapaba.
     try:
         if not path.is_file():
             return []
@@ -103,7 +98,7 @@ def scan_file(path: Path) -> List[Suspicion]:
         return []
 
     results: List[Suspicion] = []
-    # Los chequeos individuales poseen sus propios bloques try/except para mayor robustez
+    # Los chequeos individuales poseen sus propios bloques try/except para robustez frente a IO errors
     for check_func in [check_double_extension, check_recent_executable_in_downloads, check_system_lookalike]:
         try:
             res = check_func(path)
@@ -118,15 +113,13 @@ def scan_file(path: Path) -> List[Suspicion]:
 def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
     """
     Escanea recursivamente un directorio en busca de comportamientos sospechosos.
-    Verifica seguridad de la ruta antes de procesar cada archivo detectado.
+    Utiliza una pila para el recorrido evitando recursión profunda.
     """
     if not directory:
         return []
         
     try:
-        root = Path(directory).resolve()
-        # Sin chequeo de escritura: escanear es solo lectura. Poder revisar una
-        # carpeta no implica poder modificarla.
+        root: Path = Path(directory).resolve()
         results: List[Suspicion] = []
         if not root.exists() or not root.is_dir():
             return []
@@ -156,7 +149,7 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
 def run_windows_defender_quick_scan() -> str:
     """
     Dispara un escaneo rápido con Windows Defender mediante PowerShell.
-    Requiere que el entorno tenga acceso a los cmdlets de Defender.
+    Requiere permisos de ejecución y presencia del cmdlet 'Start-MpScan'.
     """
     try:
         result = subprocess.run(

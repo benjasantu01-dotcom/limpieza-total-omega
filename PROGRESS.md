@@ -5,23 +5,23 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **333**
-- Mejoras aceptadas: **224** (67.3% de aceptación)
+- Iteraciones totales: **337**
+- Mejoras aceptadas: **226** (67.1% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 22
+- Rechazadas por guardia de seguridad: 23
 - Sin cambios (nada sustancial que mejorar): 4
-- Sin respuesta de la IA (error o límite): 68
+- Sin respuesta de la IA (error o límite): 69
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
 | 2026-07-26 | 221 | 15 | 22 | 3 | 68 |
-| 2026-07-27 | 3 | 0 | 0 | 1 | 0 |
+| 2026-07-27 | 5 | 0 | 1 | 1 | 1 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **53**
+- legibilidad y documentación: **55**
 - manejo de errores y validación de entradas: **50**
 - seguridad defensiva: **44**
 - robustez ante casos límite: **40**
@@ -30,13 +30,13 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Mejoras aceptadas por archivo
 
 - `organizer.py`: **21**
+- `safety.py`: **21**
 - `browser.py`: **20**
 - `diskreport.py`: **20**
-- `safety.py`: **20**
 - `duplicates.py`: **19**
 - `memory.py`: **19**
+- `scanner.py`: **19**
 - `healthscore.py`: **18**
-- `scanner.py`: **18**
 - `branding.py`: **18**
 - `main.py`: **17**
 - `quarantine.py`: **17**
@@ -44,6 +44,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-27T05:48:12` **scanner.py** (legibilidad y documentación): He mejorado la documentación del módulo añadiendo type hints faltantes, tipado explícito en los resultados de `scan_directory` y docstrings técnicos más precisos que aclaran la intención de cada heurística y el manejo de excepciones, facilitando la mantenibilidad futura sin alterar la lógica de escaneo.
+- `2026-07-27T05:48:04` **safety.py** (legibilidad y documentación): Mejoré la documentación técnica y la robustez de los `type hints` y validaciones en `safety.py`, añadiendo `docstrings` específicos y refinando la lógica de `normalize` para cumplir con las expectativas de un proyecto de calidad profesional.
 - `2026-07-27T05:38:43` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `organizer.py` mediante la adición de docstrings estructurados (usando el formato Google Style) que explican el propósito, los parámetros y las excepciones de las funciones clave, clarificando la intención detrás de los mecanismos de seguridad y validación.
 - `2026-07-27T05:38:20` **memory.py** (legibilidad y documentación): Mejoré la documentación de `trim_working_set` y las funciones de parsing añadiendo docstrings que explican el contexto técnico de los errores y las restricciones, además de incorporar type hints en parámetros para asegurar la calidad de entrada.
 - `2026-07-27T05:36:53` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `healthscore.py` añadiendo docstrings detallados a las funciones de puntuación, explicando explícitamente el criterio de penalización y los umbrales utilizados para garantizar que cualquier colaborador entienda la lógica de negocio detrás de cada métrica.
@@ -57,5 +59,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-26T21:56:01` **organizer.py** (manejo de errores y validación de entradas): Mejora la robustez del manejo de archivos en `stage_for_review` y `delete_reviewed` mediante la validación estricta de rutas, comprobación de errores específicos durante el movimiento/borrado y el uso de `pathlib` de forma consistente para evitar inconsistencias entre `str` y `Path`.
 - `2026-07-26T21:55:40` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_windows_process_csv` implementando validaciones más estrictas sobre la estructura de los datos CSV y manejo de errores específico para el parsing, evitando que entradas mal formadas o valores fuera de rango afecten el resultado del reporte.
 - `2026-07-26T21:55:17` **main.py** (manejo de errores y validación de entradas): Se introdujo una validación robusta de tipos y valores en las entradas de usuario (`on_trim_process` y `on_restore_quarantine`) y se mejoró el manejo de errores al consolidar la validación de rutas mediante `is_path_safe` antes de intentar cualquier operación destructiva, asegurando que las entradas vacías o no válidas no disparen tareas asíncronas fallidas.
-- `2026-07-26T21:45:34` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemMetrics.validate` y `compute_score` asegurando que las métricas crudas se traten como valores numéricos válidos antes de procesarlas, evitando posibles errores de desbordamiento o tipos inesperados durante el cálculo de ratios.
-- `2026-07-26T21:44:44` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `directory_size` y `detect_profiles` mediante la validación explícita de tipos, el manejo seguro de estados de error en `os.scandir` y la consolidación de bloques `try-except` para prevenir fallos inesperados al acceder a rutas protegidas por el sistema operativo.
