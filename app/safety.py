@@ -136,12 +136,15 @@ def is_within_directory(
     allow_equal: bool = False,
 ) -> bool:
     """
-    Valida si 'child' es descendiente de 'parent'.
+    Valida si 'child' es descendiente de 'parent' evitando fugas de directorio.
     """
     if child is None or parent is None:
         return False
     try:
         c, p = normalize(child), normalize(parent)
+        # Impedir traversal y verificar parentesco real resuelto
+        if ".." in str(child) or ".." in str(parent):
+            return False
         if any(part.is_symlink() for part in c.parents):
             return False
             
@@ -149,7 +152,7 @@ def is_within_directory(
             return allow_equal
         c.relative_to(p)
         return True
-    except (ValueError, TypeError, OSError):
+    except (ValueError, TypeError, OSError, ValueError):
         return False
 
 
@@ -175,8 +178,9 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
     except (TypeError, ValueError) as e:
         raise UnsafePathError(f"Ruta mal formada: {path}") from e
 
-    if str(p).startswith(("\\\\", "//")):
-        raise UnsafePathError("Operación bloqueada: rutas UNC no permitidas.")
+    # Bloqueo estricto de rutas UNC o recursos de red
+    if str(p).startswith(("\\\\", "//")) or p.parts[0].endswith(":\\") and not p.parts[0][0].isalpha():
+        raise UnsafePathError("Operación bloqueada: rutas UNC o de red no permitidas.")
 
     try:
         if p.is_symlink():

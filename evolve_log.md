@@ -1347,3 +1347,22 @@ assert not {'replace'}
 - `2026-07-27T16:41:50` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `trim_working_set` al restringir explícitamente el acceso a procesos mediante el uso de `PROCESS_QUERY_LIMITED_INFORMATION` (el mínimo necesario) y validando que el handle obtenido sea válido, evitando operaciones sobre procesos del sistema a los que el usuario no debería acceder incluso si el PID es mayor a 4.
 - `2026-07-27T16:41:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-27T16:41:50` Corrida terminada. Total usado hoy: 264.
+- `2026-07-27T16:50:10` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-07-27T16:50:33` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-07-27T16:50:57` Tests FALLARON:
+```
+ords_the_original_path_for_restoring - safety.UnsafePathError: Ruta de cuarentena inválida: /tmp/pytest-of-runner/pytest-1/test_quarantine_records_the_or0/_Cuarentena
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - safety.UnsafePathError: Ruta de cuarentena inválida: /tmp/pytest-of-runner/pytest-1/test_restore_puts_the_file_bac0/_Cuarentena
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - safety.UnsafePathError: Ruta de cuarentena inválida: /tmp/pytest-of-runner/pytest-1/test_restore_into_a_system_pat0/_Cuarentena
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - safety.UnsafePathError: Ruta de cuarentena inválida: /tmp/pytest-of-runner/pytest-1/test_purge_item_cannot_delete_0/_Cuarentena
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - safety.UnsafePathError: Ruta de cuarentena inválida: /tmp/pytest-of-runner/pytest-1/test_purge_all_only_deletes_in0/_Cuarentena
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - safety.UnsafePathError: Ruta de cuarentena inválida: /tmp/pytest-of-runner/pytest-1/test_quarantine_two_files_with0/_Cuarentena
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - safety.UnsafePathError: Ruta de cuarentena inválida: /tmp/pytest-of-runner/pytest-1/test_quarantine_summary_report0/_Cuarentena
+8 failed, 291 passed in 1.09s
+
+```
+- `2026-07-27T16:50:57` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se añadió una validación explícita mediante `is_within_directory` en `quarantine_file` para asegurar que el `dest_dir` sea efectivamente un subdirectorio de la base de cuarentena, previniendo ataques de "path traversal" en caso de que la configuración de la ruta sea manipulada.
+- `2026-07-27T16:51:16` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-07-27T16:51:24` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `is_within_directory` incorporando una verificación de integridad ante intentos de "path traversal" mediante el uso de `resolve()` y `relative_to()`, y se añadió una validación explícita para evitar que se procesen rutas que residan en volúmenes de red (UNC), mitigando riesgos de seguridad en entornos con unidades mapeadas.
+- `2026-07-27T16:51:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-27T16:51:24` Corrida terminada. Total usado hoy: 268.
