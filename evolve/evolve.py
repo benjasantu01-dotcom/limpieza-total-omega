@@ -60,6 +60,9 @@ ITERATIONS_PER_RUN = int(os.environ.get("ITERATIONS_PER_RUN", "1"))
 # cambia el límite; 15s es conservador para la mayoría de los free tiers).
 SECONDS_BETWEEN_REQUESTS = int(os.environ.get("SECONDS_BETWEEN_REQUESTS", "15"))
 MAX_RETRIES_ON_RATE_LIMIT = 2
+# Reintentos ante fallas del servidor de Google (503, 500) y cortes de red.
+# Son transitorias y no consumen cuota útil, así que conviene insistir.
+MAX_RETRIES_ON_SERVER_ERROR = 3
 MAX_WAIT_SECONDS = 30  # nunca esperar más que esto por un solo reintento
 # Si Google pide esperar más que esto, asumimos que es la cuota DIARIA
 # agotada (no por minuto) y no tiene sentido insistir en esta corrida.
@@ -235,7 +238,13 @@ def call_gemini(prompt: str, use_search: bool = False) -> str | None:
     if use_search:
         payload["tools"] = [{"google_search": {}}]
 
-    for attempt in range(1, MAX_RETRIES_ON_RATE_LIMIT + 1):
+    # Se cuentan por separado los reintentos por rate limit y por fallas del
+    # servidor: son problemas distintos y se resuelven con esperas distintas.
+    intentos_servidor = 0
+    intento_limite = 0
+    total_maximo = MAX_RETRIES_ON_RATE_LIMIT + MAX_RETRIES_ON_SERVER_ERROR + 2
+
+    for _ in range(total_maximo):
         try:
             resp = requests.post(
                 GEMINI_URL,
@@ -243,13 +252,36 @@ def call_gemini(prompt: str, use_search: bool = False) -> str | None:
                 json=payload,
                 timeout=90 if use_search else 60,
             )
+
+            # 5xx: el problema es de Google, no del pedido. Vale reintentar.
+            # Antes esto caía en el `except RequestException` y descartaba la
+            # iteración entera, que es la causa principal de las iteraciones
+            # perdidas: en un día se fueron así ~26% de las peticiones.
+            if resp.status_code >= 500:
+                intentos_servidor += 1
+                if intentos_servidor > MAX_RETRIES_ON_SERVER_ERROR:
+                    log(f"Gemini sigue devolviendo {resp.status_code} tras "
+                        f"{MAX_RETRIES_ON_SERVER_ERROR} reintentos. Se salta esta iteración.")
+                    return None
+                espera = min(MAX_WAIT_SECONDS, 3 * 2 ** (intentos_servidor - 1))
+                log(f"Gemini devolvió {resp.status_code} (falla temporal del servidor, "
+                    f"intento {intentos_servidor}/{MAX_RETRIES_ON_SERVER_ERROR}). "
+                    f"Esperando {espera}s...")
+                time.sleep(espera)
+                continue
+
             if resp.status_code == 429:
+                intento_limite += 1
+                attempt = intento_limite
                 wait = int(resp.headers.get("Retry-After", 20 * attempt))
                 detail = resp.text[:300].replace("\n", " ")
                 log(f"Detalle del 429 de Gemini: {detail}")
                 if wait > QUOTA_EXHAUSTED_WAIT_THRESHOLD:
                     log(f"Gemini pide esperar {wait}s: parece cuota DIARIA agotada, no vale la pena reintentar hoy.")
                     return "QUOTA_EXHAUSTED"
+                if intento_limite > MAX_RETRIES_ON_RATE_LIMIT:
+                    log("Se agotaron los reintentos por rate limit. Se salta esta iteración.")
+                    return None
                 wait = min(wait, MAX_WAIT_SECONDS)
                 log(f"Rate limit de Gemini (intento {attempt}/{MAX_RETRIES_ON_RATE_LIMIT}). Esperando {wait}s...")
                 time.sleep(wait)
@@ -261,14 +293,28 @@ def call_gemini(prompt: str, use_search: bool = False) -> str | None:
             if not text.strip():
                 raise KeyError("respuesta sin texto")
             return text
+        except (requests.Timeout, requests.ConnectionError) as e:
+            # Cortes de red y timeouts también son temporales: reintentar.
+            intentos_servidor += 1
+            if intentos_servidor > MAX_RETRIES_ON_SERVER_ERROR:
+                log(f"Red inestable tras {MAX_RETRIES_ON_SERVER_ERROR} reintentos ({e}). "
+                    "Se salta esta iteración.")
+                return None
+            espera = min(MAX_WAIT_SECONDS, 3 * 2 ** (intentos_servidor - 1))
+            log(f"Problema de red hablando con Gemini (intento "
+                f"{intentos_servidor}/{MAX_RETRIES_ON_SERVER_ERROR}). Esperando {espera}s...")
+            time.sleep(espera)
+            continue
         except requests.RequestException as e:
+            # El resto (4xx que no sea 429, URL mal armada) no se arregla
+            # reintentando: el pedido es el problema.
             log(f"ERROR llamando a Gemini: {e}")
             return None
         except (KeyError, IndexError):
             log("ERROR: respuesta de Gemini con formato inesperado.")
             return None
 
-    log("Se agotaron los reintentos por rate limit. Se salta esta iteración.")
+    log("Se agotaron todos los reintentos. Se salta esta iteración.")
     return None
 
 
