@@ -174,16 +174,18 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             continue
             
         try:
-            full_source_path = jf.path.resolve()
-            if not full_source_path.exists() or not full_source_path.is_file():
+            # Validar existencia absoluta
+            if not jf.path.exists() or not jf.path.is_file():
                 continue
+            
+            full_source_path = jf.path.resolve()
             
             # Verificación de seguridad reforzada para prevenir Path Traversal
             if not is_safe_to_modify(full_source_path) or not is_safe_to_modify(dest):
                 continue
                 
-            # Evitar mover si el destino es padre, el mismo archivo o ya está dentro
-            if dest in full_source_path.parents or full_source_path.parent == dest:
+            # Evitar mover si el destino es padre, el mismo archivo o está ya en el destino
+            if dest == full_source_path.parent or dest in full_source_path.parents:
                 continue
             
             # Verificar si el archivo está bloqueado intentando abrirlo en modo lectura

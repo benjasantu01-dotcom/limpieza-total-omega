@@ -1066,3 +1066,34 @@ FAILED evolve/tests/test_modules.py::test_diagnose_explains_that_free_ram_is_not
 - `2026-07-27T14:08:56` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Mejora el manejo de errores en `trim_working_set` añadiendo validaciones de tipo/rango más rigurosas y capturando excepciones de importación, además de asegurar que `MemorySnapshot` no opere con valores negativos inesperados.
 - `2026-07-27T14:08:56` Rotación — metrics: 4 registros archivados
 - `2026-07-27T14:08:56` Corrida terminada. Total usado hoy: 204.
+- `2026-07-27T14:16:48` Arrancando corrida. Quedan hoy ~96 peticiones objetivo.
+- `2026-07-27T14:17:19` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `stage_for_review` validando exhaustivamente la existencia de rutas, el estado del archivo y la jerarquía de directorios antes de cualquier operación, aplicando un enfoque preventivo ante condiciones de carrera o archivos inexistentes.
+- `2026-07-27T14:17:44` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: manejo de errores y validación de entradas).
+- `2026-07-27T14:18:23` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
+- `2026-07-27T14:18:36` Tests FALLARON:
+```
+ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+______________ test_is_within_directory_detects_real_containment _______________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-2/test_is_within_directory_detec0')
+
+    def test_is_within_directory_detects_real_containment(tmp_path):
+        dentro = tmp_path / "sub" / "archivo.txt"
+>       assert safety.is_within_directory(dentro, tmp_path)
+E       AssertionError: assert False
+E        +  where False = <function is_within_directory at 0x7fa088b27f60>(PosixPath('/tmp/pytest-of-runner/pytest-2/test_is_within_directory_detec0/sub/archivo.txt'), PosixPath('/tmp/pytest-of-runner/pytest-2/test_is_within_directory_detec0'))
+E        +    where <function is_within_directory at 0x7fa088b27f60> = safety.is_within_directory
+
+evolve/tests/test_safety.py:149: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_is_within_directory_detects_real_containment - AssertionError: assert False
+ +  where False = <function is_within_directory at 0x7fa088b27f60>(PosixPath('/tmp/pytest-of-runner/pytest-2/test_is_within_directory_detec0/sub/archivo.txt'), PosixPath('/tmp/pytest-of-runner/pytest-2/test_is_within_directory_detec0'))
+ +    where <function is_within_directory at 0x7fa088b27f60> = safety.is_within_directory
+1 failed, 298 passed in 1.02s
+
+```
+- `2026-07-27T14:18:36` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Mejoré `is_within_directory` para validar que las rutas de entrada existan físicamente antes de comparar (evitando falsos positivos o negativos por rutas inexistentes) y añadí una validación estricta contra `None` en `normalize`, centralizando la robustez ante entradas vacías o inválidas.
+- `2026-07-27T14:18:36` Rotación — metrics: 4 registros archivados
+- `2026-07-27T14:18:36` Corrida terminada. Total usado hoy: 208.
