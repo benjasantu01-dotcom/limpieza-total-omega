@@ -161,8 +161,6 @@ def _read_windows_snapshot() -> MemorySnapshot:
     """Llamada a la API nativa de Win32 GlobalMemoryStatusEx vía ctypes."""
     import ctypes
 
-    # Estructura requerida por la Win32 API para recibir información de memoria.
-    # dwLength debe inicializarse con el tamaño de la estructura antes de la llamada.
     class MEMORYSTATUSEX(ctypes.Structure):
         _fields_ = [
             ("dwLength", ctypes.c_ulong),
@@ -234,12 +232,19 @@ def pressure_level(snapshot: MemorySnapshot) -> str:
 
 
 def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] = None) -> List[str]:
-    """Genera un reporte textual descriptivo basado en el estado actual de la memoria."""
+    """
+    Genera un reporte textual descriptivo basado en el estado actual de la memoria.
+    Args:
+        snapshot: El estado de memoria capturado.
+        processes: Lista opcional de procesos (usado para identificar los más pesados).
+    Returns:
+        Lista de líneas de texto legibles para el usuario.
+    """
     if snapshot.total <= 0:
         return ["No se pudo leer el estado de la memoria en este sistema."]
 
-    level = pressure_level(snapshot)
-    lines = [
+    level: str = pressure_level(snapshot)
+    lines: List[str] = [
         f"Memoria total: {format_bytes(snapshot.total)}",
         f"En uso: {format_bytes(snapshot.used)} ({snapshot.used_percent}%)",
         f"Disponible: {format_bytes(snapshot.available)} ({snapshot.available_percent}%)",

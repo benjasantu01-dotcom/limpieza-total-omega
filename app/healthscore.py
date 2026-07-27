@@ -57,7 +57,6 @@ class SystemMetrics:
 
     def validate(self) -> None:
         """Normaliza los valores internos para evitar estados inválidos en los cálculos."""
-        # Asegurar que los contadores no sean negativos y los tipos sean correctos
         self.junk_mb = max(0.0, _to_float(self.junk_mb))
         self.suspicious_count = max(0, _to_int(self.suspicious_count))
         self.suspicious_warnings = max(0, _to_int(self.suspicious_warnings))
@@ -153,13 +152,13 @@ def _generate_recommendations(m: SystemMetrics, ratios: Dict[str, float]) -> Lis
     if ratios.get("seguridad", 1.0) < 0.9:
         recs.append(f"Revisá los {m.suspicious_count} hallazgo(s) de seguridad; podés aislarlos en cuarentena sin borrarlos.")
     if ratios.get("disco", 1.0) < 0.6:
-        recs.append(f"Queda {round(float(m.disk_free_percent), 1)}% de disco libre. Mirá el análisis de disco para ver qué ocupa más.")
+        recs.append(f"Queda {round(m.disk_free_percent, 1)}% de disco libre. Mirá el análisis de disco para ver qué ocupa más.")
     if ratios.get("memoria", 1.0) < 0.6:
         recs.append("Memoria disponible baja: cerrá programas que no uses. Ojo, 'liberar RAM' no sirve, cerrar procesos sí.")
     if ratios.get("basura", 1.0) < 0.8:
-        recs.append(f"Hay unos {round(float(m.junk_mb))} MB de archivos temporales para revisar.")
+        recs.append(f"Hay unos {int(m.junk_mb)} MB de archivos temporales para revisar.")
     if ratios.get("duplicados", 1.0) < 0.8:
-        recs.append(f"Podrías recuperar ~{round(float(m.duplicate_mb))} MB eliminando copias duplicadas.")
+        recs.append(f"Podrías recuperar ~{int(m.duplicate_mb)} MB eliminando copias duplicadas.")
     if ratios.get("arranque", 1.0) < 0.6:
         recs.append(f"{m.startup_count} programas arrancan con Windows; desactivá los que no necesites desde el Administrador de tareas.")
     
@@ -204,7 +203,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
 
 def summarize(result: HealthResult) -> List[str]:
     """Genera un reporte visual legible para mostrar en la interfaz o logs."""
-    lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
+    lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     orden = sorted(result.breakdown.items(), key=lambda kv: kv[1] - WEIGHTS.get(kv[0], 0))
     for area, puntos in orden:
         maximo = WEIGHTS.get(area, 0)

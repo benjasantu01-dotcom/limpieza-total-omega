@@ -61,6 +61,7 @@ def list_available_drives() -> List[str]:
 
 @dataclass
 class JunkFile:
+    """Representa un archivo candidato a limpieza con sus metadatos básicos."""
     path: Path
     size_bytes: int
     modified: datetime
@@ -79,6 +80,7 @@ class JunkFile:
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     """
     Realiza un escaneo recursivo en busca de archivos candidatos a limpieza.
+    Utiliza is_safe_to_modify para filtrar accesos a directorios protegidos.
 
     Args:
         directories: Lista de rutas a escanear. Si es None, usa DEFAULT_SCAN_DIRS.
@@ -138,9 +140,9 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
     Ordena una lista de archivos basura basándose en tamaño o fecha.
     
     Args:
-        files: Lista de objetos JunkFile.
-        by: Criterio de ordenación ('size' o 'date').
-        ascending: Orden ascendente si es True, descendente si es False.
+        files: Lista de objetos JunkFile a ordenar.
+        by: Criterio de ordenación ('size' para bytes, 'date' para fecha de modificación).
+        ascending: Booleano, True para orden ascendente, False para descendente.
     """
     if not isinstance(files, list):
         return []
@@ -156,6 +158,14 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Path:
     """
     Mueve los archivos detectados a una carpeta de cuarentena para revisión humana.
+    Realiza validaciones de seguridad: Path Traversal, archivos bloqueados y directorios protegidos.
+
+    Args:
+        files: Lista de objetos JunkFile identificados como basura.
+        review_dir: Ruta donde se centralizarán los archivos para revisión.
+
+    Returns:
+        Path: Ruta absoluta al directorio de revisión utilizado.
     """
     if not files or not isinstance(files, list):
         logger.warning("La lista de archivos a organizar está vacía o es inválida.")
@@ -216,9 +226,13 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
     """
     Elimina permanentemente los archivos dentro de la carpeta de revisión.
-    
+    Usa is_safe_to_modify como medida preventiva de seguridad antes de cada unlink().
+
+    Args:
+        review_dir: Directorio donde residen los archivos revisados para borrar.
+
     Returns:
-        int: Cantidad de archivos eliminados exitosamente.
+        int: Cantidad total de archivos eliminados exitosamente.
     """
     dest = Path(review_dir).expanduser()
     if not dest.exists() or not dest.is_dir():
