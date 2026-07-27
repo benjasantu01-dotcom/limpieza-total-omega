@@ -5,24 +5,24 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **361**
-- Mejoras aceptadas: **230** (63.7% de aceptación)
+- Iteraciones totales: **365**
+- Mejoras aceptadas: **231** (63.3% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 23
 - Sin cambios (nada sustancial que mejorar): 4
-- Sin respuesta de la IA (error o límite): 89
+- Sin respuesta de la IA (error o límite): 92
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
 | 2026-07-26 | 221 | 15 | 22 | 3 | 68 |
-| 2026-07-27 | 9 | 0 | 1 | 1 | 21 |
+| 2026-07-27 | 10 | 0 | 1 | 1 | 24 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **56**
-- manejo de errores y validación de entradas: **50**
+- manejo de errores y validación de entradas: **51**
 - seguridad defensiva: **44**
 - rendimiento: **40**
 - robustez ante casos límite: **40**
@@ -33,10 +33,10 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **21**
 - `organizer.py`: **21**
 - `safety.py`: **21**
+- `branding.py`: **20**
 - `duplicates.py`: **19**
 - `memory.py`: **19**
 - `scanner.py`: **19**
-- `branding.py`: **19**
 - `healthscore.py`: **18**
 - `startup.py`: **18**
 - `main.py`: **17**
@@ -44,6 +44,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-27T07:01:35` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` y `draw_logo` mediante la validación proactiva de parámetros de entrada, evitando errores en tiempo de ejecución al interactuar con el sistema de archivos o el canvas de Tkinter.
 - `2026-07-27T05:58:27` **diskreport.py** (rendimiento): Optimicé `summarize` para evitar redundancias eliminando el uso de `heapq.heappush` dentro del loop principal, reemplazándolo por una estructura de datos más eficiente y simple al final del procesamiento, reduciendo la carga de memoria y CPU en cada iteración.
 - `2026-07-27T05:58:14` **browser.py** (rendimiento): Optimicé el rendimiento de `directory_size` eliminando llamadas redundantes a `Path.resolve()` dentro del bucle de escaneo, utilizando `os.DirEntry` directamente para evitar la creación innecesaria de objetos `Path` en cada iteración y reducir la presión sobre la memoria.
 - `2026-07-27T05:57:47` **branding.py** (rendimiento): Optimizé el acceso a los datos de la paleta y estilos integrando los mapeos de color directamente en `severity_color` y `grade_color` para eliminar llamadas innecesarias a funciones (evitando el overhead de `lru_cache` y búsquedas por clave en cada ejecución de la UI), y simplifiqué la lógica de validación de rutas en `save_logo_svg` utilizando una sola comprobación de seguridad.
@@ -58,4 +59,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-26T22:15:46` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación de `directory_size` y `detect_profiles` para clarificar la estrategia de seguridad empleada (uso de `resolve` y `is_relative_to` para evitar escapes de directorio), además de agregar type hints faltantes en los parámetros de entrada y salida para mejorar la mantenibilidad y legibilidad estática.
 - `2026-07-26T22:15:26` **branding.py** (legibilidad y documentación): Introduje tipado estricto con `Literal` y `Mapping` para las claves de configuración y mejoré la documentación técnica (docstrings) especificando restricciones de parámetros y comportamientos ante casos límite, aumentando la robustez y legibilidad para el equipo.
 - `2026-07-26T22:06:00` **startup.py** (manejo de errores y validación de entradas): Mejora la robustez del parseo de registros mediante la validación del formato CSV de PowerShell, añadiendo una comprobación explícita para evitar errores de índice al procesar entradas malformadas o inesperadas que podrían causar una excepción `IndexError`.
-- `2026-07-26T22:05:53` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de chequeo individual (`check_recent_executable_in_downloads` y `check_system_lookalike`) capturando explícitamente posibles valores de entrada malformados (como rutas no resolubles o errores de acceso) mediante validación defensiva, asegurando que `scan_file` reciba siempre datos consistentes y no falle ante excepciones no controladas.

@@ -329,9 +329,8 @@ def save_logo_svg(destination: str | Path) -> Path | None:
 
         if path.is_symlink() or not path.name.lower().endswith(".svg"):
             return None
-        # Variante booleana: acá queremos devolver None, no propagar una
-        # excepción. Con `ensure_safe_to_modify` este `if` no filtraba nada,
-        # porque la función devuelve un Path (siempre verdadero) o lanza.
+        
+        # Validar seguridad antes de operar.
         if not is_safe_to_modify(path) or not is_safe_to_modify(path.parent):
             return None
 
@@ -357,31 +356,23 @@ def logo_ascii() -> str:
 def draw_logo(canvas: Any, size: int = 56, x: int = 0, y: int = 0) -> None:
     """
     Renderiza el logo en un widget canvas de Tkinter.
-
-    El escudo se pinta en franjas horizontales de color interpolado, que es la
-    forma de conseguir un degradado en Tkinter, y lleva un halo detrás para que
-    no se vea plano.
-
-    Args:
-        canvas: Objeto con método `create_polygon`.
-        size: Tamaño base del logo.
-        x: Offset X en el canvas.
-        y: Offset Y en el canvas.
     """
     if canvas is None or not hasattr(canvas, "create_polygon"):
         return
 
-    # Normalización de tamaño para evitar desbordamiento gráfico
-    if not isinstance(size, (int, float)) or size <= 0:
-        size = 56
-
-    s = size / 128
+    # Validación estricta de parámetros
+    try:
+        s = float(size) / 128
+        x, y = float(x), float(y)
+        if s <= 0: s = 0.4375 # 56/128
+    except (TypeError, ValueError):
+        return
 
     def pts(*coords: float) -> list[float]:
         return [x + c * s if i % 2 == 0 else y + c * s for i, c in enumerate(coords)]
 
     try:
-        # Halo: círculos concéntricos que se van acercando al fondo.
+        # Halo
         if hasattr(canvas, "create_oval"):
             for paso in range(4, 0, -1):
                 radio = 56 * s * (0.6 + paso * 0.12)
@@ -395,23 +386,20 @@ def draw_logo(canvas: Any, size: int = 56, x: int = 0, y: int = 0) -> None:
         contorno = pts(64, 18, 100, 31, 100, 67, 90, 90, 64, 110, 38, 90, 28, 67, 28, 31)
         canvas.create_polygon(contorno, fill=GRADIENT_STOPS[1], outline="")
 
-        # Degradado: se recorta el escudo en franjas y cada una se pinta con su
-        # color. Tkinter no tiene degradados, así que se simulan así.
+        # Degradado
         franjas = max(6, int(28 * s))
         colores = gradient_colors(franjas)
         alto = 92 * s / franjas
         for i, tono in enumerate(colores):
             arriba = y + 18 * s + i * alto
-            # Ancho del escudo en esa altura: arriba es recto, abajo se afina.
             avance = i / max(1, franjas - 1)
             medio_ancho = 36 * s * (1.0 if avance < 0.55 else 1.0 - (avance - 0.55) * 1.9)
-            if medio_ancho <= 0:
-                continue
-            canvas.create_rectangle(
-                x + 64 * s - medio_ancho, arriba,
-                x + 64 * s + medio_ancho, arriba + alto + 1,
-                fill=tono, outline="",
-            ) if hasattr(canvas, "create_rectangle") else None
+            if medio_ancho > 0 and hasattr(canvas, "create_rectangle"):
+                canvas.create_rectangle(
+                    x + 64 * s - medio_ancho, arriba,
+                    x + 64 * s + medio_ancho, arriba + alto + 1,
+                    fill=tono, outline="",
+                )
 
         canvas.create_line(
             *pts(41, 75, 75, 41), fill=PALETTE["background"],
@@ -430,11 +418,7 @@ def draw_logo(canvas: Any, size: int = 56, x: int = 0, y: int = 0) -> None:
 def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
                       x: int = 0, y: int = 0,
                       stops: tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
-    """Pinta una franja de degradado, línea por línea.
-
-    Se usa como separador del encabezado. Es puro color y cuesta nada, pero es
-    lo que saca a la ventana del gris uniforme.
-    """
+    """Pinta una franja de degradado, línea por línea."""
     if canvas is None or not hasattr(canvas, "create_line"):
         return
     try:
@@ -453,18 +437,7 @@ def draw_ring(canvas: Any, percent: float | int, size: int = 150,
               x: int = 0, y: int = 0, thickness: int = 14,
               track: HexColor | None = None,
               fill: HexColor | None = None) -> None:
-    """Dibuja un medidor circular de progreso (dona) para el puntaje de salud.
-
-    Un número grande solo dice cuánto; el anillo dice además cuánto falta, y
-    eso es lo que hace que se entienda sin leer.
-
-    Args:
-        percent: Valor 0-100 que se completa en sentido horario.
-        size: Diámetro exterior en píxeles.
-        thickness: Grosor del anillo.
-        track: Color del fondo del anillo. Por defecto, un tono de superficie.
-        fill: Color del avance. Por defecto, según el puntaje.
-    """
+    """Dibuja un medidor circular de progreso (dona) para el puntaje de salud."""
     if canvas is None or not hasattr(canvas, "create_arc"):
         return
     try:
