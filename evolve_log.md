@@ -416,3 +416,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-07-27T19:46:22` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el rendimiento de `group_by_size` eliminando la creación de una lista intermedia y el llamado a `dict()` innecesario, y mejoré `_collect_candidates` para evitar la llamada redundante a `resolve()` (que es costosa al tocar el sistema de archivos) moviendo el chequeo de symlinks a una verificación más directa.
 - `2026-07-27T19:46:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-27T19:46:22` Corrida terminada. Total usado hoy: 336.
+- `2026-07-27T19:55:06` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-07-27T19:55:30` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
+- `2026-07-27T19:56:04` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): el archivo se encogió al 41% del original (posible pérdida de código)
+- `2026-07-27T19:56:28` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: rendimiento).
+- `2026-07-27T19:56:35` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimicé el rendimiento de `scan_for_junk` sustituyendo `os.scandir` recursivo por una iteración directa y utilizando un conjunto pre-calculado para las verificaciones de la lista de bloqueo, evitando llamadas repetidas a `lower()` y reduciendo la sobrecarga de gestión de errores en cada iteración.
+- `2026-07-27T19:56:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-27T19:56:35` Corrida terminada. Total usado hoy: 340.
