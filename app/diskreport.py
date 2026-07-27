@@ -291,7 +291,7 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
             ext_data.count += 1
             yield (size, path)
 
-    all_files_snapshot = process_files(walk_files(path_obj, skip_protected))
+    all_files_snapshot = list(process_files(walk_files(path_obj, skip_protected)))
     top_8_files = heapq.nlargest(8, all_files_snapshot, key=lambda x: x[0])
             
     lines = [

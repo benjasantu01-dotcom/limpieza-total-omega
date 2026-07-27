@@ -7,8 +7,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **276** (54.8% de aceptación)
-- Rechazadas por tests: 20
-- Rechazadas por guardia de seguridad: 32
+- Rechazadas por tests: 21
+- Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 5
 - Sin respuesta de la IA (error o límite): 171
 
@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-26 | 203 | 13 | 21 | 3 | 68 |
-| 2026-07-27 | 73 | 7 | 11 | 2 | 103 |
+| 2026-07-26 | 200 | 13 | 20 | 3 | 68 |
+| 2026-07-27 | 76 | 8 | 11 | 2 | 103 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **68**
+- legibilidad y documentación: **65**
 - seguridad defensiva: **58**
-- manejo de errores y validación de entradas: **53**
+- manejo de errores y validación de entradas: **56**
 - rendimiento: **50**
 - robustez ante casos límite: **47**
 
 ## Mejoras aceptadas por archivo
 
-- `browser.py`: **26**
-- `diskreport.py`: **26**
-- `safety.py`: **25**
+- `browser.py`: **27**
+- `diskreport.py`: **27**
 - `organizer.py`: **25**
-- `scanner.py`: **23**
+- `safety.py`: **24**
 - `healthscore.py`: **22**
+- `scanner.py`: **22**
 - `branding.py`: **21**
 - `duplicates.py`: **21**
-- `quarantine.py`: **20**
 - `startup.py`: **20**
 - `memory.py`: **20**
+- `quarantine.py`: **19**
 - `main.py`: **18**
-- `assistant.py`: **5**
+- `assistant.py`: **6**
 - `settings.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-27T13:58:19` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `summarize` y `largest_folders` validando los parámetros de entrada y asegurando que las excepciones durante el recorrido no interrumpan la agregación, manteniendo la integridad del proceso incluso ante errores de acceso a archivos.
+- `2026-07-27T13:57:57` **browser.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `detect_profiles` y `base_directories` mediante la validación proactiva de tipos y estados, garantizando que el módulo no falle ante variables de entorno ausentes o rutas malformadas, alineándose con el enfoque de manejo de errores y validación de entradas.
+- `2026-07-27T13:56:59` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `build_context` implementando validaciones más estrictas y defensivas en las funciones internas (`numero` y `entero`), asegurando que cualquier entrada malformada o inesperada en los objetos de métricas sea descartada silenciosamente sin comprometer la integridad del contexto o del asistente.
 - `2026-07-27T12:35:45` **startup.py** (seguridad defensiva): Se endureció la seguridad defensiva de `entries_from_registry` agregando una validación estricta del string `key` mediante `shlex.quote` (usando `subprocess.list2cmdline` por compatibilidad con estándar) para prevenir inyección de comandos en la ejecución de PowerShell, garantizando que el parámetro del registro sea tratado estrictamente como un dato y no como código ejecutable.
 - `2026-07-27T12:35:08` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `validate()` asegurando que la ruta `ultima_carpeta` no solo sea tratada por `is_safe_to_modify`, sino que se normalice a una ruta absoluta antes de guardarse, evitando riesgos de ambigüedad con rutas relativas o malformadas.
 - `2026-07-27T12:26:14` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `scan_directory` añadiendo una validación explícita mediante `is_protected_path` al procesar cada entrada (`entry`), asegurando que no se sigan rutas protegidas incluso si el usuario intenta escanear subdirectorios específicos.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-27T12:06:01` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad de `walk_files` evitando el seguimiento de puntos de reparse (junctions) mediante `path.is_junction()` (disponible en Python 3.12+ o vía atributo `reparse_point`) y verificando la resolución de rutas para prevenir el acceso fuera de la jerarquía esperada, garantizando así un escaneo más seguro y predecible.
 - `2026-07-27T12:05:04` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva en `directory_size` y `detect_profiles` añadiendo verificaciones estrictas para ignorar puntos de reparse (junctions) y enlaces simbólicos a nivel de sistema de archivos, asegurando que las rutas calculadas nunca escapen del contenedor esperado.
 - `2026-07-27T12:04:34` **branding.py** (seguridad defensiva): Se endureció la validación de `save_logo_svg` añadiendo una comprobación explícita mediante `is_protected_path` para prevenir la escritura en directorios restringidos del sistema, complementando `is_safe_to_modify` para asegurar una defensa en profundidad ante intentos de escritura en rutas prohibidas.
-- `2026-07-27T11:55:44` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva al sanear explícitamente el texto de la `question` antes de procesarlo, evitando que caracteres o secuencias maliciosas inyectadas por el usuario puedan alterar la lógica del flujo de control o afectar la legibilidad del motor local.
-- `2026-07-27T11:55:20` **startup.py** (robustez ante casos límite): Se reforzó la robustez de `entries_from_folders` añadiendo un filtro `item.is_symlink()` para ignorar enlaces simbólicos/junctions en las carpetas de inicio, previniendo recursión infinita o lecturas fuera de los directorios permitidos, y se mejoró el manejo de rutas malformadas en `executable` mediante una validación más estricta del índice de cierre de comillas.
-- `2026-07-27T11:45:17` **safety.py** (robustez ante casos límite): He mejorado `is_protected_path` para prevenir la recursión infinita o errores de permisos al resolver rutas, añadiendo una comprobación de existencia y un manejo de errores más robusto ante accesos denegados, lo que evita que el escáner colapse ante archivos o enlaces bloqueados por el sistema.

@@ -80,7 +80,12 @@ def base_directories() -> List[Path]:
     if os.name != "nt":
         return []
     local = os.environ.get("LOCALAPPDATA")
-    return [Path(local)] if local and Path(local).is_dir() else []
+    # Validación estricta: debe ser una cadena no vacía y una ruta existente
+    if not local or not isinstance(local, str):
+        return []
+    
+    path_local = Path(local)
+    return [path_local] if path_local.is_dir() else []
 
 
 @lru_cache(maxsize=32)
@@ -132,9 +137,9 @@ def _is_valid_cache_path(candidate: Path, base_path: Path) -> bool:
     """Verifica que la ruta sea segura, exista y no esté en la lista negra."""
     try:
         # Resolvemos para verificar la ubicación real en disco tras desreferenciar
-        resolved = candidate.resolve()
+        resolved = candidate.resolve(strict=True)
         return (
-            resolved.is_relative_to(base_path.resolve()) and
+            resolved.is_relative_to(base_path.resolve(strict=True)) and
             resolved.is_dir() and
             candidate.name.lower() not in NEVER_TOUCH
         )

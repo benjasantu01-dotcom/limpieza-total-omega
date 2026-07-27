@@ -171,9 +171,9 @@ def build_context(metrics: Any = None, health: Any = None, **extra: Any) -> Syst
         if objeto is None: return defecto
         try:
             val = getattr(objeto, nombre, None)
-            if val is None: return defecto
+            if val is None or isinstance(val, (dict, list, set)): return defecto
             num = float(val)
-            return max(0.0, min(float(num), maximo))
+            return max(0.0, min(num, float(maximo)))
         except (TypeError, ValueError):
             return defecto
 
@@ -182,8 +182,9 @@ def build_context(metrics: Any = None, health: Any = None, **extra: Any) -> Syst
         if objeto is None: return defecto
         try:
             val = getattr(objeto, nombre, None)
-            if val is None: return defecto
-            return max(0, int(val))
+            if val is None or isinstance(val, (dict, list, set)): return defecto
+            num = int(float(val))
+            return max(0, num)
         except (TypeError, ValueError):
             return defecto
 
