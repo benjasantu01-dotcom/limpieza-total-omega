@@ -154,8 +154,7 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
             except (ValueError, TypeError, OverflowError): 
                 continue
 
-    processes = sorted([p for p in _generator()], key=lambda p: p.working_set, reverse=True)
-    return processes[:limit]
+    return sorted(_generator(), key=lambda p: p.working_set, reverse=True)[:limit]
 
 
 def _read_windows_snapshot() -> MemorySnapshot:

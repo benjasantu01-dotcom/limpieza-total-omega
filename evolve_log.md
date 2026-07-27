@@ -670,3 +670,12 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-07-27T10:54:53` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Optimicé el método `refresh_list` en `LimpiezaTotalOmegaApp` para evitar el uso de `.join` sobre una lista de strings grande en cada llamada, delegando el formato al momento de la visualización y mejorando la eficiencia del manejo de strings.
 - `2026-07-27T10:54:53` Rotación — nada para rotar
 - `2026-07-27T10:54:53` Corrida terminada. Total usado hoy: 128.
+- `2026-07-27T11:02:52` Arrancando corrida. Quedan hoy ~172 peticiones objetivo.
+- `2026-07-27T11:03:04` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-07-27T11:03:08` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-07-27T11:03:44` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento de `parse_windows_process_csv` reemplazando la creación de una lista intermedia mediante list comprehension con un generator expression dentro de `sorted`, reduciendo el uso de memoria en sistemas con muchos procesos activos.
+- `2026-07-27T11:04:16` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimicé el rendimiento de `scan_for_junk` pre-calculando el set de extensiones en minúsculas una sola vez y evitando instanciar la clase `JunkFile` innecesariamente antes de validar si el archivo es candidato, reduciendo la carga de memoria y CPU en escaneos profundos.
+- `2026-07-27T11:04:42` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el rendimiento de `restore_item`, `purge_item` y `purge_all` reemplazando la recreación iterativa de diccionarios (O(n)) por accesos directos al manifiesto cargado, evitando re-parseos y redundancias.
+- `2026-07-27T11:04:49` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 108): unterminated string literal (detected at line 108)
+- `2026-07-27T11:04:49` Rotación — nada para rotar
+- `2026-07-27T11:04:49` Corrida terminada. Total usado hoy: 132.

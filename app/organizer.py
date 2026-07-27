@@ -28,6 +28,8 @@ logger = logging.getLogger(__name__)
 JUNK_EXTENSIONS: Final = {
     ".tmp", ".temp", ".log", ".bak", ".old", ".dmp", ".chk", ".cache",
 }
+# Pre-calculado para eficiencia en loops
+_LOWER_JUNK_EXTS: Final = {ext.lower() for ext in JUNK_EXTENSIONS}
 
 # Carpetas típicas donde se acumula basura en Windows 11
 DEFAULT_SCAN_DIRS: Final = [
@@ -71,7 +73,7 @@ class JunkFile:
     @property
     def is_junk_extension(self) -> bool:
         """Verifica si la extensión del archivo coincide con los criterios de basura."""
-        return self.path.suffix.lower() in {ext.lower() for ext in JUNK_EXTENSIONS}
+        return self.path.suffix.lower() in _LOWER_JUNK_EXTS
 
 
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
@@ -101,19 +103,19 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
                             if entry.name.lower() not in blocklist:
                                 _walk_dir(entry.path)
                         elif entry.is_file(follow_symlinks=False):
-                            full_path = Path(entry.path)
-                            # Creamos instancia temporal para evaluar extensión y seguridad
-                            temp_junk = JunkFile(full_path, 0, datetime.now())
-                            
-                            if temp_junk.is_junk_extension and is_safe_to_modify(full_path):
-                                stat = entry.stat()
-                                found.append(
-                                    JunkFile(
-                                        path=full_path,
-                                        size_bytes=stat.st_size,
-                                        modified=datetime.fromtimestamp(stat.st_mtime),
+                            # Validar extensión antes de instanciar JunkFile o llamar a stat()
+                            suffix = Path(entry.name).suffix.lower()
+                            if suffix in _LOWER_JUNK_EXTS:
+                                full_path = Path(entry.path)
+                                if is_safe_to_modify(full_path):
+                                    stat = entry.stat()
+                                    found.append(
+                                        JunkFile(
+                                            path=full_path,
+                                            size_bytes=stat.st_size,
+                                            modified=datetime.fromtimestamp(stat.st_mtime),
+                                        )
                                     )
-                                )
                     except (PermissionError, OSError):
                         continue
         except (PermissionError, OSError):

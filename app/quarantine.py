@@ -233,8 +233,7 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
         raise ValueError("El ID del elemento debe ser una cadena válida.")
 
     items = load_manifest(base)
-    item_dict = {i.item_id: i for i in items}
-    match = item_dict.get(item_id)
+    match = next((i for i in items if i.item_id == item_id), None)
     if match is None:
         raise KeyError(f"No hay ningún elemento en cuarentena con id '{item_id}'.")
 
@@ -272,8 +271,7 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
     if not item_id or not isinstance(item_id, str):
         return False
     items = load_manifest(base)
-    item_dict = {i.item_id: i for i in items}
-    match = item_dict.get(item_id)
+    match = next((i for i in items if i.item_id == item_id), None)
     if match is None:
         return False
 
@@ -299,7 +297,7 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     items = load_manifest(base)
     count = 0
     for item in items:
-        stored_file = normalize(quarantine_root / item.stored_name)
+        stored_file = quarantine_root / item.stored_name
         if not is_within_directory(stored_file, quarantine_root):
             continue
         try:
