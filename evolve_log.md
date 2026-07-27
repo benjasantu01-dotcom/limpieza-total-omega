@@ -709,3 +709,67 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-07-27T11:45:17` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). He mejorado `is_protected_path` para prevenir la recursión infinita o errores de permisos al resolver rutas, añadiendo una comprobación de existencia y un manejo de errores más robusto ante accesos denegados, lo que evita que el escáner colapse ante archivos o enlaces bloqueados por el sistema.
 - `2026-07-27T11:45:17` Rotación — nada para rotar
 - `2026-07-27T11:45:17` Corrida terminada. Total usado hoy: 148.
+- `2026-07-27T11:53:50` Arrancando corrida. Quedan hoy ~152 peticiones objetivo.
+- `2026-07-27T11:54:18` Tests FALLARON:
+```
+========================
+_____________ test_scanner_flags_system_lookalike_outside_system32 _____________
+
+    def test_scanner_flags_system_lookalike_outside_system32():
+        # Se usa PureWindowsPath a propósito: los tests corren en Linux (GitHub
+        # Actions) y ahí un Path normal no reconoce las barras invertidas, así
+        # que `.name` devolvería la ruta entera y el test fallaría siempre.
+        result = scanner.check_system_lookalike(PureWindowsPath(r"C:\Users\test\Downloads\svchost.exe"))
+>       assert result is not None
+E       assert None is not None
+
+evolve/tests/test_basic.py:201: AssertionError
+________________ test_scanner_lookalike_logic_is_os_independent ________________
+
+    def test_scanner_lookalike_logic_is_os_independent():
+        # La misma heurística tiene que valer con rutas estilo POSIX, para que el
+        # resultado no dependa de en qué sistema corran los tests.
+        flagged = scanner.check_system_lookalike(PurePosixPath("/home/user/Downloads/svchost.exe"))
+>       assert flagged is not None and flagged.severity == "warning"
+E       assert (None is not None)
+
+evolve/tests/test_basic.py:213: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_scanner_flags_system_lookalike_outside_system32 - assert None is not None
+FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independent - assert (None is not None)
+2 failed, 297 passed in 0.74s
+
+```
+- `2026-07-27T11:54:18` ❌ Mejora descartada en scanner.py (no pasó los tests), se revirtió. Intento: Se ha mejorado `check_system_lookalike` y `scan_directory` para manejar de forma robusta rutas con problemas de resolución, incluyendo el uso de `path.exists()` previo a `path.stat()` y validaciones de tipos adicionales para evitar `OSError` en sistemas de archivos inaccesibles o entradas inválidas.
+- `2026-07-27T11:54:49` Tests FALLARON:
+```
+...............F........................................................ [ 24%]
+........................................................................ [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+______________________ test_a_normal_folder_is_remembered ______________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-2/test_a_normal_folder_is_rememb0')
+
+    def test_a_normal_folder_is_remembered(tmp_path):
+        segura = str(tmp_path / "Descargas")
+>       assert settings.validate({"ultima_carpeta": segura})["ultima_carpeta"] == segura
+E       AssertionError: assert '' == '/tmp/pytest-...mb0/Descargas'
+E         
+E         - /tmp/pytest-of-runner/pytest-2/test_a_normal_folder_is_rememb0/Descargas
+
+evolve/tests/test_assistant.py:124: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - AssertionError: assert '' == '/tmp/pytest-...mb0/Descargas'
+  
+  - /tmp/pytest-of-runner/pytest-2/test_a_normal_folder_is_rememb0/Descargas
+1 failed, 298 passed in 0.81s
+
+```
+- `2026-07-27T11:54:49` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Se mejora la robustez de `settings.py` implementando una validación exhaustiva de la ruta `ultima_carpeta` que asegura que, además de ser segura, la ruta exista realmente en el sistema, evitando comportamientos erráticos ante carpetas eliminadas o inaccesibles.
+- `2026-07-27T11:55:20` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `entries_from_folders` añadiendo un filtro `item.is_symlink()` para ignorar enlaces simbólicos/junctions en las carpetas de inicio, previniendo recursión infinita o lecturas fuera de los directorios permitidos, y se mejoró el manejo de rutas malformadas en `executable` mediante una validación más estricta del índice de cierre de comillas.
+- `2026-07-27T11:55:44` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva al sanear explícitamente el texto de la `question` antes de procesarlo, evitando que caracteres o secuencias maliciosas inyectadas por el usuario puedan alterar la lógica del flujo de control o afectar la legibilidad del motor local.
+- `2026-07-27T11:55:44` Rotación — nada para rotar
+- `2026-07-27T11:55:44` Corrida terminada. Total usado hoy: 152.

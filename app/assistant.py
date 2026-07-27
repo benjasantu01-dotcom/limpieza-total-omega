@@ -42,6 +42,7 @@ from __future__ import annotations
 import json
 import urllib.error
 import urllib.request
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Final
@@ -264,8 +265,10 @@ def explain_area(area: str) -> str:
 
 
 def local_answer(question: str, context: SystemContext) -> Answer:
-    """Responde con reglas locales, sin conexión y sin enviar nada."""
-    texto = (question or "").strip().lower()
+    """Responde con reglas locales, tras sanear el input."""
+    # Sanitización: Limitar longitud, remover caracteres de control y normalizar a minúsculas.
+    raw_text = (question or "").strip()
+    clean_text = re.sub(r'[\x00-\x1f\x7f]', '', raw_text)[:200].lower()
 
     if not isinstance(context, SystemContext) or not context.analyzed:
         return Answer(
@@ -278,8 +281,7 @@ def local_answer(question: str, context: SystemContext) -> Answer:
 
     problemas = _rank_problems(context)
     
-    # Identificación de categoría mediante mapeo para optimizar búsquedas
-    cat = next((k for k in ("ram", "memoria", "lenta", "lento", "acelerar") if k in texto), None)
+    cat = next((k for k in ("ram", "memoria", "lenta", "lento", "acelerar") if k in clean_text), None)
     if cat:
         partes = [
             f"Tenés {context.memory_available_percent:.0f}% de RAM disponible"
@@ -301,7 +303,7 @@ def local_answer(question: str, context: SystemContext) -> Answer:
         return Answer(" ".join(partes), notice=OFFLINE_NOTICE,
                       suggestions=["¿Conviene desactivar programas de inicio?"])
 
-    if any(p in texto for p in ("espacio", "disco", "lleno", "recuperar", "liberar")):
+    if any(p in clean_text for p in ("espacio", "disco", "lleno", "recuperar", "liberar")):
         recuperable = context.junk_mb + context.duplicate_mb + context.browser_cache_mb
         partes = [
             f"Tenés {context.disk_free_percent:.0f}% libre en disco.",
@@ -318,7 +320,7 @@ def local_answer(question: str, context: SystemContext) -> Answer:
                           "revisión, no los borra, así podés ver qué hay antes de decidir.")
         return Answer(" ".join(partes), notice=OFFLINE_NOTICE)
 
-    if any(p in texto for p in ("seguro", "virus", "sospechos", "borrar", "peligro")):
+    if any(p in clean_text for p in ("seguro", "virus", "sospechos", "borrar", "peligro")):
         if context.suspicious_count == 0:
             cuerpo = ("No hay archivos sospechosos en tus Descargas. Sobre borrar: la "
                       "app nunca borra sola. La limpieza mueve todo a una carpeta de "
@@ -332,7 +334,7 @@ def local_answer(question: str, context: SystemContext) -> Answer:
                       "es reversible, y corré Windows Defender para el veredicto real.")
         return Answer(cuerpo, notice=OFFLINE_NOTICE)
 
-    if any(p in texto for p in ("puntaje", "salud", "nota", "score")):
+    if any(p in clean_text for p in ("puntaje", "salud", "nota", "score")):
         detalle = (f"Tu puntaje es {context.score}/100"
                    f"{f' (nota {context.grade})' if context.grade else ''}. ")
         if problemas:
@@ -343,7 +345,7 @@ def local_answer(question: str, context: SystemContext) -> Answer:
                     "y programas de inicio, con la seguridad pesando más que el resto.")
         return Answer(detalle, notice=OFFLINE_NOTICE)
 
-    if any(p in texto for p in ("inicio", "arranque", "arranca", "encender")):
+    if any(p in clean_text for p in ("inicio", "arranque", "arranca", "encender")):
         cuerpo = f"Tenés {context.startup_count} programas que arrancan con Windows. "
         if context.startup_count > 15:
             cuerpo += ("Son bastantes, y cada uno suma tiempo de encendido. Vale la "
@@ -357,7 +359,6 @@ def local_answer(question: str, context: SystemContext) -> Answer:
                    "cambio y te deja revertirlo.")
         return Answer(cuerpo, notice=OFFLINE_NOTICE)
 
-    # Sin coincidencia: se responde lo más útil, que es la prioridad.
     if problemas:
         cuerpo = (f"Con un puntaje de {context.score}/100, por orden de prioridad: "
                   + "; ".join(problemas[:3]) + ".")

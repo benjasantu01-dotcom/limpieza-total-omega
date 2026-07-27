@@ -5,9 +5,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **477**
-- Mejoras aceptadas: **280** (58.7% de aceptación)
-- Rechazadas por tests: 20
+- Iteraciones totales: **481**
+- Mejoras aceptadas: **282** (58.6% de aceptación)
+- Rechazadas por tests: 22
 - Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 5
 - Sin respuesta de la IA (error o límite): 140
@@ -17,15 +17,15 @@ Este archivo se regenera solo en cada corrida a partir de
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
 | 2026-07-26 | 221 | 15 | 22 | 3 | 68 |
-| 2026-07-27 | 59 | 5 | 10 | 2 | 72 |
+| 2026-07-27 | 61 | 7 | 10 | 2 | 72 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **75**
 - manejo de errores y validación de entradas: **64**
 - rendimiento: **50**
-- robustez ante casos límite: **46**
-- seguridad defensiva: **45**
+- robustez ante casos límite: **47**
+- seguridad defensiva: **46**
 
 ## Mejoras aceptadas por archivo
 
@@ -39,13 +39,15 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **22**
 - `branding.py`: **21**
 - `quarantine.py`: **20**
+- `startup.py`: **20**
 - `main.py`: **19**
-- `startup.py`: **19**
-- `assistant.py`: **4**
+- `assistant.py`: **5**
 - `settings.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-27T11:55:44` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva al sanear explícitamente el texto de la `question` antes de procesarlo, evitando que caracteres o secuencias maliciosas inyectadas por el usuario puedan alterar la lógica del flujo de control o afectar la legibilidad del motor local.
+- `2026-07-27T11:55:20` **startup.py** (robustez ante casos límite): Se reforzó la robustez de `entries_from_folders` añadiendo un filtro `item.is_symlink()` para ignorar enlaces simbólicos/junctions en las carpetas de inicio, previniendo recursión infinita o lecturas fuera de los directorios permitidos, y se mejoró el manejo de rutas malformadas en `executable` mediante una validación más estricta del índice de cierre de comillas.
 - `2026-07-27T11:45:17` **safety.py** (robustez ante casos límite): He mejorado `is_protected_path` para prevenir la recursión infinita o errores de permisos al resolver rutas, añadiendo una comprobación de existencia y un manejo de errores más robusto ante accesos denegados, lo que evita que el escáner colapse ante archivos o enlaces bloqueados por el sistema.
 - `2026-07-27T11:44:06` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de `stage_for_review` implementando una validación explícita para evitar que `shutil.move` intente realizar operaciones entre sistemas de archivos que puedan fallar silenciosamente o corromper datos al intentar mover archivos abiertos o con bloqueos de acceso, integrando un chequeo de existencia previo más estricto y un control de errores ante fallos en la transferencia.
 - `2026-07-27T11:37:32` **main.py** (robustez ante casos límite): Mejoré la robustez en `on_trim_process` y `on_restore_quarantine` validando los inputs de usuario antes de procesarlos y envolviendo las llamadas en el manejo de errores global, evitando que inputs inesperados rompan el hilo o la ejecución.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-27T11:03:44` **memory.py** (rendimiento): Optimicé el rendimiento de `parse_windows_process_csv` reemplazando la creación de una lista intermedia mediante list comprehension con un generator expression dentro de `sorted`, reduciendo el uso de memoria en sistemas con muchos procesos activos.
 - `2026-07-27T10:54:53` **main.py** (rendimiento): Optimicé el método `refresh_list` en `LimpiezaTotalOmegaApp` para evitar el uso de `.join` sobre una lista de strings grande en cada llamada, delegando el formato al momento de la visualización y mejorando la eficiencia del manejo de strings.
 - `2026-07-27T10:54:06` **healthscore.py** (rendimiento): Optimicé el método `validate` de `SystemMetrics` utilizando una tupla de acceso directo a los campos en lugar de iterar sobre el diccionario `__annotations__` en cada corrida, reduciendo la sobrecarga de reflexión al procesar las métricas.
-- `2026-07-27T10:53:41` **duplicates.py** (rendimiento): Optimizé `group_by_size` para evitar llamadas redundantes a `stat()` y `is_protected_path` al procesar archivos ya filtrados, y apliqué un filtro previo en `_collect_candidates` para no procesar archivos que ya sabemos que son únicos por su tamaño, reduciendo drásticamente las operaciones de E/S en los pasos de hash.
-- `2026-07-27T10:53:17` **diskreport.py** (rendimiento): Optimizé la función `summarize` para reducir el consumo de memoria al evitar la duplicación de toda la lista de archivos (`all_files_snapshot`) durante el recorrido, utilizando en su lugar un `heapq.nlargest` con un generador para mantener solo el top 8 de archivos en memoria.

@@ -75,7 +75,8 @@ class StartupEntry:
         # Caso 1: Ruta encapsulada en comillas (ej: "C:\App\prog.exe" /args)
         if raw_cmd.startswith('"'):
             end_quote: int = raw_cmd.find('"', 1)
-            return raw_cmd[1:end_quote] if end_quote > 0 else raw_cmd[1:]
+            # Validamos que encontramos un par válido de comillas
+            return raw_cmd[1:end_quote] if end_quote > 1 else raw_cmd[1:]
         
         # Caso 2: Ruta simple (sin comillas)
         return raw_cmd.split()[0]
@@ -102,9 +103,8 @@ def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> List[Start
     """
     Escanea las carpetas de inicio en busca de accesos directos o ejecutables.
 
-    Solo lectura: filtra 'desktop.ini' y confirma que cada elemento esté
-    contenido en la carpeta base mediante `resolve()` para evitar ataques
-    de path traversal.
+    Solo lectura: filtra 'desktop.ini' y symlinks, confirmando que cada elemento esté
+    contenido en la carpeta base mediante `resolve()` para evitar ataques de path traversal.
     """
     if folders is None:
         folders = startup_folders()
@@ -120,7 +120,8 @@ def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> List[Start
         try:
             for item in base_path.iterdir():
                 try:
-                    if item.is_file() and item.name.lower() != "desktop.ini":
+                    # Filtramos symlinks/junctions por seguridad y desktop.ini
+                    if item.is_file() and not item.is_symlink() and item.name.lower() != "desktop.ini":
                         if base_path in item.resolve().parents:
                             found_entries.append(StartupEntry(name=item.stem, command=str(item), source="carpeta"))
                 except (OSError, PermissionError):
