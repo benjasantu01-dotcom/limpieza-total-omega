@@ -149,17 +149,17 @@ def _generate_recommendations(m: SystemMetrics, ratios: Dict[str, float]) -> Lis
     """Genera una lista de acciones correctivas basadas en ratios bajos por área."""
     recs: List[str] = []
     
-    if ratios.get("seguridad", 1.0) < 0.9:
+    if ratios["seguridad"] < 0.9:
         recs.append(f"Revisá los {m.suspicious_count} hallazgo(s) de seguridad; podés aislarlos en cuarentena sin borrarlos.")
-    if ratios.get("disco", 1.0) < 0.6:
+    if ratios["disco"] < 0.6:
         recs.append(f"Queda {round(m.disk_free_percent, 1)}% de disco libre. Mirá el análisis de disco para ver qué ocupa más.")
-    if ratios.get("memoria", 1.0) < 0.6:
+    if ratios["memoria"] < 0.6:
         recs.append("Memoria disponible baja: cerrá programas que no uses. Ojo, 'liberar RAM' no sirve, cerrar procesos sí.")
-    if ratios.get("basura", 1.0) < 0.8:
+    if ratios["basura"] < 0.8:
         recs.append(f"Hay unos {int(m.junk_mb)} MB de archivos temporales para revisar.")
-    if ratios.get("duplicados", 1.0) < 0.8:
+    if ratios["duplicados"] < 0.8:
         recs.append(f"Podrías recuperar ~{int(m.duplicate_mb)} MB eliminando copias duplicadas.")
-    if ratios.get("arranque", 1.0) < 0.6:
+    if ratios["arranque"] < 0.6:
         recs.append(f"{m.startup_count} programas arrancan con Windows; desactivá los que no necesites desde el Administrador de tareas.")
     
     if m.quarantined_count > 0:
@@ -187,10 +187,10 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
             "arranque": score_startup(metrics.startup_count),
         }
 
-        breakdown = {k: int(round(ratios.get(k, 0.0) * WEIGHTS.get(k, 0))) for k in WEIGHTS}
+        breakdown = {k: int(round(ratios[k] * WEIGHTS[k])) for k in WEIGHTS}
         total = sum(breakdown.values())
 
-    except (TypeError, ValueError, ZeroDivisionError) as e:
+    except (TypeError, ValueError, ZeroDivisionError, KeyError) as e:
         return HealthResult(0, "F", {}, [f"Error al procesar métricas: {str(e)}"])
 
     return HealthResult(

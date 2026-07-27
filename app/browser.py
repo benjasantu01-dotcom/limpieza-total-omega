@@ -201,13 +201,18 @@ def detect_profiles(bases: Sequence[Path] | None = None,
 def total_cache_bytes(caches: Iterable[BrowserCache] | None = None) -> int:
     """Suma el tamaño de todas las cachés detectadas."""
     if caches is None:
+        directory_size.cache_clear()
         caches = detect_profiles()
     return sum(cache.size_bytes for cache in caches)
 
 
 def summarize(caches: List[BrowserCache] | None = None) -> List[str]:
     """Genera un reporte legible de las cachés encontradas y su peso total."""
-    current_caches = caches if caches is not None else detect_profiles()
+    if caches is None:
+        directory_size.cache_clear()
+        current_caches = detect_profiles()
+    else:
+        current_caches = caches
     
     if not current_caches:
         return ["No se detectaron cachés de navegador en este sistema."]

@@ -6,35 +6,35 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **274** (54.4% de aceptación)
+- Mejoras aceptadas: **272** (54.0% de aceptación)
 - Rechazadas por tests: 23
 - Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 4
-- Sin respuesta de la IA (error o límite): 172
+- Sin respuesta de la IA (error o límite): 174
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-26 | 180 | 10 | 18 | 2 | 66 |
-| 2026-07-27 | 94 | 13 | 13 | 2 | 106 |
+| 2026-07-26 | 176 | 10 | 18 | 2 | 66 |
+| 2026-07-27 | 96 | 13 | 13 | 2 | 108 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **77**
 - manejo de errores y validación de entradas: **60**
-- seguridad defensiva: **57**
-- rendimiento: **43**
+- seguridad defensiva: **53**
+- rendimiento: **45**
 - robustez ante casos límite: **37**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **27**
 - `browser.py`: **26**
+- `diskreport.py`: **26**
 - `organizer.py`: **25**
 - `safety.py`: **23**
-- `duplicates.py`: **22**
 - `scanner.py`: **22**
+- `duplicates.py`: **21**
 - `healthscore.py`: **21**
 - `memory.py`: **20**
 - `main.py`: **19**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-27T15:20:02` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje en `compute_score` y la generación de recomendaciones pre-calculando los ratios una sola vez y evitando llamadas redundantes a métodos de dict, mejorando la eficiencia en el flujo principal.
+- `2026-07-27T15:18:50` **browser.py** (rendimiento): Implementé la invalidación de caché de `directory_size` mediante un `cache_clear` explícito en `summarize` y `total_cache_bytes` para asegurar que los reportes reflejen el estado actual del disco sin sacrificar el rendimiento de las llamadas repetidas dentro de un mismo ciclo.
 - `2026-07-27T15:10:06` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` reemplazando los múltiples `if any(...)` que escaneaban la cadena de la pregunta en cada llamada por una búsqueda eficiente en un diccionario mapeado a funciones, reduciendo la complejidad algorítmica y mejorando la legibilidad.
 - `2026-07-27T15:09:27` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo integrando Type Hints precisos en funciones que retornaban iterables genéricos y refiné los docstrings para explicar el "porqué" de las decisiones de filtrado (como la exclusión de `desktop.ini`), facilitando la lectura para futuros colaboradores.
 - `2026-07-27T15:08:31` **settings.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `validate` separando la lógica de validación de cada tipo de dato en funciones auxiliares dedicadas, reduciendo la complejidad ciclomática del bucle principal y facilitando la documentación del comportamiento de cada regla.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-27T14:40:05` **duplicates.py** (legibilidad y documentación): Se introdujeron type hints más precisos y se documentaron las excepciones manejadas en las funciones de hashing y recolección para mejorar la mantenibilidad y claridad sobre los puntos de fallo previstos.
 - `2026-07-27T14:39:49` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `diskreport.py` añadiendo docstrings detallados en funciones clave (`walk_files`, `summarize`) que explican la lógica de exclusión y gestión de errores, para facilitar el mantenimiento y la comprensión de las medidas de seguridad.
 - `2026-07-27T14:39:21` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica y la robustez del código añadiendo *docstrings* detallados en las funciones de procesamiento de perfiles y refinando el manejo de rutas para asegurar que `is_relative_to` no falle ante posibles errores de resolución de rutas en el sistema de archivos.
-- `2026-07-27T14:29:25` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad del código introduciendo Type Aliases para clarificar las estructuras de datos y añadí docstrings explicativos en las funciones internas (`numero` y `entero`) para detallar las políticas de saneamiento de datos en el motor de contexto.
-- `2026-07-27T14:28:58` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` y `entries_from_registry` mediante la validación proactiva de datos de entrada, evitando errores de desbordamiento o procesamiento de listas vacías y asegurando que las rutas de registro se procesen únicamente si tienen el formato esperado.
