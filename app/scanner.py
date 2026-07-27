@@ -18,7 +18,7 @@ import logging
 from dataclasses import dataclass
 from pathlib import Path
 from datetime import datetime, timedelta
-from typing import List, Optional, Union, Final, Callable, Iterable
+from typing import List, Optional, Union, Final, Callable
 from safety import is_protected_path
 
 # Configuración de logger para el módulo
@@ -102,7 +102,7 @@ def scan_file(path: Path) -> List[Suspicion]:
         return []
 
     results: List[Suspicion] = []
-    # Lista de validadores: desacoplados para permitir agregar nuevas heurísticas fácilmente
+    # Definición explícita de la firma para los validadores heurísticos
     checks: List[Callable[[Path], Optional[Suspicion]]] = [
         check_double_extension, 
         check_recent_executable_in_downloads, 
@@ -115,6 +115,8 @@ def scan_file(path: Path) -> List[Suspicion]:
             if res: 
                 results.append(res)
         except Exception:
+            # Se ignora la excepción en chequeos individuales para evitar 
+            # detener el análisis de un archivo por un fallo en una heurística
             continue
     
     return results
@@ -123,14 +125,15 @@ def scan_file(path: Path) -> List[Suspicion]:
 def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
     """
     Escanea recursivamente un directorio buscando sospechas.
-    Implementa un recorrido iterativo optimizado para evitar re-análisis
-    y reducir el consumo de memoria en estructuras grandes.
+    Implementa un recorrido iterativo con pila para evitar problemas de 
+    profundidad de recursión y re-análisis innecesarios.
     """
     if not directory:
         return []
         
     try:
         root: Path = Path(directory).resolve()
+        # Se verifica la protección antes de cualquier operación de I/O
         if is_protected_path(root):
             return []
             
@@ -143,7 +146,8 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
             current_dir = stack.pop()
             try:
                 for entry in current_dir.iterdir():
-                    # Validación de seguridad defensiva: no procesar nada que sea protegido
+                    # Filtrado de seguridad: se omiten enlaces simbólicos para prevenir 
+                    # ciclos infinitos o saltos fuera del directorio objetivo
                     if is_protected_path(entry) or entry.is_symlink():
                         continue
                     if entry.is_dir():
@@ -151,6 +155,7 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
                     elif entry.is_file():
                         results.extend(scan_file(entry))
             except (PermissionError, OSError):
+                # Omitir errores de acceso a carpetas específicas sin abortar el escaneo completo
                 continue
         return results
     except (OSError, RuntimeError) as e:
