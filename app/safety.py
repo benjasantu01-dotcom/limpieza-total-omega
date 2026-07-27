@@ -112,11 +112,11 @@ def is_protected_path(path: PathLike) -> bool:
     Valida junctions, symlinks y subdirectorios de _SYSTEM_ROOTS.
     """
     try:
+        # Detectar enlaces críticos antes de resolver
         raw_p = Path(path)
-        # Verificación preliminar de existencia y tipo para evitar errores de sistema
-        if raw_p.exists():
-            if raw_p.is_symlink() or (hasattr(raw_p, 'is_junction') and raw_p.is_junction()):
-                return True
+        if raw_p.is_symlink():
+            return True
+            
         p = normalize(path)
     except (PermissionError, OSError, ValueError, TypeError):
         return True 
@@ -143,12 +143,16 @@ def is_within_directory(
 ) -> bool:
     """
     Valida si 'child' es descendiente de 'parent'.
-    Nota: Utiliza path.relative_to para verificar contención estricta.
+    Nota: Verifica recursivamente si hay symlinks en la cadena de padres.
     """
     if child is None or parent is None:
         return False
     try:
         c, p = normalize(child), normalize(parent)
+        # Si la ruta física contiene un symlink, se considera fuera del sandbox
+        if any(part.is_symlink() for part in c.parents):
+            return False
+            
         if c == p:
             return allow_equal
         c.relative_to(p)

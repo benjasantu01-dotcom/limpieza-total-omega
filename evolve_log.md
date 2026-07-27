@@ -788,3 +788,10 @@ FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - Asse
 - `2026-07-27T12:16:41` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `stage_for_review` al verificar que la ruta de origen sea una subruta efectiva dentro del contexto permitido, evitando movimientos involuntarios mediante ataques de recorrido de directorio (Path Traversal) o rutas ambiguas.
 - `2026-07-27T12:16:41` Rotación — nada para rotar
 - `2026-07-27T12:16:41` Corrida terminada. Total usado hoy: 160.
+- `2026-07-27T12:24:28` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-07-27T12:24:57` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `quarantine_file` validando explícitamente que la carpeta destino (cuarentena) sea una ruta segura antes de realizar la operación de movimiento, evitando posibles inyecciones de rutas externas mediante el parámetro `base`.
+- `2026-07-27T12:25:17` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-07-27T12:26:01` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva de `safety.py` añadiendo la detección explícita de puntos de reparse (junctions y symlinks) en el método `is_within_directory` y en la lógica principal de `is_protected_path`, evitando así que la app sea engañada para seguir enlaces hacia carpetas de sistema fuera de los directorios permitidos.
+- `2026-07-27T12:26:14` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `scan_directory` añadiendo una validación explícita mediante `is_protected_path` al procesar cada entrada (`entry`), asegurando que no se sigan rutas protegidas incluso si el usuario intenta escanear subdirectorios específicos.
+- `2026-07-27T12:26:14` Rotación — nada para rotar
+- `2026-07-27T12:26:14` Corrida terminada. Total usado hoy: 164.

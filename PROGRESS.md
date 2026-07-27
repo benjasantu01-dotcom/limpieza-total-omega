@@ -5,10 +5,10 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **489**
-- Mejoras aceptadas: **289** (59.1% de aceptación)
+- Iteraciones totales: **493**
+- Mejoras aceptadas: **292** (59.2% de aceptación)
 - Rechazadas por tests: 22
-- Rechazadas por guardia de seguridad: 32
+- Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 5
 - Sin respuesta de la IA (error o límite): 141
 
@@ -17,13 +17,13 @@ Este archivo se regenera solo en cada corrida a partir de
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
 | 2026-07-26 | 221 | 15 | 22 | 3 | 68 |
-| 2026-07-27 | 68 | 7 | 10 | 2 | 73 |
+| 2026-07-27 | 71 | 7 | 11 | 2 | 73 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **75**
 - manejo de errores y validación de entradas: **64**
-- seguridad defensiva: **53**
+- seguridad defensiva: **56**
 - rendimiento: **50**
 - robustez ante casos límite: **47**
 
@@ -32,20 +32,23 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **28**
 - `browser.py`: **27**
 - `organizer.py`: **27**
-- `safety.py`: **25**
+- `safety.py`: **26**
 - `healthscore.py`: **24**
+- `scanner.py`: **24**
 - `duplicates.py`: **23**
-- `scanner.py`: **23**
 - `memory.py`: **22**
 - `branding.py`: **22**
+- `quarantine.py`: **21**
 - `main.py`: **20**
-- `quarantine.py`: **20**
 - `startup.py`: **20**
 - `assistant.py`: **5**
 - `settings.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-27T12:26:14` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `scan_directory` añadiendo una validación explícita mediante `is_protected_path` al procesar cada entrada (`entry`), asegurando que no se sigan rutas protegidas incluso si el usuario intenta escanear subdirectorios específicos.
+- `2026-07-27T12:26:01` **safety.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `safety.py` añadiendo la detección explícita de puntos de reparse (junctions y symlinks) en el método `is_within_directory` y en la lógica principal de `is_protected_path`, evitando así que la app sea engañada para seguir enlaces hacia carpetas de sistema fuera de los directorios permitidos.
+- `2026-07-27T12:24:57` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `quarantine_file` validando explícitamente que la carpeta destino (cuarentena) sea una ruta segura antes de realizar la operación de movimiento, evitando posibles inyecciones de rutas externas mediante el parámetro `base`.
 - `2026-07-27T12:16:41` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de `stage_for_review` al verificar que la ruta de origen sea una subruta efectiva dentro del contexto permitido, evitando movimientos involuntarios mediante ataques de recorrido de directorio (Path Traversal) o rutas ambiguas.
 - `2026-07-27T12:15:50` **main.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_ask_folder` reemplazando la verificación simple por `is_protected_path` con un chequeo robusto que utiliza `ensure_safe_to_modify` para evitar que la aplicación interactúe con rutas críticas, previniendo errores de permisos o modificaciones accidentales en directorios del sistema.
 - `2026-07-27T12:14:42` **healthscore.py** (seguridad defensiva): Se reforzó la robustez de `SystemMetrics.validate` y la seguridad de los cálculos numéricos ante entradas inesperadas, implementando una validación explícita para evitar estados inconsistentes en los contadores (`int`) que podrían corromper la lógica de `compute_score`.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-27T11:45:17` **safety.py** (robustez ante casos límite): He mejorado `is_protected_path` para prevenir la recursión infinita o errores de permisos al resolver rutas, añadiendo una comprobación de existencia y un manejo de errores más robusto ante accesos denegados, lo que evita que el escáner colapse ante archivos o enlaces bloqueados por el sistema.
 - `2026-07-27T11:44:06` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de `stage_for_review` implementando una validación explícita para evitar que `shutil.move` intente realizar operaciones entre sistemas de archivos que puedan fallar silenciosamente o corromper datos al intentar mover archivos abiertos o con bloqueos de acceso, integrando un chequeo de existencia previo más estricto y un control de errores ante fallos en la transferencia.
 - `2026-07-27T11:37:32` **main.py** (robustez ante casos límite): Mejoré la robustez en `on_trim_process` y `on_restore_quarantine` validando los inputs de usuario antes de procesarlos y envolviendo las llamadas en el manejo de errores global, evitando que inputs inesperados rompan el hilo o la ejecución.
-- `2026-07-27T11:25:13` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `largest_folders` añadiendo chequeos de errores ante rutas de longitud excesiva (`OSError` en Windows) o problemas de acceso durante la enumeración, evitando que el generador se detenga inesperadamente.
-- `2026-07-27T11:24:56` **browser.py** (robustez ante casos límite): Se reforzó la robustez de `directory_size` ante el caso límite de archivos bloqueados o en uso (frecuentes en navegadores abiertos) mediante la captura explícita de excepciones durante el acceso a `stat()`, asegurando que el escaneo no se detenga y devuelva resultados parciales válidos en lugar de fallar o devolver cero.
-- `2026-07-27T11:23:49` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` ante valores corruptos o inesperados en los objetos de entrada, añadiendo validaciones de tipo y rango para asegurar que las métricas procesadas sean siempre seguras y representativas antes de llegar al asistente.

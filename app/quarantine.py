@@ -180,8 +180,10 @@ def quarantine_file(
         raise IOError(f"El archivo está en uso por otro proceso: {origin}")
 
     ensure_safe_to_modify(origin, allow_sensitive=True)
-
+    
     dest_dir = quarantine_dir(base)
+    ensure_safe_to_modify(dest_dir, allow_sensitive=False)
+
     item_id = uuid.uuid4().hex[:12]
     safe_filename = Path(origin.name).name
     stored_name = f"{item_id}__{safe_filename}"

@@ -143,7 +143,8 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
             current_dir = stack.pop()
             try:
                 for entry in current_dir.iterdir():
-                    if entry.is_symlink() or is_protected_path(entry):
+                    # Validación de seguridad defensiva: no procesar nada que sea protegido
+                    if is_protected_path(entry) or entry.is_symlink():
                         continue
                     if entry.is_dir():
                         stack.append(entry)
