@@ -147,12 +147,13 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
             try:
                 for entry in current_dir.iterdir():
                     # Filtrado de seguridad: se omiten symlinks y junctions (puntos de reparse)
-                    # para prevenir ciclos infinitos o saltos fuera del directorio objetivo.
-                    if is_protected_path(entry):
+                    # usando lstat para evitar seguir punteros fuera de la ruta validada.
+                    if is_protected_path(entry) or entry.is_symlink():
                         continue
                     
                     st = entry.lstat()
-                    if bool(st.st_file_attributes & 0x400) or entry.is_symlink():
+                    # 0x400 (FILE_ATTRIBUTE_REPARSE_POINT) verifica junctions de Windows
+                    if bool(st.st_file_attributes & 0x400):
                         continue
                         
                     if entry.is_dir():

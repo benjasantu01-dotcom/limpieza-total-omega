@@ -204,6 +204,11 @@ def save(values: Any, base: str | Path | None = None) -> Path | None:
     """Guarda la configuración validada. Devuelve la ruta, o None si no pudo."""
     global _cached_settings
     ruta = settings_path(base)
+    
+    # Defensa: verificar que el directorio destino es seguro antes de intentar nada
+    if not is_safe_to_modify(str(ruta.parent)):
+        return None
+
     limpio = validate(values)
     try:
         ruta.parent.mkdir(parents=True, exist_ok=True)
