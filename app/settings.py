@@ -252,7 +252,8 @@ def assistant_api_key(base: str | Path | None = None) -> str:
 
 def assistant_enabled(base: str | Path | None = None) -> bool:
     """True solo si el usuario lo activó Y hay una clave disponible."""
-    return bool(load(base).get("asistente_activado")) and bool(assistant_api_key(base))
+    config = load(base)
+    return bool(config.get("asistente_activado")) and bool(assistant_api_key(base))
 
 
 def describe(base: str | Path | None = None) -> list[str]:

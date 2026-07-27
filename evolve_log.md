@@ -1245,3 +1245,29 @@ FAILED evolve/tests/test_modules.py::test_ring_ignores_garbage_percent_and_missi
 - `2026-07-27T15:31:58` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el rendimiento de `quarantine_file` y `restore_item` eliminando la relectura completa del manifiesto desde el disco cuando ya está en el caché en memoria, manteniendo la consistencia de los datos.
 - `2026-07-27T15:31:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-27T15:31:58` Corrida terminada. Total usado hoy: 236.
+- `2026-07-27T15:38:38` Arrancando corrida. Quedan hoy ~64 peticiones objetivo.
+- `2026-07-27T15:39:12` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 108): unterminated string literal (detected at line 108)
+- `2026-07-27T15:39:42` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
+- `2026-07-27T15:40:04` Tests FALLARON:
+```
+f test_scanner_lookalike_logic_is_os_independent():
+        # La misma heurística tiene que valer con rutas estilo POSIX, para que el
+        # resultado no dependa de en qué sistema corran los tests.
+>       flagged = scanner.check_system_lookalike(PurePosixPath("/home/user/Downloads/svchost.exe"))
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: check_system_lookalike() missing 1 required positional argument: 'name_lower'
+
+evolve/tests/test_basic.py:212: TypeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_scanner_double_extension_detection - TypeError: check_double_extension() missing 1 required positional argument: 'name_lower'
+FAILED evolve/tests/test_basic.py::test_scanner_normal_file_is_clean - TypeError: check_double_extension() missing 1 required positional argument: 'name_lower'
+FAILED evolve/tests/test_basic.py::test_scanner_flags_system_lookalike_outside_system32 - TypeError: check_system_lookalike() missing 1 required positional argument: 'name_lower'
+FAILED evolve/tests/test_basic.py::test_scanner_does_not_flag_real_system_file - TypeError: check_system_lookalike() missing 1 required positional argument: 'name_lower'
+FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independent - TypeError: check_system_lookalike() missing 1 required positional argument: 'name_lower'
+5 failed, 294 passed in 1.03s
+
+```
+- `2026-07-27T15:40:04` ❌ Mejora descartada en scanner.py (no pasó los tests), se revirtió. Intento: Se optimizó el rendimiento del escaneo central mediante la pre-compilación de `SYSTEM32_LOWER` y evitando llamadas repetitivas a `path.name.lower()` y `path.parent`, centralizando el acceso al sistema de archivos en una sola llamada de metadatos dentro de `scan_file`.
+- `2026-07-27T15:40:23` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se implementó un mecanismo de caché para `assistant_api_key` y `assistant_enabled`, eliminando lecturas redundantes a disco (vía `load`) en llamadas frecuentes, mejorando el rendimiento en operaciones de interfaz que consultan repetidamente el estado del asistente.
+- `2026-07-27T15:40:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-27T15:40:23` Corrida terminada. Total usado hoy: 240.

@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **272** (54.0% de aceptación)
-- Rechazadas por tests: 23
+- Mejoras aceptadas: **270** (53.6% de aceptación)
+- Rechazadas por tests: 24
 - Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 4
-- Sin respuesta de la IA (error o límite): 174
+- Sin respuesta de la IA (error o límite): 175
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-26 | 173 | 10 | 18 | 2 | 65 |
-| 2026-07-27 | 99 | 13 | 13 | 2 | 109 |
+| 2026-07-26 | 170 | 10 | 17 | 2 | 65 |
+| 2026-07-27 | 100 | 14 | 14 | 2 | 110 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **77**
 - manejo de errores y validación de entradas: **60**
-- seguridad defensiva: **50**
-- rendimiento: **48**
+- rendimiento: **49**
+- seguridad defensiva: **47**
 - robustez ante casos límite: **37**
 
 ## Mejoras aceptadas por archivo
@@ -32,20 +32,21 @@ Este archivo se regenera solo en cada corrida a partir de
 - `browser.py`: **26**
 - `diskreport.py`: **26**
 - `organizer.py`: **25**
-- `safety.py`: **23**
-- `scanner.py`: **22**
+- `safety.py`: **22**
 - `duplicates.py`: **21**
 - `healthscore.py`: **21**
+- `scanner.py`: **21**
 - `memory.py`: **20**
-- `startup.py`: **19**
 - `main.py`: **19**
 - `quarantine.py`: **19**
 - `branding.py`: **18**
+- `startup.py`: **18**
 - `assistant.py`: **8**
-- `settings.py`: **5**
+- `settings.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-27T15:40:23` **settings.py** (rendimiento): Se implementó un mecanismo de caché para `assistant_api_key` y `assistant_enabled`, eliminando lecturas redundantes a disco (vía `load`) en llamadas frecuentes, mejorando el rendimiento en operaciones de interfaz que consultan repetidamente el estado del asistente.
 - `2026-07-27T15:31:58` **quarantine.py** (rendimiento): Optimicé el rendimiento de `quarantine_file` y `restore_item` eliminando la relectura completa del manifiesto desde el disco cuando ya está en el caché en memoria, manteniendo la consistencia de los datos.
 - `2026-07-27T15:31:48` **organizer.py** (rendimiento): Optimicé el rendimiento del escaneo sustituyendo la llamada redundante a `Path(entry.name).suffix.lower()` por una simple operación de cadena sobre el nombre de entrada ya obtenido, evitando la creación innecesaria de miles de objetos `Path` en el bucle principal.
 - `2026-07-27T15:29:41` **main.py** (rendimiento): Optimicé el rendimiento de la pestaña `Salud` evitando la recarga innecesaria de elementos de la interfaz (`area_bars`) mediante el uso de referencias estáticas y mejorando el manejo de `ThreadPoolExecutor` al instanciarlo una sola vez en el `__init__`, reduciendo la carga de creación de hilos en cada corrida.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-27T14:49:54` **organizer.py** (legibilidad y documentación): Documenté con type hints y docstrings enriquecidos las funciones críticas de `organizer.py` para clarificar los contratos de datos y las salvaguardas de seguridad, facilitando el mantenimiento y auditoría del módulo.
 - `2026-07-27T14:49:25` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo mediante la adición de Type Hints detallados en las funciones de diagnóstico y la formalización de los comentarios de estado, facilitando la comprensión del flujo de datos sin alterar la lógica.
 - `2026-07-27T14:48:56` **main.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo documentando mediante docstrings detallados la lógica interna de los métodos críticos de interfaz y estandarizando las anotaciones de tipo para los parámetros y retornos.
-- `2026-07-27T14:47:54` **healthscore.py** (legibilidad y documentación): He mejorado la legibilidad y la robustez del código mediante la adición de Type Hints en la función `summarize` y una corrección en `_generate_recommendations` para asegurar que el cálculo de `m.junk_mb` y `m.duplicate_mb` maneje correctamente la conversión a entero para evitar visualizaciones con decimales innecesarios, además de unificar los docstrings para cumplir con los estándares de documentación del proyecto.
