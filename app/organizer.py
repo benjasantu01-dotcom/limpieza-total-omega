@@ -183,6 +183,14 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
                 
             if dest in full_source_path.parents or full_source_path.parent == dest:
                 continue
+            
+            # Verificar si el archivo está bloqueado intentando abrirlo en modo lectura
+            try:
+                with open(full_source_path, 'rb'):
+                    pass
+            except (PermissionError, OSError):
+                logger.warning("Archivo bloqueado o en uso: %s", full_source_path)
+                continue
 
             base_name = jf.path.stem
             ext = jf.path.suffix
@@ -196,7 +204,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 
             shutil.move(str(full_source_path), str(target))
         except (PermissionError, OSError, shutil.Error) as e:
-            logger.error("Error moviendo archivo %s: %s", jf.path, e)
+            logger.error("Error crítico moviendo archivo %s: %s", jf.path, e)
             continue
     return dest
 

@@ -5,34 +5,34 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **473**
-- Mejoras aceptadas: **278** (58.8% de aceptación)
+- Iteraciones totales: **477**
+- Mejoras aceptadas: **280** (58.7% de aceptación)
 - Rechazadas por tests: 20
-- Rechazadas por guardia de seguridad: 31
+- Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 5
-- Sin respuesta de la IA (error o límite): 139
+- Sin respuesta de la IA (error o límite): 140
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
 | 2026-07-26 | 221 | 15 | 22 | 3 | 68 |
-| 2026-07-27 | 57 | 5 | 9 | 2 | 71 |
+| 2026-07-27 | 59 | 5 | 10 | 2 | 72 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **75**
 - manejo de errores y validación de entradas: **64**
 - rendimiento: **50**
+- robustez ante casos límite: **46**
 - seguridad defensiva: **45**
-- robustez ante casos límite: **44**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **27**
 - `browser.py`: **26**
-- `organizer.py`: **25**
-- `safety.py`: **24**
+- `organizer.py`: **26**
+- `safety.py`: **25**
 - `healthscore.py`: **23**
 - `scanner.py`: **23**
 - `duplicates.py`: **22**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-27T11:45:17` **safety.py** (robustez ante casos límite): He mejorado `is_protected_path` para prevenir la recursión infinita o errores de permisos al resolver rutas, añadiendo una comprobación de existencia y un manejo de errores más robusto ante accesos denegados, lo que evita que el escáner colapse ante archivos o enlaces bloqueados por el sistema.
+- `2026-07-27T11:44:06` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de `stage_for_review` implementando una validación explícita para evitar que `shutil.move` intente realizar operaciones entre sistemas de archivos que puedan fallar silenciosamente o corromper datos al intentar mover archivos abiertos o con bloqueos de acceso, integrando un chequeo de existencia previo más estricto y un control de errores ante fallos en la transferencia.
 - `2026-07-27T11:37:32` **main.py** (robustez ante casos límite): Mejoré la robustez en `on_trim_process` y `on_restore_quarantine` validando los inputs de usuario antes de procesarlos y envolviendo las llamadas en el manejo de errores global, evitando que inputs inesperados rompan el hilo o la ejecución.
 - `2026-07-27T11:25:13` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `largest_folders` añadiendo chequeos de errores ante rutas de longitud excesiva (`OSError` en Windows) o problemas de acceso durante la enumeración, evitando que el generador se detenga inesperadamente.
 - `2026-07-27T11:24:56` **browser.py** (robustez ante casos límite): Se reforzó la robustez de `directory_size` ante el caso límite de archivos bloqueados o en uso (frecuentes en navegadores abiertos) mediante la captura explícita de excepciones durante el acceso a `stat()`, asegurando que el escaneo no se detenga y devuelva resultados parciales válidos en lugar de fallar o devolver cero.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-27T10:54:06` **healthscore.py** (rendimiento): Optimicé el método `validate` de `SystemMetrics` utilizando una tupla de acceso directo a los campos en lugar de iterar sobre el diccionario `__annotations__` en cada corrida, reduciendo la sobrecarga de reflexión al procesar las métricas.
 - `2026-07-27T10:53:41` **duplicates.py** (rendimiento): Optimizé `group_by_size` para evitar llamadas redundantes a `stat()` y `is_protected_path` al procesar archivos ya filtrados, y apliqué un filtro previo en `_collect_candidates` para no procesar archivos que ya sabemos que son únicos por su tamaño, reduciendo drásticamente las operaciones de E/S en los pasos de hash.
 - `2026-07-27T10:53:17` **diskreport.py** (rendimiento): Optimizé la función `summarize` para reducir el consumo de memoria al evitar la duplicación de toda la lista de archivos (`all_files_snapshot`) durante el recorrido, utilizando en su lugar un `heapq.nlargest` con un generador para mantener solo el top 8 de archivos en memoria.
-- `2026-07-27T10:43:39` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` reemplazando múltiples escaneos redundantes de la cadena de entrada mediante `any()` (que recorren la lista y comparan múltiples veces) por una única búsqueda en un diccionario precalculado de categorías, reduciendo la complejidad de tiempo y mejorando la legibilidad.
-- `2026-07-27T10:43:03` **startup.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `startup.py` mediante la refactorización de `StartupEntry.executable` para reducir su complejidad ciclomática y mediante la adición de Type Hints detallados en la lógica de procesamiento.

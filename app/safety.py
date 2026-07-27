@@ -113,8 +113,10 @@ def is_protected_path(path: PathLike) -> bool:
     """
     try:
         raw_p = Path(path)
-        if raw_p.is_symlink() or (hasattr(raw_p, 'is_junction') and raw_p.is_junction()):
-            return True
+        # Verificación preliminar de existencia y tipo para evitar errores de sistema
+        if raw_p.exists():
+            if raw_p.is_symlink() or (hasattr(raw_p, 'is_junction') and raw_p.is_junction()):
+                return True
         p = normalize(path)
     except (PermissionError, OSError, ValueError, TypeError):
         return True 

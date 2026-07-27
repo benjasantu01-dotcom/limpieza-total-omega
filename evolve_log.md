@@ -702,3 +702,10 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-07-27T11:37:46` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
 - `2026-07-27T11:37:46` Rotación — nada para rotar
 - `2026-07-27T11:37:46` Corrida terminada. Total usado hoy: 144.
+- `2026-07-27T11:43:39` Arrancando corrida. Quedan hoy ~156 peticiones objetivo.
+- `2026-07-27T11:44:06` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `stage_for_review` implementando una validación explícita para evitar que `shutil.move` intente realizar operaciones entre sistemas de archivos que puedan fallar silenciosamente o corromper datos al intentar mover archivos abiertos o con bloqueos de acceso, integrando un chequeo de existencia previo más estricto y un control de errores ante fallos en la transferencia.
+- `2026-07-27T11:44:34` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: robustez ante casos límite).
+- `2026-07-27T11:45:02` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-07-27T11:45:17` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). He mejorado `is_protected_path` para prevenir la recursión infinita o errores de permisos al resolver rutas, añadiendo una comprobación de existencia y un manejo de errores más robusto ante accesos denegados, lo que evita que el escáner colapse ante archivos o enlaces bloqueados por el sistema.
+- `2026-07-27T11:45:17` Rotación — nada para rotar
+- `2026-07-27T11:45:17` Corrida terminada. Total usado hoy: 148.
