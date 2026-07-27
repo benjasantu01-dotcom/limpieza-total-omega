@@ -160,6 +160,22 @@ class Answer:
         return self.source == "gemini"
 
 
+# Definición constante de handlers para evitar recreación
+_HANDLERS: Final = {}
+
+
+def _initialize_handlers() -> None:
+    """Registra los handlers de preguntas en el diccionario global."""
+    if _HANDLERS: return
+    _HANDLERS.update({
+        "ram": handle_ram, "memoria": handle_ram, "lenta": handle_ram, "lento": handle_ram, "acelerar": handle_ram,
+        "espacio": handle_disk, "disco": handle_disk, "lleno": handle_disk, "recuperar": handle_disk, "liberar": handle_disk,
+        "seguro": handle_security, "virus": handle_security, "sospechos": handle_security, "borrar": handle_security, "peligro": handle_security,
+        "puntaje": handle_score, "salud": handle_score, "nota": handle_score, "score": handle_score,
+        "inicio": handle_startup, "arranque": handle_startup, "arranca": handle_startup, "encender": handle_startup
+    })
+
+
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
     """Arma el contexto agregado de forma defensiva filtrando tipos de datos.
     
@@ -267,6 +283,85 @@ def explain_area(area: str) -> str:
     return "No tengo una explicación para esa área."
 
 
+def handle_ram(ctx: SystemContext, text: str) -> Answer:
+    partes = [
+        f"Tenés {ctx.memory_available_percent:.0f}% de RAM disponible"
+        f"{f' de {ctx.memory_total_gb:.0f} GB' if ctx.memory_total_gb else ''}.",
+    ]
+    if ctx.memory_available_percent < 15:
+        partes.append("Eso es poco: Windows está usando el disco como memoria y "
+                        "ahí se siente la lentitud. Cerrá lo que no uses; en la "
+                        "pestaña Memoria tenés qué consume más.")
+    else:
+        partes.append("Eso está bien. Si la PC va lenta, el problema seguramente "
+                        "no es la RAM.")
+    partes.append("No busques un 'liberador de RAM': suben el número de memoria "
+                    "libre pero la PC queda más lenta, porque Windows tiene que "
+                    "releer del disco lo que acaba de descartar.")
+    if ctx.startup_count > 12:
+        partes.append(f"Sí te conviene mirar los {ctx.startup_count} programas "
+                        "de inicio: cada uno arranca con Windows.")
+    return Answer(" ".join(partes), notice=OFFLINE_NOTICE,
+                    suggestions=["¿Conviene desactivar programas de inicio?"])
+
+def handle_disk(ctx: SystemContext, text: str) -> Answer:
+    recuperable = ctx.junk_mb + ctx.duplicate_mb + ctx.browser_cache_mb
+    partes = [
+        f"Tenés {ctx.disk_free_percent:.0f}% libre en disco.",
+        f"Podés recuperar cerca de {recuperable:.0f} MB: "
+        f"{ctx.junk_mb:.0f} MB de basura, "
+        f"{ctx.duplicate_mb:.0f} MB de duplicados"
+        f"{f' y {ctx.browser_cache_mb:.0f} MB de caché' if ctx.browser_cache_mb else ''}.",
+    ]
+    if ctx.disk_free_percent < 10:
+        partes.append("Estás por debajo del 10%, y ahí Windows empieza a andar "
+                        "mal, no solo a quedarse sin lugar. Es lo primero que "
+                        "atendería.")
+    partes.append("Empezá por Limpieza: mueve los candidatos a una carpeta de "
+                    "revisión, no los borra, así podés ver qué hay antes de decidir.")
+    return Answer(" ".join(partes), notice=OFFLINE_NOTICE)
+
+def handle_security(ctx: SystemContext, text: str) -> Answer:
+    if ctx.suspicious_count == 0:
+        cuerpo = ("No hay archivos sospechosos en tus Descargas. Sobre borrar: la "
+                    "app nunca borra sola. La limpieza mueve todo a una carpeta de "
+                    "revisión, y el borrado real es un botón aparte que pide "
+                    "confirmación. Las carpetas de sistema están bloqueadas.")
+    else:
+        cuerpo = (f"Hay {ctx.suspicious_count} archivo(s) marcados, "
+                    f"{ctx.suspicious_warnings} con advertencia. Son señales, no "
+                    "una condena: puede ser un instalador legítimo. Si no reconocés "
+                    "alguno, usá 'Aislar hallazgos' para mandarlo a cuarentena, que "
+                    "es reversible, y corré Windows Defender para el veredicto real.")
+    return Answer(cuerpo, notice=OFFLINE_NOTICE)
+
+def handle_score(ctx: SystemContext, text: str) -> Answer:
+    detalle = (f"Tu puntaje es {ctx.score}/100"
+                f"{f' (nota {ctx.grade})' if ctx.grade else ''}. ")
+    problemas = _rank_problems(ctx)
+    if problemas:
+        detalle += "Lo que más te está restando: " + ", ".join(problemas[:3]) + "."
+    else:
+        detalle += "No hay nada urgente para arreglar."
+    detalle += (" El puntaje combina basura, seguridad, memoria, disco, duplicados "
+                "y programas de inicio, con la seguridad pesando más que el resto.")
+    return Answer(detalle, notice=OFFLINE_NOTICE)
+
+def handle_startup(ctx: SystemContext, text: str) -> Answer:
+    cuerpo = f"Tenés {ctx.startup_count} programas que arrancan con Windows. "
+    if ctx.startup_count > 15:
+        cuerpo += ("Son bastantes, y cada uno suma tiempo de encendido. Vale la "
+                    "pena revisarlos. ")
+    elif ctx.startup_count > 8:
+        cuerpo += "Es una cantidad normal, aunque se puede recortar. "
+    else:
+        cuerpo += "Está bien así. "
+    cuerpo += ("La app te los lista pero no los desactiva a propósito: hacelo desde "
+                "el Administrador de tareas de Windows, que guarda respaldo del "
+                "cambio y te deja revertirlo.")
+    return Answer(cuerpo, notice=OFFLINE_NOTICE)
+
+
 def local_answer(question: str, context: SystemContext) -> Answer:
     """Responde con reglas locales, tras sanear el input."""
     raw_text = (question or "").strip()
@@ -281,97 +376,13 @@ def local_answer(question: str, context: SystemContext) -> Answer:
             suggestions=list(SUGGESTED_QUESTIONS[:3]),
         )
 
-    problemas = _rank_problems(context)
+    _initialize_handlers()
     
-    def handle_ram(ctx: SystemContext, text: str) -> Answer:
-        partes = [
-            f"Tenés {ctx.memory_available_percent:.0f}% de RAM disponible"
-            f"{f' de {ctx.memory_total_gb:.0f} GB' if ctx.memory_total_gb else ''}.",
-        ]
-        if ctx.memory_available_percent < 15:
-            partes.append("Eso es poco: Windows está usando el disco como memoria y "
-                          "ahí se siente la lentitud. Cerrá lo que no uses; en la "
-                          "pestaña Memoria tenés qué consume más.")
-        else:
-            partes.append("Eso está bien. Si la PC va lenta, el problema seguramente "
-                          "no es la RAM.")
-        partes.append("No busques un 'liberador de RAM': suben el número de memoria "
-                      "libre pero la PC queda más lenta, porque Windows tiene que "
-                      "releer del disco lo que acaba de descartar.")
-        if ctx.startup_count > 12:
-            partes.append(f"Sí te conviene mirar los {ctx.startup_count} programas "
-                          "de inicio: cada uno arranca con Windows.")
-        return Answer(" ".join(partes), notice=OFFLINE_NOTICE,
-                      suggestions=["¿Conviene desactivar programas de inicio?"])
-
-    def handle_disk(ctx: SystemContext, text: str) -> Answer:
-        recuperable = ctx.junk_mb + ctx.duplicate_mb + ctx.browser_cache_mb
-        partes = [
-            f"Tenés {ctx.disk_free_percent:.0f}% libre en disco.",
-            f"Podés recuperar cerca de {recuperable:.0f} MB: "
-            f"{ctx.junk_mb:.0f} MB de basura, "
-            f"{ctx.duplicate_mb:.0f} MB de duplicados"
-            f"{f' y {ctx.browser_cache_mb:.0f} MB de caché' if ctx.browser_cache_mb else ''}.",
-        ]
-        if ctx.disk_free_percent < 10:
-            partes.append("Estás por debajo del 10%, y ahí Windows empieza a andar "
-                          "mal, no solo a quedarse sin lugar. Es lo primero que "
-                          "atendería.")
-        partes.append("Empezá por Limpieza: mueve los candidatos a una carpeta de "
-                          "revisión, no los borra, así podés ver qué hay antes de decidir.")
-        return Answer(" ".join(partes), notice=OFFLINE_NOTICE)
-
-    def handle_security(ctx: SystemContext, text: str) -> Answer:
-        if ctx.suspicious_count == 0:
-            cuerpo = ("No hay archivos sospechosos en tus Descargas. Sobre borrar: la "
-                      "app nunca borra sola. La limpieza mueve todo a una carpeta de "
-                      "revisión, y el borrado real es un botón aparte que pide "
-                      "confirmación. Las carpetas de sistema están bloqueadas.")
-        else:
-            cuerpo = (f"Hay {ctx.suspicious_count} archivo(s) marcados, "
-                      f"{ctx.suspicious_warnings} con advertencia. Son señales, no "
-                      "una condena: puede ser un instalador legítimo. Si no reconocés "
-                      "alguno, usá 'Aislar hallazgos' para mandarlo a cuarentena, que "
-                      "es reversible, y corré Windows Defender para el veredicto real.")
-        return Answer(cuerpo, notice=OFFLINE_NOTICE)
-
-    def handle_score(ctx: SystemContext, text: str) -> Answer:
-        detalle = (f"Tu puntaje es {ctx.score}/100"
-                   f"{f' (nota {ctx.grade})' if ctx.grade else ''}. ")
-        if problemas:
-            detalle += "Lo que más te está restando: " + ", ".join(problemas[:3]) + "."
-        else:
-            detalle += "No hay nada urgente para arreglar."
-        detalle += (" El puntaje combina basura, seguridad, memoria, disco, duplicados "
-                    "y programas de inicio, con la seguridad pesando más que el resto.")
-        return Answer(detalle, notice=OFFLINE_NOTICE)
-
-    def handle_startup(ctx: SystemContext, text: str) -> Answer:
-        cuerpo = f"Tenés {ctx.startup_count} programas que arrancan con Windows. "
-        if ctx.startup_count > 15:
-            cuerpo += ("Son bastantes, y cada uno suma tiempo de encendido. Vale la "
-                       "pena revisarlos. ")
-        elif ctx.startup_count > 8:
-            cuerpo += "Es una cantidad normal, aunque se puede recortar. "
-        else:
-            cuerpo += "Está bien así. "
-        cuerpo += ("La app te los lista pero no los desactiva a propósito: hacelo desde "
-                   "el Administrador de tareas de Windows, que guarda respaldo del "
-                   "cambio y te deja revertirlo.")
-        return Answer(cuerpo, notice=OFFLINE_NOTICE)
-
-    handlers = {
-        "ram": handle_ram, "memoria": handle_ram, "lenta": handle_ram, "lento": handle_ram, "acelerar": handle_ram,
-        "espacio": handle_disk, "disco": handle_disk, "lleno": handle_disk, "recuperar": handle_disk, "liberar": handle_disk,
-        "seguro": handle_security, "virus": handle_security, "sospechos": handle_security, "borrar": handle_security, "peligro": handle_security,
-        "puntaje": handle_score, "salud": handle_score, "nota": handle_score, "score": handle_score,
-        "inicio": handle_startup, "arranque": handle_startup, "arranca": handle_startup, "encender": handle_startup
-    }
-
-    for keyword, handler in handlers.items():
+    for keyword, handler in _HANDLERS.items():
         if keyword in clean_text:
             return handler(context, clean_text)
 
+    problemas = _rank_problems(context)
     if problemas:
         cuerpo = (f"Con un puntaje de {context.score}/100, por orden de prioridad: "
                   + "; ".join(problemas[:3]) + ".")

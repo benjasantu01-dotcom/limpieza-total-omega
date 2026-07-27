@@ -33,17 +33,24 @@ SYSTEM32_LOWER: Final = "system32"
 
 @dataclass
 class Suspicion:
-    """Representa una hallazgo sospechoso detectado durante el escaneo."""
+    """Representa un hallazgo sospechoso detectado durante el escaneo."""
     path: Path
     reason: str
     severity: str  # "info" | "warning"
 
 
+def _is_reparse_point(path: Path) -> bool:
+    """Verifica si la ruta es un punto de reparse (Junction/Symlink) en Windows."""
+    try:
+        st = path.lstat()
+        # 0x400 es la máscara de atributo FILE_ATTRIBUTE_REPARSE_POINT
+        return bool(getattr(st, 'st_file_attributes', 0) & 0x400)
+    except (OSError, AttributeError):
+        return False
+
+
 def check_double_extension(path: Path) -> Optional[Suspicion]:
-    """
-    Analiza si el nombre del archivo intenta ocultar una extensión ejecutable 
-    tras una extensión de documento común, técnica de spoofing de iconos/tipo.
-    """
+    """Analiza si el nombre del archivo intenta ocultar una extensión ejecutable."""
     if not path or not path.name:
         return None
     if DOUBLE_EXTENSION_RE.search(path.name):
@@ -52,16 +59,10 @@ def check_double_extension(path: Path) -> Optional[Suspicion]:
 
 
 def check_recent_executable_in_downloads(path: Path, hours: int = 24) -> Optional[Suspicion]:
-    """
-    Evalúa si un ejecutable es reciente basándose en su fecha de modificación. 
-    Se prioriza porque los archivos recién descargados no han sido validados 
-    por heurísticas de comportamiento a largo plazo.
-    """
+    """Evalúa si un ejecutable es reciente mediante su fecha de última modificación."""
     if not path or path.suffix.lower() not in SUSPICIOUS_EXECUTABLE_EXT:
         return None
     try:
-        # mtime se consulta directamente al FS; se encapsula en try/except 
-        # para manejar archivos bloqueados por otros procesos.
         if not path.is_file():
             return None
         mtime = datetime.fromtimestamp(path.stat().st_mtime)
@@ -73,11 +74,7 @@ def check_recent_executable_in_downloads(path: Path, hours: int = 24) -> Optiona
 
 
 def check_system_lookalike(path: Path) -> Optional[Suspicion]:
-    """
-    Detecta nombres de procesos críticos fuera de System32.
-    La validación contra SYSTEM32_LOWER previene alertas falsas en los archivos
-    legítimos del sistema, permitiendo identificar archivos 'impostores'.
-    """
+    """Detecta nombres de procesos críticos del sistema fuera de su ubicación esperada."""
     if not path or not path.name:
         return None
     try:
@@ -91,10 +88,7 @@ def check_system_lookalike(path: Path) -> Optional[Suspicion]:
 
 
 def scan_file(path: Path) -> List[Suspicion]:
-    """
-    Ejecuta el conjunto de chequeos heurísticos sobre un archivo individual.
-    Retorna una lista vacía si el archivo no existe o no es accesible.
-    """
+    """Ejecuta todos los chequeos heurísticos sobre un archivo dado."""
     if path is None:
         return []
         
@@ -105,7 +99,6 @@ def scan_file(path: Path) -> List[Suspicion]:
         return []
 
     results: List[Suspicion] = []
-    # Definición explícita de la firma para los validadores heurísticos
     checks: List[Callable[[Path], Optional[Suspicion]]] = [
         check_double_extension, 
         check_recent_executable_in_downloads, 
@@ -118,19 +111,13 @@ def scan_file(path: Path) -> List[Suspicion]:
             if res: 
                 results.append(res)
         except Exception:
-            # Se ignora la excepción en chequeos individuales para evitar 
-            # detener el análisis de un archivo por un fallo en una heurística
             continue
     
     return results
 
 
 def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
-    """
-    Escanea recursivamente un directorio buscando sospechas.
-    Implementa un recorrido iterativo con pila para evitar problemas de 
-    profundidad de recursión y re-análisis innecesarios.
-    """
+    """Escanea recursivamente un directorio buscando sospechas, saltando puntos de reparse."""
     if not directory:
         return []
         
@@ -148,12 +135,7 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
             current_dir = stack.pop()
             try:
                 for entry in current_dir.iterdir():
-                    if is_protected_path(entry) or entry.is_symlink():
-                        continue
-                    
-                    st = entry.lstat()
-                    # 0x400 (FILE_ATTRIBUTE_REPARSE_POINT) verifica junctions de Windows
-                    if hasattr(st, 'st_file_attributes') and bool(st.st_file_attributes & 0x400):
+                    if is_protected_path(entry) or entry.is_symlink() or _is_reparse_point(entry):
                         continue
                         
                     if entry.is_dir():
@@ -169,11 +151,7 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
 
 
 def run_windows_defender_quick_scan() -> str:
-    """
-    Dispara un escaneo rápido con Windows Defender mediante PowerShell.
-    La ejecución es sincrónica con un timeout de 30 minutos para evitar
-    bloqueos indefinidos de la UI principal.
-    """
+    """Ejecuta un escaneo rápido con Windows Defender y retorna el resultado."""
     try:
         result = subprocess.run(
             ["powershell", "-Command", "Start-MpScan -ScanType QuickScan"],

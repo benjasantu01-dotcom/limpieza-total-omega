@@ -79,7 +79,7 @@ class StartupEntry:
             return raw_cmd[1:end_quote] if end_quote != -1 else raw_cmd[1:]
         
         # Caso 2: Ruta simple (sin comillas)
-        parts = raw_cmd.split()
+        parts: List[str] = raw_cmd.split()
         return parts[0] if parts else ""
 
 
@@ -102,11 +102,11 @@ def startup_folders() -> List[Path]:
 
 def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> List[StartupEntry]:
     """
-    Escanea las carpetas de inicio en busca de accesos directos o ejecutables.
+    Escanea las carpetas de inicio en busca de archivos (ejecutables/accesos directos).
 
-    Solo lectura: filtra 'desktop.ini' (archivo de configuración del shell) y symlinks
-    para evitar recursión infinita o alteraciones fuera de la carpeta, confirmando 
-    que el elemento esté contenido en la carpeta base mediante `resolve()`.
+    Seguridad: Filtra 'desktop.ini' y symlinks para evitar ciclos. Verifica mediante
+    `resolve()` que el archivo encontrado permanezca efectivamente dentro de la 
+    carpeta base, evitando escapes mediante rutas relativas complejas.
     """
     if folders is None:
         folders = startup_folders()
@@ -135,10 +135,11 @@ def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> List[Start
 
 def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry]:
     """
-    Procesa el volcado CSV de PowerShell a objetos StartupEntry.
+    Transforma el volcado CSV de PowerShell en objetos StartupEntry.
     
-    Elimina cabeceras (como 'Name', 'PS...') y limpia los valores obtenidos 
-    del registro eliminando comillas de encapsulamiento.
+    Espera formato CSV generado por `ConvertTo-Csv`. Filtra las cabeceras estándar 
+    de PowerShell y limpia las comillas de encapsulamiento que el motor de 
+    registro suele incluir en los valores de cadena.
     """
     parsed_entries: List[StartupEntry] = []
     if not isinstance(text, str) or not text.strip():

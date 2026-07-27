@@ -100,7 +100,7 @@ _NUMERIC_LIMITS: Final = {
 
 
 def _coerce_bool(valor: Any) -> bool | None:
-    """Intenta convertir un valor a booleano, permitiendo cadenas de texto."""
+    """Intenta convertir un valor a booleano; retorna None si no es compatible."""
     if isinstance(valor, bool):
         return valor
     if isinstance(valor, str):
@@ -109,7 +109,10 @@ def _coerce_bool(valor: Any) -> bool | None:
 
 
 def _coerce_int(valor: Any, clave: str) -> int | None:
-    """Intenta convertir a entero respetando los límites definidos en _NUMERIC_LIMITS."""
+    """
+    Intenta convertir un valor a entero aplicando límites definidos en _NUMERIC_LIMITS.
+    Retorna None si la conversión falla o el tipo no es convertible.
+    """
     try:
         numero = int(valor)
         minimo, maximo = _NUMERIC_LIMITS.get(clave, (0, 10**9))
@@ -119,7 +122,10 @@ def _coerce_int(valor: Any, clave: str) -> int | None:
 
 
 def _validate_str(clave: str, valor: str) -> str | None:
-    """Valida cadenas específicas como temas, acentos o rutas de carpetas."""
+    """
+    Valida cadenas según el contexto (temas, acentos o rutas de sistema).
+    Retorna None si el valor viola restricciones de seguridad o integridad.
+    """
     texto = valor.strip()
     if clave == "tema" and texto.lower() not in VALID_THEMES:
         return None
@@ -137,7 +143,7 @@ def _validate_str(clave: str, valor: str) -> str | None:
 
 
 def settings_path(base: str | Path | None = None) -> Path:
-    """Ruta del archivo de configuración."""
+    """Determina la ruta absoluta del archivo de configuración final."""
     if base is not None:
         carpeta = Path(base)
     else:
@@ -146,7 +152,10 @@ def settings_path(base: str | Path | None = None) -> Path:
 
 
 def validate(values: Any) -> dict[str, Any]:
-    """Devuelve una configuración completa y sana a partir de datos crudos."""
+    """
+    Aplica una sanitización profunda a un objeto diccionario externo.
+    Para cada clave, asegura que el tipo coincida con DEFAULTS.
+    """
     limpio = dict(DEFAULTS)
     if not isinstance(values, dict):
         return limpio
@@ -176,7 +185,7 @@ def validate(values: Any) -> dict[str, Any]:
 
 
 def load(base: str | Path | None = None) -> dict[str, Any]:
-    """Carga la configuración. Devuelve valores de fábrica si el archivo es inválido."""
+    """Carga y valida la configuración desde disco o retorna DEFAULTS."""
     global _cached_settings, _last_base
     
     if _cached_settings is not None and base == _last_base:
@@ -200,11 +209,11 @@ def load(base: str | Path | None = None) -> dict[str, Any]:
 
 
 def save(values: Any, base: str | Path | None = None) -> Path | None:
-    """Guarda la configuración validada. Devuelve la ruta, o None si no pudo."""
+    """Guarda valores validados en el sistema de archivos."""
     global _cached_settings
     ruta = settings_path(base)
     
-    # Validar que el directorio sea seguro y, si existe, que sea escribible
+    # Validar que el directorio sea seguro antes de intentar persistencia
     if not is_safe_to_modify(str(ruta.parent)):
         return None
 
@@ -225,7 +234,7 @@ def save(values: Any, base: str | Path | None = None) -> Path | None:
 
 
 def update(changes: dict[str, Any], base: str | Path | None = None) -> dict[str, Any]:
-    """Aplica cambios parciales sobre lo guardado y devuelve el resultado."""
+    """Combina cambios parciales con el estado actual y persiste el resultado."""
     actual = load(base).copy()
     if isinstance(changes, dict):
         actual.update(changes)
@@ -235,7 +244,7 @@ def update(changes: dict[str, Any], base: str | Path | None = None) -> dict[str,
 
 
 def reset(base: str | Path | None = None) -> dict[str, Any]:
-    """Vuelve todo a los valores de fábrica y lo guarda."""
+    """Restaura los valores de configuración a los de fábrica."""
     global _cached_settings
     limpio = dict(DEFAULTS)
     save(limpio, base)
@@ -244,12 +253,12 @@ def reset(base: str | Path | None = None) -> dict[str, Any]:
 
 
 def get(key: str, base: str | Path | None = None) -> Any:
-    """Lee un solo valor, con su valor de fábrica como respaldo."""
+    """Obtiene una preferencia individual con respaldo en DEFAULTS."""
     return load(base).get(key, DEFAULTS.get(key))
 
 
 def assistant_api_key(base: str | Path | None = None) -> str:
-    """Clave del asistente: primero el entorno, después el archivo."""
+    """Extrae la clave API (prioridad: variable de entorno -> archivo config)."""
     desde_entorno = os.environ.get(API_KEY_ENV_VAR, "").strip()
     if desde_entorno:
         return desde_entorno
@@ -258,13 +267,13 @@ def assistant_api_key(base: str | Path | None = None) -> str:
 
 
 def assistant_enabled(base: str | Path | None = None) -> bool:
-    """True solo si el usuario lo activó Y hay una clave disponible."""
+    """Verifica si el asistente está habilitado por usuario y posee clave."""
     config = load(base)
     return bool(config.get("asistente_activado")) and bool(assistant_api_key(base))
 
 
 def describe(base: str | Path | None = None) -> list[str]:
-    """Resumen legible de la configuración, para mostrar en la app."""
+    """Genera un reporte textual de la configuración activa para el usuario."""
     actual = load(base)
     clave = assistant_api_key(base)
     origen_clave = (
