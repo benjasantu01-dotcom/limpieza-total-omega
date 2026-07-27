@@ -90,7 +90,7 @@ def normalize(path: PathLike) -> Path:
 
 def _contains_protected_name(path: Path) -> bool:
     """Verifica si alguna parte de la ruta coincide con un directorio protegido."""
-    return not PROTECTED_DIR_NAMES.isdisjoint({part.lower() for part in path.parts})
+    return not PROTECTED_DIR_NAMES.isdisjoint(part.lower() for part in path.parts)
 
 
 def is_drive_root(path: PathLike) -> bool:
@@ -107,11 +107,14 @@ def is_protected_path(path: PathLike) -> bool:
     Determina si una ruta es peligrosa por residir en un directorio de sistema.
     """
     try:
-        raw_p = Path(path)
-        if raw_p.is_symlink():
+        raw_path = str(path)
+        # Check rápido por caracteres prohibidos o UNC antes de normalizar
+        if raw_path.startswith(("\\\\", "//")):
             return True
             
         p = normalize(path)
+        if p.is_symlink():
+            return True
     except (PermissionError, OSError, ValueError, TypeError):
         return True 
         
@@ -121,13 +124,8 @@ def is_protected_path(path: PathLike) -> bool:
     if _contains_protected_name(p):
         return True
         
-    for root in _SYSTEM_ROOTS:
-        try:
-            if p == root or root in p.parents:
-                return True
-        except (ValueError, RuntimeError, PermissionError):
-            continue
-    return False
+    # Usamos any() para cortocircuitar en la primera coincidencia encontrada
+    return any(p == root or root in p.parents for root in _SYSTEM_ROOTS)
 
 
 def is_within_directory(

@@ -212,7 +212,7 @@ def quarantine_file(
                 quarantined_at=datetime.now().isoformat(timespec="seconds"),
                 sha256=file_hash,
             )
-            items = list(_manifest_cache.get(str(base)) or load_manifest(base))
+            items = load_manifest(base)
             items.append(item)
             save_manifest(items, base)
             return item
@@ -226,9 +226,7 @@ def quarantine_file(
 
 def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
     """Retorna todos los ítems en cuarentena, ordenados cronológicamente descendente."""
-    items = list(load_manifest(base))
-    items.sort(key=lambda i: i.quarantined_at, reverse=True)
-    return items
+    return sorted(load_manifest(base), key=lambda i: i.quarantined_at, reverse=True)
 
 
 def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
@@ -239,7 +237,7 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
     if not item_id or not isinstance(item_id, str):
         raise ValueError("El ID debe ser una cadena válida.")
 
-    items = list(_manifest_cache.get(str(base)) or load_manifest(base))
+    items = load_manifest(base)
     match = next((i for i in items if i.item_id == item_id), None)
     if match is None:
         raise KeyError(f"No se encontró el ítem: {item_id}")
@@ -286,7 +284,7 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
         return False
 
     quarantine_root = quarantine_dir(base)
-    stored_file = normalize(quarantine_root / match.stored_name)
+    stored_file = quarantine_root / match.stored_name
     
     if not is_within_directory(stored_file, quarantine_root):
         raise UnsafePathError(f"Intento de borrado fuera de cuarentena: {stored_file}")

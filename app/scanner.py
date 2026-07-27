@@ -39,13 +39,12 @@ class Suspicion:
     severity: str  # "info" | "warning"
 
 
-def _is_reparse_point(path: Path) -> bool:
-    """Verifica si la ruta es un punto de reparse (Junction/Symlink) en Windows."""
+def _is_reparse_point(entry: os.DirEntry) -> bool:
+    """Verifica si la entrada es un punto de reparse (Junction/Symlink) en Windows."""
     try:
-        st = path.lstat()
-        # 0x400 es la máscara de atributo FILE_ATTRIBUTE_REPARSE_POINT
-        return bool(getattr(st, 'st_file_attributes', 0) & 0x400)
-    except (OSError, AttributeError):
+        # st_file_attributes 0x400 = FILE_ATTRIBUTE_REPARSE_POINT
+        return bool(entry.stat().st_file_attributes & 0x400)
+    except (OSError, AttributeError, PermissionError):
         return False
 
 
@@ -63,8 +62,6 @@ def check_recent_executable_in_downloads(path: Path, hours: int = 24) -> Optiona
     if not path or path.suffix.lower() not in SUSPICIOUS_EXECUTABLE_EXT:
         return None
     try:
-        if not path.is_file():
-            return None
         mtime = datetime.fromtimestamp(path.stat().st_mtime)
         if datetime.now() - mtime < timedelta(hours=hours):
             return Suspicion(path, f"Ejecutable reciente detectado (modificado hace menos de {hours}h)", "info")
@@ -91,13 +88,7 @@ def scan_file(path: Path) -> List[Suspicion]:
     """Ejecuta todos los chequeos heurísticos sobre un archivo dado."""
     if path is None:
         return []
-        
-    try:
-        if not path.is_file():
-            return []
-    except (OSError, PermissionError, ValueError):
-        return []
-
+    
     results: List[Suspicion] = []
     checks: List[Callable[[Path], Optional[Suspicion]]] = [
         check_double_extension, 
@@ -117,31 +108,31 @@ def scan_file(path: Path) -> List[Suspicion]:
 
 
 def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
-    """Escanea recursivamente un directorio buscando sospechas, saltando puntos de reparse."""
+    """Escanea recursivamente un directorio buscando sospechas, optimizando acceso a disco."""
     if not directory:
         return []
         
     try:
-        root: Path = Path(directory).resolve()
+        root = Path(directory).resolve()
         if is_protected_path(root):
             return []
             
         results: List[Suspicion] = []
-        if not root.exists() or not root.is_dir():
-            return []
-            
-        stack: List[Path] = [root]
+        stack: List[str] = [str(root)]
+        
         while stack:
             current_dir = stack.pop()
             try:
-                for entry in current_dir.iterdir():
-                    if is_protected_path(entry) or entry.is_symlink() or _is_reparse_point(entry):
+                for entry in os.scandir(current_dir):
+                    # Chequeo de seguridad unificado y rápido
+                    if is_protected_path(Path(entry.path)):
                         continue
-                        
-                    if entry.is_dir():
-                        stack.append(entry)
+                    
+                    if entry.is_dir(follow_symlinks=False):
+                        if not _is_reparse_point(entry):
+                            stack.append(entry.path)
                     elif entry.is_file():
-                        results.extend(scan_file(entry))
+                        results.extend(scan_file(Path(entry.path)))
             except (PermissionError, OSError):
                 continue
         return results
