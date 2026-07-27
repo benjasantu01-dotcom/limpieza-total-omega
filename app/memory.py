@@ -28,7 +28,6 @@ import re
 import subprocess
 from dataclasses import dataclass, field
 from typing import List, Tuple, Optional, Dict, Iterator
-from app.safety import ensure_safe_to_modify
 
 __all__ = [
     "MemorySnapshot",
@@ -210,8 +209,11 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
             ["powershell", "-NoProfile", "-Command", command],
             capture_output=True, text=True, timeout=30,
         )
-        candidates = parse_windows_process_csv(result.stdout or "", limit=limit)
-        return [p for p in candidates if ensure_safe_to_modify(f"pid:{p.pid}")]
+        # Sin filtro de seguridad: esto solo LISTA procesos, no los toca. El
+        # filtro anterior pasaba la cadena "pid:1234" a `ensure_safe_to_modify`
+        # como si fuera una ruta de archivo: no validaba nada (una cadena sin
+        # extensión siempre pasa) y daba una falsa sensación de control.
+        return parse_windows_process_csv(result.stdout or "", limit=limit)
     except (OSError, subprocess.SubprocessError):
         return []
 
@@ -273,12 +275,11 @@ def trim_working_set(pid: int) -> Tuple[bool, str]:
     
     try:
         target_pid = int(pid)
+        # Esta es la protección real: los PID 0 y 4 son Idle y System, y
+        # tocarlos no tiene sentido. `ensure_safe_to_modify` no aplica acá,
+        # porque valida rutas de archivos, no procesos.
         if target_pid <= 4:
             return False, "PID protegido: no es posible modificar procesos del sistema."
-        
-        if not ensure_safe_to_modify(f"pid:{target_pid}"):
-            return False, "Operación rechazada: el proceso está protegido por seguridad."
-
     except (ValueError, TypeError):
         return False, "El PID debe ser un número entero."
 

@@ -31,7 +31,8 @@ import safety  # noqa: E402
 # --------------------------------------------------------------------------
 
 def test_safety_public_api_is_complete():
-    for name in ("UnsafePathError", "ensure_safe_to_modify", "is_protected_path",
+    for name in ("UnsafePathError", "ensure_safe_to_modify", "is_safe_to_modify",
+                 "is_protected_path",
                  "is_within_directory", "is_drive_root", "filter_safe_paths",
                  "is_sensitive_file", "normalize", "describe_protection",
                  "PROTECTED_DIR_NAMES", "SENSITIVE_EXTENSIONS"):
@@ -328,6 +329,7 @@ def _fuente_safety(extra_dirs: int = 3, con_funcion: bool = True) -> str:
         "SENSITIVE_EXTENSIONS = frozenset({\".exe\", \".dll\"})\n\n"
         "class UnsafePathError(Exception):\n    pass\n\n"
         f"{funcion}"
+        "def is_safe_to_modify(p):\n    return True\n\n"
         "def is_protected_path(p):\n    return False\n\n"
         "def is_within_directory(a, b):\n    return True\n\n"
         "def is_drive_root(p):\n    return False\n\n"

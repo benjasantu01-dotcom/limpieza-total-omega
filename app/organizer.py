@@ -18,7 +18,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import List, Optional
-from app.safety import ensure_safe_to_modify
+from safety import is_safe_to_modify
 
 # Configuración de log para seguimiento de errores no críticos
 logging.basicConfig(level=logging.INFO)
@@ -92,8 +92,12 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
                         elif entry.is_file(follow_symlinks=False):
                             if Path(entry.name).suffix.lower() in junk_set:
                                 full_path = Path(entry.path)
-                                # Seguridad: Solo añadir si la ruta pasa el filtro de app/safety.py
-                                if ensure_safe_to_modify(full_path):
+                                # Seguridad: se usa la versión booleana para
+                                # SALTEAR lo inseguro. Con `ensure_safe_to_modify`
+                                # un solo archivo protegido abortaría todo el
+                                # escaneo, porque UnsafePathError no lo atrapa
+                                # el `except (PermissionError, OSError)` de abajo.
+                                if is_safe_to_modify(full_path):
                                     stat = entry.stat()
                                     found.append(
                                         JunkFile(
@@ -160,8 +164,11 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             if not full_source_path.exists() or not full_source_path.is_file():
                 continue
             
-            # Seguridad: Verificar que tanto origen como destino estén permitidos
-            if not ensure_safe_to_modify(full_source_path) or not ensure_safe_to_modify(dest):
+            # Seguridad: origen y destino tienen que estar permitidos. Se usa
+            # la variante booleana porque acá queremos saltear este archivo y
+            # seguir con el resto, no cortar el movimiento de todos.
+            if not is_safe_to_modify(full_source_path) or not is_safe_to_modify(dest):
+                logger.info("Omitido por seguridad: %s", full_source_path)
                 continue
                 
             # Evitar bucles o recursión sobre la propia carpeta de destino
@@ -195,10 +202,14 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     for f in dest.iterdir():
         try:
             if f.is_file():
-                # Validación de seguridad antes de ejecutar el borrado real
-                if ensure_safe_to_modify(f):
+                # Validación antes del borrado real. Booleana a propósito: un
+                # archivo con extensión sensible se saltea, no rompe el vaciado
+                # de la carpeta entera.
+                if is_safe_to_modify(f):
                     f.unlink()
                     count += 1
+                else:
+                    logger.info("No se borró por seguridad: %s", f)
         except (PermissionError, OSError) as e:
             logger.error("No se pudo borrar permanentemente el archivo %s: %s", f, e)
             continue

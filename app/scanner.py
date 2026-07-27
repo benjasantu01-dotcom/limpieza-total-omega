@@ -19,7 +19,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from datetime import datetime, timedelta
 from typing import List, Optional, Union
-from app.safety import ensure_safe_to_modify
 
 # Configuración de logger para el módulo
 logger = logging.getLogger(__name__)
@@ -91,9 +90,13 @@ def scan_file(path: Path) -> List[Suspicion]:
     if path is None:
         return []
         
+    # OJO: acá NO va `ensure_safe_to_modify`. Este módulo solo LEE, nunca
+    # borra ni mueve. Ese chequeo rechaza las extensiones sensibles (.exe,
+    # .dll...), que son exactamente las que un escáner heurístico tiene que
+    # poder mirar. Ponerlo acá hacía que el escaneo abortara al encontrar el
+    # primer ejecutable, y como lanza UnsafePathError, el `except` de abajo
+    # tampoco lo atrapaba.
     try:
-        # Validación de seguridad defensiva antes de procesar
-        ensure_safe_to_modify(path)
         if not path.is_file():
             return []
     except (OSError, PermissionError, ValueError):
@@ -122,8 +125,8 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
         
     try:
         root = Path(directory).resolve()
-        ensure_safe_to_modify(root)
-        
+        # Sin chequeo de escritura: escanear es solo lectura. Poder revisar una
+        # carpeta no implica poder modificarla.
         results: List[Suspicion] = []
         if not root.exists() or not root.is_dir():
             return []

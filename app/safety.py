@@ -31,6 +31,7 @@ __all__ = [
     "is_protected_path",
     "is_within_directory",
     "ensure_safe_to_modify",
+    "is_safe_to_modify",
     "filter_safe_paths",
     "is_sensitive_file",
     "describe_protection",
@@ -195,6 +196,33 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
             f"Operación bloqueada: '{p.name}' tiene una extensión sensible ({p.suffix})."
         )
     return p
+
+
+def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> bool:
+    """Versión booleana de `ensure_safe_to_modify`: nunca lanza excepción.
+
+    POR QUÉ EXISTE ESTA FUNCIÓN
+    ---------------------------
+    `ensure_safe_to_modify` lanza `UnsafePathError` a propósito, para que un
+    olvido de chequear el resultado no termine en un borrado. Pero eso la hace
+    inservible dentro de un `if`, y escribir `if ensure_safe_to_modify(p):` es
+    un error que *parece* correcto: la función devuelve un Path (siempre
+    verdadero) o lanza. O sea, el `if` no filtra nada, y la excepción se
+    escapa del bucle y rompe la operación entera en vez de saltear un archivo.
+
+    Esa confusión ya causó un fallo real en este proyecto. Así que la regla es:
+
+      - Recorrés una lista y querés SALTEAR lo inseguro -> `is_safe_to_modify`
+      - Estás por borrar o mover algo puntual -> `ensure_safe_to_modify`
+      - Solo vas a LEER la ruta -> ninguna de las dos, usá `is_protected_path`
+
+    Devuelve False ante cualquier duda, incluida una ruta mal formada.
+    """
+    try:
+        ensure_safe_to_modify(path, allow_sensitive=allow_sensitive)
+        return True
+    except (UnsafePathError, TypeError, ValueError, OSError):
+        return False
 
 
 def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = False) -> list[Path]:

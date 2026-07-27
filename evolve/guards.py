@@ -28,6 +28,7 @@ MIN_SIZE_RATIO = 0.6
 CRITICAL_MODULES = {
     "safety.py": (
         "ensure_safe_to_modify",
+        "is_safe_to_modify",
         "is_protected_path",
         "is_within_directory",
         "is_drive_root",

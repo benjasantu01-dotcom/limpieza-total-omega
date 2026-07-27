@@ -23,6 +23,46 @@ rechaza aunque mejore todo lo demás:
 7. **Los parsers reciben texto crudo por parámetro**, así se pueden testear
    en Linux (los tests corren en GitHub Actions, no en Windows).
 8. **Todo cambio debe pasar los tests** antes de aceptarse.
+9. **Imports planos, nunca de paquete.** Se escribe `from safety import X`,
+   nunca `from app.safety import X`. La app se ejecuta con
+   `python app/main.py`, y ahí no existe ningún paquete llamado `app`.
+10. **Ninguna dependencia externa salvo `customtkinter`**, y solo en `main.py`.
+
+## El error de seguridad que ya se cometió (no repetirlo)
+
+Después de 221 mejoras aceptadas, la IA rompió la app de tres formas a la
+vez, y los tests siguieron en verde. Vale la pena entender el patrón, porque
+las tres veces el código quedó *pareciendo* más seguro:
+
+1. **Cambió los imports a `from app.safety import ...`.** Pytest corre desde
+   la raíz del repo, donde eso resuelve, así que los tests pasaron. Pero
+   `python app/main.py` dejó de arrancar. Peor: quedaban dos módulos `safety`
+   cargados, cada uno con su propia clase `UnsafePathError`, así que los
+   `except` de `main.py` ya no atrapaban nada.
+
+2. **Usó `ensure_safe_to_modify` dentro de un `if`.** Esa función devuelve un
+   `Path` (siempre verdadero) o lanza excepción. O sea que
+   `if ensure_safe_to_modify(f):` no filtra nada, y la excepción se escapa
+   del bucle y rompe la operación completa en vez de saltear un archivo.
+
+3. **Puso el chequeo de escritura en módulos que solo leen.** `scanner.py`
+   abortaba al encontrar el primer `.exe`, que es exactamente lo que un
+   escáner heurístico tiene que revisar. Y `startup.py` fallaba siempre en
+   Windows, porque la carpeta de arranque vive debajo de un directorio
+   llamado "Windows".
+
+**La regla que sale de esto:**
+
+| Qué querés hacer | Qué usar |
+|---|---|
+| Saltear lo inseguro dentro de un bucle o un `if` | `is_safe_to_modify` (bool) |
+| Borrar o mover algo puntual | `ensure_safe_to_modify` (lanza) |
+| Solo leer o listar la ruta | `is_protected_path`, o nada |
+
+`evolve/tests/test_integrity.py` verifica las tres cosas: que la app importe
+como la ejecuta el usuario, que no haya imports de paquete, que
+`ensure_safe_to_modify` no aparezca como condición, y que los módulos de solo
+lectura no usen el chequeo de escritura.
 
 ## Estado del proyecto
 

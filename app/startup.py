@@ -21,7 +21,6 @@ import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable, Optional, Iterator, List, Tuple, Dict
-from app.safety import ensure_safe_to_modify
 
 __all__ = [
     "StartupEntry",
@@ -101,17 +100,24 @@ def startup_folders() -> List[Path]:
 
 
 def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> List[StartupEntry]:
-    """Escanea las carpetas de inicio en busca de archivos (accesos directos o ejecutables).
-    
-    Aplica `ensure_safe_to_modify` para cumplir con las políticas de seguridad
-    y filtra archivos de sistema irrelevantes como 'desktop.ini'.
+    """Escanea las carpetas de inicio en busca de accesos directos o ejecutables.
+
+    Solo lectura: filtra 'desktop.ini' y confirma que cada elemento esté
+    contenido en la carpeta base.
+
+    NO usa `ensure_safe_to_modify` a propósito. La carpeta de inicio real de
+    Windows vive en
+    `AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup`, que
+    contiene el componente "Windows" y por lo tanto cuenta como ruta protegida.
+    Ese chequeo es para borrar o mover, y acá solo se listan nombres: ponerlo
+    hacía que esta función lanzara UnsafePathError siempre en Windows, dejando
+    la pestaña de Inicio inservible.
     """
     if folders is None:
         folders = startup_folders()
     found_entries: List[StartupEntry] = []
     for folder in folders:
         try:
-            ensure_safe_to_modify(folder)
             base_path: Path = folder.resolve()
             if not base_path.exists():
                 continue

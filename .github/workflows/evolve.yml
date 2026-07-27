@@ -90,6 +90,11 @@ jobs:
           # Reintentar con rebase: si se empujó algo a mano mientras el bot
           # trabajaba, sin esto el push falla y la mejora se pierde.
           for attempt in 1 2 3; do
+            # Un rebase que quedó a medias (conflicto) deja el repo en un
+            # estado donde TODOS los reintentos fallan igual. Abortarlo antes
+            # de cada intento es lo que evita que un conflicto puntual se
+            # convierta en una falla permanente.
+            git rebase --abort 2>/dev/null || true
             if git pull --rebase --autostash origin main && git push origin main; then
               echo "Push exitoso en el intento $attempt."
               exit 0
@@ -97,11 +102,21 @@ jobs:
             echo "Push falló en el intento $attempt, reintentando..."
             sleep 5
           done
-          echo "No se pudo empujar después de 3 intentos."
+          echo "::error::No se pudo empujar después de 3 intentos. La cadena sigue viva de todos modos."
           exit 1
 
+      # A partir de acá los pasos usan `always()` a propósito.
+      #
+      # POR QUÉ: sin esto, cualquier paso que falle (un push con conflicto, un
+      # error puntual de red) saltea el re-disparo y la cadena muere para
+      # siempre, porque el cron es demasiado poco confiable para revivirla.
+      # Pasó de verdad: la corrida #95 falló al commitear y el bucle quedó
+      # parado ~7 horas hasta que se arrancó a mano.
+      #
+      # La corrida igual queda marcada en rojo, así el fallo sigue siendo
+      # visible. Lo que cambia es que dejó de ser fatal para el bucle.
       - name: Esperar para completar el ciclo de ~10 minutos
-        if: steps.chain.outputs.decision == 'go' && env.SELF_TRIGGER_TOKEN != ''
+        if: always() && steps.chain.outputs.decision == 'go' && env.SELF_TRIGGER_TOKEN != ''
         env:
           CYCLE_SECONDS: "600"
         run: |
@@ -115,7 +130,7 @@ jobs:
           fi
 
       - name: Re-disparar la cadena
-        if: steps.chain.outputs.decision == 'go' && env.SELF_TRIGGER_TOKEN != ''
+        if: always() && steps.chain.outputs.decision == 'go' && env.SELF_TRIGGER_TOKEN != ''
         env:
           GH_TOKEN: ${{ env.SELF_TRIGGER_TOKEN }}
         run: |
@@ -133,7 +148,7 @@ jobs:
           echo "Cadena re-disparada."
 
       - name: Aviso si falta el token de la cadena
-        if: steps.chain.outputs.decision == 'go' && env.SELF_TRIGGER_TOKEN == ''
+        if: always() && steps.chain.outputs.decision == 'go' && env.SELF_TRIGGER_TOKEN == ''
         run: |
           echo "::warning::Falta el secreto SELF_TRIGGER_TOKEN, así que la cadena no se re-dispara."
           echo "El bucle depende solo del cron de GitHub, que es poco confiable."
