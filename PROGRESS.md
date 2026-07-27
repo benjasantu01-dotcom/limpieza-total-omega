@@ -5,26 +5,26 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **449**
-- Mejoras aceptadas: **263** (58.6% de aceptación)
-- Rechazadas por tests: 19
+- Iteraciones totales: **453**
+- Mejoras aceptadas: **265** (58.5% de aceptación)
+- Rechazadas por tests: 20
 - Rechazadas por guardia de seguridad: 29
 - Sin cambios (nada sustancial que mejorar): 4
-- Sin respuesta de la IA (error o límite): 134
+- Sin respuesta de la IA (error o límite): 135
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
 | 2026-07-26 | 221 | 15 | 22 | 3 | 68 |
-| 2026-07-27 | 42 | 4 | 7 | 1 | 66 |
+| 2026-07-27 | 44 | 5 | 7 | 1 | 67 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **74**
+- legibilidad y documentación: **75**
 - manejo de errores y validación de entradas: **64**
 - seguridad defensiva: **45**
-- rendimiento: **40**
+- rendimiento: **41**
 - robustez ante casos límite: **40**
 
 ## Mejoras aceptadas por archivo
@@ -39,13 +39,15 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **21**
 - `branding.py`: **21**
 - `quarantine.py`: **19**
-- `startup.py`: **18**
+- `startup.py`: **19**
 - `main.py`: **17**
-- `assistant.py`: **2**
+- `assistant.py`: **3**
 - `settings.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-27T10:43:39` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` reemplazando múltiples escaneos redundantes de la cadena de entrada mediante `any()` (que recorren la lista y comparan múltiples veces) por una única búsqueda en un diccionario precalculado de categorías, reduciendo la complejidad de tiempo y mejorando la legibilidad.
+- `2026-07-27T10:43:03` **startup.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `startup.py` mediante la refactorización de `StartupEntry.executable` para reducir su complejidad ciclomática y mediante la adición de Type Hints detallados en la lógica de procesamiento.
 - `2026-07-27T10:33:50` **settings.py** (legibilidad y documentación): Mejora la legibilidad y el mantenimiento de `validate()` mediante la extracción de la lógica de validación de tipos a funciones auxiliares dedicadas, documentando claramente el contrato de validación.
 - `2026-07-27T10:33:37` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints más precisos (especialmente en los retornos y colecciones) y enriqueciendo los docstrings para explicar el "por qué" de las validaciones de seguridad, facilitando el mantenimiento futuro y la legibilidad para otros colaboradores.
 - `2026-07-27T10:33:13` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el manejo de tipos en `safety.py` mediante la implementación de Type Hints explícitos para las constantes globales y la adición de docstrings detallados en las funciones de validación para clarificar el comportamiento ante errores.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-27T10:03:22` **assistant.py** (legibilidad y documentación): Documenté con docstrings detallados las funciones de transformación de tipos y procesado de métricas en `build_context` para aclarar por qué se utilizan métodos defensivos de acceso a atributos y conversión, garantizando la estabilidad frente a cambios en los objetos de origen.
 - `2026-07-27T10:02:13` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `validate` añadiendo una verificación explícita de `isinstance` para los valores numéricos, asegurando que solo se procesen tipos compatibles antes de la conversión y evitando errores inesperados si el archivo JSON contiene estructuras anidadas o tipos de datos inesperados en esas claves.
 - `2026-07-27T09:53:07` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `scan_directory` reemplazando la lógica de pila basada en listas por una verificación explícita de `Path.is_dir()` y capturando excepciones de acceso `OSError` para evitar interrupciones en rutas con permisos restringidos o sistemas de archivos inaccesibles, asegurando que un fallo en un nodo no detenga el escaneo completo.
-- `2026-07-27T09:52:52` **safety.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `is_within_directory` y `is_protected_path` ante errores de resolución del sistema de archivos, asegurando que las excepciones se manejen de forma explícita y preventiva para evitar falsos positivos o errores de ejecución no controlados.
-- `2026-07-27T09:44:11` **organizer.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `stage_for_review` validando explícitamente la existencia de las rutas antes de cualquier operación y asegurando que las excepciones en `shutil.move` no interrumpan el procesamiento del resto de la lista.

@@ -64,24 +64,21 @@ class StartupEntry:
         """
         Extrae la ruta base del ejecutable a partir de la línea de comando.
         
-        Elimina comillas, ignora argumentos adicionales y retorna el token inicial.
-        Retorna cadena vacía si no hay comando o si este está mal formado.
+        Lógica:
+        1. Si la línea empieza con comillas, extrae el contenido hasta la siguiente comilla.
+        2. Si no tiene comillas, retorna el primer token (separado por espacios).
         """
-        if not self.command:
+        raw_cmd: str = self.command.strip()
+        if not raw_cmd:
             return ""
         
-        cmd: str = self.command.strip()
-        cmd = cmd.strip('"')
+        # Caso 1: Ruta encapsulada en comillas (ej: "C:\App\prog.exe" /args)
+        if raw_cmd.startswith('"'):
+            end_quote: int = raw_cmd.find('"', 1)
+            return raw_cmd[1:end_quote] if end_quote > 0 else raw_cmd[1:]
         
-        if not cmd:
-            return ""
-            
-        if self.command.strip().startswith('"'):
-            end_quote_idx: int = self.command.find('"', 1)
-            return self.command[1:end_quote_idx] if end_quote_idx > 0 else self.command[1:]
-        
-        tokens: List[str] = cmd.split()
-        return tokens[0] if tokens else ""
+        # Caso 2: Ruta simple (sin comillas)
+        return raw_cmd.split()[0]
 
 
 def startup_folders() -> List[Path]:

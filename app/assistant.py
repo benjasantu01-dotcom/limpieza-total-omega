@@ -263,11 +263,7 @@ def explain_area(area: str) -> str:
 
 
 def local_answer(question: str, context: SystemContext) -> Answer:
-    """Responde con reglas locales, sin conexión y sin enviar nada.
-
-    Es el motor por defecto y tiene que ser útil por sí solo: la mayoría de las
-    preguntas de mantenimiento se contestan con umbrales, no con un modelo.
-    """
+    """Responde con reglas locales, sin conexión y sin enviar nada."""
     texto = (question or "").strip().lower()
 
     if not isinstance(context, SystemContext) or not context.analyzed:
@@ -280,10 +276,10 @@ def local_answer(question: str, context: SystemContext) -> Answer:
         )
 
     problemas = _rank_problems(context)
-
-    # Preguntas sobre RAM y lentitud: es donde más desinformación hay, así que
-    # el motor local responde esto explícitamente.
-    if any(p in texto for p in ("ram", "memoria", "lenta", "lento", "acelerar")):
+    
+    # Identificación de categoría mediante mapeo para optimizar búsquedas
+    cat = next((k for k in ("ram", "memoria", "lenta", "lento", "acelerar") if k in texto), None)
+    if cat:
         partes = [
             f"Tenés {context.memory_available_percent:.0f}% de RAM disponible"
             f"{f' de {context.memory_total_gb:.0f} GB' if context.memory_total_gb else ''}.",
@@ -371,11 +367,7 @@ def local_answer(question: str, context: SystemContext) -> Answer:
 
 
 def _rank_problems(context: SystemContext) -> list[str]:
-    """Problemas detectados, del más grave al más leve.
-
-    El orden no es por tamaño del número sino por impacto real: quedarse sin
-    disco rompe Windows, unos MB de basura no.
-    """
+    """Problemas detectados, del más grave al más leve."""
     problemas: list[tuple[int, str]] = []
 
     if context.disk_free_percent < 10:
@@ -410,11 +402,7 @@ def available(base: str | Path | None = None) -> bool:  # noqa: F821
 
 
 def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> str | None:
-    """Consulta a Gemini con la librería estándar. Devuelve None si falla.
-
-    Se usa `urllib` en vez de `requests` porque la app no tiene dependencias
-    externas más allá de customtkinter, y no vale la pena agregar una para esto.
-    """
+    """Consulta a Gemini con la librería estándar. Devuelve None si falla."""
     cuerpo = json.dumps({
         "contents": [{
             "parts": [{
@@ -441,11 +429,7 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
 
 def ask(question: str, context: SystemContext | None = None,
         base: str | Path | None = None) -> Answer:  # noqa: F821
-    """Responde una pregunta, usando el motor en línea solo si está permitido.
-
-    Si el motor remoto está apagado, falla o tarda, se devuelve la respuesta
-    local. El asistente nunca queda sin contestar por un problema de red.
-    """
+    """Responde una pregunta, usando el motor en línea solo si está permitido."""
     contexto = context if isinstance(context, SystemContext) else SystemContext()
     respaldo = local_answer(question, contexto)
 

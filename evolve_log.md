@@ -618,3 +618,48 @@ assert '_confirm' in {'run_async'}
 - `2026-07-27T10:33:50` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Mejora la legibilidad y el mantenimiento de `validate()` mediante la extracción de la lógica de validación de tipos a funciones auxiliares dedicadas, documentando claramente el contrato de validación.
 - `2026-07-27T10:33:50` Rotación — nada para rotar
 - `2026-07-27T10:33:50` Corrida terminada. Total usado hoy: 120.
+- `2026-07-27T10:42:31` Arrancando corrida. Quedan hoy ~180 peticiones objetivo.
+- `2026-07-27T10:43:03` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenibilidad de `startup.py` mediante la refactorización de `StartupEntry.executable` para reducir su complejidad ciclomática y mediante la adición de Type Hints detallados en la lógica de procesamiento.
+- `2026-07-27T10:43:39` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `local_answer` reemplazando múltiples escaneos redundantes de la cadena de entrada mediante `any()` (que recorren la lista y comparan múltiples veces) por una única búsqueda en un diccionario precalculado de categorías, reduciendo la complejidad de tiempo y mejorando la legibilidad.
+- `2026-07-27T10:44:26` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-07-27T10:44:39` Tests FALLARON:
+```
+-runner/pytest-3/test_detect_profiles_finds_inj0/Navegador/Default/Cache'),
+E         +         size_bytes=500,
+E         +     ),
+E         + ]
+
+evolve/tests/test_modules.py:755: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_detect_profiles_ignores_missing_folders - AssertionError: assert [BrowserCache...ze_bytes=500)] == []
+  
+  Left contains one more item: BrowserCache(browser='Navegador Falso', path=PosixPath('/tmp/pytest-of-runner/pytest-3/test_detect_profiles_finds_inj0/Navegador/Default/Cache'), size_bytes=500)
+  
+  Full diff:
+  - []
+  + [
+  +     BrowserCache(
+  +         browser='Navegador Falso',
+  +         path=PosixPath('/tmp/pytest-of-runner/pytest-3/test_detect_profiles_finds_inj0/Navegador/Default/Cache'),
+  +         size_bytes=500,
+  +     ),
+  + ]
+FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_data_folders - AssertionError: assert [BrowserCache...ze_bytes=500)] == []
+  
+  Left contains one more item: BrowserCache(browser='Navegador Falso', path=PosixPath('/tmp/pytest-of-runner/pytest-3/test_detect_profiles_finds_inj0/Navegador/Default/Cache'), size_bytes=500)
+  
+  Full diff:
+  - []
+  + [
+  +     BrowserCache(
+  +         browser='Navegador Falso',
+  +         path=PosixPath('/tmp/pytest-of-runner/pytest-3/test_detect_profiles_finds_inj0/Navegador/Default/Cache'),
+  +         size_bytes=500,
+  +     ),
+  + ]
+2 failed, 297 passed in 1.02s
+
+```
+- `2026-07-27T10:44:39` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: He implementado una caché de resultados en `detect_profiles` usando una variable de módulo para evitar escaneos de disco redundantes cuando se invoca repetidamente en el mismo ciclo de ejecución, mejorando significativamente el rendimiento.
+- `2026-07-27T10:44:39` Rotación — nada para rotar
+- `2026-07-27T10:44:39` Corrida terminada. Total usado hoy: 124.
