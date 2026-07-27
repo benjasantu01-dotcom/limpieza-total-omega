@@ -149,14 +149,6 @@ def all_drives_usage(mounts: Iterable[str] | None = None) -> list[DriveUsage]:
 def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Generator[tuple[Path, int], None, None]:
     """
     Genera tuplas (ruta_absoluta, tamaño_en_bytes) para cada archivo encontrado.
-    
-    Lógica de seguridad y recursión:
-    1. Resuelve la ruta base para asegurar integridad frente a manipulaciones.
-    2. Utiliza `os.walk` sobre el sistema de archivos.
-    3. Para cada directorio, verifica `is_protected_path`. Si es bloqueado:
-       - Si estamos en `root`, vaciamos `subdirs` para frenar la recursión.
-       - Si estamos procesando subdirectorios, filtramos `subdirs` in-place.
-    4. Implementa protección contra bucles (reparse points) verificando `lstat`.
     """
     if not directory:
         return
@@ -171,11 +163,9 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
         try:
             root_path = Path(root)
             
-            # Impedir escape de jerarquía mediante resolución absoluta
             if not str(root_path).startswith(str(base)):
                 continue
 
-            # Identificar reparse points / junctions en Windows
             if root_path.is_symlink() or (os.name == 'nt' and root_path.stat().st_reparse_tag != 0):
                 subdirs.clear()
                 continue
@@ -191,7 +181,6 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
                 try:
                     path = root_path / name
                     st = path.lstat()
-                    # Validación defensiva: evitar seguir punteros de enlace o reparse points
                     if path.is_symlink() or (os.name == 'nt' and getattr(st, 'st_reparse_tag', 0) != 0):
                         continue
                     if skip_protected and is_protected_path(path):
@@ -270,13 +259,7 @@ def total_size(directory: str | os.PathLike, skip_protected: bool = True) -> tup
 
 
 def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list[str]:
-    """
-    Genera un informe textual del uso de disco en el directorio especificado.
-    
-    Esta función utiliza una función generadora interna (`process_files`) para realizar
-    la acumulación de estadísticas en una sola pasada, evitando múltiples recorridos
-    de árbol de directorios que degradarían el rendimiento en discos mecánicos.
-    """
+    """Genera un informe textual del uso de disco en el directorio especificado."""
     if not directory:
         return ["Error: Ruta vacía."]
         
@@ -291,23 +274,25 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
     total_files: int = 0
     extension_map: dict[str, ExtensionUsage] = {}
     
-    def process_files(gen: Generator[tuple[Path, int], None, None]) -> Generator[tuple[int, Path], None, None]:
-        nonlocal total_bytes, total_files
-        for path, size in gen:
-            total_bytes += size
-            total_files += 1
-            
-            ext_name = path.suffix.lower() or "(sin extensión)"
-            if ext_name not in extension_map:
-                extension_map[ext_name] = ExtensionUsage(ext_name, 0, 0)
-            ext_data = extension_map[ext_name]
-            ext_data.size_bytes += size
-            ext_data.count += 1
-            yield (size, path)
+    # Mantenemos un heap de tamaño fijo para evitar cargar todos los archivos en RAM
+    top_8_files = []
 
-    all_files_snapshot = list(process_files(walk_files(path_obj, skip_protected)))
-    top_8_files = heapq.nlargest(8, all_files_snapshot, key=lambda x: x[0])
+    for path, size in walk_files(path_obj, skip_protected):
+        total_bytes += size
+        total_files += 1
             
+        ext_name = path.suffix.lower() or "(sin extensión)"
+        if ext_name not in extension_map:
+            extension_map[ext_name] = ExtensionUsage(ext_name, 0, 0)
+        ext_data = extension_map[ext_name]
+        ext_data.size_bytes += size
+        ext_data.count += 1
+        
+        # Mantenemos solo los 8 más grandes en el heap
+        heapq.heappush(top_8_files, (size, path))
+        if len(top_8_files) > 8:
+            heapq.heappop(top_8_files)
+
     lines = [
         f"Carpeta analizada: {path_obj}",
         f"Total: {format_size(total_bytes)} en {total_files} archivos",
@@ -321,7 +306,7 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
         
     lines.append("")
     lines.append("Archivos más grandes:")
-    for size, path in top_8_files:
+    for size, path in sorted(top_8_files, key=lambda x: x[0], reverse=True):
         lines.append(f"  {format_size(size):>10}  {path}")
         
     return lines

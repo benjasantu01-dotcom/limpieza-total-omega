@@ -109,16 +109,16 @@ def directory_size(path: str | os.PathLike) -> int:
     """
     if not path:
         return 0
-        
+    
     try:
-        p = Path(path).resolve(strict=True)
-        if not p.is_dir():
+        root_path = os.path.abspath(path)
+        if not os.path.isdir(root_path):
             return 0
-    except (OSError, RuntimeError):
+    except OSError:
         return 0
     
     total_bytes = 0
-    stack = [p]
+    stack = [root_path]
     
     while stack:
         current_dir = stack.pop()
@@ -128,12 +128,9 @@ def directory_size(path: str | os.PathLike) -> int:
                     try:
                         if entry.is_symlink():
                             continue
-                        
-                        if entry.is_dir(follow_symlinks=False):
-                            child_path = Path(entry.path)
-                            if _is_safe_path(child_path, p):
-                                stack.append(child_path.resolve())
-                        elif entry.is_file(follow_symlinks=False):
+                        if entry.is_dir():
+                            stack.append(entry.path)
+                        elif entry.is_file():
                             total_bytes += entry.stat().st_size
                     except (OSError, PermissionError):
                         continue

@@ -119,13 +119,16 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
         return {}
     groups: Dict[int, List[Path]] = defaultdict(list)
     for p in paths:
-        if not isinstance(p, Path) or not p.is_file():
+        if not isinstance(p, Path):
             continue
         try:
-            groups[p.stat().st_size].append(p)
+            # Usamos lstat para evitar resolución innecesaria de enlaces durante el conteo
+            stat = p.lstat()
+            if stat.st_size > 0:
+                groups[stat.st_size].append(p)
         except (OSError, PermissionError, FileNotFoundError, AttributeError):
             continue
-    return dict(groups)
+    return groups
 
 
 def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, skip_protected: bool) -> List[Path]:
@@ -141,33 +144,27 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
         if not directory:
             continue
         try:
-            base = Path(directory).expanduser().resolve()
+            base = Path(directory).expanduser()
             if not base.is_dir():
-                continue
-            if skip_protected and is_protected_path(base):
                 continue
             
             for root, subdirs, files in os.walk(base):
-                root_path = Path(root).resolve()
-                
-                # Evitar procesamiento de directorios fuera de la jerarquía original
-                if not str(root_path).startswith(str(base)):
-                    subdirs.clear()
-                    continue
+                root_path = Path(root)
                 
                 if skip_protected and is_protected_path(root_path):
                     subdirs.clear()
                     continue
                     
                 for name in files:
+                    candidate = root_path / name
                     try:
-                        candidate = (root_path / name).resolve()
-                        if candidate.is_symlink() or not candidate.is_file():
+                        # Usar lstat para evitar seguir symlinks o resolver rutas costosas
+                        st = candidate.lstat()
+                        if not (st.st_size >= min_size and os.path.isfile(candidate)):
                             continue
                         if skip_protected and is_protected_path(candidate):
                             continue
-                        if candidate.stat().st_size >= max(min_size, 1):
-                            candidates.append(candidate)
+                        candidates.append(candidate)
                     except (OSError, PermissionError, FileNotFoundError):
                         continue
         except (OSError, RuntimeError, FileNotFoundError):

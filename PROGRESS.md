@@ -16,22 +16,22 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-26 | 116 | 5 | 12 | 2 | 37 |
-| 2026-07-27 | 144 | 16 | 18 | 3 | 151 |
+| 2026-07-26 | 113 | 5 | 12 | 2 | 36 |
+| 2026-07-27 | 147 | 16 | 18 | 3 | 152 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **79**
-- manejo de errores y validación de entradas: **56**
+- manejo de errores y validación de entradas: **53**
 - seguridad defensiva: **46**
-- rendimiento: **41**
+- rendimiento: **44**
 - robustez ante casos límite: **38**
 
 ## Mejoras aceptadas por archivo
 
 - `browser.py`: **25**
-- `diskreport.py`: **23**
 - `organizer.py`: **23**
+- `diskreport.py`: **23**
 - `safety.py`: **22**
 - `duplicates.py`: **21**
 - `scanner.py`: **20**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-27T19:46:22` **duplicates.py** (rendimiento): Optimicé el rendimiento de `group_by_size` eliminando la creación de una lista intermedia y el llamado a `dict()` innecesario, y mejoré `_collect_candidates` para evitar la llamada redundante a `resolve()` (que es costosa al tocar el sistema de archivos) moviendo el chequeo de symlinks a una verificación más directa.
+- `2026-07-27T19:46:14` **diskreport.py** (rendimiento): Optimicé el método `summarize` eliminando la creación de una lista completa en memoria (`all_files_snapshot`) para el cálculo de los archivos más grandes, utilizando en su lugar un `heapq` que mantiene solo los N elementos necesarios, reduciendo drásticamente el consumo de RAM en directorios con miles de archivos.
+- `2026-07-27T19:45:50` **browser.py** (rendimiento): Optimicé el rendimiento de `directory_size` eliminando la resolución de rutas (`.resolve()`) dentro del bucle de escaneo, la cual es una operación costosa de E/S, y utilizando `os.path.join` y `os.scandir` de forma más directa para reducir la sobrecarga de crear múltiples objetos `Path` en directorios grandes.
 - `2026-07-27T19:36:06` **assistant.py** (rendimiento): Optimicé el diccionario de `handlers` en `local_answer` convirtiéndolo en un `dict` constante a nivel de módulo, evitando que se re-instancie en cada llamada a la función, y utilicé `dict.get()` con una búsqueda de palabras clave más eficiente para reducir el impacto de las iteraciones.
 - `2026-07-27T19:35:50` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la adición de Type Hints faltantes (especialmente en el generador interno y retornos de funciones) y clarifiqué las docstrings de `entries_from_folders` y `parse_registry_csv` para describir mejor la lógica de seguridad y el formato de datos procesado.
 - `2026-07-27T19:35:27` **settings.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo integrando Type Hints específicos en las funciones de validación y enriqueciendo los docstrings para aclarar el contrato de datos entre `validate()` y las funciones de coerción, garantizando así mayor claridad sobre cómo se manejan los valores corruptos.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-27T19:14:57` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings que explican las constantes de normalización (umbrales) y tipé explícitamente los retornos de las funciones de puntuación para mejorar la mantenibilidad.
 - `2026-07-27T19:14:34` **duplicates.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos en los métodos de filtrado y recolección, clarificando la lógica de "short-circuit" y garantizando consistencia en los tipos de retorno para mejorar la mantenibilidad.
 - `2026-07-27T19:05:28` **diskreport.py** (legibilidad y documentación): Mejoré la documentación de `walk_files` y `summarize` para aclarar el flujo de control y las decisiones técnicas, además de añadir type hints explícitos en las lambdas y variables internas para facilitar la auditoría del código.
-- `2026-07-27T19:05:19` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación técnica interna mediante la adición de docstrings estructurados y type hints aclaratorios, además de extraer la lógica de resolución de rutas en `directory_size` a una función auxiliar interna `_is_safe_path` para garantizar la consistencia en el cumplimiento de las reglas de seguridad.
-- `2026-07-27T19:04:29` **assistant.py** (legibilidad y documentación): Documenté con docstrings las funciones internas de `ask` y `build_context` para clarificar su rol en el flujo de datos seguro, alineándome con el enfoque de legibilidad técnica sin alterar la lógica.
-- `2026-07-27T18:55:04` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo validación de tipo y contenido para los componentes del CSV, evitando que el motor falle ante líneas con formato inesperado o valores vacíos que podrían romper la lógica de procesamiento.
