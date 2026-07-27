@@ -163,13 +163,6 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
     """
     Mueve los archivos detectados a una carpeta de cuarentena para revisión humana.
     Realiza validaciones de seguridad: Path Traversal, archivos bloqueados y directorios protegidos.
-
-    Args:
-        files: Lista de objetos JunkFile identificados como basura.
-        review_dir: Ruta donde se centralizarán los archivos para revisión.
-
-    Returns:
-        Path: Ruta absoluta al directorio de revisión utilizado.
     """
     if not files or not isinstance(files, list):
         logger.warning("La lista de archivos a organizar está vacía o es inválida.")
@@ -188,17 +181,20 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             continue
             
         try:
-            if not jf.path.exists() or not jf.path.is_file():
-                continue
-            
             full_source_path = jf.path.resolve()
             
-            if not is_safe_to_modify(full_source_path) or not is_safe_to_modify(dest):
-                continue
-                
-            if dest == full_source_path.parent or dest in full_source_path.parents:
+            # Validaciones de seguridad estrictas
+            if not full_source_path.exists() or not full_source_path.is_file():
                 continue
             
+            # Impedir mover a sí mismo o bucles de recursión lógica
+            if dest == full_source_path or dest in full_source_path.parents or full_source_path == dest.parent:
+                continue
+                
+            if not is_safe_to_modify(full_source_path) or not is_safe_to_modify(dest):
+                continue
+            
+            # Comprobar si está en uso (lectura exclusiva)
             try:
                 with open(full_source_path, 'rb'):
                     pass

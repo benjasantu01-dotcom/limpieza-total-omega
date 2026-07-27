@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **251** (49.8% de aceptación)
+- Mejoras aceptadas: **248** (49.2% de aceptación)
 - Rechazadas por tests: 21
-- Rechazadas por guardia de seguridad: 29
+- Rechazadas por guardia de seguridad: 30
 - Sin cambios (nada sustancial que mejorar): 5
-- Sin respuesta de la IA (error o límite): 198
+- Sin respuesta de la IA (error o límite): 200
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-26 | 126 | 5 | 13 | 2 | 50 |
-| 2026-07-27 | 125 | 16 | 16 | 3 | 148 |
+| 2026-07-26 | 122 | 5 | 13 | 2 | 50 |
+| 2026-07-27 | 126 | 16 | 17 | 3 | 150 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **66**
-- seguridad defensiva: **55**
-- manejo de errores y validación de entradas: **52**
+- manejo de errores y validación de entradas: **53**
+- seguridad defensiva: **51**
 - rendimiento: **40**
 - robustez ante casos límite: **38**
 
 ## Mejoras aceptadas por archivo
 
 - `browser.py`: **24**
-- `organizer.py`: **22**
+- `organizer.py`: **23**
 - `diskreport.py`: **22**
-- `duplicates.py`: **21**
 - `safety.py`: **21**
-- `healthscore.py`: **19**
-- `main.py`: **19**
+- `duplicates.py`: **20**
 - `scanner.py`: **19**
-- `memory.py`: **18**
+- `main.py`: **18**
+- `healthscore.py`: **18**
 - `quarantine.py`: **17**
+- `memory.py`: **17**
 - `startup.py`: **16**
 - `branding.py`: **14**
 - `assistant.py`: **11**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-27T18:44:00` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` validando que la ruta de destino no sea una subruta del origen ni un directorio protegido, y añadiendo comprobaciones de tipos y estados para evitar excepciones inesperadas al procesar la lista de archivos.
 - `2026-07-27T18:34:48` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `on_trim_process` y `on_restore_quarantine` validando los campos de entrada antes de operar y capturando errores de conversión o inexistencia, evitando que excepciones sin control lleguen a los hilos de ejecución.
 - `2026-07-27T18:34:05` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` validando explícitamente que los resultados de las funciones de puntuación (`ratios`) no sean valores `NaN` (causados por posibles divisiones por cero en futuras ediciones) y asegurando la integridad del diccionario `breakdown` mediante un acceso defensivo a `WEIGHTS`.
 - `2026-07-27T18:33:42` **duplicates.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `suggest_keeper` y `reclaimable_bytes` validando la integridad del estado interno antes de procesar, y se reemplazó el uso de una lógica de comparación potencialmente inestable en `suggest_keeper` por un manejo de errores más explícito, asegurando que ante una excepción de acceso a metadatos el sistema devuelva un resultado seguro.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-27T16:31:00` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva en `directory_size` y `_is_valid_cache_path` mediante la validación de prefijos con `is_relative_to` tras la resolución de rutas, asegurando que el escaneo nunca escape del directorio base mediante manipulación de `..` o enlaces simbólicos malintencionados.
 - `2026-07-27T16:30:38` **branding.py** (seguridad defensiva): Mejoré la seguridad en `save_logo_svg` al aplicar `ensure_safe_to_modify` para el archivo de destino, garantizando que cualquier operación de escritura sea validada explícitamente y bloqueada mediante excepción si viola las reglas de seguridad, sustituyendo el check booleano previo que no garantizaba protección ante condiciones de carrera o intentos de escritura fuera de los límites permitidos.
 - `2026-07-27T16:30:10` **assistant.py** (seguridad defensiva): Se endureció la validación en `build_context` para asegurar que ningún campo inyectado dinámicamente mediante `**extra` pueda contener tipos no permitidos o valores fuera de rango, protegiendo la integridad del contexto enviado al asistente.
-- `2026-07-27T16:20:46` **startup.py** (robustez ante casos límite): Se mejora la robustez de `StartupEntry.executable` manejando casos donde el comando contiene comillas desbalanceadas o rutas mal formadas (ej: solo una comilla de apertura sin cierre), evitando errores de indexación y retornos inesperados.
