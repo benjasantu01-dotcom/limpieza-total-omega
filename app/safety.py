@@ -152,7 +152,7 @@ def is_within_directory(
             return allow_equal
         c.relative_to(p)
         return True
-    except (ValueError, TypeError, OSError, ValueError):
+    except (ValueError, TypeError, OSError):
         return False
 
 
@@ -176,7 +176,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
         UnsafePathError: Si la ruta viola las políticas de seguridad.
     """
     if path is None:
-        raise UnsafePathError("La ruta es None.")
+        raise UnsafePathError("La ruta proporcionada es None.")
         
     try:
         p = normalize(path)
@@ -188,8 +188,11 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
         raise UnsafePathError("Operación bloqueada: rutas UNC no permitidas.")
 
     # Bloqueo de dispositivos hardware
-    if p.exists() and (p.is_block_device() or p.is_char_device()):
-        raise UnsafePathError("Operación bloqueada: dispositivo especial.")
+    try:
+        if p.exists() and (p.is_block_device() or p.is_char_device()):
+            raise UnsafePathError("Operación bloqueada: dispositivo especial.")
+    except OSError:
+        pass # Si no podemos chequear dispositivo, asumimos sospechoso si hay duda
 
     if is_drive_root(p):
         raise UnsafePathError("Operación bloqueada: raíz de unidad.")

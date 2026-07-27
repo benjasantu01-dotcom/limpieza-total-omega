@@ -1570,3 +1570,40 @@ FAILED evolve/tests/test_modules.py::test_low_disk_produces_a_specific_recommend
 - `2026-07-27T07:19:58` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se mejora la robustez en `quarantine_file` y `restore_item` validando explícitamente que las rutas procesadas sean archivos reales y no directorios antes de operar sobre ellos, evitando excepciones genéricas de `shutil.move` en casos de directorios mal formados o enlaces simbólicos.
 - `2026-07-27T07:19:58` Rotación — nada para rotar
 - `2026-07-27T07:19:58` Corrida terminada. Total usado hoy: 44.
+- `2026-07-27T07:28:40` Arrancando corrida. Quedan hoy ~256 peticiones objetivo.
+- `2026-07-27T07:29:00` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-07-27T07:29:24` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `is_within_directory` y `ensure_safe_to_modify` añadiendo validaciones preventivas de tipos y excepciones específicas para evitar errores en tiempo de ejecución al manipular objetos `Path` nulos o mal formados.
+- `2026-07-27T07:29:45` Tests FALLARON:
+```
+========================
+_____________ test_scanner_flags_system_lookalike_outside_system32 _____________
+
+    def test_scanner_flags_system_lookalike_outside_system32():
+        # Se usa PureWindowsPath a propósito: los tests corren en Linux (GitHub
+        # Actions) y ahí un Path normal no reconoce las barras invertidas, así
+        # que `.name` devolvería la ruta entera y el test fallaría siempre.
+        result = scanner.check_system_lookalike(PureWindowsPath(r"C:\Users\test\Downloads\svchost.exe"))
+>       assert result is not None
+E       assert None is not None
+
+evolve/tests/test_basic.py:201: AssertionError
+________________ test_scanner_lookalike_logic_is_os_independent ________________
+
+    def test_scanner_lookalike_logic_is_os_independent():
+        # La misma heurística tiene que valer con rutas estilo POSIX, para que el
+        # resultado no dependa de en qué sistema corran los tests.
+        flagged = scanner.check_system_lookalike(PurePosixPath("/home/user/Downloads/svchost.exe"))
+>       assert flagged is not None and flagged.severity == "warning"
+E       assert (None is not None)
+
+evolve/tests/test_basic.py:213: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_scanner_flags_system_lookalike_outside_system32 - assert None is not None
+FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independent - assert (None is not None)
+2 failed, 233 passed in 0.57s
+
+```
+- `2026-07-27T07:29:45` ❌ Mejora descartada en scanner.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez de `scan_directory` y `check_system_lookalike` reemplazando capturas de excepciones genéricas o inexistentes por validaciones de tipo explícitas y manejo específico de errores de acceso, asegurando que la ruta sea un objeto `Path` válido antes de operar.
+- `2026-07-27T07:29:53` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-07-27T07:29:53` Rotación — nada para rotar
+- `2026-07-27T07:29:53` Corrida terminada. Total usado hoy: 48.
