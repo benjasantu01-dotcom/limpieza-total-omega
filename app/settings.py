@@ -207,13 +207,16 @@ def save(values: Any, base: str | Path | None = None) -> Path | None:
     limpio = validate(values)
     try:
         ruta.parent.mkdir(parents=True, exist_ok=True)
+        # Verificar permisos antes de intentar escribir sobre el archivo existente
+        if ruta.exists() and not os.access(ruta, os.W_OK):
+            return None
         ruta.write_text(
             json.dumps(limpio, indent=2, ensure_ascii=False),
             encoding="utf-8",
         )
         _cached_settings = limpio
         return ruta
-    except OSError:
+    except (OSError, PermissionError):
         return None
 
 

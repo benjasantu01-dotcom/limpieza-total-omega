@@ -75,11 +75,12 @@ class StartupEntry:
         # Caso 1: Ruta encapsulada en comillas (ej: "C:\App\prog.exe" /args)
         if raw_cmd.startswith('"'):
             end_quote: int = raw_cmd.find('"', 1)
-            # Validamos que encontramos un par válido de comillas
-            return raw_cmd[1:end_quote] if end_quote > 1 else raw_cmd[1:]
+            # Retorna el contenido entre comillas si es válido, sino el resto de la cadena
+            return raw_cmd[1:end_quote] if end_quote != -1 else raw_cmd[1:]
         
         # Caso 2: Ruta simple (sin comillas)
-        return raw_cmd.split()[0]
+        parts = raw_cmd.split()
+        return parts[0] if parts else ""
 
 
 def startup_folders() -> List[Path]:

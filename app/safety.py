@@ -96,9 +96,9 @@ def _contains_protected_name(path: Path) -> bool:
 def is_drive_root(path: PathLike) -> bool:
     r"""Verifica si la ruta apunta a la raíz de un volumen (ej. C:\ o /)."""
     try:
-        p = normalize(path)
-        return p.parent == p or str(p) == p.anchor
-    except (ValueError, TypeError):
+        p = Path(path).resolve()
+        return p == Path(p.anchor)
+    except (ValueError, TypeError, OSError):
         return False
 
 
@@ -179,6 +179,8 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
         raise UnsafePathError("Operación bloqueada: rutas UNC no permitidas.")
 
     try:
+        if p.is_symlink():
+            raise UnsafePathError("Operación bloqueada: enlaces simbólicos no permitidos.")
         if p.exists() and (p.is_block_device() or p.is_char_device()):
             raise UnsafePathError("Operación bloqueada: dispositivo especial.")
     except OSError:

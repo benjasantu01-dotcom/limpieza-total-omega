@@ -15,6 +15,7 @@ from __future__ import annotations
 import subprocess
 import re
 import logging
+import os
 from dataclasses import dataclass
 from pathlib import Path
 from datetime import datetime, timedelta
@@ -133,7 +134,6 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
         
     try:
         root: Path = Path(directory).resolve()
-        # Se verifica la protección antes de cualquier operación de I/O
         if is_protected_path(root):
             return []
             
@@ -146,16 +146,20 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
             current_dir = stack.pop()
             try:
                 for entry in current_dir.iterdir():
-                    # Filtrado de seguridad: se omiten enlaces simbólicos para prevenir 
-                    # ciclos infinitos o saltos fuera del directorio objetivo
-                    if is_protected_path(entry) or entry.is_symlink():
+                    # Filtrado de seguridad: se omiten symlinks y junctions (puntos de reparse)
+                    # para prevenir ciclos infinitos o saltos fuera del directorio objetivo.
+                    if is_protected_path(entry):
                         continue
+                    
+                    st = entry.lstat()
+                    if bool(st.st_file_attributes & 0x400) or entry.is_symlink():
+                        continue
+                        
                     if entry.is_dir():
                         stack.append(entry)
                     elif entry.is_file():
                         results.extend(scan_file(entry))
             except (PermissionError, OSError):
-                # Omitir errores de acceso a carpetas específicas sin abortar el escaneo completo
                 continue
         return results
     except (OSError, RuntimeError) as e:
