@@ -26,7 +26,7 @@ El panel de Salud usa un medidor circular y barras por área en vez de solo
 texto, porque el objetivo es que el estado del sistema se entienda sin leer.
 
 RENDIMIENTO
------------
+------------------
 Los análisis del panel de Salud se lanzan en paralelo (`ThreadPoolExecutor`):
 son todos independientes y dominados por espera de disco, así que en conjunto
 tardan lo que el más lento en vez de la suma de todos.
@@ -356,7 +356,16 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.gauge.grid(row=0, column=0, padx=(4, 22))
         self._draw_gauge(0, "-")
 
-        areas = ctk.CTkFrame(centro, fg_color="transparent")
+        self._build_health_area_bars(centro)
+
+        self._hint(tab, "Combina limpieza, seguridad, memoria, disco y arranque en un solo "
+                        "puntaje. Es un análisis de solo lectura: no modifica nada. Las áreas "
+                        "corren en paralelo, así que tarda lo que la más lenta, no la suma.")
+        self._make_output("Salud", tab)
+
+    def _build_health_area_bars(self, parent: ctk.CTk):
+        """Crea los indicadores de progreso (barras) para cada sub-área de salud."""
+        areas = ctk.CTkFrame(parent, fg_color="transparent")
         areas.grid(row=0, column=1, sticky="ew")
         areas.grid_columnconfigure(1, weight=1)
         for fila, (clave, etiqueta) in enumerate(HEALTH_AREAS):
@@ -379,11 +388,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             )
             valor.grid(row=fila, column=2, sticky="e", pady=4)
             self.area_bars[clave] = (barra, valor)
-
-        self._hint(tab, "Combina limpieza, seguridad, memoria, disco y arranque en un solo "
-                        "puntaje. Es un análisis de solo lectura: no modifica nada. Las áreas "
-                        "corren en paralelo, así que tarda lo que la más lenta, no la suma.")
-        self._make_output("Salud", tab)
 
     def _metric_card(self, parent: ctk.CTk, title: str, column: int) -> ctk.CTkLabel:
         """Tarjeta con un número grande y su etiqueta. Devuelve la etiqueta del valor."""

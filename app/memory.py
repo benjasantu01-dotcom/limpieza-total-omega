@@ -236,7 +236,7 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
     Genera un reporte textual descriptivo basado en el estado actual de la memoria.
     Args:
         snapshot: El estado de memoria capturado.
-        processes: Lista opcional de procesos (usado para identificar los más pesados).
+        processes: Lista opcional de procesos para identificar los más pesados.
     Returns:
         Lista de líneas de texto legibles para el usuario.
     """
@@ -286,12 +286,12 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     try:
         import ctypes
 
-        # Privilegios mínimos: solo requerimos SET_QUOTA (para EmptyWorkingSet) 
-        # y QUERY_LIMITED_INFORMATION para validar el handle.
-        PROCESS_SET_QUOTA = 0x0100
-        PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
+        # Constantes de acceso para OpenProcess según Win32 API
+        WIN_PROCESS_SET_QUOTA = 0x0100
+        WIN_PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
+        
         handle = ctypes.windll.kernel32.OpenProcess(
-            PROCESS_SET_QUOTA | PROCESS_QUERY_LIMITED_INFORMATION, False, target_pid
+            WIN_PROCESS_SET_QUOTA | WIN_PROCESS_QUERY_LIMITED_INFORMATION, False, target_pid
         )
         if not handle:
             return False, f"No se pudo abrir el proceso {target_pid} (¿permisos insuficientes?)."

@@ -106,33 +106,33 @@ def _to_int(value: Any, default: int = 0) -> int:
 
 
 def score_junk(junk_mb: float) -> float:
-    """Puntúa archivos basura: escala lineal donde 0MB es 1.0 y 5000MB es 0.0."""
+    """Puntúa archivos basura (0.0 a 1.0): escala lineal donde 5000MB es el límite crítico."""
     return _clamp(1.0 - (junk_mb / 5000.0))
 
 
 def score_security(suspicious_count: int, warnings: int = 0) -> float:
-    """Puntúa seguridad: aplica penalizaciones ponderadas."""
+    """Puntúa seguridad (0.0 a 1.0): penaliza hallazgos (5%) y advertencias (25%)."""
     penalty = (suspicious_count * 0.05) + (warnings * 0.25)
     return _clamp(1.0 - penalty)
 
 
 def score_memory(available_percent: float) -> float:
-    """Puntúa disponibilidad de RAM: normaliza respecto al objetivo óptimo del 35%."""
+    """Puntúa RAM (0.0 a 1.0): el umbral óptimo de disponibilidad es 35%."""
     return _clamp(available_percent / 35.0)
 
 
 def score_disk(free_percent: float) -> float:
-    """Puntúa espacio libre: normaliza respecto al umbral de salud del 25%."""
+    """Puntúa espacio (0.0 a 1.0): el umbral crítico es 25% de disco libre."""
     return _clamp(free_percent / 25.0)
 
 
 def score_duplicates(duplicate_mb: float) -> float:
-    """Puntúa duplicados: escala lineal con penalización máxima a 2000MB."""
+    """Puntúa duplicados (0.0 a 1.0): escala lineal con penalización máxima a 2000MB."""
     return _clamp(1.0 - (duplicate_mb / 2000.0))
 
 
 def score_startup(startup_count: int) -> float:
-    """Puntúa programas de inicio: penalización lineal hasta 20 entradas."""
+    """Puntúa inicio (0.0 a 1.0): penalización lineal, el umbral de sobrecarga es 20 entradas."""
     return _clamp(1.0 - (startup_count / 20.0))
 
 

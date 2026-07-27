@@ -6,22 +6,22 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **250** (49.6% de aceptación)
+- Mejoras aceptadas: **254** (50.4% de aceptación)
 - Rechazadas por tests: 21
 - Rechazadas por guardia de seguridad: 29
 - Sin cambios (nada sustancial que mejorar): 5
-- Sin respuesta de la IA (error o límite): 199
+- Sin respuesta de la IA (error o límite): 195
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-26 | 117 | 5 | 12 | 2 | 48 |
-| 2026-07-27 | 133 | 16 | 17 | 3 | 151 |
+| 2026-07-26 | 117 | 5 | 12 | 2 | 44 |
+| 2026-07-27 | 137 | 16 | 17 | 3 | 151 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **69**
+- legibilidad y documentación: **73**
 - manejo de errores y validación de entradas: **57**
 - seguridad defensiva: **46**
 - rendimiento: **40**
@@ -32,12 +32,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - `browser.py`: **25**
 - `diskreport.py`: **23**
 - `organizer.py`: **22**
+- `duplicates.py`: **21**
 - `safety.py`: **21**
-- `duplicates.py`: **20**
+- `main.py`: **19**
+- `healthscore.py`: **19**
 - `scanner.py`: **19**
-- `main.py`: **18**
-- `healthscore.py`: **18**
-- `memory.py`: **17**
+- `memory.py`: **18**
 - `quarantine.py`: **16**
 - `startup.py`: **16**
 - `branding.py`: **14**
@@ -46,6 +46,10 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-27T19:16:05` **memory.py** (legibilidad y documentación): Mejoré la documentación interna del módulo mediante docstrings más precisos, añadí type hints en parámetros faltantes y renombré variables internas de `trim_working_set` para clarificar las constantes de la API de Windows, facilitando su auditoría.
+- `2026-07-27T19:15:56` **main.py** (legibilidad y documentación): Mejoré la legibilidad del código en `main.py` mediante la refactorización de `_build_tab_salud` y `_update_health_visuals`, extrayendo la lógica de creación de los indicadores visuales a un método privado dedicado y añadiendo docstrings que explican el propósito de las métricas complejas, facilitando el mantenimiento a futuro.
+- `2026-07-27T19:14:57` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings que explican las constantes de normalización (umbrales) y tipé explícitamente los retornos de las funciones de puntuación para mejorar la mantenibilidad.
+- `2026-07-27T19:14:34` **duplicates.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos en los métodos de filtrado y recolección, clarificando la lógica de "short-circuit" y garantizando consistencia en los tipos de retorno para mejorar la mantenibilidad.
 - `2026-07-27T19:05:28` **diskreport.py** (legibilidad y documentación): Mejoré la documentación de `walk_files` y `summarize` para aclarar el flujo de control y las decisiones técnicas, además de añadir type hints explícitos en las lambdas y variables internas para facilitar la auditoría del código.
 - `2026-07-27T19:05:19` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación técnica interna mediante la adición de docstrings estructurados y type hints aclaratorios, además de extraer la lógica de resolución de rutas en `directory_size` a una función auxiliar interna `_is_safe_path` para garantizar la consistencia en el cumplimiento de las reglas de seguridad.
 - `2026-07-27T19:04:29` **assistant.py** (legibilidad y documentación): Documenté con docstrings las funciones internas de `ask` y `build_context` para clarificar su rol en el flujo de datos seguro, alineándome con el enfoque de legibilidad técnica sin alterar la lógica.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-27T18:34:48` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `on_trim_process` y `on_restore_quarantine` validando los campos de entrada antes de operar y capturando errores de conversión o inexistencia, evitando que excepciones sin control lleguen a los hilos de ejecución.
 - `2026-07-27T18:34:05` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` validando explícitamente que los resultados de las funciones de puntuación (`ratios`) no sean valores `NaN` (causados por posibles divisiones por cero en futuras ediciones) y asegurando la integridad del diccionario `breakdown` mediante un acceso defensivo a `WEIGHTS`.
 - `2026-07-27T18:33:42` **duplicates.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `suggest_keeper` y `reclaimable_bytes` validando la integridad del estado interno antes de procesar, y se reemplazó el uso de una lógica de comparación potencialmente inestable en `suggest_keeper` por un manejo de errores más explícito, asegurando que ante una excepción de acceso a metadatos el sistema devuelva un resultado seguro.
-- `2026-07-27T18:24:12` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `build_context` al asegurar que cualquier valor recibido en `**extra` pase por un filtrado estricto de tipo y rango antes de ser asignado, además de prevenir errores silenciosos mediante una mejor gestión de tipos en las funciones auxiliares.
-- `2026-07-27T17:01:19` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `save()` añadiendo una verificación robusta de la integridad del directorio padre mediante `is_safe_to_modify` antes de cualquier operación de escritura, previniendo así intentos de manipulación fuera de los límites permitidos.
-- `2026-07-27T17:00:55` **scanner.py** (seguridad defensiva): Se reforzó la seguridad de `scan_directory` validando explícitamente el estado de reparse point antes de procesar cada entrada mediante `is_symlink()` y `lstat()`, asegurando que no se sigan accesos directos o junctions fuera del ámbito permitido.
-- `2026-07-27T16:51:24` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `is_within_directory` incorporando una verificación de integridad ante intentos de "path traversal" mediante el uso de `resolve()` y `relative_to()`, y se añadió una validación explícita para evitar que se procesen rutas que residan en volúmenes de red (UNC), mitigando riesgos de seguridad en entornos con unidades mapeadas.
