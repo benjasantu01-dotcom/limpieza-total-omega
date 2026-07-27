@@ -150,6 +150,7 @@ def is_within_directory(
         c, p = normalize(child), normalize(parent)
         if c == p:
             return allow_equal
+        # relative_to lanza ValueError si no es subdirectorio
         c.relative_to(p)
         return True
     except (ValueError, TypeError, OSError):

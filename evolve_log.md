@@ -548,3 +548,10 @@ FAILED evolve/tests/test_modules.py::test_score_color_survives_garbage - Asserti
 - `2026-07-27T09:44:11` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `stage_for_review` validando explícitamente la existencia de las rutas antes de cualquier operación y asegurando que las excepciones en `shutil.move` no interrumpan el procesamiento del resto de la lista.
 - `2026-07-27T09:44:11` Rotación — nada para rotar
 - `2026-07-27T09:44:11` Corrida terminada. Total usado hoy: 100.
+- `2026-07-27T09:51:35` Arrancando corrida. Quedan hoy ~200 peticiones objetivo.
+- `2026-07-27T09:52:03` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: manejo de errores y validación de entradas).
+- `2026-07-27T09:52:22` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 112): unterminated string literal (detected at line 112)
+- `2026-07-27T09:52:52` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `is_within_directory` y `is_protected_path` ante errores de resolución del sistema de archivos, asegurando que las excepciones se manejen de forma explícita y preventiva para evitar falsos positivos o errores de ejecución no controlados.
+- `2026-07-27T09:53:07` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `scan_directory` reemplazando la lógica de pila basada en listas por una verificación explícita de `Path.is_dir()` y capturando excepciones de acceso `OSError` para evitar interrupciones en rutas con permisos restringidos o sistemas de archivos inaccesibles, asegurando que un fallo en un nodo no detenga el escaneo completo.
+- `2026-07-27T09:53:07` Rotación — nada para rotar
+- `2026-07-27T09:53:07` Corrida terminada. Total usado hoy: 104.

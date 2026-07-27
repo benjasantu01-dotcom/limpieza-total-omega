@@ -145,7 +145,7 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
             except (PermissionError, OSError):
                 continue
         return results
-    except Exception as e:
+    except (OSError, RuntimeError) as e:
         logger.error("Error crítico al inicializar el escaneo en %s: %s", directory, e)
         return []
 
