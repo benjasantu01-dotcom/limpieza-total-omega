@@ -781,3 +781,10 @@ FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - Asse
 - `2026-07-27T12:06:11` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `_collect_candidates` integrando una validación explícita mediante `is_protected_path` sobre la ruta resuelta antes de iterar, asegurando que no se acceda a directorios bloqueados a nivel de sistema incluso si los mismos no aparecen como enlaces simbólicos o jerarquías maliciosas.
 - `2026-07-27T12:06:11` Rotación — nada para rotar
 - `2026-07-27T12:06:11` Corrida terminada. Total usado hoy: 156.
+- `2026-07-27T12:14:15` Arrancando corrida. Quedan hoy ~144 peticiones objetivo.
+- `2026-07-27T12:14:42` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la robustez de `SystemMetrics.validate` y la seguridad de los cálculos numéricos ante entradas inesperadas, implementando una validación explícita para evitar estados inconsistentes en los contadores (`int`) que podrían corromper la lógica de `compute_score`.
+- `2026-07-27T12:15:50` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_ask_folder` reemplazando la verificación simple por `is_protected_path` con un chequeo robusto que utiliza `ensure_safe_to_modify` para evitar que la aplicación interactúe con rutas críticas, previniendo errores de permisos o modificaciones accidentales en directorios del sistema.
+- `2026-07-27T12:16:22` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
+- `2026-07-27T12:16:41` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `stage_for_review` al verificar que la ruta de origen sea una subruta efectiva dentro del contexto permitido, evitando movimientos involuntarios mediante ataques de recorrido de directorio (Path Traversal) o rutas ambiguas.
+- `2026-07-27T12:16:41` Rotación — nada para rotar
+- `2026-07-27T12:16:41` Corrida terminada. Total usado hoy: 160.

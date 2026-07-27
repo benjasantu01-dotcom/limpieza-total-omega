@@ -56,19 +56,16 @@ class SystemMetrics:
     quarantined_count: int = 0
 
     def validate(self) -> None:
-        """Normaliza los tipos de datos internos para evitar errores en cálculos matemáticos."""
-        # Tupla de campos con su tipo esperado para evitar reflexión constante
-        fields_to_fix = (
-            ('junk_mb', float), ('suspicious_count', int), ('suspicious_warnings', int),
-            ('memory_available_percent', float), ('disk_free_percent', float),
-            ('duplicate_mb', float), ('startup_count', int), ('quarantined_count', int)
-        )
-        for name, f_type in fields_to_fix:
-            val = getattr(self, name)
-            if f_type is float:
-                setattr(self, name, _to_float(val))
-            else:
-                setattr(self, name, _to_int(val))
+        """Normaliza los valores internos para evitar estados inválidos en los cálculos."""
+        # Asegurar que los contadores no sean negativos y los tipos sean correctos
+        self.junk_mb = max(0.0, _to_float(self.junk_mb))
+        self.suspicious_count = max(0, _to_int(self.suspicious_count))
+        self.suspicious_warnings = max(0, _to_int(self.suspicious_warnings))
+        self.memory_available_percent = _clamp(_to_float(self.memory_available_percent), 0.0, 100.0)
+        self.disk_free_percent = _clamp(_to_float(self.disk_free_percent), 0.0, 100.0)
+        self.duplicate_mb = max(0.0, _to_float(self.duplicate_mb))
+        self.startup_count = max(0, _to_int(self.startup_count))
+        self.quarantined_count = max(0, _to_int(self.quarantined_count))
 
 
 @dataclass
@@ -86,7 +83,7 @@ class HealthResult:
 
 
 def _clamp(value: float, low: float = 0.0, high: float = 1.0) -> float:
-    """Acota un valor al rango [0.0, 1.0] para estandarizar ratios de rendimiento."""
+    """Acota un valor al rango [low, high] para estandarizar ratios."""
     if not isinstance(value, (int, float)) or not math.isfinite(value):
         return low
     return max(low, min(high, float(value)))
@@ -110,38 +107,34 @@ def _to_int(value: Any, default: int = 0) -> int:
 
 
 def score_junk(junk_mb: float) -> float:
-    """Puntúa archivos basura: usa una escala lineal donde 0MB es perfecto (1.0)
-    y 5000MB representa el valor mínimo aceptable de limpieza (0.0)."""
-    return _clamp(1.0 - (max(0.0, _to_float(junk_mb)) / 5000.0))
+    """Puntúa archivos basura: escala lineal donde 0MB es 1.0 y 5000MB es 0.0."""
+    return _clamp(1.0 - (junk_mb / 5000.0))
 
 
 def score_security(suspicious_count: int, warnings: int = 0) -> float:
-    """Puntúa seguridad: aplica penalizaciones ponderadas.
-    Cada hallazgo reduce el ratio un 5% y cada advertencia un 25%."""
-    penalty = (max(0, _to_int(suspicious_count)) * 0.05) + (max(0, _to_int(warnings)) * 0.25)
+    """Puntúa seguridad: aplica penalizaciones ponderadas."""
+    penalty = (suspicious_count * 0.05) + (warnings * 0.25)
     return _clamp(1.0 - penalty)
 
 
 def score_memory(available_percent: float) -> float:
     """Puntúa disponibilidad de RAM: normaliza respecto al objetivo óptimo del 35%."""
-    val = _to_float(available_percent)
-    return _clamp(max(0.0, val) / 35.0)
+    return _clamp(available_percent / 35.0)
 
 
 def score_disk(free_percent: float) -> float:
-    """Puntúa espacio libre: normaliza respecto al umbral de salud deseado del 25%."""
-    val = _to_float(free_percent)
-    return _clamp(max(0.0, val) / 25.0)
+    """Puntúa espacio libre: normaliza respecto al umbral de salud del 25%."""
+    return _clamp(free_percent / 25.0)
 
 
 def score_duplicates(duplicate_mb: float) -> float:
-    """Puntúa duplicados: escala lineal con penalización máxima al llegar a 2000MB."""
-    return _clamp(1.0 - (max(0.0, _to_float(duplicate_mb)) / 2000.0))
+    """Puntúa duplicados: escala lineal con penalización máxima a 2000MB."""
+    return _clamp(1.0 - (duplicate_mb / 2000.0))
 
 
 def score_startup(startup_count: int) -> float:
-    """Puntúa programas de inicio: penalización lineal creciente hasta llegar a 20 entradas."""
-    return _clamp(1.0 - (max(0, _to_int(startup_count)) / 20.0))
+    """Puntúa programas de inicio: penalización lineal hasta 20 entradas."""
+    return _clamp(1.0 - (startup_count / 20.0))
 
 
 def grade_for_score(score: int) -> str:
@@ -170,7 +163,7 @@ def _generate_recommendations(m: SystemMetrics, ratios: Dict[str, float]) -> Lis
     if ratios.get("arranque", 1.0) < 0.6:
         recs.append(f"{m.startup_count} programas arrancan con Windows; desactivá los que no necesites desde el Administrador de tareas.")
     
-    if getattr(m, 'quarantined_count', 0) > 0:
+    if m.quarantined_count > 0:
         recs.append(f"Tenés {m.quarantined_count} archivo(s) en cuarentena esperando tu decisión.")
     
     if not recs:

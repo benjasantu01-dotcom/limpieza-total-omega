@@ -178,9 +178,11 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             if not full_source_path.exists() or not full_source_path.is_file():
                 continue
             
+            # Verificación de seguridad reforzada para prevenir Path Traversal
             if not is_safe_to_modify(full_source_path) or not is_safe_to_modify(dest):
                 continue
                 
+            # Evitar mover si el destino es padre, el mismo archivo o ya está dentro
             if dest in full_source_path.parents or full_source_path.parent == dest:
                 continue
             

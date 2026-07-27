@@ -44,6 +44,7 @@ import os
 import threading
 import tkinter as tk
 from tkinter import filedialog, messagebox
+from pathlib import Path
 
 import customtkinter as ctk
 
@@ -780,14 +781,19 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         folder = filedialog.askdirectory(title=title)
         if not folder:
             return None
-        if safety.is_protected_path(folder):
+        
+        # Uso de seguridad defensiva: no solo chequeamos si es protegida,
+        # validamos si es seguro modificar/acceder usando el contrato de safety.py
+        try:
+            safety.ensure_safe_to_modify(Path(folder))
+            return folder
+        except safety.UnsafePathError:
             messagebox.showwarning(
                 "Carpeta protegida",
-                safety.describe_protection(folder)
-                + "\n\nElegí una carpeta de usuario (Descargas, Documentos, etc.).",
+                "Esa carpeta es vital para el sistema y no puede ser analizada.\n\n"
+                "Elegí una carpeta de usuario (Descargas, Documentos, etc.).",
             )
             return None
-        return folder
 
     def _confirm(self, title: str, message: str) -> bool:
         """Confirmación explícita para cualquier acción que borre o mueva."""
