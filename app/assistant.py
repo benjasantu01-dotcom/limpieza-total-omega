@@ -166,6 +166,8 @@ def build_context(metrics: Any = None, health: Any = None, **extra: Any) -> Syst
     contexto = SystemContext()
 
     def numero(objeto: Any, nombre: str, defecto: float = 0.0) -> float:
+        """Intenta extraer un valor numérico y convertirlo a float.
+        Usa acceso seguro mediante getattr para evitar excepciones si el atributo falta."""
         if objeto is None: return defecto
         try:
             val = getattr(objeto, nombre, None)
@@ -174,6 +176,9 @@ def build_context(metrics: Any = None, health: Any = None, **extra: Any) -> Syst
             return defecto
 
     def entero(objeto: Any, nombre: str, defecto: int = 0) -> int:
+        """Intenta extraer un valor entero.
+        La conversión es estricta para asegurar que solo números integros (o casteables) 
+        entren en las métricas de conteo."""
         if objeto is None: return defecto
         try:
             val = getattr(objeto, nombre, None)

@@ -5,24 +5,24 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **433**
-- Mejoras aceptadas: **251** (58.0% de aceptación)
+- Iteraciones totales: **437**
+- Mejoras aceptadas: **253** (57.9% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 28
 - Sin cambios (nada sustancial que mejorar): 4
-- Sin respuesta de la IA (error o límite): 132
+- Sin respuesta de la IA (error o límite): 134
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
 | 2026-07-26 | 221 | 15 | 22 | 3 | 68 |
-| 2026-07-27 | 30 | 3 | 6 | 1 | 64 |
+| 2026-07-27 | 32 | 3 | 6 | 1 | 66 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **63**
-- legibilidad y documentación: **63**
+- manejo de errores y validación de entradas: **64**
+- legibilidad y documentación: **64**
 - seguridad defensiva: **45**
 - rendimiento: **40**
 - robustez ante casos límite: **40**
@@ -41,10 +41,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **18**
 - `startup.py`: **18**
 - `main.py`: **17**
-- `assistant.py`: **1**
+- `assistant.py`: **2**
+- `settings.py`: **1**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-27T10:03:22` **assistant.py** (legibilidad y documentación): Documenté con docstrings detallados las funciones de transformación de tipos y procesado de métricas en `build_context` para aclarar por qué se utilizan métodos defensivos de acceso a atributos y conversión, garantizando la estabilidad frente a cambios en los objetos de origen.
+- `2026-07-27T10:02:13` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `validate` añadiendo una verificación explícita de `isinstance` para los valores numéricos, asegurando que solo se procesen tipos compatibles antes de la conversión y evitando errores inesperados si el archivo JSON contiene estructuras anidadas o tipos de datos inesperados en esas claves.
 - `2026-07-27T09:53:07` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `scan_directory` reemplazando la lógica de pila basada en listas por una verificación explícita de `Path.is_dir()` y capturando excepciones de acceso `OSError` para evitar interrupciones en rutas con permisos restringidos o sistemas de archivos inaccesibles, asegurando que un fallo en un nodo no detenga el escaneo completo.
 - `2026-07-27T09:52:52` **safety.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `is_within_directory` y `is_protected_path` ante errores de resolución del sistema de archivos, asegurando que las excepciones se manejen de forma explícita y preventiva para evitar falsos positivos o errores de ejecución no controlados.
 - `2026-07-27T09:44:11` **organizer.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `stage_for_review` validando explícitamente la existencia de las rutas antes de cualquier operación y asegurando que las excepciones en `shutil.move` no interrumpan el procesamiento del resto de la lista.
@@ -58,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-27T07:49:24` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica y la mantenibilidad del archivo añadiendo docstrings que explican las decisiones de diseño de los umbrales (por qué 5GB, 35% o 25%) y clarificando mediante type hints y comentarios el propósito de cada función de puntuación, facilitando futuras calibraciones del sistema de salud.
 - `2026-07-27T07:40:25` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica y la legibilidad mediante Type Hints explícitos, docstrings detallados en las funciones de procesamiento (indicando el propósito de cada paso del pipeline) y una mayor claridad en el flujo del buscador de duplicados para reducir la carga cognitiva al mantener el código.
 - `2026-07-27T07:40:09` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints en `summarize` y `walk_files`, y clarifiqué mediante docstrings los comportamientos de manejo de errores y seguridad de `walk_files` para evitar interpretaciones erróneas sobre su resiliencia.
-- `2026-07-27T07:39:46` **browser.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de la lógica de detección de perfiles mediante la extracción de la validación de rutas en una función auxiliar dedicada (`_is_valid_cache_path`), clarificando así la intención del código y facilitando futuras auditorías.
-- `2026-07-27T07:39:21` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo integrando una tabla de referencia sobre las funciones de dibujo y añadiendo type hints más precisos para clarificar la semántica de las colecciones (mapeos de estilo).

@@ -132,12 +132,14 @@ def validate(values: Any) -> dict[str, Any]:
             continue
 
         if isinstance(defecto, int) and not isinstance(valor, bool):
-            try:
-                numero = int(valor)
-            except (TypeError, ValueError):
-                continue
-            minimo, maximo = _NUMERIC_LIMITS.get(clave, (0, 10 ** 9))
-            limpio[clave] = max(minimo, min(maximo, numero))
+            # Solo intentamos convertir si el valor no es un dict/lista.
+            if isinstance(valor, (int, float, str)):
+                try:
+                    numero = int(valor)
+                except (TypeError, ValueError):
+                    continue
+                minimo, maximo = _NUMERIC_LIMITS.get(clave, (0, 10 ** 9))
+                limpio[clave] = max(minimo, min(maximo, numero))
             continue
 
         if isinstance(defecto, str):
