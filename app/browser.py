@@ -101,7 +101,10 @@ def directory_size(path: str | os.PathLike) -> int:
         return 0
         
     try:
-        base_path = Path(path).resolve(strict=True)
+        p = Path(path)
+        if not p.exists():
+            return 0
+        base_path = p.resolve(strict=True)
         if not base_path.is_dir():
             return 0
     except (OSError, RuntimeError):
@@ -139,6 +142,8 @@ def _is_valid_cache_path(candidate: Path, base_path: Path) -> bool:
     perfil de usuario y no contenga archivos protegidos en su nivel superior.
     """
     try:
+        if not candidate.exists():
+            return False
         # Resolvemos rutas para comparar ubicaciones físicas reales
         resolved = candidate.resolve(strict=True)
         resolved_base = base_path.resolve(strict=True)

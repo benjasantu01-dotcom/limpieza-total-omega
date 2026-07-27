@@ -1271,3 +1271,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-07-27T15:40:23` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se implementó un mecanismo de caché para `assistant_api_key` y `assistant_enabled`, eliminando lecturas redundantes a disco (vía `load`) en llamadas frecuentes, mejorando el rendimiento en operaciones de interfaz que consultan repetidamente el estado del asistente.
 - `2026-07-27T15:40:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-27T15:40:23` Corrida terminada. Total usado hoy: 240.
+- `2026-07-27T15:48:49` Arrancando corrida. Quedan hoy ~60 peticiones objetivo.
+- `2026-07-27T15:49:22` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-07-27T15:49:57` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se ha robustecido el manejo de errores en `build_context` para que, ante cualquier objeto de entrada mal formado o inesperado, el asistente devuelva un contexto limpio con `analyzed=False` en lugar de fallar o propagar excepciones, garantizando que la aplicación nunca se bloquee por datos corrompidos.
+- `2026-07-27T15:50:34` ➖ Sin cambios en branding.py (enfoque: robustez ante casos límite). Motivo: Se mejora la robustez de `save_logo_svg` al manejar explícitamente errores de escritura mediante un bloque `try-except` más granular y validando la existencia de la ruta padre, además de asegurar que la conversión de `destination` a `Path` no falle silenciosamente ante entradas malformadas.
+- `2026-07-27T15:50:53` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `directory_size` ante el acceso a rutas con permisos denegados o caracteres inválidos, y se mejoró `_is_valid_cache_path` para prevenir excepciones al manipular rutas que podrían ser inexistentes o inaccesibles antes de realizar la resolución física.
+- `2026-07-27T15:50:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-27T15:50:53` Corrida terminada. Total usado hoy: 244.

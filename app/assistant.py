@@ -169,61 +169,58 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     exponga por accidente.
     """
     contexto = SystemContext()
+    
+    try:
+        def numero(objeto: Any, nombre: str, defecto: float = 0.0, maximo: float = float('inf')) -> float:
+            if objeto is None: return defecto
+            try:
+                val = getattr(objeto, nombre, None)
+                if val is None or isinstance(val, (dict, list, set)): return defecto
+                num = float(val)
+                return max(0.0, min(num, float(maximo)))
+            except (TypeError, ValueError):
+                return defecto
 
-    def numero(objeto: Any, nombre: str, defecto: float = 0.0, maximo: float = float('inf')) -> float:
-        """Extrae un valor numérico de un objeto, ignorando tipos complejos y aplicando límites de seguridad."""
-        if objeto is None: return defecto
-        try:
-            val = getattr(objeto, nombre, None)
-            # Bloqueamos estructuras no escalares para prevenir filtración de datos complejos
-            if val is None or isinstance(val, (dict, list, set)): return defecto
-            num = float(val)
-            return max(0.0, min(num, float(maximo)))
-        except (TypeError, ValueError):
-            return defecto
+        def entero(objeto: Any, nombre: str, defecto: int = 0) -> int:
+            if objeto is None: return defecto
+            try:
+                val = getattr(objeto, nombre, None)
+                if val is None or isinstance(val, (dict, list, set)): return defecto
+                num = int(float(val))
+                return max(0, num)
+            except (TypeError, ValueError):
+                return defecto
 
-    def entero(objeto: Any, nombre: str, defecto: int = 0) -> int:
-        """Extrae un valor entero de un objeto, asegurando que solo valores numéricos positivos sean considerados."""
-        if objeto is None: return defecto
-        try:
-            val = getattr(objeto, nombre, None)
-            if val is None or isinstance(val, (dict, list, set)): return defecto
-            num = int(float(val))
-            return max(0, num)
-        except (TypeError, ValueError):
-            return defecto
+        if metrics is not None:
+            contexto.junk_mb = numero(metrics, "junk_mb")
+            contexto.suspicious_count = entero(metrics, "suspicious_count")
+            contexto.suspicious_warnings = entero(metrics, "suspicious_warnings")
+            contexto.memory_available_percent = numero(metrics, "memory_available_percent", maximo=100.0)
+            contexto.disk_free_percent = numero(metrics, "disk_free_percent", maximo=100.0)
+            contexto.duplicate_mb = numero(metrics, "duplicate_mb")
+            contexto.startup_count = entero(metrics, "startup_count")
+            contexto.quarantined_count = entero(metrics, "quarantined_count")
+            contexto.analyzed = True
 
-    if metrics is not None:
-        contexto.junk_mb = numero(metrics, "junk_mb")
-        contexto.suspicious_count = entero(metrics, "suspicious_count")
-        contexto.suspicious_warnings = entero(metrics, "suspicious_warnings")
-        contexto.memory_available_percent = numero(metrics, "memory_available_percent", maximo=100.0)
-        contexto.disk_free_percent = numero(metrics, "disk_free_percent", maximo=100.0)
-        contexto.duplicate_mb = numero(metrics, "duplicate_mb")
-        contexto.startup_count = entero(metrics, "startup_count")
-        contexto.quarantined_count = entero(metrics, "quarantined_count")
-        contexto.analyzed = True
+        if health is not None:
+            score_val = entero(health, "score")
+            contexto.score = max(0, min(score_val, 100))
+            grado = getattr(health, "grade", "")
+            contexto.grade = str(grado) if isinstance(grado, (str, int, float)) else ""
+            contexto.analyzed = True
 
-    if health is not None:
-        score_val = entero(health, "score")
-        contexto.score = max(0, min(score_val, 100))
-        grado = getattr(health, "grade", "")
-        contexto.grade = str(grado) if isinstance(grado, (str, int, float)) else ""
-        contexto.analyzed = True
-
-    for clave, valor in extra.items():
-        if hasattr(contexto, clave) and isinstance(valor, (int, float)):
-            setattr(contexto, clave, max(0.0, float(valor)))
+        for clave, valor in extra.items():
+            if hasattr(contexto, clave) and isinstance(valor, (int, float)):
+                setattr(contexto, clave, max(0.0, float(valor)))
+    except Exception:
+        # Ante cualquier error inesperado en la extracción, devolvemos un contexto vacío no analizado
+        return SystemContext(analyzed=False)
 
     return contexto
 
 
 def context_as_text(context: SystemContext) -> str:
-    """Convierte el contexto en el texto exacto que viaja a la API.
-
-    Se arma a mano, campo por campo, en vez de serializar el objeto entero:
-    así lo que sale del equipo es auditable leyendo esta función.
-    """
+    """Convierte el contexto en el texto exacto que viaja a la API."""
     if not isinstance(context, SystemContext):
         return "No hay métricas disponibles todavía."
 
