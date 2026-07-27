@@ -118,6 +118,24 @@ def _coerce_int(valor: Any, clave: str) -> int | None:
         return None
 
 
+def _validate_str(clave: str, valor: str) -> str | None:
+    """Valida cadenas específicas como temas, acentos o rutas de carpetas."""
+    texto = valor.strip()
+    if clave == "tema" and texto.lower() not in VALID_THEMES:
+        return None
+    if clave == "acento" and texto.lower() not in VALID_ACCENTS:
+        return None
+    if clave == "ultima_carpeta" and texto:
+        try:
+            ruta_candidata = Path(texto).expanduser().resolve()
+            if not is_safe_to_modify(str(ruta_candidata)):
+                return None
+            return str(ruta_candidata)
+        except (OSError, RuntimeError):
+            return None
+    return texto.lower() if clave in ("tema", "acento") else texto
+
+
 def settings_path(base: str | Path | None = None) -> Path:
     """Ruta del archivo de configuración.
 
@@ -156,22 +174,10 @@ def validate(values: Any) -> dict[str, Any]:
             if coerced is not None:
                 limpio[clave] = coerced
         
-        elif isinstance(defecto, str):
-            if isinstance(valor, str):
-                texto = valor.strip()
-                if clave == "tema" and texto.lower() not in VALID_THEMES:
-                    continue
-                if clave == "acento" and texto.lower() not in VALID_ACCENTS:
-                    continue
-                if clave == "ultima_carpeta" and texto:
-                    try:
-                        ruta_candidata = Path(texto).expanduser().resolve()
-                        if not is_safe_to_modify(str(ruta_candidata)):
-                            continue
-                        texto = str(ruta_candidata)
-                    except (OSError, RuntimeError):
-                        continue
-                limpio[clave] = texto.lower() if clave in ("tema", "acento") else texto
+        elif isinstance(defecto, str) and isinstance(valor, str):
+            validado = _validate_str(clave, valor)
+            if validado is not None:
+                limpio[clave] = validado
 
     return limpio
 

@@ -103,8 +103,9 @@ def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> List[Start
     """
     Escanea las carpetas de inicio en busca de accesos directos o ejecutables.
 
-    Solo lectura: filtra 'desktop.ini' y symlinks, confirmando que cada elemento esté
-    contenido en la carpeta base mediante `resolve()` para evitar ataques de path traversal.
+    Solo lectura: filtra 'desktop.ini' (archivo de configuración del shell) y symlinks
+    para evitar recursión infinita o alteraciones fuera de la carpeta, confirmando 
+    que el elemento esté contenido en la carpeta base mediante `resolve()`.
     """
     if folders is None:
         folders = startup_folders()
@@ -146,7 +147,7 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
         clean_line: str = line.strip()
         if not clean_line:
             continue
-        csv_row_parts: List[str] = clean_line.split(",", 1)
+        csv_row_parts: List[str] = line.split(",", 1)
         if len(csv_row_parts) < 2:
             continue
             
