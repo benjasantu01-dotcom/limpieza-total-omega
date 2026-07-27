@@ -149,7 +149,13 @@ def all_drives_usage(mounts: Iterable[str] | None = None) -> list[DriveUsage]:
 def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Generator[tuple[Path, int], None, None]:
     """
     Genera tuplas (ruta_absoluta, tamaño_en_bytes) para cada archivo encontrado.
-    Evita seguir enlaces simbólicos o puntos de reparse (junctions).
+    
+    Lógica de seguridad:
+    1. Resuelve la ruta base para evitar ataques de path traversal.
+    2. Ignora enlaces simbólicos y puntos de reparse (Windows junctions) para 
+       evitar bucles infinitos y escaneos fuera de la jerarquía deseada.
+    3. Aplica `is_protected_path` tanto a directorios como a archivos individuales
+       para garantizar que áreas del sistema no sean recorridas.
     """
     if not directory:
         return
@@ -262,7 +268,13 @@ def total_size(directory: str | os.PathLike, skip_protected: bool = True) -> tup
 
 
 def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list[str]:
-    """Resumen legible del uso de disco. Realiza un recorrido único para recopilar métricas."""
+    """
+    Genera un informe textual del uso de disco en el directorio especificado.
+    
+    Esta función utiliza `process_files` como cierre (closure) para acumular 
+    métricas de archivos y extensiones en un único recorrido eficiente, 
+    minimizando el acceso a disco necesario.
+    """
     if not directory:
         return ["Error: Ruta vacía."]
         

@@ -81,7 +81,7 @@ def hash_file(path: Union[str, os.PathLike], chunk_size: int = 1024 * 1024) -> O
         chunk_size: Tamaño del buffer de lectura para el hash.
         
     Returns:
-        Hash SHA256 (hex) si es legible, None si el acceso es denegado.
+        Hash SHA256 (hex) si es legible, None si el acceso es denegado o el archivo no existe.
     """
     if not path or is_protected_path(path):
         return None
@@ -91,6 +91,7 @@ def hash_file(path: Union[str, os.PathLike], chunk_size: int = 1024 * 1024) -> O
             while chunk := f.read(chunk_size):
                 digest.update(chunk)
     except (OSError, PermissionError, ValueError, TypeError, FileNotFoundError):
+        # Fallo esperado al intentar leer archivos bloqueados por el sistema o permisos insuficientes
         return None
     return digest.hexdigest()
 
@@ -99,6 +100,9 @@ def partial_hash(path: Union[str, os.PathLike], read_bytes: int = PARTIAL_READ_B
     """
     Calcula un hash rápido de los primeros N bytes de un archivo.
     Utilizado como filtro heurístico antes del cálculo completo.
+    
+    Returns:
+        Hash SHA256 (hex) parcial si es legible, None en caso de error de acceso.
     """
     if not path or is_protected_path(path):
         return None
@@ -130,7 +134,7 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
 def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, skip_protected: bool) -> List[Path]:
     """
     Escaneo recursivo para localizar archivos candidatos según tamaño mínimo.
-    Excluye enlaces simbólicos y rutas protegidas.
+    Excluye enlaces simbólicos y rutas protegidas mediante validación estricta de rutas.
     """
     if directories is None:
         return []

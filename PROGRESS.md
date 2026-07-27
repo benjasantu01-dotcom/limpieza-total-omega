@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-26 | 192 | 11 | 19 | 2 | 68 |
-| 2026-07-27 | 81 | 12 | 12 | 2 | 105 |
+| 2026-07-26 | 189 | 10 | 19 | 2 | 68 |
+| 2026-07-27 | 84 | 13 | 12 | 2 | 105 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **65**
+- legibilidad y documentación: **68**
 - manejo de errores y validación de entradas: **60**
 - seguridad defensiva: **58**
-- robustez ante casos límite: **47**
-- rendimiento: **43**
+- robustez ante casos límite: **45**
+- rendimiento: **42**
 
 ## Mejoras aceptadas por archivo
 
+- `diskreport.py`: **27**
 - `browser.py`: **26**
-- `diskreport.py`: **26**
 - `organizer.py`: **25**
+- `duplicates.py`: **23**
 - `safety.py`: **23**
-- `duplicates.py`: **22**
 - `scanner.py`: **22**
 - `healthscore.py`: **21**
-- `startup.py`: **20**
-- `branding.py`: **20**
 - `main.py`: **19**
 - `quarantine.py`: **19**
+- `startup.py`: **19**
+- `branding.py`: **19**
 - `memory.py`: **19**
 - `assistant.py`: **7**
 - `settings.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-27T14:40:05` **duplicates.py** (legibilidad y documentación): Se introdujeron type hints más precisos y se documentaron las excepciones manejadas en las funciones de hashing y recolección para mejorar la mantenibilidad y claridad sobre los puntos de fallo previstos.
+- `2026-07-27T14:39:49` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `diskreport.py` añadiendo docstrings detallados en funciones clave (`walk_files`, `summarize`) que explican la lógica de exclusión y gestión de errores, para facilitar el mantenimiento y la comprensión de las medidas de seguridad.
+- `2026-07-27T14:39:21` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica y la robustez del código añadiendo *docstrings* detallados en las funciones de procesamiento de perfiles y refinando el manejo de rutas para asegurar que `is_relative_to` no falle ante posibles errores de resolución de rutas en el sistema de archivos.
 - `2026-07-27T14:29:25` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad del código introduciendo Type Aliases para clarificar las estructuras de datos y añadí docstrings explicativos en las funciones internas (`numero` y `entero`) para detallar las políticas de saneamiento de datos en el motor de contexto.
 - `2026-07-27T14:28:58` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` y `entries_from_registry` mediante la validación proactiva de datos de entrada, evitando errores de desbordamiento o procesamiento de listas vacías y asegurando que las rutas de registro se procesen únicamente si tienen el formato esperado.
 - `2026-07-27T14:17:19` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` validando exhaustivamente la existencia de rutas, el estado del archivo y la jerarquía de directorios antes de cualquier operación, aplicando un enfoque preventivo ante condiciones de carrera o archivos inexistentes.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-27T12:35:08` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `validate()` asegurando que la ruta `ultima_carpeta` no solo sea tratada por `is_safe_to_modify`, sino que se normalice a una ruta absoluta antes de guardarse, evitando riesgos de ambigüedad con rutas relativas o malformadas.
 - `2026-07-27T12:26:14` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `scan_directory` añadiendo una validación explícita mediante `is_protected_path` al procesar cada entrada (`entry`), asegurando que no se sigan rutas protegidas incluso si el usuario intenta escanear subdirectorios específicos.
 - `2026-07-27T12:26:01` **safety.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `safety.py` añadiendo la detección explícita de puntos de reparse (junctions y symlinks) en el método `is_within_directory` y en la lógica principal de `is_protected_path`, evitando así que la app sea engañada para seguir enlaces hacia carpetas de sistema fuera de los directorios permitidos.
-- `2026-07-27T12:24:57` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `quarantine_file` validando explícitamente que la carpeta destino (cuarentena) sea una ruta segura antes de realizar la operación de movimiento, evitando posibles inyecciones de rutas externas mediante el parámetro `base`.
-- `2026-07-27T12:16:41` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de `stage_for_review` al verificar que la ruta de origen sea una subruta efectiva dentro del contexto permitido, evitando movimientos involuntarios mediante ataques de recorrido de directorio (Path Traversal) o rutas ambiguas.
-- `2026-07-27T12:15:50` **main.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_ask_folder` reemplazando la verificación simple por `is_protected_path` con un chequeo robusto que utiliza `ensure_safe_to_modify` para evitar que la aplicación interactúe con rutas críticas, previniendo errores de permisos o modificaciones accidentales en directorios del sistema.

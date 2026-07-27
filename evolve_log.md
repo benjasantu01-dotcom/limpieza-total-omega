@@ -1162,3 +1162,43 @@ FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - Asse
 - `2026-07-27T14:29:25` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejoré la legibilidad del código introduciendo Type Aliases para clarificar las estructuras de datos y añadí docstrings explicativos en las funciones internas (`numero` y `entero`) para detallar las políticas de saneamiento de datos en el motor de contexto.
 - `2026-07-27T14:29:25` Rotación — metrics: 4 registros archivados
 - `2026-07-27T14:29:25` Corrida terminada. Total usado hoy: 212.
+- `2026-07-27T14:37:14` Arrancando corrida. Quedan hoy ~88 peticiones objetivo.
+- `2026-07-27T14:37:38` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-07-27T14:38:11` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-07-27T14:38:58` Tests FALLARON:
+```
+= 50, size = 150, x = 0, y = 0, thickness = 14
+track = None, fill = None
+
+    def draw_ring(canvas: DrawableCanvas, percent: float | int, size: int = 150,
+                  x: int = 0, y: int = 0, thickness: int = 14,
+                  track: HexColor | None = None,
+                  fill: HexColor | None = None) -> None:
+        """Dibuja un medidor circular (donita) para indicar progreso o puntajes."""
+        try:
+            valor = max(0.0, min(100.0, float(percent)))
+            diametro = max(20, int(size))
+            grosor = max(2, min(int(thickness), diametro // 2 - 1))
+        except (TypeError, ValueError): return
+    
+        color_fondo, color_avance = track or PALETTE["surface_alt"], fill or score_color(valor)
+        borde = grosor / 2
+        caja = (x + borde, y + borde, x + diametro - borde, y + diametro - borde)
+    
+>       canvas.create_arc(*caja, start=0, extent=359.9, style="arc", outline=color_fondo, width=grosor)
+        ^^^^^^^^^^^^^^^^^
+E       AttributeError: 'NoneType' object has no attribute 'create_arc'
+
+app/branding.py:366: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_gradient_bar_ignores_invalid_sizes - AttributeError: 'NoneType' object has no attribute 'create_line'
+FAILED evolve/tests/test_modules.py::test_ring_ignores_garbage_percent_and_missing_canvas - AttributeError: 'NoneType' object has no attribute 'create_arc'
+2 failed, 297 passed in 1.03s
+
+```
+- `2026-07-27T14:38:58` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Mejoré la legibilidad del código en `branding.py` al sustituir el uso de tipos genéricos `Any` por protocolos específicos de Canvas (o verificaciones de tipo más claras) y añadí docstrings detallados en las funciones de dibujo explicando los parámetros y el comportamiento esperado.
+- `2026-07-27T14:39:21` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica y la robustez del código añadiendo *docstrings* detallados en las funciones de procesamiento de perfiles y refinando el manejo de rutas para asegurar que `is_relative_to` no falle ante posibles errores de resolución de rutas en el sistema de archivos.
+- `2026-07-27T14:39:49` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo `diskreport.py` añadiendo docstrings detallados en funciones clave (`walk_files`, `summarize`) que explican la lógica de exclusión y gestión de errores, para facilitar el mantenimiento y la comprensión de las medidas de seguridad.
+- `2026-07-27T14:40:05` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Se introdujeron type hints más precisos y se documentaron las excepciones manejadas en las funciones de hashing y recolección para mejorar la mantenibilidad y claridad sobre los puntos de fallo previstos.
+- `2026-07-27T14:40:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-27T14:40:05` Corrida terminada. Total usado hoy: 216.

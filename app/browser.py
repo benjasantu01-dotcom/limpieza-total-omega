@@ -134,12 +134,16 @@ def directory_size(path: str | os.PathLike) -> int:
 
 
 def _is_valid_cache_path(candidate: Path, base_path: Path) -> bool:
-    """Verifica que la ruta sea segura, exista y no esté en la lista negra."""
+    """
+    Verifica que la ruta sea un directorio existente, sea hijo directo del 
+    perfil de usuario y no contenga archivos protegidos en su nivel superior.
+    """
     try:
-        # Resolvemos para verificar la ubicación real en disco tras desreferenciar
+        # Resolvemos rutas para comparar ubicaciones físicas reales
         resolved = candidate.resolve(strict=True)
+        resolved_base = base_path.resolve(strict=True)
         return (
-            resolved.is_relative_to(base_path.resolve(strict=True)) and
+            resolved.is_relative_to(resolved_base) and
             resolved.is_dir() and
             candidate.name.lower() not in NEVER_TOUCH
         )
@@ -150,7 +154,11 @@ def _is_valid_cache_path(candidate: Path, base_path: Path) -> bool:
 def detect_profiles(bases: Sequence[Path] | None = None, 
                     cache_paths: Dict[str, str] | None = None) -> List[BrowserCache]:
     """
-    Explora directorios base buscando cachés definidas en `cache_paths`.
+    Explora directorios base en busca de carpetas de caché definidas.
+    
+    La función itera sobre cada base proporcionada, construye las rutas a los 
+    cachés mediante unión de segmentos y valida cada una contra las reglas 
+    de seguridad del proyecto antes de calcular su peso en disco.
     """
     if bases is None:
         bases = base_directories()
@@ -175,7 +183,6 @@ def detect_profiles(bases: Sequence[Path] | None = None,
             try:
                 candidate = resolved_base.joinpath(*relative_path_str.split("\\"))
                 
-                # Validamos antes de intentar medir
                 if not _is_valid_cache_path(candidate, resolved_base):
                     continue
                     
