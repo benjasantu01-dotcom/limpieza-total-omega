@@ -505,3 +505,37 @@ FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - Asse
 - `2026-07-27T09:24:43` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `build_context` implementando una validación explícita para los valores de `health` y `metrics` (usando `isinstance` y chequeos de existencia de atributos) para evitar errores en tiempo de ejecución si los objetos de origen no son los esperados, reemplazando el uso de `getattr` sobre objetos potencialmente nulos.
 - `2026-07-27T09:24:43` Rotación — nada para rotar
 - `2026-07-27T09:24:43` Corrida terminada. Total usado hoy: 92.
+- `2026-07-27T09:31:13` Arrancando corrida. Quedan hoy ~208 peticiones objetivo.
+- `2026-07-27T09:31:57` Tests FALLARON:
+```
+........................................................................ [ 24%]
+......................................F................................. [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+______________________ test_score_color_survives_garbage _______________________
+
+    def test_score_color_survives_garbage():
+>       assert branding.score_color(None) == branding.PALETTE["text_muted"]
+E       AssertionError: assert '#ff4757' == '#94a3b8'
+E         
+E         - #94a3b8
+E         + #ff4757
+
+evolve/tests/test_modules.py:167: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_score_color_survives_garbage - AssertionError: assert '#ff4757' == '#94a3b8'
+  
+  - #94a3b8
+  + #ff4757
+1 failed, 298 passed in 0.97s
+
+```
+- `2026-07-27T09:31:57` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de las funciones de acceso a datos (`color`, `font_size`, `icon`, `severity_color`) implementando validaciones explícitas de tipo y manejo de errores para evitar que un valor inesperado o `None` rompa la interfaz gráfica, garantizando que siempre retornen un valor seguro y consistente.
+- `2026-07-27T09:32:25` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `detect_profiles` y `directory_size` mediante la validación proactiva de parámetros de entrada, capturando excepciones específicas y manejando casos de rutas mal formadas para evitar fallos silenciosos o bloqueos inesperados.
+- `2026-07-27T09:32:25` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-07-27T09:32:52` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `walk_files` y `largest_folders` validando explícitamente que la entrada sea una ruta válida y convirtiendo entradas `None` o mal formadas en retornos seguros y silenciosos, evitando excepciones no controladas durante el inicio del escaneo.
+- `2026-07-27T09:32:59` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-07-27T09:32:59` Rotación — nada para rotar
+- `2026-07-27T09:32:59` Corrida terminada. Total usado hoy: 96.

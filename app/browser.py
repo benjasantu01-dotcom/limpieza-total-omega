@@ -97,7 +97,7 @@ def directory_size(path: str | os.PathLike) -> int:
         
     try:
         p = Path(path)
-        if not p.exists() or not p.is_dir():
+        if not p.is_dir():
             return 0
         base_path = p.resolve(strict=True)
     except (OSError, RuntimeError):
@@ -129,11 +129,14 @@ def directory_size(path: str | os.PathLike) -> int:
 
 def _is_valid_cache_path(candidate: Path, base_path: Path) -> bool:
     """Verifica que la ruta sea segura, exista y no esté en la lista negra."""
-    return (
-        candidate.is_relative_to(base_path) and
-        candidate.is_dir() and
-        candidate.name.lower() not in NEVER_TOUCH
-    )
+    try:
+        return (
+            candidate.is_relative_to(base_path) and
+            candidate.is_dir() and
+            candidate.name.lower() not in NEVER_TOUCH
+        )
+    except ValueError:
+        return False
 
 
 def detect_profiles(bases: Sequence[Path] | None = None, 
@@ -165,7 +168,7 @@ def detect_profiles(bases: Sequence[Path] | None = None,
                 continue
                 
             try:
-                candidate = base_path.joinpath(*relative.split("\\")).resolve()
+                candidate = base_path.joinpath(*relative.split("\\")).resolve(strict=False)
                 if not _is_valid_cache_path(candidate, base_path):
                     continue
                     

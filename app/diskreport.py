@@ -226,8 +226,6 @@ def largest_folders(directory: str | os.PathLike, limit: int = 10, skip_protecte
         base = Path(directory).expanduser().resolve(strict=False)
         if not base.exists() or not base.is_dir():
             return []
-        if skip_protected and is_protected_path(base):
-            return []
     except (OSError, RuntimeError):
         return []
         
@@ -236,7 +234,9 @@ def largest_folders(directory: str | os.PathLike, limit: int = 10, skip_protecte
     for path, size in walk_files(base, skip_protected):
         try:
             relative_path = path.relative_to(base)
-            top_level = base / relative_path.parts[0] if relative_path.parts else base
+            if not relative_path.parts:
+                continue
+            top_level = base / relative_path.parts[0]
         except (ValueError, IndexError):
             continue
             
