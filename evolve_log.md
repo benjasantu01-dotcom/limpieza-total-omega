@@ -437,3 +437,9 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-07-27T20:17:01` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Mejoré la robustez de `save_logo_svg` al verificar la existencia y tipo de directorio padre antes de intentar la escritura y agregué validación de nombre de archivo `is_protected_path` para prevenir escrituras en ubicaciones críticas, asegurando que cualquier fallo sea manejado elegantemente sin abortar.
 - `2026-07-27T20:17:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-27T20:17:01` Corrida terminada. Total usado hoy: 348.
+- `2026-07-27T20:25:44` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-07-27T20:26:07` ➖ Sin cambios en browser.py (enfoque: robustez ante casos límite). Motivo: Mejoré la resiliencia de `directory_size` ante el bloqueo de lectura (`PermissionError`) y posibles errores en `entry.stat()` (frecuentes en archivos en uso o bloqueados por el sistema) mediante un manejo de excepciones más granular dentro del iterador de `os.scandir`.
+- `2026-07-27T20:26:31` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la resiliencia de `walk_files` ante archivos bloqueados o inexistentes durante la iteración (condiciones de carrera) añadiendo un manejo de excepciones más fino en el `stat()` dentro del bucle, asegurando que el generador no se interrumpa ante errores de acceso a archivos individuales.
+- `2026-07-27T20:26:31` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-07-27T20:26:31` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-27T20:26:31` Corrida terminada. Total usado hoy: 350.

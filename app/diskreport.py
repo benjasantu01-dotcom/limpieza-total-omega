@@ -186,7 +186,7 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
                     if skip_protected and is_protected_path(path):
                         continue
                     yield path, st.st_size
-                except (OSError, PermissionError, FileNotFoundError):
+                except (OSError, PermissionError, FileNotFoundError, AttributeError):
                     continue
         except (OSError, PermissionError):
             continue
