@@ -151,9 +151,10 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
     Genera tuplas (ruta_absoluta, tamaño_en_bytes) para cada archivo encontrado.
     
     El parámetro `skip_protected` evita la recursión en directorios bloqueados
-    o de sistema. Los errores de lectura (permisos, archivos inexistentes) se 
-    silencian (`onerror` y `try-except`) para garantizar que el generador no se 
-    detenga durante el escaneo completo.
+    o de sistema. La función ignora silenciosamente errores de acceso (como 
+    PermissionError o archivos inexistentes) mediante un manejo granular de 
+    excepciones, asegurando la continuidad del escaneo en sistemas con 
+    restricciones de lectura.
     """
     if not directory:
         return
@@ -178,6 +179,7 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
             continue
             
         if skip_protected:
+            # Modificamos in-place 'subdirs' para evitar descender en rutas protegidas
             subdirs[:] = [d for d in subdirs if not is_protected_path(root_path / d)]
             
         for name in files:
@@ -261,7 +263,7 @@ def total_size(directory: str | os.PathLike, skip_protected: bool = True) -> tup
 
 
 def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list[str]:
-    """Resumen legible del uso de disco de una carpeta, realizando un solo recorrido."""
+    """Resumen legible del uso de disco. Realiza un recorrido único para recopilar métricas."""
     if not directory:
         return ["Error: Ruta vacía."]
         
@@ -272,14 +274,15 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
     except (OSError, RuntimeError):
         return ["Error: No se pudo acceder a la ruta."]
         
-    total: int = 0
-    count: int = 0
+    total_bytes: int = 0
+    total_files: int = 0
     extension_map: dict[str, ExtensionUsage] = {}
-    all_files: list[tuple[int, Path]] = []
+    # Estructura de almacenamiento temporal para reporte de archivos pesados
+    all_files_snapshot: list[tuple[int, Path]] = []
     
     for path, size in walk_files(path_obj, skip_protected):
-        total += size
-        count += 1
+        total_bytes += size
+        total_files += 1
         
         ext_name = path.suffix.lower() or "(sin extensión)"
         if ext_name not in extension_map:
@@ -289,22 +292,23 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
         ext_data.size_bytes += size
         ext_data.count += 1
         
-        all_files.append((size, path))
+        all_files_snapshot.append((size, path))
             
     lines = [
         f"Carpeta analizada: {path_obj}",
-        f"Total: {format_size(total)} en {count} archivos",
+        f"Total: {format_size(total_bytes)} en {total_files} archivos",
         "",
         "Por tipo de archivo:",
     ]
     
+    # Procesar y ordenar resultados para mostrar los 8 elementos más significativos
     sorted_exts = heapq.nlargest(8, extension_map.values(), key=lambda x: x.size_bytes)
     for ext_data in sorted_exts:
         lines.append(f"  {ext_data.extension:<18} {format_size(ext_data.size_bytes):>10}  ({ext_data.count} archivos)")
         
     lines.append("")
     lines.append("Archivos más grandes:")
-    for size, path in heapq.nlargest(8, all_files, key=lambda x: x[0]):
+    for size, path in heapq.nlargest(8, all_files_snapshot, key=lambda x: x[0]):
         lines.append(f"  {format_size(size):>10}  {path}")
         
     return lines

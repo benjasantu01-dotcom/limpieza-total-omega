@@ -21,7 +21,7 @@ import os
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, Callable, Dict, List, Optional
+from typing import Iterable, Callable, Dict, List, Optional, Union
 
 from safety import is_protected_path
 
@@ -49,7 +49,7 @@ class DuplicateGroup:
     
     Attributes:
         digest: Hash SHA256 calculado sobre el contenido total del archivo.
-        size_bytes: Tamaño del archivo en bytes.
+        size_bytes: Tamaño de cada archivo en el grupo en bytes.
         paths: Lista de objetos Path que contienen los archivos duplicados.
     """
     digest: str
@@ -64,18 +64,24 @@ class DuplicateGroup:
     @property
     def wasted_bytes(self) -> int:
         """
-        Calcula el espacio total que podría liberarse si se eliminaran 
-        todas las copias duplicadas, preservando únicamente una.
+        Calcula el espacio total que podría liberarse si se conservara
+        solo una copia del archivo.
         """
         if not self.paths or self.count <= 1:
             return 0
         return (self.count - 1) * max(0, self.size_bytes)
 
 
-def hash_file(path: str | os.PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
+def hash_file(path: Union[str, os.PathLike], chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
-    Calcula el hash SHA256 completo de un archivo mediante lectura en bloques.
-    Retorna None si el acceso es denegado o el archivo no es legible.
+    Calcula el hash SHA256 completo de un archivo.
+    
+    Args:
+        path: Ruta del archivo a procesar.
+        chunk_size: Tamaño del buffer de lectura para el hash.
+        
+    Returns:
+        Hash SHA256 (hex) si es legible, None si el acceso es denegado.
     """
     if not path or is_protected_path(path):
         return None
@@ -89,10 +95,10 @@ def hash_file(path: str | os.PathLike, chunk_size: int = 1024 * 1024) -> Optiona
     return digest.hexdigest()
 
 
-def partial_hash(path: str | os.PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
+def partial_hash(path: Union[str, os.PathLike], read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """
-    Calcula un hash rápido leyendo solo el encabezado del archivo.
-    Útil para descartar candidatos de forma eficiente antes de leer todo el disco.
+    Calcula un hash rápido de los primeros N bytes de un archivo.
+    Utilizado como filtro heurístico antes del cálculo completo.
     """
     if not path or is_protected_path(path):
         return None
@@ -106,8 +112,7 @@ def partial_hash(path: str | os.PathLike, read_bytes: int = PARTIAL_READ_BYTES) 
 
 def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     """
-    Organiza una lista de rutas de archivo en un diccionario usando
-    estadísticas de archivo para evitar accesos redundantes al sistema.
+    Agrupa rutas de archivos por su tamaño en disco (st_size).
     """
     if paths is None:
         return {}
@@ -122,10 +127,10 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     return dict(groups)
 
 
-def _collect_candidates(directories: Iterable[str | Path], min_size: int, skip_protected: bool) -> List[Path]:
+def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, skip_protected: bool) -> List[Path]:
     """
-    Rastreo recursivo para localizar archivos candidatos.
-    Aplica filtros de seguridad y excluye symlinks/rutas protegidas.
+    Escaneo recursivo para localizar archivos candidatos según tamaño mínimo.
+    Excluye enlaces simbólicos y rutas protegidas.
     """
     if directories is None:
         return []
@@ -172,10 +177,10 @@ def _collect_candidates(directories: Iterable[str | Path], min_size: int, skip_p
     return candidates
 
 
-def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[str | Path], Optional[str]]) -> Dict[str, List[Path]]:
+def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Union[str, Path]], Optional[str]]) -> Dict[str, List[Path]]:
     """
-    Agrupa candidatos por el hash devuelto por hash_func.
-    Filtra y retorna solo grupos con múltiples archivos (candidatos a duplicados).
+    Filtra una lista de archivos agrupándolos por su hash mediante una función dada.
+    Solo retorna grupos con al menos dos archivos coincidentes.
     """
     if paths is None:
         return {}
@@ -187,7 +192,7 @@ def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[str | Path], Opt
 
 
 def find_duplicates(
-    directories: Iterable[str | Path],
+    directories: Iterable[Union[str, Path]],
     min_size: int = 1024,
     skip_protected: bool = True,
 ) -> List[DuplicateGroup]:
@@ -211,11 +216,9 @@ def find_duplicates(
         if len(same_size) < 2:
             continue
             
-        # Refinar grupos de igual tamaño usando hash parcial
         by_partial = _refine_by_hash(same_size, partial_hash)
         
         for partial_candidates in by_partial.values():
-            # Confirmar duplicados reales mediante hash completo
             by_full = _refine_by_hash(partial_candidates, hash_file)
             
             for digest, confirmed in by_full.items():
@@ -231,7 +234,7 @@ def find_duplicates(
 
 
 def reclaimable_bytes(groups: List[DuplicateGroup]) -> int:
-    """Calcula el espacio total que se liberaría sumando los bytes de todos los grupos."""
+    """Calcula el espacio total recuperable sumando los desperdicios de todos los grupos."""
     if not isinstance(groups, list):
         return 0
     return sum(g.wasted_bytes for g in groups if isinstance(g, DuplicateGroup))
@@ -256,7 +259,7 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
 
 
 def format_group(group: DuplicateGroup) -> List[str]:
-    """Formatea la información de un grupo de duplicados para su visualización en UI."""
+    """Formatea la información de un grupo de duplicados para su despliegue en la interfaz."""
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return []
     keeper = suggest_keeper(group)

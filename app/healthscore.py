@@ -107,35 +107,37 @@ def _to_int(value: Any, default: int = 0) -> int:
 
 
 def score_junk(junk_mb: float) -> float:
-    """Puntúa archivos temporales: castigo lineal. 0MB=1.0, 5000MB=0.0."""
+    """Puntúa archivos basura: usa una escala lineal donde 0MB es perfecto (1.0)
+    y 5000MB representa el valor mínimo aceptable de limpieza (0.0)."""
     return _clamp(1.0 - (max(0.0, _to_float(junk_mb)) / 5000.0))
 
 
 def score_security(suspicious_count: int, warnings: int = 0) -> float:
-    """Puntúa seguridad: cada hallazgo reduce el score (5% c/u) y advertencia (25% c/u)."""
+    """Puntúa seguridad: aplica penalizaciones ponderadas.
+    Cada hallazgo reduce el ratio un 5% y cada advertencia un 25%."""
     penalty = (max(0, _to_int(suspicious_count)) * 0.05) + (max(0, _to_int(warnings)) * 0.25)
     return _clamp(1.0 - penalty)
 
 
 def score_memory(available_percent: float) -> float:
-    """Puntúa disponibilidad de RAM. 35% de margen libre se considera nivel óptimo."""
+    """Puntúa disponibilidad de RAM: normaliza respecto al objetivo óptimo del 35%."""
     val = _to_float(available_percent)
     return _clamp(max(0.0, val) / 35.0)
 
 
 def score_disk(free_percent: float) -> float:
-    """Puntúa espacio en disco. 25% de espacio libre es el umbral de salud deseado."""
+    """Puntúa espacio libre: normaliza respecto al umbral de salud deseado del 25%."""
     val = _to_float(free_percent)
     return _clamp(max(0.0, val) / 25.0)
 
 
 def score_duplicates(duplicate_mb: float) -> float:
-    """Puntúa duplicados: penalización hasta alcanzar el umbral de 2GB (2000MB)."""
+    """Puntúa duplicados: escala lineal con penalización máxima al llegar a 2000MB."""
     return _clamp(1.0 - (max(0.0, _to_float(duplicate_mb)) / 2000.0))
 
 
 def score_startup(startup_count: int) -> float:
-    """Puntúa programas de inicio: penalización creciente hasta 20 entradas."""
+    """Puntúa programas de inicio: penalización lineal creciente hasta llegar a 20 entradas."""
     return _clamp(1.0 - (max(0, _to_int(startup_count)) / 20.0))
 
 

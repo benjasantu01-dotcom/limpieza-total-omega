@@ -88,23 +88,23 @@ def directory_size(path: str | os.PathLike) -> int:
     """
     Calcula el tamaño total de una carpeta de forma segura.
     
-    Utiliza iteración manual (stack) para evitar recursión profunda y 
-    `is_relative_to` para garantizar que la exploración no escape de la 
-    carpeta raíz original, protegiendo al sistema de symlink attacks.
+    Usa un stack explícito para recorrer el árbol de archivos sin recursión,
+    evitando el desbordamiento de pila en estructuras profundas. 
+    IGNORA symlinks para evitar ciclos y escapes de directorio, y maneja 
+    excepciones de permisos de lectura por archivo de forma silenciosa.
     """
     if not path:
         return 0
         
     try:
-        p = Path(path)
-        if not p.is_dir():
+        root_path = Path(path).resolve(strict=True)
+        if not root_path.is_dir():
             return 0
-        base_path = p.resolve(strict=True)
     except (OSError, RuntimeError):
         return 0
     
-    total = 0
-    stack = [base_path]
+    total_bytes = 0
+    stack = [root_path]
     
     while stack:
         current_dir = stack.pop()
@@ -112,19 +112,20 @@ def directory_size(path: str | os.PathLike) -> int:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
+                        # is_symlink() es True para enlaces simbólicos y junctions
                         if entry.is_symlink():
                             continue
                         
                         if entry.is_dir(follow_symlinks=False):
                             stack.append(Path(entry.path))
                         elif entry.is_file(follow_symlinks=False):
-                            total += entry.stat().st_size
+                            total_bytes += entry.stat().st_size
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):
             continue
             
-    return total
+    return total_bytes
 
 
 def _is_valid_cache_path(candidate: Path, base_path: Path) -> bool:
@@ -144,8 +145,9 @@ def detect_profiles(bases: Sequence[Path] | None = None,
     """
     Explora directorios base buscando cachés definidas en `cache_paths`.
     
-    Seguridad: Valida que cada ruta de caché resultante resuelva dentro 
-    de la carpeta base del perfil. Se ignoran rutas prohibidas en `NEVER_TOUCH`.
+    Seguridad: Valida que cada ruta de caché resultante sea un subdirectorio 
+    de la carpeta base del perfil (evitando Path Traversal) y omite cualquier 
+    ruta marcada en `NEVER_TOUCH`.
     """
     if bases is None:
         bases = base_directories()
@@ -159,21 +161,23 @@ def detect_profiles(bases: Sequence[Path] | None = None,
             continue
             
         try:
-            base_path = base.resolve(strict=True)
+            resolved_base = base.resolve(strict=True)
         except (OSError, RuntimeError):
             continue
 
-        for browser, relative in cache_paths.items():
-            if not isinstance(relative, str) or not relative:
+        for browser_name, relative_path_str in cache_paths.items():
+            if not isinstance(relative_path_str, str) or not relative_path_str:
                 continue
                 
             try:
-                candidate = base_path.joinpath(*relative.split("\\")).resolve(strict=False)
-                if not _is_valid_cache_path(candidate, base_path):
+                # Se construye la ruta absoluta para validar la integridad del árbol
+                candidate = resolved_base.joinpath(*relative_path_str.split("\\")).resolve(strict=False)
+                
+                if not _is_valid_cache_path(candidate, resolved_base):
                     continue
                     
                 found.append(BrowserCache(
-                    browser=browser,
+                    browser=browser_name,
                     path=candidate,
                     size_bytes=directory_size(str(candidate)),
                 ))

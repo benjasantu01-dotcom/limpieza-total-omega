@@ -5,8 +5,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **437**
-- Mejoras aceptadas: **253** (57.9% de aceptación)
+- Iteraciones totales: **441**
+- Mejoras aceptadas: **257** (58.3% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 28
 - Sin cambios (nada sustancial que mejorar): 4
@@ -17,26 +17,26 @@ Este archivo se regenera solo en cada corrida a partir de
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
 | 2026-07-26 | 221 | 15 | 22 | 3 | 68 |
-| 2026-07-27 | 32 | 3 | 6 | 1 | 66 |
+| 2026-07-27 | 36 | 3 | 6 | 1 | 66 |
 
 ## Mejoras aceptadas por enfoque
 
+- legibilidad y documentación: **68**
 - manejo de errores y validación de entradas: **64**
-- legibilidad y documentación: **64**
 - seguridad defensiva: **45**
 - rendimiento: **40**
 - robustez ante casos límite: **40**
 
 ## Mejoras aceptadas por archivo
 
-- `browser.py`: **24**
-- `diskreport.py`: **24**
+- `browser.py`: **25**
+- `diskreport.py`: **25**
 - `organizer.py`: **23**
 - `safety.py`: **23**
-- `healthscore.py`: **21**
+- `healthscore.py`: **22**
+- `duplicates.py`: **21**
 - `scanner.py`: **21**
 - `branding.py`: **21**
-- `duplicates.py`: **20**
 - `memory.py`: **20**
 - `quarantine.py`: **18**
 - `startup.py`: **18**
@@ -46,6 +46,10 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-27T10:13:46` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica mediante docstrings más precisos en las funciones de cálculo de puntaje (`score_*`), detallando explícitamente los umbrales de penalización y la lógica de normalización para facilitar su mantenimiento.
+- `2026-07-27T10:13:31` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de docstrings y se han añadido anotaciones de tipo más precisas para clarificar los contratos de las funciones, facilitando el mantenimiento y la legibilidad sin alterar la lógica de negocio.
+- `2026-07-27T10:12:58` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación interna y claridad de `summarize` y `walk_files`, añadiendo type hints faltantes y una explicación detallada sobre el comportamiento de silenciamiento de errores, alineándose con el enfoque de legibilidad técnica sin alterar la funcionalidad.
+- `2026-07-27T10:12:23` **browser.py** (legibilidad y documentación): Mejoré la documentación de `directory_size` y `detect_profiles` añadiendo detalles sobre las garantías de seguridad y el manejo de excepciones, y mejoré la tipificación y nombres internos en `detect_profiles` para clarificar el flujo de resolución de rutas.
 - `2026-07-27T10:03:22` **assistant.py** (legibilidad y documentación): Documenté con docstrings detallados las funciones de transformación de tipos y procesado de métricas en `build_context` para aclarar por qué se utilizan métodos defensivos de acceso a atributos y conversión, garantizando la estabilidad frente a cambios en los objetos de origen.
 - `2026-07-27T10:02:13` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `validate` añadiendo una verificación explícita de `isinstance` para los valores numéricos, asegurando que solo se procesen tipos compatibles antes de la conversión y evitando errores inesperados si el archivo JSON contiene estructuras anidadas o tipos de datos inesperados en esas claves.
 - `2026-07-27T09:53:07` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `scan_directory` reemplazando la lógica de pila basada en listas por una verificación explícita de `Path.is_dir()` y capturando excepciones de acceso `OSError` para evitar interrupciones en rutas con permisos restringidos o sistemas de archivos inaccesibles, asegurando que un fallo en un nodo no detenga el escaneo completo.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-27T09:24:43` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `build_context` implementando una validación explícita para los valores de `health` y `metrics` (usando `isinstance` y chequeos de existencia de atributos) para evitar errores en tiempo de ejecución si los objetos de origen no son los esperados, reemplazando el uso de `getattr` sobre objetos potencialmente nulos.
 - `2026-07-27T08:00:28` **scanner.py** (seguridad defensiva): Se ha añadido una validación de seguridad mediante `is_protected_path` en `scan_directory` para garantizar que el escáner no procese directorios críticos del sistema, reforzando el enfoque de seguridad defensiva mediante la integración con las reglas de `safety.py`.
 - `2026-07-27T07:51:07` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `organizer.py` mediante la adición de Type Hints en la función recursiva `_walk_dir`, la documentación explícita de los bloques `try-except` para clarificar la resiliencia ante errores de sistema, y la conversión de los filtros de bloque de `set` a `frozenset` para garantizar su inmutabilidad durante la ejecución.
-- `2026-07-27T07:50:59` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints completos en las funciones que carecían de ellos y la inclusión de docstrings detallados que explican el propósito de las constantes y estructuras, cumpliendo así con los estándares de documentación exigidos para esta iteración.
-- `2026-07-27T07:49:24` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica y la mantenibilidad del archivo añadiendo docstrings que explican las decisiones de diseño de los umbrales (por qué 5GB, 35% o 25%) y clarificando mediante type hints y comentarios el propósito de cada función de puntuación, facilitando futuras calibraciones del sistema de salud.
-- `2026-07-27T07:40:25` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica y la legibilidad mediante Type Hints explícitos, docstrings detallados en las funciones de procesamiento (indicando el propósito de cada paso del pipeline) y una mayor claridad en el flujo del buscador de duplicados para reducir la carga cognitiva al mantener el código.
-- `2026-07-27T07:40:09` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints en `summarize` y `walk_files`, y clarifiqué mediante docstrings los comportamientos de manejo de errores y seguridad de `walk_files` para evitar interpretaciones erróneas sobre su resiliencia.
