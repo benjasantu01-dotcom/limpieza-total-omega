@@ -146,7 +146,7 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
             for root, subdirs, files in os.walk(base):
                 root_path = Path(root).resolve()
                 
-                # Defensa contra escapes de directorio
+                # Defensa contra escapes de directorio y rutas protegidas
                 if not str(root_path).startswith(str(base)):
                     subdirs[:] = []
                     continue

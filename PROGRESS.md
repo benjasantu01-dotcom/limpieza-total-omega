@@ -5,8 +5,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **481**
-- Mejoras aceptadas: **282** (58.6% de aceptación)
+- Iteraciones totales: **485**
+- Mejoras aceptadas: **286** (59.0% de aceptación)
 - Rechazadas por tests: 22
 - Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 5
@@ -17,27 +17,27 @@ Este archivo se regenera solo en cada corrida a partir de
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
 | 2026-07-26 | 221 | 15 | 22 | 3 | 68 |
-| 2026-07-27 | 61 | 7 | 10 | 2 | 72 |
+| 2026-07-27 | 65 | 7 | 10 | 2 | 72 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **75**
 - manejo de errores y validación de entradas: **64**
 - rendimiento: **50**
+- seguridad defensiva: **50**
 - robustez ante casos límite: **47**
-- seguridad defensiva: **46**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **27**
-- `browser.py`: **26**
+- `diskreport.py`: **28**
+- `browser.py`: **27**
 - `organizer.py`: **26**
 - `safety.py`: **25**
+- `duplicates.py`: **23**
 - `healthscore.py`: **23**
 - `scanner.py`: **23**
-- `duplicates.py`: **22**
 - `memory.py`: **22**
-- `branding.py`: **21**
+- `branding.py`: **22**
 - `quarantine.py`: **20**
 - `startup.py`: **20**
 - `main.py`: **19**
@@ -46,6 +46,10 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-27T12:06:11` **duplicates.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_collect_candidates` integrando una validación explícita mediante `is_protected_path` sobre la ruta resuelta antes de iterar, asegurando que no se acceda a directorios bloqueados a nivel de sistema incluso si los mismos no aparecen como enlaces simbólicos o jerarquías maliciosas.
+- `2026-07-27T12:06:01` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad de `walk_files` evitando el seguimiento de puntos de reparse (junctions) mediante `path.is_junction()` (disponible en Python 3.12+ o vía atributo `reparse_point`) y verificando la resolución de rutas para prevenir el acceso fuera de la jerarquía esperada, garantizando así un escaneo más seguro y predecible.
+- `2026-07-27T12:05:04` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva en `directory_size` y `detect_profiles` añadiendo verificaciones estrictas para ignorar puntos de reparse (junctions) y enlaces simbólicos a nivel de sistema de archivos, asegurando que las rutas calculadas nunca escapen del contenedor esperado.
+- `2026-07-27T12:04:34` **branding.py** (seguridad defensiva): Se endureció la validación de `save_logo_svg` añadiendo una comprobación explícita mediante `is_protected_path` para prevenir la escritura en directorios restringidos del sistema, complementando `is_safe_to_modify` para asegurar una defensa en profundidad ante intentos de escritura en rutas prohibidas.
 - `2026-07-27T11:55:44` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva al sanear explícitamente el texto de la `question` antes de procesarlo, evitando que caracteres o secuencias maliciosas inyectadas por el usuario puedan alterar la lógica del flujo de control o afectar la legibilidad del motor local.
 - `2026-07-27T11:55:20` **startup.py** (robustez ante casos límite): Se reforzó la robustez de `entries_from_folders` añadiendo un filtro `item.is_symlink()` para ignorar enlaces simbólicos/junctions en las carpetas de inicio, previniendo recursión infinita o lecturas fuera de los directorios permitidos, y se mejoró el manejo de rutas malformadas en `executable` mediante una validación más estricta del índice de cierre de comillas.
 - `2026-07-27T11:45:17` **safety.py** (robustez ante casos límite): He mejorado `is_protected_path` para prevenir la recursión infinita o errores de permisos al resolver rutas, añadiendo una comprobación de existencia y un manejo de errores más robusto ante accesos denegados, lo que evita que el escáner colapse ante archivos o enlaces bloqueados por el sistema.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-27T11:14:27` **settings.py** (rendimiento): Se implementó un cache en memoria para la configuración (`_cached_settings`) y un identificador de base (`_last_base`) para evitar operaciones innecesarias de lectura y validación de disco en llamadas repetidas a `load()` o `get()`, mejorando significativamente el rendimiento durante el bucle principal.
 - `2026-07-27T11:14:00` **scanner.py** (rendimiento): Optimicé el rendimiento de `scan_directory` reemplazando la lista `queue` por una estructura de datos más adecuada para búsquedas frecuentes y evitando la re-evaluación de la configuración de ruta mediante el uso de constantes pre-compiladas y chequeos mínimos.
 - `2026-07-27T11:04:42` **quarantine.py** (rendimiento): Optimicé el rendimiento de `restore_item`, `purge_item` y `purge_all` reemplazando la recreación iterativa de diccionarios (O(n)) por accesos directos al manifiesto cargado, evitando re-parseos y redundancias.
-- `2026-07-27T11:04:16` **organizer.py** (rendimiento): Optimicé el rendimiento de `scan_for_junk` pre-calculando el set de extensiones en minúsculas una sola vez y evitando instanciar la clase `JunkFile` innecesariamente antes de validar si el archivo es candidato, reduciendo la carga de memoria y CPU en escaneos profundos.
-- `2026-07-27T11:03:44` **memory.py** (rendimiento): Optimicé el rendimiento de `parse_windows_process_csv` reemplazando la creación de una lista intermedia mediante list comprehension con un generator expression dentro de `sorted`, reduciendo el uso de memoria en sistemas con muchos procesos activos.
-- `2026-07-27T10:54:53` **main.py** (rendimiento): Optimicé el método `refresh_list` en `LimpiezaTotalOmegaApp` para evitar el uso de `.join` sobre una lista de strings grande en cada llamada, delegando el formato al momento de la visualización y mejorando la eficiencia del manejo de strings.
-- `2026-07-27T10:54:06` **healthscore.py** (rendimiento): Optimicé el método `validate` de `SystemMetrics` utilizando una tupla de acceso directo a los campos en lugar de iterar sobre el diccionario `__annotations__` en cada corrida, reduciendo la sobrecarga de reflexión al procesar las métricas.

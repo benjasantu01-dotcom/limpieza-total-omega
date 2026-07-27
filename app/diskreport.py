@@ -149,6 +149,7 @@ def all_drives_usage(mounts: Iterable[str] | None = None) -> list[DriveUsage]:
 def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Generator[tuple[Path, int], None, None]:
     """
     Genera tuplas (ruta_absoluta, tamaño_en_bytes) para cada archivo encontrado.
+    Evita seguir enlaces simbólicos o puntos de reparse (junctions).
     """
     if not directory:
         return
@@ -159,12 +160,19 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
     except (OSError, RuntimeError):
         return
     
-    if base.is_symlink():
-        return
-    
     for root, subdirs, files in os.walk(base, onerror=lambda _: None):
         try:
             root_path = Path(root)
+            
+            # Impedir escape de jerarquía mediante resolución absoluta
+            if not str(root_path).startswith(str(base)):
+                continue
+
+            # Identificar reparse points / junctions en Windows
+            if root_path.is_symlink() or (os.name == 'nt' and root_path.lstat().st_reparse_tag != 0):
+                subdirs.clear()
+                continue
+
             if skip_protected and is_protected_path(root_path):
                 subdirs.clear()
                 continue
@@ -175,7 +183,8 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
             for name in files:
                 try:
                     path = root_path / name
-                    if path.is_symlink():
+                    # No seguir symlinks ni detectar reparse points en archivos
+                    if path.is_symlink() or (os.name == 'nt' and path.lstat().st_reparse_tag != 0):
                         continue
                     if skip_protected and is_protected_path(path):
                         continue

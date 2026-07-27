@@ -90,21 +90,20 @@ def directory_size(path: str | os.PathLike) -> int:
     
     Usa un stack explícito para recorrer el árbol de archivos sin recursión,
     evitando el desbordamiento de pila en estructuras profundas. 
-    IGNORA symlinks para evitar ciclos y escapes de directorio, y maneja 
-    excepciones de permisos de lectura y archivos bloqueados de forma silenciosa.
+    IGNORA symlinks y junctions para evitar ciclos y escapes de directorio.
     """
     if not path:
         return 0
         
     try:
-        root_path = Path(path).resolve(strict=True)
-        if not root_path.is_dir():
+        base_path = Path(path).resolve(strict=True)
+        if not base_path.is_dir():
             return 0
     except (OSError, RuntimeError):
         return 0
     
     total_bytes = 0
-    stack = [root_path]
+    stack = [base_path]
     
     while stack:
         current_dir = stack.pop()
@@ -112,14 +111,14 @@ def directory_size(path: str | os.PathLike) -> int:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
-                        # is_symlink() es True para enlaces simbólicos y junctions
+                        # is_symlink() detecta symlinks y junctions.
+                        # Nunca seguimos enlaces para garantizar el aislamiento.
                         if entry.is_symlink():
                             continue
                         
                         if entry.is_dir(follow_symlinks=False):
                             stack.append(Path(entry.path))
                         elif entry.is_file(follow_symlinks=False):
-                            # Capturamos OSError ante archivos bloqueados por el navegador
                             total_bytes += entry.stat().st_size
                     except (OSError, PermissionError):
                         continue
@@ -132,12 +131,14 @@ def directory_size(path: str | os.PathLike) -> int:
 def _is_valid_cache_path(candidate: Path, base_path: Path) -> bool:
     """Verifica que la ruta sea segura, exista y no esté en la lista negra."""
     try:
+        # Resolvemos para verificar la ubicación real en disco tras desreferenciar
+        resolved = candidate.resolve()
         return (
-            candidate.is_relative_to(base_path) and
-            candidate.is_dir() and
+            resolved.is_relative_to(base_path.resolve()) and
+            resolved.is_dir() and
             candidate.name.lower() not in NEVER_TOUCH
         )
-    except ValueError:
+    except (ValueError, OSError, RuntimeError):
         return False
 
 
@@ -145,10 +146,6 @@ def detect_profiles(bases: Sequence[Path] | None = None,
                     cache_paths: Dict[str, str] | None = None) -> List[BrowserCache]:
     """
     Explora directorios base buscando cachés definidas en `cache_paths`.
-    
-    Seguridad: Valida que cada ruta de caché resultante sea un subdirectorio 
-    de la carpeta base del perfil (evitando Path Traversal) y omite cualquier 
-    ruta marcada en `NEVER_TOUCH`.
     """
     if bases is None:
         bases = base_directories()
@@ -171,9 +168,9 @@ def detect_profiles(bases: Sequence[Path] | None = None,
                 continue
                 
             try:
-                # Se construye la ruta absoluta para validar la integridad del árbol
-                candidate = resolved_base.joinpath(*relative_path_str.split("\\")).resolve(strict=False)
+                candidate = resolved_base.joinpath(*relative_path_str.split("\\"))
                 
+                # Validamos antes de intentar medir
                 if not _is_valid_cache_path(candidate, resolved_base):
                     continue
                     
