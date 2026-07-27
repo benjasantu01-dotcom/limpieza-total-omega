@@ -44,7 +44,7 @@ __all__ = [
 ]
 
 # Advertencia que la interfaz debe mostrar junto al botón de trim.
-TRIM_WARNING = (
+TRIM_WARNING: str = (
     "Liberar el working set NO acelera la PC: fuerza a Windows a expulsar "
     "memoria que los programas están usando, y al volver a necesitarla la "
     "tiene que releer del disco. El número de 'RAM libre' sube, pero el "
@@ -113,7 +113,7 @@ def format_bytes(num: int | float) -> str:
 def parse_linux_meminfo(text: str) -> MemorySnapshot:
     """
     Procesa el contenido de /proc/meminfo. 
-    Convierte valores expresados en kB a bytes.
+    Convierte valores expresados en kB a bytes para estandarizar con MemorySnapshot.
     """
     values: Dict[str, int] = {}
     for line in text.splitlines():
@@ -197,7 +197,7 @@ def read_snapshot() -> MemorySnapshot:
 
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
-    """Consulta los procesos más pesados mediante PowerShell."""
+    """Consulta los procesos más pesados mediante PowerShell en Windows."""
     if os.name != "nt":
         return []
     command = (
@@ -217,7 +217,8 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
 
 def pressure_level(snapshot: MemorySnapshot) -> str:
     """
-    Clasifica el estado de presión basándose en el % de memoria disponible.
+    Clasifica el estado de presión de memoria basándose en el 
+    porcentaje de memoria física disponible.
     """
     if snapshot.total <= 0:
         return "info"
@@ -232,7 +233,7 @@ def pressure_level(snapshot: MemorySnapshot) -> str:
 
 
 def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] = None) -> List[str]:
-    """Genera un reporte textual descriptivo basado en el estado actual."""
+    """Genera un reporte textual descriptivo basado en el estado actual de la memoria."""
     if snapshot.total <= 0:
         return ["No se pudo leer el estado de la memoria en este sistema."]
 
@@ -243,7 +244,7 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
         f"Disponible: {format_bytes(snapshot.available)} ({snapshot.available_percent}%)",
     ]
 
-    diagnosticos = {
+    diagnosticos: Dict[str, str] = {
         "ok": "Estado: holgado. No hace falta 'liberar' nada: la memoria ocupada por caché es la que hace que los programas abran rápido.",
         "info": "Estado: normal. Windows está usando la memoria como corresponde. Liberarla a la fuerza no mejoraría el rendimiento.",
         "warning": "Estado: ajustado. Conviene cerrar programas que no estés usando; eso sí libera memoria de verdad, a diferencia de un 'limpiador'.",
@@ -263,9 +264,8 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     Ejecuta el trim (purga) del working set de un proceso en Windows usando
     la API `EmptyWorkingSet`.
     
-    Seguridad: Los PID menores o iguales a 4 (System, Idle) están bloqueados,
-    ya que no pueden ni deben ser manipulados. Se requiere handle con
-    permisos de consulta y seteo de cuota.
+    Seguridad: Los PID <= 4 están protegidos contra manipulación.
+    Retorna (éxito, mensaje_explicativo).
     """
     if os.name != "nt":
         return False, "Solo disponible en Windows."

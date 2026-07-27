@@ -5,10 +5,10 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **381**
-- Mejoras aceptadas: **240** (63.0% de aceptación)
+- Iteraciones totales: **385**
+- Mejoras aceptadas: **243** (63.1% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 24
+- Rechazadas por guardia de seguridad: 25
 - Sin cambios (nada sustancial que mejorar): 4
 - Sin respuesta de la IA (error o límite): 97
 
@@ -17,11 +17,11 @@ Este archivo se regenera solo en cada corrida a partir de
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
 | 2026-07-26 | 221 | 15 | 22 | 3 | 68 |
-| 2026-07-27 | 19 | 1 | 2 | 1 | 29 |
+| 2026-07-27 | 22 | 1 | 3 | 1 | 29 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **60**
+- legibilidad y documentación: **63**
 - manejo de errores y validación de entradas: **56**
 - seguridad defensiva: **44**
 - rendimiento: **40**
@@ -31,12 +31,12 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `browser.py`: **23**
 - `diskreport.py`: **23**
+- `organizer.py`: **22**
 - `safety.py`: **22**
-- `organizer.py`: **21**
 - `branding.py`: **21**
 - `duplicates.py`: **20**
-- `healthscore.py`: **19**
-- `memory.py`: **19**
+- `healthscore.py`: **20**
+- `memory.py`: **20**
 - `scanner.py`: **19**
 - `quarantine.py`: **18**
 - `startup.py`: **18**
@@ -44,6 +44,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-27T07:51:07` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `organizer.py` mediante la adición de Type Hints en la función recursiva `_walk_dir`, la documentación explícita de los bloques `try-except` para clarificar la resiliencia ante errores de sistema, y la conversión de los filtros de bloque de `set` a `frozenset` para garantizar su inmutabilidad durante la ejecución.
+- `2026-07-27T07:50:59` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints completos en las funciones que carecían de ellos y la inclusión de docstrings detallados que explican el propósito de las constantes y estructuras, cumpliendo así con los estándares de documentación exigidos para esta iteración.
+- `2026-07-27T07:49:24` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica y la mantenibilidad del archivo añadiendo docstrings que explican las decisiones de diseño de los umbrales (por qué 5GB, 35% o 25%) y clarificando mediante type hints y comentarios el propósito de cada función de puntuación, facilitando futuras calibraciones del sistema de salud.
 - `2026-07-27T07:40:25` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica y la legibilidad mediante Type Hints explícitos, docstrings detallados en las funciones de procesamiento (indicando el propósito de cada paso del pipeline) y una mayor claridad en el flujo del buscador de duplicados para reducir la carga cognitiva al mantener el código.
 - `2026-07-27T07:40:09` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints en `summarize` y `walk_files`, y clarifiqué mediante docstrings los comportamientos de manejo de errores y seguridad de `walk_files` para evitar interpretaciones erróneas sobre su resiliencia.
 - `2026-07-27T07:39:46` **browser.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de la lógica de detección de perfiles mediante la extracción de la validación de rutas en una función auxiliar dedicada (`_is_valid_cache_path`), clarificando así la intención del código y facilitando futuras auditorías.
@@ -56,6 +59,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-27T07:01:35` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` y `draw_logo` mediante la validación proactiva de parámetros de entrada, evitando errores en tiempo de ejecución al interactuar con el sistema de archivos o el canvas de Tkinter.
 - `2026-07-27T05:58:27` **diskreport.py** (rendimiento): Optimicé `summarize` para evitar redundancias eliminando el uso de `heapq.heappush` dentro del loop principal, reemplazándolo por una estructura de datos más eficiente y simple al final del procesamiento, reduciendo la carga de memoria y CPU en cada iteración.
 - `2026-07-27T05:58:14` **browser.py** (rendimiento): Optimicé el rendimiento de `directory_size` eliminando llamadas redundantes a `Path.resolve()` dentro del bucle de escaneo, utilizando `os.DirEntry` directamente para evitar la creación innecesaria de objetos `Path` en cada iteración y reducir la presión sobre la memoria.
-- `2026-07-27T05:57:47` **branding.py** (rendimiento): Optimizé el acceso a los datos de la paleta y estilos integrando los mapeos de color directamente en `severity_color` y `grade_color` para eliminar llamadas innecesarias a funciones (evitando el overhead de `lru_cache` y búsquedas por clave en cada ejecución de la UI), y simplifiqué la lógica de validación de rutas en `save_logo_svg` utilizando una sola comprobación de seguridad.
-- `2026-07-27T05:57:23` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la implementación de Type Hints más precisos y la conversión de los comentarios internos en docstrings estructurados, facilitando la comprensión de la lógica de procesamiento de registros y la manipulación de rutas.
-- `2026-07-27T05:48:12` **scanner.py** (legibilidad y documentación): He mejorado la documentación del módulo añadiendo type hints faltantes, tipado explícito en los resultados de `scan_directory` y docstrings técnicos más precisos que aclaran la intención de cada heurística y el manejo de excepciones, facilitando la mantenibilidad futura sin alterar la lógica de escaneo.

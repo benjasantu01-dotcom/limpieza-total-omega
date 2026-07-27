@@ -17,7 +17,7 @@ import logging
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Final
 from safety import is_safe_to_modify
 
 # Configuración de log para seguimiento de errores no críticos
@@ -25,19 +25,19 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Extensiones típicas de archivos "basura" / temporales en Windows
-JUNK_EXTENSIONS = {
+JUNK_EXTENSIONS: Final = {
     ".tmp", ".temp", ".log", ".bak", ".old", ".dmp", ".chk", ".cache",
 }
 
 # Carpetas típicas donde se acumula basura en Windows 11
-DEFAULT_SCAN_DIRS = [
+DEFAULT_SCAN_DIRS: Final = [
     os.path.expandvars(r"%TEMP%"),
     os.path.expandvars(r"%LOCALAPPDATA%\Temp"),
     os.path.expanduser("~/Downloads"),
 ]
 
 # Carpetas de sistema críticas que nunca se recorren.
-SYSTEM_FOLDER_BLOCKLIST = {"windows", "program files", "program files (x86)", "$recycle.bin", "system volume information"}
+SYSTEM_FOLDER_BLOCKLIST: Final = frozenset({"windows", "program files", "program files (x86)", "$recycle.bin", "system volume information"})
 
 
 def list_available_drives() -> List[str]:
@@ -86,9 +86,10 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     dirs = directories or DEFAULT_SCAN_DIRS
     found: List[JunkFile] = []
     junk_set = {ext.lower() for ext in JUNK_EXTENSIONS}
-    blocklist = {s.lower() for s in SYSTEM_FOLDER_BLOCKLIST}
+    blocklist = SYSTEM_FOLDER_BLOCKLIST
 
-    def _walk_dir(base_path: str):
+    def _walk_dir(base_path: str) -> None:
+        # Intenta recorrer el directorio; ignora errores si el acceso es denegado
         try:
             with os.scandir(base_path) as it:
                 for entry in it:
@@ -109,8 +110,10 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
                                         )
                                     )
                     except (PermissionError, OSError):
+                        # Se omite el archivo/directorio específico si falla el acceso
                         continue
         except (PermissionError, OSError):
+            # Se omite la carpeta base si falla el acceso
             pass
 
     for d in dirs:
