@@ -175,7 +175,8 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
                 continue
 
             # Identificar reparse points / junctions en Windows
-            if root_path.is_symlink() or (os.name == 'nt' and root_path.lstat().st_reparse_tag != 0):
+            # st_reparse_tag != 0 indica que es un punto de reanálisis (junction, symlink, etc.)
+            if root_path.is_symlink() or (os.name == 'nt' and root_path.stat().st_reparse_tag != 0):
                 subdirs.clear()
                 continue
 
@@ -189,12 +190,13 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
             for name in files:
                 try:
                     path = root_path / name
-                    # No seguir symlinks ni detectar reparse points en archivos
-                    if path.is_symlink() or (os.name == 'nt' and path.lstat().st_reparse_tag != 0):
+                    # Validación defensiva de tipo para evitar seguir reparse points en archivos
+                    st = path.lstat()
+                    if path.is_symlink() or (os.name == 'nt' and getattr(st, 'st_reparse_tag', 0) != 0):
                         continue
                     if skip_protected and is_protected_path(path):
                         continue
-                    yield path, path.stat().st_size
+                    yield path, st.st_size
                 except (OSError, PermissionError, FileNotFoundError):
                     continue
         except (OSError, PermissionError):

@@ -209,11 +209,13 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
             contexto.grade = str(grado) if isinstance(grado, (str, int, float)) else ""
             contexto.analyzed = True
 
+        # Endurecimiento: solo permitir números en **extra y validar contra campos definidos
         for clave, valor in extra.items():
             if hasattr(contexto, clave) and isinstance(valor, (int, float)):
-                setattr(contexto, clave, max(0.0, float(valor)))
+                # No permitir sobreescribir campos sensibles o de control
+                if clave not in ["analyzed", "grade"]:
+                    setattr(contexto, clave, max(0.0, float(valor)))
     except Exception:
-        # Ante cualquier error inesperado en la extracción, devolvemos un contexto vacío no analizado
         return SystemContext(analyzed=False)
 
     return contexto

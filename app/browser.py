@@ -101,17 +101,14 @@ def directory_size(path: str | os.PathLike) -> int:
         return 0
         
     try:
-        p = Path(path)
-        if not p.exists():
-            return 0
-        base_path = p.resolve(strict=True)
-        if not base_path.is_dir():
+        p = Path(path).resolve(strict=True)
+        if not p.is_dir():
             return 0
     except (OSError, RuntimeError):
         return 0
     
     total_bytes = 0
-    stack = [base_path]
+    stack = [p]
     
     while stack:
         current_dir = stack.pop()
@@ -119,13 +116,16 @@ def directory_size(path: str | os.PathLike) -> int:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
-                        # is_symlink() detecta symlinks y junctions.
-                        # Nunca seguimos enlaces para garantizar el aislamiento.
+                        # Verificación de aislamiento: el elemento debe seguir contenido en p
+                        # tras resolver enlaces (si los hubiera, aunque los bloqueamos abajo).
                         if entry.is_symlink():
                             continue
                         
                         if entry.is_dir(follow_symlinks=False):
-                            stack.append(Path(entry.path))
+                            # Validar que el subdirectorio no escape al padre mediante resolución
+                            child_path = Path(entry.path).resolve()
+                            if p in child_path.parents or child_path == p:
+                                stack.append(child_path)
                         elif entry.is_file(follow_symlinks=False):
                             total_bytes += entry.stat().st_size
                     except (OSError, PermissionError):
@@ -144,7 +144,7 @@ def _is_valid_cache_path(candidate: Path, base_path: Path) -> bool:
     try:
         if not candidate.exists():
             return False
-        # Resolvemos rutas para comparar ubicaciones físicas reales
+        # Resolvemos rutas para comparar ubicaciones físicas reales y prevenir escapes
         resolved = candidate.resolve(strict=True)
         resolved_base = base_path.resolve(strict=True)
         return (
