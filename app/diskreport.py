@@ -227,6 +227,8 @@ def largest_folders(directory: str | os.PathLike, limit: int = 10, skip_protecte
         return []
     try:
         base = Path(directory).expanduser().resolve(strict=False)
+        if not base.exists() or not base.is_dir():
+            return []
         if skip_protected and is_protected_path(base):
             return []
     except (OSError, RuntimeError):
@@ -267,16 +269,19 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
     if not directory:
         return ["Error: Ruta vacía."]
         
-    path_obj = Path(directory)
-    if not path_obj.exists():
-        return ["Error: La carpeta no existe."]
+    try:
+        path_obj = Path(directory).expanduser().resolve(strict=False)
+        if not path_obj.exists() or not path_obj.is_dir():
+            return [f"Error: La carpeta '{directory}' no es válida."]
+    except (OSError, RuntimeError):
+        return ["Error: No se pudo acceder a la ruta."]
         
     total = 0
     count = 0
     extension_map: dict[str, ExtensionUsage] = {}
     all_files: list[tuple[int, Path]] = []
     
-    for path, size in walk_files(directory, skip_protected):
+    for path, size in walk_files(path_obj, skip_protected):
         total += size
         count += 1
         
@@ -291,7 +296,7 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
         all_files.append((size, path))
             
     lines = [
-        f"Carpeta analizada: {directory}",
+        f"Carpeta analizada: {path_obj}",
         f"Total: {format_size(total)} en {count} archivos",
         "",
         "Por tipo de archivo:",

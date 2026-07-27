@@ -56,13 +56,16 @@ class SystemMetrics:
     quarantined_count: int = 0
 
     def validate(self) -> None:
-        """Asegura que todos los campos tengan valores numéricos finitos."""
+        """Asegura que todos los campos definidos tengan valores numéricos finitos."""
         for field_name, field_type in self.__annotations__.items():
-            val = getattr(self, field_name)
-            if field_type is float:
-                setattr(self, field_name, _to_float(val))
-            elif field_type is int:
-                setattr(self, field_name, _to_int(val))
+            try:
+                val = getattr(self, field_name, None)
+                if field_type is float:
+                    setattr(self, field_name, _to_float(val))
+                elif field_type is int:
+                    setattr(self, field_name, _to_int(val))
+            except AttributeError:
+                continue
 
 
 @dataclass

@@ -94,10 +94,12 @@ def directory_size(path: str | os.PathLike) -> int:
     """
     if not path:
         return 0
+        
     try:
-        base_path = Path(path).resolve(strict=True)
-        if not base_path.is_dir():
+        p = Path(path)
+        if not p.exists() or not p.is_dir():
             return 0
+        base_path = p.resolve(strict=True)
     except (OSError, RuntimeError):
         return 0
     
@@ -141,7 +143,7 @@ def detect_profiles(bases: Sequence[Path] | None = None,
     found: List[BrowserCache] = []
     
     for base in bases:
-        if not isinstance(base, Path):
+        if not isinstance(base, Path) or not base.is_dir():
             continue
             
         try:
@@ -150,7 +152,7 @@ def detect_profiles(bases: Sequence[Path] | None = None,
             continue
 
         for browser, relative in cache_paths.items():
-            if not isinstance(relative, str):
+            if not isinstance(relative, str) or not relative:
                 continue
                 
             try:

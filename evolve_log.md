@@ -1556,3 +1556,10 @@ FAILED evolve/tests/test_modules.py::test_low_disk_produces_a_specific_recommend
 - `2026-07-27T07:01:35` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `save_logo_svg` y `draw_logo` mediante la validación proactiva de parámetros de entrada, evitando errores en tiempo de ejecución al interactuar con el sistema de archivos o el canvas de Tkinter.
 - `2026-07-27T07:01:35` Rotación — nada para rotar
 - `2026-07-27T07:01:35` Corrida terminada. Total usado hoy: 36.
+- `2026-07-27T07:08:16` Arrancando corrida. Quedan hoy ~264 peticiones objetivo.
+- `2026-07-27T07:08:45` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `directory_size` y `detect_profiles` añadiendo validaciones explícitas de tipo y estado para prevenir excepciones en tiempo de ejecución al interactuar con rutas del sistema.
+- `2026-07-27T07:09:09` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `summarize` y `largest_folders` validando que la ruta proporcionada sea un directorio absoluto y accesible antes de comenzar el recorrido, evitando errores silenciosos al procesar entradas inválidas.
+- `2026-07-27T07:09:34` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-07-27T07:09:44` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Reforcé `SystemMetrics.validate` para que el acceso a atributos sea robusto ante la ausencia de campos en versiones antiguas o datos mal formados, garantizando que el cálculo no falle incluso si el objeto `SystemMetrics` tiene una estructura inesperada.
+- `2026-07-27T07:09:44` Rotación — nada para rotar
+- `2026-07-27T07:09:44` Corrida terminada. Total usado hoy: 40.
