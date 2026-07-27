@@ -1621,3 +1621,39 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-07-27T07:51:07` ✅ Mejora aceptada en organizer.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `organizer.py` mediante la adición de Type Hints en la función recursiva `_walk_dir`, la documentación explícita de los bloques `try-except` para clarificar la resiliencia ante errores de sistema, y la conversión de los filtros de bloque de `set` a `frozenset` para garantizar su inmutabilidad durante la ejecución.
 - `2026-07-27T07:51:07` Rotación — nada para rotar
 - `2026-07-27T07:51:07` Corrida terminada. Total usado hoy: 56.
+- `2026-07-27T07:59:11` Arrancando corrida. Quedan hoy ~244 peticiones objetivo.
+- `2026-07-27T07:59:37` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-07-27T08:00:00` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-07-27T08:00:28` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha añadido una validación de seguridad mediante `is_protected_path` en `scan_directory` para garantizar que el escáner no procese directorios críticos del sistema, reforzando el enfoque de seguridad defensiva mediante la integración con las reglas de `safety.py`.
+- `2026-07-27T08:00:31` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-07-27T08:00:34` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-07-27T08:01:07` Tests FALLARON:
+```
+...............F........................................................ [ 24%]
+........................................................................ [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+______________________ test_a_normal_folder_is_remembered ______________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-2/test_a_normal_folder_is_rememb0')
+
+    def test_a_normal_folder_is_remembered(tmp_path):
+        segura = str(tmp_path / "Descargas")
+>       assert settings.validate({"ultima_carpeta": segura})["ultima_carpeta"] == segura
+E       AssertionError: assert '' == '/tmp/pytest-...mb0/Descargas'
+E         
+E         - /tmp/pytest-of-runner/pytest-2/test_a_normal_folder_is_rememb0/Descargas
+
+evolve/tests/test_assistant.py:124: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - AssertionError: assert '' == '/tmp/pytest-...mb0/Descargas'
+  
+  - /tmp/pytest-of-runner/pytest-2/test_a_normal_folder_is_rememb0/Descargas
+1 failed, 298 passed in 0.98s
+
+```
+- `2026-07-27T08:01:07` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Se reforzó la validación de `ultima_carpeta` en `validate()` asegurando que la ruta no solo sea segura (`is_safe_to_modify`), sino que exista físicamente en el sistema antes de ser aceptada, evitando que la aplicación intente persistir rutas inexistentes o malformadas.
+- `2026-07-27T08:01:07` Rotación — nada para rotar
+- `2026-07-27T08:01:07` Corrida terminada. Total usado hoy: 60.

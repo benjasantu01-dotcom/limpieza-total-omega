@@ -19,6 +19,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from datetime import datetime, timedelta
 from typing import List, Optional, Union, Final
+from safety import is_protected_path
 
 # Configuración de logger para el módulo
 logger = logging.getLogger(__name__)
@@ -120,6 +121,9 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
         
     try:
         root: Path = Path(directory).resolve()
+        if is_protected_path(root):
+            return []
+            
         results: List[Suspicion] = []
         if not root.exists() or not root.is_dir():
             return []
@@ -130,7 +134,7 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
             try:
                 for entry in current_dir.iterdir():
                     try:
-                        if entry.is_symlink():
+                        if entry.is_symlink() or is_protected_path(entry):
                             continue
                         if entry.is_dir():
                             queue.append(entry)

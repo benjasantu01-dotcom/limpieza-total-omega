@@ -5,25 +5,25 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **385**
-- Mejoras aceptadas: **243** (63.1% de aceptación)
-- Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 25
+- Iteraciones totales: **389**
+- Mejoras aceptadas: **244** (62.7% de aceptación)
+- Rechazadas por tests: 17
+- Rechazadas por guardia de seguridad: 26
 - Sin cambios (nada sustancial que mejorar): 4
-- Sin respuesta de la IA (error o límite): 97
+- Sin respuesta de la IA (error o límite): 98
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
 | 2026-07-26 | 221 | 15 | 22 | 3 | 68 |
-| 2026-07-27 | 22 | 1 | 3 | 1 | 29 |
+| 2026-07-27 | 23 | 2 | 4 | 1 | 30 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **63**
 - manejo de errores y validación de entradas: **56**
-- seguridad defensiva: **44**
+- seguridad defensiva: **45**
 - rendimiento: **40**
 - robustez ante casos límite: **40**
 
@@ -37,13 +37,14 @@ Este archivo se regenera solo en cada corrida a partir de
 - `duplicates.py`: **20**
 - `healthscore.py`: **20**
 - `memory.py`: **20**
-- `scanner.py`: **19**
+- `scanner.py`: **20**
 - `quarantine.py`: **18**
 - `startup.py`: **18**
 - `main.py`: **17**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-27T08:00:28` **scanner.py** (seguridad defensiva): Se ha añadido una validación de seguridad mediante `is_protected_path` en `scan_directory` para garantizar que el escáner no procese directorios críticos del sistema, reforzando el enfoque de seguridad defensiva mediante la integración con las reglas de `safety.py`.
 - `2026-07-27T07:51:07` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `organizer.py` mediante la adición de Type Hints en la función recursiva `_walk_dir`, la documentación explícita de los bloques `try-except` para clarificar la resiliencia ante errores de sistema, y la conversión de los filtros de bloque de `set` a `frozenset` para garantizar su inmutabilidad durante la ejecución.
 - `2026-07-27T07:50:59` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints completos en las funciones que carecían de ellos y la inclusión de docstrings detallados que explican el propósito de las constantes y estructuras, cumpliendo así con los estándares de documentación exigidos para esta iteración.
 - `2026-07-27T07:49:24` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica y la mantenibilidad del archivo añadiendo docstrings que explican las decisiones de diseño de los umbrales (por qué 5GB, 35% o 25%) y clarificando mediante type hints y comentarios el propósito de cada función de puntuación, facilitando futuras calibraciones del sistema de salud.
@@ -58,4 +59,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-27T07:08:45` **browser.py** (manejo de errores y validación de entradas): Mejora la robustez de `directory_size` y `detect_profiles` añadiendo validaciones explícitas de tipo y estado para prevenir excepciones en tiempo de ejecución al interactuar con rutas del sistema.
 - `2026-07-27T07:01:35` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` y `draw_logo` mediante la validación proactiva de parámetros de entrada, evitando errores en tiempo de ejecución al interactuar con el sistema de archivos o el canvas de Tkinter.
 - `2026-07-27T05:58:27` **diskreport.py** (rendimiento): Optimicé `summarize` para evitar redundancias eliminando el uso de `heapq.heappush` dentro del loop principal, reemplazándolo por una estructura de datos más eficiente y simple al final del procesamiento, reduciendo la carga de memoria y CPU en cada iteración.
-- `2026-07-27T05:58:14` **browser.py** (rendimiento): Optimicé el rendimiento de `directory_size` eliminando llamadas redundantes a `Path.resolve()` dentro del bucle de escaneo, utilizando `os.DirEntry` directamente para evitar la creación innecesaria de objetos `Path` en cada iteración y reducir la presión sobre la memoria.
