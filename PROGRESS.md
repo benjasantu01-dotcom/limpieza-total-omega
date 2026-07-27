@@ -5,19 +5,19 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **469**
-- Mejoras aceptadas: **277** (59.1% de aceptación)
+- Iteraciones totales: **473**
+- Mejoras aceptadas: **278** (58.8% de aceptación)
 - Rechazadas por tests: 20
 - Rechazadas por guardia de seguridad: 31
-- Sin cambios (nada sustancial que mejorar): 4
-- Sin respuesta de la IA (error o límite): 137
+- Sin cambios (nada sustancial que mejorar): 5
+- Sin respuesta de la IA (error o límite): 139
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
 | 2026-07-26 | 221 | 15 | 22 | 3 | 68 |
-| 2026-07-27 | 56 | 5 | 9 | 1 | 69 |
+| 2026-07-27 | 57 | 5 | 9 | 2 | 71 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,7 +25,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **64**
 - rendimiento: **50**
 - seguridad defensiva: **45**
-- robustez ante casos límite: **43**
+- robustez ante casos límite: **44**
 
 ## Mejoras aceptadas por archivo
 
@@ -39,13 +39,14 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **22**
 - `branding.py`: **21**
 - `quarantine.py`: **20**
+- `main.py`: **19**
 - `startup.py`: **19**
-- `main.py`: **18**
 - `assistant.py`: **4**
 - `settings.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-27T11:37:32` **main.py** (robustez ante casos límite): Mejoré la robustez en `on_trim_process` y `on_restore_quarantine` validando los inputs de usuario antes de procesarlos y envolviendo las llamadas en el manejo de errores global, evitando que inputs inesperados rompan el hilo o la ejecución.
 - `2026-07-27T11:25:13` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `largest_folders` añadiendo chequeos de errores ante rutas de longitud excesiva (`OSError` en Windows) o problemas de acceso durante la enumeración, evitando que el generador se detenga inesperadamente.
 - `2026-07-27T11:24:56` **browser.py** (robustez ante casos límite): Se reforzó la robustez de `directory_size` ante el caso límite de archivos bloqueados o en uso (frecuentes en navegadores abiertos) mediante la captura explícita de excepciones durante el acceso a `stat()`, asegurando que el escaneo no se detenga y devuelva resultados parciales válidos en lugar de fallar o devolver cero.
 - `2026-07-27T11:23:49` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` ante valores corruptos o inesperados en los objetos de entrada, añadiendo validaciones de tipo y rango para asegurar que las métricas procesadas sean siempre seguras y representativas antes de llegar al asistente.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-27T10:53:17` **diskreport.py** (rendimiento): Optimizé la función `summarize` para reducir el consumo de memoria al evitar la duplicación de toda la lista de archivos (`all_files_snapshot`) durante el recorrido, utilizando en su lugar un `heapq.nlargest` con un generador para mantener solo el top 8 de archivos en memoria.
 - `2026-07-27T10:43:39` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` reemplazando múltiples escaneos redundantes de la cadena de entrada mediante `any()` (que recorren la lista y comparan múltiples veces) por una única búsqueda en un diccionario precalculado de categorías, reduciendo la complejidad de tiempo y mejorando la legibilidad.
 - `2026-07-27T10:43:03` **startup.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `startup.py` mediante la refactorización de `StartupEntry.executable` para reducir su complejidad ciclomática y mediante la adición de Type Hints detallados en la lógica de procesamiento.
-- `2026-07-27T10:33:50` **settings.py** (legibilidad y documentación): Mejora la legibilidad y el mantenimiento de `validate()` mediante la extracción de la lógica de validación de tipos a funciones auxiliares dedicadas, documentando claramente el contrato de validación.

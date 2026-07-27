@@ -693,3 +693,12 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-07-27T11:25:13` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la robustez de `walk_files` y `largest_folders` añadiendo chequeos de errores ante rutas de longitud excesiva (`OSError` en Windows) o problemas de acceso durante la enumeración, evitando que el generador se detenga inesperadamente.
 - `2026-07-27T11:25:13` Rotación — nada para rotar
 - `2026-07-27T11:25:13` Corrida terminada. Total usado hoy: 140.
+- `2026-07-27T11:33:25` Arrancando corrida. Quedan hoy ~160 peticiones objetivo.
+- `2026-07-27T11:33:51` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-07-27T11:34:15` ➖ Sin cambios en healthscore.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `score_memory` y `score_disk` para evitar divisiones por cero (o valores infinitos/NaN) ante casos límite donde los umbrales de referencia son extremadamente bajos o inválidos, asegurando que `_clamp` y el manejo de tipos mantengan el sistema operativo ante cualquier entrada corrupta.
+- `2026-07-27T11:35:15` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-07-27T11:36:19` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-07-27T11:37:32` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Mejoré la robustez en `on_trim_process` y `on_restore_quarantine` validando los inputs de usuario antes de procesarlos y envolviendo las llamadas en el manejo de errores global, evitando que inputs inesperados rompan el hilo o la ejecución.
+- `2026-07-27T11:37:46` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-07-27T11:37:46` Rotación — nada para rotar
+- `2026-07-27T11:37:46` Corrida terminada. Total usado hoy: 144.

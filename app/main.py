@@ -1090,11 +1090,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         def task():
-            try:
-                destino = quarantine.restore_item(item_id)
-                self.log(f"Restaurado en: {destino}", "Cuarentena")
-            except (KeyError, FileNotFoundError, safety.UnsafePathError) as e:
-                self.log(f"No se pudo restaurar: {e}", "Cuarentena")
+            destino = quarantine.restore_item(item_id)
+            self.log(f"Restaurado en: {destino}", "Cuarentena")
 
         self.run_async(task)
 
