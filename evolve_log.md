@@ -1288,3 +1288,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-07-27T16:03:06` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se implementó un manejo de errores robusto en `on_disk_analysis` y `on_find_duplicates` para evitar que la app intente procesar rutas inválidas, vacías o bloqueadas mediante un chequeo previo de existencia, reforzando la seguridad ante entradas inesperadas del usuario.
 - `2026-07-27T16:03:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-27T16:03:06` Corrida terminada. Total usado hoy: 248.
+- `2026-07-27T16:09:16` Arrancando corrida. Quedan hoy ~52 peticiones objetivo.
+- `2026-07-27T16:09:51` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-07-27T16:10:14` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `scan_for_junk` integrando un chequeo preventivo de permisos sobre los directorios base antes de iniciar el recorrido, y se ha encapsulado el acceso a `os.scandir` para manejar de forma más granular los fallos en sistemas de archivos con enlaces simbólicos o puntos de reparse, asegurando que la recursión sea más resiliente ante errores de acceso.
+- `2026-07-27T16:10:50` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Mejoré la robustez de `quarantine_file` añadiendo una verificación de espacio en disco previo al movimiento, evitando fallos parciales cuando el volumen de destino está lleno o tiene permisos restringidos inesperados.
+- `2026-07-27T16:10:54` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-07-27T16:10:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-27T16:10:54` Corrida terminada. Total usado hoy: 252.

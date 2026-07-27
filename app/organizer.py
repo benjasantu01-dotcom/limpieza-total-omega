@@ -101,11 +101,13 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
             with os.scandir(base_path) as it:
                 for entry in it:
                     try:
+                        # Saltar enlaces simbólicos o puntos de reparse por seguridad
+                        if entry.is_symlink():
+                            continue
                         if entry.is_dir(follow_symlinks=False):
                             if entry.name.lower() not in blocklist:
                                 _walk_dir(entry.path)
                         elif entry.is_file(follow_symlinks=False):
-                            # Optimización: extracción de extensión mediante split en string
                             _, ext = os.path.splitext(entry.name)
                             if ext.lower() in _LOWER_JUNK_EXTS:
                                 full_path = Path(entry.path)
@@ -127,10 +129,12 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
         if not isinstance(d, str):
             continue
         p = Path(d).expanduser()
-        if p.exists() and p.is_dir():
-            _walk_dir(str(p))
-        else:
-            logger.warning(f"Ruta de escaneo inválida: {p}")
+        # Validación previa de existencia y permisos básicos antes de recursión
+        try:
+            if p.exists() and p.is_dir() and os.access(p, os.R_OK):
+                _walk_dir(str(p))
+        except (PermissionError, OSError):
+            logger.warning(f"No se pudo acceder a la ruta: {p}")
             
     return found
 
@@ -184,21 +188,17 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             continue
             
         try:
-            # Validar existencia absoluta
             if not jf.path.exists() or not jf.path.is_file():
                 continue
             
             full_source_path = jf.path.resolve()
             
-            # Verificación de seguridad reforzada para prevenir Path Traversal
             if not is_safe_to_modify(full_source_path) or not is_safe_to_modify(dest):
                 continue
                 
-            # Evitar mover si el destino es padre, el mismo archivo o está ya en el destino
             if dest == full_source_path.parent or dest in full_source_path.parents:
                 continue
             
-            # Verificar si el archivo está bloqueado intentando abrirlo en modo lectura
             try:
                 with open(full_source_path, 'rb'):
                     pass

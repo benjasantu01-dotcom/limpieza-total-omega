@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **275** (54.6% de aceptación)
+- Mejoras aceptadas: **277** (55.0% de aceptación)
 - Rechazadas por tests: 24
-- Rechazadas por guardia de seguridad: 31
+- Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 5
-- Sin respuesta de la IA (error o límite): 169
+- Sin respuesta de la IA (error o límite): 166
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-26 | 170 | 10 | 17 | 2 | 57 |
-| 2026-07-27 | 105 | 14 | 14 | 3 | 112 |
+| 2026-07-26 | 170 | 10 | 17 | 2 | 53 |
+| 2026-07-27 | 107 | 14 | 15 | 3 | 113 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,20 +25,20 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **60**
 - rendimiento: **49**
 - seguridad defensiva: **47**
-- robustez ante casos límite: **42**
+- robustez ante casos límite: **44**
 
 ## Mejoras aceptadas por archivo
 
 - `browser.py`: **27**
 - `diskreport.py`: **26**
-- `organizer.py`: **25**
+- `organizer.py`: **26**
 - `duplicates.py`: **22**
 - `healthscore.py`: **22**
 - `safety.py`: **22**
 - `scanner.py`: **21**
 - `main.py`: **20**
 - `memory.py`: **20**
-- `quarantine.py`: **19**
+- `quarantine.py`: **20**
 - `branding.py`: **18**
 - `startup.py`: **18**
 - `assistant.py`: **9**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-27T16:10:50` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` añadiendo una verificación de espacio en disco previo al movimiento, evitando fallos parciales cuando el volumen de destino está lleno o tiene permisos restringidos inesperados.
+- `2026-07-27T16:10:14` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de `scan_for_junk` integrando un chequeo preventivo de permisos sobre los directorios base antes de iniciar el recorrido, y se ha encapsulado el acceso a `os.scandir` para manejar de forma más granular los fallos en sistemas de archivos con enlaces simbólicos o puntos de reparse, asegurando que la recursión sea más resiliente ante errores de acceso.
 - `2026-07-27T16:03:06` **main.py** (robustez ante casos límite): Se implementó un manejo de errores robusto en `on_disk_analysis` y `on_find_duplicates` para evitar que la app intente procesar rutas inválidas, vacías o bloqueadas mediante un chequeo previo de existencia, reforzando la seguridad ante entradas inesperadas del usuario.
 - `2026-07-27T16:00:45` **healthscore.py** (robustez ante casos límite): Se mejora la robustez de `compute_score` frente a casos donde `WEIGHTS` podría ser modificado o contener claves inesperadas, asegurando que `breakdown` se calcule de forma segura y que la suma total sea consistente mediante una iteración sobre las claves validadas.
 - `2026-07-27T16:00:08` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez de `_collect_candidates` ante errores de permisos durante el `os.walk` mediante el manejo de `onerror`, evitando que el escaneo se detenga silenciosamente y garantizando que las excepciones de acceso no interrumpan la recolección de archivos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-27T15:18:50` **browser.py** (rendimiento): Implementé la invalidación de caché de `directory_size` mediante un `cache_clear` explícito en `summarize` y `total_cache_bytes` para asegurar que los reportes reflejen el estado actual del disco sin sacrificar el rendimiento de las llamadas repetidas dentro de un mismo ciclo.
 - `2026-07-27T15:10:06` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` reemplazando los múltiples `if any(...)` que escaneaban la cadena de la pregunta en cada llamada por una búsqueda eficiente en un diccionario mapeado a funciones, reduciendo la complejidad algorítmica y mejorando la legibilidad.
 - `2026-07-27T15:09:27` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo integrando Type Hints precisos en funciones que retornaban iterables genéricos y refiné los docstrings para explicar el "porqué" de las decisiones de filtrado (como la exclusión de `desktop.ini`), facilitando la lectura para futuros colaboradores.
-- `2026-07-27T15:08:31` **settings.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `validate` separando la lógica de validación de cada tipo de dato en funciones auxiliares dedicadas, reduciendo la complejidad ciclomática del bucle principal y facilitando la documentación del comportamiento de cada regla.
-- `2026-07-27T14:59:47` **scanner.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings enriquecidos en funciones críticas para mejorar la legibilidad del flujo de control y clarificar el propósito de las validaciones de seguridad.

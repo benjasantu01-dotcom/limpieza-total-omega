@@ -24,6 +24,7 @@ import json
 import shutil
 import uuid
 import hashlib
+import os
 from dataclasses import dataclass, asdict
 from datetime import datetime
 from pathlib import Path
@@ -183,6 +184,12 @@ def quarantine_file(
     
     dest_dir = quarantine_dir(base)
     ensure_safe_to_modify(dest_dir, allow_sensitive=False)
+    
+    # Verificación preventiva de espacio libre antes de mover
+    file_size = origin.stat().st_size
+    usage = shutil.disk_usage(dest_dir)
+    if usage.free < file_size:
+        raise OSError(f"No hay suficiente espacio en el disco de cuarentena: {dest_dir}")
 
     item_id = uuid.uuid4().hex[:12]
     safe_filename = Path(origin.name).name
@@ -192,8 +199,6 @@ def quarantine_file(
     if destination.exists():
         raise FileExistsError(f"Colisión de nombre en cuarentena: {destination}")
 
-    file_size = origin.stat().st_size
-    
     try:
         shutil.move(str(origin), str(destination))
         try:
