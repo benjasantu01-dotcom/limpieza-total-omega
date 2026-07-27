@@ -154,13 +154,10 @@ def test_gui_only_imports_modules_that_exist():
     archivo en app/.
     """
     disponibles = {f.stem for f in app_modules(include_gui=True)}
-    externos = {
-        "threading", "logging", "os", "sys", "tkinter", "customtkinter",
-        "typing", "pathlib", "datetime", "subprocess", "json", "shutil",
-        "re", "time", "collections", "dataclasses", "functools", "hashlib",
-        "csv", "io", "ctypes", "itertools", "math", "enum", "types", "abc",
-        "textwrap", "traceback", "webbrowser", "platform", "tempfile",
-    }
+    # Se usa el listado real de la librería estándar en vez de una lista
+    # escrita a mano, que quedaba desactualizada cada vez que la UI necesitaba
+    # un módulo nuevo y hacía fallar el test por el motivo equivocado.
+    externos = set(sys.stdlib_module_names) | {"customtkinter"}
     faltantes = [
         nombre for nombre in imported_names(parse(APP_DIR / GUI_MODULE))
         if nombre not in disponibles and nombre not in externos

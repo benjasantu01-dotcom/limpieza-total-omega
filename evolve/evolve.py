@@ -141,6 +141,22 @@ IMPROVEMENT_CATEGORIES = {
         "validar, evitar efectos secundarios si una operación falla a mitad de camino",
         False, False,
     ),
+    "diseño visual y experiencia de uso": (
+        "mejorar cómo se VE y cómo se usa la app. Ideas: más color con "
+        "sentido (que el estado se entienda sin leer), mejor jerarquía "
+        "visual y espaciado, agrupar en tarjetas, barras de progreso o "
+        "medidores en vez de números sueltos, íconos, insignias de estado, "
+        "textos más claros y cortos, mejor orden de los controles, "
+        "resaltar la acción principal y atenuar las secundarias, "
+        "accesibilidad (contraste suficiente, orden de tabulación). "
+        "REGLAS: todo color, tamaño e ícono va en branding.py, nunca "
+        "escrito a mano en main.py. Nada de dependencias nuevas: el dibujo "
+        "se hace con Canvas de Tkinter y widgets de customtkinter. No "
+        "cambies la lógica ni saques confirmaciones de las acciones "
+        "destructivas. Antes de proponer, buscá en la web cómo se ven las "
+        "apps de mantenimiento modernas para inspirarte",
+        True, True,
+    ),
     "funcionalidad incremental": (
         "una función nueva y chica que sume valor real a la misión del "
         "proyecto (ej: selección de disco/carpeta a escanear, una opción "

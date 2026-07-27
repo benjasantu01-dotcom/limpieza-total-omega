@@ -36,21 +36,38 @@ import startup  # noqa: E402
 class _CanvasFalso:
     """Canvas de mentira: registra las llamadas en vez de dibujar.
 
-    Permite testear `draw_logo` sin pantalla, que es justo lo que no hay en
-    GitHub Actions.
+    Permite testear todo el dibujo (logo, degradado, medidor circular) sin
+    pantalla, que es justo lo que no hay en GitHub Actions.
     """
 
     def __init__(self):
         self.llamadas = []
+        self.colores = []
+
+    def _registrar(self, tipo, kwargs):
+        self.llamadas.append(tipo)
+        for clave in ("fill", "outline"):
+            valor = kwargs.get(clave)
+            if isinstance(valor, str) and valor.startswith("#"):
+                self.colores.append(valor)
 
     def create_polygon(self, *a, **k):
-        self.llamadas.append("polygon")
+        self._registrar("polygon", k)
 
     def create_line(self, *a, **k):
-        self.llamadas.append("line")
+        self._registrar("line", k)
 
     def create_text(self, *a, **k):
-        self.llamadas.append("text")
+        self._registrar("text", k)
+
+    def create_oval(self, *a, **k):
+        self._registrar("oval", k)
+
+    def create_rectangle(self, *a, **k):
+        self._registrar("rectangle", k)
+
+    def create_arc(self, *a, **k):
+        self._registrar("arc", k)
 
 
 def test_branding_has_name_and_version():
@@ -112,6 +129,155 @@ def test_grade_color_covers_a_to_f():
 
 def test_logo_ascii_is_not_empty():
     assert "Omega" in branding.logo_ascii()
+
+
+# -- diseño visual: iconos, barras, degradados y medidor ---------------------
+
+def test_every_tab_has_an_icon():
+    for seccion in ("Salud", "Limpieza", "Seguridad", "Cuarentena", "Memoria",
+                    "Disco", "Duplicados", "Navegadores", "Inicio", "Informe"):
+        assert seccion in branding.ICONS, f"la pestaña {seccion} no tiene ícono"
+        assert branding.icon(seccion) != "\u2022"
+
+
+def test_unknown_section_gets_a_neutral_bullet():
+    assert branding.icon("No existe") == "\u2022"
+    assert branding.icon(None) == "\u2022"
+
+
+def test_tab_label_puts_the_icon_before_the_name():
+    etiqueta = branding.tab_label("Salud")
+    assert etiqueta.startswith(branding.ICONS["Salud"])
+    assert "Salud" in etiqueta
+
+
+def test_severity_icons_are_distinct():
+    marcas = {branding.severity_icon(n) for n in ("ok", "info", "warning", "danger")}
+    assert len(marcas) == 4
+
+
+def test_score_color_changes_with_the_score():
+    assert branding.score_color(95) == branding.PALETTE["success"]
+    assert branding.score_color(85) == branding.PALETTE["info"]
+    assert branding.score_color(70) == branding.PALETTE["warning"]
+    assert branding.score_color(10) == branding.PALETTE["danger"]
+
+
+def test_score_color_survives_garbage():
+    assert branding.score_color(None) == branding.PALETTE["text_muted"]
+    assert branding.score_color("mucho") == branding.PALETTE["text_muted"]
+
+
+def test_text_bar_length_is_exact():
+    assert len(branding.bar(50, width=20)) == 20
+    assert len(branding.bar(0, width=8)) == 8
+
+
+def test_text_bar_reflects_the_percentage():
+    assert branding.bar(0, 10).count("\u2588") == 0
+    assert branding.bar(100, 10).count("\u2588") == 10
+    assert branding.bar(50, 10).count("\u2588") == 5
+
+
+def test_text_bar_clamps_and_tolerates_garbage():
+    assert branding.bar(-40, 10).count("\u2588") == 0
+    assert branding.bar(9999, 10).count("\u2588") == 10
+    assert len(branding.bar(None, 10)) == 10
+    assert len(branding.bar("hola", 10)) == 10
+
+
+def test_blend_returns_the_endpoints_and_the_middle():
+    assert branding.blend("#000000", "#ffffff", 0.0) == "#000000"
+    assert branding.blend("#000000", "#ffffff", 1.0) == "#ffffff"
+    medio = branding.blend("#000000", "#ffffff", 0.5)
+    assert medio in ("#7f7f7f", "#808080")
+
+
+def test_blend_clamps_out_of_range_ratios():
+    assert branding.blend("#000000", "#ffffff", -5) == "#000000"
+    assert branding.blend("#000000", "#ffffff", 99) == "#ffffff"
+
+
+def test_blend_on_invalid_color_does_not_crash():
+    assert branding.blend("no-es-color", "#ffffff", 0.5).startswith("#")
+
+
+def test_gradient_produces_the_requested_amount_of_colors():
+    for cantidad in (1, 2, 7, 300):
+        colores = branding.gradient_colors(cantidad)
+        assert len(colores) == cantidad
+        assert all(c.startswith("#") and len(c) == 7 for c in colores)
+
+
+def test_gradient_starts_and_ends_on_its_stops():
+    colores = branding.gradient_colors(50)
+    assert colores[0].lower() == branding.GRADIENT_STOPS[0].lower()
+    assert colores[-1].lower() == branding.GRADIENT_STOPS[-1].lower()
+
+
+def test_gradient_actually_changes_color():
+    colores = branding.gradient_colors(40)
+    assert len(set(colores)) > 10, "un degradado con un solo tono no es un degradado"
+
+
+def test_gradient_bar_paints_one_line_per_pixel():
+    canvas = _CanvasFalso()
+    branding.draw_gradient_bar(canvas, width=60)
+    assert canvas.llamadas.count("line") == 60
+
+
+def test_gradient_bar_ignores_invalid_sizes():
+    canvas = _CanvasFalso()
+    branding.draw_gradient_bar(canvas, width="ancho")
+    branding.draw_gradient_bar(None, width=10)
+    assert canvas.llamadas == []
+
+
+def test_ring_draws_track_and_progress():
+    canvas = _CanvasFalso()
+    branding.draw_ring(canvas, 75, size=120)
+    assert canvas.llamadas.count("arc") == 2, "hacen falta pista y avance"
+
+
+def test_ring_at_zero_draws_only_the_track():
+    canvas = _CanvasFalso()
+    branding.draw_ring(canvas, 0, size=120)
+    assert canvas.llamadas.count("arc") == 1
+
+
+def test_ring_uses_the_score_color():
+    canvas = _CanvasFalso()
+    branding.draw_ring(canvas, 95, size=120)
+    assert branding.PALETTE["success"] in canvas.colores
+
+
+def test_ring_ignores_garbage_percent_and_missing_canvas():
+    canvas = _CanvasFalso()
+    branding.draw_ring(canvas, "mucho", size=120)
+    branding.draw_ring(None, 50)
+    assert canvas.llamadas == [], "un porcentaje inválido no debe dibujar nada"
+
+
+def test_ring_clamps_absurd_sizes_instead_of_failing():
+    # Un tamaño negativo se lleva al mínimo dibujable: es preferible un anillo
+    # chico a una pestaña vacía sin explicación.
+    canvas = _CanvasFalso()
+    branding.draw_ring(canvas, 50, size=-10)
+    assert canvas.llamadas.count("arc") == 2
+
+
+def test_logo_draws_a_gradient_and_a_halo():
+    canvas = _CanvasFalso()
+    branding.draw_logo(canvas, size=72)
+    assert "oval" in canvas.llamadas, "falta el halo detrás del escudo"
+    assert "rectangle" in canvas.llamadas, "falta el degradado del escudo"
+    assert "text" in canvas.llamadas
+
+
+def test_palette_offers_more_than_one_accent():
+    # Un solo acento es lo que hacía que la interfaz se viera apagada.
+    for clave in ("accent", "accent2", "accent3", "success", "info", "warning"):
+        assert clave in branding.PALETTE
 
 
 # ==========================================================================
