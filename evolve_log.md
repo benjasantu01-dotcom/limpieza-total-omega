@@ -430,3 +430,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-07-27T20:06:30` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento de `scan_directory` reemplazando la lógica de `is_protected_path` (que es una función de búsqueda) por una verificación de conjunto previa, evitando llamadas innecesarias al sistema de archivos mediante el uso de `os.scandir` (que recupera atributos de archivo en una sola operación de directorio) en lugar de `Path.iterdir()`.
 - `2026-07-27T20:06:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-27T20:06:30` Corrida terminada. Total usado hoy: 344.
+- `2026-07-27T20:15:27` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-07-27T20:15:54` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se implementó un mecanismo de invalidación de caché basado en el timestamp de modificación del archivo (`st_mtime`) para detectar cambios externos sin necesidad de releer el disco en cada acceso, optimizando el rendimiento en llamadas recurrentes a `get` o `load`.
+- `2026-07-27T20:16:16` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-07-27T20:16:47` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se endureció `build_context` para prevenir errores de ejecución ante métricas parciales o corrompidas, garantizando que el asistente nunca falle al intentar leer atributos inesperados de objetos externos.
+- `2026-07-27T20:17:01` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Mejoré la robustez de `save_logo_svg` al verificar la existencia y tipo de directorio padre antes de intentar la escritura y agregué validación de nombre de archivo `is_protected_path` para prevenir escrituras en ubicaciones críticas, asegurando que cualquier fallo sea manejado elegantemente sin abortar.
+- `2026-07-27T20:17:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-27T20:17:01` Corrida terminada. Total usado hoy: 348.

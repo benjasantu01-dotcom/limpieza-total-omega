@@ -65,6 +65,7 @@ VALID_ACCENTS: Final = ("menta", "violeta", "magenta", "cian", "ambar")
 # Caché interno para evitar lectura repetitiva de disco
 _cached_settings: dict[str, Any] | None = None
 _last_base: str | Path | None = None
+_last_mtime: float = 0.0
 
 # Valores de fábrica. Cada clave define además el tipo esperado: si el archivo
 # trae otra cosa, se descarta ese valor y se usa este.
@@ -186,34 +187,33 @@ def validate(values: Any) -> dict[str, Any]:
 
 def load(base: str | Path | None = None) -> dict[str, Any]:
     """Carga y valida la configuración desde disco o retorna DEFAULTS."""
-    global _cached_settings, _last_base
+    global _cached_settings, _last_base, _last_mtime
     
-    if _cached_settings is not None and base == _last_base:
+    ruta = settings_path(base)
+    mtime = ruta.stat().st_mtime if ruta.exists() else 0.0
+
+    if _cached_settings is not None and base == _last_base and mtime == _last_mtime:
         return _cached_settings
 
-    ruta = settings_path(base)
     try:
         if ruta.exists():
             contenido = ruta.read_text(encoding="utf-8").strip()
-            if not contenido:
-                _cached_settings = dict(DEFAULTS)
-            else:
-                _cached_settings = validate(json.loads(contenido))
+            _cached_settings = validate(json.loads(contenido)) if contenido else dict(DEFAULTS)
         else:
             _cached_settings = dict(DEFAULTS)
     except (OSError, json.JSONDecodeError, UnicodeDecodeError):
         _cached_settings = dict(DEFAULTS)
         
     _last_base = base
+    _last_mtime = mtime
     return _cached_settings
 
 
 def save(values: Any, base: str | Path | None = None) -> Path | None:
     """Guarda valores validados en el sistema de archivos."""
-    global _cached_settings
+    global _cached_settings, _last_mtime
     ruta = settings_path(base)
     
-    # Validar que el directorio sea seguro antes de intentar persistencia
     if not is_safe_to_modify(str(ruta.parent)):
         return None
 
@@ -228,6 +228,7 @@ def save(values: Any, base: str | Path | None = None) -> Path | None:
             encoding="utf-8",
         )
         _cached_settings = limpio
+        _last_mtime = ruta.stat().st_mtime
         return ruta
     except (OSError, PermissionError):
         return None

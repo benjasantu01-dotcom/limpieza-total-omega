@@ -177,58 +177,39 @@ def _initialize_handlers() -> None:
 
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
-    """Arma el contexto agregado de forma defensiva filtrando tipos de datos.
-    
-    Esta función abstrae la extracción de datos evitando copiar objetos complejos.
-    Solo permite tipos numéricos básicos para asegurar que ninguna ruta de archivo 
-    escapa hacia el motor de IA.
-    """
+    """Arma el contexto agregado de forma defensiva filtrando tipos de datos."""
     contexto = SystemContext()
     
+    def obtener_val(obj: Any, nombre: str, tipo: type, defecto: Any) -> Any:
+        try:
+            val = getattr(obj, nombre, defecto)
+            if val is None or isinstance(val, (dict, list, set, tuple)): return defecto
+            return tipo(val)
+        except (TypeError, ValueError, AttributeError):
+            return defecto
+
     try:
-        def numero(objeto: Any, nombre: str, defecto: float = 0.0, maximo: float = float('inf')) -> float:
-            if objeto is None: return defecto
-            try:
-                val = getattr(objeto, nombre, None)
-                if val is None or isinstance(val, (dict, list, set, tuple)): return defecto
-                num = float(val)
-                return max(0.0, min(num, float(maximo)))
-            except (TypeError, ValueError):
-                return defecto
-
-        def entero(objeto: Any, nombre: str, defecto: int = 0) -> int:
-            if objeto is None: return defecto
-            try:
-                val = getattr(objeto, nombre, None)
-                if val is None or isinstance(val, (dict, list, set, tuple)): return defecto
-                num = int(float(val))
-                return max(0, num)
-            except (TypeError, ValueError):
-                return defecto
-
         if metrics is not None:
-            contexto.junk_mb = numero(metrics, "junk_mb")
-            contexto.suspicious_count = entero(metrics, "suspicious_count")
-            contexto.suspicious_warnings = entero(metrics, "suspicious_warnings")
-            contexto.memory_available_percent = numero(metrics, "memory_available_percent", maximo=100.0)
-            contexto.disk_free_percent = numero(metrics, "disk_free_percent", maximo=100.0)
-            contexto.duplicate_mb = numero(metrics, "duplicate_mb")
-            contexto.startup_count = entero(metrics, "startup_count")
-            contexto.quarantined_count = entero(metrics, "quarantined_count")
+            contexto.junk_mb = float(obtener_val(metrics, "junk_mb", float, 0.0))
+            contexto.suspicious_count = int(obtener_val(metrics, "suspicious_count", int, 0))
+            contexto.suspicious_warnings = int(obtener_val(metrics, "suspicious_warnings", int, 0))
+            contexto.memory_available_percent = max(0.0, min(float(obtener_val(metrics, "memory_available_percent", float, 0.0)), 100.0))
+            contexto.disk_free_percent = max(0.0, min(float(obtener_val(metrics, "disk_free_percent", float, 0.0)), 100.0))
+            contexto.duplicate_mb = float(obtener_val(metrics, "duplicate_mb", float, 0.0))
+            contexto.startup_count = int(obtener_val(metrics, "startup_count", int, 0))
+            contexto.quarantined_count = int(obtener_val(metrics, "quarantined_count", int, 0))
             contexto.analyzed = True
 
         if health is not None:
-            contexto.score = entero(health, "score")
-            contexto.score = max(0, min(contexto.score, 100))
+            score_val = obtener_val(health, "score", int, 0)
+            contexto.score = max(0, min(int(score_val), 100))
             grado = getattr(health, "grade", "")
             contexto.grade = str(grado) if isinstance(grado, (str, int, float)) else ""
             contexto.analyzed = True
 
-        # Endurecimiento: validar tipos y rangos de campos extra
         for clave, valor in extra.items():
-            if hasattr(contexto, clave) and isinstance(valor, (int, float)):
-                if clave not in ["analyzed", "grade"]:
-                    setattr(contexto, clave, max(0.0, float(valor)))
+            if hasattr(contexto, clave) and isinstance(valor, (int, float)) and clave not in ["analyzed", "grade"]:
+                setattr(contexto, clave, float(valor))
     except Exception:
         return SystemContext(analyzed=False)
 
@@ -455,12 +436,7 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
 
 def ask(question: str, context: SystemContext | None = None,
         base: str | Path | None = None) -> Answer:  # noqa: F821
-    """Coordina el flujo de respuesta combinando motores locales y remotos.
-    
-    Esta función verifica la disponibilidad del asistente en ajustes y gestiona 
-    el envío de métricas de forma segura. Si el motor remoto no responde, 
-    degrada la experiencia silenciosamente al motor local.
-    """
+    """Coordina el flujo de respuesta combinando motores locales y remotos."""
     contexto = context if isinstance(context, SystemContext) else SystemContext()
     respaldo = local_answer(question, contexto)
 
