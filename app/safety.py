@@ -99,7 +99,7 @@ def normalize(path: PathLike) -> Path:
 
 
 def is_drive_root(path: PathLike) -> bool:
-    """Verifica si la ruta apunta a la raíz de un volumen (ej. C:\ o /)."""
+    r"""Verifica si la ruta apunta a la raíz de un volumen (ej. C:\ o /)."""
     try:
         p = normalize(path)
         return p.parent == p or str(p) == p.anchor
