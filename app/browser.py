@@ -113,13 +113,9 @@ def directory_size(path: str | os.PathLike) -> int:
                         if entry.is_symlink():
                             continue
                         
-                        entry_path = Path(entry.path).resolve()
-                        if not entry_path.is_relative_to(base_path):
-                            continue
-                            
-                        if entry.is_dir():
-                            stack.append(entry_path)
-                        elif entry.is_file():
+                        if entry.is_dir(follow_symlinks=False):
+                            stack.append(Path(entry.path))
+                        elif entry.is_file(follow_symlinks=False):
                             total += entry.stat().st_size
                     except (OSError, PermissionError):
                         continue

@@ -61,10 +61,11 @@ class StartupEntry:
 
     @property
     def executable(self) -> str:
-        """Extrae la ruta base del ejecutable a partir de la línea de comando.
+        """
+        Extrae la ruta base del ejecutable a partir de la línea de comando.
         
-        Elimina comillas, ignora argumentos adicionales y retorna el token inicial,
-        que es el ejecutable propiamente dicho. Retorna cadena vacía si no hay comando.
+        Elimina comillas, ignora argumentos adicionales y retorna el token inicial.
+        Retorna cadena vacía si no hay comando o si este está mal formado.
         """
         if not self.command:
             return ""
@@ -75,18 +76,19 @@ class StartupEntry:
         if not cmd:
             return ""
             
-        # Si el comando original estaba entre comillas, extraemos el contenido hasta la segunda comilla
         if self.command.strip().startswith('"'):
             end_quote_idx: int = self.command.find('"', 1)
             return self.command[1:end_quote_idx] if end_quote_idx > 0 else self.command[1:]
         
-        # Caso sin comillas: el ejecutable es el primer segmento de la ruta o comando
-        tokens = cmd.split()
+        tokens: List[str] = cmd.split()
         return tokens[0] if tokens else ""
 
 
 def startup_folders() -> List[Path]:
-    """Retorna las rutas a las carpetas 'Inicio' (usuario y sistema) verificando existencia."""
+    """
+    Retorna las rutas a las carpetas 'Inicio' (usuario y sistema) 
+    verificando la existencia de los directorios en el sistema de archivos.
+    """
     if os.name != "nt":
         return []
     candidates: List[Path] = []
@@ -100,18 +102,12 @@ def startup_folders() -> List[Path]:
 
 
 def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> List[StartupEntry]:
-    """Escanea las carpetas de inicio en busca de accesos directos o ejecutables.
+    """
+    Escanea las carpetas de inicio en busca de accesos directos o ejecutables.
 
     Solo lectura: filtra 'desktop.ini' y confirma que cada elemento esté
-    contenido en la carpeta base.
-
-    NO usa `ensure_safe_to_modify` a propósito. La carpeta de inicio real de
-    Windows vive en
-    `AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup`, que
-    contiene el componente "Windows" y por lo tanto cuenta como ruta protegida.
-    Ese chequeo es para borrar o mover, y acá solo se listan nombres: ponerlo
-    hacía que esta función lanzara UnsafePathError siempre en Windows, dejando
-    la pestaña de Inicio inservible.
+    contenido en la carpeta base mediante `resolve()` para evitar ataques
+    de path traversal.
     """
     if folders is None:
         folders = startup_folders()
@@ -128,7 +124,6 @@ def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> List[Start
             for item in base_path.iterdir():
                 try:
                     if item.is_file() and item.name.lower() != "desktop.ini":
-                        # Validación de seguridad: confirma que el objeto está bajo la ruta base
                         if base_path in item.resolve().parents:
                             found_entries.append(StartupEntry(name=item.stem, command=str(item), source="carpeta"))
                 except (OSError, PermissionError):
@@ -139,19 +134,20 @@ def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> List[Start
 
 
 def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry]:
-    """Procesa el volcado CSV de PowerShell a objetos StartupEntry.
+    """
+    Procesa el volcado CSV de PowerShell a objetos StartupEntry.
     
-    Elimina cabeceras de PowerShell y limpia los valores obtenidos del registro.
+    Elimina cabeceras (como 'Name', 'PS...') y limpia los valores obtenidos 
+    del registro eliminando comillas de encapsulamiento.
     """
     parsed_entries: List[StartupEntry] = []
     if not text:
         return parsed_entries
         
     for line in text.splitlines():
-        clean_line = line.strip()
+        clean_line: str = line.strip()
         if not clean_line:
             continue
-        # La estructura CSV esperada es: "NombrePropiedad","Valor"
         csv_row_parts: List[str] = clean_line.split(",", 1)
         if len(csv_row_parts) < 2:
             continue
@@ -159,7 +155,6 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
         name_raw: str = csv_row_parts[0].strip().strip('"').strip("'")
         value_raw: str = csv_row_parts[1].strip().strip('"').strip("'")
         
-        # Omite metadatos propios del formato de salida de PowerShell
         if not name_raw or name_raw.lower() == "name" or name_raw.startswith("PS"):
             continue
         parsed_entries.append(StartupEntry(name=name_raw, command=value_raw, source=source))
@@ -167,14 +162,16 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
 
 
 def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[StartupEntry]:
-    """Obtiene programas de inicio consultando las llaves del Registro vía PowerShell.
+    """
+    Obtiene programas de inicio consultando las llaves del Registro vía PowerShell.
     
-    Valida las llaves contra una lista permitida antes de ejecutar el comando.
+    Ejecuta un comando de PowerShell para extraer propiedades de las llaves 
+    Run y las convierte a CSV para parseo seguro.
     """
     if os.name != "nt":
         return []
     all_entries: List[StartupEntry] = []
-    allowed_keys = set(REGISTRY_RUN_KEYS)
+    allowed_keys: set[str] = set(REGISTRY_RUN_KEYS)
     
     for key in keys:
         if key not in allowed_keys:
@@ -186,7 +183,7 @@ def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[Start
             "ConvertTo-Csv -NoTypeInformation }"
         )
         try:
-            result = subprocess.run(
+            result: subprocess.CompletedProcess = subprocess.run(
                 ["powershell", "-NoProfile", "-Command", ps_cmd],
                 capture_output=True, text=True, timeout=30,
             )
@@ -198,7 +195,7 @@ def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[Start
 
 
 def list_startup_entries() -> List[StartupEntry]:
-    """Agrega todas las entradas detectadas filtrando duplicados por nombre (case-insensitive)."""
+    """Retorna una lista consolidada de programas, eliminando duplicados por nombre."""
     seen_names: set[str] = set()
     unique_entries: List[StartupEntry] = []
     
@@ -227,7 +224,7 @@ def estimate_impact(entries: Iterable[StartupEntry]) -> str:
 
 
 def summarize(entries: Optional[Iterable[StartupEntry]] = None) -> List[str]:
-    """Genera un reporte legible de los programas de inicio detectados."""
+    """Genera un informe legible y estructurado de los programas de inicio detectados."""
     entries_list: List[StartupEntry] = list(entries) if entries is not None else list_startup_entries()
         
     lines: List[str] = [f"Programas que arrancan con el sistema: {len(entries_list)}"]

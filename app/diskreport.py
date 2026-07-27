@@ -273,9 +273,8 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
         
     total = 0
     count = 0
-    # Usamos un dict para mapear extensiones a una instancia acumulativa de ExtensionUsage
     extension_map: dict[str, ExtensionUsage] = {}
-    largest_files_heap: list[tuple[int, Path]] = []
+    all_files: list[tuple[int, Path]] = []
     
     for path, size in walk_files(directory, skip_protected):
         total += size
@@ -289,9 +288,7 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
         ext_data.size_bytes += size
         ext_data.count += 1
         
-        heapq.heappush(largest_files_heap, (size, path))
-        if len(largest_files_heap) > 8:
-            heapq.heappop(largest_files_heap)
+        all_files.append((size, path))
             
     lines = [
         f"Carpeta analizada: {directory}",
@@ -306,7 +303,7 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
         
     lines.append("")
     lines.append("Archivos más grandes:")
-    for size, path in sorted(largest_files_heap, key=lambda x: x[0], reverse=True):
+    for size, path in heapq.nlargest(8, all_files, key=lambda x: x[0]):
         lines.append(f"  {format_size(size):>10}  {path}")
         
     return lines

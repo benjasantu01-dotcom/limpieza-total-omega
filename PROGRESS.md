@@ -5,8 +5,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **337**
-- Mejoras aceptadas: **226** (67.1% de aceptación)
+- Iteraciones totales: **341**
+- Mejoras aceptadas: **230** (67.4% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 23
 - Sin cambios (nada sustancial que mejorar): 4
@@ -17,33 +17,37 @@ Este archivo se regenera solo en cada corrida a partir de
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
 | 2026-07-26 | 221 | 15 | 22 | 3 | 68 |
-| 2026-07-27 | 5 | 0 | 1 | 1 | 1 |
+| 2026-07-27 | 9 | 0 | 1 | 1 | 1 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **55**
+- legibilidad y documentación: **56**
 - manejo de errores y validación de entradas: **50**
 - seguridad defensiva: **44**
+- rendimiento: **40**
 - robustez ante casos límite: **40**
-- rendimiento: **37**
 
 ## Mejoras aceptadas por archivo
 
+- `browser.py`: **21**
+- `diskreport.py`: **21**
 - `organizer.py`: **21**
 - `safety.py`: **21**
-- `browser.py`: **20**
-- `diskreport.py`: **20**
 - `duplicates.py`: **19**
 - `memory.py`: **19**
 - `scanner.py`: **19**
+- `branding.py`: **19**
 - `healthscore.py`: **18**
-- `branding.py`: **18**
+- `startup.py`: **18**
 - `main.py`: **17**
 - `quarantine.py`: **17**
-- `startup.py`: **17**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-27T05:58:27` **diskreport.py** (rendimiento): Optimicé `summarize` para evitar redundancias eliminando el uso de `heapq.heappush` dentro del loop principal, reemplazándolo por una estructura de datos más eficiente y simple al final del procesamiento, reduciendo la carga de memoria y CPU en cada iteración.
+- `2026-07-27T05:58:14` **browser.py** (rendimiento): Optimicé el rendimiento de `directory_size` eliminando llamadas redundantes a `Path.resolve()` dentro del bucle de escaneo, utilizando `os.DirEntry` directamente para evitar la creación innecesaria de objetos `Path` en cada iteración y reducir la presión sobre la memoria.
+- `2026-07-27T05:57:47` **branding.py** (rendimiento): Optimizé el acceso a los datos de la paleta y estilos integrando los mapeos de color directamente en `severity_color` y `grade_color` para eliminar llamadas innecesarias a funciones (evitando el overhead de `lru_cache` y búsquedas por clave en cada ejecución de la UI), y simplifiqué la lógica de validación de rutas en `save_logo_svg` utilizando una sola comprobación de seguridad.
+- `2026-07-27T05:57:23` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la implementación de Type Hints más precisos y la conversión de los comentarios internos en docstrings estructurados, facilitando la comprensión de la lógica de procesamiento de registros y la manipulación de rutas.
 - `2026-07-27T05:48:12` **scanner.py** (legibilidad y documentación): He mejorado la documentación del módulo añadiendo type hints faltantes, tipado explícito en los resultados de `scan_directory` y docstrings técnicos más precisos que aclaran la intención de cada heurística y el manejo de excepciones, facilitando la mantenibilidad futura sin alterar la lógica de escaneo.
 - `2026-07-27T05:48:04` **safety.py** (legibilidad y documentación): Mejoré la documentación técnica y la robustez de los `type hints` y validaciones en `safety.py`, añadiendo `docstrings` específicos y refinando la lógica de `normalize` para cumplir con las expectativas de un proyecto de calidad profesional.
 - `2026-07-27T05:38:43` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `organizer.py` mediante la adición de docstrings estructurados (usando el formato Google Style) que explican el propósito, los parámetros y las excepciones de las funciones clave, clarificando la intención detrás de los mecanismos de seguridad y validación.
@@ -55,7 +59,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-26T22:15:26` **branding.py** (legibilidad y documentación): Introduje tipado estricto con `Literal` y `Mapping` para las claves de configuración y mejoré la documentación técnica (docstrings) especificando restricciones de parámetros y comportamientos ante casos límite, aumentando la robustez y legibilidad para el equipo.
 - `2026-07-26T22:06:00` **startup.py** (manejo de errores y validación de entradas): Mejora la robustez del parseo de registros mediante la validación del formato CSV de PowerShell, añadiendo una comprobación explícita para evitar errores de índice al procesar entradas malformadas o inesperadas que podrían causar una excepción `IndexError`.
 - `2026-07-26T22:05:53` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de chequeo individual (`check_recent_executable_in_downloads` y `check_system_lookalike`) capturando explícitamente posibles valores de entrada malformados (como rutas no resolubles o errores de acceso) mediante validación defensiva, asegurando que `scan_file` reciba siempre datos consistentes y no falle ante excepciones no controladas.
-- `2026-07-26T22:05:34` **safety.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de errores en `is_within_directory` y `is_sensitive_file` eliminando el uso de `Exception` genérica (que podía ocultar errores de lógica) y reemplazándolo por un filtrado estricto de tipos y excepciones específicas, garantizando que el sistema sea más predecible ante entradas inválidas.
-- `2026-07-26T21:56:01` **organizer.py** (manejo de errores y validación de entradas): Mejora la robustez del manejo de archivos en `stage_for_review` y `delete_reviewed` mediante la validación estricta de rutas, comprobación de errores específicos durante el movimiento/borrado y el uso de `pathlib` de forma consistente para evitar inconsistencias entre `str` y `Path`.
-- `2026-07-26T21:55:40` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_windows_process_csv` implementando validaciones más estrictas sobre la estructura de los datos CSV y manejo de errores específico para el parsing, evitando que entradas mal formadas o valores fuera de rango afecten el resultado del reporte.
-- `2026-07-26T21:55:17` **main.py** (manejo de errores y validación de entradas): Se introdujo una validación robusta de tipos y valores en las entradas de usuario (`on_trim_process` y `on_restore_quarantine`) y se mejoró el manejo de errores al consolidar la validación de rutas mediante `is_path_safe` antes de intentar cualquier operación destructiva, asegurando que las entradas vacías o no válidas no disparen tareas asíncronas fallidas.
