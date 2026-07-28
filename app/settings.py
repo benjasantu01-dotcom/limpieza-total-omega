@@ -176,12 +176,10 @@ def validate(values: Any) -> dict[str, Any]:
         return limpio
 
     for clave, defecto in DEFAULTS.items():
-        if clave not in values:
-            continue
-            
-        coerced = _apply_validation_by_type(clave, values[clave], defecto)
-        if coerced is not None:
-            limpio[clave] = coerced
+        if clave in values:
+            coerced = _apply_validation_by_type(clave, values[clave], defecto)
+            if coerced is not None:
+                limpio[clave] = coerced
 
     return limpio
 
@@ -258,7 +256,8 @@ def assistant_api_key(base: str | Path | None = None) -> str:
     desde_entorno = os.environ.get(API_KEY_ENV_VAR, "").strip()
     if desde_entorno:
         return desde_entorno
-    valor = load(base).get("asistente_clave_api", "")
+    config = load(base)
+    valor = config.get("asistente_clave_api", "")
     return valor.strip() if isinstance(valor, str) else ""
 
 

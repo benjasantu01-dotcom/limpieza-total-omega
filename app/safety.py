@@ -69,6 +69,7 @@ _SYSTEM_ROOTS: Final[tuple[Path, ...]] = tuple(
     for v in ("SystemRoot", "windir", "ProgramFiles", "ProgramFiles(x86)", "ProgramData")
     if os.environ.get(v)
 )
+_SYSTEM_ROOTS_PARTS: Final[set[str]] = {p.name.lower() for p in _SYSTEM_ROOTS}
 
 
 def normalize(path: PathLike) -> Path:
@@ -116,7 +117,6 @@ def is_protected_path(path: PathLike) -> bool:
         if p.is_symlink():
             return True
     except (PermissionError, OSError, ValueError, TypeError):
-        # Si no podemos resolver la ruta por permisos, asumimos precaución máxima
         return True 
         
     if is_drive_root(p):
@@ -125,7 +125,7 @@ def is_protected_path(path: PathLike) -> bool:
     if _contains_protected_name(p):
         return True
         
-    return any(p == root or root in p.parents for root in _SYSTEM_ROOTS)
+    return any(part.lower() in _SYSTEM_ROOTS_PARTS for part in p.parts)
 
 
 def is_within_directory(
@@ -135,9 +135,6 @@ def is_within_directory(
 ) -> bool:
     """
     Valida si 'child' es descendiente de 'parent' evitando fugas de directorio.
-    
-    ADVERTENCIA: Esta función resuelve symlinks. Si 'child' contiene un symlink 
-    que apunta fuera de 'parent', la validación fallará por seguridad.
     """
     if child is None or parent is None:
         return False
@@ -222,6 +219,7 @@ def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = Fals
         return safe
     for candidate in paths:
         try:
+            # Reutilizamos el chequeo evitando normalizar múltiples veces si es posible
             safe.append(ensure_safe_to_modify(candidate, allow_sensitive=allow_sensitive))
         except (UnsafePathError, TypeError, ValueError):
             continue

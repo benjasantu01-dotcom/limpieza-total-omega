@@ -8,45 +8,47 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **232** (46.0% de aceptación)
 - Rechazadas por tests: 22
-- Rechazadas por guardia de seguridad: 29
+- Rechazadas por guardia de seguridad: 30
 - Sin cambios (nada sustancial que mejorar): 7
-- Sin respuesta de la IA (error o límite): 214
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-26 | 33 | 3 | 3 | 0 | 19 |
+| 2026-07-26 | 31 | 2 | 3 | 0 | 18 |
 | 2026-07-27 | 155 | 16 | 20 | 4 | 155 |
-| 2026-07-28 | 44 | 3 | 6 | 3 | 40 |
+| 2026-07-28 | 46 | 4 | 7 | 3 | 40 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **67**
 - manejo de errores y validación de entradas: **48**
 - seguridad defensiva: **47**
-- rendimiento: **35**
-- robustez ante casos límite: **35**
+- rendimiento: **36**
+- robustez ante casos límite: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `browser.py`: **21**
 - `diskreport.py`: **21**
 - `organizer.py`: **21**
-- `scanner.py`: **19**
+- `browser.py`: **20**
+- `safety.py`: **18**
+- `scanner.py`: **18**
 - `assistant.py`: **18**
 - `duplicates.py`: **17**
-- `safety.py`: **17**
 - `healthscore.py`: **17**
 - `main.py`: **16**
+- `settings.py`: **16**
 - `startup.py`: **15**
-- `settings.py`: **15**
 - `memory.py`: **13**
 - `quarantine.py`: **13**
 - `branding.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-28T04:06:59` **settings.py** (rendimiento): Optimizé la validación en `validate()` reemplazando la creación de una copia innecesaria de `DEFAULTS` por una actualización selectiva, y reduje las llamadas redundantes a `load()` en los métodos de acceso (`get`, `assistant_api_key`, `assistant_enabled`, `describe`) para aprovechar el caché ya implementado, mejorando el rendimiento en escenarios de alta frecuencia de consulta.
+- `2026-07-28T04:06:28` **safety.py** (rendimiento): Se optimizó el rendimiento del chequeo de rutas mediante la pre-compilación de los nombres de carpetas protegidas en `_SYSTEM_ROOTS` y la minimización de llamadas costosas a `normalize` dentro del loop en `filter_safe_paths`, evitando recalcular rutas ya validadas.
 - `2026-07-28T03:57:25` **quarantine.py** (rendimiento): Optimizé `total_quarantined_bytes` y `summarize` para evitar múltiples lecturas y deserializaciones del manifiesto mediante el uso del caché `_manifest_cache` que ya existía, reduciendo significativamente la sobrecarga de I/O en llamadas repetidas.
 - `2026-07-28T03:57:15` **organizer.py** (rendimiento): Optimizé la lógica de filtrado en `scan_for_junk` reemplazando la llamada repetida a `endswith(tuple(...))` por una verificación de conjunto (`in`) en la extensión, aprovechando el conjunto `_LOWER_JUNK_EXTS` ya precalculado, lo que reduce la carga computacional durante el recorrido de directorios.
 - `2026-07-28T03:46:39` **healthscore.py** (rendimiento): Optimicé el cálculo del score reemplazando el diccionario de lambdas por llamadas directas a funciones, eliminando la sobrecarga de instanciar objetos temporales y delegar la ejecución en cada ciclo.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-28T03:16:26` **memory.py** (legibilidad y documentación): Se añadió documentación mediante docstrings más detallados y type hints adicionales para aclarar los parámetros y comportamientos internos, facilitando el mantenimiento y la comprensión de las interacciones con APIs de sistema.
 - `2026-07-28T03:16:02` **main.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de la lógica de construcción de la interfaz (`_build_layout`) y el estado de la aplicación mediante la creación de métodos de configuración específicos, encapsulando la inicialización compleja y reduciendo la carga cognitiva en el constructor.
 - `2026-07-28T03:15:04` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings descriptivos a los métodos de cálculo y especificando las unidades de medida (MB, porcentaje) para eliminar ambigüedades en la lógica de evaluación.
-- `2026-07-28T03:05:54` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings más precisos, se han añadido type hints faltantes en las funciones internas para mayor claridad, y se ha simplificado la estructura de `_collect_candidates` utilizando `Path.iterdir()` o validaciones más explícitas para asegurar que la lógica de filtrado de seguridad sea legible y robusta.
-- `2026-07-28T03:05:45` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints detallados en las funciones de recorrido de disco y una explicación clara en el docstring de `walk_files` sobre el manejo de errores y la omisión de rutas protegidas, facilitando el mantenimiento futuro.

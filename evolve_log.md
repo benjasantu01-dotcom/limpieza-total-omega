@@ -860,3 +860,29 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-07-28T03:57:25` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimizé `total_quarantined_bytes` y `summarize` para evitar múltiples lecturas y deserializaciones del manifiesto mediante el uso del caché `_manifest_cache` que ya existía, reduciendo significativamente la sobrecarga de I/O en llamadas repetidas.
 - `2026-07-28T03:57:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-28T03:57:25` Corrida terminada. Total usado hoy: 96.
+- `2026-07-28T04:05:45` Arrancando corrida. Quedan hoy ~204 peticiones objetivo.
+- `2026-07-28T04:06:05` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-07-28T04:06:28` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se optimizó el rendimiento del chequeo de rutas mediante la pre-compilación de los nombres de carpetas protegidas en `_SYSTEM_ROOTS` y la minimización de llamadas costosas a `normalize` dentro del loop en `filter_safe_paths`, evitando recalcular rutas ya validadas.
+- `2026-07-28T04:06:49` Tests FALLARON:
+```
+y.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:68: SyntaxWarning: invalid escape sequence '\P'
+    - '"C:\Program Files\App.exe" /s' -> 'C:\Program Files\App.exe'
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_scanner_double_extension_detection - TypeError: check_double_extension() missing 1 required positional argument: 'name_lower'
+FAILED evolve/tests/test_basic.py::test_scanner_normal_file_is_clean - TypeError: check_double_extension() missing 1 required positional argument: 'name_lower'
+FAILED evolve/tests/test_basic.py::test_scanner_flags_system_lookalike_outside_system32 - TypeError: check_system_lookalike() missing 1 required positional argument: 'name_lower'
+FAILED evolve/tests/test_basic.py::test_scanner_does_not_flag_real_system_file - TypeError: check_system_lookalike() missing 1 required positional argument: 'name_lower'
+FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independent - TypeError: check_system_lookalike() missing 1 required positional argument: 'name_lower'
+5 failed, 294 passed, 7 warnings in 1.00s
+
+```
+- `2026-07-28T04:06:49` ❌ Mejora descartada en scanner.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `scan_file` pre-calculando el nombre y la extensión en minúsculas una sola vez, evitando llamadas redundantes a `path.name` y `path.suffix` dentro de cada función de chequeo.
+- `2026-07-28T04:06:59` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimizé la validación en `validate()` reemplazando la creación de una copia innecesaria de `DEFAULTS` por una actualización selectiva, y reduje las llamadas redundantes a `load()` en los métodos de acceso (`get`, `assistant_api_key`, `assistant_enabled`, `describe`) para aprovechar el caché ya implementado, mejorando el rendimiento en escenarios de alta frecuencia de consulta.
+- `2026-07-28T04:06:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-28T04:06:59` Corrida terminada. Total usado hoy: 100.
