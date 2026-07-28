@@ -111,8 +111,8 @@ def is_protected_path(path: PathLike) -> bool:
     Determina si una ruta es peligrosa por residir en un directorio de sistema.
     """
     try:
-        raw_path = str(path)
-        if raw_path.startswith(("\\\\", "//")):
+        raw_path = str(path).strip()
+        if not raw_path or raw_path.startswith(("\\\\", "//")):
             return True
             
         p = normalize(path)
@@ -138,7 +138,7 @@ def is_within_directory(
     """
     Valida si 'child' es descendiente de 'parent' evitando fugas de directorio.
     """
-    if child is None or parent is None:
+    if not child or not parent:
         return False
     try:
         c, p = normalize(child), normalize(parent)
@@ -160,6 +160,8 @@ def is_sensitive_file(path: PathLike) -> bool:
     Verifica si la extensión del archivo es crítica según SENSITIVE_EXTENSIONS.
     """
     try:
+        if not path:
+            return True
         return normalize(path).suffix.lower() in SENSITIVE_EXTENSIONS
     except (TypeError, ValueError, OSError):
         return True 
@@ -169,21 +171,21 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
     """
     Valida si una ruta puede ser modificada.
     """
-    if path is None:
-        raise UnsafePathError("La ruta proporcionada es None.")
+    if not path:
+        raise UnsafePathError("La ruta proporcionada está vacía o es None.")
         
     try:
         p = normalize(path)
     except (TypeError, ValueError) as e:
         raise UnsafePathError(f"Ruta mal formada: {path}") from e
 
+    if not p.parts:
+        raise UnsafePathError("Ruta inválida: no contiene componentes detectables.")
+
     str_p = str(p)
     if str_p.startswith(("\\\\", "//")):
         raise UnsafePathError("Operación bloqueada: rutas UNC o de red no permitidas.")
     
-    if len(p.parts) == 0:
-        raise UnsafePathError("Ruta inválida: no contiene componentes detectables.")
-
     try:
         if p.is_symlink():
             raise UnsafePathError("Operación bloqueada: enlaces simbólicos no permitidos.")
@@ -221,8 +223,8 @@ def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = Fals
         return safe
     for candidate in paths:
         try:
-            # Reutilizamos el chequeo evitando normalizar múltiples veces si es posible
-            safe.append(ensure_safe_to_modify(candidate, allow_sensitive=allow_sensitive))
+            if candidate:
+                safe.append(ensure_safe_to_modify(candidate, allow_sensitive=allow_sensitive))
         except (UnsafePathError, TypeError, ValueError):
             continue
     return safe
@@ -232,6 +234,8 @@ def describe_protection(path: PathLike) -> str:
     """
     Retorna un string descriptivo sobre el estado de seguridad de una ruta.
     """
+    if not path:
+        return "La ruta está vacía."
     try:
         p = normalize(path)
     except (TypeError, ValueError):

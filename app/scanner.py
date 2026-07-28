@@ -63,7 +63,7 @@ def check_double_extension(path: Path) -> Optional[Suspicion]:
     Analiza si el nombre del archivo contiene una doble extensión que intente 
     engañar al usuario sobre el tipo real de archivo.
     """
-    if not path or not path.name or is_protected_path(path):
+    if path is None or not path.name or is_protected_path(path):
         return None
     if DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
@@ -75,7 +75,7 @@ def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_TH
     Evalúa si un archivo ejecutable fue modificado recientemente. 
     Los ejecutables nuevos en carpetas de usuario tienen mayor perfil de riesgo.
     """
-    if not path or is_protected_path(path) or path.suffix.lower() not in SUSPICIOUS_EXECUTABLE_EXT:
+    if path is None or is_protected_path(path) or path.suffix.lower() not in SUSPICIOUS_EXECUTABLE_EXT:
         return None
     try:
         # Usar stat() solo si el archivo es accesible
@@ -92,7 +92,7 @@ def check_system_lookalike(path: Path) -> Optional[Suspicion]:
     Detecta si un archivo tiene el nombre de un proceso crítico de sistema,
     pero se encuentra alojado fuera de la carpeta System32.
     """
-    if not path or not path.name or is_protected_path(path):
+    if path is None or not path.name or is_protected_path(path):
         return None
     try:
         if path.name.lower() in SYSTEM_LOOKALIKES:
@@ -109,7 +109,6 @@ def scan_file(path: Path) -> List[Suspicion]:
     Aplica todos los chequeos heurísticos disponibles sobre una ruta de archivo.
     Retorna una lista de hallazgos sospechosos encontrados.
     """
-    # Validar existencia antes de procesar y asegurar que no sea ruta protegida
     if path is None or is_protected_path(path):
         return []
     
@@ -158,6 +157,8 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
             try:
                 with os.scandir(current_dir) as it:
                     for entry in it:
+                        if entry is None:
+                            continue
                         try:
                             if is_protected_path(Path(entry.path)):
                                 continue
@@ -169,7 +170,7 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
                                 results.extend(scan_file(Path(entry.path)))
                         except (PermissionError, OSError):
                             continue
-            except (PermissionError, OSError):
+            except (PermissionError, OSError, FileNotFoundError):
                 continue
         return results
     except (OSError, RuntimeError) as e:

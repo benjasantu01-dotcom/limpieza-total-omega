@@ -123,11 +123,13 @@ def _coerce_int(valor: Any, clave: str) -> int | None:
         return None
 
 
-def _validate_str(clave: str, valor: str) -> str | None:
+def _validate_str(clave: str, valor: str | Any) -> str | None:
     """
     Valida cadenas según el contexto (temas, acentos o rutas de sistema).
     Retorna None si el valor viola restricciones de seguridad o integridad.
     """
+    if not isinstance(valor, str):
+        return None
     texto = valor.strip()
     if clave == "tema" and texto.lower() not in VALID_THEMES:
         return None
@@ -149,11 +151,13 @@ def _apply_validation_by_type(clave: str, valor: Any, defecto: Any) -> Any:
     Despacha la validación de un valor basándose en el tipo del valor por defecto.
     Retorna el valor validado o None si el valor no puede ser saneado.
     """
+    if valor is None:
+        return None
     if isinstance(defecto, bool):
         return _coerce_bool(valor)
     if isinstance(defecto, int) and not isinstance(valor, bool):
         return _coerce_int(valor, clave)
-    if isinstance(defecto, str) and isinstance(valor, str):
+    if isinstance(defecto, str):
         return _validate_str(clave, valor)
     return None
 
@@ -212,9 +216,9 @@ def save(values: Any, base: str | Path | None = None) -> Path | None:
     """Guarda valores validados en el sistema de archivos de forma atómica."""
     global _cached_settings, _last_mtime
     ruta = settings_path(base)
+    temp_name = None
     
     try:
-        # Validar directorio antes de cualquier operación de escritura
         ensure_safe_to_modify(str(ruta.parent))
         
         limpio = validate(values)
@@ -222,20 +226,21 @@ def save(values: Any, base: str | Path | None = None) -> Path | None:
         
         ruta.parent.mkdir(parents=True, exist_ok=True)
         
-        # Escritura atómica vía archivo temporal
         with tempfile.NamedTemporaryFile("w", dir=ruta.parent, delete=False, encoding="utf-8") as tf:
-            tf.write(json_data)
             temp_name = tf.name
+            tf.write(json_data)
         
-        # Reemplazo de archivo existente (atómico en sistemas POSIX, estable en Windows)
         os.replace(temp_name, ruta)
         
         _cached_settings = limpio
         _last_mtime = ruta.stat().st_mtime
         return ruta
     except (OSError, RuntimeError, PermissionError):
-        if 'temp_name' in locals() and os.path.exists(temp_name):
-            os.remove(temp_name)
+        if temp_name and os.path.exists(temp_name):
+            try:
+                os.remove(temp_name)
+            except OSError:
+                pass
         return None
 
 

@@ -151,8 +151,13 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
         name_raw: str = csv_row_parts[0].strip().strip('"').strip("'")
         value_raw: str = csv_row_parts[1].strip().strip('"').strip("'")
         
-        if not name_raw or name_raw.lower() in ("name", "pscustomobject") or name_raw.upper().startswith("PS"):
+        # Validación de integridad de datos parseados
+        if not name_raw or not value_raw:
             continue
+            
+        if name_raw.lower() in ("name", "pscustomobject") or name_raw.upper().startswith("PS"):
+            continue
+            
         parsed_entries.append(StartupEntry(name=name_raw, command=value_raw, source=source))
     return parsed_entries
 
