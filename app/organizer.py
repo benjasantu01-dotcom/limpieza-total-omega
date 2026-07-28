@@ -17,7 +17,7 @@ import logging
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional, Final
+from typing import List, Optional, Final, Callable, Union
 from safety import is_safe_to_modify
 
 # Configuración de log para seguimiento de errores no críticos
@@ -80,7 +80,9 @@ class JunkFile:
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     """
     Realiza un escaneo recursivo en busca de archivos candidatos a limpieza.
-    Utiliza is_safe_to_modify como filtro de seguridad obligatorio antes de catalogar cualquier archivo.
+    
+    Aplica 'is_safe_to_modify' para garantizar que solo se cataloguen archivos 
+    fuera de rutas críticas protegidas o de sistema.
     """
     if directories is not None and not isinstance(directories, list):
         logger.error("El parámetro directories debe ser una lista.")
@@ -130,7 +132,12 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
 
 def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -> List[JunkFile]:
     """
-    Ordena una lista de archivos basura basándose en tamaño o fecha.
+    Ordena la lista de JunkFile según el criterio especificado.
+    
+    Args:
+        files: Lista de objetos JunkFile a ordenar.
+        by: Atributo de ordenamiento ('size' para bytes, 'date' para fecha de modificación).
+        ascending: Dirección del ordenamiento.
     """
     if not isinstance(files, list):
         return []
@@ -139,13 +146,16 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
         logger.warning("Criterio de ordenación desconocido '%s', usando 'size' por defecto.", by)
         by = "size"
 
-    key_func = (lambda f: f.size_bytes) if by == "size" else (lambda f: f.modified)
+    key_func: Callable[[JunkFile], Union[int, datetime]] = (
+        (lambda f: f.size_bytes) if by == "size" else (lambda f: f.modified)
+    )
     return sorted(files, key=key_func, reverse=not ascending)
 
 
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Path:
     """
     Mueve archivos candidatos a una carpeta de revisión ("staging").
+    Verifica seguridad, existencia de archivo y espacio disponible antes de cada operación.
     """
     if not files or not isinstance(files, list):
         logger.warning("La lista de archivos a organizar está vacía o es inválida.")
@@ -208,7 +218,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
     """
-    Elimina permanentemente archivos en el directorio de revisión tras confirmación.
+    Elimina permanentemente archivos en el directorio de revisión tras confirmación externa.
     """
     dest = Path(review_dir).expanduser()
     if not dest.exists() or not dest.is_dir():

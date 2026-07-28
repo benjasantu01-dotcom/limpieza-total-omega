@@ -74,7 +74,8 @@ _SYSTEM_ROOTS_PARTS: Final[set[str]] = {p.name.lower() for p in _SYSTEM_ROOTS}
 
 def normalize(path: PathLike) -> Path:
     """
-    Normaliza una ruta a absoluta y resuelta para evitar manipulaciones de '..'.
+    Convierte cualquier entrada tipo ruta a un objeto Path absoluto y resuelto.
+    Elimina enlaces simbólicos y referencias a directorios padres ('..').
     """
     if not isinstance(path, (str, os.PathLike)):
         raise TypeError(f"Entrada inválida: se esperaba str o PathLike, recibió {type(path)}")
@@ -85,20 +86,18 @@ def normalize(path: PathLike) -> Path:
         
     try:
         p = Path(str_path).expanduser()
-        # resolve(strict=False) permite normalizar rutas aunque no existan físicamente
         return p.resolve(strict=False)
     except (OSError, RuntimeError, ValueError):
-        # Fallback si resolve() falla por problemas de sistema de archivos
         return Path(os.path.abspath(os.path.expanduser(str_path)))
 
 
 def _contains_protected_name(path: Path) -> bool:
-    """Verifica si alguna parte de la ruta coincide con un directorio protegido."""
+    """Verifica si alguno de los componentes de la ruta es un nombre reservado."""
     return not PROTECTED_DIR_NAMES.isdisjoint(part.lower() for part in path.parts)
 
 
 def is_drive_root(path: PathLike) -> bool:
-    r"""Verifica si la ruta apunta a la raíz de un volumen (ej. C:\ o /)."""
+    r"""Verifica si la ruta corresponde a la raíz del sistema de archivos (ej. C:\)."""
     try:
         p = normalize(path)
         return p == Path(p.anchor)
@@ -108,7 +107,8 @@ def is_drive_root(path: PathLike) -> bool:
 
 def is_protected_path(path: PathLike) -> bool:
     """
-    Determina si una ruta es peligrosa por residir en un directorio de sistema.
+    Analiza si la ruta reside en carpetas críticas de sistema o es una ruta UNC.
+    Usa el cache _SYSTEM_ROOTS_PARTS para una validación rápida.
     """
     try:
         raw_path = str(path).strip()
@@ -136,7 +136,8 @@ def is_within_directory(
     allow_equal: bool = False,
 ) -> bool:
     """
-    Valida si 'child' es descendiente de 'parent' evitando fugas de directorio.
+    Comprueba si 'child' es descendiente de 'parent' mediante resolución de rutas.
+    Evita falsos positivos causados por symlinks en el árbol de directorios.
     """
     if not child or not parent:
         return False
@@ -156,9 +157,7 @@ def is_within_directory(
 
 
 def is_sensitive_file(path: PathLike) -> bool:
-    """
-    Verifica si la extensión del archivo es crítica según SENSITIVE_EXTENSIONS.
-    """
+    """Verifica si el archivo posee una extensión considerada sensible."""
     try:
         if not path:
             return True
@@ -169,7 +168,8 @@ def is_sensitive_file(path: PathLike) -> bool:
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> Path:
     """
-    Valida si una ruta puede ser modificada.
+    Valida si una ruta puede ser modificada. Lanza UnsafePathError si existe riesgo.
+    Es el estándar para operaciones de escritura (borrado/movimiento).
     """
     if not path:
         raise UnsafePathError("La ruta proporcionada está vacía o es None.")
@@ -204,9 +204,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
 
 
 def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> bool:
-    """
-    Versión booleana de `ensure_safe_to_modify`.
-    """
+    """Versión booleana de `ensure_safe_to_modify` para chequeos preventivos."""
     try:
         ensure_safe_to_modify(path, allow_sensitive=allow_sensitive)
         return True
@@ -215,9 +213,7 @@ def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> bool:
 
 
 def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = False) -> list[Path]:
-    """
-    Filtra una colección de rutas, devolviendo solo aquellas consideradas seguras.
-    """
+    """Filtra una colección y retorna solo las rutas que superan el test de seguridad."""
     safe: list[Path] = []
     if paths is None:
         return safe
@@ -231,9 +227,7 @@ def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = Fals
 
 
 def describe_protection(path: PathLike) -> str:
-    """
-    Retorna un string descriptivo sobre el estado de seguridad de una ruta.
-    """
+    """Genera una explicación legible sobre por qué una ruta está bloqueada."""
     if not path:
         return "La ruta está vacía."
     try:
