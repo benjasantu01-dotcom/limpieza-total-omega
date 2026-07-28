@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **246** (48.8% de aceptación)
+- Mejoras aceptadas: **245** (48.6% de aceptación)
 - Rechazadas por tests: 20
 - Rechazadas por guardia de seguridad: 26
-- Sin cambios (nada sustancial que mejorar): 6
+- Sin cambios (nada sustancial que mejorar): 7
 - Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-27 | 86 | 9 | 9 | 2 | 82 |
-| 2026-07-28 | 160 | 11 | 17 | 4 | 124 |
+| 2026-07-27 | 82 | 9 | 9 | 2 | 82 |
+| 2026-07-28 | 163 | 11 | 17 | 5 | 124 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **64**
-- seguridad defensiva: **51**
 - manejo de errores y validación de entradas: **48**
-- robustez ante casos límite: **43**
+- seguridad defensiva: **47**
+- robustez ante casos límite: **46**
 - rendimiento: **40**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **24**
-- `settings.py`: **23**
+- `settings.py`: **22**
 - `diskreport.py`: **21**
-- `scanner.py`: **20**
 - `main.py`: **20**
 - `browser.py`: **19**
+- `organizer.py`: **19**
+- `scanner.py`: **19**
 - `duplicates.py`: **18**
-- `organizer.py`: **18**
+- `healthscore.py`: **18**
 - `quarantine.py`: **18**
-- `healthscore.py`: **17**
-- `safety.py`: **15**
-- `startup.py`: **14**
-- `memory.py`: **11**
+- `safety.py`: **14**
+- `startup.py`: **13**
+- `memory.py`: **12**
 - `branding.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-28T13:32:07` **organizer.py** (robustez ante casos límite): He mejorado la robustez de `stage_for_review` añadiendo una comprobación explícita para evitar que el archivo a mover sea el mismo destino (o una relación de padres/hijos directa), y asegurando que las rutas base de origen y destino no colisionen en entornos con permisos restringidos, garantizando la integridad de la operación.
+- `2026-07-28T13:31:58` **memory.py** (robustez ante casos límite): Se mejora la robustez de `trim_working_set` añadiendo una validación explícita mediante `is_protected_path` (o verificación de acceso equivalente) y un manejo más preciso de los errores de la API de Windows, asegurando que la operación de trim solo intente ejecutarse tras validar que el proceso no es una tarea esencial bloqueada por el sistema.
+- `2026-07-28T13:29:28` **healthscore.py** (robustez ante casos límite): Mejora la robustez de `score_memory` y `score_disk` evitando la división por cero si las constantes de umbral se modifican por error, y añade una validación de `weights` más estricta ante valores negativos.
 - `2026-07-28T13:20:10` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `largest_folders` ante archivos inaccesibles o bloqueados (como aquellos en uso exclusivo por el sistema), añadiendo un manejo de excepciones más granular en `os.scandir` y asegurando que las operaciones de comparación de rutas no fallen frente a errores de permisos o sistemas de archivos inestables.
 - `2026-07-28T13:19:47` **browser.py** (robustez ante casos límite): Mejoré la robustez de `directory_size` ante el acceso a rutas que puedan ser puntos de reparse, junctions o enlaces simbólicos complejos, asegurando que no se produzcan bucles infinitos ni lecturas recursivas fuera de la estructura esperada, validando explícitamente mediante `is_symlink()` y `entry.is_dir()` de forma defensiva antes de cualquier operación.
 - `2026-07-28T13:10:06` **assistant.py** (robustez ante casos límite): Mejora la robustez del motor de consulta a Gemini ante configuraciones corruptas o valores inesperados (como modelos vacíos o claves mal formadas) asegurando que cualquier error durante la carga de `settings` no bloquee la respuesta del motor local.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-28T12:39:00` **browser.py** (rendimiento): Optimicé el rendimiento de `directory_size` eliminando la conversión recursiva a objetos `Path` dentro del bucle (`entry.path` ya es un `str`) y aplicando el filtro `is_protected_path` solo sobre la ruta resuelta, evitando sobrecarga de procesamiento en cada iteración del escaneo profundo.
 - `2026-07-28T12:38:11` **assistant.py** (rendimiento): Se optimizó el rendimiento del motor local al reemplazar la búsqueda secuencial por una clave en `_HANDLER_MAP` mediante el uso de una expresión regular precompilada (`re.compile`), evitando iteraciones innecesarias sobre todas las keywords.
 - `2026-07-28T12:28:40` **settings.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo integrando docstrings que especifican explícitamente las precondiciones y el comportamiento ante fallos de las funciones críticas, facilitando el mantenimiento y la comprensión de los mecanismos de seguridad y resiliencia implementados.
-- `2026-07-28T12:28:14` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings que explican el contexto funcional de cada función y se ha estandarizado la validación de seguridad inicial, clarificando la separación entre la lógica de escaneo de archivos y la lógica de navegación de directorios.
-- `2026-07-28T12:27:52` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación de los métodos principales de `safety.py` mediante la adición de docstrings estructuradas que especifican explícitamente las condiciones de error y el propósito de cada parámetro, facilitando el mantenimiento para futuros colaboradores y aumentando la claridad sobre el manejo de excepciones.
-- `2026-07-28T12:18:32` **quarantine.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints en parámetros y retornos omitidos, y la inclusión de docstrings detallados en funciones clave, explicando las restricciones críticas de seguridad que garantizan la integridad de la cuarentena.

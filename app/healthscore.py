@@ -114,6 +114,7 @@ def _to_int(value: Any, default: int = 0) -> int:
 
 def score_junk(junk_mb: float) -> float:
     """Puntúa basura: 0.0 si junk_mb >= JUNK_LIMIT_MB, 1.0 si es 0MB."""
+    if JUNK_LIMIT_MB <= 0: return 0.0
     return _clamp(1.0 - (junk_mb / JUNK_LIMIT_MB))
 
 
@@ -125,21 +126,25 @@ def score_security(suspicious_count: int, warnings: int = 0) -> float:
 
 def score_memory(available_percent: float) -> float:
     """Puntúa RAM: 1.0 si el % de RAM libre es >= RAM_IDEAL_PERCENT."""
+    if RAM_IDEAL_PERCENT <= 0: return 0.0
     return _clamp(available_percent / RAM_IDEAL_PERCENT)
 
 
 def score_disk(free_percent: float) -> float:
     """Puntúa espacio libre: 1.0 si el espacio libre es >= DISK_IDEAL_PERCENT."""
+    if DISK_IDEAL_PERCENT <= 0: return 0.0
     return _clamp(free_percent / DISK_IDEAL_PERCENT)
 
 
 def score_duplicates(duplicate_mb: float) -> float:
     """Puntúa duplicados: penalización lineal, 0.0 al llegar a DUPLICATE_LIMIT_MB."""
+    if DUPLICATE_LIMIT_MB <= 0: return 0.0
     return _clamp(1.0 - (duplicate_mb / DUPLICATE_LIMIT_MB))
 
 
 def score_startup(startup_count: int) -> float:
     """Puntúa inicio: penalización lineal, 0.0 al superar STARTUP_LIMIT_COUNT entradas."""
+    if STARTUP_LIMIT_COUNT <= 0: return 0.0
     return _clamp(1.0 - (startup_count / STARTUP_LIMIT_COUNT))
 
 
@@ -183,8 +188,8 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         return HealthResult(0, "F", {}, ["Error: Datos de entrada faltantes o inválidos."])
 
     # Seguridad defensiva: Verificar integridad de configuración
-    if sum(WEIGHTS.values()) != 100:
-        return HealthResult(0, "F", {}, ["Error de configuración: Los pesos del sistema no suman 100."])
+    if sum(WEIGHTS.values()) != 100 or any(w < 0 for w in WEIGHTS.values()):
+        return HealthResult(0, "F", {}, ["Error de configuración: Los pesos deben sumar 100 y ser positivos."])
 
     try:
         metrics.validate()

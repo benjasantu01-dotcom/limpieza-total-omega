@@ -186,7 +186,8 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
                 continue
 
             # Prevenir colisiones lógicas: el destino no puede ser antepasado del origen (evitar recursión maliciosa)
-            if dest == full_source_path or dest in full_source_path.parents or full_source_path == dest.parent:
+            # Tampoco permitir mover el archivo hacia sí mismo
+            if dest == full_source_path or dest in full_source_path.parents or full_source_path.parent == dest:
                 continue
                 
             # Verificar disponibilidad de acceso exclusivo antes de mover
@@ -197,7 +198,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
                 logger.warning("Archivo bloqueado o en uso: %s", full_source_path)
                 continue
 
-            usage = shutil.disk_usage(dest)
+            usage = shutil.disk_usage(dest.anchor)
             if usage.free < (jf.size_bytes + 10 * 1024 * 1024):
                 logger.error("Espacio insuficiente en destino para mover %s", full_source_path)
                 continue

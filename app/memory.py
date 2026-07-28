@@ -306,9 +306,8 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     
     try:
         target_pid = int(pid)
-        # Protección defensiva: bloquear PIDs de sistema y negativos
-        # Idle (0), System (4) y otros servicios críticos deben quedar fuera de alcance.
-        if target_pid <= 16:
+        # Protección: PID 0 (Idle) y PIDs < 16 son componentes críticos del kernel
+        if target_pid < 16:
             return False, "PID protegido: no es posible modificar procesos del sistema base."
     except (ValueError, TypeError):
         return False, "El PID debe ser un número entero válido."
@@ -325,10 +324,10 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
             WIN_PROCESS_SET_QUOTA | WIN_PROCESS_QUERY_LIMITED_INFORMATION, False, target_pid
         )
         if not handle:
-            return False, f"No se pudo acceder al proceso {target_pid} (¿permisos denegados?)."
+            return False, f"No se pudo acceder al proceso {target_pid} (¿acceso denegado?)."
         
         try:
-            # Verificación de seguridad adicional: evitar auto-manipulación si no es intencional
+            # Evitar auto-manipulación y chequeo de seguridad final
             if handle == ctypes.windll.kernel32.GetCurrentProcess():
                 return False, "Operación denegada: no se permite modificar el proceso actual."
 
@@ -340,5 +339,5 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
             ctypes.windll.kernel32.CloseHandle(handle)
         
         return True, f"Working set del proceso {target_pid} liberado. {TRIM_WARNING}"
-    except (OSError, AttributeError) as e:
-        return False, f"Error al interactuar con el sistema: {e}"
+    except (OSError, AttributeError):
+        return False, "Error fatal al interactuar con las APIs de bajo nivel del sistema."
