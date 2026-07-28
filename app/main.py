@@ -175,7 +175,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.tabs[name] = self.tabview.add(branding.tab_label(name))
 
         # Construcción lógica de cada tab
-        builders = [
+        builders: List[Callable[[], None]] = [
             self._build_tab_salud, self._build_tab_limpieza, self._build_tab_seguridad,
             self._build_tab_cuarentena, self._build_tab_memoria, self._build_tab_disco,
             self._build_tab_duplicados, self._build_tab_navegadores, self._build_tab_inicio,
@@ -336,28 +336,28 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                      secondary=True, column=1)
 
         # Tarjetas de métricas rápidas.
-        tarjetas = ctk.CTkFrame(tab, fg_color="transparent")
-        tarjetas.pack(fill="x", padx=12, pady=(14, 0))
+        card_container = ctk.CTkFrame(tab, fg_color="transparent")
+        card_container.pack(fill="x", padx=12, pady=(14, 0))
         for i, (clave, titulo) in enumerate(
             (("basura", "Basura"), ("sospechosos", "Sospechosos"),
              ("ram", "RAM libre"), ("disco", "Disco libre"))
         ):
-            tarjetas.grid_columnconfigure(i, weight=1)
-            self.cards[clave] = self._metric_card(tarjetas, titulo, i)
+            card_container.grid_columnconfigure(i, weight=1)
+            self.cards[clave] = self._metric_card(card_container, titulo, i)
 
         # Zona central: medidor circular a la izquierda, barras por área a la derecha.
-        centro = ctk.CTkFrame(tab, fg_color="transparent")
-        centro.pack(fill="x", padx=12, pady=(16, 0))
-        centro.grid_columnconfigure(1, weight=1)
+        center_container = ctk.CTkFrame(tab, fg_color="transparent")
+        center_container.pack(fill="x", padx=12, pady=(16, 0))
+        center_container.grid_columnconfigure(1, weight=1)
 
         self.gauge = tk.Canvas(
-            centro, width=176, height=176,
+            center_container, width=176, height=176,
             bg=branding.color("surface"), highlightthickness=0, bd=0,
         )
         self.gauge.grid(row=0, column=0, padx=(4, 22))
         self._draw_gauge(0, "-")
 
-        self._build_health_area_bars(centro)
+        self._build_health_area_bars(center_container)
 
         self._hint(tab, "Combina limpieza, seguridad, memoria, disco y arranque en un solo "
                         "puntaje. Es un análisis de solo lectura: no modifica nada. Las áreas "
@@ -366,29 +366,29 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _build_health_area_bars(self, parent: ctk.CTk):
         """Crea los indicadores de progreso (barras) para cada sub-área de salud."""
-        areas = ctk.CTkFrame(parent, fg_color="transparent")
-        areas.grid(row=0, column=1, sticky="ew")
-        areas.grid_columnconfigure(1, weight=1)
+        area_container = ctk.CTkFrame(parent, fg_color="transparent")
+        area_container.grid(row=0, column=1, sticky="ew")
+        area_container.grid_columnconfigure(1, weight=1)
         for fila, (clave, etiqueta) in enumerate(HEALTH_AREAS):
             ctk.CTkLabel(
-                areas, text=etiqueta, anchor="w", width=150,
+                area_container, text=etiqueta, anchor="w", width=150,
                 text_color=branding.color("text_muted"),
                 font=ctk.CTkFont(size=branding.font_size("body")),
             ).grid(row=fila, column=0, sticky="w", pady=4)
             barra = ctk.CTkProgressBar(
-                areas, height=9, corner_radius=5,
+                area_container, height=9, corner_radius=5,
                 fg_color=branding.color("surface_alt"),
                 progress_color=branding.color("accent"),
             )
             barra.grid(row=fila, column=1, sticky="ew", padx=10, pady=4)
             barra.set(0)
-            valor = ctk.CTkLabel(
-                areas, text="-", width=64, anchor="e",
+            valor_label = ctk.CTkLabel(
+                area_container, text="-", width=64, anchor="e",
                 text_color=branding.color("text"),
                 font=ctk.CTkFont(size=branding.font_size("caption"), weight="bold"),
             )
-            valor.grid(row=fila, column=2, sticky="e", pady=4)
-            self.area_bars[clave] = (barra, valor)
+            valor_label.grid(row=fila, column=2, sticky="e", pady=4)
+            self.area_bars[clave] = (barra, valor_label)
 
     def _metric_card(self, parent: ctk.CTk, title: str, column: int) -> ctk.CTkLabel:
         """Tarjeta con un número grande y su etiqueta. Devuelve la etiqueta del valor."""
@@ -398,18 +398,18 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         )
         tarjeta.grid(row=0, column=column, padx=6, sticky="ew")
 
-        valor = ctk.CTkLabel(
+        valor_label = ctk.CTkLabel(
             tarjeta, text="-",
             font=ctk.CTkFont(size=branding.font_size("title"), weight="bold"),
             text_color=branding.color("accent"),
         )
-        valor.pack(pady=(14, 0))
+        valor_label.pack(pady=(14, 0))
         ctk.CTkLabel(
             tarjeta, text=title.upper(),
             font=ctk.CTkFont(size=branding.font_size("caption")),
             text_color=branding.color("text_dim"),
         ).pack(pady=(0, 14))
-        return valor
+        return valor_label
 
     def _draw_gauge(self, score: int, grade: str):
         """Redibuja el medidor circular con el puntaje y la nota adentro."""
@@ -435,24 +435,24 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._action(row, "Mover a revisión", self.on_stage, secondary=True, column=1)
         self._action(row, "Vaciar revisados", self.on_delete_reviewed, danger=True, column=2)
 
-        options = ctk.CTkFrame(tab, fg_color="transparent")
-        options.pack(fill="x", padx=12, pady=(12, 0))
+        options_container = ctk.CTkFrame(tab, fg_color="transparent")
+        options_container.pack(fill="x", padx=12, pady=(12, 0))
 
-        ctk.CTkLabel(options, text="Buscar en:", text_color=branding.color("text_muted")).grid(
+        ctk.CTkLabel(options_container, text="Buscar en:", text_color=branding.color("text_muted")).grid(
             row=0, column=0, padx=(0, 8))
         drive_options = ["Por defecto (Temp + Descargas)"] + list_available_drives() + ["Elegir carpeta..."]
         self.target_choice = ctk.StringVar(value=drive_options[0])
-        self._menu(options, drive_options, self.target_choice,
+        self._menu(options_container, drive_options, self.target_choice,
                    self.on_target_choice_changed, width=240).grid(row=0, column=1, padx=4)
 
-        self.target_label = ctk.CTkLabel(options, text="",
+        self.target_label = ctk.CTkLabel(options_container, text="",
                                          text_color=branding.color("accent"))
         self.target_label.grid(row=0, column=2, padx=10)
 
-        ctk.CTkLabel(options, text="Ordenar por:",
+        ctk.CTkLabel(options_container, text="Ordenar por:",
                      text_color=branding.color("text_muted")).grid(row=0, column=3, padx=(20, 8))
         self.sort_by = ctk.StringVar(value="size")
-        self._menu(options, ["size", "date"], self.sort_by,
+        self._menu(options_container, ["size", "date"], self.sort_by,
                    lambda _: self.refresh_list(), width=110).grid(row=0, column=4, padx=4)
 
         self._hint(tab, "Los candidatos se mueven a una carpeta de revisión, no se borran. "
@@ -485,11 +485,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._action(row, "Vaciar cuarentena", self.on_purge_quarantine,
                      danger=True, column=2)
 
-        id_row = ctk.CTkFrame(tab, fg_color="transparent")
-        id_row.pack(fill="x", padx=12, pady=(12, 0))
-        ctk.CTkLabel(id_row, text="ID a restaurar:",
+        id_container = ctk.CTkFrame(tab, fg_color="transparent")
+        id_container.pack(fill="x", padx=12, pady=(12, 0))
+        ctk.CTkLabel(id_container, text="ID a restaurar:",
                      text_color=branding.color("text_muted")).grid(row=0, column=0, padx=(0, 8))
-        self.quarantine_id = self._entry(id_row, "pegá el ID que ves en la lista", 240)
+        self.quarantine_id = self._entry(id_container, "pegá el ID que ves en la lista", 240)
         self.quarantine_id.grid(row=0, column=1, padx=4)
 
         self._hint(tab, "La cuarentena guarda la ruta original de cada archivo, así se puede "
@@ -506,11 +506,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._action(row, "Liberar working set (PID)", self.on_trim_process,
                      danger=True, column=2)
 
-        pid_row = ctk.CTkFrame(tab, fg_color="transparent")
-        pid_row.pack(fill="x", padx=12, pady=(12, 0))
-        ctk.CTkLabel(pid_row, text="PID:",
+        pid_container = ctk.CTkFrame(tab, fg_color="transparent")
+        pid_container.pack(fill="x", padx=12, pady=(12, 0))
+        ctk.CTkLabel(pid_container, text="PID:",
                      text_color=branding.color("text_muted")).grid(row=0, column=0, padx=(0, 8))
-        self.pid_entry = self._entry(pid_row, "ej. 4812", 140)
+        self.pid_entry = self._entry(pid_container, "ej. 4812", 140)
         self.pid_entry.grid(row=0, column=1, padx=4)
 
         self._hint(tab, "Acá no hay 'limpiador de RAM' y es a propósito: forzar la liberación "
@@ -583,19 +583,19 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._action(row, "Limpiar charla", lambda: self.clear("Asistente"),
                      secondary=True, column=2)
 
-        pregunta = ctk.CTkFrame(tab, fg_color="transparent")
-        pregunta.pack(fill="x", padx=12, pady=(12, 0))
-        pregunta.grid_columnconfigure(0, weight=1)
-        self.question_entry = self._entry(pregunta, "Escribí tu pregunta y apretá Enter", 600)
+        pregunta_container = ctk.CTkFrame(tab, fg_color="transparent")
+        pregunta_container.pack(fill="x", padx=12, pady=(12, 0))
+        pregunta_container.grid_columnconfigure(0, weight=1)
+        self.question_entry = self._entry(pregunta_container, "Escribí tu pregunta y apretá Enter", 600)
         self.question_entry.grid(row=0, column=0, sticky="ew")
         self.question_entry.bind("<Return>", lambda _e: self.on_ask_assistant())
 
         # Preguntas sugeridas: dan un punto de partida sin tener que escribir.
-        sugeridas = ctk.CTkFrame(tab, fg_color="transparent")
-        sugeridas.pack(fill="x", padx=12, pady=(10, 0))
+        sugeridas_container = ctk.CTkFrame(tab, fg_color="transparent")
+        sugeridas_container.pack(fill="x", padx=12, pady=(10, 0))
         for i, texto in enumerate(assistant.SUGGESTED_QUESTIONS):
             ctk.CTkButton(
-                sugeridas, text=texto, height=28, corner_radius=14,
+                sugeridas_container, text=texto, height=28, corner_radius=14,
                 fg_color=branding.color("surface_alt"),
                 hover_color=branding.color("surface_hover"),
                 text_color=branding.color("text_muted"),
@@ -671,22 +671,22 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             font=ctk.CTkFont(size=branding.font_size("heading"), weight="bold"),
         ).pack(fill="x", padx=14, pady=(18, 0))
 
-        ia = ctk.CTkFrame(tab, fg_color="transparent")
-        ia.pack(fill="x", padx=12, pady=(6, 0))
+        ia_container = ctk.CTkFrame(tab, fg_color="transparent")
+        ia_container.pack(fill="x", padx=12, pady=(6, 0))
 
         self.setting_vars["asistente_activado"] = ctk.BooleanVar(
             value=bool(self.settings.get("asistente_activado")))
         ctk.CTkSwitch(
-            ia, text="Activar asistente en línea",
+            ia_container, text="Activar asistente en línea",
             variable=self.setting_vars["asistente_activado"],
             progress_color=branding.color("accent2"),
             button_color=branding.color("text"),
             text_color=branding.color("text"),
         ).grid(row=0, column=0, sticky="w", padx=(0, 20), pady=6)
 
-        ctk.CTkLabel(ia, text="Clave de API:",
+        ctk.CTkLabel(ia_container, text="Clave de API:",
                      text_color=branding.color("text_muted")).grid(row=0, column=1, padx=(0, 8))
-        self.api_key_entry = self._entry(ia, f"vacío = usar {settings_mod.API_KEY_ENV_VAR}", 260)
+        self.api_key_entry = self._entry(ia_container, f"vacío = usar {settings_mod.API_KEY_ENV_VAR}", 260)
         self.api_key_entry.configure(show="*")
         self.api_key_entry.grid(row=0, column=2, sticky="w")
 
@@ -890,13 +890,13 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                     etiqueta.configure(text=valores.get(clave, "-"),
                                     text_color=colores.get(clave, branding.color("accent")))
 
-                for clave, (barra, valor) in self.area_bars.items():
+                for clave, (barra, valor_label) in self.area_bars.items():
                     puntos = resultado.breakdown.get(clave, 0)
                     maximo = healthscore.WEIGHTS.get(clave, 1)
                     proporcion = puntos / maximo if maximo else 0
                     barra.set(proporcion)
                     barra.configure(progress_color=branding.score_color(proporcion * 100))
-                    valor.configure(text=f"{puntos:.0f}/{maximo}",
+                    valor_label.configure(text=f"{puntos:.0f}/{maximo}",
                                     text_color=branding.score_color(proporcion * 100))
             except Exception as e:
                 logging.debug("Error visual en Salud: %s", e)

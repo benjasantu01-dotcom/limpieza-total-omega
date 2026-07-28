@@ -106,33 +106,33 @@ def _to_int(value: Any, default: int = 0) -> int:
 
 
 def score_junk(junk_mb: float) -> float:
-    """Puntúa basura (0.0-1.0): 0 puntos si junk_mb >= 5000MB, 1.0 si es 0MB."""
+    """Puntúa basura (retorno float 0.0-1.0): 0.0 si junk_mb >= 5000MB, 1.0 si es 0MB."""
     return _clamp(1.0 - (junk_mb / 5000.0))
 
 
 def score_security(suspicious_count: int, warnings: int = 0) -> float:
-    """Puntúa seguridad (0.0-1.0): cada hallazgo resta 0.05 y cada warning 0.25 al score base 1.0."""
+    """Puntúa seguridad (retorno float 0.0-1.0): castigo acumulativo por hallazgos y warnings."""
     penalty = (suspicious_count * 0.05) + (warnings * 0.25)
     return _clamp(1.0 - penalty)
 
 
 def score_memory(available_percent: float) -> float:
-    """Puntúa RAM (0.0-1.0): devuelve 1.0 si el % de RAM libre es >= 35%."""
+    """Puntúa RAM (retorno float 0.0-1.0): 1.0 si el % de RAM libre es >= 35%."""
     return _clamp(available_percent / 35.0)
 
 
 def score_disk(free_percent: float) -> float:
-    """Puntúa espacio libre (0.0-1.0): devuelve 1.0 si el espacio libre es >= 25%."""
+    """Puntúa espacio libre (retorno float 0.0-1.0): 1.0 si el espacio libre es >= 25%."""
     return _clamp(free_percent / 25.0)
 
 
 def score_duplicates(duplicate_mb: float) -> float:
-    """Puntúa duplicados (0.0-1.0): penalización lineal, 0 puntos al alcanzar 2000MB."""
+    """Puntúa duplicados (retorno float 0.0-1.0): penalización lineal, 0.0 al llegar a 2000MB."""
     return _clamp(1.0 - (duplicate_mb / 2000.0))
 
 
 def score_startup(startup_count: int) -> float:
-    """Puntúa inicio (0.0-1.0): penalización lineal, 0 puntos al superar 20 entradas."""
+    """Puntúa inicio (retorno float 0.0-1.0): penalización lineal, 0.0 al superar 20 entradas."""
     return _clamp(1.0 - (startup_count / 20.0))
 
 

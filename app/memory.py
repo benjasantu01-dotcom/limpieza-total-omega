@@ -90,12 +90,15 @@ class ProcessMemory:
 
     @property
     def working_set_mb(self) -> float:
-        """Representación del Working Set en Megabytes para visualización."""
+        """Conversión del Working Set a Megabytes para visualización de usuario."""
         return round(self.working_set / (1024 * 1024), 1)
 
 
 def format_bytes(num: int | float | None) -> str:
-    """Convierte bytes a una cadena legible humanamente con unidades."""
+    """
+    Convierte una magnitud en bytes a una cadena legible humanamente.
+    Aplica redondeo dinámico: 0 decimales para Bytes, 1 decimal para unidades superiores.
+    """
     if num is None:
         return "0 B"
     try:
@@ -114,8 +117,8 @@ def format_bytes(num: int | float | None) -> str:
 
 def parse_linux_meminfo(text: str) -> MemorySnapshot:
     """
-    Procesa el contenido crudo de /proc/meminfo. 
-    Convierte valores expresados en kB a bytes para estandarizar con MemorySnapshot.
+    Parsea la salida cruda de /proc/meminfo.
+    Convierte valores de kB (estándar de kernel) a bytes.
     """
     values: Dict[str, int] = {}
     for line in text.splitlines():
@@ -130,12 +133,12 @@ def parse_linux_meminfo(text: str) -> MemorySnapshot:
 
 def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]:
     """
-    Parsea la salida de texto plano (CSV) proveniente de PowerShell.
-    Espera formato: Name,Id,WorkingSet. Ignora cabeceras y líneas vacías.
+    Procesa el CSV de procesos generado por PowerShell.
     
-    :param text: Contenido del CSV capturado de PowerShell.
-    :param limit: Cantidad máxima de procesos a retornar.
-    :return: Lista de objetos ProcessMemory ordenados por consumo descendente.
+    Lógica de filtrado:
+    - Ignora líneas vacías o mal formadas.
+    - Excluye cabeceras típicas de PowerShell.
+    - Asegura que los valores numéricos de PID y WorkingSet sean positivos.
     """
     if not text:
         return []
@@ -164,7 +167,10 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
 
 
 def _read_windows_snapshot() -> MemorySnapshot:
-    """Llamada a la API nativa de Win32 GlobalMemoryStatusEx vía ctypes."""
+    """
+    Implementación interna de bajo nivel usando ctypes para invocar
+    GlobalMemoryStatusEx y obtener el estado real de RAM en Windows.
+    """
     import ctypes
 
     class MEMORYSTATUSEX(ctypes.Structure):
@@ -188,7 +194,10 @@ def _read_windows_snapshot() -> MemorySnapshot:
 
 
 def read_snapshot() -> MemorySnapshot:
-    """Captura el estado actual de la memoria del sistema detectando el SO."""
+    """
+    Captura un snapshot del estado de memoria. 
+    Detecta automáticamente el SO (NT o Linux).
+    """
     try:
         if os.name == "nt":
             return _read_windows_snapshot()
@@ -202,7 +211,10 @@ def read_snapshot() -> MemorySnapshot:
 
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
-    """Consulta los procesos más pesados mediante PowerShell en Windows."""
+    """
+    Consulta al sistema operativo por los procesos de mayor consumo.
+    Solo implementado para Windows vía PowerShell.
+    """
     if os.name != "nt":
         return []
     command = (
@@ -222,8 +234,8 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
 
 def pressure_level(snapshot: MemorySnapshot) -> str:
     """
-    Clasifica el estado de presión de memoria basándose en el 
-    porcentaje de memoria física disponible.
+    Categoriza el estado actual de la memoria en niveles de presión.
+    Se basa en el porcentaje de disponibilidad de RAM física.
     """
     if snapshot.total <= 0:
         return "info"
@@ -239,7 +251,8 @@ def pressure_level(snapshot: MemorySnapshot) -> str:
 
 def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] = None) -> List[str]:
     """
-    Genera un reporte textual descriptivo basado en el estado actual de la memoria.
+    Genera un reporte legible por humanos basado en el snapshot y la lista 
+    de procesos proporcionada.
     """
     if not isinstance(snapshot, MemorySnapshot) or snapshot.total <= 0:
         return ["No se pudo leer el estado de la memoria en este sistema."]
@@ -270,13 +283,14 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
-    Ejecuta el trim (purga) del working set de un proceso en Windows.
+    Solicita al S.O. que libere la memoria RAM física (Working Set) asignada a un PID.
     
-    Usa la API `EmptyWorkingSet` de la librería `psapi`.
-    Requiere que el proceso no sea crítico ni sea el proceso actual.
+    Esta operación invoca `EmptyWorkingSet` de la API de Windows. 
+    ADVERTENCIA: Esta función es potencialmente perjudicial para el rendimiento 
+    general del sistema según los principios expuestos en este módulo.
     
-    :param pid: PID del proceso objetivo (entero o string).
-    :return: Tupla (éxito: bool, mensaje: str).
+    :param pid: Identificador del proceso (entero o cadena numérica).
+    :return: Tupla (éxito, mensaje descriptivo).
     """
     if os.name != "nt":
         return False, "Solo disponible en Windows."

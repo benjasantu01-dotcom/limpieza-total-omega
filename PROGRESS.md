@@ -6,22 +6,22 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **233** (46.2% de aceptación)
+- Mejoras aceptadas: **237** (47.0% de aceptación)
 - Rechazadas por tests: 20
 - Rechazadas por guardia de seguridad: 29
 - Sin cambios (nada sustancial que mejorar): 6
-- Sin respuesta de la IA (error o límite): 216
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-27 | 146 | 16 | 19 | 3 | 140 |
-| 2026-07-28 | 87 | 4 | 10 | 3 | 76 |
+| 2026-07-27 | 146 | 16 | 19 | 3 | 136 |
+| 2026-07-28 | 91 | 4 | 10 | 3 | 76 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **61**
+- legibilidad y documentación: **65**
 - manejo de errores y validación de entradas: **53**
 - seguridad defensiva: **49**
 - robustez ante casos límite: **36**
@@ -32,20 +32,24 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **22**
 - `diskreport.py`: **21**
 - `browser.py`: **19**
+- `healthscore.py`: **19**
 - `organizer.py`: **19**
 - `settings.py`: **19**
-- `healthscore.py`: **18**
+- `duplicates.py`: **17**
 - `scanner.py`: **17**
+- `main.py`: **17**
 - `safety.py`: **16**
-- `duplicates.py`: **16**
-- `main.py`: **16**
 - `quarantine.py`: **15**
 - `startup.py`: **15**
+- `memory.py`: **11**
 - `branding.py`: **10**
-- `memory.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-28T07:42:29` **memory.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `memory.py` mediante docstrings detallados en funciones críticas, especifiqué tipos para parámetros ambiguos (como en `trim_working_set`) y añadí aclaraciones sobre el comportamiento de los parsers para mejorar la mantenibilidad.
+- `2026-07-28T07:42:18` **main.py** (legibilidad y documentación): Se introdujeron type hints en los métodos de construcción de la interfaz y se renombraron variables internas en los constructores de pestañas para aclarar su propósito y mejorar la mantenibilidad, siguiendo el enfoque de legibilidad.
+- `2026-07-28T07:41:19` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `healthscore.py` añadiendo tipos precisos en los docstrings y documentando la lógica de las funciones de puntuación para que cualquier colaborador entienda el impacto de los umbrales utilizados.
+- `2026-07-28T07:40:55` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de Type Hints más precisos y docstrings explicativos que aclaran el flujo del pipeline y el propósito de las funciones internas, facilitando la legibilidad para futuros desarrolladores sin alterar la lógica.
 - `2026-07-28T07:31:49` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `walk_files` extrayendo la lógica de validación de seguridad de carpetas a una subfunción interna (`is_unsafe_dir`), clarificando así el propósito de los chequeos de recursión y cumpliendo con el enfoque de documentación técnica.
 - `2026-07-28T07:31:40` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica y la robustez del módulo añadiendo type hints faltantes, docstrings detallados que explican la lógica de exclusión y seguridad (`NEVER_TOUCH`, `_is_safe_path`), y renombré variables internas en `directory_size` para eliminar ambigüedades.
 - `2026-07-28T07:31:17` **branding.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `branding.py` mediante la normalización de la documentación, la corrección de type hints en `gradient_colors` (que omitía el tipo de retorno) y la simplificación de la estructura de `draw_logo` para reducir el anidamiento y la complejidad ciclomática de su lógica de renderizado.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-28T07:11:03` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez del manejo de archivos mediante la validación explícita de `Path` en las funciones críticas de entrada, evitando errores de tiempo de ejecución y asegurando que las operaciones de entrada/salida manejen rutas correctamente tipadas antes de interactuar con el sistema de archivos.
 - `2026-07-28T07:10:37` **organizer.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `stage_for_review` implementando una validación de parámetros más estricta (verificando `is_dir` sobre el destino) y añadiendo un manejo de excepciones más granular para evitar que una falla en un solo archivo detenga el proceso completo, asegurando que los recursos (como el manejo de archivos) sean manejados de manera segura.
 - `2026-07-28T07:10:15` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez de `parse_windows_process_csv` implementando validaciones preventivas contra entradas inesperadas, como valores `None` o nombres de proceso vacíos, asegurando que la función no falle silenciosamente ni procese datos inválidos en el bucle principal.
-- `2026-07-28T07:01:57` **main.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `on_trim_process` y `on_restore_quarantine` para asegurar que las entradas de usuario (PID e ID) se validen correctamente, evitando excepciones no controladas antes de llegar a la lógica de negocio.
-- `2026-07-28T07:01:15` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` validando que `metrics` no sea `None` y asegurando que las funciones de puntuación manejen casos extremos de forma explícita, evitando divisiones por cero o valores fuera de rango antes de que `_clamp` actúe.
-- `2026-07-28T07:00:52` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `suggest_keeper` y `reclaimable_bytes` añadiendo validaciones de tipo explícitas y manejando casos de rutas inexistentes durante la selección del archivo a conservar, evitando posibles errores en tiempo de ejecución.
-- `2026-07-28T07:00:04` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `summarize` y las funciones auxiliares capturando potenciales errores de `format_size` y validaciones de entrada, asegurando que el informe sea informativo incluso ante valores inesperados o rutas mal formadas.
