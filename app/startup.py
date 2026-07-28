@@ -64,30 +64,24 @@ class StartupEntry:
         """
         Extrae la ruta base del ejecutable a partir de la línea de comando.
         
-        Lógica:
-        1. Si la línea empieza con comillas, extrae el contenido hasta la siguiente comilla.
-        2. Si no tiene comillas, retorna el primer token (separado por espacios).
+        Ejemplos:
+        - '"C:\Program Files\App.exe" /s' -> 'C:\Program Files\App.exe'
+        - 'C:\Windows\System32\app.exe'    -> 'C:\Windows\System32\app.exe'
         """
         raw_cmd: str = self.command.strip()
         if not raw_cmd:
             return ""
         
-        # Caso 1: Ruta encapsulada en comillas (ej: "C:\App\prog.exe" /args)
         if raw_cmd.startswith('"'):
             end_quote: int = raw_cmd.find('"', 1)
-            # Retorna el contenido entre comillas si es válido, sino el resto de la cadena
             return raw_cmd[1:end_quote] if end_quote != -1 else raw_cmd[1:]
         
-        # Caso 2: Ruta simple (sin comillas)
         parts: List[str] = raw_cmd.split()
         return parts[0] if parts else ""
 
 
 def startup_folders() -> List[Path]:
-    """
-    Retorna las rutas a las carpetas 'Inicio' (usuario y sistema) 
-    verificando la existencia de los directorios en el sistema de archivos.
-    """
+    """Retorna las rutas a las carpetas 'Inicio' (usuario y sistema) existentes."""
     if os.name != "nt":
         return []
     candidates: List[Path] = []
@@ -102,11 +96,10 @@ def startup_folders() -> List[Path]:
 
 def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> List[StartupEntry]:
     """
-    Escanea las carpetas de inicio en busca de archivos (ejecutables/accesos directos).
+    Escanea carpetas en busca de ejecutables o accesos directos.
 
-    Seguridad: Filtra 'desktop.ini' y symlinks para evitar ciclos. Verifica mediante
-    `resolve()` que el archivo encontrado permanezca efectivamente dentro de la 
-    carpeta base, evitando escapes mediante rutas relativas complejas.
+    Seguridad: Ignora 'desktop.ini' y symlinks. Usa `resolve()` para asegurar que
+    los archivos encontrados no escapen del árbol de directorios base.
     """
     if folders is None:
         folders = startup_folders()
@@ -120,10 +113,8 @@ def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> List[Start
         try:
             for item in base_path.iterdir():
                 try:
-                    # Filtramos symlinks/junctions por seguridad y desktop.ini
                     if item.is_file() and not item.is_symlink() and item.name.lower() != "desktop.ini":
                         resolved_item: Path = item.resolve()
-                        # Verificación estricta: el archivo debe residir bajo la base resuelta
                         if base_path == resolved_item.parent:
                             found_entries.append(StartupEntry(name=item.stem, command=str(item), source="carpeta"))
                 except (OSError, PermissionError, RuntimeError):
@@ -137,9 +128,8 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
     """
     Transforma el volcado CSV de PowerShell en objetos StartupEntry.
     
-    Espera formato CSV generado por `ConvertTo-Csv`. Filtra las cabeceras estándar 
-    de PowerShell y limpia las comillas de encapsulamiento que el motor de 
-    registro suele incluir en los valores de cadena.
+    Limpia comillas residuales y descarta cabeceras propias de los objetos 
+    de PowerShell (PSCustomObject).
     """
     parsed_entries: List[StartupEntry] = []
     if not isinstance(text, str) or not text.strip():
@@ -156,7 +146,6 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
         name_raw: str = csv_row_parts[0].strip().strip('"').strip("'")
         value_raw: str = csv_row_parts[1].strip().strip('"').strip("'")
         
-        # Validar que el nombre no sea una cabecera de sistema ignorando case
         if not name_raw or name_raw.lower() in ("name", "pscustomobject") or name_raw.upper().startswith("PS"):
             continue
         parsed_entries.append(StartupEntry(name=name_raw, command=value_raw, source=source))
@@ -164,12 +153,7 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
 
 
 def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[StartupEntry]:
-    """
-    Obtiene programas de inicio consultando las llaves del Registro vía PowerShell.
-    
-    Ejecuta un comando de PowerShell para extraer propiedades de las llaves 
-    Run y las convierte a CSV para parseo seguro.
-    """
+    """Obtiene programas de inicio consultando las llaves del Registro vía PowerShell."""
     if os.name != "nt":
         return []
     all_entries: List[StartupEntry] = []
@@ -178,7 +162,6 @@ def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[Start
         if not key or not isinstance(key, str):
             continue
             
-        # Escapado para PowerShell usando list2cmdline para evitar inyección en el comando
         safe_key: str = subprocess.list2cmdline([key])
         ps_cmd: str = (
             f"if (Test-Path {safe_key}) {{ (Get-Item {safe_key}).Property | ForEach-Object "
@@ -215,16 +198,13 @@ def list_startup_entries() -> List[StartupEntry]:
 
 
 def estimate_impact(entries: Iterable[StartupEntry]) -> str:
-    """Clasifica el impacto en el rendimiento basado en la cantidad total de programas."""
-    if entries is None:
-        return "ok"
-    total_count: int = sum(1 for _ in entries)
-    if total_count <= 5:
-        return "ok"
-    if total_count <= 10:
-        return "info"
-    if total_count <= 18:
-        return "warning"
+    """Clasifica el impacto en el rendimiento basándose en umbrales de cantidad."""
+    count = sum(1 for _ in (entries or []))
+    # Umbrales ordenados para determinar el nivel de criticidad
+    thresholds = [(5, "ok"), (10, "info"), (18, "warning")]
+    for limit, label in thresholds:
+        if count <= limit:
+            return label
     return "danger"
 
 

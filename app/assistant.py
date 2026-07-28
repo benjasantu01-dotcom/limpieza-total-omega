@@ -102,6 +102,8 @@ SUGGESTED_QUESTIONS: Final = (
     "¿Conviene desactivar programas de inicio?",
 )
 
+SUGGESTED_QUESTIONS_LIST: Final = list(SUGGESTED_QUESTIONS)
+
 SYSTEM_PROMPT: Final = (
     "Sos el asistente de Limpieza Total Omega, una app de mantenimiento para "
     "Windows 11. Respondés en castellano rioplatense, de forma breve y "
@@ -123,6 +125,14 @@ _ENDPOINT: Final = "https://generativelanguage.googleapis.com/v1beta/models/{mod
 _TIMEOUT_SECONDS: Final = 30
 _PATH_REGEX: Final = re.compile(r"([a-zA-Z]:\\|/|\\)")
 
+# Estructura estática para búsqueda rápida de handlers
+_HANDLER_MAP: Final = {
+    "ram": "handle_ram", "memoria": "handle_ram", "lenta": "handle_ram", "lento": "handle_ram", "acelerar": "handle_ram",
+    "espacio": "handle_disk", "disco": "handle_disk", "lleno": "handle_disk", "recuperar": "handle_disk", "liberar": "handle_disk",
+    "seguro": "handle_security", "virus": "handle_security", "sospechos": "handle_security", "borrar": "handle_security", "peligro": "handle_security",
+    "puntaje": "handle_score", "salud": "handle_score", "nota": "handle_score", "score": "handle_score",
+    "inicio": "handle_startup", "arranque": "handle_startup", "arranca": "handle_startup", "encender": "handle_startup"
+}
 
 @dataclass
 class SystemContext:
@@ -153,21 +163,6 @@ class Answer:
     @property
     def is_online(self) -> bool:
         return self.source == "gemini"
-
-
-_HANDLERS: Final = {}
-
-
-def _initialize_handlers() -> None:
-    """Registra los handlers de preguntas en el diccionario global."""
-    if _HANDLERS: return
-    _HANDLERS.update({
-        "ram": handle_ram, "memoria": handle_ram, "lenta": handle_ram, "lento": handle_ram, "acelerar": handle_ram,
-        "espacio": handle_disk, "disco": handle_disk, "lleno": handle_disk, "recuperar": handle_disk, "liberar": handle_disk,
-        "seguro": handle_security, "virus": handle_security, "sospechos": handle_security, "borrar": handle_security, "peligro": handle_security,
-        "puntaje": handle_score, "salud": handle_score, "nota": handle_score, "score": handle_score,
-        "inicio": handle_startup, "arranque": handle_startup, "arranca": handle_startup, "encender": handle_startup
-    })
 
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
@@ -347,14 +342,12 @@ def local_answer(question: str, context: SystemContext) -> Answer:
                  "tu sistema. Andá a la pestaña Salud y apretá 'Analizar el "
                  "sistema': es de solo lectura, no modifica nada.",
             notice=OFFLINE_NOTICE,
-            suggestions=list(SUGGESTED_QUESTIONS[:3]),
+            suggestions=SUGGESTED_QUESTIONS_LIST[:3],
         )
 
-    _initialize_handlers()
-    
-    for keyword, handler in _HANDLERS.items():
+    for keyword, handler_name in _HANDLER_MAP.items():
         if keyword in clean_text:
-            return handler(context, clean_text)
+            return globals()[handler_name](context, clean_text)
 
     problemas = _rank_problems(context)
     if problemas:
@@ -363,7 +356,7 @@ def local_answer(question: str, context: SystemContext) -> Answer:
     else:
         cuerpo = (f"Tu sistema está en buen estado ({context.score}/100). No hay nada "
                   "urgente. Un repaso de limpieza cada tanto es suficiente.")
-    return Answer(cuerpo, notice=OFFLINE_NOTICE, suggestions=list(SUGGESTED_QUESTIONS[:3]))
+    return Answer(cuerpo, notice=OFFLINE_NOTICE, suggestions=SUGGESTED_QUESTIONS_LIST[:3])
 
 
 def _rank_problems(context: SystemContext) -> list[str]:

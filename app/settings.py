@@ -143,6 +143,20 @@ def _validate_str(clave: str, valor: str) -> str | None:
     return texto.lower() if clave in ("tema", "acento") else texto
 
 
+def _apply_validation_by_type(clave: str, valor: Any, defecto: Any) -> Any:
+    """
+    Despacha la validación de un valor basándose en el tipo del valor por defecto.
+    Retorna el valor validado o None si el valor no puede ser saneado.
+    """
+    if isinstance(defecto, bool):
+        return _coerce_bool(valor)
+    if isinstance(defecto, int) and not isinstance(valor, bool):
+        return _coerce_int(valor, clave)
+    if isinstance(defecto, str) and isinstance(valor, str):
+        return _validate_str(clave, valor)
+    return None
+
+
 def settings_path(base: str | Path | None = None) -> Path:
     """Determina la ruta absoluta del archivo de configuración final."""
     if base is not None:
@@ -165,22 +179,9 @@ def validate(values: Any) -> dict[str, Any]:
         if clave not in values:
             continue
             
-        valor = values[clave]
-
-        if isinstance(defecto, bool):
-            coerced = _coerce_bool(valor)
-            if coerced is not None:
-                limpio[clave] = coerced
-        
-        elif isinstance(defecto, int) and not isinstance(valor, bool):
-            coerced = _coerce_int(valor, clave)
-            if coerced is not None:
-                limpio[clave] = coerced
-        
-        elif isinstance(defecto, str) and isinstance(valor, str):
-            validado = _validate_str(clave, valor)
-            if validado is not None:
-                limpio[clave] = validado
+        coerced = _apply_validation_by_type(clave, values[clave], defecto)
+        if coerced is not None:
+            limpio[clave] = coerced
 
     return limpio
 

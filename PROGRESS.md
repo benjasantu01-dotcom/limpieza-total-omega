@@ -16,37 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-26 | 41 | 3 | 5 | 1 | 20 |
+| 2026-07-26 | 38 | 3 | 5 | 1 | 19 |
 | 2026-07-27 | 155 | 16 | 20 | 4 | 155 |
-| 2026-07-28 | 37 | 3 | 5 | 2 | 37 |
+| 2026-07-28 | 40 | 3 | 5 | 2 | 38 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **66**
+- legibilidad y documentación: **67**
 - manejo de errores y validación de entradas: **48**
 - seguridad defensiva: **47**
-- rendimiento: **37**
+- rendimiento: **36**
 - robustez ante casos límite: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `browser.py`: **22**
-- `diskreport.py`: **21**
 - `organizer.py`: **21**
+- `browser.py`: **21**
+- `diskreport.py`: **20**
 - `scanner.py`: **19**
 - `duplicates.py`: **18**
 - `safety.py`: **18**
-- `assistant.py`: **17**
+- `assistant.py`: **18**
 - `main.py`: **16**
 - `healthscore.py`: **16**
 - `startup.py`: **15**
+- `settings.py`: **15**
 - `memory.py`: **14**
-- `settings.py`: **14**
 - `quarantine.py`: **13**
 - `branding.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-28T03:36:24` **assistant.py** (rendimiento): Optimicé el rendimiento de `_initialize_handlers` y las búsquedas de texto convirtiendo el diccionario de mapeo en una estructura de acceso directo y evitando la reconstrucción de listas de sugerencias en cada llamado, centralizando la lógica en una constante global eficiente.
+- `2026-07-28T03:35:55` **startup.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `startup.py` mediante la refactorización de `estimate_impact` para usar un enfoque de mapeo de datos y añadiendo documentación tipo "docstring" detallada con ejemplos en los métodos de filtrado y parsing.
+- `2026-07-28T03:35:31` **settings.py** (legibilidad y documentación): Mejore la claridad y mantenibilidad de la función `validate` mediante la separación de la lógica de validación por tipo en funciones privadas específicas, facilitando futuras extensiones y mejorando la legibilidad.
 - `2026-07-28T03:26:10` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la inclusión de type hints precisos, la estandarización de docstrings para explicar la lógica de los chequeos, y la extracción de la lógica de tiempo del escaneo a una constante documentada para mejorar la legibilidad y el mantenimiento.
 - `2026-07-28T03:26:03` **safety.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints en la interfaz pública y una sección de advertencia crítica (docstring) en `is_within_directory` para prevenir el uso incorrecto de comparaciones de rutas, reduciendo la ambigüedad en el manejo de enlaces simbólicos.
 - `2026-07-28T03:25:21` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints faltantes, docstrings técnicos que explican las precondiciones de seguridad y se refactorizó la lógica de los bloques `try/except` en `quarantine_file` para clarificar la reversibilidad de la operación en caso de fallo, alineándose con el enfoque de legibilidad técnica exigido.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-28T02:55:38` **assistant.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando Type Hints detallados en las funciones de manejo (`handle_*`) y normalizando los docstrings para que expliquen claramente el propósito funcional, facilitando el mantenimiento y la comprensión de las reglas de negocio encapsuladas.
 - `2026-07-28T02:55:02` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save` y `load` encapsulando la decodificación y escritura JSON en bloques de manejo de errores más específicos para prevenir la persistencia de datos corruptos y asegurar que las excepciones de I/O no degraden la experiencia del usuario.
 - `2026-07-28T02:45:17` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ensure_safe_to_modify` ante entradas inválidas y mejoré `is_protected_path` para evitar que un error de acceso inesperado (como un `PermissionError` al intentar resolver una ruta inaccesible) bloquee erróneamente la operación, permitiendo un manejo más granular.
-- `2026-07-28T02:44:27` **organizer.py** (manejo de errores y validación de entradas): Mejora la robustez de `stage_for_review` validando que la ruta destino no sea parte de la estructura de archivos del sistema protegidos y asegurando que las rutas origen existan antes de intentar cualquier operación de movimiento, evitando excepciones innecesarias.
-- `2026-07-28T02:35:42` **memory.py** (manejo de errores y validación de entradas): Se reforzó la validación de los datos de entrada en `parse_windows_process_csv` y `format_bytes` para asegurar que valores inesperados (como `None` o strings no numéricos) no provoquen fallos en tiempo de ejecución, además de añadir chequeos de integridad en la función `diagnose`.
-- `2026-07-28T02:34:36` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` validando que `metrics` no sea `None` y asegurando que las funciones de cálculo no lancen excepciones inesperadas ante entradas no normalizadas, protegiendo así la estabilidad del hilo de la interfaz.
