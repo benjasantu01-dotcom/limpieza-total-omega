@@ -32,7 +32,7 @@ import os
 from pathlib import Path
 from typing import Any, Final
 
-from safety import is_safe_to_modify
+from safety import is_safe_to_modify, ensure_safe_to_modify
 
 __all__ = [
     "DEFAULTS",
@@ -212,7 +212,10 @@ def save(values: Any, base: str | Path | None = None) -> Path | None:
     global _cached_settings, _last_mtime
     ruta = settings_path(base)
     
-    if not is_safe_to_modify(str(ruta.parent)):
+    # Verificación de seguridad en la carpeta contenedora y en el archivo mismo
+    try:
+        ensure_safe_to_modify(str(ruta.parent))
+    except (RuntimeError, PermissionError):
         return None
 
     limpio = validate(values)

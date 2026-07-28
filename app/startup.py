@@ -114,8 +114,6 @@ def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> List[Start
     for folder in folders:
         try:
             base_path: Path = folder.resolve()
-            if not base_path.exists():
-                continue
         except (ValueError, PermissionError, OSError):
             continue
 
@@ -124,7 +122,9 @@ def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> List[Start
                 try:
                     # Filtramos symlinks/junctions por seguridad y desktop.ini
                     if item.is_file() and not item.is_symlink() and item.name.lower() != "desktop.ini":
-                        if base_path in item.resolve().parents:
+                        resolved_item: Path = item.resolve()
+                        # Verificación estricta: el archivo debe residir bajo la base resuelta
+                        if base_path == resolved_item.parent:
                             found_entries.append(StartupEntry(name=item.stem, command=str(item), source="carpeta"))
                 except (OSError, PermissionError, RuntimeError):
                     continue
