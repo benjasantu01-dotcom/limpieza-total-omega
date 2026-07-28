@@ -173,11 +173,11 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             if not is_safe_to_modify(full_source_path) or not is_safe_to_modify(dest):
                 continue
 
-            # Evitar bucles o movimientos dentro de sí mismo
+            # Evitar bucles, movimientos dentro de sí mismo o a ubicaciones protegidas
             if dest == full_source_path or dest in full_source_path.parents or full_source_path == dest.parent:
                 continue
                 
-            # Verificar si el archivo está en uso
+            # Verificar si el archivo está en uso mediante apertura exclusiva
             try:
                 with open(full_source_path, 'rb'):
                     pass

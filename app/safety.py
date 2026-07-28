@@ -85,6 +85,7 @@ def normalize(path: PathLike) -> Path:
     try:
         return Path(str_path).expanduser().resolve()
     except (OSError, RuntimeError, ValueError):
+        # Fallback si resolve() falla por permisos o problemas de sistema de archivos
         return Path(os.path.abspath(os.path.expanduser(str_path)))
 
 
@@ -96,7 +97,7 @@ def _contains_protected_name(path: Path) -> bool:
 def is_drive_root(path: PathLike) -> bool:
     r"""Verifica si la ruta apunta a la raíz de un volumen (ej. C:\ o /)."""
     try:
-        p = Path(path).resolve()
+        p = normalize(path)
         return p == Path(p.anchor)
     except (ValueError, TypeError, OSError):
         return False
@@ -108,7 +109,6 @@ def is_protected_path(path: PathLike) -> bool:
     """
     try:
         raw_path = str(path)
-        # Check rápido por caracteres prohibidos o UNC antes de normalizar
         if raw_path.startswith(("\\\\", "//")):
             return True
             
@@ -116,6 +116,7 @@ def is_protected_path(path: PathLike) -> bool:
         if p.is_symlink():
             return True
     except (PermissionError, OSError, ValueError, TypeError):
+        # Si no podemos resolver la ruta por permisos, asumimos precaución máxima
         return True 
         
     if is_drive_root(p):
@@ -124,7 +125,6 @@ def is_protected_path(path: PathLike) -> bool:
     if _contains_protected_name(p):
         return True
         
-    # Usamos any() para cortocircuitar en la primera coincidencia encontrada
     return any(p == root or root in p.parents for root in _SYSTEM_ROOTS)
 
 
@@ -149,7 +149,7 @@ def is_within_directory(
             return allow_equal
         c.relative_to(p)
         return True
-    except (ValueError, TypeError, OSError):
+    except (ValueError, TypeError, OSError, ValueError):
         return False
 
 
@@ -166,16 +166,6 @@ def is_sensitive_file(path: PathLike) -> bool:
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> Path:
     """
     Valida si una ruta puede ser modificada.
-    
-    Args:
-        path: Ruta a evaluar.
-        allow_sensitive: Si es True, permite extensiones en SENSITIVE_EXTENSIONS.
-        
-    Returns:
-        Path: Ruta normalizada y validada.
-        
-    Raises:
-        UnsafePathError: Si la ruta es insegura o mal formada.
     """
     if path is None:
         raise UnsafePathError("La ruta proporcionada es None.")
@@ -185,21 +175,19 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
     except (TypeError, ValueError) as e:
         raise UnsafePathError(f"Ruta mal formada: {path}") from e
 
-    # Bloqueo estricto de rutas UNC o recursos de red
     str_p = str(p)
     if str_p.startswith(("\\\\", "//")):
         raise UnsafePathError("Operación bloqueada: rutas UNC o de red no permitidas.")
     
-    # Validar partes de la ruta para evitar casos mal formados (ej. dispositivos)
     if len(p.parts) == 0:
-        raise UnsafePathError("Ruta inválida: no contiene componentes.")
+        raise UnsafePathError("Ruta inválida: no contiene componentes detectables.")
 
     try:
         if p.is_symlink():
             raise UnsafePathError("Operación bloqueada: enlaces simbólicos no permitidos.")
         if p.exists() and (p.is_block_device() or p.is_char_device()):
-            raise UnsafePathError("Operación bloqueada: dispositivo especial.")
-    except OSError:
+            raise UnsafePathError("Operación bloqueada: dispositivo especial detectado.")
+    except (OSError, PermissionError):
         pass
 
     if is_drive_root(p):
