@@ -156,15 +156,15 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
 
     def should_ignore_entry(entry: os.DirEntry) -> bool:
         """Verifica si la entrada es un enlace simbólico, reparse point o ruta protegida."""
-        if entry.is_symlink():
-            return True
-        if os.name == 'nt':
-            try:
-                if entry.stat().st_reparse_tag != 0:
-                    return True
-            except OSError:
+        try:
+            if entry.is_symlink():
                 return True
-        if skip_protected and is_protected_path(Path(entry.path)):
+            if os.name == 'nt':
+                if entry.stat(follow_symlinks=False).st_reparse_tag != 0:
+                    return True
+            if skip_protected and is_protected_path(Path(entry.path)):
+                return True
+        except OSError:
             return True
         return False
 
@@ -175,13 +175,13 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
                 for entry in iterator:
                     if should_ignore_entry(entry):
                         continue
-                    if entry.is_dir():
-                        yield from recursive_scan(entry.path)
-                    else:
-                        try:
+                    try:
+                        if entry.is_dir():
+                            yield from recursive_scan(entry.path)
+                        else:
                             yield Path(entry.path), entry.stat().st_size
-                        except (OSError, PermissionError):
-                            continue
+                    except (OSError, PermissionError):
+                        continue
         except (OSError, PermissionError):
             return
 

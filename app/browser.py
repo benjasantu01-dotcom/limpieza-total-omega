@@ -115,6 +115,7 @@ def directory_size(path: str | os.PathLike) -> int:
     
     try:
         p = Path(path)
+        # No seguir enlaces simbólicos para evitar bucles o lecturas fuera de rango
         if p.is_symlink():
             return 0
         target = p.resolve(strict=True)
@@ -132,9 +133,10 @@ def directory_size(path: str | os.PathLike) -> int:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
-                        if entry.is_symlink() or entry.is_junction():
+                        # Verificar si es symlink o junction antes de procesar
+                        if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
                             continue
-                        if entry.is_dir():
+                        if entry.is_dir(follow_symlinks=False):
                             if not is_protected_path(Path(entry.path)):
                                 stack.append(entry.path)
                         else:

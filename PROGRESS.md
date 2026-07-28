@@ -7,8 +7,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **246** (48.8% de aceptación)
-- Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 27
+- Rechazadas por tests: 20
+- Rechazadas por guardia de seguridad: 26
 - Sin cambios (nada sustancial que mejorar): 6
 - Sin respuesta de la IA (error o límite): 206
 
@@ -16,28 +16,28 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-27 | 88 | 9 | 10 | 2 | 83 |
-| 2026-07-28 | 158 | 10 | 17 | 4 | 123 |
+| 2026-07-27 | 86 | 9 | 9 | 2 | 82 |
+| 2026-07-28 | 160 | 11 | 17 | 4 | 124 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **64**
-- seguridad defensiva: **53**
+- seguridad defensiva: **51**
 - manejo de errores y validación de entradas: **48**
-- robustez ante casos límite: **41**
+- robustez ante casos límite: **43**
 - rendimiento: **40**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **24**
 - `settings.py`: **23**
+- `diskreport.py`: **21**
 - `scanner.py`: **20**
-- `diskreport.py`: **20**
 - `main.py`: **20**
-- `organizer.py`: **19**
-- `quarantine.py`: **19**
-- `browser.py`: **18**
+- `browser.py`: **19**
 - `duplicates.py`: **18**
+- `organizer.py`: **18**
+- `quarantine.py`: **18**
 - `healthscore.py`: **17**
 - `safety.py`: **15**
 - `startup.py`: **14**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-28T13:20:10` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `largest_folders` ante archivos inaccesibles o bloqueados (como aquellos en uso exclusivo por el sistema), añadiendo un manejo de excepciones más granular en `os.scandir` y asegurando que las operaciones de comparación de rutas no fallen frente a errores de permisos o sistemas de archivos inestables.
+- `2026-07-28T13:19:47` **browser.py** (robustez ante casos límite): Mejoré la robustez de `directory_size` ante el acceso a rutas que puedan ser puntos de reparse, junctions o enlaces simbólicos complejos, asegurando que no se produzcan bucles infinitos ni lecturas recursivas fuera de la estructura esperada, validando explícitamente mediante `is_symlink()` y `entry.is_dir()` de forma defensiva antes de cualquier operación.
 - `2026-07-28T13:10:06` **assistant.py** (robustez ante casos límite): Mejora la robustez del motor de consulta a Gemini ante configuraciones corruptas o valores inesperados (como modelos vacíos o claves mal formadas) asegurando que cualquier error durante la carga de `settings` no bloquee la respuesta del motor local.
 - `2026-07-28T13:09:26` **settings.py** (rendimiento): Optimizé la validación en `load` y `validate` pre-calculando las claves válidas en un `set` para evitar recorridos lineales innecesarios y redundancias en el proceso de lectura de configuración.
 - `2026-07-28T13:08:59` **scanner.py** (rendimiento): Se optimizó `scan_file` reemplazando la creación dinámica de una lista de funciones en cada llamada por una constante predefinida, reduciendo la asignación de memoria y el overhead en escaneos masivos de disco.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-28T12:28:14` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings que explican el contexto funcional de cada función y se ha estandarizado la validación de seguridad inicial, clarificando la separación entre la lógica de escaneo de archivos y la lógica de navegación de directorios.
 - `2026-07-28T12:27:52` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación de los métodos principales de `safety.py` mediante la adición de docstrings estructuradas que especifican explícitamente las condiciones de error y el propósito de cada parámetro, facilitando el mantenimiento para futuros colaboradores y aumentando la claridad sobre el manejo de excepciones.
 - `2026-07-28T12:18:32` **quarantine.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints en parámetros y retornos omitidos, y la inclusión de docstrings detallados en funciones clave, explicando las restricciones críticas de seguridad que garantizan la integridad de la cuarentena.
-- `2026-07-28T12:18:07` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `organizer.py` añadiendo type hints faltantes, tipado explícito en lambdas y docstrings detallados que explican el "porqué" de las validaciones de seguridad, facilitando el mantenimiento a largo plazo sin alterar el comportamiento funcional.
-- `2026-07-28T12:17:43` **memory.py** (legibilidad y documentación): Documenté con type hints los campos de la estructura interna `MEMORYSTATUSEX` en `_read_windows_snapshot` y mejoré la legibilidad de la lógica en `parse_windows_process_csv` extrayendo la validación de filas a variables descriptivas, facilitando el mantenimiento.

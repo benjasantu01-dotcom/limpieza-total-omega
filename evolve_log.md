@@ -709,3 +709,34 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-07-28T13:10:06` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejora la robustez del motor de consulta a Gemini ante configuraciones corruptas o valores inesperados (como modelos vacíos o claves mal formadas) asegurando que cualquier error durante la carga de `settings` no bloquee la respuesta del motor local.
 - `2026-07-28T13:10:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-28T13:10:06` Corrida terminada. Total usado hoy: 312.
+- `2026-07-28T13:18:55` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-07-28T13:19:24` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-07-28T13:19:47` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Mejoré la robustez de `directory_size` ante el acceso a rutas que puedan ser puntos de reparse, junctions o enlaces simbólicos complejos, asegurando que no se produzcan bucles infinitos ni lecturas recursivas fuera de la estructura esperada, validando explícitamente mediante `is_symlink()` y `entry.is_dir()` de forma defensiva antes de cualquier operación.
+- `2026-07-28T13:20:10` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la robustez de `walk_files` y `largest_folders` ante archivos inaccesibles o bloqueados (como aquellos en uso exclusivo por el sistema), añadiendo un manejo de excepciones más granular en `os.scandir` y asegurando que las operaciones de comparación de rutas no fallen frente a errores de permisos o sistemas de archivos inestables.
+- `2026-07-28T13:20:18` Tests FALLARON:
+```
+_result' object has no attribute 'st_is_file'
+
+app/duplicates.py:170: AttributeError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:72: SyntaxWarning: invalid escape sequence '\P'
+    - '"C:\Program Files\App.exe" /s' -> 'C:\Program Files\App.exe'
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_finds_identical_files - AttributeError: 'os.stat_result' object has no attribute 'st_is_file'
+FAILED evolve/tests/test_modules.py::test_ignores_files_with_different_content - AttributeError: 'os.stat_result' object has no attribute 'st_is_file'
+FAILED evolve/tests/test_modules.py::test_finds_duplicates_across_subfolders - AttributeError: 'os.stat_result' object has no attribute 'st_is_file'
+3 failed, 296 passed, 7 warnings in 0.98s
+
+```
+- `2026-07-28T13:20:18` ❌ Mejora descartada en duplicates.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez de `_collect_candidates` ante rutas con permisos denegados o errores de lectura durante el `os.walk` mediante el uso de un manejo de excepciones granular y se mejoró la resiliencia de `group_by_size` al validar que las entradas sigan siendo archivos antes de procesar su tamaño, evitando que carpetas o enlaces simbólicos causen inconsistencias en los grupos.
+- `2026-07-28T13:20:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-28T13:20:18` Corrida terminada. Total usado hoy: 316.
