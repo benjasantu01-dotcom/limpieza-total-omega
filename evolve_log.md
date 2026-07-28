@@ -893,3 +893,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-07-28T04:17:30` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
 - `2026-07-28T04:17:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-28T04:17:30` Corrida terminada. Total usado hoy: 104.
+- `2026-07-28T04:26:16` Arrancando corrida. Quedan hoy ~196 peticiones objetivo.
+- `2026-07-28T04:26:42` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha robustecido la función `walk_files` ante fallos de `stat` causados por archivos bloqueados o en uso (race conditions) durante el recorrido, asegurando que el motor de escaneo no se detenga abruptamente si una operación de lectura falla temporalmente.
+- `2026-07-28T04:27:03` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-07-28T04:27:27` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `compute_score` asegurando que el cálculo de `total` sea consistente incluso si `WEIGHTS` y `ratios` tienen claves divergentes, y blindé `_generate_recommendations` ante posibles divisiones por cero o claves faltantes usando `.get()` con valores por defecto seguros.
+- `2026-07-28T04:28:07` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante estados inconsistentes y errores de concurrencia en la interfaz al asegurar que el contador de tareas en curso (`_tasks_running`) se decremente siempre en un bloque `finally`, y añadiendo un manejo de excepciones más granular en `_update_health_visuals` para evitar que caídas de renderizado de la UI detengan los hilos de análisis.
+- `2026-07-28T04:28:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-28T04:28:07` Corrida terminada. Total usado hoy: 108.

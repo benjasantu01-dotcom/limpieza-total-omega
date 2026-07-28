@@ -172,7 +172,7 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
                 continue
 
             # Seguridad: evitar seguir enlaces simbólicos y puntos de reparse
-            if root_path.is_symlink() or (os.name == 'nt' and root_path.stat().st_reparse_tag != 0):
+            if root_path.is_symlink() or (os.name == 'nt' and hasattr(root_path, 'stat') and root_path.stat().st_reparse_tag != 0):
                 subdirs.clear()
                 continue
 

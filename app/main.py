@@ -745,8 +745,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def run_async(self, fn: Callable):
         """Envuelve la ejecución de tareas en un hilo secundario con manejo global de errores."""
+        self._set_busy(True)
         def wrapper():
-            self._set_busy(True)
             try:
                 fn()
             except safety.UnsafePathError as e:
@@ -871,32 +871,35 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                                sospechosos: int, ram_libre: float, disco_libre: float):
         """Actualiza la interfaz de la pestaña Salud con los resultados del análisis."""
         def actualizar():
-            self._draw_gauge(resultado.score, resultado.grade)
+            try:
+                self._draw_gauge(resultado.score, resultado.grade)
 
-            valores = {
-                "basura": f"{junk_mb:.0f} MB",
-                "sospechosos": str(sospechosos),
-                "ram": f"{ram_libre:.0f}%",
-                "disco": f"{disco_libre:.0f}%",
-            }
-            colores = {
-                "basura": branding.color("accent") if junk_mb < 1000 else branding.color("warning"),
-                "sospechosos": branding.color("accent") if sospechosos == 0 else branding.color("warning"),
-                "ram": branding.score_color(ram_libre * 3),
-                "disco": branding.score_color(disco_libre * 5),
-            }
-            for clave, etiqueta in self.cards.items():
-                etiqueta.configure(text=valores.get(clave, "-"),
-                                   text_color=colores.get(clave, branding.color("accent")))
+                valores = {
+                    "basura": f"{junk_mb:.0f} MB",
+                    "sospechosos": str(sospechosos),
+                    "ram": f"{ram_libre:.0f}%",
+                    "disco": f"{disco_libre:.0f}%",
+                }
+                colores = {
+                    "basura": branding.color("accent") if junk_mb < 1000 else branding.color("warning"),
+                    "sospechosos": branding.color("accent") if sospechosos == 0 else branding.color("warning"),
+                    "ram": branding.score_color(ram_libre * 3),
+                    "disco": branding.score_color(disco_libre * 5),
+                }
+                for clave, etiqueta in self.cards.items():
+                    etiqueta.configure(text=valores.get(clave, "-"),
+                                    text_color=colores.get(clave, branding.color("accent")))
 
-            for clave, (barra, valor) in self.area_bars.items():
-                puntos = resultado.breakdown.get(clave, 0)
-                maximo = healthscore.WEIGHTS.get(clave, 1)
-                proporcion = puntos / maximo if maximo else 0
-                barra.set(proporcion)
-                barra.configure(progress_color=branding.score_color(proporcion * 100))
-                valor.configure(text=f"{puntos:.0f}/{maximo}",
-                                text_color=branding.score_color(proporcion * 100))
+                for clave, (barra, valor) in self.area_bars.items():
+                    puntos = resultado.breakdown.get(clave, 0)
+                    maximo = healthscore.WEIGHTS.get(clave, 1)
+                    proporcion = puntos / maximo if maximo else 0
+                    barra.set(proporcion)
+                    barra.configure(progress_color=branding.score_color(proporcion * 100))
+                    valor.configure(text=f"{puntos:.0f}/{maximo}",
+                                    text_color=branding.score_color(proporcion * 100))
+            except Exception as e:
+                logging.debug("Error visual en Salud: %s", e)
 
         self.after(0, actualizar)
 
