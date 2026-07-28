@@ -21,6 +21,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable, Sequence, Dict, List
 from functools import lru_cache
+from safety import is_protected_path
 
 __all__ = [
     "BrowserCache",
@@ -93,6 +94,9 @@ def _is_safe_path(p: Path, base: Path) -> bool:
     try:
         resolved_p = p.resolve(strict=True)
         resolved_base = base.resolve(strict=True)
+        # Seguridad adicional: verificar protección global antes de procesar
+        if is_protected_path(resolved_p):
+            return False
         return resolved_base in resolved_p.parents or resolved_p == resolved_base
     except (OSError, RuntimeError):
         return False
@@ -111,14 +115,14 @@ def directory_size(path: str | os.PathLike) -> int:
         return 0
     
     try:
-        root_path = os.path.abspath(path)
-        if not os.path.isdir(root_path):
+        p = Path(path).resolve(strict=True)
+        if is_protected_path(p) or not p.is_dir():
             return 0
-    except OSError:
+    except (OSError, RuntimeError):
         return 0
     
     total_bytes = 0
-    stack = [root_path]
+    stack = [p]
     
     while stack:
         current_dir = stack.pop()
@@ -129,7 +133,9 @@ def directory_size(path: str | os.PathLike) -> int:
                         if entry.is_symlink():
                             continue
                         if entry.is_dir():
-                            stack.append(entry.path)
+                            # Validar que no sea ruta protegida antes de entrar
+                            if not is_protected_path(Path(entry.path)):
+                                stack.append(entry.path)
                         elif entry.is_file():
                             total_bytes += entry.stat().st_size
                     except (OSError, PermissionError):
@@ -174,7 +180,7 @@ def detect_profiles(bases: Sequence[Path] | None = None,
     found: List[BrowserCache] = []
     
     for base in bases:
-        if not isinstance(base, Path) or not base.is_dir():
+        if not isinstance(base, Path) or not base.is_dir() or is_protected_path(base):
             continue
             
         try:

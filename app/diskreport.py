@@ -163,13 +163,17 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
         try:
             root_path = Path(root)
             
+            # Seguridad: no permitir escape del directorio base
             if not str(root_path).startswith(str(base)):
+                subdirs.clear()
                 continue
 
+            # Seguridad: evitar seguir enlaces simbólicos y puntos de reparse
             if root_path.is_symlink() or (os.name == 'nt' and root_path.stat().st_reparse_tag != 0):
                 subdirs.clear()
                 continue
 
+            # Seguridad: evitar entrar en carpetas protegidas
             if skip_protected and is_protected_path(root_path):
                 subdirs.clear()
                 continue
@@ -181,6 +185,7 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
                 try:
                     path = root_path / name
                     st = path.lstat()
+                    # Seguridad: evitar archivos en carpetas protegidas detectadas tarde
                     if path.is_symlink() or (os.name == 'nt' and getattr(st, 'st_reparse_tag', 0) != 0):
                         continue
                     if skip_protected and is_protected_path(path):
@@ -231,6 +236,9 @@ def largest_folders(directory: str | os.PathLike, limit: int = 10, skip_protecte
     
     for path, size in walk_files(base, skip_protected):
         try:
+            # Seguridad adicional: validar que path esté bajo base antes de calcular relativo
+            if not str(path).startswith(str(base)):
+                continue
             rel = path.relative_to(base)
             if not rel.parts:
                 continue

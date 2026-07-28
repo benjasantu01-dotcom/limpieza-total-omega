@@ -145,12 +145,14 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
             continue
         try:
             base = Path(directory).expanduser()
-            if not base.is_dir():
+            # Validar integridad: no seguir puntos de reparse (symlinks/junctions)
+            if base.is_symlink() or not base.is_dir():
                 continue
             
             for root, subdirs, files in os.walk(base):
                 root_path = Path(root)
                 
+                # Pre-filtrar subdirectorios si son protegidos
                 if skip_protected and is_protected_path(root_path):
                     subdirs.clear()
                     continue
@@ -158,8 +160,11 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
                 for name in files:
                     candidate = root_path / name
                     try:
-                        # Usar lstat para evitar seguir symlinks o resolver rutas costosas
+                        # Usar lstat para evitar seguir symlinks durante la iteración
                         st = candidate.lstat()
+                        # Ignorar enlaces simbólicos explícitamente
+                        if os.path.islink(candidate):
+                            continue
                         if not (st.st_size >= min_size and os.path.isfile(candidate)):
                             continue
                         if skip_protected and is_protected_path(candidate):

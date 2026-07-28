@@ -257,15 +257,15 @@ def save_logo_svg(destination: str | Path) -> Path | None:
     if not destination: return None
     try:
         path = Path(destination).expanduser().resolve()
-        # Verificaciones de seguridad robustas contra rutas maliciosas o restringidas
-        if path.is_symlink() or not path.name.lower().endswith(".svg"):
-            return None
+        
+        # Validar integridad contra rutas protegidas
         if is_protected_path(path):
             return None
             
+        # Verificar seguridad antes de modificar (lanza error si no es seguro)
         ensure_safe_to_modify(path)
         
-        # Crear directorio solo si es seguro
+        # Crear directorio padre si es seguro
         if not path.parent.exists():
             path.parent.mkdir(parents=True, exist_ok=True)
             
