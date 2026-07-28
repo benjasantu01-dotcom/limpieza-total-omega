@@ -419,8 +419,9 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
             
         texto = "".join(p.get("text", "") for p in candidatos[0].get("content", {}).get("parts", [])).strip()
         
-        # Seguridad Defensiva: rechazar si la respuesta contiene patrones de ruta
-        if not texto or _PATH_REGEX.search(texto):
+        # Seguridad Defensiva: rechazar si contiene rutas o caracteres de control,
+        # y limitar longitud para evitar ataques de desbordamiento en la UI.
+        if not texto or len(texto) > 1000 or _PATH_REGEX.search(texto) or re.search(r'[\x00-\x08\x0b\x0c\x0e-\x1f]', texto):
             return None
         return texto
     except (urllib.error.URLError, urllib.error.HTTPError, OSError,

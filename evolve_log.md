@@ -1272,3 +1272,34 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-07-28T09:13:47` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se ha mejorado la resiliencia de `load` y `save` ante situaciones de acceso concurrente al disco (como bloqueos de archivo o cambios de permisos súbitos) mediante la adición de un bloque de control más robusto y el manejo explícito de errores de E/S, asegurando que la app nunca quede en estado inconsistente.
 - `2026-07-28T09:13:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-28T09:13:47` Corrida terminada. Total usado hoy: 220.
+- `2026-07-28T09:22:46` Arrancando corrida. Quedan hoy ~80 peticiones objetivo.
+- `2026-07-28T09:23:11` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.01s
+
+```
+- `2026-07-28T09:23:11` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `StartupEntry.executable` ante rutas con caracteres especiales o espacios y añadí un manejo de excepciones más granular en `entries_from_folders` para evitar que un solo archivo inaccesible interrumpa el escaneo completo.
+- `2026-07-28T09:23:41` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_call_gemini` limitando el tamaño del texto de respuesta y restringiendo estrictamente los caracteres de control para evitar inyecciones en el flujo de interfaz de la app.
+- `2026-07-28T09:24:09` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `save_logo_svg` al reemplazar el manejo genérico de excepciones por una validación explícita mediante `is_safe_to_modify` antes de cualquier operación de escritura, evitando además la creación de directorios innecesarios si la ruta ya es inválida.
+- `2026-07-28T09:24:17` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva de `directory_size` y `detect_profiles` implementando `is_symlink()` de forma más estricta para evitar la recursión en enlaces simbólicos y puntos de reparse, asegurando que las rutas procesadas sean tratadas como archivos o carpetas reales antes de cualquier operación de I/O.
+- `2026-07-28T09:24:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-28T09:24:17` Corrida terminada. Total usado hoy: 224.

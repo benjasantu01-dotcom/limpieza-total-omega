@@ -6,34 +6,34 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **248** (49.2% de aceptación)
-- Rechazadas por tests: 19
+- Mejoras aceptadas: **251** (49.8% de aceptación)
+- Rechazadas por tests: 20
 - Rechazadas por guardia de seguridad: 29
 - Sin cambios (nada sustancial que mejorar): 7
-- Sin respuesta de la IA (error o límite): 201
+- Sin respuesta de la IA (error o límite): 197
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-27 | 132 | 14 | 16 | 3 | 119 |
-| 2026-07-28 | 116 | 5 | 13 | 4 | 82 |
+| 2026-07-27 | 132 | 14 | 16 | 3 | 115 |
+| 2026-07-28 | 119 | 6 | 13 | 4 | 82 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **64**
-- seguridad defensiva: **48**
+- seguridad defensiva: **51**
 - manejo de errores y validación de entradas: **47**
 - robustez ante casos límite: **47**
 - rendimiento: **42**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **24**
+- `assistant.py`: **25**
 - `settings.py`: **22**
 - `diskreport.py`: **21**
+- `browser.py`: **20**
 - `organizer.py`: **20**
-- `browser.py`: **19**
 - `scanner.py`: **19**
 - `main.py`: **19**
 - `healthscore.py`: **18**
@@ -42,10 +42,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - `safety.py`: **16**
 - `startup.py`: **16**
 - `memory.py`: **11**
-- `branding.py`: **8**
+- `branding.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-28T09:24:17` **browser.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `directory_size` y `detect_profiles` implementando `is_symlink()` de forma más estricta para evitar la recursión en enlaces simbólicos y puntos de reparse, asegurando que las rutas procesadas sean tratadas como archivos o carpetas reales antes de cualquier operación de I/O.
+- `2026-07-28T09:24:09` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` al reemplazar el manejo genérico de excepciones por una validación explícita mediante `is_safe_to_modify` antes de cualquier operación de escritura, evitando además la creación de directorios innecesarios si la ruta ya es inválida.
+- `2026-07-28T09:23:41` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_call_gemini` limitando el tamaño del texto de respuesta y restringiendo estrictamente los caracteres de control para evitar inyecciones en el flujo de interfaz de la app.
 - `2026-07-28T09:13:47` **settings.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `load` y `save` ante situaciones de acceso concurrente al disco (como bloqueos de archivo o cambios de permisos súbitos) mediante la adición de un bloque de control más robusto y el manejo explícito de errores de E/S, asegurando que la app nunca quede en estado inconsistente.
 - `2026-07-28T09:13:37` **scanner.py** (robustez ante casos límite): Se reforzó la robustez de `scan_directory` al manejar explícitamente posibles errores de acceso y metadatos inconsistentes al iterar sobre el sistema de archivos, asegurando que la recolección de sospechas continúe incluso si un archivo individual es bloqueado o eliminado durante el escaneo.
 - `2026-07-28T09:04:29` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` ante la posible falta de consistencia en el estado del disco, añadiendo una limpieza explícita del archivo temporal (si llegara a quedar huérfano) y verificando que el hash generado sea válido antes de confirmar el movimiento en el manifiesto.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-28T08:52:38` **browser.py** (robustez ante casos límite): Se ha robustecido el cálculo de `directory_size` y `detect_profiles` añadiendo una verificación explícita de `is_symlink` y `is_junction` (usando `is_mount` o chequeo de reparse points) para evitar la recursión infinita o el procesamiento indebido de puntos de montaje que puedan causar bucles de archivos o errores de acceso a disco en casos límite.
 - `2026-07-28T08:43:15` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` ante valores `NaN` o `inf` no numéricos que podrían causar fallos en la lógica de negocio, y añadí una validación estricta para evitar que claves inexistentes en el diccionario de métricas causen errores al acceder a ellas durante la construcción del contexto.
 - `2026-07-28T08:42:20` **settings.py** (rendimiento): Optimicé el sistema de caché en `load` y `save` consolidando la lógica de invalidación y reduciendo las llamadas redundantes a `stat()` y `path` mediante una verificación de `base` consistente, mejorando el rendimiento en accesos repetidos.
-- `2026-07-28T08:32:59` **scanner.py** (rendimiento): Optimizé el rendimiento de `scan_directory` evitando llamadas redundantes a `Path(entry.path)` y resoluciones innecesarias de rutas, consolidando la validación de archivos en un único chequeo eficiente dentro del bucle de `os.scandir`.
-- `2026-07-28T08:32:11` **quarantine.py** (rendimiento): Optimicé el cálculo del total de bytes usados por la cuarentena evitando recargar y re-parsear el archivo de manifiesto completo en cada iteración de la UI, utilizando en su lugar la propiedad `_manifest_cache` que ya gestiona el estado en memoria.
-- `2026-07-28T08:22:54` **main.py** (rendimiento): Se optimizó el rendimiento del panel de Salud sustituyendo la creación de hilos innecesarios en `on_full_analysis` por una ejecución eficiente dentro de un único hilo de tarea, evitando el overhead de gestión de múltiples futuros y permitiendo que la interfaz responda mejor al no saturar el `ThreadPoolExecutor`.

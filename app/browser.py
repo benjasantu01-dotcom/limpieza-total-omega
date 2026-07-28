@@ -116,7 +116,10 @@ def directory_size(path: str | os.PathLike) -> int:
         return 0
     
     try:
-        target = Path(path).resolve(strict=True)
+        p = Path(path)
+        if p.is_symlink():
+            return 0
+        target = p.resolve(strict=True)
         if is_protected_path(target) or not target.is_dir():
             return 0
     except (OSError, RuntimeError):
@@ -132,7 +135,7 @@ def directory_size(path: str | os.PathLike) -> int:
                 for entry in it:
                     try:
                         # Saltar enlaces simbólicos y puntos de reparse (junctions)
-                        if entry.is_symlink() or (entry.is_dir() and Path(entry.path).is_mount()):
+                        if entry.is_symlink() or entry.is_junction():
                             continue
                         if entry.is_dir():
                             if not is_protected_path(Path(entry.path)):
@@ -150,7 +153,7 @@ def directory_size(path: str | os.PathLike) -> int:
 def _is_valid_cache_path(candidate: Path, base_path: Path) -> bool:
     """Valida si una ruta es un directorio de caché existente, seguro y permitido."""
     try:
-        if not candidate.exists():
+        if not candidate.exists() or candidate.is_symlink():
             return False
         return (
             _is_safe_path(candidate, base_path) and

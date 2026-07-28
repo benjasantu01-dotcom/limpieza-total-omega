@@ -256,11 +256,13 @@ def save_logo_svg(destination: str | Path | None) -> Path | None:
     if not destination: return None
     try:
         path = Path(destination).expanduser().resolve()
-        if is_protected_path(path): return None
+        # Validación defensiva antes de cualquier intento de IO
+        if not is_safe_to_modify(path): return None
         ensure_safe_to_modify(path)
         
         if not path.parent.exists():
-            if is_protected_path(path.parent): return None
+            # Validar directorio padre antes de crearlo
+            if not is_safe_to_modify(path.parent): return None
             ensure_safe_to_modify(path.parent)
             path.parent.mkdir(parents=True, exist_ok=True)
             
