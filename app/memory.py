@@ -151,14 +151,16 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
             parts = [p.strip().strip('"') for p in clean_line.split(",", 2)]
             if len(parts) != 3: continue
             
-            if parts[0].lower() in {"name", "processname"}: continue
+            is_header = parts[0].lower() in {"name", "processname"}
+            if is_header: continue
                 
             try:
                 pid_val = int(parts[1])
                 working_set_val = int(float(parts[2]))
                 proc_name = parts[0] if parts[0] else "Unknown"
                 
-                if pid_val >= 0 and working_set_val >= 0:
+                is_valid = pid_val >= 0 and working_set_val >= 0
+                if is_valid:
                     yield ProcessMemory(name=proc_name, pid=pid_val, working_set=working_set_val)
             except (ValueError, TypeError, OverflowError): 
                 continue

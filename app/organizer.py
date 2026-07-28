@@ -17,7 +17,7 @@ import logging
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional, Final, Callable, Union
+from typing import List, Optional, Final, Callable, Union, Iterator
 from safety import is_safe_to_modify
 
 # Configuración de log para seguimiento de errores no críticos
@@ -51,7 +51,7 @@ def list_available_drives() -> List[str]:
     """
     if os.name != "nt":
         return []
-    drives = []
+    drives: List[str] = []
     for letter in string.ascii_uppercase:
         drive = f"{letter}:\\"
         if os.path.exists(drive):
@@ -97,7 +97,7 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
             with os.scandir(base_path) as it:
                 for entry in it:
                     try:
-                        # Ignorar enlaces simbólicos y puntos de reparse para evitar loops o acceso a rutas prohibidas
+                        # Ignorar enlaces simbólicos para evitar bucles infinitos y exposición a rutas fuera de control
                         if entry.is_symlink():
                             continue
                         if entry.is_dir(follow_symlinks=False):
@@ -106,6 +106,7 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
                         elif entry.is_file(follow_symlinks=False):
                             if entry.path.lower().endswith(tuple(_LOWER_JUNK_EXTS)):
                                 full_path = Path(entry.path)
+                                # Validación centralizada: evitar tocar archivos protegidos por la lógica de seguridad
                                 if is_safe_to_modify(full_path):
                                     stat = entry.stat()
                                     found.append(
@@ -177,16 +178,18 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         try:
             full_source_path = jf.path.resolve()
             
+            # Verificaciones pre-movimiento: existencia y seguridad de escritura
             if not full_source_path.exists() or not full_source_path.is_file():
                 continue
             
             if not is_safe_to_modify(full_source_path) or not is_safe_to_modify(dest):
                 continue
 
-            # Prevenir que el destino sea padre del origen o viceversa (loops lógicos)
+            # Prevenir colisiones lógicas: el destino no puede ser antepasado del origen (evitar recursión maliciosa)
             if dest == full_source_path or dest in full_source_path.parents or full_source_path == dest.parent:
                 continue
                 
+            # Verificar disponibilidad de acceso exclusivo antes de mover
             try:
                 with open(full_source_path, 'rb'):
                     pass
@@ -203,7 +206,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             ext = jf.path.suffix
             timestamp = int(jf.modified.timestamp())
             
-            # Construir ruta final y validar que esté contenida en 'dest' (evitar traversal)
+            # Construir ruta final validando que permanezca confinada al directorio de staging (evitar path traversal)
             target = (dest / f"{base_name}_{timestamp}{ext}").resolve()
             if not str(target).startswith(str(dest)):
                 continue
@@ -223,6 +226,9 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
     """
     Elimina permanentemente archivos en el directorio de revisión tras confirmación externa.
+    
+    Verifica mediante 'is_safe_to_modify' y 'startswith' que solo se operen archivos 
+    confinados estrictamente al directorio de revisión, previniendo borrados accidentales.
     """
     if not isinstance(review_dir, str):
         return 0
@@ -236,7 +242,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     for f in dest.iterdir():
         try:
             if f.is_file():
-                # Validar que el archivo resuelto siga estando bajo el directorio de revisión
+                # Doble validación: seguridad del módulo y confinamiento del Path
                 if is_safe_to_modify(f) and str(f.resolve()).startswith(str(dest)):
                     f.unlink()
                     count += 1
