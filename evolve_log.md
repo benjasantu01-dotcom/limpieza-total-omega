@@ -517,3 +517,40 @@ FAILED evolve/tests/test_safety.py::test_normal_user_folders_are_not_protected -
 - `2026-07-28T00:43:09` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se añadió una validación explícita mediante `is_safe_to_modify` antes de cualquier operación de movimiento en `stage_for_review` y se mejoró la robustez de la exclusión de carpetas mediante el uso de `resolve()` y `parents`, asegurando que no se intente procesar archivos dentro de rutas protegidas incluso si el sistema de archivos contiene enlaces simbólicos complejos o rutas relativas ambiguas.
 - `2026-07-28T00:43:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-28T00:43:09` Corrida terminada. Total usado hoy: 20.
+- `2026-07-28T00:51:29` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-07-28T00:51:56` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `purge_all` implementando una validación explícita para cada archivo antes de su borrado, asegurando que no se pueda manipular el manifiesto para intentar eliminar archivos fuera del directorio de cuarentena, protegiendo así la integridad del sistema ante posibles corrupciones de datos.
+- `2026-07-28T00:52:14` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-07-28T00:52:37` Tests FALLARON:
+```
+ytest-2/test_purge_item_cannot_delete_0/_Cuarentena')
+
+    def test_purge_item_cannot_delete_outside_the_quarantine(tmp_path, cuarentena):
+        victima = tmp_path / "no-tocar.txt"
+        victima.write_text("importante")
+    
+        origen = tmp_path / "cualquiera.txt"
+        origen.write_text("x")
+        item = quarantine.quarantine_file(origen, base=cuarentena)
+    
+        # Manifiesto manipulado para apuntar afuera de la cuarentena.
+        items = quarantine.load_manifest(cuarentena)
+        items[0].stored_name = "../no-tocar.txt"
+        quarantine.save_manifest(items, cuarentena)
+    
+>       with pytest.raises(safety.UnsafePathError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE UnsafePathError
+
+evolve/tests/test_safety.py:255: Failed
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_is_within_directory_rejects_traversal_escape - AssertionError: assert not True
+ +  where True = <function is_within_directory at 0x7fdf5004fec0>(PosixPath('/tmp/pytest-of-runner/pytest-2/test_is_within_directory_rejec0/permitida/../afuera.txt'), PosixPath('/tmp/pytest-of-runner/pytest-2/test_is_within_directory_rejec0/permitida'))
+ +    where <function is_within_directory at 0x7fdf5004fec0> = safety.is_within_directory
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - Failed: DID NOT RAISE UnsafePathError
+2 failed, 297 passed in 0.98s
+
+```
+- `2026-07-28T00:52:37` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la protección contra enlaces simbólicos (symlinks) y puntos de reparse en `is_within_directory` y `is_protected_path`, asegurando que `resolve()` no siga enlaces y que se inspeccione la cadena de padres en busca de atajos maliciosos, reforzando la seguridad defensiva sin alterar la funcionalidad.
+- `2026-07-28T00:52:43` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva al integrar `is_protected_path` en `check_system_lookalike` y `check_recent_executable_in_downloads`, asegurando que no se acceda a propiedades de archivos en rutas críticas ni se procesen heurísticas en áreas protegidas, incluso si se invocan manualmente fuera de `scan_directory`.
+- `2026-07-28T00:52:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-28T00:52:43` Corrida terminada. Total usado hoy: 24.

@@ -306,6 +306,7 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     count = 0
     for item in items:
         stored_file = quarantine_root / item.stored_name
+        # Validación defensiva crítica antes de cualquier acceso al FS
         if not is_within_directory(stored_file, quarantine_root):
             continue
         try:

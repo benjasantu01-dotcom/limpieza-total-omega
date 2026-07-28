@@ -50,7 +50,7 @@ def _is_reparse_point(entry: os.DirEntry) -> bool:
 
 def check_double_extension(path: Path) -> Optional[Suspicion]:
     """Analiza si el nombre del archivo intenta ocultar una extensión ejecutable."""
-    if not path or not path.name:
+    if not path or not path.name or is_protected_path(path):
         return None
     if DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
@@ -59,7 +59,7 @@ def check_double_extension(path: Path) -> Optional[Suspicion]:
 
 def check_recent_executable_in_downloads(path: Path, hours: int = 24) -> Optional[Suspicion]:
     """Evalúa si un ejecutable es reciente mediante su fecha de última modificación."""
-    if not path or path.suffix.lower() not in SUSPICIOUS_EXECUTABLE_EXT:
+    if not path or is_protected_path(path) or path.suffix.lower() not in SUSPICIOUS_EXECUTABLE_EXT:
         return None
     try:
         mtime = datetime.fromtimestamp(path.stat().st_mtime)
@@ -72,7 +72,7 @@ def check_recent_executable_in_downloads(path: Path, hours: int = 24) -> Optiona
 
 def check_system_lookalike(path: Path) -> Optional[Suspicion]:
     """Detecta nombres de procesos críticos del sistema fuera de su ubicación esperada."""
-    if not path or not path.name:
+    if not path or not path.name or is_protected_path(path):
         return None
     try:
         if path.name.lower() in SYSTEM_LOOKALIKES:
@@ -86,7 +86,7 @@ def check_system_lookalike(path: Path) -> Optional[Suspicion]:
 
 def scan_file(path: Path) -> List[Suspicion]:
     """Ejecuta todos los chequeos heurísticos sobre un archivo dado."""
-    if path is None:
+    if path is None or is_protected_path(path):
         return []
     
     results: List[Suspicion] = []
