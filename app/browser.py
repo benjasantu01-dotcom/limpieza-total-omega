@@ -90,8 +90,8 @@ def base_directories() -> List[Path]:
 
 def _is_safe_path(target_path: Path, base_path: Path) -> bool:
     """
-    Valida la integridad de la ruta contra ataques de path traversal y
-    asegura que no se acceda a directorios protegidos por política de seguridad.
+    Valida que la ruta candidata resida físicamente dentro de la base,
+    previendo ataques de directory traversal.
     """
     try:
         resolved_target = target_path.resolve(strict=True)
@@ -115,7 +115,6 @@ def directory_size(path: str | os.PathLike) -> int:
     
     try:
         p = Path(path)
-        # No seguir enlaces simbólicos para evitar bucles o lecturas fuera de rango
         if p.is_symlink():
             return 0
         target = p.resolve(strict=True)
@@ -133,7 +132,6 @@ def directory_size(path: str | os.PathLike) -> int:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
-                        # Verificar si es symlink o junction antes de procesar
                         if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
                             continue
                         if entry.is_dir(follow_symlinks=False):

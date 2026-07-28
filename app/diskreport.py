@@ -162,9 +162,13 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
             if os.name == 'nt':
                 if entry.stat(follow_symlinks=False).st_reparse_tag != 0:
                     return True
-            if skip_protected and is_protected_path(Path(entry.path)):
+            # Validar que la ruta sea hija de la base para evitar escape
+            path_entry = Path(entry.path).resolve()
+            if not path_entry.is_relative_to(base_path):
                 return True
-        except OSError:
+            if skip_protected and is_protected_path(path_entry):
+                return True
+        except (OSError, ValueError):
             return True
         return False
 
@@ -227,7 +231,8 @@ def largest_folders(directory: str | os.PathLike, limit: int = 10, skip_protecte
     
     for path, size in walk_files(base, skip_protected):
         try:
-            rel = path.relative_to(base)
+            # Aseguramos que el path sea hijo de base
+            rel = path.resolve().relative_to(base)
             if not rel.parts:
                 continue
             top_level = base / rel.parts[0]

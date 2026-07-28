@@ -188,8 +188,9 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         return HealthResult(0, "F", {}, ["Error: Datos de entrada faltantes o inválidos."])
 
     # Seguridad defensiva: Verificar integridad de configuración
-    if sum(WEIGHTS.values()) != 100 or any(w < 0 for w in WEIGHTS.values()):
-        return HealthResult(0, "F", {}, ["Error de configuración: Los pesos deben sumar 100 y ser positivos."])
+    expected_keys = {"seguridad", "disco", "memoria", "basura", "duplicados", "arranque"}
+    if sum(WEIGHTS.values()) != 100 or set(WEIGHTS.keys()) != expected_keys or any(w < 0 for w in WEIGHTS.values()):
+        return HealthResult(0, "F", {}, ["Error de configuración: Los pesos son inválidos o están incompletos."])
 
     try:
         metrics.validate()

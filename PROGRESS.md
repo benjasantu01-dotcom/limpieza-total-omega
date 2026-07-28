@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **250** (49.6% de aceptación)
+- Mejoras aceptadas: **254** (50.4% de aceptación)
 - Rechazadas por tests: 21
 - Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 7
-- Sin respuesta de la IA (error o límite): 199
+- Sin respuesta de la IA (error o límite): 195
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-27 | 82 | 9 | 9 | 2 | 74 |
-| 2026-07-28 | 168 | 12 | 18 | 5 | 125 |
+| 2026-07-27 | 82 | 9 | 9 | 2 | 70 |
+| 2026-07-28 | 172 | 12 | 18 | 5 | 125 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **64**
+- seguridad defensiva: **53**
 - robustez ante casos límite: **49**
-- seguridad defensiva: **49**
 - manejo de errores y validación de entradas: **48**
 - rendimiento: **40**
 
@@ -31,14 +31,14 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `assistant.py`: **25**
 - `settings.py`: **23**
-- `diskreport.py`: **21**
+- `diskreport.py`: **22**
+- `browser.py`: **20**
 - `main.py`: **20**
-- `browser.py`: **19**
+- `duplicates.py`: **19**
 - `organizer.py`: **19**
+- `healthscore.py`: **19**
 - `quarantine.py`: **19**
 - `scanner.py`: **19**
-- `duplicates.py`: **18**
-- `healthscore.py`: **18**
 - `safety.py`: **15**
 - `startup.py`: **13**
 - `memory.py`: **12**
@@ -46,6 +46,10 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-28T14:01:20` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante una validación de integridad más estricta en `compute_score`, asegurando que `WEIGHTS` tenga las claves esperadas antes de iterar, evitando posibles `KeyError` ante una configuración externa maliciosa o corrompida.
+- `2026-07-28T14:01:10` **duplicates.py** (seguridad defensiva): Se añadió una validación explícita mediante `is_protected_path` en `_collect_candidates` antes de procesar cualquier archivo para reforzar la seguridad defensiva, asegurando que ninguna ruta pase el filtro de recolección aunque no se haya invocado `lstat` previamente.
+- `2026-07-28T14:00:47` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad en `walk_files` y `largest_folders` validando que las rutas resultantes sigan siendo subdirectorios del `base_path` original mediante `is_relative_to`, previniendo ataques de "path traversal" en caso de que alguna lógica interna de resolución de sistema de archivos pudiera ser manipulada.
+- `2026-07-28T14:00:23` **browser.py** (seguridad defensiva): Se ha restringido el acceso a directorios mediante la validación estricta de que la ruta candidata resida físicamente dentro del árbol de directorios del usuario, evitando escapes de ruta incluso en el caso de enlaces simbólicos o redirecciones, mejorando la robustez defensiva frente a paths maliciosos.
 - `2026-07-28T13:51:16` **branding.py** (seguridad defensiva): Mejoré `save_logo_svg` aplicando una validación más estricta mediante `is_safe_to_modify` antes de cualquier operación de I/O, siguiendo el principio de no confiar en estados intermedios y asegurando que la ruta destino sea absoluta y validada antes de intentar crear directorios o escribir contenido, lo cual evita que la función ejecute escrituras si la ruta fue manipulada externamente.
 - `2026-07-28T13:51:03` **assistant.py** (seguridad defensiva): Se fortaleció la defensa del asistente en línea (`_call_gemini`) aplicando una validación más estricta sobre la respuesta recibida, asegurando que cualquier intento de inyección de rutas o formatos no deseados sea descartado antes de alcanzar la interfaz, cumpliendo con el principio de mínima confianza hacia los datos externos.
 - `2026-07-28T13:50:07` **settings.py** (robustez ante casos límite): Mejora la robustez ante casos límite en la escritura de archivos de configuración agregando una verificación de integridad mediante una escritura atómica más segura y un manejo explícito de errores de disco (como disco lleno o bloqueos temporales) que podrían dejar el archivo en un estado inconsistente.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-28T13:20:10` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `largest_folders` ante archivos inaccesibles o bloqueados (como aquellos en uso exclusivo por el sistema), añadiendo un manejo de excepciones más granular en `os.scandir` y asegurando que las operaciones de comparación de rutas no fallen frente a errores de permisos o sistemas de archivos inestables.
 - `2026-07-28T13:19:47` **browser.py** (robustez ante casos límite): Mejoré la robustez de `directory_size` ante el acceso a rutas que puedan ser puntos de reparse, junctions o enlaces simbólicos complejos, asegurando que no se produzcan bucles infinitos ni lecturas recursivas fuera de la estructura esperada, validando explícitamente mediante `is_symlink()` y `entry.is_dir()` de forma defensiva antes de cualquier operación.
 - `2026-07-28T13:10:06` **assistant.py** (robustez ante casos límite): Mejora la robustez del motor de consulta a Gemini ante configuraciones corruptas o valores inesperados (como modelos vacíos o claves mal formadas) asegurando que cualquier error durante la carga de `settings` no bloquee la respuesta del motor local.
-- `2026-07-28T13:09:26` **settings.py** (rendimiento): Optimizé la validación en `load` y `validate` pre-calculando las claves válidas en un `set` para evitar recorridos lineales innecesarios y redundancias en el proceso de lectura de configuración.
-- `2026-07-28T13:08:59` **scanner.py** (rendimiento): Se optimizó `scan_file` reemplazando la creación dinámica de una lista de funciones en cada llamada por una constante predefinida, reduciendo la asignación de memoria y el overhead en escaneos masivos de disco.
-- `2026-07-28T12:59:27` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` eliminando la llamada redundante y costosa a `normalize(path)` cuando la ruta ya es claramente una ruta UNC o está vacía, y caché el set de `PROTECTED_DIR_NAMES` para evitar iteraciones innecesarias durante las verificaciones.
-- `2026-07-28T12:59:00` **quarantine.py** (rendimiento): Optimicé el rendimiento de `load_manifest` mediante el uso de un mapa de búsqueda (`dict` indexado por `item_id`) dentro del caché de sesión, evitando recorridos lineales O(n) en operaciones frecuentes como `restore_item` y `purge_item`.

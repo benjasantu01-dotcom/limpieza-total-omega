@@ -125,6 +125,8 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
         return groups
         
     for p in paths:
+        if is_protected_path(p):
+            continue
         try:
             stat = p.lstat()
             if stat.st_size > 0:
@@ -160,10 +162,10 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
                 
                 for name in files:
                     candidate = root_path / name
+                    if skip_protected and is_protected_path(candidate):
+                        continue
                     try:
                         if candidate.is_symlink():
-                            continue
-                        if skip_protected and is_protected_path(candidate):
                             continue
                         st = candidate.stat()
                         if st.st_size >= min_size and os.path.isfile(candidate):
@@ -242,6 +244,8 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
 
     valid_paths: List[tuple[float, int, Path]] = []
     for p in group.paths:
+        if is_protected_path(p):
+            continue
         try:
             mtime = p.stat().st_mtime
             valid_paths.append((mtime, len(str(p)), p))
