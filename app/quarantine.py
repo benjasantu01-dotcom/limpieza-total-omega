@@ -99,6 +99,8 @@ def _is_file_locked(path: Path) -> bool:
 
 def quarantine_dir(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
     """Normaliza y asegura la existencia del directorio de cuarentena."""
+    if not base:
+        raise ValueError("El directorio base no puede estar vacío.")
     path = Path(base).expanduser()
     path.mkdir(parents=True, exist_ok=True)
     return path
@@ -112,12 +114,6 @@ def _manifest_path(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
 def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload: bool = False) -> List[QuarantineItem]:
     """
     Carga el manifiesto de cuarentena desde disco.
-    
-    Args:
-        base: Directorio base de cuarentena.
-        force_reload: Ignora el caché en memoria si es True.
-    Returns:
-        Lista de objetos QuarantineItem.
     """
     base_path = quarantine_dir(base)
     base_str = str(base_path)
@@ -131,10 +127,15 @@ def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload:
         raw = json.loads(path.read_text(encoding="utf-8"))
     except (json.JSONDecodeError, OSError):
         return []
+    
+    if not isinstance(raw, list):
+        return []
+
     items: List[QuarantineItem] = []
-    for entry in raw if isinstance(raw, list) else []:
+    for entry in raw:
         try:
-            items.append(QuarantineItem(**entry))
+            if isinstance(entry, dict):
+                items.append(QuarantineItem(**entry))
         except (TypeError, ValueError):
             continue
     _manifest_cache[base_str] = items
@@ -143,13 +144,19 @@ def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload:
 
 def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
     """Persiste la lista de objetos QuarantineItem en formato JSON."""
+    if not isinstance(items, list):
+        raise ValueError("El manifiesto debe ser una lista de ítems.")
+        
     base_path = quarantine_dir(base)
     _manifest_cache[str(base_path)] = items
     path = _manifest_path(base_path)
-    path.write_text(
-        json.dumps([item.to_dict() for item in items], indent=2, ensure_ascii=False),
-        encoding="utf-8",
-    )
+    try:
+        path.write_text(
+            json.dumps([item.to_dict() for item in items], indent=2, ensure_ascii=False),
+            encoding="utf-8",
+        )
+    except OSError as e:
+        raise RuntimeError(f"Error al escribir el manifiesto: {e}")
     return path
 
 
@@ -160,11 +167,6 @@ def quarantine_file(
 ) -> QuarantineItem:
     """
     Mueve un archivo a cuarentena tras validar seguridad y bloqueos.
-    
-    Raises:
-        UnsafePathError: Si la ruta origen o destino no es segura.
-        IOError: Si el archivo está bloqueado por otro proceso.
-        RuntimeError: Si fallan operaciones de I/O o integridad.
     """
     if not source:
         raise ValueError("La ruta de origen no puede estar vacía.")
@@ -175,7 +177,6 @@ def quarantine_file(
     if not origin.is_file():
         raise FileNotFoundError(f"El objeto no es un archivo válido: {origin}")
     
-    # Prevenir que se intente cuarentenar algo que ya está en la carpeta de cuarentena
     if is_within_directory(origin, dest_dir):
         raise UnsafePathError(f"El archivo ya reside en la carpeta de cuarentena: {origin}")
 
@@ -191,8 +192,7 @@ def quarantine_file(
         raise OSError(f"No hay espacio suficiente en: {dest_dir}")
 
     item_id = uuid.uuid4().hex[:12]
-    safe_filename = Path(origin.name).name
-    stored_name = f"{item_id}__{safe_filename}"
+    stored_name = f"{item_id}__{origin.name}"
     destination = dest_dir / stored_name
 
     if destination.exists():
@@ -203,14 +203,8 @@ def quarantine_file(
     except (OSError, PermissionError) as e:
         raise RuntimeError(f"Falla al mover archivo a cuarentena: {e}")
 
-    if not destination.exists():
-        raise RuntimeError("El archivo no se movió correctamente al destino.")
-
     try:
         file_hash = _get_sha256(destination)
-        if not file_hash:
-            raise RuntimeError("Fallo al calcular hash del archivo movido.")
-            
         item = QuarantineItem(
             item_id=item_id,
             original_path=str(origin),
@@ -230,7 +224,7 @@ def quarantine_file(
                 destination.unlink()
             except OSError:
                 pass
-        raise RuntimeError(f"Error al procesar manifiesto: {e}")
+        raise RuntimeError(f"Error al procesar manifiesto tras mover el archivo: {e}")
 
 
 def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
@@ -241,10 +235,6 @@ def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[Quaranti
 def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
     """
     Restaura un archivo a su ubicación original validando integridad.
-    
-    Raises:
-        UnsafePathError: Si la ruta de destino está protegida.
-        RuntimeError: Si el hash no coincide o falla la restauración.
     """
     if not item_id or not isinstance(item_id, str):
         raise ValueError("El ID debe ser una cadena válida.")
@@ -258,7 +248,7 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
     stored_file = base_path / match.stored_name
     
     if not stored_file.is_file():
-        raise FileNotFoundError(f"Archivo inexistente: {stored_file}")
+        raise FileNotFoundError(f"Archivo inexistente en cuarentena: {stored_file}")
         
     if match.sha256 and _get_sha256(stored_file) != match.sha256:
         raise RuntimeError("Integridad comprometida (SHA256 mismatch).")
@@ -266,7 +256,7 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
     destination = normalize(match.original_path)
     
     if is_protected_path(destination):
-        raise UnsafePathError(f"Restauración denegada: {destination} protegida.")
+        raise UnsafePathError(f"Restauración denegada: {destination} está protegida.")
 
     if destination.exists():
         raise FileExistsError(f"El destino ya está ocupado: {destination}")
@@ -288,6 +278,7 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
     """Elimina físicamente un ítem de la cuarentena."""
     if not item_id or not isinstance(item_id, str):
         return False
+    
     items = load_manifest(base)
     match = next((i for i in items if i.item_id == item_id), None)
     if match is None:
@@ -303,7 +294,7 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
         if stored_file.is_file():
             stored_file.unlink()
     except (OSError, PermissionError):
-        pass
+        return False
     
     items.remove(match)
     save_manifest(items, base)

@@ -1103,6 +1103,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 self.log(f"Error: El ID '{item_id}' no existe en la cuarentena.", "Cuarentena")
                 return
             try:
+                # Validamos que el ID no sea una cadena vacía sospechosa
+                if not item_id.isalnum():
+                     self.log(f"Error: ID inválido '{item_id}'.", "Cuarentena")
+                     return
                 destino = quarantine.restore_item(item_id)
                 self.log(f"Restaurado en: {destino}", "Cuarentena")
             except Exception as e:
@@ -1182,6 +1186,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
         
         pid = int(raw)
+        if pid <= 0:
+            messagebox.showwarning("PID inválido", "El PID debe ser mayor a 0.")
+            return
+
         if not self._confirm("Liberar working set", memory_mod.TRIM_WARNING + "\n\n¿Seguimos?"):
             return
 

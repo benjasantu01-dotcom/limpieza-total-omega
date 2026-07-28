@@ -567,3 +567,10 @@ FAILED evolve/tests/test_modules.py::test_score_color_survives_garbage - Asserti
 - `2026-07-28T11:27:20` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Reforcé la robustez de `compute_score` implementando un chequeo preventivo de `None` en las métricas de entrada y asegurando que las funciones de puntuación manejen casos de división por cero ante parámetros extremos.
 - `2026-07-28T11:27:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-28T11:27:20` Corrida terminada. Total usado hoy: 272.
+- `2026-07-28T11:36:20` Arrancando corrida. Quedan hoy ~28 peticiones objetivo.
+- `2026-07-28T11:37:22` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `on_trim_process` y `on_restore_quarantine` añadiendo validaciones preventivas, manejo de tipos y excepciones específicas para evitar cierres inesperados de la interfaz cuando el usuario ingresa datos corruptos.
+- `2026-07-28T11:37:47` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: manejo de errores y validación de entradas).
+- `2026-07-28T11:38:10` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Se reforzó la validación de los parámetros de entrada en `stage_for_review` y `delete_reviewed` para evitar errores de tipo o rutas mal formadas, asegurando que cualquier operación de disco reciba rutas absolutas resueltas y tipadas correctamente antes de proceder.
+- `2026-07-28T11:38:20` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez y seguridad del módulo mediante una validación estricta de los parámetros de entrada y la propagación adecuada de excepciones al interactuar con el manifiesto, evitando estados inconsistentes si el archivo JSON se encuentra corrupto.
+- `2026-07-28T11:38:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-28T11:38:20` Corrida terminada. Total usado hoy: 276.

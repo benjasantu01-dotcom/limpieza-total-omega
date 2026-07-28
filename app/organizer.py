@@ -156,8 +156,8 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
     Mueve archivos candidatos a una carpeta de revisión ("staging").
     Verifica seguridad, existencia de archivo y espacio disponible antes de cada operación.
     """
-    if not files or not isinstance(files, list):
-        logger.warning("La lista de archivos a organizar está vacía o es inválida.")
+    if not files or not isinstance(files, list) or not isinstance(review_dir, str):
+        logger.warning("Entrada inválida en stage_for_review.")
         return Path(review_dir).expanduser()
 
     dest = Path(review_dir).expanduser().resolve()
@@ -224,6 +224,9 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     """
     Elimina permanentemente archivos en el directorio de revisión tras confirmación externa.
     """
+    if not isinstance(review_dir, str):
+        return 0
+        
     dest = Path(review_dir).expanduser().resolve()
     if not dest.exists() or not dest.is_dir():
         logger.info("Directorio de revisión no encontrado o inválido: %s", dest)
