@@ -110,7 +110,7 @@ def _is_safe_path(target_path: Path, base_path: Path) -> bool:
 def directory_size(path: str | os.PathLike) -> int:
     """
     Calcula el tamaño total de una carpeta mediante recorrido iterativo.
-    Usa scandir para reducir llamadas al sistema al cachear stats.
+    Evita seguir enlaces simbólicos o puntos de reparse (junctions).
     """
     if not path:
         return 0
@@ -131,7 +131,8 @@ def directory_size(path: str | os.PathLike) -> int:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
-                        if entry.is_symlink():
+                        # Saltar enlaces simbólicos y puntos de reparse (junctions)
+                        if entry.is_symlink() or (entry.is_dir() and Path(entry.path).is_mount()):
                             continue
                         if entry.is_dir():
                             if not is_protected_path(Path(entry.path)):

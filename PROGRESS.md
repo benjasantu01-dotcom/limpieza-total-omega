@@ -6,46 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **241** (47.8% de aceptación)
+- Mejoras aceptadas: **243** (48.2% de aceptación)
 - Rechazadas por tests: 20
-- Rechazadas por guardia de seguridad: 29
+- Rechazadas por guardia de seguridad: 28
 - Sin cambios (nada sustancial que mejorar): 7
-- Sin respuesta de la IA (error o límite): 207
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-27 | 135 | 15 | 17 | 3 | 126 |
-| 2026-07-28 | 106 | 5 | 12 | 4 | 81 |
+| 2026-07-27 | 133 | 15 | 16 | 3 | 125 |
+| 2026-07-28 | 110 | 5 | 12 | 4 | 81 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **66**
+- legibilidad y documentación: **64**
 - seguridad defensiva: **49**
 - manejo de errores y validación de entradas: **47**
 - rendimiento: **42**
-- robustez ante casos límite: **37**
+- robustez ante casos límite: **41**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **24**
+- `diskreport.py`: **21**
 - `settings.py`: **21**
-- `organizer.py`: **20**
-- `diskreport.py`: **20**
 - `scanner.py`: **19**
-- `browser.py`: **18**
+- `browser.py`: **19**
+- `organizer.py`: **19**
+- `healthscore.py`: **18**
+- `duplicates.py`: **18**
 - `main.py`: **18**
-- `healthscore.py`: **17**
-- `duplicates.py`: **17**
 - `safety.py`: **16**
 - `quarantine.py`: **16**
 - `startup.py`: **16**
-- `memory.py`: **11**
+- `memory.py`: **10**
 - `branding.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-28T08:53:33` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `compute_score` frente a configuraciones corruptas o incompletas de `WEIGHTS` mediante el uso de `.get()` con valores seguros y una validación de integridad previa, evitando que la app colapse si alguien modifica accidentalmente la constante global.
+- `2026-07-28T08:53:25` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez de `_collect_candidates` ante enlaces simbólicos (junctions o reparse points) utilizando `is_symlink()` antes de intentar abrir archivos o directorios, evitando así bucles infinitos o el seguimiento de rutas fuera del alcance del usuario.
+- `2026-07-28T08:53:02` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `largest_folders` ante rutas con caracteres especiales o inaccesibles añadiendo validaciones más estrictas en la resolución de `Path`, garantizando que el escaneo no falle silenciosamente ni procese rutas relativas inválidas en caso de errores de permisos o sistemas de archivos.
+- `2026-07-28T08:52:38` **browser.py** (robustez ante casos límite): Se ha robustecido el cálculo de `directory_size` y `detect_profiles` añadiendo una verificación explícita de `is_symlink` y `is_junction` (usando `is_mount` o chequeo de reparse points) para evitar la recursión infinita o el procesamiento indebido de puntos de montaje que puedan causar bucles de archivos o errores de acceso a disco en casos límite.
 - `2026-07-28T08:43:15` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` ante valores `NaN` o `inf` no numéricos que podrían causar fallos en la lógica de negocio, y añadí una validación estricta para evitar que claves inexistentes en el diccionario de métricas causen errores al acceder a ellas durante la construcción del contexto.
 - `2026-07-28T08:42:20` **settings.py** (rendimiento): Optimicé el sistema de caché en `load` y `save` consolidando la lógica de invalidación y reduciendo las llamadas redundantes a `stat()` y `path` mediante una verificación de `base` consistente, mejorando el rendimiento en accesos repetidos.
 - `2026-07-28T08:32:59` **scanner.py** (rendimiento): Optimizé el rendimiento de `scan_directory` evitando llamadas redundantes a `Path(entry.path)` y resoluciones innecesarias de rutas, consolidando la validación de archivos en un único chequeo eficiente dentro del bucle de `os.scandir`.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-28T08:02:25` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` y `_rank_problems` reemplazando los chequeos secuenciales basados en `globals()[handler_name]` por un acceso directo a funciones pre-mapeadas y evitando la regeneración constante de listas en el bucle de clasificación.
 - `2026-07-28T08:02:09` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación del método `executable` en la clase `StartupEntry` aclarando la lógica de saneamiento de rutas, y se han añadido type hints más precisos (usando `Sequence` en lugar de `Iterable` donde se requiere indexación o conteo implícito) para mejorar la legibilidad y mantenibilidad del contrato de las funciones.
 - `2026-07-28T08:01:45` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `settings.py` añadiendo docstrings que explican el propósito de las funciones de sanitización, especificando los tipos de datos esperados y justificando el flujo de carga/validación, manteniendo la integridad del código original.
-- `2026-07-28T08:01:21` **scanner.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints explícitos para las funciones de inspección y la documentación interna del flujo de escaneo mediante docstrings más precisos.
-- `2026-07-28T07:52:00` **safety.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints consistentes en todo el módulo para eliminar ambigüedades en la lógica de seguridad y facilitar el mantenimiento del código crítico.
-- `2026-07-28T07:51:33` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de los docstrings bajo el formato Google Style, añadiendo especificaciones claras sobre parámetros, tipos de retorno y excepciones, lo cual facilita el mantenimiento y la auditoría del flujo de datos en un entorno de trabajo compartido y exigente.
-- `2026-07-28T07:51:08` **organizer.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos en las funciones de ordenamiento y escaneo para clarificar los criterios de procesamiento y las restricciones de seguridad aplicadas, mejorando la mantenibilidad técnica del módulo.

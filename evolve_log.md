@@ -1250,3 +1250,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-07-28T08:43:27` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
 - `2026-07-28T08:43:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-28T08:43:27` Corrida terminada. Total usado hoy: 208.
+- `2026-07-28T08:52:06` Arrancando corrida. Quedan hoy ~92 peticiones objetivo.
+- `2026-07-28T08:52:13` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-07-28T08:52:38` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se ha robustecido el cálculo de `directory_size` y `detect_profiles` añadiendo una verificación explícita de `is_symlink` y `is_junction` (usando `is_mount` o chequeo de reparse points) para evitar la recursión infinita o el procesamiento indebido de puntos de montaje que puedan causar bucles de archivos o errores de acceso a disco en casos límite.
+- `2026-07-28T08:53:02` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la robustez de `walk_files` y `largest_folders` ante rutas con caracteres especiales o inaccesibles añadiendo validaciones más estrictas en la resolución de `Path`, garantizando que el escaneo no falle silenciosamente ni procese rutas relativas inválidas en caso de errores de permisos o sistemas de archivos.
+- `2026-07-28T08:53:25` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_collect_candidates` ante enlaces simbólicos (junctions o reparse points) utilizando `is_symlink()` antes de intentar abrir archivos o directorios, evitando así bucles infinitos o el seguimiento de rutas fuera del alcance del usuario.
+- `2026-07-28T08:53:33` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `compute_score` frente a configuraciones corruptas o incompletas de `WEIGHTS` mediante el uso de `.get()` con valores seguros y una validación de integridad previa, evitando que la app colapse si alguien modifica accidentalmente la constante global.
+- `2026-07-28T08:53:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-28T08:53:33` Corrida terminada. Total usado hoy: 212.

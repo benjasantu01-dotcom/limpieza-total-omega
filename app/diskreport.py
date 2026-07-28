@@ -157,8 +157,8 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
     if not directory:
         return
     try:
-        base = Path(directory).expanduser().resolve(strict=False)
-        if not base.exists() or not base.is_dir():
+        base = Path(directory).expanduser().resolve(strict=True)
+        if not base.is_dir():
             return
     except (OSError, RuntimeError):
         return
@@ -225,8 +225,8 @@ def largest_folders(directory: str | os.PathLike, limit: int = 10, skip_protecte
     if not directory:
         return []
     try:
-        base = Path(directory).expanduser().resolve(strict=False)
-        if not base.exists() or not base.is_dir():
+        base = Path(directory).expanduser().resolve(strict=True)
+        if not base.is_dir():
             return []
     except (OSError, RuntimeError):
         return []
@@ -239,15 +239,13 @@ def largest_folders(directory: str | os.PathLike, limit: int = 10, skip_protecte
             if not rel.parts:
                 continue
             top_level = base / rel.parts[0]
-        except (ValueError, IndexError):
+            if top_level not in folder_map:
+                folder_map[top_level] = FolderUsage(path=top_level, size_bytes=0, file_count=0)
+            stats = folder_map[top_level]
+            stats.size_bytes += size
+            stats.file_count += 1
+        except (ValueError, IndexError, OSError):
             continue
-            
-        if top_level not in folder_map:
-            folder_map[top_level] = FolderUsage(path=top_level, size_bytes=0, file_count=0)
-            
-        stats = folder_map[top_level]
-        stats.size_bytes += size
-        stats.file_count += 1
 
     return heapq.nlargest(max(0, limit), folder_map.values(), key=lambda f: f.size_bytes)
 
@@ -268,8 +266,8 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
         return ["Error: Ruta vacía."]
         
     try:
-        path_obj = Path(directory).expanduser().resolve(strict=False)
-        if not path_obj.exists() or not path_obj.is_dir():
+        path_obj = Path(directory).expanduser().resolve(strict=True)
+        if not path_obj.is_dir():
             return [f"Error: La carpeta '{directory}' no es válida."]
     except (OSError, RuntimeError):
         return ["Error: No se pudo acceder a la ruta."]

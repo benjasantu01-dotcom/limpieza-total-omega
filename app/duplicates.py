@@ -153,12 +153,13 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
                     
                 for name in files:
                     candidate = root_path / name
-                    if skip_protected and is_protected_path(candidate):
-                        continue
-                        
                     try:
-                        # Usamos lstat una vez para obtener tamaño y tipo
+                        # lstat permite detectar symlinks sin seguirlos
                         st = candidate.lstat()
+                        if candidate.is_symlink():
+                            continue
+                        if skip_protected and is_protected_path(candidate):
+                            continue
                         if st.st_size >= min_size and os.path.isfile(candidate):
                             candidates.append(candidate)
                     except (OSError, PermissionError, FileNotFoundError):

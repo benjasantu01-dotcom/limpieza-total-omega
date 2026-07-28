@@ -187,8 +187,12 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
             "arranque": score_startup(metrics.startup_count),
         }
 
-        # Aseguramos consistencia: solo usamos claves presentes en WEIGHTS
-        breakdown = {key: int(round(ratios.get(key, 0.0) * WEIGHTS[key])) for key in WEIGHTS}
+        # Calculamos desglose usando WEIGHTS de forma segura
+        breakdown = {}
+        for key in ratios:
+            weight = WEIGHTS.get(key, 0)
+            breakdown[key] = int(round(ratios[key] * weight))
+            
         total = sum(breakdown.values())
 
         return HealthResult(
