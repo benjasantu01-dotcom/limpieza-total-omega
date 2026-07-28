@@ -1184,6 +1184,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def on_trim_process(self):
         """Intenta liberar el working set de un proceso específico."""
         raw = self.pid_entry.get().strip()
+        if not raw:
+            messagebox.showwarning("PID vacío", "Ingresá un PID.")
+            return
         if not raw.isdigit():
             messagebox.showwarning("PID inválido", "El PID debe ser un número entero.")
             return

@@ -118,15 +118,11 @@ def score_security(suspicious_count: int, warnings: int = 0) -> float:
 
 def score_memory(available_percent: float) -> float:
     """Puntúa RAM (0.0-1.0): devuelve 1.0 si el % de RAM libre es >= 35%."""
-    # Defensa: evitar divisiones por cero y asegurar que porcentajes negativos no impacten el cálculo
-    if available_percent < 0: return 0.0
     return _clamp(available_percent / 35.0)
 
 
 def score_disk(free_percent: float) -> float:
     """Puntúa espacio libre (0.0-1.0): devuelve 1.0 si el espacio libre es >= 25%."""
-    # Defensa: evitar divisiones por cero y asegurar que porcentajes negativos no impacten el cálculo
-    if free_percent < 0: return 0.0
     return _clamp(free_percent / 25.0)
 
 
@@ -176,7 +172,7 @@ def _generate_recommendations(m: SystemMetrics, ratios: Dict[str, float]) -> Lis
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
     """Calcula el HealthResult unificando todas las heurísticas y pesos definidos."""
-    if not isinstance(metrics, SystemMetrics):
+    if metrics is None or not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Datos de entrada faltantes o inválidos."])
 
     try:

@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **220** (43.7% de aceptación)
+- Mejoras aceptadas: **222** (44.0% de aceptación)
 - Rechazadas por tests: 20
 - Rechazadas por guardia de seguridad: 28
 - Sin cambios (nada sustancial que mejorar): 6
-- Sin respuesta de la IA (error o límite): 230
+- Sin respuesta de la IA (error o límite): 228
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-27 | 148 | 16 | 19 | 3 | 154 |
-| 2026-07-28 | 72 | 4 | 9 | 3 | 76 |
+| 2026-07-27 | 146 | 16 | 19 | 3 | 152 |
+| 2026-07-28 | 76 | 4 | 9 | 3 | 76 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - seguridad defensiva: **49**
-- manejo de errores y validación de entradas: **42**
-- rendimiento: **36**
+- manejo de errores y validación de entradas: **46**
 - robustez ante casos límite: **36**
+- rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **21**
 - `diskreport.py`: **20**
-- `browser.py`: **19**
+- `browser.py`: **18**
+- `healthscore.py`: **18**
 - `organizer.py`: **18**
 - `settings.py`: **18**
-- `healthscore.py`: **17**
+- `duplicates.py`: **16**
 - `scanner.py`: **16**
+- `main.py`: **16**
 - `safety.py`: **15**
-- `duplicates.py`: **15**
-- `main.py`: **15**
 - `quarantine.py`: **14**
 - `startup.py`: **14**
 - `branding.py`: **9**
@@ -46,6 +46,10 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-28T07:01:57` **main.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `on_trim_process` y `on_restore_quarantine` para asegurar que las entradas de usuario (PID e ID) se validen correctamente, evitando excepciones no controladas antes de llegar a la lógica de negocio.
+- `2026-07-28T07:01:15` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` validando que `metrics` no sea `None` y asegurando que las funciones de puntuación manejen casos extremos de forma explícita, evitando divisiones por cero o valores fuera de rango antes de que `_clamp` actúe.
+- `2026-07-28T07:00:52` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `suggest_keeper` y `reclaimable_bytes` añadiendo validaciones de tipo explícitas y manejando casos de rutas inexistentes durante la selección del archivo a conservar, evitando posibles errores en tiempo de ejecución.
+- `2026-07-28T07:00:04` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `summarize` y las funciones auxiliares capturando potenciales errores de `format_size` y validaciones de entrada, asegurando que el informe sea informativo incluso ante valores inesperados o rutas mal formadas.
 - `2026-07-28T06:51:42` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `detect_profiles` y `summarize` implementando una validación exhaustiva de tipos y estados para los parámetros opcionales (`bases` y `cache_paths`), previniendo errores de ejecución ante entradas mal formadas o nulas.
 - `2026-07-28T06:51:34` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y `draw_logo` validando explícitamente parámetros críticos y manejando fallos de ejecución sin interrumpir el flujo visual de la aplicación.
 - `2026-07-28T06:51:05` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `build_context` al añadir una validación de tipo más estricta para `metrics` y `health`, previniendo errores de `AttributeError` si se pasan objetos inesperados, y asegurando que las conversiones numéricas no fallen silenciosamente ante datos malformados.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-28T05:08:58` **main.py** (seguridad defensiva): Se ha añadido un chequeo de seguridad preventivo en `on_stage` y `on_quarantine_findings` para validar que los archivos que se intenta procesar existan y sean accesibles antes de iniciar el bucle de movimiento, evitando bloqueos inesperados por archivos que pudieron haber desaparecido o sido bloqueados por el SO entre el escaneo y la acción.
 - `2026-07-28T05:08:00` **healthscore.py** (seguridad defensiva): Mejoré la robustez de los cálculos de `score_memory` y `score_disk` añadiendo validaciones de seguridad para evitar divisiones por cero o resultados negativos en caso de lecturas de hardware anómalas, siguiendo el enfoque defensivo.
 - `2026-07-28T05:07:37` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` y `_refine_by_hash` mediante la validación explícita `is_protected_path` (usando el patrón booleano recomendado) antes de realizar cualquier operación de E/S adicional, asegurando que ninguna ruta bloqueada sea procesada, incluso si se filtró por error en los pasos previos.
-- `2026-07-28T04:58:28` **diskreport.py** (seguridad defensiva): Mejoré la robustez de `walk_files` y `largest_folders` añadiendo una normalización explícita de rutas mediante `os.path.commonpath` para garantizar que, independientemente de caracteres especiales o manipulaciones de `Path`, la comparación de límites de directorio sea siempre segura y coherente con la API de `pathlib`.
-- `2026-07-28T04:58:20` **browser.py** (seguridad defensiva): Reforcé la seguridad defensiva en `directory_size` para impedir el seguimiento de enlaces simbólicos (junctions o symlinks) mediante `entry.is_symlink()` y una verificación explícita de `is_protected_path`, evitando que el escáner salga accidentalmente del ámbito seguro o se quede atrapado en bucles de recursión infinita.
-- `2026-07-28T04:57:57` **branding.py** (seguridad defensiva): Se ha mejorado `save_logo_svg` para prevenir una posible condición de carrera entre la validación de seguridad y la escritura, utilizando un chequeo preventivo más estricto y asegurando que la creación del directorio padre también sea sometida a validación de seguridad.
-- `2026-07-28T04:57:29` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_call_gemini` aplicando `ensure_safe_to_modify` indirectamente mediante el filtrado de rutas y validación estricta de la estructura del JSON devuelto, asegurando que cualquier intento de inyección o respuesta maliciosa con patrones de ruta sea descartado antes de que el asistente procese la respuesta.

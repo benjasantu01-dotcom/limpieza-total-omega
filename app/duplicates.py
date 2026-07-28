@@ -255,7 +255,8 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
             continue
             
     if not valid_paths:
-        return group.paths[0] if group.paths else None
+        # Si ningún archivo es accesible, devolvemos el primero disponible si existe
+        return group.paths[0] if group.paths and isinstance(group.paths[0], Path) else None
 
     # Ordenar por mtime (ascendente: el más antiguo primero), luego por longitud de ruta
     best = min(valid_paths, key=lambda x: (x[0], x[1]))
