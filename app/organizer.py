@@ -91,6 +91,8 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     blocklist = SYSTEM_FOLDER_BLOCKLIST
 
     def _walk_dir(base_path: str) -> None:
+        if not os.path.exists(base_path):
+            return
         try:
             with os.scandir(base_path) as it:
                 for entry in it:

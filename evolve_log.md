@@ -470,3 +470,29 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-07-28T00:02:08` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
 - `2026-07-28T00:02:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-28T00:02:08` Corrida terminada. Total usado hoy: 4.
+- `2026-07-28T00:10:25` Arrancando corrida. Quedan hoy ~296 peticiones objetivo.
+- `2026-07-28T00:10:49` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se ha añadido una validación de existencia para `base_path` antes de ejecutar `os.scandir` en `_walk_dir`, evitando excepciones innecesarias ante rutas temporales que pueden no existir en el momento de la ejecución.
+- `2026-07-28T00:11:12` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: robustez ante casos límite).
+- `2026-07-28T00:11:31` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-07-28T00:11:39` Tests FALLARON:
+```
+rtionError: assert not True
+E            +  where True = <function is_protected_path at 0x7ff14d18ff60>(((PosixPath('/tmp/pytest-of-runner/pytest-2/test_normal_user_folders_are_n0') / 'Descargas') / 'archivo.txt'))
+E            +    where <function is_protected_path at 0x7ff14d18ff60> = safety.is_protected_path
+
+evolve/tests/test_safety.py:86: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_save_creates_the_folder - AssertionError: assert None is not None
+ +  where None = <function save at 0x7ff14c825bc0>({'tema': 'oscuro', 'acento': 'menta', 'mostrar_barras': True, 'animaciones': True, ...}, PosixPath('/tmp/pytest-of-runner/pytest-2/test_save_creates_the_folder0/sub/carpeta'))
+ +    where <function save at 0x7ff14c825bc0> = settings.save
+ +    and   {'tema': 'oscuro', 'acento': 'menta', 'mostrar_barras': True, 'animaciones': True, ...} = settings.DEFAULTS
+FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - AttributeError: 'NoneType' object has no attribute 'is_file'
+FAILED evolve/tests/test_safety.py::test_normal_user_folders_are_not_protected - AssertionError: assert not True
+ +  where True = <function is_protected_path at 0x7ff14d18ff60>(((PosixPath('/tmp/pytest-of-runner/pytest-2/test_normal_user_folders_are_n0') / 'Descargas') / 'archivo.txt'))
+ +    where <function is_protected_path at 0x7ff14d18ff60> = safety.is_protected_path
+3 failed, 296 passed in 1.02s
+
+```
+- `2026-07-28T00:11:39` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se reforzó `is_protected_path` añadiendo una comprobación explícita de `p.exists()` mediante `lstat` para detectar errores de acceso (como `PermissionError`) y evitar el bypass silencioso de rutas protegidas que actualmente no son accesibles o están bloqueadas por el sistema.
+- `2026-07-28T00:11:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-28T00:11:39` Corrida terminada. Total usado hoy: 8.
