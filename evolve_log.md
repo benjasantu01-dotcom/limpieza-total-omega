@@ -574,3 +574,10 @@ FAILED evolve/tests/test_modules.py::test_score_color_survives_garbage - Asserti
 - `2026-07-28T11:38:20` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez y seguridad del módulo mediante una validación estricta de los parámetros de entrada y la propagación adecuada de excepciones al interactuar con el manifiesto, evitando estados inconsistentes si el archivo JSON se encuentra corrupto.
 - `2026-07-28T11:38:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-28T11:38:20` Corrida terminada. Total usado hoy: 276.
+- `2026-07-28T11:46:31` Arrancando corrida. Quedan hoy ~24 peticiones objetivo.
+- `2026-07-28T11:46:52` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-07-28T11:47:14` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: manejo de errores y validación de entradas).
+- `2026-07-28T11:47:40` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Reforcé la robustez de `scan_file` y `scan_directory` reemplazando los bloques genéricos `try-except` por validaciones de estado (`is_file`, `exists`) y capturas de excepciones específicas, asegurando que `Path.resolve()` no propague errores ante rutas inválidas o inaccesibles.
+- `2026-07-28T11:47:51` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la resiliencia de `_validate_str` capturando errores de `Path` antes de que ocurran y aseguré que `_coerce_int` maneje casos donde `valor` sea `None` explícitamente, evitando así posibles errores de `TypeError` en conversiones futuras.
+- `2026-07-28T11:47:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-28T11:47:51` Corrida terminada. Total usado hoy: 280.

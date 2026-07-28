@@ -54,7 +54,7 @@ def _is_reparse_point(entry: os.DirEntry) -> bool:
     """
     try:
         return bool(entry.stat().st_file_attributes & 0x400)
-    except (OSError, AttributeError, PermissionError):
+    except (OSError, AttributeError):
         return False
 
 
@@ -78,7 +78,6 @@ def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_TH
     if path is None or is_protected_path(path) or path.suffix.lower() not in SUSPICIOUS_EXECUTABLE_EXT:
         return None
     try:
-        # Usar stat() solo si el archivo es accesible
         mtime = datetime.fromtimestamp(path.stat().st_mtime)
         if datetime.now() - mtime < timedelta(hours=hours):
             return Suspicion(path, f"Ejecutable reciente detectado (modificado hace menos de {hours}h)", "info")
@@ -94,13 +93,13 @@ def check_system_lookalike(path: Path) -> Optional[Suspicion]:
     """
     if path is None or not path.name or is_protected_path(path):
         return None
-    try:
-        if path.name.lower() in SYSTEM_LOOKALIKES:
+    if path.name.lower() in SYSTEM_LOOKALIKES:
+        try:
             parent_str = str(path.parent).lower()
             if SYSTEM32_LOWER not in parent_str:
                 return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
-    except (AttributeError, ValueError):
-        pass
+        except (AttributeError, ValueError):
+            return None
     return None
 
 
@@ -108,12 +107,11 @@ def scan_file(path: Path) -> List[Suspicion]:
     """
     Ejecuta el conjunto de reglas heurísticas sobre una ruta dada.
     """
-    # Validar integridad: la ruta resuelta no debe ser protegida
+    if not path or is_protected_path(path):
+        return []
+
     try:
-        resolved_path = path.resolve(strict=False)
-        if resolved_path is None or is_protected_path(resolved_path):
-            return []
-        if not resolved_path.is_file():
+        if not path.is_file():
             return []
     except (OSError, PermissionError):
         return []
@@ -126,12 +124,9 @@ def scan_file(path: Path) -> List[Suspicion]:
     ]
     
     for check_func in checks:
-        try:
-            res = check_func(resolved_path)
-            if res: 
-                results.append(res)
-        except Exception:
-            continue
+        res = check_func(path)
+        if res: 
+            results.append(res)
     
     return results
 
@@ -146,11 +141,11 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
         
     try:
         root = Path(directory).resolve()
-        if is_protected_path(root) or not root.exists():
+        if not root.exists() or not root.is_dir() or is_protected_path(root):
             return []
             
         results: List[Suspicion] = []
-        stack: List[str] = [str(root)]
+        stack: List[Path] = [root]
         
         while stack:
             current_dir = stack.pop()
@@ -158,21 +153,20 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
                 with os.scandir(current_dir) as it:
                     for entry in it:
                         try:
-                            # Verificamos tipo y seguridad contra traversal
                             if entry.is_dir(follow_symlinks=False):
                                 if not _is_reparse_point(entry):
-                                    stack.append(entry.path)
+                                    stack.append(Path(entry.path))
                             elif entry.is_file():
-                                entry_path = Path(entry.path).resolve()
-                                if not is_protected_path(entry_path) and entry_path.is_relative_to(root):
+                                entry_path = Path(entry.path)
+                                if not is_protected_path(entry_path):
                                     results.extend(scan_file(entry_path))
-                        except (PermissionError, OSError, ValueError):
+                        except (PermissionError, OSError):
                             continue
-            except (PermissionError, OSError, FileNotFoundError):
+            except (PermissionError, OSError):
                 continue
         return results
     except (OSError, RuntimeError) as e:
-        logger.error("Error crítico al inicializar el escaneo en %s: %s", directory, e)
+        logger.error("Error al acceder al directorio %s: %s", directory, e)
         return []
 
 

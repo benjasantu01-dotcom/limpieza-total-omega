@@ -115,6 +115,8 @@ def _coerce_int(valor: Any, clave: str) -> int | None:
     Convierte a entero y asegura que el resultado esté dentro del rango permitido
     por _NUMERIC_LIMITS, evitando desbordamientos o configuraciones absurdas.
     """
+    if valor is None:
+        return None
     try:
         numero = int(valor)
         minimo, maximo = _NUMERIC_LIMITS.get(clave, (0, 10**9))
@@ -131,17 +133,20 @@ def _validate_str(clave: str, valor: Any) -> str | None:
     if not isinstance(valor, str):
         return None
     texto = valor.strip()
+    if not texto:
+        return "" if clave == "ultima_carpeta" else None
+        
     if clave == "tema" and texto.lower() not in VALID_THEMES:
         return None
     if clave == "acento" and texto.lower() not in VALID_ACCENTS:
         return None
-    if clave == "ultima_carpeta" and texto:
+    if clave == "ultima_carpeta":
         try:
             ruta_candidata = Path(texto).expanduser().resolve(strict=False)
             if not is_safe_to_modify(str(ruta_candidata)):
                 return None
             return str(ruta_candidata)
-        except (OSError, RuntimeError):
+        except (OSError, RuntimeError, ValueError):
             return None
     return texto.lower() if clave in ("tema", "acento") else texto
 
