@@ -900,3 +900,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-07-28T04:28:07` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante estados inconsistentes y errores de concurrencia en la interfaz al asegurar que el contador de tareas en curso (`_tasks_running`) se decremente siempre en un bloque `finally`, y añadiendo un manejo de excepciones más granular en `_update_health_visuals` para evitar que caídas de renderizado de la UI detengan los hilos de análisis.
 - `2026-07-28T04:28:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-28T04:28:07` Corrida terminada. Total usado hoy: 108.
+- `2026-07-28T04:36:30` Arrancando corrida. Quedan hoy ~192 peticiones objetivo.
+- `2026-07-28T04:36:56` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-07-28T04:37:16` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-07-28T04:37:41` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Reforcé la robustez de `purge_item` agregando una validación previa de existencia física del archivo y un manejo de errores más específico para evitar que fallos de I/O interrumpan el proceso si el archivo ya no existe, manteniendo la integridad del manifiesto.
+- `2026-07-28T04:37:44` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-07-28T04:37:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-28T04:37:44` Corrida terminada. Total usado hoy: 112.

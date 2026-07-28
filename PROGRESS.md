@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **233** (46.2% de aceptación)
+- Mejoras aceptadas: **231** (45.8% de aceptación)
 - Rechazadas por tests: 21
-- Rechazadas por guardia de seguridad: 29
+- Rechazadas por guardia de seguridad: 30
 - Sin cambios (nada sustancial que mejorar): 7
-- Sin respuesta de la IA (error o límite): 214
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-26 | 26 | 1 | 2 | 0 | 17 |
+| 2026-07-26 | 23 | 1 | 2 | 0 | 16 |
 | 2026-07-27 | 155 | 16 | 20 | 4 | 155 |
-| 2026-07-28 | 52 | 4 | 7 | 3 | 42 |
+| 2026-07-28 | 53 | 4 | 8 | 3 | 44 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,7 +26,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **48**
 - seguridad defensiva: **47**
 - rendimiento: **37**
-- robustez ante casos límite: **34**
+- robustez ante casos límite: **32**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,19 +34,20 @@ Este archivo se regenera solo en cada corrida a partir de
 - `browser.py`: **20**
 - `organizer.py`: **20**
 - `assistant.py`: **19**
-- `safety.py`: **18**
-- `scanner.py`: **18**
 - `healthscore.py`: **18**
-- `startup.py`: **16**
+- `safety.py`: **17**
+- `scanner.py`: **17**
 - `duplicates.py`: **16**
 - `main.py`: **16**
 - `settings.py`: **16**
-- `quarantine.py`: **13**
+- `startup.py`: **15**
+- `quarantine.py`: **14**
 - `memory.py`: **12**
 - `branding.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-28T04:37:41` **quarantine.py** (robustez ante casos límite): Reforcé la robustez de `purge_item` agregando una validación previa de existencia física del archivo y un manejo de errores más específico para evitar que fallos de I/O interrumpan el proceso si el archivo ya no existe, manteniendo la integridad del manifiesto.
 - `2026-07-28T04:28:07` **main.py** (robustez ante casos límite): Se ha mejorado la robustez ante estados inconsistentes y errores de concurrencia en la interfaz al asegurar que el contador de tareas en curso (`_tasks_running`) se decremente siempre en un bloque `finally`, y añadiendo un manejo de excepciones más granular en `_update_health_visuals` para evitar que caídas de renderizado de la UI detengan los hilos de análisis.
 - `2026-07-28T04:27:27` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `compute_score` asegurando que el cálculo de `total` sea consistente incluso si `WEIGHTS` y `ratios` tienen claves divergentes, y blindé `_generate_recommendations` ante posibles divisiones por cero o claves faltantes usando `.get()` con valores por defecto seguros.
 - `2026-07-28T04:26:42` **diskreport.py** (robustez ante casos límite): Se ha robustecido la función `walk_files` ante fallos de `stat` causados por archivos bloqueados o en uso (race conditions) durante el recorrido, asegurando que el motor de escaneo no se detenga abruptamente si una operación de lectura falla temporalmente.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-28T03:46:10` **diskreport.py** (rendimiento): Optimicé el rendimiento de `summarize` evitando la creación de diccionarios intermedios y el uso excesivo de `heapq` mediante la actualización de los contadores en un solo pase lineal, minimizando la carga de memoria al no duplicar objetos `ExtensionUsage` durante el proceso de recolección.
 - `2026-07-28T03:36:24` **assistant.py** (rendimiento): Optimicé el rendimiento de `_initialize_handlers` y las búsquedas de texto convirtiendo el diccionario de mapeo en una estructura de acceso directo y evitando la reconstrucción de listas de sugerencias en cada llamado, centralizando la lógica en una constante global eficiente.
 - `2026-07-28T03:35:55` **startup.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `startup.py` mediante la refactorización de `estimate_impact` para usar un enfoque de mapeo de datos y añadiendo documentación tipo "docstring" detallada con ejemplos en los métodos de filtrado y parsing.
-- `2026-07-28T03:35:31` **settings.py** (legibilidad y documentación): Mejore la claridad y mantenibilidad de la función `validate` mediante la separación de la lógica de validación por tipo en funciones privadas específicas, facilitando futuras extensiones y mejorando la legibilidad.
