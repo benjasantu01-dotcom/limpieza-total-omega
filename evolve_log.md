@@ -832,3 +832,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-07-28T03:16:33` 🛑 Propuesta bloqueada por la guardia en organizer.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 117): invalid syntax
 - `2026-07-28T03:16:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-28T03:16:33` Corrida terminada. Total usado hoy: 80.
+- `2026-07-28T03:24:55` Arrancando corrida. Quedan hoy ~220 peticiones objetivo.
+- `2026-07-28T03:25:21` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación del módulo añadiendo type hints faltantes, docstrings técnicos que explican las precondiciones de seguridad y se refactorizó la lógica de los bloques `try/except` en `quarantine_file` para clarificar la reversibilidad de la operación en caso de fallo, alineándose con el enfoque de legibilidad técnica exigido.
+- `2026-07-28T03:25:40` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 117): unterminated string literal (detected at line 117)
+- `2026-07-28T03:26:03` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante la adición de Type Hints en la interfaz pública y una sección de advertencia crítica (docstring) en `is_within_directory` para prevenir el uso incorrecto de comparaciones de rutas, reduciendo la ambigüedad en el manejo de enlaces simbólicos.
+- `2026-07-28T03:26:10` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante la inclusión de type hints precisos, la estandarización de docstrings para explicar la lógica de los chequeos, y la extracción de la lógica de tiempo del escaneo a una constante documentada para mejorar la legibilidad y el mantenimiento.
+- `2026-07-28T03:26:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-28T03:26:10` Corrida terminada. Total usado hoy: 84.

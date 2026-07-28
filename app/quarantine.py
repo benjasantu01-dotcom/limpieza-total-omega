@@ -24,11 +24,10 @@ import json
 import shutil
 import uuid
 import hashlib
-import os
 from dataclasses import dataclass, asdict
 from datetime import datetime
 from pathlib import Path
-from typing import List, Union, Dict, Optional
+from typing import List, Union, Dict
 
 from safety import (
     UnsafePathError,
@@ -98,7 +97,7 @@ def _get_sha256(path: Path) -> str:
 def _is_file_locked(path: Path) -> bool:
     """
     Determina si un archivo está bloqueado intentando renombrarlo sobre sí mismo.
-    Retorna True si el sistema operativo deniega la operación.
+    Retorna True si el sistema operativo deniega la operación (ej. uso exclusivo).
     """
     try:
         path.rename(path)
@@ -168,8 +167,7 @@ def quarantine_file(
 ) -> QuarantineItem:
     """
     Mueve un archivo a cuarentena tras validar seguridad y bloqueos.
-    Lanza: UnsafePathError (vía `ensure_safe_to_modify`), FileNotFoundError, 
-    IOError (si está bloqueado), o RuntimeError (fallo en I/O o manifiesto).
+    Lanza: UnsafePathError, FileNotFoundError, IOError (bloqueado), RuntimeError (fallo I/O).
     """
     if not source:
         raise ValueError("La ruta de origen no puede estar vacía.")
@@ -199,29 +197,32 @@ def quarantine_file(
     if destination.exists():
         raise FileExistsError(f"Colisión de nombre en cuarentena: {destination}")
 
+    # Operación crítica: Mover archivo y registrar en manifiesto
     try:
         shutil.move(str(origin), str(destination))
-        try:
-            file_hash = _get_sha256(destination)
-            item = QuarantineItem(
-                item_id=item_id,
-                original_path=str(origin),
-                stored_name=stored_name,
-                size_bytes=file_size,
-                reason=reason,
-                quarantined_at=datetime.now().isoformat(timespec="seconds"),
-                sha256=file_hash,
-            )
-            items = load_manifest(base)
-            items.append(item)
-            save_manifest(items, base)
-            return item
-        except Exception as e:
-            if destination.exists():
-                shutil.move(str(destination), str(origin))
-            raise RuntimeError(f"Error al actualizar manifiesto: {e}")
     except (OSError, PermissionError) as e:
         raise RuntimeError(f"Falla al mover archivo a cuarentena: {e}")
+
+    try:
+        file_hash = _get_sha256(destination)
+        item = QuarantineItem(
+            item_id=item_id,
+            original_path=str(origin),
+            stored_name=stored_name,
+            size_bytes=file_size,
+            reason=reason,
+            quarantined_at=datetime.now().isoformat(timespec="seconds"),
+            sha256=file_hash,
+        )
+        items = load_manifest(base)
+        items.append(item)
+        save_manifest(items, base)
+        return item
+    except Exception as e:
+        # Revertir movimiento si la metainformación no se pudo persistir
+        if destination.exists():
+            shutil.move(str(destination), str(origin))
+        raise RuntimeError(f"Error al actualizar manifiesto, operación revertida: {e}")
 
 
 def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:

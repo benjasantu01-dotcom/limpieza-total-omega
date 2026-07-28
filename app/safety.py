@@ -135,6 +135,9 @@ def is_within_directory(
 ) -> bool:
     """
     Valida si 'child' es descendiente de 'parent' evitando fugas de directorio.
+    
+    ADVERTENCIA: Esta función resuelve symlinks. Si 'child' contiene un symlink 
+    que apunta fuera de 'parent', la validación fallará por seguridad.
     """
     if child is None or parent is None:
         return False
@@ -149,7 +152,7 @@ def is_within_directory(
             return allow_equal
         c.relative_to(p)
         return True
-    except (ValueError, TypeError, OSError, ValueError):
+    except (ValueError, TypeError, OSError):
         return False
 
 

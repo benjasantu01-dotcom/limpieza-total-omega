@@ -16,9 +16,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-26 | 44 | 3 | 6 | 1 | 20 |
+| 2026-07-26 | 41 | 3 | 5 | 1 | 20 |
 | 2026-07-27 | 155 | 16 | 20 | 4 | 155 |
-| 2026-07-28 | 34 | 3 | 4 | 2 | 37 |
+| 2026-07-28 | 37 | 3 | 5 | 2 | 37 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -34,8 +34,8 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **21**
 - `organizer.py`: **21**
 - `scanner.py`: **19**
-- `safety.py`: **18**
 - `duplicates.py`: **18**
+- `safety.py`: **18**
 - `assistant.py`: **17**
 - `main.py`: **16**
 - `healthscore.py`: **16**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-28T03:26:10` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la inclusión de type hints precisos, la estandarización de docstrings para explicar la lógica de los chequeos, y la extracción de la lógica de tiempo del escaneo a una constante documentada para mejorar la legibilidad y el mantenimiento.
+- `2026-07-28T03:26:03` **safety.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints en la interfaz pública y una sección de advertencia crítica (docstring) en `is_within_directory` para prevenir el uso incorrecto de comparaciones de rutas, reduciendo la ambigüedad en el manejo de enlaces simbólicos.
+- `2026-07-28T03:25:21` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints faltantes, docstrings técnicos que explican las precondiciones de seguridad y se refactorizó la lógica de los bloques `try/except` en `quarantine_file` para clarificar la reversibilidad de la operación en caso de fallo, alineándose con el enfoque de legibilidad técnica exigido.
 - `2026-07-28T03:16:26` **memory.py** (legibilidad y documentación): Se añadió documentación mediante docstrings más detallados y type hints adicionales para aclarar los parámetros y comportamientos internos, facilitando el mantenimiento y la comprensión de las interacciones con APIs de sistema.
 - `2026-07-28T03:16:02` **main.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de la lógica de construcción de la interfaz (`_build_layout`) y el estado de la aplicación mediante la creación de métodos de configuración específicos, encapsulando la inicialización compleja y reduciendo la carga cognitiva en el constructor.
 - `2026-07-28T03:15:04` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings descriptivos a los métodos de cálculo y especificando las unidades de medida (MB, porcentaje) para eliminar ambigüedades en la lógica de evaluación.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-28T02:44:27` **organizer.py** (manejo de errores y validación de entradas): Mejora la robustez de `stage_for_review` validando que la ruta destino no sea parte de la estructura de archivos del sistema protegidos y asegurando que las rutas origen existan antes de intentar cualquier operación de movimiento, evitando excepciones innecesarias.
 - `2026-07-28T02:35:42` **memory.py** (manejo de errores y validación de entradas): Se reforzó la validación de los datos de entrada en `parse_windows_process_csv` y `format_bytes` para asegurar que valores inesperados (como `None` o strings no numéricos) no provoquen fallos en tiempo de ejecución, además de añadir chequeos de integridad en la función `diagnose`.
 - `2026-07-28T02:34:36` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` validando que `metrics` no sea `None` y asegurando que las funciones de cálculo no lancen excepciones inesperadas ante entradas no normalizadas, protegiendo así la estabilidad del hilo de la interfaz.
-- `2026-07-28T02:34:12` **duplicates.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `suggest_keeper` y `reclaimable_bytes` validando la integridad del contenido de los grupos y el tipo de los parámetros, además de asegurar que `partial_hash` gestione correctamente rutas no existentes o vacías, evitando posibles excepciones durante el procesamiento.
-- `2026-07-28T02:25:05` **diskreport.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `walk_files` y las funciones de análisis al validar explícitamente que los resultados de `path.lstat()` sean válidos y capturar excepciones de tipo `AttributeError` o `ValueError` al interactuar con rutas malformadas o permisos restringidos, evitando que el bucle de recorrido se interrumpa inesperadamente ante archivos bloqueados por el sistema operativo.
-- `2026-07-28T02:24:55` **browser.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `detect_profiles` y `directory_size` ante entradas malformadas o rutas inaccesibles mediante la adición de validaciones explícitas de tipo y capturas de excepciones específicas, siguiendo el enfoque de manejo de errores defensivo sin alterar la lógica de negocio.
