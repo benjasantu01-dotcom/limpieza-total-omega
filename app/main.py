@@ -823,15 +823,18 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.clear("Salud")
             self.log("Analizando... esto no modifica nada.", "Salud")
 
-            # Ejecución síncrona dentro del hilo worker para evitar overhead de futuros
+            # Ejecución centralizada y coherente de los módulos
             descargas = os.path.expanduser("~/Downloads")
             hallazgos = scan_directory(descargas) if os.path.isdir(descargas) else []
             snapshot = memory_mod.read_snapshot()
             unidad = diskreport.drive_usage(os.path.expanduser("~"))
             arranque = startup_mod.list_startup_entries()
-            junk_files = scan_for_junk()
+            
+            # Reutilizar self.junk_files si ya existe para evitar rescaneo innecesario
+            if not self.junk_files:
+                self.junk_files = scan_for_junk()
 
-            junk_mb = sum(j.size_bytes for j in junk_files) / (1024 * 1024)
+            junk_mb = sum(j.size_bytes for j in self.junk_files) / (1024 * 1024)
             advertencias = sum(1 for h in hallazgos if h.severity == "warning")
             libre_pct = (unidad.free / unidad.total * 100) if unidad and unidad.total else 100.0
             en_cuarentena = quarantine.list_items()

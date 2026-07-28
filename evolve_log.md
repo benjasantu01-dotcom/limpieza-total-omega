@@ -664,3 +664,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-07-28T12:39:09` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el bucle principal de `summarize` eliminando la creación repetitiva de objetos `Path` y delegando el mantenimiento del heap a una estructura más limpia, reduciendo el consumo de memoria y CPU al consolidar las actualizaciones de estado en una sola pasada.
 - `2026-07-28T12:39:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-28T12:39:09` Corrida terminada. Total usado hoy: 300.
+- `2026-07-28T12:47:57` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-07-28T12:48:20` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-07-28T12:48:43` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
+- `2026-07-28T12:49:44` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Optimicé el método `on_full_analysis` para evitar cálculos redundantes y accesos múltiples al disco, consolidando las métricas en una pasada única y eliminando la recolección de `junk_files` si el análisis ya fue realizado, mejorando así la capacidad de respuesta de la interfaz.
+- `2026-07-28T12:49:52` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: rendimiento).
+- `2026-07-28T12:49:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-28T12:49:52` Corrida terminada. Total usado hoy: 304.
