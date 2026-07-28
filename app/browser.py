@@ -50,12 +50,12 @@ BROWSER_CACHE_PATHS: Dict[str, str] = {
 
 # Nombres que este módulo nunca reporta ni toca, aunque estén dentro del
 # perfil: son datos del usuario, no caché.
-NEVER_TOUCH = frozenset({
+NEVER_TOUCH: frozenset[str] = frozenset({
     "login data", "cookies", "web data", "bookmarks", "history",
     "preferences", "local state", "extensions", "profile",
 })
 
-SAFETY_NOTE = (
+SAFETY_NOTE: str = (
     "Solo se listan carpetas de caché, que el navegador regenera solo. "
     "Nunca se tocan contraseñas, cookies, marcadores ni historial. "
     "Cerrá el navegador antes de limpiar su caché, o los archivos en uso "
@@ -81,7 +81,6 @@ def base_directories() -> List[Path]:
     if os.name != "nt":
         return []
     local = os.environ.get("LOCALAPPDATA")
-    # Validación estricta: debe ser una cadena no vacía y una ruta existente
     if not local or not isinstance(local, str):
         return []
     
@@ -89,15 +88,20 @@ def base_directories() -> List[Path]:
     return [path_local] if path_local.is_dir() else []
 
 
-def _is_safe_path(p: Path, base: Path) -> bool:
-    """Verifica que p sea un subdirectorio real bajo base, evitando escapes."""
+def _is_safe_path(target_path: Path, base_path: Path) -> bool:
+    """
+    Verifica que target_path se encuentre dentro de base_path para prevenir
+    ataques de path traversal, validando adicionalmente contra la lista 
+    de directorios protegidos del sistema.
+    """
     try:
-        resolved_p = p.resolve(strict=True)
-        resolved_base = base.resolve(strict=True)
-        # Seguridad adicional: verificar protección global antes de procesar
-        if is_protected_path(resolved_p):
+        resolved_target = target_path.resolve(strict=True)
+        resolved_base = base_path.resolve(strict=True)
+        
+        if is_protected_path(resolved_target):
             return False
-        return resolved_base in resolved_p.parents or resolved_p == resolved_base
+            
+        return resolved_base in resolved_target.parents or resolved_target == resolved_base
     except (OSError, RuntimeError):
         return False
 
@@ -105,26 +109,27 @@ def _is_safe_path(p: Path, base: Path) -> bool:
 @lru_cache(maxsize=32)
 def directory_size(path: str | os.PathLike) -> int:
     """
-    Calcula el tamaño total de una carpeta de forma recursiva (mediante stack).
+    Calcula el tamaño total de una carpeta mediante recorrido iterativo con stack.
 
     Args:
         path: Ruta al directorio a medir.
         
     Returns:
-        Tamaño total en bytes. Retorna 0 en caso de error o ruta protegida.
+        Tamaño total en bytes. Retorna 0 en caso de error o si la ruta está
+        en la lista de protección.
     """
     if not path or not isinstance(path, (str, Path)):
         return 0
     
     try:
-        p = Path(path).resolve(strict=True)
-        if is_protected_path(p) or not p.is_dir():
+        target = Path(path).resolve(strict=True)
+        if is_protected_path(target) or not target.is_dir():
             return 0
     except (OSError, RuntimeError):
         return 0
     
-    total_bytes = 0
-    stack = [p]
+    total_bytes: int = 0
+    stack: List[Path] = [target]
     
     while stack:
         current_dir = stack.pop()
@@ -132,13 +137,13 @@ def directory_size(path: str | os.PathLike) -> int:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
-                        # Nunca seguir enlaces simbólicos o puntos de reparse
                         if entry.is_symlink():
                             continue
                         if entry.is_dir():
-                            path_entry = Path(entry.path)
-                            if not is_protected_path(path_entry):
-                                stack.append(entry.path)
+                            # Validamos subcarpetas antes de profundizar
+                            entry_path = Path(entry.path)
+                            if not is_protected_path(entry_path):
+                                stack.append(entry_path)
                         elif entry.is_file():
                             total_bytes += entry.stat().st_size
                     except (OSError, PermissionError):
@@ -150,9 +155,7 @@ def directory_size(path: str | os.PathLike) -> int:
 
 
 def _is_valid_cache_path(candidate: Path, base_path: Path) -> bool:
-    """
-    Verifica si una ruta es un directorio de caché válido y seguro.
-    """
+    """Valida si una ruta es un directorio de caché existente, seguro y permitido."""
     try:
         if not candidate.exists():
             return False
@@ -170,14 +173,14 @@ def detect_profiles(
     cache_paths: Dict[str, str] | None = None
 ) -> List[BrowserCache]:
     """
-    Explora directorios base buscando carpetas de caché definidas.
+    Explora directorios base buscando carpetas de caché según BROWSER_CACHE_PATHS.
 
     Args:
-        bases: Lista de directorios raíz donde buscar perfiles de navegador.
-        cache_paths: Diccionario de rutas relativas de caché por navegador.
+        bases: Directorios raíz donde iniciar la búsqueda.
+        cache_paths: Mapa de navegadores y sus rutas de caché relativas.
 
     Returns:
-        Lista de objetos BrowserCache con la información de las carpetas halladas.
+        Lista de objetos BrowserCache ordenados por tamaño descendente.
     """
     if bases is None:
         bases = base_directories()
@@ -221,7 +224,7 @@ def detect_profiles(
 
 
 def total_cache_bytes(caches: Iterable[BrowserCache] | None = None) -> int:
-    """Suma el tamaño total en bytes de una lista de cachés."""
+    """Suma el tamaño total de una lista de objetos BrowserCache."""
     if caches is None:
         directory_size.cache_clear()
         caches = detect_profiles()
@@ -233,7 +236,7 @@ def total_cache_bytes(caches: Iterable[BrowserCache] | None = None) -> int:
 
 
 def summarize(caches: List[BrowserCache] | None = None) -> List[str]:
-    """Genera un reporte legible como lista de strings para mostrar en UI."""
+    """Genera una representación en texto del reporte de caché para la UI."""
     if caches is None:
         directory_size.cache_clear()
         current_caches = detect_profiles()

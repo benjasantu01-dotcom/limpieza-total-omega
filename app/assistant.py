@@ -126,7 +126,7 @@ _ENDPOINT: Final = "https://generativelanguage.googleapis.com/v1beta/models/{mod
 _TIMEOUT_SECONDS: Final = 30
 _PATH_REGEX: Final = re.compile(r"([a-zA-Z]:\\|/|\\)")
 
-# Estructura estática para búsqueda rápida de handlers
+# Mapeo de intenciones del usuario (keywords) a funciones de respuesta locales
 _HANDLER_MAP: Final = {
     "ram": "handle_ram", "memoria": "handle_ram", "lenta": "handle_ram", "lento": "handle_ram", "acelerar": "handle_ram",
     "espacio": "handle_disk", "disco": "handle_disk", "lleno": "handle_disk", "recuperar": "handle_disk", "liberar": "handle_disk",
@@ -253,7 +253,7 @@ def explain_area(area: str) -> str:
 
 
 def handle_ram(ctx: SystemContext, text: str) -> Answer:
-    """Genera respuesta orientada al rendimiento de memoria y RAM."""
+    """Handler local para consultas sobre rendimiento de memoria RAM."""
     partes = [
         f"Tenés {ctx.memory_available_percent:.0f}% de RAM disponible"
         f"{f' de {ctx.memory_total_gb:.0f} GB' if ctx.memory_total_gb else ''}.",
@@ -275,7 +275,7 @@ def handle_ram(ctx: SystemContext, text: str) -> Answer:
                     suggestions=["¿Conviene desactivar programas de inicio?"])
 
 def handle_disk(ctx: SystemContext, text: str) -> Answer:
-    """Genera respuesta sobre capacidad de almacenamiento y limpieza."""
+    """Handler local para consultas sobre almacenamiento y limpieza de disco."""
     recuperable = ctx.junk_mb + ctx.duplicate_mb + ctx.browser_cache_mb
     partes = [
         f"Tenés {ctx.disk_free_percent:.0f}% libre en disco.",
@@ -293,7 +293,7 @@ def handle_disk(ctx: SystemContext, text: str) -> Answer:
     return Answer(" ".join(partes), notice=OFFLINE_NOTICE)
 
 def handle_security(ctx: SystemContext, text: str) -> Answer:
-    """Genera respuesta sobre hallazgos potencialmente peligrosos."""
+    """Handler local para consultas sobre archivos sospechosos y seguridad."""
     if ctx.suspicious_count == 0:
         cuerpo = ("No hay archivos sospechosos en tus Descargas. Sobre borrar: la "
                     "app nunca borra sola. La limpieza mueve todo a una carpeta de "
@@ -308,7 +308,7 @@ def handle_security(ctx: SystemContext, text: str) -> Answer:
     return Answer(cuerpo, notice=OFFLINE_NOTICE)
 
 def handle_score(ctx: SystemContext, text: str) -> Answer:
-    """Genera respuesta sobre el estado general del sistema."""
+    """Handler local para explicar el estado general y el puntaje de salud."""
     detalle = (f"Tu puntaje es {ctx.score}/100"
                 f"{f' (nota {ctx.grade})' if ctx.grade else ''}. ")
     problemas = _rank_problems(ctx)
@@ -321,7 +321,7 @@ def handle_score(ctx: SystemContext, text: str) -> Answer:
     return Answer(detalle, notice=OFFLINE_NOTICE)
 
 def handle_startup(ctx: SystemContext, text: str) -> Answer:
-    """Genera respuesta sobre programas de inicio y tiempos de carga."""
+    """Handler local para programas que inician con el sistema."""
     cuerpo = f"Tenés {ctx.startup_count} programas que arrancan con Windows. "
     if ctx.startup_count > 15:
         cuerpo += ("Son bastantes, y cada uno suma tiempo de encendido. Vale la "

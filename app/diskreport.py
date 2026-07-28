@@ -165,26 +165,25 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
         return
     
     base_str = str(base)
+
+    def is_unsafe_dir(path: Path) -> bool:
+        """Determina si una ruta es un enlace simbólico, punto de reparse o zona protegida."""
+        is_symlink = path.is_symlink()
+        is_reparse = (os.name == 'nt' and hasattr(path, 'stat') and 
+                     getattr(path.stat(), 'st_reparse_tag', 0) != 0)
+        return is_symlink or is_reparse or (skip_protected and is_protected_path(path))
+
     for root, subdirs, files in os.walk(base, onerror=lambda _: None):
         try:
             root_path = Path(root)
             
             # Seguridad: evitar escape del directorio base mediante validación de path común
-            try:
-                if os.path.commonpath([base_str, root]) != base_str:
-                    subdirs.clear()
-                    continue
-            except ValueError:
+            if os.path.commonpath([base_str, root]) != base_str:
                 subdirs.clear()
                 continue
 
             # Seguridad: evitar seguir enlaces simbólicos y puntos de reparse
-            if root_path.is_symlink() or (os.name == 'nt' and hasattr(root_path, 'stat') and root_path.stat().st_reparse_tag != 0):
-                subdirs.clear()
-                continue
-
-            # Seguridad: evitar entrar en carpetas protegidas
-            if skip_protected and is_protected_path(root_path):
+            if is_unsafe_dir(root_path):
                 subdirs.clear()
                 continue
                 
@@ -194,13 +193,9 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
             for name in files:
                 try:
                     path = root_path / name
-                    st = path.lstat()
-                    # Seguridad: evitar archivos en carpetas protegidas detectadas tarde
-                    if path.is_symlink() or (os.name == 'nt' and getattr(st, 'st_reparse_tag', 0) != 0):
+                    if is_unsafe_dir(path):
                         continue
-                    if skip_protected and is_protected_path(path):
-                        continue
-                    yield path, st.st_size
+                    yield path, path.lstat().st_size
                 except (OSError, PermissionError, FileNotFoundError, AttributeError, ValueError):
                     continue
         except (OSError, PermissionError):
@@ -247,7 +242,6 @@ def largest_folders(directory: str | os.PathLike, limit: int = 10, skip_protecte
     
     for path, size in walk_files(base, skip_protected):
         try:
-            # Seguridad: validar que path esté bajo base antes de calcular relativo
             if os.path.commonpath([base_str, str(path)]) != base_str:
                 continue
             rel = path.relative_to(base)
@@ -291,7 +285,6 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
         
     total_bytes: int = 0
     total_files: int = 0
-    # Almacena [bytes, count] para evitar instanciar múltiples clases innecesarias
     ext_data_map: dict[str, list[int]] = defaultdict(lambda: [0, 0])
     top_8_files: list[tuple[int, Path]] = []
 
@@ -316,7 +309,6 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
         "Por tipo de archivo:",
     ]
     
-    # Conversión eficiente a lista para ordenamiento
     sorted_exts = sorted(
         ((ext, data[0], data[1]) for ext, data in ext_data_map.items()),
         key=lambda x: x[1], 

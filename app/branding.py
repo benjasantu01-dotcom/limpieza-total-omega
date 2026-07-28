@@ -16,7 +16,7 @@ El motivo es un escudo (seguridad) cruzado por un trazo de limpieza.
 
 from __future__ import annotations
 from pathlib import Path
-from typing import Any, Final, TypeAlias, Literal, Mapping, Tuple
+from typing import Any, Final, TypeAlias, Literal, Mapping, Tuple, List
 from types import MappingProxyType
 from functools import lru_cache
 from safety import is_safe_to_modify, is_protected_path, ensure_safe_to_modify
@@ -67,7 +67,6 @@ FONT_SIZES: Final = MappingProxyType({
     "caption": 10,
 })
 
-# Diccionarios de mapeo directo para evitar lógica repetitiva
 SEVERITY_STYLES: Final[Mapping[str, SeverityStyle]] = MappingProxyType({
     "ok": ("#22e39a", "Correcto"),
     "info": ("#38bdf8", "Informativo"),
@@ -83,7 +82,6 @@ GRADE_COLORS: Final[Mapping[str, HexColor]] = MappingProxyType({
     "F": "#ff4757",
 })
 
-# Íconos por sección usando glifos Unicode de Segoe UI Symbol
 ICONS: Final[Mapping[str, str]] = MappingProxyType({
     "Salud": "\u25c9",        
     "Limpieza": "\u2726",     
@@ -94,9 +92,9 @@ ICONS: Final[Mapping[str, str]] = MappingProxyType({
     "Duplicados": "\u29c9",   
     "Navegadores": "\u25d0",  
     "Inicio": "\u23fb",       
-    "Informe": "\u2263",      # ≣ líneas
-    "Asistente": "\u273b",    # ✻ destello de ayuda
-    "Ajustes": "\u2699",      # ⚙ engranaje      
+    "Informe": "\u2263",      
+    "Asistente": "\u273b",    
+    "Ajustes": "\u2699",      
 })
 
 GRADIENT_STOPS: Final = ("#00f0c0", "#7c5cff", "#ff2d78")
@@ -211,15 +209,14 @@ def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
     )
 
 
-def gradient_colors(steps: int, stops: tuple[HexColor, ...] = GRADIENT_STOPS) -> list[HexColor]:
+def gradient_colors(steps: int, stops: tuple[HexColor, ...] = GRADIENT_STOPS) -> List[HexColor]:
     """Genera una lista interpolada de colores recorriendo las paradas."""
     cantidad = max(1, int(steps))
-    if not stops:
-        return [PALETTE["accent"]] * cantidad
-    if len(stops) < 2:
-        return [stops[0]] * cantidad
+    if not stops: return [PALETTE["accent"]] * cantidad
+    if len(stops) < 2: return [stops[0]] * cantidad
+    
     tramos = len(stops) - 1
-    salida: list[HexColor] = []
+    salida: List[HexColor] = []
     for i in range(cantidad):
         posicion = i / max(1, cantidad - 1) * tramos
         indice = min(tramos - 1, int(posicion))
@@ -259,16 +256,11 @@ def save_logo_svg(destination: str | Path | None) -> Path | None:
     if not destination: return None
     try:
         path = Path(destination).expanduser().resolve()
-        
-        # Validaciones de seguridad preventivas
-        if is_protected_path(path):
-            return None
+        if is_protected_path(path): return None
         ensure_safe_to_modify(path)
         
-        # Asegurar seguridad del padre antes de crear estructura
         if not path.parent.exists():
-            if is_protected_path(path.parent):
-                return None
+            if is_protected_path(path.parent): return None
             ensure_safe_to_modify(path.parent)
             path.parent.mkdir(parents=True, exist_ok=True)
             
@@ -298,44 +290,38 @@ def draw_logo(canvas: Any, size: int = 56, x: int = 0, y: int = 0) -> None:
         x_val, y_val = float(x), float(y)
     except (TypeError, ValueError): return
 
-    def pts(*coords: float) -> list[float]:
+    def pts(*coords: float) -> List[float]:
         return [x_val + c * s if i % 2 == 0 else y_val + c * s for i, c in enumerate(coords)]
 
-    try:
-        if hasattr(canvas, "create_oval"):
-            for paso in range(4, 0, -1):
-                radio = 56 * s * (0.6 + paso * 0.12)
-                canvas.create_oval(
-                    x_val + 64 * s - radio, y_val + 58 * s - radio,
-                    x_val + 64 * s + radio, y_val + 58 * s + radio,
-                    fill=blend(PALETTE["surface"], PALETTE["glow"], 0.04 * paso),
-                    outline="",
-                )
-        contorno = pts(64, 18, 100, 31, 100, 67, 90, 90, 64, 110, 38, 90, 28, 67, 28, 31)
-        canvas.create_polygon(contorno, fill=GRADIENT_STOPS[1], outline="")
-        franjas = max(6, int(28 * s))
-        colores = gradient_colors(franjas)
-        alto = 92 * s / franjas
-        for i, tono in enumerate(colores):
-            arriba = y_val + 18 * s + i * alto
-            avance = i / max(1, franjas - 1)
-            medio_ancho = 36 * s * (1.0 if avance < 0.55 else 1.0 - (avance - 0.55) * 1.9)
-            if medio_ancho > 0 and hasattr(canvas, "create_rectangle"):
-                canvas.create_rectangle(
-                    x_val + 64 * s - medio_ancho, arriba,
-                    x_val + 64 * s + medio_ancho, arriba + alto + 1,
-                    fill=tono, outline="",
-                )
-        canvas.create_line(
-            *pts(41, 75, 75, 41), fill=PALETTE["background"],
-            width=max(2, int(8 * s)), capstyle="round",
+    # Draw glow layers
+    for paso in range(4, 0, -1):
+        radio = 56 * s * (0.6 + paso * 0.12)
+        canvas.create_oval(
+            x_val + 64 * s - radio, y_val + 58 * s - radio,
+            x_val + 64 * s + radio, y_val + 58 * s + radio,
+            fill=blend(PALETTE["surface"], PALETTE["glow"], 0.04 * paso),
+            outline="",
         )
-        canvas.create_polygon(pts(75, 41, 89, 38, 92, 52), fill=PALETTE["background"], outline="")
-        canvas.create_text(
-            *pts(64, 96), text="\u03a9", fill=PALETTE["background"],
-            font=("Segoe UI", max(8, int(23 * s)), "bold"),
+
+    # Draw shield body
+    contorno = pts(64, 18, 100, 31, 100, 67, 90, 90, 64, 110, 38, 90, 28, 67, 28, 31)
+    canvas.create_polygon(contorno, fill=GRADIENT_STOPS[1], outline="")
+    
+    # Draw gradient details
+    franjas = max(6, int(28 * s))
+    alto = 92 * s / franjas
+    for i, tono in enumerate(gradient_colors(franjas)):
+        arriba = y_val + 18 * s + i * alto
+        avance = i / max(1, franjas - 1)
+        w = 36 * s * (1.0 if avance < 0.55 else 1.0 - (avance - 0.55) * 1.9)
+        canvas.create_rectangle(
+            x_val + 64 * s - w, arriba, x_val + 64 * s + w, arriba + alto + 1,
+            fill=tono, outline=""
         )
-    except (ValueError, TypeError, AttributeError): pass
+
+    canvas.create_line(*pts(41, 75, 75, 41), fill=PALETTE["background"], width=max(2, int(8 * s)), capstyle="round")
+    canvas.create_polygon(pts(75, 41, 89, 38, 92, 52), fill=PALETTE["background"], outline="")
+    canvas.create_text(*pts(64, 96), text="\u03a9", fill=PALETTE["background"], font=("Segoe UI", max(8, int(23 * s)), "bold"))
 
 
 def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
@@ -361,12 +347,11 @@ def draw_ring(canvas: Any, percent: float | int, size: int = 150,
         diametro = max(20, int(size))
         grosor = max(2, min(int(thickness), diametro // 2 - 1))
     except (TypeError, ValueError): return
+    
     color_fondo, color_avance = track or PALETTE["surface_alt"], fill or score_color(valor)
-    try:
-        borde = grosor / 2
-        caja = (x + borde, y + borde, x + diametro - borde, y + diametro - borde)
-        canvas.create_arc(*caja, start=0, extent=359.9, style="arc", outline=color_fondo, width=grosor)
-        if valor > 0:
-            canvas.create_arc(*caja, start=90, extent=-(valor / 100 * 359.9),
-                              style="arc", outline=color_avance, width=grosor)
-    except (ValueError, TypeError, AttributeError): pass
+    borde = grosor / 2
+    caja = (x + borde, y + borde, x + diametro - borde, y + diametro - borde)
+    canvas.create_arc(*caja, start=0, extent=359.9, style="arc", outline=color_fondo, width=grosor)
+    if valor > 0:
+        canvas.create_arc(*caja, start=90, extent=-(valor / 100 * 359.9),
+                          style="arc", outline=color_avance, width=grosor)
