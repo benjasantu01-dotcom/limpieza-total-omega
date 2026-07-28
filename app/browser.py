@@ -111,7 +111,7 @@ def directory_size(path: str | os.PathLike) -> int:
     evitando el desbordamiento de pila en estructuras profundas. 
     IGNORA symlinks y junctions para evitar ciclos y escapes de directorio.
     """
-    if not path:
+    if not path or not isinstance(path, (str, Path)):
         return 0
     
     try:
@@ -179,6 +179,9 @@ def detect_profiles(bases: Sequence[Path] | None = None,
 
     found: List[BrowserCache] = []
     
+    if not isinstance(bases, (list, tuple)):
+        return []
+
     for base in bases:
         if not isinstance(base, Path) or not base.is_dir() or is_protected_path(base):
             continue
@@ -203,7 +206,7 @@ def detect_profiles(bases: Sequence[Path] | None = None,
                     path=candidate,
                     size_bytes=directory_size(str(candidate)),
                 ))
-            except (OSError, PermissionError, ValueError, AttributeError):
+            except (OSError, PermissionError, ValueError, AttributeError, TypeError):
                 continue
                 
     found.sort(key=lambda c: c.size_bytes, reverse=True)

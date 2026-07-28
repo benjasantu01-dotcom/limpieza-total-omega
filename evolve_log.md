@@ -760,3 +760,10 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-07-28T02:17:28` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-07-28T02:17:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-28T02:17:28` Corrida terminada. Total usado hoy: 56.
+- `2026-07-28T02:23:33` Arrancando corrida. Quedan hoy ~244 peticiones objetivo.
+- `2026-07-28T02:24:05` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `build_context` y `ask` mediante la validación proactiva de tipos y el manejo explícito de errores, asegurando que cualquier entrada malformada o fallos al cargar settings no interrumpan el flujo de trabajo del asistente.
+- `2026-07-28T02:24:32` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-07-28T02:24:55` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `detect_profiles` y `directory_size` ante entradas malformadas o rutas inaccesibles mediante la adición de validaciones explícitas de tipo y capturas de excepciones específicas, siguiendo el enfoque de manejo de errores defensivo sin alterar la lógica de negocio.
+- `2026-07-28T02:25:05` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `walk_files` y las funciones de análisis al validar explícitamente que los resultados de `path.lstat()` sean válidos y capturar excepciones de tipo `AttributeError` o `ValueError` al interactuar con rutas malformadas o permisos restringidos, evitando que el bucle de recorrido se interrumpa inesperadamente ante archivos bloqueados por el sistema operativo.
+- `2026-07-28T02:25:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-28T02:25:05` Corrida terminada. Total usado hoy: 60.

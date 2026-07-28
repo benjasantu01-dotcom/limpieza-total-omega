@@ -126,12 +126,7 @@ _PATH_REGEX: Final = re.compile(r"([a-zA-Z]:\\|/|\\)")
 
 @dataclass
 class SystemContext:
-    """Las métricas agregadas que el asistente puede ver.
-
-    Todos los campos son números o cadenas cortas a propósito: si un campo
-    pudiera contener una ruta, el motor remoto la recibiría.
-    """
-
+    """Las métricas agregadas que el asistente puede ver."""
     score: int | None = None
     grade: str = ""
     junk_mb: float = 0.0
@@ -150,9 +145,8 @@ class SystemContext:
 @dataclass
 class Answer:
     """Respuesta del asistente, con el origen a la vista."""
-
     text: str
-    source: str = "local"  # "local" o "gemini"
+    source: str = "local"
     notice: str = ""
     suggestions: list[str] = field(default_factory=list)
 
@@ -161,7 +155,6 @@ class Answer:
         return self.source == "gemini"
 
 
-# Definición constante de handlers para evitar recreación
 _HANDLERS: Final = {}
 
 
@@ -189,41 +182,35 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         except (TypeError, ValueError, AttributeError):
             return defecto
 
-    try:
-        if metrics is not None:
-            contexto.junk_mb = float(obtener_val(metrics, "junk_mb", float, 0.0))
-            contexto.suspicious_count = int(obtener_val(metrics, "suspicious_count", int, 0))
-            contexto.suspicious_warnings = int(obtener_val(metrics, "suspicious_warnings", int, 0))
-            contexto.memory_available_percent = max(0.0, min(float(obtener_val(metrics, "memory_available_percent", float, 0.0)), 100.0))
-            contexto.disk_free_percent = max(0.0, min(float(obtener_val(metrics, "disk_free_percent", float, 0.0)), 100.0))
-            contexto.duplicate_mb = float(obtener_val(metrics, "duplicate_mb", float, 0.0))
-            contexto.startup_count = int(obtener_val(metrics, "startup_count", int, 0))
-            contexto.quarantined_count = int(obtener_val(metrics, "quarantined_count", int, 0))
-            contexto.analyzed = True
+    if metrics is not None:
+        contexto.junk_mb = float(obtener_val(metrics, "junk_mb", float, 0.0))
+        contexto.suspicious_count = int(obtener_val(metrics, "suspicious_count", int, 0))
+        contexto.suspicious_warnings = int(obtener_val(metrics, "suspicious_warnings", int, 0))
+        contexto.memory_available_percent = max(0.0, min(float(obtener_val(metrics, "memory_available_percent", float, 0.0)), 100.0))
+        contexto.disk_free_percent = max(0.0, min(float(obtener_val(metrics, "disk_free_percent", float, 0.0)), 100.0))
+        contexto.duplicate_mb = float(obtener_val(metrics, "duplicate_mb", float, 0.0))
+        contexto.startup_count = int(obtener_val(metrics, "startup_count", int, 0))
+        contexto.quarantined_count = int(obtener_val(metrics, "quarantined_count", int, 0))
+        contexto.analyzed = True
 
-        if health is not None:
-            score_val = obtener_val(health, "score", int, 0)
-            contexto.score = max(0, min(int(score_val), 100))
-            grado = getattr(health, "grade", "")
-            contexto.grade = str(grado) if isinstance(grado, (str, int, float)) else ""
-            contexto.analyzed = True
+    if health is not None:
+        score_val = obtener_val(health, "score", int, 0)
+        contexto.score = max(0, min(int(score_val), 100))
+        grado = getattr(health, "grade", "")
+        contexto.grade = str(grado) if isinstance(grado, (str, int, float)) else ""
+        contexto.analyzed = True
 
-        for clave, valor in extra.items():
-            if hasattr(contexto, clave) and isinstance(valor, (int, float)) and clave not in ["analyzed", "grade"]:
-                setattr(contexto, clave, float(valor))
-    except Exception:
-        return SystemContext(analyzed=False)
+    for clave, valor in extra.items():
+        if hasattr(contexto, clave) and isinstance(valor, (int, float)) and clave not in ["analyzed", "grade"]:
+            setattr(contexto, clave, float(valor))
 
     return contexto
 
 
 def context_as_text(context: SystemContext) -> str:
     """Convierte el contexto en el texto exacto que viaja a la API."""
-    if not isinstance(context, SystemContext):
+    if not isinstance(context, SystemContext) or not context.analyzed:
         return "No hay métricas disponibles todavía."
-
-    if not context.analyzed:
-        return "El usuario todavía no corrió ningún análisis."
 
     lineas = [
         f"Puntaje de salud: {context.score if context.score is not None else 'sin calcular'}"
@@ -401,7 +388,7 @@ def _rank_problems(context: SystemContext) -> list[str]:
     return [texto for _, texto in problemas]
 
 
-def available(base: str | Path | None = None) -> bool:  # noqa: F821
+def available(base: str | Path | None = None) -> bool:
     """True si el motor en línea está activado y tiene clave."""
     try:
         return settings.assistant_enabled(base)
@@ -411,26 +398,26 @@ def available(base: str | Path | None = None) -> bool:  # noqa: F821
 
 def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> str | None:
     """Consulta a Gemini con la librería estándar. Devuelve None si falla."""
-    cuerpo = json.dumps({
-        "contents": [{
-            "parts": [{
-                "text": f"{SYSTEM_PROMPT}\n\nMétricas del sistema:\n{context_text}\n\n"
-                        f"Pregunta del usuario: {question}"
-            }]
-        }]
-    }).encode("utf-8")
-
-    url = _ENDPOINT.format(model=model) + f"?key={api_key}"
-    peticion = urllib.request.Request(
-        url, data=cuerpo, headers={"Content-Type": "application/json"}, method="POST"
-    )
     try:
+        cuerpo = json.dumps({
+            "contents": [{
+                "parts": [{
+                    "text": f"{SYSTEM_PROMPT}\n\nMétricas del sistema:\n{context_text}\n\n"
+                            f"Pregunta del usuario: {question}"
+                }]
+            }]
+        }).encode("utf-8")
+
+        url = _ENDPOINT.format(model=model) + f"?key={api_key}"
+        peticion = urllib.request.Request(
+            url, data=cuerpo, headers={"Content-Type": "application/json"}, method="POST"
+        )
         with urllib.request.urlopen(peticion, timeout=_TIMEOUT_SECONDS) as respuesta:
             datos = json.loads(respuesta.read().decode("utf-8"))
-        partes = datos["candidates"][0]["content"]["parts"]
+        
+        partes = datos.get("candidates", [{}])[0].get("content", {}).get("parts", [])
         texto = "".join(p.get("text", "") for p in partes).strip()
         
-        # Seguridad: Bloqueo defensivo ante posibles inyecciones de rutas en el texto devuelto
         if not texto or _PATH_REGEX.search(texto):
             return None
         return texto
@@ -440,7 +427,7 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
 
 
 def ask(question: str, context: SystemContext | None = None,
-        base: str | Path | None = None) -> Answer:  # noqa: F821
+        base: str | Path | None = None) -> Answer:
     """Coordina el flujo de respuesta combinando motores locales y remotos."""
     contexto = context if isinstance(context, SystemContext) else SystemContext()
     respaldo = local_answer(question, contexto)
@@ -451,9 +438,9 @@ def ask(question: str, context: SystemContext | None = None,
     try:
         clave = settings.assistant_api_key(base)
         configuracion = settings.load(base)
-        modelo = configuracion.get("asistente_modelo", "gemini-3.1-flash-lite")
+        modelo = str(configuracion.get("asistente_modelo", "gemini-3.1-flash-lite"))
         enviar = bool(configuracion.get("asistente_enviar_metricas", True))
-    except Exception:
+    except (Exception, TypeError, ValueError):
         return respaldo
 
     texto_contexto = context_as_text(contexto) if enviar else "El usuario no autorizó enviar métricas."
