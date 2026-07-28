@@ -158,7 +158,7 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
         return
     try:
         base = Path(directory).expanduser().resolve(strict=True)
-        if not base.is_dir():
+        if not base.is_dir() or (skip_protected and is_protected_path(base)):
             return
     except (OSError, RuntimeError):
         return

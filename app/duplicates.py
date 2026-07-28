@@ -147,19 +147,20 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
             for root, subdirs, files in os.walk(base):
                 root_path = Path(root)
                 
-                if skip_protected:
-                    # Filtra subdirectorios in situ antes de que os.walk descienda
-                    subdirs[:] = [d for d in subdirs if not is_protected_path(root_path / d)]
-                    
+                # Filtrar puntos de reparse (junctions) para no salir del árbol y evitar loops
+                subdirs[:] = [
+                    d for d in subdirs 
+                    if not (root_path / d).is_symlink() and not is_protected_path(root_path / d)
+                ]
+                
                 for name in files:
                     candidate = root_path / name
                     try:
-                        # lstat permite detectar symlinks sin seguirlos
-                        st = candidate.lstat()
                         if candidate.is_symlink():
                             continue
                         if skip_protected and is_protected_path(candidate):
                             continue
+                        st = candidate.stat()
                         if st.st_size >= min_size and os.path.isfile(candidate):
                             candidates.append(candidate)
                     except (OSError, PermissionError, FileNotFoundError):

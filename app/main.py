@@ -539,7 +539,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
         self._hint(tab, "Compara por tamaño, después por hash parcial y por último por hash "
                         "completo, así no lee de más. 'Aislar copias extra' conserva una copia "
-                        "de cada grupo y manda el resto a cuarentena, no las borra.")
+                        "de cada grupo y manda el resto a cuarentena, no las borran.")
         self._make_output("Duplicados", tab)
 
     def _build_tab_navegadores(self):
@@ -962,16 +962,15 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
         def task():
             self.set_status("Moviendo a revisión...")
-            seguros = safety.filter_safe_paths([jf.path for jf in self.junk_files])
-            permitidos = {str(p) for p in seguros}
-            descartados = len(self.junk_files) - len(permitidos)
-            aptos = [jf for jf in self.junk_files if str(jf.path.resolve()) in permitidos
-                     or str(jf.path) in permitidos]
+            # Filtrado explícito mediante seguridad
+            aptos = [jf for jf in self.junk_files if safety.is_safe_to_modify(Path(jf.path))]
+            descartados = len(self.junk_files) - len(aptos)
             if descartados:
-                self.log(f"{descartados} archivo(s) se omitieron por estar en rutas protegidas.",
-                         "Limpieza")
-            dest = stage_for_review(aptos)
-            self.log(f"Movidos {len(aptos)} archivos a: {dest}", "Limpieza")
+                self.log(f"{descartados} archivo(s) omitido(s) por seguridad.", "Limpieza")
+            
+            if aptos:
+                dest = stage_for_review(aptos)
+                self.log(f"Movidos {len(aptos)} archivos a: {dest}", "Limpieza")
             self.junk_files = []
 
         self.run_async(task)
@@ -1280,6 +1279,14 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         if not a_mover:
             messagebox.showinfo("Nada para mover", "No hay copias extra que aislar.")
             return
+        
+        # Validar seguridad antes de aislar
+        seguros = [p for p in a_mover if safety.is_safe_to_modify(Path(p))]
+        if len(seguros) < len(a_mover):
+            self.log(f"Omitidos {len(a_mover) - len(seguros)} duplicados en rutas protegidas.", "Duplicados")
+            a_mover = seguros
+            if not a_mover: return
+
         if not self._confirm(
             "Aislar copias duplicadas",
             f"Se van a MOVER {len(a_mover)} copia(s) a la cuarentena, conservando "

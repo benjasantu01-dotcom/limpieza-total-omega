@@ -175,6 +175,10 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     if metrics is None or not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Datos de entrada faltantes o inválidos."])
 
+    # Seguridad defensiva: Verificar integridad de configuración
+    if sum(WEIGHTS.values()) != 100:
+        return HealthResult(0, "F", {}, ["Error de configuración: Los pesos del sistema no suman 100."])
+
     try:
         metrics.validate()
         
@@ -189,9 +193,10 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
 
         # Calculamos desglose usando WEIGHTS de forma segura
         breakdown = {}
-        for key in ratios:
+        for key in WEIGHTS.keys():
+            ratio = ratios.get(key, 0.0)
             weight = WEIGHTS.get(key, 0)
-            breakdown[key] = int(round(ratios[key] * weight))
+            breakdown[key] = int(round(ratio * weight))
             
         total = sum(breakdown.values())
 
