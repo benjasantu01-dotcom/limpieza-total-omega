@@ -748,3 +748,10 @@ FAILED evolve/tests/test_modules.py::test_finds_duplicates_across_subfolders - A
 - `2026-07-28T13:32:07` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). He mejorado la robustez de `stage_for_review` añadiendo una comprobación explícita para evitar que el archivo a mover sea el mismo destino (o una relación de padres/hijos directa), y asegurando que las rutas base de origen y destino no colisionen en entornos con permisos restringidos, garantizando la integridad de la operación.
 - `2026-07-28T13:32:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-28T13:32:07` Corrida terminada. Total usado hoy: 320.
+- `2026-07-28T13:39:21` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-07-28T13:39:48` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `restore_item` y `quarantine_file` ante condiciones de carrera y archivos inconsistentes, añadiendo una validación explícita de existencia del directorio padre antes de la restauración y manejando mejor los casos donde `shutil.move` podría fallar parcialmente por bloqueos en el sistema de archivos, asegurando la integridad del manifiesto.
+- `2026-07-28T13:40:07` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-07-28T13:40:30` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Mejoré `is_within_directory` para detectar "junciones" (puntos de reparse) y prevenir el escape del sandbox mediante la validación de `st_reparse_tag` (usando `os.lstat`), asegurando que la validación no siga estructuras que puedan romper el aislamiento de rutas.
+- `2026-07-28T13:40:36` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-07-28T13:40:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-28T13:40:36` Corrida terminada. Total usado hoy: 324.

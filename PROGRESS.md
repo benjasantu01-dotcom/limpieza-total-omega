@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **245** (48.6% de aceptación)
+- Mejoras aceptadas: **247** (49.0% de aceptación)
 - Rechazadas por tests: 20
-- Rechazadas por guardia de seguridad: 26
+- Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 7
-- Sin respuesta de la IA (error o límite): 206
+- Sin respuesta de la IA (error o límite): 203
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-27 | 82 | 9 | 9 | 2 | 82 |
-| 2026-07-28 | 163 | 11 | 17 | 5 | 124 |
+| 2026-07-27 | 82 | 9 | 9 | 2 | 78 |
+| 2026-07-28 | 165 | 11 | 18 | 5 | 125 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **64**
 - manejo de errores y validación de entradas: **48**
+- robustez ante casos límite: **48**
 - seguridad defensiva: **47**
-- robustez ante casos límite: **46**
 - rendimiento: **40**
 
 ## Mejoras aceptadas por archivo
@@ -35,17 +35,19 @@ Este archivo se regenera solo en cada corrida a partir de
 - `main.py`: **20**
 - `browser.py`: **19**
 - `organizer.py`: **19**
+- `quarantine.py`: **19**
 - `scanner.py`: **19**
 - `duplicates.py`: **18**
 - `healthscore.py`: **18**
-- `quarantine.py`: **18**
-- `safety.py`: **14**
+- `safety.py`: **15**
 - `startup.py`: **13**
 - `memory.py`: **12**
 - `branding.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-28T13:40:30` **safety.py** (robustez ante casos límite): Mejoré `is_within_directory` para detectar "junciones" (puntos de reparse) y prevenir el escape del sandbox mediante la validación de `st_reparse_tag` (usando `os.lstat`), asegurando que la validación no siga estructuras que puedan romper el aislamiento de rutas.
+- `2026-07-28T13:39:48` **quarantine.py** (robustez ante casos límite): Se reforzó la robustez de `restore_item` y `quarantine_file` ante condiciones de carrera y archivos inconsistentes, añadiendo una validación explícita de existencia del directorio padre antes de la restauración y manejando mejor los casos donde `shutil.move` podría fallar parcialmente por bloqueos en el sistema de archivos, asegurando la integridad del manifiesto.
 - `2026-07-28T13:32:07` **organizer.py** (robustez ante casos límite): He mejorado la robustez de `stage_for_review` añadiendo una comprobación explícita para evitar que el archivo a mover sea el mismo destino (o una relación de padres/hijos directa), y asegurando que las rutas base de origen y destino no colisionen en entornos con permisos restringidos, garantizando la integridad de la operación.
 - `2026-07-28T13:31:58` **memory.py** (robustez ante casos límite): Se mejora la robustez de `trim_working_set` añadiendo una validación explícita mediante `is_protected_path` (o verificación de acceso equivalente) y un manejo más preciso de los errores de la API de Windows, asegurando que la operación de trim solo intente ejecutarse tras validar que el proceso no es una tarea esencial bloqueada por el sistema.
 - `2026-07-28T13:29:28` **healthscore.py** (robustez ante casos límite): Mejora la robustez de `score_memory` y `score_disk` evitando la división por cero si las constantes de umbral se modifican por error, y añade una validación de `weights` más estricta ante valores negativos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-28T12:49:44` **main.py** (rendimiento): Optimicé el método `on_full_analysis` para evitar cálculos redundantes y accesos múltiples al disco, consolidando las métricas en una pasada única y eliminando la recolección de `junk_files` si el análisis ya fue realizado, mejorando así la capacidad de respuesta de la interfaz.
 - `2026-07-28T12:39:09` **diskreport.py** (rendimiento): Optimicé el bucle principal de `summarize` eliminando la creación repetitiva de objetos `Path` y delegando el mantenimiento del heap a una estructura más limpia, reduciendo el consumo de memoria y CPU al consolidar las actualizaciones de estado en una sola pasada.
 - `2026-07-28T12:39:00` **browser.py** (rendimiento): Optimicé el rendimiento de `directory_size` eliminando la conversión recursiva a objetos `Path` dentro del bucle (`entry.path` ya es un `str`) y aplicando el filtro `is_protected_path` solo sobre la ruta resuelta, evitando sobrecarga de procesamiento en cada iteración del escaneo profundo.
-- `2026-07-28T12:38:11` **assistant.py** (rendimiento): Se optimizó el rendimiento del motor local al reemplazar la búsqueda secuencial por una clave en `_HANDLER_MAP` mediante el uso de una expresión regular precompilada (`re.compile`), evitando iteraciones innecesarias sobre todas las keywords.
-- `2026-07-28T12:28:40` **settings.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo integrando docstrings que especifican explícitamente las precondiciones y el comportamiento ante fallos de las funciones críticas, facilitando el mantenimiento y la comprensión de los mecanismos de seguridad y resiliencia implementados.

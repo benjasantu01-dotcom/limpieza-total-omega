@@ -260,7 +260,8 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
     ensure_safe_to_modify(destination, allow_sensitive=False)
 
     try:
-        destination.parent.mkdir(parents=True, exist_ok=True)
+        if not destination.parent.exists():
+            destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.move(str(stored_file), str(destination))
     except (OSError, PermissionError) as e:
         raise RuntimeError(f"Fallo durante la restauración: {e}")

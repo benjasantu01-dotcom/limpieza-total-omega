@@ -142,11 +142,7 @@ def is_within_directory(
 ) -> bool:
     """
     Verifica si 'child' es descendiente de 'parent' tras resolver enlaces.
-
-    Args:
-        child: Ruta que se intenta validar.
-        parent: Ruta del directorio contenedor.
-        allow_equal: Si True, considera True si las rutas coinciden.
+    Detecta puntos de reparse (junciones) para prevenir saltos fuera del sandbox.
     """
     if not child or not parent:
         return False
@@ -154,8 +150,14 @@ def is_within_directory(
         c, p = normalize(child), normalize(parent)
         if not c.is_absolute() or not p.is_absolute():
             return False
-        if any(part.is_symlink() for part in c.parents):
-            return False
+            
+        # Verificar puntos de reparse en la ruta
+        for path_to_check in [c, p]:
+            for parent_dir in path_to_check.parents:
+                if parent_dir.exists():
+                    stat = os.lstat(parent_dir)
+                    if hasattr(stat, "st_reparse_tag") and stat.st_reparse_tag != 0:
+                        return False
             
         if c == p:
             return allow_equal
