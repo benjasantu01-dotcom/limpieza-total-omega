@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **246** (48.8% de aceptación)
+- Mejoras aceptadas: **248** (49.2% de aceptación)
 - Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 28
+- Rechazadas por guardia de seguridad: 29
 - Sin cambios (nada sustancial que mejorar): 7
-- Sin respuesta de la IA (error o límite): 204
+- Sin respuesta de la IA (error o límite): 201
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-27 | 132 | 14 | 16 | 3 | 123 |
-| 2026-07-28 | 114 | 5 | 12 | 4 | 81 |
+| 2026-07-27 | 132 | 14 | 16 | 3 | 119 |
+| 2026-07-28 | 116 | 5 | 13 | 4 | 82 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **64**
 - seguridad defensiva: **48**
 - manejo de errores y validación de entradas: **47**
-- robustez ante casos límite: **45**
+- robustez ante casos límite: **47**
 - rendimiento: **42**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **24**
+- `settings.py`: **22**
 - `diskreport.py`: **21**
-- `settings.py`: **21**
 - `organizer.py`: **20**
 - `browser.py`: **19**
+- `scanner.py`: **19**
 - `main.py`: **19**
 - `healthscore.py`: **18**
-- `scanner.py`: **18**
 - `duplicates.py`: **18**
 - `quarantine.py`: **17**
 - `safety.py`: **16**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-28T09:13:47` **settings.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `load` y `save` ante situaciones de acceso concurrente al disco (como bloqueos de archivo o cambios de permisos súbitos) mediante la adición de un bloque de control más robusto y el manejo explícito de errores de E/S, asegurando que la app nunca quede en estado inconsistente.
+- `2026-07-28T09:13:37` **scanner.py** (robustez ante casos límite): Se reforzó la robustez de `scan_directory` al manejar explícitamente posibles errores de acceso y metadatos inconsistentes al iterar sobre el sistema de archivos, asegurando que la recolección de sospechas continúe incluso si un archivo individual es bloqueado o eliminado durante el escaneo.
 - `2026-07-28T09:04:29` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` ante la posible falta de consistencia en el estado del disco, añadiendo una limpieza explícita del archivo temporal (si llegara a quedar huérfano) y verificando que el hash generado sea válido antes de confirmar el movimiento en el manifiesto.
 - `2026-07-28T09:04:19` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de `scan_for_junk` añadiendo un manejo de excepciones más específico y resiliente, evitando que errores de acceso inesperados (como puntos de reparse o archivos bloqueados por el sistema) detengan el escaneo completo, y asegurando que las rutas absolutas se procesen de manera consistente.
 - `2026-07-28T09:03:56` **memory.py** (robustez ante casos límite): Se ha robustecido la función `read_snapshot` ante posibles fallos de lectura de archivos en entornos Linux (donde `/proc/meminfo` podría ser inexistente, estar vacío o inaccesible), evitando excepciones no controladas y asegurando que siempre se retorne un objeto `MemorySnapshot` válido.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-28T08:32:59` **scanner.py** (rendimiento): Optimizé el rendimiento de `scan_directory` evitando llamadas redundantes a `Path(entry.path)` y resoluciones innecesarias de rutas, consolidando la validación de archivos en un único chequeo eficiente dentro del bucle de `os.scandir`.
 - `2026-07-28T08:32:11` **quarantine.py** (rendimiento): Optimicé el cálculo del total de bytes usados por la cuarentena evitando recargar y re-parsear el archivo de manifiesto completo en cada iteración de la UI, utilizando en su lugar la propiedad `_manifest_cache` que ya gestiona el estado en memoria.
 - `2026-07-28T08:22:54` **main.py** (rendimiento): Se optimizó el rendimiento del panel de Salud sustituyendo la creación de hilos innecesarios en `on_full_analysis` por una ejecución eficiente dentro de un único hilo de tarea, evitando el overhead de gestión de múltiples futuros y permitiendo que la interfaz responda mejor al no saturar el `ThreadPoolExecutor`.
-- `2026-07-28T08:12:36` **duplicates.py** (rendimiento): Optimizé `group_by_size` y `_collect_candidates` para evitar llamadas redundantes a `is_protected_path` y `stat` dentro de los bucles, mejorando la eficiencia en recorridos de disco extensos.
-- `2026-07-28T08:12:29` **diskreport.py** (rendimiento): Optimizé la función `walk_files` para evitar múltiples llamadas a `lstat()` y `is_symlink()` mediante el uso de `os.scandir`, lo cual reduce drásticamente las llamadas al sistema y mejora la performance del escaneo.

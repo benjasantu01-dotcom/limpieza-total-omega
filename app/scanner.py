@@ -162,17 +162,17 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
             try:
                 with os.scandir(current_dir) as it:
                     for entry in it:
-                        # Convertimos a Path una sola vez
-                        entry_path = Path(entry.path)
-                        
-                        if is_protected_path(entry_path):
+                        try:
+                            # Verificamos tipo antes de convertir a Path completo
+                            if entry.is_dir(follow_symlinks=False):
+                                if not _is_reparse_point(entry):
+                                    stack.append(entry.path)
+                            elif entry.is_file():
+                                entry_path = Path(entry.path)
+                                if not is_protected_path(entry_path):
+                                    results.extend(scan_file(entry_path))
+                        except (PermissionError, OSError):
                             continue
-                            
-                        if entry.is_dir(follow_symlinks=False):
-                            if not _is_reparse_point(entry):
-                                stack.append(entry.path)
-                        elif entry.is_file():
-                            results.extend(scan_file(entry_path))
             except (PermissionError, OSError, FileNotFoundError):
                 continue
         return results

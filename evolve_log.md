@@ -1265,3 +1265,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-07-28T09:04:29` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Mejoré la robustez de `quarantine_file` ante la posible falta de consistencia en el estado del disco, añadiendo una limpieza explícita del archivo temporal (si llegara a quedar huérfano) y verificando que el hash generado sea válido antes de confirmar el movimiento en el manifiesto.
 - `2026-07-28T09:04:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-28T09:04:29` Corrida terminada. Total usado hoy: 216.
+- `2026-07-28T09:12:34` Arrancando corrida. Quedan hoy ~84 peticiones objetivo.
+- `2026-07-28T09:12:54` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-07-28T09:13:15` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
+- `2026-07-28T09:13:37` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `scan_directory` al manejar explícitamente posibles errores de acceso y metadatos inconsistentes al iterar sobre el sistema de archivos, asegurando que la recolección de sospechas continúe incluso si un archivo individual es bloqueado o eliminado durante el escaneo.
+- `2026-07-28T09:13:47` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se ha mejorado la resiliencia de `load` y `save` ante situaciones de acceso concurrente al disco (como bloqueos de archivo o cambios de permisos súbitos) mediante la adición de un bloque de control más robusto y el manejo explícito de errores de E/S, asegurando que la app nunca quede en estado inconsistente.
+- `2026-07-28T09:13:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-28T09:13:47` Corrida terminada. Total usado hoy: 220.
