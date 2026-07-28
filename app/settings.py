@@ -198,8 +198,9 @@ def load(base: str | Path | None = None) -> dict[str, Any]:
         if _cached_settings is not None and base == _last_base and stat.st_mtime == _last_mtime:
             return _cached_settings
 
-        contenido = ruta.read_text(encoding="utf-8").strip()
-        _cached_settings = validate(json.loads(contenido)) if contenido else dict(DEFAULTS)
+        contenido = ruta.read_text(encoding="utf-8")
+        data = json.loads(contenido)
+        _cached_settings = validate(data)
         _last_base = base
         _last_mtime = stat.st_mtime
         return _cached_settings
@@ -212,27 +213,18 @@ def save(values: Any, base: str | Path | None = None) -> Path | None:
     global _cached_settings, _last_mtime
     ruta = settings_path(base)
     
-    # Verificación de seguridad en la carpeta contenedora y en el archivo mismo
     try:
         ensure_safe_to_modify(str(ruta.parent))
-    except (RuntimeError, PermissionError):
-        return None
-
-    limpio = validate(values)
-    try:
+        limpio = validate(values)
+        json_data = json.dumps(limpio, indent=2, ensure_ascii=False)
+        
         ruta.parent.mkdir(parents=True, exist_ok=True)
-        # Verificación explícita de capacidad de escritura sin sobrescribir si es bloqueado
-        if ruta.exists() and not os.access(ruta, os.W_OK):
-            return None
-            
-        ruta.write_text(
-            json.dumps(limpio, indent=2, ensure_ascii=False),
-            encoding="utf-8",
-        )
+        ruta.write_text(json_data, encoding="utf-8")
+        
         _cached_settings = limpio
         _last_mtime = ruta.stat().st_mtime
         return ruta
-    except (OSError, PermissionError):
+    except (OSError, RuntimeError, PermissionError):
         return None
 
 

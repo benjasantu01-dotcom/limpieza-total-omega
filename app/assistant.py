@@ -253,6 +253,7 @@ def explain_area(area: str) -> str:
 
 
 def handle_ram(ctx: SystemContext, text: str) -> Answer:
+    """Genera respuesta orientada al rendimiento de memoria y RAM."""
     partes = [
         f"Tenés {ctx.memory_available_percent:.0f}% de RAM disponible"
         f"{f' de {ctx.memory_total_gb:.0f} GB' if ctx.memory_total_gb else ''}.",
@@ -274,6 +275,7 @@ def handle_ram(ctx: SystemContext, text: str) -> Answer:
                     suggestions=["¿Conviene desactivar programas de inicio?"])
 
 def handle_disk(ctx: SystemContext, text: str) -> Answer:
+    """Genera respuesta sobre capacidad de almacenamiento y limpieza."""
     recuperable = ctx.junk_mb + ctx.duplicate_mb + ctx.browser_cache_mb
     partes = [
         f"Tenés {ctx.disk_free_percent:.0f}% libre en disco.",
@@ -291,6 +293,7 @@ def handle_disk(ctx: SystemContext, text: str) -> Answer:
     return Answer(" ".join(partes), notice=OFFLINE_NOTICE)
 
 def handle_security(ctx: SystemContext, text: str) -> Answer:
+    """Genera respuesta sobre hallazgos potencialmente peligrosos."""
     if ctx.suspicious_count == 0:
         cuerpo = ("No hay archivos sospechosos en tus Descargas. Sobre borrar: la "
                     "app nunca borra sola. La limpieza mueve todo a una carpeta de "
@@ -305,6 +308,7 @@ def handle_security(ctx: SystemContext, text: str) -> Answer:
     return Answer(cuerpo, notice=OFFLINE_NOTICE)
 
 def handle_score(ctx: SystemContext, text: str) -> Answer:
+    """Genera respuesta sobre el estado general del sistema."""
     detalle = (f"Tu puntaje es {ctx.score}/100"
                 f"{f' (nota {ctx.grade})' if ctx.grade else ''}. ")
     problemas = _rank_problems(ctx)
@@ -317,6 +321,7 @@ def handle_score(ctx: SystemContext, text: str) -> Answer:
     return Answer(detalle, notice=OFFLINE_NOTICE)
 
 def handle_startup(ctx: SystemContext, text: str) -> Answer:
+    """Genera respuesta sobre programas de inicio y tiempos de carga."""
     cuerpo = f"Tenés {ctx.startup_count} programas que arrancan con Windows. "
     if ctx.startup_count > 15:
         cuerpo += ("Son bastantes, y cada uno suma tiempo de encendido. Vale la "

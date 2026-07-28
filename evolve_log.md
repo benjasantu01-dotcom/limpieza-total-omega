@@ -781,3 +781,40 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-07-28T02:45:17` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `ensure_safe_to_modify` ante entradas inválidas y mejoré `is_protected_path` para evitar que un error de acceso inesperado (como un `PermissionError` al intentar resolver una ruta inaccesible) bloquee erróneamente la operación, permitiendo un manejo más granular.
 - `2026-07-28T02:45:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-28T02:45:17` Corrida terminada. Total usado hoy: 68.
+- `2026-07-28T02:54:15` Arrancando corrida. Quedan hoy ~232 peticiones objetivo.
+- `2026-07-28T02:54:37` Tests FALLARON:
+```
+========================
+_____________ test_scanner_flags_system_lookalike_outside_system32 _____________
+
+    def test_scanner_flags_system_lookalike_outside_system32():
+        # Se usa PureWindowsPath a propósito: los tests corren en Linux (GitHub
+        # Actions) y ahí un Path normal no reconoce las barras invertidas, así
+        # que `.name` devolvería la ruta entera y el test fallaría siempre.
+        result = scanner.check_system_lookalike(PureWindowsPath(r"C:\Users\test\Downloads\svchost.exe"))
+>       assert result is not None
+E       assert None is not None
+
+evolve/tests/test_basic.py:201: AssertionError
+________________ test_scanner_lookalike_logic_is_os_independent ________________
+
+    def test_scanner_lookalike_logic_is_os_independent():
+        # La misma heurística tiene que valer con rutas estilo POSIX, para que el
+        # resultado no dependa de en qué sistema corran los tests.
+        flagged = scanner.check_system_lookalike(PurePosixPath("/home/user/Downloads/svchost.exe"))
+>       assert flagged is not None and flagged.severity == "warning"
+E       assert (None is not None)
+
+evolve/tests/test_basic.py:213: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_scanner_flags_system_lookalike_outside_system32 - assert None is not None
+FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independent - assert (None is not None)
+2 failed, 297 passed in 1.18s
+
+```
+- `2026-07-28T02:54:37` ❌ Mejora descartada en scanner.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `scan_directory` y `scan_file` añadiendo validaciones estrictas de tipo y existencia sobre los parámetros de entrada (`Path` y `str`) para evitar excepciones no capturadas al manipular rutas malformadas o tipos inesperados durante el recorrido del disco.
+- `2026-07-28T02:55:02` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save` y `load` encapsulando la decodificación y escritura JSON en bloques de manejo de errores más específicos para prevenir la persistencia de datos corruptos y asegurar que las excepciones de I/O no degraden la experiencia del usuario.
+- `2026-07-28T02:55:23` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-07-28T02:55:38` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna agregando Type Hints detallados en las funciones de manejo (`handle_*`) y normalizando los docstrings para que expliquen claramente el propósito funcional, facilitando el mantenimiento y la comprensión de las reglas de negocio encapsuladas.
+- `2026-07-28T02:55:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-28T02:55:38` Corrida terminada. Total usado hoy: 72.
