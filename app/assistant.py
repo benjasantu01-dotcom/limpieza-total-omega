@@ -46,7 +46,7 @@ import re
 import math
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Final, TypeAlias
+from typing import Any, Final, TypeAlias, Callable
 
 import settings
 
@@ -127,13 +127,7 @@ _TIMEOUT_SECONDS: Final = 30
 _PATH_REGEX: Final = re.compile(r"([a-zA-Z]:\\|/|\\)")
 
 # Mapeo de intenciones del usuario (keywords) a funciones de respuesta locales
-_HANDLER_MAP: Final = {
-    "ram": "handle_ram", "memoria": "handle_ram", "lenta": "handle_ram", "lento": "handle_ram", "acelerar": "handle_ram",
-    "espacio": "handle_disk", "disco": "handle_disk", "lleno": "handle_disk", "recuperar": "handle_disk", "liberar": "handle_disk",
-    "seguro": "handle_security", "virus": "handle_security", "sospechos": "handle_security", "borrar": "handle_security", "peligro": "handle_security",
-    "puntaje": "handle_score", "salud": "handle_score", "nota": "handle_score", "score": "handle_score",
-    "inicio": "handle_startup", "arranque": "handle_startup", "arranca": "handle_startup", "encender": "handle_startup"
-}
+_HANDLER_MAP: dict[str, Callable[[SystemContext, str], Answer]] = {}
 
 @dataclass
 class SystemContext:
@@ -335,6 +329,14 @@ def handle_startup(ctx: SystemContext, text: str) -> Answer:
                 "cambio y te deja revertirlo.")
     return Answer(cuerpo, notice=OFFLINE_NOTICE)
 
+# Inicializar mapeo para evitar búsquedas dinámicas
+_HANDLER_MAP.update({
+    "ram": handle_ram, "memoria": handle_ram, "lenta": handle_ram, "lento": handle_ram, "acelerar": handle_ram,
+    "espacio": handle_disk, "disco": handle_disk, "lleno": handle_disk, "recuperar": handle_disk, "liberar": handle_disk,
+    "seguro": handle_security, "virus": handle_security, "sospechos": handle_security, "borrar": handle_security, "peligro": handle_security,
+    "puntaje": handle_score, "salud": handle_score, "nota": handle_score, "score": handle_score,
+    "inicio": handle_startup, "arranque": handle_startup, "arranca": handle_startup, "encender": handle_startup
+})
 
 def local_answer(question: str, context: SystemContext) -> Answer:
     """Responde con reglas locales, tras sanear el input."""
@@ -350,9 +352,9 @@ def local_answer(question: str, context: SystemContext) -> Answer:
             suggestions=SUGGESTED_QUESTIONS_LIST[:3],
         )
 
-    for keyword, handler_name in _HANDLER_MAP.items():
+    for keyword, handler in _HANDLER_MAP.items():
         if keyword in clean_text:
-            return globals()[handler_name](context, clean_text)
+            return handler(context, clean_text)
 
     problemas = _rank_problems(context)
     if problemas:
@@ -366,29 +368,22 @@ def local_answer(question: str, context: SystemContext) -> Answer:
 
 def _rank_problems(context: SystemContext) -> list[str]:
     """Problemas detectados, del más grave al más leve."""
-    problemas: list[tuple[int, str]] = []
+    problemas = []
 
     if context.disk_free_percent < 10:
-        problemas.append((0, f"queda solo {context.disk_free_percent:.0f}% de disco libre, "
-                             "atendelo primero (pestaña Disco y Limpieza)"))
+        problemas.append(f"queda solo {context.disk_free_percent:.0f}% de disco libre, atendelo primero (pestaña Disco y Limpieza)")
     if context.suspicious_warnings > 0:
-        problemas.append((1, f"{context.suspicious_warnings} archivo(s) sospechosos con "
-                             "advertencia (pestaña Seguridad)"))
+        problemas.append(f"{context.suspicious_warnings} archivo(s) sospechosos con advertencia (pestaña Seguridad)")
     if context.memory_available_percent < 15:
-        problemas.append((2, f"queda {context.memory_available_percent:.0f}% de RAM "
-                             "disponible (pestaña Memoria)"))
+        problemas.append(f"queda {context.memory_available_percent:.0f}% de RAM disponible (pestaña Memoria)")
     if context.junk_mb > 1000:
-        problemas.append((3, f"{context.junk_mb:.0f} MB de archivos basura "
-                             "(pestaña Limpieza)"))
+        problemas.append(f"{context.junk_mb:.0f} MB de archivos basura (pestaña Limpieza)")
     if context.duplicate_mb > 500:
-        problemas.append((4, f"{context.duplicate_mb:.0f} MB en duplicados "
-                             "(pestaña Duplicados)"))
+        problemas.append(f"{context.duplicate_mb:.0f} MB en duplicados (pestaña Duplicados)")
     if context.startup_count > 15:
-        problemas.append((5, f"{context.startup_count} programas de inicio "
-                             "(pestaña Inicio)"))
+        problemas.append(f"{context.startup_count} programas de inicio (pestaña Inicio)")
 
-    problemas.sort(key=lambda par: par[0])
-    return [texto for _, texto in problemas]
+    return problemas
 
 
 def available(base: str | Path | None = None) -> bool:

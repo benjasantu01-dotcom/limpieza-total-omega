@@ -106,8 +106,13 @@ def check_system_lookalike(path: Path) -> Optional[Suspicion]:
 
 def scan_file(path: Path) -> List[Suspicion]:
     """
-    Aplica todos los chequeos heurísticos disponibles sobre una ruta de archivo.
-    Retorna una lista de hallazgos sospechosos encontrados.
+    Ejecuta el conjunto de reglas heurísticas sobre una ruta dada.
+    
+    Args:
+        path: Objeto Path del archivo a inspeccionar.
+        
+    Returns:
+        Lista de objetos Suspicion con las alertas encontradas.
     """
     if path is None or is_protected_path(path):
         return []
@@ -138,8 +143,14 @@ def scan_file(path: Path) -> List[Suspicion]:
 
 def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
     """
-    Recorre el sistema de archivos de forma iterativa (evitando recursión profunda).
-    Ignora puntos de reparse para evitar bucles infinitos en el sistema de archivos.
+    Recorre el directorio de forma iterativa, aplicando escaneo heurístico.
+    No sigue enlaces simbólicos ni puntos de reparse para evitar bucles.
+    
+    Args:
+        directory: Ruta raíz donde comenzar el escaneo.
+        
+    Returns:
+        Lista completa de hallazgos en toda la sub-estructura.
     """
     if not directory:
         return []

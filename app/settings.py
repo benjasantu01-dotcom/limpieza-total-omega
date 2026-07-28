@@ -102,7 +102,7 @@ _NUMERIC_LIMITS: Final = {
 
 
 def _coerce_bool(valor: Any) -> bool | None:
-    """Intenta convertir un valor a booleano; retorna None si no es compatible."""
+    """Intenta convertir un valor a booleano; acepta strings representativos."""
     if isinstance(valor, bool):
         return valor
     if isinstance(valor, str):
@@ -112,8 +112,8 @@ def _coerce_bool(valor: Any) -> bool | None:
 
 def _coerce_int(valor: Any, clave: str) -> int | None:
     """
-    Intenta convertir un valor a entero aplicando límites definidos en _NUMERIC_LIMITS.
-    Retorna None si la conversión falla o el tipo no es convertible.
+    Convierte a entero y asegura que el resultado esté dentro del rango permitido
+    por _NUMERIC_LIMITS, evitando desbordamientos o configuraciones absurdas.
     """
     try:
         numero = int(valor)
@@ -123,10 +123,10 @@ def _coerce_int(valor: Any, clave: str) -> int | None:
         return None
 
 
-def _validate_str(clave: str, valor: str | Any) -> str | None:
+def _validate_str(clave: str, valor: Any) -> str | None:
     """
-    Valida cadenas según el contexto (temas, acentos o rutas de sistema).
-    Retorna None si el valor viola restricciones de seguridad o integridad.
+    Valida cadenas. Si la clave requiere validación de seguridad (ej. rutas)
+    o de enum (ej. temas), verifica contra las reglas del proyecto antes de retornar.
     """
     if not isinstance(valor, str):
         return None
@@ -148,8 +148,8 @@ def _validate_str(clave: str, valor: str | Any) -> str | None:
 
 def _apply_validation_by_type(clave: str, valor: Any, defecto: Any) -> Any:
     """
-    Despacha la validación de un valor basándose en el tipo del valor por defecto.
-    Retorna el valor validado o None si el valor no puede ser saneado.
+    Función dispatch que determina la estrategia de validación según el tipo
+    del valor por defecto esperado. Es el núcleo de la resiliencia ante datos corruptos.
     """
     if valor is None:
         return None
@@ -163,7 +163,7 @@ def _apply_validation_by_type(clave: str, valor: Any, defecto: Any) -> Any:
 
 
 def settings_path(base: str | Path | None = None) -> Path:
-    """Determina la ruta absoluta del archivo de configuración final."""
+    """Resuelve la ubicación final del archivo de configuración (soporta rutas relativas/home)."""
     if base is not None:
         carpeta = Path(base)
     else:
@@ -173,8 +173,9 @@ def settings_path(base: str | Path | None = None) -> Path:
 
 def validate(values: Any) -> dict[str, Any]:
     """
-    Aplica una sanitización profunda a un objeto diccionario externo.
-    Para cada clave, asegura que el tipo coincida con DEFAULTS.
+    Crea un diccionario nuevo basado en DEFAULTS, poblándolo únicamente con
+    valores válidos encontrados en la entrada `values`. Garantiza que el retorno
+    sea siempre un objeto completo y seguro.
     """
     limpio = dict(DEFAULTS)
     if not isinstance(values, dict):
@@ -190,7 +191,7 @@ def validate(values: Any) -> dict[str, Any]:
 
 
 def load(base: str | Path | None = None) -> dict[str, Any]:
-    """Carga y valida la configuración desde disco o retorna DEFAULTS."""
+    """Carga configuración desde disco con caché inteligente o retorna defaults ante error."""
     global _cached_settings, _last_base, _last_mtime
     
     ruta = settings_path(base)
@@ -213,7 +214,10 @@ def load(base: str | Path | None = None) -> dict[str, Any]:
 
 
 def save(values: Any, base: str | Path | None = None) -> Path | None:
-    """Guarda valores validados en el sistema de archivos de forma atómica."""
+    """
+    Persiste la configuración de forma atómica usando un archivo temporal.
+    Verifica seguridad de escritura antes de realizar cualquier operación.
+    """
     global _cached_settings, _last_mtime
     ruta = settings_path(base)
     temp_name = None
@@ -245,7 +249,7 @@ def save(values: Any, base: str | Path | None = None) -> Path | None:
 
 
 def update(changes: dict[str, Any], base: str | Path | None = None) -> dict[str, Any]:
-    """Combina cambios parciales con el estado actual y persiste el resultado."""
+    """Aplica cambios parciales y guarda el nuevo estado completo."""
     actual = load(base).copy()
     if isinstance(changes, dict):
         actual.update(changes)
@@ -255,7 +259,7 @@ def update(changes: dict[str, Any], base: str | Path | None = None) -> dict[str,
 
 
 def reset(base: str | Path | None = None) -> dict[str, Any]:
-    """Restaura los valores de configuración a los de fábrica."""
+    """Sobrescribe el archivo de configuración con los valores por defecto."""
     global _cached_settings
     limpio = dict(DEFAULTS)
     save(limpio, base)
@@ -264,12 +268,12 @@ def reset(base: str | Path | None = None) -> dict[str, Any]:
 
 
 def get(key: str, base: str | Path | None = None) -> Any:
-    """Obtiene una preferencia individual con respaldo en DEFAULTS."""
+    """Recupera el valor de una clave específica desde la configuración cargada."""
     return load(base).get(key, DEFAULTS.get(key))
 
 
 def assistant_api_key(base: str | Path | None = None) -> str:
-    """Extrae la clave API (prioridad: variable de entorno -> archivo config)."""
+    """Obtiene la API key (prioridad: variable de entorno -> archivo de configuración)."""
     desde_entorno = os.environ.get(API_KEY_ENV_VAR, "").strip()
     if desde_entorno:
         return desde_entorno
@@ -279,13 +283,13 @@ def assistant_api_key(base: str | Path | None = None) -> str:
 
 
 def assistant_enabled(base: str | Path | None = None) -> bool:
-    """Verifica si el asistente está habilitado por usuario y posee clave."""
+    """Valida si el asistente puede operar (debe estar activado y poseer una key válida)."""
     config = load(base)
     return bool(config.get("asistente_activado")) and bool(assistant_api_key(base))
 
 
 def describe(base: str | Path | None = None) -> list[str]:
-    """Genera un reporte textual de la configuración activa para el usuario."""
+    """Genera una vista humana de la configuración para propósitos de reporte/debug."""
     actual = load(base)
     clave = assistant_api_key(base)
     origen_clave = (

@@ -20,7 +20,7 @@ import os
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, Optional, Iterator, List, Tuple, Dict
+from typing import Iterable, Optional, Iterator, List, Tuple, Dict, Sequence
 
 __all__ = [
     "StartupEntry",
@@ -62,7 +62,11 @@ class StartupEntry:
     @property
     def executable(self) -> str:
         """
-        Extrae la ruta base del ejecutable a partir de la línea de comando.
+        Extrae la ruta del archivo ejecutable saneando la línea de comando.
+        
+        El proceso identifica rutas entrecomilladas eliminando los delimitadores
+        o toma el primer argumento de la línea. Valida la existencia o extensión
+        para asegurar que el resultado sea un binario ejecutable.
         
         Ejemplos:
         - '"C:\Program Files\App.exe" /s' -> 'C:\Program Files\App.exe'
@@ -98,7 +102,7 @@ def startup_folders() -> List[Path]:
     return [c for c in candidates if c.is_dir()]
 
 
-def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> List[StartupEntry]:
+def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[StartupEntry]:
     """
     Escanea carpetas en busca de ejecutables o accesos directos.
 
@@ -207,9 +211,9 @@ def list_startup_entries() -> List[StartupEntry]:
     return unique_entries
 
 
-def estimate_impact(entries: Iterable[StartupEntry]) -> str:
+def estimate_impact(entries: Sequence[StartupEntry]) -> str:
     """Clasifica el impacto en el rendimiento basándose en umbrales de cantidad."""
-    count = sum(1 for _ in (entries or []))
+    count = len(entries)
     # Umbrales ordenados para determinar el nivel de criticidad
     thresholds = [(5, "ok"), (10, "info"), (18, "warning")]
     for limit, label in thresholds:
@@ -218,9 +222,9 @@ def estimate_impact(entries: Iterable[StartupEntry]) -> str:
     return "danger"
 
 
-def summarize(entries: Optional[Iterable[StartupEntry]] = None) -> List[str]:
+def summarize(entries: Optional[Sequence[StartupEntry]] = None) -> List[str]:
     """Genera un informe legible y estructurado de los programas de inicio detectados."""
-    entries_list: List[StartupEntry] = entries if entries is not None else list_startup_entries()
+    entries_list: Sequence[StartupEntry] = entries if entries is not None else list_startup_entries()
     total_count: int = len(entries_list)
         
     lines: List[str] = [f"Programas que arrancan con el sistema: {total_count}"]
