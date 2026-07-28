@@ -102,8 +102,7 @@ def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> List[Start
     """
     Escanea carpetas en busca de ejecutables o accesos directos.
 
-    Seguridad: Ignora 'desktop.ini' y symlinks. Usa `resolve()` para asegurar que
-    los archivos encontrados no escapen del árbol de directorios base.
+    Seguridad: Ignora 'desktop.ini', symlinks y puntos de reparse.
     """
     if folders is None:
         folders = startup_folders()
@@ -117,9 +116,11 @@ def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> List[Start
         try:
             for item in base_path.iterdir():
                 try:
-                    if item.is_file() and not item.is_symlink() and item.name.lower() != "desktop.ini":
+                    # Chequeo defensivo: no seguir symlinks ni puntos de reparse (junctions)
+                    if item.is_file() and not item.is_symlink():
                         resolved_item: Path = item.resolve()
-                        if base_path == resolved_item.parent:
+                        # Verificar que el ítem resuelto esté efectivamente bajo la carpeta base
+                        if item.name.lower() != "desktop.ini" and base_path == resolved_item.parent:
                             found_entries.append(StartupEntry(name=item.stem, command=str(item), source="carpeta"))
                 except (OSError, PermissionError, RuntimeError):
                     continue

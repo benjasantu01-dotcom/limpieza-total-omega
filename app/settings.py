@@ -214,7 +214,9 @@ def save(values: Any, base: str | Path | None = None) -> Path | None:
     ruta = settings_path(base)
     
     try:
+        # Validar directorio antes de cualquier operación de escritura
         ensure_safe_to_modify(str(ruta.parent))
+        
         limpio = validate(values)
         json_data = json.dumps(limpio, indent=2, ensure_ascii=False)
         
