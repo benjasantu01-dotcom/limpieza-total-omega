@@ -1317,3 +1317,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-07-28T09:44:40` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-07-28T09:44:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-28T09:44:40` Corrida terminada. Total usado hoy: 232.
+- `2026-07-28T09:53:36` Arrancando corrida. Quedan hoy ~68 peticiones objetivo.
+- `2026-07-28T09:54:00` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-07-28T09:54:22` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se añadió la validación de integridad mediante `resolve()` y `is_relative_to` en las funciones de escaneo, garantizando que no se procesen rutas que hayan escapado del contexto de seguridad o que contengan manipulaciones de directorio (traversal).
+- `2026-07-28T09:54:47` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se endureció la validación de seguridad en `settings_path` y `_validate_str` para evitar inyecciones de rutas o acceso a directorios prohibidos mediante la resolución absoluta de la ruta antes de cualquier operación de I/O.
+- `2026-07-28T09:54:54` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: seguridad defensiva).
+- `2026-07-28T09:54:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-28T09:54:54` Corrida terminada. Total usado hoy: 236.

@@ -137,7 +137,7 @@ def _validate_str(clave: str, valor: Any) -> str | None:
         return None
     if clave == "ultima_carpeta" and texto:
         try:
-            ruta_candidata = Path(texto).expanduser().resolve()
+            ruta_candidata = Path(texto).expanduser().resolve(strict=False)
             if not is_safe_to_modify(str(ruta_candidata)):
                 return None
             return str(ruta_candidata)
@@ -165,9 +165,9 @@ def _apply_validation_by_type(clave: str, valor: Any, defecto: Any) -> Any:
 def settings_path(base: str | Path | None = None) -> Path:
     """Resuelve la ubicación final del archivo de configuración (soporta rutas relativas/home)."""
     if base is not None:
-        carpeta = Path(base)
+        carpeta = Path(base).expanduser().resolve()
     else:
-        carpeta = Path(SETTINGS_DIR).expanduser()
+        carpeta = Path(SETTINGS_DIR).expanduser().resolve()
     return carpeta / SETTINGS_FILE
 
 
@@ -238,7 +238,7 @@ def save(values: Any, base: str | Path | None = None) -> Path | None:
                 tf.write(json_data)
             os.replace(temp_name, ruta)
         except Exception:
-            if os.path.exists(temp_name):
+            if temp_name and os.path.exists(temp_name):
                 os.remove(temp_name)
             raise
         
@@ -255,7 +255,8 @@ def update(changes: dict[str, Any], base: str | Path | None = None) -> dict[str,
     actual = load(base).copy()
     if isinstance(changes, dict):
         actual.update(changes)
-    return save(actual, base) and actual or actual
+    save(actual, base)
+    return actual
 
 
 def reset(base: str | Path | None = None) -> dict[str, Any]:

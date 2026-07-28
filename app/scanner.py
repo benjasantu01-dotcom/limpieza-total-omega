@@ -107,18 +107,13 @@ def check_system_lookalike(path: Path) -> Optional[Suspicion]:
 def scan_file(path: Path) -> List[Suspicion]:
     """
     Ejecuta el conjunto de reglas heurísticas sobre una ruta dada.
-    
-    Args:
-        path: Objeto Path del archivo a inspeccionar.
-        
-    Returns:
-        Lista de objetos Suspicion con las alertas encontradas.
     """
-    if path is None or is_protected_path(path):
-        return []
-    
+    # Validar integridad: la ruta resuelta no debe ser protegida
     try:
-        if not path.is_file():
+        resolved_path = path.resolve(strict=False)
+        if resolved_path is None or is_protected_path(resolved_path):
+            return []
+        if not resolved_path.is_file():
             return []
     except (OSError, PermissionError):
         return []
@@ -132,7 +127,7 @@ def scan_file(path: Path) -> List[Suspicion]:
     
     for check_func in checks:
         try:
-            res = check_func(path)
+            res = check_func(resolved_path)
             if res: 
                 results.append(res)
         except Exception:
@@ -163,15 +158,15 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
                 with os.scandir(current_dir) as it:
                     for entry in it:
                         try:
-                            # Verificamos tipo antes de convertir a Path completo
+                            # Verificamos tipo y seguridad contra traversal
                             if entry.is_dir(follow_symlinks=False):
                                 if not _is_reparse_point(entry):
                                     stack.append(entry.path)
                             elif entry.is_file():
-                                entry_path = Path(entry.path)
-                                if not is_protected_path(entry_path):
+                                entry_path = Path(entry.path).resolve()
+                                if not is_protected_path(entry_path) and entry_path.is_relative_to(root):
                                     results.extend(scan_file(entry_path))
-                        except (PermissionError, OSError):
+                        except (PermissionError, OSError, ValueError):
                             continue
             except (PermissionError, OSError, FileNotFoundError):
                 continue
@@ -184,7 +179,6 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
 def run_windows_defender_quick_scan() -> str:
     """
     Invoca PowerShell para ejecutar un QuickScan de Windows Defender.
-    Retorna el resultado de la salida estándar o un mensaje de error.
     """
     try:
         result = subprocess.run(
