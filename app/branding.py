@@ -214,8 +214,10 @@ def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
 def gradient_colors(steps: int, stops: tuple[HexColor, ...] = GRADIENT_STOPS) -> list[HexColor]:
     """Genera una lista interpolada de colores recorriendo las paradas."""
     cantidad = max(1, int(steps))
+    if not stops:
+        return [PALETTE["accent"]] * cantidad
     if len(stops) < 2:
-        return [stops[0] if stops else PALETTE["accent"]] * cantidad
+        return [stops[0]] * cantidad
     tramos = len(stops) - 1
     salida: list[HexColor] = []
     for i in range(cantidad):
@@ -252,7 +254,7 @@ def logo_svg(size: int = 128) -> str:
 """
 
 
-def save_logo_svg(destination: str | Path) -> Path | None:
+def save_logo_svg(destination: str | Path | None) -> Path | None:
     """Persiste el logo en disco tras validar seguridad."""
     if not destination: return None
     try:
@@ -292,21 +294,20 @@ def draw_logo(canvas: Any, size: int = 56, x: int = 0, y: int = 0) -> None:
     """Renderiza el logo en un widget canvas de Tkinter."""
     if canvas is None or not hasattr(canvas, "create_polygon"): return
     try:
-        s = float(size) / 128
-        x, y = float(x), float(y)
-        if s <= 0: s = 0.4375 
+        s = max(0.1, float(size) / 128)
+        x_val, y_val = float(x), float(y)
     except (TypeError, ValueError): return
 
     def pts(*coords: float) -> list[float]:
-        return [x + c * s if i % 2 == 0 else y + c * s for i, c in enumerate(coords)]
+        return [x_val + c * s if i % 2 == 0 else y_val + c * s for i, c in enumerate(coords)]
 
     try:
         if hasattr(canvas, "create_oval"):
             for paso in range(4, 0, -1):
                 radio = 56 * s * (0.6 + paso * 0.12)
                 canvas.create_oval(
-                    x + 64 * s - radio, y + 58 * s - radio,
-                    x + 64 * s + radio, y + 58 * s + radio,
+                    x_val + 64 * s - radio, y_val + 58 * s - radio,
+                    x_val + 64 * s + radio, y_val + 58 * s + radio,
                     fill=blend(PALETTE["surface"], PALETTE["glow"], 0.04 * paso),
                     outline="",
                 )
@@ -316,13 +317,13 @@ def draw_logo(canvas: Any, size: int = 56, x: int = 0, y: int = 0) -> None:
         colores = gradient_colors(franjas)
         alto = 92 * s / franjas
         for i, tono in enumerate(colores):
-            arriba = y + 18 * s + i * alto
+            arriba = y_val + 18 * s + i * alto
             avance = i / max(1, franjas - 1)
             medio_ancho = 36 * s * (1.0 if avance < 0.55 else 1.0 - (avance - 0.55) * 1.9)
             if medio_ancho > 0 and hasattr(canvas, "create_rectangle"):
                 canvas.create_rectangle(
-                    x + 64 * s - medio_ancho, arriba,
-                    x + 64 * s + medio_ancho, arriba + alto + 1,
+                    x_val + 64 * s - medio_ancho, arriba,
+                    x_val + 64 * s + medio_ancho, arriba + alto + 1,
                     fill=tono, outline="",
                 )
         canvas.create_line(

@@ -174,6 +174,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         return isinstance(val, (int, float)) and math.isfinite(val)
 
     def obtener_val(obj: Any, nombre: str, tipo: type, defecto: Any) -> Any:
+        if obj is None: return defecto
         try:
             val = getattr(obj, nombre, defecto)
             if not es_num_valido(val) and tipo in (int, float): return defecto
@@ -181,7 +182,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         except (TypeError, ValueError, AttributeError):
             return defecto
 
-    if metrics is not None:
+    if metrics is not None and isinstance(metrics, object):
         contexto.junk_mb = float(obtener_val(metrics, "junk_mb", float, 0.0))
         contexto.suspicious_count = int(obtener_val(metrics, "suspicious_count", int, 0))
         contexto.suspicious_warnings = int(obtener_val(metrics, "suspicious_warnings", int, 0))
@@ -192,7 +193,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         contexto.quarantined_count = int(obtener_val(metrics, "quarantined_count", int, 0))
         contexto.analyzed = True
 
-    if health is not None:
+    if health is not None and isinstance(health, object):
         score_val = obtener_val(health, "score", int, 0)
         contexto.score = max(0, min(int(score_val), 100))
         grado = getattr(health, "grade", "")

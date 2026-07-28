@@ -184,11 +184,11 @@ def detect_profiles(
     if cache_paths is None:
         cache_paths = BROWSER_CACHE_PATHS
 
-    found: List[BrowserCache] = []
-    
-    if not isinstance(bases, (list, tuple)):
+    if not isinstance(bases, (list, tuple)) or not isinstance(cache_paths, dict):
         return []
 
+    found: List[BrowserCache] = []
+    
     for base in bases:
         if not isinstance(base, Path) or not base.is_dir() or is_protected_path(base):
             continue
@@ -225,6 +225,10 @@ def total_cache_bytes(caches: Iterable[BrowserCache] | None = None) -> int:
     if caches is None:
         directory_size.cache_clear()
         caches = detect_profiles()
+    
+    if not isinstance(caches, (list, tuple)):
+        return 0
+
     return sum(cache.size_bytes for cache in caches)
 
 
@@ -234,6 +238,8 @@ def summarize(caches: List[BrowserCache] | None = None) -> List[str]:
         directory_size.cache_clear()
         current_caches = detect_profiles()
     else:
+        if not isinstance(caches, list):
+            return ["Error: Formato de datos de caché inválido."]
         current_caches = caches
     
     if not current_caches:

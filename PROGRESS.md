@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **221** (43.8% de aceptación)
+- Mejoras aceptadas: **220** (43.7% de aceptación)
 - Rechazadas por tests: 20
 - Rechazadas por guardia de seguridad: 28
 - Sin cambios (nada sustancial que mejorar): 6
-- Sin respuesta de la IA (error o límite): 229
+- Sin respuesta de la IA (error o límite): 230
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-27 | 152 | 16 | 19 | 3 | 154 |
-| 2026-07-28 | 69 | 4 | 9 | 3 | 75 |
+| 2026-07-27 | 148 | 16 | 19 | 3 | 154 |
+| 2026-07-28 | 72 | 4 | 9 | 3 | 76 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **60**
+- legibilidad y documentación: **57**
 - seguridad defensiva: **49**
-- manejo de errores y validación de entradas: **39**
-- rendimiento: **37**
+- manejo de errores y validación de entradas: **42**
+- rendimiento: **36**
 - robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
+- `assistant.py`: **21**
 - `diskreport.py`: **20**
-- `assistant.py`: **20**
-- `browser.py`: **18**
+- `browser.py`: **19**
 - `organizer.py`: **18**
 - `settings.py`: **18**
-- `scanner.py`: **17**
 - `healthscore.py`: **17**
-- `safety.py`: **16**
-- `startup.py`: **15**
+- `scanner.py`: **16**
+- `safety.py`: **15**
 - `duplicates.py`: **15**
 - `main.py`: **15**
 - `quarantine.py`: **14**
+- `startup.py`: **14**
 - `branding.py`: **9**
 - `memory.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-28T06:51:42` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `detect_profiles` y `summarize` implementando una validación exhaustiva de tipos y estados para los parámetros opcionales (`bases` y `cache_paths`), previniendo errores de ejecución ante entradas mal formadas o nulas.
+- `2026-07-28T06:51:34` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y `draw_logo` validando explícitamente parámetros críticos y manejando fallos de ejecución sin interrumpir el flujo visual de la aplicación.
+- `2026-07-28T06:51:05` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `build_context` al añadir una validación de tipo más estricta para `metrics` y `health`, previniendo errores de `AttributeError` si se pasan objetos inesperados, y asegurando que las conversiones numéricas no fallen silenciosamente ante datos malformados.
 - `2026-07-28T05:28:48` **startup.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `entries_from_folders` añadiendo una validación explícita para asegurar que el archivo detectado no sea un "punto de reparse" (junction o symbolic link a directorios fuera del árbol esperado), previniendo así posibles ataques de escalada o desbordamiento de contexto al procesar archivos del sistema.
 - `2026-07-28T05:28:25` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad en la persistencia del archivo de configuración asegurando que la creación del directorio base sea validada mediante `ensure_safe_to_modify` antes de cualquier operación de escritura, previniendo que la aplicación cree estructuras de directorios fuera de los límites permitidos.
 - `2026-07-28T05:27:59` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez de `scan_file` y las funciones de chequeo individual asegurando que el acceso a `path.stat()` y `path.exists()` esté protegido ante rutas que fueron eliminadas o modificadas durante la ejecución del bucle, mitigando condiciones de carrera.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-28T04:58:20` **browser.py** (seguridad defensiva): Reforcé la seguridad defensiva en `directory_size` para impedir el seguimiento de enlaces simbólicos (junctions o symlinks) mediante `entry.is_symlink()` y una verificación explícita de `is_protected_path`, evitando que el escáner salga accidentalmente del ámbito seguro o se quede atrapado en bucles de recursión infinita.
 - `2026-07-28T04:57:57` **branding.py** (seguridad defensiva): Se ha mejorado `save_logo_svg` para prevenir una posible condición de carrera entre la validación de seguridad y la escritura, utilizando un chequeo preventivo más estricto y asegurando que la creación del directorio padre también sea sometida a validación de seguridad.
 - `2026-07-28T04:57:29` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_call_gemini` aplicando `ensure_safe_to_modify` indirectamente mediante el filtrado de rutas y validación estricta de la estructura del JSON devuelto, asegurando que cualquier intento de inyección o respuesta maliciosa con patrones de ruta sea descartado antes de que el asistente procese la respuesta.
-- `2026-07-28T04:48:07` **startup.py** (robustez ante casos límite): Se añadió una validación robusta en `executable` para capturar rutas de registro que contienen argumentos mal formados o mal citados, evitando que el extractor devuelva fragmentos de comandos como si fueran archivos existentes.
-- `2026-07-28T04:47:59` **settings.py** (robustez ante casos límite): Mejoré la robustez de `save()` ante condiciones de carrera y fallos de permisos al utilizar un archivo temporal para la escritura atómica, asegurando que el archivo de configuración nunca quede corrupto o truncado si el proceso es interrumpido.
-- `2026-07-28T04:47:35` **scanner.py** (robustez ante casos límite): Mejoré la robustez de `scan_file` añadiendo una validación de existencia `path.exists()` antes de realizar operaciones de acceso (como `stat()`), evitando excepciones innecesarias ante archivos que desaparecen durante el recorrido.
