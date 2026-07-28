@@ -853,3 +853,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-07-28T03:46:39` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del score reemplazando el diccionario de lambdas por llamadas directas a funciones, eliminando la sobrecarga de instanciar objetos temporales y delegar la ejecución en cada ciclo.
 - `2026-07-28T03:46:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-28T03:46:39` Corrida terminada. Total usado hoy: 92.
+- `2026-07-28T03:55:34` Arrancando corrida. Quedan hoy ~208 peticiones objetivo.
+- `2026-07-28T03:56:30` ➖ Sin cambios en main.py (enfoque: rendimiento). Motivo: Optimicé el método `on_full_analysis` para evitar el re-procesamiento innecesario del estado de los duplicados durante el análisis de salud, utilizando el atributo de instancia existente `self.duplicate_groups` en lugar de una lógica que, de ser omitida, resultaba en un re-cálculo de bytes redundante.
+- `2026-07-28T03:56:53` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: rendimiento).
+- `2026-07-28T03:57:15` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimizé la lógica de filtrado en `scan_for_junk` reemplazando la llamada repetida a `endswith(tuple(...))` por una verificación de conjunto (`in`) en la extensión, aprovechando el conjunto `_LOWER_JUNK_EXTS` ya precalculado, lo que reduce la carga computacional durante el recorrido de directorios.
+- `2026-07-28T03:57:25` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimizé `total_quarantined_bytes` y `summarize` para evitar múltiples lecturas y deserializaciones del manifiesto mediante el uso del caché `_manifest_cache` que ya existía, reduciendo significativamente la sobrecarga de I/O en llamadas repetidas.
+- `2026-07-28T03:57:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-28T03:57:25` Corrida terminada. Total usado hoy: 96.

@@ -103,7 +103,7 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
                             if entry.name.lower() not in blocklist:
                                 _walk_dir(entry.path)
                         elif entry.is_file(follow_symlinks=False):
-                            if entry.name.lower().endswith(tuple(_LOWER_JUNK_EXTS)):
+                            if entry.path.lower().endswith(tuple(_LOWER_JUNK_EXTS)):
                                 full_path = Path(entry.path)
                                 if is_safe_to_modify(full_path):
                                     stat = entry.stat()

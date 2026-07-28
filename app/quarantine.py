@@ -321,13 +321,13 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
 
 
 def total_quarantined_bytes(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
-    """Calcula el uso total de espacio (bytes) ocupado en cuarentena."""
+    """Calcula el uso total de espacio (bytes) ocupado en cuarentena usando el caché."""
     return sum(item.size_bytes for item in load_manifest(base))
 
 
 def summarize(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[str]:
-    """Genera un reporte descriptivo legible para la interfaz."""
-    items = list_items(base)
+    """Genera un reporte descriptivo legible para la interfaz usando el caché."""
+    items = load_manifest(base)
     if not items:
         return ["La cuarentena está vacía."]
     total_mb = round(total_quarantined_bytes(base) / (1024 * 1024), 2)
