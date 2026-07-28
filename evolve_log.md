@@ -1205,3 +1205,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-07-28T08:12:36` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé `group_by_size` y `_collect_candidates` para evitar llamadas redundantes a `is_protected_path` y `stat` dentro de los bucles, mejorando la eficiencia en recorridos de disco extensos.
 - `2026-07-28T08:12:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-28T08:12:36` Corrida terminada. Total usado hoy: 196.
+- `2026-07-28T08:21:30` Arrancando corrida. Quedan hoy ~104 peticiones objetivo.
+- `2026-07-28T08:21:54` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
+- `2026-07-28T08:22:54` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Se optimizó el rendimiento del panel de Salud sustituyendo la creación de hilos innecesarios en `on_full_analysis` por una ejecución eficiente dentro de un único hilo de tarea, evitando el overhead de gestión de múltiples futuros y permitiendo que la interfaz responda mejor al no saturar el `ThreadPoolExecutor`.
+- `2026-07-28T08:23:17` ➖ Sin cambios en memory.py (enfoque: rendimiento). Motivo: Optimicé el rendimiento de `parse_windows_process_csv` reemplazando la creación de una lista intermedia mediante `list()` por el consumo directo del generador en `sorted()`, evitando la asignación innecesaria de memoria antes de realizar el ordenamiento y filtrado.
+- `2026-07-28T08:23:23` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-07-28T08:23:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-28T08:23:23` Corrida terminada. Total usado hoy: 200.

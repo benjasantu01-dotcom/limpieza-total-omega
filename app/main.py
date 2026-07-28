@@ -27,9 +27,9 @@ texto, porque el objetivo es que el estado del sistema se entienda sin leer.
 
 RENDIMIENTO
 ------------------
-Los análisis del panel de Salud se lanzan en paralelo (`ThreadPoolExecutor`):
-son todos independientes y dominados por espera de disco, así que en conjunto
-tardan lo que el más lento en vez de la suma de todos.
+Los análisis del panel de Salud se consolidan en una única ejecución asíncrona
+para minimizar el overhead de hilos y garantizar la coherencia de los datos
+que consume el asistente.
 
 Instalar dependencias:
     pip install customtkinter
@@ -806,33 +806,21 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     # ------------------------------------------------------------------
 
     def on_full_analysis(self):
-        """Ejecuta todos los análisis de salud en paralelo y calcula métricas."""
+        """Ejecuta todos los análisis de salud de forma eficiente."""
         def task():
-            self.set_status("Analizando el sistema en paralelo (solo lectura)...")
+            self.set_status("Analizando el sistema...")
             self.clear("Salud")
             self.log("Analizando... esto no modifica nada.", "Salud")
 
-            def medir_basura():
-                archivos = scan_for_junk()
-                return sum(j.size_bytes for j in archivos) / (1024 * 1024)
+            # Ejecución síncrona dentro del hilo worker para evitar overhead de futuros
+            descargas = os.path.expanduser("~/Downloads")
+            hallazgos = scan_directory(descargas) if os.path.isdir(descargas) else []
+            snapshot = memory_mod.read_snapshot()
+            unidad = diskreport.drive_usage(os.path.expanduser("~"))
+            arranque = startup_mod.list_startup_entries()
+            junk_files = scan_for_junk()
 
-            def medir_sospechosos():
-                descargas = os.path.expanduser("~/Downloads")
-                return scan_directory(descargas) if os.path.isdir(descargas) else []
-
-            # Usamos self._executor pre-instanciado en __init__
-            f_basura = self._executor.submit(medir_basura)
-            f_sospechosos = self._executor.submit(medir_sospechosos)
-            f_memoria = self._executor.submit(memory_mod.read_snapshot)
-            f_disco = self._executor.submit(diskreport.drive_usage, os.path.expanduser("~"))
-            f_arranque = self._executor.submit(startup_mod.list_startup_entries)
-
-            junk_mb = f_basura.result()
-            hallazgos = f_sospechosos.result()
-            snapshot = f_memoria.result()
-            unidad = f_disco.result()
-            arranque = f_arranque.result()
-
+            junk_mb = sum(j.size_bytes for j in junk_files) / (1024 * 1024)
             advertencias = sum(1 for h in hallazgos if h.severity == "warning")
             libre_pct = (unidad.free / unidad.total * 100) if unidad and unidad.total else 100.0
             en_cuarentena = quarantine.list_items()

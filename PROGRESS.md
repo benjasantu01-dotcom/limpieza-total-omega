@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **243** (48.2% de aceptación)
+- Mejoras aceptadas: **242** (48.0% de aceptación)
 - Rechazadas por tests: 20
-- Rechazadas por guardia de seguridad: 30
-- Sin cambios (nada sustancial que mejorar): 6
-- Sin respuesta de la IA (error o límite): 205
+- Rechazadas por guardia de seguridad: 29
+- Sin cambios (nada sustancial que mejorar): 7
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-27 | 142 | 16 | 19 | 3 | 128 |
-| 2026-07-28 | 101 | 4 | 11 | 3 | 77 |
+| 2026-07-27 | 140 | 16 | 18 | 3 | 127 |
+| 2026-07-28 | 102 | 4 | 11 | 4 | 79 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **71**
-- manejo de errores y validación de entradas: **49**
 - seguridad defensiva: **49**
-- rendimiento: **38**
+- manejo de errores y validación de entradas: **47**
+- rendimiento: **39**
 - robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
@@ -37,15 +37,16 @@ Este archivo se regenera solo en cada corrida a partir de
 - `duplicates.py`: **18**
 - `healthscore.py`: **18**
 - `scanner.py`: **18**
-- `safety.py`: **17**
-- `main.py`: **17**
-- `quarantine.py`: **16**
+- `main.py`: **18**
+- `safety.py`: **16**
 - `startup.py`: **16**
+- `quarantine.py`: **15**
 - `memory.py`: **11**
 - `branding.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-28T08:22:54` **main.py** (rendimiento): Se optimizó el rendimiento del panel de Salud sustituyendo la creación de hilos innecesarios en `on_full_analysis` por una ejecución eficiente dentro de un único hilo de tarea, evitando el overhead de gestión de múltiples futuros y permitiendo que la interfaz responda mejor al no saturar el `ThreadPoolExecutor`.
 - `2026-07-28T08:12:36` **duplicates.py** (rendimiento): Optimizé `group_by_size` y `_collect_candidates` para evitar llamadas redundantes a `is_protected_path` y `stat` dentro de los bucles, mejorando la eficiencia en recorridos de disco extensos.
 - `2026-07-28T08:12:29` **diskreport.py** (rendimiento): Optimizé la función `walk_files` para evitar múltiples llamadas a `lstat()` y `is_symlink()` mediante el uso de `os.scandir`, lo cual reduce drásticamente las llamadas al sistema y mejora la performance del escaneo.
 - `2026-07-28T08:12:05` **browser.py** (rendimiento): Optimicé el rendimiento de `directory_size` utilizando `os.scandir` para obtener atributos de archivo (como `st_size` e `is_dir`) directamente en la llamada al sistema inicial, evitando realizar llamadas redundantes a `entry.is_dir()` y `entry.stat().st_size` por separado, y eliminé redundancias en el cálculo de `total_cache_bytes`.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-28T07:42:18` **main.py** (legibilidad y documentación): Se introdujeron type hints en los métodos de construcción de la interfaz y se renombraron variables internas en los constructores de pestañas para aclarar su propósito y mejorar la mantenibilidad, siguiendo el enfoque de legibilidad.
 - `2026-07-28T07:41:19` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `healthscore.py` añadiendo tipos precisos en los docstrings y documentando la lógica de las funciones de puntuación para que cualquier colaborador entienda el impacto de los umbrales utilizados.
 - `2026-07-28T07:40:55` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de Type Hints más precisos y docstrings explicativos que aclaran el flujo del pipeline y el propósito de las funciones internas, facilitando la legibilidad para futuros desarrolladores sin alterar la lógica.
-- `2026-07-28T07:31:49` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `walk_files` extrayendo la lógica de validación de seguridad de carpetas a una subfunción interna (`is_unsafe_dir`), clarificando así el propósito de los chequeos de recursión y cumpliendo con el enfoque de documentación técnica.
