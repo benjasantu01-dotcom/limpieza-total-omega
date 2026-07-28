@@ -928,3 +928,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-07-28T05:09:07` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
 - `2026-07-28T05:09:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-28T05:09:07` Corrida terminada. Total usado hoy: 124.
+- `2026-07-28T05:17:22` Arrancando corrida. Quedan hoy ~176 peticiones objetivo.
+- `2026-07-28T05:17:47` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se ha añadido una verificación de seguridad proactiva en `stage_for_review` para prevenir el intento de movimiento de archivos si el dispositivo de destino es de solo lectura o carece de espacio suficiente, utilizando un chequeo previo del sistema de archivos mediante `os.statvfs` (o equivalente lógico) para mejorar la robustez defensiva.
+- `2026-07-28T05:18:12` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha mejorado `quarantine_file` para evitar la condición de carrera y la posible corrupción de datos al verificar el espacio en disco y el estado del archivo mediante una validación atómica del destino (usando `pathlib` de forma consistente) y garantizando que el manifiesto se actualice solo si el archivo realmente reside en su ubicación de cuarentena, fortaleciendo la integridad ante fallos parciales de I/O.
+- `2026-07-28T05:18:31` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-07-28T05:18:38` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-07-28T05:18:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-28T05:18:38` Corrida terminada. Total usado hoy: 128.

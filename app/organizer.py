@@ -185,6 +185,12 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
                 logger.warning("Archivo bloqueado o en uso: %s", full_source_path)
                 continue
 
+            # Verificación defensiva de espacio libre antes de mover (mínimo 10MB de margen)
+            usage = shutil.disk_usage(dest)
+            if usage.free < (jf.size_bytes + 10 * 1024 * 1024):
+                logger.error("Espacio insuficiente en destino para mover %s", full_source_path)
+                continue
+
             base_name = jf.path.stem
             ext = jf.path.suffix
             timestamp = int(jf.modified.timestamp())

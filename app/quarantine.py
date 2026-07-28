@@ -197,11 +197,14 @@ def quarantine_file(
     if destination.exists():
         raise FileExistsError(f"Colisión de nombre en cuarentena: {destination}")
 
-    # Operación crítica: Mover archivo y registrar en manifiesto
+    # Operación crítica: Mover archivo y verificar persistencia antes de actualizar manifiesto
     try:
         shutil.move(str(origin), str(destination))
     except (OSError, PermissionError) as e:
         raise RuntimeError(f"Falla al mover archivo a cuarentena: {e}")
+
+    if not destination.exists():
+        raise RuntimeError("El archivo no se movió correctamente al destino.")
 
     try:
         file_hash = _get_sha256(destination)
