@@ -145,12 +145,6 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
     """
     Recorre el directorio de forma iterativa, aplicando escaneo heurístico.
     No sigue enlaces simbólicos ni puntos de reparse para evitar bucles.
-    
-    Args:
-        directory: Ruta raíz donde comenzar el escaneo.
-        
-    Returns:
-        Lista completa de hallazgos en toda la sub-estructura.
     """
     if not directory:
         return []
@@ -168,19 +162,17 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
             try:
                 with os.scandir(current_dir) as it:
                     for entry in it:
-                        if entry is None:
+                        # Convertimos a Path una sola vez
+                        entry_path = Path(entry.path)
+                        
+                        if is_protected_path(entry_path):
                             continue
-                        try:
-                            if is_protected_path(Path(entry.path)):
-                                continue
                             
-                            if entry.is_dir(follow_symlinks=False):
-                                if not _is_reparse_point(entry):
-                                    stack.append(entry.path)
-                            elif entry.is_file():
-                                results.extend(scan_file(Path(entry.path)))
-                        except (PermissionError, OSError):
-                            continue
+                        if entry.is_dir(follow_symlinks=False):
+                            if not _is_reparse_point(entry):
+                                stack.append(entry.path)
+                        elif entry.is_file():
+                            results.extend(scan_file(entry_path))
             except (PermissionError, OSError, FileNotFoundError):
                 continue
         return results

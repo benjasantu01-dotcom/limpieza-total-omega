@@ -7,8 +7,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **242** (48.0% de aceptación)
-- Rechazadas por tests: 20
-- Rechazadas por guardia de seguridad: 29
+- Rechazadas por tests: 19
+- Rechazadas por guardia de seguridad: 30
 - Sin cambios (nada sustancial que mejorar): 7
 - Sin respuesta de la IA (error o límite): 206
 
@@ -16,15 +16,15 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-27 | 140 | 16 | 18 | 3 | 127 |
-| 2026-07-28 | 102 | 4 | 11 | 4 | 79 |
+| 2026-07-27 | 138 | 15 | 18 | 3 | 126 |
+| 2026-07-28 | 104 | 4 | 12 | 4 | 80 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **71**
+- legibilidad y documentación: **69**
 - seguridad defensiva: **49**
 - manejo de errores y validación de entradas: **47**
-- rendimiento: **39**
+- rendimiento: **41**
 - robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
@@ -33,19 +33,21 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **21**
 - `organizer.py`: **20**
 - `settings.py`: **20**
-- `browser.py`: **19**
+- `scanner.py`: **19**
 - `duplicates.py`: **18**
 - `healthscore.py`: **18**
-- `scanner.py`: **18**
+- `browser.py`: **18**
 - `main.py`: **18**
 - `safety.py`: **16**
+- `quarantine.py`: **16**
 - `startup.py`: **16**
-- `quarantine.py`: **15**
 - `memory.py`: **11**
-- `branding.py`: **9**
+- `branding.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-28T08:32:59` **scanner.py** (rendimiento): Optimizé el rendimiento de `scan_directory` evitando llamadas redundantes a `Path(entry.path)` y resoluciones innecesarias de rutas, consolidando la validación de archivos en un único chequeo eficiente dentro del bucle de `os.scandir`.
+- `2026-07-28T08:32:11` **quarantine.py** (rendimiento): Optimicé el cálculo del total de bytes usados por la cuarentena evitando recargar y re-parsear el archivo de manifiesto completo en cada iteración de la UI, utilizando en su lugar la propiedad `_manifest_cache` que ya gestiona el estado en memoria.
 - `2026-07-28T08:22:54` **main.py** (rendimiento): Se optimizó el rendimiento del panel de Salud sustituyendo la creación de hilos innecesarios en `on_full_analysis` por una ejecución eficiente dentro de un único hilo de tarea, evitando el overhead de gestión de múltiples futuros y permitiendo que la interfaz responda mejor al no saturar el `ThreadPoolExecutor`.
 - `2026-07-28T08:12:36` **duplicates.py** (rendimiento): Optimizé `group_by_size` y `_collect_candidates` para evitar llamadas redundantes a `is_protected_path` y `stat` dentro de los bucles, mejorando la eficiencia en recorridos de disco extensos.
 - `2026-07-28T08:12:29` **diskreport.py** (rendimiento): Optimizé la función `walk_files` para evitar múltiples llamadas a `lstat()` y `is_symlink()` mediante el uso de `os.scandir`, lo cual reduce drásticamente las llamadas al sistema y mejora la performance del escaneo.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-28T07:51:08` **organizer.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos en las funciones de ordenamiento y escaneo para clarificar los criterios de procesamiento y las restricciones de seguridad aplicadas, mejorando la mantenibilidad técnica del módulo.
 - `2026-07-28T07:42:29` **memory.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `memory.py` mediante docstrings detallados en funciones críticas, especifiqué tipos para parámetros ambiguos (como en `trim_working_set`) y añadí aclaraciones sobre el comportamiento de los parsers para mejorar la mantenibilidad.
 - `2026-07-28T07:42:18` **main.py** (legibilidad y documentación): Se introdujeron type hints en los métodos de construcción de la interfaz y se renombraron variables internas en los constructores de pestañas para aclarar su propósito y mejorar la mantenibilidad, siguiendo el enfoque de legibilidad.
-- `2026-07-28T07:41:19` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `healthscore.py` añadiendo tipos precisos en los docstrings y documentando la lógica de las funciones de puntuación para que cualquier colaborador entienda el impacto de los umbrales utilizados.
-- `2026-07-28T07:40:55` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de Type Hints más precisos y docstrings explicativos que aclaran el flujo del pipeline y el propósito de las funciones internas, facilitando la legibilidad para futuros desarrolladores sin alterar la lógica.

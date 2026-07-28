@@ -320,8 +320,10 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
 
 
 def total_quarantined_bytes(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
-    """Calcula el total de bytes usados por ítems en cuarentena."""
-    return sum(item.size_bytes for item in load_manifest(base))
+    """Calcula el total de bytes usados por ítems en cuarentena usando el cache."""
+    base_path = quarantine_dir(base)
+    items = _manifest_cache.get(str(base_path), load_manifest(base))
+    return sum(item.size_bytes for item in items)
 
 
 def summarize(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[str]:
