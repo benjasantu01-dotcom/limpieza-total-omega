@@ -210,9 +210,10 @@ def estimate_impact(entries: Iterable[StartupEntry]) -> str:
 
 def summarize(entries: Optional[Iterable[StartupEntry]] = None) -> List[str]:
     """Genera un informe legible y estructurado de los programas de inicio detectados."""
-    entries_list: List[StartupEntry] = list(entries) if entries is not None else list_startup_entries()
+    entries_list: List[StartupEntry] = entries if entries is not None else list_startup_entries()
+    total_count: int = len(entries_list)
         
-    lines: List[str] = [f"Programas que arrancan con el sistema: {len(entries_list)}"]
+    lines: List[str] = [f"Programas que arrancan con el sistema: {total_count}"]
     impact_level: str = estimate_impact(entries_list)
     impact_messages: Dict[str, str] = {
         "ok": "Arranque liviano: no hay mucho para ganar acá.",
@@ -226,6 +227,6 @@ def summarize(entries: Optional[Iterable[StartupEntry]] = None) -> List[str]:
         lines.append(f"  {entry.name:<28} [{entry.source}]")
         if entry.executable:
             lines.append(f"      {entry.executable}")
-    if entries_list:
+    if total_count > 0:
         lines.extend(["", HOW_TO_DISABLE])
     return lines

@@ -265,9 +265,12 @@ def save_logo_svg(destination: str | Path) -> Path | None:
         # Verificar seguridad antes de modificar (lanza error si no es seguro)
         ensure_safe_to_modify(path)
         
-        # Crear directorio padre si es seguro
+        # Crear directorio padre si existe y es seguro
         if not path.parent.exists():
-            path.parent.mkdir(parents=True, exist_ok=True)
+            try:
+                path.parent.mkdir(parents=True, exist_ok=True)
+            except OSError:
+                return None
             
         path.write_text(logo_svg(), encoding="utf-8")
         return path

@@ -27,7 +27,7 @@ Nunca se envían:
 
 `build_context()` es la única función que arma lo que sale del equipo, y
 `SENSITIVE_KEYS_NEVER_SENT` documenta lo que queda afuera. Un test verifica
-que el texto enviado no contenga separadores de ruta, así el día que alguien
+ que el texto enviado no contenga separadores de ruta, así el día que alguien
 agregue una métrica con una ruta adentro, el test falla antes de que se filtre.
 
 EL ASISTENTE NO EJECUTA NADA
@@ -43,6 +43,7 @@ import json
 import urllib.error
 import urllib.request
 import re
+import math
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Final, TypeAlias
@@ -166,13 +167,16 @@ class Answer:
 
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
-    """Arma el contexto agregado de forma defensiva filtrando tipos de datos."""
+    """Arma el contexto agregado de forma defensiva filtrando tipos y valores no numéricos."""
     contexto = SystemContext()
     
+    def es_num_valido(val: Any) -> bool:
+        return isinstance(val, (int, float)) and math.isfinite(val)
+
     def obtener_val(obj: Any, nombre: str, tipo: type, defecto: Any) -> Any:
         try:
             val = getattr(obj, nombre, defecto)
-            if val is None or isinstance(val, (dict, list, set, tuple)): return defecto
+            if not es_num_valido(val) and tipo in (int, float): return defecto
             return tipo(val)
         except (TypeError, ValueError, AttributeError):
             return defecto
@@ -196,7 +200,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         contexto.analyzed = True
 
     for clave, valor in extra.items():
-        if hasattr(contexto, clave) and isinstance(valor, (int, float)) and clave not in ["analyzed", "grade"]:
+        if hasattr(contexto, clave) and es_num_valido(valor) and clave not in ["analyzed", "grade"]:
             setattr(contexto, clave, float(valor))
 
     return contexto
