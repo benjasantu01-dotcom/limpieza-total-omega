@@ -117,7 +117,8 @@ def partial_hash(path: Union[str, os.PathLike], read_bytes: int = PARTIAL_READ_B
 def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     """
     Agrupa rutas de archivos basándose en su tamaño (st_size).
-    Retorna un diccionario {tamaño_en_bytes: [lista_de_paths]}.
+    Retorna un diccionario donde la llave es el tamaño en bytes y el valor 
+    es una lista de rutas que comparten dicho tamaño.
     """
     if paths is None:
         return {}
@@ -149,31 +150,27 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
             continue
         try:
             base = Path(directory).expanduser()
-            # Validar integridad: no seguir puntos de reparse (symlinks/junctions)
-            if base.is_symlink() or not base.is_dir():
+            if not base.is_dir() or (skip_protected and is_protected_path(base)):
                 continue
             
             for root, subdirs, files in os.walk(base):
                 root_path = Path(root)
                 
-                # Pre-filtrar subdirectorios si son protegidos
-                if skip_protected and is_protected_path(root_path):
-                    subdirs.clear()
-                    continue
+                # Pre-filtrar subdirectorios protegidos evitando que os.walk entre en ellos
+                if skip_protected:
+                    subdirs[:] = [d for d in subdirs if not is_protected_path(root_path / d)]
                     
                 for name in files:
                     candidate = root_path / name
                     try:
-                        # Usar lstat para evitar seguir symlinks durante la iteración
-                        st = candidate.lstat()
-                        # Ignorar enlaces simbólicos explícitamente
+                        # Verificar seguridad y que no sea un enlace simbólico (lstat)
                         if os.path.islink(candidate):
                             continue
-                        if not (st.st_size >= min_size and os.path.isfile(candidate)):
-                            continue
-                        if skip_protected and is_protected_path(candidate):
-                            continue
-                        candidates.append(candidate)
+                            
+                        st = candidate.lstat()
+                        if st.st_size >= min_size and os.path.isfile(candidate):
+                            if not skip_protected or not is_protected_path(candidate):
+                                candidates.append(candidate)
                     except (OSError, PermissionError, FileNotFoundError):
                         continue
         except (OSError, RuntimeError, FileNotFoundError):
@@ -217,10 +214,10 @@ def find_duplicates(
     size_map = {s: p for s, p in group_by_size(candidates).items() if len(p) > 1}
     
     for size, same_size in size_map.items():
-        by_partial = _refine_by_hash(same_size, partial_hash) # type: ignore
+        by_partial = _refine_by_hash(same_size, partial_hash)
         
         for partial_candidates in by_partial.values():
-            by_full = _refine_by_hash(partial_candidates, hash_file) # type: ignore
+            by_full = _refine_by_hash(partial_candidates, hash_file)
             
             for digest, confirmed in by_full.items():
                 groups.append(DuplicateGroup(
@@ -237,17 +234,13 @@ def reclaimable_bytes(groups: List[DuplicateGroup]) -> int:
     """Suma el espacio recuperable de todos los grupos identificados."""
     if not isinstance(groups, list):
         return 0
-    total = 0
-    for g in groups:
-        if isinstance(g, DuplicateGroup) and g.paths:
-            total += g.wasted_bytes
-    return total
+    return sum(g.wasted_bytes for g in groups if isinstance(g, DuplicateGroup))
 
 
 def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
     """
     Heurística para sugerir el archivo a conservar: el más antiguo.
-    En caso de empate en fecha, se favorece el que tenga una ruta más corta.
+    En caso de empate en fecha (mtime), se favorece el que tenga una ruta más corta.
     """
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None
@@ -264,7 +257,7 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
     if not valid_paths:
         return group.paths[0] if group.paths else None
 
-    # El índice 0 es mtime (ascendente), el 1 es len de path (ascendente)
+    # Ordenar por mtime (ascendente: el más antiguo primero), luego por longitud de ruta
     best = min(valid_paths, key=lambda x: (x[0], x[1]))
     return best[2]
 

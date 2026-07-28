@@ -6,23 +6,23 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **235** (46.6% de aceptación)
+- Mejoras aceptadas: **234** (46.4% de aceptación)
 - Rechazadas por tests: 22
 - Rechazadas por guardia de seguridad: 29
 - Sin cambios (nada sustancial que mejorar): 7
-- Sin respuesta de la IA (error o límite): 211
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-26 | 52 | 3 | 6 | 1 | 20 |
+| 2026-07-26 | 48 | 3 | 6 | 1 | 20 |
 | 2026-07-27 | 155 | 16 | 20 | 4 | 155 |
-| 2026-07-28 | 28 | 3 | 3 | 2 | 36 |
+| 2026-07-28 | 31 | 3 | 3 | 2 | 37 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **68**
+- legibilidad y documentación: **67**
 - manejo de errores y validación de entradas: **48**
 - seguridad defensiva: **47**
 - rendimiento: **37**
@@ -30,12 +30,12 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Mejoras aceptadas por archivo
 
-- `browser.py`: **22**
 - `organizer.py`: **22**
+- `browser.py`: **22**
 - `diskreport.py`: **21**
 - `scanner.py`: **19**
-- `duplicates.py`: **18**
 - `safety.py`: **18**
+- `duplicates.py`: **18**
 - `assistant.py`: **17**
 - `healthscore.py`: **16**
 - `main.py`: **16**
@@ -43,10 +43,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **14**
 - `settings.py`: **14**
 - `quarantine.py`: **13**
-- `branding.py`: **10**
+- `branding.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-28T03:05:54` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings más precisos, se han añadido type hints faltantes en las funciones internas para mayor claridad, y se ha simplificado la estructura de `_collect_candidates` utilizando `Path.iterdir()` o validaciones más explícitas para asegurar que la lógica de filtrado de seguridad sea legible y robusta.
+- `2026-07-28T03:05:45` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints detallados en las funciones de recorrido de disco y una explicación clara en el docstring de `walk_files` sobre el manejo de errores y la omisión de rutas protegidas, facilitando el mantenimiento futuro.
+- `2026-07-28T03:05:21` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de docstrings estructurados (usando formato estilo Google) en funciones clave y se clarificaron los tipos de los argumentos en `detect_profiles` para mejorar la legibilidad y mantenibilidad del contrato de interfaz.
 - `2026-07-28T02:55:38` **assistant.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando Type Hints detallados en las funciones de manejo (`handle_*`) y normalizando los docstrings para que expliquen claramente el propósito funcional, facilitando el mantenimiento y la comprensión de las reglas de negocio encapsuladas.
 - `2026-07-28T02:55:02` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save` y `load` encapsulando la decodificación y escritura JSON en bloques de manejo de errores más específicos para prevenir la persistencia de datos corruptos y asegurar que las excepciones de I/O no degraden la experiencia del usuario.
 - `2026-07-28T02:45:17` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ensure_safe_to_modify` ante entradas inválidas y mejoré `is_protected_path` para evitar que un error de acceso inesperado (como un `PermissionError` al intentar resolver una ruta inaccesible) bloquee erróneamente la operación, permitiendo un manejo más granular.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-28T02:24:05` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `build_context` y `ask` mediante la validación proactiva de tipos y el manejo explícito de errores, asegurando que cualquier entrada malformada o fallos al cargar settings no interrumpan el flujo de trabajo del asistente.
 - `2026-07-28T01:02:38` **startup.py** (seguridad defensiva): Se endureció la validación en `entries_from_folders` mediante el uso de `pathlib.Path.is_relative_to` (o equivalente lógico) para asegurar que el archivo resuelto esté contenido en la carpeta base, previniendo posibles ataques de *path traversal* antes de intentar acceder a la ruta.
 - `2026-07-28T01:02:14` **settings.py** (seguridad defensiva): Reforcé la seguridad defensiva en `save` integrando `ensure_safe_to_modify` para el archivo de configuración en sí mismo, asegurando que la ruta final de persistencia sea válida antes de cualquier operación de escritura, cumpliendo así con las reglas del proyecto sobre la manipulación de rutas del sistema.
-- `2026-07-28T00:52:43` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva al integrar `is_protected_path` en `check_system_lookalike` y `check_recent_executable_in_downloads`, asegurando que no se acceda a propiedades de archivos en rutas críticas ni se procesen heurísticas en áreas protegidas, incluso si se invocan manualmente fuera de `scan_directory`.
-- `2026-07-28T00:51:56` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad de `purge_all` implementando una validación explícita para cada archivo antes de su borrado, asegurando que no se pueda manipular el manifiesto para intentar eliminar archivos fuera del directorio de cuarentena, protegiendo así la integridad del sistema ante posibles corrupciones de datos.
-- `2026-07-28T00:43:09` **organizer.py** (seguridad defensiva): Se añadió una validación explícita mediante `is_safe_to_modify` antes de cualquier operación de movimiento en `stage_for_review` y se mejoró la robustez de la exclusión de carpetas mediante el uso de `resolve()` y `parents`, asegurando que no se intente procesar archivos dentro de rutas protegidas incluso si el sistema de archivos contiene enlaces simbólicos complejos o rutas relativas ambiguas.

@@ -149,6 +149,9 @@ def all_drives_usage(mounts: Iterable[str] | None = None) -> list[DriveUsage]:
 def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Generator[tuple[Path, int], None, None]:
     """
     Genera tuplas (ruta_absoluta, tamaño_en_bytes) para cada archivo encontrado.
+    
+    Ignora errores de acceso (permisos/archivos no encontrados) y filtra 
+    automáticamente rutas protegidas o enlaces simbólicos peligrosos.
     """
     if not directory:
         return
@@ -283,7 +286,7 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
     extension_map: dict[str, ExtensionUsage] = {}
     
     # Mantenemos un heap de tamaño fijo para evitar cargar todos los archivos en RAM
-    top_8_files = []
+    top_8_files: list[tuple[int, Path]] = []
 
     for path, size in walk_files(path_obj, skip_protected):
         total_bytes += size
