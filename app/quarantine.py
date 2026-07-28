@@ -170,15 +170,19 @@ def quarantine_file(
         raise ValueError("La ruta de origen no puede estar vacía.")
     
     origin = normalize(source)
+    dest_dir = quarantine_dir(base)
+
     if not origin.is_file():
         raise FileNotFoundError(f"El objeto no es un archivo válido: {origin}")
     
+    # Prevenir que se intente cuarentenar algo que ya está en la carpeta de cuarentena
+    if is_within_directory(origin, dest_dir):
+        raise UnsafePathError(f"El archivo ya reside en la carpeta de cuarentena: {origin}")
+
     if _is_file_locked(origin):
         raise IOError(f"El archivo está en uso por otro proceso: {origin}")
 
     ensure_safe_to_modify(origin, allow_sensitive=True)
-    
-    dest_dir = quarantine_dir(base)
     ensure_safe_to_modify(dest_dir, allow_sensitive=False)
     
     file_size = origin.stat().st_size

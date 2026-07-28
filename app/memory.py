@@ -304,8 +304,10 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     
     try:
         target_pid = int(pid)
-        if target_pid <= 4:
-            return False, "PID protegido: no es posible modificar procesos críticos del sistema."
+        # Protección defensiva: bloquear PIDs de sistema y negativos
+        # Idle (0), System (4) y otros servicios críticos deben quedar fuera de alcance.
+        if target_pid <= 16:
+            return False, "PID protegido: no es posible modificar procesos del sistema base."
     except (ValueError, TypeError):
         return False, "El PID debe ser un número entero válido."
 
@@ -316,13 +318,15 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         WIN_PROCESS_SET_QUOTA = 0x0100
         WIN_PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
         
+        # Intentar abrir el proceso solo con los permisos estrictamente necesarios
         handle = ctypes.windll.kernel32.OpenProcess(
             WIN_PROCESS_SET_QUOTA | WIN_PROCESS_QUERY_LIMITED_INFORMATION, False, target_pid
         )
         if not handle:
-            return False, f"No se pudo abrir el proceso {target_pid} (¿permisos insuficientes?)."
+            return False, f"No se pudo acceder al proceso {target_pid} (¿permisos denegados?)."
         
         try:
+            # Verificación de seguridad adicional: evitar auto-manipulación si no es intencional
             if handle == ctypes.windll.kernel32.GetCurrentProcess():
                 return False, "Operación denegada: no se permite modificar el proceso actual."
 

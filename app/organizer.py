@@ -183,6 +183,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             if not is_safe_to_modify(full_source_path) or not is_safe_to_modify(dest):
                 continue
 
+            # Prevenir que el destino sea padre del origen o viceversa (loops lógicos)
             if dest == full_source_path or dest in full_source_path.parents or full_source_path == dest.parent:
                 continue
                 
@@ -202,7 +203,11 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             ext = jf.path.suffix
             timestamp = int(jf.modified.timestamp())
             
-            target = dest / f"{base_name}_{timestamp}{ext}"
+            # Construir ruta final y validar que esté contenida en 'dest' (evitar traversal)
+            target = (dest / f"{base_name}_{timestamp}{ext}").resolve()
+            if not str(target).startswith(str(dest)):
+                continue
+                
             counter = 1
             while target.exists():
                 target = dest / f"{base_name}_{timestamp}_{counter}{ext}"
@@ -219,7 +224,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     """
     Elimina permanentemente archivos en el directorio de revisión tras confirmación externa.
     """
-    dest = Path(review_dir).expanduser()
+    dest = Path(review_dir).expanduser().resolve()
     if not dest.exists() or not dest.is_dir():
         logger.info("Directorio de revisión no encontrado o inválido: %s", dest)
         return 0
@@ -228,7 +233,8 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     for f in dest.iterdir():
         try:
             if f.is_file():
-                if is_safe_to_modify(f):
+                # Validar que el archivo resuelto siga estando bajo el directorio de revisión
+                if is_safe_to_modify(f) and str(f.resolve()).startswith(str(dest)):
                     f.unlink()
                     count += 1
                 else:
