@@ -755,3 +755,41 @@ FAILED evolve/tests/test_modules.py::test_finds_duplicates_across_subfolders - A
 - `2026-07-28T13:40:36` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
 - `2026-07-28T13:40:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-28T13:40:36` Corrida terminada. Total usado hoy: 324.
+- `2026-07-28T13:49:40` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-07-28T13:50:07` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejora la robustez ante casos límite en la escritura de archivos de configuración agregando una verificación de integridad mediante una escritura atómica más segura y un manejo explícito de errores de disco (como disco lleno o bloqueos temporales) que podrían dejar el archivo en un estado inconsistente.
+- `2026-07-28T13:50:31` Tests FALLARON:
+```
+g").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=============================== warnings summary ===============================
+app/startup.py:72
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:72: SyntaxWarning: invalid escape sequence '\P'
+    - '"C:\Program Files\App.exe" /s' -> 'C:\Program Files\App.exe'
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed, 8 warnings in 1.08s
+
+```
+- `2026-07-28T13:50:31` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejora la robustez del parseo del registro ante entradas inválidas o bloqueadas (`AccessDenied` parciales) filtrando explícitamente caracteres de control y validando que el ejecutable parseado no sea una ruta de sistema crítica mediante la comprobación de su existencia antes de reportarlo.
+- `2026-07-28T13:51:03` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se fortaleció la defensa del asistente en línea (`_call_gemini`) aplicando una validación más estricta sobre la respuesta recibida, asegurando que cualquier intento de inyección de rutas o formatos no deseados sea descartado antes de alcanzar la interfaz, cumpliendo con el principio de mínima confianza hacia los datos externos.
+- `2026-07-28T13:51:16` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Mejoré `save_logo_svg` aplicando una validación más estricta mediante `is_safe_to_modify` antes de cualquier operación de I/O, siguiendo el principio de no confiar en estados intermedios y asegurando que la ruta destino sea absoluta y validada antes de intentar crear directorios o escribir contenido, lo cual evita que la función ejecute escrituras si la ruta fue manipulada externamente.
+- `2026-07-28T13:51:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-28T13:51:16` Corrida terminada. Total usado hoy: 328.

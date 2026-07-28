@@ -124,7 +124,7 @@ SYSTEM_PROMPT: Final = (
 
 _ENDPOINT: Final = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
 _TIMEOUT_SECONDS: Final = 30
-_PATH_REGEX: Final = re.compile(r"([a-zA-Z]:\\|/|\\)")
+_PATH_REGEX: Final = re.compile(r"([a-zA-Z]:\\|/|\\|\.\.|\0)")
 
 # Mapeo precompilado para búsqueda eficiente
 _HANDLER_PATTERNS: Final = {
@@ -427,8 +427,8 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
             
         texto = "".join(p.get("text", "") for p in candidatos[0].get("content", {}).get("parts", [])).strip()
         
-        # Seguridad Defensiva: rechazar si contiene rutas o caracteres de control,
-        # y limitar longitud para evitar ataques de desbordamiento en la UI.
+        # Seguridad Defensiva: rechazar si contiene patrones que parezcan rutas,
+        # caracteres de control o exceda límites razonables para evitar inyecciones.
         if not texto or len(texto) > 1000 or _PATH_REGEX.search(texto) or re.search(r'[\x00-\x08\x0b\x0c\x0e-\x1f]', texto):
             return None
         return texto

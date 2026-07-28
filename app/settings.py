@@ -245,21 +245,25 @@ def save(values: Any, base: str | Path | None = None) -> Path | None:
         
         ruta.parent.mkdir(parents=True, exist_ok=True)
         
-        fd, temp_name = tempfile.mkstemp(dir=ruta.parent, text=True)
-        try:
-            with os.fdopen(fd, "w", encoding="utf-8") as tf:
-                tf.write(json_data)
-            os.replace(temp_name, ruta)
-        except Exception:
-            if temp_name and os.path.exists(temp_name):
-                os.remove(temp_name)
-            raise
+        # Escritura atómica: crear archivo temporal y reemplazar
+        with tempfile.NamedTemporaryFile("w", dir=ruta.parent, delete=False, encoding="utf-8") as tf:
+            temp_name = tf.name
+            tf.write(json_data)
+            tf.flush()
+            os.fsync(tf.fileno()) # Asegurar persistencia física en disco
+        
+        os.replace(temp_name, ruta)
         
         _cached_settings = limpio
         _last_path_str = str(ruta)
         _last_mtime = ruta.stat().st_mtime
         return ruta
     except (OSError, RuntimeError, PermissionError):
+        if temp_name and os.path.exists(temp_name):
+            try:
+                os.remove(temp_name)
+            except OSError:
+                pass
         return None
 
 
