@@ -172,30 +172,22 @@ def _generate_recommendations(m: SystemMetrics, ratios: Dict[str, float]) -> Lis
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
     """Calcula el HealthResult unificando todas las heurísticas y pesos definidos."""
-    if metrics is None or not isinstance(metrics, SystemMetrics):
+    if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Datos de entrada faltantes o inválidos."])
 
     try:
         metrics.validate()
         
-        calculators = {
-            "seguridad": lambda: score_security(metrics.suspicious_count, metrics.suspicious_warnings),
-            "disco": lambda: score_disk(metrics.disk_free_percent),
-            "memoria": lambda: score_memory(metrics.memory_available_percent),
-            "basura": lambda: score_junk(metrics.junk_mb),
-            "duplicados": lambda: score_duplicates(metrics.duplicate_mb),
-            "arranque": lambda: score_startup(metrics.startup_count),
+        ratios = {
+            "seguridad": score_security(metrics.suspicious_count, metrics.suspicious_warnings),
+            "disco": score_disk(metrics.disk_free_percent),
+            "memoria": score_memory(metrics.memory_available_percent),
+            "basura": score_junk(metrics.junk_mb),
+            "duplicados": score_duplicates(metrics.duplicate_mb),
+            "arranque": score_startup(metrics.startup_count),
         }
 
-        ratios: Dict[str, float] = {}
-        for key in WEIGHTS:
-            try:
-                val = calculators[key]()
-                ratios[key] = val if math.isfinite(val) else 0.0
-            except Exception:
-                ratios[key] = 0.0
-            
-        breakdown = {key: int(round(ratios[key] * WEIGHTS.get(key, 0))) for key in WEIGHTS}
+        breakdown = {key: int(round(ratios[key] * WEIGHTS[key])) for key in WEIGHTS}
         total = sum(breakdown.values())
 
         return HealthResult(

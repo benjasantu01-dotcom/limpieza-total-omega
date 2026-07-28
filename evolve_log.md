@@ -846,3 +846,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-07-28T03:36:36` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
 - `2026-07-28T03:36:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-28T03:36:36` Corrida terminada. Total usado hoy: 88.
+- `2026-07-28T03:45:23` Arrancando corrida. Quedan hoy ~212 peticiones objetivo.
+- `2026-07-28T03:45:46` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
+- `2026-07-28T03:46:10` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el rendimiento de `summarize` evitando la creación de diccionarios intermedios y el uso excesivo de `heapq` mediante la actualización de los contadores en un solo pase lineal, minimizando la carga de memoria al no duplicar objetos `ExtensionUsage` durante el proceso de recolección.
+- `2026-07-28T03:46:31` 🛑 Propuesta bloqueada por la guardia en duplicates.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: group_by_size
+- `2026-07-28T03:46:39` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del score reemplazando el diccionario de lambdas por llamadas directas a funciones, eliminando la sobrecarga de instanciar objetos temporales y delegar la ejecución en cada ciclo.
+- `2026-07-28T03:46:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-28T03:46:39` Corrida terminada. Total usado hoy: 92.

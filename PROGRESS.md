@@ -9,16 +9,16 @@ Este archivo se regenera solo en cada corrida a partir de
 - Mejoras aceptadas: **233** (46.2% de aceptación)
 - Rechazadas por tests: 22
 - Rechazadas por guardia de seguridad: 30
-- Sin cambios (nada sustancial que mejorar): 7
-- Sin respuesta de la IA (error o límite): 212
+- Sin cambios (nada sustancial que mejorar): 6
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-26 | 38 | 3 | 5 | 1 | 19 |
+| 2026-07-26 | 36 | 3 | 4 | 0 | 19 |
 | 2026-07-27 | 155 | 16 | 20 | 4 | 155 |
-| 2026-07-28 | 40 | 3 | 5 | 2 | 38 |
+| 2026-07-28 | 42 | 3 | 6 | 2 | 39 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -32,21 +32,23 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `organizer.py`: **21**
 - `browser.py`: **21**
-- `diskreport.py`: **20**
+- `diskreport.py`: **21**
 - `scanner.py`: **19**
-- `duplicates.py`: **18**
 - `safety.py`: **18**
 - `assistant.py`: **18**
+- `duplicates.py`: **17**
+- `healthscore.py`: **17**
 - `main.py`: **16**
-- `healthscore.py`: **16**
 - `startup.py`: **15**
 - `settings.py`: **15**
-- `memory.py`: **14**
 - `quarantine.py`: **13**
+- `memory.py`: **13**
 - `branding.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-28T03:46:39` **healthscore.py** (rendimiento): Optimicé el cálculo del score reemplazando el diccionario de lambdas por llamadas directas a funciones, eliminando la sobrecarga de instanciar objetos temporales y delegar la ejecución en cada ciclo.
+- `2026-07-28T03:46:10` **diskreport.py** (rendimiento): Optimicé el rendimiento de `summarize` evitando la creación de diccionarios intermedios y el uso excesivo de `heapq` mediante la actualización de los contadores en un solo pase lineal, minimizando la carga de memoria al no duplicar objetos `ExtensionUsage` durante el proceso de recolección.
 - `2026-07-28T03:36:24` **assistant.py** (rendimiento): Optimicé el rendimiento de `_initialize_handlers` y las búsquedas de texto convirtiendo el diccionario de mapeo en una estructura de acceso directo y evitando la reconstrucción de listas de sugerencias en cada llamado, centralizando la lógica en una constante global eficiente.
 - `2026-07-28T03:35:55` **startup.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `startup.py` mediante la refactorización de `estimate_impact` para usar un enfoque de mapeo de datos y añadiendo documentación tipo "docstring" detallada con ejemplos en los métodos de filtrado y parsing.
 - `2026-07-28T03:35:31` **settings.py** (legibilidad y documentación): Mejore la claridad y mantenibilidad de la función `validate` mediante la separación de la lógica de validación por tipo en funciones privadas específicas, facilitando futuras extensiones y mejorando la legibilidad.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-28T03:05:45` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints detallados en las funciones de recorrido de disco y una explicación clara en el docstring de `walk_files` sobre el manejo de errores y la omisión de rutas protegidas, facilitando el mantenimiento futuro.
 - `2026-07-28T03:05:21` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de docstrings estructurados (usando formato estilo Google) en funciones clave y se clarificaron los tipos de los argumentos en `detect_profiles` para mejorar la legibilidad y mantenibilidad del contrato de interfaz.
 - `2026-07-28T02:55:38` **assistant.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando Type Hints detallados en las funciones de manejo (`handle_*`) y normalizando los docstrings para que expliquen claramente el propósito funcional, facilitando el mantenimiento y la comprensión de las reglas de negocio encapsuladas.
-- `2026-07-28T02:55:02` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save` y `load` encapsulando la decodificación y escritura JSON en bloques de manejo de errores más específicos para prevenir la persistencia de datos corruptos y asegurar que las excepciones de I/O no degraden la experiencia del usuario.
-- `2026-07-28T02:45:17` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ensure_safe_to_modify` ante entradas inválidas y mejoré `is_protected_path` para evitar que un error de acceso inesperado (como un `PermissionError` al intentar resolver una ruta inaccesible) bloquee erróneamente la operación, permitiendo un manejo más granular.

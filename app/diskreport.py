@@ -283,9 +283,8 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
         
     total_bytes: int = 0
     total_files: int = 0
-    extension_map: dict[str, ExtensionUsage] = {}
-    
-    # Mantenemos un heap de tamaño fijo para evitar cargar todos los archivos en RAM
+    # Almacena [bytes, count] para evitar instanciar múltiples clases innecesarias
+    ext_data_map: dict[str, list[int]] = defaultdict(lambda: [0, 0])
     top_8_files: list[tuple[int, Path]] = []
 
     for path, size in walk_files(path_obj, skip_protected):
@@ -293,16 +292,14 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
         total_files += 1
             
         ext_name = path.suffix.lower() or "(sin extensión)"
-        if ext_name not in extension_map:
-            extension_map[ext_name] = ExtensionUsage(ext_name, 0, 0)
-        ext_data = extension_map[ext_name]
-        ext_data.size_bytes += size
-        ext_data.count += 1
+        record = ext_data_map[ext_name]
+        record[0] += size
+        record[1] += 1
         
-        # Mantenemos solo los 8 más grandes en el heap
-        heapq.heappush(top_8_files, (size, path))
-        if len(top_8_files) > 8:
-            heapq.heappop(top_8_files)
+        if len(top_8_files) < 8:
+            heapq.heappush(top_8_files, (size, path))
+        elif size > top_8_files[0][0]:
+            heapq.heapreplace(top_8_files, (size, path))
 
     lines = [
         f"Carpeta analizada: {path_obj}",
@@ -311,9 +308,15 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
         "Por tipo de archivo:",
     ]
     
-    sorted_exts = heapq.nlargest(8, extension_map.values(), key=lambda x: x.size_bytes)
-    for ext_data in sorted_exts:
-        lines.append(f"  {ext_data.extension:<18} {format_size(ext_data.size_bytes):>10}  ({ext_data.count} archivos)")
+    # Conversión eficiente a lista para ordenamiento
+    sorted_exts = sorted(
+        ((ext, data[0], data[1]) for ext, data in ext_data_map.items()),
+        key=lambda x: x[1], 
+        reverse=True
+    )[:8]
+    
+    for ext, size, count in sorted_exts:
+        lines.append(f"  {ext:<18} {format_size(size):>10}  ({count} archivos)")
         
     lines.append("")
     lines.append("Archivos más grandes:")
