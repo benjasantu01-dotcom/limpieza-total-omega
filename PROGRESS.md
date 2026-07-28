@@ -16,9 +16,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-26 | 20 | 0 | 2 | 0 | 16 |
+| 2026-07-26 | 16 | 0 | 2 | 0 | 16 |
 | 2026-07-27 | 155 | 16 | 20 | 4 | 155 |
-| 2026-07-28 | 57 | 4 | 8 | 3 | 44 |
+| 2026-07-28 | 61 | 4 | 8 | 3 | 44 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -30,23 +30,27 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Mejoras aceptadas por archivo
 
-- `organizer.py`: **20**
-- `diskreport.py`: **20**
-- `browser.py`: **19**
-- `assistant.py`: **19**
+- `diskreport.py`: **21**
+- `browser.py`: **20**
+- `assistant.py`: **20**
+- `organizer.py`: **19**
 - `safety.py`: **18**
 - `scanner.py`: **18**
 - `healthscore.py`: **18**
 - `settings.py`: **17**
-- `main.py`: **16**
 - `startup.py`: **16**
+- `main.py`: **15**
 - `duplicates.py`: **15**
-- `quarantine.py`: **14**
-- `memory.py`: **12**
-- `branding.py`: **10**
+- `quarantine.py`: **13**
+- `branding.py`: **11**
+- `memory.py`: **11**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-28T04:58:28` **diskreport.py** (seguridad defensiva): Mejoré la robustez de `walk_files` y `largest_folders` añadiendo una normalización explícita de rutas mediante `os.path.commonpath` para garantizar que, independientemente de caracteres especiales o manipulaciones de `Path`, la comparación de límites de directorio sea siempre segura y coherente con la API de `pathlib`.
+- `2026-07-28T04:58:20` **browser.py** (seguridad defensiva): Reforcé la seguridad defensiva en `directory_size` para impedir el seguimiento de enlaces simbólicos (junctions o symlinks) mediante `entry.is_symlink()` y una verificación explícita de `is_protected_path`, evitando que el escáner salga accidentalmente del ámbito seguro o se quede atrapado en bucles de recursión infinita.
+- `2026-07-28T04:57:57` **branding.py** (seguridad defensiva): Se ha mejorado `save_logo_svg` para prevenir una posible condición de carrera entre la validación de seguridad y la escritura, utilizando un chequeo preventivo más estricto y asegurando que la creación del directorio padre también sea sometida a validación de seguridad.
+- `2026-07-28T04:57:29` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_call_gemini` aplicando `ensure_safe_to_modify` indirectamente mediante el filtrado de rutas y validación estricta de la estructura del JSON devuelto, asegurando que cualquier intento de inyección o respuesta maliciosa con patrones de ruta sea descartado antes de que el asistente procese la respuesta.
 - `2026-07-28T04:48:07` **startup.py** (robustez ante casos límite): Se añadió una validación robusta en `executable` para capturar rutas de registro que contienen argumentos mal formados o mal citados, evitando que el extractor devuelva fragmentos de comandos como si fueran archivos existentes.
 - `2026-07-28T04:47:59` **settings.py** (robustez ante casos límite): Mejoré la robustez de `save()` ante condiciones de carrera y fallos de permisos al utilizar un archivo temporal para la escritura atómica, asegurando que el archivo de configuración nunca quede corrupto o truncado si el proceso es interrumpido.
 - `2026-07-28T04:47:35` **scanner.py** (robustez ante casos límite): Mejoré la robustez de `scan_file` añadiendo una validación de existencia `path.exists()` antes de realizar operaciones de acceso (como `stat()`), evitando excepciones innecesarias ante archivos que desaparecen durante el recorrido.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-28T04:17:24` **branding.py** (robustez ante casos límite): Se ha mejorado la robustez de `save_logo_svg` ante casos límite mediante la validación de `path.parent` antes de intentar operaciones de escritura y añadiendo el manejo de errores para `OSError` específico al crear directorios.
 - `2026-07-28T04:16:55` **assistant.py** (robustez ante casos límite): Se reforzó la robustez de `build_context` añadiendo validación de tipos estricta para los valores de `health` y `metrics` (usando `isinstance` y chequeo de `math.isfinite` para filtrar valores `NaN` o `inf`), evitando así que datos corruptos en el origen propaguen errores a la lógica de decisión del asistente.
 - `2026-07-28T04:16:24` **startup.py** (rendimiento): Optimizé la generación de reportes en `summarize` reemplazando la conversión innecesaria de iterables a listas completas (`list(entries)`) por una evaluación de un solo paso, evitando duplicar el consumo de memoria en colecciones potencialmente grandes.
-- `2026-07-28T04:06:59` **settings.py** (rendimiento): Optimizé la validación en `validate()` reemplazando la creación de una copia innecesaria de `DEFAULTS` por una actualización selectiva, y reduje las llamadas redundantes a `load()` en los métodos de acceso (`get`, `assistant_api_key`, `assistant_enabled`, `describe`) para aprovechar el caché ya implementado, mejorando el rendimiento en escenarios de alta frecuencia de consulta.
-- `2026-07-28T04:06:28` **safety.py** (rendimiento): Se optimizó el rendimiento del chequeo de rutas mediante la pre-compilación de los nombres de carpetas protegidas en `_SYSTEM_ROOTS` y la minimización de llamadas costosas a `normalize` dentro del loop en `filter_safe_paths`, evitando recalcular rutas ya validadas.
-- `2026-07-28T03:57:25` **quarantine.py** (rendimiento): Optimizé `total_quarantined_bytes` y `summarize` para evitar múltiples lecturas y deserializaciones del manifiesto mediante el uso del caché `_manifest_cache` que ya existía, reduciendo significativamente la sobrecarga de I/O en llamadas repetidas.
-- `2026-07-28T03:57:15` **organizer.py** (rendimiento): Optimizé la lógica de filtrado en `scan_for_junk` reemplazando la llamada repetida a `endswith(tuple(...))` por una verificación de conjunto (`in`) en la extensión, aprovechando el conjunto `_LOWER_JUNK_EXTS` ya precalculado, lo que reduce la carga computacional durante el recorrido de directorios.

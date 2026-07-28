@@ -132,11 +132,12 @@ def directory_size(path: str | os.PathLike) -> int:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
+                        # Nunca seguir enlaces simbólicos o puntos de reparse
                         if entry.is_symlink():
                             continue
                         if entry.is_dir():
-                            # Validar que no sea ruta protegida antes de entrar
-                            if not is_protected_path(Path(entry.path)):
+                            path_entry = Path(entry.path)
+                            if not is_protected_path(path_entry):
                                 stack.append(entry.path)
                         elif entry.is_file():
                             total_bytes += entry.stat().st_size

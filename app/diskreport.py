@@ -162,12 +162,17 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
     except (OSError, RuntimeError):
         return
     
+    base_str = str(base)
     for root, subdirs, files in os.walk(base, onerror=lambda _: None):
         try:
             root_path = Path(root)
             
-            # Seguridad: no permitir escape del directorio base
-            if not str(root_path).startswith(str(base)):
+            # Seguridad: evitar escape del directorio base mediante validación de path común
+            try:
+                if os.path.commonpath([base_str, root]) != base_str:
+                    subdirs.clear()
+                    continue
+            except ValueError:
                 subdirs.clear()
                 continue
 
@@ -235,12 +240,13 @@ def largest_folders(directory: str | os.PathLike, limit: int = 10, skip_protecte
     except (OSError, RuntimeError):
         return []
         
+    base_str = str(base)
     folder_map: dict[Path, FolderUsage] = {}
     
     for path, size in walk_files(base, skip_protected):
         try:
-            # Seguridad adicional: validar que path esté bajo base antes de calcular relativo
-            if not str(path).startswith(str(base)):
+            # Seguridad: validar que path esté bajo base antes de calcular relativo
+            if os.path.commonpath([base_str, str(path)]) != base_str:
                 continue
             rel = path.relative_to(base)
             if not rel.parts:

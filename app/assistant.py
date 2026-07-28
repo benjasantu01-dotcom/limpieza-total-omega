@@ -417,9 +417,13 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
         with urllib.request.urlopen(peticion, timeout=_TIMEOUT_SECONDS) as respuesta:
             datos = json.loads(respuesta.read().decode("utf-8"))
         
-        partes = datos.get("candidates", [{}])[0].get("content", {}).get("parts", [])
-        texto = "".join(p.get("text", "") for p in partes).strip()
+        candidatos = datos.get("candidates", [])
+        if not candidatos:
+            return None
+            
+        texto = "".join(p.get("text", "") for p in candidatos[0].get("content", {}).get("parts", [])).strip()
         
+        # Seguridad Defensiva: rechazar si la respuesta contiene patrones de ruta
         if not texto or _PATH_REGEX.search(texto):
             return None
         return texto
