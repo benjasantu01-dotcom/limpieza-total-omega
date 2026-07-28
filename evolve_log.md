@@ -671,3 +671,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-07-28T12:49:52` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: rendimiento).
 - `2026-07-28T12:49:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-28T12:49:52` Corrida terminada. Total usado hoy: 304.
+- `2026-07-28T12:58:10` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-07-28T12:58:35` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-07-28T12:59:00` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el rendimiento de `load_manifest` mediante el uso de un mapa de búsqueda (`dict` indexado por `item_id`) dentro del caché de sesión, evitando recorridos lineales O(n) en operaciones frecuentes como `restore_item` y `purge_item`.
+- `2026-07-28T12:59:18` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-07-28T12:59:27` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimicé el rendimiento de `is_protected_path` eliminando la llamada redundante y costosa a `normalize(path)` cuando la ruta ya es claramente una ruta UNC o está vacía, y caché el set de `PROTECTED_DIR_NAMES` para evitar iteraciones innecesarias durante las verificaciones.
+- `2026-07-28T12:59:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-28T12:59:27` Corrida terminada. Total usado hoy: 308.

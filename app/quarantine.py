@@ -27,7 +27,7 @@ import hashlib
 from dataclasses import dataclass, asdict
 from datetime import datetime
 from pathlib import Path
-from typing import List, Union, Dict
+from typing import List, Union, Dict, Optional
 
 from safety import (
     UnsafePathError,
@@ -112,10 +112,7 @@ def _manifest_path(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
 
 
 def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload: bool = False) -> List[QuarantineItem]:
-    """
-    Carga el manifiesto de cuarentena desde disco. Usa caché para optimizar lecturas
-    repetidas dentro del mismo ciclo de ejecución.
-    """
+    """Carga el manifiesto de cuarentena desde disco. Usa caché para optimizar lecturas."""
     base_path = quarantine_dir(base)
     base_str = str(base_path)
     if not force_reload and base_str in _manifest_cache:
@@ -166,10 +163,7 @@ def quarantine_file(
     reason: str = "Marcado como sospechoso",
     base: Union[str, Path] = DEFAULT_QUARANTINE_DIR,
 ) -> QuarantineItem:
-    """
-    Mueve un archivo a cuarentena tras validar seguridad y bloqueos. 
-    Asegura que el origen sea seguro y el destino tenga espacio.
-    """
+    """Mueve un archivo a cuarentena tras validar seguridad y bloqueos."""
     if not source:
         raise ValueError("La ruta de origen no puede estar vacía.")
     
@@ -235,15 +229,14 @@ def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[Quaranti
 
 
 def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
-    """
-    Restaura un archivo a su ubicación original validando integridad.
-    Verifica mediante SHA256 que el archivo en cuarentena no haya sido alterado.
-    """
+    """Restaura un archivo a su ubicación original validando integridad."""
     if not item_id or not isinstance(item_id, str):
         raise ValueError("El ID debe ser una cadena válida.")
 
     items = load_manifest(base)
-    match = next((i for i in items if i.item_id == item_id), None)
+    item_map = {i.item_id: i for i in items}
+    match = item_map.get(item_id)
+    
     if match is None:
         raise KeyError(f"No se encontró el ítem: {item_id}")
 
@@ -278,15 +271,14 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
 
 
 def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> bool:
-    """
-    Elimina físicamente un ítem de la cuarentena. 
-    Verifica estrictamente que la ruta esté contenida en el directorio base.
-    """
+    """Elimina físicamente un ítem de la cuarentena."""
     if not item_id or not isinstance(item_id, str):
         return False
     
     items = load_manifest(base)
-    match = next((i for i in items if i.item_id == item_id), None)
+    item_map = {i.item_id: i for i in items}
+    match = item_map.get(item_id)
+    
     if match is None:
         return False
 

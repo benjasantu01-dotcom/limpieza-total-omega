@@ -117,31 +117,22 @@ def is_drive_root(path: PathLike) -> bool:
 def is_protected_path(path: PathLike) -> bool:
     """
     Determina si una ruta es crítica para el sistema operativo o es una ruta UNC.
-
-    Args:
-        path: Ruta a evaluar.
-
-    Returns:
-        True si la ruta está protegida, False si es segura para lectura.
     """
+    raw_path = str(path).strip()
+    if not raw_path or raw_path.startswith(("\\\\", "//")):
+        return True
+        
     try:
-        raw_path = str(path).strip()
-        if not raw_path or raw_path.startswith(("\\\\", "//")):
-            return True
-            
         p = normalize(path)
         if p.is_symlink():
             return True
+        if is_drive_root(p):
+            return True
+        if _contains_protected_name(p):
+            return True
+        return any(part.lower() in _SYSTEM_ROOTS_PARTS for part in p.parts)
     except (PermissionError, OSError, ValueError, TypeError):
         return True 
-        
-    if is_drive_root(p):
-        return True
-    
-    if _contains_protected_name(p):
-        return True
-        
-    return any(part.lower() in _SYSTEM_ROOTS_PARTS for part in p.parts)
 
 
 def is_within_directory(
