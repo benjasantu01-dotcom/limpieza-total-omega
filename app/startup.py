@@ -72,12 +72,16 @@ class StartupEntry:
         if not raw_cmd:
             return ""
         
+        # Caso: ruta citada (maneja casos mal formados deteniéndose en la segunda comilla)
         if raw_cmd.startswith('"'):
             end_quote: int = raw_cmd.find('"', 1)
-            return raw_cmd[1:end_quote] if end_quote != -1 else raw_cmd[1:]
+            path = raw_cmd[1:end_quote] if end_quote != -1 else raw_cmd[1:]
+            return path if path.lower().endswith(('.exe', '.bat', '.cmd', '.scr')) or os.path.exists(path) else ""
         
+        # Caso: ruta sin citar
         parts: List[str] = raw_cmd.split()
-        return parts[0] if parts else ""
+        path = parts[0] if parts else ""
+        return path if path else ""
 
 
 def startup_folders() -> List[Path]:

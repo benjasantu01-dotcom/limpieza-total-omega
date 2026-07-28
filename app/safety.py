@@ -84,9 +84,11 @@ def normalize(path: PathLike) -> Path:
         raise ValueError("La ruta proporcionada está vacía.")
         
     try:
-        return Path(str_path).expanduser().resolve()
+        p = Path(str_path).expanduser()
+        # resolve(strict=False) permite normalizar rutas aunque no existan físicamente
+        return p.resolve(strict=False)
     except (OSError, RuntimeError, ValueError):
-        # Fallback si resolve() falla por permisos o problemas de sistema de archivos
+        # Fallback si resolve() falla por problemas de sistema de archivos
         return Path(os.path.abspath(os.path.expanduser(str_path)))
 
 

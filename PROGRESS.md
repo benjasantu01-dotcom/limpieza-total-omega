@@ -6,8 +6,8 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **231** (45.8% de aceptación)
-- Rechazadas por tests: 21
+- Mejoras aceptadas: **232** (46.0% de aceptación)
+- Rechazadas por tests: 20
 - Rechazadas por guardia de seguridad: 30
 - Sin cambios (nada sustancial que mejorar): 7
 - Sin respuesta de la IA (error o límite): 215
@@ -16,37 +16,41 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-26 | 23 | 1 | 2 | 0 | 16 |
+| 2026-07-26 | 20 | 0 | 2 | 0 | 16 |
 | 2026-07-27 | 155 | 16 | 20 | 4 | 155 |
-| 2026-07-28 | 53 | 4 | 8 | 3 | 44 |
+| 2026-07-28 | 57 | 4 | 8 | 3 | 44 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **67**
 - manejo de errores y validación de entradas: **48**
-- seguridad defensiva: **47**
+- seguridad defensiva: **44**
 - rendimiento: **37**
-- robustez ante casos límite: **32**
+- robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **21**
-- `browser.py`: **20**
 - `organizer.py`: **20**
+- `diskreport.py`: **20**
+- `browser.py`: **19**
 - `assistant.py`: **19**
+- `safety.py`: **18**
+- `scanner.py`: **18**
 - `healthscore.py`: **18**
-- `safety.py`: **17**
-- `scanner.py`: **17**
-- `duplicates.py`: **16**
+- `settings.py`: **17**
 - `main.py`: **16**
-- `settings.py`: **16**
-- `startup.py`: **15**
+- `startup.py`: **16**
+- `duplicates.py`: **15**
 - `quarantine.py`: **14**
 - `memory.py`: **12**
 - `branding.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-28T04:48:07` **startup.py** (robustez ante casos límite): Se añadió una validación robusta en `executable` para capturar rutas de registro que contienen argumentos mal formados o mal citados, evitando que el extractor devuelva fragmentos de comandos como si fueran archivos existentes.
+- `2026-07-28T04:47:59` **settings.py** (robustez ante casos límite): Mejoré la robustez de `save()` ante condiciones de carrera y fallos de permisos al utilizar un archivo temporal para la escritura atómica, asegurando que el archivo de configuración nunca quede corrupto o truncado si el proceso es interrumpido.
+- `2026-07-28T04:47:35` **scanner.py** (robustez ante casos límite): Mejoré la robustez de `scan_file` añadiendo una validación de existencia `path.exists()` antes de realizar operaciones de acceso (como `stat()`), evitando excepciones innecesarias ante archivos que desaparecen durante el recorrido.
+- `2026-07-28T04:47:13` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en `normalize` al incluir un manejo específico para `pathlib.Path.resolve()` cuando la ruta no existe en el sistema de archivos (evitando errores `FileNotFoundError`), asegurando que la normalización sea siempre posible incluso para archivos que están siendo eliminados o movidos.
 - `2026-07-28T04:37:41` **quarantine.py** (robustez ante casos límite): Reforcé la robustez de `purge_item` agregando una validación previa de existencia física del archivo y un manejo de errores más específico para evitar que fallos de I/O interrumpan el proceso si el archivo ya no existe, manteniendo la integridad del manifiesto.
 - `2026-07-28T04:28:07` **main.py** (robustez ante casos límite): Se ha mejorado la robustez ante estados inconsistentes y errores de concurrencia en la interfaz al asegurar que el contador de tareas en curso (`_tasks_running`) se decremente siempre en un bloque `finally`, y añadiendo un manejo de excepciones más granular en `_update_health_visuals` para evitar que caídas de renderizado de la UI detengan los hilos de análisis.
 - `2026-07-28T04:27:27` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `compute_score` asegurando que el cálculo de `total` sea consistente incluso si `WEIGHTS` y `ratios` tienen claves divergentes, y blindé `_generate_recommendations` ante posibles divisiones por cero o claves faltantes usando `.get()` con valores por defecto seguros.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-28T04:06:28` **safety.py** (rendimiento): Se optimizó el rendimiento del chequeo de rutas mediante la pre-compilación de los nombres de carpetas protegidas en `_SYSTEM_ROOTS` y la minimización de llamadas costosas a `normalize` dentro del loop en `filter_safe_paths`, evitando recalcular rutas ya validadas.
 - `2026-07-28T03:57:25` **quarantine.py** (rendimiento): Optimizé `total_quarantined_bytes` y `summarize` para evitar múltiples lecturas y deserializaciones del manifiesto mediante el uso del caché `_manifest_cache` que ya existía, reduciendo significativamente la sobrecarga de I/O en llamadas repetidas.
 - `2026-07-28T03:57:15` **organizer.py** (rendimiento): Optimizé la lógica de filtrado en `scan_for_junk` reemplazando la llamada repetida a `endswith(tuple(...))` por una verificación de conjunto (`in`) en la extensión, aprovechando el conjunto `_LOWER_JUNK_EXTS` ya precalculado, lo que reduce la carga computacional durante el recorrido de directorios.
-- `2026-07-28T03:46:39` **healthscore.py** (rendimiento): Optimicé el cálculo del score reemplazando el diccionario de lambdas por llamadas directas a funciones, eliminando la sobrecarga de instanciar objetos temporales y delegar la ejecución en cada ciclo.
-- `2026-07-28T03:46:10` **diskreport.py** (rendimiento): Optimicé el rendimiento de `summarize` evitando la creación de diccionarios intermedios y el uso excesivo de `heapq` mediante la actualización de los contadores en un solo pase lineal, minimizando la carga de memoria al no duplicar objetos `ExtensionUsage` durante el proceso de recolección.
-- `2026-07-28T03:36:24` **assistant.py** (rendimiento): Optimicé el rendimiento de `_initialize_handlers` y las búsquedas de texto convirtiendo el diccionario de mapeo en una estructura de acceso directo y evitando la reconstrucción de listas de sugerencias en cada llamado, centralizando la lógica en una constante global eficiente.
-- `2026-07-28T03:35:55` **startup.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `startup.py` mediante la refactorización de `estimate_impact` para usar un enfoque de mapeo de datos y añadiendo documentación tipo "docstring" detallada con ejemplos en los métodos de filtrado y parsing.

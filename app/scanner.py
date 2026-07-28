@@ -78,6 +78,8 @@ def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_TH
     if not path or is_protected_path(path) or path.suffix.lower() not in SUSPICIOUS_EXECUTABLE_EXT:
         return None
     try:
+        if not path.exists():
+            return None
         mtime = datetime.fromtimestamp(path.stat().st_mtime)
         if datetime.now() - mtime < timedelta(hours=hours):
             return Suspicion(path, f"Ejecutable reciente detectado (modificado hace menos de {hours}h)", "info")
@@ -108,7 +110,7 @@ def scan_file(path: Path) -> List[Suspicion]:
     Aplica todos los chequeos heurísticos disponibles sobre una ruta de archivo.
     Retorna una lista de hallazgos sospechosos encontrados.
     """
-    if path is None or is_protected_path(path):
+    if path is None or is_protected_path(path) or not path.exists():
         return []
     
     results: List[Suspicion] = []
@@ -139,7 +141,7 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
         
     try:
         root = Path(directory).resolve()
-        if is_protected_path(root):
+        if is_protected_path(root) or not root.exists():
             return []
             
         results: List[Suspicion] = []

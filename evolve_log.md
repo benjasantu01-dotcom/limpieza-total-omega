@@ -907,3 +907,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-07-28T04:37:44` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
 - `2026-07-28T04:37:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-28T04:37:44` Corrida terminada. Total usado hoy: 112.
+- `2026-07-28T04:46:48` Arrancando corrida. Quedan hoy ~188 peticiones objetivo.
+- `2026-07-28T04:47:13` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante casos límite en `normalize` al incluir un manejo específico para `pathlib.Path.resolve()` cuando la ruta no existe en el sistema de archivos (evitando errores `FileNotFoundError`), asegurando que la normalización sea siempre posible incluso para archivos que están siendo eliminados o movidos.
+- `2026-07-28T04:47:35` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Mejoré la robustez de `scan_file` añadiendo una validación de existencia `path.exists()` antes de realizar operaciones de acceso (como `stat()`), evitando excepciones innecesarias ante archivos que desaparecen durante el recorrido.
+- `2026-07-28T04:47:59` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `save()` ante condiciones de carrera y fallos de permisos al utilizar un archivo temporal para la escritura atómica, asegurando que el archivo de configuración nunca quede corrupto o truncado si el proceso es interrumpido.
+- `2026-07-28T04:48:07` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Se añadió una validación robusta en `executable` para capturar rutas de registro que contienen argumentos mal formados o mal citados, evitando que el extractor devuelva fragmentos de comandos como si fueran archivos existentes.
+- `2026-07-28T04:48:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-28T04:48:07` Corrida terminada. Total usado hoy: 116.

@@ -29,6 +29,7 @@ from __future__ import annotations
 
 import json
 import os
+import tempfile
 from pathlib import Path
 from typing import Any, Final
 
@@ -208,7 +209,7 @@ def load(base: str | Path | None = None) -> dict[str, Any]:
 
 
 def save(values: Any, base: str | Path | None = None) -> Path | None:
-    """Guarda valores validados en el sistema de archivos."""
+    """Guarda valores validados en el sistema de archivos de forma atómica."""
     global _cached_settings, _last_mtime
     ruta = settings_path(base)
     
@@ -218,12 +219,21 @@ def save(values: Any, base: str | Path | None = None) -> Path | None:
         json_data = json.dumps(limpio, indent=2, ensure_ascii=False)
         
         ruta.parent.mkdir(parents=True, exist_ok=True)
-        ruta.write_text(json_data, encoding="utf-8")
+        
+        # Escritura atómica vía archivo temporal
+        with tempfile.NamedTemporaryFile("w", dir=ruta.parent, delete=False, encoding="utf-8") as tf:
+            tf.write(json_data)
+            temp_name = tf.name
+        
+        # Reemplazo de archivo existente (atómico en sistemas POSIX, estable en Windows)
+        os.replace(temp_name, ruta)
         
         _cached_settings = limpio
         _last_mtime = ruta.stat().st_mtime
         return ruta
     except (OSError, RuntimeError, PermissionError):
+        if 'temp_name' in locals() and os.path.exists(temp_name):
+            os.remove(temp_name)
         return None
 
 
