@@ -93,12 +93,11 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     blocklist = SYSTEM_FOLDER_BLOCKLIST
 
     def _walk_dir(base_path: str) -> None:
-        if not os.path.exists(base_path):
-            return
         try:
             with os.scandir(base_path) as it:
                 for entry in it:
                     try:
+                        # Ignorar enlaces simbólicos y puntos de reparse para evitar loops o acceso a rutas prohibidas
                         if entry.is_symlink():
                             continue
                         if entry.is_dir(follow_symlinks=False):
@@ -119,13 +118,13 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
                     except (PermissionError, OSError):
                         continue
         except (PermissionError, OSError):
-            pass
+            return
 
     for d in dirs:
         if isinstance(d, str):
             p = Path(d).expanduser()
-            if p.is_dir():
-                _walk_dir(str(p))
+            if p.exists() and p.is_dir():
+                _walk_dir(str(p.resolve()))
             
     return found
 

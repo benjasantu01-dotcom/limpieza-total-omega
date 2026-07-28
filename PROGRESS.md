@@ -6,46 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **243** (48.2% de aceptación)
-- Rechazadas por tests: 20
+- Mejoras aceptadas: **246** (48.8% de aceptación)
+- Rechazadas por tests: 19
 - Rechazadas por guardia de seguridad: 28
 - Sin cambios (nada sustancial que mejorar): 7
-- Sin respuesta de la IA (error o límite): 206
+- Sin respuesta de la IA (error o límite): 204
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-27 | 133 | 15 | 16 | 3 | 125 |
-| 2026-07-28 | 110 | 5 | 12 | 4 | 81 |
+| 2026-07-27 | 132 | 14 | 16 | 3 | 123 |
+| 2026-07-28 | 114 | 5 | 12 | 4 | 81 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **64**
-- seguridad defensiva: **49**
+- seguridad defensiva: **48**
 - manejo de errores y validación de entradas: **47**
+- robustez ante casos límite: **45**
 - rendimiento: **42**
-- robustez ante casos límite: **41**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **24**
 - `diskreport.py`: **21**
 - `settings.py`: **21**
-- `scanner.py`: **19**
+- `organizer.py`: **20**
 - `browser.py`: **19**
-- `organizer.py`: **19**
+- `main.py`: **19**
 - `healthscore.py`: **18**
+- `scanner.py`: **18**
 - `duplicates.py`: **18**
-- `main.py`: **18**
+- `quarantine.py`: **17**
 - `safety.py`: **16**
-- `quarantine.py`: **16**
 - `startup.py`: **16**
-- `memory.py`: **10**
+- `memory.py`: **11**
 - `branding.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-28T09:04:29` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` ante la posible falta de consistencia en el estado del disco, añadiendo una limpieza explícita del archivo temporal (si llegara a quedar huérfano) y verificando que el hash generado sea válido antes de confirmar el movimiento en el manifiesto.
+- `2026-07-28T09:04:19` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de `scan_for_junk` añadiendo un manejo de excepciones más específico y resiliente, evitando que errores de acceso inesperados (como puntos de reparse o archivos bloqueados por el sistema) detengan el escaneo completo, y asegurando que las rutas absolutas se procesen de manera consistente.
+- `2026-07-28T09:03:56` **memory.py** (robustez ante casos límite): Se ha robustecido la función `read_snapshot` ante posibles fallos de lectura de archivos en entornos Linux (donde `/proc/meminfo` podría ser inexistente, estar vacío o inaccesible), evitando excepciones no controladas y asegurando que siempre se retorne un objeto `MemorySnapshot` válido.
+- `2026-07-28T09:03:31` **main.py** (robustez ante casos límite): Se implementó un manejo de errores robusto en `_draw_gauge` y `_update_health_visuals` para evitar que la aplicación colapse si la interfaz de usuario se destruye durante una operación asíncrona, además de validar que los valores numéricos ingresados en los ajustes sean números válidos antes de intentar procesarlos.
 - `2026-07-28T08:53:33` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `compute_score` frente a configuraciones corruptas o incompletas de `WEIGHTS` mediante el uso de `.get()` con valores seguros y una validación de integridad previa, evitando que la app colapse si alguien modifica accidentalmente la constante global.
 - `2026-07-28T08:53:25` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez de `_collect_candidates` ante enlaces simbólicos (junctions o reparse points) utilizando `is_symlink()` antes de intentar abrir archivos o directorios, evitando así bucles infinitos o el seguimiento de rutas fuera del alcance del usuario.
 - `2026-07-28T08:53:02` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `largest_folders` ante rutas con caracteres especiales o inaccesibles añadiendo validaciones más estrictas en la resolución de `Path`, garantizando que el escaneo no falle silenciosamente ni procese rutas relativas inválidas en caso de errores de permisos o sistemas de archivos.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-28T08:22:54` **main.py** (rendimiento): Se optimizó el rendimiento del panel de Salud sustituyendo la creación de hilos innecesarios en `on_full_analysis` por una ejecución eficiente dentro de un único hilo de tarea, evitando el overhead de gestión de múltiples futuros y permitiendo que la interfaz responda mejor al no saturar el `ThreadPoolExecutor`.
 - `2026-07-28T08:12:36` **duplicates.py** (rendimiento): Optimizé `group_by_size` y `_collect_candidates` para evitar llamadas redundantes a `is_protected_path` y `stat` dentro de los bucles, mejorando la eficiencia en recorridos de disco extensos.
 - `2026-07-28T08:12:29` **diskreport.py** (rendimiento): Optimizé la función `walk_files` para evitar múltiples llamadas a `lstat()` y `is_symlink()` mediante el uso de `os.scandir`, lo cual reduce drásticamente las llamadas al sistema y mejora la performance del escaneo.
-- `2026-07-28T08:12:05` **browser.py** (rendimiento): Optimicé el rendimiento de `directory_size` utilizando `os.scandir` para obtener atributos de archivo (como `st_size` e `is_dir`) directamente en la llamada al sistema inicial, evitando realizar llamadas redundantes a `entry.is_dir()` y `entry.stat().st_size` por separado, y eliminé redundancias en el cálculo de `total_cache_bytes`.
-- `2026-07-28T08:02:25` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` y `_rank_problems` reemplazando los chequeos secuenciales basados en `globals()[handler_name]` por un acceso directo a funciones pre-mapeadas y evitando la regeneración constante de listas en el bucle de clasificación.
-- `2026-07-28T08:02:09` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación del método `executable` en la clase `StartupEntry` aclarando la lógica de saneamiento de rutas, y se han añadido type hints más precisos (usando `Sequence` en lugar de `Iterable` donde se requiere indexación o conteo implícito) para mejorar la legibilidad y mantenibilidad del contrato de las funciones.
-- `2026-07-28T08:01:45` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `settings.py` añadiendo docstrings que explican el propósito de las funciones de sanitización, especificando los tipos de datos esperados y justificando el flujo de carga/validación, manteniendo la integridad del código original.

@@ -415,7 +415,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """Redibuja el medidor circular con el puntaje y la nota adentro."""
         try:
             self.gauge.delete("all")
-        except tk.TclError:
+        except (tk.TclError, AttributeError):
             return
         branding.draw_ring(self.gauge, score, size=176, thickness=15)
         color_nota = branding.grade_color(grade) if grade != "-" else branding.color("text_dim")
@@ -709,8 +709,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         box = self._box(tab)
 
         def append():
-            box.insert("end", f"{text}\n")
-            box.see("end")
+            try:
+                box.insert("end", f"{text}\n")
+                box.see("end")
+            except Exception:
+                pass
 
         self.after(0, append)
 
@@ -886,8 +889,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                     barra.configure(progress_color=branding.score_color(proporcion * 100))
                     valor_label.configure(text=f"{puntos:.0f}/{maximo}",
                                     text_color=branding.score_color(proporcion * 100))
-            except Exception as e:
-                logging.debug("Error visual en Salud: %s", e)
+            except Exception:
+                pass
 
         self.after(0, actualizar)
 
@@ -1396,8 +1399,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 continue
         
         try:
-            valores["duplicados_tamano_minimo_kb"] = int(self.min_dup_entry.get().strip() or 64)
-            valores["top_archivos"] = int(self.top_files_entry.get().strip() or 15)
+            val_dup = self.min_dup_entry.get().strip()
+            valores["duplicados_tamano_minimo_kb"] = int(val_dup) if val_dup.isdigit() else 64
+            val_top = self.top_files_entry.get().strip()
+            valores["top_archivos"] = int(val_top) if val_top.isdigit() else 15
         except ValueError:
             pass
             

@@ -204,6 +204,9 @@ def quarantine_file(
 
     try:
         file_hash = _get_sha256(destination)
+        if not file_hash:
+            raise RuntimeError("Fallo al calcular hash del archivo movido.")
+            
         item = QuarantineItem(
             item_id=item_id,
             original_path=str(origin),
@@ -219,8 +222,11 @@ def quarantine_file(
         return item
     except Exception as e:
         if destination.exists():
-            shutil.move(str(destination), str(origin))
-        raise RuntimeError(f"Error al actualizar manifiesto, operación revertida: {e}")
+            try:
+                destination.unlink()
+            except OSError:
+                pass
+        raise RuntimeError(f"Error al procesar manifiesto: {e}")
 
 
 def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:

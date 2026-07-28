@@ -198,15 +198,22 @@ def read_snapshot() -> MemorySnapshot:
     Captura un snapshot del estado de memoria. 
     Detecta automáticamente el SO (NT o Linux).
     """
-    try:
-        if os.name == "nt":
+    if os.name == "nt":
+        try:
             return _read_windows_snapshot()
-        meminfo = "/proc/meminfo"
-        if os.path.exists(meminfo):
+        except Exception:
+            return MemorySnapshot(total=0, available=0)
+            
+    meminfo = "/proc/meminfo"
+    if os.path.exists(meminfo):
+        try:
             with open(meminfo, encoding="utf-8", errors="replace") as f:
-                return parse_linux_meminfo(f.read())
-    except (OSError, AttributeError, ValueError):
-        pass
+                content = f.read()
+                if content:
+                    return parse_linux_meminfo(content)
+        except (OSError, ValueError):
+            pass
+            
     return MemorySnapshot(total=0, available=0)
 
 
