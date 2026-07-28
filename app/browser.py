@@ -90,9 +90,8 @@ def base_directories() -> List[Path]:
 
 def _is_safe_path(target_path: Path, base_path: Path) -> bool:
     """
-    Verifica que target_path se encuentre dentro de base_path para prevenir
-    ataques de path traversal, validando adicionalmente contra la lista 
-    de directorios protegidos del sistema.
+    Valida la integridad de la ruta contra ataques de path traversal y
+    asegura que no se acceda a directorios protegidos por política de seguridad.
     """
     try:
         resolved_target = target_path.resolve(strict=True)
@@ -109,8 +108,12 @@ def _is_safe_path(target_path: Path, base_path: Path) -> bool:
 @lru_cache(maxsize=32)
 def directory_size(path: str | os.PathLike) -> int:
     """
-    Calcula el tamaño total de una carpeta mediante recorrido iterativo.
-    Evita seguir enlaces simbólicos o puntos de reparse (junctions).
+    Calcula el peso total de una carpeta mediante un recorrido seguro del sistema de archivos.
+    
+    Implementa:
+    1. Resolución de rutas para evitar enlaces simbólicos o junctions (puntos de reparse).
+    2. Filtrado contra `is_protected_path` para cumplir con los estándares de seguridad.
+    3. Manejo de excepciones por permisos para evitar el bloqueo del bucle de escaneo.
     """
     if not path:
         return 0
@@ -151,7 +154,7 @@ def directory_size(path: str | os.PathLike) -> int:
 
 
 def _is_valid_cache_path(candidate: Path, base_path: Path) -> bool:
-    """Valida si una ruta es un directorio de caché existente, seguro y permitido."""
+    """Valida que la ruta sea un directorio de caché objetivo y no contenga datos personales."""
     try:
         if not candidate.exists() or candidate.is_symlink():
             return False
@@ -169,7 +172,11 @@ def detect_profiles(
     cache_paths: Dict[str, str] | None = None
 ) -> List[BrowserCache]:
     """
-    Explora directorios base buscando carpetas de caché según BROWSER_CACHE_PATHS.
+    Explora los directorios base para identificar cachés de navegadores.
+    
+    La función compara las rutas encontradas con `BROWSER_CACHE_PATHS` y
+    filtra resultados usando las reglas de `safety.py`. Retorna una lista
+    ordenada de objetos `BrowserCache`.
     """
     if bases is None:
         bases = base_directories()
@@ -207,14 +214,14 @@ def detect_profiles(
 
 
 def total_cache_bytes(caches: Iterable[BrowserCache] | None = None) -> int:
-    """Suma el tamaño total de una lista de objetos BrowserCache."""
+    """Calcula la suma agregada de bytes en una colección de cachés."""
     if caches is None:
         return 0
     return sum(cache.size_bytes for cache in caches)
 
 
 def summarize(caches: List[BrowserCache] | None = None) -> List[str]:
-    """Genera una representación en texto del reporte de caché para la UI."""
+    """Genera una representación formateada del reporte para la interfaz de usuario."""
     current_caches = caches if caches is not None else detect_profiles()
     
     if not current_caches:

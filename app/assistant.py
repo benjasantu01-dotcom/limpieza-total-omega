@@ -46,7 +46,7 @@ import re
 import math
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Final, TypeAlias, Callable
+from typing import Any, Final, TypeAlias, Callable, Optional
 
 import settings
 
@@ -132,7 +132,7 @@ _HANDLER_MAP: dict[str, Callable[[SystemContext, str], Answer]] = {}
 @dataclass
 class SystemContext:
     """Las métricas agregadas que el asistente puede ver."""
-    score: int | None = None
+    score: Optional[int] = None
     grade: str = ""
     junk_mb: float = 0.0
     suspicious_count: int = 0
@@ -394,7 +394,7 @@ def available(base: str | Path | None = None) -> bool:
         return False
 
 
-def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> str | None:
+def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> Optional[str]:
     """Consulta a Gemini con la librería estándar. Devuelve None si falla."""
     try:
         cuerpo = json.dumps({

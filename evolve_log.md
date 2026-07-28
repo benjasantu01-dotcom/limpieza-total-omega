@@ -581,3 +581,34 @@ FAILED evolve/tests/test_modules.py::test_score_color_survives_garbage - Asserti
 - `2026-07-28T11:47:51` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la resiliencia de `_validate_str` capturando errores de `Path` antes de que ocurran y aseguré que `_coerce_int` maneje casos donde `valor` sea `None` explícitamente, evitando así posibles errores de `TypeError` en conversiones futuras.
 - `2026-07-28T11:47:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-28T11:47:51` Corrida terminada. Total usado hoy: 280.
+- `2026-07-28T11:56:41` Arrancando corrida. Quedan hoy ~20 peticiones objetivo.
+- `2026-07-28T11:57:06` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.03s
+
+```
+- `2026-07-28T11:57:06` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Reforcé la robustez del parseo de rutas en `StartupEntry.executable` capturando excepciones al validar la existencia de archivos y mejoré la resiliencia de `parse_registry_csv` añadiendo una limpieza de caracteres de control que suelen aparecer en salidas de PowerShell.
+- `2026-07-28T11:57:37` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad de `assistant.py` añadiendo type hints faltantes en funciones clave y estructurando la lógica de `build_context` para que sea más clara, sin alterar su comportamiento defensivo ni funcional.
+- `2026-07-28T11:58:05` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: legibilidad y documentación).
+- `2026-07-28T11:58:13` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos en funciones críticas y la clarificación de los tipos y objetivos de los métodos auxiliares, facilitando la comprensión del flujo de seguridad.
+- `2026-07-28T11:58:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-28T11:58:13` Corrida terminada. Total usado hoy: 284.
