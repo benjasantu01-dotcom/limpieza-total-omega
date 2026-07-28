@@ -118,15 +118,16 @@ def score_security(suspicious_count: int, warnings: int = 0) -> float:
 
 def score_memory(available_percent: float) -> float:
     """Puntúa RAM (0.0-1.0): devuelve 1.0 si el % de RAM libre es >= 35%."""
-    # Evitar división por cero en escenarios extremos
-    base = 35.0 if available_percent >= 0 else 1.0
-    return _clamp(available_percent / base)
+    # Defensa: evitar divisiones por cero y asegurar que porcentajes negativos no impacten el cálculo
+    if available_percent < 0: return 0.0
+    return _clamp(available_percent / 35.0)
 
 
 def score_disk(free_percent: float) -> float:
     """Puntúa espacio libre (0.0-1.0): devuelve 1.0 si el espacio libre es >= 25%."""
-    base = 25.0 if free_percent >= 0 else 1.0
-    return _clamp(free_percent / base)
+    # Defensa: evitar divisiones por cero y asegurar que porcentajes negativos no impacten el cálculo
+    if free_percent < 0: return 0.0
+    return _clamp(free_percent / 25.0)
 
 
 def score_duplicates(duplicate_mb: float) -> float:

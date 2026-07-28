@@ -953,6 +953,15 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         if not self.junk_files:
             messagebox.showinfo("Sin candidatos", "Primero usá 'Buscar basura'.")
             return
+        
+        # Validar existencia antes de confirmar
+        validos = [jf for jf in self.junk_files if os.path.exists(jf.path)]
+        if len(validos) < len(self.junk_files):
+            self.log("Algunos archivos ya no existen. Refrescando lista...", "Limpieza")
+            self.junk_files = validos
+            self.refresh_list()
+            if not self.junk_files: return
+
         if not self._confirm(
             "Mover a revisión",
             f"Se van a MOVER {len(self.junk_files)} archivos a la carpeta de revisión.\n\n"
@@ -1038,6 +1047,14 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         if not self.suspicions:
             messagebox.showinfo("Sin hallazgos", "Primero corré un escaneo heurístico.")
             return
+        
+        # Validar existencia antes de mover
+        validos = [s for s in self.suspicions if os.path.exists(s.path)]
+        if len(validos) < len(self.suspicions):
+            self.log("Algunos archivos ya no existen. Refrescando hallazgos...", "Seguridad")
+            self.suspicions = validos
+            if not self.suspicions: return
+
         rutas = sorted({str(s.path) for s in self.suspicions})
         if not self._confirm(
             "Aislar en cuarentena",

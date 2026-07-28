@@ -124,10 +124,9 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
         return {}
     groups: Dict[int, List[Path]] = defaultdict(list)
     for p in paths:
-        if not isinstance(p, Path):
+        if not isinstance(p, Path) or is_protected_path(p):
             continue
         try:
-            # Usamos lstat para evitar resolución innecesaria de enlaces durante el conteo
             stat = p.lstat()
             if stat.st_size > 0:
                 groups[stat.st_size].append(p)
@@ -156,21 +155,20 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
             for root, subdirs, files in os.walk(base):
                 root_path = Path(root)
                 
-                # Pre-filtrar subdirectorios protegidos evitando que os.walk entre en ellos
                 if skip_protected:
                     subdirs[:] = [d for d in subdirs if not is_protected_path(root_path / d)]
                     
                 for name in files:
                     candidate = root_path / name
+                    if skip_protected and is_protected_path(candidate):
+                        continue
                     try:
-                        # Verificar seguridad y que no sea un enlace simbólico (lstat)
                         if os.path.islink(candidate):
                             continue
                             
                         st = candidate.lstat()
                         if st.st_size >= min_size and os.path.isfile(candidate):
-                            if not skip_protected or not is_protected_path(candidate):
-                                candidates.append(candidate)
+                            candidates.append(candidate)
                     except (OSError, PermissionError, FileNotFoundError):
                         continue
         except (OSError, RuntimeError, FileNotFoundError):
@@ -187,6 +185,8 @@ def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[
         return {}
     by_hash: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
+        if is_protected_path(path):
+            continue
         if digest := hash_func(path):
             by_hash[digest].append(path)
     return {h: p for h, p in by_hash.items() if len(p) > 1}
@@ -248,7 +248,7 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
     valid_paths: List[tuple[float, int, Path]] = []
     for p in group.paths:
         try:
-            if p.exists():
+            if not is_protected_path(p) and p.exists():
                 mtime = p.stat().st_mtime
                 valid_paths.append((mtime, len(str(p)), p))
         except (OSError, PermissionError, FileNotFoundError):
