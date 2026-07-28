@@ -148,13 +148,14 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
     if not directory:
         return
     try:
-        base = Path(directory).expanduser().resolve(strict=True)
-        if not base.is_dir() or (skip_protected and is_protected_path(base)):
+        base_path = Path(directory).expanduser().resolve(strict=True)
+        if not base_path.is_dir() or (skip_protected and is_protected_path(base_path)):
             return
     except (OSError, RuntimeError):
         return
 
-    def is_unsafe(entry: os.DirEntry) -> bool:
+    def should_ignore_entry(entry: os.DirEntry) -> bool:
+        """Verifica si la entrada es un enlace simbólico, reparse point o ruta protegida."""
         if entry.is_symlink():
             return True
         if os.name == 'nt':
@@ -167,14 +168,15 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
             return True
         return False
 
-    def scan(current_dir: str):
+    def recursive_scan(root_path: str) -> Generator[tuple[Path, int], None, None]:
+        """Explora recursivamente el directorio capturando excepciones de acceso."""
         try:
-            with os.scandir(current_dir) as it:
-                for entry in it:
-                    if is_unsafe(entry):
+            with os.scandir(root_path) as iterator:
+                for entry in iterator:
+                    if should_ignore_entry(entry):
                         continue
                     if entry.is_dir():
-                        yield from scan(entry.path)
+                        yield from recursive_scan(entry.path)
                     else:
                         try:
                             yield Path(entry.path), entry.stat().st_size
@@ -183,7 +185,7 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
         except (OSError, PermissionError):
             return
 
-    yield from scan(str(base))
+    yield from recursive_scan(str(base_path))
 
 
 def largest_files(directory: str | os.PathLike, limit: int = 20, skip_protected: bool = True) -> list[FileEntry]:

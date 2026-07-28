@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **244** (48.4% de aceptación)
+- Mejoras aceptadas: **246** (48.8% de aceptación)
 - Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 28
+- Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 7
-- Sin respuesta de la IA (error o límite): 206
+- Sin respuesta de la IA (error o límite): 205
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-27 | 105 | 11 | 13 | 3 | 88 |
-| 2026-07-28 | 139 | 8 | 15 | 4 | 118 |
+| 2026-07-27 | 103 | 11 | 12 | 3 | 87 |
+| 2026-07-28 | 143 | 8 | 15 | 4 | 118 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **60**
-- legibilidad y documentación: **54**
+- legibilidad y documentación: **58**
 - manejo de errores y validación de entradas: **48**
 - robustez ante casos límite: **47**
-- rendimiento: **35**
+- rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **24**
 - `settings.py`: **22**
-- `diskreport.py`: **20**
-- `main.py`: **20**
-- `scanner.py`: **19**
+- `diskreport.py`: **21**
+- `main.py`: **21**
 - `browser.py`: **19**
 - `organizer.py`: **19**
-- `quarantine.py`: **18**
-- `duplicates.py`: **18**
-- `healthscore.py`: **17**
+- `duplicates.py`: **19**
+- `healthscore.py`: **18**
+- `scanner.py`: **18**
+- `quarantine.py`: **17**
 - `startup.py`: **15**
 - `safety.py`: **14**
 - `memory.py`: **10**
@@ -46,6 +46,10 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-28T12:09:02` **main.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de la inicialización de la interfaz en `main.py` mediante la refactorización de la creación dinámica de pestañas y sus constructores, eliminando la lista `builders` manual y reemplazándola por un mapeo más limpio y auto-documentado que reduce el riesgo de errores al agregar nuevas secciones.
+- `2026-07-28T12:08:16` **healthscore.py** (legibilidad y documentación): Documenté el propósito de los umbrales de normalización (como los 5000MB para basura) mediante constantes explicativas, facilitando el mantenimiento y la comprensión de las reglas de negocio sin cambiar el comportamiento funcional.
+- `2026-07-28T12:07:52` **duplicates.py** (legibilidad y documentación): Se introdujeron type hints más precisos (especialmente en `Union` y `List`/`Dict` genéricos) y docstrings detallados que clarifican la lógica de los parámetros y los estados de retorno, mejorando la mantenibilidad y documentación técnica del módulo.
+- `2026-07-28T12:07:28` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `walk_files` extrayendo la lógica compleja de escaneo de directorios a una función interna documentada y mejorando la claridad de los nombres de los parámetros en el filtrado de seguridad.
 - `2026-07-28T11:58:13` **browser.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos en funciones críticas y la clarificación de los tipos y objetivos de los métodos auxiliares, facilitando la comprensión del flujo de seguridad.
 - `2026-07-28T11:57:37` **assistant.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `assistant.py` añadiendo type hints faltantes en funciones clave y estructurando la lógica de `build_context` para que sea más clara, sin alterar su comportamiento defensivo ni funcional.
 - `2026-07-28T11:47:51` **settings.py** (manejo de errores y validación de entradas): Mejoré la resiliencia de `_validate_str` capturando errores de `Path` antes de que ocurran y aseguré que `_coerce_int` maneje casos donde `valor` sea `None` explícitamente, evitando así posibles errores de `TypeError` en conversiones futuras.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-28T11:27:12` **duplicates.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `hash_file` y `partial_hash` al centralizar el manejo de excepciones y validaciones de entrada, asegurando que cualquier entrada `None` o ruta inválida sea gestionada de forma elegante sin interrumpir el flujo de procesamiento de los grupos.
 - `2026-07-28T11:26:49` **diskreport.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las funciones de análisis al implementar un filtrado de excepciones más preciso en `walk_files` y `summarize`, asegurando que el proceso de escaneo no se interrumpa ante errores de acceso (como `PermissionError`) y validando explícitamente los parámetros de entrada antes de realizar operaciones costosas.
 - `2026-07-28T11:18:34` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `build_context` y `ask` mediante la validación proactiva de tipos y el manejo explícito de errores en la carga de configuraciones, evitando excepciones no controladas que podrían romper el flujo de la aplicación.
-- `2026-07-28T09:54:47` **settings.py** (seguridad defensiva): Se endureció la validación de seguridad en `settings_path` y `_validate_str` para evitar inyecciones de rutas o acceso a directorios prohibidos mediante la resolución absoluta de la ruta antes de cualquier operación de I/O.
-- `2026-07-28T09:54:22` **scanner.py** (seguridad defensiva): Se añadió la validación de integridad mediante `resolve()` y `is_relative_to` en las funciones de escaneo, garantizando que no se procesen rutas que hayan escapado del contexto de seguridad o que contengan manipulaciones de directorio (traversal).
-- `2026-07-28T09:44:37` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `quarantine_file` validando que la ruta de origen, una vez normalizada, no se encuentre ya dentro del directorio de cuarentena, evitando así posibles bucles o intentos de autocuarentena malintencionada.
-- `2026-07-28T09:44:11` **organizer.py** (seguridad defensiva): Se reforzó `stage_for_review` para prevenir colisiones de rutas y ataques de salto de directorio, asegurando mediante `relative_to` que el destino resuelto sea efectivamente un hijo de la carpeta de revisión y evitando que archivos de sistema sean movidos incluso si `is_safe_to_modify` pasara.

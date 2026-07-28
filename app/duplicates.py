@@ -54,7 +54,7 @@ class DuplicateGroup:
     """
     digest: str
     size_bytes: int
-    paths: list[Path]
+    paths: List[Path]
 
     @property
     def count(self) -> int:
@@ -65,7 +65,8 @@ class DuplicateGroup:
     def wasted_bytes(self) -> int:
         """
         Calcula el espacio total que podría liberarse si se conservara
-        solo una copia del archivo (n-1 copias).
+        solo una copia del archivo (n-1 copias). Retorna 0 si el grupo
+        está vacío o tiene una sola entrada.
         """
         if not self.paths or self.count <= 1:
             return 0
@@ -75,6 +76,9 @@ class DuplicateGroup:
 def hash_file(path: Union[str, os.PathLike], chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
     Calcula el hash SHA256 completo de un archivo mediante lectura en bloques.
+    
+    Returns:
+        String hexadecimal del hash si es accesible, None en caso de error o ruta protegida.
     """
     if path is None or is_protected_path(path):
         return None
@@ -92,6 +96,9 @@ def hash_file(path: Union[str, os.PathLike], chunk_size: int = 1024 * 1024) -> O
 def partial_hash(path: Union[str, os.PathLike], read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """
     Calcula un hash rápido de los primeros N bytes de un archivo.
+    
+    Returns:
+        String hexadecimal del hash, None si el archivo es vacío o inaccesible.
     """
     if path is None or is_protected_path(path):
         return None
@@ -109,6 +116,9 @@ def partial_hash(path: Union[str, os.PathLike], read_bytes: int = PARTIAL_READ_B
 def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     """
     Clasifica rutas de archivos según su tamaño en disco (st_size).
+    
+    Returns:
+        Diccionario donde la clave es el tamaño en bytes y el valor es la lista de rutas.
     """
     groups: Dict[int, List[Path]] = defaultdict(list)
     if paths is None:
@@ -127,6 +137,7 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
 def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, skip_protected: bool) -> List[Path]:
     """
     Realiza un recorrido recursivo del sistema de archivos para recolectar candidatos.
+    Solo incluye archivos mayores a min_size y excluye rutas protegidas/links.
     """
     if directories is None:
         return []
@@ -167,6 +178,9 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
 def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
     """
     Refina una lista de archivos agrupándolos por el resultado de una función de hash.
+    
+    Returns:
+        Diccionario de hash -> lista de rutas (solo grupos con >1 elemento).
     """
     if paths is None:
         return {}
@@ -183,7 +197,7 @@ def find_duplicates(
     skip_protected: bool = True,
 ) -> List[DuplicateGroup]:
     """
-    Pipeline de detección de duplicados en tres etapas.
+    Pipeline de detección de duplicados en tres etapas: tamaño, hash parcial, hash total.
     """
     if not directories:
         return []
@@ -213,7 +227,7 @@ def find_duplicates(
 
 
 def reclaimable_bytes(groups: List[DuplicateGroup]) -> int:
-    """Calcula la suma total de espacio desperdiciado por todos los duplicados."""
+    """Calcula la suma total de espacio desperdiciado por todos los grupos duplicados."""
     if not groups:
         return 0
     return sum(g.wasted_bytes for g in groups)
@@ -221,7 +235,7 @@ def reclaimable_bytes(groups: List[DuplicateGroup]) -> int:
 
 def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
     """
-    Selecciona el mejor candidato a conservar mediante heurística.
+    Selecciona la ruta de archivo más antigua (creación/mtime) para conservarla como original.
     """
     if not group or not group.paths:
         return None
@@ -242,7 +256,7 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
 
 
 def format_group(group: DuplicateGroup) -> List[str]:
-    """Prepara una representación en texto del grupo para visualización en UI."""
+    """Prepara una lista de strings para visualización en la UI, marcando el archivo a conservar."""
     if not group or not group.paths:
         return []
     keeper = suggest_keeper(group)

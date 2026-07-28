@@ -170,19 +170,27 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         )
         self.tabview.pack(fill="both", expand=True, padx=18, pady=(4, 8))
 
-        # Registro de pestañas
+        # Mapa de nombres de pestañas a sus métodos constructores.
+        # Esto permite mantener el orden lógico y facilita agregar nuevas pestañas.
+        tab_constructors = {
+            "Salud": self._build_tab_salud,
+            "Limpieza": self._build_tab_limpieza,
+            "Seguridad": self._build_tab_seguridad,
+            "Cuarentena": self._build_tab_cuarentena,
+            "Memoria": self._build_tab_memoria,
+            "Disco": self._build_tab_disco,
+            "Duplicados": self._build_tab_duplicados,
+            "Navegadores": self._build_tab_navegadores,
+            "Inicio": self._build_tab_inicio,
+            "Informe": self._build_tab_informe,
+            "Asistente": self._build_tab_asistente,
+            "Ajustes": self._build_tab_ajustes,
+        }
+
         for name in TABS:
             self.tabs[name] = self.tabview.add(branding.tab_label(name))
-
-        # Construcción lógica de cada tab
-        builders: List[Callable[[], None]] = [
-            self._build_tab_salud, self._build_tab_limpieza, self._build_tab_seguridad,
-            self._build_tab_cuarentena, self._build_tab_memoria, self._build_tab_disco,
-            self._build_tab_duplicados, self._build_tab_navegadores, self._build_tab_inicio,
-            self._build_tab_informe, self._build_tab_asistente, self._build_tab_ajustes
-        ]
-        for builder in builders:
-            builder()
+            if name in tab_constructors:
+                tab_constructors[name]()
 
         # Compatibilidad con el flujo original, que escribía en un solo cuadro.
         self.output = self.outputs.get("Limpieza")

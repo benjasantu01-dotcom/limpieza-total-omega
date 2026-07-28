@@ -32,6 +32,13 @@ __all__ = [
     "summarize",
 ]
 
+# Umbrales para normalización de métricas
+JUNK_LIMIT_MB = 5000.0          # 0 puntos si la basura alcanza este límite
+DUPLICATE_LIMIT_MB = 2000.0     # 0 puntos al alcanzar este volumen
+STARTUP_LIMIT_COUNT = 20        # 0 puntos al superar esta cantidad de apps
+RAM_IDEAL_PERCENT = 35.0        # 1.0 de ratio a partir de este porcentaje libre
+DISK_IDEAL_PERCENT = 25.0       # 1.0 de ratio a partir de este porcentaje libre
+
 # Cuánto pesa cada área en el puntaje final. Suman 100 puntos totales.
 WEIGHTS: Dict[str, int] = {
     "seguridad": 30,
@@ -106,8 +113,8 @@ def _to_int(value: Any, default: int = 0) -> int:
 
 
 def score_junk(junk_mb: float) -> float:
-    """Puntúa basura: 0.0 si junk_mb >= 5000MB, 1.0 si es 0MB."""
-    return _clamp(1.0 - (junk_mb / 5000.0))
+    """Puntúa basura: 0.0 si junk_mb >= JUNK_LIMIT_MB, 1.0 si es 0MB."""
+    return _clamp(1.0 - (junk_mb / JUNK_LIMIT_MB))
 
 
 def score_security(suspicious_count: int, warnings: int = 0) -> float:
@@ -117,23 +124,23 @@ def score_security(suspicious_count: int, warnings: int = 0) -> float:
 
 
 def score_memory(available_percent: float) -> float:
-    """Puntúa RAM: 1.0 si el % de RAM libre es >= 35%."""
-    return _clamp(available_percent / 35.0)
+    """Puntúa RAM: 1.0 si el % de RAM libre es >= RAM_IDEAL_PERCENT."""
+    return _clamp(available_percent / RAM_IDEAL_PERCENT)
 
 
 def score_disk(free_percent: float) -> float:
-    """Puntúa espacio libre: 1.0 si el espacio libre es >= 25%."""
-    return _clamp(free_percent / 25.0)
+    """Puntúa espacio libre: 1.0 si el espacio libre es >= DISK_IDEAL_PERCENT."""
+    return _clamp(free_percent / DISK_IDEAL_PERCENT)
 
 
 def score_duplicates(duplicate_mb: float) -> float:
-    """Puntúa duplicados: penalización lineal, 0.0 al llegar a 2000MB."""
-    return _clamp(1.0 - (duplicate_mb / 2000.0))
+    """Puntúa duplicados: penalización lineal, 0.0 al llegar a DUPLICATE_LIMIT_MB."""
+    return _clamp(1.0 - (duplicate_mb / DUPLICATE_LIMIT_MB))
 
 
 def score_startup(startup_count: int) -> float:
-    """Puntúa inicio: penalización lineal, 0.0 al superar 20 entradas."""
-    return _clamp(1.0 - (startup_count / 20.0))
+    """Puntúa inicio: penalización lineal, 0.0 al superar STARTUP_LIMIT_COUNT entradas."""
+    return _clamp(1.0 - (startup_count / STARTUP_LIMIT_COUNT))
 
 
 def grade_for_score(score: int) -> str:
