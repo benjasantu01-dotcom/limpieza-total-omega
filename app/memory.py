@@ -270,7 +270,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     Ejecuta el trim (purga) del working set de un proceso en Windows usando
     la API `EmptyWorkingSet`.
     
-    Seguridad: Los PID <= 4 están protegidos y se solicita acceso restringido.
+    Seguridad: Los PID <= 4 están protegidos y se valida el acceso al proceso.
     Retorna (éxito, mensaje_explicativo).
     """
     if os.name != "nt":
@@ -278,15 +278,16 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     
     try:
         target_pid = int(pid)
+        # 0: Idle, 4: System (protección estricta)
         if target_pid <= 4:
-            return False, "PID protegido: no es posible modificar procesos del sistema."
+            return False, "PID protegido: no es posible modificar procesos críticos del sistema."
     except (ValueError, TypeError):
         return False, "El PID debe ser un número entero válido."
 
     try:
         import ctypes
 
-        # Constantes de acceso para OpenProcess según Win32 API
+        # Constantes de acceso para OpenProcess
         WIN_PROCESS_SET_QUOTA = 0x0100
         WIN_PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
         
@@ -297,6 +298,10 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
             return False, f"No se pudo abrir el proceso {target_pid} (¿permisos insuficientes?)."
         
         try:
+            # Validación defensiva extra: evitar tocar el propio proceso de la app si fuera posible
+            if handle == ctypes.windll.kernel32.GetCurrentProcess():
+                return False, "Operación denegada: no se permite modificar el proceso actual."
+
             if not ctypes.windll.psapi.EmptyWorkingSet(handle):
                 error_code = ctypes.GetLastError()
                 return False, f"Windows rechazó la operación (código: {error_code})."

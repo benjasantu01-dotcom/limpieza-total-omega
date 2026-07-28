@@ -195,8 +195,8 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         breakdown = {key: int(round(ratios[key] * WEIGHTS.get(key, 0))) for key in WEIGHTS}
         total = sum(breakdown.values())
 
-    except (TypeError, ValueError, ZeroDivisionError, KeyError) as e:
-        return HealthResult(0, "F", {}, [f"Error al procesar métricas: {str(e)}"])
+    except Exception:
+        return HealthResult(0, "F", {}, ["Error inesperado al calcular las métricas."])
 
     return HealthResult(
         score=max(0, min(100, total)),
