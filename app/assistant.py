@@ -401,6 +401,9 @@ def available(base: str | Path | None = None) -> bool:
 
 def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> Optional[str]:
     """Consulta a Gemini con la librería estándar. Devuelve None si falla."""
+    if not api_key or not model:
+        return None
+        
     try:
         cuerpo = json.dumps({
             "contents": [{
@@ -452,7 +455,7 @@ def ask(question: str, context: SystemContext | None = None,
             
         modelo = str(configuracion.get("asistente_modelo", "gemini-3.1-flash-lite"))
         enviar = bool(configuracion.get("asistente_enviar_metricas", True))
-    except (Exception, TypeError, ValueError):
+    except (Exception):
         return respaldo
 
     texto_contexto = context_as_text(contexto) if enviar else "El usuario no autorizó enviar métricas."

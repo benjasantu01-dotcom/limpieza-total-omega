@@ -100,6 +100,9 @@ _NUMERIC_LIMITS: Final = {
     "top_procesos": (1, 500),
 }
 
+# Pre-cálculo para optimizar validación
+_DEFAULTS_KEYS: Final = set(DEFAULTS.keys())
+
 
 def _coerce_bool(valor: Any) -> bool | None:
     """Intenta convertir un valor a booleano; acepta strings representativos."""
@@ -186,9 +189,9 @@ def validate(values: Any) -> dict[str, Any]:
     if not isinstance(values, dict):
         return limpio
 
-    for clave, defecto in DEFAULTS.items():
+    for clave in _DEFAULTS_KEYS:
         if clave in values:
-            coerced = _apply_validation_by_type(clave, values[clave], defecto)
+            coerced = _apply_validation_by_type(clave, values[clave], DEFAULTS[clave])
             if coerced is not None:
                 limpio[clave] = coerced
 

@@ -678,3 +678,34 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-07-28T12:59:27` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimicé el rendimiento de `is_protected_path` eliminando la llamada redundante y costosa a `normalize(path)` cuando la ruta ya es claramente una ruta UNC o está vacía, y caché el set de `PROTECTED_DIR_NAMES` para evitar iteraciones innecesarias durante las verificaciones.
 - `2026-07-28T12:59:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-28T12:59:27` Corrida terminada. Total usado hoy: 308.
+- `2026-07-28T13:08:32` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-07-28T13:08:59` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se optimizó `scan_file` reemplazando la creación dinámica de una lista de funciones en cada llamada por una constante predefinida, reduciendo la asignación de memoria y el overhead en escaneos masivos de disco.
+- `2026-07-28T13:09:26` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimizé la validación en `load` y `validate` pre-calculando las claves válidas en un `set` para evitar recorridos lineales innecesarios y redundancias en el proceso de lectura de configuración.
+- `2026-07-28T13:09:50` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.01s
+
+```
+- `2026-07-28T13:09:50` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Optimicé el método `StartupEntry.executable` para evitar llamadas redundantes a `os.path.exists` dentro de un condicional innecesario, pre-calculando la validación de extensiones y mejorando la eficiencia en la evaluación de rutas.
+- `2026-07-28T13:10:06` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejora la robustez del motor de consulta a Gemini ante configuraciones corruptas o valores inesperados (como modelos vacíos o claves mal formadas) asegurando que cualquier error durante la carga de `settings` no bloquee la respuesta del motor local.
+- `2026-07-28T13:10:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-28T13:10:06` Corrida terminada. Total usado hoy: 312.

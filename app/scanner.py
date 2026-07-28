@@ -105,6 +105,12 @@ def check_system_lookalike(path: Path) -> Optional[Suspicion]:
             return None
     return None
 
+# Lista inmutable de chequeos para evitar recrearla en cada llamada a scan_file
+CHECK_FUNCS: Final[List[Callable[[Path], Optional[Suspicion]]]] = [
+    check_double_extension, 
+    check_recent_executable_in_downloads, 
+    check_system_lookalike
+]
 
 def scan_file(path: Path) -> List[Suspicion]:
     """
@@ -121,13 +127,7 @@ def scan_file(path: Path) -> List[Suspicion]:
         return []
     
     results: List[Suspicion] = []
-    checks: List[Callable[[Path], Optional[Suspicion]]] = [
-        check_double_extension, 
-        check_recent_executable_in_downloads, 
-        check_system_lookalike
-    ]
-    
-    for check_func in checks:
+    for check_func in CHECK_FUNCS:
         if (res := check_func(path)):
             results.append(res)
     
