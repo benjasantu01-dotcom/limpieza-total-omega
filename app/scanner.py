@@ -117,18 +117,23 @@ def scan_file(path: Path) -> List[Suspicion]:
     Ejecuta el conjunto de reglas heurísticas sobre un archivo individual.
     Es la unidad atómica de análisis utilizada tanto en el escaneo iterativo como en checks únicos.
     """
-    if is_protected_path(path):
+    try:
+        safe_path = path.resolve()
+    except (OSError, RuntimeError):
+        return []
+
+    if is_protected_path(safe_path):
         return []
 
     try:
-        if not path.is_file():
+        if not safe_path.is_file():
             return []
     except (OSError, PermissionError):
         return []
     
     results: List[Suspicion] = []
     for check_func in CHECK_FUNCS:
-        if (res := check_func(path)):
+        if (res := check_func(safe_path)):
             results.append(res)
     
     return results

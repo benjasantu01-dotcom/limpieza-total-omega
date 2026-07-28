@@ -807,3 +807,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-07-28T14:12:30` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `quarantine_file` al verificar explícitamente que el archivo de origen no sea un enlace simbólico o punto de reparse antes de intentar moverlo, evitando así que la operación actúe sobre destinos fuera de lo previsto.
 - `2026-07-28T14:12:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-28T14:12:30` Corrida terminada. Total usado hoy: 336.
+- `2026-07-28T14:20:39` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-07-28T14:21:00` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-07-28T14:21:23` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-07-28T14:21:48` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `scan_directory` validando que las rutas de los archivos procesados sigan siendo seguras tras resolverse, previniendo condiciones de carrera o rutas inesperadas, y aplicando `is_protected_path` sobre la ruta absoluta antes de analizar cada archivo individual.
+- `2026-07-28T14:21:59` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Reforcé la seguridad defensiva al migrar la validación de la ruta de configuración (`SETTINGS_DIR`) y su creación, asegurando que `ensure_safe_to_modify` verifique la integridad de la ruta base incluso antes de intentar operar con el archivo de configuración.
+- `2026-07-28T14:21:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-28T14:21:59` Corrida terminada. Total usado hoy: 340.

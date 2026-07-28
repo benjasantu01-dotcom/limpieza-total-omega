@@ -176,6 +176,9 @@ def settings_path(base: str | Path | None = None) -> Path:
         carpeta = Path(base).expanduser().resolve()
     else:
         carpeta = Path(SETTINGS_DIR).expanduser().resolve()
+    
+    # Asegurar que la carpeta base es segura antes de retornar la ruta
+    ensure_safe_to_modify(str(carpeta))
     return carpeta / SETTINGS_FILE
 
 
@@ -206,7 +209,11 @@ def load(base: str | Path | None = None) -> dict[str, Any]:
     """
     global _cached_settings, _last_path_str, _last_mtime
     
-    ruta = settings_path(base)
+    try:
+        ruta = settings_path(base)
+    except (OSError, RuntimeError):
+        return dict(DEFAULTS)
+
     ruta_str = str(ruta)
     
     try:
@@ -234,10 +241,9 @@ def save(values: Any, base: str | Path | None = None) -> Path | None:
     de éxito, o None si hay error de permisos o acceso al sistema de archivos.
     """
     global _cached_settings, _last_path_str, _last_mtime
-    ruta = settings_path(base)
-    temp_name = None
     
     try:
+        ruta = settings_path(base)
         ensure_safe_to_modify(str(ruta.parent))
         
         limpio = validate(values)
@@ -246,6 +252,7 @@ def save(values: Any, base: str | Path | None = None) -> Path | None:
         ruta.parent.mkdir(parents=True, exist_ok=True)
         
         # Escritura atómica: crear archivo temporal y reemplazar
+        temp_name = None
         with tempfile.NamedTemporaryFile("w", dir=ruta.parent, delete=False, encoding="utf-8") as tf:
             temp_name = tf.name
             tf.write(json_data)
@@ -259,7 +266,7 @@ def save(values: Any, base: str | Path | None = None) -> Path | None:
         _last_mtime = ruta.stat().st_mtime
         return ruta
     except (OSError, RuntimeError, PermissionError):
-        if temp_name and os.path.exists(temp_name):
+        if 'temp_name' in locals() and os.path.exists(temp_name):
             try:
                 os.remove(temp_name)
             except OSError:
