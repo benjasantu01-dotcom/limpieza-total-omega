@@ -172,8 +172,8 @@ def _generate_recommendations(m: SystemMetrics, ratios: Dict[str, float]) -> Lis
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
     """Calcula el HealthResult unificando todas las heurísticas y pesos definidos."""
-    if not isinstance(metrics, SystemMetrics):
-        return HealthResult(0, "F", {}, ["Error: Datos de entrada con formato inválido."])
+    if metrics is None or not isinstance(metrics, SystemMetrics):
+        return HealthResult(0, "F", {}, ["Error: Datos de entrada faltantes o inválidos."])
 
     try:
         metrics.validate()
@@ -189,21 +189,24 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
 
         ratios: Dict[str, float] = {}
         for key in WEIGHTS:
-            val = calculators[key]()
-            ratios[key] = val if math.isfinite(val) else 0.0
+            try:
+                val = calculators[key]()
+                ratios[key] = val if math.isfinite(val) else 0.0
+            except Exception:
+                ratios[key] = 0.0
             
         breakdown = {key: int(round(ratios[key] * WEIGHTS.get(key, 0))) for key in WEIGHTS}
         total = sum(breakdown.values())
 
-    except Exception:
-        return HealthResult(0, "F", {}, ["Error inesperado al calcular las métricas."])
+        return HealthResult(
+            score=max(0, min(100, total)),
+            grade=grade_for_score(total),
+            breakdown=breakdown,
+            recommendations=_generate_recommendations(metrics, ratios),
+        )
 
-    return HealthResult(
-        score=max(0, min(100, total)),
-        grade=grade_for_score(total),
-        breakdown=breakdown,
-        recommendations=_generate_recommendations(metrics, ratios),
-    )
+    except Exception:
+        return HealthResult(0, "F", {}, ["Error crítico inesperado al procesar métricas."])
 
 
 def summarize(result: HealthResult) -> List[str]:

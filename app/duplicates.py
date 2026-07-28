@@ -90,7 +90,7 @@ def hash_file(path: Union[str, os.PathLike], chunk_size: int = 1024 * 1024) -> O
         with open(path, "rb") as f:
             while chunk := f.read(chunk_size):
                 digest.update(chunk)
-    except (OSError, PermissionError, ValueError, TypeError, FileNotFoundError):
+    except (OSError, PermissionError, ValueError, TypeError, FileNotFoundError, IsADirectoryError):
         return None
     return digest.hexdigest()
 
@@ -103,10 +103,14 @@ def partial_hash(path: Union[str, os.PathLike], read_bytes: int = PARTIAL_READ_B
     if not path or is_protected_path(path):
         return None
     try:
+        if not os.path.exists(path):
+            return None
         with open(path, "rb") as f:
             content = f.read(read_bytes)
+            if not content:
+                return None
             return hashlib.sha256(content).hexdigest()
-    except (OSError, PermissionError, ValueError, TypeError, FileNotFoundError):
+    except (OSError, PermissionError, ValueError, TypeError, FileNotFoundError, IsADirectoryError):
         return None
 
 
@@ -233,7 +237,11 @@ def reclaimable_bytes(groups: List[DuplicateGroup]) -> int:
     """Suma el espacio recuperable de todos los grupos identificados."""
     if not isinstance(groups, list):
         return 0
-    return sum(g.wasted_bytes for g in groups if isinstance(g, DuplicateGroup))
+    total = 0
+    for g in groups:
+        if isinstance(g, DuplicateGroup) and g.paths:
+            total += g.wasted_bytes
+    return total
 
 
 def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
@@ -247,8 +255,9 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
     valid_paths: List[tuple[float, int, Path]] = []
     for p in group.paths:
         try:
-            mtime = p.stat().st_mtime
-            valid_paths.append((mtime, len(str(p)), p))
+            if p.exists():
+                mtime = p.stat().st_mtime
+                valid_paths.append((mtime, len(str(p)), p))
         except (OSError, PermissionError, FileNotFoundError):
             continue
             

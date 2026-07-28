@@ -94,8 +94,10 @@ class ProcessMemory:
         return round(self.working_set / (1024 * 1024), 1)
 
 
-def format_bytes(num: int | float) -> str:
+def format_bytes(num: int | float | None) -> str:
     """Convierte bytes a una cadena legible humanamente con unidades."""
+    if num is None:
+        return "0 B"
     try:
         value = float(num)
     except (TypeError, ValueError):
@@ -131,30 +133,29 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
     Parsea la salida de texto plano (CSV) proveniente de PowerShell.
     Espera formato: Name,Id,WorkingSet. Ignora cabeceras y líneas vacías.
     """
+    if not text:
+        return []
+
     def _generator() -> Iterator[ProcessMemory]:
         for line in text.splitlines():
             clean_line = line.strip()
             if not clean_line: continue
             
             parts = [p.strip().strip('"') for p in clean_line.split(",", 2)]
-            # Esperamos Name, Id, WorkingSet
             if len(parts) != 3: continue
             
-            # Saltar encabezado PowerShell
             if parts[0].lower() in {"name", "processname"}: continue
                 
             try:
-                name, pid_str, ws_str = parts
-                pid_val = int(pid_str)
-                # PowerShell puede devolver WorkingSet como float (ej. 1.23E+7)
-                working_set_val = int(float(ws_str))
+                pid_val = int(parts[1])
+                working_set_val = int(float(parts[2]))
                 
                 if pid_val >= 0 and working_set_val >= 0:
-                    yield ProcessMemory(name=name, pid=pid_val, working_set=working_set_val)
+                    yield ProcessMemory(name=parts[0] or "Unknown", pid=pid_val, working_set=working_set_val)
             except (ValueError, TypeError, OverflowError): 
                 continue
 
-    return sorted(_generator(), key=lambda p: p.working_set, reverse=True)[:limit]
+    return sorted(_generator(), key=lambda p: p.working_set, reverse=True)[:max(0, limit)]
 
 
 def _read_windows_snapshot() -> MemorySnapshot:
@@ -234,13 +235,8 @@ def pressure_level(snapshot: MemorySnapshot) -> str:
 def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] = None) -> List[str]:
     """
     Genera un reporte textual descriptivo basado en el estado actual de la memoria.
-    Args:
-        snapshot: El estado de memoria capturado.
-        processes: Lista opcional de procesos para identificar los más pesados.
-    Returns:
-        Lista de líneas de texto legibles para el usuario.
     """
-    if snapshot.total <= 0:
+    if not isinstance(snapshot, MemorySnapshot) or snapshot.total <= 0:
         return ["No se pudo leer el estado de la memoria en este sistema."]
 
     level: str = pressure_level(snapshot)
@@ -259,8 +255,10 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
     
     lines.append(diagnosticos.get(level, ""))
 
-    for proc in (processes or [])[:3]:
-        lines.append(f"  Mayor consumo: {proc.name} (PID {proc.pid}) — {proc.working_set_mb} MB")
+    if processes:
+        for proc in processes[:3]:
+            if isinstance(proc, ProcessMemory):
+                lines.append(f"  Mayor consumo: {proc.name} (PID {proc.pid}) — {proc.working_set_mb} MB")
 
     return lines
 
@@ -269,16 +267,12 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
     Ejecuta el trim (purga) del working set de un proceso en Windows usando
     la API `EmptyWorkingSet`.
-    
-    Seguridad: Los PID <= 4 están protegidos y se valida el acceso al proceso.
-    Retorna (éxito, mensaje_explicativo).
     """
     if os.name != "nt":
         return False, "Solo disponible en Windows."
     
     try:
         target_pid = int(pid)
-        # 0: Idle, 4: System (protección estricta)
         if target_pid <= 4:
             return False, "PID protegido: no es posible modificar procesos críticos del sistema."
     except (ValueError, TypeError):
@@ -287,7 +281,6 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     try:
         import ctypes
 
-        # Constantes de acceso para OpenProcess
         WIN_PROCESS_SET_QUOTA = 0x0100
         WIN_PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
         
@@ -298,7 +291,6 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
             return False, f"No se pudo abrir el proceso {target_pid} (¿permisos insuficientes?)."
         
         try:
-            # Validación defensiva extra: evitar tocar el propio proceso de la app si fuera posible
             if handle == ctypes.windll.kernel32.GetCurrentProcess():
                 return False, "Operación denegada: no se permite modificar el proceso actual."
 
