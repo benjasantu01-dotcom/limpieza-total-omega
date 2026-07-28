@@ -463,3 +463,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-07-27T23:29:37` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-07-27T23:39:52` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-07-27T23:50:01` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-07-28T00:00:12` Arrancando corrida. Quedan hoy ~300 peticiones objetivo.
+- `2026-07-28T00:00:36` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-07-28T00:00:58` ➖ Sin cambios en healthscore.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `SystemMetrics.validate()` integrando el uso de `_clamp` para asegurar que los conteos de `suspicious_count` y `startup_count` no generen divisiones por cero o valores negativos en las funciones de cálculo si llegan datos inconsistentes.
+- `2026-07-28T00:01:59` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Mejoré la robustez de `on_ask_assistant` y `on_trim_process` añadiendo validaciones de entrada más estrictas y manejo de estados críticos para evitar excepciones no controladas durante interacciones del usuario, asegurando que el bucle de eventos permanezca estable ante entradas vacías o malformadas.
+- `2026-07-28T00:02:08` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-07-28T00:02:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-28T00:02:08` Corrida terminada. Total usado hoy: 4.

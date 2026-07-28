@@ -5,27 +5,28 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **502**
-- Mejoras aceptadas: **255** (50.8% de aceptación)
+- Iteraciones totales: **504**
+- Mejoras aceptadas: **255** (50.6% de aceptación)
 - Rechazadas por tests: 20
-- Rechazadas por guardia de seguridad: 31
-- Sin cambios (nada sustancial que mejorar): 6
-- Sin respuesta de la IA (error o límite): 190
+- Rechazadas por guardia de seguridad: 30
+- Sin cambios (nada sustancial que mejorar): 7
+- Sin respuesta de la IA (error o límite): 192
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-26 | 100 | 4 | 11 | 2 | 35 |
+| 2026-07-26 | 99 | 4 | 10 | 2 | 35 |
 | 2026-07-27 | 155 | 16 | 20 | 4 | 155 |
+| 2026-07-28 | 1 | 0 | 0 | 1 | 2 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **71**
+- legibilidad y documentación: **70**
 - rendimiento: **49**
 - manejo de errores y validación de entradas: **48**
 - seguridad defensiva: **46**
-- robustez ante casos límite: **41**
+- robustez ante casos límite: **42**
 
 ## Mejoras aceptadas por archivo
 
@@ -36,16 +37,17 @@ Este archivo se regenera solo en cada corrida a partir de
 - `scanner.py`: **21**
 - `duplicates.py`: **20**
 - `healthscore.py`: **18**
-- `quarantine.py`: **17**
+- `main.py`: **18**
 - `startup.py`: **17**
-- `main.py`: **17**
 - `memory.py`: **16**
+- `quarantine.py`: **16**
 - `assistant.py`: **14**
 - `branding.py`: **13**
 - `settings.py`: **11**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-28T00:01:59` **main.py** (robustez ante casos límite): Mejoré la robustez de `on_ask_assistant` y `on_trim_process` añadiendo validaciones de entrada más estrictas y manejo de estados críticos para evitar excepciones no controladas durante interacciones del usuario, asegurando que el bucle de eventos permanezca estable ante entradas vacías o malformadas.
 - `2026-07-27T20:26:31` **diskreport.py** (robustez ante casos límite): Mejoré la resiliencia de `walk_files` ante archivos bloqueados o inexistentes durante la iteración (condiciones de carrera) añadiendo un manejo de excepciones más fino en el `stat()` dentro del bucle, asegurando que el generador no se interrumpa ante errores de acceso a archivos individuales.
 - `2026-07-27T20:17:01` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` al verificar la existencia y tipo de directorio padre antes de intentar la escritura y agregué validación de nombre de archivo `is_protected_path` para prevenir escrituras en ubicaciones críticas, asegurando que cualquier fallo sea manejado elegantemente sin abortar.
 - `2026-07-27T20:16:47` **assistant.py** (robustez ante casos límite): Se endureció `build_context` para prevenir errores de ejecución ante métricas parciales o corrompidas, garantizando que el asistente nunca falle al intentar leer atributos inesperados de objetos externos.
@@ -60,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-27T19:36:06` **assistant.py** (rendimiento): Optimicé el diccionario de `handlers` en `local_answer` convirtiéndolo en un `dict` constante a nivel de módulo, evitando que se re-instancie en cada llamada a la función, y utilicé `dict.get()` con una búsqueda de palabras clave más eficiente para reducir el impacto de las iteraciones.
 - `2026-07-27T19:35:50` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la adición de Type Hints faltantes (especialmente en el generador interno y retornos de funciones) y clarifiqué las docstrings de `entries_from_folders` y `parse_registry_csv` para describir mejor la lógica de seguridad y el formato de datos procesado.
 - `2026-07-27T19:35:27` **settings.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo integrando Type Hints específicos en las funciones de validación y enriqueciendo los docstrings para aclarar el contrato de datos entre `validate()` y las funciones de coerción, garantizando así mayor claridad sobre cómo se manejan los valores corruptos.
-- `2026-07-27T19:35:03` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de docstrings siguiendo convenciones de estilo profesional y se ha garantizado la robustez de `scan_directory` al extraer la lógica de exclusión de puntos de reparse en una función privada, facilitando su lectura y mantenimiento futuro.

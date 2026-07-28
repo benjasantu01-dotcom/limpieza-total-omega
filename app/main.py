@@ -1168,15 +1168,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """Intenta liberar el working set de un proceso específico."""
         raw = self.pid_entry.get().strip()
         if not raw.isdigit():
-            messagebox.showinfo("PID inválido", "Escribí el número de PID de un proceso.")
+            messagebox.showwarning("PID inválido", "El PID debe ser un número entero.")
             return
         
-        try:
-            pid = int(raw)
-        except ValueError:
-            messagebox.showerror("Error", "El PID debe ser un número entero.")
-            return
-
+        pid = int(raw)
         if not self._confirm("Liberar working set", memory_mod.TRIM_WARNING + "\n\n¿Seguimos?"):
             return
 
@@ -1362,8 +1357,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """Procesa una consulta para el asistente local."""
         texto = (question or self.question_entry.get()).strip()
         if not texto:
-            messagebox.showinfo("Sin pregunta", "Escribí una pregunta o elegí una sugerida.")
+            self.log("Escribí una pregunta o elegí una sugerida.", "Asistente")
             return
+        
         if question is None:
             self.question_entry.delete(0, "end")
 
