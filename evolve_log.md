@@ -825,3 +825,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-07-28T03:05:54` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante docstrings más precisos, se han añadido type hints faltantes en las funciones internas para mayor claridad, y se ha simplificado la estructura de `_collect_candidates` utilizando `Path.iterdir()` o validaciones más explícitas para asegurar que la lógica de filtrado de seguridad sea legible y robusta.
 - `2026-07-28T03:05:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-28T03:05:54` Corrida terminada. Total usado hoy: 76.
+- `2026-07-28T03:14:40` Arrancando corrida. Quedan hoy ~224 peticiones objetivo.
+- `2026-07-28T03:15:04` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna agregando docstrings descriptivos a los métodos de cálculo y especificando las unidades de medida (MB, porcentaje) para eliminar ambigüedades en la lógica de evaluación.
+- `2026-07-28T03:16:02` ✅ Mejora aceptada en main.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenibilidad de la lógica de construcción de la interfaz (`_build_layout`) y el estado de la aplicación mediante la creación de métodos de configuración específicos, encapsulando la inicialización compleja y reduciendo la carga cognitiva en el constructor.
+- `2026-07-28T03:16:26` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Se añadió documentación mediante docstrings más detallados y type hints adicionales para aclarar los parámetros y comportamientos internos, facilitando el mantenimiento y la comprensión de las interacciones con APIs de sistema.
+- `2026-07-28T03:16:33` 🛑 Propuesta bloqueada por la guardia en organizer.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 117): invalid syntax
+- `2026-07-28T03:16:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-28T03:16:33` Corrida terminada. Total usado hoy: 80.

@@ -112,12 +112,19 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def __init__(self):
         super().__init__()
+        self._init_window_properties()
+        self._init_state()
+        self._build_layout()
+
+    def _init_window_properties(self):
+        """Configura los atributos básicos de la ventana principal."""
         self.title(branding.app_title())
         self.geometry("1120x780")
         self.minsize(980, 680)
         self.configure(fg_color=branding.color("background"))
 
-        # Estado compartido entre pestañas.
+    def _init_state(self):
+        """Inicializa las estructuras de datos y variables de estado."""
         self.junk_files = []
         self.suspicions = []
         self.duplicate_groups = []
@@ -136,16 +143,18 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._tasks_running = 0
         self._executor = concurrent.futures.ThreadPoolExecutor(max_workers=5)
 
-        self._build_layout()
-
     # ------------------------------------------------------------------
     # Construcción de la interfaz
     # ------------------------------------------------------------------
 
     def _build_layout(self):
-        """Arma el encabezado con el logo y el contenedor de pestañas."""
+        """Arma el encabezado, el contenedor de pestañas y el pie."""
         self._build_header()
+        self._build_tabs_container()
+        self._build_footer()
 
+    def _build_tabs_container(self):
+        """Crea el componente de pestañas (Tabview) y sus secciones."""
         self.tabview = ctk.CTkTabview(
             self,
             fg_color=branding.color("surface"),
@@ -161,28 +170,22 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         )
         self.tabview.pack(fill="both", expand=True, padx=18, pady=(4, 8))
 
-        # Las pestañas se registran con ícono en la etiqueta visible, pero se
-        # siguen refiriendo por su nombre interno en todo el código.
+        # Registro de pestañas
         for name in TABS:
             self.tabs[name] = self.tabview.add(branding.tab_label(name))
 
-        self._build_tab_salud()
-        self._build_tab_limpieza()
-        self._build_tab_seguridad()
-        self._build_tab_cuarentena()
-        self._build_tab_memoria()
-        self._build_tab_disco()
-        self._build_tab_duplicados()
-        self._build_tab_navegadores()
-        self._build_tab_inicio()
-        self._build_tab_informe()
-        self._build_tab_asistente()
-        self._build_tab_ajustes()
+        # Construcción lógica de cada tab
+        builders = [
+            self._build_tab_salud, self._build_tab_limpieza, self._build_tab_seguridad,
+            self._build_tab_cuarentena, self._build_tab_memoria, self._build_tab_disco,
+            self._build_tab_duplicados, self._build_tab_navegadores, self._build_tab_inicio,
+            self._build_tab_informe, self._build_tab_asistente, self._build_tab_ajustes
+        ]
+        for builder in builders:
+            builder()
 
         # Compatibilidad con el flujo original, que escribía en un solo cuadro.
-        self.output = self.outputs["Limpieza"]
-
-        self._build_footer()
+        self.output = self.outputs.get("Limpieza")
 
     def _build_header(self):
         """Encabezado con logo, nombre, versión y franja de degradado."""
@@ -209,7 +212,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             text_color=branding.color("text_muted"),
         ).grid(row=1, column=1, sticky="nw")
 
-        # Insignia de versión, en vez de texto suelto.
+        # Insignia de versión
         ctk.CTkLabel(
             header, text=f"  v{branding.APP_VERSION}  ",
             font=ctk.CTkFont(size=branding.font_size("caption"), weight="bold"),
@@ -218,7 +221,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         ).grid(row=0, column=2, sticky="e", padx=(16, 0))
         header.grid_columnconfigure(2, weight=1)
 
-        # Franja de degradado como separador.
+        # Franja de degradado
         franja = tk.Canvas(self, height=3, bg=branding.color("background"),
                            highlightthickness=0, bd=0)
         franja.pack(fill="x", padx=18, pady=(12, 6))
@@ -240,8 +243,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         )
         self.status.pack(side="left")
 
-        # Barra indeterminada: solo se ve mientras hay una tarea en curso, así
-        # el usuario sabe que la app está trabajando y no colgada.
         self.activity = ctk.CTkProgressBar(
             pie, width=170, height=6, mode="indeterminate",
             fg_color=branding.color("surface_alt"),

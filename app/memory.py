@@ -114,7 +114,7 @@ def format_bytes(num: int | float | None) -> str:
 
 def parse_linux_meminfo(text: str) -> MemorySnapshot:
     """
-    Procesa el contenido de /proc/meminfo. 
+    Procesa el contenido crudo de /proc/meminfo. 
     Convierte valores expresados en kB a bytes para estandarizar con MemorySnapshot.
     """
     values: Dict[str, int] = {}
@@ -132,6 +132,10 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
     """
     Parsea la salida de texto plano (CSV) proveniente de PowerShell.
     Espera formato: Name,Id,WorkingSet. Ignora cabeceras y líneas vacías.
+    
+    :param text: Contenido del CSV capturado de PowerShell.
+    :param limit: Cantidad máxima de procesos a retornar.
+    :return: Lista de objetos ProcessMemory ordenados por consumo descendente.
     """
     if not text:
         return []
@@ -265,8 +269,13 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
-    Ejecuta el trim (purga) del working set de un proceso en Windows usando
-    la API `EmptyWorkingSet`.
+    Ejecuta el trim (purga) del working set de un proceso en Windows.
+    
+    Usa la API `EmptyWorkingSet` de la librería `psapi`.
+    Requiere que el proceso no sea crítico ni sea el proceso actual.
+    
+    :param pid: PID del proceso objetivo (entero o string).
+    :return: Tupla (éxito: bool, mensaje: str).
     """
     if os.name != "nt":
         return False, "Solo disponible en Windows."
@@ -281,6 +290,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     try:
         import ctypes
 
+        # Constantes de permisos para OpenProcess
         WIN_PROCESS_SET_QUOTA = 0x0100
         WIN_PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
         
@@ -294,6 +304,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
             if handle == ctypes.windll.kernel32.GetCurrentProcess():
                 return False, "Operación denegada: no se permite modificar el proceso actual."
 
+            # Llamada al API de Windows: EmptyWorkingSet retorna distinto de cero si tiene éxito.
             if not ctypes.windll.psapi.EmptyWorkingSet(handle):
                 error_code = ctypes.GetLastError()
                 return False, f"Windows rechazó la operación (código: {error_code})."
