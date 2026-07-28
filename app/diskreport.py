@@ -264,10 +264,10 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
     except (OSError, RuntimeError):
         return ["Error: No se pudo acceder a la ruta."]
         
-    total_bytes: int = 0
-    total_files: int = 0
-    ext_data_map: dict[str, list[int]] = defaultdict(lambda: [0, 0])
-    top_8_files: list[tuple[int, Path]] = []
+    total_bytes = 0
+    total_files = 0
+    ext_data_map = defaultdict(lambda: [0, 0])
+    top_heap = []
 
     for path, size in walk_files(path_obj, skip_protected):
         total_bytes += size
@@ -278,10 +278,10 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
         record[0] += size
         record[1] += 1
         
-        if len(top_8_files) < 8:
-            heapq.heappush(top_8_files, (size, path))
-        elif size > top_8_files[0][0]:
-            heapq.heapreplace(top_8_files, (size, path))
+        if len(top_heap) < 8:
+            heapq.heappush(top_heap, (size, path))
+        else:
+            heapq.heappushpop(top_heap, (size, path))
 
     lines = [
         f"Carpeta analizada: {path_obj}",
@@ -301,7 +301,7 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
         
     lines.append("")
     lines.append("Archivos más grandes:")
-    for size, path in sorted(top_8_files, key=lambda x: x[0], reverse=True):
+    for size, path in sorted(top_heap, key=lambda x: x[0], reverse=True):
         lines.append(f"  {format_size(size):>10}  {path}")
         
     return lines

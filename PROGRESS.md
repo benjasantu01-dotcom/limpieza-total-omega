@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **248** (49.2% de aceptación)
+- Mejoras aceptadas: **249** (49.4% de aceptación)
 - Rechazadas por tests: 20
 - Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 6
-- Sin respuesta de la IA (error o límite): 203
+- Sin respuesta de la IA (error o límite): 202
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-27 | 99 | 11 | 11 | 2 | 85 |
-| 2026-07-28 | 149 | 9 | 16 | 4 | 118 |
+| 2026-07-27 | 97 | 11 | 11 | 2 | 83 |
+| 2026-07-28 | 152 | 9 | 16 | 4 | 119 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **64**
 - seguridad defensiva: **60**
 - manejo de errores y validación de entradas: **48**
-- robustez ante casos límite: **44**
-- rendimiento: **32**
+- robustez ante casos límite: **42**
+- rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **23**
+- `assistant.py`: **24**
 - `settings.py`: **22**
-- `main.py`: **21**
-- `organizer.py`: **20**
-- `diskreport.py`: **20**
+- `diskreport.py`: **21**
+- `main.py`: **20**
+- `browser.py`: **19**
 - `duplicates.py`: **19**
+- `organizer.py`: **19**
 - `scanner.py`: **19**
-- `browser.py`: **18**
 - `healthscore.py`: **18**
 - `quarantine.py`: **18**
 - `safety.py`: **15**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-28T12:39:09` **diskreport.py** (rendimiento): Optimicé el bucle principal de `summarize` eliminando la creación repetitiva de objetos `Path` y delegando el mantenimiento del heap a una estructura más limpia, reduciendo el consumo de memoria y CPU al consolidar las actualizaciones de estado en una sola pasada.
+- `2026-07-28T12:39:00` **browser.py** (rendimiento): Optimicé el rendimiento de `directory_size` eliminando la conversión recursiva a objetos `Path` dentro del bucle (`entry.path` ya es un `str`) y aplicando el filtro `is_protected_path` solo sobre la ruta resuelta, evitando sobrecarga de procesamiento en cada iteración del escaneo profundo.
+- `2026-07-28T12:38:11` **assistant.py** (rendimiento): Se optimizó el rendimiento del motor local al reemplazar la búsqueda secuencial por una clave en `_HANDLER_MAP` mediante el uso de una expresión regular precompilada (`re.compile`), evitando iteraciones innecesarias sobre todas las keywords.
 - `2026-07-28T12:28:40` **settings.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo integrando docstrings que especifican explícitamente las precondiciones y el comportamiento ante fallos de las funciones críticas, facilitando el mantenimiento y la comprensión de los mecanismos de seguridad y resiliencia implementados.
 - `2026-07-28T12:28:14` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings que explican el contexto funcional de cada función y se ha estandarizado la validación de seguridad inicial, clarificando la separación entre la lógica de escaneo de archivos y la lógica de navegación de directorios.
 - `2026-07-28T12:27:52` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación de los métodos principales de `safety.py` mediante la adición de docstrings estructuradas que especifican explícitamente las condiciones de error y el propósito de cada parámetro, facilitando el mantenimiento para futuros colaboradores y aumentando la claridad sobre el manejo de excepciones.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-28T12:07:28` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `walk_files` extrayendo la lógica compleja de escaneo de directorios a una función interna documentada y mejorando la claridad de los nombres de los parámetros en el filtrado de seguridad.
 - `2026-07-28T11:58:13` **browser.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos en funciones críticas y la clarificación de los tipos y objetivos de los métodos auxiliares, facilitando la comprensión del flujo de seguridad.
 - `2026-07-28T11:57:37` **assistant.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `assistant.py` añadiendo type hints faltantes en funciones clave y estructurando la lógica de `build_context` para que sea más clara, sin alterar su comportamiento defensivo ni funcional.
-- `2026-07-28T11:47:51` **settings.py** (manejo de errores y validación de entradas): Mejoré la resiliencia de `_validate_str` capturando errores de `Path` antes de que ocurran y aseguré que `_coerce_int` maneje casos donde `valor` sea `None` explícitamente, evitando así posibles errores de `TypeError` en conversiones futuras.
-- `2026-07-28T11:47:40` **scanner.py** (manejo de errores y validación de entradas): Reforcé la robustez de `scan_file` y `scan_directory` reemplazando los bloques genéricos `try-except` por validaciones de estado (`is_file`, `exists`) y capturas de excepciones específicas, asegurando que `Path.resolve()` no propague errores ante rutas inválidas o inaccesibles.
-- `2026-07-28T11:38:20` **quarantine.py** (manejo de errores y validación de entradas): Se reforzó la robustez y seguridad del módulo mediante una validación estricta de los parámetros de entrada y la propagación adecuada de excepciones al interactuar con el manifiesto, evitando estados inconsistentes si el archivo JSON se encuentra corrupto.

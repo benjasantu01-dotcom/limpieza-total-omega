@@ -126,8 +126,14 @@ _ENDPOINT: Final = "https://generativelanguage.googleapis.com/v1beta/models/{mod
 _TIMEOUT_SECONDS: Final = 30
 _PATH_REGEX: Final = re.compile(r"([a-zA-Z]:\\|/|\\)")
 
-# Mapeo de intenciones del usuario (keywords) a funciones de respuesta locales
-_HANDLER_MAP: dict[str, Callable[[SystemContext, str], Answer]] = {}
+# Mapeo precompilado para búsqueda eficiente
+_HANDLER_PATTERNS: Final = {
+    re.compile(r"ram|memoria|lenta|lento|acelerar"): "ram",
+    re.compile(r"espacio|disco|lleno|recuperar|liberar"): "disco",
+    re.compile(r"seguro|virus|sospechos|borrar|peligro"): "security",
+    re.compile(r"puntaje|salud|nota|score"): "score",
+    re.compile(r"inicio|arranque|arranca|encender"): "startup"
+}
 
 @dataclass
 class SystemContext:
@@ -329,14 +335,13 @@ def handle_startup(ctx: SystemContext, text: str) -> Answer:
                 "cambio y te deja revertirlo.")
     return Answer(cuerpo, notice=OFFLINE_NOTICE)
 
-# Inicializar mapeo para evitar búsquedas dinámicas
-_HANDLER_MAP.update({
-    "ram": handle_ram, "memoria": handle_ram, "lenta": handle_ram, "lento": handle_ram, "acelerar": handle_ram,
-    "espacio": handle_disk, "disco": handle_disk, "lleno": handle_disk, "recuperar": handle_disk, "liberar": handle_disk,
-    "seguro": handle_security, "virus": handle_security, "sospechos": handle_security, "borrar": handle_security, "peligro": handle_security,
-    "puntaje": handle_score, "salud": handle_score, "nota": handle_score, "score": handle_score,
-    "inicio": handle_startup, "arranque": handle_startup, "arranca": handle_startup, "encender": handle_startup
-})
+_HANDLERS = {
+    "ram": handle_ram,
+    "disco": handle_disk,
+    "security": handle_security,
+    "score": handle_score,
+    "startup": handle_startup
+}
 
 def local_answer(question: str, context: SystemContext) -> Answer:
     """Responde con reglas locales, tras sanear el input."""
@@ -352,9 +357,9 @@ def local_answer(question: str, context: SystemContext) -> Answer:
             suggestions=SUGGESTED_QUESTIONS_LIST[:3],
         )
 
-    for keyword, handler in _HANDLER_MAP.items():
-        if keyword in clean_text:
-            return handler(context, clean_text)
+    for pattern, key in _HANDLER_PATTERNS.items():
+        if pattern.search(clean_text):
+            return _HANDLERS[key](context, clean_text)
 
     problemas = _rank_problems(context)
     if problemas:

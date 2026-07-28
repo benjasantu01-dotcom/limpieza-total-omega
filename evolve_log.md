@@ -657,3 +657,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-07-28T12:28:49` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejora la legibilidad y mantenibilidad de `startup.py` mediante la implementación de Type Hints más precisos, documentación de tipo "docstring" extendida sobre la lógica de resolución de rutas, y la extracción de una función privada `_is_executable` para encapsular la lógica de validación de archivos, facilitando la auditoría de seguridad del código.
 - `2026-07-28T12:28:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-28T12:28:49` Corrida terminada. Total usado hoy: 296.
+- `2026-07-28T12:37:38` Arrancando corrida. Quedan hoy ~4 peticiones objetivo.
+- `2026-07-28T12:38:11` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Se optimizó el rendimiento del motor local al reemplazar la búsqueda secuencial por una clave en `_HANDLER_MAP` mediante el uso de una expresión regular precompilada (`re.compile`), evitando iteraciones innecesarias sobre todas las keywords.
+- `2026-07-28T12:38:39` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-07-28T12:39:00` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el rendimiento de `directory_size` eliminando la conversión recursiva a objetos `Path` dentro del bucle (`entry.path` ya es un `str`) y aplicando el filtro `is_protected_path` solo sobre la ruta resuelta, evitando sobrecarga de procesamiento en cada iteración del escaneo profundo.
+- `2026-07-28T12:39:09` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el bucle principal de `summarize` eliminando la creación repetitiva de objetos `Path` y delegando el mantenimiento del heap a una estructura más limpia, reduciendo el consumo de memoria y CPU al consolidar las actualizaciones de estado en una sola pasada.
+- `2026-07-28T12:39:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-28T12:39:09` Corrida terminada. Total usado hoy: 300.

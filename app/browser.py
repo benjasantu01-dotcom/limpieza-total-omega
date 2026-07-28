@@ -109,11 +109,6 @@ def _is_safe_path(target_path: Path, base_path: Path) -> bool:
 def directory_size(path: str | os.PathLike) -> int:
     """
     Calcula el peso total de una carpeta mediante un recorrido seguro del sistema de archivos.
-    
-    Implementa:
-    1. Resolución de rutas para evitar enlaces simbólicos o junctions (puntos de reparse).
-    2. Filtrado contra `is_protected_path` para cumplir con los estándares de seguridad.
-    3. Manejo de excepciones por permisos para evitar el bloqueo del bucle de escaneo.
     """
     if not path:
         return 0
@@ -137,7 +132,6 @@ def directory_size(path: str | os.PathLike) -> int:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
-                        # Saltar enlaces simbólicos y puntos de reparse (junctions)
                         if entry.is_symlink() or entry.is_junction():
                             continue
                         if entry.is_dir():
@@ -173,10 +167,6 @@ def detect_profiles(
 ) -> List[BrowserCache]:
     """
     Explora los directorios base para identificar cachés de navegadores.
-    
-    La función compara las rutas encontradas con `BROWSER_CACHE_PATHS` y
-    filtra resultados usando las reglas de `safety.py`. Retorna una lista
-    ordenada de objetos `BrowserCache`.
     """
     if bases is None:
         bases = base_directories()
