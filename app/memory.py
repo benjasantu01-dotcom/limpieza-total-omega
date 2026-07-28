@@ -153,9 +153,10 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
             try:
                 pid_val = int(parts[1])
                 working_set_val = int(float(parts[2]))
+                proc_name = parts[0] if parts[0] else "Unknown"
                 
                 if pid_val >= 0 and working_set_val >= 0:
-                    yield ProcessMemory(name=parts[0] or "Unknown", pid=pid_val, working_set=working_set_val)
+                    yield ProcessMemory(name=proc_name, pid=pid_val, working_set=working_set_val)
             except (ValueError, TypeError, OverflowError): 
                 continue
 

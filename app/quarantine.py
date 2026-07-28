@@ -126,11 +126,12 @@ def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload:
     Obtiene la lista de ítems en cuarentena desde el manifiesto JSON.
     Usa un caché en memoria para minimizar I/O. Retorna lista vacía ante error o ausencia de archivo.
     """
-    base_str = str(base)
+    base_path = quarantine_dir(base)
+    base_str = str(base_path)
     if not force_reload and base_str in _manifest_cache:
         return _manifest_cache[base_str]
         
-    path = _manifest_path(base)
+    path = _manifest_path(base_path)
     if not path.exists():
         return []
     try:
@@ -151,8 +152,9 @@ def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_
     """
     Persiste la lista de objetos QuarantineItem en disco como un archivo JSON.
     """
-    _manifest_cache[str(base)] = items
-    path = _manifest_path(base)
+    base_path = quarantine_dir(base)
+    _manifest_cache[str(base_path)] = items
+    path = _manifest_path(base_path)
     path.write_text(
         json.dumps([item.to_dict() for item in items], indent=2, ensure_ascii=False),
         encoding="utf-8",
@@ -246,7 +248,8 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
     if match is None:
         raise KeyError(f"No se encontró el ítem: {item_id}")
 
-    stored_file = quarantine_dir(base) / match.stored_name
+    base_path = quarantine_dir(base)
+    stored_file = base_path / match.stored_name
     
     if not stored_file.is_file():
         raise FileNotFoundError(f"Archivo inexistente: {stored_file}")

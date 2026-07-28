@@ -155,7 +155,9 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
     
     try:
         dest.mkdir(parents=True, exist_ok=True)
-    except OSError as e:
+        if not dest.is_dir():
+            raise NotADirectoryError(f"El destino {dest} no es un directorio válido.")
+    except (OSError, NotADirectoryError) as e:
         logger.error("No se pudo preparar el directorio de revisión %s: %s", dest, e)
         raise
 
@@ -169,15 +171,12 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             if not full_source_path.exists() or not full_source_path.is_file():
                 continue
             
-            # Verificación de seguridad reforzada antes de mover
             if not is_safe_to_modify(full_source_path) or not is_safe_to_modify(dest):
                 continue
 
-            # Evitar bucles, movimientos dentro de sí mismo o a ubicaciones protegidas
             if dest == full_source_path or dest in full_source_path.parents or full_source_path == dest.parent:
                 continue
                 
-            # Verificar si el archivo está en uso mediante apertura exclusiva
             try:
                 with open(full_source_path, 'rb'):
                     pass
@@ -185,7 +184,6 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
                 logger.warning("Archivo bloqueado o en uso: %s", full_source_path)
                 continue
 
-            # Verificación defensiva de espacio libre antes de mover (mínimo 10MB de margen)
             usage = shutil.disk_usage(dest)
             if usage.free < (jf.size_bytes + 10 * 1024 * 1024):
                 logger.error("Espacio insuficiente en destino para mover %s", full_source_path)
