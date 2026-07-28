@@ -119,20 +119,15 @@ def drive_usage(mount: str | os.PathLike) -> DriveUsage | None:
     if not mount:
         return None
     try:
-        # Validar string antes de pasarlo al SO
-        path_str = str(mount)
+        path_str = os.fspath(mount)
         usage = shutil.disk_usage(path_str)
-    except (OSError, ValueError):
+    except (OSError, ValueError, TypeError):
         return None
     return DriveUsage(mount=str(mount), total=usage.total, used=usage.used, free=usage.free)
 
 
 def all_drives_usage(mounts: Iterable[str] | None = None) -> list[DriveUsage]:
-    """Espacio de todas las unidades disponibles.
-
-    `mounts` se puede pasar explícitamente (útil para tests); si no, se
-    detectan las unidades del sistema.
-    """
+    """Espacio de todas las unidades disponibles."""
     if mounts is None:
         if os.name == "nt":
             import string
@@ -149,11 +144,7 @@ def all_drives_usage(mounts: Iterable[str] | None = None) -> list[DriveUsage]:
 
 
 def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Generator[tuple[Path, int], None, None]:
-    """
-    Genera tuplas (ruta_absoluta, tamaño_en_bytes) para cada archivo encontrado.
-    
-    Usa `os.scandir` para minimizar llamadas a `stat` y mejorar rendimiento.
-    """
+    """Genera tuplas (ruta, tamaño) para cada archivo encontrado, manejando errores de acceso."""
     if not directory:
         return
     try:
@@ -164,7 +155,6 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
         return
 
     def is_unsafe(entry: os.DirEntry) -> bool:
-        """Determina si una entrada es un enlace simbólico, punto de reparse o zona protegida."""
         if entry.is_symlink():
             return True
         if os.name == 'nt':
@@ -188,7 +178,7 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
                     else:
                         try:
                             yield Path(entry.path), entry.stat().st_size
-                        except OSError:
+                        except (OSError, PermissionError):
                             continue
         except (OSError, PermissionError):
             return

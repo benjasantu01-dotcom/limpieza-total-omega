@@ -75,34 +75,27 @@ class DuplicateGroup:
 def hash_file(path: Union[str, os.PathLike], chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
     Calcula el hash SHA256 completo de un archivo mediante lectura en bloques.
-    
-    Args:
-        path: Ruta del archivo a procesar.
-        chunk_size: Tamaño del buffer para lectura progresiva (default 1MB).
-        
-    Returns:
-        Hash SHA256 (hex) si es accesible, None si es protegido o inaccesible.
     """
-    if not path or is_protected_path(path):
+    if path is None or is_protected_path(path):
         return None
+    
     digest = hashlib.sha256()
     try:
         with open(path, "rb") as f:
             while chunk := f.read(chunk_size):
                 digest.update(chunk)
+        return digest.hexdigest()
     except (OSError, PermissionError, ValueError, TypeError, FileNotFoundError, IsADirectoryError):
         return None
-    return digest.hexdigest()
 
 
 def partial_hash(path: Union[str, os.PathLike], read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """
     Calcula un hash rápido de los primeros N bytes de un archivo.
-    Actúa como filtro heurístico de alto rendimiento para descartar archivos con 
-    cabeceras diferentes sin necesidad de leer el archivo completo.
     """
-    if not path or is_protected_path(path):
+    if path is None or is_protected_path(path):
         return None
+    
     try:
         with open(path, "rb") as f:
             content = f.read(read_bytes)
@@ -118,6 +111,9 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     Clasifica rutas de archivos según su tamaño en disco (st_size).
     """
     groups: Dict[int, List[Path]] = defaultdict(list)
+    if paths is None:
+        return groups
+        
     for p in paths:
         try:
             stat = p.lstat()
@@ -146,8 +142,6 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
             
             for root, subdirs, files in os.walk(base):
                 root_path = Path(root)
-                
-                # Filtrar puntos de reparse (junctions) para no salir del árbol y evitar loops
                 subdirs[:] = [
                     d for d in subdirs 
                     if not (root_path / d).is_symlink() and not is_protected_path(root_path / d)
@@ -199,15 +193,12 @@ def find_duplicates(
         return []
 
     groups: List[DuplicateGroup] = []
-    # Etapa 1: Agrupar por tamaño
     size_map = {s: p for s, p in group_by_size(candidates).items() if len(p) > 1}
     
     for size, same_size in size_map.items():
-        # Etapa 2: Refinar por hash parcial (64KB)
         by_partial = _refine_by_hash(same_size, partial_hash)
         
         for partial_candidates in by_partial.values():
-            # Etapa 3: Confirmar por hash completo
             by_full = _refine_by_hash(partial_candidates, hash_file)
             
             for digest, confirmed in by_full.items():
@@ -223,6 +214,8 @@ def find_duplicates(
 
 def reclaimable_bytes(groups: List[DuplicateGroup]) -> int:
     """Calcula la suma total de espacio desperdiciado por todos los duplicados."""
+    if not groups:
+        return 0
     return sum(g.wasted_bytes for g in groups)
 
 
@@ -236,7 +229,6 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
     valid_paths: List[tuple[float, int, Path]] = []
     for p in group.paths:
         try:
-            # is_protected ya fue chequeado en la recolección, pero validamos existencia
             mtime = p.stat().st_mtime
             valid_paths.append((mtime, len(str(p)), p))
         except (OSError, PermissionError, FileNotFoundError):
