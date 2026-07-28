@@ -123,16 +123,20 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
         while stack:
             current_dir = stack.pop()
             try:
-                for entry in os.scandir(current_dir):
-                    # Chequeo de seguridad unificado y rápido
-                    if is_protected_path(Path(entry.path)):
-                        continue
-                    
-                    if entry.is_dir(follow_symlinks=False):
-                        if not _is_reparse_point(entry):
-                            stack.append(entry.path)
-                    elif entry.is_file():
-                        results.extend(scan_file(Path(entry.path)))
+                with os.scandir(current_dir) as it:
+                    for entry in it:
+                        try:
+                            # Chequeo de seguridad unificado y rápido
+                            if is_protected_path(Path(entry.path)):
+                                continue
+                            
+                            if entry.is_dir(follow_symlinks=False):
+                                if not _is_reparse_point(entry):
+                                    stack.append(entry.path)
+                            elif entry.is_file():
+                                results.extend(scan_file(Path(entry.path)))
+                        except (PermissionError, OSError):
+                            continue
             except (PermissionError, OSError):
                 continue
         return results

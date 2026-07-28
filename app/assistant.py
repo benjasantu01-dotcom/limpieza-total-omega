@@ -121,6 +121,7 @@ SYSTEM_PROMPT: Final = (
 
 _ENDPOINT: Final = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
 _TIMEOUT_SECONDS: Final = 30
+_PATH_REGEX: Final = re.compile(r"([a-zA-Z]:\\|/|\\)")
 
 
 @dataclass
@@ -428,7 +429,11 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
             datos = json.loads(respuesta.read().decode("utf-8"))
         partes = datos["candidates"][0]["content"]["parts"]
         texto = "".join(p.get("text", "") for p in partes).strip()
-        return texto or None
+        
+        # Seguridad: Bloqueo defensivo ante posibles inyecciones de rutas en el texto devuelto
+        if not texto or _PATH_REGEX.search(texto):
+            return None
+        return texto
     except (urllib.error.URLError, urllib.error.HTTPError, OSError,
             json.JSONDecodeError, KeyError, IndexError, TypeError):
         return None

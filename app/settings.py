@@ -190,23 +190,21 @@ def load(base: str | Path | None = None) -> dict[str, Any]:
     global _cached_settings, _last_base, _last_mtime
     
     ruta = settings_path(base)
-    mtime = ruta.stat().st_mtime if ruta.exists() else 0.0
-
-    if _cached_settings is not None and base == _last_base and mtime == _last_mtime:
-        return _cached_settings
-
     try:
-        if ruta.exists():
-            contenido = ruta.read_text(encoding="utf-8").strip()
-            _cached_settings = validate(json.loads(contenido)) if contenido else dict(DEFAULTS)
-        else:
-            _cached_settings = dict(DEFAULTS)
-    except (OSError, json.JSONDecodeError, UnicodeDecodeError):
-        _cached_settings = dict(DEFAULTS)
+        if not ruta.exists():
+            return dict(DEFAULTS)
         
-    _last_base = base
-    _last_mtime = mtime
-    return _cached_settings
+        stat = ruta.stat()
+        if _cached_settings is not None and base == _last_base and stat.st_mtime == _last_mtime:
+            return _cached_settings
+
+        contenido = ruta.read_text(encoding="utf-8").strip()
+        _cached_settings = validate(json.loads(contenido)) if contenido else dict(DEFAULTS)
+        _last_base = base
+        _last_mtime = stat.st_mtime
+        return _cached_settings
+    except (OSError, json.JSONDecodeError, UnicodeDecodeError):
+        return dict(DEFAULTS)
 
 
 def save(values: Any, base: str | Path | None = None) -> Path | None:
@@ -220,6 +218,7 @@ def save(values: Any, base: str | Path | None = None) -> Path | None:
     limpio = validate(values)
     try:
         ruta.parent.mkdir(parents=True, exist_ok=True)
+        # Verificación explícita de capacidad de escritura sin sobrescribir si es bloqueado
         if ruta.exists() and not os.access(ruta, os.W_OK):
             return None
             

@@ -126,7 +126,7 @@ def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> List[Start
                     if item.is_file() and not item.is_symlink() and item.name.lower() != "desktop.ini":
                         if base_path in item.resolve().parents:
                             found_entries.append(StartupEntry(name=item.stem, command=str(item), source="carpeta"))
-                except (OSError, PermissionError):
+                except (OSError, PermissionError, RuntimeError):
                     continue
         except (OSError, PermissionError):
             continue
