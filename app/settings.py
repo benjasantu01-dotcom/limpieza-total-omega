@@ -180,7 +180,7 @@ def validate(values: Any) -> dict[str, Any]:
     """
     Crea un diccionario nuevo basado en DEFAULTS, poblándolo únicamente con
     valores válidos encontrados en la entrada `values`. Garantiza que el retorno
-    sea siempre un objeto completo y seguro.
+    sea siempre un objeto completo y seguro, incluso si el input es basura.
     """
     limpio = dict(DEFAULTS)
     if not isinstance(values, dict):
@@ -196,7 +196,11 @@ def validate(values: Any) -> dict[str, Any]:
 
 
 def load(base: str | Path | None = None) -> dict[str, Any]:
-    """Carga configuración desde disco con caché inteligente o retorna defaults ante error."""
+    """
+    Carga configuración desde disco. Implementa un caché por mtime para optimizar
+    lecturas. Ante cualquier error de lectura o corrupción JSON, retorna 
+    DEFAULTS para asegurar que la app nunca deje de arrancar.
+    """
     global _cached_settings, _last_path_str, _last_mtime
     
     ruta = settings_path(base)
@@ -222,8 +226,9 @@ def load(base: str | Path | None = None) -> dict[str, Any]:
 
 def save(values: Any, base: str | Path | None = None) -> Path | None:
     """
-    Persiste la configuración de forma atómica usando un archivo temporal.
-    Verifica seguridad de escritura antes de realizar cualquier operación.
+    Persiste la configuración de forma atómica. Utiliza `ensure_safe_to_modify` 
+    para validar el directorio padre antes de escribir. Retorna la ruta en caso 
+    de éxito, o None si hay error de permisos o acceso al sistema de archivos.
     """
     global _cached_settings, _last_path_str, _last_mtime
     ruta = settings_path(base)
@@ -256,7 +261,7 @@ def save(values: Any, base: str | Path | None = None) -> Path | None:
 
 
 def update(changes: dict[str, Any], base: str | Path | None = None) -> dict[str, Any]:
-    """Aplica cambios parciales y guarda el nuevo estado completo."""
+    """Aplica cambios parciales sobre el estado actual y los persiste."""
     actual = load(base).copy()
     if isinstance(changes, dict):
         actual.update(changes)

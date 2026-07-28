@@ -74,8 +74,17 @@ _SYSTEM_ROOTS_PARTS: Final[set[str]] = {p.name.lower() for p in _SYSTEM_ROOTS}
 
 def normalize(path: PathLike) -> Path:
     """
-    Convierte cualquier entrada tipo ruta a un objeto Path absoluto y resuelto.
-    Elimina enlaces simbólicos y referencias a directorios padres ('..').
+    Convierte la entrada a Path absoluto, resolviendo symlinks y referencias '..'.
+
+    Args:
+        path: Ruta a normalizar.
+
+    Returns:
+        Un objeto Path absoluto y resuelto.
+
+    Raises:
+        TypeError: Si la entrada no es str o os.PathLike.
+        ValueError: Si la ruta está vacía.
     """
     if not isinstance(path, (str, os.PathLike)):
         raise TypeError(f"Entrada inválida: se esperaba str o PathLike, recibió {type(path)}")
@@ -107,8 +116,13 @@ def is_drive_root(path: PathLike) -> bool:
 
 def is_protected_path(path: PathLike) -> bool:
     """
-    Analiza si la ruta reside en carpetas críticas de sistema o es una ruta UNC.
-    Usa el cache _SYSTEM_ROOTS_PARTS para una validación rápida.
+    Determina si una ruta es crítica para el sistema operativo o es una ruta UNC.
+
+    Args:
+        path: Ruta a evaluar.
+
+    Returns:
+        True si la ruta está protegida, False si es segura para lectura.
     """
     try:
         raw_path = str(path).strip()
@@ -136,8 +150,12 @@ def is_within_directory(
     allow_equal: bool = False,
 ) -> bool:
     """
-    Comprueba si 'child' es descendiente de 'parent' mediante resolución de rutas.
-    Evita falsos positivos causados por symlinks en el árbol de directorios.
+    Verifica si 'child' es descendiente de 'parent' tras resolver enlaces.
+
+    Args:
+        child: Ruta que se intenta validar.
+        parent: Ruta del directorio contenedor.
+        allow_equal: Si True, considera True si las rutas coinciden.
     """
     if not child or not parent:
         return False
@@ -157,7 +175,7 @@ def is_within_directory(
 
 
 def is_sensitive_file(path: PathLike) -> bool:
-    """Verifica si el archivo posee una extensión considerada sensible."""
+    """Verifica si el archivo tiene una extensión sensible (ej. .exe, .sys)."""
     try:
         if not path:
             return True
@@ -168,8 +186,17 @@ def is_sensitive_file(path: PathLike) -> bool:
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> Path:
     """
-    Valida si una ruta puede ser modificada. Lanza UnsafePathError si existe riesgo.
-    Es el estándar para operaciones de escritura (borrado/movimiento).
+    Valida la seguridad de la ruta antes de modificarla (escritura/borrado).
+
+    Args:
+        path: Ruta a validar.
+        allow_sensitive: Si True, permite extensiones sensibles.
+
+    Returns:
+        La ruta normalizada si es segura.
+
+    Raises:
+        UnsafePathError: Si la ruta es insegura o restringida.
     """
     if not path:
         raise UnsafePathError("La ruta proporcionada está vacía o es None.")
@@ -204,7 +231,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
 
 
 def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> bool:
-    """Versión booleana de `ensure_safe_to_modify` para chequeos preventivos."""
+    """Versión booleana para chequeos preventivos sin levantar excepciones."""
     try:
         ensure_safe_to_modify(path, allow_sensitive=allow_sensitive)
         return True
@@ -213,7 +240,13 @@ def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> bool:
 
 
 def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = False) -> list[Path]:
-    """Filtra una colección y retorna solo las rutas que superan el test de seguridad."""
+    """
+    Filtra una lista de rutas, retornando solo las que pueden ser modificadas.
+    
+    Args:
+        paths: Iterable con rutas a filtrar.
+        allow_sensitive: Propagado a ensure_safe_to_modify.
+    """
     safe: list[Path] = []
     if paths is None:
         return safe
@@ -227,7 +260,7 @@ def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = Fals
 
 
 def describe_protection(path: PathLike) -> str:
-    """Genera una explicación legible sobre por qué una ruta está bloqueada."""
+    """Retorna una cadena explicativa sobre por qué una ruta no es segura."""
     if not path:
         return "La ruta está vacía."
     try:

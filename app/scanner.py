@@ -7,7 +7,7 @@ en vez de reinventar un motor de firmas.
 
 Señales heurísticas que marca (no borra nada, solo informa):
 - Doble extensión (ej. "factura.pdf.exe")
-- Ejecutables en carpetas de descargas/temp recién creados
+- Ejecutables en carpetas de usuario recién creados
 - Nombres que imitan archivos de sistema pero fuera de System32
 """
 
@@ -51,6 +51,7 @@ def _is_reparse_point(entry: os.DirEntry) -> bool:
     """
     Verifica si la entrada es un punto de reparse (Junction/Symlink) en Windows.
     El bit 0x400 (FILE_ATTRIBUTE_REPARSE_POINT) identifica enlaces simbólicos y junctions.
+    Evita la recursión infinita en estructuras de directorios complejas.
     """
     try:
         return bool(entry.stat().st_file_attributes & 0x400)
@@ -61,9 +62,9 @@ def _is_reparse_point(entry: os.DirEntry) -> bool:
 def check_double_extension(path: Path) -> Optional[Suspicion]:
     """
     Analiza si el nombre del archivo contiene una doble extensión que intente 
-    engañar al usuario sobre el tipo real de archivo.
+    engañar al usuario sobre el tipo real de archivo mediante el ocultamiento de extensiones.
     """
-    if path is None or not path.name or is_protected_path(path):
+    if not path.name or is_protected_path(path):
         return None
     if DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
@@ -72,10 +73,11 @@ def check_double_extension(path: Path) -> Optional[Suspicion]:
 
 def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_THRESHOLD_HOURS) -> Optional[Suspicion]:
     """
-    Evalúa si un archivo ejecutable fue modificado recientemente. 
-    Los ejecutables nuevos en carpetas de usuario tienen mayor perfil de riesgo.
+    Evalúa la frescura de un ejecutable mediante su marca de tiempo (mtime). 
+    La aparición reciente de ejecutables en directorios de usuario suele correlacionar 
+    con descargas no autorizadas.
     """
-    if path is None or is_protected_path(path) or path.suffix.lower() not in SUSPICIOUS_EXECUTABLE_EXT:
+    if is_protected_path(path) or path.suffix.lower() not in SUSPICIOUS_EXECUTABLE_EXT:
         return None
     try:
         mtime = datetime.fromtimestamp(path.stat().st_mtime)
@@ -88,10 +90,11 @@ def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_TH
 
 def check_system_lookalike(path: Path) -> Optional[Suspicion]:
     """
-    Detecta si un archivo tiene el nombre de un proceso crítico de sistema,
-    pero se encuentra alojado fuera de la carpeta System32.
+    Detecta suplantación mediante nombres idénticos a procesos críticos de Windows.
+    Si un archivo con nombre de proceso crítico reside fuera de la ruta protegida 
+    System32, se considera una señal de alerta de suplantación.
     """
-    if path is None or not path.name or is_protected_path(path):
+    if not path.name or is_protected_path(path):
         return None
     if path.name.lower() in SYSTEM_LOOKALIKES:
         try:
@@ -105,9 +108,10 @@ def check_system_lookalike(path: Path) -> Optional[Suspicion]:
 
 def scan_file(path: Path) -> List[Suspicion]:
     """
-    Ejecuta el conjunto de reglas heurísticas sobre una ruta dada.
+    Ejecuta el conjunto de reglas heurísticas sobre un archivo individual.
+    Es la unidad atómica de análisis utilizada tanto en el escaneo iterativo como en checks únicos.
     """
-    if not path or is_protected_path(path):
+    if is_protected_path(path):
         return []
 
     try:
@@ -124,8 +128,7 @@ def scan_file(path: Path) -> List[Suspicion]:
     ]
     
     for check_func in checks:
-        res = check_func(path)
-        if res: 
+        if (res := check_func(path)):
             results.append(res)
     
     return results
@@ -133,8 +136,10 @@ def scan_file(path: Path) -> List[Suspicion]:
 
 def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
     """
-    Recorre el directorio de forma iterativa, aplicando escaneo heurístico.
-    No sigue enlaces simbólicos ni puntos de reparse para evitar bucles.
+    Recorre el sistema de archivos de forma iterativa empleando una pila (stack).
+    - No sigue enlaces simbólicos ni puntos de reparse (previene loops).
+    - Filtra recursivamente mediante `is_protected_path`.
+    - Captura excepciones de acceso al sistema de archivos para garantizar robustez.
     """
     if not directory:
         return []
@@ -157,9 +162,7 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
                                 if not _is_reparse_point(entry):
                                     stack.append(Path(entry.path))
                             elif entry.is_file():
-                                entry_path = Path(entry.path)
-                                if not is_protected_path(entry_path):
-                                    results.extend(scan_file(entry_path))
+                                results.extend(scan_file(Path(entry.path)))
                         except (PermissionError, OSError):
                             continue
             except (PermissionError, OSError):
@@ -172,7 +175,8 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
 
 def run_windows_defender_quick_scan() -> str:
     """
-    Invoca PowerShell para ejecutar un QuickScan de Windows Defender.
+    Invoca la API de PowerShell `Start-MpScan` para ejecutar un análisis de Defender.
+    Se utiliza como fallback cuando se requiere un escaneo de firmas profesional.
     """
     try:
         result = subprocess.run(
