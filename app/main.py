@@ -797,16 +797,15 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         if not folder:
             return None
         
-        try:
-            safety.ensure_safe_to_modify(Path(folder))
-            return folder
-        except safety.UnsafePathError:
+        if not safety.is_safe_to_modify(Path(folder)):
             messagebox.showwarning(
                 "Carpeta protegida",
                 "Esa carpeta es vital para el sistema y no puede ser analizada.\n\n"
                 "Elegí una carpeta de usuario (Descargas, Documentos, etc.).",
             )
             return None
+            
+        return folder
 
     def _confirm(self, title: str, message: str) -> bool:
         """Muestra un cuadro de confirmación modal para acciones destructivas."""

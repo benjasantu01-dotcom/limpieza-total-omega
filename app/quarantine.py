@@ -173,6 +173,10 @@ def quarantine_file(
     if not origin.is_file():
         raise FileNotFoundError(f"El objeto no es un archivo válido: {origin}")
     
+    # Defensa: No operar sobre enlaces simbólicos para evitar escapar del scope
+    if origin.is_symlink():
+        raise UnsafePathError(f"Operación denegada: {origin} es un enlace simbólico.")
+    
     if is_within_directory(origin, dest_dir):
         raise UnsafePathError(f"El archivo ya reside en la carpeta de cuarentena: {origin}")
 

@@ -17,7 +17,7 @@ import logging
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional, Final, Callable, Union, Iterator
+from typing import List, Optional, Final, Callable, Union
 from safety import is_safe_to_modify
 
 # Configuración de log para seguimiento de errores no críticos
@@ -190,7 +190,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             if dest == full_source_path or dest in full_source_path.parents or full_source_path.parent == dest:
                 continue
                 
-            # Verificar disponibilidad de acceso exclusivo antes de mover
+            # Verificar acceso exclusivo antes de mover
             try:
                 with open(full_source_path, 'rb'):
                     pass
@@ -207,7 +207,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             ext = jf.path.suffix
             timestamp = int(jf.modified.timestamp())
             
-            # Construir ruta final validando que permanezca confinada al directorio de staging (evitar path traversal)
+            # Construir ruta final validando que permanezca confinada al directorio de staging
             target = (dest / f"{base_name}_{timestamp}{ext}").resolve()
             if not str(target).startswith(str(dest)):
                 continue

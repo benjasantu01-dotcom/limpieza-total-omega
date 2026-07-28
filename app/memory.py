@@ -306,7 +306,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     
     try:
         target_pid = int(pid)
-        # Protección: PID 0 (Idle) y PIDs < 16 son componentes críticos del kernel
+        # Protección estricta: PID 0 (Idle) y PID 4 (System) son intocables por seguridad y estabilidad.
         if target_pid < 16:
             return False, "PID protegido: no es posible modificar procesos del sistema base."
     except (ValueError, TypeError):
@@ -315,19 +315,18 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     try:
         import ctypes
 
-        # Constantes de permisos para OpenProcess
+        # Permisos mínimos necesarios: SET_QUOTA (para EmptyWorkingSet) y QUERY (para verificar estado).
         WIN_PROCESS_SET_QUOTA = 0x0100
         WIN_PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
         
-        # Intentar abrir el proceso solo con los permisos estrictamente necesarios
         handle = ctypes.windll.kernel32.OpenProcess(
             WIN_PROCESS_SET_QUOTA | WIN_PROCESS_QUERY_LIMITED_INFORMATION, False, target_pid
         )
         if not handle:
-            return False, f"No se pudo acceder al proceso {target_pid} (¿acceso denegado?)."
+            return False, f"Acceso denegado al proceso {target_pid}."
         
         try:
-            # Evitar auto-manipulación y chequeo de seguridad final
+            # Doble chequeo de seguridad contra la manipulación del proceso host.
             if handle == ctypes.windll.kernel32.GetCurrentProcess():
                 return False, "Operación denegada: no se permite modificar el proceso actual."
 
