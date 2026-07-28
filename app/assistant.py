@@ -441,6 +441,10 @@ def ask(question: str, context: SystemContext | None = None,
     try:
         clave = settings.assistant_api_key(base)
         configuracion = settings.load(base)
+        
+        if not isinstance(configuracion, dict):
+            return respaldo
+            
         modelo = str(configuracion.get("asistente_modelo", "gemini-3.1-flash-lite"))
         enviar = bool(configuracion.get("asistente_enviar_metricas", True))
     except (Exception, TypeError, ValueError):

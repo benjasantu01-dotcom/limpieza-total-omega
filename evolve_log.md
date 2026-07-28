@@ -510,3 +510,53 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-07-28T11:09:34` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-07-28T11:09:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-28T11:09:34` Corrida terminada. Total usado hoy: 264.
+- `2026-07-28T11:15:44` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-07-28T11:15:47` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-07-28T11:15:47` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-07-28T11:16:08` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-07-28T11:16:08` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-07-28T11:16:39` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-07-28T11:16:39` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-07-28T11:16:55` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-07-28T11:16:55` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-07-28T11:17:15` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-07-28T11:17:15` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-07-28T11:17:46` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-07-28T11:17:46` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-07-28T11:18:34` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `build_context` y `ask` mediante la validación proactiva de tipos y el manejo explícito de errores en la carga de configuraciones, evitando excepciones no controladas que podrían romper el flujo de la aplicación.
+- `2026-07-28T11:18:48` Tests FALLARON:
+```
+================
+______________________ test_score_color_survives_garbage _______________________
+
+    def test_score_color_survives_garbage():
+>       assert branding.score_color(None) == branding.PALETTE["text_muted"]
+E       AssertionError: assert '#ff4757' == '#94a3b8'
+E         
+E         - #94a3b8
+E         + #ff4757
+
+evolve/tests/test_modules.py:167: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:72: SyntaxWarning: invalid escape sequence '\P'
+    - '"C:\Program Files\App.exe" /s' -> 'C:\Program Files\App.exe'
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_score_color_survives_garbage - AssertionError: assert '#ff4757' == '#94a3b8'
+  
+  - #94a3b8
+  + #ff4757
+1 failed, 298 passed, 7 warnings in 1.02s
+
+```
+- `2026-07-28T11:18:48` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez de `save_logo_svg` y `draw_logo` mediante la validación proactiva de tipos y estados, garantizando que operaciones de I/O o cálculo gráfico no fallen silenciosamente ante entradas inesperadas (`None`, tipos incorrectos o valores fuera de rango), manteniendo la integridad de la interfaz bajo el enfoque de manejo estricto de errores.
+- `2026-07-28T11:18:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-28T11:18:48` Corrida terminada. Total usado hoy: 268.
