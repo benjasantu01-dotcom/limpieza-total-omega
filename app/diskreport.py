@@ -152,8 +152,7 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
     """
     Genera tuplas (ruta_absoluta, tamaño_en_bytes) para cada archivo encontrado.
     
-    Ignora errores de acceso (permisos/archivos no encontrados) y filtra 
-    automáticamente rutas protegidas o enlaces simbólicos peligrosos.
+    Usa `os.scandir` para minimizar llamadas a `stat` y mejorar rendimiento.
     """
     if not directory:
         return
@@ -163,43 +162,38 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
             return
     except (OSError, RuntimeError):
         return
-    
-    base_str = str(base)
 
-    def is_unsafe_dir(path: Path) -> bool:
-        """Determina si una ruta es un enlace simbólico, punto de reparse o zona protegida."""
-        is_symlink = path.is_symlink()
-        is_reparse = (os.name == 'nt' and hasattr(path, 'stat') and 
-                     getattr(path.stat(), 'st_reparse_tag', 0) != 0)
-        return is_symlink or is_reparse or (skip_protected and is_protected_path(path))
+    def is_unsafe(entry: os.DirEntry) -> bool:
+        """Determina si una entrada es un enlace simbólico, punto de reparse o zona protegida."""
+        if entry.is_symlink():
+            return True
+        if os.name == 'nt':
+            try:
+                if entry.stat().st_reparse_tag != 0:
+                    return True
+            except OSError:
+                return True
+        if skip_protected and is_protected_path(Path(entry.path)):
+            return True
+        return False
 
-    for root, subdirs, files in os.walk(base, onerror=lambda _: None):
+    def scan(current_dir: str):
         try:
-            root_path = Path(root)
-            
-            # Seguridad: evitar escape del directorio base mediante validación de path común
-            if os.path.commonpath([base_str, root]) != base_str:
-                subdirs.clear()
-                continue
-
-            # Seguridad: evitar seguir enlaces simbólicos y puntos de reparse
-            if is_unsafe_dir(root_path):
-                subdirs.clear()
-                continue
-                
-            if skip_protected:
-                subdirs[:] = [d for d in subdirs if not is_protected_path(root_path / d)]
-                
-            for name in files:
-                try:
-                    path = root_path / name
-                    if is_unsafe_dir(path):
+            with os.scandir(current_dir) as it:
+                for entry in it:
+                    if is_unsafe(entry):
                         continue
-                    yield path, path.lstat().st_size
-                except (OSError, PermissionError, FileNotFoundError, AttributeError, ValueError):
-                    continue
+                    if entry.is_dir():
+                        yield from scan(entry.path)
+                    else:
+                        try:
+                            yield Path(entry.path), entry.stat().st_size
+                        except OSError:
+                            continue
         except (OSError, PermissionError):
-            continue
+            return
+
+    yield from scan(str(base))
 
 
 def largest_files(directory: str | os.PathLike, limit: int = 20, skip_protected: bool = True) -> list[FileEntry]:
@@ -237,13 +231,10 @@ def largest_folders(directory: str | os.PathLike, limit: int = 10, skip_protecte
     except (OSError, RuntimeError):
         return []
         
-    base_str = str(base)
     folder_map: dict[Path, FolderUsage] = {}
     
     for path, size in walk_files(base, skip_protected):
         try:
-            if os.path.commonpath([base_str, str(path)]) != base_str:
-                continue
             rel = path.relative_to(base)
             if not rel.parts:
                 continue

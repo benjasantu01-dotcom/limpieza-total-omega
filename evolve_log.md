@@ -1198,3 +1198,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-07-28T08:02:25` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `local_answer` y `_rank_problems` reemplazando los chequeos secuenciales basados en `globals()[handler_name]` por un acceso directo a funciones pre-mapeadas y evitando la regeneración constante de listas en el bucle de clasificación.
 - `2026-07-28T08:02:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-28T08:02:25` Corrida terminada. Total usado hoy: 192.
+- `2026-07-28T08:11:15` Arrancando corrida. Quedan hoy ~108 peticiones objetivo.
+- `2026-07-28T08:11:44` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-07-28T08:12:05` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el rendimiento de `directory_size` utilizando `os.scandir` para obtener atributos de archivo (como `st_size` e `is_dir`) directamente en la llamada al sistema inicial, evitando realizar llamadas redundantes a `entry.is_dir()` y `entry.stat().st_size` por separado, y eliminé redundancias en el cálculo de `total_cache_bytes`.
+- `2026-07-28T08:12:29` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé la función `walk_files` para evitar múltiples llamadas a `lstat()` y `is_symlink()` mediante el uso de `os.scandir`, lo cual reduce drásticamente las llamadas al sistema y mejora la performance del escaneo.
+- `2026-07-28T08:12:36` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé `group_by_size` y `_collect_candidates` para evitar llamadas redundantes a `is_protected_path` y `stat` dentro de los bucles, mejorando la eficiencia en recorridos de disco extensos.
+- `2026-07-28T08:12:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-28T08:12:36` Corrida terminada. Total usado hoy: 196.

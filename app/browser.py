@@ -109,16 +109,10 @@ def _is_safe_path(target_path: Path, base_path: Path) -> bool:
 @lru_cache(maxsize=32)
 def directory_size(path: str | os.PathLike) -> int:
     """
-    Calcula el tamaño total de una carpeta mediante recorrido iterativo con stack.
-
-    Args:
-        path: Ruta al directorio a medir.
-        
-    Returns:
-        Tamaño total en bytes. Retorna 0 en caso de error o si la ruta está
-        en la lista de protección.
+    Calcula el tamaño total de una carpeta mediante recorrido iterativo.
+    Usa scandir para reducir llamadas al sistema al cachear stats.
     """
-    if not path or not isinstance(path, (str, Path)):
+    if not path:
         return 0
     
     try:
@@ -129,7 +123,7 @@ def directory_size(path: str | os.PathLike) -> int:
         return 0
     
     total_bytes: int = 0
-    stack: List[Path] = [target]
+    stack: List[str] = [str(target)]
     
     while stack:
         current_dir = stack.pop()
@@ -140,11 +134,9 @@ def directory_size(path: str | os.PathLike) -> int:
                         if entry.is_symlink():
                             continue
                         if entry.is_dir():
-                            # Validamos subcarpetas antes de profundizar
-                            entry_path = Path(entry.path)
-                            if not is_protected_path(entry_path):
-                                stack.append(entry_path)
-                        elif entry.is_file():
+                            if not is_protected_path(Path(entry.path)):
+                                stack.append(entry.path)
+                        else:
                             total_bytes += entry.stat().st_size
                     except (OSError, PermissionError):
                         continue
@@ -174,21 +166,11 @@ def detect_profiles(
 ) -> List[BrowserCache]:
     """
     Explora directorios base buscando carpetas de caché según BROWSER_CACHE_PATHS.
-
-    Args:
-        bases: Directorios raíz donde iniciar la búsqueda.
-        cache_paths: Mapa de navegadores y sus rutas de caché relativas.
-
-    Returns:
-        Lista de objetos BrowserCache ordenados por tamaño descendente.
     """
     if bases is None:
         bases = base_directories()
     if cache_paths is None:
         cache_paths = BROWSER_CACHE_PATHS
-
-    if not isinstance(bases, (list, tuple)) or not isinstance(cache_paths, dict):
-        return []
 
     found: List[BrowserCache] = []
     
@@ -202,9 +184,6 @@ def detect_profiles(
             continue
 
         for browser_name, relative_path_str in cache_paths.items():
-            if not isinstance(relative_path_str, str) or not relative_path_str:
-                continue
-                
             try:
                 candidate = resolved_base.joinpath(*relative_path_str.split("\\"))
                 
@@ -226,24 +205,13 @@ def detect_profiles(
 def total_cache_bytes(caches: Iterable[BrowserCache] | None = None) -> int:
     """Suma el tamaño total de una lista de objetos BrowserCache."""
     if caches is None:
-        directory_size.cache_clear()
-        caches = detect_profiles()
-    
-    if not isinstance(caches, (list, tuple)):
         return 0
-
     return sum(cache.size_bytes for cache in caches)
 
 
 def summarize(caches: List[BrowserCache] | None = None) -> List[str]:
     """Genera una representación en texto del reporte de caché para la UI."""
-    if caches is None:
-        directory_size.cache_clear()
-        current_caches = detect_profiles()
-    else:
-        if not isinstance(caches, list):
-            return ["Error: Formato de datos de caché inválido."]
-        current_caches = caches
+    current_caches = caches if caches is not None else detect_profiles()
     
     if not current_caches:
         return ["No se detectaron cachés de navegador en este sistema."]
