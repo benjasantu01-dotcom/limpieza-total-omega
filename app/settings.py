@@ -65,7 +65,7 @@ VALID_ACCENTS: Final = ("menta", "violeta", "magenta", "cian", "ambar")
 
 # Caché interno para evitar lectura repetitiva de disco
 _cached_settings: dict[str, Any] | None = None
-_last_base: str | Path | None = None
+_last_path_str: str | None = None
 _last_mtime: float = 0.0
 
 # Valores de fábrica. Cada clave define además el tipo esperado: si el archivo
@@ -192,21 +192,23 @@ def validate(values: Any) -> dict[str, Any]:
 
 def load(base: str | Path | None = None) -> dict[str, Any]:
     """Carga configuración desde disco con caché inteligente o retorna defaults ante error."""
-    global _cached_settings, _last_base, _last_mtime
+    global _cached_settings, _last_path_str, _last_mtime
     
     ruta = settings_path(base)
+    ruta_str = str(ruta)
+    
     try:
         if not ruta.exists():
             return dict(DEFAULTS)
         
         stat = ruta.stat()
-        if _cached_settings is not None and base == _last_base and stat.st_mtime == _last_mtime:
+        if _cached_settings is not None and ruta_str == _last_path_str and stat.st_mtime == _last_mtime:
             return _cached_settings
 
         contenido = ruta.read_text(encoding="utf-8")
         data = json.loads(contenido)
         _cached_settings = validate(data)
-        _last_base = base
+        _last_path_str = ruta_str
         _last_mtime = stat.st_mtime
         return _cached_settings
     except (OSError, json.JSONDecodeError, UnicodeDecodeError):
@@ -218,7 +220,7 @@ def save(values: Any, base: str | Path | None = None) -> Path | None:
     Persiste la configuración de forma atómica usando un archivo temporal.
     Verifica seguridad de escritura antes de realizar cualquier operación.
     """
-    global _cached_settings, _last_mtime
+    global _cached_settings, _last_path_str, _last_mtime
     ruta = settings_path(base)
     temp_name = None
     
@@ -237,6 +239,7 @@ def save(values: Any, base: str | Path | None = None) -> Path | None:
         os.replace(temp_name, ruta)
         
         _cached_settings = limpio
+        _last_path_str = str(ruta)
         _last_mtime = ruta.stat().st_mtime
         return ruta
     except (OSError, RuntimeError, PermissionError):
@@ -253,18 +256,13 @@ def update(changes: dict[str, Any], base: str | Path | None = None) -> dict[str,
     actual = load(base).copy()
     if isinstance(changes, dict):
         actual.update(changes)
-    limpio = validate(actual)
-    save(limpio, base)
-    return limpio
+    return save(actual, base) and actual or actual
 
 
 def reset(base: str | Path | None = None) -> dict[str, Any]:
     """Sobrescribe el archivo de configuración con los valores por defecto."""
-    global _cached_settings
-    limpio = dict(DEFAULTS)
-    save(limpio, base)
-    _cached_settings = limpio
-    return limpio
+    save(dict(DEFAULTS), base)
+    return dict(DEFAULTS)
 
 
 def get(key: str, base: str | Path | None = None) -> Any:

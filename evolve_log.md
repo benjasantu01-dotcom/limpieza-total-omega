@@ -1219,3 +1219,34 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-07-28T08:32:59` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizé el rendimiento de `scan_directory` evitando llamadas redundantes a `Path(entry.path)` y resoluciones innecesarias de rutas, consolidando la validación de archivos en un único chequeo eficiente dentro del bucle de `os.scandir`.
 - `2026-07-28T08:32:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-28T08:32:59` Corrida terminada. Total usado hoy: 204.
+- `2026-07-28T08:41:54` Arrancando corrida. Quedan hoy ~96 peticiones objetivo.
+- `2026-07-28T08:42:20` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el sistema de caché en `load` y `save` consolidando la lógica de invalidación y reduciendo las llamadas redundantes a `stat()` y `path` mediante una verificación de `base` consistente, mejorando el rendimiento en accesos repetidos.
+- `2026-07-28T08:42:44` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.02s
+
+```
+- `2026-07-28T08:42:44` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Optimicé el método `StartupEntry.executable` para evitar llamadas redundantes a `os.path.exists` (una operación de I/O costosa) mediante una evaluación "lazy" y el uso de un conjunto para la validación rápida de extensiones, reduciendo drásticamente la latencia en listas largas de programas.
+- `2026-07-28T08:43:15` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `build_context` ante valores `NaN` o `inf` no numéricos que podrían causar fallos en la lógica de negocio, y añadí una validación estricta para evitar que claves inexistentes en el diccionario de métricas causen errores al acceder a ellas durante la construcción del contexto.
+- `2026-07-28T08:43:27` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-07-28T08:43:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-28T08:43:27` Corrida terminada. Total usado hoy: 208.

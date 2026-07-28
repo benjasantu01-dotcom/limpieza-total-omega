@@ -171,7 +171,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         if obj is None: return defecto
         try:
             val = getattr(obj, nombre, defecto)
-            if not es_num_valido(val) and tipo in (int, float): return defecto
+            if not es_num_valido(val): return defecto
             return tipo(val)
         except (TypeError, ValueError, AttributeError):
             return defecto
