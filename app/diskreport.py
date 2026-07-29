@@ -147,7 +147,11 @@ def all_drives_usage(mounts: Iterable[str] | None = None) -> list[DriveUsage]:
 def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Generator[tuple[Path, int], None, None]:
     """
     Genera tuplas (ruta, tamaño) para cada archivo encontrado.
-    Utiliza recursión interna para recorrer el árbol de archivos.
+    
+    El escaneo es iterativo/recursivo y excluye:
+    1. Archivos en rutas protegidas según `safety.is_protected_path`.
+    2. Enlaces simbólicos y puntos de reparse (Junctions) para evitar bucles.
+    3. Rutas que escapen del directorio base (seguimiento de enlaces).
     """
     if not directory:
         return
@@ -159,7 +163,7 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
         return
 
     def should_ignore_entry(entry: os.DirEntry) -> bool:
-        """Valida si una entrada debe excluirse por políticas de seguridad o enlaces."""
+        """Verifica restricciones de seguridad para una entrada del sistema de archivos."""
         try:
             if entry.is_symlink():
                 return True
@@ -267,7 +271,14 @@ def total_size(directory: str | os.PathLike, skip_protected: bool = True) -> tup
 
 
 def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list[str]:
-    """Genera un informe textual resumen del uso de disco en el directorio especificado."""
+    """
+    Genera un informe textual resumen del uso de disco en el directorio especificado.
+    
+    El proceso recolecta:
+    - Métricas globales (total de bytes y archivos).
+    - Agrupación por extensión (usando un diccionario de contadores).
+    - Top 8 de archivos más pesados mediante un heap para eficiencia de memoria.
+    """
     if not directory:
         return ["Error: Ruta vacía."]
         
@@ -280,6 +291,7 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
         
     total_bytes: int = 0
     total_files: int = 0
+    # ext_data_map: {ext: [tamaño_total, contador_archivos]}
     ext_data_map: Dict[str, List[int]] = defaultdict(lambda: [0, 0])
     top_heap: List[Tuple[int, Path]] = []
 
@@ -292,6 +304,7 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
         record[0] += size
         record[1] += 1
         
+        # Mantenemos un heap fijo de los 8 archivos más grandes encontrados
         if len(top_heap) < 8:
             heapq.heappush(top_heap, (size, path))
         else:
@@ -304,7 +317,7 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
         "Por tipo de archivo:",
     ]
     
-    # Ordenar tipos de archivo por tamaño total (índice 0 del record)
+    # Ordenar tipos de archivo por tamaño total (índice 0)
     sorted_exts = sorted(
         ext_data_map.items(),
         key=lambda item: item[1][0], 

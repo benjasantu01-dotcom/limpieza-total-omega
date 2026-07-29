@@ -112,35 +112,36 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
 def directory_size(path: str | os.PathLike) -> int:
     """
     Calcula el tamaño total en bytes de un directorio mediante suma recursiva.
+    
+    Se ignoran explícitamente:
+    1. Rutas protegidas (safety.py).
+    2. Symlinks y Junctions (para evitar bucles infinitos o fugas fuera del scope).
     """
-    try:
-        p = Path(path)
-        if not p.exists() or not p.is_dir() or p.is_symlink() or is_protected_path(p):
-            return 0
-    except (OSError, PermissionError):
+    root_path = Path(path)
+    
+    # Pre-validación de seguridad antes de iterar
+    if not root_path.is_dir() or is_protected_path(root_path):
         return 0
     
     total_bytes: int = 0
-    stack: List[Path] = [p]
+    stack: List[Path] = [root_path]
     
     while stack:
         current_dir = stack.pop()
-        if is_protected_path(current_dir):
-            continue
-            
+        
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:
-                    try:
-                        if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
-                            continue
-                        
-                        if entry.is_dir():
-                            stack.append(Path(entry.path))
-                        else:
-                            total_bytes += entry.stat().st_size
-                    except (OSError, PermissionError):
+                    # Salto de seguridad: evitar puntos de reparse (symlinks/junctions)
+                    if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
                         continue
+                    
+                    if entry.is_dir():
+                        # Solo procesar subcarpetas no protegidas
+                        if not is_protected_path(Path(entry.path)):
+                            stack.append(Path(entry.path))
+                    else:
+                        total_bytes += entry.stat().st_size
         except (OSError, PermissionError):
             continue
             

@@ -75,7 +75,8 @@ class DuplicateGroup:
 
 def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
-    Calcula el hash SHA256 completo de un archivo mediante lectura en bloques.
+    Calcula el hash SHA256 completo de un archivo. 
+    Retorna None si el archivo es inaccesible, protegido o un directorio.
     """
     if not path or is_protected_path(path):
         return None
@@ -96,7 +97,8 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
 
 def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """
-    Calcula un hash rápido de los primeros N bytes de un archivo.
+    Calcula el hash SHA256 de los primeros N bytes de un archivo.
+    Útil para descartar rápidamente archivos diferentes sin leerlos por completo.
     """
     if not path or is_protected_path(path):
         return None
@@ -114,7 +116,8 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
 
 def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     """
-    Clasifica rutas de archivos según su tamaño en disco (st_size).
+    Agrupa rutas de archivos por su tamaño en bytes. 
+    Ignora archivos protegidos o inaccesibles.
     """
     if paths is None:
         return {}
@@ -134,7 +137,8 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
 
 def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, skip_protected: bool) -> List[Path]:
     """
-    Realiza un recorrido recursivo del sistema de archivos para recolectar candidatos.
+    Recorre recursivamente directorios buscando candidatos mayores a min_size.
+    Implementa prevención contra bucles de enlaces simbólicos.
     """
     if directories is None:
         return []
@@ -174,7 +178,8 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
 
 def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
     """
-    Refina una lista de archivos agrupándolos por el resultado de una función de hash.
+    Filtra una lista de archivos agrupándolos por el resultado de hash_func.
+    Solo retorna grupos con 2 o más elementos (potenciales duplicados).
     """
     if paths is None:
         return {}
@@ -191,7 +196,8 @@ def find_duplicates(
     skip_protected: bool = True,
 ) -> List[DuplicateGroup]:
     """
-    Pipeline de detección de duplicados en tres etapas: tamaño, hash parcial, hash total.
+    Ejecuta el pipeline completo de detección: tamaño -> hash parcial -> hash total.
+    Retorna una lista de objetos DuplicateGroup ordenados por espacio desperdiciado.
     """
     if not directories:
         return []
@@ -221,7 +227,7 @@ def find_duplicates(
 
 
 def reclaimable_bytes(groups: List[DuplicateGroup]) -> int:
-    """Calcula la suma total de espacio desperdiciado por todos los grupos duplicados."""
+    """Suma total de bytes recuperables sumando el desperdicio de cada grupo."""
     if not groups:
         return 0
     return sum(g.wasted_bytes for g in groups if g is not None)
@@ -229,7 +235,8 @@ def reclaimable_bytes(groups: List[DuplicateGroup]) -> int:
 
 def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
     """
-    Selecciona el archivo que será conservado basado en criterios de antigüedad.
+    Determina qué archivo conservar en el grupo usando antigüedad (mtime) 
+    y longitud de ruta como desempate.
     """
     if not group or not group.paths:
         return None
@@ -254,7 +261,10 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
 
 
 def format_group(group: DuplicateGroup) -> List[str]:
-    """Prepara una lista de strings para visualización en la UI, marcando el archivo a conservar."""
+    """
+    Genera una representación legible del grupo para la interfaz, 
+    marcando claramente el archivo sugerido para conservación.
+    """
     if not group or not group.paths:
         return []
     keeper = suggest_keeper(group)
