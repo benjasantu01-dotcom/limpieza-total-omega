@@ -148,7 +148,7 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
             except (PermissionError, OSError):
                 continue
         return results
-    except (OSError, RuntimeError) as e:
+    except (OSError, RuntimeError, TypeError, ValueError) as e:
         logger.error("Error al acceder al directorio %s: %s", directory, e)
         return []
 

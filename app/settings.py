@@ -117,8 +117,8 @@ def _coerce_bool(valor: Any) -> bool | None:
 
 
 def _coerce_int(valor: Any, clave: str) -> int | None:
-    """Convierte a entero y asegura rango."""
-    if valor is None:
+    """Convierte a entero y asegura rango, validando tipos básicos primero."""
+    if not isinstance(valor, (int, str)):
         return None
     try:
         numero = int(valor)
@@ -157,7 +157,7 @@ def _apply_validation_by_type(clave: str, valor: Any, defecto: Any) -> Any:
         return None
     
     dispatch = {
-        bool: lambda v: _coerce_bool(v) if not isinstance(v, int) else bool(v),
+        bool: lambda v: _coerce_bool(v),
         int: lambda v: _coerce_int(v, clave),
         str: lambda v: _validate_str(clave, v)
     }
@@ -209,7 +209,12 @@ def load(path_or_base: PathLike | None = None) -> dict[str, Any]:
         if _cached_settings is not None and ruta_str == _last_path_str and stat.st_mtime == _last_mtime:
             return _cached_settings
 
-        data = json.loads(ruta.read_text(encoding="utf-8"))
+        raw_data = ruta.read_text(encoding="utf-8")
+        data = json.loads(raw_data)
+        
+        if not isinstance(data, dict):
+            return dict(DEFAULTS)
+
         _cached_settings = validate(data)
         _last_path_str = ruta_str
         _last_mtime = stat.st_mtime

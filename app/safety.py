@@ -135,7 +135,7 @@ def is_within_directory(
     """
     Valida si 'child' reside físicamente dentro de 'parent'.
     """
-    if not child or not parent:
+    if child is None or parent is None:
         return False
     try:
         c, p = normalize(child), normalize(parent)
@@ -160,7 +160,7 @@ def is_within_directory(
 
 def is_sensitive_file(path: PathLike) -> bool:
     """Verifica si el archivo tiene una extensión sensible (ej. .exe, .sys)."""
-    if not path:
+    if path is None:
         return True
     try:
         return normalize(path).suffix.lower() in SENSITIVE_EXTENSIONS
@@ -173,6 +173,9 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
     Valida la seguridad de la ruta antes de modificarla (escritura/borrado).
     Lanza UnsafePathError si la ruta es riesgosa.
     """
+    if path is None:
+        raise UnsafePathError("Ruta nula recibida.")
+        
     p = normalize(path)
     if not p.parts:
         raise UnsafePathError("Ruta inválida: no contiene componentes detectables.")
@@ -210,6 +213,8 @@ def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> bool:
 
 def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = False) -> list[Path]:
     """Filtra una lista de rutas, retornando solo las que pueden ser modificadas."""
+    if paths is None:
+        return []
     return [normalize(c) for c in paths if c and is_safe_to_modify(c, allow_sensitive=allow_sensitive)]
 
 
