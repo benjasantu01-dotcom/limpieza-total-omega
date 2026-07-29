@@ -59,33 +59,33 @@ class StartupEntry:
     command: str
     source: str  # Indica si proviene de una carpeta o una ruta de registro específica
 
+    def _extract_quoted_path(self, raw_cmd: str) -> str:
+        """Extrae la ruta si está delimitada por comillas dobles."""
+        end_quote: int = raw_cmd.find('"', 1)
+        path = raw_cmd[1:end_quote] if end_quote != -1 else raw_cmd[1:]
+        # Valida que sea ejecutable real o exista antes de retornarlo
+        if path.lower().endswith(('.exe', '.bat', '.cmd', '.scr')) or os.path.exists(path):
+            return path
+        return ""
+
     @property
     def executable(self) -> str:
         """
         Extrae la ruta del archivo ejecutable saneando la línea de comando.
         
-        El proceso identifica rutas entrecomilladas eliminando los delimitadores
-        o toma el primer argumento de la línea. Valida la existencia o extensión
-        para asegurar que el resultado sea un binario ejecutable.
-        
-        Ejemplos:
-        - '"C:\Program Files\App.exe" /s' -> 'C:\Program Files\App.exe'
-        - 'C:\Windows\System32\app.exe'    -> 'C:\Windows\System32\app.exe'
+        El proceso identifica rutas entrecomilladas o toma el primer argumento 
+        de la línea si no existen comillas.
         """
-        raw_cmd: str = self.command.strip()
-        if not raw_cmd:
+        cmd: str = self.command.strip()
+        if not cmd:
             return ""
         
-        # Caso: ruta citada (maneja casos mal formados deteniéndose en la segunda comilla)
-        if raw_cmd.startswith('"'):
-            end_quote: int = raw_cmd.find('"', 1)
-            path = raw_cmd[1:end_quote] if end_quote != -1 else raw_cmd[1:]
-            return path if path.lower().endswith(('.exe', '.bat', '.cmd', '.scr')) or os.path.exists(path) else ""
+        if cmd.startswith('"'):
+            return self._extract_quoted_path(cmd)
         
-        # Caso: ruta sin citar
-        parts: List[str] = raw_cmd.split()
-        path = parts[0] if parts else ""
-        return path if path else ""
+        # Caso: ruta sin citar, tomamos el primer token como posible ejecutable
+        parts: List[str] = cmd.split()
+        return parts[0] if parts else ""
 
 
 def startup_folders() -> List[Path]:

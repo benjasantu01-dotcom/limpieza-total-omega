@@ -378,22 +378,21 @@ def local_answer(question: str, context: SystemContext) -> Answer:
 
 def _rank_problems(context: SystemContext) -> list[str]:
     """Problemas detectados, del más grave al más leve."""
-    problemas = []
-
+    # Pre-allocating list as a flat generator logic is faster than multiple list appends
+    res = []
     if context.disk_free_percent < 10:
-        problemas.append(f"queda solo {context.disk_free_percent:.0f}% de disco libre, atendelo primero (pestaña Disco y Limpieza)")
+        res.append(f"queda solo {context.disk_free_percent:.0f}% de disco libre, atendelo primero (pestaña Disco y Limpieza)")
     if context.suspicious_warnings > 0:
-        problemas.append(f"{context.suspicious_warnings} archivo(s) sospechosos con advertencia (pestaña Seguridad)")
+        res.append(f"{context.suspicious_warnings} archivo(s) sospechosos con advertencia (pestaña Seguridad)")
     if context.memory_available_percent < 15:
-        problemas.append(f"queda {context.memory_available_percent:.0f}% de RAM disponible (pestaña Memoria)")
+        res.append(f"queda {context.memory_available_percent:.0f}% de RAM disponible (pestaña Memoria)")
     if context.junk_mb > 1000:
-        problemas.append(f"{context.junk_mb:.0f} MB de archivos basura (pestaña Limpieza)")
+        res.append(f"{context.junk_mb:.0f} MB de archivos basura (pestaña Limpieza)")
     if context.duplicate_mb > 500:
-        problemas.append(f"{context.duplicate_mb:.0f} MB en duplicados (pestaña Duplicados)")
+        res.append(f"{context.duplicate_mb:.0f} MB en duplicados (pestaña Duplicados)")
     if context.startup_count > 15:
-        problemas.append(f"{context.startup_count} programas de inicio (pestaña Inicio)")
-
-    return problemas
+        res.append(f"{context.startup_count} programas de inicio (pestaña Inicio)")
+    return res
 
 
 def available(base: str | Path | None = None) -> bool:

@@ -26,17 +26,17 @@ from safety import is_protected_path
 logger = logging.getLogger(__name__)
 
 # Expresión regular para detectar extensiones dobles donde la final es ejecutable
-DOUBLE_EXTENSION_RE: Final = re.compile(r"\.(pdf|jpg|png|docx|xlsx|txt)\.(exe|scr|bat|cmd|js|vbs)$", re.IGNORECASE)
+DOUBLE_EXTENSION_RE: Final[re.Pattern] = re.compile(r"\.(pdf|jpg|png|docx|xlsx|txt)\.(exe|scr|bat|cmd|js|vbs)$", re.IGNORECASE)
 
 # Lista blanca de extensiones potencialmente riesgosas para inspección heurística
-SUSPICIOUS_EXECUTABLE_EXT: Final = {".exe", ".scr", ".bat", ".cmd", ".js", ".vbs", ".ps1"}
+SUSPICIOUS_EXECUTABLE_EXT: Final[set[str]] = {".exe", ".scr", ".bat", ".cmd", ".js", ".vbs", ".ps1"}
 
 # Procesos críticos de Windows usados para detectar suplantación de identidad
-SYSTEM_LOOKALIKES: Final = {"svchost.exe", "explorer.exe", "csrss.exe", "winlogon.exe", "lsass.exe"}
-SYSTEM32_LOWER: Final = "system32"
+SYSTEM_LOOKALIKES: Final[set[str]] = {"svchost.exe", "explorer.exe", "csrss.exe", "winlogon.exe", "lsass.exe"}
+SYSTEM32_LOWER: Final[str] = "system32"
 
 # Tiempo umbral para definir un archivo como "reciente" (en horas)
-RECENT_FILE_THRESHOLD_HOURS: Final = 24
+RECENT_FILE_THRESHOLD_HOURS: Final[int] = 24
 
 
 @dataclass
@@ -50,8 +50,8 @@ class Suspicion:
 def _is_reparse_point(entry: os.DirEntry) -> bool:
     """
     Verifica si la entrada es un punto de reparse (Junction/Symlink) en Windows.
-    El bit 0x400 (FILE_ATTRIBUTE_REPARSE_POINT) identifica enlaces simbólicos y junctions.
-    Evita la recursión infinita en estructuras de directorios complejas.
+    Utiliza el bit 0x400 (FILE_ATTRIBUTE_REPARSE_POINT) para identificar enlaces 
+    simbólicos y junctions, evitando la recursión infinita durante el escaneo.
     """
     try:
         return bool(entry.stat().st_file_attributes & 0x400)
@@ -61,8 +61,9 @@ def _is_reparse_point(entry: os.DirEntry) -> bool:
 
 def check_double_extension(path: Path) -> Optional[Suspicion]:
     """
-    Analiza si el nombre del archivo contiene una doble extensión que intente 
-    engañar al usuario sobre el tipo real de archivo mediante el ocultamiento de extensiones.
+    Analiza si el nombre del archivo contiene una doble extensión (ej. .pdf.exe).
+    Esta técnica es común en ataques de ingeniería social para ocultar la 
+    extensión real del ejecutable.
     """
     if not path.name or is_protected_path(path):
         return None
@@ -73,9 +74,9 @@ def check_double_extension(path: Path) -> Optional[Suspicion]:
 
 def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_THRESHOLD_HOURS) -> Optional[Suspicion]:
     """
-    Evalúa la frescura de un ejecutable mediante su marca de tiempo (mtime). 
-    La aparición reciente de ejecutables en directorios de usuario suele correlacionar 
-    con descargas no autorizadas.
+    Evalúa si un archivo ejecutable fue modificado recientemente.
+    La aparición súbita de binarios en directorios de usuario suele ser un 
+    indicador temprano de descargas inesperadas.
     """
     if is_protected_path(path) or path.suffix.lower() not in SUSPICIOUS_EXECUTABLE_EXT:
         return None
@@ -90,9 +91,9 @@ def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_TH
 
 def check_system_lookalike(path: Path) -> Optional[Suspicion]:
     """
-    Detecta suplantación mediante nombres idénticos a procesos críticos de Windows.
-    Si un archivo con nombre de proceso crítico reside fuera de la ruta protegida 
-    System32, se considera una señal de alerta de suplantación.
+    Detecta suplantación de identidad mediante nombres de procesos críticos.
+    Si un ejecutable coincide con un proceso de sistema conocido (ej. svchost.exe)
+    pero reside fuera de 'System32', se marca como comportamiento sospechoso.
     """
     if not path.name or is_protected_path(path):
         return None
@@ -105,7 +106,7 @@ def check_system_lookalike(path: Path) -> Optional[Suspicion]:
             return None
     return None
 
-# Lista inmutable de chequeos para evitar recrearla en cada llamada a scan_file
+# Lista inmutable de funciones de análisis heurístico
 CHECK_FUNCS: Final[List[Callable[[Path], Optional[Suspicion]]]] = [
     check_double_extension, 
     check_recent_executable_in_downloads, 
@@ -115,7 +116,8 @@ CHECK_FUNCS: Final[List[Callable[[Path], Optional[Suspicion]]]] = [
 def scan_file(path: Path) -> List[Suspicion]:
     """
     Ejecuta el conjunto de reglas heurísticas sobre un archivo individual.
-    Es la unidad atómica de análisis utilizada tanto en el escaneo iterativo como en checks únicos.
+    Valida la existencia del archivo y descarta rutas protegidas antes de
+    aplicar cada filtro de detección.
     """
     try:
         safe_path = path.resolve()
@@ -142,9 +144,9 @@ def scan_file(path: Path) -> List[Suspicion]:
 def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
     """
     Recorre el sistema de archivos de forma iterativa empleando una pila (stack).
-    - No sigue enlaces simbólicos ni puntos de reparse (previene loops).
-    - Filtra recursivamente mediante `is_protected_path`.
-    - Captura excepciones de acceso al sistema de archivos para garantizar robustez.
+    - Excluye puntos de reparse para evitar bucles de recursión.
+    - Aplica filtros de seguridad vía `is_protected_path` en cada directorio.
+    - Maneja excepciones de acceso para asegurar la continuidad del escaneo.
     """
     if not directory:
         return []
@@ -181,7 +183,7 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
 def run_windows_defender_quick_scan() -> str:
     """
     Invoca la API de PowerShell `Start-MpScan` para ejecutar un análisis de Defender.
-    Se utiliza como fallback cuando se requiere un escaneo de firmas profesional.
+    Se utiliza como mecanismo complementario para firmas de malware conocidas.
     """
     try:
         result = subprocess.run(

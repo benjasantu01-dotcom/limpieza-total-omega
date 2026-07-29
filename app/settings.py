@@ -31,9 +31,11 @@ import json
 import os
 import tempfile
 from pathlib import Path
-from typing import Any, Final
+from typing import Any, Final, TypeAlias
 
 from safety import is_safe_to_modify, ensure_safe_to_modify
+
+PathLike: TypeAlias = str | Path
 
 __all__ = [
     "DEFAULTS",
@@ -115,13 +117,16 @@ def _coerce_bool(valor: Any) -> bool | None:
 
 def _coerce_int(valor: Any, clave: str) -> int | None:
     """
-    Convierte a entero y asegura que el resultado esté dentro del rango permitido
-    por _NUMERIC_LIMITS, evitando desbordamientos o configuraciones absurdas.
+    Convierte a entero y asegura que el resultado esté dentro del rango definido
+    en _NUMERIC_LIMITS. 
+    
+    El uso de _NUMERIC_LIMITS actúa como una barrera de seguridad contra 
+    configuraciones maliciosas o corruptas (ej. valores negativos o gigantes) 
+    que podrían causar fallos en la interfaz o desbordamiento de memoria.
     """
     if valor is None:
         return None
     try:
-        # Forzamos conversión numérica estricta
         numero = int(valor)
         minimo, maximo = _NUMERIC_LIMITS.get(clave, (0, 10**9))
         return max(minimo, min(maximo, numero))
@@ -171,10 +176,10 @@ def _apply_validation_by_type(clave: str, valor: Any, defecto: Any) -> Any:
     return None
 
 
-def settings_path(base: str | Path | None = None) -> Path:
-    """Resuelve la ubicación final del archivo de configuración (soporta rutas relativas/home)."""
-    if base is not None:
-        carpeta = Path(base).expanduser().resolve()
+def settings_path(path_or_base: PathLike | None = None) -> Path:
+    """Resuelve la ubicación final del archivo de configuración."""
+    if path_or_base is not None:
+        carpeta = Path(path_or_base).expanduser().resolve()
     else:
         carpeta = Path(SETTINGS_DIR).expanduser().resolve()
     
@@ -202,7 +207,7 @@ def validate(values: Any) -> dict[str, Any]:
     return limpio
 
 
-def load(base: str | Path | None = None) -> dict[str, Any]:
+def load(path_or_base: PathLike | None = None) -> dict[str, Any]:
     """
     Carga configuración desde disco. Implementa un caché por mtime para optimizar
     lecturas. Ante cualquier error de lectura o corrupción JSON, retorna 
@@ -211,7 +216,7 @@ def load(base: str | Path | None = None) -> dict[str, Any]:
     global _cached_settings, _last_path_str, _last_mtime
     
     try:
-        ruta = settings_path(base)
+        ruta = settings_path(path_or_base)
     except (OSError, RuntimeError):
         return dict(DEFAULTS)
 
@@ -235,7 +240,7 @@ def load(base: str | Path | None = None) -> dict[str, Any]:
         return dict(DEFAULTS)
 
 
-def save(values: Any, base: str | Path | None = None) -> Path | None:
+def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     """
     Persiste la configuración de forma atómica. Utiliza `ensure_safe_to_modify` 
     para validar el directorio padre antes de escribir. Retorna la ruta en caso 
@@ -244,7 +249,7 @@ def save(values: Any, base: str | Path | None = None) -> Path | None:
     global _cached_settings, _last_path_str, _last_mtime
     
     try:
-        ruta = settings_path(base)
+        ruta = settings_path(path_or_base)
         ensure_safe_to_modify(str(ruta.parent))
         
         limpio = validate(values)
@@ -275,46 +280,46 @@ def save(values: Any, base: str | Path | None = None) -> Path | None:
         return None
 
 
-def update(changes: dict[str, Any], base: str | Path | None = None) -> dict[str, Any]:
+def update(changes: dict[str, Any], path_or_base: PathLike | None = None) -> dict[str, Any]:
     """Aplica cambios parciales sobre el estado actual y los persiste."""
-    actual = load(base).copy()
+    actual = load(path_or_base).copy()
     if isinstance(changes, dict):
         actual.update(changes)
-    save(actual, base)
+    save(actual, path_or_base)
     return actual
 
 
-def reset(base: str | Path | None = None) -> dict[str, Any]:
+def reset(path_or_base: PathLike | None = None) -> dict[str, Any]:
     """Sobrescribe el archivo de configuración con los valores por defecto."""
-    save(dict(DEFAULTS), base)
+    save(dict(DEFAULTS), path_or_base)
     return dict(DEFAULTS)
 
 
-def get(key: str, base: str | Path | None = None) -> Any:
+def get(key: str, path_or_base: PathLike | None = None) -> Any:
     """Recupera el valor de una clave específica desde la configuración cargada."""
-    return load(base).get(key, DEFAULTS.get(key))
+    return load(path_or_base).get(key, DEFAULTS.get(key))
 
 
-def assistant_api_key(base: str | Path | None = None) -> str:
+def assistant_api_key(path_or_base: PathLike | None = None) -> str:
     """Obtiene la API key (prioridad: variable de entorno -> archivo de configuración)."""
     desde_entorno = os.environ.get(API_KEY_ENV_VAR, "").strip()
     if desde_entorno:
         return desde_entorno
-    config = load(base)
+    config = load(path_or_base)
     valor = config.get("asistente_clave_api", "")
     return valor.strip() if isinstance(valor, str) else ""
 
 
-def assistant_enabled(base: str | Path | None = None) -> bool:
+def assistant_enabled(path_or_base: PathLike | None = None) -> bool:
     """Valida si el asistente puede operar (debe estar activado y poseer una key válida)."""
-    config = load(base)
-    return bool(config.get("asistente_activado")) and bool(assistant_api_key(base))
+    config = load(path_or_base)
+    return bool(config.get("asistente_activado")) and bool(assistant_api_key(path_or_base))
 
 
-def describe(base: str | Path | None = None) -> list[str]:
+def describe(path_or_base: PathLike | None = None) -> list[str]:
     """Genera una vista humana de la configuración para propósitos de reporte/debug."""
-    actual = load(base)
-    clave = assistant_api_key(base)
+    actual = load(path_or_base)
+    clave = assistant_api_key(path_or_base)
     origen_clave = (
         f"variable de entorno {API_KEY_ENV_VAR}"
         if os.environ.get(API_KEY_ENV_VAR, "").strip()
@@ -324,7 +329,7 @@ def describe(base: str | Path | None = None) -> list[str]:
     return [
         "Configuración actual",
         "",
-        f"  Archivo:                {settings_path(base)}",
+        f"  Archivo:                {settings_path(path_or_base)}",
         "",
         "  Apariencia",
         f"    Tema:                 {actual['tema']}",
