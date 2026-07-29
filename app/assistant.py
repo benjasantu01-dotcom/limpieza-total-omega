@@ -167,34 +167,39 @@ class Answer:
 
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
-    """Arma el contexto agregado de forma defensiva filtrando tipos y valores no numéricos."""
+    """
+    Crea un contexto de forma defensiva filtrando tipos no numéricos y evitando la 
+    propagación de datos sensibles mediante la validación estricta de cada campo.
+    """
     contexto = SystemContext()
     
     def es_num_valido(val: Any) -> bool:
+        """Verifica que el valor sea un número real (ni infinito ni NaN)."""
         return isinstance(val, (int, float)) and math.isfinite(val)
 
-    def obtener_val(obj: Any, nombre: str, tipo: type, defecto: Any) -> Any:
-        if obj is None: return defecto
+    def extraer_seguro(fuente: Any, nombre_atributo: str, tipo_destino: type, valor_defecto: Any) -> Any:
+        """Busca un atributo en un objeto y lo fuerza al tipo requerido de forma segura."""
+        if fuente is None: return valor_defecto
         try:
-            val = getattr(obj, nombre, defecto)
-            if not es_num_valido(val): return defecto
-            return tipo(val)
+            valor = getattr(fuente, nombre_atributo, valor_defecto)
+            if not es_num_valido(valor): return valor_defecto
+            return tipo_destino(valor)
         except (TypeError, ValueError, AttributeError):
-            return defecto
+            return valor_defecto
 
     if metrics is not None and not isinstance(metrics, (int, float, str)):
-        contexto.junk_mb = float(obtener_val(metrics, "junk_mb", float, 0.0))
-        contexto.suspicious_count = int(obtener_val(metrics, "suspicious_count", int, 0))
-        contexto.suspicious_warnings = int(obtener_val(metrics, "suspicious_warnings", int, 0))
-        contexto.memory_available_percent = max(0.0, min(float(obtener_val(metrics, "memory_available_percent", float, 0.0)), 100.0))
-        contexto.disk_free_percent = max(0.0, min(float(obtener_val(metrics, "disk_free_percent", float, 0.0)), 100.0))
-        contexto.duplicate_mb = float(obtener_val(metrics, "duplicate_mb", float, 0.0))
-        contexto.startup_count = int(obtener_val(metrics, "startup_count", int, 0))
-        contexto.quarantined_count = int(obtener_val(metrics, "quarantined_count", int, 0))
+        contexto.junk_mb = float(extraer_seguro(metrics, "junk_mb", float, 0.0))
+        contexto.suspicious_count = int(extraer_seguro(metrics, "suspicious_count", int, 0))
+        contexto.suspicious_warnings = int(extraer_seguro(metrics, "suspicious_warnings", int, 0))
+        contexto.memory_available_percent = max(0.0, min(float(extraer_seguro(metrics, "memory_available_percent", float, 0.0)), 100.0))
+        contexto.disk_free_percent = max(0.0, min(float(extraer_seguro(metrics, "disk_free_percent", float, 0.0)), 100.0))
+        contexto.duplicate_mb = float(extraer_seguro(metrics, "duplicate_mb", float, 0.0))
+        contexto.startup_count = int(extraer_seguro(metrics, "startup_count", int, 0))
+        contexto.quarantined_count = int(extraer_seguro(metrics, "quarantined_count", int, 0))
         contexto.analyzed = True
 
     if health is not None and not isinstance(health, (int, float, str)):
-        score_val = obtener_val(health, "score", int, 0)
+        score_val = extraer_seguro(health, "score", int, 0)
         contexto.score = max(0, min(int(score_val), 100))
         grado = getattr(health, "grade", "")
         contexto.grade = str(grado) if isinstance(grado, (str, int, float)) else ""

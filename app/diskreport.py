@@ -156,7 +156,7 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
         return
 
     def should_ignore_entry(entry: os.DirEntry) -> bool:
-        """Verifica si la entrada es un enlace simbólico, reparse point o ruta protegida."""
+        """Filtra enlaces simbólicos, puntos de reparse (Windows) y rutas protegidas."""
         try:
             if entry.is_symlink():
                 return True
@@ -173,7 +173,7 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
         return False
 
     def recursive_scan(root_path: str) -> Generator[tuple[Path, int], None, None]:
-        """Explora recursivamente el directorio capturando excepciones de acceso."""
+        """Recorre directorios de forma segura ignorando errores de permisos."""
         try:
             with os.scandir(root_path) as iterator:
                 for entry in iterator:
@@ -270,8 +270,9 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
         
     total_bytes = 0
     total_files = 0
-    ext_data_map = defaultdict(lambda: [0, 0])
-    top_heap = []
+    # Map: extension -> [bytes_acumulados, cantidad_archivos]
+    ext_data_map: dict[str, list[int]] = defaultdict(lambda: [0, 0])
+    top_heap: list[tuple[int, Path]] = []
 
     for path, size in walk_files(path_obj, skip_protected):
         total_bytes += size
@@ -282,6 +283,7 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
         record[0] += size
         record[1] += 1
         
+        # Mantenemos el top 8 de archivos más grandes usando un heap
         if len(top_heap) < 8:
             heapq.heappush(top_heap, (size, path))
         else:

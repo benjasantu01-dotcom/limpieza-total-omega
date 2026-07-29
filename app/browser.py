@@ -65,19 +65,19 @@ SAFETY_NOTE: str = (
 
 @dataclass
 class BrowserCache:
-    """Carpeta de caché detectada de un navegador."""
+    """Representación de una carpeta de caché detectada."""
     browser: str
     path: Path
     size_bytes: int
 
     @property
     def size_mb(self) -> float:
-        """Convierte bytes a MB con dos decimales de precisión."""
+        """Calcula el tamaño en MB. Precisión de 2 decimales para reportes."""
         return round(self.size_bytes / (1024 * 1024), 2)
 
 
 def base_directories() -> List[Path]:
-    """Carpetas base donde buscar perfiles de navegador (solo Windows)."""
+    """Obtiene directorios base (LOCALAPPDATA) para búsqueda de perfiles (Windows)."""
     if os.name != "nt":
         return []
     local = os.environ.get("LOCALAPPDATA")
@@ -90,8 +90,8 @@ def base_directories() -> List[Path]:
 
 def _is_safe_path(target_path: Path, base_path: Path) -> bool:
     """
-    Valida que la ruta candidata resida físicamente dentro de la base,
-    previendo ataques de directory traversal.
+    Verifica que la ruta sea un descendiente legítimo de base_path.
+    Impide escapes de directorio y valida contra la lista negra de seguridad.
     """
     if not target_path or not base_path:
         return False
@@ -99,6 +99,7 @@ def _is_safe_path(target_path: Path, base_path: Path) -> bool:
         resolved_target = target_path.resolve(strict=True)
         resolved_base = base_path.resolve(strict=True)
         
+        # Verifica protección global antes de confirmar pertenencia al árbol base
         if is_protected_path(resolved_target):
             return False
             
@@ -110,7 +111,8 @@ def _is_safe_path(target_path: Path, base_path: Path) -> bool:
 @lru_cache(maxsize=32)
 def directory_size(path: str | os.PathLike) -> int:
     """
-    Calcula el peso total de una carpeta mediante un recorrido seguro del sistema de archivos.
+    Suma recursiva de archivos. Ignora enlaces simbólicos y carpetas protegidas.
+    Usa os.scandir para rendimiento en directorios con muchos archivos.
     """
     if not path:
         return 0
@@ -134,6 +136,7 @@ def directory_size(path: str | os.PathLike) -> int:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
+                        # Saltar links para evitar bucles infinitos o escaneo fuera de ruta
                         if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
                             continue
                         if entry.is_dir(follow_symlinks=False):
@@ -150,7 +153,10 @@ def directory_size(path: str | os.PathLike) -> int:
 
 
 def _is_valid_cache_path(candidate: Path, base_path: Path) -> bool:
-    """Valida que la ruta sea un directorio de caché objetivo y no contenga datos personales."""
+    """
+    Filtro estricto: valida existencia, seguridad de la ruta y que no sea 
+    un componente sensible del perfil (ej. Cookies).
+    """
     if not candidate:
         return False
     try:
@@ -169,9 +175,7 @@ def detect_profiles(
     bases: Sequence[Path] | None = None, 
     cache_paths: Dict[str, str] | None = None
 ) -> List[BrowserCache]:
-    """
-    Explora los directorios base para identificar cachés de navegadores.
-    """
+    """Explora directorios base en busca de cachés definidas en BROWSER_CACHE_PATHS."""
     if bases is None:
         bases = base_directories()
     if cache_paths is None:
@@ -210,14 +214,14 @@ def detect_profiles(
 
 
 def total_cache_bytes(caches: Iterable[BrowserCache] | None = None) -> int:
-    """Calcula la suma agregada de bytes en una colección de cachés."""
+    """Calcula el total de bytes de una lista de objetos BrowserCache."""
     if caches is None:
         return 0
     return sum(cache.size_bytes for cache in caches)
 
 
 def summarize(caches: List[BrowserCache] | None = None) -> List[str]:
-    """Genera una representación formateada del reporte para la interfaz de usuario."""
+    """Formatea el reporte de caché para visualización en la interfaz (UI)."""
     current_caches = caches if caches is not None else detect_profiles()
     
     if not current_caches:
