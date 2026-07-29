@@ -111,7 +111,20 @@ def _is_safe_path(target_path: Path, base_path: Path) -> bool:
 @lru_cache(maxsize=32)
 def directory_size(path: str | os.PathLike) -> int:
     """
-    Suma recursiva de archivos. Ignora enlaces simbólicos, junctions y carpetas protegidas.
+    Calcula el tamaño total en bytes de un directorio mediante suma recursiva.
+
+    Args:
+        path: Ruta del directorio a analizar.
+
+    Returns:
+        Suma de tamaños de archivo encontrados. Retorna 0 si el path es
+        inválido, inaccesible, un enlace simbólico, una unión (junction) 
+        o está marcado como protegido por `safety.py`.
+
+    Notes:
+        Utiliza `os.scandir` para maximizar rendimiento. Las excepciones por
+        permisos o errores de I/O son capturadas silenciosamente para permitir
+        el escaneo parcial en entornos con restricciones.
     """
     p = Path(path)
     if not p.is_dir() or p.is_symlink() or is_protected_path(p):

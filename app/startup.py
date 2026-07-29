@@ -153,7 +153,8 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
         clean_line: str = line.strip()
         if not clean_line:
             continue
-        csv_row_parts: List[str] = line.split(",", 1)
+        csv_row_parts: List[str] = clean_line.split(",", 1)
+        # Validación: asegurar estructura mínima [Nombre, Comando]
         if len(csv_row_parts) < 2:
             continue
             

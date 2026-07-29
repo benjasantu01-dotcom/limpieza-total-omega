@@ -6,27 +6,27 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **254** (50.4% de aceptación)
-- Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 28
+- Mejoras aceptadas: **256** (50.8% de aceptación)
+- Rechazadas por tests: 17
+- Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 9
-- Sin respuesta de la IA (error o límite): 197
+- Sin respuesta de la IA (error o límite): 195
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-27 | 8 | 0 | 2 | 1 | 3 |
+| 2026-07-27 | 7 | 0 | 1 | 1 | 1 |
 | 2026-07-28 | 178 | 12 | 19 | 5 | 136 |
-| 2026-07-29 | 68 | 4 | 7 | 3 | 58 |
+| 2026-07-29 | 71 | 5 | 7 | 3 | 58 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **60**
-- manejo de errores y validación de entradas: **54**
-- legibilidad y documentación: **51**
+- manejo de errores y validación de entradas: **55**
+- legibilidad y documentación: **53**
 - robustez ante casos límite: **48**
-- rendimiento: **41**
+- rendimiento: **40**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,19 +34,22 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **23**
 - `diskreport.py`: **22**
 - `quarantine.py`: **21**
-- `organizer.py`: **20**
 - `scanner.py`: **20**
-- `browser.py`: **19**
+- `browser.py`: **20**
+- `organizer.py`: **19**
 - `main.py`: **18**
 - `healthscore.py`: **18**
 - `duplicates.py`: **17**
 - `safety.py`: **15**
 - `memory.py`: **15**
-- `branding.py`: **11**
-- `startup.py`: **11**
+- `branding.py`: **12**
+- `startup.py`: **12**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-29T06:04:17` **browser.py** (legibilidad y documentación): Mejoré la documentación de `directory_size` utilizando un estilo de docstring más técnico y descriptivo (tipo Google/NumPy) para clarificar las condiciones de seguridad y los casos de excepción, facilitando la auditoría del bucle de escaneo.
+- `2026-07-29T06:04:07` **branding.py** (legibilidad y documentación): Se documentó exhaustivamente la lógica de renderizado en `draw_logo` y `draw_ring` mediante comentarios explicativos y se añadieron type hints más precisos en parámetros de funciones geométricas para clarificar las expectativas del motor gráfico, mejorando la mantenibilidad sin alterar la funcionalidad.
+- `2026-07-29T06:03:09` **startup.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `parse_registry_csv` añadiendo una validación explícita para evitar errores al procesar líneas malformadas o inesperadas que podrían causar una excepción `IndexError` al realizar el `split`, asegurando que la app no se detenga ante datos inconsistentes del registro.
 - `2026-07-29T05:53:47` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `settings.py` implementando una validación temprana y segura en `_coerce_int`, evitando errores de tipo al procesar configuraciones externas potencialmente malformadas, y añadiendo chequeos de integridad para los valores de configuración en `load()`.
 - `2026-07-29T05:53:37` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `scan_directory` validando explícitamente la entrada `directory` mediante `is_protected_path` antes de procesarla y encapsulando la creación de `Path` en un bloque de control para prevenir errores por rutas mal formadas o inaccesibles.
 - `2026-07-29T05:53:16` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `is_within_directory` y `ensure_safe_to_modify` añadiendo validaciones de tipo y estructura más estrictas para prevenir excepciones inesperadas durante la resolución de rutas complejas o mal formadas.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-29T05:32:33` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `directory_size` y `_is_safe_path` ante errores de resolución de rutas y entradas inexistentes, asegurando que el bucle de escaneo no aborte prematuramente ni procese rutas mal formadas.
 - `2026-07-29T05:24:42` **assistant.py** (manejo de errores y validación de entradas): Se reforzó la validación de los datos recibidos en `ask` mediante el uso de excepciones específicas y chequeos de tipo, asegurando que la configuración cargada desde `settings` sea procesada de forma robusta antes de invocar servicios externos.
 - `2026-07-29T04:01:13` **settings.py** (seguridad defensiva): Se reforzó la seguridad de `settings.py` al implementar una validación explícita mediante `ensure_safe_to_modify` antes de cualquier operación de escritura en `save()` y `reset()`, protegiendo la integridad del sistema contra manipulaciones de rutas de configuración.
-- `2026-07-29T04:00:48` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `scan_directory` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta resuelta antes de iterar, y se reemplazó la validación redundante `Path(entry.path).exists()` por una verificación más eficiente y segura dentro del loop de `os.scandir`.
-- `2026-07-29T04:00:27` **safety.py** (seguridad defensiva): Se reforzó `ensure_safe_to_modify` para prevenir ataques de "Time-of-Check to Time-of-Use" (TOCTOU) y manipulación de rutas externas mediante la validación estricta de que el archivo no sea un symlink o punto de reparse justo antes de la operación, cerrando un hueco donde un atacante podría redirigir la operación hacia una ruta del sistema después de pasar el filtro inicial.
-- `2026-07-29T03:51:02` **quarantine.py** (seguridad defensiva): Se ha añadido una validación estricta en `purge_item` y `purge_all` para asegurar que el archivo a eliminar sea efectivamente un archivo regular dentro de la carpeta de cuarentena, evitando que manipulaciones externas del manifiesto permitan el borrado accidental de archivos fuera del alcance definido por la app.

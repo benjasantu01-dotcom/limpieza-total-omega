@@ -287,7 +287,10 @@ def logo_ascii() -> str:
 
 
 def draw_logo(canvas: Any, size: int = 56, x: int = 0, y: int = 0) -> None:
-    """Renderiza el logo en un widget canvas de Tkinter."""
+    """
+    Renderiza el logo (escudo Omega) en un widget canvas de Tkinter.
+    Utiliza un factor de escala 's' para mantener las proporciones relativas.
+    """
     if canvas is None or not hasattr(canvas, "create_polygon"): return
     try:
         s = max(0.1, float(size) / 128)
@@ -297,7 +300,7 @@ def draw_logo(canvas: Any, size: int = 56, x: int = 0, y: int = 0) -> None:
     def pts(*coords: float) -> List[float]:
         return [x_val + c * s if i % 2 == 0 else y_val + c * s for i, c in enumerate(coords)]
 
-    # Draw glow layers
+    # Capas de resplandor para dar profundidad lumínica (radial)
     for paso in range(4, 0, -1):
         radio = 56 * s * (0.6 + paso * 0.12)
         canvas.create_oval(
@@ -307,11 +310,11 @@ def draw_logo(canvas: Any, size: int = 56, x: int = 0, y: int = 0) -> None:
             outline="",
         )
 
-    # Draw shield body
+    # Cuerpo principal del escudo: polígono cerrado base
     contorno = pts(64, 18, 100, 31, 100, 67, 90, 90, 64, 110, 38, 90, 28, 67, 28, 31)
     canvas.create_polygon(contorno, fill=GRADIENT_STOPS[1], outline="")
     
-    # Draw gradient details
+    # Detalle de degradado lineal interno renderizado por franjas horizontales
     franjas = max(6, int(28 * s))
     alto = 92 * s / franjas
     colores_grad = gradient_colors(franjas)
@@ -324,6 +327,7 @@ def draw_logo(canvas: Any, size: int = 56, x: int = 0, y: int = 0) -> None:
             fill=tono, outline=""
         )
 
+    # Trazos superiores: corte de limpieza sobre el escudo
     canvas.create_line(*pts(41, 75, 75, 41), fill=PALETTE["background"], width=max(2, int(8 * s)), capstyle="round")
     canvas.create_polygon(pts(75, 41, 89, 38, 92, 52), fill=PALETTE["background"], outline="")
     canvas.create_text(*pts(64, 96), text="\u03a9", fill=PALETTE["background"], font=("Segoe UI", max(8, int(23 * s)), "bold"))
@@ -346,7 +350,11 @@ def draw_ring(canvas: Any, percent: float | int, size: int = 150,
               x: int = 0, y: int = 0, thickness: int = 14,
               track: HexColor | None = None,
               fill: HexColor | None = None) -> None:
-    """Dibuja un medidor circular de progreso."""
+    """
+    Dibuja un medidor circular (HealthScore) usando arcos de Tkinter.
+    - 'track': color del anillo inactivo (fondo).
+    - 'fill': color del arco de progreso actual.
+    """
     if canvas is None or not hasattr(canvas, "create_arc"): return
     try:
         valor = max(0.0, min(100.0, float(percent)))
@@ -357,7 +365,11 @@ def draw_ring(canvas: Any, percent: float | int, size: int = 150,
     color_fondo, color_avance = track or PALETTE["surface_alt"], fill or score_color(valor)
     borde = grosor / 2
     caja = (x + borde, y + borde, x + diametro - borde, y + diametro - borde)
+    
+    # Dibujo del anillo de fondo (completo)
     canvas.create_arc(*caja, start=0, extent=359.9, style="arc", outline=color_fondo, width=grosor)
+    
+    # Arco de progreso (sobreimpreso)
     if valor > 0:
         canvas.create_arc(*caja, start=90, extent=-(valor / 100 * 359.9),
                           style="arc", outline=color_avance, width=grosor)

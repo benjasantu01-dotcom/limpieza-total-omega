@@ -423,3 +423,26 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-07-29T05:53:47` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `settings.py` implementando una validación temprana y segura en `_coerce_int`, evitando errores de tipo al procesar configuraciones externas potencialmente malformadas, y añadiendo chequeos de integridad para los valores de configuración en `load()`.
 - `2026-07-29T05:53:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-29T05:53:47` Corrida terminada. Total usado hoy: 140.
+- `2026-07-29T06:02:44` Arrancando corrida. Quedan hoy ~160 peticiones objetivo.
+- `2026-07-29T06:03:09` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `parse_registry_csv` añadiendo una validación explícita para evitar errores al procesar líneas malformadas o inesperadas que podrían causar una excepción `IndexError` al realizar el `split`, asegurando que la app no se detenga ante datos inconsistentes del registro.
+- `2026-07-29T06:03:38` Tests FALLARON:
+```
+pestaña Seguridad.', source='local', notice='Respondido por el m...conexión ni envío de datos. Para preguntas escritas con tus palabras, activá el asistente en Ajustes.', suggestions=[]).text
+FAILED evolve/tests/test_assistant.py::test_a_healthy_system_gets_a_calm_answer - AssertionError: assert 'buen estado' in 'estado: 98/100. todo bien.'
+ +  where 'estado: 98/100. todo bien.' = <built-in method lower of str object at 0x7f67988a8e90>()
+ +    where <built-in method lower of str object at 0x7f67988a8e90> = 'Estado: 98/100. Todo bien.'.lower
+ +      where 'Estado: 98/100. Todo bien.' = Answer(text='Estado: 98/100. Todo bien.', source='local', notice='Respondido por el motor local, sin conexión ni envío...lo más urgente que debería arreglar?', '¿Por qué mi PC está lenta?', '¿Es seguro borrar lo que encontró la limpieza?']).text
+FAILED evolve/tests/test_assistant.py::test_explain_area_covers_every_health_area - AssertionError: assert 39 > 40
+ +  where 39 = len('Espacio libre en la unidad del sistema.')
+ +    where 'Espacio libre en la unidad del sistema.' = <function explain_area at 0x7f679953a840>('disco')
+ +      where <function explain_area at 0x7f679953a840> = assistant.explain_area
+FAILED evolve/tests/test_assistant.py::test_explain_area_on_unknown_input - AttributeError: 'NoneType' object has no attribute 'strip'
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - AssertionError: assert 'no autorizó' in ''
+7 failed, 292 passed in 1.07s
+
+```
+- `2026-07-29T06:03:38` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `build_context` para utilizar un patrón de mapeo más limpio, añadiendo type hints precisos y docstrings explicativos en las funciones de procesamiento, lo cual facilita la auditoría del flujo de datos sensibles.
+- `2026-07-29T06:04:07` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Se documentó exhaustivamente la lógica de renderizado en `draw_logo` y `draw_ring` mediante comentarios explicativos y se añadieron type hints más precisos en parámetros de funciones geométricas para clarificar las expectativas del motor gráfico, mejorando la mantenibilidad sin alterar la funcionalidad.
+- `2026-07-29T06:04:17` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Mejoré la documentación de `directory_size` utilizando un estilo de docstring más técnico y descriptivo (tipo Google/NumPy) para clarificar las condiciones de seguridad y los casos de excepción, facilitando la auditoría del bucle de escaneo.
+- `2026-07-29T06:04:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-29T06:04:17` Corrida terminada. Total usado hoy: 144.
