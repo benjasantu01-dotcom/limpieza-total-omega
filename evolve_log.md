@@ -606,3 +606,10 @@ FAILED evolve/tests/test_integrity.py::test_is_safe_returns_bool_and_never_raise
 - `2026-07-29T08:07:01` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: seguridad defensiva).
 - `2026-07-29T08:07:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-29T08:07:01` Corrida terminada. Total usado hoy: 192.
+- `2026-07-29T08:15:53` Arrancando corrida. Quedan hoy ~108 peticiones objetivo.
+- `2026-07-29T08:16:54` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de las validaciones de seguridad en `main.py` mediante la implementación de `ensure_safe_to_modify` antes de la ejecución de operaciones destructivas en los métodos `on_stage`, `on_quarantine_findings` y `on_quarantine_duplicates`, sustituyendo chequeos insuficientes y previniendo la ejecución de acciones sobre rutas protegidas.
+- `2026-07-29T08:17:18` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `trim_working_set` validando el PID contra el sistema de protección (`is_protected_path` no aplica a PIDs, así que se implementó una verificación de privilegios y límites de seguridad) para evitar que la aplicación intente manipular procesos críticos del sistema operativo, garantizando que solo procesos de usuario puedan ser objeto de la operación.
+- `2026-07-29T08:17:40` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-07-29T08:17:51` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha implementado una validación robusta de puntos de reparse (junctions/symlinks) en `restore_item` para asegurar que, al restaurar un archivo, la ruta destino no haya sido alterada para apuntar fuera del árbol de directorios esperado, previniendo ataques de escalada de privilegios mediante manipulación del sistema de archivos.
+- `2026-07-29T08:17:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-29T08:17:51` Corrida terminada. Total usado hoy: 196.

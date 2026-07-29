@@ -272,6 +272,9 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
 
     destination = normalize(match.original_path)
     
+    if destination.is_symlink():
+        raise UnsafePathError(f"Restauración denegada: {destination} es un enlace simbólico.")
+
     if is_protected_path(destination):
         raise UnsafePathError(f"Restauración denegada: {destination} está protegida.")
 

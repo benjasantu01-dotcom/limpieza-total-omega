@@ -986,10 +986,13 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         def task():
             self.set_status("Moviendo a revisión...")
             # Filtrado explícito mediante seguridad
-            aptos = [jf for jf in junk if safety.is_safe_to_modify(Path(jf.path))]
-            descartados = len(junk) - len(aptos)
-            if descartados:
-                self.log(f"{descartados} archivo(s) omitido(s) por seguridad.", "Limpieza")
+            aptos = []
+            for jf in junk:
+                try:
+                    ensure_safe = safety.ensure_safe_to_modify(Path(jf.path))
+                    aptos.append(jf)
+                except safety.UnsafePathError:
+                    self.log(f"Omitido por seguridad: {jf.path}", "Limpieza")
             
             if aptos:
                 dest = stage_for_review(aptos)
@@ -1084,6 +1087,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             aislados, bloqueados = 0, 0
             for ruta in rutas:
                 try:
+                    # Validar seguridad antes de aislar
+                    safety.ensure_safe_to_modify(Path(ruta))
                     item = quarantine.quarantine_file(ruta, reason="Marcado por escaneo heurístico")
                     self.log(f"Aislado [{item.item_id}] {ruta}", "Seguridad")
                     aislados += 1
@@ -1135,7 +1140,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             
             # Obtener el manifiesto para verificar la ruta original antes de restaurar
             item = quarantine.get_item(raw_id)
-            if not safety.is_safe_to_modify(Path(item.original_path)):
+            try:
+                safety.ensure_safe_to_modify(Path(item.original_path))
+            except safety.UnsafePathError:
                 self.log(f"Error: La ruta original '{item.original_path}' es insegura. Restauración bloqueada.", "Cuarentena")
                 return
 
@@ -1329,13 +1336,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             messagebox.showinfo("Nada para mover", "No hay copias extra que aislar.")
             return
         
-        # Validar seguridad antes de aislar
-        seguros = [p for p in a_mover if safety.is_safe_to_modify(Path(p))]
-        if len(seguros) < len(a_mover):
-            self.log(f"Omitidos {len(a_mover) - len(seguros)} duplicados en rutas protegidas.", "Duplicados")
-            a_mover = seguros
-            if not a_mover: return
-
         if not self._confirm(
             "Aislar copias duplicadas",
             f"Se van a MOVER {len(a_mover)} copia(s) a la cuarentena, conservando "
@@ -1348,6 +1348,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             movidos = 0
             for ruta in a_mover:
                 try:
+                    # Validar seguridad antes de aislar
+                    safety.ensure_safe_to_modify(Path(ruta))
                     quarantine.quarantine_file(ruta, reason="Copia duplicada")
                     movidos += 1
                 except (safety.UnsafePathError, FileNotFoundError, OSError) as e:

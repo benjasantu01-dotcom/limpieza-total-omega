@@ -28,6 +28,7 @@ import re
 import subprocess
 from dataclasses import dataclass, field
 from typing import List, Tuple, Optional, Dict, Iterator, Any
+from safety import is_protected_path
 
 __all__ = [
     "MemorySnapshot",
@@ -298,8 +299,8 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     
     try:
         target_pid = int(pid)
-        if target_pid <= 0:
-            raise ValueError("PID fuera de rango.")
+        if target_pid <= 4:
+            return False, "Operación denegada: PID de sistema protegido."
     except (ValueError, TypeError):
         return False, "El PID debe ser un número entero positivo."
 
