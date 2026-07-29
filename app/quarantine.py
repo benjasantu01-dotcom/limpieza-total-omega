@@ -113,7 +113,8 @@ def _manifest_path(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
 
 def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload: bool = False) -> List[QuarantineItem]:
     """
-    Carga el manifiesto desde disco o caché con validación estricta de esquema.
+    Carga y parsea el manifiesto desde el disco. Implementa una caché en memoria
+    para evitar I/O redundante. Valida tipos de datos contra el esquema esperado.
     """
     base_path = quarantine_dir(base)
     base_str = str(base_path)
@@ -132,7 +133,6 @@ def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload:
         return []
 
     items: List[QuarantineItem] = []
-    # Validación estricta de tipos esperados para evitar corrupción de datos
     for entry in data:
         if not isinstance(entry, dict):
             continue
@@ -155,13 +155,8 @@ def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload:
 
 def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
     """
-    Persiste la lista de objetos QuarantineItem en JSON.
-    
-    Args:
-        items: Lista de ítems a guardar.
-        base: Directorio base de cuarentena.
-    Raises:
-        RuntimeError: Si la escritura en disco falla.
+    Persiste la lista de ítems en el manifiesto JSON.
+    La integridad del archivo depende de que `items` contenga solo objetos válidos.
     """
     if not isinstance(items, list):
         raise ValueError("El manifiesto debe ser una lista de ítems.")
@@ -206,7 +201,6 @@ def quarantine_file(
     ensure_safe_to_modify(origin, allow_sensitive=True)
     ensure_safe_to_modify(dest_dir, allow_sensitive=False)
     
-    # Verificar existencia nuevamente antes de medir
     if not origin.exists():
         raise FileNotFoundError(f"El archivo desapareció antes de ser procesado: {origin}")
 
@@ -314,7 +308,6 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
     quarantine_root = quarantine_dir(base)
     stored_file = quarantine_root / match.stored_name
     
-    # Validamos: debe ser un archivo, existir y estar dentro de cuarentena
     if not stored_file.is_file() or not is_within_directory(stored_file, quarantine_root):
         raise UnsafePathError(f"Intento de borrado fuera de cuarentena: {stored_file}")
 
@@ -329,13 +322,12 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
 
 
 def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
-    """Limpia el directorio y resetea el manifiesto; solo borra archivos validados como hijos de la base."""
+    """Limpia el directorio y resetea el manifiesto."""
     quarantine_root = quarantine_dir(base)
     items = load_manifest(base)
     count = 0
     for item in items:
         stored_file = quarantine_root / item.stored_name
-        # Validación de seguridad defensiva: no borrar nada que no sea un archivo regular en la base
         if stored_file.is_file() and is_within_directory(stored_file, quarantine_root):
             try:
                 stored_file.unlink()
@@ -347,7 +339,7 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
 
 
 def total_quarantined_bytes(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
-    """Calcula el total de bytes usados por ítems en cuarentena usando el cache."""
+    """Calcula el total de bytes usados por ítems en cuarentena."""
     base_path = quarantine_dir(base)
     items = _manifest_cache.get(str(base_path), load_manifest(base))
     return sum(item.size_bytes for item in items)

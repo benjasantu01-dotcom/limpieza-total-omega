@@ -45,10 +45,10 @@ SYSTEM_FOLDER_BLOCKLIST: Final = frozenset({"windows", "program files", "program
 
 def list_available_drives() -> List[str]:
     """
-    Lista las unidades de disco montadas en el sistema mediante iteración de letras de unidad.
+    Detecta unidades montadas en sistemas Windows.
 
     Returns:
-        List[str]: Lista de rutas raíz (ej. ['C:\\', 'D:\\']). Retorna vacía en entornos no-NT.
+        List[str]: Lista de rutas raíz (ej. ['C:\\', 'D:\\']). Retorna lista vacía en entornos no-NT.
     """
     if os.name != "nt":
         return []
@@ -62,14 +62,21 @@ def list_available_drives() -> List[str]:
 
 @dataclass
 class JunkFile:
-    """Representa un archivo candidato a limpieza con sus metadatos básicos para auditoría y ordenación."""
+    """
+    Representa un archivo candidato a limpieza.
+    
+    Attributes:
+        path: Objeto Path con la ubicación del archivo.
+        size_bytes: Tamaño original en bytes.
+        modified: Fecha y hora de la última modificación.
+    """
     path: Path
     size_bytes: int
     modified: datetime
 
     @property
     def size_mb(self) -> float:
-        """Convierte bytes a Megabytes (formato float) para legibilidad en la interfaz."""
+        """Calcula el tamaño del archivo en Megabytes."""
         return round(self.size_bytes / (1024 * 1024), 2)
 
     @property
@@ -80,11 +87,13 @@ class JunkFile:
 
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     """
-    Realiza un escaneo recursivo en busca de archivos candidatos a limpieza.
-    
-    El proceso utiliza 'is_safe_to_modify' como filtro de seguridad en cada entrada 
-    para garantizar que solo se cataloguen archivos fuera de rutas críticas. 
-    Se ignoran explícitamente enlaces simbólicos para prevenir escapes del árbol de directorios.
+    Escanea directorios en busca de archivos temporales.
+
+    Args:
+        directories: Lista opcional de rutas a escanear. Si es None, usa DEFAULT_SCAN_DIRS.
+
+    Returns:
+        List[JunkFile]: Lista de archivos identificados como basura y seguros para mover.
     """
     if directories is not None and not isinstance(directories, list):
         logger.error("El parámetro directories debe ser una lista.")
@@ -99,7 +108,7 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
             with os.scandir(base_path) as it:
                 for entry in it:
                     try:
-                        # Ignorar enlaces simbólicos para evitar bucles infinitos
+                        # Ignorar enlaces simbólicos para evitar bucles infinitos y escapes
                         if entry.is_symlink():
                             continue
                         if entry.is_dir(follow_symlinks=False):
@@ -108,7 +117,7 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
                         elif entry.is_file(follow_symlinks=False):
                             if entry.name.lower().endswith(_JUNK_EXTS_TUPLE):
                                 full_path = Path(entry.path)
-                                # Validación centralizada: evitar tocar archivos protegidos
+                                # Validación centralizada: solo catalogar archivos seguros
                                 if is_safe_to_modify(full_path):
                                     stat = entry.stat()
                                     found.append(
@@ -134,12 +143,15 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
 
 def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -> List[JunkFile]:
     """
-    Ordena la lista de JunkFile según el criterio especificado.
-    
+    Ordena una lista de objetos JunkFile según tamaño o fecha.
+
     Args:
-        files: Lista de objetos JunkFile a ordenar.
-        by: Atributo de ordenamiento ('size' para bytes, 'date' para fecha de modificación).
-        ascending: Dirección del ordenamiento.
+        files: Lista de objetos JunkFile.
+        by: Atributo de ordenamiento ('size' o 'date').
+        ascending: Booleano para orden ascendente.
+
+    Returns:
+        List[JunkFile]: Lista ordenada.
     """
     if not isinstance(files, list):
         return []
@@ -156,7 +168,17 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Path:
     """
-    Mueve archivos candidatos a una carpeta de revisión ("staging").
+    Mueve archivos candidatos a una carpeta de cuarentena para revisión humana.
+
+    Args:
+        files: Lista de JunkFile a mover.
+        review_dir: Ruta destino de la cuarentena.
+
+    Returns:
+        Path: Ruta del directorio de revisión.
+
+    Raises:
+        OSError: Si no se puede crear el directorio o mover los archivos.
     """
     if not isinstance(files, list) or not isinstance(review_dir, str):
         logger.warning("Entrada inválida en stage_for_review.")
@@ -221,7 +243,13 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
     """
-    Elimina permanentemente archivos en el directorio de revisión tras confirmación externa.
+    Elimina permanentemente archivos desde la carpeta de revisión.
+
+    Args:
+        review_dir: Directorio base de revisión.
+
+    Returns:
+        int: Cantidad de archivos eliminados con éxito.
     """
     if not isinstance(review_dir, str):
         return 0

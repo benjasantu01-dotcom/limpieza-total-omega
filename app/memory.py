@@ -134,6 +134,7 @@ def parse_linux_meminfo(text: str) -> MemorySnapshot:
 def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]:
     """
     Procesa el CSV de procesos generado por PowerShell.
+    Convierte líneas separadas por comas en objetos ProcessMemory ordenados.
     """
     if not text:
         return []
@@ -159,8 +160,8 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
 
 def _read_windows_snapshot() -> MemorySnapshot:
     """
-    Implementación interna de bajo nivel usando ctypes para invocar
-    GlobalMemoryStatusEx y obtener el estado real de RAM en Windows.
+    Implementación interna mediante ctypes para invocar GlobalMemoryStatusEx.
+    Devuelve un snapshot con la memoria física total y disponible del sistema.
     """
     import ctypes
 
@@ -189,7 +190,7 @@ def _read_windows_snapshot() -> MemorySnapshot:
 def read_snapshot() -> MemorySnapshot:
     """
     Captura un snapshot del estado de memoria. 
-    Detecta automáticamente el SO (NT o Linux).
+    Detecta automáticamente el SO y delega a la función de parseo adecuada.
     """
     if os.name == "nt":
         try:
@@ -213,10 +214,10 @@ def read_snapshot() -> MemorySnapshot:
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     """
     Consulta al sistema operativo por los procesos de mayor consumo.
+    Solo implementado para entornos Windows vía PowerShell.
     """
     if os.name != "nt":
         return []
-    # Usar Select-Object directamente para reducir el flujo de datos por el pipe
     command = (
         f"Get-Process | Select-Object -Property Name,Id,WorkingSet | "
         "Sort-Object -Property WorkingSet -Descending | "
@@ -226,7 +227,7 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     try:
         result = subprocess.run(
             ["powershell", "-NoProfile", "-Command", command],
-            capture_output=True, text=True, timeout=10, # Timeout ajustado
+            capture_output=True, text=True, timeout=10,
         )
         return parse_windows_process_csv(result.stdout or "", limit=limit)
     except (OSError, subprocess.SubprocessError):
@@ -285,6 +286,7 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
     Solicita al S.O. que libere la memoria RAM física (Working Set) asignada a un PID.
+    Usa la API de Windows EmptyWorkingSet tras obtener los permisos necesarios.
     """
     if os.name != "nt":
         return False, "Solo disponible en Windows."
@@ -304,7 +306,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         if not hasattr(kernel32, "OpenProcess") or not hasattr(psapi, "EmptyWorkingSet"):
             return False, "APIs necesarias no disponibles en este entorno."
 
-        # Permisos mínimos necesarios: SET_QUOTA (0x0100) y QUERY_LIMITED_INFORMATION (0x1000)
+        # Permisos mínimos: SET_QUOTA (0x0100) y QUERY_LIMITED_INFORMATION (0x1000)
         handle = kernel32.OpenProcess(0x0100 | 0x1000, False, target_pid)
         if not handle:
             return False, f"Acceso denegado al proceso {target_pid} (posible sistema protegido)."
