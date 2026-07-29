@@ -385,25 +385,31 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         area_container.grid(row=0, column=1, sticky="ew")
         area_container.grid_columnconfigure(1, weight=1)
         for fila, (clave, etiqueta) in enumerate(HEALTH_AREAS):
-            ctk.CTkLabel(
-                area_container, text=etiqueta, anchor="w", width=150,
-                text_color=branding.color("text_muted"),
-                font=ctk.CTkFont(size=branding.font_size("body")),
-            ).grid(row=fila, column=0, sticky="w", pady=4)
-            barra = ctk.CTkProgressBar(
-                area_container, height=9, corner_radius=5,
-                fg_color=branding.color("surface_alt"),
-                progress_color=branding.color("accent"),
-            )
-            barra.grid(row=fila, column=1, sticky="ew", padx=10, pady=4)
-            barra.set(0)
-            valor_label = ctk.CTkLabel(
-                area_container, text="-", width=64, anchor="e",
-                text_color=branding.color("text"),
-                font=ctk.CTkFont(size=branding.font_size("caption"), weight="bold"),
-            )
-            valor_label.grid(row=fila, column=2, sticky="e", pady=4)
-            self.area_bars[clave] = (barra, valor_label)
+            self._build_single_health_bar(area_container, clave, etiqueta, fila)
+
+    def _build_single_health_bar(self, container: ctk.CTkFrame, clave: str, etiqueta: str, fila: int):
+        """Crea una fila individual de barra de progreso para un área de salud."""
+        ctk.CTkLabel(
+            container, text=etiqueta, anchor="w", width=150,
+            text_color=branding.color("text_muted"),
+            font=ctk.CTkFont(size=branding.font_size("body")),
+        ).grid(row=fila, column=0, sticky="w", pady=4)
+        
+        barra = ctk.CTkProgressBar(
+            container, height=9, corner_radius=5,
+            fg_color=branding.color("surface_alt"),
+            progress_color=branding.color("accent"),
+        )
+        barra.grid(row=fila, column=1, sticky="ew", padx=10, pady=4)
+        barra.set(0)
+        
+        valor_label = ctk.CTkLabel(
+            container, text="-", width=64, anchor="e",
+            text_color=branding.color("text"),
+            font=ctk.CTkFont(size=branding.font_size("caption"), weight="bold"),
+        )
+        valor_label.grid(row=fila, column=2, sticky="e", pady=4)
+        self.area_bars[clave] = (barra, valor_label)
 
     def _metric_card(self, parent: ctk.CTk, title: str, column: int) -> ctk.CTkLabel:
         """Tarjeta con un número grande y su etiqueta. Devuelve la etiqueta del valor."""

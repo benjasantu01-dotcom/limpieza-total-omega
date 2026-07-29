@@ -166,8 +166,9 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
 
 def _read_windows_snapshot() -> MemorySnapshot:
     """
-    Implementación interna mediante ctypes para invocar GlobalMemoryStatusEx.
-    Devuelve un snapshot con la memoria física total y disponible del sistema.
+    Obtiene métricas de memoria del sistema mediante la API de Windows `GlobalMemoryStatusEx`.
+    Utiliza una estructura de datos `MEMORYSTATUSEX` alineada con la definición de Microsoft 
+    para extraer información precisa de memoria física sin dependencias externas.
     """
     import ctypes
 
@@ -291,8 +292,11 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
-    Solicita al S.O. que libere la memoria RAM física (Working Set) asignada a un PID.
-    Usa la API de Windows EmptyWorkingSet tras obtener los permisos necesarios.
+    Solicita al sistema operativo (vía `EmptyWorkingSet` de psapi.dll) que intente 
+    reducir el consumo de memoria RAM física del proceso especificado.
+    
+    Nota: Esta es una operación de bajo nivel que requiere permisos sobre el PID; 
+    el sistema operativo puede denegarla si el proceso es crítico o pertenece al kernel.
     """
     if os.name != "nt":
         return False, "Solo disponible en Windows."

@@ -85,6 +85,29 @@ class JunkFile:
         return self.path.suffix.lower() in _LOWER_JUNK_EXTS
 
 
+def _generate_unique_target(target: Path) -> Path:
+    """
+    Genera una ruta única iterando un contador si el archivo destino ya existe.
+    
+    Args:
+        target: La ruta base deseada para el archivo.
+        
+    Returns:
+        Path: Una ruta única que no colisiona con archivos existentes.
+    """
+    if not target.exists():
+        return target
+        
+    parent = target.parent
+    stem = target.stem
+    suffix = target.suffix
+    counter = 1
+    
+    while (candidate := parent / f"{stem}_{counter}{suffix}").exists():
+        counter += 1
+    return candidate
+
+
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     """
     Escanea directorios en busca de archivos temporales.
@@ -221,23 +244,15 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             if usage.free < (jf.size_bytes + 10 * 1024 * 1024):
                 continue
 
+            # Construcción de target único
             base_name = jf.path.stem
             ext = jf.path.suffix
             timestamp = int(jf.modified.timestamp())
-            
-            target = (dest / f"{base_name}_{timestamp}{ext}").resolve()
-            
-            # Verificar que el target final esté realmente bajo la carpeta de revisión
-            if not str(target).startswith(str(dest)):
-                continue
+            initial_target = (dest / f"{base_name}_{timestamp}{ext}").resolve()
+            target = _generate_unique_target(initial_target)
                 
-            counter = 1
-            while target.exists():
-                target = (dest / f"{base_name}_{timestamp}_{counter}{ext}").resolve()
-                if not str(target).startswith(str(dest)):
-                    break
-                counter += 1
-            else:
+            # Verificar que el target final esté realmente bajo la carpeta de revisión
+            if str(target).startswith(str(dest)):
                 ensure_safe_to_modify(full_source_path)
                 shutil.move(str(full_source_path), str(target))
                 
