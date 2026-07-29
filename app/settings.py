@@ -215,7 +215,6 @@ def load(path_or_base: PathLike | None = None) -> dict[str, Any]:
     
     try:
         ruta = settings_path(path_or_base)
-        ruta_str = str(ruta)
         if not ruta.exists():
             return dict(DEFAULTS)
         
@@ -223,6 +222,7 @@ def load(path_or_base: PathLike | None = None) -> dict[str, Any]:
         if stat.st_size > MAX_SETTINGS_SIZE:
             return dict(DEFAULTS)
             
+        ruta_str = str(ruta)
         if _cached_settings is not None and ruta_str == _last_path_str and stat.st_mtime == _last_mtime:
             return _cached_settings
 
@@ -237,6 +237,7 @@ def load(path_or_base: PathLike | None = None) -> dict[str, Any]:
         _last_mtime = stat.st_mtime
         return _cached_settings
     except (OSError, json.JSONDecodeError, UnicodeDecodeError):
+        # Si falló la lectura, retornamos defaults para no romper la app
         return dict(DEFAULTS)
 
 
@@ -252,13 +253,20 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
         ruta.parent.mkdir(parents=True, exist_ok=True)
         ensure_safe_to_modify(str(ruta.parent))
         
+        # Uso de with para asegurar cierre de descriptor y evitar fugas si falla el fsync
         with tempfile.NamedTemporaryFile("w", dir=ruta.parent, delete=False, encoding="utf-8") as tf:
             tf.write(json_data)
             tf.flush()
             os.fsync(tf.fileno())
             temp_name = tf.name
         
-        os.replace(temp_name, ruta)
+        try:
+            os.replace(temp_name, ruta)
+        except OSError:
+            if os.path.exists(temp_name):
+                os.remove(temp_name)
+            raise
+
         _cached_settings = limpio
         _last_path_str = str(ruta)
         _last_mtime = ruta.stat().st_mtime
