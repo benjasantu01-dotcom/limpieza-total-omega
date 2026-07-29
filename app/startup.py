@@ -61,11 +61,13 @@ class StartupEntry:
 
     def _extract_quoted_path(self, raw_cmd: str) -> str:
         """
-        Extrae la ruta absoluta delimitada por comillas dobles.
+        Extrae la ruta absoluta de una cadena delimitada por comillas dobles.
         
-        Busca el cierre de la comilla tras el primer carácter, validando que el 
-        contenido no contenga caracteres inválidos para el sistema de archivos
-        y verificando la existencia del ejecutable.
+        Args:
+            raw_cmd: Cadena de comando cruda que comienza con comillas.
+            
+        Returns:
+            La ruta extraída si es válida y existe, o una cadena vacía en caso contrario.
         """
         end_quote: int = raw_cmd.find('"', 1)
         if end_quote == -1:
@@ -82,11 +84,10 @@ class StartupEntry:
     @property
     def executable(self) -> str:
         """
-        Extrae la ruta del archivo ejecutable saneando la línea de comando.
+        Extrae y normaliza la ruta del archivo ejecutable de la línea de comando.
         
-        Prioriza el parseo de rutas entrecomilladas; si la cadena carece de 
-        comillas, se asume que el primer elemento separado por espacios 
-        es el binario de ejecución.
+        Si la cadena comienza con comillas, utiliza el extractor de rutas citado; 
+        en caso contrario, asume que el primer token es el binario.
         """
         cmd: str = self.command.strip()
         if not cmd:
@@ -101,7 +102,11 @@ class StartupEntry:
 
 
 def startup_folders() -> List[Path]:
-    """Retorna las rutas a las carpetas 'Inicio' (usuario y sistema) existentes."""
+    """
+    Retorna las rutas a las carpetas 'Inicio' (usuario y sistema) del sistema.
+    
+    Verifica la existencia del directorio antes de incluirlo en la lista.
+    """
     if os.name != "nt":
         return []
     candidates: List[Path] = []
@@ -116,9 +121,9 @@ def startup_folders() -> List[Path]:
 
 def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[StartupEntry]:
     """
-    Escanea carpetas en busca de ejecutables o accesos directos.
+    Escanea las carpetas de inicio en busca de ejecutables o accesos directos.
 
-    Seguridad: Ignora 'desktop.ini', symlinks y puntos de reparse.
+    Seguridad: Ignora 'desktop.ini', enlaces simbólicos y puntos de reparse.
     """
     if folders is None:
         folders = startup_folders()
@@ -147,10 +152,11 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
 
 def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry]:
     """
-    Transforma el volcado CSV crudo de PowerShell en objetos StartupEntry.
+    Transforma el volcado CSV de PowerShell en objetos StartupEntry.
     
-    Implementa una lógica de filtrado para ignorar cabeceras, objetos de sistema 
-    internos y filas mal formadas resultantes de la exportación del registro.
+    Args:
+        text: Salida cruda de PowerShell en formato CSV.
+        source: Identificador de la fuente (usualmente la clave de registro).
     """
     parsed_entries: List[StartupEntry] = []
     if not isinstance(text, str) or not text.strip():
@@ -161,17 +167,16 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
         if not clean_line:
             continue
         csv_row_parts: List[str] = clean_line.split(",", 1)
-        # Validación: asegurar estructura mínima [Nombre, Comando]
         if len(csv_row_parts) < 2:
             continue
             
         name_raw: str = csv_row_parts[0].strip().strip('"').strip("'")
         value_raw: str = csv_row_parts[1].strip().strip('"').strip("'")
         
-        # Validación de integridad de datos parseados
         if not name_raw or not value_raw:
             continue
             
+        # Filtra metadatos de PowerShell
         if name_raw.lower() in ("name", "pscustomobject") or name_raw.upper().startswith("PS"):
             continue
             
@@ -180,12 +185,16 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
 
 
 def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[StartupEntry]:
-    """Obtiene programas de inicio consultando las llaves del Registro vía PowerShell."""
+    """
+    Obtiene los programas de inicio consultando las claves del Registro vía PowerShell.
+    
+    Genera un único script consolidado para minimizar el costo de invocación 
+    de procesos externos.
+    """
     if os.name != "nt":
         return []
     all_entries: List[StartupEntry] = []
     
-    # Consolidamos en un script único para evitar múltiples invocaciones costosas
     query_parts = []
     for key in keys:
         if isinstance(key, str):
@@ -205,7 +214,6 @@ def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[Start
                 if line.startswith("'HK"):
                     current_source = line.strip("'")
                     continue
-                # Las filas CSV procesadas manualmente
                 if '","' in line or (line.startswith('"') and line.endswith('"')):
                     all_entries.extend(parse_registry_csv(line, source=current_source))
     except (OSError, subprocess.SubprocessError):
@@ -214,7 +222,7 @@ def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[Start
 
 
 def list_startup_entries() -> List[StartupEntry]:
-    """Retorna una lista consolidada de programas, eliminando duplicados por nombre."""
+    """Consolida las entradas de carpetas y registro, eliminando duplicados por nombre."""
     seen_names: set[str] = set()
     unique_entries: List[StartupEntry] = []
     
@@ -231,9 +239,8 @@ def list_startup_entries() -> List[StartupEntry]:
 
 
 def estimate_impact(entries: Sequence[StartupEntry]) -> str:
-    """Clasifica el impacto en el rendimiento basándose en umbrales de cantidad."""
+    """Clasifica el impacto en el rendimiento basado en la cantidad de entradas."""
     count = len(entries)
-    # Umbrales ordenados para determinar el nivel de criticidad
     thresholds = [(5, "ok"), (10, "info"), (18, "warning")]
     for limit, label in thresholds:
         if count <= limit:
@@ -242,7 +249,7 @@ def estimate_impact(entries: Sequence[StartupEntry]) -> str:
 
 
 def summarize(entries: Optional[Sequence[StartupEntry]] = None) -> List[str]:
-    """Genera un informe legible y estructurado de los programas de inicio detectados."""
+    """Genera un informe textual legible de los programas de inicio detectados."""
     entries_list: Sequence[StartupEntry] = entries if entries is not None else list_startup_entries()
     total_count: int = len(entries_list)
         

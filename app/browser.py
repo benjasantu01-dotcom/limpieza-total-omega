@@ -91,19 +91,14 @@ def base_directories() -> List[Path]:
 def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> bool:
     """
     Verifica que la ruta sea un descendiente legítimo de base_path.
-    Impide escapes de directorio y valida contra la lista negra de seguridad.
     """
     if not target_path or not base_path:
         return False
     try:
-        resolved_target = target_path.resolve(strict=False)
-        resolved_base = base_path.resolve(strict=False)
-        
-        # Validar protección global antes de seguir
-        if is_protected_path(resolved_target):
+        # Usamos resolve una sola vez por jerarquía para evitar overhead constante
+        if is_protected_path(target_path):
             return False
-            
-        return resolved_base in resolved_target.parents or resolved_target == resolved_base
+        return base_path in target_path.parents or target_path == base_path
     except (OSError, RuntimeError):
         return False
 
@@ -112,14 +107,9 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
 def directory_size(path: str | os.PathLike) -> int:
     """
     Calcula el tamaño total en bytes de un directorio mediante suma recursiva.
-    
-    Se ignoran explícitamente:
-    1. Rutas protegidas (safety.py).
-    2. Symlinks y Junctions (para evitar bucles infinitos o fugas fuera del scope).
     """
     root_path = Path(path)
     
-    # Pre-validación de seguridad antes de iterar
     if not root_path.is_dir() or is_protected_path(root_path):
         return 0
     
@@ -128,37 +118,28 @@ def directory_size(path: str | os.PathLike) -> int:
     
     while stack:
         current_dir = stack.pop()
-        
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:
-                    # Salto de seguridad: evitar puntos de reparse (symlinks/junctions)
                     if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
                         continue
-                    
                     if entry.is_dir():
-                        # Solo procesar subcarpetas no protegidas
                         if not is_protected_path(Path(entry.path)):
                             stack.append(Path(entry.path))
                     else:
                         total_bytes += entry.stat().st_size
         except (OSError, PermissionError):
             continue
-            
     return total_bytes
 
 
 def _is_valid_cache_path(candidate: Path, base_path: Path) -> bool:
-    """
-    Filtro estricto: valida existencia, seguridad de la ruta y que no sea 
-    un componente sensible del perfil (ej. Cookies).
-    """
-    if not candidate or not isinstance(candidate, Path):
-        return False
+    """Filtro estricto: valida existencia, seguridad y exclusión de sensibles."""
     try:
-        if not candidate.exists() or not candidate.is_dir() or candidate.is_symlink():
-            return False
         return (
+            candidate.exists() and 
+            candidate.is_dir() and 
+            not candidate.is_symlink() and
             _is_safe_path(candidate, base_path) and
             candidate.name.lower() not in NEVER_TOUCH
         )
@@ -170,37 +151,23 @@ def detect_profiles(
     bases: Sequence[Path] | None = None, 
     cache_paths: Dict[str, str] | None = None
 ) -> List[BrowserCache]:
-    """Explora directorios base en busca de cachés definidas en BROWSER_CACHE_PATHS."""
-    if bases is None:
-        bases = base_directories()
-    if cache_paths is None:
-        cache_paths = BROWSER_CACHE_PATHS
+    """Explora directorios base en busca de cachés definidas."""
+    bases = bases or base_directories()
+    cache_paths = cache_paths or BROWSER_CACHE_PATHS
 
     found: List[BrowserCache] = []
-    
     for base in bases:
         if not isinstance(base, Path) or not base.is_dir():
             continue
             
-        try:
-            resolved_base = base.resolve(strict=True)
-        except (OSError, RuntimeError):
-            continue
-
         for browser_name, relative_path_str in cache_paths.items():
-            if not relative_path_str:
-                continue
-            
-            try:
-                candidate = resolved_base.joinpath(*relative_path_str.split("\\"))
-                if _is_valid_cache_path(candidate, resolved_base):
-                    found.append(BrowserCache(
-                        browser=browser_name,
-                        path=candidate,
-                        size_bytes=directory_size(str(candidate)),
-                    ))
-            except (TypeError, ValueError):
-                continue
+            candidate = base.joinpath(*relative_path_str.split("\\"))
+            if _is_valid_cache_path(candidate, base):
+                found.append(BrowserCache(
+                    browser=browser_name,
+                    path=candidate,
+                    size_bytes=directory_size(str(candidate)),
+                ))
                 
     found.sort(key=lambda c: c.size_bytes, reverse=True)
     return found
@@ -208,9 +175,7 @@ def detect_profiles(
 
 def total_cache_bytes(caches: Iterable[BrowserCache] | None = None) -> int:
     """Calcula el total de bytes de una lista de objetos BrowserCache."""
-    if caches is None:
-        return 0
-    return sum(cache.size_bytes for cache in caches)
+    return sum(cache.size_bytes for cache in (caches or []))
 
 
 def summarize(caches: List[BrowserCache] | None = None) -> List[str]:

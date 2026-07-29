@@ -127,13 +127,13 @@ _TIMEOUT_SECONDS: Final = 30
 _PATH_REGEX: Final = re.compile(r"([a-zA-Z]:\\|/|\\|\.\.|\0)")
 
 # Mapeo precompilado para búsqueda eficiente
-_HANDLER_PATTERNS: Final = {
-    re.compile(r"ram|memoria|lenta|lento|acelerar"): "ram",
-    re.compile(r"espacio|disco|lleno|recuperar|liberar"): "disco",
-    re.compile(r"seguro|virus|sospechos|borrar|peligro"): "security",
-    re.compile(r"puntaje|salud|nota|score"): "score",
-    re.compile(r"inicio|arranque|arranca|encender"): "startup"
-}
+_HANDLER_PATTERNS: Final = (
+    (re.compile(r"ram|memoria|lenta|lento|acelerar"), "ram"),
+    (re.compile(r"espacio|disco|lleno|recuperar|liberar"), "disco"),
+    (re.compile(r"seguro|virus|sospechos|borrar|peligro"), "security"),
+    (re.compile(r"puntaje|salud|nota|score"), "score"),
+    (re.compile(r"inicio|arranque|arranca|encender"), "startup"),
+)
 
 @dataclass
 class SystemContext:
@@ -360,7 +360,7 @@ def local_answer(question: str, context: SystemContext) -> Answer:
             suggestions=SUGGESTED_QUESTIONS_LIST[:3],
         )
 
-    for pattern, key in _HANDLER_PATTERNS.items():
+    for pattern, key in _HANDLER_PATTERNS:
         if pattern.search(clean_text):
             return _HANDLERS[key](context, clean_text)
 
