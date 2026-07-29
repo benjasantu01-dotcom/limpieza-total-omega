@@ -73,6 +73,12 @@ class SystemMetrics:
         self.startup_count = max(0, _to_int(self.startup_count))
         self.quarantined_count = max(0, _to_int(self.quarantined_count))
 
+    def is_finite(self) -> bool:
+        """Verifica que todas las métricas sean números finitos y válidos."""
+        return all(math.isfinite(v) for v in [
+            self.junk_mb, self.memory_available_percent, self.disk_free_percent, self.duplicate_mb
+        ])
+
 
 @dataclass
 class HealthResult:
@@ -194,6 +200,8 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
 
     try:
         metrics.validate()
+        if not metrics.is_finite():
+            return HealthResult(0, "F", {}, ["Error: Las métricas contienen datos numéricos no procesables."])
         
         ratios = {
             "seguridad": score_security(metrics.suspicious_count, metrics.suspicious_warnings),

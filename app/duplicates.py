@@ -170,11 +170,12 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
                 
                 for name in files:
                     candidate = root_path / name
+                    # Defensa: chequeo temprano de symlink antes de acceder a stat o abrir
+                    if candidate.is_symlink():
+                        continue
                     if skip_protected and is_protected_path(candidate):
                         continue
                     try:
-                        if candidate.is_symlink():
-                            continue
                         st = candidate.stat()
                         if st.st_size >= min_size and st.st_size > 0:
                             candidates.append(candidate)

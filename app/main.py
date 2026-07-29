@@ -1117,6 +1117,13 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             if not quarantine.item_exists(item_id):
                 self.log(f"Error: El ID '{item_id}' no existe en la cuarentena.", "Cuarentena")
                 return
+            
+            # Obtener el manifiesto para verificar la ruta original antes de restaurar
+            item = quarantine.get_item(item_id)
+            if not safety.is_safe_to_modify(Path(item.original_path)):
+                self.log(f"Error: La ruta original '{item.original_path}' es insegura. Restauración bloqueada.", "Cuarentena")
+                return
+
             try:
                 destino = quarantine.restore_item(item_id)
                 self.log(f"Restaurado en: {destino}", "Cuarentena")
