@@ -16,28 +16,28 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-28 | 115 | 8 | 11 | 2 | 92 |
-| 2026-07-29 | 142 | 9 | 14 | 5 | 106 |
+| 2026-07-28 | 112 | 8 | 11 | 2 | 91 |
+| 2026-07-29 | 145 | 9 | 14 | 5 | 107 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **66**
 - manejo de errores y validación de entradas: **55**
-- seguridad defensiva: **49**
 - rendimiento: **47**
-- robustez ante casos límite: **40**
+- seguridad defensiva: **46**
+- robustez ante casos límite: **43**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **23**
+- `browser.py`: **23**
 - `scanner.py`: **22**
-- `browser.py`: **22**
-- `main.py`: **21**
-- `quarantine.py`: **21**
-- `assistant.py`: **21**
-- `organizer.py`: **19**
+- `assistant.py`: **22**
+- `main.py`: **20**
+- `quarantine.py`: **20**
+- `diskreport.py`: **19**
 - `duplicates.py`: **19**
-- `diskreport.py`: **18**
+- `organizer.py`: **18**
 - `healthscore.py`: **17**
 - `memory.py`: **17**
 - `safety.py`: **14**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-29T11:52:33` **diskreport.py** (robustez ante casos límite): Se reforzó la robustez de `all_drives_usage` ante la presencia de unidades de red (UNC) o unidades mapeadas que fallan al resolverse, evitando que una sola ruta inaccesible interrumpa la detección global del sistema.
+- `2026-07-29T11:52:23` **browser.py** (robustez ante casos límite): Mejoré la robustez de `directory_size` para manejar posibles errores al consultar `stat()` en archivos bloqueados durante el escaneo, evitando que el proceso se interrumpa ante errores de E/S inesperados.
+- `2026-07-29T11:51:34` **assistant.py** (robustez ante casos límite): Mejora la robustez del motor de consulta remota incluyendo validaciones explícitas de estado de red y integridad de respuesta para evitar fallos por respuestas vacías, truncadas o con formato JSON inválido, asegurando que el asistente siempre tenga una salida segura ante errores de red o API.
 - `2026-07-29T11:42:11` **startup.py** (rendimiento): Optimicé el rendimiento de `entries_from_registry` consolidando el parseo de CSV: en lugar de llamar a `parse_registry_csv` por cada línea (lo que generaba múltiples listas y recorridos innecesarios), ahora proceso el buffer de una sola vez, reduciendo la carga de CPU y la creación de objetos intermedios.
 - `2026-07-29T11:42:02` **settings.py** (rendimiento): Se optimizó el rendimiento del proceso de carga mediante la implementación de una caché de validación (`_validated_cache`) que evita recalcular la estructura completa del diccionario de configuración cuando el archivo en disco no ha cambiado, reduciendo la carga de CPU y la redundancia lógica.
 - `2026-07-29T11:41:36` **scanner.py** (rendimiento): Optronicé la función `scan_directory` reemplazando la creación repetitiva de objetos `Path` por el uso directo de `entry.path` (string) para el chequeo de seguridad y recursión, reduciendo drásticamente la sobrecarga de instanciación de objetos en directorios grandes.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-29T11:21:07` **duplicates.py** (rendimiento): Optimicé el rendimiento de `group_by_size` eliminando la llamada innecesaria a `group_by_size` dentro de `find_duplicates` (que recalculaba lo que `_collect_candidates` ya podría haber procesado) y simplificando el acceso al diccionario de grupos para reducir iteraciones redundantes.
 - `2026-07-29T11:11:38` **browser.py** (rendimiento): Se implementó un cacheo simple mediante `lru_cache` en `detect_profiles` (con un timeout de sesión implícito por el ciclo de vida de la app) y se optimizó la resolución de rutas en `directory_size` evitando llamadas innecesarias a `.resolve()` dentro del bucle, mejorando la velocidad de escaneo al evitar re-procesar subdirectorios ya visitados.
 - `2026-07-29T11:11:04` **assistant.py** (rendimiento): Se pre-compilaron las expresiones regulares y se optimizó la estructura de búsqueda de handlers usando un diccionario indexado por las llaves de las categorías, evitando la re-iteración innecesaria de las reglas en cada consulta de usuario.
-- `2026-07-29T11:10:33` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados, type hints consistentes y la clarificación de las responsabilidades de cada función, eliminando ambigüedades en la lógica de procesamiento para facilitar el mantenimiento y la auditoría.
-- `2026-07-29T11:01:21` **settings.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados que explican el contrato de las funciones de validación, clarifiqué la jerarquía de validación de tipos y mejoré los nombres de variables internas en las funciones `_coerce_int` y `_coerce_bool` para eliminar ambigüedades sobre su propósito.
-- `2026-07-29T11:01:10` **scanner.py** (legibilidad y documentación): Mejora la legibilidad y la robustez del código mediante la adición de Type Hints detallados, la unificación del manejo de errores mediante el uso de una constante de tipos, y la inclusión de docstrings más descriptivos que clarifican las decisiones de seguridad tomadas en `scan_directory` y `_is_reparse_point`.

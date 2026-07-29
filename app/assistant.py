@@ -427,13 +427,16 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
             url, data=cuerpo, headers={"Content-Type": "application/json"}, method="POST"
         )
         with urllib.request.urlopen(peticion, timeout=_TIMEOUT_SECONDS) as respuesta:
+            if respuesta.status != 200:
+                return None
             datos = json.loads(respuesta.read().decode("utf-8"))
         
         candidatos = datos.get("candidates", [])
-        if not candidatos:
+        if not candidatos or "content" not in candidatos[0]:
             return None
             
-        texto = "".join(p.get("text", "") for p in candidatos[0].get("content", {}).get("parts", [])).strip()
+        partes = candidatos[0]["content"].get("parts", [])
+        texto = "".join(p.get("text", "") for p in partes).strip()
         
         if not texto or len(texto) > 1200 or _PATH_REGEX.search(texto) or re.search(r'[\x00-\x1f\x7f]', texto):
             return None

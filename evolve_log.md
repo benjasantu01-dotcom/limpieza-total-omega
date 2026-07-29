@@ -942,3 +942,10 @@ FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quara
 - `2026-07-29T11:42:11` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Optimicé el rendimiento de `entries_from_registry` consolidando el parseo de CSV: en lugar de llamar a `parse_registry_csv` por cada línea (lo que generaba múltiples listas y recorridos innecesarios), ahora proceso el buffer de una sola vez, reduciendo la carga de CPU y la creación de objetos intermedios.
 - `2026-07-29T11:42:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-29T11:42:11` Corrida terminada. Total usado hoy: 276.
+- `2026-07-29T11:51:01` Arrancando corrida. Quedan hoy ~24 peticiones objetivo.
+- `2026-07-29T11:51:34` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejora la robustez del motor de consulta remota incluyendo validaciones explícitas de estado de red y integridad de respuesta para evitar fallos por respuestas vacías, truncadas o con formato JSON inválido, asegurando que el asistente siempre tenga una salida segura ante errores de red o API.
+- `2026-07-29T11:52:02` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-07-29T11:52:23` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Mejoré la robustez de `directory_size` para manejar posibles errores al consultar `stat()` en archivos bloqueados durante el escaneo, evitando que el proceso se interrumpa ante errores de E/S inesperados.
+- `2026-07-29T11:52:33` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `all_drives_usage` ante la presencia de unidades de red (UNC) o unidades mapeadas que fallan al resolverse, evitando que una sola ruta inaccesible interrumpa la detección global del sistema.
+- `2026-07-29T11:52:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-29T11:52:33` Corrida terminada. Total usado hoy: 280.

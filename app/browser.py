@@ -127,7 +127,10 @@ def directory_size(path: str | os.PathLike) -> int:
                         if not is_protected_path(Path(entry.path)):
                             stack.append(Path(entry.path))
                     else:
-                        total_bytes += entry.stat().st_size
+                        try:
+                            total_bytes += entry.stat().st_size
+                        except (OSError, PermissionError):
+                            continue
         except (OSError, PermissionError):
             continue
     return total_bytes
