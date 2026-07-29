@@ -1190,3 +1190,10 @@ FAILED evolve/tests/test_modules.py::test_score_color_survives_garbage - Asserti
 - `2026-07-29T02:50:08` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `save_logo_svg` ante casos límite de E/S, validando explícitamente la existencia de la ruta destino y manejando posibles errores de sistema al intentar crear directorios o escribir archivos en rutas protegidas.
 - `2026-07-29T02:50:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-29T02:50:08` Corrida terminada. Total usado hoy: 68.
+- `2026-07-29T02:58:43` Arrancando corrida. Quedan hoy ~232 peticiones objetivo.
+- `2026-07-29T02:59:07` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se mejoró `directory_size` para manejar errores de acceso (Permisos denegados) de forma más robusta, asegurando que si un directorio padre falla al listar, la suma continúe con el resto del árbol en lugar de abortar silenciosamente.
+- `2026-07-29T02:59:31` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la robustez de `walk_files` y sus subfunciones ante nombres de archivos o rutas con caracteres inválidos, sistemas de archivos con errores de lectura durante el escaneo y condiciones de carrera (archivos que desaparecen durante la iteración), envolviendo las operaciones de metadatos en bloques `try-except` más granulares.
+- `2026-07-29T02:59:55` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-07-29T03:00:03` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: robustez ante casos límite).
+- `2026-07-29T03:00:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-29T03:00:03` Corrida terminada. Total usado hoy: 72.

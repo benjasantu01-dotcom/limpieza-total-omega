@@ -6,47 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **253** (50.2% de aceptación)
-- Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 28
+- Mejoras aceptadas: **254** (50.4% de aceptación)
+- Rechazadas por tests: 13
+- Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 8
-- Sin respuesta de la IA (error o límite): 201
+- Sin respuesta de la IA (error o límite): 202
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-27 | 37 | 1 | 5 | 1 | 42 |
+| 2026-07-27 | 36 | 0 | 4 | 1 | 41 |
 | 2026-07-28 | 178 | 12 | 19 | 5 | 136 |
-| 2026-07-29 | 38 | 1 | 4 | 2 | 23 |
+| 2026-07-29 | 40 | 1 | 4 | 2 | 25 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **64**
-- seguridad defensiva: **52**
 - manejo de errores y validación de entradas: **52**
+- seguridad defensiva: **51**
 - rendimiento: **45**
-- robustez ante casos límite: **40**
+- robustez ante casos límite: **42**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **24**
 - `assistant.py`: **24**
-- `diskreport.py`: **22**
+- `diskreport.py`: **23**
 - `scanner.py`: **20**
 - `healthscore.py`: **19**
 - `organizer.py`: **19**
+- `browser.py`: **19**
 - `quarantine.py`: **19**
 - `duplicates.py`: **18**
-- `browser.py`: **18**
 - `main.py`: **17**
-- `safety.py`: **16**
+- `safety.py`: **15**
 - `memory.py`: **14**
 - `startup.py`: **12**
 - `branding.py`: **11**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-29T02:59:31` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y sus subfunciones ante nombres de archivos o rutas con caracteres inválidos, sistemas de archivos con errores de lectura durante el escaneo y condiciones de carrera (archivos que desaparecen durante la iteración), envolviendo las operaciones de metadatos en bloques `try-except` más granulares.
+- `2026-07-29T02:59:07` **browser.py** (robustez ante casos límite): Se mejoró `directory_size` para manejar errores de acceso (Permisos denegados) de forma más robusta, asegurando que si un directorio padre falla al listar, la suma continúe con el resto del árbol en lugar de abortar silenciosamente.
 - `2026-07-29T02:50:08` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante casos límite de E/S, validando explícitamente la existencia de la ruta destino y manejando posibles errores de sistema al intentar crear directorios o escribir archivos en rutas protegidas.
 - `2026-07-29T02:49:54` **assistant.py** (robustez ante casos límite): Mejora la robustez del motor de consulta a Gemini ante configuraciones inválidas o datos de entrada malformados al añadir un chequeo de tipo más estricto y seguro en `ask`, evitando que el asistente falle o se comporte de forma inesperada si el archivo de configuración está corrupto.
 - `2026-07-29T02:49:22` **startup.py** (rendimiento): Optimicé el rendimiento de `entries_from_registry` eliminando llamadas redundantes a PowerShell dentro del bucle al consolidar la consulta en un único comando, reduciendo significativamente la latencia de ejecución al evitar múltiples inicializaciones del subsistema de Windows.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-29T02:19:08` **diskreport.py** (rendimiento): Optimizé la función `summarize` para reducir las llamadas repetitivas a `path.suffix` y `format_size` mediante un procesamiento único por iteración, y reemplacé la creación innecesaria de objetos intermedios por un cálculo directo sobre los datos acumulados.
 - `2026-07-29T02:18:44` **browser.py** (rendimiento): Optimicé `directory_size` reemplazando la lógica de resolución de rutas (`resolve`) y chequeos de seguridad dentro del bucle (`is_protected_path`) por un filtro basado en la comparación directa de nombres, reduciendo drásticamente las llamadas al sistema operativo (syscalls) innecesarias por cada archivo escaneado.
 - `2026-07-29T02:18:22` **branding.py** (rendimiento): Optimicé el cálculo de colores y degradados reemplazando operaciones costosas por una caché de `lru_cache` y evitando la regeneración innecesaria de objetos en bucles críticos de renderizado.
-- `2026-07-29T02:09:12` **assistant.py** (rendimiento): Optimicé el ranking de problemas (`_rank_problems`) convirtiendo la concatenación de listas en una lógica más eficiente que evita la creación de sublistas innecesarias, y cacheé el pre-procesamiento de las sugerencias para evitar duplicados en memoria durante cada llamada a `local_answer`.
-- `2026-07-29T02:08:55` **startup.py** (legibilidad y documentación): Mejora la legibilidad y el mantenimiento de `startup.py` mediante la refactorización de la lógica de extracción de ejecutables en `StartupEntry` hacia un método de instancia más claro, eliminando la duplicación de lógica y mejorando el manejo de rutas.

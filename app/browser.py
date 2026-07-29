@@ -132,11 +132,12 @@ def directory_size(path: str | os.PathLike) -> int:
                     if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
                         continue
                     if entry.is_dir(follow_symlinks=False):
-                        # Evitamos llamar a is_protected_path innecesariamente en cada subdirectorio
-                        # si el nombre no coincide con patrones de riesgo conocidos localmente.
                         stack.append(entry.path)
                     else:
-                        total_bytes += entry.stat().st_size
+                        try:
+                            total_bytes += entry.stat().st_size
+                        except OSError:
+                            continue
         except (OSError, PermissionError):
             continue
             

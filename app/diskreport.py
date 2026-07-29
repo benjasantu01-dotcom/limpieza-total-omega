@@ -173,13 +173,13 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
         return False
 
     def recursive_scan(root_path: str) -> Generator[tuple[Path, int], None, None]:
-        """Recorre directorios de forma segura ignorando errores de permisos."""
+        """Recorre directorios de forma segura ignorando errores de permisos o cambios de estado."""
         try:
             with os.scandir(root_path) as iterator:
                 for entry in iterator:
-                    if should_ignore_entry(entry):
-                        continue
                     try:
+                        if should_ignore_entry(entry):
+                            continue
                         if entry.is_dir():
                             yield from recursive_scan(entry.path)
                         else:
