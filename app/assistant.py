@@ -378,20 +378,27 @@ def local_answer(question: str, context: SystemContext) -> Answer:
 
 def _rank_problems(context: SystemContext) -> list[str]:
     """Problemas detectados, del más grave al más leve."""
-    # Pre-allocating list as a flat generator logic is faster than multiple list appends
     res = []
-    if context.disk_free_percent < 10:
-        res.append(f"queda solo {context.disk_free_percent:.0f}% de disco libre, atendelo primero (pestaña Disco y Limpieza)")
-    if context.suspicious_warnings > 0:
-        res.append(f"{context.suspicious_warnings} archivo(s) sospechosos con advertencia (pestaña Seguridad)")
-    if context.memory_available_percent < 15:
-        res.append(f"queda {context.memory_available_percent:.0f}% de RAM disponible (pestaña Memoria)")
-    if context.junk_mb > 1000:
-        res.append(f"{context.junk_mb:.0f} MB de archivos basura (pestaña Limpieza)")
-    if context.duplicate_mb > 500:
-        res.append(f"{context.duplicate_mb:.0f} MB en duplicados (pestaña Duplicados)")
-    if context.startup_count > 15:
-        res.append(f"{context.startup_count} programas de inicio (pestaña Inicio)")
+    # Acceso local a propiedades para evitar múltiples getattr/acceso en el loop
+    disk = context.disk_free_percent
+    warns = context.suspicious_warnings
+    mem = context.memory_available_percent
+    junk = context.junk_mb
+    dups = context.duplicate_mb
+    start = context.startup_count
+
+    if disk < 10:
+        res.append(f"queda solo {disk:.0f}% de disco libre, atendelo primero (pestaña Disco y Limpieza)")
+    if warns > 0:
+        res.append(f"{warns} archivo(s) sospechosos con advertencia (pestaña Seguridad)")
+    if mem < 15:
+        res.append(f"queda {mem:.0f}% de RAM disponible (pestaña Memoria)")
+    if junk > 1000:
+        res.append(f"{junk:.0f} MB de archivos basura (pestaña Limpieza)")
+    if dups > 500:
+        res.append(f"{dups:.0f} MB en duplicados (pestaña Duplicados)")
+    if start > 15:
+        res.append(f"{start} programas de inicio (pestaña Inicio)")
     return res
 
 

@@ -112,19 +112,6 @@ def _is_safe_path(target_path: Path, base_path: Path) -> bool:
 def directory_size(path: str | os.PathLike) -> int:
     """
     Calcula el tamaño total en bytes de un directorio mediante suma recursiva.
-
-    Args:
-        path: Ruta del directorio a analizar.
-
-    Returns:
-        Suma de tamaños de archivo encontrados. Retorna 0 si el path es
-        inválido, inaccesible, un enlace simbólico, una unión (junction) 
-        o está marcado como protegido por `safety.py`.
-
-    Notes:
-        Utiliza `os.scandir` para maximizar rendimiento. Las excepciones por
-        permisos o errores de I/O son capturadas silenciosamente para permitir
-        el escaneo parcial en entornos con restricciones.
     """
     p = Path(path)
     if not p.is_dir() or p.is_symlink() or is_protected_path(p):
@@ -144,8 +131,8 @@ def directory_size(path: str | os.PathLike) -> int:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
-                        is_reparse = entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction())
-                        if is_reparse:
+                        # Si es un enlace/junction, no entrar (protección rendimiento y bucles)
+                        if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
                             continue
                             
                         if entry.is_dir():
@@ -192,7 +179,7 @@ def detect_profiles(
     found: List[BrowserCache] = []
     
     for base in bases:
-        if not isinstance(base, Path) or not base.is_dir() or is_protected_path(base):
+        if not isinstance(base, Path) or not base.is_dir():
             continue
             
         try:

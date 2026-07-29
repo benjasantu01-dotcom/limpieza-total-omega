@@ -467,3 +467,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-07-29T06:34:55` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Mejoré la documentación de las funciones de parseo de registro y extracción de ejecutables para aclarar las asunciones técnicas y limitaciones, y añadí type hints de retorno explícitos para mayor claridad en el flujo de datos.
 - `2026-07-29T06:34:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-29T06:34:55` Corrida terminada. Total usado hoy: 156.
+- `2026-07-29T06:43:50` Arrancando corrida. Quedan hoy ~144 peticiones objetivo.
+- `2026-07-29T06:44:25` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Se pre-compilaron las expresiones regulares de los `handlers` como variables de módulo y se optimizó `_rank_problems` para evitar múltiples llamadas a propiedades de objetos, reduciendo la carga de procesamiento en cada consulta.
+- `2026-07-29T06:44:53` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se optimizó el rendimiento de `draw_logo` eliminando la creación de objetos innecesarios en el bucle principal y sustituyendo el cálculo de coordenadas en tiempo real por el uso eficiente de `cached` o pre-cálculos, reduciendo la carga de CPU durante el refresco de la UI.
+- `2026-07-29T06:45:15` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimizé la función `directory_size` para evitar llamadas redundantes a `is_protected_path` dentro del bucle recursivo, utilizando una verificación única al inicio, y añadí una validación de ruta protegida más eficiente en el flujo principal de `detect_profiles`.
+- `2026-07-29T06:45:22` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-07-29T06:45:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-29T06:45:22` Corrida terminada. Total usado hoy: 160.
