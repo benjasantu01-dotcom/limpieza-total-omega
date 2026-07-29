@@ -204,17 +204,22 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             timestamp = int(jf.modified.timestamp())
             
             target = (dest / f"{base_name}_{timestamp}{ext}").resolve()
+            
+            # Verificación de integridad: el target final DEBE residir dentro de dest
             if not str(target).startswith(str(dest)):
                 continue
                 
             counter = 1
             while target.exists():
-                target = dest / f"{base_name}_{timestamp}_{counter}{ext}"
+                target = (dest / f"{base_name}_{timestamp}_{counter}{ext}").resolve()
+                if not str(target).startswith(str(dest)):
+                    break
                 counter += 1
-
-            # Ejecución protegida final
-            ensure_safe_to_modify(full_source_path)
-            shutil.move(str(full_source_path), str(target))
+            else:
+                # Ejecución protegida final
+                ensure_safe_to_modify(full_source_path)
+                shutil.move(str(full_source_path), str(target))
+                
         except (PermissionError, OSError, shutil.Error):
             continue
     return dest
@@ -235,7 +240,9 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     for f in dest.iterdir():
         try:
             if f.is_file():
-                if is_safe_to_modify(f) and str(f.resolve()).startswith(str(dest)):
+                # Verificar que el archivo está realmente dentro de la carpeta de revisión
+                resolved_f = f.resolve()
+                if is_safe_to_modify(resolved_f) and str(resolved_f).startswith(str(dest)):
                     f.unlink()
                     count += 1
         except (PermissionError, OSError):

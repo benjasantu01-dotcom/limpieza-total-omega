@@ -311,12 +311,12 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
     quarantine_root = quarantine_dir(base)
     stored_file = quarantine_root / match.stored_name
     
-    if not is_within_directory(stored_file, quarantine_root):
+    # Validamos: debe ser un archivo, existir y estar dentro de cuarentena
+    if not stored_file.is_file() or not is_within_directory(stored_file, quarantine_root):
         raise UnsafePathError(f"Intento de borrado fuera de cuarentena: {stored_file}")
 
     try:
-        if stored_file.is_file():
-            stored_file.unlink()
+        stored_file.unlink()
     except (OSError, PermissionError):
         return False
     
@@ -332,14 +332,13 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     count = 0
     for item in items:
         stored_file = quarantine_root / item.stored_name
-        if not is_within_directory(stored_file, quarantine_root):
-            continue
-        try:
-            if stored_file.is_file():
+        # Validación de seguridad defensiva: no borrar nada que no sea un archivo regular en la base
+        if stored_file.is_file() and is_within_directory(stored_file, quarantine_root):
+            try:
                 stored_file.unlink()
                 count += 1
-        except (OSError, PermissionError):
-            continue
+            except (OSError, PermissionError):
+                continue
     save_manifest([], base)
     return count
 

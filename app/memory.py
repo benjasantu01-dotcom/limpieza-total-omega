@@ -291,8 +291,6 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     
     try:
         target_pid = int(pid)
-        if target_pid < 16:
-            return False, "PID protegido: no es posible modificar procesos del sistema base."
     except (ValueError, TypeError):
         return False, "El PID debe ser un número entero válido."
 
@@ -304,21 +302,18 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         if not hasattr(kernel32, "OpenProcess") or not hasattr(psapi, "EmptyWorkingSet"):
             return False, "APIs necesarias no disponibles en este entorno."
 
-        WIN_PROCESS_SET_QUOTA = 0x0100
-        WIN_PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
-        
-        handle = kernel32.OpenProcess(
-            WIN_PROCESS_SET_QUOTA | WIN_PROCESS_QUERY_LIMITED_INFORMATION, False, target_pid
-        )
+        # Permisos mínimos necesarios: SET_QUOTA y QUERY_LIMITED_INFORMATION
+        handle = kernel32.OpenProcess(0x0100 | 0x1000, False, target_pid)
         if not handle:
-            return False, f"Acceso denegado al proceso {target_pid}."
+            return False, f"Acceso denegado al proceso {target_pid} (posible proceso crítico)."
         
         try:
             if handle == kernel32.GetCurrentProcess():
                 return False, "Operación denegada: no se permite modificar el proceso actual."
 
             if not psapi.EmptyWorkingSet(handle):
-                return False, f"Windows rechazó la operación (código: {kernel32.GetLastError()})."
+                error_code = kernel32.GetLastError()
+                return False, f"Windows rechazó la operación (código: {error_code})."
         finally:
             kernel32.CloseHandle(handle)
         
