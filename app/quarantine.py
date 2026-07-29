@@ -112,7 +112,15 @@ def _manifest_path(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
 
 
 def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload: bool = False) -> List[QuarantineItem]:
-    """Carga el manifiesto de cuarentena desde disco. Usa caché para optimizar lecturas."""
+    """
+    Carga el manifiesto desde disco o caché.
+    
+    Args:
+        base: Directorio base de cuarentena.
+        force_reload: Si es True, ignora el caché en memoria.
+    Returns:
+        Lista de QuarantineItem válidos extraídos del JSON.
+    """
     base_path = quarantine_dir(base)
     base_str = str(base_path)
     if not force_reload and base_str in _manifest_cache:
@@ -143,7 +151,15 @@ def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload:
 
 
 def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
-    """Persiste la lista de objetos QuarantineItem en formato JSON y actualiza el caché."""
+    """
+    Persiste la lista de objetos QuarantineItem en JSON.
+    
+    Args:
+        items: Lista de ítems a guardar.
+        base: Directorio base de cuarentena.
+    Raises:
+        RuntimeError: Si la escritura en disco falla.
+    """
     if not isinstance(items, list):
         raise ValueError("El manifiesto debe ser una lista de ítems.")
         
@@ -175,7 +191,6 @@ def quarantine_file(
     if not origin.is_file():
         raise FileNotFoundError(f"El objeto no es un archivo válido: {origin}")
     
-    # Defensa: No operar sobre enlaces simbólicos para evitar escapar del scope
     if origin.is_symlink():
         raise UnsafePathError(f"Operación denegada: {origin} es un enlace simbólico.")
     

@@ -81,8 +81,9 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     """
     Realiza un escaneo recursivo en busca de archivos candidatos a limpieza.
     
-    Aplica 'is_safe_to_modify' para garantizar que solo se cataloguen archivos 
-    fuera de rutas críticas protegidas o de sistema.
+    El proceso utiliza 'is_safe_to_modify' como filtro de seguridad en cada entrada 
+    para garantizar que solo se cataloguen archivos fuera de rutas críticas. 
+    Se ignoran explícitamente enlaces simbólicos para prevenir escapes del árbol de directorios.
     """
     if directories is not None and not isinstance(directories, list):
         logger.error("El parámetro directories debe ser una lista.")
@@ -155,7 +156,11 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Path:
     """
     Mueve archivos candidatos a una carpeta de revisión ("staging").
-    Verifica seguridad, existencia de archivo y espacio disponible antes de cada operación.
+
+    Seguridad: 
+    1. Verifica que cada origen sea seguro mediante 'is_safe_to_modify'.
+    2. Aplica comprobación de colisiones (evitar mover recursivamente).
+    3. Confirma que el destino sea seguro antes de la operación de escritura.
     """
     if not isinstance(files, list) or not isinstance(review_dir, str):
         logger.warning("Entrada inválida en stage_for_review.")
@@ -228,8 +233,9 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     """
     Elimina permanentemente archivos en el directorio de revisión tras confirmación externa.
     
-    Verifica mediante 'is_safe_to_modify' y 'startswith' que solo se operen archivos 
-    confinados estrictamente al directorio de revisión, previniendo borrados accidentales.
+    Seguridad: Implementa doble chequeo. Solo opera archivos que pasan 'is_safe_to_modify'
+    y cuyo Path resuelto es estrictamente hijo del directorio de revisión ('startswith'),
+    previniendo borrados accidentales en directorios padre fuera de control.
     """
     if not isinstance(review_dir, str):
         return 0

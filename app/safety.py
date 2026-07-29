@@ -102,7 +102,7 @@ def normalize(path: PathLike) -> Path:
 
 def _contains_protected_name(path: Path) -> bool:
     """Verifica si alguno de los componentes de la ruta es un nombre reservado."""
-    return not PROTECTED_DIR_NAMES.isdisjoint(part.lower() for part in path.parts)
+    return any(part.lower() in PROTECTED_DIR_NAMES for part in path.parts)
 
 
 def is_drive_root(path: PathLike) -> bool:
@@ -116,7 +116,8 @@ def is_drive_root(path: PathLike) -> bool:
 
 def is_protected_path(path: PathLike) -> bool:
     """
-    Determina si una ruta es crítica para el sistema operativo o es una ruta UNC.
+    Evalúa si una ruta es peligrosa porque pertenece al sistema operativo,
+    es una ruta UNC (red) o contiene componentes en la lista negra.
     """
     if not path or not isinstance(path, (str, os.PathLike)):
         return True
@@ -144,8 +145,9 @@ def is_within_directory(
     allow_equal: bool = False,
 ) -> bool:
     """
-    Verifica si 'child' es descendiente de 'parent' tras resolver enlaces.
-    Detecta puntos de reparse (junciones) para prevenir saltos fuera del sandbox.
+    Valida si 'child' reside físicamente dentro de 'parent'.
+    Verifica la jerarquía real tras resolver symlinks y detecta puntos de reparse 
+    (junctions) para evitar que la operación escape del sandbox definido.
     """
     if not child or not parent:
         return False
@@ -183,6 +185,7 @@ def is_sensitive_file(path: PathLike) -> bool:
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> Path:
     """
     Valida la seguridad de la ruta antes de modificarla (escritura/borrado).
+    Lanza UnsafePathError si la ruta es riesgosa.
     """
     if not path:
         raise UnsafePathError("La ruta proporcionada está vacía o es None.")
