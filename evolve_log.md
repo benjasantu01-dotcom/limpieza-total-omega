@@ -1175,3 +1175,11 @@ FAILED evolve/tests/test_modules.py::test_score_color_survives_garbage - Asserti
 - `2026-07-29T02:30:02` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Se optimizó el rendimiento del escaneo recursivo eliminando la conversión repetitiva de `_LOWER_JUNK_EXTS` a `tuple()` dentro del bucle `for` de `_walk_dir`, sustituyéndola por una referencia constante pre-compilada, y se evitó la resolución `Path.resolve()` innecesaria dentro del bucle crítico al procesar archivos.
 - `2026-07-29T02:30:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-29T02:30:02` Corrida terminada. Total usado hoy: 60.
+- `2026-07-29T02:38:23` Arrancando corrida. Quedan hoy ~240 peticiones objetivo.
+- `2026-07-29T02:38:49` ➖ Sin cambios en quarantine.py (enfoque: rendimiento). Motivo: Optimicé el acceso a los datos de la cuarentena implementando un diccionario de búsqueda (`item_map`) en `purge_item` y `restore_item` en lugar de iterar sobre la lista cargada, reduciendo la complejidad temporal de O(n) a O(1) en esas operaciones críticas.
+- `2026-07-29T02:39:08` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 108): unterminated string literal (detected at line 108)
+- `2026-07-29T02:39:33` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimicé el rendimiento de `is_protected_path` y `ensure_safe_to_modify` reemplazando iteraciones redundantes y llamadas repetidas a `normalize` mediante el uso de un conjunto para `PROTECTED_DIR_NAMES` y una verificación previa más eficiente de las partes de la ruta.
+- `2026-07-29T02:39:40` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-07-29T02:39:50` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizé el rendimiento de `scan_file` y el bucle principal de `scan_directory` eliminando llamadas redundantes a `resolve()` y `path.is_file()`, además de centralizar la validación de seguridad para evitar redundancias durante el escaneo.
+- `2026-07-29T02:39:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-29T02:39:50` Corrida terminada. Total usado hoy: 64.

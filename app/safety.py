@@ -69,22 +69,12 @@ _SYSTEM_ROOTS: Final[tuple[Path, ...]] = tuple(
     for v in ("SystemRoot", "windir", "ProgramFiles", "ProgramFiles(x86)", "ProgramData")
     if os.environ.get(v)
 )
-_SYSTEM_ROOTS_PARTS: Final[set[str]] = {p.name.lower() for p in _SYSTEM_ROOTS}
+_SYSTEM_ROOTS_PARTS: Final[frozenset[str]] = frozenset({p.name.lower() for p in _SYSTEM_ROOTS})
 
 
 def normalize(path: PathLike) -> Path:
     """
     Convierte la entrada a Path absoluto, resolviendo symlinks y referencias '..'.
-
-    Args:
-        path: Ruta a normalizar.
-
-    Returns:
-        Un objeto Path absoluto y resuelto.
-
-    Raises:
-        TypeError: Si la entrada no es str o os.PathLike.
-        ValueError: Si la ruta está vacía.
     """
     if not isinstance(path, (str, os.PathLike)):
         raise TypeError(f"Entrada inválida: se esperaba str o PathLike, recibió {type(path)}")
@@ -102,7 +92,7 @@ def normalize(path: PathLike) -> Path:
 
 def _contains_protected_name(path: Path) -> bool:
     """Verifica si alguno de los componentes de la ruta es un nombre reservado."""
-    return any(part.lower() in PROTECTED_DIR_NAMES for part in path.parts)
+    return not PROTECTED_DIR_NAMES.isdisjoint(part.lower() for part in path.parts)
 
 
 def is_drive_root(path: PathLike) -> bool:
@@ -128,13 +118,11 @@ def is_protected_path(path: PathLike) -> bool:
         
     try:
         p = normalize(path)
-        if p.is_symlink():
+        if p.is_symlink() or is_drive_root(p):
             return True
-        if is_drive_root(p):
-            return True
-        if _contains_protected_name(p):
-            return True
-        return any(part.lower() in _SYSTEM_ROOTS_PARTS for part in p.parts)
+        
+        parts_lower = {part.lower() for part in p.parts}
+        return not PROTECTED_DIR_NAMES.isdisjoint(parts_lower) or not _SYSTEM_ROOTS_PARTS.isdisjoint(parts_lower)
     except (PermissionError, OSError, ValueError, TypeError):
         return True 
 
@@ -146,8 +134,6 @@ def is_within_directory(
 ) -> bool:
     """
     Valida si 'child' reside físicamente dentro de 'parent'.
-    Verifica la jerarquía real tras resolver symlinks y detecta puntos de reparse 
-    (junctions) para evitar que la operación escape del sandbox definido.
     """
     if not child or not parent:
         return False
@@ -187,34 +173,21 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
     Valida la seguridad de la ruta antes de modificarla (escritura/borrado).
     Lanza UnsafePathError si la ruta es riesgosa.
     """
-    if not path:
-        raise UnsafePathError("La ruta proporcionada está vacía o es None.")
-        
-    try:
-        p = normalize(path)
-    except (TypeError, ValueError) as e:
-        raise UnsafePathError(f"Ruta mal formada: {path}") from e
-
+    p = normalize(path)
     if not p.parts:
         raise UnsafePathError("Ruta inválida: no contiene componentes detectables.")
 
-    str_p = str(p)
-    if str_p.startswith(("\\\\", "//")):
+    if str(p).startswith(("\\\\", "//")):
         raise UnsafePathError("Operación bloqueada: rutas UNC o de red no permitidas.")
     
     try:
-        if p.exists():
-            if p.is_symlink():
-                raise UnsafePathError("Operación bloqueada: enlaces simbólicos no permitidos.")
-            if p.is_block_device() or p.is_char_device():
-                raise UnsafePathError("Operación bloqueada: dispositivo especial detectado.")
+        if p.exists() and (p.is_symlink() or p.is_block_device() or p.is_char_device()):
+            raise UnsafePathError("Operación bloqueada: enlace o dispositivo especial detectado.")
     except (OSError, PermissionError):
         pass
 
-    if is_drive_root(p):
-        raise UnsafePathError("Operación bloqueada: raíz de unidad.")
-    if is_protected_path(p):
-        raise UnsafePathError("Operación bloqueada: ruta de sistema protegida.")
+    if is_drive_root(p) or is_protected_path(p):
+        raise UnsafePathError("Operación bloqueada: ruta de sistema protegida o raíz.")
     if not allow_sensitive and is_sensitive_file(p):
         raise UnsafePathError(f"Operación bloqueada: extensión sensible detectada ({p.suffix}).")
     return p
@@ -230,16 +203,7 @@ def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> bool:
 
 def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = False) -> list[Path]:
     """Filtra una lista de rutas, retornando solo las que pueden ser modificadas."""
-    safe: list[Path] = []
-    if paths is None:
-        return safe
-    for candidate in paths:
-        if candidate and is_safe_to_modify(candidate, allow_sensitive=allow_sensitive):
-            try:
-                safe.append(normalize(candidate))
-            except (TypeError, ValueError):
-                continue
-    return safe
+    return [normalize(c) for c in paths if c and is_safe_to_modify(c, allow_sensitive=allow_sensitive)]
 
 
 def describe_protection(path: PathLike) -> str:

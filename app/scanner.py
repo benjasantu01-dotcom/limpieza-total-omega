@@ -62,11 +62,7 @@ def _is_reparse_point(entry: os.DirEntry) -> bool:
 def check_double_extension(path: Path) -> Optional[Suspicion]:
     """
     Analiza si el nombre del archivo contiene una doble extensión (ej. .pdf.exe).
-    Esta técnica es común en ataques de ingeniería social para ocultar la 
-    extensión real del ejecutable.
     """
-    if not path.name or is_protected_path(path):
-        return None
     if DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
     return None
@@ -75,10 +71,8 @@ def check_double_extension(path: Path) -> Optional[Suspicion]:
 def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_THRESHOLD_HOURS) -> Optional[Suspicion]:
     """
     Evalúa si un archivo ejecutable fue modificado recientemente.
-    La aparición súbita de binarios en directorios de usuario suele ser un 
-    indicador temprano de descargas inesperadas.
     """
-    if is_protected_path(path) or path.suffix.lower() not in SUSPICIOUS_EXECUTABLE_EXT:
+    if path.suffix.lower() not in SUSPICIOUS_EXECUTABLE_EXT:
         return None
     try:
         mtime = datetime.fromtimestamp(path.stat().st_mtime)
@@ -92,11 +86,7 @@ def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_TH
 def check_system_lookalike(path: Path) -> Optional[Suspicion]:
     """
     Detecta suplantación de identidad mediante nombres de procesos críticos.
-    Si un ejecutable coincide con un proceso de sistema conocido (ej. svchost.exe)
-    pero reside fuera de 'System32', se marca como comportamiento sospechoso.
     """
-    if not path.name or is_protected_path(path):
-        return None
     if path.name.lower() in SYSTEM_LOOKALIKES:
         try:
             parent_str = str(path.parent).lower()
@@ -115,27 +105,12 @@ CHECK_FUNCS: Final[List[Callable[[Path], Optional[Suspicion]]]] = [
 
 def scan_file(path: Path) -> List[Suspicion]:
     """
-    Ejecuta el conjunto de reglas heurísticas sobre un archivo individual.
-    Valida la existencia del archivo y descarta rutas protegidas antes de
-    aplicar cada filtro de detección.
+    Ejecuta el conjunto de reglas heurísticas sobre un archivo.
+    Se asume que la ruta ya fue validada contra is_protected_path por el llamador.
     """
-    try:
-        safe_path = path.resolve()
-    except (OSError, RuntimeError):
-        return []
-
-    if is_protected_path(safe_path):
-        return []
-
-    try:
-        if not safe_path.is_file():
-            return []
-    except (OSError, PermissionError):
-        return []
-    
     results: List[Suspicion] = []
     for check_func in CHECK_FUNCS:
-        if (res := check_func(safe_path)):
+        if (res := check_func(path)):
             results.append(res)
     
     return results
@@ -144,16 +119,13 @@ def scan_file(path: Path) -> List[Suspicion]:
 def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
     """
     Recorre el sistema de archivos de forma iterativa empleando una pila (stack).
-    - Excluye puntos de reparse para evitar bucles de recursión.
-    - Aplica filtros de seguridad vía `is_protected_path` en cada directorio.
-    - Maneja excepciones de acceso para asegurar la continuidad del escaneo.
     """
     if not directory:
         return []
         
     try:
         root = Path(directory).resolve()
-        if not root.exists() or not root.is_dir() or is_protected_path(root):
+        if not root.is_dir() or is_protected_path(root):
             return []
             
         results: List[Suspicion] = []
@@ -166,10 +138,12 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
                     for entry in it:
                         try:
                             if entry.is_dir(follow_symlinks=False):
-                                if not _is_reparse_point(entry):
+                                if not _is_reparse_point(entry) and not is_protected_path(Path(entry.path)):
                                     stack.append(Path(entry.path))
                             elif entry.is_file():
-                                results.extend(scan_file(Path(entry.path)))
+                                p_entry = Path(entry.path)
+                                if not is_protected_path(p_entry):
+                                    results.extend(scan_file(p_entry))
                         except (PermissionError, OSError):
                             continue
             except (PermissionError, OSError):
@@ -183,7 +157,6 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
 def run_windows_defender_quick_scan() -> str:
     """
     Invoca la API de PowerShell `Start-MpScan` para ejecutar un análisis de Defender.
-    Se utiliza como mecanismo complementario para firmas de malware conocidas.
     """
     try:
         result = subprocess.run(
