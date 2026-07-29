@@ -123,9 +123,6 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
     Utiliza un enfoque de pila para evitar la recursión del stack de llamadas y 'os.scandir'
     para minimizar las llamadas al sistema. Ignora puntos de reparse y rutas protegidas 
     según la política de seguridad vigente.
-    
-    Returns:
-        List[Suspicion]: Lista de objetos hallados. Retorna lista vacía ante errores de acceso.
     """
     if not directory:
         return []
@@ -144,17 +141,18 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
                 # Se utiliza os.scandir para eficiencia en grandes volúmenes de archivos
                 with os.scandir(current_dir) as it:
                     for entry in it:
-                        # Convertimos a Path una sola vez por iteración
-                        entry_path = Path(entry.path)
-                        
-                        if is_protected_path(entry_path):
+                        try:
+                            entry_path = Path(entry.path)
+                            if is_protected_path(entry_path):
+                                continue
+                                
+                            if entry.is_dir(follow_symlinks=False):
+                                if not _is_reparse_point(entry):
+                                    stack.append(entry_path)
+                            elif entry.is_file():
+                                results.extend(scan_file(entry_path))
+                        except (PermissionError, OSError, ValueError):
                             continue
-                            
-                        if entry.is_dir(follow_symlinks=False):
-                            if not _is_reparse_point(entry):
-                                stack.append(entry_path)
-                        elif entry.is_file():
-                            results.extend(scan_file(entry_path))
             except (PermissionError, OSError):
                 # Se omiten directorios sin permisos de lectura para continuar el escaneo
                 continue

@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **257** (51.0% de aceptación)
-- Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 26
+- Mejoras aceptadas: **258** (51.2% de aceptación)
+- Rechazadas por tests: 18
+- Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 8
-- Sin respuesta de la IA (error o límite): 196
+- Sin respuesta de la IA (error o límite): 193
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-28 | 160 | 10 | 17 | 4 | 133 |
-| 2026-07-29 | 97 | 7 | 9 | 4 | 63 |
+| 2026-07-28 | 160 | 10 | 17 | 4 | 129 |
+| 2026-07-29 | 98 | 8 | 10 | 4 | 64 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **64**
 - manejo de errores y validación de entradas: **55**
-- robustez ante casos límite: **48**
+- robustez ante casos límite: **49**
 - seguridad defensiva: **47**
 - rendimiento: **43**
 
@@ -34,10 +34,10 @@ Este archivo se regenera solo en cada corrida a partir de
 - `browser.py`: **21**
 - `diskreport.py`: **21**
 - `quarantine.py`: **21**
+- `scanner.py`: **20**
 - `healthscore.py`: **19**
 - `organizer.py`: **19**
 - `main.py`: **19**
-- `scanner.py`: **19**
 - `duplicates.py`: **18**
 - `memory.py`: **16**
 - `safety.py`: **16**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-29T07:46:34` **scanner.py** (robustez ante casos límite): Se mejoró la robustez de `scan_directory` para manejar archivos o carpetas que desaparecen durante la iteración (condición de carrera) y se añadió una validación explícita para evitar que `Path(entry.path)` falle si la ruta es extremadamente larga o inválida, garantizando que el escáner no aborte ante archivos bloqueados o temporales.
 - `2026-07-29T07:37:16` **organizer.py** (robustez ante casos límite): Mejoré `stage_for_review` añadiendo una verificación de integridad de ruta (usando `is_relative_to`) para prevenir ataques de trayectoria y validando que el archivo origen no sea un enlace simbólico, reforzando la robustez contra casos límite en sistemas de archivos complejos.
 - `2026-07-29T07:37:08` **memory.py** (robustez ante casos límite): Mejoré la robustez de `parse_windows_process_csv` para gestionar correctamente los casos donde el CSV pueda contener líneas con encabezados inesperados o valores truncados, evitando fallos en el parser ante salidas parciales de PowerShell.
 - `2026-07-29T07:36:43` **main.py** (robustez ante casos límite): Mejoré la robustez de la aplicación ante cambios de tamaño de ventana durante operaciones de dibujo asíncrono y problemas de hilos en la actualización de la interfaz (`_draw_gauge`), evitando errores de `TclError` cuando el componente es destruido o redimensionado abruptamente mientras un hilo intenta actualizarlo.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-29T06:56:00` **main.py** (rendimiento): Se implementó un mecanismo de caché (`self._cache`) en la clase `LimpiezaTotalOmegaApp` y se reemplazó el acceso directo a los resultados de `scan_for_junk` y `find_duplicates` por un acceso vía método `_get_cached`, evitando escaneos redundantes en la misma sesión y mejorando drásticamente el rendimiento percibido en la interfaz.
 - `2026-07-29T06:45:15` **browser.py** (rendimiento): Optimizé la función `directory_size` para evitar llamadas redundantes a `is_protected_path` dentro del bucle recursivo, utilizando una verificación única al inicio, y añadí una validación de ruta protegida más eficiente en el flujo principal de `detect_profiles`.
 - `2026-07-29T06:44:53` **branding.py** (rendimiento): Se optimizó el rendimiento de `draw_logo` eliminando la creación de objetos innecesarios en el bucle principal y sustituyendo el cálculo de coordenadas en tiempo real por el uso eficiente de `cached` o pre-cálculos, reduciendo la carga de CPU durante el refresco de la UI.
-- `2026-07-29T06:44:25` **assistant.py** (rendimiento): Se pre-compilaron las expresiones regulares de los `handlers` como variables de módulo y se optimizó `_rank_problems` para evitar múltiples llamadas a propiedades de objetos, reduciendo la carga de procesamiento en cada consulta.
