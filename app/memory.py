@@ -291,8 +291,10 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     
     try:
         target_pid = int(pid)
+        if target_pid <= 0:
+            raise ValueError("PID fuera de rango.")
     except (ValueError, TypeError):
-        return False, "El PID debe ser un número entero válido."
+        return False, "El PID debe ser un número entero positivo."
 
     try:
         import ctypes
@@ -302,10 +304,10 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         if not hasattr(kernel32, "OpenProcess") or not hasattr(psapi, "EmptyWorkingSet"):
             return False, "APIs necesarias no disponibles en este entorno."
 
-        # Permisos mínimos necesarios: SET_QUOTA y QUERY_LIMITED_INFORMATION
+        # Permisos mínimos necesarios: SET_QUOTA (0x0100) y QUERY_LIMITED_INFORMATION (0x1000)
         handle = kernel32.OpenProcess(0x0100 | 0x1000, False, target_pid)
         if not handle:
-            return False, f"Acceso denegado al proceso {target_pid} (posible proceso crítico)."
+            return False, f"Acceso denegado al proceso {target_pid} (posible sistema protegido)."
         
         try:
             if handle == kernel32.GetCurrentProcess():
@@ -318,5 +320,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
             kernel32.CloseHandle(handle)
         
         return True, f"Working set del proceso {target_pid} liberado. {TRIM_WARNING}"
-    except (OSError, AttributeError, Exception):
-        return False, "Error fatal al interactuar con las APIs de bajo nivel del sistema."
+    except (OSError, AttributeError, MemoryError) as e:
+        return False, f"Error inesperado al ejecutar: {str(e)}"
+    except Exception:
+        return False, "Error fatal al interactuar con las APIs de bajo nivel."

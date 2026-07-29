@@ -165,24 +165,21 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
     dest = Path(review_dir).expanduser().resolve()
     
     try:
-        # Validación de seguridad: el destino no puede ser protegido
         ensure_safe_to_modify(dest)
         dest.mkdir(parents=True, exist_ok=True)
-    except (OSError, NotADirectoryError, Exception) as e:
+    except (OSError, Exception) as e:
         logger.error("No se pudo preparar el directorio de revisión %s: %s", dest, e)
         raise
 
     for jf in files:
-        if not isinstance(jf, JunkFile) or not hasattr(jf, 'path') or jf.path is None:
+        if not isinstance(jf, JunkFile) or not isinstance(getattr(jf, 'path', None), Path):
             continue
             
         try:
             full_source_path = jf.path.resolve()
-            
-            if not full_source_path.exists() or not full_source_path.is_file():
+            if not full_source_path.is_file() or not full_source_path.exists():
                 continue
             
-            # Verificación booleana dentro de bucle
             if not is_safe_to_modify(full_source_path):
                 continue
 
@@ -204,8 +201,6 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             timestamp = int(jf.modified.timestamp())
             
             target = (dest / f"{base_name}_{timestamp}{ext}").resolve()
-            
-            # Verificación de integridad: el target final DEBE residir dentro de dest
             if not str(target).startswith(str(dest)):
                 continue
                 
@@ -216,7 +211,6 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
                     break
                 counter += 1
             else:
-                # Ejecución protegida final
                 ensure_safe_to_modify(full_source_path)
                 shutil.move(str(full_source_path), str(target))
                 
@@ -240,7 +234,6 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     for f in dest.iterdir():
         try:
             if f.is_file():
-                # Verificar que el archivo está realmente dentro de la carpeta de revisión
                 resolved_f = f.resolve()
                 if is_safe_to_modify(resolved_f) and str(resolved_f).startswith(str(dest)):
                     f.unlink()

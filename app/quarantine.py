@@ -113,13 +113,7 @@ def _manifest_path(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
 
 def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload: bool = False) -> List[QuarantineItem]:
     """
-    Carga el manifiesto desde disco o caché.
-    
-    Args:
-        base: Directorio base de cuarentena.
-        force_reload: Si es True, ignora el caché en memoria.
-    Returns:
-        Lista de QuarantineItem válidos extraídos del JSON.
+    Carga el manifiesto desde disco o caché con validación estricta de esquema.
     """
     base_path = quarantine_dir(base)
     base_str = str(base_path)
@@ -138,13 +132,22 @@ def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload:
         return []
 
     items: List[QuarantineItem] = []
-    required_fields = {"item_id", "original_path", "stored_name", "size_bytes", "reason", "quarantined_at"}
-    
+    # Validación estricta de tipos esperados para evitar corrupción de datos
     for entry in data:
+        if not isinstance(entry, dict):
+            continue
         try:
-            if isinstance(entry, dict) and required_fields.issubset(entry.keys()):
-                items.append(QuarantineItem(**entry))
-        except (TypeError, ValueError):
+            item = QuarantineItem(
+                item_id=str(entry["item_id"]),
+                original_path=str(entry["original_path"]),
+                stored_name=str(entry["stored_name"]),
+                size_bytes=int(entry["size_bytes"]),
+                reason=str(entry["reason"]),
+                quarantined_at=str(entry["quarantined_at"]),
+                sha256=str(entry.get("sha256", ""))
+            )
+            items.append(item)
+        except (KeyError, ValueError, TypeError):
             continue
     _manifest_cache[base_str] = items
     return items

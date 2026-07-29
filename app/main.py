@@ -1103,29 +1103,29 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def on_restore_quarantine(self):
         """Restaura un archivo específico desde la cuarentena."""
-        item_id = self.quarantine_id.get().strip()
-        if not item_id:
+        raw_id = self.quarantine_id.get().strip()
+        if not raw_id:
             messagebox.showinfo("Falta el ID", "Pegá el ID del archivo que querés restaurar.")
             return
 
-        # Validación robusta de ID para evitar inyecciones o rutas maliciosas
-        if not item_id.isalnum():
+        # Validación estricta: debe ser una cadena alfanumérica
+        if not raw_id.isalnum():
              messagebox.showerror("Error", "El ID debe ser alfanumérico.")
              return
 
         def task():
-            if not quarantine.item_exists(item_id):
-                self.log(f"Error: El ID '{item_id}' no existe en la cuarentena.", "Cuarentena")
+            if not quarantine.item_exists(raw_id):
+                self.log(f"Error: El ID '{raw_id}' no existe en la cuarentena.", "Cuarentena")
                 return
             
             # Obtener el manifiesto para verificar la ruta original antes de restaurar
-            item = quarantine.get_item(item_id)
+            item = quarantine.get_item(raw_id)
             if not safety.is_safe_to_modify(Path(item.original_path)):
                 self.log(f"Error: La ruta original '{item.original_path}' es insegura. Restauración bloqueada.", "Cuarentena")
                 return
 
             try:
-                destino = quarantine.restore_item(item_id)
+                destino = quarantine.restore_item(raw_id)
                 self.log(f"Restaurado en: {destino}", "Cuarentena")
             except Exception as e:
                 self.log(f"Error al restaurar: {str(e)}", "Cuarentena")

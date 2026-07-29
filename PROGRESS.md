@@ -16,37 +16,41 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-27 | 15 | 0 | 2 | 1 | 4 |
+| 2026-07-27 | 11 | 0 | 2 | 1 | 4 |
 | 2026-07-28 | 178 | 12 | 19 | 5 | 136 |
-| 2026-07-29 | 61 | 4 | 6 | 3 | 58 |
+| 2026-07-29 | 65 | 4 | 6 | 3 | 58 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **60**
-- legibilidad y documentación: **54**
+- manejo de errores y validación de entradas: **51**
+- legibilidad y documentación: **51**
 - robustez ante casos límite: **48**
-- manejo de errores y validación de entradas: **47**
-- rendimiento: **45**
+- rendimiento: **44**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **24**
-- `assistant.py`: **24**
 - `diskreport.py`: **23**
-- `scanner.py`: **20**
+- `settings.py`: **23**
+- `assistant.py`: **23**
+- `quarantine.py`: **21**
 - `browser.py`: **20**
-- `quarantine.py`: **20**
-- `organizer.py`: **19**
+- `organizer.py`: **20**
+- `scanner.py`: **19**
 - `duplicates.py`: **18**
+- `main.py`: **18**
 - `healthscore.py`: **18**
-- `main.py`: **17**
+- `memory.py`: **15**
 - `safety.py`: **14**
-- `memory.py`: **14**
-- `startup.py`: **12**
 - `branding.py`: **11**
+- `startup.py`: **11**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-29T05:44:19` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `load_manifest` añadiendo una validación explícita de integridad para cada campo del JSON, evitando errores de ejecución o estados inconsistentes al procesar archivos de manifiesto corruptos o parcialmente escritos.
+- `2026-07-29T05:44:08` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` validando exhaustivamente la existencia y validez de los objetos `JunkFile` mediante `isinstance` y chequeos de integridad de ruta antes de operar, evitando posibles `AttributeError` o accesos fuera del destino permitido.
+- `2026-07-29T05:43:46` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` añadiendo validaciones de rango para el PID, capturando excepciones de forma granular y evitando comportamientos imprevistos ante valores de entrada inválidos.
+- `2026-07-29T05:43:22` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `on_restore_quarantine` validando explícitamente el tipo de dato y la existencia del ID antes de procesarlo, evitando errores no capturados al acceder a diccionarios o rutas, y asegurando que las entradas del usuario pasen por filtros antes de intentar operaciones de archivo.
 - `2026-07-29T05:33:21` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez del procesamiento de rutas y la gestión de excepciones en `suggest_keeper` y `group_by_size`, asegurando que el código maneje correctamente archivos inaccesibles o eliminados durante la ejecución sin romper el flujo del análisis.
 - `2026-07-29T05:32:57` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y las funciones de consulta integrando validaciones de entrada (`is_protected_path`) y manejos de excepciones específicos para evitar que rutas malformadas o bloqueadas interrumpan el proceso de escaneo.
 - `2026-07-29T05:32:33` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `directory_size` y `_is_safe_path` ante errores de resolución de rutas y entradas inexistentes, asegurando que el bucle de escaneo no aborte prematuramente ni procese rutas mal formadas.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-29T03:50:36` **organizer.py** (seguridad defensiva): Se ha implementado un control de "path traversal" robusto en `stage_for_review` verificando que la ruta destino resuelta mediante `.resolve()` contenga efectivamente la ruta base del directorio de revisión, evitando posibles manipulaciones de rutas mediante ".." u otros trucos de sistema.
 - `2026-07-29T03:50:14` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `trim_working_set` validando explícitamente el PID contra el sistema mediante el acceso a `OpenProcess` con privilegios mínimos, asegurando que no se intente manipular procesos críticos del sistema o el proceso actual antes de llamar a `EmptyWorkingSet`.
 - `2026-07-29T03:41:30` **main.py** (seguridad defensiva): Mejoré la seguridad defensiva en `on_restore_quarantine` añadiendo una validación explícita mediante `safety.is_safe_to_modify` antes de proceder con la restauración, asegurando que el archivo no sea restaurado sobre una ruta crítica del sistema, cerrando así un potencial vector de escritura maliciosa.
-- `2026-07-29T03:40:48` **healthscore.py** (seguridad defensiva): Se reforzó la robustez defensiva de `compute_score` validando explícitamente que el objeto `SystemMetrics` posea valores numéricos finitos antes de procesarlos, evitando así que datos malformados o estados de coma flotante no válidos (como `NaN` o `Inf` resultantes de divisiones incorrectas en otros módulos) propaguen errores hacia la lógica de cálculo del puntaje.
-- `2026-07-29T03:40:23` **duplicates.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_collect_candidates` asegurando que el chequeo de enlaces simbólicos (`is_symlink`) ocurra inmediatamente después de obtener el objeto `Path` y antes de intentar abrir o realizar `stat()` sobre el archivo, evitando así seguir enlaces a rutas fuera del alcance del usuario o a zonas protegidas.
-- `2026-07-29T03:30:57` **browser.py** (seguridad defensiva): Se reforzó la seguridad de `directory_size` para prevenir el seguimiento de puntos de reparse (junctions) en sistemas Windows, asegurando que la recursión no escape del directorio base validado.
-- `2026-07-29T03:30:20` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_call_gemini` añadiendo una validación explícita para prevenir la inyección de comandos o la fuga de datos mediante el control de caracteres sospechosos, asegurando que el contenido retornado por la API no contenga estructuras que evadan las restricciones de privacidad, manteniendo la integridad del contrato de datos.
