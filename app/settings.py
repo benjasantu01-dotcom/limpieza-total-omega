@@ -58,6 +58,7 @@ __all__ = [
 
 SETTINGS_DIR: Final = "~/LimpiezaTotalOmega"
 SETTINGS_FILE: Final = "config.json"
+MAX_SETTINGS_SIZE: Final = 1024 * 64  # Límite de 64KB para evitar ataques de desbordamiento
 
 # Variable de entorno preferida para la clave del asistente.
 API_KEY_ENV_VAR: Final = "OMEGA_GEMINI_KEY"
@@ -192,7 +193,7 @@ def validate(values: Any) -> dict[str, Any]:
 
 
 def load(path_or_base: PathLike | None = None) -> dict[str, Any]:
-    """Carga configuración con caché por mtime."""
+    """Carga configuración con caché por mtime y chequeos de seguridad."""
     global _cached_settings, _last_path_str, _last_mtime
     
     try:
@@ -202,6 +203,9 @@ def load(path_or_base: PathLike | None = None) -> dict[str, Any]:
             return dict(DEFAULTS)
         
         stat = ruta.stat()
+        if stat.st_size > MAX_SETTINGS_SIZE:
+            return dict(DEFAULTS)
+            
         if _cached_settings is not None and ruta_str == _last_path_str and stat.st_mtime == _last_mtime:
             return _cached_settings
 

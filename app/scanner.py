@@ -125,7 +125,7 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
         
     try:
         root = Path(directory).resolve()
-        if not root.is_dir() or is_protected_path(root):
+        if not root.exists() or not root.is_dir() or is_protected_path(root):
             return []
             
         results: List[Suspicion] = []
@@ -137,6 +137,10 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
                 with os.scandir(current_dir) as it:
                     for entry in it:
                         try:
+                            # Verificamos existencia para evitar errores ante archivos borrados en tiempo de ejecución
+                            if not entry.path or not Path(entry.path).exists():
+                                continue
+                                
                             if entry.is_dir(follow_symlinks=False):
                                 if not _is_reparse_point(entry) and not is_protected_path(Path(entry.path)):
                                     stack.append(Path(entry.path))
