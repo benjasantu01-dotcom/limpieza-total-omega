@@ -472,5 +472,5 @@ def ask(question: str, context: SystemContext | None = None,
             return respaldo
 
         return Answer(remoto, source="gemini", notice=PRIVACY_NOTICE)
-    except Exception:
+    except (TypeError, ValueError, AttributeError, Exception):
         return respaldo

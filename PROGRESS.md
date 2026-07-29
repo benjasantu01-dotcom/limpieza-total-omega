@@ -6,47 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **257** (51.0% de aceptación)
+- Mejoras aceptadas: **254** (50.4% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 28
 - Sin cambios (nada sustancial que mejorar): 8
-- Sin respuesta de la IA (error o límite): 195
+- Sin respuesta de la IA (error o límite): 198
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-27 | 22 | 0 | 3 | 1 | 4 |
+| 2026-07-27 | 18 | 0 | 3 | 1 | 4 |
 | 2026-07-28 | 178 | 12 | 19 | 5 | 136 |
-| 2026-07-29 | 57 | 4 | 6 | 2 | 55 |
+| 2026-07-29 | 58 | 4 | 6 | 2 | 58 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **61**
 - seguridad defensiva: **60**
+- legibilidad y documentación: **57**
 - robustez ante casos límite: **48**
 - rendimiento: **45**
-- manejo de errores y validación de entradas: **43**
+- manejo de errores y validación de entradas: **44**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **24**
-- `assistant.py`: **23**
+- `assistant.py`: **24**
 - `diskreport.py`: **22**
 - `quarantine.py`: **21**
 - `organizer.py`: **20**
 - `scanner.py`: **20**
-- `healthscore.py`: **19**
 - `browser.py`: **19**
-- `duplicates.py`: **18**
-- `main.py`: **18**
-- `memory.py`: **15**
+- `healthscore.py`: **18**
+- `duplicates.py`: **17**
+- `main.py`: **17**
 - `safety.py`: **15**
+- `memory.py`: **14**
 - `startup.py`: **12**
 - `branding.py`: **11**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-29T05:24:42` **assistant.py** (manejo de errores y validación de entradas): Se reforzó la validación de los datos recibidos en `ask` mediante el uso de excepciones específicas y chequeos de tipo, asegurando que la configuración cargada desde `settings` sea procesada de forma robusta antes de invocar servicios externos.
 - `2026-07-29T04:01:13` **settings.py** (seguridad defensiva): Se reforzó la seguridad de `settings.py` al implementar una validación explícita mediante `ensure_safe_to_modify` antes de cualquier operación de escritura en `save()` y `reset()`, protegiendo la integridad del sistema contra manipulaciones de rutas de configuración.
 - `2026-07-29T04:00:48` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `scan_directory` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta resuelta antes de iterar, y se reemplazó la validación redundante `Path(entry.path).exists()` por una verificación más eficiente y segura dentro del loop de `os.scandir`.
 - `2026-07-29T04:00:27` **safety.py** (seguridad defensiva): Se reforzó `ensure_safe_to_modify` para prevenir ataques de "Time-of-Check to Time-of-Use" (TOCTOU) y manipulación de rutas externas mediante la validación estricta de que el archivo no sea un symlink o punto de reparse justo antes de la operación, cerrando un hueco donde un atacante podría redirigir la operación hacia una ruta del sistema después de pasar el filtro inicial.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-29T03:29:48` **startup.py** (robustez ante casos límite): Se añadió una validación defensiva en `_extract_quoted_path` para prevenir rutas malformadas o entradas que contienen caracteres de escape no válidos, asegurando que solo se procesen rutas que realmente existen o tienen extensiones ejecutables permitidas, evitando excepciones en el parseo de líneas de comando complejas.
 - `2026-07-29T03:20:19` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante casos límite en la carga de archivos, añadiendo un chequeo preventivo de tamaño y codificación antes de intentar el parseo JSON para evitar bloqueos por archivos corruptos de gran tamaño o binarios accidentales.
 - `2026-07-29T03:20:09` **scanner.py** (robustez ante casos límite): Mejoré la resiliencia de `scan_directory` ante casos límite añadiendo `path.exists()` dentro del bucle de escaneo, protegiendo así contra condiciones de carrera donde un archivo o carpeta es eliminado o renombrado por otro proceso justo después de ser listado por `os.scandir`.
-- `2026-07-29T03:10:55` **quarantine.py** (robustez ante casos límite): Se reforzó la robustez ante casos límite en `quarantine_file` añadiendo una verificación explícita para evitar intentos de cuarentena de archivos que han sido eliminados de su origen antes de procesar el movimiento, evitando así errores de I/O innecesarios y estados inconsistentes.
