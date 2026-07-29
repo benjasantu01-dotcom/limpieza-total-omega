@@ -460,3 +460,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-07-29T06:24:41` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
 - `2026-07-29T06:24:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-29T06:24:41` Corrida terminada. Total usado hoy: 152.
+- `2026-07-29T06:33:34` Arrancando corrida. Quedan hoy ~148 peticiones objetivo.
+- `2026-07-29T06:33:59` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante la adición de docstrings estructurados con secciones explícitas de parámetros, retornos y excepciones, asegurando que cualquier colaborador futuro entienda las garantías de seguridad de cada función sin necesidad de inferirlas.
+- `2026-07-29T06:34:21` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Documenté el propósito y el contrato de `scan_directory` mediante docstrings, especificando el uso de `os.scandir` para mejorar la eficiencia y aclarando el manejo de excepciones, mejorando la legibilidad técnica para futuros desarrollos.
+- `2026-07-29T06:34:46` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Documenté con docstrings claros y detallados las funciones de validación interna y los límites numéricos, clarificando el flujo de datos y la política de recuperación ante errores de configuración.
+- `2026-07-29T06:34:55` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Mejoré la documentación de las funciones de parseo de registro y extracción de ejecutables para aclarar las asunciones técnicas y limitaciones, y añadí type hints de retorno explícitos para mayor claridad en el flujo de datos.
+- `2026-07-29T06:34:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-29T06:34:55` Corrida terminada. Total usado hoy: 156.

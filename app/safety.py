@@ -74,7 +74,13 @@ _SYSTEM_ROOTS_PARTS: Final[frozenset[str]] = frozenset({p.name.lower() for p in 
 
 def normalize(path: PathLike) -> Path:
     """
-    Convierte la entrada a Path absoluto, resolviendo symlinks y referencias '..'.
+    Convierte una ruta a objeto Path absoluto y resuelto.
+
+    Args:
+        path: La ruta a normalizar.
+
+    Returns:
+        Un objeto Path absoluto, libre de symlinks relativos.
     """
     if not isinstance(path, (str, os.PathLike)):
         raise TypeError(f"Entrada inválida: se esperaba str o PathLike, recibió {type(path)}")
@@ -106,8 +112,10 @@ def is_drive_root(path: PathLike) -> bool:
 
 def is_protected_path(path: PathLike) -> bool:
     """
-    Evalúa si una ruta es peligrosa porque pertenece al sistema operativo,
-    es una ruta UNC (red) o contiene componentes en la lista negra.
+    Evalúa si una ruta es considerada peligrosa por ser del sistema o red.
+
+    Returns:
+        True si la ruta es de sistema, red, o contiene partes protegidas.
     """
     if not path or not isinstance(path, (str, os.PathLike)):
         return True
@@ -133,7 +141,12 @@ def is_within_directory(
     allow_equal: bool = False,
 ) -> bool:
     """
-    Valida si 'child' reside físicamente dentro de 'parent'.
+    Verifica si 'child' reside físicamente dentro de 'parent' evitando symlinks.
+
+    Args:
+        child: Ruta candidata a estar dentro.
+        parent: Ruta directorio contenedor.
+        allow_equal: Si es True, permite que child == parent.
     """
     if child is None or parent is None:
         return False
@@ -159,7 +172,7 @@ def is_within_directory(
 
 
 def is_sensitive_file(path: PathLike) -> bool:
-    """Verifica si el archivo tiene una extensión sensible (ej. .exe, .sys)."""
+    """Verifica si la extensión del archivo es crítica para el sistema."""
     if path is None:
         return True
     try:
@@ -170,8 +183,13 @@ def is_sensitive_file(path: PathLike) -> bool:
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> Path:
     """
-    Valida la seguridad de la ruta antes de modificarla (escritura/borrado).
-    Lanza UnsafePathError si la ruta es riesgosa.
+    Valida la seguridad para operaciones de escritura/borrado.
+
+    Raises:
+        UnsafePathError: Si la ruta es inválida, de red, protegida o sensible.
+
+    Returns:
+        La ruta normalizada si es segura.
     """
     if path is None:
         raise UnsafePathError("Ruta nula recibida.")
@@ -183,14 +201,12 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
     if str(p).startswith(("\\\\", "//")):
         raise UnsafePathError("Operación bloqueada: rutas UNC o de red no permitidas.")
     
-    # Verificación de integridad: el archivo no debe ser un symlink o enlace simbólico actual
     if p.exists() and p.is_symlink():
         raise UnsafePathError("Operación bloqueada: symlink detectado.")
     
     try:
         if p.exists():
             stat = p.lstat()
-            # Verificación de reparse points (Windows Juntions/MountPoints)
             if hasattr(stat, "st_reparse_tag") and stat.st_reparse_tag != 0:
                 raise UnsafePathError("Operación bloqueada: punto de reparse detectado.")
     except (OSError, PermissionError):
@@ -212,7 +228,7 @@ def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> bool:
 
 
 def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = False) -> list[Path]:
-    """Filtra una lista de rutas, retornando solo las que pueden ser modificadas."""
+    """Filtra una lista de rutas, retornando solo las seguras."""
     if paths is None:
         return []
     return [normalize(c) for c in paths if c and is_safe_to_modify(c, allow_sensitive=allow_sensitive)]

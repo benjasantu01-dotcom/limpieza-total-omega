@@ -118,7 +118,14 @@ def scan_file(path: Path) -> List[Suspicion]:
 
 def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
     """
-    Recorre el sistema de archivos de forma iterativa empleando una pila (stack).
+    Realiza un escaneo profundo (recursivo) de un directorio buscando archivos sospechosos.
+    
+    Utiliza un enfoque de pila para evitar la recursión del stack de llamadas y 'os.scandir'
+    para minimizar las llamadas al sistema. Ignora puntos de reparse y rutas protegidas 
+    según la política de seguridad vigente.
+    
+    Returns:
+        List[Suspicion]: Lista de objetos hallados. Retorna lista vacía ante errores de acceso.
     """
     if not directory:
         return []
@@ -134,6 +141,7 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
         while stack:
             current_dir = stack.pop()
             try:
+                # Se utiliza os.scandir para eficiencia en grandes volúmenes de archivos
                 with os.scandir(current_dir) as it:
                     for entry in it:
                         # La validación is_protected_path es central para la seguridad defensiva
@@ -146,6 +154,7 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
                         elif entry.is_file():
                             results.extend(scan_file(Path(entry.path)))
             except (PermissionError, OSError):
+                # Se omiten directorios sin permisos de lectura para continuar el escaneo
                 continue
         return results
     except (OSError, RuntimeError, TypeError, ValueError) as e:

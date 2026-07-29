@@ -96,19 +96,23 @@ DEFAULTS: Final[dict[str, Any]] = {
     "asistente_modelo": "gemini-3.1-flash-lite",
 }
 
-# Límites de los valores numéricos: (mínimo, máximo).
+# Límites de los valores numéricos permitidos para prevenir configuraciones extremas.
+# Estructura: clave -> (minimo_inclusivo, maximo_inclusivo).
 _NUMERIC_LIMITS: Final = {
     "duplicados_tamano_minimo_kb": (0, 1024 * 1024),
     "top_archivos": (1, 500),
     "top_procesos": (1, 500),
 }
 
-# Pre-cálculo para optimizar validación
+# Pre-cálculo para optimizar validación al verificar claves presentes en DEFAULTS
 _DEFAULTS_KEYS: Final = set(DEFAULTS.keys())
 
 
 def _coerce_bool(valor: Any) -> bool | None:
-    """Intenta convertir un valor a booleano; acepta strings representativos."""
+    """
+    Normaliza entradas no booleanas (strings tipo 'true'/'1'/'si') a booleano real.
+    Devuelve None si el valor no representa un booleano válido.
+    """
     if isinstance(valor, bool):
         return valor
     if isinstance(valor, str):
@@ -117,7 +121,10 @@ def _coerce_bool(valor: Any) -> bool | None:
 
 
 def _coerce_int(valor: Any, clave: str) -> int | None:
-    """Convierte a entero y asegura rango, validando tipos básicos primero."""
+    """
+    Intenta convertir a entero, aplicando los límites definidos en _NUMERIC_LIMITS.
+    Si el valor está fuera de rango o es inválido, retorna None para disparar fallback.
+    """
     if not isinstance(valor, (int, str)):
         return None
     try:
@@ -129,7 +136,10 @@ def _coerce_int(valor: Any, clave: str) -> int | None:
 
 
 def _validate_str(clave: str, valor: Any) -> str | None:
-    """Valida cadenas y rutas."""
+    """
+    Valida strings de configuración. Para 'ultima_carpeta', realiza chequeo
+    de seguridad contra el sistema de archivos mediante `is_safe_to_modify`.
+    """
     if not isinstance(valor, str):
         return None
     texto = valor.strip()
@@ -152,7 +162,10 @@ def _validate_str(clave: str, valor: Any) -> str | None:
 
 
 def _apply_validation_by_type(clave: str, valor: Any, defecto: Any) -> Any:
-    """Dispatch de validación usando mapeo de tipos para rendimiento."""
+    """
+    Selecciona la estrategia de validación basada en el tipo del valor por defecto.
+    Asegura que el dato resultante mantenga la consistencia tipológica del esquema.
+    """
     if valor is None:
         return None
     
@@ -167,7 +180,7 @@ def _apply_validation_by_type(clave: str, valor: Any, defecto: Any) -> Any:
 
 
 def settings_path(path_or_base: PathLike | None = None) -> Path:
-    """Resuelve la ubicación final del archivo de configuración."""
+    """Resuelve la ruta absoluta del archivo de configuración, asegurando seguridad."""
     if path_or_base is not None:
         carpeta = Path(path_or_base).expanduser().resolve()
     else:
@@ -178,7 +191,10 @@ def settings_path(path_or_base: PathLike | None = None) -> Path:
 
 
 def validate(values: Any) -> dict[str, Any]:
-    """Valida diccionario completo contra esquemas de DEFAULTS."""
+    """
+    Valida un diccionario externo contra el esquema de DEFAULTS.
+    Descarta cualquier clave desconocida y corrige valores inválidos a sus defaults.
+    """
     limpio = dict(DEFAULTS)
     if not isinstance(values, dict):
         return limpio
@@ -224,7 +240,7 @@ def load(path_or_base: PathLike | None = None) -> dict[str, Any]:
 
 
 def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
-    """Persistencia atómica de configuración."""
+    """Persistencia atómica: escribe en archivo temporal y luego reemplaza."""
     global _cached_settings, _last_path_str, _last_mtime
     
     try:
@@ -250,7 +266,7 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
 
 
 def update(changes: dict[str, Any], path_or_base: PathLike | None = None) -> dict[str, Any]:
-    """Actualiza y persiste cambios."""
+    """Actualiza solo las claves provistas y persiste el estado completo."""
     actual = load(path_or_base)
     actual.update(changes)
     save(actual, path_or_base)
@@ -258,7 +274,7 @@ def update(changes: dict[str, Any], path_or_base: PathLike | None = None) -> dic
 
 
 def reset(path_or_base: PathLike | None = None) -> dict[str, Any]:
-    """Resetea a valores de fábrica."""
+    """Resetea el archivo de configuración a los valores de fábrica."""
     ruta = settings_path(path_or_base)
     ensure_safe_to_modify(str(ruta))
     save(dict(DEFAULTS), path_or_base)
@@ -266,24 +282,24 @@ def reset(path_or_base: PathLike | None = None) -> dict[str, Any]:
 
 
 def get(key: str, path_or_base: PathLike | None = None) -> Any:
-    """Getter con fallback a defaults."""
+    """Getter de alto nivel: obtiene valor configurado o el default si no existe."""
     return load(path_or_base).get(key, DEFAULTS.get(key))
 
 
 def assistant_api_key(path_or_base: PathLike | None = None) -> str:
-    """Obtiene API key con prioridad en entorno."""
+    """Obtiene API key con prioridad absoluta en variable de entorno."""
     desde_entorno = os.environ.get(API_KEY_ENV_VAR, "").strip()
     return desde_entorno or load(path_or_base).get("asistente_clave_api", "").strip()
 
 
 def assistant_enabled(path_or_base: PathLike | None = None) -> bool:
-    """Verifica habilitación del asistente."""
+    """Verifica si el asistente está activado y posee una API key válida."""
     config = load(path_or_base)
     return bool(config.get("asistente_activado")) and bool(assistant_api_key(path_or_base))
 
 
 def describe(path_or_base: PathLike | None = None) -> list[str]:
-    """Genera reporte de estado."""
+    """Genera una representación textual legible de la configuración actual."""
     actual = load(path_or_base)
     clave = assistant_api_key(path_or_base)
     origen = f"variable de entorno {API_KEY_ENV_VAR}" if os.environ.get(API_KEY_ENV_VAR) else ("archivo de configuración" if clave else "no configurada")

@@ -60,7 +60,13 @@ class StartupEntry:
     source: str  # Indica si proviene de una carpeta o una ruta de registro específica
 
     def _extract_quoted_path(self, raw_cmd: str) -> str:
-        """Extrae la ruta si está delimitada por comillas dobles."""
+        """
+        Extrae la ruta absoluta delimitada por comillas dobles.
+        
+        Busca el cierre de la comilla tras el primer carácter, validando que el 
+        contenido no contenga caracteres inválidos para el sistema de archivos
+        y verificando la existencia del ejecutable.
+        """
         end_quote: int = raw_cmd.find('"', 1)
         if end_quote == -1:
             return ""
@@ -78,8 +84,9 @@ class StartupEntry:
         """
         Extrae la ruta del archivo ejecutable saneando la línea de comando.
         
-        El proceso identifica rutas entrecomilladas o toma el primer argumento 
-        de la línea si no existen comillas.
+        Prioriza el parseo de rutas entrecomilladas; si la cadena carece de 
+        comillas, se asume que el primer elemento separado por espacios 
+        es el binario de ejecución.
         """
         cmd: str = self.command.strip()
         if not cmd:
@@ -140,10 +147,10 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
 
 def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry]:
     """
-    Transforma el volcado CSV de PowerShell en objetos StartupEntry.
+    Transforma el volcado CSV crudo de PowerShell en objetos StartupEntry.
     
-    Limpia comillas residuales y descarta cabeceras propias de los objetos 
-    de PowerShell (PSCustomObject).
+    Implementa una lógica de filtrado para ignorar cabeceras, objetos de sistema 
+    internos y filas mal formadas resultantes de la exportación del registro.
     """
     parsed_entries: List[StartupEntry] = []
     if not isinstance(text, str) or not text.strip():
