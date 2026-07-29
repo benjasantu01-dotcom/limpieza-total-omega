@@ -106,9 +106,10 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
 @lru_cache(maxsize=32)
 def directory_size(path: str | os.PathLike) -> int:
     """
-    Calcula el tamaño total en bytes de un directorio mediante suma recursiva.
+    Calcula el tamaño total en bytes de un directorio mediante suma recursiva,
+    validando que cada subdirectorio esté contenido en el root original.
     """
-    root_path = Path(path)
+    root_path = Path(path).resolve()
     
     if not root_path.is_dir() or is_protected_path(root_path):
         return 0
@@ -124,8 +125,10 @@ def directory_size(path: str | os.PathLike) -> int:
                     if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
                         continue
                     if entry.is_dir():
-                        if not is_protected_path(Path(entry.path)):
-                            stack.append(Path(entry.path))
+                        entry_path = Path(entry.path).resolve()
+                        # Defensa: Asegurar que no salimos de la raíz de la caché
+                        if root_path in entry_path.parents and not is_protected_path(entry_path):
+                            stack.append(entry_path)
                     else:
                         try:
                             total_bytes += entry.stat().st_size

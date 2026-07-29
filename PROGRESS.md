@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **261** (51.8% de aceptación)
+- Mejoras aceptadas: **264** (52.4% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 26
 - Sin cambios (nada sustancial que mejorar): 8
-- Sin respuesta de la IA (error o límite): 192
+- Sin respuesta de la IA (error o límite): 189
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-28 | 109 | 8 | 10 | 2 | 83 |
-| 2026-07-29 | 152 | 9 | 16 | 6 | 109 |
+| 2026-07-28 | 109 | 8 | 10 | 2 | 79 |
+| 2026-07-29 | 155 | 9 | 16 | 6 | 110 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,27 +25,30 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **55**
 - robustez ante casos límite: **49**
 - rendimiento: **47**
-- seguridad defensiva: **44**
+- seguridad defensiva: **47**
 
 ## Mejoras aceptadas por archivo
 
+- `browser.py`: **24**
 - `assistant.py`: **23**
-- `browser.py`: **23**
 - `settings.py`: **23**
 - `scanner.py`: **22**
 - `quarantine.py`: **21**
+- `duplicates.py`: **20**
 - `main.py`: **20**
 - `diskreport.py`: **19**
-- `duplicates.py`: **19**
 - `organizer.py`: **19**
 - `healthscore.py`: **18**
 - `memory.py`: **17**
 - `safety.py`: **15**
-- `branding.py`: **13**
+- `branding.py`: **14**
 - `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-29T12:33:36` **duplicates.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `group_by_size` y `_collect_candidates` añadiendo una verificación explícita mediante `is_protected_path` antes de realizar `lstat` sobre los archivos, previniendo así el acceso no deseado a rutas críticas incluso antes de intentar leer sus atributos.
+- `2026-07-29T12:33:04` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `directory_size` para impedir que la recursión escape fuera de la carpeta raíz de caché especificada, previniendo el seguimiento de enlaces simbólicos malintencionados o accesos no autorizados a directorios fuera del alcance del reporte.
+- `2026-07-29T12:32:42` **branding.py** (seguridad defensiva): Mejoré la seguridad en `save_logo_svg` implementando `is_safe_to_modify` para validar la ruta de destino antes de intentar crear el directorio padre, previniendo errores de ejecución no controlados y respetando el contrato de seguridad defensiva.
 - `2026-07-29T12:23:24` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva de `assistant.py` al añadir una validación estricta del `text` generado por el modelo remoto, asegurando que cualquier respuesta que contenga caracteres de control o rutas de sistema sea descartada antes de llegar al usuario, reforzando así la protección de la privacidad y la integridad de la UI.
 - `2026-07-29T12:22:45` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `settings.py` ante errores de entrada y condiciones de carrera en el sistema de archivos al añadir validación explícita para la existencia del directorio antes de la escritura y manejar de forma segura archivos corruptos de configuración durante la deserialización JSON.
 - `2026-07-29T12:22:19` **scanner.py** (robustez ante casos límite): Se mejoró `scan_directory` añadiendo una comprobación explícita de `exists()` antes de procesar la entrada, previniendo errores en condiciones de carrera donde un archivo o carpeta es eliminado o renombrado por otro proceso justo después de ser listado por `os.scandir`.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-29T11:51:34` **assistant.py** (robustez ante casos límite): Mejora la robustez del motor de consulta remota incluyendo validaciones explícitas de estado de red y integridad de respuesta para evitar fallos por respuestas vacías, truncadas o con formato JSON inválido, asegurando que el asistente siempre tenga una salida segura ante errores de red o API.
 - `2026-07-29T11:42:11` **startup.py** (rendimiento): Optimicé el rendimiento de `entries_from_registry` consolidando el parseo de CSV: en lugar de llamar a `parse_registry_csv` por cada línea (lo que generaba múltiples listas y recorridos innecesarios), ahora proceso el buffer de una sola vez, reduciendo la carga de CPU y la creación de objetos intermedios.
 - `2026-07-29T11:42:02` **settings.py** (rendimiento): Se optimizó el rendimiento del proceso de carga mediante la implementación de una caché de validación (`_validated_cache`) que evita recalcular la estructura completa del diccionario de configuración cuando el archivo en disco no ha cambiado, reduciendo la carga de CPU y la redundancia lógica.
-- `2026-07-29T11:41:36` **scanner.py** (rendimiento): Optronicé la función `scan_directory` reemplazando la creación repetitiva de objetos `Path` por el uso directo de `entry.path` (string) para el chequeo de seguridad y recursión, reduciendo drásticamente la sobrecarga de instanciación de objetos en directorios grandes.
-- `2026-07-29T11:41:14` **safety.py** (rendimiento): Se implementó un cache LRU en `is_sensitive_file` y se optimizó `is_protected_path` evitando la regeneración constante de conjuntos en cada llamada, mejorando el rendimiento en recorridos de disco masivos.
-- `2026-07-29T11:31:48` **quarantine.py** (rendimiento): Optimizé `list_items` y `summarize` para aprovechar la caché existente en lugar de recargar el manifiesto desde disco en cada llamado, reduciendo drásticamente las operaciones de I/O redundantes durante la navegación por la UI.

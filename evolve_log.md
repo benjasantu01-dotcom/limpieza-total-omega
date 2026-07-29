@@ -970,3 +970,10 @@ FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quara
 - `2026-07-29T12:23:24` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva de `assistant.py` al añadir una validación estricta del `text` generado por el modelo remoto, asegurando que cualquier respuesta que contenga caracteres de control o rutas de sistema sea descartada antes de llegar al usuario, reforzando así la protección de la privacidad y la integridad de la UI.
 - `2026-07-29T12:23:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-29T12:23:24` Corrida terminada. Total usado hoy: 292.
+- `2026-07-29T12:32:13` Arrancando corrida. Quedan hoy ~8 peticiones objetivo.
+- `2026-07-29T12:32:42` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Mejoré la seguridad en `save_logo_svg` implementando `is_safe_to_modify` para validar la ruta de destino antes de intentar crear el directorio padre, previniendo errores de ejecución no controlados y respetando el contrato de seguridad defensiva.
+- `2026-07-29T12:33:04` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `directory_size` para impedir que la recursión escape fuera de la carpeta raíz de caché especificada, previniendo el seguimiento de enlaces simbólicos malintencionados o accesos no autorizados a directorios fuera del alcance del reporte.
+- `2026-07-29T12:33:28` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: seguridad defensiva).
+- `2026-07-29T12:33:36` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `group_by_size` y `_collect_candidates` añadiendo una verificación explícita mediante `is_protected_path` antes de realizar `lstat` sobre los archivos, previniendo así el acceso no deseado a rutas críticas incluso antes de intentar leer sus atributos.
+- `2026-07-29T12:33:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-29T12:33:36` Corrida terminada. Total usado hoy: 296.

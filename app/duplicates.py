@@ -121,6 +121,8 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     """
     groups: Dict[int, List[Path]] = defaultdict(list)
     for p in paths:
+        if is_protected_path(p):
+            continue
         try:
             size = p.lstat().st_size
             if size > 0:
@@ -156,9 +158,7 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
                 
                 for name in files:
                     candidate = root_path / name
-                    if candidate.is_symlink():
-                        continue
-                    if skip_protected and is_protected_path(candidate):
+                    if candidate.is_symlink() or (skip_protected and is_protected_path(candidate)):
                         continue
                     try:
                         st = candidate.lstat()
