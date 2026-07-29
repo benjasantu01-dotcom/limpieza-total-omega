@@ -168,8 +168,8 @@ class Answer:
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
     """
-    Crea un contexto de forma defensiva filtrando tipos no numéricos y evitando la 
-    propagación de datos sensibles mediante la validación estricta de cada campo.
+    Crea un contexto de forma defensiva filtrando tipos no numéricos y validando
+    cada campo de forma estricta para evitar datos mal formados.
     """
     contexto = SystemContext()
     
@@ -187,7 +187,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         except (TypeError, ValueError, AttributeError):
             return valor_defecto
 
-    if metrics is not None and not isinstance(metrics, (int, float, str)):
+    if metrics is not None and isinstance(metrics, object):
         contexto.junk_mb = float(extraer_seguro(metrics, "junk_mb", float, 0.0))
         contexto.suspicious_count = int(extraer_seguro(metrics, "suspicious_count", int, 0))
         contexto.suspicious_warnings = int(extraer_seguro(metrics, "suspicious_warnings", int, 0))
@@ -198,7 +198,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         contexto.quarantined_count = int(extraer_seguro(metrics, "quarantined_count", int, 0))
         contexto.analyzed = True
 
-    if health is not None and not isinstance(health, (int, float, str)):
+    if health is not None and isinstance(health, object):
         score_val = extraer_seguro(health, "score", int, 0)
         contexto.score = max(0, min(int(score_val), 100))
         grado = getattr(health, "grade", "")
@@ -379,7 +379,6 @@ def local_answer(question: str, context: SystemContext) -> Answer:
 def _rank_problems(context: SystemContext) -> list[str]:
     """Problemas detectados, del más grave al más leve."""
     res = []
-    # Acceso local a propiedades para evitar múltiples getattr/acceso en el loop
     disk = context.disk_free_percent
     warns = context.suspicious_warnings
     mem = context.memory_available_percent
@@ -438,8 +437,6 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
             
         texto = "".join(p.get("text", "") for p in candidatos[0].get("content", {}).get("parts", [])).strip()
         
-        # Validación defensiva estricta: se rechaza cualquier output que sea sospechoso,
-        # contenga caracteres de control o patrones de ruta, asegurando integridad del flujo.
         if not texto or len(texto) > 1200 or _PATH_REGEX.search(texto) or re.search(r'[\x00-\x1f\x7f]', texto):
             return None
         return texto
@@ -458,12 +455,11 @@ def ask(question: str, context: SystemContext | None = None,
         return respaldo
 
     try:
-        clave = settings.assistant_api_key(base)
         configuracion = settings.load(base)
-        
         if not isinstance(configuracion, dict):
             return respaldo
             
+        clave = str(configuracion.get("asistente_api_key", ""))
         modelo_val = configuracion.get("asistente_modelo")
         modelo = str(modelo_val) if isinstance(modelo_val, str) else "gemini-3.1-flash-lite"
         

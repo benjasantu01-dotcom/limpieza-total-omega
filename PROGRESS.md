@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **256** (50.8% de aceptación)
+- Mejoras aceptadas: **253** (50.2% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 8
-- Sin respuesta de la IA (error o límite): 196
+- Sin respuesta de la IA (error o límite): 199
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-28 | 149 | 9 | 16 | 3 | 99 |
-| 2026-07-29 | 107 | 8 | 11 | 5 | 97 |
+| 2026-07-28 | 145 | 9 | 16 | 3 | 99 |
+| 2026-07-29 | 108 | 8 | 11 | 5 | 100 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **62**
+- legibilidad y documentación: **58**
 - seguridad defensiva: **55**
 - robustez ante casos límite: **50**
-- manejo de errores y validación de entradas: **46**
+- manejo de errores y validación de entradas: **47**
 - rendimiento: **43**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **23**
 - `quarantine.py`: **22**
+- `assistant.py`: **22**
 - `scanner.py`: **21**
-- `assistant.py`: **21**
-- `diskreport.py`: **20**
-- `main.py`: **20**
 - `browser.py`: **20**
-- `duplicates.py`: **18**
-- `healthscore.py`: **18**
+- `diskreport.py`: **19**
+- `main.py`: **19**
 - `organizer.py`: **18**
+- `healthscore.py`: **17**
+- `duplicates.py`: **17**
 - `memory.py`: **16**
 - `safety.py`: **15**
 - `branding.py`: **13**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-29T09:51:45` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `build_context` y `ask` mediante la validación estricta de tipos y la captura de errores en la carga de configuraciones, asegurando que un `settings.json` mal formado o valores inesperados no provoquen el colapso del asistente.
 - `2026-07-29T08:27:30` **settings.py** (seguridad defensiva): Se reforzó la seguridad de `settings.py` al prevenir inyecciones de rutas externas mediante el uso de `pathlib.Path.resolve()` antes de cualquier validación y al limitar el acceso al archivo de configuración a un directorio específico del usuario, evitando escapes de ruta mediante técnicas de normalización.
 - `2026-07-29T08:27:20` **scanner.py** (seguridad defensiva): Se ha añadido una validación explícita mediante `is_protected_path` dentro de `scan_file` para garantizar que, incluso si un llamador externo omite el chequeo, la función de análisis no procese rutas críticas, reforzando la seguridad defensiva del módulo.
 - `2026-07-29T08:17:51` **quarantine.py** (seguridad defensiva): Se ha implementado una validación robusta de puntos de reparse (junctions/symlinks) en `restore_item` para asegurar que, al restaurar un archivo, la ruta destino no haya sido alterada para apuntar fuera del árbol de directorios esperado, previniendo ataques de escalada de privilegios mediante manipulación del sistema de archivos.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-29T07:37:08` **memory.py** (robustez ante casos límite): Mejoré la robustez de `parse_windows_process_csv` para gestionar correctamente los casos donde el CSV pueda contener líneas con encabezados inesperados o valores truncados, evitando fallos en el parser ante salidas parciales de PowerShell.
 - `2026-07-29T07:36:43` **main.py** (robustez ante casos límite): Mejoré la robustez de la aplicación ante cambios de tamaño de ventana durante operaciones de dibujo asíncrono y problemas de hilos en la actualización de la interfaz (`_draw_gauge`), evitando errores de `TclError` cuando el componente es destruido o redimensionado abruptamente mientras un hilo intenta actualizarlo.
 - `2026-07-29T07:35:31` **healthscore.py** (robustez ante casos límite): Mejora la robustez ante casos límite en `compute_score` agregando una validación explícita para evitar divisiones por cero o resultados inconsistentes si los umbrales globales en `WEIGHTS` fueran modificados accidentalmente o si las métricas presentaran valores extremos.
-- `2026-07-29T07:26:12` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `_collect_candidates` ante casos límite añadiendo `follow_symlinks=False` en `os.walk` (para evitar ciclos y escapes accidentales de directorios) y fortaleciendo la validación de `lstat` en el recorrido para asegurar que no se sigan archivos bloqueados o inaccesibles que pudieran causar excepciones no capturadas.
