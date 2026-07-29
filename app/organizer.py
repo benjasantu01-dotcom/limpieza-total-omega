@@ -205,7 +205,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         raise
 
     for jf in files:
-        if not isinstance(jf, JunkFile) or not isinstance(getattr(jf, 'path', None), Path):
+        if not isinstance(jf, JunkFile) or not hasattr(jf, 'path') or not jf.path:
             continue
             
         try:

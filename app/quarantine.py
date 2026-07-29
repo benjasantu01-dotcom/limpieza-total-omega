@@ -238,7 +238,7 @@ def quarantine_file(
         items.append(item)
         save_manifest(items, base)
         return item
-    except Exception as e:
+    except (json.JSONDecodeError, OSError, KeyError, ValueError) as e:
         if destination.exists():
             try:
                 destination.unlink()

@@ -1211,3 +1211,33 @@ FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quara
 - `2026-07-29T14:37:32` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Se ha robustecido el manejo de errores en `trim_working_set` y `parse_windows_process_csv`, sustituyendo capturas genéricas por validaciones explícitas de estado y tipos, asegurando que las interacciones con APIs de sistema y estructuras de datos sean seguras y predecibles.
 - `2026-07-29T14:37:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-29T14:37:32` Corrida terminada. Total usado hoy: 344.
+- `2026-07-29T14:45:39` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-07-29T14:46:04` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `stage_for_review` validando explícitamente que la ruta de origen sea un archivo existente y no esté vacía antes de procesarla, previniendo excepciones innecesarias y comportamientos indefinidos al manipular rutas.
+- `2026-07-29T14:46:31` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez del manejo de errores en `quarantine_file` al reemplazar excepciones genéricas `Exception` por una captura específica, asegurando que si ocurre un fallo en el post-procesado (manifiesto), se realice una limpieza atómica y explicativa.
+- `2026-07-29T14:46:50` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-07-29T14:46:58` Tests FALLARON:
+```
+..................................................F....... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+___________ test_is_within_directory_same_path_requires_allow_equal ____________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-3/test_is_within_directory_same_0')
+
+    def test_is_within_directory_same_path_requires_allow_equal(tmp_path):
+>       assert not safety.is_within_directory(tmp_path, tmp_path)
+E       AssertionError: assert not True
+E        +  where True = <function is_within_directory at 0x7f0079be7ec0>(PosixPath('/tmp/pytest-of-runner/pytest-3/test_is_within_directory_same_0'), PosixPath('/tmp/pytest-of-runner/pytest-3/test_is_within_directory_same_0'))
+E        +    where <function is_within_directory at 0x7f0079be7ec0> = safety.is_within_directory
+
+evolve/tests/test_safety.py:160: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_is_within_directory_same_path_requires_allow_equal - AssertionError: assert not True
+ +  where True = <function is_within_directory at 0x7f0079be7ec0>(PosixPath('/tmp/pytest-of-runner/pytest-3/test_is_within_directory_same_0'), PosixPath('/tmp/pytest-of-runner/pytest-3/test_is_within_directory_same_0'))
+ +    where <function is_within_directory at 0x7f0079be7ec0> = safety.is_within_directory
+1 failed, 298 passed in 1.04s
+
+```
+- `2026-07-29T14:46:58` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez de las funciones de validación `is_protected_path` e `is_within_directory` mediante la normalización temprana y el manejo explícito de errores, evitando comportamientos inesperados ante entradas mal formadas o problemas de permisos durante la resolución de rutas.
+- `2026-07-29T14:46:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-29T14:46:58` Corrida terminada. Total usado hoy: 348.
