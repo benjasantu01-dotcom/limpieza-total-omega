@@ -134,38 +134,27 @@ def parse_linux_meminfo(text: str) -> MemorySnapshot:
 def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]:
     """
     Procesa el CSV de procesos generado por PowerShell.
-    
-    Lógica de filtrado:
-    - Ignora líneas vacías o mal formadas.
-    - Excluye cabeceras típicas de PowerShell.
-    - Asegura que los valores numéricos de PID y WorkingSet sean positivos.
     """
     if not text:
         return []
 
-    def _generator() -> Iterator[ProcessMemory]:
-        for line in text.splitlines():
-            clean_line = line.strip()
-            if not clean_line: continue
+    lines = text.splitlines()
+    results = []
+    
+    for line in lines[1:]: # Saltar cabecera directamente
+        parts = [p.strip().strip('"') for p in line.split(",")]
+        if len(parts) < 3: continue
             
-            parts = [p.strip().strip('"') for p in clean_line.split(",", 2)]
-            if len(parts) != 3: continue
-            
-            is_header = parts[0].lower() in {"name", "processname"}
-            if is_header: continue
-                
-            try:
-                pid_val = int(parts[1])
-                working_set_val = int(float(parts[2]))
-                proc_name = parts[0] if parts[0] else "Unknown"
-                
-                is_valid = pid_val >= 0 and working_set_val >= 0
-                if is_valid:
-                    yield ProcessMemory(name=proc_name, pid=pid_val, working_set=working_set_val)
-            except (ValueError, TypeError, OverflowError): 
-                continue
+        try:
+            results.append(ProcessMemory(
+                name=parts[0] or "Unknown",
+                pid=int(parts[1]),
+                working_set=int(parts[2])
+            ))
+        except (ValueError, TypeError, IndexError):
+            continue
 
-    return sorted(_generator(), key=lambda p: p.working_set, reverse=True)[:max(0, limit)]
+    return sorted(results, key=lambda p: p.working_set, reverse=True)[:limit]
 
 
 def _read_windows_snapshot() -> MemorySnapshot:
@@ -224,22 +213,20 @@ def read_snapshot() -> MemorySnapshot:
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     """
     Consulta al sistema operativo por los procesos de mayor consumo.
-    Solo implementado para Windows vía PowerShell.
-    
-    :param limit: Cantidad máxima de procesos a retornar.
-    :return: Lista ordenada de objetos ProcessMemory.
     """
     if os.name != "nt":
         return []
+    # Usar Select-Object directamente para reducir el flujo de datos por el pipe
     command = (
-        "Get-Process | Sort-Object -Property WorkingSet -Descending | "
-        f"Select-Object -First {int(limit)} Name,Id,WorkingSet | "
+        f"Get-Process | Select-Object -Property Name,Id,WorkingSet | "
+        "Sort-Object -Property WorkingSet -Descending | "
+        f"Select-Object -First {int(limit)} | "
         "ConvertTo-Csv -NoTypeInformation"
     )
     try:
         result = subprocess.run(
             ["powershell", "-NoProfile", "-Command", command],
-            capture_output=True, text=True, timeout=30,
+            capture_output=True, text=True, timeout=10, # Timeout ajustado
         )
         return parse_windows_process_csv(result.stdout or "", limit=limit)
     except (OSError, subprocess.SubprocessError):
@@ -298,13 +285,6 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
     Solicita al S.O. que libere la memoria RAM física (Working Set) asignada a un PID.
-    
-    Esta operación invoca `EmptyWorkingSet` de la API de Windows. 
-    ADVERTENCIA: Esta función es potencialmente perjudicial para el rendimiento 
-    general del sistema según los principios expuestos en este módulo.
-    
-    :param pid: Identificador del proceso (entero o cadena numérica).
-    :return: Tupla con (éxito: bool, mensaje: str).
     """
     if os.name != "nt":
         return False, "Solo disponible en Windows."

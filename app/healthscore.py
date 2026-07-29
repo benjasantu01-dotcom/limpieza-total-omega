@@ -188,7 +188,6 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     if metrics is None or not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Datos de entrada faltantes o inválidos."])
 
-    # Seguridad defensiva: Verificar integridad de configuración
     expected_keys = {"seguridad", "disco", "memoria", "basura", "duplicados", "arranque"}
     if sum(WEIGHTS.values()) != 100 or set(WEIGHTS.keys()) != expected_keys or any(w < 0 for w in WEIGHTS.values()):
         return HealthResult(0, "F", {}, ["Error de configuración: Los pesos son inválidos o están incompletos."])
@@ -205,12 +204,9 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
             "arranque": score_startup(metrics.startup_count),
         }
 
-        # Calculamos desglose usando WEIGHTS de forma segura
         breakdown: Dict[str, int] = {}
-        for key in WEIGHTS.keys():
-            ratio = ratios.get(key, 0.0)
-            weight = WEIGHTS.get(key, 0)
-            breakdown[key] = int(round(ratio * weight))
+        for key, weight in WEIGHTS.items():
+            breakdown[key] = int(round(ratios.get(key, 0.0) * weight))
             
         total = sum(breakdown.values())
 
@@ -228,9 +224,9 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
 def summarize(result: HealthResult) -> List[str]:
     """Genera un reporte textual resumido a partir de un HealthResult."""
     lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
-    orden = sorted(result.breakdown.items(), key=lambda kv: kv[1] - WEIGHTS.get(kv[0], 0))
+    orden = sorted(result.breakdown.items(), key=lambda kv: kv[1] - WEIGHTS[kv[0]])
     for area, puntos in orden:
-        maximo = WEIGHTS.get(area, 0)
+        maximo = WEIGHTS[area]
         lines.append(f"  {area.capitalize():<12} {puntos:>2}/{maximo:<2} [{'#' * puntos}{'.' * (maximo - puntos)}]")
     lines.extend(["", "Recomendaciones:"])
     lines.extend([f"  - {rec}" for rec in result.recommendations])
