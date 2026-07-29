@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **253** (50.2% de aceptación)
+- Mejoras aceptadas: **255** (50.6% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 27
+- Rechazadas por guardia de seguridad: 25
 - Sin cambios (nada sustancial que mejorar): 8
 - Sin respuesta de la IA (error o límite): 199
 
@@ -16,36 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-28 | 145 | 9 | 16 | 3 | 99 |
-| 2026-07-29 | 108 | 8 | 11 | 5 | 100 |
+| 2026-07-28 | 143 | 9 | 14 | 3 | 99 |
+| 2026-07-29 | 112 | 8 | 11 | 5 | 100 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **58**
+- legibilidad y documentación: **56**
 - seguridad defensiva: **55**
+- manejo de errores y validación de entradas: **51**
 - robustez ante casos límite: **50**
-- manejo de errores y validación de entradas: **47**
 - rendimiento: **43**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **23**
-- `quarantine.py`: **22**
 - `assistant.py`: **22**
 - `scanner.py`: **21**
-- `browser.py`: **20**
-- `diskreport.py`: **19**
+- `quarantine.py`: **21**
+- `browser.py`: **21**
+- `diskreport.py`: **20**
 - `main.py`: **19**
 - `organizer.py`: **18**
+- `duplicates.py`: **18**
 - `healthscore.py`: **17**
-- `duplicates.py`: **17**
-- `memory.py`: **16**
 - `safety.py`: **15**
-- `branding.py`: **13**
+- `memory.py`: **15**
+- `branding.py`: **14**
 - `startup.py`: **11**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-29T09:59:51` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de hash y el recolector de candidatos mediante la validación de tipos y el manejo explícito de rutas inválidas, asegurando que los chequeos de seguridad sean efectivos antes de intentar operaciones de I/O, previniendo excepciones innecesarias en el pipeline de procesamiento.
+- `2026-07-29T09:59:43` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y las funciones de análisis añadiendo validación explícita para entradas `None` o rutas vacías y reforzando el manejo de excepciones en `largest_folders` y `summarize` para evitar fallos silenciosos al procesar rutas inaccesibles o mal formadas.
+- `2026-07-29T09:59:18` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `directory_size` y `_is_safe_path` ante errores de sistema (`PermissionError`, `OSError`, valores `None`) mediante la validación estricta de tipos y capturas de excepciones más específicas, evitando que errores transitorios en el acceso a archivos detengan el análisis de otros directorios.
+- `2026-07-29T09:58:56` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y `draw_logo` validando parámetros y capturando excepciones de forma más estricta para evitar fallos silenciosos o bloqueos inesperados, siguiendo el enfoque de manejo de errores y validación de entradas.
 - `2026-07-29T09:51:45` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `build_context` y `ask` mediante la validación estricta de tipos y la captura de errores en la carga de configuraciones, asegurando que un `settings.json` mal formado o valores inesperados no provoquen el colapso del asistente.
 - `2026-07-29T08:27:30` **settings.py** (seguridad defensiva): Se reforzó la seguridad de `settings.py` al prevenir inyecciones de rutas externas mediante el uso de `pathlib.Path.resolve()` antes de cualquier validación y al limitar el acceso al archivo de configuración a un directorio específico del usuario, evitando escapes de ruta mediante técnicas de normalización.
 - `2026-07-29T08:27:20` **scanner.py** (seguridad defensiva): Se ha añadido una validación explícita mediante `is_protected_path` dentro de `scan_file` para garantizar que, incluso si un llamador externo omite el chequeo, la función de análisis no procese rutas críticas, reforzando la seguridad defensiva del módulo.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-29T07:57:06` **branding.py** (seguridad defensiva): Mejoré la seguridad de `save_logo_svg` reemplazando la creación implícita de directorios con una validación estricta, asegurando que `ensure_safe_to_modify` se aplique sobre el directorio padre antes de intentar cualquier operación de escritura, previniendo así posibles ataques de escritura en rutas no permitidas.
 - `2026-07-29T07:55:59` **settings.py** (robustez ante casos límite): Mejoré la robustez de `_validate_str` ante rutas inválidas o inexistentes, asegurando que `ultima_carpeta` siempre devuelva una cadena válida (o vacía) incluso si `Path.resolve()` falla por caracteres prohibidos o errores de sistema, manteniendo la integridad del archivo de configuración.
 - `2026-07-29T07:46:34` **scanner.py** (robustez ante casos límite): Se mejoró la robustez de `scan_directory` para manejar archivos o carpetas que desaparecen durante la iteración (condición de carrera) y se añadió una validación explícita para evitar que `Path(entry.path)` falle si la ruta es extremadamente larga o inválida, garantizando que el escáner no aborte ante archivos bloqueados o temporales.
-- `2026-07-29T07:37:16` **organizer.py** (robustez ante casos límite): Mejoré `stage_for_review` añadiendo una verificación de integridad de ruta (usando `is_relative_to`) para prevenir ataques de trayectoria y validando que el archivo origen no sea un enlace simbólico, reforzando la robustez contra casos límite en sistemas de archivos complejos.
-- `2026-07-29T07:37:08` **memory.py** (robustez ante casos límite): Mejoré la robustez de `parse_windows_process_csv` para gestionar correctamente los casos donde el CSV pueda contener líneas con encabezados inesperados o valores truncados, evitando fallos en el parser ante salidas parciales de PowerShell.
-- `2026-07-29T07:36:43` **main.py** (robustez ante casos límite): Mejoré la robustez de la aplicación ante cambios de tamaño de ventana durante operaciones de dibujo asíncrono y problemas de hilos en la actualización de la interfaz (`_draw_gauge`), evitando errores de `TclError` cuando el componente es destruido o redimensionado abruptamente mientras un hilo intenta actualizarlo.
-- `2026-07-29T07:35:31` **healthscore.py** (robustez ante casos límite): Mejora la robustez ante casos límite en `compute_score` agregando una validación explícita para evitar divisiones por cero o resultados inconsistentes si los umbrales globales en `WEIGHTS` fueran modificados accidentalmente o si las métricas presentaran valores extremos.

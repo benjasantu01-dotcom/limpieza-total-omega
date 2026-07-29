@@ -19,7 +19,7 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, Sequence, Dict, List
+from typing import Iterable, Sequence, Dict, List, Optional
 from functools import lru_cache
 from safety import is_protected_path
 
@@ -88,7 +88,7 @@ def base_directories() -> List[Path]:
     return [path_local] if path_local.is_dir() else []
 
 
-def _is_safe_path(target_path: Path, base_path: Path) -> bool:
+def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> bool:
     """
     Verifica que la ruta sea un descendiente legítimo de base_path.
     Impide escapes de directorio y valida contra la lista negra de seguridad.
@@ -113,9 +113,11 @@ def directory_size(path: str | os.PathLike) -> int:
     """
     Calcula el tamaño total en bytes de un directorio mediante suma recursiva.
     """
-    p = Path(path)
-    # Verificación de seguridad antes de cualquier acceso
-    if not p.exists() or not p.is_dir() or p.is_symlink() or is_protected_path(p):
+    try:
+        p = Path(path)
+        if not p.exists() or not p.is_dir() or p.is_symlink() or is_protected_path(p):
+            return 0
+    except (OSError, PermissionError):
         return 0
     
     total_bytes: int = 0
@@ -123,7 +125,6 @@ def directory_size(path: str | os.PathLike) -> int:
     
     while stack:
         current_dir = stack.pop()
-        # Re-validar seguridad en cada nivel del stack
         if is_protected_path(current_dir):
             continue
             
@@ -131,16 +132,11 @@ def directory_size(path: str | os.PathLike) -> int:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
-                        # Si es un enlace/junction, no entrar
                         if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
                             continue
                         
-                        entry_path = Path(entry.path)
-                        if is_protected_path(entry_path):
-                            continue
-                            
                         if entry.is_dir():
-                            stack.append(entry_path)
+                            stack.append(Path(entry.path))
                         else:
                             total_bytes += entry.stat().st_size
                     except (OSError, PermissionError):
@@ -156,7 +152,7 @@ def _is_valid_cache_path(candidate: Path, base_path: Path) -> bool:
     Filtro estricto: valida existencia, seguridad de la ruta y que no sea 
     un componente sensible del perfil (ej. Cookies).
     """
-    if not candidate:
+    if not candidate or not isinstance(candidate, Path):
         return False
     try:
         if not candidate.exists() or not candidate.is_dir() or candidate.is_symlink():
@@ -194,14 +190,16 @@ def detect_profiles(
             if not relative_path_str:
                 continue
             
-            candidate = resolved_base.joinpath(*relative_path_str.split("\\"))
-            
-            if _is_valid_cache_path(candidate, resolved_base):
-                found.append(BrowserCache(
-                    browser=browser_name,
-                    path=candidate,
-                    size_bytes=directory_size(str(candidate)),
-                ))
+            try:
+                candidate = resolved_base.joinpath(*relative_path_str.split("\\"))
+                if _is_valid_cache_path(candidate, resolved_base):
+                    found.append(BrowserCache(
+                        browser=browser_name,
+                        path=candidate,
+                        size_bytes=directory_size(str(candidate)),
+                    ))
+            except (TypeError, ValueError):
+                continue
                 
     found.sort(key=lambda c: c.size_bytes, reverse=True)
     return found

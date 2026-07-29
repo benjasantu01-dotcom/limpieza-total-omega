@@ -76,20 +76,17 @@ class DuplicateGroup:
 def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
     Calcula el hash SHA256 completo de un archivo mediante lectura en bloques.
-    
-    Args:
-        path: Ruta del archivo (str o Path) a procesar.
-        chunk_size: Tamaño de cada bloque de lectura en bytes.
-        
-    Returns:
-        String hexadecimal del hash si es accesible, None en caso de error o ruta protegida.
     """
-    if path is None or is_protected_path(path):
+    if not path or is_protected_path(path):
         return None
     
+    p = Path(path)
+    if not p.is_file():
+        return None
+        
     digest = hashlib.sha256()
     try:
-        with open(path, "rb") as f:
+        with open(p, "rb") as f:
             while chunk := f.read(chunk_size):
                 digest.update(chunk)
         return digest.hexdigest()
@@ -100,19 +97,13 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
 def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """
     Calcula un hash rápido de los primeros N bytes de un archivo.
-    
-    Args:
-        path: Ruta del archivo (str o Path) a procesar.
-        read_bytes: Cantidad de bytes a leer desde el inicio.
-        
-    Returns:
-        String hexadecimal del hash (SHA256), None si el archivo es vacío o inaccesible.
     """
-    if path is None or is_protected_path(path):
+    if not path or is_protected_path(path):
         return None
-    
+
+    p = Path(path)
     try:
-        with open(path, "rb") as f:
+        with open(p, "rb") as f:
             content = f.read(read_bytes)
             if not content:
                 return None
@@ -130,7 +121,7 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
         
     groups: Dict[int, List[Path]] = defaultdict(list)
     for p in paths:
-        if not isinstance(p, Path):
+        if not isinstance(p, Path) or is_protected_path(p):
             continue
         try:
             stat = p.lstat()
@@ -154,8 +145,7 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
             continue
         try:
             base = Path(directory).expanduser()
-            # Resolvemos para evitar seguir puntos de reparse fuera del árbol base
-            if not base.exists() or not base.is_dir() or (skip_protected and is_protected_path(base)):
+            if not base.is_dir() or (skip_protected and is_protected_path(base)):
                 continue
             
             for root, subdirs, files in os.walk(base, followlinks=False):
@@ -249,7 +239,6 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
         if not isinstance(p, Path) or is_protected_path(p):
             continue
         try:
-            # Asegurar que el archivo exista y sea accesible antes de sugerirlo
             if not p.is_file():
                 continue
             stat = p.stat()

@@ -198,6 +198,8 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
 
 def largest_files(directory: str | os.PathLike, limit: int = 20, skip_protected: bool = True) -> list[FileEntry]:
     """Los archivos más grandes bajo una carpeta, de mayor a menor."""
+    if not directory:
+        return []
     return heapq.nlargest(
         max(0, limit), 
         (FileEntry(path=p, size_bytes=s) for p, s in walk_files(directory, skip_protected)),
@@ -207,6 +209,8 @@ def largest_files(directory: str | os.PathLike, limit: int = 20, skip_protected:
 
 def usage_by_extension(directory: str | os.PathLike, limit: int = 15, skip_protected: bool = True) -> list[ExtensionUsage]:
     """Espacio agrupado por extensión, de mayor a menor."""
+    if not directory:
+        return []
     sizes: dict[str, int] = defaultdict(int)
     counts: dict[str, int] = defaultdict(int)
     for path, size in walk_files(directory, skip_protected):
@@ -252,6 +256,8 @@ def largest_folders(directory: str | os.PathLike, limit: int = 10, skip_protecte
 
 def total_size(directory: str | os.PathLike, skip_protected: bool = True) -> tuple[int, int]:
     """Devuelve (bytes totales, cantidad de archivos) bajo una carpeta."""
+    if not directory:
+        return 0, 0
     total = 0
     count = 0
     for _, size in walk_files(directory, skip_protected):
