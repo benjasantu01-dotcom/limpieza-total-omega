@@ -94,7 +94,6 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
                 digest.update(chunk)
         return digest.hexdigest()
     except (OSError, PermissionError, ValueError, TypeError, FileNotFoundError, IsADirectoryError):
-        # Excepciones controladas: el acceso a archivos en uso o sin permisos retorna None
         return None
 
 
@@ -125,12 +124,6 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
 def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     """
     Clasifica rutas de archivos según su tamaño en disco (st_size).
-    
-    Args:
-        paths: Colección de objetos Path a clasificar.
-        
-    Returns:
-        Diccionario donde la clave es el tamaño en bytes y el valor es la lista de rutas.
     """
     if paths is None:
         return {}
@@ -151,7 +144,6 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
 def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, skip_protected: bool) -> List[Path]:
     """
     Realiza un recorrido recursivo del sistema de archivos para recolectar candidatos.
-    Solo incluye archivos mayores a min_size y excluye rutas protegidas/links.
     """
     if directories is None:
         return []
@@ -165,7 +157,7 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
             if not base.is_dir() or (skip_protected and is_protected_path(base)):
                 continue
             
-            for root, subdirs, files in os.walk(base):
+            for root, subdirs, files in os.walk(base, followlinks=False):
                 root_path = Path(root)
                 subdirs[:] = [
                     d for d in subdirs 
@@ -179,8 +171,8 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
                     if skip_protected and is_protected_path(candidate):
                         continue
                     try:
-                        st = candidate.stat()
-                        if st.st_size >= min_size and st.st_size > 0:
+                        st = candidate.lstat()
+                        if st.st_size >= min_size:
                             candidates.append(candidate)
                     except (OSError, PermissionError, FileNotFoundError):
                         continue
@@ -192,13 +184,6 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
 def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
     """
     Refina una lista de archivos agrupándolos por el resultado de una función de hash.
-    
-    Args:
-        paths: Lista de rutas a agrupar.
-        hash_func: Función para calcular el hash.
-    
-    Returns:
-        Diccionario de hash -> lista de rutas (solo grupos con >1 elemento).
     """
     if paths is None:
         return {}
@@ -254,9 +239,6 @@ def reclaimable_bytes(groups: List[DuplicateGroup]) -> int:
 def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
     """
     Selecciona el archivo que será conservado basado en criterios de antigüedad.
-    
-    El criterio es: la fecha de modificación (mtime) más antigua. 
-    En caso de empate, se utiliza la longitud de la ruta como desempate.
     """
     if not group or not group.paths:
         return None
@@ -274,7 +256,6 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
     if not valid_paths:
         return group.paths[0] if group.paths else None
 
-    # Ordenar primero por tiempo, luego por longitud de ruta
     best_candidate = min(valid_paths, key=lambda x: (x[0], x[1]))
     return best_candidate[2]
 

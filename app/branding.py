@@ -190,8 +190,9 @@ def _hex_to_rgb(value: HexColor) -> tuple[int, int, int]:
     """Convierte '#rrggbb' a una tupla RGB. Devuelve negro si es inválido."""
     try:
         limpio = value.lstrip("#")
+        if len(limpio) != 6: raise ValueError("Invalid length")
         return (int(limpio[0:2], 16), int(limpio[2:4], 16), int(limpio[4:6], 16))
-    except (AttributeError, ValueError, IndexError):
+    except (AttributeError, ValueError, IndexError, TypeError):
         return (0, 0, 0)
 
 
@@ -257,11 +258,12 @@ def save_logo_svg(destination: str | Path | None) -> Path | None:
     try:
         path = Path(destination).expanduser().resolve()
         
-        # El directorio padre debe ser seguro
-        if not path.parent.exists():
-            if not is_safe_to_modify(path.parent):
+        # Validar directorio padre
+        parent = path.parent
+        if not parent.exists():
+            if not is_safe_to_modify(parent):
                 return None
-            path.parent.mkdir(parents=True, exist_ok=True)
+            parent.mkdir(parents=True, exist_ok=True)
             
         # Validación final de seguridad antes de escritura
         if not is_safe_to_modify(path):
@@ -270,7 +272,7 @@ def save_logo_svg(destination: str | Path | None) -> Path | None:
         ensure_safe_to_modify(path)
         path.write_text(logo_svg(), encoding="utf-8")
         return path
-    except (OSError, PermissionError, RuntimeError):
+    except (OSError, PermissionError, RuntimeError, ValueError):
         return None
 
 

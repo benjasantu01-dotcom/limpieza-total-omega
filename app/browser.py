@@ -114,16 +114,11 @@ def directory_size(path: str | os.PathLike) -> int:
     Calcula el tamaño total en bytes de un directorio mediante suma recursiva.
     """
     p = Path(path)
-    if not p.is_dir() or p.is_symlink() or is_protected_path(p):
+    if not p.exists() or not p.is_dir() or p.is_symlink() or is_protected_path(p):
         return 0
     
     total_bytes: int = 0
-    try:
-        base_resolved = p.resolve(strict=True)
-    except (OSError, RuntimeError):
-        return 0
-        
-    stack: List[Path] = [base_resolved]
+    stack: List[Path] = [p]
     
     while stack:
         current_dir = stack.pop()
