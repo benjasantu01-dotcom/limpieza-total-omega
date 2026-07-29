@@ -949,3 +949,10 @@ FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quara
 - `2026-07-29T11:52:33` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `all_drives_usage` ante la presencia de unidades de red (UNC) o unidades mapeadas que fallan al resolverse, evitando que una sola ruta inaccesible interrumpa la detección global del sistema.
 - `2026-07-29T11:52:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-29T11:52:33` Corrida terminada. Total usado hoy: 280.
+- `2026-07-29T12:01:15` Arrancando corrida. Quedan hoy ~20 peticiones objetivo.
+- `2026-07-29T12:01:45` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-07-29T12:02:12` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se ha robustecido el cálculo de `score_security` para prevenir comportamientos inesperados ante valores extremos, asegurando que el ratio nunca sea negativo y manejando la posibilidad de que los parámetros de entrada sean extremadamente altos, manteniendo la estabilidad del cálculo global.
+- `2026-07-29T12:03:15` ➖ Sin cambios en main.py (enfoque: robustez ante casos límite). Motivo: Se reforzó la robustez de `main.py` ante errores de entrada del usuario en los campos de texto (`PID` y `ID de cuarentena`) y se añadió validación defensiva en la recuperación de rutas de `safety.py` para evitar que la aplicación intente realizar operaciones sobre rutas que podrían haberse vuelto inválidas o inexistentes durante la ejecución.
+- `2026-07-29T12:03:25` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-07-29T12:03:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-29T12:03:25` Corrida terminada. Total usado hoy: 284.

@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **257** (51.0% de aceptación)
+- Mejoras aceptadas: **256** (50.8% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 25
-- Sin cambios (nada sustancial que mejorar): 7
-- Sin respuesta de la IA (error o límite): 198
+- Rechazadas por guardia de seguridad: 24
+- Sin cambios (nada sustancial que mejorar): 8
+- Sin respuesta de la IA (error o límite): 199
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-28 | 112 | 8 | 11 | 2 | 91 |
-| 2026-07-29 | 145 | 9 | 14 | 5 | 107 |
+| 2026-07-28 | 110 | 8 | 10 | 2 | 90 |
+| 2026-07-29 | 146 | 9 | 14 | 6 | 109 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **66**
 - manejo de errores y validación de entradas: **55**
 - rendimiento: **47**
-- seguridad defensiva: **46**
-- robustez ante casos límite: **43**
+- seguridad defensiva: **44**
+- robustez ante casos límite: **44**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **23**
 - `browser.py`: **23**
-- `scanner.py`: **22**
 - `assistant.py`: **22**
+- `settings.py`: **22**
+- `scanner.py`: **21**
 - `main.py`: **20**
 - `quarantine.py`: **20**
 - `diskreport.py`: **19**
 - `duplicates.py`: **19**
+- `healthscore.py`: **18**
 - `organizer.py`: **18**
-- `healthscore.py`: **17**
 - `memory.py`: **17**
 - `safety.py`: **14**
 - `branding.py`: **13**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-29T12:02:12` **healthscore.py** (robustez ante casos límite): Se ha robustecido el cálculo de `score_security` para prevenir comportamientos inesperados ante valores extremos, asegurando que el ratio nunca sea negativo y manejando la posibilidad de que los parámetros de entrada sean extremadamente altos, manteniendo la estabilidad del cálculo global.
 - `2026-07-29T11:52:33` **diskreport.py** (robustez ante casos límite): Se reforzó la robustez de `all_drives_usage` ante la presencia de unidades de red (UNC) o unidades mapeadas que fallan al resolverse, evitando que una sola ruta inaccesible interrumpa la detección global del sistema.
 - `2026-07-29T11:52:23` **browser.py** (robustez ante casos límite): Mejoré la robustez de `directory_size` para manejar posibles errores al consultar `stat()` en archivos bloqueados durante el escaneo, evitando que el proceso se interrumpa ante errores de E/S inesperados.
 - `2026-07-29T11:51:34` **assistant.py** (robustez ante casos límite): Mejora la robustez del motor de consulta remota incluyendo validaciones explícitas de estado de red y integridad de respuesta para evitar fallos por respuestas vacías, truncadas o con formato JSON inválido, asegurando que el asistente siempre tenga una salida segura ante errores de red o API.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-29T11:21:32` **healthscore.py** (rendimiento): Optimicé el cálculo del `breakdown` en `compute_score` usando una pre-comprensión para evitar búsquedas repetidas en diccionarios y mejoré la eficiencia de `summarize` al cachear el valor de `WEIGHTS[area]` dentro del bucle de formateo, reduciendo accesos innecesarios.
 - `2026-07-29T11:21:07` **duplicates.py** (rendimiento): Optimicé el rendimiento de `group_by_size` eliminando la llamada innecesaria a `group_by_size` dentro de `find_duplicates` (que recalculaba lo que `_collect_candidates` ya podría haber procesado) y simplificando el acceso al diccionario de grupos para reducir iteraciones redundantes.
 - `2026-07-29T11:11:38` **browser.py** (rendimiento): Se implementó un cacheo simple mediante `lru_cache` en `detect_profiles` (con un timeout de sesión implícito por el ciclo de vida de la app) y se optimizó la resolución de rutas en `directory_size` evitando llamadas innecesarias a `.resolve()` dentro del bucle, mejorando la velocidad de escaneo al evitar re-procesar subdirectorios ya visitados.
-- `2026-07-29T11:11:04` **assistant.py** (rendimiento): Se pre-compilaron las expresiones regulares y se optimizó la estructura de búsqueda de handlers usando un diccionario indexado por las llaves de las categorías, evitando la re-iteración innecesaria de las reglas en cada consulta de usuario.

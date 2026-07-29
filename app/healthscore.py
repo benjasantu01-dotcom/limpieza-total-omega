@@ -126,8 +126,9 @@ def score_junk(junk_mb: float) -> float:
 
 def score_security(suspicious_count: int, warnings: int = 0) -> float:
     """Calcula el ratio de seguridad (0.0 a 1.0) penalizando hallazgos."""
-    penalty: float = (suspicious_count * 0.05) + (warnings * 0.25)
-    return _clamp(1.0 - penalty)
+    # Uso de float para evitar desbordamientos y asegurar clamp lógico
+    penalty: float = float(suspicious_count) * 0.05 + float(warnings) * 0.25
+    return _clamp(1.0 - penalty, 0.0, 1.0)
 
 
 def score_memory(available_percent: float) -> float:
