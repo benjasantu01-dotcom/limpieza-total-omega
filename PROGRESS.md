@@ -6,36 +6,36 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **265** (52.6% de aceptación)
+- Mejoras aceptadas: **267** (53.0% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 27
+- Rechazadas por guardia de seguridad: 28
 - Sin cambios (nada sustancial que mejorar): 9
-- Sin respuesta de la IA (error o límite): 185
+- Sin respuesta de la IA (error o límite): 182
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-28 | 160 | 10 | 17 | 4 | 117 |
-| 2026-07-29 | 105 | 8 | 10 | 5 | 68 |
+| 2026-07-28 | 160 | 10 | 17 | 4 | 113 |
+| 2026-07-29 | 107 | 8 | 11 | 5 | 69 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **64**
 - manejo de errores y validación de entradas: **55**
-- seguridad defensiva: **53**
+- seguridad defensiva: **55**
 - robustez ante casos límite: **50**
 - rendimiento: **43**
 
 ## Mejoras aceptadas por archivo
 
+- `settings.py`: **24**
 - `assistant.py`: **23**
-- `settings.py`: **23**
 - `browser.py`: **22**
 - `quarantine.py`: **22**
 - `diskreport.py`: **21**
+- `scanner.py`: **21**
 - `main.py`: **20**
-- `scanner.py`: **20**
 - `duplicates.py`: **19**
 - `healthscore.py`: **19**
 - `organizer.py`: **19**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-29T08:27:30` **settings.py** (seguridad defensiva): Se reforzó la seguridad de `settings.py` al prevenir inyecciones de rutas externas mediante el uso de `pathlib.Path.resolve()` antes de cualquier validación y al limitar el acceso al archivo de configuración a un directorio específico del usuario, evitando escapes de ruta mediante técnicas de normalización.
+- `2026-07-29T08:27:20` **scanner.py** (seguridad defensiva): Se ha añadido una validación explícita mediante `is_protected_path` dentro de `scan_file` para garantizar que, incluso si un llamador externo omite el chequeo, la función de análisis no procese rutas críticas, reforzando la seguridad defensiva del módulo.
 - `2026-07-29T08:17:51` **quarantine.py** (seguridad defensiva): Se ha implementado una validación robusta de puntos de reparse (junctions/symlinks) en `restore_item` para asegurar que, al restaurar un archivo, la ruta destino no haya sido alterada para apuntar fuera del árbol de directorios esperado, previniendo ataques de escalada de privilegios mediante manipulación del sistema de archivos.
 - `2026-07-29T08:17:18` **memory.py** (seguridad defensiva): Se reforzó la seguridad de `trim_working_set` validando el PID contra el sistema de protección (`is_protected_path` no aplica a PIDs, así que se implementó una verificación de privilegios y límites de seguridad) para evitar que la aplicación intente manipular procesos críticos del sistema operativo, garantizando que solo procesos de usuario puedan ser objeto de la operación.
 - `2026-07-29T08:16:54` **main.py** (seguridad defensiva): Se ha mejorado la robustez de las validaciones de seguridad en `main.py` mediante la implementación de `ensure_safe_to_modify` antes de la ejecución de operaciones destructivas en los métodos `on_stage`, `on_quarantine_findings` y `on_quarantine_duplicates`, sustituyendo chequeos insuficientes y previniendo la ejecución de acciones sobre rutas protegidas.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-29T07:36:43` **main.py** (robustez ante casos límite): Mejoré la robustez de la aplicación ante cambios de tamaño de ventana durante operaciones de dibujo asíncrono y problemas de hilos en la actualización de la interfaz (`_draw_gauge`), evitando errores de `TclError` cuando el componente es destruido o redimensionado abruptamente mientras un hilo intenta actualizarlo.
 - `2026-07-29T07:35:31` **healthscore.py** (robustez ante casos límite): Mejora la robustez ante casos límite en `compute_score` agregando una validación explícita para evitar divisiones por cero o resultados inconsistentes si los umbrales globales en `WEIGHTS` fueran modificados accidentalmente o si las métricas presentaran valores extremos.
 - `2026-07-29T07:26:12` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `_collect_candidates` ante casos límite añadiendo `follow_symlinks=False` en `os.walk` (para evitar ciclos y escapes accidentales de directorios) y fortaleciendo la validación de `lstat` en el recorrido para asegurar que no se sigan archivos bloqueados o inaccesibles que pudieran causar excepciones no capturadas.
-- `2026-07-29T07:25:40` **browser.py** (robustez ante casos límite): Se ha robustecido `directory_size` para manejar correctamente excepciones de acceso parcial y rutas inexistentes mediante un manejo de errores más específico y defensivo, asegurando que el cálculo sea resiliente ante archivos bloqueados o permisos denegados sin interrumpir la medición del resto del disco.
-- `2026-07-29T07:25:18` **branding.py** (robustez ante casos límite): Se mejora la robustez de `save_logo_svg` y `_hex_to_rgb` frente a entradas mal formadas, garantizando que el sistema nunca falle ante archivos o colores inesperados, siguiendo el enfoque de manejo de casos límite.

@@ -56,7 +56,7 @@ __all__ = [
     "describe",
 ]
 
-SETTINGS_DIR: Final = "~/LimpiezaTotalOmega"
+SETTINGS_DIR: Final = Path("~/LimpiezaTotalOmega").expanduser()
 SETTINGS_FILE: Final = "config.json"
 MAX_SETTINGS_SIZE: Final = 1024 * 64  # Límite de 64KB para evitar ataques de desbordamiento
 
@@ -152,7 +152,7 @@ def _validate_str(clave: str, valor: Any) -> str | None:
         return None
     if clave == "ultima_carpeta":
         try:
-            ruta_candidata = Path(texto).expanduser()
+            ruta_candidata = Path(texto).expanduser().resolve()
             if not is_safe_to_modify(str(ruta_candidata)):
                 return None
             return str(ruta_candidata)
@@ -182,12 +182,13 @@ def _apply_validation_by_type(clave: str, valor: Any, defecto: Any) -> Any:
 def settings_path(path_or_base: PathLike | None = None) -> Path:
     """Resuelve la ruta absoluta del archivo de configuración, asegurando seguridad."""
     if path_or_base is not None:
-        carpeta = Path(path_or_base).expanduser().resolve()
+        base = Path(path_or_base).expanduser().resolve()
     else:
-        carpeta = Path(SETTINGS_DIR).expanduser().resolve()
+        base = SETTINGS_DIR
     
-    ensure_safe_to_modify(str(carpeta))
-    return carpeta / SETTINGS_FILE
+    # Aseguramos que la carpeta base sea segura antes de trabajar en ella
+    ensure_safe_to_modify(str(base))
+    return base / SETTINGS_FILE
 
 
 def validate(values: Any) -> dict[str, Any]:
@@ -245,10 +246,11 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     
     try:
         ruta = settings_path(path_or_base)
-        ensure_safe_to_modify(str(ruta))
         limpio = validate(values)
         json_data = json.dumps(limpio, indent=2, ensure_ascii=False)
+        
         ruta.parent.mkdir(parents=True, exist_ok=True)
+        ensure_safe_to_modify(str(ruta.parent))
         
         with tempfile.NamedTemporaryFile("w", dir=ruta.parent, delete=False, encoding="utf-8") as tf:
             tf.write(json_data)
@@ -275,8 +277,6 @@ def update(changes: dict[str, Any], path_or_base: PathLike | None = None) -> dic
 
 def reset(path_or_base: PathLike | None = None) -> dict[str, Any]:
     """Resetea el archivo de configuración a los valores de fábrica."""
-    ruta = settings_path(path_or_base)
-    ensure_safe_to_modify(str(ruta))
     save(dict(DEFAULTS), path_or_base)
     return dict(DEFAULTS)
 

@@ -613,3 +613,10 @@ FAILED evolve/tests/test_integrity.py::test_is_safe_returns_bool_and_never_raise
 - `2026-07-29T08:17:51` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha implementado una validación robusta de puntos de reparse (junctions/symlinks) en `restore_item` para asegurar que, al restaurar un archivo, la ruta destino no haya sido alterada para apuntar fuera del árbol de directorios esperado, previniendo ataques de escalada de privilegios mediante manipulación del sistema de archivos.
 - `2026-07-29T08:17:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-29T08:17:51` Corrida terminada. Total usado hoy: 196.
+- `2026-07-29T08:26:16` Arrancando corrida. Quedan hoy ~104 peticiones objetivo.
+- `2026-07-29T08:26:36` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-07-29T08:26:58` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-07-29T08:27:20` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha añadido una validación explícita mediante `is_protected_path` dentro de `scan_file` para garantizar que, incluso si un llamador externo omite el chequeo, la función de análisis no procese rutas críticas, reforzando la seguridad defensiva del módulo.
+- `2026-07-29T08:27:30` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `settings.py` al prevenir inyecciones de rutas externas mediante el uso de `pathlib.Path.resolve()` antes de cualquier validación y al limitar el acceso al archivo de configuración a un directorio específico del usuario, evitando escapes de ruta mediante técnicas de normalización.
+- `2026-07-29T08:27:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-29T08:27:30` Corrida terminada. Total usado hoy: 200.

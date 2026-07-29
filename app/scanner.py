@@ -106,8 +106,11 @@ CHECK_FUNCS: Final[List[Callable[[Path], Optional[Suspicion]]]] = [
 def scan_file(path: Path) -> List[Suspicion]:
     """
     Ejecuta el conjunto de reglas heurísticas sobre un archivo.
-    Se asume que la ruta ya fue validada contra is_protected_path por el llamador.
+    Garantiza que la ruta no pertenezca a zonas protegidas antes de analizar.
     """
+    if is_protected_path(path):
+        return []
+
     results: List[Suspicion] = []
     for check_func in CHECK_FUNCS:
         if (res := check_func(path)):
