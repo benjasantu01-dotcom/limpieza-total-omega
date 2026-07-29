@@ -137,7 +137,7 @@ def score_memory(available_percent: float) -> float:
 
 
 def score_disk(free_percent: float) -> float:
-    """Calcula el ratio de espacio libre en disco (0.0 a 1.0)."""
+    """Calcula el ratio de espacio libre en disco (0.0 a 1.0)"""
     if DISK_IDEAL_PERCENT <= 0: return 0.0
     return _clamp(free_percent / DISK_IDEAL_PERCENT)
 
@@ -211,10 +211,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
             "arranque": score_startup(metrics.startup_count),
         }
 
-        breakdown: Dict[str, int] = {
-            key: int(round(_clamp(ratios.get(key, 0.0), 0.0, 1.0) * WEIGHTS[key])) 
-            for key in WEIGHTS
-        }
+        breakdown: Dict[str, int] = {k: int(round(ratios[k] * w)) for k, w in WEIGHTS.items()}
             
         total_score: int = sum(breakdown.values())
 
@@ -235,8 +232,7 @@ def summarize(result: HealthResult) -> List[str]:
     
     # Ordenar por desviación respecto al peso máximo esperado (puntos perdidos)
     def calculate_deviation(item: tuple[str, int]) -> int:
-        area, puntos = item
-        return puntos - WEIGHTS[area]
+        return item[1] - WEIGHTS[item[0]]
 
     orden = sorted(result.breakdown.items(), key=calculate_deviation)
     

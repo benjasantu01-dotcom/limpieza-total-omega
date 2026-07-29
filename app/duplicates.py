@@ -119,17 +119,12 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     Agrupa rutas de archivos por su tamaño en bytes. 
     Ignora archivos protegidos o inaccesibles.
     """
-    if paths is None:
-        return {}
-        
     groups: Dict[int, List[Path]] = defaultdict(list)
     for p in paths:
-        if not isinstance(p, Path) or is_protected_path(p):
-            continue
         try:
-            stat = p.lstat()
-            if stat.st_size > 0:
-                groups[stat.st_size].append(p)
+            size = p.lstat().st_size
+            if size > 0:
+                groups[size].append(p)
         except (OSError, PermissionError, FileNotFoundError, AttributeError):
             continue
     return groups
@@ -199,15 +194,12 @@ def find_duplicates(
     Ejecuta el pipeline completo de detección: tamaño -> hash parcial -> hash total.
     Retorna una lista de objetos DuplicateGroup ordenados por espacio desperdiciado.
     """
-    if not directories:
-        return []
-        
     candidates = _collect_candidates(directories, min_size, skip_protected)
     if not candidates:
         return []
 
-    groups: List[DuplicateGroup] = []
     size_map = {s: p for s, p in group_by_size(candidates).items() if len(p) > 1}
+    groups: List[DuplicateGroup] = []
     
     for size, same_size in size_map.items():
         by_partial = _refine_by_hash(same_size, partial_hash)

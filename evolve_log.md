@@ -921,3 +921,10 @@ FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quara
 - `2026-07-29T11:11:38` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Se implementó un cacheo simple mediante `lru_cache` en `detect_profiles` (con un timeout de sesión implícito por el ciclo de vida de la app) y se optimizó la resolución de rutas en `directory_size` evitando llamadas innecesarias a `.resolve()` dentro del bucle, mejorando la velocidad de escaneo al evitar re-procesar subdirectorios ya visitados.
 - `2026-07-29T11:11:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-29T11:11:38` Corrida terminada. Total usado hoy: 264.
+- `2026-07-29T11:20:18` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-07-29T11:20:44` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-07-29T11:21:07` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el rendimiento de `group_by_size` eliminando la llamada innecesaria a `group_by_size` dentro de `find_duplicates` (que recalculaba lo que `_collect_candidates` ya podría haber procesado) y simplificando el acceso al diccionario de grupos para reducir iteraciones redundantes.
+- `2026-07-29T11:21:32` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del `breakdown` en `compute_score` usando una pre-comprensión para evitar búsquedas repetidas en diccionarios y mejoré la eficiencia de `summarize` al cachear el valor de `WEIGHTS[area]` dentro del bucle de formateo, reduciendo accesos innecesarios.
+- `2026-07-29T11:22:19` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Se implementó un cacheo más eficiente en el método `on_full_analysis` utilizando el diccionario `_cache` existente para evitar re-escaneos redundantes de directorios de descarga y registros de arranque, reduciendo significativamente la latencia de la pestaña Salud al consolidar mediciones costosas.
+- `2026-07-29T11:22:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-29T11:22:19` Corrida terminada. Total usado hoy: 268.

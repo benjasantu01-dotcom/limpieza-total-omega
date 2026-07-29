@@ -837,15 +837,15 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.clear("Salud")
             self.log("Analizando... esto no modifica nada.", "Salud")
 
-            # Ejecución centralizada y coherente de los módulos
+            # Ejecución centralizada y coherente de los módulos con caché.
             descargas = os.path.expanduser("~/Downloads")
-            hallazgos = scan_directory(descargas) if os.path.isdir(descargas) else []
+            hallazgos = self._get_cached("suspicions", lambda: scan_directory(descargas) if os.path.isdir(descargas) else [])
             snapshot = memory_mod.read_snapshot()
             unidad = diskreport.drive_usage(os.path.expanduser("~"))
-            arranque = startup_mod.list_startup_entries()
+            arranque = self._get_cached("startup", startup_mod.list_startup_entries)
             
             junk = self._get_cached("junk", scan_for_junk)
-            dups = self._get_cached("dups", lambda: [])
+            dups = self._cache.get("dups", [])
 
             junk_mb = sum(j.size_bytes for j in junk) / (1024 * 1024)
             advertencias = sum(1 for h in hallazgos if h.severity == "warning")
