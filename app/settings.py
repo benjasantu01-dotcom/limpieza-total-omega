@@ -121,6 +121,7 @@ def _coerce_int(valor: Any, clave: str) -> int | None:
     if valor is None:
         return None
     try:
+        # Forzamos conversión numérica estricta
         numero = int(valor)
         minimo, maximo = _NUMERIC_LIMITS.get(clave, (0, 10**9))
         return max(minimo, min(maximo, numero))

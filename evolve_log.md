@@ -1126,3 +1126,10 @@ FAILED evolve/tests/test_modules.py::test_score_color_survives_garbage - Asserti
 - `2026-07-29T01:17:57` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
 - `2026-07-29T01:17:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-29T01:17:57` Corrida terminada. Total usado hoy: 32.
+- `2026-07-29T01:26:48` Arrancando corrida. Quedan hoy ~268 peticiones objetivo.
+- `2026-07-29T01:27:13` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `is_within_directory` y `ensure_safe_to_modify` añadiendo validaciones preventivas de tipos y estados, garantizando que operaciones de pathing no fallen inesperadamente ante entradas `None` o estructuras de directorios inexistentes o inaccesibles.
+- `2026-07-29T01:27:33` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
+- `2026-07-29T01:27:59` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la resiliencia de `_coerce_int` añadiendo una comprobación explícita para evitar que configuraciones con valores no numéricos o fuera de rango causen comportamientos inesperados, asegurando que siempre retornen un entero válido dentro de los límites predefinidos.
+- `2026-07-29T01:28:06` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-07-29T01:28:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-29T01:28:06` Corrida terminada. Total usado hoy: 36.

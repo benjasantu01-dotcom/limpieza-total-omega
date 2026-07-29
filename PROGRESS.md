@@ -16,37 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-27 | 61 | 3 | 7 | 2 | 49 |
+| 2026-07-27 | 59 | 3 | 7 | 2 | 47 |
 | 2026-07-28 | 178 | 12 | 19 | 5 | 136 |
-| 2026-07-29 | 9 | 1 | 1 | 0 | 21 |
+| 2026-07-29 | 11 | 1 | 1 | 0 | 23 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **59**
+- manejo de errores y validación de entradas: **52**
 - legibilidad y documentación: **51**
-- manejo de errores y validación de entradas: **50**
 - robustez ante casos límite: **49**
-- rendimiento: **39**
+- rendimiento: **37**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **23**
+- `settings.py`: **24**
 - `assistant.py`: **23**
 - `diskreport.py`: **21**
 - `main.py`: **20**
 - `quarantine.py`: **20**
-- `browser.py`: **19**
-- `healthscore.py`: **19**
 - `organizer.py`: **19**
 - `scanner.py`: **19**
+- `browser.py`: **18**
 - `duplicates.py`: **18**
-- `safety.py`: **14**
+- `healthscore.py`: **18**
+- `safety.py`: **15**
 - `memory.py`: **13**
 - `startup.py`: **11**
 - `branding.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-29T01:27:59` **settings.py** (manejo de errores y validación de entradas): Mejoré la resiliencia de `_coerce_int` añadiendo una comprobación explícita para evitar que configuraciones con valores no numéricos o fuera de rango causen comportamientos inesperados, asegurando que siempre retornen un entero válido dentro de los límites predefinidos.
+- `2026-07-29T01:27:13` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `is_within_directory` y `ensure_safe_to_modify` añadiendo validaciones preventivas de tipos y estados, garantizando que operaciones de pathing no fallen inesperadamente ante entradas `None` o estructuras de directorios inexistentes o inaccesibles.
 - `2026-07-29T01:17:53` **quarantine.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `load_manifest` mediante la validación del esquema de datos, evitando que un JSON malformado o con tipos de datos inesperados propague errores silenciosos o cause un colapso en la carga del manifiesto.
 - `2026-07-29T01:17:28` **organizer.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `stage_for_review` validando explícitamente el tipo de los elementos en la lista de entrada y asegurando que las rutas base sean absolutas y normalizadas antes de realizar comparaciones de seguridad, evitando errores de validación por rutas relativas o mal formadas.
 - `2026-07-29T01:17:04` **memory.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `trim_working_set` validando la existencia de las funciones de la API antes de su invocación y mejorando la captura de errores en la interacción con `ctypes`, asegurando que no se produzcan fallos inesperados al intentar liberar recursos protegidos.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-28T14:21:48` **scanner.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `scan_directory` validando que las rutas de los archivos procesados sigan siendo seguras tras resolverse, previniendo condiciones de carrera o rutas inesperadas, y aplicando `is_protected_path` sobre la ruta absoluta antes de analizar cada archivo individual.
 - `2026-07-28T14:12:30` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `quarantine_file` al verificar explícitamente que el archivo de origen no sea un enlace simbólico o punto de reparse antes de intentar moverlo, evitando así que la operación actúe sobre destinos fuera de lo previsto.
 - `2026-07-28T14:12:20` **organizer.py** (seguridad defensiva): Mejoré la seguridad en `stage_for_review` implementando un chequeo estricto de confinamiento: ahora verifico que la ruta origen (`full_source_path`) esté efectivamente contenida dentro de las rutas permitidas antes de proceder, usando `is_safe_to_modify` antes de cualquier operación destructiva o de movimiento.
-- `2026-07-28T14:11:55` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `trim_working_set` añadiendo una validación explícita mediante `is_protected_path` (o verificación lógica de rango) y limitando el alcance de los permisos `OpenProcess` para asegurar que solo se interactúe con procesos permitidos, previniendo inyecciones o abusos.
-- `2026-07-28T14:11:30` **main.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_ask_folder` al agregar una verificación explícita de `is_safe_to_modify` antes de aceptar cualquier ruta seleccionada, asegurando que el diálogo de selección de carpetas no permita ni siquiera elegir rutas de sistema (como `C:\Windows`) antes de que el usuario intente cualquier operación.

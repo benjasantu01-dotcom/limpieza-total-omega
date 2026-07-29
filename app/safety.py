@@ -118,6 +118,9 @@ def is_protected_path(path: PathLike) -> bool:
     """
     Determina si una ruta es crítica para el sistema operativo o es una ruta UNC.
     """
+    if not path or not isinstance(path, (str, os.PathLike)):
+        return True
+    
     raw_path = str(path).strip()
     if not raw_path or raw_path.startswith(("\\\\", "//")):
         return True
@@ -169,9 +172,9 @@ def is_within_directory(
 
 def is_sensitive_file(path: PathLike) -> bool:
     """Verifica si el archivo tiene una extensión sensible (ej. .exe, .sys)."""
+    if not path:
+        return True
     try:
-        if not path:
-            return True
         return normalize(path).suffix.lower() in SENSITIVE_EXTENSIONS
     except (TypeError, ValueError, OSError):
         return True 
@@ -180,16 +183,6 @@ def is_sensitive_file(path: PathLike) -> bool:
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> Path:
     """
     Valida la seguridad de la ruta antes de modificarla (escritura/borrado).
-
-    Args:
-        path: Ruta a validar.
-        allow_sensitive: Si True, permite extensiones sensibles.
-
-    Returns:
-        La ruta normalizada si es segura.
-
-    Raises:
-        UnsafePathError: Si la ruta es insegura o restringida.
     """
     if not path:
         raise UnsafePathError("La ruta proporcionada está vacía o es None.")
@@ -207,10 +200,11 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
         raise UnsafePathError("Operación bloqueada: rutas UNC o de red no permitidas.")
     
     try:
-        if p.is_symlink():
-            raise UnsafePathError("Operación bloqueada: enlaces simbólicos no permitidos.")
-        if p.exists() and (p.is_block_device() or p.is_char_device()):
-            raise UnsafePathError("Operación bloqueada: dispositivo especial detectado.")
+        if p.exists():
+            if p.is_symlink():
+                raise UnsafePathError("Operación bloqueada: enlaces simbólicos no permitidos.")
+            if p.is_block_device() or p.is_char_device():
+                raise UnsafePathError("Operación bloqueada: dispositivo especial detectado.")
     except (OSError, PermissionError):
         pass
 
@@ -226,29 +220,22 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
 def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> bool:
     """Versión booleana para chequeos preventivos sin levantar excepciones."""
     try:
-        ensure_safe_to_modify(path, allow_sensitive=allow_sensitive)
-        return True
+        return isinstance(ensure_safe_to_modify(path, allow_sensitive=allow_sensitive), Path)
     except (UnsafePathError, TypeError, ValueError, OSError):
         return False
 
 
 def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = False) -> list[Path]:
-    """
-    Filtra una lista de rutas, retornando solo las que pueden ser modificadas.
-    
-    Args:
-        paths: Iterable con rutas a filtrar.
-        allow_sensitive: Propagado a ensure_safe_to_modify.
-    """
+    """Filtra una lista de rutas, retornando solo las que pueden ser modificadas."""
     safe: list[Path] = []
     if paths is None:
         return safe
     for candidate in paths:
-        try:
-            if candidate:
-                safe.append(ensure_safe_to_modify(candidate, allow_sensitive=allow_sensitive))
-        except (UnsafePathError, TypeError, ValueError):
-            continue
+        if candidate and is_safe_to_modify(candidate, allow_sensitive=allow_sensitive):
+            try:
+                safe.append(normalize(candidate))
+            except (TypeError, ValueError):
+                continue
     return safe
 
 
