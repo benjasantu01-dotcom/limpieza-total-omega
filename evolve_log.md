@@ -1249,3 +1249,4 @@ FAILED evolve/tests/test_safety.py::test_is_within_directory_same_path_requires_
 - `2026-07-29T14:56:53` Corrida terminada. Total usado hoy: 350.
 - `2026-07-29T15:06:18` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-07-29T15:16:31` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-07-29T15:26:43` Presupuesto diario agotado (350 usados). Corte hasta mañana.
