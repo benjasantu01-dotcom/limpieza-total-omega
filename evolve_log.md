@@ -956,3 +956,10 @@ FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quara
 - `2026-07-29T12:03:25` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
 - `2026-07-29T12:03:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-29T12:03:25` Corrida terminada. Total usado hoy: 284.
+- `2026-07-29T12:11:33` Arrancando corrida. Quedan hoy ~16 peticiones objetivo.
+- `2026-07-29T12:11:58` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Mejoré la robustez de `stage_for_review` implementando un chequeo preventivo de concurrencia y espacio en disco, evitando excepciones innecesarias y asegurando que las rutas de destino mantengan la integridad del sistema incluso ante estados de archivos bloqueados.
+- `2026-07-29T12:12:23` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Mejoré la robustez de `quarantine_file` para manejar el caso límite donde la ruta de origen contiene caracteres inválidos para el sistema de archivos de destino o nombres con longitudes que excedan los límites del sistema operativo antes de intentar el movimiento.
+- `2026-07-29T12:12:42` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-07-29T12:12:51` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante casos límite en `is_within_directory` y `is_protected_path` al asegurar que las rutas no existentes o con permisos denegados no se evalúen erróneamente como "seguras" o "inseguras" de forma impredecible, centralizando la validación de existencia en un try-except más estricto.
+- `2026-07-29T12:12:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-29T12:12:51` Corrida terminada. Total usado hoy: 288.

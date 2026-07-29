@@ -190,16 +190,6 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Path:
     """
     Mueve archivos candidatos a una carpeta de cuarentena para revisión humana.
-
-    Args:
-        files: Lista de JunkFile a mover.
-        review_dir: Ruta destino de la cuarentena.
-
-    Returns:
-        Path: Ruta del directorio de revisión.
-
-    Raises:
-        OSError: Si no se puede crear el directorio o mover los archivos.
     """
     if not isinstance(files, list) or not isinstance(review_dir, str):
         logger.warning("Entrada inválida en stage_for_review.")
@@ -221,7 +211,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         try:
             full_source_path = jf.path.resolve()
             
-            if not full_source_path.is_file() or full_source_path.is_symlink():
+            if not full_source_path.exists() or not full_source_path.is_file() or full_source_path.is_symlink():
                 continue
             
             if not is_safe_to_modify(full_source_path):
@@ -230,12 +220,14 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             if dest == full_source_path or dest in full_source_path.parents or full_source_path.parent == dest:
                 continue
                 
+            # Verifica concurrencia: intentamos abrir en modo exclusivo si es posible
             try:
-                with open(full_source_path, 'rb'):
+                with open(full_source_path, 'rb+'):
                     pass
             except (PermissionError, OSError):
                 continue
 
+            # Verifica espacio en disco destino (con margen de 10MB)
             usage = shutil.disk_usage(dest.anchor)
             if usage.free < (jf.size_bytes + 10 * 1024 * 1024):
                 continue

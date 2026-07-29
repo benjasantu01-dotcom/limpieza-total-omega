@@ -211,7 +211,9 @@ def quarantine_file(
         raise OSError(f"No hay espacio suficiente en: {dest_dir}")
 
     item_id = uuid.uuid4().hex[:12]
-    stored_name = f"{item_id}__{origin.name}"
+    # Sanitizar el nombre del archivo para evitar caracteres prohibidos o rutas excesivas
+    safe_name = "".join(c for c in origin.name if c.isalnum() or c in "._-")
+    stored_name = f"{item_id}__{safe_name}"[:250] 
     destination = dest_dir / stored_name
 
     if destination.exists():

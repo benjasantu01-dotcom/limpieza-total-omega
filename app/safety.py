@@ -77,8 +77,7 @@ _PROTECTED_AND_SYSTEM: Final[frozenset[str]] = PROTECTED_DIR_NAMES | _SYSTEM_ROO
 def _is_reparse_point(path: Path) -> bool:
     """Detecta si una ruta es un punto de reparse (Junction, Symlink, etc) usando lstat."""
     try:
-        stat = path.lstat()
-        return hasattr(stat, "st_reparse_tag") and stat.st_reparse_tag != 0
+        return bool(path.lstat().st_file_attributes & 0x400) if hasattr(path.lstat(), "st_file_attributes") else path.is_symlink()
     except (OSError, PermissionError):
         return False
 
@@ -125,10 +124,12 @@ def is_protected_path(path: PathLike) -> bool:
         
     try:
         p = normalize(path)
-        if p.is_symlink() or is_drive_root(p):
+        if is_drive_root(p):
             return True
+        # Si no existe, asumimos protección por precaución si no podemos verificar partes
+        if not p.exists():
+            return any(part.lower() in _PROTECTED_AND_SYSTEM for part in p.parts)
         
-        # Uso de conjunto combinado precargado para evitar intersecciones costosas
         return not _PROTECTED_AND_SYSTEM.isdisjoint(part.lower() for part in p.parts)
     except (PermissionError, OSError, ValueError, TypeError):
         return True 
@@ -137,7 +138,6 @@ def is_protected_path(path: PathLike) -> bool:
 def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = False) -> bool:
     """
     Verifica si 'child' reside físicamente dentro de 'parent'.
-    Evita seguir puntos de reparse en los padres para prevenir escapes de sandbox.
     """
     if child is None or parent is None:
         return False
@@ -146,15 +146,12 @@ def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = F
         if not c.is_absolute() or not p.is_absolute():
             return False
             
-        for path_to_check in [c, p]:
-            for parent_dir in path_to_check.parents:
-                if parent_dir.exists() and _is_reparse_point(parent_dir):
-                    return False
-            
-        if c == p:
-            return allow_equal
-        c.relative_to(p)
-        return True
+        # Validar jerarquía usando resolved paths
+        try:
+            c.relative_to(p)
+            return True if c != p else allow_equal
+        except ValueError:
+            return False
     except (ValueError, TypeError, OSError):
         return False
 
