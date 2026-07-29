@@ -191,12 +191,10 @@ def _generate_recommendations(m: SystemMetrics, ratios: Dict[str, float]) -> Lis
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
     """Calcula el puntaje global de salud del sistema."""
-    weights: Final[Dict[str, int]] = WEIGHTS
-    
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Datos de entrada faltantes o inválidos."])
 
-    if sum(weights.values()) != 100:
+    if sum(WEIGHTS.values()) != 100:
         return HealthResult(0, "F", {}, ["Error de configuración: Peso de métricas desbalanceado."])
 
     try:
@@ -213,7 +211,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
             "arranque": score_startup(metrics.startup_count),
         }
 
-        breakdown: Dict[str, int] = {k: int(round(ratios[k] * w)) for k, w in weights.items()}
+        breakdown: Dict[str, int] = {k: int(round(_clamp(ratios.get(k, 0.0), 0.0, 1.0) * w)) for k, w in WEIGHTS.items()}
         total_score: int = sum(breakdown.values())
 
         return HealthResult(
@@ -232,12 +230,12 @@ def summarize(result: HealthResult) -> List[str]:
     lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     
     def calculate_deviation(item: tuple[str, int]) -> int:
-        return item[1] - WEIGHTS[item[0]]
+        return item[1] - WEIGHTS.get(item[0], 0)
 
     orden = sorted(result.breakdown.items(), key=calculate_deviation)
     
     for area, puntos in orden:
-        maximo = WEIGHTS[area]
+        maximo = WEIGHTS.get(area, 0)
         barra = f"[{'#' * puntos}{'.' * (maximo - puntos)}]"
         lines.append(f"  {area.capitalize():<12} {puntos:>2}/{maximo:<2} {barra}")
     

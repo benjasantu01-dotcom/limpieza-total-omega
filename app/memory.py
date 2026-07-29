@@ -143,7 +143,7 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
     def _extract_rows() -> Iterator[ProcessMemory]:
         for line in text.splitlines():
             line = line.strip()
-            if not line or line.startswith("Name,"):  # Saltar cabecera
+            if not line or line.startswith("Name,"):
                 continue
             parts = [p.strip().strip('"') for p in line.split(",")]
             if len(parts) < 3:
@@ -154,10 +154,10 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
                     pid=int(parts[1]),
                     working_set=int(parts[2])
                 )
-            except (ValueError, TypeError, IndexError):
+            except (ValueError, TypeError):
                 continue
 
-    return sorted(_extract_rows(), key=lambda p: p.working_set, reverse=True)[:limit]
+    return sorted(_extract_rows(), key=lambda p: p.working_set, reverse=True)[:max(0, limit)]
 
 
 def _read_windows_snapshot() -> MemorySnapshot:
@@ -196,7 +196,7 @@ def read_snapshot() -> MemorySnapshot:
     if os.name == "nt":
         try:
             return _read_windows_snapshot()
-        except Exception:
+        except (AttributeError, OSError, MemoryError):
             return MemorySnapshot(total=0, available=0)
             
     meminfo = "/proc/meminfo"
@@ -222,7 +222,7 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     command = (
         f"Get-Process | Select-Object -Property Name,Id,WorkingSet | "
         "Sort-Object -Property WorkingSet -Descending | "
-        f"Select-Object -First {int(limit)} | "
+        f"Select-Object -First {max(1, int(limit))} | "
         "ConvertTo-Csv -NoTypeInformation"
     )
     try:
@@ -297,32 +297,26 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         if target_pid <= 4:
             return False, "Operación denegada: PID de sistema protegido."
     except (ValueError, TypeError):
-        return False, "El PID debe ser un número entero positivo."
+        return False, "El PID debe ser un número entero válido."
 
+    import ctypes
+    kernel32 = ctypes.windll.kernel32
+    psapi = ctypes.windll.psapi
+
+    if not hasattr(kernel32, "OpenProcess") or not hasattr(psapi, "EmptyWorkingSet"):
+        return False, "APIs de sistema no disponibles en este entorno."
+
+    handle = kernel32.OpenProcess(0x0100 | 0x1000, False, target_pid)
+    if not handle:
+        return False, f"No se pudo abrir el proceso {target_pid} (posiblemente protegido)."
+    
     try:
-        import ctypes
-        kernel32 = ctypes.windll.kernel32
-        psapi = ctypes.windll.psapi
+        if handle == kernel32.GetCurrentProcess():
+            return False, "Operación denegada: no se puede modificar el proceso de la app."
 
-        if not hasattr(kernel32, "OpenProcess") or not hasattr(psapi, "EmptyWorkingSet"):
-            return False, "APIs necesarias no disponibles en este entorno."
-
-        handle = kernel32.OpenProcess(0x0100 | 0x1000, False, target_pid)
-        if not handle:
-            return False, f"Acceso denegado al proceso {target_pid} (posible sistema protegido)."
-        
-        try:
-            if handle == kernel32.GetCurrentProcess():
-                return False, "Operación denegada: no se permite modificar el proceso actual."
-
-            if not psapi.EmptyWorkingSet(handle):
-                error_code = kernel32.GetLastError()
-                return False, f"Windows rechazó la operación (código: {error_code})."
-        finally:
-            kernel32.CloseHandle(handle)
+        if not psapi.EmptyWorkingSet(handle):
+            return False, f"Windows rechazó la operación (error {kernel32.GetLastError()})."
         
         return True, f"Working set del proceso {target_pid} liberado. {TRIM_WARNING}"
-    except (OSError, AttributeError, MemoryError) as e:
-        return False, f"Error inesperado al ejecutar: {str(e)}"
-    except Exception:
-        return False, "Error fatal al interactuar con las APIs de bajo nivel."
+    finally:
+        kernel32.CloseHandle(handle)
