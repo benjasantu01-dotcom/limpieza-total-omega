@@ -139,12 +139,17 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
     if not text:
         return []
 
-    lines = text.splitlines()
     results = []
-    
-    for line in lines[1:]: # Saltar cabecera directamente
+    # Filtrar líneas vacías y saltar la cabecera del CSV
+    lines = [line.strip() for line in text.splitlines() if line.strip()]
+    if len(lines) < 2:
+        return []
+
+    for line in lines[1:]:
         parts = [p.strip().strip('"') for p in line.split(",")]
-        if len(parts) < 3: continue
+        # Verificamos que tenga los campos mínimos: Name, Id, WorkingSet
+        if len(parts) < 3:
+            continue
             
         try:
             results.append(ProcessMemory(

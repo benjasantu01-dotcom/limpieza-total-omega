@@ -199,12 +199,15 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             
         try:
             full_source_path = jf.path.resolve()
-            if not full_source_path.is_file() or not full_source_path.exists():
+            
+            # Verificación de integridad: el origen debe ser un archivo, no enlace simbólico
+            if not full_source_path.is_file() or full_source_path.is_symlink():
                 continue
             
             if not is_safe_to_modify(full_source_path):
                 continue
 
+            # Prevenir colisión de rutas o que el destino contenga al origen
             if dest == full_source_path or dest in full_source_path.parents or full_source_path.parent == dest:
                 continue
                 
@@ -223,6 +226,8 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             timestamp = int(jf.modified.timestamp())
             
             target = (dest / f"{base_name}_{timestamp}{ext}").resolve()
+            
+            # Verificar que el target final esté realmente bajo la carpeta de revisión
             if not str(target).startswith(str(dest)):
                 continue
                 

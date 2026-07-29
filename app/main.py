@@ -428,20 +428,23 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _draw_gauge(self, score: int, grade: str):
         """Redibuja el medidor circular con el puntaje y la nota adentro."""
-        try:
-            self.gauge.delete("all")
-        except (tk.TclError, AttributeError):
-            return
-        branding.draw_ring(self.gauge, score, size=176, thickness=15)
-        color_nota = branding.grade_color(grade) if grade != "-" else branding.color("text_dim")
-        self.gauge.create_text(
-            88, 78, text=str(score), fill=branding.score_color(score),
-            font=("Segoe UI", branding.font_size("display"), "bold"),
-        )
-        self.gauge.create_text(
-            88, 116, text=f"nota {grade}", fill=color_nota,
-            font=("Segoe UI", branding.font_size("body"), "bold"),
-        )
+        def update_canvas():
+            try:
+                if not self.gauge.winfo_exists(): return
+                self.gauge.delete("all")
+                branding.draw_ring(self.gauge, score, size=176, thickness=15)
+                color_nota = branding.grade_color(grade) if grade != "-" else branding.color("text_dim")
+                self.gauge.create_text(
+                    88, 78, text=str(score), fill=branding.score_color(score),
+                    font=("Segoe UI", branding.font_size("display"), "bold"),
+                )
+                self.gauge.create_text(
+                    88, 116, text=f"nota {grade}", fill=color_nota,
+                    font=("Segoe UI", branding.font_size("body"), "bold"),
+                )
+            except Exception:
+                pass
+        self.after(0, update_canvas)
 
     def _build_tab_limpieza(self):
         tab = self.tabs["Limpieza"]

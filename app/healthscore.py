@@ -192,18 +192,12 @@ def _generate_recommendations(m: SystemMetrics, ratios: Dict[str, float]) -> Lis
 def compute_score(metrics: SystemMetrics) -> HealthResult:
     """
     Calcula el puntaje global de salud del sistema.
-    
-    Parámetros:
-        metrics: Instancia de SystemMetrics con los datos recolectados.
-        
-    Retorna:
-        HealthResult con el puntaje calculado, desglose y recomendaciones.
     """
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Datos de entrada faltantes o inválidos."])
 
-    # Validar integridad de la configuración de pesos
-    if sum(WEIGHTS.values()) != 100 or WEIGHTS.keys() != {"seguridad", "disco", "memoria", "basura", "duplicados", "arranque"}:
+    # Validar integridad de la configuración de pesos (protección contra cambios fatales)
+    if sum(WEIGHTS.values()) != 100 or set(WEIGHTS.keys()) != {"seguridad", "disco", "memoria", "basura", "duplicados", "arranque"}:
         return HealthResult(0, "F", {}, ["Error de configuración: Los pesos son inválidos o están incompletos."])
 
     try:
@@ -211,6 +205,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         if not metrics.is_finite():
             return HealthResult(0, "F", {}, ["Error: Las métricas contienen datos numéricos no procesables."])
         
+        # Calcular ratios individuales garantizando que no haya errores de cálculo
         ratios: Dict[str, float] = {
             "seguridad": score_security(metrics.suspicious_count, metrics.suspicious_warnings),
             "disco": score_disk(metrics.disk_free_percent),
@@ -220,8 +215,10 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
             "arranque": score_startup(metrics.startup_count),
         }
 
+        # Asegurar que ningún ratio sea None o no finito antes de multiplicar
         breakdown: Dict[str, int] = {
-            key: int(round(ratios[key] * WEIGHTS[key])) for key in WEIGHTS
+            key: int(round(_clamp(ratios.get(key, 0.0), 0.0, 1.0) * WEIGHTS[key])) 
+            for key in WEIGHTS
         }
             
         total = sum(breakdown.values())

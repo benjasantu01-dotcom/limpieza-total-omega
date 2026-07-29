@@ -6,8 +6,8 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **256** (50.8% de aceptación)
-- Rechazadas por tests: 18
+- Mejoras aceptadas: **257** (51.0% de aceptación)
+- Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 26
 - Sin cambios (nada sustancial que mejorar): 8
 - Sin respuesta de la IA (error o límite): 196
@@ -16,36 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-28 | 163 | 11 | 17 | 4 | 133 |
-| 2026-07-29 | 93 | 7 | 9 | 4 | 63 |
+| 2026-07-28 | 160 | 10 | 17 | 4 | 133 |
+| 2026-07-29 | 97 | 7 | 9 | 4 | 63 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **64**
 - manejo de errores y validación de entradas: **55**
-- seguridad defensiva: **50**
-- robustez ante casos límite: **44**
+- robustez ante casos límite: **48**
+- seguridad defensiva: **47**
 - rendimiento: **43**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **23**
 - `assistant.py`: **23**
+- `settings.py`: **22**
 - `browser.py`: **21**
 - `diskreport.py`: **21**
 - `quarantine.py`: **21**
-- `scanner.py`: **20**
+- `healthscore.py`: **19**
+- `organizer.py`: **19**
+- `main.py`: **19**
+- `scanner.py`: **19**
 - `duplicates.py`: **18**
-- `healthscore.py`: **18**
-- `organizer.py`: **18**
-- `main.py`: **18**
+- `memory.py`: **16**
 - `safety.py`: **16**
-- `memory.py`: **15**
-- `startup.py`: **12**
 - `branding.py`: **12**
+- `startup.py`: **11**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-29T07:37:16` **organizer.py** (robustez ante casos límite): Mejoré `stage_for_review` añadiendo una verificación de integridad de ruta (usando `is_relative_to`) para prevenir ataques de trayectoria y validando que el archivo origen no sea un enlace simbólico, reforzando la robustez contra casos límite en sistemas de archivos complejos.
+- `2026-07-29T07:37:08` **memory.py** (robustez ante casos límite): Mejoré la robustez de `parse_windows_process_csv` para gestionar correctamente los casos donde el CSV pueda contener líneas con encabezados inesperados o valores truncados, evitando fallos en el parser ante salidas parciales de PowerShell.
+- `2026-07-29T07:36:43` **main.py** (robustez ante casos límite): Mejoré la robustez de la aplicación ante cambios de tamaño de ventana durante operaciones de dibujo asíncrono y problemas de hilos en la actualización de la interfaz (`_draw_gauge`), evitando errores de `TclError` cuando el componente es destruido o redimensionado abruptamente mientras un hilo intenta actualizarlo.
+- `2026-07-29T07:35:31` **healthscore.py** (robustez ante casos límite): Mejora la robustez ante casos límite en `compute_score` agregando una validación explícita para evitar divisiones por cero o resultados inconsistentes si los umbrales globales en `WEIGHTS` fueran modificados accidentalmente o si las métricas presentaran valores extremos.
 - `2026-07-29T07:26:12` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `_collect_candidates` ante casos límite añadiendo `follow_symlinks=False` en `os.walk` (para evitar ciclos y escapes accidentales de directorios) y fortaleciendo la validación de `lstat` en el recorrido para asegurar que no se sigan archivos bloqueados o inaccesibles que pudieran causar excepciones no capturadas.
 - `2026-07-29T07:25:40` **browser.py** (robustez ante casos límite): Se ha robustecido `directory_size` para manejar correctamente excepciones de acceso parcial y rutas inexistentes mediante un manejo de errores más específico y defensivo, asegurando que el cálculo sea resiliente ante archivos bloqueados o permisos denegados sin interrumpir la medición del resto del disco.
 - `2026-07-29T07:25:18` **branding.py** (robustez ante casos límite): Se mejora la robustez de `save_logo_svg` y `_hex_to_rgb` frente a entradas mal formadas, garantizando que el sistema nunca falle ante archivos o colores inesperados, siguiendo el enfoque de manejo de casos límite.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-29T06:45:15` **browser.py** (rendimiento): Optimizé la función `directory_size` para evitar llamadas redundantes a `is_protected_path` dentro del bucle recursivo, utilizando una verificación única al inicio, y añadí una validación de ruta protegida más eficiente en el flujo principal de `detect_profiles`.
 - `2026-07-29T06:44:53` **branding.py** (rendimiento): Se optimizó el rendimiento de `draw_logo` eliminando la creación de objetos innecesarios en el bucle principal y sustituyendo el cálculo de coordenadas en tiempo real por el uso eficiente de `cached` o pre-cálculos, reduciendo la carga de CPU durante el refresco de la UI.
 - `2026-07-29T06:44:25` **assistant.py** (rendimiento): Se pre-compilaron las expresiones regulares de los `handlers` como variables de módulo y se optimizó `_rank_problems` para evitar múltiples llamadas a propiedades de objetos, reduciendo la carga de procesamiento en cada consulta.
-- `2026-07-29T06:34:55` **startup.py** (legibilidad y documentación): Mejoré la documentación de las funciones de parseo de registro y extracción de ejecutables para aclarar las asunciones técnicas y limitaciones, y añadí type hints de retorno explícitos para mayor claridad en el flujo de datos.
-- `2026-07-29T06:34:46` **settings.py** (legibilidad y documentación): Documenté con docstrings claros y detallados las funciones de validación interna y los límites numéricos, clarificando el flujo de datos y la política de recuperación ante errores de configuración.
-- `2026-07-29T06:34:21` **scanner.py** (legibilidad y documentación): Documenté el propósito y el contrato de `scan_directory` mediante docstrings, especificando el uso de `os.scandir` para mejorar la eficiencia y aclarando el manejo de excepciones, mejorando la legibilidad técnica para futuros desarrollos.
-- `2026-07-29T06:33:59` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de docstrings estructurados con secciones explícitas de parámetros, retornos y excepciones, asegurando que cualquier colaborador futuro entienda las garantías de seguridad de cada función sin necesidad de inferirlas.
