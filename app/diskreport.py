@@ -120,6 +120,8 @@ def drive_usage(mount: str | os.PathLike) -> DriveUsage | None:
         return None
     try:
         path_str = os.fspath(mount)
+        if not os.path.exists(path_str):
+            return None
         usage = shutil.disk_usage(path_str)
     except (OSError, ValueError, TypeError):
         return None

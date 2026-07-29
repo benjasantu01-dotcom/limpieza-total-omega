@@ -282,12 +282,11 @@ def save_logo_svg(destination: str | Path | None) -> Path | None:
     if not destination: return None
     try:
         path = Path(destination).expanduser().resolve()
-        parent = path.parent
-        
-        # Validar si el directorio padre es seguro para ser operado
-        if not is_safe_to_modify(parent):
+        # Verificar seguridad antes de cualquier operación
+        if not is_safe_to_modify(path):
             return None
         
+        parent = path.parent
         if not parent.exists():
             parent.mkdir(parents=True, exist_ok=True)
             
@@ -325,8 +324,8 @@ def draw_logo(canvas: Any, size: int = 56, x: int = 0, y: int = 0) -> None:
         x_val, y_val = float(x), float(y)
     except (TypeError, ValueError): return
 
-    # Resplandor radial pre-calculado
     try:
+        # Resplandor radial pre-calculado
         for paso in range(4, 0, -1):
             radio = 56 * s * (0.6 + paso * 0.12)
             canvas.create_oval(

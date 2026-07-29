@@ -92,13 +92,15 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
     """
     Verifica que la ruta sea un descendiente legítimo de base_path.
     """
-    if not target_path or not base_path:
+    if not target_path or not base_path or not isinstance(target_path, Path):
         return False
     try:
-        # Usamos resolve una sola vez por jerarquía para evitar overhead constante
         if is_protected_path(target_path):
             return False
-        return base_path in target_path.parents or target_path == base_path
+        # Comparación absoluta para evitar bypass por rutas relativas
+        resolved_target = target_path.resolve()
+        resolved_base = base_path.resolve()
+        return resolved_base in resolved_target.parents or resolved_target == resolved_base
     except (OSError, RuntimeError):
         return False
 
@@ -122,14 +124,13 @@ def directory_size(path: str | os.PathLike) -> int:
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:
-                    if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
+                    if entry.is_symlink():
                         continue
                     if entry.is_dir():
                         entry_path = Path(entry.path).resolve()
-                        # Defensa: Asegurar que no salimos de la raíz de la caché
                         if root_path in entry_path.parents and not is_protected_path(entry_path):
                             stack.append(entry_path)
-                    else:
+                    elif entry.is_file():
                         try:
                             total_bytes += entry.stat().st_size
                         except (OSError, PermissionError):
@@ -143,13 +144,14 @@ def _is_valid_cache_path(candidate: Path, base_path: Path) -> bool:
     """Filtro estricto: valida existencia, seguridad y exclusión de sensibles."""
     try:
         return (
+            isinstance(candidate, Path) and
             candidate.exists() and 
             candidate.is_dir() and 
             not candidate.is_symlink() and
             _is_safe_path(candidate, base_path) and
             candidate.name.lower() not in NEVER_TOUCH
         )
-    except (ValueError, OSError, RuntimeError):
+    except (ValueError, OSError, RuntimeError, TypeError):
         return False
 
 
