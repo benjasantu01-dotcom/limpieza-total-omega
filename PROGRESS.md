@@ -6,31 +6,31 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **258** (51.2% de aceptación)
+- Mejoras aceptadas: **260** (51.6% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 27
-- Sin cambios (nada sustancial que mejorar): 8
-- Sin respuesta de la IA (error o límite): 193
+- Sin cambios (nada sustancial que mejorar): 9
+- Sin respuesta de la IA (error o límite): 190
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-28 | 160 | 10 | 17 | 4 | 129 |
-| 2026-07-29 | 98 | 8 | 10 | 4 | 64 |
+| 2026-07-28 | 160 | 10 | 17 | 4 | 125 |
+| 2026-07-29 | 100 | 8 | 10 | 5 | 65 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **64**
 - manejo de errores y validación de entradas: **55**
-- robustez ante casos límite: **49**
-- seguridad defensiva: **47**
+- robustez ante casos límite: **50**
+- seguridad defensiva: **48**
 - rendimiento: **43**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **23**
-- `settings.py`: **22**
+- `settings.py`: **23**
 - `browser.py`: **21**
 - `diskreport.py`: **21**
 - `quarantine.py`: **21**
@@ -41,11 +41,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - `duplicates.py`: **18**
 - `memory.py`: **16**
 - `safety.py`: **16**
-- `branding.py`: **12**
+- `branding.py`: **13**
 - `startup.py`: **11**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-29T07:57:06` **branding.py** (seguridad defensiva): Mejoré la seguridad de `save_logo_svg` reemplazando la creación implícita de directorios con una validación estricta, asegurando que `ensure_safe_to_modify` se aplique sobre el directorio padre antes de intentar cualquier operación de escritura, previniendo así posibles ataques de escritura en rutas no permitidas.
+- `2026-07-29T07:55:59` **settings.py** (robustez ante casos límite): Mejoré la robustez de `_validate_str` ante rutas inválidas o inexistentes, asegurando que `ultima_carpeta` siempre devuelva una cadena válida (o vacía) incluso si `Path.resolve()` falla por caracteres prohibidos o errores de sistema, manteniendo la integridad del archivo de configuración.
 - `2026-07-29T07:46:34` **scanner.py** (robustez ante casos límite): Se mejoró la robustez de `scan_directory` para manejar archivos o carpetas que desaparecen durante la iteración (condición de carrera) y se añadió una validación explícita para evitar que `Path(entry.path)` falle si la ruta es extremadamente larga o inválida, garantizando que el escáner no aborte ante archivos bloqueados o temporales.
 - `2026-07-29T07:37:16` **organizer.py** (robustez ante casos límite): Mejoré `stage_for_review` añadiendo una verificación de integridad de ruta (usando `is_relative_to`) para prevenir ataques de trayectoria y validando que el archivo origen no sea un enlace simbólico, reforzando la robustez contra casos límite en sistemas de archivos complejos.
 - `2026-07-29T07:37:08` **memory.py** (robustez ante casos límite): Mejoré la robustez de `parse_windows_process_csv` para gestionar correctamente los casos donde el CSV pueda contener líneas con encabezados inesperados o valores truncados, evitando fallos en el parser ante salidas parciales de PowerShell.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-29T07:05:37` **safety.py** (rendimiento): Se optimizó el rendimiento en el filtrado y validación de rutas mediante el uso de `frozenset` para `_SYSTEM_ROOTS_PARTS` y la introducción de una caché local de tipo `lru_cache` para `is_protected_path`, evitando la re-normalización costosa y las consultas repetidas de componentes de ruta en iteraciones intensivas.
 - `2026-07-29T07:05:10` **quarantine.py** (rendimiento): Optimizé la búsqueda de ítems en `restore_item` y `purge_item` convirtiendo la lista a un diccionario solo cuando es necesario, evitando la creación de mapas completos en cada operación y mejorando la eficiencia al manejar el manifiesto.
 - `2026-07-29T06:56:00` **main.py** (rendimiento): Se implementó un mecanismo de caché (`self._cache`) en la clase `LimpiezaTotalOmegaApp` y se reemplazó el acceso directo a los resultados de `scan_for_junk` y `find_duplicates` por un acceso vía método `_get_cached`, evitando escaneos redundantes en la misma sesión y mejorando drásticamente el rendimiento percibido en la interfaz.
-- `2026-07-29T06:45:15` **browser.py** (rendimiento): Optimizé la función `directory_size` para evitar llamadas redundantes a `is_protected_path` dentro del bucle recursivo, utilizando una verificación única al inicio, y añadí una validación de ruta protegida más eficiente en el flujo principal de `detect_profiles`.
-- `2026-07-29T06:44:53` **branding.py** (rendimiento): Se optimizó el rendimiento de `draw_logo` eliminando la creación de objetos innecesarios en el bucle principal y sustituyendo el cálculo de coordenadas en tiempo real por el uso eficiente de `cached` o pre-cálculos, reduciendo la carga de CPU durante el refresco de la UI.

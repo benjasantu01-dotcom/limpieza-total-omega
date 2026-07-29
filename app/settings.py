@@ -152,7 +152,7 @@ def _validate_str(clave: str, valor: Any) -> str | None:
         return None
     if clave == "ultima_carpeta":
         try:
-            ruta_candidata = Path(texto).expanduser().resolve(strict=False)
+            ruta_candidata = Path(texto).expanduser()
             if not is_safe_to_modify(str(ruta_candidata)):
                 return None
             return str(ruta_candidata)
