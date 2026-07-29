@@ -840,3 +840,48 @@ FAILED evolve/tests/test_integrity.py::test_is_safe_returns_bool_and_never_raise
 - `2026-07-29T10:10:45` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
 - `2026-07-29T10:10:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-29T10:10:45` Corrida terminada. Total usado hoy: 240.
+- `2026-07-29T10:18:57` Arrancando corrida. Quedan hoy ~60 peticiones objetivo.
+- `2026-07-29T10:19:24` Tests FALLARON:
+```
+nipulado para apuntar afuera de la cuarentena.
+        items = quarantine.load_manifest(cuarentena)
+        items[0].stored_name = "../no-tocar.txt"
+        quarantine.save_manifest(items, cuarentena)
+    
+>       with pytest.raises(safety.UnsafePathError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE UnsafePathError
+
+evolve/tests/test_safety.py:255: Failed
+______________ test_purge_all_only_deletes_inside_the_quarantine _______________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-1/test_purge_all_only_deletes_in0')
+cuarentena = PosixPath('/tmp/pytest-of-runner/pytest-1/test_purge_all_only_deletes_in0/_Cuarentena')
+
+    def test_purge_all_only_deletes_inside_the_quarantine(tmp_path, cuarentena):
+        afuera = tmp_path / "intacto.txt"
+        afuera.write_text("y")
+    
+        for nombre in ("a.txt", "b.txt"):
+            f = tmp_path / nombre
+            f.write_text("x")
+            quarantine.quarantine_file(f, base=cuarentena)
+    
+        borrados = quarantine.purge_all(base=cuarentena)
+    
+>       assert borrados == 2
+E       assert 1 == 2
+
+evolve/tests/test_safety.py:272: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - assert 1 == 2
+2 failed, 297 passed in 1.04s
+
+```
+- `2026-07-29T10:19:24` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez de `quarantine_file` y `restore_item` mediante una validación estricta de parámetros y el uso de bloques `try-finally` para asegurar que el manifiesto se mantenga sincronizado incluso si ocurren errores inesperados durante la manipulación de archivos.
+- `2026-07-29T10:19:43` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-07-29T10:20:04` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: manejo de errores y validación de entradas).
+- `2026-07-29T10:20:10` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `scan_directory` validando que la entrada `directory` sea procesable mediante `Path` antes de operar y encapsulé la lógica de resolución de rutas en un bloque seguro para evitar errores en llamadas con rutas mal formadas o tipos incompatibles.
+- `2026-07-29T10:20:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-29T10:20:10` Corrida terminada. Total usado hoy: 244.

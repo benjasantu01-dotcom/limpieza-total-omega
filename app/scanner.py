@@ -131,8 +131,13 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
         return []
         
     try:
+        # Validación de tipo y resolución segura
         root = Path(directory).resolve()
-        if not root.exists() or not root.is_dir() or is_protected_path(root):
+    except (TypeError, ValueError, OSError):
+        return []
+
+    try:
+        if not root.is_dir() or is_protected_path(root):
             return []
             
         results: List[Suspicion] = []
@@ -160,7 +165,7 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
                 # Se omiten directorios sin permisos de lectura para continuar el escaneo
                 continue
         return results
-    except (OSError, RuntimeError, TypeError, ValueError) as e:
+    except (OSError, RuntimeError) as e:
         logger.error("Error al acceder al directorio %s: %s", directory, e)
         return []
 
