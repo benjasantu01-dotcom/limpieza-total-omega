@@ -180,9 +180,16 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
     if str(p).startswith(("\\\\", "//")):
         raise UnsafePathError("Operación bloqueada: rutas UNC o de red no permitidas.")
     
+    # Verificación de integridad: el archivo no debe ser un symlink o enlace simbólico actual
+    if p.exists() and p.is_symlink():
+        raise UnsafePathError("Operación bloqueada: symlink detectado.")
+    
     try:
-        if p.exists() and (p.is_symlink() or p.is_block_device() or p.is_char_device()):
-            raise UnsafePathError("Operación bloqueada: enlace o dispositivo especial detectado.")
+        if p.exists():
+            stat = p.lstat()
+            # Verificación de reparse points (Windows Juntions/MountPoints)
+            if hasattr(stat, "st_reparse_tag") and stat.st_reparse_tag != 0:
+                raise UnsafePathError("Operación bloqueada: punto de reparse detectado.")
     except (OSError, PermissionError):
         pass
 

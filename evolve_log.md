@@ -1282,3 +1282,37 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-07-29T03:51:06` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-07-29T03:51:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-29T03:51:06` Corrida terminada. Total usado hoy: 92.
+- `2026-07-29T04:00:03` Arrancando corrida. Quedan hoy ~208 peticiones objetivo.
+- `2026-07-29T04:00:27` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se reforzó `ensure_safe_to_modify` para prevenir ataques de "Time-of-Check to Time-of-Use" (TOCTOU) y manipulación de rutas externas mediante la validación estricta de que el archivo no sea un symlink o punto de reparse justo antes de la operación, cerrando un hueco donde un atacante podría redirigir la operación hacia una ruta del sistema después de pasar el filtro inicial.
+- `2026-07-29T04:00:48` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `scan_directory` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta resuelta antes de iterar, y se reemplazó la validación redundante `Path(entry.path).exists()` por una verificación más eficiente y segura dentro del loop de `os.scandir`.
+- `2026-07-29T04:01:13` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `settings.py` al implementar una validación explícita mediante `ensure_safe_to_modify` antes de cualquier operación de escritura en `save()` y `reset()`, protegiendo la integridad del sistema contra manipulaciones de rutas de configuración.
+- `2026-07-29T04:01:22` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+........................................F............................... [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '/home/runner...\App\\app.exe' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+E         + /home/runner/work/limpieza-total-omega/limpieza-total-omega/C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '/home/runner...\App\\app.exe' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+  + /home/runner/work/limpieza-total-omega/limpieza-total-omega/C:\Program Files\App\app.exe
+1 failed, 298 passed in 1.04s
+
+```
+- `2026-07-29T04:01:22` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la seguridad defensiva en `_extract_quoted_path` integrando el uso de `os.path.abspath` y una validación de prefijo para asegurar que cualquier ruta extraída desde el registro o accesos directos no escape de las carpetas permitidas, mitigando posibles ataques de path traversal en comandos de inicio maliciosos.
+- `2026-07-29T04:01:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-29T04:01:22` Corrida terminada. Total usado hoy: 96.

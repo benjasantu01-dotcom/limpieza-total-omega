@@ -224,7 +224,7 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     
     try:
         ruta = settings_path(path_or_base)
-        ensure_safe_to_modify(str(ruta.parent))
+        ensure_safe_to_modify(str(ruta))
         limpio = validate(values)
         json_data = json.dumps(limpio, indent=2, ensure_ascii=False)
         ruta.parent.mkdir(parents=True, exist_ok=True)
@@ -254,6 +254,8 @@ def update(changes: dict[str, Any], path_or_base: PathLike | None = None) -> dic
 
 def reset(path_or_base: PathLike | None = None) -> dict[str, Any]:
     """Resetea a valores de fábrica."""
+    ruta = settings_path(path_or_base)
+    ensure_safe_to_modify(str(ruta))
     save(dict(DEFAULTS), path_or_base)
     return dict(DEFAULTS)
 
