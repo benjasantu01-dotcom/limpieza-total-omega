@@ -119,43 +119,43 @@ def _to_int(value: Any, default: int = 0) -> int:
 
 
 def score_junk(junk_mb: float) -> float:
-    """Calcula el ratio de limpieza de basura (0.0 a 1.0)."""
+    """Calcula el ratio de limpieza de basura (0.0 a 1.0) basado en JUNK_LIMIT_MB."""
     if JUNK_LIMIT_MB <= 0: return 0.0
     return _clamp(1.0 - (junk_mb / JUNK_LIMIT_MB))
 
 
 def score_security(suspicious_count: int, warnings: int = 0) -> float:
-    """Calcula el ratio de seguridad (0.0 a 1.0) aplicando penalizaciones."""
+    """Calcula el ratio de seguridad (0.0 a 1.0) penalizando hallazgos y advertencias."""
     penalty = (suspicious_count * 0.05) + (warnings * 0.25)
     return _clamp(1.0 - penalty)
 
 
 def score_memory(available_percent: float) -> float:
-    """Calcula el ratio de disponibilidad de RAM (0.0 a 1.0)."""
+    """Calcula el ratio de disponibilidad de RAM (0.0 a 1.0) usando RAM_IDEAL_PERCENT."""
     if RAM_IDEAL_PERCENT <= 0: return 0.0
     return _clamp(available_percent / RAM_IDEAL_PERCENT)
 
 
 def score_disk(free_percent: float) -> float:
-    """Calcula el ratio de espacio libre en disco (0.0 a 1.0)."""
+    """Calcula el ratio de espacio libre en disco (0.0 a 1.0) usando DISK_IDEAL_PERCENT."""
     if DISK_IDEAL_PERCENT <= 0: return 0.0
     return _clamp(free_percent / DISK_IDEAL_PERCENT)
 
 
 def score_duplicates(duplicate_mb: float) -> float:
-    """Calcula el ratio de archivos duplicados (0.0 a 1.0)."""
+    """Calcula el ratio de archivos duplicados (0.0 a 1.0) usando DUPLICATE_LIMIT_MB."""
     if DUPLICATE_LIMIT_MB <= 0: return 0.0
     return _clamp(1.0 - (duplicate_mb / DUPLICATE_LIMIT_MB))
 
 
 def score_startup(startup_count: int) -> float:
-    """Calcula el ratio de programas en inicio (0.0 a 1.0)."""
+    """Calcula el ratio de programas en inicio (0.0 a 1.0) usando STARTUP_LIMIT_COUNT."""
     if STARTUP_LIMIT_COUNT <= 0: return 0.0
     return _clamp(1.0 - (startup_count / STARTUP_LIMIT_COUNT))
 
 
 def grade_for_score(score: int) -> str:
-    """Mapea un puntaje entero a una calificación cualitativa (A-F)."""
+    """Mapea un puntaje entero [0-100] a una calificación cualitativa (A-F)."""
     if score >= 90: return "A"
     if score >= 80: return "B"
     if score >= 65: return "C"
@@ -164,7 +164,7 @@ def grade_for_score(score: int) -> str:
 
 
 def _generate_recommendations(m: SystemMetrics, ratios: Dict[str, float]) -> List[str]:
-    """Genera recomendaciones basadas en el análisis de ratios por área."""
+    """Genera una lista de sugerencias accionables basadas en ratios de salud."""
     recs: List[str] = []
     
     if ratios.get("seguridad", 1.0) < 0.9:
@@ -190,12 +190,20 @@ def _generate_recommendations(m: SystemMetrics, ratios: Dict[str, float]) -> Lis
 
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
-    """Calcula el HealthResult unificando todas las heurísticas y pesos definidos."""
-    if metrics is None or not isinstance(metrics, SystemMetrics):
+    """
+    Calcula el puntaje global de salud del sistema.
+    
+    Parámetros:
+        metrics: Instancia de SystemMetrics con los datos recolectados.
+        
+    Retorna:
+        HealthResult con el puntaje calculado, desglose y recomendaciones.
+    """
+    if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Datos de entrada faltantes o inválidos."])
 
-    expected_keys = {"seguridad", "disco", "memoria", "basura", "duplicados", "arranque"}
-    if sum(WEIGHTS.values()) != 100 or set(WEIGHTS.keys()) != expected_keys or any(w < 0 for w in WEIGHTS.values()):
+    # Validar integridad de la configuración de pesos
+    if sum(WEIGHTS.values()) != 100 or WEIGHTS.keys() != {"seguridad", "disco", "memoria", "basura", "duplicados", "arranque"}:
         return HealthResult(0, "F", {}, ["Error de configuración: Los pesos son inválidos o están incompletos."])
 
     try:
@@ -203,7 +211,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         if not metrics.is_finite():
             return HealthResult(0, "F", {}, ["Error: Las métricas contienen datos numéricos no procesables."])
         
-        ratios = {
+        ratios: Dict[str, float] = {
             "seguridad": score_security(metrics.suspicious_count, metrics.suspicious_warnings),
             "disco": score_disk(metrics.disk_free_percent),
             "memoria": score_memory(metrics.memory_available_percent),
@@ -212,9 +220,9 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
             "arranque": score_startup(metrics.startup_count),
         }
 
-        breakdown: Dict[str, int] = {}
-        for key, weight in WEIGHTS.items():
-            breakdown[key] = int(round(ratios.get(key, 0.0) * weight))
+        breakdown: Dict[str, int] = {
+            key: int(round(ratios[key] * WEIGHTS[key])) for key in WEIGHTS
+        }
             
         total = sum(breakdown.values())
 
@@ -230,12 +238,16 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
 
 
 def summarize(result: HealthResult) -> List[str]:
-    """Genera un reporte textual resumido a partir de un HealthResult."""
+    """Genera una representación visual y textual de un HealthResult para el usuario."""
     lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
+    
+    # Ordenar por desviación respecto al peso máximo esperado (puntos perdidos)
     orden = sorted(result.breakdown.items(), key=lambda kv: kv[1] - WEIGHTS[kv[0]])
+    
     for area, puntos in orden:
         maximo = WEIGHTS[area]
         lines.append(f"  {area.capitalize():<12} {puntos:>2}/{maximo:<2} [{'#' * puntos}{'.' * (maximo - puntos)}]")
+    
     lines.extend(["", "Recomendaciones:"])
     lines.extend([f"  - {rec}" for rec in result.recommendations])
     return lines

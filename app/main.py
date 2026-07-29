@@ -346,12 +346,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         # Tarjetas de métricas rápidas.
         card_container = ctk.CTkFrame(tab, fg_color="transparent")
         card_container.pack(fill="x", padx=12, pady=(14, 0))
-        for i, (clave, titulo) in enumerate(
-            (("basura", "Basura"), ("sospechosos", "Sospechosos"),
-             ("ram", "RAM libre"), ("disco", "Disco libre"))
-        ):
-            card_container.grid_columnconfigure(i, weight=1)
-            self.cards[clave] = self._metric_card(card_container, titulo, i)
+        self._build_health_metrics_row(card_container)
 
         # Zona central: medidor circular a la izquierda, barras por área a la derecha.
         center_container = ctk.CTkFrame(tab, fg_color="transparent")
@@ -371,6 +366,14 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                         "puntaje. Es un análisis de solo lectura: no modifica nada. Las áreas "
                         "corren en paralelo, así que tarda lo que la más lenta, no la suma.")
         self._make_output("Salud", tab)
+
+    def _build_health_metrics_row(self, container: ctk.CTkFrame):
+        """Construye las tarjetas de resumen numérico."""
+        metrics = (("basura", "Basura"), ("sospechosos", "Sospechosos"),
+                   ("ram", "RAM libre"), ("disco", "Disco libre"))
+        for i, (clave, titulo) in enumerate(metrics):
+            container.grid_columnconfigure(i, weight=1)
+            self.cards[clave] = self._metric_card(container, titulo, i)
 
     def _build_health_area_bars(self, parent: ctk.CTk):
         """Crea los indicadores de progreso (barras) para cada sub-área de salud."""

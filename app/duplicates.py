@@ -73,12 +73,12 @@ class DuplicateGroup:
         return (self.count - 1) * max(0, self.size_bytes)
 
 
-def hash_file(path: Union[str, os.PathLike], chunk_size: int = 1024 * 1024) -> Optional[str]:
+def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
     Calcula el hash SHA256 completo de un archivo mediante lectura en bloques.
     
     Args:
-        path: Ruta del archivo a procesar.
+        path: Ruta del archivo (str o Path) a procesar.
         chunk_size: Tamaño de cada bloque de lectura en bytes.
         
     Returns:
@@ -94,15 +94,16 @@ def hash_file(path: Union[str, os.PathLike], chunk_size: int = 1024 * 1024) -> O
                 digest.update(chunk)
         return digest.hexdigest()
     except (OSError, PermissionError, ValueError, TypeError, FileNotFoundError, IsADirectoryError):
+        # Excepciones controladas: el acceso a archivos en uso o sin permisos retorna None
         return None
 
 
-def partial_hash(path: Union[str, os.PathLike], read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
+def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """
     Calcula un hash rápido de los primeros N bytes de un archivo.
     
     Args:
-        path: Ruta del archivo a procesar.
+        path: Ruta del archivo (str o Path) a procesar.
         read_bytes: Cantidad de bytes a leer desde el inicio.
         
     Returns:
@@ -125,6 +126,9 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     """
     Clasifica rutas de archivos según su tamaño en disco (st_size).
     
+    Args:
+        paths: Colección de objetos Path a clasificar.
+        
     Returns:
         Diccionario donde la clave es el tamaño en bytes y el valor es la lista de rutas.
     """
@@ -133,7 +137,7 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
         
     groups: Dict[int, List[Path]] = defaultdict(list)
     for p in paths:
-        if p is None or not isinstance(p, Path):
+        if not isinstance(p, Path):
             continue
         try:
             stat = p.lstat()
@@ -170,7 +174,6 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
                 
                 for name in files:
                     candidate = root_path / name
-                    # Defensa: chequeo temprano de symlink antes de acceder a stat o abrir
                     if candidate.is_symlink():
                         continue
                     if skip_protected and is_protected_path(candidate):
@@ -189,6 +192,10 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
 def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
     """
     Refina una lista de archivos agrupándolos por el resultado de una función de hash.
+    
+    Args:
+        paths: Lista de rutas a agrupar.
+        hash_func: Función para calcular el hash.
     
     Returns:
         Diccionario de hash -> lista de rutas (solo grupos con >1 elemento).
@@ -256,7 +263,7 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
 
     valid_paths: List[tuple[float, int, Path]] = []
     for p in group.paths:
-        if not p or not isinstance(p, Path) or is_protected_path(p):
+        if not isinstance(p, Path) or is_protected_path(p):
             continue
         try:
             stat = p.stat()

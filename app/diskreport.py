@@ -22,7 +22,7 @@ import heapq
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Generator, Iterable
+from typing import Generator, Iterable, Dict, List, Tuple
 
 from safety import is_protected_path
 
@@ -145,7 +145,10 @@ def all_drives_usage(mounts: Iterable[str] | None = None) -> list[DriveUsage]:
 
 
 def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Generator[tuple[Path, int], None, None]:
-    """Genera tuplas (ruta, tamaño) para cada archivo encontrado, manejando errores de acceso."""
+    """
+    Genera tuplas (ruta, tamaño) para cada archivo encontrado.
+    Utiliza recursión interna para recorrer el árbol de archivos.
+    """
     if not directory:
         return
     try:
@@ -156,11 +159,12 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
         return
 
     def should_ignore_entry(entry: os.DirEntry) -> bool:
-        """Filtra enlaces simbólicos, puntos de reparse (Windows) y rutas protegidas."""
+        """Valida si una entrada debe excluirse por políticas de seguridad o enlaces."""
         try:
             if entry.is_symlink():
                 return True
             if os.name == 'nt':
+                # Verifica puntos de reparse (Junctions/Mount Points) en Windows
                 if entry.stat(follow_symlinks=False).st_reparse_tag != 0:
                     return True
             path_entry = Path(entry.path).resolve()
@@ -173,7 +177,7 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
         return False
 
     def recursive_scan(root_path: str) -> Generator[tuple[Path, int], None, None]:
-        """Recorre directorios de forma segura ignorando errores de permisos o cambios de estado."""
+        """Recorre directorios ignorando errores de permisos o cambios de estado."""
         try:
             with os.scandir(root_path) as iterator:
                 for entry in iterator:
@@ -257,7 +261,7 @@ def total_size(directory: str | os.PathLike, skip_protected: bool = True) -> tup
 
 
 def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list[str]:
-    """Genera un informe textual del uso de disco en el directorio especificado."""
+    """Genera un informe textual resumen del uso de disco en el directorio especificado."""
     if not directory:
         return ["Error: Ruta vacía."]
         
@@ -268,10 +272,10 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
     except (OSError, RuntimeError):
         return ["Error: No se pudo acceder a la ruta."]
         
-    total_bytes = 0
-    total_files = 0
-    ext_data_map: dict[str, list[int]] = defaultdict(lambda: [0, 0])
-    top_heap: list[tuple[int, Path]] = []
+    total_bytes: int = 0
+    total_files: int = 0
+    ext_data_map: Dict[str, List[int]] = defaultdict(lambda: [0, 0])
+    top_heap: List[Tuple[int, Path]] = []
 
     for path, size in walk_files(path_obj, skip_protected):
         total_bytes += size
@@ -294,9 +298,10 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
         "Por tipo de archivo:",
     ]
     
+    # Ordenar tipos de archivo por tamaño total (índice 0 del record)
     sorted_exts = sorted(
         ext_data_map.items(),
-        key=lambda x: x[1][0], 
+        key=lambda item: item[1][0], 
         reverse=True
     )[:8]
     
@@ -305,7 +310,10 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
         
     lines.append("")
     lines.append("Archivos más grandes:")
-    for size, path in sorted(top_heap, key=lambda x: x[0], reverse=True):
+    
+    # Ordenar los archivos recolectados en el heap de mayor a menor tamaño
+    top_files = sorted(top_heap, key=lambda x: x[0], reverse=True)
+    for size, path in top_files:
         lines.append(f"  {format_size(size):>10}  {path}")
         
     return lines
