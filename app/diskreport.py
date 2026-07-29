@@ -270,7 +270,6 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
         
     total_bytes = 0
     total_files = 0
-    # Map: extension -> [bytes_acumulados, cantidad_archivos]
     ext_data_map: dict[str, list[int]] = defaultdict(lambda: [0, 0])
     top_heap: list[tuple[int, Path]] = []
 
@@ -283,7 +282,6 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
         record[0] += size
         record[1] += 1
         
-        # Mantenemos el top 8 de archivos más grandes usando un heap
         if len(top_heap) < 8:
             heapq.heappush(top_heap, (size, path))
         else:
@@ -297,13 +295,13 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
     ]
     
     sorted_exts = sorted(
-        ((ext, data[0], data[1]) for ext, data in ext_data_map.items()),
-        key=lambda x: x[1], 
+        ext_data_map.items(),
+        key=lambda x: x[1][0], 
         reverse=True
     )[:8]
     
-    for ext, size, count in sorted_exts:
-        lines.append(f"  {ext:<18} {format_size(size):>10}  ({count} archivos)")
+    for ext, data in sorted_exts:
+        lines.append(f"  {ext:<18} {format_size(data[0]):>10}  ({data[1]} archivos)")
         
     lines.append("")
     lines.append("Archivos más grandes:")

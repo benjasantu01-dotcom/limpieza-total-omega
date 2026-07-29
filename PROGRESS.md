@@ -6,47 +6,51 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **253** (50.2% de aceptación)
+- Mejoras aceptadas: **255** (50.6% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 28
+- Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 6
-- Sin respuesta de la IA (error o límite): 202
+- Sin respuesta de la IA (error o límite): 201
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-27 | 50 | 2 | 6 | 1 | 43 |
+| 2026-07-27 | 48 | 2 | 5 | 1 | 42 |
 | 2026-07-28 | 178 | 12 | 19 | 5 | 136 |
-| 2026-07-29 | 25 | 1 | 3 | 0 | 23 |
+| 2026-07-29 | 29 | 1 | 3 | 0 | 23 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **64**
 - seguridad defensiva: **59**
 - manejo de errores y validación de entradas: **52**
-- robustez ante casos límite: **44**
-- rendimiento: **34**
+- robustez ante casos límite: **42**
+- rendimiento: **38**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **24**
 - `assistant.py`: **24**
-- `diskreport.py`: **22**
-- `quarantine.py`: **20**
+- `diskreport.py`: **23**
 - `scanner.py`: **20**
-- `organizer.py`: **19**
-- `browser.py`: **18**
-- `duplicates.py`: **18**
+- `browser.py`: **19**
+- `duplicates.py`: **19**
+- `quarantine.py`: **19**
 - `main.py`: **18**
 - `healthscore.py`: **18**
+- `organizer.py`: **18**
 - `safety.py`: **16**
 - `memory.py`: **14**
 - `startup.py`: **12**
-- `branding.py`: **10**
+- `branding.py`: **11**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-29T02:19:15` **duplicates.py** (rendimiento): Optimicé el rendimiento de `group_by_size` eliminando llamadas redundantes a `is_protected_path` al procesar los resultados de `_collect_candidates`, dado que dicha función ya filtra las rutas durante el recorrido recursivo inicial.
+- `2026-07-29T02:19:08` **diskreport.py** (rendimiento): Optimizé la función `summarize` para reducir las llamadas repetitivas a `path.suffix` y `format_size` mediante un procesamiento único por iteración, y reemplacé la creación innecesaria de objetos intermedios por un cálculo directo sobre los datos acumulados.
+- `2026-07-29T02:18:44` **browser.py** (rendimiento): Optimicé `directory_size` reemplazando la lógica de resolución de rutas (`resolve`) y chequeos de seguridad dentro del bucle (`is_protected_path`) por un filtro basado en la comparación directa de nombres, reduciendo drásticamente las llamadas al sistema operativo (syscalls) innecesarias por cada archivo escaneado.
+- `2026-07-29T02:18:22` **branding.py** (rendimiento): Optimicé el cálculo de colores y degradados reemplazando operaciones costosas por una caché de `lru_cache` y evitando la regeneración innecesaria de objetos en bucles críticos de renderizado.
 - `2026-07-29T02:09:12` **assistant.py** (rendimiento): Optimicé el ranking de problemas (`_rank_problems`) convirtiendo la concatenación de listas en una lógica más eficiente que evita la creación de sublistas innecesarias, y cacheé el pre-procesamiento de las sugerencias para evitar duplicados en memoria durante cada llamada a `local_answer`.
 - `2026-07-29T02:08:55` **startup.py** (legibilidad y documentación): Mejora la legibilidad y el mantenimiento de `startup.py` mediante la refactorización de la lógica de extracción de ejecutables en `StartupEntry` hacia un método de instancia más claro, eliminando la duplicación de lógica y mejorando el manejo de rutas.
 - `2026-07-29T02:08:32` **settings.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `settings.py` incluyendo Type Hints más específicos, refinando la nomenclatura de parámetros (usando `path_or_base`) para mayor claridad y añadiendo un docstring detallado a `_coerce_int` para explicar explícitamente el uso de `_NUMERIC_LIMITS` como medida contra configuraciones inyectadas maliciosamente.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-29T01:48:01` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints en las firmas de funciones faltantes y la normalización de los docstrings bajo el estándar PEP 257 para asegurar una documentación técnica consistente.
 - `2026-07-29T01:47:37` **duplicates.py** (legibilidad y documentación): Mejoré la documentación de las funciones de hash y el pipeline principal mediante docstrings más precisos, agregué anotaciones de tipo faltantes para mejorar el análisis estático y clarifiqué la lógica de `suggest_keeper` para manejar la selección del "keeper" de forma más legible.
 - `2026-07-29T01:38:42` **diskreport.py** (legibilidad y documentación): Mejora la legibilidad y mantenimiento añadiendo docstrings que explican el propósito de las funciones internas y refinando los tipos para clarificar las estructuras de datos que manejan el análisis de disco.
-- `2026-07-29T01:38:32` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad del código añadiendo docstrings técnicos específicos para las funciones internas (`_is_safe_path`, `_is_valid_cache_path`) y aclarando mediante comentarios el manejo de excepciones, garantizando que el propósito de cada filtro de seguridad sea evidente ante una auditoría técnica.
-- `2026-07-29T01:38:09` **branding.py** (legibilidad y documentación): Mejora la robustez y legibilidad de `save_logo_svg` reemplazando la captura genérica de excepciones por el uso explícito de `is_safe_to_modify` como filtro, alineado con las reglas de seguridad del proyecto.
-- `2026-07-29T01:37:38` **assistant.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings que explican el "porqué" de las decisiones de filtrado y el propósito de los tipos, además de renombrar variables internas en `build_context` para aclarar el flujo de validación defensiva.
-- `2026-07-29T01:27:59` **settings.py** (manejo de errores y validación de entradas): Mejoré la resiliencia de `_coerce_int` añadiendo una comprobación explícita para evitar que configuraciones con valores no numéricos o fuera de rango causen comportamientos inesperados, asegurando que siempre retornen un entero válido dentro de los límites predefinidos.

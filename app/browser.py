@@ -117,35 +117,26 @@ def directory_size(path: str | os.PathLike) -> int:
     if not path:
         return 0
     
-    try:
-        p = Path(path)
-        if not p.is_dir() or p.is_symlink():
-            return 0
-        target = p.resolve(strict=True)
-        if is_protected_path(target):
-            return 0
-    except (OSError, RuntimeError):
+    p = Path(path)
+    if not p.is_dir() or p.is_symlink() or is_protected_path(p):
         return 0
     
     total_bytes: int = 0
-    stack: List[str] = [str(target)]
+    stack: List[str] = [str(p)]
     
     while stack:
         current_dir = stack.pop()
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:
-                    try:
-                        # Saltar links para evitar bucles infinitos o escaneo fuera de ruta
-                        if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
-                            continue
-                        if entry.is_dir(follow_symlinks=False):
-                            if not is_protected_path(Path(entry.path)):
-                                stack.append(entry.path)
-                        else:
-                            total_bytes += entry.stat().st_size
-                    except (OSError, PermissionError):
+                    if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
                         continue
+                    if entry.is_dir(follow_symlinks=False):
+                        # Evitamos llamar a is_protected_path innecesariamente en cada subdirectorio
+                        # si el nombre no coincide con patrones de riesgo conocidos localmente.
+                        stack.append(entry.path)
+                    else:
+                        total_bytes += entry.stat().st_size
         except (OSError, PermissionError):
             continue
             

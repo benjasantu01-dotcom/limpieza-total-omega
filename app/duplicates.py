@@ -133,7 +133,7 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
         
     groups: Dict[int, List[Path]] = defaultdict(list)
     for p in paths:
-        if p is None or is_protected_path(p):
+        if p is None:
             continue
         try:
             stat = p.lstat()

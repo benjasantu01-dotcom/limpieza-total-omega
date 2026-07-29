@@ -185,6 +185,7 @@ def bar(percent: float | int | None, width: int = 24,
     return filled * llenos + empty * (ancho - llenos)
 
 
+@lru_cache(maxsize=128)
 def _hex_to_rgb(value: HexColor) -> tuple[int, int, int]:
     """Convierte '#rrggbb' a una tupla RGB. Devuelve negro si es inválido."""
     try:
@@ -194,12 +195,10 @@ def _hex_to_rgb(value: HexColor) -> tuple[int, int, int]:
         return (0, 0, 0)
 
 
+@lru_cache(maxsize=64)
 def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
     """Mezcla dos colores mediante interpolación lineal."""
-    try:
-        proporcion = max(0.0, min(1.0, float(ratio)))
-    except (TypeError, ValueError):
-        proporcion = 0.0
+    proporcion = max(0.0, min(1.0, float(ratio)))
     r1, g1, b1 = _hex_to_rgb(start)
     r2, g2, b2 = _hex_to_rgb(end)
     return "#{:02x}{:02x}{:02x}".format(
@@ -209,6 +208,7 @@ def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
     )
 
 
+@lru_cache(maxsize=16)
 def gradient_colors(steps: int, stops: tuple[HexColor, ...] = GRADIENT_STOPS) -> List[HexColor]:
     """Genera una lista interpolada de colores recorriendo las paradas."""
     cantidad = max(1, int(steps))
@@ -315,7 +315,8 @@ def draw_logo(canvas: Any, size: int = 56, x: int = 0, y: int = 0) -> None:
     # Draw gradient details
     franjas = max(6, int(28 * s))
     alto = 92 * s / franjas
-    for i, tono in enumerate(gradient_colors(franjas)):
+    colores_grad = gradient_colors(franjas)
+    for i, tono in enumerate(colores_grad):
         arriba = y_val + 18 * s + i * alto
         avance = i / max(1, franjas - 1)
         w = 36 * s * (1.0 if avance < 0.55 else 1.0 - (avance - 0.55) * 1.9)
@@ -336,7 +337,8 @@ def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
     if canvas is None or not hasattr(canvas, "create_line"): return
     try:
         ancho, alto = max(1, int(width)), max(1, int(height))
-        for i, tono in enumerate(gradient_colors(ancho, stops)):
+        colores = gradient_colors(ancho, stops)
+        for i, tono in enumerate(colores):
             canvas.create_line(x + i, y, x + i, y + alto, fill=tono)
     except (ValueError, TypeError, AttributeError): pass
 
