@@ -151,9 +151,8 @@ def _validate_str(clave: str, valor: Any) -> str | None:
     if clave == "ultima_carpeta":
         try:
             ruta_candidata = Path(texto).expanduser().resolve()
-            # Si la ruta no existe, validamos el directorio padre
-            chequeo_path = ruta_candidata if ruta_candidata.exists() else ruta_candidata.parent
-            if not is_safe_to_modify(str(chequeo_path)):
+            # Validamos seguridad de la ruta resultante antes de permitirla en configuración
+            if not is_safe_to_modify(str(ruta_candidata)):
                 return None
             return str(ruta_candidata)
         except (OSError, RuntimeError, ValueError):

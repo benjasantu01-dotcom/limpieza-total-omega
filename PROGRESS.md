@@ -6,33 +6,33 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **270** (53.6% de aceptación)
+- Mejoras aceptadas: **271** (53.8% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 8
-- Sin respuesta de la IA (error o límite): 182
+- Sin respuesta de la IA (error o límite): 181
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-28 | 109 | 8 | 10 | 2 | 71 |
-| 2026-07-29 | 161 | 9 | 17 | 6 | 111 |
+| 2026-07-28 | 109 | 8 | 10 | 2 | 67 |
+| 2026-07-29 | 162 | 9 | 17 | 6 | 114 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **66**
 - manejo de errores y validación de entradas: **55**
-- seguridad defensiva: **53**
+- seguridad defensiva: **54**
 - robustez ante casos límite: **49**
 - rendimiento: **47**
 
 ## Mejoras aceptadas por archivo
 
 - `browser.py`: **24**
+- `settings.py`: **24**
 - `assistant.py`: **23**
 - `scanner.py`: **23**
-- `settings.py`: **23**
 - `quarantine.py`: **22**
 - `main.py`: **21**
 - `duplicates.py`: **20**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-29T13:03:22` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_validate_str` al asegurar que las rutas candidatas sean verificadas mediante `is_safe_to_modify` antes de ser persistidas, previniendo que una ruta maliciosa o de sistema introducida manualmente en el JSON pueda ser utilizada como `ultima_carpeta`.
 - `2026-07-29T12:53:55` **scanner.py** (seguridad defensiva): Se introdujo una validación de seguridad defensiva en `scan_directory` para asegurar que las rutas resueltas mediante `path_entry` mantengan una relación consistente con el directorio de inicio, evitando el seguimiento de enlaces simbólicos fuera del árbol de directorios objetivo durante el recorrido.
 - `2026-07-29T12:53:48` **safety.py** (seguridad defensiva): Mejoré la seguridad defensiva en `is_protected_path` al incluir la detección de puntos de reparse (junctions/symlinks) dentro de su lógica, evitando que la app siga enlaces fuera de los directorios permitidos o hacia zonas críticas del sistema que no son visibles por su nombre de carpeta.
 - `2026-07-29T12:53:06` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva en `quarantine_file` y `restore_item` al validar que el padre del destino sea un directorio real y no un archivo preexistente, evitando ataques de inyección de rutas donde un atacante podría intentar que el sistema de archivos colapse ante un nombre de ruta manipulado.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-29T12:22:19` **scanner.py** (robustez ante casos límite): Se mejoró `scan_directory` añadiendo una comprobación explícita de `exists()` antes de procesar la entrada, previniendo errores en condiciones de carrera donde un archivo o carpeta es eliminado o renombrado por otro proceso justo después de ser listado por `os.scandir`.
 - `2026-07-29T12:12:51` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en `is_within_directory` y `is_protected_path` al asegurar que las rutas no existentes o con permisos denegados no se evalúen erróneamente como "seguras" o "inseguras" de forma impredecible, centralizando la validación de existencia en un try-except más estricto.
 - `2026-07-29T12:12:23` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` para manejar el caso límite donde la ruta de origen contiene caracteres inválidos para el sistema de archivos de destino o nombres con longitudes que excedan los límites del sistema operativo antes de intentar el movimiento.
-- `2026-07-29T12:11:58` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `stage_for_review` implementando un chequeo preventivo de concurrencia y espacio en disco, evitando excepciones innecesarias y asegurando que las rutas de destino mantengan la integridad del sistema incluso ante estados de archivos bloqueados.
