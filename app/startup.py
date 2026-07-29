@@ -172,25 +172,31 @@ def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[Start
         return []
     all_entries: List[StartupEntry] = []
     
+    # Consolidamos en un script único para evitar múltiples invocaciones costosas
+    query_parts = []
     for key in keys:
-        if not key or not isinstance(key, str):
-            continue
-            
-        safe_key: str = subprocess.list2cmdline([key])
-        ps_cmd: str = (
-            f"if (Test-Path {safe_key}) {{ (Get-Item {safe_key}).Property | ForEach-Object "
-            f"{{ [PSCustomObject]@{{ Name = $_; Value = (Get-ItemProperty {safe_key}).$_ }} }} | "
-            "ConvertTo-Csv -NoTypeInformation }"
+        if isinstance(key, str):
+            safe_key = subprocess.list2cmdline([key])
+            query_parts.append(f"Write-Host '{key}'; (Get-ItemProperty {safe_key}).psobject.properties | Select-Object Name, Value | ConvertTo-Csv -NoTypeInformation")
+    
+    ps_cmd = " ; ".join(query_parts)
+    
+    try:
+        result: subprocess.CompletedProcess = subprocess.run(
+            ["powershell", "-NoProfile", "-Command", ps_cmd],
+            capture_output=True, text=True, timeout=30,
         )
-        try:
-            result: subprocess.CompletedProcess = subprocess.run(
-                ["powershell", "-NoProfile", "-Command", ps_cmd],
-                capture_output=True, text=True, timeout=30,
-            )
-            if result.returncode == 0 and result.stdout:
-                all_entries.extend(parse_registry_csv(result.stdout, source=key))
-        except (OSError, subprocess.SubprocessError):
-            continue
+        if result.returncode == 0 and result.stdout:
+            current_source = "registro"
+            for line in result.stdout.splitlines():
+                if line.startswith("'HK"):
+                    current_source = line.strip("'")
+                    continue
+                # Las filas CSV procesadas manualmente
+                if '","' in line or (line.startswith('"') and line.endswith('"')):
+                    all_entries.extend(parse_registry_csv(line, source=current_source))
+    except (OSError, subprocess.SubprocessError):
+        pass
     return all_entries
 
 

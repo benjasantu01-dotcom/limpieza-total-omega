@@ -116,14 +116,7 @@ def _coerce_bool(valor: Any) -> bool | None:
 
 
 def _coerce_int(valor: Any, clave: str) -> int | None:
-    """
-    Convierte a entero y asegura que el resultado esté dentro del rango definido
-    en _NUMERIC_LIMITS. 
-    
-    El uso de _NUMERIC_LIMITS actúa como una barrera de seguridad contra 
-    configuraciones maliciosas o corruptas (ej. valores negativos o gigantes) 
-    que podrían causar fallos en la interfaz o desbordamiento de memoria.
-    """
+    """Convierte a entero y asegura rango."""
     if valor is None:
         return None
     try:
@@ -135,10 +128,7 @@ def _coerce_int(valor: Any, clave: str) -> int | None:
 
 
 def _validate_str(clave: str, valor: Any) -> str | None:
-    """
-    Valida cadenas. Si la clave requiere validación de seguridad (ej. rutas)
-    o de enum (ej. temas), verifica contra las reglas del proyecto antes de retornar.
-    """
+    """Valida cadenas y rutas."""
     if not isinstance(valor, str):
         return None
     texto = valor.strip()
@@ -161,19 +151,18 @@ def _validate_str(clave: str, valor: Any) -> str | None:
 
 
 def _apply_validation_by_type(clave: str, valor: Any, defecto: Any) -> Any:
-    """
-    Función dispatch que determina la estrategia de validación según el tipo
-    del valor por defecto esperado. Es el núcleo de la resiliencia ante datos corruptos.
-    """
+    """Dispatch de validación usando mapeo de tipos para rendimiento."""
     if valor is None:
         return None
-    if isinstance(defecto, bool):
-        return _coerce_bool(valor)
-    if isinstance(defecto, int) and not isinstance(valor, bool):
-        return _coerce_int(valor, clave)
-    if isinstance(defecto, str):
-        return _validate_str(clave, valor)
-    return None
+    
+    dispatch = {
+        bool: lambda v: _coerce_bool(v) if not isinstance(v, int) else bool(v),
+        int: lambda v: _coerce_int(v, clave),
+        str: lambda v: _validate_str(clave, v)
+    }
+    
+    func = dispatch.get(type(defecto))
+    return func(valor) if func else None
 
 
 def settings_path(path_or_base: PathLike | None = None) -> Path:
@@ -183,17 +172,12 @@ def settings_path(path_or_base: PathLike | None = None) -> Path:
     else:
         carpeta = Path(SETTINGS_DIR).expanduser().resolve()
     
-    # Asegurar que la carpeta base es segura antes de retornar la ruta
     ensure_safe_to_modify(str(carpeta))
     return carpeta / SETTINGS_FILE
 
 
 def validate(values: Any) -> dict[str, Any]:
-    """
-    Crea un diccionario nuevo basado en DEFAULTS, poblándolo únicamente con
-    valores válidos encontrados en la entrada `values`. Garantiza que el retorno
-    sea siempre un objeto completo y seguro, incluso si el input es basura.
-    """
+    """Valida diccionario completo contra esquemas de DEFAULTS."""
     limpio = dict(DEFAULTS)
     if not isinstance(values, dict):
         return limpio
@@ -208,21 +192,12 @@ def validate(values: Any) -> dict[str, Any]:
 
 
 def load(path_or_base: PathLike | None = None) -> dict[str, Any]:
-    """
-    Carga configuración desde disco. Implementa un caché por mtime para optimizar
-    lecturas. Ante cualquier error de lectura o corrupción JSON, retorna 
-    DEFAULTS para asegurar que la app nunca deje de arrancar.
-    """
+    """Carga configuración con caché por mtime."""
     global _cached_settings, _last_path_str, _last_mtime
     
     try:
         ruta = settings_path(path_or_base)
-    except (OSError, RuntimeError):
-        return dict(DEFAULTS)
-
-    ruta_str = str(ruta)
-    
-    try:
+        ruta_str = str(ruta)
         if not ruta.exists():
             return dict(DEFAULTS)
         
@@ -230,8 +205,7 @@ def load(path_or_base: PathLike | None = None) -> dict[str, Any]:
         if _cached_settings is not None and ruta_str == _last_path_str and stat.st_mtime == _last_mtime:
             return _cached_settings
 
-        contenido = ruta.read_text(encoding="utf-8")
-        data = json.loads(contenido)
+        data = json.loads(ruta.read_text(encoding="utf-8"))
         _cached_settings = validate(data)
         _last_path_str = ruta_str
         _last_mtime = stat.st_mtime
@@ -241,116 +215,76 @@ def load(path_or_base: PathLike | None = None) -> dict[str, Any]:
 
 
 def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
-    """
-    Persiste la configuración de forma atómica. Utiliza `ensure_safe_to_modify` 
-    para validar el directorio padre antes de escribir. Retorna la ruta en caso 
-    de éxito, o None si hay error de permisos o acceso al sistema de archivos.
-    """
+    """Persistencia atómica de configuración."""
     global _cached_settings, _last_path_str, _last_mtime
     
     try:
         ruta = settings_path(path_or_base)
         ensure_safe_to_modify(str(ruta.parent))
-        
         limpio = validate(values)
         json_data = json.dumps(limpio, indent=2, ensure_ascii=False)
-        
         ruta.parent.mkdir(parents=True, exist_ok=True)
         
-        # Escritura atómica: crear archivo temporal y reemplazar
-        temp_name = None
         with tempfile.NamedTemporaryFile("w", dir=ruta.parent, delete=False, encoding="utf-8") as tf:
-            temp_name = tf.name
             tf.write(json_data)
             tf.flush()
-            os.fsync(tf.fileno()) # Asegurar persistencia física en disco
+            os.fsync(tf.fileno())
+            temp_name = tf.name
         
         os.replace(temp_name, ruta)
-        
         _cached_settings = limpio
         _last_path_str = str(ruta)
         _last_mtime = ruta.stat().st_mtime
         return ruta
     except (OSError, RuntimeError, PermissionError):
-        if 'temp_name' in locals() and os.path.exists(temp_name):
-            try:
-                os.remove(temp_name)
-            except OSError:
-                pass
         return None
 
 
 def update(changes: dict[str, Any], path_or_base: PathLike | None = None) -> dict[str, Any]:
-    """Aplica cambios parciales sobre el estado actual y los persiste."""
-    actual = load(path_or_base).copy()
-    if isinstance(changes, dict):
-        actual.update(changes)
+    """Actualiza y persiste cambios."""
+    actual = load(path_or_base)
+    actual.update(changes)
     save(actual, path_or_base)
     return actual
 
 
 def reset(path_or_base: PathLike | None = None) -> dict[str, Any]:
-    """Sobrescribe el archivo de configuración con los valores por defecto."""
+    """Resetea a valores de fábrica."""
     save(dict(DEFAULTS), path_or_base)
     return dict(DEFAULTS)
 
 
 def get(key: str, path_or_base: PathLike | None = None) -> Any:
-    """Recupera el valor de una clave específica desde la configuración cargada."""
+    """Getter con fallback a defaults."""
     return load(path_or_base).get(key, DEFAULTS.get(key))
 
 
 def assistant_api_key(path_or_base: PathLike | None = None) -> str:
-    """Obtiene la API key (prioridad: variable de entorno -> archivo de configuración)."""
+    """Obtiene API key con prioridad en entorno."""
     desde_entorno = os.environ.get(API_KEY_ENV_VAR, "").strip()
-    if desde_entorno:
-        return desde_entorno
-    config = load(path_or_base)
-    valor = config.get("asistente_clave_api", "")
-    return valor.strip() if isinstance(valor, str) else ""
+    return desde_entorno or load(path_or_base).get("asistente_clave_api", "").strip()
 
 
 def assistant_enabled(path_or_base: PathLike | None = None) -> bool:
-    """Valida si el asistente puede operar (debe estar activado y poseer una key válida)."""
+    """Verifica habilitación del asistente."""
     config = load(path_or_base)
     return bool(config.get("asistente_activado")) and bool(assistant_api_key(path_or_base))
 
 
 def describe(path_or_base: PathLike | None = None) -> list[str]:
-    """Genera una vista humana de la configuración para propósitos de reporte/debug."""
+    """Genera reporte de estado."""
     actual = load(path_or_base)
     clave = assistant_api_key(path_or_base)
-    origen_clave = (
-        f"variable de entorno {API_KEY_ENV_VAR}"
-        if os.environ.get(API_KEY_ENV_VAR, "").strip()
-        else ("archivo de configuración" if clave else "no configurada")
-    )
+    origen = f"variable de entorno {API_KEY_ENV_VAR}" if os.environ.get(API_KEY_ENV_VAR) else ("archivo de configuración" if clave else "no configurada")
 
     return [
-        "Configuración actual",
-        "",
-        f"  Archivo:                {settings_path(path_or_base)}",
-        "",
-        "  Apariencia",
-        f"    Tema:                 {actual['tema']}",
-        f"    Acento:               {actual['acento']}",
-        f"    Barras visuales:      {'sí' if actual['mostrar_barras'] else 'no'}",
-        "",
-        "  Comportamiento",
-        f"    Confirmar siempre:    {'sí' if actual['confirmar_siempre'] else 'no'}",
-        f"    Pestaña inicial:      {actual['abrir_en']}",
-        f"    Recordar carpeta:     {'sí' if actual['recordar_ultima_carpeta'] else 'no'}",
-        "",
-        "  Rendimiento",
-        f"    Duplicados desde:     {actual['duplicados_tamano_minimo_kb']} KB",
-        f"    Top de archivos:      {actual['top_archivos']}",
-        f"    Análisis en paralelo: {'sí' if actual['analisis_en_paralelo'] else 'no'}",
-        "",
-        "  Asistente IA",
-        f"    Activado:             {'sí' if actual['asistente_activado'] else 'no'}",
-        f"    Clave:                {origen_clave}",
-        f"    Modelo:               {actual['asistente_modelo']}",
-        "",
-        "  El asistente viene apagado a propósito: encenderlo manda métricas",
-        "  agregadas a Google. Nunca se envían rutas ni contenido de archivos.",
+        "Configuración actual", "", f"  Archivo: {settings_path(path_or_base)}", "",
+        "  Apariencia", f"    Tema: {actual['tema']}", f"    Acento: {actual['acento']}",
+        f"    Barras visuales: {'sí' if actual['mostrar_barras'] else 'no'}", "",
+        "  Comportamiento", f"    Confirmar siempre: {'sí' if actual['confirmar_siempre'] else 'no'}",
+        f"    Pestaña inicial: {actual['abrir_en']}", f"    Recordar carpeta: {'sí' if actual['recordar_ultima_carpeta'] else 'no'}", "",
+        "  Rendimiento", f"    Duplicados desde: {actual['duplicados_tamano_minimo_kb']} KB",
+        f"    Top de archivos: {actual['top_archivos']}", f"    Análisis en paralelo: {'sí' if actual['analisis_en_paralelo'] else 'no'}", "",
+        "  Asistente IA", f"    Activado: {'sí' if actual['asistente_activado'] else 'no'}",
+        f"    Clave: {origen}", f"    Modelo: {actual['asistente_modelo']}", ""
     ]

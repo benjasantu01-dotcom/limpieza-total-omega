@@ -6,8 +6,8 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **252** (50.0% de aceptación)
-- Rechazadas por tests: 15
+- Mejoras aceptadas: **253** (50.2% de aceptación)
+- Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 28
 - Sin cambios (nada sustancial que mejorar): 8
 - Sin respuesta de la IA (error o límite): 201
@@ -16,37 +16,41 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-27 | 40 | 2 | 5 | 1 | 42 |
+| 2026-07-27 | 37 | 1 | 5 | 1 | 42 |
 | 2026-07-28 | 178 | 12 | 19 | 5 | 136 |
-| 2026-07-29 | 34 | 1 | 4 | 2 | 23 |
+| 2026-07-29 | 38 | 1 | 4 | 2 | 23 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **64**
-- seguridad defensiva: **55**
+- seguridad defensiva: **52**
 - manejo de errores y validación de entradas: **52**
-- rendimiento: **43**
-- robustez ante casos límite: **38**
+- rendimiento: **45**
+- robustez ante casos límite: **40**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **23**
-- `assistant.py`: **23**
+- `settings.py`: **24**
+- `assistant.py`: **24**
 - `diskreport.py`: **22**
 - `scanner.py`: **20**
-- `duplicates.py`: **19**
 - `healthscore.py`: **19**
 - `organizer.py`: **19**
 - `quarantine.py`: **19**
-- `main.py`: **18**
+- `duplicates.py`: **18**
 - `browser.py`: **18**
+- `main.py`: **17**
 - `safety.py`: **16**
-- `memory.py`: **15**
-- `startup.py`: **11**
-- `branding.py`: **10**
+- `memory.py`: **14**
+- `startup.py`: **12**
+- `branding.py`: **11**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-29T02:50:08` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante casos límite de E/S, validando explícitamente la existencia de la ruta destino y manejando posibles errores de sistema al intentar crear directorios o escribir archivos en rutas protegidas.
+- `2026-07-29T02:49:54` **assistant.py** (robustez ante casos límite): Mejora la robustez del motor de consulta a Gemini ante configuraciones inválidas o datos de entrada malformados al añadir un chequeo de tipo más estricto y seguro en `ask`, evitando que el asistente falle o se comporte de forma inesperada si el archivo de configuración está corrupto.
+- `2026-07-29T02:49:22` **startup.py** (rendimiento): Optimicé el rendimiento de `entries_from_registry` eliminando llamadas redundantes a PowerShell dentro del bucle al consolidar la consulta en un único comando, reduciendo significativamente la latencia de ejecución al evitar múltiples inicializaciones del subsistema de Windows.
+- `2026-07-29T02:48:59` **settings.py** (rendimiento): Optimicé el rendimiento reduciendo la redundancia en la validación de tipos mediante el uso de un diccionario de dispatch, evitando múltiples sentencias `if-isinstance` anidadas y unificando la lógica de coerción.
 - `2026-07-29T02:39:50` **scanner.py** (rendimiento): Optimizé el rendimiento de `scan_file` y el bucle principal de `scan_directory` eliminando llamadas redundantes a `resolve()` y `path.is_file()`, además de centralizar la validación de seguridad para evitar redundancias durante el escaneo.
 - `2026-07-29T02:39:33` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` y `ensure_safe_to_modify` reemplazando iteraciones redundantes y llamadas repetidas a `normalize` mediante el uso de un conjunto para `PROTECTED_DIR_NAMES` y una verificación previa más eficiente de las partes de la ruta.
 - `2026-07-29T02:30:02` **organizer.py** (rendimiento): Se optimizó el rendimiento del escaneo recursivo eliminando la conversión repetitiva de `_LOWER_JUNK_EXTS` a `tuple()` dentro del bucle `for` de `_walk_dir`, sustituyéndola por una referencia constante pre-compilada, y se evitó la resolución `Path.resolve()` innecesaria dentro del bucle crítico al procesar archivos.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-29T02:18:22` **branding.py** (rendimiento): Optimicé el cálculo de colores y degradados reemplazando operaciones costosas por una caché de `lru_cache` y evitando la regeneración innecesaria de objetos en bucles críticos de renderizado.
 - `2026-07-29T02:09:12` **assistant.py** (rendimiento): Optimicé el ranking de problemas (`_rank_problems`) convirtiendo la concatenación de listas en una lógica más eficiente que evita la creación de sublistas innecesarias, y cacheé el pre-procesamiento de las sugerencias para evitar duplicados en memoria durante cada llamada a `local_answer`.
 - `2026-07-29T02:08:55` **startup.py** (legibilidad y documentación): Mejora la legibilidad y el mantenimiento de `startup.py` mediante la refactorización de la lógica de extracción de ejecutables en `StartupEntry` hacia un método de instancia más claro, eliminando la duplicación de lógica y mejorando el manejo de rutas.
-- `2026-07-29T02:08:32` **settings.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `settings.py` incluyendo Type Hints más específicos, refinando la nomenclatura de parámetros (usando `path_or_base`) para mayor claridad y añadiendo un docstring detallado a `_coerce_int` para explicar explícitamente el uso de `_NUMERIC_LIMITS` como medida contra configuraciones inyectadas maliciosamente.
-- `2026-07-29T02:08:07` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la inclusión de type hints precisos, la estandarización de las descripciones en los docstrings y la aclaración de las intenciones detrás de las validaciones de seguridad en cada función.
-- `2026-07-29T01:58:49` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings más precisos en `is_within_directory` y `is_protected_path`, y se refinó la lógica de `_contains_protected_name` para ser más eficiente y clara, además de añadir type hints faltantes.
-- `2026-07-29T01:58:19` **quarantine.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints detallados en las funciones de manipulación de manifiesto y la expansión de los docstrings para clarificar las precondiciones y efectos secundarios de las operaciones, facilitando el mantenimiento y auditoría del código.

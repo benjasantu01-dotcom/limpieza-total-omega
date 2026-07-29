@@ -457,8 +457,11 @@ def ask(question: str, context: SystemContext | None = None,
         if not isinstance(configuracion, dict):
             return respaldo
             
-        modelo = str(configuracion.get("asistente_modelo", "gemini-3.1-flash-lite"))
-        enviar = bool(configuracion.get("asistente_enviar_metricas", True))
+        modelo_val = configuracion.get("asistente_modelo")
+        modelo = str(modelo_val) if isinstance(modelo_val, str) else "gemini-3.1-flash-lite"
+        
+        enviar_val = configuracion.get("asistente_enviar_metricas")
+        enviar = bool(enviar_val) if isinstance(enviar_val, bool) else True
         
         texto_contexto = context_as_text(contexto) if enviar else "El usuario no autorizó enviar métricas."
         remoto = _call_gemini(question, texto_contexto, clave, modelo)
