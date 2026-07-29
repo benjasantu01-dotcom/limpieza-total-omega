@@ -1067,3 +1067,48 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-07-29T00:50:02` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-07-29T00:50:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-29T00:50:02` Corrida terminada. Total usado hoy: 20.
+- `2026-07-29T00:56:01` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-07-29T00:56:03` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-07-29T00:56:03` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-07-29T00:56:23` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-07-29T00:56:23` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-07-29T00:56:53` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-07-29T00:56:53` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-07-29T00:57:38` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `ask` y `build_context` mediante la validación estricta de tipos en los parámetros recibidos y la centralización de los intentos de carga de configuración, evitando fallos silenciosos por datos inesperados en el archivo de ajustes.
+- `2026-07-29T00:58:07` Tests FALLARON:
+```
+================
+______________________ test_score_color_survives_garbage _______________________
+
+    def test_score_color_survives_garbage():
+>       assert branding.score_color(None) == branding.PALETTE["text_muted"]
+E       AssertionError: assert '#ff4757' == '#94a3b8'
+E         
+E         - #94a3b8
+E         + #ff4757
+
+evolve/tests/test_modules.py:167: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:72: SyntaxWarning: invalid escape sequence '\P'
+    - '"C:\Program Files\App.exe" /s' -> 'C:\Program Files\App.exe'
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_score_color_survives_garbage - AssertionError: assert '#ff4757' == '#94a3b8'
+  
+  - #94a3b8
+  + #ff4757
+1 failed, 298 passed, 7 warnings in 1.02s
+
+```
+- `2026-07-29T00:58:07` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez de `save_logo_svg` y las funciones gráficas mediante la validación proactiva de tipos y estados, evitando que valores inesperados (como `None` o strings vacíos en parámetros) causen excepciones no controladas o estados visuales corruptos.
+- `2026-07-29T00:58:14` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `directory_size` y `detect_profiles` al agregar validaciones estrictas contra tipos de datos inesperados (None/vacíos) y mejorar el manejo de excepciones al convertir rutas para prevenir fallos silenciosos en sistemas con permisos restringidos.
+- `2026-07-29T00:58:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-29T00:58:14` Corrida terminada. Total usado hoy: 24.

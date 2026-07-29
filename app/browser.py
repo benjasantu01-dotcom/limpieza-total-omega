@@ -93,6 +93,8 @@ def _is_safe_path(target_path: Path, base_path: Path) -> bool:
     Valida que la ruta candidata resida físicamente dentro de la base,
     previendo ataques de directory traversal.
     """
+    if not target_path or not base_path:
+        return False
     try:
         resolved_target = target_path.resolve(strict=True)
         resolved_base = base_path.resolve(strict=True)
@@ -115,10 +117,10 @@ def directory_size(path: str | os.PathLike) -> int:
     
     try:
         p = Path(path)
-        if p.is_symlink():
+        if not p.is_dir() or p.is_symlink():
             return 0
         target = p.resolve(strict=True)
-        if is_protected_path(target) or not target.is_dir():
+        if is_protected_path(target):
             return 0
     except (OSError, RuntimeError):
         return 0
@@ -149,6 +151,8 @@ def directory_size(path: str | os.PathLike) -> int:
 
 def _is_valid_cache_path(candidate: Path, base_path: Path) -> bool:
     """Valida que la ruta sea un directorio de caché objetivo y no contenga datos personales."""
+    if not candidate:
+        return False
     try:
         if not candidate.exists() or candidate.is_symlink():
             return False
@@ -186,6 +190,8 @@ def detect_profiles(
 
         for browser_name, relative_path_str in cache_paths.items():
             try:
+                if not relative_path_str:
+                    continue
                 candidate = resolved_base.joinpath(*relative_path_str.split("\\"))
                 
                 if not _is_valid_cache_path(candidate, resolved_base):

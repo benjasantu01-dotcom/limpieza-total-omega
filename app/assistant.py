@@ -182,7 +182,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         except (TypeError, ValueError, AttributeError):
             return defecto
 
-    if metrics is not None and isinstance(metrics, object):
+    if metrics is not None and not isinstance(metrics, (int, float, str)):
         contexto.junk_mb = float(obtener_val(metrics, "junk_mb", float, 0.0))
         contexto.suspicious_count = int(obtener_val(metrics, "suspicious_count", int, 0))
         contexto.suspicious_warnings = int(obtener_val(metrics, "suspicious_warnings", int, 0))
@@ -193,7 +193,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         contexto.quarantined_count = int(obtener_val(metrics, "quarantined_count", int, 0))
         contexto.analyzed = True
 
-    if health is not None and isinstance(health, object):
+    if health is not None and not isinstance(health, (int, float, str)):
         score_val = obtener_val(health, "score", int, 0)
         contexto.score = max(0, min(int(score_val), 100))
         grado = getattr(health, "grade", "")
@@ -455,15 +455,15 @@ def ask(question: str, context: SystemContext | None = None,
             
         modelo = str(configuracion.get("asistente_modelo", "gemini-3.1-flash-lite"))
         enviar = bool(configuracion.get("asistente_enviar_metricas", True))
-    except (Exception):
+        
+        texto_contexto = context_as_text(contexto) if enviar else "El usuario no autorizó enviar métricas."
+        remoto = _call_gemini(question, texto_contexto, clave, modelo)
+
+        if not remoto:
+            respaldo.notice = ("No se pudo consultar al asistente en línea, así que "
+                               "respondí con el motor local.")
+            return respaldo
+
+        return Answer(remoto, source="gemini", notice=PRIVACY_NOTICE)
+    except Exception:
         return respaldo
-
-    texto_contexto = context_as_text(contexto) if enviar else "El usuario no autorizó enviar métricas."
-    remoto = _call_gemini(question, texto_contexto, clave, modelo)
-
-    if not remoto:
-        respaldo.notice = ("No se pudo consultar al asistente en línea, así que "
-                           "respondí con el motor local.")
-        return respaldo
-
-    return Answer(remoto, source="gemini", notice=PRIVACY_NOTICE)
