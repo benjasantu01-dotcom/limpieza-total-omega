@@ -474,3 +474,40 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-07-29T06:45:22` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
 - `2026-07-29T06:45:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-29T06:45:22` Corrida terminada. Total usado hoy: 160.
+- `2026-07-29T06:54:01` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-07-29T06:54:26` Tests FALLARON:
+```
+        candidates: List[Path] = []
+        for directory in directories:
+            base = Path(directory).expanduser()
+            if not base.exists(): continue
+    
+            # Uso de os.walk con scandir (Python 3.5+) para obtener stats sin llamadas extra
+            for root, dirs, files in os.walk(base):
+                root_path = Path(root)
+                if skip_protected and is_protected_path(root_path):
+                    dirs.clear()
+                    continue
+    
+                for name in files:
+                    full_path = root_path / name
+                    try:
+                        stat = full_path.lstat()
+>                       if stat.st_size >= min_size and not stat.st_is_symlink():
+                                                            ^^^^^^^^^^^^^^^^^^
+E                       AttributeError: 'os.stat_result' object has no attribute 'st_is_symlink'
+
+app/duplicates.py:159: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_finds_identical_files - AttributeError: 'os.stat_result' object has no attribute 'st_is_symlink'
+FAILED evolve/tests/test_modules.py::test_ignores_files_with_different_content - AttributeError: 'os.stat_result' object has no attribute 'st_is_symlink'
+FAILED evolve/tests/test_modules.py::test_finds_duplicates_across_subfolders - AttributeError: 'os.stat_result' object has no attribute 'st_is_symlink'
+3 failed, 296 passed in 1.15s
+
+```
+- `2026-07-29T06:54:26` ❌ Mejora descartada en duplicates.py (no pasó los tests), se revirtió. Intento: Optimizé `group_by_size` y `_collect_candidates` para reducir drásticamente el número de llamadas a `stat()` y `lstat()` mediante el uso de `os.scandir` (que recupera la información de los atributos del archivo en una sola operación a nivel de sistema operativo), minimizando el I/O innecesario durante el escaneo.
+- `2026-07-29T06:54:49` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
+- `2026-07-29T06:56:00` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Se implementó un mecanismo de caché (`self._cache`) en la clase `LimpiezaTotalOmegaApp` y se reemplazó el acceso directo a los resultados de `scan_for_junk` y `find_duplicates` por un acceso vía método `_get_cached`, evitando escaneos redundantes en la misma sesión y mejorando drásticamente el rendimiento percibido en la interfaz.
+- `2026-07-29T06:56:09` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: rendimiento).
+- `2026-07-29T06:56:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-29T06:56:09` Corrida terminada. Total usado hoy: 164.

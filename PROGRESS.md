@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **261** (51.8% de aceptación)
+- Mejoras aceptadas: **260** (51.6% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 27
+- Rechazadas por guardia de seguridad: 26
 - Sin cambios (nada sustancial que mejorar): 7
-- Sin respuesta de la IA (error o límite): 192
+- Sin respuesta de la IA (error o límite): 194
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-28 | 176 | 12 | 19 | 4 | 133 |
-| 2026-07-29 | 85 | 5 | 8 | 3 | 59 |
+| 2026-07-28 | 174 | 11 | 18 | 4 | 133 |
+| 2026-07-29 | 86 | 6 | 8 | 3 | 61 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **64**
 - seguridad defensiva: **60**
 - manejo de errores y validación de entradas: **55**
-- robustez ante casos límite: **43**
-- rendimiento: **39**
+- robustez ante casos límite: **41**
+- rendimiento: **40**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **24**
 - `assistant.py`: **23**
+- `settings.py`: **23**
 - `diskreport.py`: **22**
 - `browser.py`: **21**
 - `quarantine.py`: **21**
-- `scanner.py`: **20**
 - `healthscore.py`: **19**
+- `main.py`: **19**
 - `organizer.py`: **19**
+- `scanner.py`: **19**
 - `duplicates.py`: **18**
-- `main.py`: **18**
 - `memory.py`: **16**
 - `safety.py`: **15**
 - `startup.py`: **13**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-29T06:56:00` **main.py** (rendimiento): Se implementó un mecanismo de caché (`self._cache`) en la clase `LimpiezaTotalOmegaApp` y se reemplazó el acceso directo a los resultados de `scan_for_junk` y `find_duplicates` por un acceso vía método `_get_cached`, evitando escaneos redundantes en la misma sesión y mejorando drásticamente el rendimiento percibido en la interfaz.
 - `2026-07-29T06:45:15` **browser.py** (rendimiento): Optimizé la función `directory_size` para evitar llamadas redundantes a `is_protected_path` dentro del bucle recursivo, utilizando una verificación única al inicio, y añadí una validación de ruta protegida más eficiente en el flujo principal de `detect_profiles`.
 - `2026-07-29T06:44:53` **branding.py** (rendimiento): Se optimizó el rendimiento de `draw_logo` eliminando la creación de objetos innecesarios en el bucle principal y sustituyendo el cálculo de coordenadas en tiempo real por el uso eficiente de `cached` o pre-cálculos, reduciendo la carga de CPU durante el refresco de la UI.
 - `2026-07-29T06:44:25` **assistant.py** (rendimiento): Se pre-compilaron las expresiones regulares de los `handlers` como variables de módulo y se optimizó `_rank_problems` para evitar múltiples llamadas a propiedades de objetos, reduciendo la carga de procesamiento en cada consulta.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-29T06:14:18` **healthscore.py** (legibilidad y documentación): Mejora de la legibilidad y mantenimiento mediante la adición de Type Hints detallados, docstrings con descripción de parámetros en funciones clave y la sustitución de comprobaciones manuales por una validación de estructura de datos más robusta.
 - `2026-07-29T06:13:53` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la inclusión de tipado estricto en los argumentos de las funciones, la clarificación de las excepciones capturadas en los bloques `try-except` y la adición de docstrings precisos que explican el contrato de los parámetros, facilitando el mantenimiento y la legibilidad.
 - `2026-07-29T06:13:29` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `walk_files` y `summarize` mediante la adición de Type Hints detallados, docstrings descriptivos y la extracción de la lógica de ordenamiento en `summarize` hacia variables nombradas para evitar la carga cognitiva de operaciones anidadas.
-- `2026-07-29T06:04:17` **browser.py** (legibilidad y documentación): Mejoré la documentación de `directory_size` utilizando un estilo de docstring más técnico y descriptivo (tipo Google/NumPy) para clarificar las condiciones de seguridad y los casos de excepción, facilitando la auditoría del bucle de escaneo.
