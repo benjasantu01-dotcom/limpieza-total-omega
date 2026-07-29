@@ -122,17 +122,19 @@ def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload:
     if not path.exists():
         return []
     try:
-        raw = json.loads(path.read_text(encoding="utf-8"))
+        data = json.loads(path.read_text(encoding="utf-8"))
     except (json.JSONDecodeError, OSError):
         return []
     
-    if not isinstance(raw, list):
+    if not isinstance(data, list):
         return []
 
     items: List[QuarantineItem] = []
-    for entry in raw:
+    required_fields = {"item_id", "original_path", "stored_name", "size_bytes", "reason", "quarantined_at"}
+    
+    for entry in data:
         try:
-            if isinstance(entry, dict):
+            if isinstance(entry, dict) and required_fields.issubset(entry.keys()):
                 items.append(QuarantineItem(**entry))
         except (TypeError, ValueError):
             continue

@@ -190,7 +190,8 @@ def _read_windows_snapshot() -> MemorySnapshot:
 
     stat = MEMORYSTATUSEX()
     stat.dwLength = ctypes.sizeof(MEMORYSTATUSEX)
-    if not ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(stat)):
+    if not hasattr(ctypes.windll.kernel32, "GlobalMemoryStatusEx") or \
+       not ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(stat)):
         return MemorySnapshot(total=0, available=0)
     return MemorySnapshot(total=int(stat.ullTotalPhys), available=int(stat.ullAvailPhys))
 
@@ -306,7 +307,6 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     
     try:
         target_pid = int(pid)
-        # Protección estricta: PID 0 (Idle) y PID 4 (System) son intocables por seguridad y estabilidad.
         if target_pid < 16:
             return False, "PID protegido: no es posible modificar procesos del sistema base."
     except (ValueError, TypeError):
@@ -314,29 +314,30 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
 
     try:
         import ctypes
+        kernel32 = ctypes.windll.kernel32
+        psapi = ctypes.windll.psapi
 
-        # Permisos mínimos necesarios: SET_QUOTA (para EmptyWorkingSet) y QUERY (para verificar estado).
+        if not hasattr(kernel32, "OpenProcess") or not hasattr(psapi, "EmptyWorkingSet"):
+            return False, "APIs necesarias no disponibles en este entorno."
+
         WIN_PROCESS_SET_QUOTA = 0x0100
         WIN_PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
         
-        handle = ctypes.windll.kernel32.OpenProcess(
+        handle = kernel32.OpenProcess(
             WIN_PROCESS_SET_QUOTA | WIN_PROCESS_QUERY_LIMITED_INFORMATION, False, target_pid
         )
         if not handle:
             return False, f"Acceso denegado al proceso {target_pid}."
         
         try:
-            # Doble chequeo de seguridad contra la manipulación del proceso host.
-            if handle == ctypes.windll.kernel32.GetCurrentProcess():
+            if handle == kernel32.GetCurrentProcess():
                 return False, "Operación denegada: no se permite modificar el proceso actual."
 
-            # Llamada al API de Windows: EmptyWorkingSet retorna distinto de cero si tiene éxito.
-            if not ctypes.windll.psapi.EmptyWorkingSet(handle):
-                error_code = ctypes.GetLastError()
-                return False, f"Windows rechazó la operación (código: {error_code})."
+            if not psapi.EmptyWorkingSet(handle):
+                return False, f"Windows rechazó la operación (código: {kernel32.GetLastError()})."
         finally:
-            ctypes.windll.kernel32.CloseHandle(handle)
+            kernel32.CloseHandle(handle)
         
         return True, f"Working set del proceso {target_pid} liberado. {TRIM_WARNING}"
-    except (OSError, AttributeError):
+    except (OSError, AttributeError, Exception):
         return False, "Error fatal al interactuar con las APIs de bajo nivel del sistema."

@@ -157,9 +157,9 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
     Mueve archivos candidatos a una carpeta de revisión ("staging").
     Verifica seguridad, existencia de archivo y espacio disponible antes de cada operación.
     """
-    if not files or not isinstance(files, list) or not isinstance(review_dir, str):
+    if not isinstance(files, list) or not isinstance(review_dir, str):
         logger.warning("Entrada inválida en stage_for_review.")
-        return Path(review_dir).expanduser()
+        return Path(review_dir).expanduser().resolve()
 
     dest = Path(review_dir).expanduser().resolve()
     
@@ -172,7 +172,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         raise
 
     for jf in files:
-        if not isinstance(jf, JunkFile) or not jf.path:
+        if not isinstance(jf, JunkFile) or not hasattr(jf, 'path') or jf.path is None:
             continue
             
         try:
