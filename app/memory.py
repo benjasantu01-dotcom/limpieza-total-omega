@@ -27,7 +27,7 @@ import os
 import re
 import subprocess
 from dataclasses import dataclass, field
-from typing import List, Tuple, Optional, Dict, Iterator
+from typing import List, Tuple, Optional, Dict, Iterator, Any
 
 __all__ = [
     "MemorySnapshot",
@@ -190,8 +190,9 @@ def _read_windows_snapshot() -> MemorySnapshot:
 
     stat = MEMORYSTATUSEX()
     stat.dwLength = ctypes.sizeof(MEMORYSTATUSEX)
-    if not hasattr(ctypes.windll.kernel32, "GlobalMemoryStatusEx") or \
-       not ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(stat)):
+    kernel32 = ctypes.windll.kernel32
+    if not hasattr(kernel32, "GlobalMemoryStatusEx") or \
+       not kernel32.GlobalMemoryStatusEx(ctypes.byref(stat)):
         return MemorySnapshot(total=0, available=0)
     return MemorySnapshot(total=int(stat.ullTotalPhys), available=int(stat.ullAvailPhys))
 
@@ -224,6 +225,9 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     """
     Consulta al sistema operativo por los procesos de mayor consumo.
     Solo implementado para Windows vía PowerShell.
+    
+    :param limit: Cantidad máxima de procesos a retornar.
+    :return: Lista ordenada de objetos ProcessMemory.
     """
     if os.name != "nt":
         return []
@@ -300,7 +304,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     general del sistema según los principios expuestos en este módulo.
     
     :param pid: Identificador del proceso (entero o cadena numérica).
-    :return: Tupla (éxito, mensaje descriptivo).
+    :return: Tupla con (éxito: bool, mensaje: str).
     """
     if os.name != "nt":
         return False, "Solo disponible en Windows."

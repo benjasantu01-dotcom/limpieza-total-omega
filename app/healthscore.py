@@ -89,14 +89,14 @@ class HealthResult:
 
 
 def _clamp(value: float, low: float = 0.0, high: float = 1.0) -> float:
-    """Acota un valor al rango [low, high] para estandarizar ratios."""
+    """Acota un valor numérico al rango [low, high]."""
     if not isinstance(value, (int, float)) or not math.isfinite(value):
         return low
     return max(low, min(high, float(value)))
 
 
 def _to_float(value: Any, default: float = 0.0) -> float:
-    """Conversor seguro de tipos a float con manejo de errores."""
+    """Convierte un valor a float, retornando un default en caso de error."""
     try:
         val = float(value) if value is not None else default
         return val if math.isfinite(val) else default
@@ -105,7 +105,7 @@ def _to_float(value: Any, default: float = 0.0) -> float:
 
 
 def _to_int(value: Any, default: int = 0) -> int:
-    """Conversor seguro de tipos a int con manejo de errores."""
+    """Convierte un valor a int, retornando un default en caso de error."""
     try:
         return int(value) if value is not None else default
     except (TypeError, ValueError):
@@ -113,43 +113,43 @@ def _to_int(value: Any, default: int = 0) -> int:
 
 
 def score_junk(junk_mb: float) -> float:
-    """Puntúa basura: 0.0 si junk_mb >= JUNK_LIMIT_MB, 1.0 si es 0MB."""
+    """Calcula el ratio de limpieza de basura (0.0 a 1.0)."""
     if JUNK_LIMIT_MB <= 0: return 0.0
     return _clamp(1.0 - (junk_mb / JUNK_LIMIT_MB))
 
 
 def score_security(suspicious_count: int, warnings: int = 0) -> float:
-    """Puntúa seguridad: castigo acumulativo por hallazgos y warnings."""
+    """Calcula el ratio de seguridad (0.0 a 1.0) aplicando penalizaciones."""
     penalty = (suspicious_count * 0.05) + (warnings * 0.25)
     return _clamp(1.0 - penalty)
 
 
 def score_memory(available_percent: float) -> float:
-    """Puntúa RAM: 1.0 si el % de RAM libre es >= RAM_IDEAL_PERCENT."""
+    """Calcula el ratio de disponibilidad de RAM (0.0 a 1.0)."""
     if RAM_IDEAL_PERCENT <= 0: return 0.0
     return _clamp(available_percent / RAM_IDEAL_PERCENT)
 
 
 def score_disk(free_percent: float) -> float:
-    """Puntúa espacio libre: 1.0 si el espacio libre es >= DISK_IDEAL_PERCENT."""
+    """Calcula el ratio de espacio libre en disco (0.0 a 1.0)."""
     if DISK_IDEAL_PERCENT <= 0: return 0.0
     return _clamp(free_percent / DISK_IDEAL_PERCENT)
 
 
 def score_duplicates(duplicate_mb: float) -> float:
-    """Puntúa duplicados: penalización lineal, 0.0 al llegar a DUPLICATE_LIMIT_MB."""
+    """Calcula el ratio de archivos duplicados (0.0 a 1.0)."""
     if DUPLICATE_LIMIT_MB <= 0: return 0.0
     return _clamp(1.0 - (duplicate_mb / DUPLICATE_LIMIT_MB))
 
 
 def score_startup(startup_count: int) -> float:
-    """Puntúa inicio: penalización lineal, 0.0 al superar STARTUP_LIMIT_COUNT entradas."""
+    """Calcula el ratio de programas en inicio (0.0 a 1.0)."""
     if STARTUP_LIMIT_COUNT <= 0: return 0.0
     return _clamp(1.0 - (startup_count / STARTUP_LIMIT_COUNT))
 
 
 def grade_for_score(score: int) -> str:
-    """Convierte el score 0-100 a escala escolar A-F."""
+    """Mapea un puntaje entero a una calificación cualitativa (A-F)."""
     if score >= 90: return "A"
     if score >= 80: return "B"
     if score >= 65: return "C"
@@ -158,7 +158,7 @@ def grade_for_score(score: int) -> str:
 
 
 def _generate_recommendations(m: SystemMetrics, ratios: Dict[str, float]) -> List[str]:
-    """Genera una lista de acciones correctivas basadas en ratios bajos por área."""
+    """Genera recomendaciones basadas en el análisis de ratios por área."""
     recs: List[str] = []
     
     if ratios.get("seguridad", 1.0) < 0.9:
@@ -206,7 +206,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         }
 
         # Calculamos desglose usando WEIGHTS de forma segura
-        breakdown = {}
+        breakdown: Dict[str, int] = {}
         for key in WEIGHTS.keys():
             ratio = ratios.get(key, 0.0)
             weight = WEIGHTS.get(key, 0)
@@ -226,7 +226,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
 
 
 def summarize(result: HealthResult) -> List[str]:
-    """Genera un reporte visual legible para mostrar en la interfaz o logs."""
+    """Genera un reporte textual resumido a partir de un HealthResult."""
     lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     orden = sorted(result.breakdown.items(), key=lambda kv: kv[1] - WEIGHTS.get(kv[0], 0))
     for area, puntos in orden:

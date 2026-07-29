@@ -77,6 +77,10 @@ def hash_file(path: Union[str, os.PathLike], chunk_size: int = 1024 * 1024) -> O
     """
     Calcula el hash SHA256 completo de un archivo mediante lectura en bloques.
     
+    Args:
+        path: Ruta del archivo a procesar.
+        chunk_size: Tamaño de cada bloque de lectura en bytes.
+        
     Returns:
         String hexadecimal del hash si es accesible, None en caso de error o ruta protegida.
     """
@@ -97,8 +101,12 @@ def partial_hash(path: Union[str, os.PathLike], read_bytes: int = PARTIAL_READ_B
     """
     Calcula un hash rápido de los primeros N bytes de un archivo.
     
+    Args:
+        path: Ruta del archivo a procesar.
+        read_bytes: Cantidad de bytes a leer desde el inicio.
+        
     Returns:
-        String hexadecimal del hash, None si el archivo es vacío o inaccesible.
+        String hexadecimal del hash (SHA256), None si el archivo es vacío o inaccesible.
     """
     if path is None or is_protected_path(path):
         return None
@@ -237,11 +245,15 @@ def reclaimable_bytes(groups: List[DuplicateGroup]) -> int:
 
 def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
     """
-    Selecciona la ruta de archivo más antigua (creación/mtime) para conservarla como original.
+    Selecciona el archivo que será conservado basado en criterios de antigüedad.
+    
+    El criterio es: la fecha de modificación (mtime) más antigua. 
+    En caso de empate, se utiliza la longitud de la ruta como desempate.
     """
     if not group or not group.paths:
         return None
 
+    # Lista de tuplas: (mtime, len_path, path)
     valid_paths: List[tuple[float, int, Path]] = []
     for p in group.paths:
         if not p or is_protected_path(p):
@@ -255,8 +267,9 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
     if not valid_paths:
         return group.paths[0] if group.paths else None
 
-    best = min(valid_paths, key=lambda x: (x[0], x[1]))
-    return best[2]
+    # Ordenar primero por tiempo, luego por longitud de ruta
+    best_candidate = min(valid_paths, key=lambda x: (x[0], x[1]))
+    return best_candidate[2]
 
 
 def format_group(group: DuplicateGroup) -> List[str]:
