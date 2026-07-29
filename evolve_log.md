@@ -833,3 +833,10 @@ FAILED evolve/tests/test_integrity.py::test_is_safe_returns_bool_and_never_raise
 - `2026-07-29T09:59:51` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las funciones de hash y el recolector de candidatos mediante la validación de tipos y el manejo explícito de rutas inválidas, asegurando que los chequeos de seguridad sean efectivos antes de intentar operaciones de I/O, previniendo excepciones innecesarias en el pipeline de procesamiento.
 - `2026-07-29T09:59:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-29T09:59:51` Corrida terminada. Total usado hoy: 236.
+- `2026-07-29T10:08:45` Arrancando corrida. Quedan hoy ~64 peticiones objetivo.
+- `2026-07-29T10:09:11` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez en `_generate_recommendations` mediante la validación de tipos y rangos de las métricas recibidas, evitando posibles errores de formato o desbordamiento al procesar valores inesperados durante la generación del informe.
+- `2026-07-29T10:10:14` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `run_async` añadiendo una captura explícita y específica para `PermissionError` y `FileNotFoundError` (garantizando que el usuario reciba feedback útil sin romper el bucle), además de asegurar que el acceso a `self.tabview.get()` esté protegido frente a posibles condiciones de carrera durante el inicio de la app.
+- `2026-07-29T10:10:39` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: manejo de errores y validación de entradas).
+- `2026-07-29T10:10:45` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-07-29T10:10:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-29T10:10:45` Corrida terminada. Total usado hoy: 240.

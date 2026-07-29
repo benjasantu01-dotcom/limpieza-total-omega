@@ -773,11 +773,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             except safety.UnsafePathError as e:
                 self.log(f"Bloqueado por seguridad: {e}", self._current_tab())
             except PermissionError:
-                self.log("Error: permiso denegado. Probá ejecutar como administrador.",
-                         self._current_tab())
+                self.log("Error: permiso denegado. Ejecutá como administrador.", self._current_tab())
             except FileNotFoundError as e:
-                self.log(f"Error: no se encontró la ruta: {getattr(e, 'filename', e)}",
-                         self._current_tab())
+                self.log(f"Error: ruta no encontrada: {getattr(e, 'filename', 'desconocida')}", self._current_tab())
             except OSError as e:
                 logging.error("Error de sistema: %s", e)
                 self.log(f"Error de sistema ({e.errno}): {e.strerror}", self._current_tab())
@@ -794,6 +792,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """Devuelve el nombre de la pestaña visible actualmente."""
         try:
             etiqueta = self.tabview.get()
+            if not isinstance(etiqueta, str): return "Limpieza"
         except Exception:
             return "Limpieza"
         for nombre in TABS:
