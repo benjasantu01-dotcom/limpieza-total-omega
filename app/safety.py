@@ -71,6 +71,7 @@ _SYSTEM_ROOTS: Final[tuple[Path, ...]] = tuple(
     if os.environ.get(v)
 )
 _SYSTEM_ROOTS_PARTS: Final[frozenset[str]] = frozenset({p.name.lower() for p in _SYSTEM_ROOTS})
+_PROTECTED_AND_SYSTEM: Final[frozenset[str]] = PROTECTED_DIR_NAMES | _SYSTEM_ROOTS_PARTS
 
 
 def _is_reparse_point(path: Path) -> bool:
@@ -110,7 +111,7 @@ def is_drive_root(path: PathLike) -> bool:
         return False
 
 
-@lru_cache(maxsize=256)
+@lru_cache(maxsize=1024)
 def is_protected_path(path: PathLike) -> bool:
     """
     Evalúa si una ruta es peligrosa por ser parte del sistema o una ruta de red (UNC).
@@ -127,8 +128,8 @@ def is_protected_path(path: PathLike) -> bool:
         if p.is_symlink() or is_drive_root(p):
             return True
         
-        parts_lower = {part.lower() for part in p.parts}
-        return not PROTECTED_DIR_NAMES.isdisjoint(parts_lower) or not _SYSTEM_ROOTS_PARTS.isdisjoint(parts_lower)
+        # Uso de conjunto combinado precargado para evitar intersecciones costosas
+        return not _PROTECTED_AND_SYSTEM.isdisjoint(part.lower() for part in p.parts)
     except (PermissionError, OSError, ValueError, TypeError):
         return True 
 
@@ -145,7 +146,6 @@ def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = F
         if not c.is_absolute() or not p.is_absolute():
             return False
             
-        # Comprobar que ningún padre sea un punto de reparse
         for path_to_check in [c, p]:
             for parent_dir in path_to_check.parents:
                 if parent_dir.exists() and _is_reparse_point(parent_dir):
@@ -159,6 +159,7 @@ def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = F
         return False
 
 
+@lru_cache(maxsize=512)
 def is_sensitive_file(path: PathLike) -> bool:
     """Verifica si la extensión del archivo es crítica (.sys, .dll, etc)."""
     if path is None:
@@ -224,7 +225,7 @@ def describe_protection(path: PathLike) -> str:
         return f"'{p}' es la raíz de una unidad."
     if is_protected_path(p):
         protegida = next(
-            (part for part in p.parts if part.lower() in PROTECTED_DIR_NAMES),
+            (part for part in p.parts if part.lower() in _PROTECTED_AND_SYSTEM),
             "ruta de sistema",
         )
         return f"'{p}' está protegida por contener '{protegida}'."

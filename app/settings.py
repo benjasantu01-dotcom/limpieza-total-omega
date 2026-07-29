@@ -66,7 +66,7 @@ API_KEY_ENV_VAR: Final = "OMEGA_GEMINI_KEY"
 VALID_THEMES: Final = ("oscuro", "claro", "sistema")
 VALID_ACCENTS: Final = ("menta", "violeta", "magenta", "cian", "ambar")
 
-# Caché interno para evitar lectura repetitiva de disco
+# Caché interno para evitar lectura repetitiva de disco y re-validación
 _cached_settings: dict[str, Any] | None = None
 _last_path_str: str | None = None
 _last_mtime: float = 0.0

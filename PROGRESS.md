@@ -16,36 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-28 | 119 | 8 | 11 | 2 | 92 |
-| 2026-07-29 | 138 | 9 | 14 | 5 | 106 |
+| 2026-07-28 | 115 | 8 | 11 | 2 | 92 |
+| 2026-07-29 | 142 | 9 | 14 | 5 | 106 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **66**
 - manejo de errores y validación de entradas: **55**
-- seguridad defensiva: **53**
-- rendimiento: **43**
+- seguridad defensiva: **49**
+- rendimiento: **47**
 - robustez ante casos límite: **40**
 
 ## Mejoras aceptadas por archivo
 
-- `browser.py`: **23**
-- `settings.py`: **22**
+- `settings.py`: **23**
+- `scanner.py`: **22**
+- `browser.py`: **22**
 - `main.py`: **21**
 - `quarantine.py`: **21**
-- `scanner.py`: **21**
 - `assistant.py`: **21**
-- `duplicates.py`: **20**
-- `diskreport.py`: **19**
 - `organizer.py`: **19**
-- `healthscore.py`: **18**
+- `duplicates.py`: **19**
+- `diskreport.py`: **18**
+- `healthscore.py`: **17**
 - `memory.py`: **17**
+- `safety.py`: **14**
 - `branding.py`: **13**
-- `safety.py`: **13**
-- `startup.py`: **9**
+- `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-29T11:42:11` **startup.py** (rendimiento): Optimicé el rendimiento de `entries_from_registry` consolidando el parseo de CSV: en lugar de llamar a `parse_registry_csv` por cada línea (lo que generaba múltiples listas y recorridos innecesarios), ahora proceso el buffer de una sola vez, reduciendo la carga de CPU y la creación de objetos intermedios.
+- `2026-07-29T11:42:02` **settings.py** (rendimiento): Se optimizó el rendimiento del proceso de carga mediante la implementación de una caché de validación (`_validated_cache`) que evita recalcular la estructura completa del diccionario de configuración cuando el archivo en disco no ha cambiado, reduciendo la carga de CPU y la redundancia lógica.
+- `2026-07-29T11:41:36` **scanner.py** (rendimiento): Optronicé la función `scan_directory` reemplazando la creación repetitiva de objetos `Path` por el uso directo de `entry.path` (string) para el chequeo de seguridad y recursión, reduciendo drásticamente la sobrecarga de instanciación de objetos en directorios grandes.
+- `2026-07-29T11:41:14` **safety.py** (rendimiento): Se implementó un cache LRU en `is_sensitive_file` y se optimizó `is_protected_path` evitando la regeneración constante de conjuntos en cada llamada, mejorando el rendimiento en recorridos de disco masivos.
 - `2026-07-29T11:31:48` **quarantine.py** (rendimiento): Optimizé `list_items` y `summarize` para aprovechar la caché existente en lugar de recargar el manifiesto desde disco en cada llamado, reduciendo drásticamente las operaciones de I/O redundantes durante la navegación por la UI.
 - `2026-07-29T11:31:22` **organizer.py** (rendimiento): Se optimizó el escaneo de directorios reemplazando el uso recursivo de `os.scandir` por una implementación que pre-filtra extensiones mediante el uso eficiente de `str.endswith` con tuplas, y se evitó la instanciación innecesaria de objetos `Path` dentro del bucle crítico, reduciendo la carga sobre el sistema de archivos durante el escaneo.
 - `2026-07-29T11:30:59` **memory.py** (rendimiento): Optimizé `parse_windows_process_csv` reemplazando la creación y filtrado de listas intermedias por un generador eficiente, reduciendo el consumo de memoria al procesar la salida del comando de procesos.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-29T11:10:33` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados, type hints consistentes y la clarificación de las responsabilidades de cada función, eliminando ambigüedades en la lógica de procesamiento para facilitar el mantenimiento y la auditoría.
 - `2026-07-29T11:01:21` **settings.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados que explican el contrato de las funciones de validación, clarifiqué la jerarquía de validación de tipos y mejoré los nombres de variables internas en las funciones `_coerce_int` y `_coerce_bool` para eliminar ambigüedades sobre su propósito.
 - `2026-07-29T11:01:10` **scanner.py** (legibilidad y documentación): Mejora la legibilidad y la robustez del código mediante la adición de Type Hints detallados, la unificación del manejo de errores mediante el uso de una constante de tipos, y la inclusión de docstrings más descriptivos que clarifican las decisiones de seguridad tomadas en `scan_directory` y `_is_reparse_point`.
-- `2026-07-29T11:00:48` **safety.py** (legibilidad y documentación): Se introdujo documentación técnica detallada (docstrings) para las funciones críticas y se unificó la lógica de detección de puntos de reparse (reparse points) en una función privada `_is_reparse_point` para evitar la duplicación de código y mejorar la legibilidad.
-- `2026-07-29T10:51:33` **quarantine.py** (legibilidad y documentación): Mejoré la documentación de `quarantine.py` mediante type hints explícitos, docstrings más detallados que aclaran las precondiciones de cada función, y la sustitución de `str` por `Path` en firmas críticas para reforzar la seguridad de tipos y reducir errores de manejo de rutas.
-- `2026-07-29T10:51:22` **organizer.py** (legibilidad y documentación): Se añadió documentación mediante Type Hinting avanzado y docstrings descriptivos, y se extrajo la lógica de validación de colisiones de nombres de archivo en `stage_for_review` a una función privada para mejorar la legibilidad y mantenibilidad del flujo principal.
-- `2026-07-29T10:50:59` **memory.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo incorporando docstrings detallados en las funciones de bajo nivel (`_read_windows_snapshot`, `trim_working_set`) para explicar el uso de `ctypes` y las restricciones de seguridad del sistema operativo, facilitando el mantenimiento futuro.

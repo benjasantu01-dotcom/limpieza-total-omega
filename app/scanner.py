@@ -139,7 +139,7 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
             return []
             
         results: List[Suspicion] = []
-        stack: List[Path] = [root]
+        stack: List[str] = [str(root)]
         
         while stack:
             current_dir = stack.pop()
@@ -147,16 +147,14 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
                 with os.scandir(current_dir) as it:
                     for entry in it:
                         try:
-                            entry_path = Path(entry.path)
-                            if is_protected_path(entry_path):
+                            if is_protected_path(Path(entry.path)):
                                 continue
                                 
                             if entry.is_dir(follow_symlinks=False):
-                                # Evitar recursión en reparse points para preservar integridad
                                 if not _is_reparse_point(entry):
-                                    stack.append(entry_path)
+                                    stack.append(entry.path)
                             elif entry.is_file():
-                                results.extend(scan_file(entry_path))
+                                results.extend(scan_file(Path(entry.path)))
                         except (PermissionError, OSError, ValueError):
                             continue
             except (PermissionError, OSError):

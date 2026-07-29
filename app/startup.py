@@ -164,20 +164,14 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
         
     for line in text.splitlines():
         clean_line: str = line.strip()
-        if not clean_line:
-            continue
-        csv_row_parts: List[str] = clean_line.split(",", 1)
-        if len(csv_row_parts) < 2:
+        if not clean_line or ',' not in clean_line:
             continue
             
+        csv_row_parts: List[str] = clean_line.split(",", 1)
         name_raw: str = csv_row_parts[0].strip().strip('"').strip("'")
         value_raw: str = csv_row_parts[1].strip().strip('"').strip("'")
         
-        if not name_raw or not value_raw:
-            continue
-            
-        # Filtra metadatos de PowerShell
-        if name_raw.lower() in ("name", "pscustomobject") or name_raw.upper().startswith("PS"):
+        if not name_raw or not value_raw or name_raw.lower() in ("name", "pscustomobject") or name_raw.upper().startswith("PS"):
             continue
             
         parsed_entries.append(StartupEntry(name=name_raw, command=value_raw, source=source))
@@ -193,13 +187,12 @@ def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[Start
     """
     if os.name != "nt":
         return []
-    all_entries: List[StartupEntry] = []
     
     query_parts = []
     for key in keys:
         if isinstance(key, str):
             safe_key = subprocess.list2cmdline([key])
-            query_parts.append(f"Write-Host '{key}'; (Get-ItemProperty {safe_key}).psobject.properties | Select-Object Name, Value | ConvertTo-Csv -NoTypeInformation")
+            query_parts.append(f"Write-Host 'SRCDATA:{key}'; (Get-ItemProperty {safe_key}).psobject.properties | Select-Object Name, Value | ConvertTo-Csv -NoTypeInformation")
     
     ps_cmd = " ; ".join(query_parts)
     
@@ -209,16 +202,18 @@ def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[Start
             capture_output=True, text=True, timeout=30,
         )
         if result.returncode == 0 and result.stdout:
+            entries = []
             current_source = "registro"
             for line in result.stdout.splitlines():
-                if line.startswith("'HK"):
-                    current_source = line.strip("'")
+                if line.startswith("SRCDATA:"):
+                    current_source = line[8:]
                     continue
-                if '","' in line or (line.startswith('"') and line.endswith('"')):
-                    all_entries.extend(parse_registry_csv(line, source=current_source))
+                if ',' in line:
+                    entries.extend(parse_registry_csv(line, source=current_source))
+            return entries
     except (OSError, subprocess.SubprocessError):
         pass
-    return all_entries
+    return []
 
 
 def list_startup_entries() -> List[StartupEntry]:

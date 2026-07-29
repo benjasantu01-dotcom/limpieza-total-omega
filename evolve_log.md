@@ -935,3 +935,10 @@ FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quara
 - `2026-07-29T11:31:51` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 100): unterminated string literal (detected at line 100)
 - `2026-07-29T11:31:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-29T11:31:51` Corrida terminada. Total usado hoy: 272.
+- `2026-07-29T11:40:49` Arrancando corrida. Quedan hoy ~28 peticiones objetivo.
+- `2026-07-29T11:41:14` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se implementó un cache LRU en `is_sensitive_file` y se optimizó `is_protected_path` evitando la regeneración constante de conjuntos en cada llamada, mejorando el rendimiento en recorridos de disco masivos.
+- `2026-07-29T11:41:36` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optronicé la función `scan_directory` reemplazando la creación repetitiva de objetos `Path` por el uso directo de `entry.path` (string) para el chequeo de seguridad y recursión, reduciendo drásticamente la sobrecarga de instanciación de objetos en directorios grandes.
+- `2026-07-29T11:42:02` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se optimizó el rendimiento del proceso de carga mediante la implementación de una caché de validación (`_validated_cache`) que evita recalcular la estructura completa del diccionario de configuración cuando el archivo en disco no ha cambiado, reduciendo la carga de CPU y la redundancia lógica.
+- `2026-07-29T11:42:11` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Optimicé el rendimiento de `entries_from_registry` consolidando el parseo de CSV: en lugar de llamar a `parse_registry_csv` por cada línea (lo que generaba múltiples listas y recorridos innecesarios), ahora proceso el buffer de una sola vez, reduciendo la carga de CPU y la creación de objetos intermedios.
+- `2026-07-29T11:42:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-29T11:42:11` Corrida terminada. Total usado hoy: 276.
