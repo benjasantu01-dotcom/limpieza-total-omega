@@ -137,15 +137,16 @@ def all_drives_usage(mounts: Iterable[str] | None = None) -> list[DriveUsage]:
             mounts = ["/"]
     results = []
     for mount in mounts:
-        usage = drive_usage(mount)
-        if usage is not None:
-            results.append(usage)
+        if mount:
+            usage = drive_usage(mount)
+            if usage is not None:
+                results.append(usage)
     return results
 
 
 def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Generator[tuple[Path, int], None, None]:
     """Genera tuplas (ruta, tamaño) para cada archivo encontrado, manejando errores de acceso."""
-    if not directory:
+    if directory is None:
         return
     try:
         base_path = Path(directory).expanduser().resolve(strict=True)
@@ -162,7 +163,6 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
             if os.name == 'nt':
                 if entry.stat(follow_symlinks=False).st_reparse_tag != 0:
                     return True
-            # Validar que la ruta sea hija de la base para evitar escape
             path_entry = Path(entry.path).resolve()
             if not path_entry.is_relative_to(base_path):
                 return True
@@ -231,7 +231,6 @@ def largest_folders(directory: str | os.PathLike, limit: int = 10, skip_protecte
     
     for path, size in walk_files(base, skip_protected):
         try:
-            # Aseguramos que el path sea hijo de base
             rel = path.resolve().relative_to(base)
             if not rel.parts:
                 continue

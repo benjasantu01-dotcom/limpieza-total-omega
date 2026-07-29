@@ -120,12 +120,12 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     Returns:
         Diccionario donde la clave es el tamaño en bytes y el valor es la lista de rutas.
     """
-    groups: Dict[int, List[Path]] = defaultdict(list)
     if paths is None:
-        return groups
+        return {}
         
+    groups: Dict[int, List[Path]] = defaultdict(list)
     for p in paths:
-        if is_protected_path(p):
+        if p is None or is_protected_path(p):
             continue
         try:
             stat = p.lstat()
@@ -168,7 +168,7 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
                         if candidate.is_symlink():
                             continue
                         st = candidate.stat()
-                        if st.st_size >= min_size and os.path.isfile(candidate):
+                        if st.st_size >= min_size and st.st_size > 0:
                             candidates.append(candidate)
                     except (OSError, PermissionError, FileNotFoundError):
                         continue
@@ -188,7 +188,7 @@ def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[
         return {}
     by_hash: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
-        if digest := hash_func(path):
+        if path and (digest := hash_func(path)):
             by_hash[digest].append(path)
     return {h: p for h, p in by_hash.items() if len(p) > 1}
 
@@ -232,7 +232,7 @@ def reclaimable_bytes(groups: List[DuplicateGroup]) -> int:
     """Calcula la suma total de espacio desperdiciado por todos los grupos duplicados."""
     if not groups:
         return 0
-    return sum(g.wasted_bytes for g in groups)
+    return sum(g.wasted_bytes for g in groups if g is not None)
 
 
 def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
@@ -244,7 +244,7 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
 
     valid_paths: List[tuple[float, int, Path]] = []
     for p in group.paths:
-        if is_protected_path(p):
+        if not p or is_protected_path(p):
             continue
         try:
             mtime = p.stat().st_mtime
@@ -253,7 +253,7 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
             continue
             
     if not valid_paths:
-        return group.paths[0]
+        return group.paths[0] if group.paths else None
 
     best = min(valid_paths, key=lambda x: (x[0], x[1]))
     return best[2]

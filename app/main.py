@@ -1108,15 +1108,16 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             messagebox.showinfo("Falta el ID", "Pegá el ID del archivo que querés restaurar.")
             return
 
+        # Validación robusta de ID para evitar inyecciones o rutas maliciosas
+        if not item_id.isalnum():
+             messagebox.showerror("Error", "El ID debe ser alfanumérico.")
+             return
+
         def task():
             if not quarantine.item_exists(item_id):
                 self.log(f"Error: El ID '{item_id}' no existe en la cuarentena.", "Cuarentena")
                 return
             try:
-                # Validamos que el ID no sea una cadena vacía sospechosa
-                if not item_id.isalnum():
-                     self.log(f"Error: ID inválido '{item_id}'.", "Cuarentena")
-                     return
                 destino = quarantine.restore_item(item_id)
                 self.log(f"Restaurado en: {destino}", "Cuarentena")
             except Exception as e:

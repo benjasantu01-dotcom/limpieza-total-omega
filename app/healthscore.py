@@ -164,18 +164,19 @@ def _generate_recommendations(m: SystemMetrics, ratios: Dict[str, float]) -> Lis
     if ratios.get("seguridad", 1.0) < 0.9:
         recs.append(f"Revisá los {m.suspicious_count} hallazgo(s) de seguridad; podés aislarlos en cuarentena sin borrarlos.")
     if ratios.get("disco", 1.0) < 0.6:
-        recs.append(f"Queda {round(m.disk_free_percent, 1)}% de disco libre. Mirá el análisis de disco para ver qué ocupa más.")
+        pct = round(_clamp(m.disk_free_percent, 0, 100), 1)
+        recs.append(f"Queda {pct}% de disco libre. Mirá el análisis de disco para ver qué ocupa más.")
     if ratios.get("memoria", 1.0) < 0.6:
         recs.append("Memoria disponible baja: cerrá programas que no uses. Ojo, 'liberar RAM' no sirve, cerrar procesos sí.")
     if ratios.get("basura", 1.0) < 0.8:
-        recs.append(f"Hay unos {int(m.junk_mb)} MB de archivos temporales para revisar.")
+        recs.append(f"Hay unos {int(max(0, m.junk_mb))} MB de archivos temporales para revisar.")
     if ratios.get("duplicados", 1.0) < 0.8:
-        recs.append(f"Podrías recuperar ~{int(m.duplicate_mb)} MB eliminando copias duplicadas.")
+        recs.append(f"Podrías recuperar ~{int(max(0, m.duplicate_mb))} MB eliminando copias duplicadas.")
     if ratios.get("arranque", 1.0) < 0.6:
-        recs.append(f"{m.startup_count} programas arrancan con Windows; desactivá los que no necesites desde el Administrador de tareas.")
+        recs.append(f"{max(0, m.startup_count)} programas arrancan con Windows; desactivá los que no necesites desde el Administrador de tareas.")
     
     if m.quarantined_count > 0:
-        recs.append(f"Tenés {m.quarantined_count} archivo(s) en cuarentena esperando tu decisión.")
+        recs.append(f"Tenés {max(0, m.quarantined_count)} archivo(s) en cuarentena esperando tu decisión.")
     
     if not recs:
         recs.append("No hay nada urgente para hacer. El sistema está en buen estado.")
