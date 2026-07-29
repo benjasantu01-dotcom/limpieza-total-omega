@@ -18,6 +18,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 from typing import Union, Iterable, TypeAlias, Final
+from functools import lru_cache
 
 # Alias para facilitar la lectura de firmas de funciones que aceptan rutas
 PathLike: TypeAlias = Union[str, os.PathLike]
@@ -75,12 +76,6 @@ _SYSTEM_ROOTS_PARTS: Final[frozenset[str]] = frozenset({p.name.lower() for p in 
 def normalize(path: PathLike) -> Path:
     """
     Convierte una ruta a objeto Path absoluto y resuelto.
-
-    Args:
-        path: La ruta a normalizar.
-
-    Returns:
-        Un objeto Path absoluto, libre de symlinks relativos.
     """
     if not isinstance(path, (str, os.PathLike)):
         raise TypeError(f"Entrada inválida: se esperaba str o PathLike, recibió {type(path)}")
@@ -110,12 +105,10 @@ def is_drive_root(path: PathLike) -> bool:
         return False
 
 
+@lru_cache(maxsize=256)
 def is_protected_path(path: PathLike) -> bool:
     """
     Evalúa si una ruta es considerada peligrosa por ser del sistema o red.
-
-    Returns:
-        True si la ruta es de sistema, red, o contiene partes protegidas.
     """
     if not path or not isinstance(path, (str, os.PathLike)):
         return True
@@ -142,11 +135,6 @@ def is_within_directory(
 ) -> bool:
     """
     Verifica si 'child' reside físicamente dentro de 'parent' evitando symlinks.
-
-    Args:
-        child: Ruta candidata a estar dentro.
-        parent: Ruta directorio contenedor.
-        allow_equal: Si es True, permite que child == parent.
     """
     if child is None or parent is None:
         return False
@@ -155,7 +143,6 @@ def is_within_directory(
         if not c.is_absolute() or not p.is_absolute():
             return False
             
-        # Verificar puntos de reparse en la ruta
         for path_to_check in [c, p]:
             for parent_dir in path_to_check.parents:
                 if parent_dir.exists():
@@ -184,12 +171,6 @@ def is_sensitive_file(path: PathLike) -> bool:
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> Path:
     """
     Valida la seguridad para operaciones de escritura/borrado.
-
-    Raises:
-        UnsafePathError: Si la ruta es inválida, de red, protegida o sensible.
-
-    Returns:
-        La ruta normalizada si es segura.
     """
     if path is None:
         raise UnsafePathError("Ruta nula recibida.")

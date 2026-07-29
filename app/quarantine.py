@@ -256,8 +256,7 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
         raise ValueError("El ID debe ser una cadena válida.")
 
     items = load_manifest(base)
-    item_map = {i.item_id: i for i in items}
-    match = item_map.get(item_id)
+    match = next((i for i in items if i.item_id == item_id), None)
     
     if match is None:
         raise KeyError(f"No se encontró el ítem: {item_id}")
@@ -299,8 +298,7 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
         return False
     
     items = load_manifest(base)
-    item_map = {i.item_id: i for i in items}
-    match = item_map.get(item_id)
+    match = next((i for i in items if i.item_id == item_id), None)
     
     if match is None:
         return False

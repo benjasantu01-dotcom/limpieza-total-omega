@@ -511,3 +511,10 @@ FAILED evolve/tests/test_modules.py::test_finds_duplicates_across_subfolders - A
 - `2026-07-29T06:56:09` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: rendimiento).
 - `2026-07-29T06:56:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-29T06:56:09` Corrida terminada. Total usado hoy: 164.
+- `2026-07-29T07:04:15` Arrancando corrida. Quedan hoy ~136 peticiones objetivo.
+- `2026-07-29T07:04:38` ➖ Sin cambios en organizer.py (enfoque: rendimiento). Motivo: Optimizé la función `_walk_dir` en `scan_for_junk` para reemplazar las llamadas redundantes a `Path(entry.path)` y `entry.path.lower()` por operaciones directas sobre el objeto `DirEntry`, reduciendo significativamente la creación de objetos y el uso de memoria durante el escaneo de directorios grandes.
+- `2026-07-29T07:05:10` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimizé la búsqueda de ítems en `restore_item` y `purge_item` convirtiendo la lista a un diccionario solo cuando es necesario, evitando la creación de mapas completos en cada operación y mejorando la eficiencia al manejar el manifiesto.
+- `2026-07-29T07:05:28` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 103): unterminated string literal (detected at line 103)
+- `2026-07-29T07:05:37` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se optimizó el rendimiento en el filtrado y validación de rutas mediante el uso de `frozenset` para `_SYSTEM_ROOTS_PARTS` y la introducción de una caché local de tipo `lru_cache` para `is_protected_path`, evitando la re-normalización costosa y las consultas repetidas de componentes de ruta en iteraciones intensivas.
+- `2026-07-29T07:05:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-29T07:05:37` Corrida terminada. Total usado hoy: 168.
