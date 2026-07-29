@@ -77,6 +77,7 @@ _PROTECTED_AND_SYSTEM: Final[frozenset[str]] = PROTECTED_DIR_NAMES | _SYSTEM_ROO
 def _is_reparse_point(path: Path) -> bool:
     """Detecta si una ruta es un punto de reparse (Junction, Symlink, etc) usando lstat."""
     try:
+        # 0x400 es FILE_ATTRIBUTE_REPARSE_POINT
         return bool(path.lstat().st_file_attributes & 0x400) if hasattr(path.lstat(), "st_file_attributes") else path.is_symlink()
     except (OSError, PermissionError):
         return False
@@ -114,6 +115,7 @@ def is_drive_root(path: PathLike) -> bool:
 def is_protected_path(path: PathLike) -> bool:
     """
     Evalúa si una ruta es peligrosa por ser parte del sistema o una ruta de red (UNC).
+    Incluye chequeo de reparse points para evitar escapes a zonas protegidas.
     """
     if not path or not isinstance(path, (str, os.PathLike)):
         return True
@@ -126,6 +128,11 @@ def is_protected_path(path: PathLike) -> bool:
         p = normalize(path)
         if is_drive_root(p):
             return True
+        
+        # Si existe, bloqueamos si es un punto de reparse que apunta a un lugar externo
+        if p.exists() and _is_reparse_point(p):
+            return True
+
         # Si no existe, asumimos protección por precaución si no podemos verificar partes
         if not p.exists():
             return any(part.lower() in _PROTECTED_AND_SYSTEM for part in p.parts)

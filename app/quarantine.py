@@ -211,7 +211,6 @@ def quarantine_file(
         raise OSError(f"No hay espacio suficiente en: {dest_dir}")
 
     item_id = uuid.uuid4().hex[:12]
-    # Sanitizar el nombre del archivo para evitar caracteres prohibidos o rutas excesivas
     safe_name = "".join(c for c in origin.name if c.isalnum() or c in "._-")
     stored_name = f"{item_id}__{safe_name}"[:250] 
     destination = dest_dir / stored_name
@@ -290,8 +289,14 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
     ensure_safe_to_modify(destination, allow_sensitive=False)
 
     try:
-        if not destination.parent.exists():
-            destination.parent.mkdir(parents=True, exist_ok=True)
+        # Validación defensiva: asegurar que el padre sea directorio real
+        parent_dir = destination.parent
+        if parent_dir.exists() and not parent_dir.is_dir():
+            raise NotADirectoryError(f"La ruta padre no es un directorio: {parent_dir}")
+        
+        if not parent_dir.exists():
+            parent_dir.mkdir(parents=True, exist_ok=True)
+            
         shutil.move(str(stored_file), str(destination))
     except (OSError, PermissionError) as e:
         raise RuntimeError(f"Fallo durante la restauración: {e}")
