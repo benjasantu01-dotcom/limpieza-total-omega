@@ -154,7 +154,8 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
             continue
         try:
             base = Path(directory).expanduser()
-            if not base.is_dir() or (skip_protected and is_protected_path(base)):
+            # Resolvemos para evitar seguir puntos de reparse fuera del árbol base
+            if not base.exists() or not base.is_dir() or (skip_protected and is_protected_path(base)):
                 continue
             
             for root, subdirs, files in os.walk(base, followlinks=False):
@@ -248,6 +249,9 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
         if not isinstance(p, Path) or is_protected_path(p):
             continue
         try:
+            # Asegurar que el archivo exista y sea accesible antes de sugerirlo
+            if not p.is_file():
+                continue
             stat = p.stat()
             valid_paths.append((stat.st_mtime, len(str(p)), p))
         except (OSError, PermissionError, FileNotFoundError):

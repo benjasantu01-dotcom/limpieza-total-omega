@@ -599,3 +599,10 @@ FAILED evolve/tests/test_integrity.py::test_is_safe_returns_bool_and_never_raise
 - `2026-07-29T07:57:06` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Mejoré la seguridad de `save_logo_svg` reemplazando la creación implícita de directorios con una validación estricta, asegurando que `ensure_safe_to_modify` se aplique sobre el directorio padre antes de intentar cualquier operación de escritura, previniendo así posibles ataques de escritura en rutas no permitidas.
 - `2026-07-29T07:57:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-29T07:57:06` Corrida terminada. Total usado hoy: 188.
+- `2026-07-29T08:05:42` Arrancando corrida. Quedan hoy ~112 peticiones objetivo.
+- `2026-07-29T08:06:06` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `directory_size` y `_is_safe_path` para prevenir ataques de traversal y acceso no autorizado a rutas de sistema mediante la verificación explícita de `is_protected_path` sobre el resultado de `resolve(strict=False)` antes de cualquier operación de I/O.
+- `2026-07-29T08:06:30` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: seguridad defensiva).
+- `2026-07-29T08:06:53` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `_collect_candidates` ante puntos de reparse y enlaces simbólicos mediante el uso de `resolve()` antes de validar rutas, y se añadió una verificación de seguridad adicional en `suggest_keeper` para asegurar que el archivo seleccionado como "keeper" sea realmente accesible antes de sugerirlo.
+- `2026-07-29T08:07:01` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: seguridad defensiva).
+- `2026-07-29T08:07:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-29T08:07:01` Corrida terminada. Total usado hoy: 192.
