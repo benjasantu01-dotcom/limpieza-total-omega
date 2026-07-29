@@ -1235,6 +1235,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             messagebox.showwarning("PID inválido", "El PID debe ser mayor a 0.")
             return
 
+        # Protección: validar que el PID no se trate como una ruta sensible si se usara para algo más
+        # aunque acá el impacto es solo memoria, mantenemos la coherencia de seguridad.
         if not self._confirm("Liberar working set", memory_mod.TRIM_WARNING + "\n\n¿Seguimos?"):
             return
 

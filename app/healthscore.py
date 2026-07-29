@@ -14,7 +14,7 @@ vive en los otros módulos; acá solo se puntúa.
 
 from __future__ import annotations
 from dataclasses import dataclass, field
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Final
 import math
 
 __all__ = [
@@ -40,7 +40,7 @@ RAM_IDEAL_PERCENT: float = 35.0        # Ratio de 1.0 (óptimo) si el libre >= 3
 DISK_IDEAL_PERCENT: float = 25.0       # Ratio de 1.0 (óptimo) si el libre >= 25%
 
 # Peso relativo de cada área en el puntaje total (sumatoria debe ser 100).
-WEIGHTS: Dict[str, int] = {
+WEIGHTS: Final[Dict[str, int]] = {
     "seguridad": 30,
     "disco": 20,
     "memoria": 18,
@@ -126,7 +126,6 @@ def score_junk(junk_mb: float) -> float:
 
 def score_security(suspicious_count: int, warnings: int = 0) -> float:
     """Calcula el ratio de seguridad (0.0 a 1.0) penalizando hallazgos."""
-    # Uso de float para evitar desbordamientos y asegurar clamp lógico
     penalty: float = float(suspicious_count) * 0.05 + float(warnings) * 0.25
     return _clamp(1.0 - penalty, 0.0, 1.0)
 
@@ -192,11 +191,13 @@ def _generate_recommendations(m: SystemMetrics, ratios: Dict[str, float]) -> Lis
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
     """Calcula el puntaje global de salud del sistema."""
+    weights: Final[Dict[str, int]] = WEIGHTS
+    
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Datos de entrada faltantes o inválidos."])
 
-    if sum(WEIGHTS.values()) != 100 or set(WEIGHTS.keys()) != {"seguridad", "disco", "memoria", "basura", "duplicados", "arranque"}:
-        return HealthResult(0, "F", {}, ["Error de configuración: Los pesos son inválidos o están incompletos."])
+    if sum(weights.values()) != 100:
+        return HealthResult(0, "F", {}, ["Error de configuración: Peso de métricas desbalanceado."])
 
     try:
         metrics.validate()
@@ -212,8 +213,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
             "arranque": score_startup(metrics.startup_count),
         }
 
-        breakdown: Dict[str, int] = {k: int(round(ratios[k] * w)) for k, w in WEIGHTS.items()}
-            
+        breakdown: Dict[str, int] = {k: int(round(ratios[k] * w)) for k, w in weights.items()}
         total_score: int = sum(breakdown.values())
 
         return HealthResult(
@@ -231,7 +231,6 @@ def summarize(result: HealthResult) -> List[str]:
     """Genera una representación visual y textual del resultado de salud."""
     lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     
-    # Ordenar por desviación respecto al peso máximo esperado (puntos perdidos)
     def calculate_deviation(item: tuple[str, int]) -> int:
         return item[1] - WEIGHTS[item[0]]
 

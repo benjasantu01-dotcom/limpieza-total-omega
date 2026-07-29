@@ -216,18 +216,19 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             
             if not is_safe_to_modify(full_source_path):
                 continue
-
+            
+            # Verificación de contención: el origen no puede estar bajo el destino ni viceversa
             if dest == full_source_path or dest in full_source_path.parents or full_source_path.parent == dest:
                 continue
                 
-            # Verifica concurrencia: intentamos abrir en modo exclusivo si es posible
+            # Verifica concurrencia
             try:
                 with open(full_source_path, 'rb+'):
                     pass
             except (PermissionError, OSError):
                 continue
 
-            # Verifica espacio en disco destino (con margen de 10MB)
+            # Verifica espacio en disco
             usage = shutil.disk_usage(dest.anchor)
             if usage.free < (jf.size_bytes + 10 * 1024 * 1024):
                 continue
@@ -237,10 +238,13 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             timestamp = int(jf.modified.timestamp())
             initial_target = (dest / f"{base_name}_{timestamp}{ext}").resolve()
             target = _generate_unique_target(initial_target)
+            
+            # Asegurar que el destino final esté dentro de la carpeta designada
+            if not str(target).startswith(str(dest)):
+                continue
                 
-            if str(target).startswith(str(dest)):
-                ensure_safe_to_modify(full_source_path)
-                shutil.move(str(full_source_path), str(target))
+            ensure_safe_to_modify(full_source_path)
+            shutil.move(str(full_source_path), str(target))
                 
         except (PermissionError, OSError, shutil.Error):
             continue
