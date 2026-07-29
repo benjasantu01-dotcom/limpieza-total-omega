@@ -134,41 +134,35 @@ def parse_linux_meminfo(text: str) -> MemorySnapshot:
 
 def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]:
     """
-    Procesa el CSV de procesos generado por PowerShell.
-    Convierte líneas separadas por comas en objetos ProcessMemory ordenados.
+    Procesa el CSV de procesos generado por PowerShell usando un generador
+    para filtrar eficientemente los datos antes de ordenarlos.
     """
     if not text:
         return []
 
-    results = []
-    # Filtrar líneas vacías y saltar la cabecera del CSV
-    lines = [line.strip() for line in text.splitlines() if line.strip()]
-    if len(lines) < 2:
-        return []
+    def _extract_rows() -> Iterator[ProcessMemory]:
+        for line in text.splitlines():
+            line = line.strip()
+            if not line or line.startswith("Name,"):  # Saltar cabecera
+                continue
+            parts = [p.strip().strip('"') for p in line.split(",")]
+            if len(parts) < 3:
+                continue
+            try:
+                yield ProcessMemory(
+                    name=parts[0] or "Unknown",
+                    pid=int(parts[1]),
+                    working_set=int(parts[2])
+                )
+            except (ValueError, TypeError, IndexError):
+                continue
 
-    for line in lines[1:]:
-        parts = [p.strip().strip('"') for p in line.split(",")]
-        # Verificamos que tenga los campos mínimos: Name, Id, WorkingSet
-        if len(parts) < 3:
-            continue
-            
-        try:
-            results.append(ProcessMemory(
-                name=parts[0] or "Unknown",
-                pid=int(parts[1]),
-                working_set=int(parts[2])
-            ))
-        except (ValueError, TypeError, IndexError):
-            continue
-
-    return sorted(results, key=lambda p: p.working_set, reverse=True)[:limit]
+    return sorted(_extract_rows(), key=lambda p: p.working_set, reverse=True)[:limit]
 
 
 def _read_windows_snapshot() -> MemorySnapshot:
     """
     Obtiene métricas de memoria del sistema mediante la API de Windows `GlobalMemoryStatusEx`.
-    Utiliza una estructura de datos `MEMORYSTATUSEX` alineada con la definición de Microsoft 
-    para extraer información precisa de memoria física sin dependencias externas.
     """
     import ctypes
 
@@ -294,9 +288,6 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
     Solicita al sistema operativo (vía `EmptyWorkingSet` de psapi.dll) que intente 
     reducir el consumo de memoria RAM física del proceso especificado.
-    
-    Nota: Esta es una operación de bajo nivel que requiere permisos sobre el PID; 
-    el sistema operativo puede denegarla si el proceso es crítico o pertenece al kernel.
     """
     if os.name != "nt":
         return False, "Solo disponible en Windows."
@@ -316,7 +307,6 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         if not hasattr(kernel32, "OpenProcess") or not hasattr(psapi, "EmptyWorkingSet"):
             return False, "APIs necesarias no disponibles en este entorno."
 
-        # Permisos mínimos: SET_QUOTA (0x0100) y QUERY_LIMITED_INFORMATION (0x1000)
         handle = kernel32.OpenProcess(0x0100 | 0x1000, False, target_pid)
         if not handle:
             return False, f"Acceso denegado al proceso {target_pid} (posible sistema protegido)."

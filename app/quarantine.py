@@ -247,7 +247,7 @@ def quarantine_file(
 
 
 def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
-    """Retorna los ítems en cuarentena ordenados por fecha descendente."""
+    """Retorna los ítems en cuarentena ordenados por fecha descendente usando caché."""
     return sorted(load_manifest(base), key=lambda i: i.quarantined_at, reverse=True)
 
 
@@ -351,7 +351,7 @@ def total_quarantined_bytes(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> 
 
 
 def summarize(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[str]:
-    """Genera una lista de cadenas para reporte legible en UI."""
+    """Genera una lista de cadenas para reporte legible en UI usando los datos en caché."""
     items = load_manifest(base)
     if not items:
         return ["La cuarentena está vacía."]

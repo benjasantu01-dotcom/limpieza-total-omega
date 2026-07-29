@@ -125,27 +125,25 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     dirs = directories or DEFAULT_SCAN_DIRS
     found: List[JunkFile] = []
     blocklist = SYSTEM_FOLDER_BLOCKLIST
+    ext_tuple = _JUNK_EXTS_TUPLE
 
     def _walk_dir(base_path: str) -> None:
         try:
             with os.scandir(base_path) as it:
                 for entry in it:
                     try:
-                        # Ignorar enlaces simbólicos para evitar bucles infinitos y escapes
                         if entry.is_symlink():
                             continue
                         if entry.is_dir(follow_symlinks=False):
                             if entry.name.lower() not in blocklist:
                                 _walk_dir(entry.path)
                         elif entry.is_file(follow_symlinks=False):
-                            if entry.name.lower().endswith(_JUNK_EXTS_TUPLE):
-                                full_path = Path(entry.path)
-                                # Validación centralizada: solo catalogar archivos seguros
-                                if is_safe_to_modify(full_path):
+                            if entry.name.lower().endswith(ext_tuple):
+                                if is_safe_to_modify(Path(entry.path)):
                                     stat = entry.stat()
                                     found.append(
                                         JunkFile(
-                                            path=full_path,
+                                            path=Path(entry.path),
                                             size_bytes=stat.st_size,
                                             modified=datetime.fromtimestamp(stat.st_mtime),
                                         )
@@ -223,14 +221,12 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         try:
             full_source_path = jf.path.resolve()
             
-            # Verificación de integridad: el origen debe ser un archivo, no enlace simbólico
             if not full_source_path.is_file() or full_source_path.is_symlink():
                 continue
             
             if not is_safe_to_modify(full_source_path):
                 continue
 
-            # Prevenir colisión de rutas o que el destino contenga al origen
             if dest == full_source_path or dest in full_source_path.parents or full_source_path.parent == dest:
                 continue
                 
@@ -244,14 +240,12 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             if usage.free < (jf.size_bytes + 10 * 1024 * 1024):
                 continue
 
-            # Construcción de target único
             base_name = jf.path.stem
             ext = jf.path.suffix
             timestamp = int(jf.modified.timestamp())
             initial_target = (dest / f"{base_name}_{timestamp}{ext}").resolve()
             target = _generate_unique_target(initial_target)
                 
-            # Verificar que el target final esté realmente bajo la carpeta de revisión
             if str(target).startswith(str(dest)):
                 ensure_safe_to_modify(full_source_path)
                 shutil.move(str(full_source_path), str(target))

@@ -928,3 +928,10 @@ FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quara
 - `2026-07-29T11:22:19` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Se implementó un cacheo más eficiente en el método `on_full_analysis` utilizando el diccionario `_cache` existente para evitar re-escaneos redundantes de directorios de descarga y registros de arranque, reduciendo significativamente la latencia de la pestaña Salud al consolidar mediciones costosas.
 - `2026-07-29T11:22:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-29T11:22:19` Corrida terminada. Total usado hoy: 268.
+- `2026-07-29T11:30:31` Arrancando corrida. Quedan hoy ~32 peticiones objetivo.
+- `2026-07-29T11:30:59` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimizé `parse_windows_process_csv` reemplazando la creación y filtrado de listas intermedias por un generador eficiente, reduciendo el consumo de memoria al procesar la salida del comando de procesos.
+- `2026-07-29T11:31:22` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Se optimizó el escaneo de directorios reemplazando el uso recursivo de `os.scandir` por una implementación que pre-filtra extensiones mediante el uso eficiente de `str.endswith` con tuplas, y se evitó la instanciación innecesaria de objetos `Path` dentro del bucle crítico, reduciendo la carga sobre el sistema de archivos durante el escaneo.
+- `2026-07-29T11:31:48` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimizé `list_items` y `summarize` para aprovechar la caché existente en lugar de recargar el manifiesto desde disco en cada llamado, reduciendo drásticamente las operaciones de I/O redundantes durante la navegación por la UI.
+- `2026-07-29T11:31:51` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 100): unterminated string literal (detected at line 100)
+- `2026-07-29T11:31:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-29T11:31:51` Corrida terminada. Total usado hoy: 272.

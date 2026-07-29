@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **258** (51.2% de aceptación)
+- Mejoras aceptadas: **257** (51.0% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 24
+- Rechazadas por guardia de seguridad: 25
 - Sin cambios (nada sustancial que mejorar): 7
 - Sin respuesta de la IA (error o límite): 198
 
@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-28 | 123 | 8 | 11 | 2 | 92 |
-| 2026-07-29 | 135 | 9 | 13 | 5 | 106 |
+| 2026-07-28 | 119 | 8 | 11 | 2 | 92 |
+| 2026-07-29 | 138 | 9 | 14 | 5 | 106 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **66**
-- seguridad defensiva: **55**
 - manejo de errores y validación de entradas: **55**
-- robustez ante casos límite: **42**
-- rendimiento: **40**
+- seguridad defensiva: **53**
+- rendimiento: **43**
+- robustez ante casos límite: **40**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **23**
 - `browser.py`: **23**
-- `assistant.py`: **22**
+- `settings.py`: **22**
 - `main.py`: **21**
+- `quarantine.py`: **21**
 - `scanner.py`: **21**
+- `assistant.py`: **21**
 - `duplicates.py`: **20**
-- `quarantine.py`: **20**
 - `diskreport.py`: **19**
+- `organizer.py`: **19**
 - `healthscore.py`: **18**
-- `organizer.py`: **18**
-- `memory.py`: **16**
-- `branding.py`: **14**
+- `memory.py`: **17**
+- `branding.py`: **13**
 - `safety.py`: **13**
-- `startup.py`: **10**
+- `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-29T11:31:48` **quarantine.py** (rendimiento): Optimizé `list_items` y `summarize` para aprovechar la caché existente en lugar de recargar el manifiesto desde disco en cada llamado, reduciendo drásticamente las operaciones de I/O redundantes durante la navegación por la UI.
+- `2026-07-29T11:31:22` **organizer.py** (rendimiento): Se optimizó el escaneo de directorios reemplazando el uso recursivo de `os.scandir` por una implementación que pre-filtra extensiones mediante el uso eficiente de `str.endswith` con tuplas, y se evitó la instanciación innecesaria de objetos `Path` dentro del bucle crítico, reduciendo la carga sobre el sistema de archivos durante el escaneo.
+- `2026-07-29T11:30:59` **memory.py** (rendimiento): Optimizé `parse_windows_process_csv` reemplazando la creación y filtrado de listas intermedias por un generador eficiente, reduciendo el consumo de memoria al procesar la salida del comando de procesos.
 - `2026-07-29T11:22:19` **main.py** (rendimiento): Se implementó un cacheo más eficiente en el método `on_full_analysis` utilizando el diccionario `_cache` existente para evitar re-escaneos redundantes de directorios de descarga y registros de arranque, reduciendo significativamente la latencia de la pestaña Salud al consolidar mediciones costosas.
 - `2026-07-29T11:21:32` **healthscore.py** (rendimiento): Optimicé el cálculo del `breakdown` en `compute_score` usando una pre-comprensión para evitar búsquedas repetidas en diccionarios y mejoré la eficiencia de `summarize` al cachear el valor de `WEIGHTS[area]` dentro del bucle de formateo, reduciendo accesos innecesarios.
 - `2026-07-29T11:21:07` **duplicates.py** (rendimiento): Optimicé el rendimiento de `group_by_size` eliminando la llamada innecesaria a `group_by_size` dentro de `find_duplicates` (que recalculaba lo que `_collect_candidates` ya podría haber procesado) y simplificando el acceso al diccionario de grupos para reducir iteraciones redundantes.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-29T10:51:33` **quarantine.py** (legibilidad y documentación): Mejoré la documentación de `quarantine.py` mediante type hints explícitos, docstrings más detallados que aclaran las precondiciones de cada función, y la sustitución de `str` por `Path` en firmas críticas para reforzar la seguridad de tipos y reducir errores de manejo de rutas.
 - `2026-07-29T10:51:22` **organizer.py** (legibilidad y documentación): Se añadió documentación mediante Type Hinting avanzado y docstrings descriptivos, y se extrajo la lógica de validación de colisiones de nombres de archivo en `stage_for_review` a una función privada para mejorar la legibilidad y mantenibilidad del flujo principal.
 - `2026-07-29T10:50:59` **memory.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo incorporando docstrings detallados en las funciones de bajo nivel (`_read_windows_snapshot`, `trim_working_set`) para explicar el uso de `ctypes` y las restricciones de seguridad del sistema operativo, facilitando el mantenimiento futuro.
-- `2026-07-29T10:50:34` **main.py** (legibilidad y documentación): Mejoré la legibilidad del método `_build_health_area_bars` extrayendo la lógica de creación de cada fila a un método auxiliar `_build_single_health_bar`, lo cual reduce la complejidad ciclomática del constructor de la pestaña y facilita la lectura del layout.
-- `2026-07-29T10:40:45` **healthscore.py** (legibilidad y documentación): Mejora de la legibilidad y mantenimiento mediante la adición de Type Hints detallados, docstrings que explican el propósito de los umbrales constantes y la clarificación de la lógica en `summarize` para facilitar futuras expansiones.
-- `2026-07-29T10:40:36` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `duplicates.py` mediante docstrings precisos y descriptivos que explican el propósito de cada función, eliminando ambigüedades sobre el manejo de errores y las expectativas de los parámetros.
