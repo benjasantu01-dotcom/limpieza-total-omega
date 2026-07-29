@@ -121,21 +121,20 @@ def scan_file(path: Path) -> List[Suspicion]:
 def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
     """
     Realiza un escaneo profundo (recursivo) de un directorio buscando archivos sospechosos.
-    
-    Emplea una pila (stack) para la recursión manual, evitando desbordamientos de stack.
-    Utiliza os.scandir para optimizar el acceso a disco mediante iteradores eficientes.
-    Ignora sistemáticamente puntos de reparse y rutas protegidas definidas en safety.py.
     """
     if not directory:
         return []
         
     try:
-        root = Path(directory).resolve()
-    except (TypeError, ValueError, OSError):
+        # Validación estricta del tipo de entrada antes de operar
+        path_obj = Path(directory)
+        root = path_obj.resolve()
+    except (TypeError, ValueError, OSError) as e:
+        logger.error("Error al resolver la ruta base %s: %s", directory, e)
         return []
 
     try:
-        if not root.is_dir() or is_protected_path(root):
+        if not root.exists() or not root.is_dir() or is_protected_path(root):
             return []
             
         results: List[Suspicion] = []

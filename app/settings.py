@@ -242,34 +242,35 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     """Persistencia atómica: escribe en archivo temporal y luego reemplaza."""
     global _cached_settings, _last_path_str, _last_mtime
     
+    ruta = settings_path(path_or_base)
+    limpio = validate(values)
+    json_data = json.dumps(limpio, indent=2, ensure_ascii=False)
+    
+    parent = ruta.parent
+    parent.mkdir(parents=True, exist_ok=True)
+    ensure_safe_to_modify(str(parent))
+    
+    temp_name = None
     try:
-        ruta = settings_path(path_or_base)
-        limpio = validate(values)
-        json_data = json.dumps(limpio, indent=2, ensure_ascii=False)
-        
-        parent = ruta.parent
-        parent.mkdir(parents=True, exist_ok=True)
-        ensure_safe_to_modify(str(parent))
-        
         with tempfile.NamedTemporaryFile("w", dir=parent, delete=False, encoding="utf-8") as tf:
+            temp_name = tf.name
             tf.write(json_data)
             tf.flush()
             os.fsync(tf.fileno())
-            temp_name = tf.name
         
-        try:
-            os.replace(temp_name, ruta)
-        except OSError:
-            if os.path.exists(temp_name):
-                os.remove(temp_name)
-            raise
-
+        os.replace(temp_name, ruta)
         _cached_settings = limpio
         _last_path_str = str(ruta)
         _last_mtime = ruta.stat().st_mtime
         return ruta
     except (OSError, RuntimeError, PermissionError):
         return None
+    finally:
+        if temp_name and os.path.exists(temp_name):
+            try:
+                os.remove(temp_name)
+            except OSError:
+                pass
 
 
 def update(changes: dict[str, Any], path_or_base: PathLike | None = None) -> dict[str, Any]:

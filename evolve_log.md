@@ -1241,3 +1241,9 @@ FAILED evolve/tests/test_safety.py::test_is_within_directory_same_path_requires_
 - `2026-07-29T14:46:58` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez de las funciones de validación `is_protected_path` e `is_within_directory` mediante la normalización temprana y el manejo explícito de errores, evitando comportamientos inesperados ante entradas mal formadas o problemas de permisos durante la resolución de rutas.
 - `2026-07-29T14:46:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-29T14:46:58` Corrida terminada. Total usado hoy: 348.
+- `2026-07-29T14:56:04` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-07-29T14:56:27` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `scan_directory` validando la entrada `directory` antes de su procesamiento y añadiendo un manejo de excepciones más granular en la conversión a `Path`, previniendo fallos ante entradas malformadas o tipos de datos inesperados.
+- `2026-07-29T14:56:53` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `load` y `save` mediante el uso de bloques `try-finally` para asegurar que el manejo de recursos sea atómico y no se deje el estado de la aplicación en inconsistencia ante errores de lectura o escritura.
+- `2026-07-29T14:56:53` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-07-29T14:56:53` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-29T14:56:53` Corrida terminada. Total usado hoy: 350.
