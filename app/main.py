@@ -1245,6 +1245,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.analysis_folder = folder
 
         def task():
+            if not os.path.exists(folder):
+                self.log("Error: La carpeta seleccionada ya no existe.", "Disco")
+                return
             self.set_status(f"Analizando {folder}...")
             self.clear("Disco")
             self.log(f"Analizando {folder} (solo lectura, puede tardar)...", "Disco")
@@ -1263,6 +1266,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         def task():
+            if not os.path.exists(folder):
+                self.log("Error: La carpeta seleccionada ya no existe.", "Duplicados")
+                return
             self.set_status(f"Buscando duplicados en {folder}...")
             self.clear("Duplicados")
             self.log(f"Buscando duplicados en {folder} (solo lectura, puede tardar)...",

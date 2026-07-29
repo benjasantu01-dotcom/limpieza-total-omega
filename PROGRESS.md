@@ -6,40 +6,40 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **254** (50.4% de aceptación)
+- Mejoras aceptadas: **255** (50.6% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 8
-- Sin respuesta de la IA (error o límite): 202
+- Sin respuesta de la IA (error o límite): 201
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-27 | 36 | 0 | 4 | 1 | 41 |
+| 2026-07-27 | 34 | 0 | 4 | 1 | 39 |
 | 2026-07-28 | 178 | 12 | 19 | 5 | 136 |
-| 2026-07-29 | 40 | 1 | 4 | 2 | 25 |
+| 2026-07-29 | 43 | 1 | 4 | 2 | 26 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **64**
 - manejo de errores y validación de entradas: **52**
-- seguridad defensiva: **51**
+- seguridad defensiva: **49**
 - rendimiento: **45**
-- robustez ante casos límite: **42**
+- robustez ante casos límite: **45**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **24**
 - `assistant.py`: **24**
+- `settings.py`: **23**
 - `diskreport.py`: **23**
-- `scanner.py`: **20**
+- `organizer.py`: **20**
+- `quarantine.py`: **20**
 - `healthscore.py`: **19**
-- `organizer.py`: **19**
+- `scanner.py`: **19**
 - `browser.py`: **19**
-- `quarantine.py`: **19**
 - `duplicates.py`: **18**
-- `main.py`: **17**
+- `main.py`: **18**
 - `safety.py`: **15**
 - `memory.py`: **14**
 - `startup.py`: **12**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-29T03:10:55` **quarantine.py** (robustez ante casos límite): Se reforzó la robustez ante casos límite en `quarantine_file` añadiendo una verificación explícita para evitar intentos de cuarentena de archivos que han sido eliminados de su origen antes de procesar el movimiento, evitando así errores de I/O innecesarios y estados inconsistentes.
+- `2026-07-29T03:10:45` **organizer.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `stage_for_review` para validar que el `dest` no resida en una ruta protegida y se ha encapsulado el movimiento en una validación de `ensure_safe_to_modify` para garantizar que la operación cumpla con la normativa de seguridad ante cualquier fallo de los filtros previos.
+- `2026-07-29T03:09:58` **main.py** (robustez ante casos límite): Se implementó un manejo de errores robusto en `on_disk_analysis` y `on_find_duplicates` para capturar el caso donde el usuario selecciona una carpeta que, por cambios en el sistema de archivos, deja de existir antes de iniciar el análisis, evitando que el hilo asíncrono aborte silenciosamente y manteniendo la app responsiva.
 - `2026-07-29T02:59:31` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y sus subfunciones ante nombres de archivos o rutas con caracteres inválidos, sistemas de archivos con errores de lectura durante el escaneo y condiciones de carrera (archivos que desaparecen durante la iteración), envolviendo las operaciones de metadatos en bloques `try-except` más granulares.
 - `2026-07-29T02:59:07` **browser.py** (robustez ante casos límite): Se mejoró `directory_size` para manejar errores de acceso (Permisos denegados) de forma más robusta, asegurando que si un directorio padre falla al listar, la suma continúe con el resto del árbol en lugar de abortar silenciosamente.
 - `2026-07-29T02:50:08` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante casos límite de E/S, validando explícitamente la existencia de la ruta destino y manejando posibles errores de sistema al intentar crear directorios o escribir archivos en rutas protegidas.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-29T02:29:54` **memory.py** (rendimiento): Se optimizó el proceso de recolección de datos de `top_memory_processes` evitando la carga de datos innecesarios a través de PowerShell, reduciendo el overhead de ejecución mediante una consulta más selectiva y eliminando el parsing de cadenas redundantes dentro del generador.
 - `2026-07-29T02:28:30` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje en `compute_score` cacheando las llamadas a `WEIGHTS.get()` y eliminando búsquedas innecesarias en el diccionario de pesos, mejorando el rendimiento en la generación del reporte.
 - `2026-07-29T02:19:15` **duplicates.py** (rendimiento): Optimicé el rendimiento de `group_by_size` eliminando llamadas redundantes a `is_protected_path` al procesar los resultados de `_collect_candidates`, dado que dicha función ya filtra las rutas durante el recorrido recursivo inicial.
-- `2026-07-29T02:19:08` **diskreport.py** (rendimiento): Optimizé la función `summarize` para reducir las llamadas repetitivas a `path.suffix` y `format_size` mediante un procesamiento único por iteración, y reemplacé la creación innecesaria de objetos intermedios por un cálculo directo sobre los datos acumulados.
-- `2026-07-29T02:18:44` **browser.py** (rendimiento): Optimicé `directory_size` reemplazando la lógica de resolución de rutas (`resolve`) y chequeos de seguridad dentro del bucle (`is_protected_path`) por un filtro basado en la comparación directa de nombres, reduciendo drásticamente las llamadas al sistema operativo (syscalls) innecesarias por cada archivo escaneado.
-- `2026-07-29T02:18:22` **branding.py** (rendimiento): Optimicé el cálculo de colores y degradados reemplazando operaciones costosas por una caché de `lru_cache` y evitando la regeneración innecesaria de objetos en bucles críticos de renderizado.

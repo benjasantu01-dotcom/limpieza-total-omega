@@ -1197,3 +1197,10 @@ FAILED evolve/tests/test_modules.py::test_score_color_survives_garbage - Asserti
 - `2026-07-29T03:00:03` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: robustez ante casos límite).
 - `2026-07-29T03:00:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-29T03:00:03` Corrida terminada. Total usado hoy: 72.
+- `2026-07-29T03:08:55` Arrancando corrida. Quedan hoy ~228 peticiones objetivo.
+- `2026-07-29T03:09:58` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se implementó un manejo de errores robusto en `on_disk_analysis` y `on_find_duplicates` para capturar el caso donde el usuario selecciona una carpeta que, por cambios en el sistema de archivos, deja de existir antes de iniciar el análisis, evitando que el hilo asíncrono aborte silenciosamente y manteniendo la app responsiva.
+- `2026-07-29T03:10:22` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-07-29T03:10:45` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de integridad en `stage_for_review` para validar que el `dest` no resida en una ruta protegida y se ha encapsulado el movimiento en una validación de `ensure_safe_to_modify` para garantizar que la operación cumpla con la normativa de seguridad ante cualquier fallo de los filtros previos.
+- `2026-07-29T03:10:55` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se reforzó la robustez ante casos límite en `quarantine_file` añadiendo una verificación explícita para evitar intentos de cuarentena de archivos que han sido eliminados de su origen antes de procesar el movimiento, evitando así errores de I/O innecesarios y estados inconsistentes.
+- `2026-07-29T03:10:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-29T03:10:55` Corrida terminada. Total usado hoy: 76.

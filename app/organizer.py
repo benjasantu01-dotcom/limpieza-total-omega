@@ -18,7 +18,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import List, Optional, Final, Callable, Union
-from safety import is_safe_to_modify
+from safety import is_safe_to_modify, ensure_safe_to_modify
 
 # Configuración de log para seguimiento de errores no críticos
 logging.basicConfig(level=logging.INFO)
@@ -165,8 +165,10 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
     dest = Path(review_dir).expanduser().resolve()
     
     try:
+        # Validación de seguridad: el destino no puede ser protegido
+        ensure_safe_to_modify(dest)
         dest.mkdir(parents=True, exist_ok=True)
-    except (OSError, NotADirectoryError) as e:
+    except (OSError, NotADirectoryError, Exception) as e:
         logger.error("No se pudo preparar el directorio de revisión %s: %s", dest, e)
         raise
 
@@ -180,7 +182,8 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             if not full_source_path.exists() or not full_source_path.is_file():
                 continue
             
-            if not is_safe_to_modify(full_source_path) or not is_safe_to_modify(dest):
+            # Verificación booleana dentro de bucle
+            if not is_safe_to_modify(full_source_path):
                 continue
 
             if dest == full_source_path or dest in full_source_path.parents or full_source_path.parent == dest:
@@ -209,6 +212,8 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
                 target = dest / f"{base_name}_{timestamp}_{counter}{ext}"
                 counter += 1
 
+            # Ejecución protegida final
+            ensure_safe_to_modify(full_source_path)
             shutil.move(str(full_source_path), str(target))
         except (PermissionError, OSError, shutil.Error):
             continue

@@ -203,6 +203,10 @@ def quarantine_file(
     ensure_safe_to_modify(origin, allow_sensitive=True)
     ensure_safe_to_modify(dest_dir, allow_sensitive=False)
     
+    # Verificar existencia nuevamente antes de medir
+    if not origin.exists():
+        raise FileNotFoundError(f"El archivo desapareció antes de ser procesado: {origin}")
+
     file_size = origin.stat().st_size
     usage = shutil.disk_usage(dest_dir)
     if usage.free < file_size:
