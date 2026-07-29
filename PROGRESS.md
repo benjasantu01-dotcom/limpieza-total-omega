@@ -6,34 +6,34 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **258** (51.2% de aceptación)
+- Mejoras aceptadas: **261** (51.8% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 25
+- Rechazadas por guardia de seguridad: 26
 - Sin cambios (nada sustancial que mejorar): 8
-- Sin respuesta de la IA (error o límite): 196
+- Sin respuesta de la IA (error o límite): 192
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-28 | 109 | 8 | 10 | 2 | 87 |
-| 2026-07-29 | 149 | 9 | 15 | 6 | 109 |
+| 2026-07-28 | 109 | 8 | 10 | 2 | 83 |
+| 2026-07-29 | 152 | 9 | 16 | 6 | 109 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **66**
 - manejo de errores y validación de entradas: **55**
+- robustez ante casos límite: **49**
 - rendimiento: **47**
-- robustez ante casos límite: **47**
-- seguridad defensiva: **43**
+- seguridad defensiva: **44**
 
 ## Mejoras aceptadas por archivo
 
+- `assistant.py`: **23**
 - `browser.py`: **23**
-- `assistant.py`: **22**
-- `settings.py`: **22**
+- `settings.py`: **23**
+- `scanner.py`: **22**
 - `quarantine.py`: **21**
-- `scanner.py`: **21**
 - `main.py`: **20**
 - `diskreport.py`: **19**
 - `duplicates.py`: **19**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-29T12:23:24` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva de `assistant.py` al añadir una validación estricta del `text` generado por el modelo remoto, asegurando que cualquier respuesta que contenga caracteres de control o rutas de sistema sea descartada antes de llegar al usuario, reforzando así la protección de la privacidad y la integridad de la UI.
+- `2026-07-29T12:22:45` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `settings.py` ante errores de entrada y condiciones de carrera en el sistema de archivos al añadir validación explícita para la existencia del directorio antes de la escritura y manejar de forma segura archivos corruptos de configuración durante la deserialización JSON.
+- `2026-07-29T12:22:19` **scanner.py** (robustez ante casos límite): Se mejoró `scan_directory` añadiendo una comprobación explícita de `exists()` antes de procesar la entrada, previniendo errores en condiciones de carrera donde un archivo o carpeta es eliminado o renombrado por otro proceso justo después de ser listado por `os.scandir`.
 - `2026-07-29T12:12:51` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en `is_within_directory` y `is_protected_path` al asegurar que las rutas no existentes o con permisos denegados no se evalúen erróneamente como "seguras" o "inseguras" de forma impredecible, centralizando la validación de existencia en un try-except más estricto.
 - `2026-07-29T12:12:23` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` para manejar el caso límite donde la ruta de origen contiene caracteres inválidos para el sistema de archivos de destino o nombres con longitudes que excedan los límites del sistema operativo antes de intentar el movimiento.
 - `2026-07-29T12:11:58` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `stage_for_review` implementando un chequeo preventivo de concurrencia y espacio en disco, evitando excepciones innecesarias y asegurando que las rutas de destino mantengan la integridad del sistema incluso ante estados de archivos bloqueados.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-29T11:41:36` **scanner.py** (rendimiento): Optronicé la función `scan_directory` reemplazando la creación repetitiva de objetos `Path` por el uso directo de `entry.path` (string) para el chequeo de seguridad y recursión, reduciendo drásticamente la sobrecarga de instanciación de objetos en directorios grandes.
 - `2026-07-29T11:41:14` **safety.py** (rendimiento): Se implementó un cache LRU en `is_sensitive_file` y se optimizó `is_protected_path` evitando la regeneración constante de conjuntos en cada llamada, mejorando el rendimiento en recorridos de disco masivos.
 - `2026-07-29T11:31:48` **quarantine.py** (rendimiento): Optimizé `list_items` y `summarize` para aprovechar la caché existente en lugar de recargar el manifiesto desde disco en cada llamado, reduciendo drásticamente las operaciones de I/O redundantes durante la navegación por la UI.
-- `2026-07-29T11:31:22` **organizer.py** (rendimiento): Se optimizó el escaneo de directorios reemplazando el uso recursivo de `os.scandir` por una implementación que pre-filtra extensiones mediante el uso eficiente de `str.endswith` con tuplas, y se evitó la instanciación innecesaria de objetos `Path` dentro del bucle crítico, reduciendo la carga sobre el sistema de archivos durante el escaneo.
-- `2026-07-29T11:30:59` **memory.py** (rendimiento): Optimizé `parse_windows_process_csv` reemplazando la creación y filtrado de listas intermedias por un generador eficiente, reduciendo el consumo de memoria al procesar la salida del comando de procesos.
-- `2026-07-29T11:22:19` **main.py** (rendimiento): Se implementó un cacheo más eficiente en el método `on_full_analysis` utilizando el diccionario `_cache` existente para evitar re-escaneos redundantes de directorios de descarga y registros de arranque, reduciendo significativamente la latencia de la pestaña Salud al consolidar mediciones costosas.

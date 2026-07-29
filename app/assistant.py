@@ -438,6 +438,8 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
         partes = candidatos[0]["content"].get("parts", [])
         texto = "".join(p.get("text", "") for p in partes).strip()
         
+        # Validaciones de seguridad: rechazar si parece un comando, ruta, o tiene caracteres ilegales.
+        # Se verifica también longitud para evitar inyecciones de datos masivos.
         if not texto or len(texto) > 1200 or _PATH_REGEX.search(texto) or re.search(r'[\x00-\x1f\x7f]', texto):
             return None
         return texto

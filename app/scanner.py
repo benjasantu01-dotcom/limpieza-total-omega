@@ -147,14 +147,16 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
                 with os.scandir(current_dir) as it:
                     for entry in it:
                         try:
-                            if is_protected_path(Path(entry.path)):
+                            # Verificación robusta: existencia y protección
+                            path_entry = Path(entry.path)
+                            if not path_entry.exists() or is_protected_path(path_entry):
                                 continue
                                 
                             if entry.is_dir(follow_symlinks=False):
                                 if not _is_reparse_point(entry):
                                     stack.append(entry.path)
                             elif entry.is_file():
-                                results.extend(scan_file(Path(entry.path)))
+                                results.extend(scan_file(path_entry))
                         except (PermissionError, OSError, ValueError):
                             continue
             except (PermissionError, OSError):

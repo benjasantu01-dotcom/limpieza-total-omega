@@ -111,10 +111,6 @@ _DEFAULTS_KEYS: Final = set(DEFAULTS.keys())
 def _coerce_bool(raw_value: Any) -> bool | None:
     """
     Normaliza entradas no booleanas (strings tipo 'true'/'1'/'si') a booleano real.
-    
-    Returns:
-        bool: El valor normalizado.
-        None: Si la entrada no representa un booleano válido.
     """
     if isinstance(raw_value, bool):
         return raw_value
@@ -126,14 +122,6 @@ def _coerce_bool(raw_value: Any) -> bool | None:
 def _coerce_int(raw_value: Any, setting_key: str) -> int | None:
     """
     Intenta convertir a entero, aplicando límites definidos en _NUMERIC_LIMITS.
-    
-    Args:
-        raw_value: El valor crudo extraído del archivo JSON.
-        setting_key: La clave de configuración para buscar límites asociados.
-    
-    Returns:
-        int: El valor dentro del rango permitido (o truncado al límite).
-        None: Si la conversión falla.
     """
     if not isinstance(raw_value, (int, str)):
         return None
@@ -163,7 +151,9 @@ def _validate_str(clave: str, valor: Any) -> str | None:
     if clave == "ultima_carpeta":
         try:
             ruta_candidata = Path(texto).expanduser().resolve()
-            if not is_safe_to_modify(str(ruta_candidata)):
+            # Si la ruta no existe, validamos el directorio padre
+            chequeo_path = ruta_candidata if ruta_candidata.exists() else ruta_candidata.parent
+            if not is_safe_to_modify(str(chequeo_path)):
                 return None
             return str(ruta_candidata)
         except (OSError, RuntimeError, ValueError):
@@ -174,7 +164,6 @@ def _validate_str(clave: str, valor: Any) -> str | None:
 def _apply_validation_by_type(clave: str, valor: Any, defecto: Any) -> Any:
     """
     Selecciona la estrategia de validación basada en el tipo del valor por defecto.
-    Asegura que el dato resultante mantenga la consistencia tipológica del esquema.
     """
     if valor is None:
         return None
@@ -196,15 +185,15 @@ def settings_path(path_or_base: PathLike | None = None) -> Path:
     else:
         base = SETTINGS_DIR
     
-    # Aseguramos que la carpeta base sea segura antes de trabajar en ella
-    ensure_safe_to_modify(str(base))
+    # Aseguramos que la carpeta base sea segura. Si no existe, verificamos el parent.
+    check_target = base if base.exists() else base.parent
+    ensure_safe_to_modify(str(check_target))
     return base / SETTINGS_FILE
 
 
 def validate(values: Any) -> dict[str, Any]:
     """
     Valida un diccionario externo contra el esquema de DEFAULTS.
-    Descarta cualquier clave desconocida y corrige valores inválidos a sus defaults.
     """
     limpio = dict(DEFAULTS)
     if not isinstance(values, dict):
@@ -247,7 +236,6 @@ def load(path_or_base: PathLike | None = None) -> dict[str, Any]:
         _last_mtime = stat.st_mtime
         return _cached_settings
     except (OSError, json.JSONDecodeError, UnicodeDecodeError):
-        # Si falló la lectura, retornamos defaults para no romper la app
         return dict(DEFAULTS)
 
 
@@ -260,11 +248,11 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
         limpio = validate(values)
         json_data = json.dumps(limpio, indent=2, ensure_ascii=False)
         
-        ruta.parent.mkdir(parents=True, exist_ok=True)
-        ensure_safe_to_modify(str(ruta.parent))
+        parent = ruta.parent
+        parent.mkdir(parents=True, exist_ok=True)
+        ensure_safe_to_modify(str(parent))
         
-        # Uso de with para asegurar cierre de descriptor y evitar fugas si falla el fsync
-        with tempfile.NamedTemporaryFile("w", dir=ruta.parent, delete=False, encoding="utf-8") as tf:
+        with tempfile.NamedTemporaryFile("w", dir=parent, delete=False, encoding="utf-8") as tf:
             tf.write(json_data)
             tf.flush()
             os.fsync(tf.fileno())
