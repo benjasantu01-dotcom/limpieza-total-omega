@@ -111,28 +111,37 @@ def _is_safe_path(target_path: Path, base_path: Path) -> bool:
 @lru_cache(maxsize=32)
 def directory_size(path: str | os.PathLike) -> int:
     """
-    Suma recursiva de archivos. Ignora enlaces simbólicos y carpetas protegidas.
-    Usa os.scandir para rendimiento en directorios con muchos archivos.
+    Suma recursiva de archivos. Ignora enlaces simbólicos, junctions y carpetas protegidas.
     """
-    if not path:
-        return 0
-    
     p = Path(path)
     if not p.is_dir() or p.is_symlink() or is_protected_path(p):
         return 0
     
     total_bytes: int = 0
-    stack: List[str] = [str(p)]
+    # Usamos resolve() para asegurar que la comparación de padres sea robusta
+    try:
+        base_resolved = p.resolve(strict=True)
+    except (OSError, RuntimeError):
+        return 0
+        
+    stack: List[Path] = [base_resolved]
     
     while stack:
         current_dir = stack.pop()
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:
-                    if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
+                    # Detectar links y puntos de reparse (Junctions) para no salir del árbol
+                    try:
+                        is_reparse = entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction())
+                    except OSError:
+                        is_reparse = True
+                        
+                    if is_reparse:
                         continue
-                    if entry.is_dir(follow_symlinks=False):
-                        stack.append(entry.path)
+                        
+                    if entry.is_dir():
+                        stack.append(Path(entry.path))
                     else:
                         try:
                             total_bytes += entry.stat().st_size

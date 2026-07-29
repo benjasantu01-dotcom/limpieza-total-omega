@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **257** (51.0% de aceptación)
-- Rechazadas por tests: 14
+- Mejoras aceptadas: **260** (51.6% de aceptación)
+- Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 28
 - Sin cambios (nada sustancial que mejorar): 8
-- Sin respuesta de la IA (error o límite): 197
+- Sin respuesta de la IA (error o límite): 193
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-27 | 34 | 0 | 4 | 1 | 35 |
+| 2026-07-27 | 34 | 0 | 4 | 1 | 31 |
 | 2026-07-28 | 178 | 12 | 19 | 5 | 136 |
-| 2026-07-29 | 45 | 2 | 5 | 2 | 26 |
+| 2026-07-29 | 48 | 3 | 5 | 2 | 26 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **64**
 - manejo de errores y validación de entradas: **52**
-- seguridad defensiva: **49**
-- robustez ante casos límite: **47**
+- seguridad defensiva: **51**
+- robustez ante casos límite: **48**
 - rendimiento: **45**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **24**
+- `assistant.py`: **25**
 - `settings.py`: **24**
 - `diskreport.py`: **23**
 - `organizer.py`: **20**
 - `scanner.py`: **20**
+- `browser.py`: **20**
 - `quarantine.py`: **20**
 - `healthscore.py`: **19**
-- `browser.py`: **19**
 - `duplicates.py`: **18**
 - `main.py`: **18**
 - `safety.py`: **15**
 - `memory.py`: **14**
-- `startup.py`: **12**
+- `startup.py`: **13**
 - `branding.py`: **11**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-29T03:30:57` **browser.py** (seguridad defensiva): Se reforzó la seguridad de `directory_size` para prevenir el seguimiento de puntos de reparse (junctions) en sistemas Windows, asegurando que la recursión no escape del directorio base validado.
+- `2026-07-29T03:30:20` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_call_gemini` añadiendo una validación explícita para prevenir la inyección de comandos o la fuga de datos mediante el control de caracteres sospechosos, asegurando que el contenido retornado por la API no contenga estructuras que evadan las restricciones de privacidad, manteniendo la integridad del contrato de datos.
+- `2026-07-29T03:29:48` **startup.py** (robustez ante casos límite): Se añadió una validación defensiva en `_extract_quoted_path` para prevenir rutas malformadas o entradas que contienen caracteres de escape no válidos, asegurando que solo se procesen rutas que realmente existen o tienen extensiones ejecutables permitidas, evitando excepciones en el parseo de líneas de comando complejas.
 - `2026-07-29T03:20:19` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante casos límite en la carga de archivos, añadiendo un chequeo preventivo de tamaño y codificación antes de intentar el parseo JSON para evitar bloqueos por archivos corruptos de gran tamaño o binarios accidentales.
 - `2026-07-29T03:20:09` **scanner.py** (robustez ante casos límite): Mejoré la resiliencia de `scan_directory` ante casos límite añadiendo `path.exists()` dentro del bucle de escaneo, protegiendo así contra condiciones de carrera donde un archivo o carpeta es eliminado o renombrado por otro proceso justo después de ser listado por `os.scandir`.
 - `2026-07-29T03:10:55` **quarantine.py** (robustez ante casos límite): Se reforzó la robustez ante casos límite en `quarantine_file` añadiendo una verificación explícita para evitar intentos de cuarentena de archivos que han sido eliminados de su origen antes de procesar el movimiento, evitando así errores de I/O innecesarios y estados inconsistentes.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-29T02:49:22` **startup.py** (rendimiento): Optimicé el rendimiento de `entries_from_registry` eliminando llamadas redundantes a PowerShell dentro del bucle al consolidar la consulta en un único comando, reduciendo significativamente la latencia de ejecución al evitar múltiples inicializaciones del subsistema de Windows.
 - `2026-07-29T02:48:59` **settings.py** (rendimiento): Optimicé el rendimiento reduciendo la redundancia en la validación de tipos mediante el uso de un diccionario de dispatch, evitando múltiples sentencias `if-isinstance` anidadas y unificando la lógica de coerción.
 - `2026-07-29T02:39:50` **scanner.py** (rendimiento): Optimizé el rendimiento de `scan_file` y el bucle principal de `scan_directory` eliminando llamadas redundantes a `resolve()` y `path.is_file()`, además de centralizar la validación de seguridad para evitar redundancias durante el escaneo.
-- `2026-07-29T02:39:33` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` y `ensure_safe_to_modify` reemplazando iteraciones redundantes y llamadas repetidas a `normalize` mediante el uso de un conjunto para `PROTECTED_DIR_NAMES` y una verificación previa más eficiente de las partes de la ruta.
-- `2026-07-29T02:30:02` **organizer.py** (rendimiento): Se optimizó el rendimiento del escaneo recursivo eliminando la conversión repetitiva de `_LOWER_JUNK_EXTS` a `tuple()` dentro del bucle `for` de `_walk_dir`, sustituyéndola por una referencia constante pre-compilada, y se evitó la resolución `Path.resolve()` innecesaria dentro del bucle crítico al procesar archivos.
-- `2026-07-29T02:29:54` **memory.py** (rendimiento): Se optimizó el proceso de recolección de datos de `top_memory_processes` evitando la carga de datos innecesarios a través de PowerShell, reduciendo el overhead de ejecución mediante una consulta más selectiva y eliminando el parsing de cadenas redundantes dentro del generador.

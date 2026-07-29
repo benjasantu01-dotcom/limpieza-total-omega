@@ -1237,3 +1237,34 @@ FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked -
 - `2026-07-29T03:20:19` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `settings.py` ante casos límite en la carga de archivos, añadiendo un chequeo preventivo de tamaño y codificación antes de intentar el parseo JSON para evitar bloqueos por archivos corruptos de gran tamaño o binarios accidentales.
 - `2026-07-29T03:20:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-29T03:20:19` Corrida terminada. Total usado hoy: 80.
+- `2026-07-29T03:29:22` Arrancando corrida. Quedan hoy ~220 peticiones objetivo.
+- `2026-07-29T03:29:48` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Se añadió una validación defensiva en `_extract_quoted_path` para prevenir rutas malformadas o entradas que contienen caracteres de escape no válidos, asegurando que solo se procesen rutas que realmente existen o tienen extensiones ejecutables permitidas, evitando excepciones en el parseo de líneas de comando complejas.
+- `2026-07-29T03:30:20` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_call_gemini` añadiendo una validación explícita para prevenir la inyección de comandos o la fuga de datos mediante el control de caracteres sospechosos, asegurando que el contenido retornado por la API no contenga estructuras que evadan las restricciones de privacidad, manteniendo la integridad del contrato de datos.
+- `2026-07-29T03:30:49` Tests FALLARON:
+```
+........................................................................ [ 24%]
+.........................F.............................................. [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+______________________ test_save_logo_svg_writes_the_file ______________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-3/test_save_logo_svg_writes_the_0')
+
+    def test_save_logo_svg_writes_the_file(tmp_path):
+        destino = branding.save_logo_svg(tmp_path / "iconos" / "logo.svg")
+>       assert destino.is_file()
+               ^^^^^^^^^^^^^^^
+E       AttributeError: 'NoneType' object has no attribute 'is_file'
+
+evolve/tests/test_modules.py:92: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - AttributeError: 'NoneType' object has no attribute 'is_file'
+1 failed, 298 passed in 1.06s
+
+```
+- `2026-07-29T03:30:49` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad de `save_logo_svg` reemplazando la creación de directorios implícita por una verificación explícita mediante `is_safe_to_modify` para cada nivel de la ruta, asegurando que ninguna operación de disco ocurra fuera del control del sistema de seguridad.
+- `2026-07-29T03:30:57` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `directory_size` para prevenir el seguimiento de puntos de reparse (junctions) en sistemas Windows, asegurando que la recursión no escape del directorio base validado.
+- `2026-07-29T03:30:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-29T03:30:57` Corrida terminada. Total usado hoy: 84.

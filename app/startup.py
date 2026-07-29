@@ -62,7 +62,12 @@ class StartupEntry:
     def _extract_quoted_path(self, raw_cmd: str) -> str:
         """Extrae la ruta si está delimitada por comillas dobles."""
         end_quote: int = raw_cmd.find('"', 1)
-        path = raw_cmd[1:end_quote] if end_quote != -1 else raw_cmd[1:]
+        if end_quote == -1:
+            return ""
+        path = raw_cmd[1:end_quote]
+        # Validación de integridad de ruta ante caracteres ilegales o rutas vacías
+        if not path or any(c in path for c in '<>|?*'):
+            return ""
         # Valida que sea ejecutable real o exista antes de retornarlo
         if path.lower().endswith(('.exe', '.bat', '.cmd', '.scr')) or os.path.exists(path):
             return path
