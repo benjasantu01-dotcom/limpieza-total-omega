@@ -108,29 +108,39 @@ _NUMERIC_LIMITS: Final = {
 _DEFAULTS_KEYS: Final = set(DEFAULTS.keys())
 
 
-def _coerce_bool(valor: Any) -> bool | None:
+def _coerce_bool(raw_value: Any) -> bool | None:
     """
     Normaliza entradas no booleanas (strings tipo 'true'/'1'/'si') a booleano real.
-    Devuelve None si el valor no representa un booleano válido.
+    
+    Returns:
+        bool: El valor normalizado.
+        None: Si la entrada no representa un booleano válido.
     """
-    if isinstance(valor, bool):
-        return valor
-    if isinstance(valor, str):
-        return valor.strip().lower() in ("1", "true", "si", "sí", "yes")
+    if isinstance(raw_value, bool):
+        return raw_value
+    if isinstance(raw_value, str):
+        return raw_value.strip().lower() in ("1", "true", "si", "sí", "yes")
     return None
 
 
-def _coerce_int(valor: Any, clave: str) -> int | None:
+def _coerce_int(raw_value: Any, setting_key: str) -> int | None:
     """
-    Intenta convertir a entero, aplicando los límites definidos en _NUMERIC_LIMITS.
-    Si el valor está fuera de rango o es inválido, retorna None para disparar fallback.
+    Intenta convertir a entero, aplicando límites definidos en _NUMERIC_LIMITS.
+    
+    Args:
+        raw_value: El valor crudo extraído del archivo JSON.
+        setting_key: La clave de configuración para buscar límites asociados.
+    
+    Returns:
+        int: El valor dentro del rango permitido (o truncado al límite).
+        None: Si la conversión falla.
     """
-    if not isinstance(valor, (int, str)):
+    if not isinstance(raw_value, (int, str)):
         return None
     try:
-        numero = int(valor)
-        minimo, maximo = _NUMERIC_LIMITS.get(clave, (0, 10**9))
-        return max(minimo, min(maximo, numero))
+        parsed_val = int(raw_value)
+        min_limit, max_limit = _NUMERIC_LIMITS.get(setting_key, (0, 10**9))
+        return max(min_limit, min(max_limit, parsed_val))
     except (TypeError, ValueError):
         return None
 
