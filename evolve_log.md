@@ -518,3 +518,32 @@ FAILED evolve/tests/test_modules.py::test_finds_duplicates_across_subfolders - A
 - `2026-07-29T07:05:37` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se optimizó el rendimiento en el filtrado y validación de rutas mediante el uso de `frozenset` para `_SYSTEM_ROOTS_PARTS` y la introducción de una caché local de tipo `lru_cache` para `is_protected_path`, evitando la re-normalización costosa y las consultas repetidas de componentes de ruta en iteraciones intensivas.
 - `2026-07-29T07:05:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-29T07:05:37` Corrida terminada. Total usado hoy: 168.
+- `2026-07-29T07:14:28` Arrancando corrida. Quedan hoy ~132 peticiones objetivo.
+- `2026-07-29T07:14:51` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el bucle de escaneo en `scan_directory` cacheando la conversión de rutas y evitando la creación redundante de objetos `Path` y conversiones de tipo dentro del ciclo principal, mejorando el rendimiento en directorios extensos.
+- `2026-07-29T07:15:15` Tests FALLARON:
+```
+
+______________________ test_describe_never_prints_the_key ______________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-2/test_describe_never_prints_the0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fccd999d040>
+
+    def test_describe_never_prints_the_key(tmp_path, monkeypatch):
+        monkeypatch.delenv(settings.API_KEY_ENV_VAR, raising=False)
+        settings.save({**settings.DEFAULTS, "asistente_clave_api": "SECRETO-123"}, tmp_path)
+        texto = "\n".join(settings.describe(tmp_path))
+        assert "SECRETO-123" not in texto, "la clave nunca debe mostrarse en pantalla"
+>       assert "archivo de configuración" in texto
+E       AssertionError: assert 'archivo de configuración' in 'Configuración actual\n\n  Archivo: /tmp/pytest-of-runner/pytest-2/test_describe_never_prints_the0/config.json\n\n  Ap... Análisis en paralelo: sí\n\n  Asistente IA\n    Activado: no\n    Clave: archivo\n    Modelo: gemini-3.1-flash-lite\n'
+
+evolve/tests/test_assistant.py:178: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - AssertionError: assert 'archivo de configuración' in 'Configuración actual\n\n  Archivo: /tmp/pytest-of-runner/pytest-2/test_describe_never_prints_the0/config.json\n\n  Ap... Análisis en paralelo: sí\n\n  Asistente IA\n    Activado: no\n    Clave: archivo\n    Modelo: gemini-3.1-flash-lite\n'
+1 failed, 298 passed in 1.06s
+
+```
+- `2026-07-29T07:15:15` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Se optimizó el acceso a las configuraciones centralizando la lógica de validación y reduciendo las llamadas redundantes a `load()` mediante un decorador de caché eficiente, evitando re-procesamiento innecesario de disco y validaciones repetidas en las funciones de consulta.
+- `2026-07-29T07:15:38` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-07-29T07:15:55` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta y defensiva en `_call_gemini` para prevenir la propagación de errores de red o configuraciones maliciosas, garantizando que cualquier respuesta que contenga caracteres de control o patrones sospechosos sea descartada, protegiendo la integridad de la interfaz.
+- `2026-07-29T07:15:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-29T07:15:55` Corrida terminada. Total usado hoy: 172.

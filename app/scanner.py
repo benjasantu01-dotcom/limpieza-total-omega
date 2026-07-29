@@ -144,15 +144,17 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
                 # Se utiliza os.scandir para eficiencia en grandes volúmenes de archivos
                 with os.scandir(current_dir) as it:
                     for entry in it:
-                        # La validación is_protected_path es central para la seguridad defensiva
-                        if is_protected_path(Path(entry.path)):
+                        # Convertimos a Path una sola vez por iteración
+                        entry_path = Path(entry.path)
+                        
+                        if is_protected_path(entry_path):
                             continue
                             
                         if entry.is_dir(follow_symlinks=False):
                             if not _is_reparse_point(entry):
-                                stack.append(Path(entry.path))
+                                stack.append(entry_path)
                         elif entry.is_file():
-                            results.extend(scan_file(Path(entry.path)))
+                            results.extend(scan_file(entry_path))
             except (PermissionError, OSError):
                 # Se omiten directorios sin permisos de lectura para continuar el escaneo
                 continue
