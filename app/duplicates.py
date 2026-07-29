@@ -133,7 +133,7 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
         
     groups: Dict[int, List[Path]] = defaultdict(list)
     for p in paths:
-        if p is None:
+        if p is None or not isinstance(p, Path):
             continue
         try:
             stat = p.lstat()
@@ -254,14 +254,13 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
     if not group or not group.paths:
         return None
 
-    # Lista de tuplas: (mtime, len_path, path)
     valid_paths: List[tuple[float, int, Path]] = []
     for p in group.paths:
-        if not p or is_protected_path(p):
+        if not p or not isinstance(p, Path) or is_protected_path(p):
             continue
         try:
-            mtime = p.stat().st_mtime
-            valid_paths.append((mtime, len(str(p)), p))
+            stat = p.stat()
+            valid_paths.append((stat.st_mtime, len(str(p)), p))
         except (OSError, PermissionError, FileNotFoundError):
             continue
             
@@ -282,6 +281,6 @@ def format_group(group: DuplicateGroup) -> List[str]:
     mb_wasted = round(group.wasted_bytes / (1024 * 1024), 2)
     lines = [f"{group.count} copias de {mb_total} MB (recuperable: {mb_wasted} MB)"]
     for path in group.paths:
-        marca = "conservar" if path == keeper else "duplicado"
+        marca = "conservar" if keeper and path == keeper else "duplicado"
         lines.append(f"   [{marca}] {path}")
     return lines

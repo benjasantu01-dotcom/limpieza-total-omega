@@ -402,3 +402,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-07-29T05:24:53` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
 - `2026-07-29T05:24:53` Rotación — log: 1122 líneas archivadas; metrics: 4 registros archivados; 2 archivo(s) histórico(s) descartado(s)
 - `2026-07-29T05:24:53` Corrida terminada. Total usado hoy: 128.
+- `2026-07-29T05:32:09` Arrancando corrida. Quedan hoy ~172 peticiones objetivo.
+- `2026-07-29T05:32:33` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `directory_size` y `_is_safe_path` ante errores de resolución de rutas y entradas inexistentes, asegurando que el bucle de escaneo no aborte prematuramente ni procese rutas mal formadas.
+- `2026-07-29T05:32:57` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y las funciones de consulta integrando validaciones de entrada (`is_protected_path`) y manejos de excepciones específicos para evitar que rutas malformadas o bloqueadas interrumpan el proceso de escaneo.
+- `2026-07-29T05:33:21` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez del procesamiento de rutas y la gestión de excepciones en `suggest_keeper` y `group_by_size`, asegurando que el código maneje correctamente archivos inaccesibles o eliminados durante la ejecución sin romper el flujo del análisis.
+- `2026-07-29T05:33:28` ➖ Sin cambios en healthscore.py (enfoque: manejo de errores y validación de entradas). Motivo: Reforcé la robustez de `compute_score` validando que las métricas contengan valores numéricos coherentes antes del procesamiento, evitando así la propagación de estados inválidos a través de la lógica de negocio.
+- `2026-07-29T05:33:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-29T05:33:28` Corrida terminada. Total usado hoy: 132.

@@ -96,8 +96,8 @@ def _is_safe_path(target_path: Path, base_path: Path) -> bool:
     if not target_path or not base_path:
         return False
     try:
-        resolved_target = target_path.resolve(strict=True)
-        resolved_base = base_path.resolve(strict=True)
+        resolved_target = target_path.resolve(strict=False)
+        resolved_base = base_path.resolve(strict=False)
         
         # Verifica protección global antes de confirmar pertenencia al árbol base
         if is_protected_path(resolved_target):
@@ -118,7 +118,6 @@ def directory_size(path: str | os.PathLike) -> int:
         return 0
     
     total_bytes: int = 0
-    # Usamos resolve() para asegurar que la comparación de padres sea robusta
     try:
         base_resolved = p.resolve(strict=True)
     except (OSError, RuntimeError):
@@ -131,22 +130,17 @@ def directory_size(path: str | os.PathLike) -> int:
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:
-                    # Detectar links y puntos de reparse (Junctions) para no salir del árbol
                     try:
                         is_reparse = entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction())
-                    except OSError:
-                        is_reparse = True
-                        
-                    if is_reparse:
-                        continue
-                        
-                    if entry.is_dir():
-                        stack.append(Path(entry.path))
-                    else:
-                        try:
-                            total_bytes += entry.stat().st_size
-                        except OSError:
+                        if is_reparse:
                             continue
+                            
+                        if entry.is_dir():
+                            stack.append(Path(entry.path))
+                        else:
+                            total_bytes += entry.stat().st_size
+                    except (OSError, PermissionError):
+                        continue
         except (OSError, PermissionError):
             continue
             
@@ -161,11 +155,11 @@ def _is_valid_cache_path(candidate: Path, base_path: Path) -> bool:
     if not candidate:
         return False
     try:
-        if not candidate.exists() or candidate.is_symlink():
+        # Usamos exists() y is_dir() sin strict resolve para evitar fallos si el path es temporalmente inaccesible
+        if not candidate.exists() or not candidate.is_dir() or candidate.is_symlink():
             return False
         return (
             _is_safe_path(candidate, base_path) and
-            candidate.is_dir() and
             candidate.name.lower() not in NEVER_TOUCH
         )
     except (ValueError, OSError, RuntimeError):
@@ -194,21 +188,17 @@ def detect_profiles(
             continue
 
         for browser_name, relative_path_str in cache_paths.items():
-            try:
-                if not relative_path_str:
-                    continue
-                candidate = resolved_base.joinpath(*relative_path_str.split("\\"))
-                
-                if not _is_valid_cache_path(candidate, resolved_base):
-                    continue
-                    
+            if not relative_path_str:
+                continue
+            
+            candidate = resolved_base.joinpath(*relative_path_str.split("\\"))
+            
+            if _is_valid_cache_path(candidate, resolved_base):
                 found.append(BrowserCache(
                     browser=browser_name,
                     path=candidate,
                     size_bytes=directory_size(str(candidate)),
                 ))
-            except (OSError, PermissionError, ValueError, AttributeError, TypeError):
-                continue
                 
     found.sort(key=lambda c: c.size_bytes, reverse=True)
     return found

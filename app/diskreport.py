@@ -146,7 +146,7 @@ def all_drives_usage(mounts: Iterable[str] | None = None) -> list[DriveUsage]:
 
 def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Generator[tuple[Path, int], None, None]:
     """Genera tuplas (ruta, tamaño) para cada archivo encontrado, manejando errores de acceso."""
-    if directory is None:
+    if not directory:
         return
     try:
         base_path = Path(directory).expanduser().resolve(strict=True)
