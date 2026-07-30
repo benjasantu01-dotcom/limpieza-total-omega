@@ -175,38 +175,49 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     contexto = SystemContext()
     
     def es_num_valido(val: Any) -> bool:
-        """Verifica que el valor sea un número real (ni infinito ni NaN)."""
-        return isinstance(val, (int, float)) and math.isfinite(val)
+        """Verifica que el valor sea un número real finito."""
+        try:
+            return isinstance(val, (int, float)) and math.isfinite(val)
+        except (TypeError, ValueError):
+            return False
 
     def extraer(fuente: Any, attr: str, tipo: type, default: Any) -> Any:
         """Extrae de forma segura un atributo de un objeto."""
         try:
-            val = getattr(fuente, attr, default)
-            return tipo(val) if es_num_valido(val) else default
+            val = getattr(fuente, attr, None)
+            if val is None or not es_num_valido(val):
+                return default
+            return tipo(val)
         except (TypeError, ValueError):
             return default
 
     if metrics:
-        contexto.junk_mb = extraer(metrics, "junk_mb", float, 0.0)
-        contexto.suspicious_count = extraer(metrics, "suspicious_count", int, 0)
-        contexto.suspicious_warnings = extraer(metrics, "suspicious_warnings", int, 0)
-        contexto.memory_available_percent = max(0.0, min(extraer(metrics, "memory_available_percent", float, 0.0), 100.0))
-        contexto.disk_free_percent = max(0.0, min(extraer(metrics, "disk_free_percent", float, 0.0), 100.0))
-        contexto.duplicate_mb = extraer(metrics, "duplicate_mb", float, 0.0)
-        contexto.startup_count = extraer(metrics, "startup_count", int, 0)
-        contexto.quarantined_count = extraer(metrics, "quarantined_count", int, 0)
+        contexto.junk_mb = float(extraer(metrics, "junk_mb", float, 0.0))
+        contexto.suspicious_count = int(extraer(metrics, "suspicious_count", int, 0))
+        contexto.suspicious_warnings = int(extraer(metrics, "suspicious_warnings", int, 0))
+        
+        mem_pct = extraer(metrics, "memory_available_percent", float, 0.0)
+        contexto.memory_available_percent = max(0.0, min(float(mem_pct), 100.0))
+        
+        disk_pct = extraer(metrics, "disk_free_percent", float, 0.0)
+        contexto.disk_free_percent = max(0.0, min(float(disk_pct), 100.0))
+        
+        contexto.duplicate_mb = float(extraer(metrics, "duplicate_mb", float, 0.0))
+        contexto.startup_count = int(extraer(metrics, "startup_count", int, 0))
+        contexto.quarantined_count = int(extraer(metrics, "quarantined_count", int, 0))
         contexto.analyzed = True
 
     if health:
         score_val = extraer(health, "score", int, 0)
-        contexto.score = max(0, min(score_val, 100))
+        contexto.score = max(0, min(int(score_val), 100))
         grado = getattr(health, "grade", "")
         contexto.grade = str(grado) if isinstance(grado, (str, int, float)) else ""
         contexto.analyzed = True
 
     for clave, valor in extra.items():
-        if hasattr(contexto, clave) and es_num_valido(valor) and clave not in ["analyzed", "grade"]:
-            setattr(contexto, clave, float(valor))
+        if hasattr(contexto, clave) and clave not in ["analyzed", "grade"]:
+            if es_num_valido(valor):
+                setattr(contexto, clave, float(valor))
 
     return contexto
 

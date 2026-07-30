@@ -1421,3 +1421,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption
 - `2026-07-30T01:11:23` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
 - `2026-07-30T01:11:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-30T01:11:23` Corrida terminada. Total usado hoy: 28.
+- `2026-07-30T01:20:24` Arrancando corrida. Quedan hoy ~272 peticiones objetivo.
+- `2026-07-30T01:20:47` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se optimizó el escaneo del directorio convirtiendo `SYSTEM_LOOKALIKES` y `SUSPICIOUS_EXECUTABLE_EXT` a `frozenset` para obtener búsquedas O(1) más rápidas, y se evitó la resolución costosa de `Path` mediante `resolve()` dentro del bucle crítico, usando en su lugar la comparación directa de rutas `str` optimizada.
+- `2026-07-30T01:21:12` ➖ Sin cambios en settings.py (enfoque: rendimiento). Motivo: Optimicé el rendimiento del módulo evitando re-parseos y re-validaciones innecesarias del archivo de configuración al utilizar un caché de estado que verifica cambios mediante `st_mtime` antes de acceder a la lectura del disco.
+- `2026-07-30T01:21:36` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Optimizé `entries_from_registry` para evitar el uso redundante de `parse_registry_csv` dentro de un loop, procesando el bloque completo de salida de PowerShell de una vez y reduciendo drásticamente las operaciones de split/join en cada línea.
+- `2026-07-30T01:21:51` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se mejora la robustez de `build_context` ante valores corruptos o inesperados en `metrics` y `health`, garantizando que si los datos provienen de un estado inconsistente, la app no se bloquee ni propague valores inválidos.
+- `2026-07-30T01:21:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-30T01:21:51` Corrida terminada. Total usado hoy: 32.

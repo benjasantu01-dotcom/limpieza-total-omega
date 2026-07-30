@@ -32,10 +32,10 @@ SuspicionCheck: TypeAlias = Callable[[Path], Optional["Suspicion"]]
 DOUBLE_EXTENSION_RE: Final[re.Pattern] = re.compile(r"\.(pdf|jpg|png|docx|xlsx|txt)\.(exe|scr|bat|cmd|js|vbs)$", re.IGNORECASE)
 
 # Lista blanca de extensiones potencialmente riesgosas para inspección heurística
-SUSPICIOUS_EXECUTABLE_EXT: Final[set[str]] = {".exe", ".scr", ".bat", ".cmd", ".js", ".vbs", ".ps1"}
+SUSPICIOUS_EXECUTABLE_EXT: Final[frozenset[str]] = frozenset({".exe", ".scr", ".bat", ".cmd", ".js", ".vbs", ".ps1"})
 
 # Procesos críticos de Windows usados para detectar suplantación de identidad
-SYSTEM_LOOKALIKES: Final[set[str]] = {"svchost.exe", "explorer.exe", "csrss.exe", "winlogon.exe", "lsass.exe"}
+SYSTEM_LOOKALIKES: Final[frozenset[str]] = frozenset({"svchost.exe", "explorer.exe", "csrss.exe", "winlogon.exe", "lsass.exe"})
 SYSTEM32_LOWER: Final[str] = "system32"
 
 # Tiempo umbral para definir un archivo como "reciente" (en horas)
@@ -58,30 +58,27 @@ def _is_reparse_point(entry: os.DirEntry) -> bool:
     infinitas en el sistema de archivos al encontrar enlaces simbólicos o junctions.
     """
     try:
-        # st_file_attributes es específico de Windows en la librería estándar
         return bool(entry.stat().st_file_attributes & 0x400)
     except (OSError, AttributeError):
         return False
 
 
-def _process_directory_entry(entry: os.DirEntry, root_path: Path, results: List[Suspicion], stack: List[str]) -> None:
+def _process_directory_entry(entry: os.DirEntry, root_path: str, results: List[Suspicion], stack: List[str]) -> None:
     """
     Evalúa una entrada individual del sistema de archivos.
-    Si es un directorio, lo añade a la pila para escaneo recursivo. 
-    Si es un archivo, ejecuta los chequeos heurísticos.
     """
     try:
-        path_entry = Path(entry.path).resolve()
+        path_str = entry.path
         
-        # Saltos de seguridad: omitir protegidos o intentos de escape fuera del root
-        if not path_entry.exists() or is_protected_path(path_entry) or not str(path_entry).startswith(str(root_path)):
+        # Omitir protegidos usando la función que recibe texto crudo (evitando Path.resolve() en loop)
+        if is_protected_path(Path(path_str)) or not path_str.startswith(root_path):
             return
             
         if entry.is_dir(follow_symlinks=False):
             if not _is_reparse_point(entry):
-                stack.append(str(path_entry))
+                stack.append(path_str)
         elif entry.is_file():
-            results.extend(scan_file(path_entry))
+            results.extend(scan_file(Path(path_str)))
     except (PermissionError, OSError, ValueError):
         pass
 
@@ -127,7 +124,6 @@ CHECK_FUNCS: Final[List[SuspicionCheck]] = [
 def scan_file(path: Path) -> List[Suspicion]:
     """
     Ejecuta el conjunto de reglas heurísticas sobre un archivo.
-    Garantiza que la ruta no pertenezca a zonas protegidas antes de analizar.
     """
     if is_protected_path(path):
         return []
@@ -148,24 +144,23 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
         return []
         
     try:
-        path_obj = Path(directory)
-        root = path_obj.resolve()
-    except (TypeError, ValueError, OSError) as e:
-        logger.error("Error al resolver la ruta base %s: %s", directory, e)
+        root_path = Path(directory).resolve()
+        root_str = str(root_path)
+    except (TypeError, ValueError, OSError):
         return []
 
-    if not root.exists() or not root.is_dir() or is_protected_path(root):
+    if not root_path.exists() or not root_path.is_dir() or is_protected_path(root_path):
         return []
         
     results: List[Suspicion] = []
-    stack: List[str] = [str(root)]
+    stack: List[str] = [root_str]
     
     while stack:
         current_dir = stack.pop()
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:
-                    _process_directory_entry(entry, root, results, stack)
+                    _process_directory_entry(entry, root_str, results, stack)
         except (PermissionError, OSError):
             continue
             

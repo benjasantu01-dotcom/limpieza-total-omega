@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **250** (49.6% de aceptación)
+- Mejoras aceptadas: **249** (49.4% de aceptación)
 - Rechazadas por tests: 19
 - Rechazadas por guardia de seguridad: 26
-- Sin cambios (nada sustancial que mejorar): 9
+- Sin cambios (nada sustancial que mejorar): 10
 - Sin respuesta de la IA (error o límite): 200
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-28 | 59 | 6 | 6 | 1 | 54 |
+| 2026-07-28 | 55 | 6 | 6 | 1 | 54 |
 | 2026-07-29 | 171 | 10 | 18 | 8 | 143 |
-| 2026-07-30 | 20 | 3 | 2 | 0 | 3 |
+| 2026-07-30 | 23 | 3 | 2 | 1 | 3 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **65**
-- seguridad defensiva: **51**
 - manejo de errores y validación de entradas: **51**
-- rendimiento: **45**
-- robustez ante casos límite: **38**
+- seguridad defensiva: **47**
+- rendimiento: **47**
+- robustez ante casos límite: **39**
 
 ## Mejoras aceptadas por archivo
 
+- `scanner.py`: **22**
 - `settings.py`: **22**
 - `quarantine.py`: **21**
-- `scanner.py`: **21**
 - `browser.py`: **21**
 - `organizer.py`: **20**
-- `healthscore.py`: **19**
-- `main.py`: **19**
-- `assistant.py`: **19**
-- `diskreport.py`: **18**
-- `duplicates.py`: **17**
+- `assistant.py`: **20**
+- `healthscore.py`: **18**
+- `main.py`: **18**
+- `diskreport.py`: **17**
 - `memory.py`: **16**
+- `duplicates.py`: **16**
 - `safety.py`: **14**
 - `branding.py`: **14**
-- `startup.py`: **9**
+- `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-30T01:21:51` **assistant.py** (robustez ante casos límite): Se mejora la robustez de `build_context` ante valores corruptos o inesperados en `metrics` y `health`, garantizando que si los datos provienen de un estado inconsistente, la app no se bloquee ni propague valores inválidos.
+- `2026-07-30T01:21:36` **startup.py** (rendimiento): Optimizé `entries_from_registry` para evitar el uso redundante de `parse_registry_csv` dentro de un loop, procesando el bloque completo de salida de PowerShell de una vez y reduciendo drásticamente las operaciones de split/join en cada línea.
+- `2026-07-30T01:20:47` **scanner.py** (rendimiento): Se optimizó el escaneo del directorio convirtiendo `SYSTEM_LOOKALIKES` y `SUSPICIOUS_EXECUTABLE_EXT` a `frozenset` para obtener búsquedas O(1) más rápidas, y se evitó la resolución costosa de `Path` mediante `resolve()` dentro del bucle crítico, usando en su lugar la comparación directa de rutas `str` optimizada.
 - `2026-07-30T01:10:57` **quarantine.py** (rendimiento): Se implementó un cacheo basado en el estado del sistema de archivos (`st_mtime` del manifiesto) para evitar deserializaciones redundantes de JSON en llamadas sucesivas, mejorando drásticamente el rendimiento en bucles de lectura sin sacrificar la coherencia de datos.
 - `2026-07-30T01:10:33` **organizer.py** (rendimiento): Se optimizó el rendimiento de `scan_for_junk` sustituyendo `entry.path` (que genera un string completo innecesario en cada iteración del sistema de archivos) por `entry.name` y construyendo las rutas solo cuando es estrictamente necesario, además de aprovechar el cacheo local de `stat()` ya disponible en `os.DirEntry`.
 - `2026-07-30T01:01:34` **main.py** (rendimiento): Se optimizó el flujo `_update_health_visuals` reemplazando la recreación de objetos por una actualización de propiedades existente, y se eliminó el uso de `lambda` para capturar iteradores en los loops de construcción de pestañas, evitando llamadas a `winfo_exists` redundantes y reduciendo la carga en el hilo principal durante la actualización de la UI.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-30T00:30:32` **quarantine.py** (legibilidad y documentación): He mejorado la documentación interna y la robustez del código mediante la adición de Type Hints faltantes, la corrección de una inconsistencia en el manejo del caché del manifiesto y la mejora de los docstrings para clarificar el comportamiento ante errores.
 - `2026-07-30T00:30:07` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de docstrings estructurados (usando el estándar Google) para las funciones que carecían de ellos, especificando explícitamente las excepciones que pueden ser lanzadas y los tipos de datos esperados, facilitando el mantenimiento y la comprensión de los flujos de seguridad.
 - `2026-07-30T00:29:43` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de Type Hints en la firma de `_read_windows_snapshot` y `diagnose`, y se ha documentado la lógica de exclusión de procesos de sistema en `trim_working_set` para clarificar las salvaguardas de seguridad.
-- `2026-07-30T00:21:08` **main.py** (legibilidad y documentación): Mejoré la legibilidad del método `on_full_analysis` extrayendo la lógica de consolidación de métricas a una función dedicada, facilitando la comprensión del flujo de datos entre los módulos de análisis y el motor de salud/asistente.
-- `2026-07-30T00:20:22` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings que explican el "porqué" de las constantes de umbral y la lógica de normalización, además de añadir type hints más precisos en la función `summarize` para mejorar la legibilidad del código de ordenamiento.
-- `2026-07-30T00:19:58` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del pipeline de `find_duplicates` mediante type hinting más estricto y docstrings detallados, clarificando la lógica de selección en `suggest_keeper` para facilitar el mantenimiento.

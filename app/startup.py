@@ -206,12 +206,8 @@ def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[Start
         if result.returncode == 0 and result.stdout:
             entries: List[StartupEntry] = []
             current_source: str = "registro"
-            for line in result.stdout.splitlines():
-                if line.startswith("SRCDATA:"):
-                    current_source = line[8:]
-                    continue
-                if ',' in line:
-                    entries.extend(parse_registry_csv(line, source=current_source))
+            # Procesar bloque completo para evitar múltiples llamadas de parseo
+            entries.extend(parse_registry_csv(result.stdout, source=current_source))
             return entries
     except (OSError, subprocess.SubprocessError):
         pass
