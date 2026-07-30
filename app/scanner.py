@@ -69,11 +69,12 @@ def _process_directory_entry(entry: os.DirEntry, root_path: str, results: List[S
     mediante tracking de 'seen' y delega el escaneo de archivos a `scan_file`.
     """
     try:
-        # Resolvemos la ruta absoluta para validar el sandbox lógico
+        # Resolvemos ruta absoluta para evitar ataques de salto de directorio
         path_str = os.path.abspath(entry.path)
+        path_obj = Path(path_str)
         
-        # Validar que la ruta sea segura y pertenezca jerárquicamente a la raíz
-        if is_protected_path(Path(path_str)) or not path_str.startswith(root_path):
+        # Validar sandbox lógico: la ruta debe estar dentro de root_path
+        if not path_str.startswith(root_path) or is_protected_path(path_obj):
             return
             
         if entry.is_dir(follow_symlinks=False):
@@ -81,7 +82,7 @@ def _process_directory_entry(entry: os.DirEntry, root_path: str, results: List[S
                 seen.add(path_str)
                 stack.append(path_str)
         elif entry.is_file():
-            results.extend(scan_file(Path(path_str)))
+            results.extend(scan_file(path_obj))
     except (PermissionError, OSError, ValueError):
         pass
 
@@ -161,8 +162,9 @@ def scan_file(path: Path) -> List[Suspicion]:
     Retorna una lista con todos los objetos `Suspicion` hallados.
     """
     try:
-        # Validación defensiva ante rutas malformadas o inaccesibles
-        if not isinstance(path, Path) or not path.exists() or is_protected_path(path):
+        # Validación defensiva estricta: normalizar y verificar protección
+        abs_path = path.resolve()
+        if not abs_path.exists() or is_protected_path(abs_path):
             return []
     except (PermissionError, OSError):
         return []
@@ -170,13 +172,13 @@ def scan_file(path: Path) -> List[Suspicion]:
     results: List[Suspicion] = []
     for check_func in CHECK_FUNCS:
         try:
-            res = check_func(path)
+            res = check_func(abs_path)
             if res is not None:
                 results.append(res)
         except (PermissionError, OSError):
             continue
         except Exception as e:
-            logger.debug(f"Error inesperado en chequeo {check_func.__name__} para {path}: {e}")
+            logger.debug(f"Error inesperado en chequeo {check_func.__name__} para {abs_path}: {e}")
             continue
     
     return results

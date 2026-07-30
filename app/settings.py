@@ -232,6 +232,7 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     try:
         parent.mkdir(parents=True, exist_ok=True)
         ensure_safe_to_modify(str(parent))
+        ensure_safe_to_modify(str(ruta))
     except (OSError, RuntimeError, PermissionError):
         return None
     
