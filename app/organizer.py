@@ -259,8 +259,10 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             # Asegurar que el destino final esté dentro de la carpeta designada
             if not str(target).startswith(str(dest)):
                 continue
-                
+            
+            # Validación final de seguridad antes de la escritura
             ensure_safe_to_modify(full_source_path)
+            ensure_safe_to_modify(target)
             shutil.move(str(full_source_path), str(target))
                 
         except (PermissionError, OSError, shutil.Error):

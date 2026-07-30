@@ -877,3 +877,11 @@ assert not True
 - `2026-07-30T06:38:28` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva de `_collect_candidates` asegurando mediante `resolve()` y `is_relative_to` que el escaneo no escape accidentalmente de los directorios raíz solicitados, previniendo el procesamiento de rutas fuera del alcance deseado incluso ante manipulaciones de enlaces simbólicos o rutas absolutas inesperadas.
 - `2026-07-30T06:38:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-30T06:38:28` Corrida terminada. Total usado hoy: 156.
+- `2026-07-30T06:47:20` Arrancando corrida. Quedan hoy ~144 peticiones objetivo.
+- `2026-07-30T06:47:47` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la robustez de `SystemMetrics.validate` y `compute_score` ante valores atípicos mediante el uso de `math.isfinite` y `_clamp` adicional, asegurando que los cálculos aritméticos en `compute_score` no deriven en estados de excepción inesperados ni corrompan el puntaje final con valores fuera de rango.
+- `2026-07-30T06:48:48` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-07-30T06:49:48` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Se ha mejorado `on_stage` y `on_quarantine_findings` en `main.py` para realizar una validación de seguridad proactiva mediante `is_safe_to_modify` antes de proceder con cualquier confirmación o movimiento, asegurando que los archivos bajo procesos de limpieza o aislamiento no residan en rutas protegidas incluso antes de solicitar permiso al usuario.
+- `2026-07-30T06:50:12` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
+- `2026-07-30T06:50:20` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `stage_for_review` implementando una validación explícita mediante `ensure_safe_to_modify` sobre el destino calculado antes de cada operación de movimiento, garantizando que ninguna manipulación de archivos escape al control centralizado de seguridad del proyecto.
+- `2026-07-30T06:50:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-30T06:50:20` Corrida terminada. Total usado hoy: 160.

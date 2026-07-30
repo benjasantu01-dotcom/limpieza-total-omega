@@ -7,7 +7,7 @@ recomendaciones concretas.
 
 DECISIÓN DE DISEÑO: `compute_score` es una función pura — recibe un objeto
 con las métricas y no toca el disco ni el sistema. Eso permite testear
-todos los casos límite (sistema impecable, sistema desastroso, datos
+todos los casos límite (sistema impecable, sistema desastre, datos
 faltantes) sin necesitar una PC sucia de verdad. La recolección de datos
 vive en los otros módulos; acá solo se puntúa.
 """
@@ -212,17 +212,17 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
             "arranque": score_startup(metrics.startup_count),
         }
 
-        total_score = 0
-        breakdown = {}
+        total_score: float = 0.0
+        breakdown: Dict[str, int] = {}
         for area, weight in WEIGHTS.items():
             ratio = ratios.get(area, 0.0)
-            score_part = int(round(ratio * weight))
+            score_part = int(round(_clamp(ratio, 0.0, 1.0) * weight))
             breakdown[area] = score_part
-            total_score += score_part
+            total_score += float(score_part)
 
         return HealthResult(
-            score=max(0, min(100, total_score)),
-            grade=grade_for_score(total_score),
+            score=max(0, min(100, int(round(total_score)))),
+            grade=grade_for_score(int(round(total_score))),
             breakdown=breakdown,
             recommendations=_generate_recommendations(metrics, ratios),
         )

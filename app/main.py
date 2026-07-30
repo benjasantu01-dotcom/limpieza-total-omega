@@ -978,36 +978,25 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             messagebox.showinfo("Sin candidatos", "Primero usá 'Buscar basura'.")
             return
         
-        # Validar existencia antes de confirmar
-        validos = [jf for jf in junk if os.path.exists(jf.path)]
-        if len(validos) < len(junk):
-            self.log("Algunos archivos ya no existen. Refrescando lista...", "Limpieza")
-            self._cache["junk"] = validos
-            self.refresh_list()
-            if not validos: return
+        # Filtrar candidatos inseguros antes de preguntar al usuario
+        aptos = [jf for jf in junk if safety.is_safe_to_modify(Path(jf.path))]
+        
+        if not aptos:
+            messagebox.showwarning("Sin candidatos seguros", "Todos los archivos encontrados están en rutas protegidas.")
+            return
 
         if not self._confirm(
             "Mover a revisión",
-            f"Se van a MOVER {len(junk)} archivos a la carpeta de revisión.\n\n"
+            f"Se van a MOVER {len(aptos)} archivos seguros a la carpeta de revisión.\n\n"
             "No se borra nada: podés verlos y decidir después. ¿Seguimos?",
         ):
             return
 
         def task():
             self.set_status("Moviendo a revisión...")
-            # Filtrado explícito mediante seguridad
-            aptos = []
-            for jf in junk:
-                try:
-                    safety.ensure_safe_to_modify(Path(jf.path))
-                    aptos.append(jf)
-                except safety.UnsafePathError:
-                    self.log(f"Omitido por seguridad: {jf.path}", "Limpieza")
-            
-            if aptos:
-                dest = stage_for_review(aptos)
-                self.log(f"Movidos {len(aptos)} archivos a: {dest}", "Limpieza")
-            self._cache["junk"] = []
+            dest = stage_for_review(aptos)
+            self.log(f"Movidos {len(aptos)} archivos a: {dest}", "Limpieza")
+            self._cache["junk"] = [j for j in junk if j not in aptos]
 
         self.run_async(task)
 
@@ -1076,17 +1065,16 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             messagebox.showinfo("Sin hallazgos", "Primero corré un escaneo heurístico.")
             return
         
-        # Validar existencia antes de mover
-        validos = [s for s in suspicions if os.path.exists(s.path)]
-        if len(validos) < len(suspicions):
-            self.log("Algunos archivos ya no existen. Refrescando hallazgos...", "Seguridad")
-            self._cache["suspicions"] = validos
-            if not validos: return
+        # Filtrar hallazgos seguros antes de confirmar
+        aptos = [s for s in suspicions if safety.is_safe_to_modify(Path(s.path))]
+        
+        if not aptos:
+            messagebox.showwarning("Nada que aislar", "Los archivos sospechosos se encuentran en rutas protegidas.")
+            return
 
-        rutas = sorted({str(s.path) for s in suspicions})
         if not self._confirm(
             "Aislar en cuarentena",
-            f"Se van a MOVER {len(rutas)} archivo(s) a la cuarentena.\n\n"
+            f"Se van a MOVER {len(aptos)} archivo(s) seguro(s) a la cuarentena.\n\n"
             "No se borran: quedan guardados con su ruta original y se pueden "
             "restaurar cuando quieras. ¿Seguimos?",
         ):
@@ -1094,19 +1082,16 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
         def task():
             self.set_status("Aislando archivos...")
-            aislados, bloqueados = 0, 0
-            for ruta in rutas:
+            aislados = 0
+            for item_s in aptos:
                 try:
-                    # Validar seguridad antes de aislar
-                    safety.ensure_safe_to_modify(Path(ruta))
-                    item = quarantine.quarantine_file(ruta, reason="Marcado por escaneo heurístico")
-                    self.log(f"Aislado [{item.item_id}] {ruta}", "Seguridad")
+                    item = quarantine.quarantine_file(item_s.path, reason="Marcado por escaneo heurístico")
+                    self.log(f"Aislado [{item.item_id}] {item_s.path}", "Seguridad")
                     aislados += 1
-                except (safety.UnsafePathError, FileNotFoundError, OSError) as e:
-                    self.log(f"No se aisló {ruta}: {e}", "Seguridad")
-                    bloqueados += 1
-            self.log(f"Listo: {aislados} aislado(s), {bloqueados} omitido(s).", "Seguridad")
-            self._cache["suspicions"] = []
+                except (FileNotFoundError, OSError) as e:
+                    self.log(f"Error al aislar {item_s.path}: {e}", "Seguridad")
+            self.log(f"Listo: {aislados} aislado(s).", "Seguridad")
+            self._cache["suspicions"] = [s for s in suspicions if s not in aptos]
 
         self.run_async(task)
 
@@ -1351,27 +1336,28 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             conservar = duplicates_mod.suggest_keeper(grupo)
             a_mover.extend([p for p in grupo.paths if p != conservar])
 
-        if not a_mover:
-            messagebox.showinfo("Nada para mover", "No hay copias extra que aislar.")
+        # Filtrar duplicados inseguros antes de preguntar
+        aptos = [r for r in a_mover if safety.is_safe_to_modify(Path(r))]
+        
+        if not aptos:
+            messagebox.showwarning("Nada que aislar", "Las copias extra están en rutas protegidas.")
             return
         
         if not self._confirm(
             "Aislar copias duplicadas",
-            f"Se van a MOVER {len(a_mover)} copia(s) a la cuarentena, conservando "
-            f"una de cada grupo.\n\nNo se borran: se pueden restaurar. ¿Seguimos?",
+            f"Se van a MOVER {len(aptos)} copia(s) segura(s) a la cuarentena.\n\n"
+            "No se borran: se pueden restaurar. ¿Seguimos?",
         ):
             return
 
         def task():
             self.set_status("Aislando copias duplicadas...")
             movidos = 0
-            for ruta in a_mover:
+            for ruta in aptos:
                 try:
-                    # Validar seguridad antes de aislar
-                    safety.ensure_safe_to_modify(Path(ruta))
                     quarantine.quarantine_file(ruta, reason="Copia duplicada")
                     movidos += 1
-                except (safety.UnsafePathError, FileNotFoundError, OSError) as e:
+                except (FileNotFoundError, OSError) as e:
                     self.log(f"No se aisló {ruta}: {e}", "Duplicados")
             self.log(f"Aisladas {movidos} copia(s). Revisá la pestaña Cuarentena.", "Duplicados")
             self._cache["dups"] = []
