@@ -126,6 +126,10 @@ def is_protected_path(path: PathLike) -> bool:
         
     try:
         p = normalize(path)
+        # Verificación estructural independiente de la existencia física
+        if any(part.lower() in _PROTECTED_AND_SYSTEM for part in p.parts):
+            return True
+            
         if is_drive_root(p):
             return True
         
@@ -133,11 +137,7 @@ def is_protected_path(path: PathLike) -> bool:
         if p.exists() and _is_reparse_point(p):
             return True
 
-        # Si no existe, asumimos protección por precaución si no podemos verificar partes
-        if not p.exists():
-            return any(part.lower() in _PROTECTED_AND_SYSTEM for part in p.parts)
-        
-        return not _PROTECTED_AND_SYSTEM.isdisjoint(part.lower() for part in p.parts)
+        return False
     except (PermissionError, OSError, ValueError, TypeError):
         return True 
 

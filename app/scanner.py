@@ -63,19 +63,20 @@ def _is_reparse_point(entry: os.DirEntry) -> bool:
         return False
 
 
-def _process_directory_entry(entry: os.DirEntry, root_path: str, results: List[Suspicion], stack: List[str]) -> None:
+def _process_directory_entry(entry: os.DirEntry, root_path: str, results: List[Suspicion], stack: List[str], seen: set[str]) -> None:
     """
     Evalúa una entrada individual del sistema de archivos.
     """
     try:
-        path_str = entry.path
+        path_str = os.path.abspath(entry.path)
         
         # Omitir protegidos usando la función que recibe texto crudo (evitando Path.resolve() en loop)
         if is_protected_path(Path(path_str)) or not path_str.startswith(root_path):
             return
             
         if entry.is_dir(follow_symlinks=False):
-            if not _is_reparse_point(entry):
+            if not _is_reparse_point(entry) and path_str not in seen:
+                seen.add(path_str)
                 stack.append(path_str)
         elif entry.is_file():
             results.extend(scan_file(Path(path_str)))
@@ -146,7 +147,7 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
         
     try:
         root_path = Path(directory).resolve()
-        root_str = str(root_path)
+        root_str = os.path.abspath(str(root_path))
     except (TypeError, ValueError, OSError):
         return []
 
@@ -155,13 +156,14 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
         
     results: List[Suspicion] = []
     stack: List[str] = [root_str]
+    seen: set[str] = {root_str}
     
     while stack:
         current_dir = stack.pop()
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:
-                    _process_directory_entry(entry, root_str, results, stack)
+                    _process_directory_entry(entry, root_str, results, stack, seen)
         except (PermissionError, OSError):
             continue
             

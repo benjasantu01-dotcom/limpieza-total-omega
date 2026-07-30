@@ -187,12 +187,13 @@ def settings_path(path_or_base: PathLike | None = None) -> Path:
         else:
             base = SETTINGS_DIR
         
-        # Aseguramos que la carpeta base sea segura. Si no existe, verificamos el parent.
-        check_target = base if base.exists() else base.parent
-        ensure_safe_to_modify(str(check_target))
+        # Validamos que la carpeta base exista o sea creable en un entorno seguro
+        if not base.exists():
+            ensure_safe_to_modify(str(base.parent))
+        else:
+            ensure_safe_to_modify(str(base))
         return base / SETTINGS_FILE
     except (OSError, RuntimeError, ValueError):
-        # Ante error de sistema de archivos, fallback seguro a la carpeta default
         return SETTINGS_DIR / SETTINGS_FILE
 
 
@@ -256,6 +257,7 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     parent = ruta.parent
     try:
         parent.mkdir(parents=True, exist_ok=True)
+        # Verificamos seguridad del directorio padre antes de escribir
         ensure_safe_to_modify(str(parent))
     except (OSError, RuntimeError, PermissionError):
         return None
