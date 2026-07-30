@@ -95,7 +95,8 @@ def base_directories() -> List[Path]:
 def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> bool:
     """
     Verifica que la ruta sea un descendiente legítimo de base_path y
-    no esté marcada como protegida por `safety.py`.
+    no esté marcada como protegida por `safety.py`. 
+    La validación se realiza mediante resolución de rutas absolutas.
     """
     if not target_path or not base_path or not isinstance(target_path, Path):
         return False
@@ -113,9 +114,9 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
 @lru_cache(maxsize=32)
 def directory_size(path: str | os.PathLike | None) -> int:
     """
-    Calcula el tamaño total en bytes mediante suma recursiva.
-    Ignora enlaces simbólicos y valida contención estricta para
-    evitar escapes de directorio.
+    Calcula el tamaño total en bytes mediante suma recursiva no destructiva.
+    Ignora enlaces simbólicos y valida contención estricta mediante
+    `is_protected_path` para evitar escapes de directorio fuera de perfiles.
     """
     if path is None:
         return 0
@@ -153,8 +154,8 @@ def directory_size(path: str | os.PathLike | None) -> int:
 
 def _is_valid_cache_path(candidate: Path, base_path: Path) -> bool:
     """
-    Filtro estricto: valida que la ruta sea un directorio existente,
-    no sea un enlace simbólico y contenga componentes seguros.
+    Filtro estricto para validar que la ruta candidata pertenezca a un 
+    navegador y sea un directorio de caché seguro (no protegido ni simbólico).
     """
     try:
         return (

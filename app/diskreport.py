@@ -149,7 +149,9 @@ def all_drives_usage(mounts: Iterable[str] | None = None) -> list[DriveUsage]:
 
 def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Generator[tuple[Path, int], None, None]:
     """
-    Genera tuplas (ruta, tamaño) para cada archivo encontrado.
+    Recorre recursivamente un directorio y genera tuplas (Path, size_bytes).
+    Utiliza `should_ignore_entry` para garantizar que no se sigan enlaces simbólicos 
+    ni se acceda a rutas protegidas por sistema.
     """
     if not directory:
         return
@@ -164,11 +166,12 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
         return
 
     def should_ignore_entry(entry: os.DirEntry) -> bool:
-        """Verifica restricciones de seguridad para una entrada del sistema de archivos."""
+        """Determina si un objeto del sistema de archivos debe omitirse por seguridad o por ser un reparse point."""
         try:
             if entry.is_symlink():
                 return True
             if os.name == 'nt':
+                # Bloquear puntos de reanálisis (Junctions, Mount Points) para evitar ciclos infinitos
                 if entry.stat(follow_symlinks=False).st_reparse_tag != 0:
                     return True
             path_entry = Path(entry.path).resolve()
@@ -181,7 +184,7 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
         return False
 
     def recursive_scan(root_path: str) -> Generator[tuple[Path, int], None, None]:
-        """Recorre directorios ignorando errores de permisos o cambios de estado."""
+        """Iterador interno que captura errores de acceso para evitar abortar el escaneo completo."""
         try:
             with os.scandir(root_path) as iterator:
                 for entry in iterator:
@@ -295,7 +298,7 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
         total_files += 1
             
         ext_name = path.suffix.lower() or "(sin extensión)"
-        record = ext_data_map[ext_name]
+        record: List[int] = ext_data_map[ext_name]
         record[0] += size
         record[1] += 1
         
@@ -304,14 +307,14 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
         elif size > top_heap[0][0]:
             heapq.heapreplace(top_heap, (size, path))
 
-    lines = [
+    lines: List[str] = [
         f"Carpeta analizada: {path_obj}",
         f"Total: {format_size(total_bytes)} en {total_files} archivos",
         "",
         "Por tipo de archivo:",
     ]
     
-    sorted_exts = sorted(
+    sorted_exts: List[Tuple[str, List[int]]] = sorted(
         ext_data_map.items(),
         key=lambda item: item[1][0], 
         reverse=True

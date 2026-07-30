@@ -139,8 +139,10 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
 
 def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, skip_protected: bool) -> List[Path]:
     """
-    Recorre recursivamente directorios buscando candidatos mayores a min_size.
-    Implementa prevención contra bucles de enlaces simbólicos mediante followlinks=False.
+    Recorre recursivamente directorios para obtener archivos candidatos.
+    
+    Utiliza lstat() para validar tamaños sin seguir enlaces simbólicos (followlinks=False).
+    Filtra los resultados basándose en la configuración de protección y tamaño mínimo.
     """
     if directories is None:
         return []
@@ -178,8 +180,10 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
 
 def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
     """
-    Agrupa rutas mediante el resultado de hash_func. 
-    Filtra los resultados devolviendo solo grupos con al menos 2 colisiones.
+    Aplica una función de hash (parcial o total) para agrupar candidatos coincidentes.
+    
+    Retorna solo aquellos grupos donde la colisión de hash es mayor a 1, 
+    eliminando candidatos que resultaron ser únicos tras aplicar el hash.
     """
     if paths is None:
         return {}
@@ -196,12 +200,12 @@ def find_duplicates(
     skip_protected: bool = True,
 ) -> List[DuplicateGroup]:
     """
-    Pipeline de detección en tres niveles:
+    Pipeline principal de detección de duplicados en tres niveles:
     1. Filtro por tamaño (group_by_size).
     2. Filtrado heurístico (partial_hash) para descartar archivos disímiles rápidamente.
     3. Verificación de integridad (hash_file) para confirmar duplicidad total.
 
-    Retorna: Lista de DuplicateGroup ordenados por mayor impacto en bytes.
+    Retorna: Lista de objetos DuplicateGroup ordenados por mayor impacto en bytes.
     """
     if not directories:
         return []
@@ -271,7 +275,7 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
 
 def format_group(group: DuplicateGroup) -> List[str]:
     """
-    Genera una representación legible del grupo para la interfaz.
+    Genera una representación textual legible del grupo para la interfaz.
     Identifica visualmente el archivo sugerido para conservación.
     """
     if not group or not group.paths:
