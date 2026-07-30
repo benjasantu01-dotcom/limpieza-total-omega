@@ -1216,3 +1216,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-07-30T10:43:30` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
 - `2026-07-30T10:43:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-30T10:43:30` Corrida terminada. Total usado hoy: 252.
+- `2026-07-30T10:52:21` Arrancando corrida. Quedan hoy ~48 peticiones objetivo.
+- `2026-07-30T10:52:45` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
+- `2026-07-30T10:53:08` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `scan_file` añadiendo una validación explícita mediante `is_protected_path` ante posibles archivos cuya ruta absoluta no pueda ser resuelta (casos límite con nombres de archivo inválidos o bloqueados), evitando excepciones no controladas durante la inspección.
+- `2026-07-30T10:53:33` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `settings.py` ante errores de entrada y concurrencia al añadir un chequeo explícito de integridad en `save` mediante `os.replace` (que es atómico en sistemas POSIX y Windows) y garantizando que `tempfile` no deje residuos si la escritura falla debido a falta de permisos o disco lleno.
+- `2026-07-30T10:53:41` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Mejoré la robustez de `StartupEntry.executable` añadiendo un manejo de excepciones al verificar la existencia física del archivo y una limpieza de caracteres de control, evitando fallos ante rutas malformadas o errores de permisos del sistema operativo.
+- `2026-07-30T10:53:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-30T10:53:41` Corrida terminada. Total usado hoy: 256.

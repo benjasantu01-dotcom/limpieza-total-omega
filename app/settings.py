@@ -223,7 +223,10 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     
     ruta = settings_path(path_or_base)
     limpio = validate(values)
-    json_data = json.dumps(limpio, indent=2, ensure_ascii=False)
+    try:
+        json_data = json.dumps(limpio, indent=2, ensure_ascii=False)
+    except (TypeError, ValueError):
+        return None
     
     parent = ruta.parent
     try:
@@ -232,27 +235,25 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     except (OSError, RuntimeError, PermissionError):
         return None
     
-    temp_name = None
+    temp_file = None
     try:
-        with tempfile.NamedTemporaryFile("w", dir=parent, delete=False, encoding="utf-8") as tf:
-            temp_name = tf.name
-            tf.write(json_data)
-            tf.flush()
-            os.fsync(tf.fileno())
+        # Usar dir=parent garantiza que el temp esté en la misma partición para os.replace
+        temp_file = tempfile.NamedTemporaryFile("w", dir=parent, delete=False, encoding="utf-8")
+        temp_file.write(json_data)
+        temp_file.flush()
+        os.fsync(temp_file.fileno())
+        temp_file.close()
         
-        os.replace(temp_name, ruta)
+        os.replace(temp_file.name, ruta)
+        
         _cached_settings = limpio
         _last_path_str = str(ruta)
         _last_mtime = ruta.stat().st_mtime
         return ruta
     except (OSError, RuntimeError, PermissionError):
+        if temp_file and os.path.exists(temp_file.name):
+            os.remove(temp_file.name)
         return None
-    finally:
-        if temp_name and os.path.exists(temp_name):
-            try:
-                os.remove(temp_name)
-            except OSError:
-                pass
 
 
 def update(changes: dict[str, Any], path_or_base: PathLike | None = None) -> dict[str, Any]:

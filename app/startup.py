@@ -63,10 +63,6 @@ class StartupEntry:
     def _extract_quoted_path(self, raw_cmd: str) -> str:
         """
         Extrae la ruta de un ejecutable envuelto en comillas dobles.
-        
-        Asume que la ruta termina en la siguiente comilla encontrada. Si el 
-        formato es inválido (ej. falta la comilla de cierre o contiene caracteres 
-        prohibidos por el sistema), retorna un string vacío.
         """
         end_quote: int = raw_cmd.find('"', 1)
         if end_quote == -1:
@@ -75,21 +71,22 @@ class StartupEntry:
         # Validación: evita rutas con caracteres reservados o vacías
         if not path or any(c in path for c in '<>|?*'):
             return ""
+        
         # Criterio: se considera ejecutable si tiene extensión binaria o si existe físicamente
-        if path.lower().endswith(('.exe', '.bat', '.cmd', '.scr')) or os.path.exists(path):
-            return path
+        try:
+            if path.lower().endswith(('.exe', '.bat', '.cmd', '.scr')) or os.path.exists(path):
+                return path
+        except (OSError, ValueError):
+            return ""
         return ""
 
     @property
     def executable(self) -> str:
         """
         Obtiene la ruta normalizada del ejecutable.
-        
-        Si el comando utiliza comillas (típico de rutas con espacios), delega
-        en el extractor especializado; si no, asume que el ejecutable es el 
-        primer componente de la cadena antes del primer espacio.
         """
-        cmd: str = self.command.strip()
+        # Limpieza inicial de caracteres de control que puedan corromper rutas
+        cmd: str = "".join(c for c in self.command.strip() if ord(c) >= 32)
         if not cmd:
             return ""
         
@@ -120,15 +117,11 @@ def startup_folders() -> List[Path]:
 def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[StartupEntry]:
     """
     Escanea las carpetas de inicio en busca de ejecutables o accesos directos.
-
-    Seguridad: Ignora 'desktop.ini', enlaces simbólicos, puntos de reparse y 
-    carpetas protegidas del sistema.
     """
     if folders is None:
         folders = startup_folders()
     found_entries: List[StartupEntry] = []
     for folder in folders:
-        # Verificar que la carpeta no sea una ruta protegida antes de procesar
         if is_protected_path(folder):
             continue
             
@@ -143,12 +136,10 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
                     if not item.name or item.name.lower() == "desktop.ini":
                         continue
                     if item.is_file() and not item.is_symlink():
-                        # Protección defensiva: no procesar rutas marcadas como prohibidas
                         if is_protected_path(item):
                             continue
                         
                         resolved_item: Path = item.resolve()
-                        # Verificación estricta de jerarquía para evitar escapes de carpeta
                         if base_path == resolved_item.parent:
                             found_entries.append(StartupEntry(name=item.stem, command=str(item), source="carpeta"))
                 except (OSError, PermissionError, RuntimeError):
@@ -171,14 +162,13 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
         if not clean_line or ',' not in clean_line:
             continue
             
-        parts: List[str] = clean_line.split(",", 1)
+        parts: List[str] = line.split(",", 1)
         if len(parts) < 2:
             continue
             
         name_raw: str = parts[0].strip().strip('"\'')
         value_raw: str = parts[1].strip().strip('"\'')
         
-        # Ignorar metadatos de PowerShell que no son entradas del sistema
         if not name_raw or name_raw.lower() in ("name", "pscustomobject") or name_raw.upper().startswith("PS"):
             continue
             
@@ -186,9 +176,12 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
         
         # Protección defensiva: filtrar si el comando apunta a rutas protegidas
         executable_path = entry.executable
-        if executable_path and os.path.exists(executable_path):
-            if is_protected_path(Path(executable_path)):
-                continue
+        if executable_path:
+            try:
+                if os.path.exists(executable_path) and is_protected_path(Path(executable_path)):
+                    continue
+            except (OSError, ValueError):
+                pass
                 
         parsed_entries.append(entry)
     return parsed_entries
@@ -197,8 +190,6 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
 def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[StartupEntry]:
     """
     Ejecuta consultas de PowerShell para extraer entradas de las claves del Registro.
-    
-    El proceso invoca PowerShell en una sola llamada consolidada.
     """
     if os.name != "nt":
         return []
@@ -207,7 +198,6 @@ def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[Start
     for key in keys:
         if isinstance(key, str):
             safe_key: str = subprocess.list2cmdline([key])
-            # Extraer propiedades ignorando errores si la clave no existe
             query_parts.append(f"try {{ (Get-ItemProperty {safe_key} -ErrorAction SilentlyContinue).psobject.properties | Select-Object Name, Value | ConvertTo-Csv -NoTypeInformation }} catch {{ }}")
     
     ps_cmd: str = " ; ".join(query_parts)
@@ -227,12 +217,6 @@ def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[Start
 def list_startup_entries() -> List[StartupEntry]:
     """
     Consolida las entradas provenientes de carpetas del sistema y del Registro.
-    
-    Aplica una política de deduplicación basada en el nombre del programa,
-    priorizando la primera instancia encontrada.
-    
-    Returns:
-        Lista filtrada de StartupEntry únicas según su nombre.
     """
     seen_names: set[str] = set()
     unique_entries: List[StartupEntry] = []

@@ -160,10 +160,11 @@ def scan_file(path: Path) -> List[Suspicion]:
     Aplica secuencialmente todas las funciones de `CHECK_FUNCS` sobre una ruta.
     Retorna una lista con todos los objetos `Suspicion` hallados.
     """
-    if not isinstance(path, Path) or not path.exists():
-        return []
-    
-    if is_protected_path(path):
+    try:
+        # Validación defensiva ante rutas malformadas o inaccesibles
+        if not isinstance(path, Path) or not path.exists() or is_protected_path(path):
+            return []
+    except (PermissionError, OSError):
         return []
 
     results: List[Suspicion] = []
