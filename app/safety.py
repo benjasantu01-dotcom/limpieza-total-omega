@@ -153,12 +153,7 @@ def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = F
         if not c.is_absolute() or not p.is_absolute():
             return False
             
-        # Validar jerarquía usando resolved paths
-        try:
-            c.relative_to(p)
-            return True if c != p else allow_equal
-        except ValueError:
-            return False
+        return p in c.parents or (allow_equal and c == p)
     except (ValueError, TypeError, OSError):
         return False
 
@@ -210,9 +205,17 @@ def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> bool:
 
 def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = False) -> list[Path]:
     """Recibe una colección de rutas y retorna solo aquellas que superan las pruebas de seguridad."""
-    if paths is None:
+    if not isinstance(paths, Iterable) or paths is None:
         return []
-    return [normalize(c) for c in paths if c and is_safe_to_modify(c, allow_sensitive=allow_sensitive)]
+        
+    safe_list = []
+    for p in paths:
+        try:
+            if p and is_safe_to_modify(p, allow_sensitive=allow_sensitive):
+                safe_list.append(normalize(p))
+        except (TypeError, ValueError, OSError):
+            continue
+    return safe_list
 
 
 def describe_protection(path: PathLike) -> str:

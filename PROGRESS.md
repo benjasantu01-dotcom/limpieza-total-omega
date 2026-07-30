@@ -8,45 +8,48 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **249** (49.4% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 25
+- Rechazadas por guardia de seguridad: 26
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 201
+- Sin respuesta de la IA (error o límite): 200
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-28 | 29 | 3 | 3 | 1 | 18 |
+| 2026-07-28 | 26 | 3 | 3 | 1 | 17 |
 | 2026-07-29 | 171 | 10 | 18 | 8 | 143 |
-| 2026-07-30 | 49 | 4 | 4 | 3 | 40 |
+| 2026-07-30 | 52 | 4 | 5 | 3 | 40 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **54**
 - legibilidad y documentación: **53**
-- manejo de errores y validación de entradas: **48**
-- rendimiento: **47**
+- manejo de errores y validación de entradas: **51**
 - robustez ante casos límite: **47**
+- rendimiento: **44**
 
 ## Mejoras aceptadas por archivo
 
-- `browser.py`: **23**
-- `scanner.py`: **21**
+- `scanner.py`: **22**
+- `browser.py`: **22**
 - `settings.py`: **21**
-- `assistant.py`: **20**
-- `quarantine.py`: **19**
+- `quarantine.py`: **20**
+- `assistant.py`: **19**
 - `healthscore.py`: **19**
-- `diskreport.py`: **18**
 - `organizer.py`: **18**
 - `main.py`: **17**
+- `diskreport.py`: **17**
 - `duplicates.py`: **17**
 - `memory.py`: **16**
+- `safety.py`: **15**
 - `branding.py`: **15**
-- `safety.py`: **14**
 - `startup.py`: **11**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-30T04:25:18` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `scan_file` y `scan_directory` mediante la validación explícita de `path` contra nulos o tipos incorrectos, evitando que errores de resolución en el sistema de archivos (como `OSError` al acceder a metadatos) detengan el escaneo de forma silenciosa.
+- `2026-07-30T04:25:11` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `is_within_directory` y `filter_safe_paths` ante entradas malformadas o tipos inesperados, asegurando que las funciones de validación devuelvan resultados predecibles (False/lista vacía) en lugar de propagar errores o excepciones imprevistas.
+- `2026-07-30T04:24:30` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` añadiendo una validación explícita de `OSError` al calcular el hash y al realizar operaciones de sistema, asegurando que si ocurre un fallo durante la lectura o escritura, el estado del sistema permanezca consistente y se notifique con un mensaje claro en lugar de propagar excepciones ambiguas.
 - `2026-07-30T04:15:37` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` validando la existencia de los handles antes de operar y encapsulé la lógica de creación de objetos `ProcessMemory` en `parse_windows_process_csv` para manejar mejor los errores de conversión de tipos sin interrumpir el flujo.
 - `2026-07-30T04:14:15` **healthscore.py** (manejo de errores y validación de entradas): Reforcé la robustez del método `compute_score` agregando una validación explícita para asegurar que los pesos de las categorías no sean modificados accidentalmente y mejorando el manejo de errores en el bucle de cálculo para evitar resultados parciales inconsistentes.
 - `2026-07-30T04:05:09` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `find_duplicates` añadiendo validaciones preventivas de entrada y manejo de listas vacías, asegurando que el pipeline no procese iterables nulos o malformados que podrían causar errores inesperados en tiempo de ejecución.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-30T02:32:19` **safety.py** (seguridad defensiva): Se ha mejorado `is_protected_path` para que no dependa únicamente de `normalize` (que puede fallar ante rutas inexistentes o sin permisos), garantizando que las rutas de sistema y los nombres protegidos se detecten incluso cuando el archivo no existe físicamente, manteniendo la robustez del chequeo defensivo.
 - `2026-07-30T02:23:46` **quarantine.py** (seguridad defensiva): Se ha implementado una validación de integridad previa al borrado en `purge_item` y `purge_all`, asegurando mediante `is_within_directory` y una verificación de coincidencia del hash SHA-256 (si está presente) que solo se eliminen los archivos legítimamente gestionados por el sistema de cuarentena, protegiendo contra posibles ataques de "path traversal" o archivos externos inyectados manualmente en la carpeta.
 - `2026-07-30T02:23:35` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de `stage_for_review` implementando una validación de ruta absoluta antes de la operación de movimiento, asegurando que la ruta de destino no sea un punto de reparse ni un enlace simbólico, reforzando la seguridad frente a posibles ataques de escalada de privilegios o manipulación de rutas externas.
-- `2026-07-30T02:23:11` **memory.py** (seguridad defensiva): Se añadió una validación defensiva en `trim_working_set` para asegurar que el `handle` no sea nulo antes de operar, previniendo posibles errores de acceso a memoria o estados indefinidos al interactuar con la API de Windows mediante `ctypes`.
-- `2026-07-30T02:12:33` **healthscore.py** (seguridad defensiva): Se reforzó la integridad defensiva de la clase `SystemMetrics` evitando la propagación de valores fuera de rango o de tipo incorrecto que podrían causar estados inconsistentes, añadiendo una validación explícita mediante el uso de `math.isfinite` en las asignaciones críticas dentro de `validate()`.
-- `2026-07-30T02:12:23` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` y `suggest_keeper` al integrar chequeos explícitos de `is_protected_path` sobre rutas resueltas y convertir los objetos de entrada a `Path` de forma segura, previniendo la manipulación de rutas externas a los directorios escaneados o protegidos.

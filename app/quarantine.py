@@ -82,9 +82,12 @@ class QuarantineItem:
 def _get_sha256(path: Path) -> str:
     """Calcula el hash SHA-256 de un archivo en bloques de 4KB."""
     sha256_hash = hashlib.sha256()
-    with open(path, "rb") as f:
-        for byte_block in iter(lambda: f.read(4096), b""):
-            sha256_hash.update(byte_block)
+    try:
+        with open(path, "rb") as f:
+            for byte_block in iter(lambda: f.read(4096), b""):
+                sha256_hash.update(byte_block)
+    except OSError as e:
+        raise OSError(f"No se pudo leer el archivo para calcular hash: {e}")
     return sha256_hash.hexdigest()
 
 
@@ -241,13 +244,13 @@ def quarantine_file(
         items.append(item)
         save_manifest(items, base)
         return item
-    except (json.JSONDecodeError, OSError, KeyError, ValueError) as e:
+    except (OSError, Exception) as e:
         if destination.exists():
             try:
                 destination.unlink()
             except OSError:
                 pass
-        raise RuntimeError(f"Error al procesar manifiesto tras mover el archivo: {e}")
+        raise RuntimeError(f"Error irrecuperable al procesar archivo en cuarentena: {e}")
 
 
 def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:

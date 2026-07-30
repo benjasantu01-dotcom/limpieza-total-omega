@@ -655,3 +655,10 @@ FAILED evolve/tests/test_modules.py::test_score_color_survives_garbage - Asserti
 - `2026-07-30T04:15:45` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
 - `2026-07-30T04:15:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-30T04:15:45` Corrida terminada. Total usado hoy: 100.
+- `2026-07-30T04:24:03` Arrancando corrida. Quedan hoy ~200 peticiones objetivo.
+- `2026-07-30T04:24:30` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `quarantine_file` añadiendo una validación explícita de `OSError` al calcular el hash y al realizar operaciones de sistema, asegurando que si ocurre un fallo durante la lectura o escritura, el estado del sistema permanezca consistente y se notifique con un mensaje claro en lugar de propagar excepciones ambiguas.
+- `2026-07-30T04:24:49` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-07-30T04:25:11` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `is_within_directory` y `filter_safe_paths` ante entradas malformadas o tipos inesperados, asegurando que las funciones de validación devuelvan resultados predecibles (False/lista vacía) en lugar de propagar errores o excepciones imprevistas.
+- `2026-07-30T04:25:18` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `scan_file` y `scan_directory` mediante la validación explícita de `path` contra nulos o tipos incorrectos, evitando que errores de resolución en el sistema de archivos (como `OSError` al acceder a metadatos) detengan el escaneo de forma silenciosa.
+- `2026-07-30T04:25:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-30T04:25:18` Corrida terminada. Total usado hoy: 104.
