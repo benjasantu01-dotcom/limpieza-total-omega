@@ -31,7 +31,7 @@ import json
 import os
 import tempfile
 from pathlib import Path
-from typing import Any, Final, TypeAlias
+from typing import Any, Final, TypeAlias, cast
 
 from safety import is_safe_to_modify, ensure_safe_to_modify
 
@@ -98,7 +98,7 @@ DEFAULTS: Final[dict[str, Any]] = {
 
 # Límites de los valores numéricos permitidos para prevenir configuraciones extremas.
 # Estructura: clave -> (minimo_inclusivo, maximo_inclusivo).
-_NUMERIC_LIMITS: Final = {
+_NUMERIC_LIMITS: Final[dict[str, tuple[int, int]]] = {
     "duplicados_tamano_minimo_kb": (0, 1024 * 1024),
     "top_archivos": (1, 500),
     "top_procesos": (1, 500),
@@ -153,7 +153,10 @@ def _validate_str(clave: str, valor: Any) -> str | None:
 
 
 def _apply_validation_by_type(clave: str, valor: Any, defecto: Any) -> Any:
-    """Despacha la validación de forma eficiente sin crear estructuras innecesarias."""
+    """
+    Despacha la validación de forma eficiente.
+    Retorna el valor validado o None si el valor crudo no es compatible con el tipo del defecto.
+    """
     tipo = type(defecto)
     if tipo is bool:
         return _coerce_bool(valor)

@@ -127,14 +127,14 @@ _TIMEOUT_SECONDS: Final[int] = 30
 _PATH_REGEX: Final[re.Pattern] = re.compile(r"([a-zA-Z]:\\|/|\\|\.\.|\0)")
 _CONTROL_CHARS_REGEX: Final[re.Pattern] = re.compile(r"[\x00-\x1f\x7f]")
 
-# Mapeo precompilado para búsqueda eficiente
-_HANDLER_PATTERNS: Final[tuple[tuple[re.Pattern, str], ...]] = (
-    (re.compile(r"ram|memoria|lenta|lento|acelerar"), "ram"),
-    (re.compile(r"espacio|disco|lleno|recuperar|liberar"), "disco"),
-    (re.compile(r"seguro|virus|sospechos|borrar|peligro"), "security"),
-    (re.compile(r"puntaje|salud|nota|score"), "score"),
-    (re.compile(r"inicio|arranque|arranca|encender"), "startup"),
-)
+# Mapeo optimizado mediante conjuntos de palabras clave
+_KEYWORD_MAP: Final[dict[str, str]] = {
+    "ram": "ram", "memoria": "ram", "lenta": "ram", "lento": "ram", "acelerar": "ram",
+    "espacio": "disco", "disco": "disco", "lleno": "disco", "recuperar": "disco", "liberar": "disco",
+    "seguro": "security", "virus": "security", "sospechos": "security", "borrar": "security", "peligro": "security",
+    "puntaje": "score", "salud": "score", "nota": "score", "score": "score",
+    "inicio": "startup", "arranque": "startup", "arranca": "startup", "encender": "startup"
+}
 
 @dataclass
 class SystemContext:
@@ -384,10 +384,11 @@ def local_answer(question: str, context: SystemContext) -> Answer:
         )
 
     clean_text = _sanitize_query(question)
+    tokens = set(re.findall(r"\w+", clean_text))
 
-    for pattern, key in _HANDLER_PATTERNS:
-        if pattern.search(clean_text):
-            return _HANDLERS[key](context, clean_text)
+    for token in tokens:
+        if token in _KEYWORD_MAP:
+            return _HANDLERS[_KEYWORD_MAP[token]](context, clean_text)
 
     problemas = _rank_problems(context)
     if problemas:

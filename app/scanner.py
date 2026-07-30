@@ -56,6 +56,12 @@ def _is_reparse_point(entry: os.DirEntry) -> bool:
     
     Usa el atributo FILE_ATTRIBUTE_REPARSE_POINT (0x400) para evitar recursiones
     infinitas en el sistema de archivos al encontrar enlaces simbólicos o junctions.
+    
+    Args:
+        entry: Objeto DirEntry que representa el archivo o carpeta.
+        
+    Returns:
+        True si es un punto de reparse, False en caso contrario o error.
     """
     try:
         return bool(entry.stat(follow_symlinks=False).st_file_attributes & 0x400)
@@ -162,7 +168,12 @@ CHECK_FUNCS: Final[List[SuspicionCheck]] = [
 def scan_file(path: Path) -> List[Suspicion]:
     """
     Aplica secuencialmente todas las funciones de `CHECK_FUNCS` sobre una ruta.
-    Retorna una lista con todos los objetos `Suspicion` hallados.
+    
+    Args:
+        path: Ruta absoluta al archivo a escanear.
+        
+    Returns:
+        Lista de objetos Suspicion encontrados.
     """
     try:
         # Validación defensiva estricta: normalizar y verificar protección
@@ -192,6 +203,12 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
     Realiza un recorrido recursivo iterativo sobre `directory`.
     Utiliza un stack para la gestión del árbol y `os.scandir` para maximizar 
     el rendimiento en la enumeración de archivos.
+    
+    Args:
+        directory: Ruta base desde donde comenzar el escaneo.
+        
+    Returns:
+        Lista de todos los objetos Suspicion encontrados en el árbol.
     """
     if not directory:
         return []
@@ -225,7 +242,9 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
 def run_windows_defender_quick_scan() -> str:
     """
     Invoca `Start-MpScan` mediante PowerShell para disparar un escaneo de Defender.
-    Captura la salida estándar y maneja errores de ejecución o timeout.
+    
+    Returns:
+        Cadena con el resultado del comando o mensaje de error.
     """
     try:
         result = subprocess.run(

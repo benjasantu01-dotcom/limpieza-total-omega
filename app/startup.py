@@ -63,6 +63,7 @@ class StartupEntry:
     def _extract_quoted_path(self, raw_cmd: str) -> str:
         """
         Extrae la ruta de un ejecutable envuelto en comillas dobles.
+        Busca el cierre de la comilla y valida que la ruta no contenga caracteres inválidos.
         """
         end_quote: int = raw_cmd.find('"', 1)
         if end_quote == -1:
@@ -84,6 +85,7 @@ class StartupEntry:
     def executable(self) -> str:
         """
         Obtiene la ruta normalizada del ejecutable.
+        Limpia caracteres de control y decide si usar extracción citada o división simple.
         """
         # Limpieza inicial de caracteres de control que puedan corromper rutas
         cmd: str = "".join(c for c in self.command.strip() if ord(c) >= 32)
@@ -117,6 +119,7 @@ def startup_folders() -> List[Path]:
 def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[StartupEntry]:
     """
     Escanea las carpetas de inicio en busca de ejecutables o accesos directos.
+    Omite archivos protegidos y enlaces simbólicos para evitar bucles o alteraciones.
     """
     if folders is None:
         folders = startup_folders()
@@ -152,6 +155,7 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
 def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry]:
     """
     Convierte el CSV de PowerShell en objetos de dominio StartupEntry.
+    Filtra encabezados de PowerShell (Name, Value) y registros en rutas protegidas.
     """
     parsed_entries: List[StartupEntry] = []
     if not isinstance(text, str) or not text.strip():
@@ -162,17 +166,18 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
         if not clean_line or ',' not in clean_line:
             continue
             
-        parts: List[str] = line.split(",", 1)
-        if len(parts) < 2:
+        columns: List[str] = line.split(",", 1)
+        if len(columns) < 2:
             continue
             
-        name_raw: str = parts[0].strip().strip('"\'')
-        value_raw: str = parts[1].strip().strip('"\'')
+        name_key: str = columns[0].strip().strip('"\'')
+        value_cmd: str = columns[1].strip().strip('"\'')
         
-        if not name_raw or name_raw.lower() in ("name", "pscustomobject") or name_raw.upper().startswith("PS"):
+        # Ignora encabezados de objetos de PowerShell o registros vacíos
+        if not name_key or name_key.lower() in ("name", "pscustomobject") or name_key.upper().startswith("PS"):
             continue
             
-        entry = StartupEntry(name=name_raw, command=value_raw, source=source)
+        entry = StartupEntry(name=name_key, command=value_cmd, source=source)
         
         # Protección defensiva: filtrar si el comando apunta a rutas protegidas
         executable_path = entry.executable
@@ -190,6 +195,7 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
 def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[StartupEntry]:
     """
     Ejecuta consultas de PowerShell para extraer entradas de las claves del Registro.
+    Utiliza un bloque try/catch en el script de PowerShell para manejar errores de acceso.
     """
     if os.name != "nt":
         return []
@@ -217,6 +223,7 @@ def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[Start
 def list_startup_entries() -> List[StartupEntry]:
     """
     Consolida las entradas provenientes de carpetas del sistema y del Registro.
+    Elimina duplicados basados en el nombre de la entrada (normalizado a minúsculas).
     """
     seen_names: set[str] = set()
     unique_entries: List[StartupEntry] = []
