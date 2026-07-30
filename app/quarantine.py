@@ -27,7 +27,7 @@ import hashlib
 from dataclasses import dataclass, asdict
 from datetime import datetime
 from pathlib import Path
-from typing import List, Union, Dict
+from typing import List, Union, Dict, Tuple
 
 from safety import (
     UnsafePathError,
@@ -56,7 +56,7 @@ __all__ = [
 DEFAULT_QUARANTINE_DIR = "~/LimpiezaTotalOmega/_Cuarentena"
 MANIFEST_NAME = "manifest.json"
 
-_manifest_cache: Dict[str, List[QuarantineItem]] = {}
+_manifest_cache: Dict[str, Tuple[float, List[QuarantineItem]]] = {}
 
 @dataclass
 class QuarantineItem:
@@ -114,14 +114,18 @@ def _manifest_path(base_dir: Path) -> Path:
 def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload: bool = False) -> List[QuarantineItem]:
     """
     Carga el manifiesto. Si el archivo no existe o es inválido, retorna una lista vacía.
-    Usa caché para optimizar operaciones repetitivas de lectura.
+    Usa caché basado en el timestamp del archivo para optimizar operaciones.
     """
     base_path = quarantine_dir(base)
-    base_str = str(base_path)
-    if not force_reload and base_str in _manifest_cache:
-        return _manifest_cache[base_str]
-        
     path = _manifest_path(base_path)
+    base_str = str(base_path)
+    
+    mtime = path.stat().st_mtime if path.exists() else 0.0
+    if not force_reload and base_str in _manifest_cache:
+        cached_mtime, cached_data = _manifest_cache[base_str]
+        if cached_mtime == mtime:
+            return cached_data
+        
     if not path.exists():
         return []
     try:
@@ -149,7 +153,7 @@ def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload:
             items.append(item)
         except (KeyError, ValueError, TypeError):
             continue
-    _manifest_cache[base_str] = items
+    _manifest_cache[base_str] = (mtime, items)
     return items
 
 
@@ -159,13 +163,13 @@ def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_
         raise ValueError("El manifiesto debe ser una lista de ítems.")
         
     base_path = quarantine_dir(base)
-    _manifest_cache[str(base_path)] = items
     path = _manifest_path(base_path)
     try:
         path.write_text(
             json.dumps([item.to_dict() for item in items], indent=2, ensure_ascii=False),
             encoding="utf-8",
         )
+        _manifest_cache[str(base_path)] = (path.stat().st_mtime, items)
     except OSError as e:
         raise RuntimeError(f"Error al escribir el manifiesto: {e}")
     return path

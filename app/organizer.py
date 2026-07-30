@@ -139,11 +139,12 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
                                 _walk_dir(entry.path)
                         elif entry.is_file(follow_symlinks=False):
                             if entry.name.lower().endswith(ext_tuple):
-                                if is_safe_to_modify(Path(entry.path)):
+                                p_obj = Path(entry.path)
+                                if is_safe_to_modify(p_obj):
                                     stat = entry.stat()
                                     found.append(
                                         JunkFile(
-                                            path=Path(entry.path),
+                                            path=p_obj,
                                             size_bytes=stat.st_size,
                                             modified=datetime.fromtimestamp(stat.st_mtime),
                                         )
