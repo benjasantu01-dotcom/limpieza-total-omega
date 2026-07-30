@@ -443,8 +443,13 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
         partes = candidatos[0]["content"].get("parts", [])
         texto = "".join(p.get("text", "") for p in partes).strip()
         
-        if not texto or len(texto) > 1200 or _PATH_REGEX.search(texto) or _CONTROL_CHARS_REGEX.search(texto):
+        # Validación de seguridad defensiva: no aceptamos respuestas sospechosas, 
+        # excesivamente largas o que intenten codificar rutas.
+        if not texto or len(texto) > 1200:
             return None
+        if _PATH_REGEX.search(texto) or _CONTROL_CHARS_REGEX.search(texto):
+            return None
+            
         return texto
     except (urllib.error.URLError, urllib.error.HTTPError, OSError,
             json.JSONDecodeError, KeyError, IndexError, TypeError):

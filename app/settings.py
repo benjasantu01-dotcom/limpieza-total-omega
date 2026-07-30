@@ -177,12 +177,14 @@ def settings_path(path_or_base: PathLike | None = None) -> Path:
         else:
             base = SETTINGS_DIR
         
+        # Verificar seguridad antes de crear la ruta o acceder
         if not base.exists():
             ensure_safe_to_modify(str(base.parent))
         else:
             ensure_safe_to_modify(str(base))
         return base / SETTINGS_FILE
-    except (OSError, RuntimeError, ValueError):
+    except (OSError, RuntimeError, PermissionError, ValueError):
+        # Fallback seguro a la carpeta predeterminada si la resuelta falla
         return SETTINGS_DIR / SETTINGS_FILE
 
 
@@ -256,7 +258,7 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
             temp_name = tf.name
             tf.write(json_data)
             tf.flush()
-            os.fsync(tf.fileno())
+            os.fsync(tf.fileno()) # Garantizar persistencia física
         
         os.replace(temp_name, ruta)
         _cached_settings = limpio

@@ -58,7 +58,7 @@ def _is_reparse_point(entry: os.DirEntry) -> bool:
     infinitas en el sistema de archivos al encontrar enlaces simbólicos o junctions.
     """
     try:
-        return bool(entry.stat().st_file_attributes & 0x400)
+        return bool(entry.stat(follow_symlinks=False).st_file_attributes & 0x400)
     except (OSError, AttributeError):
         return False
 
@@ -71,7 +71,7 @@ def _process_directory_entry(entry: os.DirEntry, root_path: str, results: List[S
     try:
         path_str = os.path.abspath(entry.path)
         
-        # Omitir protegidos usando la función que recibe texto crudo (evitando Path.resolve() en loop)
+        # Omitir protegidos usando la función que recibe texto crudo
         if is_protected_path(Path(path_str)) or not path_str.startswith(root_path):
             return
             
