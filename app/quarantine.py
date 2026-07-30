@@ -309,7 +309,7 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
 
 
 def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> bool:
-    """Elimina físicamente un ítem tras verificar que resida dentro de cuarentena."""
+    """Elimina físicamente un ítem tras verificar su integridad y confinamiento."""
     if not item_id or not isinstance(item_id, str):
         return False
     
@@ -325,6 +325,9 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
     if not stored_file.is_file() or not is_within_directory(stored_file, quarantine_root):
         raise UnsafePathError(f"Intento de borrado fuera de cuarentena: {stored_file}")
 
+    if match.sha256 and _get_sha256(stored_file) != match.sha256:
+        raise UnsafePathError(f"Integridad comprometida, borrado abortado: {stored_file}")
+
     try:
         stored_file.unlink()
     except (OSError, PermissionError):
@@ -336,16 +339,19 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
 
 
 def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
-    """Limpia el directorio y resetea el manifiesto."""
+    """Limpia el directorio y resetea el manifiesto tras validar integridad."""
     quarantine_root = quarantine_dir(base)
     items = load_manifest(base)
     count = 0
     for item in items:
         stored_file = quarantine_root / item.stored_name
+        # Validar confinamiento y que el archivo exista antes de intentar borrar
         if stored_file.is_file() and is_within_directory(stored_file, quarantine_root):
             try:
-                stored_file.unlink()
-                count += 1
+                # Verificamos hash si existe para prevenir borrado de basura inyectada
+                if not item.sha256 or _get_sha256(stored_file) == item.sha256:
+                    stored_file.unlink()
+                    count += 1
             except (OSError, PermissionError):
                 continue
     save_manifest([], base)

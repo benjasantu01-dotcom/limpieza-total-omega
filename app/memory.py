@@ -307,9 +307,10 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if not hasattr(kernel32, "OpenProcess") or not hasattr(psapi, "EmptyWorkingSet"):
         return False, "APIs de sistema no disponibles en este entorno."
 
-    handle = kernel32.OpenProcess(0x0100 | 0x1000, False, target_pid)
+    # PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_SET_QUOTA
+    handle = kernel32.OpenProcess(0x1000 | 0x0100, False, target_pid)
     if not handle:
-        return False, f"No se pudo abrir el proceso {target_pid} (posiblemente protegido)."
+        return False, f"No se pudo abrir el proceso {target_pid} (permisos insuficientes)."
     
     try:
         if handle == kernel32.GetCurrentProcess():

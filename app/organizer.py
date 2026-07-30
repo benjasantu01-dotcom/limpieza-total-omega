@@ -218,12 +218,13 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         raise
 
     for jf in files:
-        if not isinstance(jf, JunkFile) or not hasattr(jf, 'path') or not jf.path:
+        if not isinstance(jf, JunkFile) or not jf.path:
             continue
             
         try:
             full_source_path = jf.path.resolve()
             
+            # Validación estricta de seguridad contra enlaces y reparse points
             if not full_source_path.exists() or not full_source_path.is_file() or full_source_path.is_symlink():
                 continue
             
