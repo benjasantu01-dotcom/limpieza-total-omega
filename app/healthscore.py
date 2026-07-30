@@ -14,7 +14,7 @@ vive en los otros módulos; acá solo se puntúa.
 
 from __future__ import annotations
 from dataclasses import dataclass, field
-from typing import Dict, List, Any, Final, Tuple
+from typing import Dict, List, Any, Final
 import math
 
 __all__ = [
@@ -33,12 +33,13 @@ __all__ = [
 ]
 
 # Umbrales críticos para la normalización: definen el punto de saturación (ratio 0.0).
-# Superar estos valores implica un sistema degradado en esa categoría específica.
-JUNK_LIMIT_MB: float = 5000.0          
-DUPLICATE_LIMIT_MB: float = 2000.0     
-STARTUP_LIMIT_COUNT: int = 20          
-RAM_IDEAL_PERCENT: float = 35.0        # Basado en el estándar de capacidad disponible.
-DISK_IDEAL_PERCENT: float = 25.0       # El 25% libre es el límite inferior recomendado antes de alertar.
+# Un ratio de 1.0 significa desempeño ideal, mientras que 0.0 indica que se ha alcanzado
+# el límite crítico de degradación para esa métrica específica.
+JUNK_LIMIT_MB: Final[float] = 5000.0          
+DUPLICATE_LIMIT_MB: Final[float] = 2000.0     
+STARTUP_LIMIT_COUNT: Final[int] = 20          
+RAM_IDEAL_PERCENT: Final[float] = 35.0        
+DISK_IDEAL_PERCENT: Final[float] = 25.0       
 
 # Peso relativo de cada área en el puntaje total (sumatoria debe ser 100).
 WEIGHTS: Final[Dict[str, int]] = {
@@ -231,11 +232,18 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         return HealthResult(0, "F", {}, ["Error crítico inesperado al procesar métricas."])
 
 
+def _sort_by_performance_delta(item: tuple[str, int]) -> int:
+    """Calcula la desviación respecto al peso ideal para ordenar áreas prioritarias."""
+    area, puntos = item
+    return puntos - WEIGHTS.get(area, 0)
+
+
 def summarize(result: HealthResult) -> List[str]:
     """Genera una representación visual y textual del resultado de salud."""
     lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     
-    orden = sorted(result.breakdown.items(), key=lambda item: item[1] - WEIGHTS.get(item[0], 0))
+    # Ordenar áreas priorizando las que más puntos han perdido respecto a su peso.
+    orden = sorted(result.breakdown.items(), key=_sort_by_performance_delta)
     
     for area, puntos in orden:
         maximo = WEIGHTS.get(area, 0)

@@ -57,26 +57,26 @@ BYTE_UNITS: Tuple[str, ...] = ("B", "KB", "MB", "GB", "TB")
 
 @dataclass
 class MemorySnapshot:
-    """Representa un instante de la memoria física del sistema."""
+    """Representa un instante de la memoria física del sistema en bytes."""
     total: int
     available: int
     cached: int = 0
 
     @property
     def used(self) -> int:
-        """Calcula la cantidad de memoria física ocupada en bytes."""
+        """Calcula memoria ocupada. Se asegura de no retornar valores negativos."""
         return max(0, self.total - self.available)
 
     @property
     def used_percent(self) -> float:
-        """Calcula el porcentaje de memoria física utilizada (0.0 a 100.0)."""
+        """Retorna el porcentaje de uso (0-100) basado en la capacidad total."""
         if self.total <= 0:
             return 0.0
         return round(self.used / self.total * 100, 1)
 
     @property
     def available_percent(self) -> float:
-        """Calcula el porcentaje de memoria física disponible (0.0 a 100.0)."""
+        """Retorna el porcentaje disponible (0-100) basado en la capacidad total."""
         if self.total <= 0:
             return 0.0
         return round(self.available / self.total * 100, 1)
@@ -84,7 +84,7 @@ class MemorySnapshot:
 
 @dataclass
 class ProcessMemory:
-    """Información de consumo de memoria residente (RSS) de un proceso."""
+    """Consumo de memoria de un proceso (RSS/Working Set)."""
     name: str
     pid: int
     working_set: int
@@ -92,16 +92,16 @@ class ProcessMemory:
 
     @property
     def working_set_mb(self) -> float:
-        """Retorna el Working Set convertido a MB para interfaz de usuario."""
+        """Convierte bytes a MB para legibilidad en la UI."""
         return round(self.working_set / (1024 * 1024), 1)
 
 
 def format_bytes(num: int | float | None) -> str:
     """
-    Convierte una magnitud en bytes a una cadena legible (ej: 1.5 MB).
-    La lógica escala automáticamente a través de BYTE_UNITS.
+    Convierte un valor numérico en bytes a formato de cadena legible (ej: 1.5 MB).
+    Escala mediante divisiones sucesivas sobre BYTE_UNITS.
     """
-    if num is None or not isinstance(num, (int, float)):
+    if not isinstance(num, (int, float)):
         return "0 B"
     
     value = float(num)
@@ -118,8 +118,8 @@ def format_bytes(num: int | float | None) -> str:
 
 def parse_linux_meminfo(text: str) -> MemorySnapshot:
     """
-    Parsea la salida cruda de /proc/meminfo.
-    Convierte unidades kB (estándar de kernel) a bytes para normalizar.
+    Parsea /proc/meminfo. Convierte la escala original en kB a bytes.
+    Retorna un MemorySnapshot normalizado.
     """
     values: Dict[str, int] = {}
     for line in text.splitlines():
@@ -135,8 +135,8 @@ def parse_linux_meminfo(text: str) -> MemorySnapshot:
 
 def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]:
     """
-    Procesa el CSV de procesos generado por PowerShell.
-    Usa un generador interno para filtrar y parsear filas de forma eficiente.
+    Convierte CSV generado por PowerShell a objetos ProcessMemory.
+    Filtra entradas inválidas y ordena por consumo descendente.
     """
     if not text:
         return []
@@ -166,7 +166,7 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
 
 
 def _read_windows_snapshot() -> MemorySnapshot:
-    """Obtiene métricas mediante la API nativa de Windows `GlobalMemoryStatusEx`."""
+    """Accede a la API Win32 GlobalMemoryStatusEx vía ctypes."""
     import ctypes
 
     class MEMORYSTATUSEX(ctypes.Structure):
@@ -191,7 +191,7 @@ def _read_windows_snapshot() -> MemorySnapshot:
 
 
 def read_snapshot() -> MemorySnapshot:
-    """Captura un snapshot del estado de memoria detectando el SO actual."""
+    """Determina el SO y captura las métricas de memoria correspondientes."""
     if os.name == "nt":
         try:
             return _read_windows_snapshot()
@@ -212,7 +212,7 @@ def read_snapshot() -> MemorySnapshot:
 
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
-    """Consulta procesos de alto consumo mediante PowerShell en Windows."""
+    """Obtiene los procesos de mayor consumo en Windows ejecutando PowerShell."""
     if os.name != "nt":
         return []
     command = (
@@ -232,7 +232,10 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
 
 
 def pressure_level(snapshot: MemorySnapshot) -> str:
-    """Clasifica el estado del sistema según el porcentaje de disponibilidad."""
+    """
+    Clasifica la salud de la RAM basándose en el porcentaje disponible.
+    Devuelve etiquetas que mapean al sistema de diagnóstico.
+    """
     if snapshot.total <= 0:
         return "info"
     available = snapshot.available_percent
@@ -243,7 +246,7 @@ def pressure_level(snapshot: MemorySnapshot) -> str:
 
 
 def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] = None) -> List[str]:
-    """Genera un diagnóstico textual del estado de memoria actual."""
+    """Crea un informe textual legible para el usuario final."""
     if not isinstance(snapshot, MemorySnapshot) or snapshot.total <= 0:
         return ["No se pudo leer el estado de la memoria en este sistema."]
 
@@ -271,7 +274,10 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
 
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """Intenta reducir la RAM física de un proceso mediante `EmptyWorkingSet`."""
+    """
+    Solicita al OS liberar el working set de un proceso específico.
+    Solo disponible en Windows (WinAPI psapi.EmptyWorkingSet).
+    """
     if os.name != "nt":
         return False, "Solo disponible en Windows."
     

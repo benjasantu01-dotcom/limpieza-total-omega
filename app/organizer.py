@@ -111,6 +111,9 @@ def _generate_unique_target(target: Path) -> Path:
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     """
     Escanea directorios en busca de archivos temporales mediante recursión segura.
+    
+    Utiliza os.scandir para obtener metadatos de forma eficiente y filtra rutas 
+    protegidas mediante la capa de seguridad `safety.py`.
 
     Args:
         directories: Lista opcional de rutas a escanear. Si es None, usa DEFAULT_SCAN_DIRS.
@@ -132,17 +135,17 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
             with os.scandir(base_path) as it:
                 for entry in it:
                     try:
-                        # is_symlink() es O(1) con DirEntry
+                        # Exclusión de enlaces simbólicos para evitar bucles infinitos
                         if entry.is_symlink():
                             continue
                         
-                        # Usar is_dir/is_file directo de la entrada evita syscalls extras
                         if entry.is_dir(follow_symlinks=False):
                             if entry.name.lower() not in blocklist:
                                 _walk_dir(entry.path)
                         elif entry.is_file(follow_symlinks=False):
                             if entry.name.lower().endswith(ext_tuple):
                                 p_obj = Path(entry.path)
+                                # is_safe_to_modify: chequeo de solo lectura, no altera el disco
                                 if is_safe_to_modify(p_obj):
                                     stat = entry.stat()
                                     found.append(
@@ -195,8 +198,11 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
     """
     Mueve archivos candidatos a una carpeta de cuarentena para revisión humana.
     
-    Verifica que el destino sea seguro y que los archivos no estén en uso.
-    
+    Aplica chequeos estrictos:
+    1. Verifica que el destino no sea una ruta de sistema (ensure_safe_to_modify).
+    2. Valida que el archivo no esté en uso abriéndolo temporalmente.
+    3. Asegura que el archivo original y el destino sean rutas disjuntas.
+
     Args:
         files: Lista de objetos JunkFile a mover.
         review_dir: Ruta destino de la carpeta de revisión.
@@ -205,7 +211,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         Path: Ruta absoluta donde se centralizaron los archivos.
         
     Raises:
-        OSError: Si no se puede crear o validar la carpeta de destino.
+        OSError: Si el directorio destino no puede ser validado o creado.
     """
     if not isinstance(files, list) or not isinstance(review_dir, str):
         logger.warning("Entrada inválida en stage_for_review.")
@@ -214,6 +220,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
     dest = Path(review_dir).expanduser().resolve()
     
     try:
+        # ensure_safe_to_modify lanza excepción si la ruta es peligrosa
         ensure_safe_to_modify(dest)
         dest.mkdir(parents=True, exist_ok=True)
     except (OSError, Exception) as e:
@@ -227,25 +234,26 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         try:
             full_source_path = jf.path.resolve()
             
-            # Validación estricta de seguridad contra enlaces y reparse points
+            # Validación: no mover enlaces o rutas fuera de control
             if not full_source_path.exists() or not full_source_path.is_file() or full_source_path.is_symlink():
                 continue
             
+            # Filtro lógico previo al movimiento
             if not is_safe_to_modify(full_source_path):
                 continue
             
-            # Verificación de contención: el origen no puede estar bajo el destino ni viceversa
+            # Prevenir colisión de jerarquía: origen dentro de destino o viceversa
             if dest == full_source_path or dest in full_source_path.parents or full_source_path.parent == dest:
                 continue
                 
-            # Verifica concurrencia
+            # Verificar si el archivo está bloqueado por otro proceso
             try:
                 with open(full_source_path, 'rb+'):
                     pass
             except (PermissionError, OSError):
                 continue
 
-            # Verifica espacio en disco
+            # Verificar espacio libre antes de mover
             usage = shutil.disk_usage(dest.anchor)
             if usage.free < (jf.size_bytes + 10 * 1024 * 1024):
                 continue
@@ -256,11 +264,11 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             initial_target = (dest / f"{base_name}_{timestamp}{ext}").resolve()
             target = _generate_unique_target(initial_target)
             
-            # Asegurar que el destino final esté dentro de la carpeta designada
+            # Validación de integridad de ruta destino
             if not str(target).startswith(str(dest)):
                 continue
             
-            # Validación final de seguridad antes de la escritura
+            # Confirmación final de seguridad antes de la escritura física
             ensure_safe_to_modify(full_source_path)
             ensure_safe_to_modify(target)
             shutil.move(str(full_source_path), str(target))

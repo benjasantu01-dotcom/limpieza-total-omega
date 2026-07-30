@@ -16,36 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-29 | 139 | 9 | 14 | 6 | 120 |
-| 2026-07-30 | 105 | 9 | 10 | 8 | 84 |
+| 2026-07-29 | 135 | 9 | 14 | 6 | 120 |
+| 2026-07-30 | 109 | 9 | 10 | 8 | 84 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **56**
+- legibilidad y documentación: **60**
 - seguridad defensiva: **54**
 - manejo de errores y validación de entradas: **50**
 - robustez ante casos límite: **47**
-- rendimiento: **37**
+- rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `scanner.py`: **24**
 - `browser.py`: **23**
-- `settings.py`: **20**
+- `scanner.py`: **23**
 - `assistant.py`: **20**
+- `settings.py`: **19**
 - `diskreport.py`: **18**
+- `main.py`: **18**
 - `quarantine.py`: **18**
-- `main.py`: **17**
+- `healthscore.py`: **18**
 - `duplicates.py`: **17**
-- `healthscore.py`: **17**
-- `safety.py`: **15**
+- `organizer.py`: **16**
 - `branding.py`: **15**
-- `organizer.py`: **15**
-- `startup.py`: **13**
-- `memory.py`: **12**
+- `safety.py`: **14**
+- `memory.py`: **13**
+- `startup.py`: **12**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-30T09:22:31` **organizer.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints consistentes en `scan_for_junk` y `stage_for_review` para aclarar la lógica de seguridad y el manejo de excepciones, facilitando el mantenimiento a largo plazo del módulo.
+- `2026-07-30T09:22:22` **memory.py** (legibilidad y documentación): Mejoré la documentación técnica y la mantenibilidad de `memory.py` mediante type hints explícitos, docstrings más precisas que explican el *porqué* de las decisiones de diseño, y la eliminación de redundancias en las firmas de funciones.
+- `2026-07-30T09:21:56` **main.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en los métodos de construcción de la interfaz (`_build_tab_*`) y utilidades, mejorando la legibilidad técnica y la trazabilidad del código conforme al enfoque de documentación exigido.
+- `2026-07-30T09:20:55` **healthscore.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del código mediante la incorporación de type hints faltantes, la documentación clara de los umbrales de normalización y la extracción de la lógica de ordenamiento en `summarize` para reducir la complejidad cognitiva.
 - `2026-07-30T09:11:43` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación de los métodos de escaneo y filtrado mediante docstrings de tipo Google que especifican claramente los parámetros y comportamientos ante errores, y se han añadido type hints más precisos (como el uso de `Sequence` o `Collection`) para mejorar la legibilidad y facilitar la integración con herramientas de análisis estático.
 - `2026-07-30T09:11:34` **diskreport.py** (legibilidad y documentación): Se documentó la función `walk_files` con type hints y una explicación clara del mecanismo de exclusión de reparse points, mejorando la legibilidad técnica del núcleo de escaneo del módulo.
 - `2026-07-30T09:11:10` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints en los retornos y argumentos faltantes, y clarifiqué la semántica de `_is_safe_path` mediante la mejora de sus docstrings para explicar la necesidad de normalización de rutas, facilitando el mantenimiento futuro.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-30T08:39:58` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez del manejo de archivos en `_collect_candidates` y `suggest_keeper` asegurando que las rutas se validen exhaustivamente antes de intentar acceder a sus metadatos (lstat/stat), evitando excepciones inesperadas por archivos desaparecidos o bloqueados durante la iteración.
 - `2026-07-30T08:30:59` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones públicas `largest_files`, `usage_by_extension`, `largest_folders` y `total_size` añadiendo validaciones preventivas de rutas y manejo de excepciones de sistema para evitar que entradas inválidas o bloqueadas interrumpan el flujo de datos.
 - `2026-07-30T08:30:49` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `directory_size` y `_is_safe_path` ante errores de resolución de rutas (como accesos denegados o rutas bloqueadas) capturando explícitamente `PermissionError` y `OSError` al llamar a `resolve()`, asegurando que el bucle continúe operando en lugar de abortar silenciosamente o fallar.
-- `2026-07-30T08:30:27` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` utilizando una validación de ruta explícita y capturando excepciones de sistema de manera más específica, además de asegurar que el objeto `path` esté limpio antes de interactuar con el sistema de archivos.
-- `2026-07-30T08:29:57` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `build_context` y `ask` mediante la validación proactiva de tipos y el manejo explícito de errores de configuración, garantizando que una entrada inesperada (tipo incorrecto o nulo) no comprometa la ejecución del asistente ni la estabilidad de la aplicación.
-- `2026-07-30T07:08:37` **startup.py** (seguridad defensiva): Se implementó un filtrado de seguridad en la lectura de entradas del Registro (`entries_from_registry`) verificando que los comandos obtenidos no apunten a rutas protegidas mediante `is_protected_path`, evitando así cualquier exposición involuntaria de información sensible o manipulación de rutas del sistema.
-- `2026-07-30T07:08:13` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `settings_path` al aplicar `ensure_safe_to_modify` sobre el directorio base de la configuración antes de cualquier operación, garantizando que el archivo de preferencias no pueda ser forzado a ubicarse en rutas críticas del sistema mediante inyección de parámetros.
