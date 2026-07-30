@@ -89,7 +89,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
         return None
     
     p = Path(path)
-    if not p.is_file() or is_protected_path(p):
+    if not p.is_file() or p.is_symlink() or is_protected_path(p):
         return None
         
     digest = hashlib.sha256()
@@ -117,7 +117,7 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
         return None
 
     p = Path(path)
-    if not p.is_file() or is_protected_path(p):
+    if not p.is_file() or p.is_symlink() or is_protected_path(p):
         return None
 
     try:
@@ -139,9 +139,9 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     groups: Dict[int, List[Path]] = defaultdict(list)
     for p in paths:
         try:
-            size = p.lstat().st_size
-            if size > 0:
-                groups[size].append(p)
+            st = p.lstat()
+            if st.st_size > 0:
+                groups[st.st_size].append(p)
         except (OSError, PermissionError, FileNotFoundError, AttributeError):
             continue
     return groups
@@ -165,15 +165,16 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
             
             for root, subdirs, files in os.walk(base, followlinks=False):
                 root_path = Path(root)
-                # Filtrar subdirectorios in situ
-                if skip_protected:
-                    subdirs[:] = [
-                        d for d in subdirs 
-                        if not is_protected_path(root_path / d)
-                    ]
+                # Filtrar subdirectorios in situ (evita enlaces simbólicos explícitamente)
+                subdirs[:] = [
+                    d for d in subdirs 
+                    if not (root_path / d).is_symlink() and not (skip_protected and is_protected_path(root_path / d))
+                ]
                 
                 for name in files:
                     candidate = root_path / name
+                    if candidate.is_symlink():
+                        continue
                     if skip_protected and is_protected_path(candidate):
                         continue
                     try:

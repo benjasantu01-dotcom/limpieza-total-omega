@@ -170,7 +170,6 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
             if entry.is_symlink():
                 return True
             if os.name == 'nt':
-                # Verifica etiquetas de reparse (Reparse Points/Junctions) en Windows
                 if entry.stat(follow_symlinks=False).st_reparse_tag != 0:
                     return True
             if skip_protected and is_protected_path(Path(entry.path)):
@@ -320,7 +319,6 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
         "Por tipo de archivo:",
     ]
     
-    # Usamos nlargest sobre los items para evitar ordenar todo el diccionario
     sorted_exts = heapq.nlargest(8, ext_data_map.items(), key=lambda x: x[1][0])
     
     for ext, data in sorted_exts:

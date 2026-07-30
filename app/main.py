@@ -176,7 +176,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.tabview.pack(fill="both", expand=True, padx=18, pady=(4, 8))
 
         # Mapa de nombres de pestañas a sus métodos constructores.
-        # Esto permite mantener el orden lógico y facilita agregar nuevas pestañas.
         tab_constructors = {
             "Salud": self._build_tab_salud,
             "Limpieza": self._build_tab_limpieza,
@@ -193,11 +192,13 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         }
 
         for name in TABS:
-            self.tabs[name] = self.tabview.add(branding.tab_label(name))
-            if name in tab_constructors:
-                tab_constructors[name]()
+            try:
+                self.tabs[name] = self.tabview.add(branding.tab_label(name))
+                if name in tab_constructors:
+                    tab_constructors[name]()
+            except Exception as e:
+                logging.error("No se pudo construir la pestaña %s: %s", name, e)
 
-        # Compatibilidad con el flujo original, que escribía en un solo cuadro.
         self.output = self.outputs.get("Limpieza")
 
     def _build_header(self):
@@ -796,7 +797,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         descargas = os.path.expanduser("~/Downloads")
         hallazgos = self._get_cached("suspicions", lambda: scan_directory(descargas) if os.path.isdir(descargas) else [])
         snapshot = memory_mod.read_snapshot()
-        unidad = diskreport.drive_usage(os.path.expanduser("~"))
+        home = os.path.expanduser("~")
+        unidad = diskreport.drive_usage(home) if os.path.exists(home) else None
         arranque = self._get_cached("startup", startup_mod.list_startup_entries)
         
         junk = self._get_cached("junk", scan_for_junk)
@@ -818,7 +820,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             startup_count=len(arranque),
             quarantined_count=len(en_cuarentena),
         )
-        return metrics, snapshot, unidad
+        return metrics, snapshot, unidad or diskreport.DriveInfo(0, 0, 0, "")
 
     def on_full_analysis(self):
         """Ejecuta todos los análisis de salud de forma eficiente."""
@@ -1202,8 +1204,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             messagebox.showwarning("PID inválido", "El PID debe ser mayor a 0.")
             return
 
-        # Protección: validar que el PID no se trate como una ruta sensible si se usara para algo más
-        # aunque acá el impacto es solo memoria, mantenemos la coherencia de seguridad.
         if not self._confirm("Liberar working set", memory_mod.TRIM_WARNING + "\n\n¿Seguimos?"):
             return
 

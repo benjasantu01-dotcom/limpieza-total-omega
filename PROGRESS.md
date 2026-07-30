@@ -8,37 +8,37 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **245** (48.6% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 25
+- Rechazadas por guardia de seguridad: 24
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 201
+- Sin respuesta de la IA (error o límite): 202
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-29 | 118 | 7 | 13 | 6 | 116 |
-| 2026-07-30 | 127 | 10 | 12 | 10 | 85 |
+| 2026-07-29 | 115 | 7 | 12 | 6 | 116 |
+| 2026-07-30 | 130 | 10 | 12 | 10 | 86 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **65**
 - manejo de errores y validación de entradas: **50**
-- seguridad defensiva: **47**
+- seguridad defensiva: **44**
 - rendimiento: **44**
-- robustez ante casos límite: **39**
+- robustez ante casos límite: **42**
 
 ## Mejoras aceptadas por archivo
 
-- `scanner.py`: **23**
 - `browser.py`: **23**
+- `scanner.py`: **22**
 - `settings.py`: **20**
-- `quarantine.py`: **19**
 - `assistant.py`: **19**
-- `diskreport.py`: **18**
+- `diskreport.py`: **19**
+- `duplicates.py`: **18**
+- `main.py`: **18**
+- `quarantine.py`: **18**
 - `healthscore.py`: **18**
-- `duplicates.py`: **17**
-- `main.py`: **17**
-- `safety.py`: **16**
+- `safety.py`: **15**
 - `branding.py`: **15**
 - `organizer.py`: **14**
 - `memory.py`: **13**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-30T10:33:54` **main.py** (robustez ante casos límite): Se implementó un manejo de excepciones robusto dentro del bucle `_build_tabs_container` y se añadió una validación de existencia de ruta en `_build_tab_salud` para prevenir errores si el sistema operativo no logra acceder a las carpetas predeterminadas (ej. `Downloads` o `Home` inaccesible).
+- `2026-07-30T10:32:48` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `_collect_candidates` al añadir una verificación de `is_symlink()` para evitar el seguimiento involuntario de enlaces simbólicos (junctions o symlinks) que puedan causar recursión infinita o errores de acceso fuera del árbol permitido, asegurando que solo se procesen archivos reales.
+- `2026-07-30T10:32:24` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y las funciones de análisis ante casos límite donde una ruta existe al inicio del escaneo pero desaparece durante el mismo (condición de carrera o eliminación externa), asegurando que el generador no aborte el proceso completo al encontrar un archivo no encontrado (`FileNotFoundError`).
 - `2026-07-30T10:23:20` **browser.py** (robustez ante casos límite): Se reforzó la robustez de `directory_size` ante el acceso a directorios bloqueados o inaccesibles, añadiendo una comprobación explícita para evitar errores en `os.scandir` y asegurando que las rutas mal formadas no interrumpan el flujo del escaneo.
 - `2026-07-30T10:23:13` **branding.py** (robustez ante casos límite): He mejorado la robustez de `save_logo_svg` y las funciones de dibujo agregando validaciones de entrada y manejo de excepciones ante rutas inválidas o widgets no inicializados, asegurando que un fallo en el sistema de archivos o una interfaz inconsistente no detenga la ejecución.
 - `2026-07-30T10:22:12` **startup.py** (rendimiento): Optimicé el rendimiento de `entries_from_registry` evitando el parseo redundante dentro del bucle de claves y reduciendo la sobrecarga de llamadas a `subprocess` mediante la consolidación de la lógica de extracción de datos, asegurando que la recolección de información del registro sea una sola operación pesada en lugar de varias.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-30T09:52:23` **duplicates.py** (rendimiento): Optimizé `group_by_size` y `_collect_candidates` para evitar redundancia mediante la eliminación de llamadas a `is_protected_path` cuando ya han sido filtradas previamente, y consolidé el recorrido de archivos para reducir accesos innecesarios al sistema de archivos.
 - `2026-07-30T09:52:00` **diskreport.py** (rendimiento): Optimicé `summarize` para evitar múltiples recorridos y redundancias al usar la estructura `heapq` ya cargada y consolidar el procesamiento de datos en una única iteración sobre el generador `walk_files`, eliminando además el uso de `sorted` innecesario sobre diccionarios grandes antes de limitarlos.
 - `2026-07-30T09:51:36` **browser.py** (rendimiento): Optimicé `directory_size` reemplazando la lógica de resolución de rutas por `os.scandir` para evitar la creación innecesaria de objetos `Path` en cada iteración del bucle, reduciendo significativamente el consumo de memoria y la sobrecarga de I/O.
-- `2026-07-30T09:42:23` **assistant.py** (rendimiento): Optimicé el rendimiento de `_rank_problems` convirtiendo la tupla de reglas en una estructura que se procesa de forma más eficiente y evitando la recreación innecesaria de objetos en cada iteración del bucle autónomo.
-- `2026-07-30T09:41:53` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación de los métodos de `StartupEntry` para aclarar las asunciones técnicas sobre el parseo de rutas y se añadió una validación explícita de `is_protected_path` en `entries_from_folders` para asegurar que el escáner no intente acceder a rutas sensibles del sistema.
-- `2026-07-30T09:41:29` **settings.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la adición de docstrings estructurados con secciones "Args" y "Returns", clarificando las responsabilidades de las funciones de validación y persistencia sin alterar su lógica operativa.
