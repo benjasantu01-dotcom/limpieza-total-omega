@@ -783,3 +783,43 @@ FAILED evolve/tests/test_assistant.py::test_available_reflects_the_configuration
 - `2026-07-30T05:47:03` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
 - `2026-07-30T05:47:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-30T05:47:03` Corrida terminada. Total usado hoy: 136.
+- `2026-07-30T05:55:58` Arrancando corrida. Quedan hoy ~164 peticiones objetivo.
+- `2026-07-30T05:56:31` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `build_context` ante valores inesperados (como `float('inf')` o `float('nan')`) y posibles errores en la obtención de atributos, evitando que métricas mal formadas corrompan el `SystemContext` o causen excepciones durante el análisis.
+- `2026-07-30T05:57:01` Tests FALLARON:
+```
+=============
+______________________ test_score_color_survives_garbage _______________________
+
+    def test_score_color_survives_garbage():
+>       assert branding.score_color(None) == branding.PALETTE["text_muted"]
+E       AssertionError: assert '#ff4757' == '#94a3b8'
+E         
+E         - #94a3b8
+E         + #ff4757
+
+evolve/tests/test_modules.py:167: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:72: SyntaxWarning: invalid escape sequence '\R'
+    raw_cmd: Cadena de comando cruda (ej. '"C:\Ruta\App.exe" /param').
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_score_color_survives_garbage - AssertionError: assert '#ff4757' == '#94a3b8'
+  
+  - #94a3b8
+  + #ff4757
+1 failed, 298 passed, 7 warnings in 1.11s
+
+```
+- `2026-07-30T05:57:01` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `save_logo_svg` y las funciones gráficas (`draw_logo`, `draw_ring`, `draw_gradient_bar`) implementando validaciones preventivas contra entradas nulas, tipos inesperados y errores de ejecución en el contexto de widgets, asegurando que un fallo en la renderización no propague excepciones al hilo principal de la aplicación.
+- `2026-07-30T05:57:24` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se endureció la robustez de `directory_size` ante el acceso a directorios bloqueados, symlinks cíclicos y archivos inaccesibles, asegurando que el recorrido no aborte ante permisos denegados o estructuras inusuales, garantizando además que la validación de rutas no lance excepciones inesperadas mediante una normalización más segura.
+- `2026-07-30T05:57:33` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `walk_files` y las funciones de análisis asociadas mediante la adición de una gestión explícita de `PermissionError` y `OSError` en la resolución inicial de rutas, además de asegurar que `os.scandir` maneje el acceso a directorios denegados de manera silenciosa para evitar interrupciones en el escaneo.
+- `2026-07-30T05:57:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-30T05:57:33` Corrida terminada. Total usado hoy: 140.

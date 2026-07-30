@@ -175,10 +175,9 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     
     def es_num_valido(val: Any) -> bool:
         """Verifica que el valor sea un número real finito."""
-        try:
-            return isinstance(val, (int, float)) and math.isfinite(val)
-        except (TypeError, ValueError):
+        if not isinstance(val, (int, float)):
             return False
+        return math.isfinite(val)
 
     def extraer(fuente: Any, attr: str, tipo: type, default: Any) -> Any:
         """Extrae de forma segura un atributo de un objeto."""

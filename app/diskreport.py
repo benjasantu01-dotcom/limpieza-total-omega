@@ -133,7 +133,6 @@ def all_drives_usage(mounts: Iterable[str] | None = None) -> list[DriveUsage]:
     if mounts is None:
         if os.name == "nt":
             import string
-            # Validamos existencia básica antes de consultar para evitar bloqueos por unidades de red
             mounts = [f"{letter}:\\" for letter in string.ascii_uppercase
                       if os.path.isdir(f"{letter}:\\")]
         else:
@@ -150,18 +149,15 @@ def all_drives_usage(mounts: Iterable[str] | None = None) -> list[DriveUsage]:
 def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Generator[tuple[Path, int], None, None]:
     """
     Recorre recursivamente un directorio y genera tuplas (Path, size_bytes).
-    Utiliza `should_ignore_entry` para garantizar que no se sigan enlaces simbólicos 
-    ni se acceda a rutas protegidas por sistema.
+    Gestiona errores de acceso y omite rutas protegidas.
     """
     if not directory:
         return
     try:
         base_path = Path(directory).expanduser().resolve(strict=True)
-        if base_path.is_symlink():
-            return
         if not base_path.is_dir() or (skip_protected and is_protected_path(base_path)):
             return
-    except (OSError, RuntimeError):
+    except (OSError, RuntimeError, PermissionError):
         return
 
     def should_ignore_entry(entry: os.DirEntry) -> bool:
@@ -234,7 +230,7 @@ def largest_folders(directory: str | os.PathLike, limit: int = 10, skip_protecte
         base = Path(directory).expanduser().resolve(strict=True)
         if not base.is_dir():
             return []
-    except (OSError, RuntimeError):
+    except (OSError, RuntimeError, PermissionError):
         return []
         
     folder_map: dict[Path, FolderUsage] = {}
@@ -279,7 +275,7 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
         path_obj = Path(directory).expanduser().resolve(strict=True)
         if not path_obj.is_dir():
             return [f"Error: La ruta '{directory}' no es un directorio válido."]
-    except (OSError, RuntimeError):
+    except (OSError, RuntimeError, PermissionError):
         return ["Error: No se pudo acceder a la ruta especificada."]
         
     total_bytes: int = 0

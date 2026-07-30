@@ -102,8 +102,10 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
     try:
         if is_protected_path(target_path):
             return False
-        # Uso de commonpath para validación eficiente sin instanciar padres
-        return os.path.commonpath([str(base_path.resolve()), str(target_path.resolve())]) == str(base_path.resolve())
+        # Normalización robusta para evitar errores de comparación entre sistemas de archivos
+        abs_base = base_path.resolve(strict=False)
+        abs_target = target_path.resolve(strict=False)
+        return abs_base in abs_target.parents or abs_base == abs_target
     except (OSError, RuntimeError, ValueError):
         return False
 
@@ -115,16 +117,23 @@ def directory_size(path: str | os.PathLike | None) -> int:
     """
     if path is None:
         return 0
-    root_path = Path(path).resolve()
-    if not root_path.exists() or not root_path.is_dir() or is_protected_path(root_path):
+    try:
+        root_path = Path(path).resolve(strict=False)
+        if not root_path.exists() or not root_path.is_dir() or is_protected_path(root_path):
+            return 0
+    except (OSError, RuntimeError):
         return 0
     
     total_bytes: int = 0
-    root_str = str(root_path)
-    stack: List[str] = [root_str]
+    stack: List[Path] = [root_path]
+    visited: set[Path] = set()
     
     while stack:
         current_dir = stack.pop()
+        if current_dir in visited:
+            continue
+        visited.add(current_dir)
+        
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:
@@ -132,7 +141,7 @@ def directory_size(path: str | os.PathLike | None) -> int:
                         if entry.is_symlink():
                             continue
                         if entry.is_dir():
-                            stack.append(entry.path)
+                            stack.append(Path(entry.path))
                         elif entry.is_file():
                             total_bytes += entry.stat().st_size
                     except (OSError, PermissionError):
