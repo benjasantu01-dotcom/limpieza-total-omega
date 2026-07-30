@@ -77,7 +77,8 @@ class SystemMetrics:
     def is_finite(self) -> bool:
         """Verifica que todas las métricas críticas sean números finitos."""
         return all(math.isfinite(v) for v in (
-            self.junk_mb, self.memory_available_percent, self.disk_free_percent, self.duplicate_mb
+            self.junk_mb, self.memory_available_percent, self.disk_free_percent, 
+            self.duplicate_mb, float(self.suspicious_count), float(self.startup_count)
         ))
 
 
@@ -114,7 +115,8 @@ def _to_float(value: Any, default: float = 0.0) -> float:
 def _to_int(value: Any, default: int = 0) -> int:
     """Convierte un valor a int de manera segura."""
     try:
-        return int(value) if value is not None else default
+        val = int(value) if value is not None else default
+        return val if math.isfinite(float(val)) else default
     except (TypeError, ValueError):
         return default
 

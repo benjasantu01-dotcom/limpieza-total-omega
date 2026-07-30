@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **253** (50.2% de aceptación)
+- Mejoras aceptadas: **257** (51.0% de aceptación)
 - Rechazadas por tests: 19
 - Rechazadas por guardia de seguridad: 26
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 196
+- Sin respuesta de la IA (error o límite): 192
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-28 | 50 | 6 | 5 | 1 | 44 |
+| 2026-07-28 | 50 | 6 | 5 | 1 | 40 |
 | 2026-07-29 | 171 | 10 | 18 | 8 | 143 |
-| 2026-07-30 | 32 | 3 | 3 | 1 | 9 |
+| 2026-07-30 | 36 | 3 | 3 | 1 | 9 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,20 +26,20 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **51**
 - rendimiento: **47**
 - robustez ante casos límite: **47**
-- seguridad defensiva: **43**
+- seguridad defensiva: **47**
 
 ## Mejoras aceptadas por archivo
 
+- `browser.py`: **23**
 - `scanner.py`: **22**
 - `settings.py`: **22**
-- `browser.py`: **22**
 - `assistant.py`: **21**
+- `healthscore.py`: **20**
 - `quarantine.py`: **20**
-- `healthscore.py`: **19**
+- `diskreport.py`: **19**
 - `main.py`: **19**
 - `organizer.py`: **19**
-- `diskreport.py`: **18**
-- `duplicates.py`: **17**
+- `duplicates.py`: **18**
 - `memory.py`: **15**
 - `branding.py`: **15**
 - `safety.py`: **14**
@@ -47,6 +47,10 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-30T02:12:33` **healthscore.py** (seguridad defensiva): Se reforzó la integridad defensiva de la clase `SystemMetrics` evitando la propagación de valores fuera de rango o de tipo incorrecto que podrían causar estados inconsistentes, añadiendo una validación explícita mediante el uso de `math.isfinite` en las asignaciones críticas dentro de `validate()`.
+- `2026-07-30T02:12:23` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` y `suggest_keeper` al integrar chequeos explícitos de `is_protected_path` sobre rutas resueltas y convertir los objetos de entrada a `Path` de forma segura, previniendo la manipulación de rutas externas a los directorios escaneados o protegidos.
+- `2026-07-30T02:12:00` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez de `walk_files` implementando una validación estricta de rutas con `pathlib` antes de iniciar el escaneo, asegurando que `base_path` sea un directorio real y no un enlace simbólico que pudiera escapar del scope esperado, reforzando la seguridad defensiva.
+- `2026-07-30T02:11:37` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `directory_size` para prevenir la traversa de directorios mediante enlaces simbólicos fuera del alcance original, utilizando `Path.resolve()` estrictamente antes de cualquier operación y verificando que el camino real siga contenido en la raíz del caché analizado.
 - `2026-07-30T02:02:25` **assistant.py** (seguridad defensiva): Se endurecieron las validaciones en `_call_gemini` para prevenir la inyección de caracteres de control o patrones de ruta en la respuesta, asegurando que cualquier respuesta del LLM pase por filtros de seguridad antes de ser mostrada al usuario.
 - `2026-07-30T02:01:30` **settings.py** (robustez ante casos límite): Se implementó un manejo robusto de excepciones en `settings_path` para prevenir fallos catastróficos si `expanduser()` o `resolve()` encuentran rutas inválidas (como caracteres no permitidos en el sistema de archivos), asegurando que la aplicación siempre pueda caer de forma elegante al fallback de fábrica.
 - `2026-07-30T01:52:22` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez de `check_recent_executable_in_downloads` y `check_system_lookalike` ante archivos eliminados o movidos durante la ejecución (race conditions) envolviendo el acceso a metadatos en bloques `try-except` más específicos y seguros.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-30T01:31:01` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores del sistema de archivos mediante el uso de `is_safe_to_modify` para evitar excepciones innecesarias y se mejoró el manejo de rutas para prevenir fallos en directorios padres inexistentes o con permisos restringidos, siguiendo el enfoque de robustez ante casos límite.
 - `2026-07-30T01:21:51` **assistant.py** (robustez ante casos límite): Se mejora la robustez de `build_context` ante valores corruptos o inesperados en `metrics` y `health`, garantizando que si los datos provienen de un estado inconsistente, la app no se bloquee ni propague valores inválidos.
 - `2026-07-30T01:21:36` **startup.py** (rendimiento): Optimizé `entries_from_registry` para evitar el uso redundante de `parse_registry_csv` dentro de un loop, procesando el bloque completo de salida de PowerShell de una vez y reduciendo drásticamente las operaciones de split/join en cada línea.
-- `2026-07-30T01:20:47` **scanner.py** (rendimiento): Se optimizó el escaneo del directorio convirtiendo `SYSTEM_LOOKALIKES` y `SUSPICIOUS_EXECUTABLE_EXT` a `frozenset` para obtener búsquedas O(1) más rápidas, y se evitó la resolución costosa de `Path` mediante `resolve()` dentro del bucle crítico, usando en su lugar la comparación directa de rutas `str` optimizada.
-- `2026-07-30T01:10:57` **quarantine.py** (rendimiento): Se implementó un cacheo basado en el estado del sistema de archivos (`st_mtime` del manifiesto) para evitar deserializaciones redundantes de JSON en llamadas sucesivas, mejorando drásticamente el rendimiento en bucles de lectura sin sacrificar la coherencia de datos.
-- `2026-07-30T01:10:33` **organizer.py** (rendimiento): Se optimizó el rendimiento de `scan_for_junk` sustituyendo `entry.path` (que genera un string completo innecesario en cada iteración del sistema de archivos) por `entry.name` y construyendo las rutas solo cuando es estrictamente necesario, además de aprovechar el cacheo local de `stat()` ya disponible en `os.DirEntry`.
-- `2026-07-30T01:01:34` **main.py** (rendimiento): Se optimizó el flujo `_update_health_visuals` reemplazando la recreación de objetos por una actualización de propiedades existente, y se eliminó el uso de `lambda` para capturar iteradores en los loops de construcción de pestañas, evitando llamadas a `winfo_exists` redundantes y reduciendo la carga en el hilo principal durante la actualización de la UI.

@@ -114,8 +114,8 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
 def directory_size(path: str | os.PathLike) -> int:
     """
     Calcula el tamaño total en bytes mediante suma recursiva.
-    Ignora enlaces simbólicos para evitar bucles infinitos y
-    saltea archivos cuyo acceso esté restringido.
+    Ignora enlaces simbólicos y valida contención estricta para
+    evitar escapes de directorio.
     """
     try:
         root_path = Path(path).resolve()
@@ -134,10 +134,12 @@ def directory_size(path: str | os.PathLike) -> int:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
+                        # Si es link, ignorar para evitar bucles y bypass de seguridad
                         if entry.is_symlink():
                             continue
                         if entry.is_dir():
                             entry_path = Path(entry.path).resolve()
+                            # Validar contención estricta: debe estar bajo el root_path
                             if root_path in entry_path.parents and not is_protected_path(entry_path):
                                 stack.append(entry_path)
                         elif entry.is_file():

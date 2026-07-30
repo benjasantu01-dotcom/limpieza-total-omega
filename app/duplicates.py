@@ -82,7 +82,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
         return None
     
     p = Path(path)
-    if not p.is_file():
+    if not p.is_file() or is_protected_path(p):
         return None
         
     digest = hashlib.sha256()
@@ -104,6 +104,9 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
         return None
 
     p = Path(path)
+    if not p.is_file() or is_protected_path(p):
+        return None
+
     try:
         with open(p, "rb") as f:
             content = f.read(read_bytes)
@@ -145,7 +148,7 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
         if not directory:
             continue
         try:
-            base = Path(directory).expanduser()
+            base = Path(directory).resolve()
             if not base.is_dir() or (skip_protected and is_protected_path(base)):
                 continue
             
@@ -240,20 +243,18 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
 
     valid_paths: List[Tuple[float, int, Path]] = []
     for p in group.paths:
-        if not isinstance(p, Path) or is_protected_path(p):
+        path_obj = Path(p)
+        if not path_obj.is_file() or is_protected_path(path_obj):
             continue
         try:
-            # Usamos stat() en lugar de lstat() para asegurar que el archivo es real
-            stat = p.stat()
-            valid_paths.append((stat.st_mtime, len(str(p)), p))
+            stat = path_obj.stat()
+            valid_paths.append((stat.st_mtime, len(str(path_obj)), path_obj))
         except (OSError, PermissionError, FileNotFoundError):
             continue
             
     if not valid_paths:
         return group.paths[0] if group.paths else None
 
-    # El ordenamiento lexicográfico de la tupla (mtime, len) permite elegir 
-    # automáticamente el más antiguo y luego el de ruta más corta.
     best_candidate = min(valid_paths, key=lambda x: (x[0], x[1]))
     return best_candidate[2]
 

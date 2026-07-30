@@ -155,6 +155,9 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
         return
     try:
         base_path = Path(directory).expanduser().resolve(strict=True)
+        # Validación defensiva extra: impedir seguir enlaces simbólicos desde la raíz
+        if base_path.is_symlink():
+            return
         if not base_path.is_dir() or (skip_protected and is_protected_path(base_path)):
             return
     except (OSError, RuntimeError):
