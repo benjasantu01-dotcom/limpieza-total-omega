@@ -648,3 +648,10 @@ FAILED evolve/tests/test_modules.py::test_score_color_survives_garbage - Asserti
 - `2026-07-30T04:05:09` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `find_duplicates` añadiendo validaciones preventivas de entrada y manejo de listas vacías, asegurando que el pipeline no procese iterables nulos o malformados que podrían causar errores inesperados en tiempo de ejecución.
 - `2026-07-30T04:05:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-30T04:05:09` Corrida terminada. Total usado hoy: 96.
+- `2026-07-30T04:13:48` Arrancando corrida. Quedan hoy ~204 peticiones objetivo.
+- `2026-07-30T04:14:15` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Reforcé la robustez del método `compute_score` agregando una validación explícita para asegurar que los pesos de las categorías no sean modificados accidentalmente y mejorando el manejo de errores en el bucle de cálculo para evitar resultados parciales inconsistentes.
+- `2026-07-30T04:15:13` ➖ Sin cambios en main.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré el manejo de errores en `on_trim_process` y `on_restore_quarantine` mediante validaciones de entrada más rigurosas y verificaciones de estado preventivas, siguiendo la regla de capturar excepciones específicas y validar parámetros antes de operar.
+- `2026-07-30T04:15:37` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `trim_working_set` validando la existencia de los handles antes de operar y encapsulé la lógica de creación de objetos `ProcessMemory` en `parse_windows_process_csv` para manejar mejor los errores de conversión de tipos sin interrumpir el flujo.
+- `2026-07-30T04:15:45` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-07-30T04:15:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-30T04:15:45` Corrida terminada. Total usado hoy: 100.

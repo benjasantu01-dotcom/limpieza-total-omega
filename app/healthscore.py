@@ -210,11 +210,13 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
             "arranque": score_startup(metrics.startup_count),
         }
 
-        # Cálculo defensivo: sumamos cada parte escalada según su peso
         total_score = 0
         breakdown = {}
         for area, weight in WEIGHTS.items():
-            ratio = ratios.get(area, 0.0)
+            if area not in ratios:
+                raise KeyError(f"Métrica faltante para el área: {area}")
+            
+            ratio = ratios[area]
             score_part = int(round(ratio * weight))
             breakdown[area] = score_part
             total_score += score_part

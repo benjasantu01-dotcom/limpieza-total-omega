@@ -140,6 +140,16 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
     if not text:
         return []
 
+    def _safe_create_proc(parts: List[str]) -> Optional[ProcessMemory]:
+        try:
+            return ProcessMemory(
+                name=parts[0] or "Unknown",
+                pid=int(parts[1]),
+                working_set=int(parts[2])
+            )
+        except (ValueError, IndexError):
+            return None
+
     def _extract_rows() -> Iterator[ProcessMemory]:
         for line in text.splitlines():
             line = line.strip()
@@ -148,14 +158,9 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
             parts = [p.strip().strip('"') for p in line.split(",")]
             if len(parts) < 3:
                 continue
-            try:
-                yield ProcessMemory(
-                    name=parts[0] or "Unknown",
-                    pid=int(parts[1]),
-                    working_set=int(parts[2])
-                )
-            except (ValueError, TypeError):
-                continue
+            proc = _safe_create_proc(parts)
+            if proc:
+                yield proc
 
     return sorted(_extract_rows(), key=lambda p: p.working_set, reverse=True)[:max(0, limit)]
 
@@ -294,7 +299,6 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     
     try:
         target_pid = int(pid)
-        # Excluir procesos de sistema (Idle, System) que tienen PID <= 4
         if target_pid <= 4:
             return False, "Operación denegada: PID de sistema protegido."
     except (ValueError, TypeError):
@@ -307,7 +311,6 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if not hasattr(kernel32, "OpenProcess") or not hasattr(psapi, "EmptyWorkingSet"):
         return False, "APIs de sistema no disponibles en este entorno."
 
-    # PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_SET_QUOTA
     handle = kernel32.OpenProcess(0x1000 | 0x0100, False, target_pid)
     if not handle:
         return False, f"No se pudo abrir el proceso {target_pid} (permisos insuficientes)."
@@ -321,4 +324,5 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         
         return True, f"Working set del proceso {target_pid} liberado. {TRIM_WARNING}"
     finally:
-        kernel32.CloseHandle(handle)
+        if handle:
+            kernel32.CloseHandle(handle)
