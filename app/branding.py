@@ -209,13 +209,15 @@ def bar(percent: float | int | None, width: int = 24,
 def _hex_to_rgb(value: HexColor) -> tuple[int, int, int]:
     """
     Convierte un color hexadecimal '#rrggbb' a tupla (R, G, B).
-    En caso de formato inválido, retorna (0, 0, 0) de forma segura.
+    En caso de formato inválido o entrada inesperada, retorna (0, 0, 0).
     """
+    if not isinstance(value, str) or not value.startswith("#"):
+        return (0, 0, 0)
     try:
         limpio = value.lstrip("#")
-        if len(limpio) != 6: raise ValueError("Invalid length")
+        if len(limpio) != 6: raise ValueError
         return (int(limpio[0:2], 16), int(limpio[2:4], 16), int(limpio[4:6], 16))
-    except (AttributeError, ValueError, IndexError, TypeError):
+    except (ValueError, IndexError):
         return (0, 0, 0)
 
 
@@ -294,7 +296,10 @@ def save_logo_svg(destination: str | Path | None) -> Path | None:
     try:
         path = Path(destination).expanduser().resolve()
         
-        # Validar si el directorio o archivo es seguro para modificar
+        # Validación de seguridad: no permitir rutas protegidas o bloqueadas
+        if not is_safe_to_modify(path):
+            return None
+        
         ensure_safe_to_modify(path)
             
         parent = path.parent

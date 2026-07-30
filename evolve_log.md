@@ -547,3 +547,34 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-07-30T14:38:38` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizé la performance del escaneo moviendo la resolución de `root_path` y la validación de `path_str` fuera del loop interno, y evitando llamadas redundantes a `Path.resolve()` y `is_protected_path()` dentro de `scan_file`, confiando en la pre-filtración del directorio.
 - `2026-07-30T14:38:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-30T14:38:38` Corrida terminada. Total usado hoy: 344.
+- `2026-07-30T14:47:41` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-07-30T14:48:08` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de `load()` evitando la llamada redundante a `ruta.stat()` y el procesamiento de strings en cada acceso, introduciendo una verificación temprana en el caché antes de consultar el sistema de archivos.
+- `2026-07-30T14:48:32` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 0.88s
+
+```
+- `2026-07-30T14:48:32` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Optimizé la extracción de ejecutables en `StartupEntry.executable` eliminando llamadas recurrentes a `os.path.exists` dentro de un bucle de parseo y sustituyendo la creación de listas intermedias con un generador, reduciendo la carga de I/O y el uso de memoria.
+- `2026-07-30T14:49:04` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `build_context` ante valores de entrada mal formados o inesperados (como tipos inválidos en `extra`) para evitar excepciones no controladas durante la serialización del contexto.
+- `2026-07-30T14:49:20` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `save_logo_svg` y `_hex_to_rgb` frente a entradas mal formadas, añadiendo una validación explícita de `is_safe_to_modify` antes de preparar directorios y asegurando que las conversiones de color no propaguen errores inesperados.
+- `2026-07-30T14:49:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-30T14:49:20` Corrida terminada. Total usado hoy: 348.

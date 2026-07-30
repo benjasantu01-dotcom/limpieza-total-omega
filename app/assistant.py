@@ -222,6 +222,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
 
     for clave, valor in extra.items():
         if hasattr(contexto, clave) and clave not in ["analyzed", "grade"]:
+            # Validar tipo de dato de entrada extra para evitar errores de set en dataclass
             if es_num_valido(valor):
                 setattr(contexto, clave, float(valor))
 

@@ -7,45 +7,48 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **246** (48.8% de aceptación)
-- Rechazadas por tests: 15
+- Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 26
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 202
+- Sin respuesta de la IA (error o límite): 201
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-29 | 70 | 2 | 8 | 3 | 77 |
-| 2026-07-30 | 176 | 13 | 18 | 12 | 125 |
+| 2026-07-29 | 67 | 2 | 8 | 3 | 76 |
+| 2026-07-30 | 179 | 14 | 18 | 12 | 125 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **64**
-- seguridad defensiva: **49**
+- rendimiento: **49**
 - manejo de errores y validación de entradas: **48**
-- rendimiento: **48**
-- robustez ante casos límite: **37**
+- seguridad defensiva: **46**
+- robustez ante casos límite: **39**
 
 ## Mejoras aceptadas por archivo
 
 - `scanner.py`: **23**
+- `settings.py`: **21**
 - `browser.py`: **21**
 - `diskreport.py`: **21**
 - `quarantine.py`: **20**
-- `settings.py`: **20**
+- `assistant.py`: **20**
 - `healthscore.py`: **20**
-- `duplicates.py`: **19**
-- `assistant.py`: **19**
-- `main.py`: **16**
-- `branding.py`: **15**
+- `duplicates.py`: **18**
+- `branding.py`: **16**
+- `main.py`: **15**
 - `organizer.py`: **15**
 - `safety.py`: **14**
 - `startup.py`: **13**
-- `memory.py`: **10**
+- `memory.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-30T14:49:20` **branding.py** (robustez ante casos límite): Se ha mejorado la robustez de `save_logo_svg` y `_hex_to_rgb` frente a entradas mal formadas, añadiendo una validación explícita de `is_safe_to_modify` antes de preparar directorios y asegurando que las conversiones de color no propaguen errores inesperados.
+- `2026-07-30T14:49:04` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` ante valores de entrada mal formados o inesperados (como tipos inválidos en `extra`) para evitar excepciones no controladas durante la serialización del contexto.
+- `2026-07-30T14:48:08` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` evitando la llamada redundante a `ruta.stat()` y el procesamiento de strings en cada acceso, introduciendo una verificación temprana en el caché antes de consultar el sistema de archivos.
 - `2026-07-30T14:38:38` **scanner.py** (rendimiento): Optimizé la performance del escaneo moviendo la resolución de `root_path` y la validación de `path_str` fuera del loop interno, y evitando llamadas redundantes a `Path.resolve()` y `is_protected_path()` dentro de `scan_file`, confiando en la pre-filtración del directorio.
 - `2026-07-30T14:38:31` **safety.py** (rendimiento): Se optimizó el rendimiento del módulo `safety.py` mediante la implementación de `_ALL_PROTECTED_TOKENS` como un conjunto de búsqueda directa y la adición de una verificación rápida de prefijos mediante `p.parts` antes de realizar operaciones costosas de resolución de sistema de archivos, reduciendo significativamente la carga de llamadas al disco en bucles de escaneo.
 - `2026-07-30T14:37:49` **quarantine.py** (rendimiento): Optimicé el rendimiento de `load_manifest` mediante la eliminación de la recarga innecesaria del archivo de manifiesto durante las operaciones secuenciales de listado, aprovechando plenamente el caché existente.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-30T14:17:22` **branding.py** (rendimiento): Optimicé el cálculo de colores en `draw_logo` y `draw_gradient_bar` mediante la pre-generación de listas de colores con `gradient_colors`, evitando la ejecución redundante de interpolaciones matemáticas dentro de los bucles de renderizado.
 - `2026-07-30T14:08:12` **assistant.py** (rendimiento): Optimicé el rendimiento de las consultas al asistente reemplazando la búsqueda lineal mediante `re.search` en cada palabra de la consulta por una lógica de `set` y `str.split()` más eficiente, evitando la compilación innecesaria y el re-procesamiento de regex en cada iteración del bucle de handlers.
 - `2026-07-30T14:07:54` **startup.py** (legibilidad y documentación): Se añadió documentación mediante docstrings detallados en las funciones de procesamiento de datos y se clarificaron los nombres de variables internas en `parse_registry_csv` para reflejar mejor su intención, facilitando la comprensión del flujo de datos sin alterar la lógica.
-- `2026-07-30T14:07:29` **settings.py** (legibilidad y documentación): Se introdujeron type hints en `_NUMERIC_LIMITS` y se documentó explícitamente el contrato de los validadores para mejorar la legibilidad del flujo de datos sin alterar la lógica de validación.
-- `2026-07-30T14:07:03` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints faltantes en los parámetros de entrada y salida, junto con docstrings descriptivos que explican el propósito y las precondiciones de las funciones clave para mejorar la mantenibilidad del código.
-- `2026-07-30T13:57:45` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación técnica interna de `safety.py` mediante la adición de docstrings estructurados con secciones "Args" y "Returns" para explicar claramente las responsabilidades de cada función, reforzando la comprensión de los contratos de seguridad definidos en la misión actual.

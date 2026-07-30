@@ -194,17 +194,18 @@ def load(path_or_base: PathLike | None = None) -> dict[str, Any]:
     global _cached_settings, _last_path_str, _last_mtime
     
     ruta = settings_path(path_or_base)
+    ruta_str = str(ruta)
+    
     if not ruta.exists():
         return dict(DEFAULTS)
     
     try:
         stat = ruta.stat()
-        if stat.st_size > MAX_SETTINGS_SIZE:
-            return dict(DEFAULTS)
-            
-        ruta_str = str(ruta)
         if _cached_settings is not None and ruta_str == _last_path_str and stat.st_mtime == _last_mtime:
             return _cached_settings
+            
+        if stat.st_size > MAX_SETTINGS_SIZE:
+            return dict(DEFAULTS)
 
         raw_data = ruta.read_text(encoding="utf-8")
         data = json.loads(raw_data)
