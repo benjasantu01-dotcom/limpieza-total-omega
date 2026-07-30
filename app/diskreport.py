@@ -241,6 +241,8 @@ def largest_folders(directory: str | os.PathLike, limit: int = 10, skip_protecte
             if not rel.parts:
                 continue
             top_level = base / rel.parts[0]
+            if skip_protected and is_protected_path(top_level):
+                continue
             if top_level not in folder_map:
                 folder_map[top_level] = FolderUsage(path=top_level, size_bytes=0, file_count=0)
             stats = folder_map[top_level]

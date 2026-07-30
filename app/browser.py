@@ -119,7 +119,8 @@ def directory_size(path: str | os.PathLike | None) -> int:
         return 0
     try:
         root_path = Path(path).resolve(strict=False)
-        if not root_path.exists() or not root_path.is_dir() or is_protected_path(root_path):
+        # Seguridad adicional: no seguir puntos de reparse o symlinks desde la raíz
+        if not root_path.exists() or not root_path.is_dir() or root_path.is_symlink() or is_protected_path(root_path):
             return 0
     except (OSError, RuntimeError):
         return 0
@@ -138,6 +139,7 @@ def directory_size(path: str | os.PathLike | None) -> int:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
+                        # Evitar seguir enlaces simbólicos o junctions que salgan del árbol
                         if entry.is_symlink():
                             continue
                         if entry.is_dir():
@@ -157,6 +159,7 @@ def _is_valid_cache_path(candidate: Path, base_path: Path) -> bool:
     navegador y sea un directorio de caché seguro.
     """
     try:
+        # Validar existencia, tipo, y prevenir symlinks como ataque de ruta
         return (
             candidate.exists() and 
             candidate.is_dir() and 

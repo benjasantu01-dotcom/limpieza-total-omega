@@ -19,7 +19,7 @@ from pathlib import Path
 from typing import Any, Final, TypeAlias, Literal, Mapping, Tuple, List
 from types import MappingProxyType
 from functools import lru_cache
-from safety import is_safe_to_modify, ensure_safe_to_modify
+from safety import is_safe_to_modify
 
 # Type Aliases para mejorar la legibilidad de la semántica de datos
 HexColor: TypeAlias = str
@@ -293,17 +293,14 @@ def save_logo_svg(destination: str | Path | None) -> Path | None:
     try:
         path = Path(destination).expanduser().resolve()
         
-        # Validar si el directorio padre es escribible y seguro
+        # Validar si el directorio es seguro para modificar
+        if not is_safe_to_modify(path):
+            return None
+            
         parent = path.parent
         if not parent.exists():
             parent.mkdir(parents=True, exist_ok=True)
             
-        # Verificar seguridad antes de cualquier operación
-        if not is_safe_to_modify(path):
-            return None
-            
-        # Validación final de seguridad antes de escritura
-        ensure_safe_to_modify(path)
         path.write_text(logo_svg(), encoding="utf-8")
         return path
     except (OSError, PermissionError, RuntimeError, ValueError):

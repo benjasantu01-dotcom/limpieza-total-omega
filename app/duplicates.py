@@ -157,7 +157,10 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
                 continue
             
             for root, subdirs, files in os.walk(base, followlinks=False):
-                root_path = Path(root)
+                root_path = Path(root).resolve()
+                if not root_path.is_relative_to(base):
+                    continue
+                
                 subdirs[:] = [
                     d for d in subdirs 
                     if not (root_path / d).is_symlink() and not is_protected_path(root_path / d)
