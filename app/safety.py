@@ -75,9 +75,12 @@ _PROTECTED_AND_SYSTEM: Final[frozenset[str]] = PROTECTED_DIR_NAMES | _SYSTEM_ROO
 
 
 def _is_reparse_point(path: Path) -> bool:
-    """Detecta si una ruta es un punto de reparse (Junction, Symlink, etc) usando lstat."""
+    """
+    Verifica atributos de sistema (reparse points) para evitar seguir Junctions
+    o Symlinks que apunten fuera del árbol de directorios esperado.
+    """
     try:
-        # 0x400 es FILE_ATTRIBUTE_REPARSE_POINT
+        # 0x400 es FILE_ATTRIBUTE_REPARSE_POINT en Windows API
         return bool(path.lstat().st_file_attributes & 0x400) if hasattr(path.lstat(), "st_file_attributes") else path.is_symlink()
     except (OSError, PermissionError):
         return False
@@ -85,8 +88,8 @@ def _is_reparse_point(path: Path) -> bool:
 
 def normalize(path: PathLike) -> Path:
     """
-    Convierte una ruta a objeto Path absoluto, resuelto y expandido.
-    Lanza TypeError si el tipo de entrada es incorrecto.
+    Estandariza rutas mediante expansión de usuario y resolución de enlaces.
+    Garantiza que la ruta sea un objeto Path absoluto para chequeos de seguridad.
     """
     if not isinstance(path, (str, os.PathLike)):
         raise TypeError(f"Entrada inválida: se esperaba str o PathLike, recibió {type(path)}")
@@ -114,8 +117,9 @@ def is_drive_root(path: PathLike) -> bool:
 @lru_cache(maxsize=1024)
 def is_protected_path(path: PathLike) -> bool:
     """
-    Evalúa si una ruta es peligrosa por ser parte del sistema o una ruta de red (UNC).
-    Incluye chequeo de reparse points para evitar escapes a zonas protegidas.
+    Analiza si una ruta debe ser excluida de manipulación.
+    Bloquea: rutas UNC, raíces de disco, directorios definidos en PROTECTED_DIR_NAMES,
+    y reparse points que podrían causar recursión infinita o escape a zona protegida.
     """
     if not path or not isinstance(path, (str, os.PathLike)):
         return True
@@ -126,14 +130,13 @@ def is_protected_path(path: PathLike) -> bool:
         
     try:
         p = normalize(path)
-        # Verificación estructural independiente de la existencia física
+        # Comprueba si algún componente de la ruta coincide con las prohibiciones
         if any(part.lower() in _PROTECTED_AND_SYSTEM for part in p.parts):
             return True
             
         if is_drive_root(p):
             return True
         
-        # Si existe, bloqueamos si es un punto de reparse que apunta a un lugar externo
         if p.exists() and _is_reparse_point(p):
             return True
 
@@ -144,7 +147,8 @@ def is_protected_path(path: PathLike) -> bool:
 
 def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = False) -> bool:
     """
-    Verifica si 'child' reside físicamente dentro de 'parent'.
+    Valida confinamiento: retorna True si 'child' está contenido dentro de 'parent'.
+    Evita ataques de path traversal verificando que 'child' no escape mediante '..'.
     """
     if child is None or parent is None:
         return False
@@ -160,7 +164,7 @@ def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = F
 
 @lru_cache(maxsize=512)
 def is_sensitive_file(path: PathLike) -> bool:
-    """Verifica si la extensión del archivo es crítica (.sys, .dll, etc)."""
+    """Determina si un archivo es crítico por extensión (ej. .sys, .dll, .exe)."""
     if path is None:
         return True
     try:
@@ -171,8 +175,8 @@ def is_sensitive_file(path: PathLike) -> bool:
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> Path:
     """
-    Valida la seguridad de la ruta antes de una operación destructiva.
-    Lanza UnsafePathError si la ruta es peligrosa.
+    Valida la seguridad de la ruta antes de una operación destructiva (borrado/mover).
+    Lanza UnsafePathError ante cualquier sospecha.
     """
     if path is None:
         raise UnsafePathError("Ruta nula recibida.")
@@ -196,7 +200,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
 
 
 def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> bool:
-    """Versión booleana para chequeos preventivos en bucles."""
+    """Versión booleana para chequeos preventivos, ideal para bucles de procesamiento."""
     try:
         return isinstance(ensure_safe_to_modify(path, allow_sensitive=allow_sensitive), Path)
     except (UnsafePathError, TypeError, ValueError, OSError):
@@ -204,7 +208,7 @@ def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> bool:
 
 
 def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = False) -> list[Path]:
-    """Recibe una colección de rutas y retorna solo aquellas que superan las pruebas de seguridad."""
+    """Filtra una lista de rutas, conservando solo aquellas que son seguras para manipular."""
     if not isinstance(paths, Iterable) or paths is None:
         return []
         
@@ -219,7 +223,10 @@ def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = Fals
 
 
 def describe_protection(path: PathLike) -> str:
-    """Explica mediante un mensaje legible por humanos por qué una ruta fue bloqueada."""
+    """
+    Provee una descripción humana de por qué una ruta específica ha sido bloqueada.
+    Útil para mostrar al usuario la razón detrás de un bloqueo de seguridad.
+    """
     if not path:
         return "La ruta está vacía."
     try:

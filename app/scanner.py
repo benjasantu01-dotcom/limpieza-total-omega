@@ -65,7 +65,8 @@ def _is_reparse_point(entry: os.DirEntry) -> bool:
 
 def _process_directory_entry(entry: os.DirEntry, root_path: str, results: List[Suspicion], stack: List[str], seen: set[str]) -> None:
     """
-    Evalúa una entrada individual del sistema de archivos.
+    Procesa una entrada de directorio: filtra rutas protegidas, evita recursión infinita
+    mediante tracking de 'seen' y delega el escaneo de archivos a `scan_file`.
     """
     try:
         path_str = os.path.abspath(entry.path)
@@ -85,7 +86,10 @@ def _process_directory_entry(entry: os.DirEntry, root_path: str, results: List[S
 
 
 def check_double_extension(path: Path) -> Optional[Suspicion]:
-    """Analiza si el nombre del archivo contiene una doble extensión (ej. .pdf.exe)."""
+    """
+    Detecta nombres de archivo que terminan en una extensión ejecutable precedida 
+    por una extensión documental, táctica común de suplantación visual.
+    """
     if not path or not path.name:
         return None
     if DOUBLE_EXTENSION_RE.search(path.name):
@@ -94,7 +98,10 @@ def check_double_extension(path: Path) -> Optional[Suspicion]:
 
 
 def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_THRESHOLD_HOURS) -> Optional[Suspicion]:
-    """Evalúa si un archivo ejecutable fue modificado recientemente según el umbral dado."""
+    """
+    Evalúa la edad de un archivo ejecutable mediante su marca de tiempo de modificación.
+    Devuelve un hallazgo si el archivo fue creado/modificado dentro del umbral definido.
+    """
     if not path or path.suffix.lower() not in SUSPICIOUS_EXECUTABLE_EXT:
         return None
     try:
@@ -102,13 +109,15 @@ def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_TH
         if datetime.now() - mtime < timedelta(hours=hours):
             return Suspicion(path, f"Ejecutable reciente detectado (modificado hace menos de {hours}h)", "info")
     except (FileNotFoundError, PermissionError, OSError):
-        # El archivo puede haber sido borrado o bloqueado entre el escaneo y este check
         return None
     return None
 
 
 def check_system_lookalike(path: Path) -> Optional[Suspicion]:
-    """Detecta suplantación de identidad mediante nombres de procesos críticos fuera de System32."""
+    """
+    Detecta archivos con nombres idénticos a binarios críticos de Windows 
+    cuando se encuentran fuera de los directorios del sistema, indicando posible confusión.
+    """
     if not path or not path.name:
         return None
     try:
@@ -129,7 +138,8 @@ CHECK_FUNCS: Final[List[SuspicionCheck]] = [
 
 def scan_file(path: Path) -> List[Suspicion]:
     """
-    Ejecuta el conjunto de reglas heurísticas sobre un archivo.
+    Aplica secuencialmente todas las funciones de `CHECK_FUNCS` sobre una ruta.
+    Retorna una lista con todos los objetos `Suspicion` hallados.
     """
     if not path or is_protected_path(path):
         return []
@@ -147,7 +157,9 @@ def scan_file(path: Path) -> List[Suspicion]:
 
 def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
     """
-    Realiza un escaneo profundo (recursivo) de un directorio buscando archivos sospechosos.
+    Realiza un recorrido recursivo iterativo sobre `directory`.
+    Utiliza un stack para la gestión del árbol y `os.scandir` para maximizar 
+    el rendimiento en la enumeración de archivos.
     """
     if not directory:
         return []
@@ -179,7 +191,10 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
 
 
 def run_windows_defender_quick_scan() -> str:
-    """Invoca la API de PowerShell `Start-MpScan` para ejecutar un análisis de Defender."""
+    """
+    Invoca `Start-MpScan` mediante PowerShell para disparar un escaneo de Defender.
+    Captura la salida estándar y maneja errores de ejecución o timeout.
+    """
     try:
         result = subprocess.run(
             ["powershell", "-Command", "Start-MpScan -ScanType QuickScan"],

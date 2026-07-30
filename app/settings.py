@@ -109,10 +109,7 @@ _DEFAULTS_KEYS: Final = set(DEFAULTS.keys())
 
 
 def _coerce_bool(raw_value: Any) -> bool | None:
-    """
-    Normaliza entradas no booleanas (strings tipo 'true'/'1'/'si') a booleano real.
-    Devuelve None si el valor no es un booleano válido tras la coerción.
-    """
+    """Normaliza entradas a booleano (soporta strings como 'si' o 'true')."""
     if isinstance(raw_value, bool):
         return raw_value
     if isinstance(raw_value, str):
@@ -121,10 +118,7 @@ def _coerce_bool(raw_value: Any) -> bool | None:
 
 
 def _coerce_int(raw_value: Any, setting_key: str) -> int | None:
-    """
-    Intenta convertir a entero, aplicando límites definidos en _NUMERIC_LIMITS.
-    Retorna el valor truncado a los límites permitidos o None si la conversión falla.
-    """
+    """Convierte a entero aplicando los límites de seguridad definidos en _NUMERIC_LIMITS."""
     if isinstance(raw_value, bool):
         return None
     try:
@@ -136,10 +130,7 @@ def _coerce_int(raw_value: Any, setting_key: str) -> int | None:
 
 
 def _validate_str(clave: str, valor: Any) -> str | None:
-    """
-    Valida strings de configuración. Para 'ultima_carpeta', realiza chequeo
-    de seguridad contra el sistema de archivos mediante `is_safe_to_modify`.
-    """
+    """Valida strings y aplica chequeos de seguridad a rutas de archivos."""
     if not isinstance(valor, str):
         return None
     texto = valor.strip()
@@ -153,7 +144,6 @@ def _validate_str(clave: str, valor: Any) -> str | None:
     if clave == "ultima_carpeta":
         try:
             ruta_candidata = Path(texto).expanduser().resolve()
-            # Validamos seguridad de la ruta resultante antes de permitirla en configuración
             if not is_safe_to_modify(str(ruta_candidata)):
                 return None
             return str(ruta_candidata)
@@ -164,19 +154,19 @@ def _validate_str(clave: str, valor: Any) -> str | None:
 
 def _apply_validation_by_type(clave: str, valor: Any, defecto: Any) -> Any:
     """
-    Selecciona la estrategia de validación basada en el tipo del valor por defecto.
+    Despacha la validación según el tipo de dato del valor de fábrica.
     """
     if valor is None:
         return None
     
-    dispatch = {
-        bool: lambda v: _coerce_bool(v),
+    validators = {
+        bool: _coerce_bool,
         int: lambda v: _coerce_int(v, clave),
         str: lambda v: _validate_str(clave, v)
     }
     
-    func = dispatch.get(type(defecto))
-    return func(valor) if func else None
+    validator = validators.get(type(defecto))
+    return validator(valor) if validator else None
 
 
 def settings_path(path_or_base: PathLike | None = None) -> Path:
@@ -187,7 +177,6 @@ def settings_path(path_or_base: PathLike | None = None) -> Path:
         else:
             base = SETTINGS_DIR
         
-        # Validamos que la carpeta base exista o sea creable en un entorno seguro
         if not base.exists():
             ensure_safe_to_modify(str(base.parent))
         else:
@@ -257,7 +246,6 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     parent = ruta.parent
     try:
         parent.mkdir(parents=True, exist_ok=True)
-        # Verificamos seguridad del directorio padre antes de escribir
         ensure_safe_to_modify(str(parent))
     except (OSError, RuntimeError, PermissionError):
         return None
