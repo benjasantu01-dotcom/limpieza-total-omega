@@ -1450,3 +1450,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption
 - `2026-07-30T01:52:22` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `check_recent_executable_in_downloads` y `check_system_lookalike` ante archivos eliminados o movidos durante la ejecución (race conditions) envolviendo el acceso a metadatos en bloques `try-except` más específicos y seguros.
 - `2026-07-30T01:52:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-30T01:52:22` Corrida terminada. Total usado hoy: 44.
+- `2026-07-30T02:01:01` Arrancando corrida. Quedan hoy ~256 peticiones objetivo.
+- `2026-07-30T02:01:30` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se implementó un manejo robusto de excepciones en `settings_path` para prevenir fallos catastróficos si `expanduser()` o `resolve()` encuentran rutas inválidas (como caracteres no permitidos en el sistema de archivos), asegurando que la aplicación siempre pueda caer de forma elegante al fallback de fábrica.
+- `2026-07-30T02:01:53` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-07-30T02:02:25` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se endurecieron las validaciones en `_call_gemini` para prevenir la inyección de caracteres de control o patrones de ruta en la respuesta, asegurando que cualquier respuesta del LLM pase por filtros de seguridad antes de ser mostrada al usuario.
+- `2026-07-30T02:02:39` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-07-30T02:02:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-30T02:02:39` Corrida terminada. Total usado hoy: 48.

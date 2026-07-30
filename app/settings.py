@@ -181,15 +181,19 @@ def _apply_validation_by_type(clave: str, valor: Any, defecto: Any) -> Any:
 
 def settings_path(path_or_base: PathLike | None = None) -> Path:
     """Resuelve la ruta absoluta del archivo de configuración, asegurando seguridad."""
-    if path_or_base is not None:
-        base = Path(path_or_base).expanduser().resolve()
-    else:
-        base = SETTINGS_DIR
-    
-    # Aseguramos que la carpeta base sea segura. Si no existe, verificamos el parent.
-    check_target = base if base.exists() else base.parent
-    ensure_safe_to_modify(str(check_target))
-    return base / SETTINGS_FILE
+    try:
+        if path_or_base is not None:
+            base = Path(path_or_base).expanduser().resolve()
+        else:
+            base = SETTINGS_DIR
+        
+        # Aseguramos que la carpeta base sea segura. Si no existe, verificamos el parent.
+        check_target = base if base.exists() else base.parent
+        ensure_safe_to_modify(str(check_target))
+        return base / SETTINGS_FILE
+    except (OSError, RuntimeError, ValueError):
+        # Ante error de sistema de archivos, fallback seguro a la carpeta default
+        return SETTINGS_DIR / SETTINGS_FILE
 
 
 def validate(values: Any) -> dict[str, Any]:
@@ -250,8 +254,11 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     json_data = json.dumps(limpio, indent=2, ensure_ascii=False)
     
     parent = ruta.parent
-    parent.mkdir(parents=True, exist_ok=True)
-    ensure_safe_to_modify(str(parent))
+    try:
+        parent.mkdir(parents=True, exist_ok=True)
+        ensure_safe_to_modify(str(parent))
+    except (OSError, RuntimeError, PermissionError):
+        return None
     
     temp_name = None
     try:

@@ -6,34 +6,34 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **251** (49.8% de aceptación)
+- Mejoras aceptadas: **253** (50.2% de aceptación)
 - Rechazadas por tests: 19
 - Rechazadas por guardia de seguridad: 26
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 198
+- Sin respuesta de la IA (error o límite): 196
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-28 | 50 | 6 | 5 | 1 | 48 |
+| 2026-07-28 | 50 | 6 | 5 | 1 | 44 |
 | 2026-07-29 | 171 | 10 | 18 | 8 | 143 |
-| 2026-07-30 | 30 | 3 | 3 | 1 | 7 |
+| 2026-07-30 | 32 | 3 | 3 | 1 | 9 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **65**
 - manejo de errores y validación de entradas: **51**
 - rendimiento: **47**
-- robustez ante casos límite: **46**
-- seguridad defensiva: **42**
+- robustez ante casos límite: **47**
+- seguridad defensiva: **43**
 
 ## Mejoras aceptadas por archivo
 
 - `scanner.py`: **22**
+- `settings.py`: **22**
 - `browser.py`: **22**
-- `settings.py`: **21**
-- `assistant.py`: **20**
+- `assistant.py`: **21**
 - `quarantine.py`: **20**
 - `healthscore.py`: **19**
 - `main.py`: **19**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-30T02:02:25` **assistant.py** (seguridad defensiva): Se endurecieron las validaciones en `_call_gemini` para prevenir la inyección de caracteres de control o patrones de ruta en la respuesta, asegurando que cualquier respuesta del LLM pase por filtros de seguridad antes de ser mostrada al usuario.
+- `2026-07-30T02:01:30` **settings.py** (robustez ante casos límite): Se implementó un manejo robusto de excepciones en `settings_path` para prevenir fallos catastróficos si `expanduser()` o `resolve()` encuentran rutas inválidas (como caracteres no permitidos en el sistema de archivos), asegurando que la aplicación siempre pueda caer de forma elegante al fallback de fábrica.
 - `2026-07-30T01:52:22` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez de `check_recent_executable_in_downloads` y `check_system_lookalike` ante archivos eliminados o movidos durante la ejecución (race conditions) envolviendo el acceso a metadatos en bloques `try-except` más específicos y seguros.
 - `2026-07-30T01:42:00` **main.py** (robustez ante casos límite): Se mejora la robustez ante errores de ejecución asíncrona en la pestaña de Salud, asegurando que si `_compile_metrics` falla (por ejemplo, por denegación de acceso al listar unidades o registros), el hilo no se silencie y el asistente reciba un contexto válido, evitando caídas en la interfaz.
 - `2026-07-30T01:41:06` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez de `compute_score` ante estados de configuración incoherentes, asegurando que el cálculo sea siempre seguro aunque los pesos definidos en `WEIGHTS` sean modificados accidentalmente o por error de usuario, evitando resultados matemáticos inesperados.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-30T01:10:57` **quarantine.py** (rendimiento): Se implementó un cacheo basado en el estado del sistema de archivos (`st_mtime` del manifiesto) para evitar deserializaciones redundantes de JSON en llamadas sucesivas, mejorando drásticamente el rendimiento en bucles de lectura sin sacrificar la coherencia de datos.
 - `2026-07-30T01:10:33` **organizer.py** (rendimiento): Se optimizó el rendimiento de `scan_for_junk` sustituyendo `entry.path` (que genera un string completo innecesario en cada iteración del sistema de archivos) por `entry.name` y construyendo las rutas solo cuando es estrictamente necesario, además de aprovechar el cacheo local de `stat()` ya disponible en `os.DirEntry`.
 - `2026-07-30T01:01:34` **main.py** (rendimiento): Se optimizó el flujo `_update_health_visuals` reemplazando la recreación de objetos por una actualización de propiedades existente, y se eliminó el uso de `lambda` para capturar iteradores en los loops de construcción de pestañas, evitando llamadas a `winfo_exists` redundantes y reduciendo la carga en el hilo principal durante la actualización de la UI.
-- `2026-07-30T01:00:37` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje global en `compute_score` eliminando iteraciones redundantes y consolidando las operaciones de validación y cálculo en un flujo más eficiente, reduciendo la creación innecesaria de objetos intermedios.
-- `2026-07-30T00:51:10` **diskreport.py** (rendimiento): Optimicé `summarize` para realizar una sola pasada por los datos, eliminando la redundancia de llamar a `walk_files` y consolidando toda la lógica de recolección (estadísticas globales, mapa de extensiones y heap de archivos pesados) en un único ciclo de iteración, lo cual reduce significativamente el uso de CPU y E/S al evitar recorridos múltiples sobre el mismo árbol de archivos.
