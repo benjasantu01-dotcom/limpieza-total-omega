@@ -6,27 +6,27 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **253** (50.2% de aceptación)
+- Mejoras aceptadas: **250** (49.6% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 26
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 197
+- Sin respuesta de la IA (error o límite): 200
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-28 | 39 | 4 | 4 | 1 | 18 |
+| 2026-07-28 | 35 | 4 | 4 | 1 | 18 |
 | 2026-07-29 | 171 | 10 | 18 | 8 | 143 |
-| 2026-07-30 | 43 | 3 | 4 | 2 | 36 |
+| 2026-07-30 | 44 | 3 | 4 | 2 | 39 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **63**
+- legibilidad y documentación: **59**
 - seguridad defensiva: **54**
 - rendimiento: **47**
 - robustez ante casos límite: **47**
-- manejo de errores y validación de entradas: **42**
+- manejo de errores y validación de entradas: **43**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,19 +34,20 @@ Este archivo se regenera solo en cada corrida a partir de
 - `settings.py`: **22**
 - `browser.py`: **22**
 - `quarantine.py`: **20**
-- `healthscore.py`: **19**
+- `assistant.py`: **20**
 - `organizer.py`: **19**
-- `assistant.py`: **19**
-- `diskreport.py`: **18**
-- `main.py`: **18**
-- `duplicates.py`: **17**
+- `healthscore.py`: **18**
+- `diskreport.py`: **17**
+- `main.py`: **17**
 - `memory.py`: **16**
+- `duplicates.py`: **16**
 - `safety.py`: **15**
 - `branding.py`: **15**
 - `startup.py`: **11**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-30T03:56:42` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `build_context` y `ask` mediante la validación proactiva de tipos y el manejo explícito de errores, evitando que la IA intente operar con datos corruptos o mal formateados provenientes de `settings`.
 - `2026-07-30T02:42:13` **startup.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `entries_from_folders` añadiendo una validación explícita mediante `is_protected_path` (importado de `safety.py`) para evitar que la aplicación intente procesar o mostrar rutas críticas del sistema operativo, incluso si están dentro de carpetas de inicio.
 - `2026-07-30T02:32:50` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save()` y `settings_path()` mediante una validación más estricta de las rutas base, asegurando que `ensure_safe_to_modify` se aplique sobre la carpeta de configuración real antes de intentar cualquier operación de I/O, evitando así inyecciones de rutas fuera del ámbito permitido.
 - `2026-07-30T02:32:40` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez de `scan_directory` introduciendo una normalización de rutas previa mediante `os.path.abspath` y el uso de un conjunto `seen` para evitar ciclos infinitos en caso de que existan estructuras de directorios inusuales, garantizando además que la validación de `root_path` sea consistente con el filtrado de seguridad.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-30T02:02:25` **assistant.py** (seguridad defensiva): Se endurecieron las validaciones en `_call_gemini` para prevenir la inyección de caracteres de control o patrones de ruta en la respuesta, asegurando que cualquier respuesta del LLM pase por filtros de seguridad antes de ser mostrada al usuario.
 - `2026-07-30T02:01:30` **settings.py** (robustez ante casos límite): Se implementó un manejo robusto de excepciones en `settings_path` para prevenir fallos catastróficos si `expanduser()` o `resolve()` encuentran rutas inválidas (como caracteres no permitidos en el sistema de archivos), asegurando que la aplicación siempre pueda caer de forma elegante al fallback de fábrica.
 - `2026-07-30T01:52:22` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez de `check_recent_executable_in_downloads` y `check_system_lookalike` ante archivos eliminados o movidos durante la ejecución (race conditions) envolviendo el acceso a metadatos en bloques `try-except` más específicos y seguros.
-- `2026-07-30T01:42:00` **main.py** (robustez ante casos límite): Se mejora la robustez ante errores de ejecución asíncrona en la pestaña de Salud, asegurando que si `_compile_metrics` falla (por ejemplo, por denegación de acceso al listar unidades o registros), el hilo no se silencie y el asistente reciba un contexto válido, evitando caídas en la interfaz.

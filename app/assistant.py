@@ -170,8 +170,6 @@ class Answer:
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
     """
     Transforma fuentes de datos crudos en un objeto SystemContext validado.
-    Filtra tipos no numéricos y normaliza valores fuera de rango para garantizar
-    que los datos enviados al motor de IA sean seguros y coherentes.
     """
     contexto = SystemContext()
     
@@ -226,7 +224,6 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
 def context_as_text(context: SystemContext) -> str:
     """
     Serializa el estado del sistema en un formato de texto compacto.
-    Este string es el único dato enviado a la API de Gemini (si está activo).
     """
     if not isinstance(context, SystemContext) or not context.analyzed:
         return "No hay métricas disponibles todavía."
@@ -364,8 +361,7 @@ _HANDLERS: Final[dict[str, Callable[[SystemContext, str], Answer]]] = {
 
 def local_answer(question: str, context: SystemContext) -> Answer:
     """
-    Procesa la pregunta del usuario utilizando reglas de negocio estáticas
-    (motor local). Sanea el input y clasifica la intención mediante patrones regex.
+    Procesa la pregunta del usuario utilizando reglas de negocio estáticas.
     """
     raw_text = (question or "").strip()
     clean_text = re.sub(r'[\x00-\x1f\x7f]', '', raw_text)[:200].lower()
@@ -394,7 +390,7 @@ def local_answer(question: str, context: SystemContext) -> Answer:
 
 
 def _rank_problems(context: SystemContext) -> list[str]:
-    """Calcula y ordena los problemas más críticos del sistema para priorizar la asistencia."""
+    """Calcula y ordena los problemas más críticos del sistema."""
     res = []
     disk = context.disk_free_percent
     warns = context.suspicious_warnings
@@ -429,7 +425,6 @@ def available(base: str | Path | None = None) -> bool:
 def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> Optional[str]:
     """
     Envía métricas agregadas a Gemini usando la librería estándar urllib.
-    Aplica filtros estrictos al contenido de respuesta para prevenir inyecciones.
     """
     if not api_key or not model:
         return None
@@ -460,8 +455,6 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
         partes = candidatos[0]["content"].get("parts", [])
         texto = "".join(p.get("text", "") for p in partes).strip()
         
-        # Validaciones de seguridad: rechazar si parece un comando, ruta, o tiene caracteres ilegales.
-        # Se verifica también longitud para evitar inyecciones de datos masivos.
         if not texto or len(texto) > 1200 or _PATH_REGEX.search(texto) or _CONTROL_CHARS_REGEX.search(texto):
             return None
         return texto
@@ -474,8 +467,6 @@ def ask(question: str, context: SystemContext | None = None,
         base: str | Path | None = None) -> Answer:
     """
     Coordina la resolución de la consulta del usuario.
-    Intenta utilizar el motor en línea si está activo; de lo contrario, 
-    delega la respuesta al motor local.
     """
     contexto = context if isinstance(context, SystemContext) else SystemContext()
     respaldo = local_answer(question, contexto)
@@ -489,11 +480,8 @@ def ask(question: str, context: SystemContext | None = None,
             return respaldo
             
         clave = str(configuracion.get("asistente_api_key", ""))
-        modelo_val = configuracion.get("asistente_modelo")
-        modelo = str(modelo_val) if isinstance(modelo_val, str) else "gemini-3.1-flash-lite"
-        
-        enviar_val = configuracion.get("asistente_enviar_metricas")
-        enviar = bool(enviar_val) if isinstance(enviar_val, bool) else True
+        modelo = str(configuracion.get("asistente_modelo", "gemini-3.1-flash-lite"))
+        enviar = bool(configuracion.get("asistente_enviar_metricas", True))
         
         texto_contexto = context_as_text(contexto) if enviar else "El usuario no autorizó enviar métricas."
         remoto = _call_gemini(question, texto_contexto, clave, modelo)
