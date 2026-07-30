@@ -6,46 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **242** (48.0% de aceptación)
+- Mejoras aceptadas: **244** (48.4% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 26
+- Rechazadas por guardia de seguridad: 25
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 205
+- Sin respuesta de la IA (error o límite): 204
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-29 | 76 | 3 | 9 | 4 | 80 |
-| 2026-07-30 | 166 | 12 | 17 | 12 | 125 |
+| 2026-07-29 | 74 | 3 | 8 | 4 | 79 |
+| 2026-07-30 | 170 | 12 | 17 | 12 | 125 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **64**
 - seguridad defensiva: **51**
 - manejo de errores y validación de entradas: **48**
-- robustez ante casos límite: **41**
-- rendimiento: **38**
+- rendimiento: **42**
+- robustez ante casos límite: **39**
 
 ## Mejoras aceptadas por archivo
 
 - `scanner.py`: **23**
+- `browser.py`: **22**
 - `settings.py`: **21**
-- `browser.py`: **21**
-- `diskreport.py`: **20**
+- `diskreport.py`: **21**
+- `duplicates.py`: **19**
 - `quarantine.py`: **19**
 - `assistant.py`: **19**
 - `healthscore.py`: **19**
-- `duplicates.py`: **18**
-- `organizer.py`: **15**
-- `branding.py`: **15**
+- `branding.py`: **16**
 - `main.py`: **15**
+- `organizer.py`: **14**
 - `safety.py`: **13**
 - `startup.py`: **13**
-- `memory.py`: **11**
+- `memory.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-30T14:18:23` **duplicates.py** (rendimiento): Optimizé el pipeline de `find_duplicates` añadiendo un filtro de "caché de inodos" (device/inode) para evitar procesar físicamente el mismo archivo si aparece en múltiples rutas debido a hardlinks o accesos redundantes, reduciendo drásticamente las operaciones de E/S innecesarias en sistemas de archivos grandes.
+- `2026-07-30T14:18:09` **diskreport.py** (rendimiento): Optimicé el rendimiento de `summarize` reemplazando la iteración completa sobre `walk_files` con un acceso directo a `total_size`, permitiendo que la función principal de reporte se concentre únicamente en la agregación de datos y la construcción de la estructura de resumen.
+- `2026-07-30T14:17:45` **browser.py** (rendimiento): Implementé un mecanismo de invalidación manual en `directory_size` utilizando un timestamp de última modificación del directorio (`st_mtime`) para evitar re-escanear recursivamente carpetas que no han cambiado desde la última medición, mejorando significativamente el rendimiento en ejecuciones consecutivas.
+- `2026-07-30T14:17:22` **branding.py** (rendimiento): Optimicé el cálculo de colores en `draw_logo` y `draw_gradient_bar` mediante la pre-generación de listas de colores con `gradient_colors`, evitando la ejecución redundante de interpolaciones matemáticas dentro de los bucles de renderizado.
 - `2026-07-30T14:08:12` **assistant.py** (rendimiento): Optimicé el rendimiento de las consultas al asistente reemplazando la búsqueda lineal mediante `re.search` en cada palabra de la consulta por una lógica de `set` y `str.split()` más eficiente, evitando la compilación innecesaria y el re-procesamiento de regex en cada iteración del bucle de handlers.
 - `2026-07-30T14:07:54` **startup.py** (legibilidad y documentación): Se añadió documentación mediante docstrings detallados en las funciones de procesamiento de datos y se clarificaron los nombres de variables internas en `parse_registry_csv` para reflejar mejor su intención, facilitando la comprensión del flujo de datos sin alterar la lógica.
 - `2026-07-30T14:07:29` **settings.py** (legibilidad y documentación): Se introdujeron type hints en `_NUMERIC_LIMITS` y se documentó explícitamente el contrato de los validadores para mejorar la legibilidad del flujo de datos sin alterar la lógica de validación.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-30T13:46:41` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings más precisos, añadí type hints faltantes en los métodos de `DuplicateGroup` y renombré parámetros internos en `_collect_candidates` para mayor claridad semántica sin afectar la funcionalidad.
 - `2026-07-30T13:37:44` **diskreport.py** (legibilidad y documentación): Se introdujeron type hints más precisos (especialmente en `summarize`), se simplificaron las estructuras de datos temporales (reemplazando `dict[str, list[int]]` por una dataclass local para mejorar la legibilidad) y se documentó con mayor claridad el propósito de las funciones internas en `walk_files`.
 - `2026-07-30T13:37:34` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en `_is_safe_path` y `_is_valid_cache_path` para clarificar la lógica de seguridad y se han añadido type hints más precisos (como `Sequence[Path]`) para mejorar la legibilidad y la integridad del análisis estático.
-- `2026-07-30T13:37:11` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la inclusión de type hints explícitos en los argumentos de las funciones `draw_logo`, `draw_gradient_bar` y `draw_ring`, aclarando el propósito y la naturaleza de los parámetros de tipo `Any` (widgets de Canvas) para mejorar la mantenibilidad y legibilidad del código.
-- `2026-07-30T13:36:41` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la aplicación de *type hints* estrictos en el motor de consultas (`_call_gemini`) y la reestructuración de la lógica de `build_context` usando *guard clauses* para reducir el anidamiento y mejorar la claridad del flujo de validación.
-- `2026-07-30T13:27:10` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` y `_validate_str()` agregando chequeos explícitos para evitar errores al procesar entradas nulas o rutas malformadas, garantizando que el sistema de configuración no falle silenciosamente ante datos inesperados.
-- `2026-07-30T13:26:45` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_process_directory_entry` integrando validaciones de tipo y estructura antes de operar, asegurando que las entradas corruptas o inaccesibles sean ignoradas silenciosamente sin riesgo de excepciones no controladas.

@@ -132,17 +132,23 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
 
 def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     """
-    Organiza rutas de archivos en un diccionario indexado por su tamaño en bytes.
+    Organiza rutas de archivos en un diccionario indexado por su tamaño en bytes,
+    evitando procesar múltiples hardlinks al mismo archivo físico.
     """
     if paths is None:
         return {}
     groups: Dict[int, List[Path]] = defaultdict(list)
+    seen_inodes: set[Tuple[int, int]] = set()
     for p in paths:
         if not isinstance(p, Path):
             continue
         try:
             st = p.lstat()
             if st.st_size > 0:
+                inode_id = (st.st_dev, st.st_ino)
+                if inode_id in seen_inodes:
+                    continue
+                seen_inodes.add(inode_id)
                 groups[st.st_size].append(p)
         except (OSError, PermissionError, FileNotFoundError, AttributeError):
             continue

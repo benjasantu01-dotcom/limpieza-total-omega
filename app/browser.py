@@ -62,6 +62,9 @@ SAFETY_NOTE: str = (
     "no se van a poder mover."
 )
 
+# Cache interno para evitar re-escaneo de discos si no hubo cambios
+_DIR_SIZE_CACHE: Dict[str, tuple[int, float]] = {}
+
 
 @dataclass
 class BrowserCache:
@@ -95,11 +98,6 @@ def base_directories() -> List[Path]:
 def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> bool:
     """
     Valida la integridad de la ruta para prevenir escapes.
-    
-    Comprueba:
-    1. Si la ruta está en la lista de bloqueados de seguridad global.
-    2. Si 'target_path' es efectivamente un subdirectorio de 'base_path'.
-    3. Resuelve rutas para evitar ataques de 'path traversal' (../).
     """
     if not target_path or not base_path:
         return False
@@ -113,17 +111,26 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
         return False
 
 
-@lru_cache(maxsize=32)
 def directory_size(path: str | os.PathLike | None) -> int:
     """
-    Calcula el tamaño total en bytes mediante suma recursiva no destructiva.
+    Calcula el tamaño total en bytes mediante suma recursiva.
+    Usa un cache basado en el mtime del directorio para evitar re-escaneos.
     """
     if path is None:
         return 0
+    
+    path_str = str(path)
     try:
         root = Path(path).resolve(strict=False)
         if not root.exists() or not root.is_dir() or root.is_symlink() or is_protected_path(root):
             return 0
+        
+        # Estrategia de caché: si el mtime del directorio no cambió, asumimos que su contenido tampoco
+        current_mtime = root.stat().st_mtime
+        if path_str in _DIR_SIZE_CACHE:
+            cached_size, cached_mtime = _DIR_SIZE_CACHE[path_str]
+            if cached_mtime == current_mtime:
+                return cached_size
     except (OSError, RuntimeError, PermissionError):
         return 0
     
@@ -133,8 +140,6 @@ def directory_size(path: str | os.PathLike | None) -> int:
     while stack:
         current_dir = stack.pop()
         try:
-            if not os.access(current_dir, os.R_OK):
-                continue
             with os.scandir(current_dir) as it:
                 for entry in it:
                     if entry.is_symlink():
@@ -145,16 +150,14 @@ def directory_size(path: str | os.PathLike | None) -> int:
                         total_bytes += entry.stat().st_size
         except (OSError, PermissionError):
             continue
+            
+    _DIR_SIZE_CACHE[path_str] = (total_bytes, current_mtime)
     return total_bytes
 
 
 def _is_valid_cache_path(candidate: Path | None, base_path: Path) -> bool:
     """
-    Filtro de validación para carpetas de caché:
-    - Asegura la existencia física del directorio.
-    - Rechaza enlaces simbólicos (prevención de bucles/círculos).
-    - Valida que no sea un archivo de datos crítico ('NEVER_TOUCH').
-    - Llama a `_is_safe_path` para garantizar confinamiento dentro de LOCALAPPDATA.
+    Filtro de validación para carpetas de caché.
     """
     if not candidate:
         return False
@@ -176,7 +179,6 @@ def detect_profiles(
 ) -> List[BrowserCache]:
     """
     Explora directorios base en busca de cachés definidas en `cache_paths`.
-    Retorna una lista ordenada de objetos `BrowserCache` por tamaño descendente.
     """
     bases = bases if bases is not None else base_directories()
     cache_paths = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
@@ -215,8 +217,7 @@ def total_cache_bytes(caches: Iterable[BrowserCache] | None = None) -> int:
 
 def summarize(caches: Optional[List[BrowserCache]] = None) -> List[str]:
     """
-    Genera un informe textual listo para la UI, resumiendo el uso
-    de disco de los cachés detectados.
+    Genera un informe textual listo para la UI.
     """
     current_caches: List[BrowserCache] = caches if caches is not None else detect_profiles()
     
