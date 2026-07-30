@@ -1442,3 +1442,11 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption
 - `2026-07-30T01:42:31` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
 - `2026-07-30T01:42:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-30T01:42:31` Corrida terminada. Total usado hoy: 40.
+- `2026-07-30T01:50:48` Arrancando corrida. Quedan hoy ~260 peticiones objetivo.
+- `2026-07-30T01:51:26` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: robustez ante casos límite).
+- `2026-07-30T01:51:45` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-07-30T01:52:07` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
+- `2026-07-30T01:52:12` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-07-30T01:52:22` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `check_recent_executable_in_downloads` y `check_system_lookalike` ante archivos eliminados o movidos durante la ejecución (race conditions) envolviendo el acceso a metadatos en bloques `try-except` más específicos y seguros.
+- `2026-07-30T01:52:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-30T01:52:22` Corrida terminada. Total usado hoy: 44.

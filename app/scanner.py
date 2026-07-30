@@ -99,19 +99,20 @@ def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_TH
         if datetime.now() - mtime < timedelta(hours=hours):
             return Suspicion(path, f"Ejecutable reciente detectado (modificado hace menos de {hours}h)", "info")
     except (FileNotFoundError, PermissionError, OSError):
+        # El archivo puede haber sido borrado o bloqueado entre el escaneo y este check
         return None
     return None
 
 
 def check_system_lookalike(path: Path) -> Optional[Suspicion]:
     """Detecta suplantación de identidad mediante nombres de procesos críticos fuera de System32."""
-    if path.name.lower() in SYSTEM_LOOKALIKES:
-        try:
+    try:
+        if path.name.lower() in SYSTEM_LOOKALIKES:
             parent_str = str(path.parent).lower()
             if SYSTEM32_LOWER not in parent_str:
                 return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
-        except (AttributeError, ValueError):
-            return None
+    except (AttributeError, ValueError, OSError):
+        return None
     return None
 
 # Lista inmutable de funciones de análisis heurístico

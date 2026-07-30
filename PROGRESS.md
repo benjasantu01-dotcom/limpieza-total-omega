@@ -6,32 +6,32 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **250** (49.6% de aceptación)
+- Mejoras aceptadas: **251** (49.8% de aceptación)
 - Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 25
+- Rechazadas por guardia de seguridad: 26
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 200
+- Sin respuesta de la IA (error o límite): 198
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-28 | 50 | 6 | 5 | 1 | 52 |
+| 2026-07-28 | 50 | 6 | 5 | 1 | 48 |
 | 2026-07-29 | 171 | 10 | 18 | 8 | 143 |
-| 2026-07-30 | 29 | 3 | 2 | 1 | 5 |
+| 2026-07-30 | 30 | 3 | 3 | 1 | 7 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **65**
 - manejo de errores y validación de entradas: **51**
 - rendimiento: **47**
-- robustez ante casos límite: **45**
+- robustez ante casos límite: **46**
 - seguridad defensiva: **42**
 
 ## Mejoras aceptadas por archivo
 
+- `scanner.py`: **22**
 - `browser.py`: **22**
-- `scanner.py`: **21**
 - `settings.py`: **21**
 - `assistant.py`: **20**
 - `quarantine.py`: **20**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-30T01:52:22` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez de `check_recent_executable_in_downloads` y `check_system_lookalike` ante archivos eliminados o movidos durante la ejecución (race conditions) envolviendo el acceso a metadatos en bloques `try-except` más específicos y seguros.
 - `2026-07-30T01:42:00` **main.py** (robustez ante casos límite): Se mejora la robustez ante errores de ejecución asíncrona en la pestaña de Salud, asegurando que si `_compile_metrics` falla (por ejemplo, por denegación de acceso al listar unidades o registros), el hilo no se silencie y el asistente reciba un contexto válido, evitando caídas en la interfaz.
 - `2026-07-30T01:41:06` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez de `compute_score` ante estados de configuración incoherentes, asegurando que el cálculo sea siempre seguro aunque los pesos definidos en `WEIGHTS` sean modificados accidentalmente o por error de usuario, evitando resultados matemáticos inesperados.
 - `2026-07-30T01:31:55` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `suggest_keeper` y `_collect_candidates` ante archivos que desaparecen durante el procesamiento (condición de carrera o cambio de estado) y mejoré la gestión de excepciones en `suggest_keeper` para evitar que un solo archivo inaccesible invalide la sugerencia de todo un grupo.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-30T01:01:34` **main.py** (rendimiento): Se optimizó el flujo `_update_health_visuals` reemplazando la recreación de objetos por una actualización de propiedades existente, y se eliminó el uso de `lambda` para capturar iteradores en los loops de construcción de pestañas, evitando llamadas a `winfo_exists` redundantes y reduciendo la carga en el hilo principal durante la actualización de la UI.
 - `2026-07-30T01:00:37` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje global en `compute_score` eliminando iteraciones redundantes y consolidando las operaciones de validación y cálculo en un flujo más eficiente, reduciendo la creación innecesaria de objetos intermedios.
 - `2026-07-30T00:51:10` **diskreport.py** (rendimiento): Optimicé `summarize` para realizar una sola pasada por los datos, eliminando la redundancia de llamar a `walk_files` y consolidando toda la lógica de recolección (estadísticas globales, mapa de extensiones y heap de archivos pesados) en un único ciclo de iteración, lo cual reduce significativamente el uso de CPU y E/S al evitar recorridos múltiples sobre el mismo árbol de archivos.
-- `2026-07-30T00:50:39` **branding.py** (rendimiento): Optimicé el método `draw_logo` para evitar la creación innecesaria de objetos `Canvas` y el re-cálculo de parámetros mediante la pre-computación de la lista `franjas` y el uso eficiente de `gradient_colors`, reduciendo el uso de CPU durante el refresco de la UI.
