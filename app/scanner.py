@@ -88,8 +88,12 @@ def _process_directory_entry(entry: os.DirEntry, root_path: str, results: List[S
 
 def check_double_extension(path: Path) -> Optional[Suspicion]:
     """
-    Detecta nombres de archivo que terminan en una extensión ejecutable precedida 
-    por una extensión documental, táctica común de suplantación visual.
+    Analiza si el nombre del archivo contiene una extensión doble sospechosa.
+    
+    Args:
+        path: Objeto Path del archivo a inspeccionar.
+    Returns:
+        Un objeto Suspicion si se detecta doble extensión, None en caso contrario.
     """
     if not path or not path.name:
         return None
@@ -100,8 +104,13 @@ def check_double_extension(path: Path) -> Optional[Suspicion]:
 
 def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_THRESHOLD_HOURS) -> Optional[Suspicion]:
     """
-    Evalúa la edad de un archivo ejecutable mediante su marca de tiempo de modificación.
-    Devuelve un hallazgo si el archivo fue creado/modificado dentro del umbral definido.
+    Evalúa si un archivo ejecutable ha sido modificado recientemente.
+    
+    Args:
+        path: Objeto Path del archivo a inspeccionar.
+        hours: Límite de tiempo en horas para considerar el archivo como 'reciente'.
+    Returns:
+        Un objeto Suspicion si el archivo fue modificado dentro del umbral definido.
     """
     if not path:
         return None
@@ -110,7 +119,6 @@ def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_TH
     if suffix not in SUSPICIOUS_EXECUTABLE_EXT:
         return None
     try:
-        # Usamos stat() directamente pero con manejo de errores robusto
         mtime = datetime.fromtimestamp(path.stat(follow_symlinks=False).st_mtime)
         if datetime.now() - mtime < timedelta(hours=hours):
             return Suspicion(path, f"Ejecutable reciente detectado (modificado hace menos de {hours}h)", "info")
@@ -121,8 +129,13 @@ def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_TH
 
 def check_system_lookalike(path: Path) -> Optional[Suspicion]:
     """
-    Detecta archivos con nombres idénticos a binarios críticos de Windows 
-    cuando se encuentran fuera de los directorios del sistema, indicando posible confusión.
+    Detecta archivos que imitan nombres de procesos críticos del sistema operativo
+    estando ubicados fuera del directorio System32.
+    
+    Args:
+        path: Objeto Path del archivo a validar.
+    Returns:
+        Un objeto Suspicion si el nombre coincide con un proceso crítico fuera de lugar.
     """
     if not path or not path.name:
         return None
