@@ -6,47 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **252** (50.0% de aceptación)
-- Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 25
+- Mejoras aceptadas: **250** (49.6% de aceptación)
+- Rechazadas por tests: 16
+- Rechazadas por guardia de seguridad: 26
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 197
+- Sin respuesta de la IA (error o límite): 199
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-28 | 13 | 1 | 1 | 0 | 11 |
+| 2026-07-28 | 10 | 0 | 1 | 0 | 11 |
 | 2026-07-29 | 171 | 10 | 18 | 8 | 143 |
-| 2026-07-30 | 68 | 6 | 6 | 5 | 43 |
+| 2026-07-30 | 69 | 6 | 7 | 5 | 45 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **64**
-- seguridad defensiva: **54**
 - manejo de errores y validación de entradas: **53**
-- rendimiento: **42**
-- robustez ante casos límite: **39**
+- seguridad defensiva: **52**
+- rendimiento: **43**
+- robustez ante casos límite: **38**
 
 ## Mejoras aceptadas por archivo
 
 - `browser.py`: **23**
-- `settings.py`: **22**
 - `scanner.py`: **22**
-- `assistant.py`: **20**
+- `settings.py`: **21**
 - `healthscore.py`: **19**
 - `quarantine.py`: **19**
+- `assistant.py`: **19**
 - `diskreport.py`: **18**
 - `duplicates.py`: **18**
-- `organizer.py`: **17**
+- `organizer.py`: **18**
 - `main.py`: **16**
 - `memory.py`: **16**
-- `branding.py`: **15**
 - `safety.py`: **14**
+- `branding.py`: **14**
 - `startup.py`: **13**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-30T05:36:19` **organizer.py** (rendimiento): Optimicé el rendimiento de `scan_for_junk` convirtiendo la lista de carpetas bloqueadas en un `frozenset` para búsquedas O(1) y utilizando `os.scandir` de forma más eficiente al cachear atributos del archivo durante la iteración, evitando llamadas redundantes a `is_dir()` o `is_file()` cuando la información ya está disponible en el objeto `DirEntry`.
 - `2026-07-30T05:25:45` **diskreport.py** (rendimiento): Optimizé `walk_files` reemplazando llamadas redundantes a `path.resolve()` (que es costosa en términos de I/O) por el uso directo de las rutas relativas procesadas por `scandir`, mejorando el rendimiento en recorridos profundos.
 - `2026-07-30T05:16:40` **browser.py** (rendimiento): Optimicé el cálculo del tamaño de carpetas sustituyendo la resolución recursiva de `Path.parents` por una comparación de cadenas de texto basada en `os.path.commonpath`, lo cual evita la sobrecarga computacional de instanciar miles de objetos `Path` durante el escaneo y mejora la eficiencia al utilizar `os.scandir` de forma más directa.
 - `2026-07-30T05:16:04` **assistant.py** (rendimiento): Se optimizó `_rank_problems` convirtiendo la lista `reglas` en una constante estática fuera de la función, evitando así la creación y asignación repetitiva de objetos en cada consulta.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-30T04:45:20` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación de los métodos de escaneo (`walk_files` y `should_ignore_entry`) mediante docstrings técnicos más precisos, aclarando las garantías de seguridad y el manejo de excepciones, y se han añadido type hints consistentes en `summarize` para alinear el estilo con el resto del módulo.
 - `2026-07-30T04:44:55` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints detallados en las funciones de utilidad y aclaré las asunciones de seguridad mediante docstrings descriptivos, reforzando la naturaleza "Solo Lectura" del módulo.
 - `2026-07-30T04:35:34` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de la lógica de priorización extrayendo el ranking de problemas a una estructura de datos declarativa y eliminando la redundancia en los mensajes de salida.
-- `2026-07-30T04:35:03` **startup.py** (manejo de errores y validación de entradas): Mejoré `entries_from_folders` para validar que el resultado de `base_path.iterdir()` no contenga nombres de archivos vacíos o rutas malformadas antes de procesarlos, asegurando robustez ante errores de entrada y evitando accesos innecesarios a archivos protegidos.

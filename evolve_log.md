@@ -754,3 +754,10 @@ FAILED evolve/tests/test_modules.py::test_group_by_size_separates_by_exact_size 
 - `2026-07-30T05:27:12` ➖ Sin cambios en main.py (enfoque: rendimiento). Motivo: Se implementó un mecanismo de memoización más robusto para `_get_cached` y se optimizó el flujo de `_compile_metrics` mediante el uso de parámetros `force` y la eliminación de re-cálculos innecesarios de `junk` y `startup` al solicitar el análisis de salud, reduciendo el I/O repetitivo.
 - `2026-07-30T05:27:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-30T05:27:12` Corrida terminada. Total usado hoy: 128.
+- `2026-07-30T05:35:31` Arrancando corrida. Quedan hoy ~172 peticiones objetivo.
+- `2026-07-30T05:35:55` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: rendimiento).
+- `2026-07-30T05:36:19` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimicé el rendimiento de `scan_for_junk` convirtiendo la lista de carpetas bloqueadas en un `frozenset` para búsquedas O(1) y utilizando `os.scandir` de forma más eficiente al cachear atributos del archivo durante la iteración, evitando llamadas redundantes a `is_dir()` o `is_file()` cuando la información ya está disponible en el objeto `DirEntry`.
+- `2026-07-30T05:36:44` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: rendimiento).
+- `2026-07-30T05:36:47` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-07-30T05:36:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-30T05:36:47` Corrida terminada. Total usado hoy: 132.

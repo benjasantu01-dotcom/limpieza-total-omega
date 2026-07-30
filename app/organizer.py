@@ -132,8 +132,11 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
             with os.scandir(base_path) as it:
                 for entry in it:
                     try:
+                        # is_symlink() es O(1) con DirEntry
                         if entry.is_symlink():
                             continue
+                        
+                        # Usar is_dir/is_file directo de la entrada evita syscalls extras
                         if entry.is_dir(follow_symlinks=False):
                             if entry.name.lower() not in blocklist:
                                 _walk_dir(entry.path)
