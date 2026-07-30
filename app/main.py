@@ -1463,9 +1463,14 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         
         try:
             val_dup = self.min_dup_entry.get().strip()
-            valores["duplicados_tamano_minimo_kb"] = int(val_dup) if val_dup.isdigit() else 64
+            # Validación: solo aceptar números positivos
+            if val_dup.isdigit() and int(val_dup) > 0:
+                valores["duplicados_tamano_minimo_kb"] = int(val_dup)
+            
             val_top = self.top_files_entry.get().strip()
-            valores["top_archivos"] = int(val_top) if val_top.isdigit() else 15
+            # Validación: solo aceptar números positivos
+            if val_top.isdigit() and int(val_top) > 0:
+                valores["top_archivos"] = int(val_top)
         except ValueError:
             pass
             

@@ -1105,3 +1105,10 @@ assert not True
 - `2026-07-30T08:30:59` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las funciones públicas `largest_files`, `usage_by_extension`, `largest_folders` y `total_size` añadiendo validaciones preventivas de rutas y manejo de excepciones de sistema para evitar que entradas inválidas o bloqueadas interrumpan el flujo de datos.
 - `2026-07-30T08:30:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-30T08:30:59` Corrida terminada. Total usado hoy: 200.
+- `2026-07-30T08:39:35` Arrancando corrida. Quedan hoy ~100 peticiones objetivo.
+- `2026-07-30T08:39:58` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez del manejo de archivos en `_collect_candidates` y `suggest_keeper` asegurando que las rutas se validen exhaustivamente antes de intentar acceder a sus metadatos (lstat/stat), evitando excepciones inesperadas por archivos desaparecidos o bloqueados durante la iteración.
+- `2026-07-30T08:40:21` ➖ Sin cambios en healthscore.py (enfoque: manejo de errores y validación de entradas). Motivo: Se reforzó la validación de entrada en `compute_score` asegurando que, si los datos son inválidos, el objeto retornado contenga un desglose vacío y una lista de recomendaciones, manteniendo la integridad del contrato de la clase `HealthResult`.
+- `2026-07-30T08:41:21` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las entradas de texto en la pestaña de Ajustes (`min_dup_entry` y `top_files_entry`) validando que los valores sean números positivos y no vacíos antes de intentar guardarlos, evitando errores de conversión y configuraciones inválidas.
+- `2026-07-30T08:41:30` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: manejo de errores y validación de entradas).
+- `2026-07-30T08:41:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-30T08:41:30` Corrida terminada. Total usado hoy: 204.
