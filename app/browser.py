@@ -95,7 +95,10 @@ def base_directories() -> List[Path]:
 def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> bool:
     """
     Verifica que la ruta sea un descendiente legítimo de base_path y
-    no esté marcada como protegida por `safety.py`. 
+    no esté marcada como protegida por `safety.py`.
+    
+    Realiza una resolución de rutas absoluta para prevenir ataques por
+    traversal o rutas relativas ambiguas.
     """
     if not target_path or not base_path:
         return False

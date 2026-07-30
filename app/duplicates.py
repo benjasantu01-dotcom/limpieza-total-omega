@@ -21,7 +21,7 @@ import os
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, Callable, Dict, List, Optional, Union, Tuple
+from typing import Iterable, Callable, Dict, List, Optional, Union, Tuple, Sequence
 
 from safety import is_protected_path
 
@@ -58,15 +58,16 @@ class DuplicateGroup:
 
     @property
     def count(self) -> int:
-        """Número de copias encontradas del archivo."""
+        """Retorna el número total de archivos en este grupo."""
         return len(self.paths) if self.paths else 0
 
     @property
     def wasted_bytes(self) -> int:
         """
-        Calcula el espacio total que podría liberarse si se conservara
-        solo una copia del archivo (n-1 copias). Retorna 0 si el grupo
-        está vacío o tiene una sola entrada.
+        Calcula el espacio total recuperable excluyendo una copia (n-1).
+        
+        Returns:
+            Total de bytes redundantes o 0 si no hay duplicados.
         """
         if not self.paths or self.count <= 1:
             return 0
@@ -75,8 +76,14 @@ class DuplicateGroup:
 
 def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
-    Calcula el hash SHA256 completo de un archivo. 
-    Retorna None si el archivo es inaccesible, protegido o un directorio.
+    Calcula el hash SHA256 completo del archivo.
+
+    Args:
+        path: Ruta del archivo a procesar.
+        chunk_size: Tamaño del bloque de lectura en bytes.
+
+    Returns:
+        Hexdigest del hash o None si el archivo es inaccesible o protegido.
     """
     if not path:
         return None
@@ -97,8 +104,14 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
 
 def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """
-    Calcula el hash SHA256 de los primeros N bytes de un archivo.
-    Útil para descartar rápidamente archivos diferentes sin leerlos por completo.
+    Calcula el hash SHA256 de los primeros N bytes del archivo.
+
+    Args:
+        path: Ruta del archivo.
+        read_bytes: Cantidad de bytes a leer (def: PARTIAL_READ_BYTES).
+
+    Returns:
+        Hexdigest del hash parcial o None si ocurre un error de acceso.
     """
     if not path:
         return None
@@ -119,8 +132,13 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
 
 def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     """
-    Agrupa rutas de archivos por su tamaño en bytes. 
-    Ignora archivos protegidos o inaccesibles.
+    Agrupa rutas de archivos basándose en su tamaño en bytes.
+
+    Args:
+        paths: Colección de rutas a inspeccionar.
+
+    Returns:
+        Diccionario donde la clave es el tamaño y el valor una lista de rutas.
     """
     if paths is None:
         return {}
@@ -194,7 +212,15 @@ def find_duplicates(
     skip_protected: bool = True,
 ) -> List[DuplicateGroup]:
     """
-    Pipeline principal de detección de duplicados.
+    Pipeline principal para detectar grupos de archivos duplicados.
+
+    Args:
+        directories: Directorios donde buscar.
+        min_size: Tamaño mínimo para considerar un archivo.
+        skip_protected: Filtrar rutas del sistema.
+
+    Returns:
+        Lista de objetos DuplicateGroup ordenados por espacio desperdiciado.
     """
     if not directories:
         return []
@@ -226,14 +252,15 @@ def find_duplicates(
     return groups
 
 
-def reclaimable_bytes(groups: List[DuplicateGroup]) -> int:
+def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
     """Calcula la suma total de bytes recuperables."""
-    return sum(g.wasted_bytes for g in groups if g is not None) if groups else 0
+    return sum(g.wasted_bytes for g in groups) if groups else 0
 
 
 def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
     """
-    Selecciona la ruta óptima para preservar dentro de un grupo.
+    Selecciona la ruta óptima para conservar. 
+    Prioriza fechas de modificación más antiguas y rutas más cortas.
     """
     if not group or not group.paths:
         return None
@@ -257,7 +284,7 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
 
 def format_group(group: DuplicateGroup) -> List[str]:
     """
-    Genera una representación textual legible del grupo.
+    Genera una representación textual legible para el usuario final.
     """
     if not group or not group.paths:
         return []

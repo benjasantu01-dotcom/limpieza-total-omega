@@ -321,29 +321,42 @@ def logo_ascii() -> str:
 """
 
 
-def draw_logo(canvas: Any, size: int = 56, x: int = 0, y: int = 0) -> None:
-    """Renderiza el logo (escudo Omega) en un widget canvas de Tkinter."""
+def draw_logo(canvas: Any, size: int = 56, canvas_x: int = 0, canvas_y: int = 0) -> None:
+    """
+    Renderiza el logo (escudo Omega) en un widget canvas de Tkinter.
+    Utiliza coordenadas locales para el dibujo escalable del escudo.
+    """
     if canvas is None or not hasattr(canvas, "create_polygon"): return
     try:
         s = max(0.1, float(size) / 128)
-        x_val, y_val = float(x), float(y)
-        # Pre-cálculo para reducir carga en el loop
+        x_val, y_val = float(canvas_x), float(canvas_y)
+        # Pre-cálculo de coordenadas relativas al escudo (base 128x128)
         c = [64, 18, 100, 31, 100, 67, 90, 90, 64, 110, 38, 90, 28, 67, 28, 31]
         contorno = [x_val + v * s if i % 2 == 0 else y_val + v * s for i, v in enumerate(c)]
         
-        # Resplandor
+        # Resplandor radial: dibujado en capas para efecto de desenfoque
         for paso in range(4, 0, -1):
             radio = 56 * s * (0.6 + paso * 0.12)
-            canvas.create_oval(x_val + 64 * s - radio, y_val + 58 * s - radio, x_val + 64 * s + radio, y_val + 58 * s + radio, fill=blend(PALETTE["surface"], PALETTE["glow"], 0.04 * paso), outline="")
+            canvas.create_oval(
+                x_val + 64 * s - radio, y_val + 58 * s - radio, 
+                x_val + 64 * s + radio, y_val + 58 * s + radio, 
+                fill=blend(PALETTE["surface"], PALETTE["glow"], 0.04 * paso), outline=""
+            )
 
         canvas.create_polygon(contorno, fill=GRADIENT_STOPS[1], outline="")
+        
+        # Relleno del escudo con franjas de color degradado
         franjas = max(6, int(28 * s))
         alto = 92 * s / franjas
         colores_grad = gradient_colors(franjas)
         for i, tono in enumerate(colores_grad):
             avance = i / max(1, franjas - 1)
             w = 36 * s * (1.0 if avance < 0.55 else 1.0 - (avance - 0.55) * 1.9)
-            canvas.create_rectangle(x_val + 64 * s - w, y_val + 18 * s + i * alto, x_val + 64 * s + w, y_val + 18 * s + (i + 1) * alto + 1, fill=tono, outline="")
+            canvas.create_rectangle(
+                x_val + 64 * s - w, y_val + 18 * s + i * alto, 
+                x_val + 64 * s + w, y_val + 18 * s + (i + 1) * alto + 1, 
+                fill=tono, outline=""
+            )
 
         canvas.create_line(x_val + 41 * s, y_val + 75 * s, x_val + 75 * s, y_val + 41 * s, fill=PALETTE["background"], width=max(2, int(8 * s)), capstyle="round")
         canvas.create_polygon(x_val + 75 * s, y_val + 41 * s, x_val + 89 * s, y_val + 38 * s, x_val + 92 * s, y_val + 52 * s, fill=PALETTE["background"], outline="")
@@ -353,23 +366,26 @@ def draw_logo(canvas: Any, size: int = 56, x: int = 0, y: int = 0) -> None:
 
 
 def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
-                      x: int = 0, y: int = 0,
+                      canvas_x: int = 0, canvas_y: int = 0,
                       stops: tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
-    """Dibuja una franja horizontal con degradado de color."""
+    """Dibuja una franja horizontal compuesta por líneas individuales de gradiente."""
     if canvas is None or not hasattr(canvas, "create_line"): return
     try:
         ancho, alto = max(1, int(width)), max(1, int(height))
         colores = gradient_colors(ancho, stops)
         for i, tono in enumerate(colores):
-            canvas.create_line(x + i, y, x + i, y + alto, fill=tono)
+            canvas.create_line(canvas_x + i, canvas_y, canvas_x + i, canvas_y + alto, fill=tono)
     except (ValueError, TypeError, AttributeError): pass
 
 
 def draw_ring(canvas: Any, percent: float | int, size: int = 150,
-              x: int = 0, y: int = 0, thickness: int = 14,
+              canvas_x: int = 0, canvas_y: int = 0, thickness: int = 14,
               track: HexColor | None = None,
               fill: HexColor | None = None) -> None:
-    """Dibuja un medidor circular (HealthScore) usando arcos."""
+    """
+    Dibuja un medidor circular de estado usando arcos concéntricos.
+    Calcula el diámetro en función de `size` y aplica el color de `fill` dinámicamente.
+    """
     if canvas is None or not hasattr(canvas, "create_arc"): return
     try:
         valor = max(0.0, min(100.0, float(percent))) # type: ignore
@@ -379,7 +395,7 @@ def draw_ring(canvas: Any, percent: float | int, size: int = 150,
     
     color_fondo, color_avance = track or PALETTE["surface_alt"], fill or score_color(valor)
     borde = grosor / 2
-    caja = (x + borde, y + borde, x + diametro - borde, y + diametro - borde)
+    caja = (canvas_x + borde, canvas_y + borde, canvas_x + diametro - borde, canvas_y + diametro - borde)
     
     canvas.create_arc(*caja, start=0, extent=359.9, style="arc", outline=color_fondo, width=grosor)
     if valor > 0:
