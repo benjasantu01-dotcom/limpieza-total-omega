@@ -76,14 +76,14 @@ class DuplicateGroup:
 
 def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
-    Calcula el hash SHA256 completo del archivo.
+    Calcula el hash SHA256 completo del archivo mediante bloques.
 
     Args:
         path: Ruta del archivo a procesar.
-        chunk_size: Tamaño del bloque de lectura en bytes.
+        chunk_size: Tamaño del búfer de lectura en bytes.
 
     Returns:
-        Hexdigest del hash o None si el archivo es inaccesible o protegido.
+        Hexdigest del hash completo o None si el archivo es inaccesible o protegido.
     """
     if not path:
         return None
@@ -104,14 +104,14 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
 
 def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """
-    Calcula el hash SHA256 de los primeros N bytes del archivo.
+    Calcula el hash SHA256 de un prefijo del archivo para comparación rápida.
 
     Args:
         path: Ruta del archivo.
         read_bytes: Cantidad de bytes a leer (def: PARTIAL_READ_BYTES).
 
     Returns:
-        Hexdigest del hash parcial o None si ocurre un error de acceso.
+        Hexdigest del hash parcial o None si el archivo es inaccesible.
     """
     if not path:
         return None
@@ -132,7 +132,7 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
 
 def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     """
-    Agrupa rutas de archivos basándose en su tamaño en bytes.
+    Organiza rutas de archivos en un diccionario indexado por su tamaño en bytes.
     """
     if paths is None:
         return {}
@@ -151,7 +151,7 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
 
 def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, skip_protected: bool) -> List[Path]:
     """
-    Recorre recursivamente directorios para obtener archivos candidatos.
+    Explora directorios para identificar candidatos a duplicados filtrando enlaces y rutas seguras.
     """
     if directories is None:
         return []
@@ -161,11 +161,11 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
         if not directory:
             continue
         try:
-            base = Path(directory).resolve(strict=True)
-            if not base.is_dir() or (skip_protected and is_protected_path(base)):
+            base_dir = Path(directory).resolve(strict=True)
+            if not base_dir.is_dir() or (skip_protected and is_protected_path(base_dir)):
                 continue
             
-            for root, subdirs, files in os.walk(base, followlinks=False):
+            for root, subdirs, files in os.walk(base_dir, followlinks=False):
                 root_path = Path(root)
                 subdirs[:] = [
                     d for d in subdirs 
@@ -175,15 +175,15 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
                 ]
                 
                 for name in files:
-                    candidate = root_path / name
-                    if candidate.is_symlink() or getattr(candidate, "is_junction", lambda: False)():
+                    file_path = root_path / name
+                    if file_path.is_symlink() or getattr(file_path, "is_junction", lambda: False)():
                         continue
-                    if skip_protected and is_protected_path(candidate):
+                    if skip_protected and is_protected_path(file_path):
                         continue
                     try:
-                        st = candidate.lstat()
+                        st = file_path.lstat()
                         if st.st_size >= min_size:
-                            candidates.append(candidate)
+                            candidates.append(file_path)
                     except (OSError, PermissionError, FileNotFoundError):
                         continue
         except (OSError, RuntimeError, FileNotFoundError):
@@ -193,7 +193,7 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
 
 def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
     """
-    Aplica una función de hash para agrupar candidatos coincidentes.
+    Aplica una función de hash para subdividir una lista de rutas en grupos coincidentes.
     """
     if paths is None:
         return {}
@@ -210,7 +210,7 @@ def find_duplicates(
     skip_protected: bool = True,
 ) -> List[DuplicateGroup]:
     """
-    Pipeline principal para detectar grupos de archivos duplicados.
+    Ejecuta el pipeline completo de detección de duplicados por tamaño y hash.
     """
     if not directories:
         return []
@@ -244,14 +244,13 @@ def find_duplicates(
 
 
 def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
-    """Calcula la suma total de bytes recuperables."""
+    """Suma el total de espacio en bytes que se recuperaría al eliminar redundancias."""
     return sum(g.wasted_bytes for g in groups) if groups else 0
 
 
 def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
     """
-    Selecciona la ruta óptima para conservar. 
-    Prioriza fechas de modificación más antiguas y rutas más cortas.
+    Determina la mejor ruta para conservar basada en antigüedad (mtime) y longitud de ruta.
     """
     if not group or not group.paths:
         return None
@@ -275,7 +274,7 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
 
 def format_group(group: DuplicateGroup) -> List[str]:
     """
-    Genera una representación textual legible para el usuario final.
+    Genera un listado descriptivo de un grupo de duplicados para interfaces de usuario.
     """
     if not group or not group.paths:
         return []

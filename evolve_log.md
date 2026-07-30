@@ -458,3 +458,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-07-30T13:37:44` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Se introdujeron type hints más precisos (especialmente en `summarize`), se simplificaron las estructuras de datos temporales (reemplazando `dict[str, list[int]]` por una dataclass local para mejorar la legibilidad) y se documentó con mayor claridad el propósito de las funciones internas en `walk_files`.
 - `2026-07-30T13:37:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-30T13:37:44` Corrida terminada. Total usado hoy: 320.
+- `2026-07-30T13:46:16` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-07-30T13:46:41` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante docstrings más precisos, añadí type hints faltantes en los métodos de `DuplicateGroup` y renombré parámetros internos en `_collect_candidates` para mayor claridad semántica sin afectar la funcionalidad.
+- `2026-07-30T13:47:10` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante la adición de Type Hints en la firma de las funciones de scoring y la inclusión de docstrings detallados que explican explícitamente el rango esperado de los parámetros de entrada y el propósito de cada cálculo, facilitando el mantenimiento y la comprensión de las métricas.
+- `2026-07-30T13:48:14` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._build_single_health_bar
+- `2026-07-30T13:48:22` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: legibilidad y documentación).
+- `2026-07-30T13:48:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-30T13:48:22` Corrida terminada. Total usado hoy: 324.

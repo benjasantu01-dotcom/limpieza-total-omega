@@ -125,13 +125,19 @@ def _to_int(value: Any, default: int = 0) -> int:
 
 
 def score_junk(junk_mb: float) -> float:
-    """Normaliza MB de basura a un ratio [0.0, 1.0] basado en JUNK_LIMIT_MB."""
+    """
+    Normaliza MB de basura a un ratio [0.0, 1.0].
+    El ratio es 1.0 si no hay basura, y 0.0 si se iguala/supera JUNK_LIMIT_MB.
+    """
     if JUNK_LIMIT_MB <= 0: return 0.0
     return _clamp(1.0 - (_to_float(junk_mb) / JUNK_LIMIT_MB))
 
 
 def score_security(suspicious_count: int, warnings: int = 0) -> float:
-    """Calcula ratio [0.0, 1.0] penalizando hallazgos de seguridad y advertencias."""
+    """
+    Calcula ratio [0.0, 1.0] penalizando hallazgos de seguridad y advertencias.
+    Cada hallazgo resta 0.05 y cada advertencia 0.25 del puntaje base de 1.0.
+    """
     count = _to_int(suspicious_count)
     warns = _to_int(warnings)
     penalty: float = float(count) * 0.05 + float(warns) * 0.25
@@ -139,25 +145,37 @@ def score_security(suspicious_count: int, warnings: int = 0) -> float:
 
 
 def score_memory(available_percent: float) -> float:
-    """Normaliza el porcentaje de RAM disponible a un ratio [0.0, 1.0]."""
+    """
+    Normaliza el porcentaje de RAM disponible a un ratio [0.0, 1.0].
+    El ratio es 1.0 si la disponibilidad es igual o mayor a RAM_IDEAL_PERCENT.
+    """
     if RAM_IDEAL_PERCENT <= 0: return 0.0
     return _clamp(_to_float(available_percent) / RAM_IDEAL_PERCENT)
 
 
 def score_disk(free_percent: float) -> float:
-    """Normaliza el porcentaje de espacio en disco a un ratio [0.0, 1.0]."""
+    """
+    Normaliza el porcentaje de espacio en disco libre a un ratio [0.0, 1.0].
+    El ratio es 1.0 si el espacio es igual o mayor a DISK_IDEAL_PERCENT.
+    """
     if DISK_IDEAL_PERCENT <= 0: return 0.0
     return _clamp(_to_float(free_percent) / DISK_IDEAL_PERCENT)
 
 
 def score_duplicates(duplicate_mb: float) -> float:
-    """Normaliza MB de duplicados a un ratio [0.0, 1.0] basado en DUPLICATE_LIMIT_MB."""
+    """
+    Normaliza MB de duplicados a un ratio [0.0, 1.0].
+    El ratio es 1.0 si no hay duplicados, y 0.0 si se alcanza DUPLICATE_LIMIT_MB.
+    """
     if DUPLICATE_LIMIT_MB <= 0: return 0.0
     return _clamp(1.0 - (_to_float(duplicate_mb) / DUPLICATE_LIMIT_MB))
 
 
 def score_startup(startup_count: int) -> float:
-    """Normaliza el conteo de programas de inicio a un ratio [0.0, 1.0]."""
+    """
+    Normaliza el conteo de programas de inicio a un ratio [0.0, 1.0].
+    El ratio es 1.0 si el conteo es 0, y 0.0 si se alcanza STARTUP_LIMIT_COUNT.
+    """
     if STARTUP_LIMIT_COUNT <= 0: return 0.0
     return _clamp(1.0 - (_to_int(startup_count) / STARTUP_LIMIT_COUNT))
 
