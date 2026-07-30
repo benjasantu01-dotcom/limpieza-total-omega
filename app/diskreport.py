@@ -198,28 +198,34 @@ def largest_files(directory: str | os.PathLike, limit: int = 20, skip_protected:
     """Los archivos más grandes bajo una carpeta, de mayor a menor."""
     if not directory:
         return []
-    return heapq.nlargest(
-        max(0, limit), 
-        (FileEntry(path=p, size_bytes=s) for p, s in walk_files(directory, skip_protected)),
-        key=lambda e: e.size_bytes
-    )
+    try:
+        return heapq.nlargest(
+            max(0, limit), 
+            (FileEntry(path=p, size_bytes=s) for p, s in walk_files(directory, skip_protected)),
+            key=lambda e: e.size_bytes
+        )
+    except (OSError, ValueError):
+        return []
 
 
 def usage_by_extension(directory: str | os.PathLike, limit: int = 15, skip_protected: bool = True) -> list[ExtensionUsage]:
     """Espacio agrupado por extensión, de mayor a menor."""
     if not directory:
         return []
-    sizes: dict[str, int] = defaultdict(int)
-    counts: dict[str, int] = defaultdict(int)
-    for path, size in walk_files(directory, skip_protected):
-        ext = path.suffix.lower() or "(sin extensión)"
-        sizes[ext] += size
-        counts[ext] += 1
-    
-    usage_list = [ExtensionUsage(extension=ext, size_bytes=size, count=counts[ext])
-                  for ext, size in sizes.items()]
-    
-    return heapq.nlargest(max(0, limit), usage_list, key=lambda u: u.size_bytes)
+    try:
+        sizes: dict[str, int] = defaultdict(int)
+        counts: dict[str, int] = defaultdict(int)
+        for path, size in walk_files(directory, skip_protected):
+            ext = path.suffix.lower() or "(sin extensión)"
+            sizes[ext] += size
+            counts[ext] += 1
+        
+        usage_list = [ExtensionUsage(extension=ext, size_bytes=size, count=counts[ext])
+                      for ext, size in sizes.items()]
+        
+        return heapq.nlargest(max(0, limit), usage_list, key=lambda u: u.size_bytes)
+    except (OSError, ValueError):
+        return []
 
 
 def largest_folders(directory: str | os.PathLike, limit: int = 10, skip_protected: bool = True) -> list[FolderUsage]:
@@ -230,40 +236,43 @@ def largest_folders(directory: str | os.PathLike, limit: int = 10, skip_protecte
         base = Path(directory).expanduser().resolve(strict=True)
         if not base.is_dir():
             return []
+        
+        folder_map: dict[Path, FolderUsage] = {}
+        
+        for path, size in walk_files(base, skip_protected):
+            try:
+                rel = path.relative_to(base)
+                if not rel.parts:
+                    continue
+                top_level = base / rel.parts[0]
+                if skip_protected and is_protected_path(top_level):
+                    continue
+                if top_level not in folder_map:
+                    folder_map[top_level] = FolderUsage(path=top_level, size_bytes=0, file_count=0)
+                stats = folder_map[top_level]
+                stats.size_bytes += size
+                stats.file_count += 1
+            except (ValueError, IndexError, OSError, FileNotFoundError):
+                continue
+
+        return heapq.nlargest(max(0, limit), folder_map.values(), key=lambda f: f.size_bytes)
     except (OSError, RuntimeError, PermissionError):
         return []
-        
-    folder_map: dict[Path, FolderUsage] = {}
-    
-    for path, size in walk_files(base, skip_protected):
-        try:
-            rel = path.relative_to(base)
-            if not rel.parts:
-                continue
-            top_level = base / rel.parts[0]
-            if skip_protected and is_protected_path(top_level):
-                continue
-            if top_level not in folder_map:
-                folder_map[top_level] = FolderUsage(path=top_level, size_bytes=0, file_count=0)
-            stats = folder_map[top_level]
-            stats.size_bytes += size
-            stats.file_count += 1
-        except (ValueError, IndexError, OSError, FileNotFoundError):
-            continue
-
-    return heapq.nlargest(max(0, limit), folder_map.values(), key=lambda f: f.size_bytes)
 
 
 def total_size(directory: str | os.PathLike, skip_protected: bool = True) -> tuple[int, int]:
     """Devuelve (bytes totales, cantidad de archivos) bajo una carpeta."""
     if not directory:
         return 0, 0
-    total = 0
-    count = 0
-    for _, size in walk_files(directory, skip_protected):
-        total += size
-        count += 1
-    return total, count
+    try:
+        total = 0
+        count = 0
+        for _, size in walk_files(directory, skip_protected):
+            total += size
+            count += 1
+        return total, count
+    except (OSError, ValueError):
+        return 0, 0
 
 
 def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list[str]:

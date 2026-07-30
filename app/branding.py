@@ -173,7 +173,7 @@ def score_color(score: float | int | None) -> HexColor:
         HexColor: Código de color asociado al rango (Éxito a Peligro).
     """
     try:
-        valor = float(score)
+        valor = float(score)  # type: ignore
     except (TypeError, ValueError):
         return PALETTE["text_muted"]
     if valor >= 90: return PALETTE["success"]
@@ -197,7 +197,7 @@ def bar(percent: float | int | None, width: int = 24,
         Cadena formateada con la representación de progreso.
     """
     try:
-        valor = max(0.0, min(100.0, float(percent)))
+        valor = max(0.0, min(100.0, float(percent))) # type: ignore
     except (TypeError, ValueError):
         valor = 0.0
     ancho = max(1, int(width))
@@ -289,11 +289,12 @@ def logo_svg(size: int = 128) -> str:
 
 def save_logo_svg(destination: str | Path | None) -> Path | None:
     """Persiste el logo en disco. Valida la ruta de destino antes de escribir."""
-    if not destination: return None
+    if not destination:
+        return None
     try:
         path = Path(destination).expanduser().resolve()
         
-        # Validar si el directorio es seguro para modificar
+        # Validar si el directorio o archivo es seguro para modificar antes de cualquier operación
         if not is_safe_to_modify(path):
             return None
             
@@ -303,7 +304,8 @@ def save_logo_svg(destination: str | Path | None) -> Path | None:
             
         path.write_text(logo_svg(), encoding="utf-8")
         return path
-    except (OSError, PermissionError, RuntimeError, ValueError):
+    except (OSError, PermissionError, RuntimeError, TypeError):
+        # Capturamos excepciones de IO o tipos incorrectos sin romper la app
         return None
 
 
@@ -370,7 +372,7 @@ def draw_ring(canvas: Any, percent: float | int, size: int = 150,
     """Dibuja un medidor circular (HealthScore) usando arcos."""
     if canvas is None or not hasattr(canvas, "create_arc"): return
     try:
-        valor = max(0.0, min(100.0, float(percent)))
+        valor = max(0.0, min(100.0, float(percent))) # type: ignore
         diametro = max(20, int(size))
         grosor = max(2, min(int(thickness), diametro // 2 - 1))
     except (TypeError, ValueError): return

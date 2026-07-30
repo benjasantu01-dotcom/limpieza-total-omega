@@ -106,7 +106,7 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
         abs_base = base_path.resolve(strict=False)
         abs_target = target_path.resolve(strict=False)
         return abs_base in abs_target.parents or abs_base == abs_target
-    except (OSError, RuntimeError, ValueError):
+    except (OSError, RuntimeError, ValueError, PermissionError):
         return False
 
 
@@ -118,11 +118,12 @@ def directory_size(path: str | os.PathLike | None) -> int:
     if path is None:
         return 0
     try:
-        root_path = Path(path).resolve(strict=False)
+        p = Path(path)
+        root_path = p.resolve(strict=False)
         # Seguridad adicional: no seguir puntos de reparse o symlinks desde la raíz
         if not root_path.exists() or not root_path.is_dir() or root_path.is_symlink() or is_protected_path(root_path):
             return 0
-    except (OSError, RuntimeError):
+    except (OSError, RuntimeError, PermissionError):
         return 0
     
     total_bytes: int = 0
@@ -167,7 +168,7 @@ def _is_valid_cache_path(candidate: Path, base_path: Path) -> bool:
             _is_safe_path(candidate, base_path) and
             candidate.name.lower() not in NEVER_TOUCH
         )
-    except (ValueError, OSError, RuntimeError, TypeError):
+    except (ValueError, OSError, RuntimeError, TypeError, PermissionError):
         return False
 
 

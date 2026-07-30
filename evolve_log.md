@@ -1098,3 +1098,10 @@ assert not True
 - `2026-07-30T08:23:22` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-07-30T08:23:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-30T08:23:22` Corrida terminada. Total usado hoy: 196.
+- `2026-07-30T08:29:24` Arrancando corrida. Quedan hoy ~104 peticiones objetivo.
+- `2026-07-30T08:29:57` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `build_context` y `ask` mediante la validación proactiva de tipos y el manejo explícito de errores de configuración, garantizando que una entrada inesperada (tipo incorrecto o nulo) no comprometa la ejecución del asistente ni la estabilidad de la aplicación.
+- `2026-07-30T08:30:27` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save_logo_svg` utilizando una validación de ruta explícita y capturando excepciones de sistema de manera más específica, además de asegurar que el objeto `path` esté limpio antes de interactuar con el sistema de archivos.
+- `2026-07-30T08:30:49` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `directory_size` y `_is_safe_path` ante errores de resolución de rutas (como accesos denegados o rutas bloqueadas) capturando explícitamente `PermissionError` y `OSError` al llamar a `resolve()`, asegurando que el bucle continúe operando en lugar de abortar silenciosamente o fallar.
+- `2026-07-30T08:30:59` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las funciones públicas `largest_files`, `usage_by_extension`, `largest_folders` y `total_size` añadiendo validaciones preventivas de rutas y manejo de excepciones de sistema para evitar que entradas inválidas o bloqueadas interrumpan el flujo de datos.
+- `2026-07-30T08:30:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-30T08:30:59` Corrida terminada. Total usado hoy: 200.
