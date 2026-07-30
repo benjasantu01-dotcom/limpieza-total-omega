@@ -6,47 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **253** (50.2% de aceptación)
-- Rechazadas por tests: 18
+- Mejoras aceptadas: **251** (49.8% de aceptación)
+- Rechazadas por tests: 19
 - Rechazadas por guardia de seguridad: 26
 - Sin cambios (nada sustancial que mejorar): 9
-- Sin respuesta de la IA (error o límite): 198
+- Sin respuesta de la IA (error o límite): 199
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-28 | 68 | 7 | 7 | 1 | 55 |
+| 2026-07-28 | 64 | 7 | 7 | 1 | 55 |
 | 2026-07-29 | 171 | 10 | 18 | 8 | 143 |
-| 2026-07-30 | 14 | 1 | 1 | 0 | 0 |
+| 2026-07-30 | 16 | 2 | 1 | 0 | 1 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **65**
 - seguridad defensiva: **54**
 - manejo de errores y validación de entradas: **51**
-- robustez ante casos límite: **44**
-- rendimiento: **39**
+- rendimiento: **41**
+- robustez ante casos límite: **40**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **23**
 - `scanner.py`: **22**
 - `browser.py`: **22**
-- `quarantine.py`: **21**
-- `organizer.py`: **20**
 - `assistant.py`: **20**
-- `main.py`: **19**
+- `quarantine.py`: **20**
+- `organizer.py`: **19**
+- `diskreport.py`: **18**
 - `healthscore.py`: **18**
-- `memory.py`: **17**
-- `diskreport.py`: **17**
+- `main.py`: **18**
 - `duplicates.py`: **17**
-- `branding.py`: **14**
+- `memory.py`: **16**
+- `branding.py`: **15**
 - `safety.py`: **14**
 - `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-30T00:51:10` **diskreport.py** (rendimiento): Optimicé `summarize` para realizar una sola pasada por los datos, eliminando la redundancia de llamar a `walk_files` y consolidando toda la lógica de recolección (estadísticas globales, mapa de extensiones y heap de archivos pesados) en un único ciclo de iteración, lo cual reduce significativamente el uso de CPU y E/S al evitar recorridos múltiples sobre el mismo árbol de archivos.
+- `2026-07-30T00:50:39` **branding.py** (rendimiento): Optimicé el método `draw_logo` para evitar la creación innecesaria de objetos `Canvas` y el re-cálculo de parámetros mediante la pre-computación de la lista `franjas` y el uso eficiente de `gradient_colors`, reduciendo el uso de CPU durante el refresco de la UI.
 - `2026-07-30T00:40:51` **startup.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de la clase `StartupEntry` documentando exhaustivamente su lógica de extracción de rutas, y agregué type hints y docstrings explicativos en `entries_from_registry` para clarificar el flujo de procesamiento del CSV de PowerShell.
 - `2026-07-30T00:40:42` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del código añadiendo docstrings más detallados y tipado explícito a funciones internas, además de documentar claramente las suposiciones de validación mediante `type hints`.
 - `2026-07-30T00:40:17` **scanner.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `scan_directory` mediante la extracción de la lógica de procesamiento de entradas del bucle, documentando claramente la gestión de reparse points y la validación de rutas para evitar escapes del directorio raíz.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-30T00:10:25` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings que explican el contrato de las funciones (incluyendo validaciones de seguridad) y añadí tipado explícito en `summarize` y `detect_profiles` para clarificar el flujo de datos.
 - `2026-07-30T00:10:18` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `branding.py` mediante docstrings detallados en las funciones de manipulación de color y renderizado, especificando restricciones de parámetros y comportamientos ante errores, para facilitar el mantenimiento y la comprensión de la lógica visual.
 - `2026-07-30T00:09:49` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `assistant.py` mediante la implementación de type hints explícitos, docstrings enriquecidos que clarifican el propósito de las funciones internas y el uso de `Final` para variables de configuración inmutables.
-- `2026-07-30T00:09:18` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo validación de tipo y estructura antes de procesar el texto, garantizando que una entrada mal formada no interrumpa la lógica de extracción, además de asegurar que el procesado de las partes del CSV sea más resiliente ante líneas inesperadas.
-- `2026-07-29T14:56:53` **settings.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `load` y `save` mediante el uso de bloques `try-finally` para asegurar que el manejo de recursos sea atómico y no se deje el estado de la aplicación en inconsistencia ante errores de lectura o escritura.

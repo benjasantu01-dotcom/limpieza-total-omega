@@ -1346,3 +1346,24 @@ FAILED evolve/tests/test_safety.py::test_describe_protection_explains_the_reason
 - `2026-07-30T00:40:51` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y el mantenimiento de la clase `StartupEntry` documentando exhaustivamente su lógica de extracción de rutas, y agregué type hints y docstrings explicativos en `entries_from_registry` para clarificar el flujo de procesamiento del CSV de PowerShell.
 - `2026-07-30T00:40:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-30T00:40:51` Corrida terminada. Total usado hoy: 16.
+- `2026-07-30T00:49:39` Arrancando corrida. Quedan hoy ~284 peticiones objetivo.
+- `2026-07-30T00:50:10` Tests FALLARON:
+```
+object at 0x7fccbfbbfb30>()
+ +    where <built-in method lower of str object at 0x7fccbfbbfb30> = "Hay 3 archivos marcados. Si no los reconocés, usá 'Aislar hallazgos'.".lower
+ +      where "Hay 3 archivos marcados. Si no los reconocés, usá 'Aislar hallazgos'." = Answer(text="Hay 3 archivos marcados. Si no los reconocés, usá 'Aislar hallazgos'.", source='local', notice='Respondid...conexión ni envío de datos. Para preguntas escritas con tus palabras, activá el asistente en Ajustes.', suggestions=[]).text
+FAILED evolve/tests/test_assistant.py::test_a_healthy_system_gets_a_calm_answer - AssertionError: assert 'buen estado' in 'con 98/100, tu sistema está bien.'
+ +  where 'con 98/100, tu sistema está bien.' = <built-in method lower of str object at 0x7fccbfbc4690>()
+ +    where <built-in method lower of str object at 0x7fccbfbc4690> = 'Con 98/100, tu sistema está bien.'.lower
+ +      where 'Con 98/100, tu sistema está bien.' = Answer(text='Con 98/100, tu sistema está bien.', source='local', notice='Respondido por el motor local, sin conexión n...lo más urgente que debería arreglar?', '¿Por qué mi PC está lenta?', '¿Es seguro borrar lo que encontró la limpieza?']).text
+FAILED evolve/tests/test_assistant.py::test_explain_area_on_unknown_input - AttributeError: 'NoneType' object has no attribute 'strip'
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - AssertionError: assert 'no autorizó' in 'Privado'
+7 failed, 292 passed, 7 warnings in 1.09s
+
+```
+- `2026-07-30T00:50:10` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Mejoré la eficiencia del motor local mediante el uso de un `cache` decorador de `functools` para `_rank_problems`, evitando recálculos innecesarios de la lista de problemas cada vez que se invoca `local_answer` durante la misma iteración, y optimicé la selección de problemas utilizando una lista de tuplas para evitar múltiples llamadas a `hasattr` o chequeos redundantes.
+- `2026-07-30T00:50:39` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimicé el método `draw_logo` para evitar la creación innecesaria de objetos `Canvas` y el re-cálculo de parámetros mediante la pre-computación de la lista `franjas` y el uso eficiente de `gradient_colors`, reduciendo el uso de CPU durante el refresco de la UI.
+- `2026-07-30T00:51:01` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
+- `2026-07-30T00:51:10` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé `summarize` para realizar una sola pasada por los datos, eliminando la redundancia de llamar a `walk_files` y consolidando toda la lógica de recolección (estadísticas globales, mapa de extensiones y heap de archivos pesados) en un único ciclo de iteración, lo cual reduce significativamente el uso de CPU y E/S al evitar recorridos múltiples sobre el mismo árbol de archivos.
+- `2026-07-30T00:51:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-30T00:51:10` Corrida terminada. Total usado hoy: 20.

@@ -321,47 +321,29 @@ def logo_ascii() -> str:
 
 
 def draw_logo(canvas: Any, size: int = 56, x: int = 0, y: int = 0) -> None:
-    """
-    Renderiza el logo (escudo Omega) en un widget canvas de Tkinter.
-    
-    Args:
-        canvas: Widget Tkinter Canvas de destino.
-        size: Escala base (se utiliza para calcular el radio y los trazos).
-        x, y: Coordenadas de origen para el renderizado.
-    """
+    """Renderiza el logo (escudo Omega) en un widget canvas de Tkinter."""
     if canvas is None or not hasattr(canvas, "create_polygon"): return
     try:
         s = max(0.1, float(size) / 128)
         x_val, y_val = float(x), float(y)
-    except (TypeError, ValueError): return
-
-    try:
-        # Resplandor radial pre-calculado
-        for paso in range(4, 0, -1):
-            radio = 56 * s * (0.6 + paso * 0.12)
-            canvas.create_oval(
-                x_val + 64 * s - radio, y_val + 58 * s - radio,
-                x_val + 64 * s + radio, y_val + 58 * s + radio,
-                fill=blend(PALETTE["surface"], PALETTE["glow"], 0.04 * paso),
-                outline="",
-            )
-
-        # Polígono base
+        # Pre-cálculo para reducir carga en el loop
         c = [64, 18, 100, 31, 100, 67, 90, 90, 64, 110, 38, 90, 28, 67, 28, 31]
         contorno = [x_val + v * s if i % 2 == 0 else y_val + v * s for i, v in enumerate(c)]
-        canvas.create_polygon(contorno, fill=GRADIENT_STOPS[1], outline="")
         
-        # Detalle interno
+        # Resplandor
+        for paso in range(4, 0, -1):
+            radio = 56 * s * (0.6 + paso * 0.12)
+            canvas.create_oval(x_val + 64 * s - radio, y_val + 58 * s - radio, x_val + 64 * s + radio, y_val + 58 * s + radio, fill=blend(PALETTE["surface"], PALETTE["glow"], 0.04 * paso), outline="")
+
+        canvas.create_polygon(contorno, fill=GRADIENT_STOPS[1], outline="")
         franjas = max(6, int(28 * s))
         alto = 92 * s / franjas
         colores_grad = gradient_colors(franjas)
         for i, tono in enumerate(colores_grad):
-            arriba = y_val + 18 * s + i * alto
             avance = i / max(1, franjas - 1)
             w = 36 * s * (1.0 if avance < 0.55 else 1.0 - (avance - 0.55) * 1.9)
-            canvas.create_rectangle(x_val + 64 * s - w, arriba, x_val + 64 * s + w, arriba + alto + 1, fill=tono, outline="")
+            canvas.create_rectangle(x_val + 64 * s - w, y_val + 18 * s + i * alto, x_val + 64 * s + w, y_val + 18 * s + (i + 1) * alto + 1, fill=tono, outline="")
 
-        # Trazos finales
         canvas.create_line(x_val + 41 * s, y_val + 75 * s, x_val + 75 * s, y_val + 41 * s, fill=PALETTE["background"], width=max(2, int(8 * s)), capstyle="round")
         canvas.create_polygon(x_val + 75 * s, y_val + 41 * s, x_val + 89 * s, y_val + 38 * s, x_val + 92 * s, y_val + 52 * s, fill=PALETTE["background"], outline="")
         canvas.create_text(x_val + 64 * s, y_val + 96 * s, text="\u03a9", fill=PALETTE["background"], font=("Segoe UI", max(8, int(23 * s)), "bold"))
@@ -372,14 +354,7 @@ def draw_logo(canvas: Any, size: int = 56, x: int = 0, y: int = 0) -> None:
 def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
                       x: int = 0, y: int = 0,
                       stops: tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
-    """
-    Dibuja una franja horizontal con degradado de color.
-    
-    Args:
-        canvas: Widget Canvas de destino.
-        width: Ancho total de la franja en píxeles.
-        height: Altura del elemento visual.
-    """
+    """Dibuja una franja horizontal con degradado de color."""
     if canvas is None or not hasattr(canvas, "create_line"): return
     try:
         ancho, alto = max(1, int(width)), max(1, int(height))
@@ -393,16 +368,7 @@ def draw_ring(canvas: Any, percent: float | int, size: int = 150,
               x: int = 0, y: int = 0, thickness: int = 14,
               track: HexColor | None = None,
               fill: HexColor | None = None) -> None:
-    """
-    Dibuja un medidor circular (HealthScore) usando arcos.
-    
-    Args:
-        canvas: Widget Canvas de destino.
-        percent: Valor de progreso (0-100).
-        size: Diámetro total del anillo.
-        x, y: Posición del centro.
-        thickness: Grosor de la línea del medidor.
-    """
+    """Dibuja un medidor circular (HealthScore) usando arcos."""
     if canvas is None or not hasattr(canvas, "create_arc"): return
     try:
         valor = max(0.0, min(100.0, float(percent)))

@@ -294,9 +294,7 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
         
     total_bytes: int = 0
     total_files: int = 0
-    # Map: {ext: [tamaño_total_bytes, contador_archivos]}
     ext_data_map: Dict[str, List[int]] = defaultdict(lambda: [0, 0])
-    # Heap: almacena tuplas (tamaño, ruta) para encontrar los archivos más pesados
     top_heap: List[Tuple[int, Path]] = []
 
     for path, size in walk_files(path_obj, skip_protected):
@@ -308,11 +306,10 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
         record[0] += size
         record[1] += 1
         
-        # Mantenemos un heap fijo de los 8 archivos más grandes encontrados
         if len(top_heap) < 8:
             heapq.heappush(top_heap, (size, path))
-        else:
-            heapq.heappushpop(top_heap, (size, path))
+        elif size > top_heap[0][0]:
+            heapq.heapreplace(top_heap, (size, path))
 
     lines = [
         f"Carpeta analizada: {path_obj}",
@@ -321,7 +318,6 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
         "Por tipo de archivo:",
     ]
     
-    # Ordenar tipos de archivo por tamaño total (índice 0)
     sorted_exts = sorted(
         ext_data_map.items(),
         key=lambda item: item[1][0], 
@@ -334,9 +330,7 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
     lines.append("")
     lines.append("Archivos más grandes:")
     
-    # Ordenar los archivos recolectados en el heap de mayor a menor tamaño
-    top_files = sorted(top_heap, key=lambda x: x[0], reverse=True)
-    for size, path in top_files:
+    for size, path in sorted(top_heap, key=lambda x: x[0], reverse=True):
         lines.append(f"  {format_size(size):>10}  {path}")
         
     return lines
