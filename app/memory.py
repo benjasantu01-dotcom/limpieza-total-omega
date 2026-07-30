@@ -25,6 +25,7 @@ la lógica se prueba en CI sobre Linux sin depender de Windows.
 from __future__ import annotations
 import os
 import re
+import math
 import subprocess
 from dataclasses import dataclass, field
 from typing import List, Tuple, Optional, Dict, Iterator
@@ -99,21 +100,16 @@ class ProcessMemory:
 def format_bytes(num: int | float | None) -> str:
     """
     Convierte un valor numérico en bytes a formato de cadena legible (ej: 1.5 MB).
-    Escala mediante divisiones sucesivas sobre BYTE_UNITS.
+    Usa logaritmo base 1024 para calcular la unidad de forma directa.
     """
-    if not isinstance(num, (int, float)):
+    if not isinstance(num, (int, float)) or num <= 0:
         return "0 B"
     
-    value = float(num)
-    if value < 0:
-        value = 0.0
-    
-    for unit in BYTE_UNITS:
-        if value < 1024 or unit == "TB":
-            decimals = 0 if unit == "B" else 1
-            return f"{value:.{decimals}f} {unit}"
-        value /= 1024
-    return f"{value:.1f} TB"
+    idx = min(int(math.log(num, 1024)), len(BYTE_UNITS) - 1)
+    val = num / (1024 ** idx)
+    unit = BYTE_UNITS[idx]
+    decimals = 0 if unit == "B" else 1
+    return f"{val:.{decimals}f} {unit}"
 
 
 def parse_linux_meminfo(text: str) -> MemorySnapshot:

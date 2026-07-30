@@ -1161,3 +1161,12 @@ assert not True
 - `2026-07-30T09:52:32` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Se optimizó el método `is_finite` de `SystemMetrics` reemplazando la creación innecesaria de una lista y su iteración mediante `all` por un acceso directo y eficiente a los atributos, reduciendo la presión sobre el recolector de basura en cada cálculo de puntaje.
 - `2026-07-30T09:52:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-30T09:52:32` Corrida terminada. Total usado hoy: 232.
+- `2026-07-30T10:01:23` Arrancando corrida. Quedan hoy ~68 peticiones objetivo.
+- `2026-07-30T10:02:25` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-07-30T10:03:28` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-07-30T10:04:31` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Se implementó un sistema de persistencia de caché más eficiente y una optimización en el ciclo de actualización de la interfaz de Salud para evitar el redibujado innecesario de componentes cuando los datos no han cambiado.
+- `2026-07-30T10:04:55` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimizé la función `format_bytes` reemplazando el bucle `for` y la división sucesiva por una búsqueda directa mediante el índice calculado con `math.log`, reduciendo la cantidad de operaciones aritméticas en el renderizado de la interfaz.
+- `2026-07-30T10:05:17` ➖ Sin cambios en organizer.py (enfoque: rendimiento). Motivo: Optimicé el bucle de escaneo en `scan_for_junk` utilizando un conjunto (`set`) para las extensiones bloqueadas y pre-calculando las rutas de la `SYSTEM_FOLDER_BLOCKLIST` a minúsculas, reduciendo significativamente las operaciones de transformación de strings por cada archivo encontrado durante el recorrido del disco.
+- `2026-07-30T10:05:29` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimizé `load_manifest` mediante el uso de `path.stat().st_mtime` para evitar lecturas innecesarias del archivo JSON en disco, aprovechando que el estado en memoria ya está sincronizado con la última modificación detectada.
+- `2026-07-30T10:05:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-30T10:05:29` Corrida terminada. Total usado hoy: 236.

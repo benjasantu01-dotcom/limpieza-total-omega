@@ -131,10 +131,10 @@ def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload:
     path = _manifest_path(base_path)
     base_str = str(base_path)
     
-    mtime = path.stat().st_mtime if path.exists() else 0.0
+    current_mtime = path.stat().st_mtime if path.exists() else 0.0
     if not force_reload and base_str in _manifest_cache:
         cached_mtime, cached_data = _manifest_cache[base_str]
-        if cached_mtime == mtime:
+        if cached_mtime == current_mtime:
             return cached_data
         
     if not path.exists():
@@ -164,7 +164,7 @@ def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload:
             items.append(item)
         except (KeyError, ValueError, TypeError):
             continue
-    _manifest_cache[base_str] = (mtime, items)
+    _manifest_cache[base_str] = (current_mtime, items)
     return items
 
 
