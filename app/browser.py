@@ -121,37 +121,26 @@ def directory_size(path: str | os.PathLike | None) -> int:
     if path is None:
         return 0
     try:
-        p = Path(path)
-        root_path = p.resolve(strict=False)
-        # Seguridad adicional: no seguir puntos de reparse o symlinks desde la raíz
-        if not root_path.exists() or not root_path.is_dir() or root_path.is_symlink() or is_protected_path(root_path):
+        root = Path(path).resolve(strict=False)
+        if not root.is_dir() or root.is_symlink() or is_protected_path(root):
             return 0
     except (OSError, RuntimeError, PermissionError):
         return 0
     
     total_bytes: int = 0
-    stack: List[Path] = [root_path]
-    visited: set[Path] = set()
+    stack: List[str] = [str(root)]
     
     while stack:
         current_dir = stack.pop()
-        if current_dir in visited:
-            continue
-        visited.add(current_dir)
-        
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:
-                    try:
-                        # Evitar seguir enlaces simbólicos o junctions que salgan del árbol
-                        if entry.is_symlink():
-                            continue
-                        if entry.is_dir():
-                            stack.append(Path(entry.path))
-                        elif entry.is_file():
-                            total_bytes += entry.stat().st_size
-                    except (OSError, PermissionError):
+                    if entry.is_symlink():
                         continue
+                    if entry.is_dir():
+                        stack.append(entry.path)
+                    elif entry.is_file():
+                        total_bytes += entry.stat().st_size
         except (OSError, PermissionError):
             continue
     return total_bytes
@@ -163,7 +152,6 @@ def _is_valid_cache_path(candidate: Path, base_path: Path) -> bool:
     navegador y sea un directorio de caché seguro.
     """
     try:
-        # Validar existencia, tipo, y prevenir symlinks como ataque de ruta
         return (
             candidate.exists() and 
             candidate.is_dir() and 

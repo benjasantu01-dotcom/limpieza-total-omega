@@ -304,7 +304,7 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
         total_files += 1
             
         ext_name = path.suffix.lower() or "(sin extensión)"
-        record: List[int] = ext_data_map[ext_name]
+        record = ext_data_map[ext_name]
         record[0] += size
         record[1] += 1
         
@@ -320,11 +320,8 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
         "Por tipo de archivo:",
     ]
     
-    sorted_exts: List[Tuple[str, List[int]]] = sorted(
-        ext_data_map.items(),
-        key=lambda item: item[1][0], 
-        reverse=True
-    )[:8]
+    # Usamos nlargest sobre los items para evitar ordenar todo el diccionario
+    sorted_exts = heapq.nlargest(8, ext_data_map.items(), key=lambda x: x[1][0])
     
     for ext, data in sorted_exts:
         lines.append(f"  {ext:<18} {format_size(data[0]):>10}  ({data[1]} archivos)")

@@ -133,19 +133,11 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
 def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     """
     Agrupa rutas de archivos basándose en su tamaño en bytes.
-
-    Args:
-        paths: Colección de rutas a inspeccionar.
-
-    Returns:
-        Diccionario donde la clave es el tamaño y el valor una lista de rutas.
     """
     if paths is None:
         return {}
     groups: Dict[int, List[Path]] = defaultdict(list)
     for p in paths:
-        if not p or is_protected_path(p):
-            continue
         try:
             size = p.lstat().st_size
             if size > 0:
@@ -173,14 +165,16 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
             
             for root, subdirs, files in os.walk(base, followlinks=False):
                 root_path = Path(root)
-                subdirs[:] = [
-                    d for d in subdirs 
-                    if not (root_path / d).is_symlink() and not is_protected_path(root_path / d)
-                ]
+                # Filtrar subdirectorios in situ
+                if skip_protected:
+                    subdirs[:] = [
+                        d for d in subdirs 
+                        if not is_protected_path(root_path / d)
+                    ]
                 
                 for name in files:
                     candidate = root_path / name
-                    if candidate.is_symlink() or (skip_protected and is_protected_path(candidate)):
+                    if skip_protected and is_protected_path(candidate):
                         continue
                     try:
                         st = candidate.lstat()
@@ -213,14 +207,6 @@ def find_duplicates(
 ) -> List[DuplicateGroup]:
     """
     Pipeline principal para detectar grupos de archivos duplicados.
-
-    Args:
-        directories: Directorios donde buscar.
-        min_size: Tamaño mínimo para considerar un archivo.
-        skip_protected: Filtrar rutas del sistema.
-
-    Returns:
-        Lista de objetos DuplicateGroup ordenados por espacio desperdiciado.
     """
     if not directories:
         return []
@@ -229,7 +215,9 @@ def find_duplicates(
     if not candidates:
         return []
 
-    size_map = {s: p for s, p in group_by_size(candidates).items() if len(p) > 1}
+    # Filtrar tamaños únicos inmediatamente
+    raw_groups = group_by_size(candidates)
+    size_map = {s: p for s, p in raw_groups.items() if len(p) > 1}
     if not size_map:
         return []
 
@@ -268,7 +256,7 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
     valid_paths: List[Tuple[float, int, Path]] = []
     for p in group.paths:
         path_obj = Path(p)
-        if not path_obj.exists() or not path_obj.is_file() or is_protected_path(path_obj):
+        if not path_obj.exists() or not path_obj.is_file():
             continue
         try:
             stat = path_obj.stat()

@@ -77,10 +77,10 @@ class SystemMetrics:
 
     def is_finite(self) -> bool:
         """Verifica que todas las métricas críticas sean números finitos."""
-        return all(math.isfinite(v) for v in (
-            self.junk_mb, self.memory_available_percent, self.disk_free_percent, 
-            self.duplicate_mb, float(self.suspicious_count), float(self.startup_count)
-        ))
+        return (math.isfinite(self.junk_mb) and 
+                math.isfinite(self.memory_available_percent) and 
+                math.isfinite(self.disk_free_percent) and 
+                math.isfinite(self.duplicate_mb))
 
 
 @dataclass

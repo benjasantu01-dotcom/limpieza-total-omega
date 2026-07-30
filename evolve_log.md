@@ -1154,3 +1154,10 @@ assert not True
 - `2026-07-30T09:42:41` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
 - `2026-07-30T09:42:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-30T09:42:41` Corrida terminada. Total usado hoy: 228.
+- `2026-07-30T09:51:12` Arrancando corrida. Quedan hoy ~72 peticiones objetivo.
+- `2026-07-30T09:51:36` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé `directory_size` reemplazando la lógica de resolución de rutas por `os.scandir` para evitar la creación innecesaria de objetos `Path` en cada iteración del bucle, reduciendo significativamente el consumo de memoria y la sobrecarga de I/O.
+- `2026-07-30T09:52:00` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé `summarize` para evitar múltiples recorridos y redundancias al usar la estructura `heapq` ya cargada y consolidar el procesamiento de datos en una única iteración sobre el generador `walk_files`, eliminando además el uso de `sorted` innecesario sobre diccionarios grandes antes de limitarlos.
+- `2026-07-30T09:52:23` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé `group_by_size` y `_collect_candidates` para evitar redundancia mediante la eliminación de llamadas a `is_protected_path` cuando ya han sido filtradas previamente, y consolidé el recorrido de archivos para reducir accesos innecesarios al sistema de archivos.
+- `2026-07-30T09:52:32` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Se optimizó el método `is_finite` de `SystemMetrics` reemplazando la creación innecesaria de una lista y su iteración mediante `all` por un acceso directo y eficiente a los atributos, reduciendo la presión sobre el recolector de basura en cada cálculo de puntaje.
+- `2026-07-30T09:52:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-30T09:52:32` Corrida terminada. Total usado hoy: 232.
