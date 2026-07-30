@@ -732,24 +732,28 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
         self.after(0, actualizar)
 
+    def _validate_and_log_error(self, e: Exception, tab: str):
+        """Manejo centralizado de excepciones en tareas asíncronas."""
+        if isinstance(e, safety.UnsafePathError):
+            self.log(f"Bloqueado por seguridad: {e}", tab)
+        elif isinstance(e, PermissionError):
+            self.log("Error: permiso denegado. Ejecutá como administrador.", tab)
+        elif isinstance(e, FileNotFoundError):
+            self.log(f"Error: ruta no encontrada: {getattr(e, 'filename', 'desconocida')}", tab)
+        elif isinstance(e, OSError):
+            self.log(f"Error de sistema ({e.errno}): {e.strerror}", tab)
+        else:
+            logging.exception("Error inesperado en tarea asíncrona: %s", e)
+            self.log(f"Error inesperado: {type(e).__name__}", tab)
+
     def run_async(self, fn: Callable):
         """Envuelve la ejecución de tareas en un hilo secundario con manejo global de errores."""
         self._set_busy(True)
         def wrapper():
             try:
                 fn()
-            except safety.UnsafePathError as e:
-                self.log(f"Bloqueado por seguridad: {e}", self._current_tab())
-            except PermissionError:
-                self.log("Error: permiso denegado. Ejecutá como administrador.", self._current_tab())
-            except FileNotFoundError as e:
-                self.log(f"Error: ruta no encontrada: {getattr(e, 'filename', 'desconocida')}", self._current_tab())
-            except OSError as e:
-                logging.error("Error de sistema: %s", e)
-                self.log(f"Error de sistema ({e.errno}): {e.strerror}", self._current_tab())
             except Exception as e:
-                logging.exception("Error inesperado en tarea asíncrona: %s", e)
-                self.log(f"Error inesperado: {type(e).__name__}", self._current_tab())
+                self._validate_and_log_error(e, self._current_tab())
             finally:
                 self._set_busy(False)
                 self.set_status("Listo.")
@@ -829,12 +833,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.clear("Salud")
             self.log("Analizando... esto no modifica nada.", "Salud")
 
-            try:
-                metrics, snapshot, unidad = self._compile_metrics()
-            except Exception as e:
-                self.log(f"Error recopilando métricas: {e}", "Salud")
-                return
-            
+            metrics, snapshot, unidad = self._compile_metrics()
             resultado = healthscore.compute_score(metrics)
 
             self.assistant_context = assistant.build_context(
@@ -1056,12 +1055,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.set_status("Aislando archivos...")
             aislados = 0
             for item_s in aptos:
-                try:
-                    item = quarantine.quarantine_file(item_s.path, reason="Marcado por escaneo heurístico")
-                    self.log(f"Aislado [{item.item_id}] {item_s.path}", "Seguridad")
-                    aislados += 1
-                except (FileNotFoundError, OSError) as e:
-                    self.log(f"Error al aislar {item_s.path}: {e}", "Seguridad")
+                item = quarantine.quarantine_file(item_s.path, reason="Marcado por escaneo heurístico")
+                self.log(f"Aislado [{item.item_id}] {item_s.path}", "Seguridad")
+                aislados += 1
             self.log(f"Listo: {aislados} aislado(s).", "Seguridad")
             self._cache["suspicions"] = [s for s in suspicions if s not in aptos]
 
@@ -1114,17 +1110,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 self.log(f"Error: La ruta original '{ruta_orig}' es protegida. Restauración denegada.", "Cuarentena")
                 return
 
-            try:
-                safety.ensure_safe_to_modify(ruta_orig)
-            except safety.UnsafePathError:
-                self.log(f"Error: La ruta original '{ruta_orig}' es insegura. Restauración bloqueada.", "Cuarentena")
-                return
-
-            try:
-                destino = quarantine.restore_item(raw_id)
-                self.log(f"Restaurado en: {destino}", "Cuarentena")
-            except Exception as e:
-                self.log(f"Error al restaurar: {str(e)}", "Cuarentena")
+            safety.ensure_safe_to_modify(ruta_orig)
+            destino = quarantine.restore_item(raw_id)
+            self.log(f"Restaurado en: {destino}", "Cuarentena")
 
         self.run_async(task)
 
@@ -1324,11 +1312,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.set_status("Aislando copias duplicadas...")
             movidos = 0
             for ruta in aptos:
-                try:
-                    quarantine.quarantine_file(ruta, reason="Copia duplicada")
-                    movidos += 1
-                except (FileNotFoundError, OSError) as e:
-                    self.log(f"No se aisló {ruta}: {e}", "Duplicados")
+                quarantine.quarantine_file(ruta, reason="Copia duplicada")
+                movidos += 1
             self.log(f"Aisladas {movidos} copia(s). Revisá la pestaña Cuarentena.", "Duplicados")
             self._cache["dups"] = []
 

@@ -80,7 +80,9 @@ class SystemMetrics:
         return (math.isfinite(self.junk_mb) and 
                 math.isfinite(self.memory_available_percent) and 
                 math.isfinite(self.disk_free_percent) and 
-                math.isfinite(self.duplicate_mb))
+                math.isfinite(self.duplicate_mb) and
+                math.isfinite(self.suspicious_count) and
+                math.isfinite(self.startup_count))
 
 
 @dataclass

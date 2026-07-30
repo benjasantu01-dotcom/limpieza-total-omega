@@ -165,15 +165,17 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
             
             for root, subdirs, files in os.walk(base, followlinks=False):
                 root_path = Path(root)
-                # Filtrar subdirectorios in situ (evita enlaces simbólicos explícitamente)
+                # Filtrar subdirectorios in situ (evita enlaces simbólicos y puntos de reparse)
                 subdirs[:] = [
                     d for d in subdirs 
-                    if not (root_path / d).is_symlink() and not (skip_protected and is_protected_path(root_path / d))
+                    if not (root_path / d).is_symlink() 
+                    and not (root_path / d).is_junction()
+                    and not (skip_protected and is_protected_path(root_path / d))
                 ]
                 
                 for name in files:
                     candidate = root_path / name
-                    if candidate.is_symlink():
+                    if candidate.is_symlink() or candidate.is_junction():
                         continue
                     if skip_protected and is_protected_path(candidate):
                         continue
