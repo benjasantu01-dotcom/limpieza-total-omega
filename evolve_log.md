@@ -1237,3 +1237,43 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-07-30T11:14:42` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
 - `2026-07-30T11:14:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-30T11:14:42` Corrida terminada. Total usado hoy: 264.
+- `2026-07-30T11:22:59` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-07-30T11:23:25` Tests FALLARON:
+```
+                                     [100%]
+=================================== FAILURES ===================================
+___________ test_stage_for_review_moves_files_without_deleting_them ____________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-1/test_stage_for_review_moves_fi0')
+
+    def test_stage_for_review_moves_files_without_deleting_them(tmp_path):
+        origen = tmp_path / "origen"
+        origen.mkdir()
+        archivo = origen / "mover.tmp"
+        archivo.write_text("contenido")
+        revision = tmp_path / "revision"
+    
+        found = organizer.scan_for_junk([str(origen)])
+        dest = organizer.stage_for_review(found, review_dir=str(revision))
+    
+>       assert not archivo.exists(), "el archivo debe salir de su lugar original"
+E       AssertionError: el archivo debe salir de su lugar original
+E       assert not True
+E        +  where True = exists()
+E        +    where exists = PosixPath('/tmp/pytest-of-runner/pytest-1/test_stage_for_review_moves_fi0/origen/mover.tmp').exists
+
+evolve/tests/test_basic.py:144: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_stage_for_review_moves_files_without_deleting_them - AssertionError: el archivo debe salir de su lugar original
+assert not True
+ +  where True = exists()
+ +    where exists = PosixPath('/tmp/pytest-of-runner/pytest-1/test_stage_for_review_moves_fi0/origen/mover.tmp').exists
+1 failed, 298 passed in 1.04s
+
+```
+- `2026-07-30T11:23:25` ❌ Mejora descartada en organizer.py (no pasó los tests), se revirtió. Intento: Mejoré la seguridad defensiva en `stage_for_review` añadiendo una validación de ruta absoluta canónica antes de cualquier operación de movimiento, asegurando que el archivo de origen esté físicamente contenido dentro de los directorios permitidos y no sea un enlace externo que escape al sandbox.
+- `2026-07-30T11:23:51` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se añadió una validación explícita mediante `is_protected_path` en `purge_item` y `purge_all` para garantizar que, incluso si la lógica de directorios fallara, no se pueda intentar borrar nada que pertenezca a rutas críticas del sistema.
+- `2026-07-30T11:24:09` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-07-30T11:24:17` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-07-30T11:24:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-30T11:24:17` Corrida terminada. Total usado hoy: 268.

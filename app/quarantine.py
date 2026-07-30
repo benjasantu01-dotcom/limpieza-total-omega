@@ -334,8 +334,8 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
     quarantine_root = quarantine_dir(base)
     stored_file = quarantine_root / match.stored_name
     
-    # Doble verificación: que el archivo exista y que esté confinado en la carpeta de cuarentena
-    if not stored_file.is_file() or not is_within_directory(stored_file, quarantine_root):
+    # Doble verificación: que sea seguro, que exista y que esté confinado en cuarentena
+    if is_protected_path(stored_file) or not stored_file.is_file() or not is_within_directory(stored_file, quarantine_root):
         raise UnsafePathError(f"Intento de borrado fuera de cuarentena: {stored_file}")
 
     if match.sha256 and _get_sha256(stored_file) != match.sha256:
@@ -354,13 +354,16 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
 def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     """Limpia el almacén completo y resetea el manifiesto."""
     quarantine_root = quarantine_dir(base)
+    if is_protected_path(quarantine_root):
+        raise UnsafePathError("Operación denegada en ruta protegida.")
+        
     ensure_safe_to_modify(quarantine_root, allow_sensitive=False)
     
     items = load_manifest(base)
     count = 0
     for item in items:
         stored_file = quarantine_root / item.stored_name
-        if stored_file.is_file() and is_within_directory(stored_file, quarantine_root):
+        if not is_protected_path(stored_file) and stored_file.is_file() and is_within_directory(stored_file, quarantine_root):
             try:
                 # Se eliminan solo los archivos que mantienen su integridad
                 if not item.sha256 or _get_sha256(stored_file) == item.sha256:
