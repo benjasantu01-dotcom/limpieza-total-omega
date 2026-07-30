@@ -218,9 +218,12 @@ def quarantine_file(
         raise IOError(f"El archivo está en uso por otro proceso: {source_path}")
     
     file_size = source_path.stat().st_size
-    usage = shutil.disk_usage(dest_dir)
-    if usage.free < file_size:
-        raise OSError(f"Espacio insuficiente en disco para mover: {dest_dir}")
+    try:
+        usage = shutil.disk_usage(dest_dir)
+        if usage.free < file_size:
+            raise OSError(f"Espacio insuficiente en disco para mover: {dest_dir}")
+    except OSError as e:
+        raise OSError(f"Error al verificar espacio disponible: {e}")
 
     item_id = uuid.uuid4().hex[:12]
     # Sanitización de nombre para evitar caracteres inválidos en sistemas de archivos
@@ -235,6 +238,9 @@ def quarantine_file(
         shutil.move(str(source_path), str(destination))
     except (OSError, PermissionError) as e:
         raise RuntimeError(f"Falla crítica al mover archivo: {e}")
+
+    if not destination.exists():
+        raise RuntimeError("El archivo no pudo localizarse en el destino tras el movimiento.")
 
     try:
         # Verificación post-movimiento: el hash garantiza que el archivo no fue corrupto durante el IO

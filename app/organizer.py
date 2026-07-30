@@ -198,9 +198,11 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
     """
     Mueve archivos candidatos a una carpeta de cuarentena para revisión humana.
     """
-    if not isinstance(files, list) or not isinstance(review_dir, str):
-        logger.warning("Entrada inválida en stage_for_review.")
+    if not isinstance(files, list) or not files:
         return Path(review_dir).expanduser().resolve()
+        
+    if not isinstance(review_dir, str):
+        raise ValueError("La ruta de revisión debe ser un string válido.")
 
     dest = Path(review_dir).expanduser().resolve()
     
@@ -221,6 +223,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             if not full_source_path.exists() or not full_source_path.is_file() or full_source_path.is_symlink():
                 continue
             
+            # Validación de seguridad defensiva
             if not is_safe_to_modify(full_source_path):
                 continue
             

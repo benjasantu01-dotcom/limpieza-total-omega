@@ -410,3 +410,10 @@ assert not True
 - `2026-07-30T13:07:53` ➖ Sin cambios en main.py (enfoque: manejo de errores y validación de entradas). Motivo: Se mejora el manejo de errores en el método `_build_tabs_container` envolviendo la llamada al constructor de cada pestaña en un bloque `try/except` específico, evitando que un error de inicialización en una pestaña individual impida el arranque completo de la aplicación, manteniendo la robustez del sistema ante configuraciones o estados inesperados.
 - `2026-07-30T13:07:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-30T13:07:53` Corrida terminada. Total usado hoy: 308.
+- `2026-07-30T13:15:47` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-07-30T13:16:12` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: manejo de errores y validación de entradas).
+- `2026-07-30T13:16:42` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `stage_for_review` validando que la lista de archivos no esté vacía antes de procesar y asegurando que `full_source_path` no sea una ruta de sistema mediante `is_safe_to_modify` antes de intentar operaciones de apertura o movimiento, evitando excepciones innecesarias.
+- `2026-07-30T13:17:09` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `quarantine_file` agregando una validación específica para detectar archivos inexistentes tras ser movidos (colisión o error de SO) y capturando excepciones en el cálculo de `shutil.disk_usage` para evitar fallos catastróficos en sistemas con permisos restringidos.
+- `2026-07-30T13:17:14` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 108): unterminated string literal (detected at line 108)
+- `2026-07-30T13:17:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-30T13:17:14` Corrida terminada. Total usado hoy: 312.
