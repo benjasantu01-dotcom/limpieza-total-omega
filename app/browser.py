@@ -125,7 +125,6 @@ def directory_size(path: str | os.PathLike | None) -> int:
         if not root.exists() or not root.is_dir() or root.is_symlink() or is_protected_path(root):
             return 0
         
-        # Estrategia de caché: si el mtime del directorio no cambió, asumimos que su contenido tampoco
         current_mtime = root.stat().st_mtime
         if path_str in _DIR_SIZE_CACHE:
             cached_size, cached_mtime = _DIR_SIZE_CACHE[path_str]
@@ -142,12 +141,15 @@ def directory_size(path: str | os.PathLike | None) -> int:
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:
-                    if entry.is_symlink():
+                    try:
+                        if entry.is_symlink():
+                            continue
+                        if entry.is_dir():
+                            stack.append(entry.path)
+                        elif entry.is_file():
+                            total_bytes += entry.stat().st_size
+                    except (OSError, PermissionError):
                         continue
-                    if entry.is_dir():
-                        stack.append(entry.path)
-                    elif entry.is_file():
-                        total_bytes += entry.stat().st_size
         except (OSError, PermissionError):
             continue
             

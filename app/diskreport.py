@@ -187,6 +187,7 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
                         if entry.is_dir():
                             yield from recursive_scan(entry.path)
                         else:
+                            # Se captura excepcion individual si el archivo desaparece o deniega acceso
                             yield Path(entry.path), entry.stat().st_size
                     except (OSError, PermissionError, FileNotFoundError):
                         continue
