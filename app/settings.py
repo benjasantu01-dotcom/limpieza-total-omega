@@ -221,6 +221,9 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     """Persistencia atómica: escribe en archivo temporal y luego reemplaza."""
     global _cached_settings, _last_path_str, _last_mtime
     
+    if values is None:
+        return None
+        
     ruta = settings_path(path_or_base)
     limpio = validate(values)
     try:
@@ -252,8 +255,11 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
         _last_mtime = ruta.stat().st_mtime
         return ruta
     except (OSError, RuntimeError, PermissionError):
-        if temp_file and os.path.exists(temp_file.name):
-            os.remove(temp_file.name)
+        if temp_file is not None and os.path.exists(temp_file.name):
+            try:
+                os.remove(temp_file.name)
+            except OSError:
+                pass
         return None
 
 

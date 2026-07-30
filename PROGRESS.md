@@ -6,34 +6,34 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **238** (47.2% de aceptación)
+- Mejoras aceptadas: **239** (47.4% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 25
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 208
+- Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-29 | 87 | 5 | 10 | 5 | 85 |
-| 2026-07-30 | 151 | 11 | 15 | 12 | 123 |
+| 2026-07-29 | 86 | 4 | 10 | 5 | 83 |
+| 2026-07-30 | 153 | 12 | 15 | 12 | 124 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
 - seguridad defensiva: **51**
+- manejo de errores y validación de entradas: **48**
 - robustez ante casos límite: **47**
-- manejo de errores y validación de entradas: **46**
-- rendimiento: **42**
+- rendimiento: **41**
 
 ## Mejoras aceptadas por archivo
 
-- `browser.py`: **22**
-- `scanner.py`: **22**
+- `scanner.py`: **23**
+- `browser.py`: **21**
+- `settings.py`: **20**
 - `quarantine.py`: **19**
 - `healthscore.py`: **19**
-- `settings.py`: **19**
 - `diskreport.py`: **19**
 - `assistant.py`: **18**
 - `duplicates.py`: **18**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-30T13:27:10` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` y `_validate_str()` agregando chequeos explícitos para evitar errores al procesar entradas nulas o rutas malformadas, garantizando que el sistema de configuración no falle silenciosamente ante datos inesperados.
+- `2026-07-30T13:26:45` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_process_directory_entry` integrando validaciones de tipo y estructura antes de operar, asegurando que las entradas corruptas o inaccesibles sean ignoradas silenciosamente sin riesgo de excepciones no controladas.
 - `2026-07-30T13:17:09` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `quarantine_file` agregando una validación específica para detectar archivos inexistentes tras ser movidos (colisión o error de SO) y capturando excepciones en el cálculo de `shutil.disk_usage` para evitar fallos catastróficos en sistemas con permisos restringidos.
 - `2026-07-30T13:16:42` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` validando que la lista de archivos no esté vacía antes de procesar y asegurando que `full_source_path` no sea una ruta de sistema mediante `is_safe_to_modify` antes de intentar operaciones de apertura o movimiento, evitando excepciones innecesarias.
 - `2026-07-30T13:06:47` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `score_security` capturando posibles tipos incorrectos en la entrada y asegurando que las divisiones o multiplicaciones no se vean afectadas por datos no numéricos, siguiendo el enfoque de validación defensiva de parámetros.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-30T11:23:51` **quarantine.py** (seguridad defensiva): Se añadió una validación explícita mediante `is_protected_path` en `purge_item` y `purge_all` para garantizar que, incluso si la lógica de directorios fallara, no se pueda intentar borrar nada que pertenezca a rutas críticas del sistema.
 - `2026-07-30T11:14:33` **main.py** (seguridad defensiva): Se implementó un método centralizado `_validate_and_log_error` para el manejo de excepciones en las tareas asíncronas, garantizando que el usuario reciba feedback claro en la interfaz ante errores de acceso (como rutas protegidas o bloqueadas por el sistema) sin que el proceso asíncrono se interrumpa inesperadamente.
 - `2026-07-30T11:13:38` **healthscore.py** (seguridad defensiva): Se ha robustecido la integridad de los datos de entrada en `SystemMetrics.validate` y `compute_score` para prevenir ataques de inyección de valores numéricos extremos (NaN, Infinito o desbordamiento) antes de realizar cálculos, asegurando que la función pura no se comporte de forma inesperada bajo condiciones de entrada manipuladas.
-- `2026-07-30T11:13:14` **duplicates.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_collect_candidates` para prevenir el seguimiento de puntos de reparse (junctions/reparse points) mediante una verificación explícita de `is_reparse_point()`, cerrando una brecha donde los enlaces simbólicos o puntos de unión podrían causar recursión infinita o acceso a rutas fuera del scope.
-- `2026-07-30T11:04:14` **diskreport.py** (seguridad defensiva): Reforcé la seguridad defensiva en `walk_files` y `largest_folders` validando que las rutas resultantes no hayan escapado del directorio raíz original mediante `path.relative_to`, previniendo potenciales ataques de "path traversal" mediante enlaces simbólicos maliciosos que lograran evadir los chequeos iniciales.

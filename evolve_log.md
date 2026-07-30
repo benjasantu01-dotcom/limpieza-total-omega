@@ -417,3 +417,37 @@ assert not True
 - `2026-07-30T13:17:14` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 108): unterminated string literal (detected at line 108)
 - `2026-07-30T13:17:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-30T13:17:14` Corrida terminada. Total usado hoy: 312.
+- `2026-07-30T13:25:57` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-07-30T13:26:21` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: manejo de errores y validación de entradas).
+- `2026-07-30T13:26:45` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `_process_directory_entry` integrando validaciones de tipo y estructura antes de operar, asegurando que las entradas corruptas o inaccesibles sean ignoradas silenciosamente sin riesgo de excepciones no controladas.
+- `2026-07-30T13:27:10` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save()` y `_validate_str()` agregando chequeos explícitos para evitar errores al procesar entradas nulas o rutas malformadas, garantizando que el sistema de configuración no falle silenciosamente ante datos inesperados.
+- `2026-07-30T13:27:19` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+........................................F............................... [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '/home/runner...\App\\app.exe' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+E         + /home/runner/work/limpieza-total-omega/limpieza-total-omega/C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '/home/runner...\App\\app.exe' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+  + /home/runner/work/limpieza-total-omega/limpieza-total-omega/C:\Program Files\App\app.exe
+1 failed, 298 passed in 1.10s
+
+```
+- `2026-07-30T13:27:19` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejora la robustez de `StartupEntry.executable` validando que la ruta no solo sea un string no vacío, sino que el resultado de `os.path.abspath` sea una ruta válida y accesible antes de procesarla, evitando posibles errores de acceso por caracteres inválidos o rutas malformadas.
+- `2026-07-30T13:27:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-30T13:27:19` Corrida terminada. Total usado hoy: 316.

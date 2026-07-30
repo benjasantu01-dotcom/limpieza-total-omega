@@ -68,6 +68,9 @@ def _process_directory_entry(entry: os.DirEntry, root_path: str, results: List[S
     Procesa una entrada de directorio: filtra rutas protegidas, evita recursión infinita
     mediante tracking de 'seen' y delega el escaneo de archivos a `scan_file`.
     """
+    if not entry or not isinstance(entry.path, str):
+        return
+
     try:
         # Resolvemos ruta absoluta para evitar ataques de salto de directorio
         path_str = os.path.abspath(entry.path)
