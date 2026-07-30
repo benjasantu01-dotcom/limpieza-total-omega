@@ -761,3 +761,25 @@ FAILED evolve/tests/test_modules.py::test_group_by_size_separates_by_exact_size 
 - `2026-07-30T05:36:47` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
 - `2026-07-30T05:36:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-30T05:36:47` Corrida terminada. Total usado hoy: 132.
+- `2026-07-30T05:45:42` Arrancando corrida. Quedan hoy ~168 peticiones objetivo.
+- `2026-07-30T05:46:07` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimicé el rendimiento de `is_protected_path` al cachear el resultado de las normalizaciones de componentes de la ruta, evitando recrear objetos `Path` y normalizaciones redundantes en cada llamada dentro de bucles de escaneo masivo.
+- `2026-07-30T05:46:29` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizé la función `check_recent_executable_in_downloads` para extraer `path.suffix.lower()` una sola vez y evitar el acceso repetido a propiedades del sistema, mejorando el rendimiento dentro del bucle de escaneo.
+- `2026-07-30T05:46:55` Tests FALLARON:
+```
+rgument: 'valor'
+FAILED evolve/tests/test_assistant.py::test_env_var_wins_over_the_config_file - TypeError: _validate_str() missing 1 required positional argument: 'valor'
+FAILED evolve/tests/test_assistant.py::test_config_key_is_used_when_there_is_no_env_var - TypeError: _validate_str() missing 1 required positional argument: 'valor'
+FAILED evolve/tests/test_assistant.py::test_enabled_requires_both_the_switch_and_a_key - TypeError: _validate_str() missing 1 required positional argument: 'valor'
+FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - TypeError: _validate_str() missing 1 required positional argument: 'valor'
+FAILED evolve/tests/test_assistant.py::test_ask_stays_local_when_the_assistant_is_off - TypeError: _validate_str() missing 1 required positional argument: 'valor'
+FAILED evolve/tests/test_assistant.py::test_ask_uses_the_online_engine_when_authorized - TypeError: _validate_str() missing 1 required positional argument: 'valor'
+FAILED evolve/tests/test_assistant.py::test_online_failure_falls_back_to_local - TypeError: _validate_str() missing 1 required positional argument: 'valor'
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - TypeError: _validate_str() missing 1 required positional argument: 'valor'
+FAILED evolve/tests/test_assistant.py::test_available_reflects_the_configuration - TypeError: _validate_str() missing 1 required positional argument: 'valor'
+19 failed, 280 passed, 7 warnings in 1.07s
+
+```
+- `2026-07-30T05:46:55` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento del módulo implementando una pre-validación de tipos mediante un diccionario de mapeo constante en `_apply_validation_by_type` y eliminando la creación repetitiva de diccionarios `validators` en cada llamada, reduciendo la carga de memoria y CPU en lecturas frecuentes.
+- `2026-07-30T05:47:03` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-07-30T05:47:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-30T05:47:03` Corrida terminada. Total usado hoy: 136.

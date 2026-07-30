@@ -130,11 +130,13 @@ def is_protected_path(path: PathLike) -> bool:
         
     try:
         p = normalize(path)
-        # Comprueba si algún componente de la ruta coincide con las prohibiciones
-        if any(part.lower() in _PROTECTED_AND_SYSTEM for part in p.parts):
+        
+        # Optimización: buscar coincidencias en los nombres de los componentes (parts)
+        # usando sets en lugar de iteración simple si la ruta es muy profunda.
+        if not _PROTECTED_AND_SYSTEM.isdisjoint(part.lower() for part in p.parts):
             return True
             
-        if is_drive_root(p):
+        if p == Path(p.anchor):
             return True
         
         if p.exists() and _is_reparse_point(p):

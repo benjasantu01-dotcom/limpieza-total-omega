@@ -102,7 +102,11 @@ def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_TH
     Evalúa la edad de un archivo ejecutable mediante su marca de tiempo de modificación.
     Devuelve un hallazgo si el archivo fue creado/modificado dentro del umbral definido.
     """
-    if not path or path.suffix.lower() not in SUSPICIOUS_EXECUTABLE_EXT:
+    if not path:
+        return None
+    
+    suffix = path.suffix.lower()
+    if suffix not in SUSPICIOUS_EXECUTABLE_EXT:
         return None
     try:
         mtime = datetime.fromtimestamp(path.stat().st_mtime)
