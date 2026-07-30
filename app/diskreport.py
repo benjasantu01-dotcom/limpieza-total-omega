@@ -157,7 +157,6 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
         return
     try:
         base_path = Path(directory).expanduser().resolve(strict=True)
-        # Validación defensiva extra: impedir seguir enlaces simbólicos desde la raíz
         if base_path.is_symlink():
             return
         if not base_path.is_dir() or (skip_protected and is_protected_path(base_path)):
@@ -166,18 +165,14 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
         return
 
     def should_ignore_entry(entry: os.DirEntry) -> bool:
-        """Determina si un objeto del sistema de archivos debe omitirse por seguridad o por ser un reparse point."""
+        """Determina si un objeto del sistema de archivos debe omitirse."""
         try:
             if entry.is_symlink():
                 return True
             if os.name == 'nt':
-                # Bloquear puntos de reanálisis (Junctions, Mount Points) para evitar ciclos infinitos
                 if entry.stat(follow_symlinks=False).st_reparse_tag != 0:
                     return True
-            path_entry = Path(entry.path).resolve()
-            if not path_entry.is_relative_to(base_path):
-                return True
-            if skip_protected and is_protected_path(path_entry):
+            if skip_protected and is_protected_path(Path(entry.path)):
                 return True
         except (OSError, ValueError):
             return True
@@ -246,7 +241,7 @@ def largest_folders(directory: str | os.PathLike, limit: int = 10, skip_protecte
     
     for path, size in walk_files(base, skip_protected):
         try:
-            rel = path.resolve().relative_to(base)
+            rel = path.relative_to(base)
             if not rel.parts:
                 continue
             top_level = base / rel.parts[0]
@@ -267,7 +262,6 @@ def total_size(directory: str | os.PathLike, skip_protected: bool = True) -> tup
         return 0, 0
     total = 0
     count = 0
-    # walk_files ya maneja internamente la validación de la existencia de la ruta
     for _, size in walk_files(directory, skip_protected):
         total += size
         count += 1

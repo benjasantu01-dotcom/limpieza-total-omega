@@ -716,3 +716,41 @@ FAILED evolve/tests/test_basic.py::test_delete_reviewed_on_missing_folder_return
 - `2026-07-30T05:16:40` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el cálculo del tamaño de carpetas sustituyendo la resolución recursiva de `Path.parents` por una comparación de cadenas de texto basada en `os.path.commonpath`, lo cual evita la sobrecarga computacional de instanciar miles de objetos `Path` durante el escaneo y mejora la eficiencia al utilizar `os.scandir` de forma más directa.
 - `2026-07-30T05:16:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-30T05:16:40` Corrida terminada. Total usado hoy: 124.
+- `2026-07-30T05:25:19` Arrancando corrida. Quedan hoy ~176 peticiones objetivo.
+- `2026-07-30T05:25:45` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé `walk_files` reemplazando llamadas redundantes a `path.resolve()` (que es costosa en términos de I/O) por el uso directo de las rutas relativas procesadas por `scandir`, mejorando el rendimiento en recorridos profundos.
+- `2026-07-30T05:26:08` Tests FALLARON:
+```
+7ff03440>
+
+    def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
+        """
+        Agrupa rutas de archivos por su tamaño en bytes ya obtenidos.
+        """
+        groups: Dict[int, List[Path]] = defaultdict(list)
+>       for p, size in paths:
+            ^^^^^^^
+E       TypeError: cannot unpack non-iterable PosixPath object
+
+app/duplicates.py:125: TypeError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:72: SyntaxWarning: invalid escape sequence '\R'
+    raw_cmd: Cadena de comando cruda (ej. '"C:\Ruta\App.exe" /param').
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_group_by_size_separates_by_exact_size - TypeError: cannot unpack non-iterable PosixPath object
+1 failed, 298 passed, 7 warnings in 1.06s
+
+```
+- `2026-07-30T05:26:08` ❌ Mejora descartada en duplicates.py (no pasó los tests), se revirtió. Intento: Optimicé `group_by_size` para evitar una doble lectura del sistema de archivos al integrar el filtrado de tamaño directamente en el proceso de recolección de candidatos, reduciendo las llamadas a `lstat()` y mejorando el rendimiento en discos mecánicos.
+- `2026-07-30T05:26:31` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
+- `2026-07-30T05:27:12` ➖ Sin cambios en main.py (enfoque: rendimiento). Motivo: Se implementó un mecanismo de memoización más robusto para `_get_cached` y se optimizó el flujo de `_compile_metrics` mediante el uso de parámetros `force` y la eliminación de re-cálculos innecesarios de `junk` y `startup` al solicitar el análisis de salud, reduciendo el I/O repetitivo.
+- `2026-07-30T05:27:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-30T05:27:12` Corrida terminada. Total usado hoy: 128.
