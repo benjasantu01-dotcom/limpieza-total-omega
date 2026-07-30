@@ -138,6 +138,8 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
         return {}
     groups: Dict[int, List[Path]] = defaultdict(list)
     for p in paths:
+        if not isinstance(p, Path):
+            continue
         try:
             st = p.lstat()
             if st.st_size > 0:
@@ -165,17 +167,16 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
             
             for root, subdirs, files in os.walk(base, followlinks=False):
                 root_path = Path(root)
-                # Filtrar subdirectorios in situ (evita enlaces simbólicos y puntos de reparse)
                 subdirs[:] = [
                     d for d in subdirs 
                     if not (root_path / d).is_symlink() 
-                    and not (root_path / d).is_junction()
+                    and not (getattr((root_path / d), "is_junction", lambda: False)())
                     and not (skip_protected and is_protected_path(root_path / d))
                 ]
                 
                 for name in files:
                     candidate = root_path / name
-                    if candidate.is_symlink() or candidate.is_junction():
+                    if candidate.is_symlink() or getattr(candidate, "is_junction", lambda: False)():
                         continue
                     if skip_protected and is_protected_path(candidate):
                         continue
@@ -218,7 +219,6 @@ def find_duplicates(
     if not candidates:
         return []
 
-    # Filtrar tamaños únicos inmediatamente
     raw_groups = group_by_size(candidates)
     size_map = {s: p for s, p in raw_groups.items() if len(p) > 1}
     if not size_map:

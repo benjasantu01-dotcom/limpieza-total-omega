@@ -170,7 +170,6 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
             path = Path(entry.path)
             if skip_protected and is_protected_path(path):
                 return True
-            # Verificación de confinamiento
             path.relative_to(base_path)
         except (OSError, ValueError):
             return True
