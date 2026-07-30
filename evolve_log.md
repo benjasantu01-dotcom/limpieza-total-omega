@@ -1367,3 +1367,50 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-07-30T00:51:10` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé `summarize` para realizar una sola pasada por los datos, eliminando la redundancia de llamar a `walk_files` y consolidando toda la lógica de recolección (estadísticas globales, mapa de extensiones y heap de archivos pesados) en un único ciclo de iteración, lo cual reduce significativamente el uso de CPU y E/S al evitar recorridos múltiples sobre el mismo árbol de archivos.
 - `2026-07-30T00:51:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-30T00:51:10` Corrida terminada. Total usado hoy: 20.
+- `2026-07-30T00:59:51` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-07-30T01:00:14` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-07-30T01:00:37` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del puntaje global en `compute_score` eliminando iteraciones redundantes y consolidando las operaciones de validación y cálculo en un flujo más eficiente, reduciendo la creación innecesaria de objetos intermedios.
+- `2026-07-30T01:01:34` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Se optimizó el flujo `_update_health_visuals` reemplazando la recreación de objetos por una actualización de propiedades existente, y se eliminó el uso de `lambda` para capturar iteradores en los loops de construcción de pestañas, evitando llamadas a `winfo_exists` redundantes y reduciendo la carga en el hilo principal durante la actualización de la UI.
+- `2026-07-30T01:01:43` Tests FALLARON:
+```
+
+E         
+E         Full diff:
+E           [
+E         +     'chico',
+E               'grande',
+E               'medio',
+E         -     'chico',
+E           ]
+
+evolve/tests/test_modules.py:346: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:71: SyntaxWarning: invalid escape sequence '\R'
+    raw_cmd: Cadena de comando cruda (ej. '"C:\Ruta\App.exe" /param').
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption - AssertionError: assert ['chico', 'grande', 'medio'] == ['grande', 'medio', 'chico']
+  
+  At index 0 diff: 'chico' != 'grande'
+  
+  Full diff:
+    [
+  +     'chico',
+        'grande',
+        'medio',
+  -     'chico',
+    ]
+1 failed, 298 passed, 7 warnings in 1.10s
+
+```
+- `2026-07-30T01:01:43` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Optimizé `top_memory_processes` delegando la ordenación (sorting) y el truncamiento directamente al comando de PowerShell para reducir drásticamente la transferencia de datos y evitar procesar líneas innecesarias en Python.
+- `2026-07-30T01:01:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-30T01:01:43` Corrida terminada. Total usado hoy: 24.

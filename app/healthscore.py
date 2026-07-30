@@ -76,9 +76,9 @@ class SystemMetrics:
 
     def is_finite(self) -> bool:
         """Verifica que todas las métricas críticas sean números finitos."""
-        return all(math.isfinite(v) for v in [
+        return all(math.isfinite(v) for v in (
             self.junk_mb, self.memory_available_percent, self.disk_free_percent, self.duplicate_mb
-        ])
+        ))
 
 
 @dataclass
@@ -168,18 +168,17 @@ def _generate_recommendations(m: SystemMetrics, ratios: Dict[str, float]) -> Lis
     """Genera sugerencias accionables basadas en los ratios obtenidos."""
     recs: List[str] = []
     
-    if ratios.get("seguridad", 1.0) < 0.9:
+    if ratios["seguridad"] < 0.9:
         recs.append(f"Revisá los {max(0, int(m.suspicious_count))} hallazgo(s) de seguridad; podés aislarlos en cuarentena sin borrarlos.")
-    if ratios.get("disco", 1.0) < 0.6:
-        pct = round(_clamp(float(m.disk_free_percent), 0.0, 100.0), 1)
-        recs.append(f"Queda {pct}% de disco libre. Mirá el análisis de disco para ver qué ocupa más.")
-    if ratios.get("memoria", 1.0) < 0.6:
+    if ratios["disco"] < 0.6:
+        recs.append(f"Queda {round(_clamp(float(m.disk_free_percent), 0.0, 100.0), 1)}% de disco libre. Mirá el análisis de disco para ver qué ocupa más.")
+    if ratios["memoria"] < 0.6:
         recs.append("Memoria disponible baja: cerrá programas que no uses. Ojo, 'liberar RAM' no sirve, cerrar procesos sí.")
-    if ratios.get("basura", 1.0) < 0.8:
+    if ratios["basura"] < 0.8:
         recs.append(f"Hay unos {int(max(0.0, float(m.junk_mb)))} MB de archivos temporales para revisar.")
-    if ratios.get("duplicados", 1.0) < 0.8:
+    if ratios["duplicados"] < 0.8:
         recs.append(f"Podrías recuperar ~{int(max(0.0, float(m.duplicate_mb)))} MB eliminando copias duplicadas.")
-    if ratios.get("arranque", 1.0) < 0.6:
+    if ratios["arranque"] < 0.6:
         recs.append(f"{max(0, int(m.startup_count))} programas arrancan con Windows; desactivá los que no necesites desde el Administrador de tareas.")
     
     if m.quarantined_count > 0:
@@ -192,18 +191,15 @@ def _generate_recommendations(m: SystemMetrics, ratios: Dict[str, float]) -> Lis
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
     """Calcula el puntaje global de salud del sistema."""
-    if not isinstance(metrics, SystemMetrics):
-        return HealthResult(0, "F", {}, ["Error: Datos de entrada faltantes o inválidos."])
-
-    if sum(WEIGHTS.values()) != 100:
-        return HealthResult(0, "F", {}, ["Error de configuración: Peso de métricas desbalanceado."])
+    if not isinstance(metrics, SystemMetrics) or sum(WEIGHTS.values()) != 100:
+        return HealthResult(0, "F", {}, ["Error: Datos de entrada faltantes, inválidos o configuración desbalanceada."])
 
     try:
         metrics.validate()
         if not metrics.is_finite():
             return HealthResult(0, "F", {}, ["Error: Las métricas contienen datos numéricos no procesables."])
         
-        ratios: Dict[str, float] = {
+        ratios = {
             "seguridad": score_security(metrics.suspicious_count, metrics.suspicious_warnings),
             "disco": score_disk(metrics.disk_free_percent),
             "memoria": score_memory(metrics.memory_available_percent),
@@ -212,11 +208,11 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
             "arranque": score_startup(metrics.startup_count),
         }
 
-        breakdown: Dict[str, int] = {k: int(round(_clamp(ratios.get(k, 0.0), 0.0, 1.0) * w)) for k, w in WEIGHTS.items()}
-        total_score: int = sum(breakdown.values())
+        breakdown = {k: int(round(ratios[k] * w)) for k, w in WEIGHTS.items()}
+        total_score = max(0, min(100, sum(breakdown.values())))
 
         return HealthResult(
-            score=max(0, min(100, total_score)),
+            score=total_score,
             grade=grade_for_score(total_score),
             breakdown=breakdown,
             recommendations=_generate_recommendations(metrics, ratios),
@@ -228,18 +224,13 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
 
 def summarize(result: HealthResult) -> List[str]:
     """Genera una representación visual y textual del resultado de salud."""
-    lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
+    lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     
-    def calculate_deviation(item: Tuple[str, int]) -> int:
-        # Prioriza mostrar áreas con mayor desviación negativa respecto a su peso ideal.
-        return item[1] - WEIGHTS.get(item[0], 0)
-
-    orden = sorted(result.breakdown.items(), key=calculate_deviation)
+    orden = sorted(result.breakdown.items(), key=lambda item: item[1] - WEIGHTS[item[0]])
     
     for area, puntos in orden:
-        maximo = WEIGHTS.get(area, 0)
-        barra = f"[{'#' * puntos}{'.' * (maximo - puntos)}]"
-        lines.append(f"  {area.capitalize():<12} {puntos:>2}/{maximo:<2} {barra}")
+        maximo = WEIGHTS[area]
+        lines.append(f"  {area.capitalize():<12} {puntos:>2}/{maximo:<2} [{'#' * puntos}{'.' * (maximo - puntos)}]")
     
     lines.extend(["", "Recomendaciones:"])
     lines.extend([f"  - {rec}" for rec in result.recommendations])

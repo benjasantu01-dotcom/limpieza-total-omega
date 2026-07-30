@@ -435,21 +435,18 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _draw_gauge(self, score: int, grade: str):
         """Redibuja el medidor circular con el puntaje y la nota adentro."""
         def update_canvas():
-            try:
-                if not self.gauge.winfo_exists(): return
-                self.gauge.delete("all")
-                branding.draw_ring(self.gauge, score, size=176, thickness=15)
-                color_nota = branding.grade_color(grade) if grade != "-" else branding.color("text_dim")
-                self.gauge.create_text(
-                    88, 78, text=str(score), fill=branding.score_color(score),
-                    font=("Segoe UI", branding.font_size("display"), "bold"),
-                )
-                self.gauge.create_text(
-                    88, 116, text=f"nota {grade}", fill=color_nota,
-                    font=("Segoe UI", branding.font_size("body"), "bold"),
-                )
-            except Exception:
-                pass
+            if not self.gauge.winfo_exists(): return
+            self.gauge.delete("all")
+            branding.draw_ring(self.gauge, score, size=176, thickness=15)
+            color_nota = branding.grade_color(grade) if grade != "-" else branding.color("text_dim")
+            self.gauge.create_text(
+                88, 78, text=str(score), fill=branding.score_color(score),
+                font=("Segoe UI", branding.font_size("display"), "bold"),
+            )
+            self.gauge.create_text(
+                88, 116, text=f"nota {grade}", fill=color_nota,
+                font=("Segoe UI", branding.font_size("body"), "bold"),
+            )
         self.after(0, update_canvas)
 
     def _build_tab_limpieza(self):
@@ -892,35 +889,32 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                                sospechosos: int, ram_libre: float, disco_libre: float):
         """Actualiza la interfaz de la pestaña Salud con los resultados del análisis."""
         def actualizar():
-            try:
-                self._draw_gauge(resultado.score, resultado.grade)
+            self._draw_gauge(resultado.score, resultado.grade)
 
-                valores = {
-                    "basura": f"{junk_mb:.0f} MB",
-                    "sospechosos": str(sospechosos),
-                    "ram": f"{ram_libre:.0f}%",
-                    "disco": f"{disco_libre:.0f}%",
-                }
-                colores = {
-                    "basura": branding.color("accent") if junk_mb < 1000 else branding.color("warning"),
-                    "sospechosos": branding.color("accent") if sospechosos == 0 else branding.color("warning"),
-                    "ram": branding.score_color(ram_libre * 3),
-                    "disco": branding.score_color(disco_libre * 5),
-                }
-                for clave, etiqueta in self.cards.items():
-                    etiqueta.configure(text=valores.get(clave, "-"),
-                                    text_color=colores.get(clave, branding.color("accent")))
+            valores = {
+                "basura": f"{junk_mb:.0f} MB",
+                "sospechosos": str(sospechosos),
+                "ram": f"{ram_libre:.0f}%",
+                "disco": f"{disco_libre:.0f}%",
+            }
+            colores = {
+                "basura": branding.color("accent") if junk_mb < 1000 else branding.color("warning"),
+                "sospechosos": branding.color("accent") if sospechosos == 0 else branding.color("warning"),
+                "ram": branding.score_color(ram_libre * 3),
+                "disco": branding.score_color(disco_libre * 5),
+            }
+            for clave, label in self.cards.items():
+                label.configure(text=valores.get(clave, "-"),
+                                text_color=colores.get(clave, branding.color("accent")))
 
-                for clave, (barra, valor_label) in self.area_bars.items():
-                    puntos = resultado.breakdown.get(clave, 0)
-                    maximo = healthscore.WEIGHTS.get(clave, 1)
-                    proporcion = puntos / maximo if maximo else 0
-                    barra.set(proporcion)
-                    barra.configure(progress_color=branding.score_color(proporcion * 100))
-                    valor_label.configure(text=f"{puntos:.0f}/{maximo}",
-                                    text_color=branding.score_color(proporcion * 100))
-            except Exception:
-                pass
+            for clave, (barra, label) in self.area_bars.items():
+                puntos = resultado.breakdown.get(clave, 0)
+                maximo = healthscore.WEIGHTS.get(clave, 1)
+                proporcion = puntos / maximo if maximo else 0
+                barra.set(proporcion)
+                barra.configure(progress_color=branding.score_color(proporcion * 100))
+                label.configure(text=f"{puntos:.0f}/{maximo}",
+                                text_color=branding.score_color(proporcion * 100))
 
         self.after(0, actualizar)
 
@@ -1000,7 +994,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             aptos = []
             for jf in junk:
                 try:
-                    ensure_safe = safety.ensure_safe_to_modify(Path(jf.path))
+                    safety.ensure_safe_to_modify(Path(jf.path))
                     aptos.append(jf)
                 except safety.UnsafePathError:
                     self.log(f"Omitido por seguridad: {jf.path}", "Limpieza")
