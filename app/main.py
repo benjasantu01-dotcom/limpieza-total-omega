@@ -126,7 +126,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _init_state(self):
         """Inicializa las estructuras de datos y variables de estado."""
         self._cache = {}
-        self._last_health_state = {}
+        self._last_health_state = None
         self.scan_target = None  # None = carpetas por defecto (Temp/Descargas)
         self.analysis_folder = None
         self.report_data = {}
@@ -858,7 +858,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _update_health_visuals(self, resultado: healthscore.ScoreResult, junk_mb: float, 
                                sospechosos: int, ram_libre: float, disco_libre: float):
         """Actualiza la interfaz de la pestaña Salud con los resultados del análisis."""
-        # Evitar redibujado si los datos no cambiaron
         state_key = (resultado.score, junk_mb, sospechosos, ram_libre, disco_libre)
         if self._last_health_state == state_key:
             return

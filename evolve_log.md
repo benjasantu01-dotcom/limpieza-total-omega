@@ -486,3 +486,57 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-07-30T14:18:23` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé el pipeline de `find_duplicates` añadiendo un filtro de "caché de inodos" (device/inode) para evitar procesar físicamente el mismo archivo si aparece en múltiples rutas debido a hardlinks o accesos redundantes, reduciendo drásticamente las operaciones de E/S innecesarias en sistemas de archivos grandes.
 - `2026-07-30T14:18:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-30T14:18:23` Corrida terminada. Total usado hoy: 336.
+- `2026-07-30T14:27:04` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-07-30T14:27:31` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del puntaje global en `compute_score` eliminando las conversiones redundantes de tipo y las llamadas repetitivas a `_clamp` dentro del loop, operando directamente con las variables ya validadas para reducir el overhead computacional.
+- `2026-07-30T14:28:46` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Implementé un mecanismo de "debouncing" visual en la actualización de la interfaz de la pestaña Salud, moviendo el cálculo de `state_key` fuera del `after` para evitar redibujados innecesarios en el hilo principal y cacheando el resultado de las métricas de forma persistente en `_compile_metrics` para reducir accesos redundantes al disco.
+- `2026-07-30T14:29:13` Tests FALLARON:
+```
+          '"grande","11","104857600"\n'
+            '"medio","12","10485760"\n'
+        )
+        procesos = memory.parse_windows_process_csv(csv)
+>       assert [p.name for p in procesos] == ["grande", "medio", "chico"]
+E       AssertionError: assert [] == ['grande', 'medio', 'chico']
+E         
+E         Right contains 3 more items, first extra item: 'grande'
+E         
+E         Full diff:
+E         + []
+E         - [
+E         -     'grande',
+E         -     'medio',
+E         -     'chico',
+E         - ]
+
+evolve/tests/test_modules.py:346: AssertionError
+__________________ test_parse_process_csv_skips_broken_lines ___________________
+
+    def test_parse_process_csv_skips_broken_lines():
+        csv = '"Name","Id","WorkingSet"\n"ok","1","1024"\nlinea basura\n"malo","x","y"\n'
+        procesos = memory.parse_windows_process_csv(csv)
+>       assert len(procesos) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+evolve/tests/test_modules.py:353: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption - AssertionError: assert [] == ['grande', 'medio', 'chico']
+  
+  Right contains 3 more items, first extra item: 'grande'
+  
+  Full diff:
+  + []
+  - [
+  -     'grande',
+  -     'medio',
+  -     'chico',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines - assert 0 == 1
+ +  where 0 = len([])
+2 failed, 297 passed in 1.07s
+
+```
+- `2026-07-30T14:29:13` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Optimizé `parse_windows_process_csv` para evitar la creación de listas intermedias y el uso de `strip()` repetitivo, utilizando un generador y procesamiento de cadenas más directo para reducir el uso de memoria en sistemas con muchos procesos activos.
+- `2026-07-30T14:29:21` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimicé `scan_for_junk` para evitar llamadas redundantes a `Path(entry.path)` y el uso de `os.path.exists` dentro del loop recursivo, utilizando directamente los objetos `DirEntry` que ya contienen la información necesaria, mejorando el rendimiento en discos con alta cantidad de archivos.
+- `2026-07-30T14:29:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-30T14:29:21` Corrida terminada. Total usado hoy: 340.

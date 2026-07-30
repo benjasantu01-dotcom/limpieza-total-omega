@@ -125,59 +125,39 @@ def _to_int(value: Any, default: int = 0) -> int:
 
 
 def score_junk(junk_mb: float) -> float:
-    """
-    Normaliza MB de basura a un ratio [0.0, 1.0].
-    El ratio es 1.0 si no hay basura, y 0.0 si se iguala/supera JUNK_LIMIT_MB.
-    """
+    """Normaliza MB de basura a un ratio [0.0, 1.0]."""
     if JUNK_LIMIT_MB <= 0: return 0.0
-    return _clamp(1.0 - (_to_float(junk_mb) / JUNK_LIMIT_MB))
+    return _clamp(1.0 - (junk_mb / JUNK_LIMIT_MB))
 
 
 def score_security(suspicious_count: int, warnings: int = 0) -> float:
-    """
-    Calcula ratio [0.0, 1.0] penalizando hallazgos de seguridad y advertencias.
-    Cada hallazgo resta 0.05 y cada advertencia 0.25 del puntaje base de 1.0.
-    """
-    count = _to_int(suspicious_count)
-    warns = _to_int(warnings)
-    penalty: float = float(count) * 0.05 + float(warns) * 0.25
+    """Calcula ratio [0.0, 1.0] penalizando hallazgos de seguridad."""
+    penalty: float = float(suspicious_count) * 0.05 + float(warnings) * 0.25
     return _clamp(1.0 - penalty, 0.0, 1.0)
 
 
 def score_memory(available_percent: float) -> float:
-    """
-    Normaliza el porcentaje de RAM disponible a un ratio [0.0, 1.0].
-    El ratio es 1.0 si la disponibilidad es igual o mayor a RAM_IDEAL_PERCENT.
-    """
+    """Normaliza el porcentaje de RAM disponible a un ratio [0.0, 1.0]."""
     if RAM_IDEAL_PERCENT <= 0: return 0.0
-    return _clamp(_to_float(available_percent) / RAM_IDEAL_PERCENT)
+    return _clamp(available_percent / RAM_IDEAL_PERCENT)
 
 
 def score_disk(free_percent: float) -> float:
-    """
-    Normaliza el porcentaje de espacio en disco libre a un ratio [0.0, 1.0].
-    El ratio es 1.0 si el espacio es igual o mayor a DISK_IDEAL_PERCENT.
-    """
+    """Normaliza el porcentaje de espacio en disco libre a un ratio [0.0, 1.0]."""
     if DISK_IDEAL_PERCENT <= 0: return 0.0
-    return _clamp(_to_float(free_percent) / DISK_IDEAL_PERCENT)
+    return _clamp(free_percent / DISK_IDEAL_PERCENT)
 
 
 def score_duplicates(duplicate_mb: float) -> float:
-    """
-    Normaliza MB de duplicados a un ratio [0.0, 1.0].
-    El ratio es 1.0 si no hay duplicados, y 0.0 si se alcanza DUPLICATE_LIMIT_MB.
-    """
+    """Normaliza MB de duplicados a un ratio [0.0, 1.0]."""
     if DUPLICATE_LIMIT_MB <= 0: return 0.0
-    return _clamp(1.0 - (_to_float(duplicate_mb) / DUPLICATE_LIMIT_MB))
+    return _clamp(1.0 - (duplicate_mb / DUPLICATE_LIMIT_MB))
 
 
 def score_startup(startup_count: int) -> float:
-    """
-    Normaliza el conteo de programas de inicio a un ratio [0.0, 1.0].
-    El ratio es 1.0 si el conteo es 0, y 0.0 si se alcanza STARTUP_LIMIT_COUNT.
-    """
+    """Normaliza el conteo de programas de inicio a un ratio [0.0, 1.0]."""
     if STARTUP_LIMIT_COUNT <= 0: return 0.0
-    return _clamp(1.0 - (_to_int(startup_count) / STARTUP_LIMIT_COUNT))
+    return _clamp(1.0 - (float(startup_count) / STARTUP_LIMIT_COUNT))
 
 
 def grade_for_score(score: int) -> str:
@@ -194,20 +174,20 @@ def _generate_recommendations(m: SystemMetrics, ratios: Dict[str, float]) -> Lis
     recs: List[str] = []
     
     if ratios.get("seguridad", 1.0) < 0.9:
-        recs.append(f"Revisá los {max(0, int(m.suspicious_count))} hallazgo(s) de seguridad; podés aislarlos en cuarentena sin borrarlos.")
+        recs.append(f"Revisá los {m.suspicious_count} hallazgo(s) de seguridad; podés aislarlos en cuarentena sin borrarlos.")
     if ratios.get("disco", 1.0) < 0.6:
-        recs.append(f"Queda {round(_clamp(float(m.disk_free_percent), 0.0, 100.0), 1)}% de disco libre. Mirá el análisis de disco para ver qué ocupa más.")
+        recs.append(f"Queda {m.disk_free_percent:.1f}% de disco libre. Mirá el análisis de disco para ver qué ocupa más.")
     if ratios.get("memoria", 1.0) < 0.6:
         recs.append("Memoria disponible baja: cerrá programas que no uses. Ojo, 'liberar RAM' no sirve, cerrar procesos sí.")
     if ratios.get("basura", 1.0) < 0.8:
-        recs.append(f"Hay unos {int(max(0.0, float(m.junk_mb)))} MB de archivos temporales para revisar.")
+        recs.append(f"Hay unos {int(m.junk_mb)} MB de archivos temporales para revisar.")
     if ratios.get("duplicados", 1.0) < 0.8:
-        recs.append(f"Podrías recuperar ~{int(max(0.0, float(m.duplicate_mb)))} MB eliminando copias duplicadas.")
+        recs.append(f"Podrías recuperar ~{int(m.duplicate_mb)} MB eliminando copias duplicadas.")
     if ratios.get("arranque", 1.0) < 0.6:
-        recs.append(f"{max(0, int(m.startup_count))} programas arrancan con Windows; desactivá los que no necesites desde el Administrador de tareas.")
+        recs.append(f"{m.startup_count} programas arrancan con Windows; desactivá los que no necesites desde el Administrador de tareas.")
     
     if m.quarantined_count > 0:
-        recs.append(f"Tenés {max(0, int(m.quarantined_count))} archivo(s) en cuarentena esperando tu decisión.")
+        recs.append(f"Tenés {m.quarantined_count} archivo(s) en cuarentena esperando tu decisión.")
     
     if not recs:
         recs.append("No hay nada urgente para hacer. El sistema está en buen estado.")
@@ -236,14 +216,14 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         total_score: float = 0.0
         breakdown: Dict[str, int] = {}
         for area, weight in WEIGHTS.items():
-            ratio = ratios.get(area, 0.0)
-            score_part = int(round(_clamp(ratio, 0.0, 1.0) * weight))
+            score_part = int(ratios.get(area, 0.0) * weight + 0.5)
             breakdown[area] = score_part
-            total_score += float(score_part)
+            total_score += score_part
 
+        final_score = int(total_score)
         return HealthResult(
-            score=max(0, min(100, int(round(total_score)))),
-            grade=grade_for_score(int(round(total_score))),
+            score=final_score,
+            grade=grade_for_score(final_score),
             breakdown=breakdown,
             recommendations=_generate_recommendations(metrics, ratios),
         )
@@ -262,7 +242,6 @@ def summarize(result: HealthResult) -> List[str]:
     """Genera una representación visual y textual del resultado de salud."""
     lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     
-    # Ordenar áreas priorizando las que más puntos han perdido respecto a su peso.
     orden = sorted(result.breakdown.items(), key=_sort_by_performance_delta)
     
     for area, puntos in orden:
