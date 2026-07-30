@@ -150,11 +150,6 @@ def all_drives_usage(mounts: Iterable[str] | None = None) -> list[DriveUsage]:
 def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Generator[tuple[Path, int], None, None]:
     """
     Genera tuplas (ruta, tamaño) para cada archivo encontrado.
-    
-    El escaneo es iterativo/recursivo y excluye:
-    1. Archivos en rutas protegidas según `safety.is_protected_path`.
-    2. Enlaces simbólicos y puntos de reparse (Junctions) para evitar bucles.
-    3. Rutas que escapen del directorio base (seguimiento de enlaces).
     """
     if not directory:
         return
@@ -171,7 +166,6 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
             if entry.is_symlink():
                 return True
             if os.name == 'nt':
-                # Verifica puntos de reparse (Junctions/Mount Points) en Windows
                 if entry.stat(follow_symlinks=False).st_reparse_tag != 0:
                     return True
             path_entry = Path(entry.path).resolve()
@@ -195,9 +189,9 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
                             yield from recursive_scan(entry.path)
                         else:
                             yield Path(entry.path), entry.stat().st_size
-                    except (OSError, PermissionError):
+                    except (OSError, PermissionError, FileNotFoundError):
                         continue
-        except (OSError, PermissionError):
+        except (OSError, PermissionError, FileNotFoundError):
             return
 
     yield from recursive_scan(str(base_path))
@@ -255,7 +249,7 @@ def largest_folders(directory: str | os.PathLike, limit: int = 10, skip_protecte
             stats = folder_map[top_level]
             stats.size_bytes += size
             stats.file_count += 1
-        except (ValueError, IndexError, OSError):
+        except (ValueError, IndexError, OSError, FileNotFoundError):
             continue
 
     return heapq.nlargest(max(0, limit), folder_map.values(), key=lambda f: f.size_bytes)
@@ -276,11 +270,6 @@ def total_size(directory: str | os.PathLike, skip_protected: bool = True) -> tup
 def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list[str]:
     """
     Genera un informe textual resumen del uso de disco en el directorio especificado.
-    
-    El proceso recolecta:
-    - Métricas globales (total de bytes y archivos).
-    - Agrupación por extensión (usando un diccionario de contadores).
-    - Top 8 de archivos más pesados mediante un heap para eficiencia de memoria.
     """
     if not directory:
         return ["Error: Ruta vacía."]

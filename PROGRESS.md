@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **249** (49.4% de aceptación)
+- Mejoras aceptadas: **250** (49.6% de aceptación)
 - Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 26
+- Rechazadas por guardia de seguridad: 25
 - Sin cambios (nada sustancial que mejorar): 10
 - Sin respuesta de la IA (error o límite): 200
 
@@ -16,37 +16,41 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-28 | 55 | 6 | 6 | 1 | 54 |
+| 2026-07-28 | 52 | 6 | 5 | 1 | 54 |
 | 2026-07-29 | 171 | 10 | 18 | 8 | 143 |
-| 2026-07-30 | 23 | 3 | 2 | 1 | 3 |
+| 2026-07-30 | 27 | 3 | 2 | 1 | 3 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **65**
 - manejo de errores y validación de entradas: **51**
-- seguridad defensiva: **47**
 - rendimiento: **47**
-- robustez ante casos límite: **39**
+- seguridad defensiva: **44**
+- robustez ante casos límite: **43**
 
 ## Mejoras aceptadas por archivo
 
 - `scanner.py`: **22**
 - `settings.py`: **22**
-- `quarantine.py`: **21**
-- `browser.py`: **21**
-- `organizer.py`: **20**
+- `browser.py`: **22**
 - `assistant.py`: **20**
+- `quarantine.py`: **20**
+- `organizer.py`: **19**
+- `diskreport.py`: **18**
 - `healthscore.py`: **18**
 - `main.py`: **18**
-- `diskreport.py`: **17**
-- `memory.py`: **16**
-- `duplicates.py`: **16**
+- `duplicates.py`: **17**
+- `memory.py`: **15**
+- `branding.py`: **15**
 - `safety.py`: **14**
-- `branding.py`: **14**
 - `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-30T01:31:55` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `suggest_keeper` y `_collect_candidates` ante archivos que desaparecen durante el procesamiento (condición de carrera o cambio de estado) y mejoré la gestión de excepciones en `suggest_keeper` para evitar que un solo archivo inaccesible invalide la sugerencia de todo un grupo.
+- `2026-07-30T01:31:47` **diskreport.py** (robustez ante casos límite): Se reforzó `walk_files` y `largest_folders` para manejar correctamente rutas que desaparecen durante el recorrido (race conditions), evitando que excepciones de sistema interrumpan el escaneo de disco.
+- `2026-07-30T01:31:23` **browser.py** (robustez ante casos límite): Se ha mejorado la robustez de `directory_size` ante errores de acceso a disco (como archivos bloqueados o denegados durante la iteración) envolviendo la lectura de `st_size` y la navegación del árbol en bloques `try-except` más granulares y resilientes, evitando que un fallo puntual detenga el cálculo total del tamaño.
+- `2026-07-30T01:31:01` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores del sistema de archivos mediante el uso de `is_safe_to_modify` para evitar excepciones innecesarias y se mejoró el manejo de rutas para prevenir fallos en directorios padres inexistentes o con permisos restringidos, siguiendo el enfoque de robustez ante casos límite.
 - `2026-07-30T01:21:51` **assistant.py** (robustez ante casos límite): Se mejora la robustez de `build_context` ante valores corruptos o inesperados en `metrics` y `health`, garantizando que si los datos provienen de un estado inconsistente, la app no se bloquee ni propague valores inválidos.
 - `2026-07-30T01:21:36` **startup.py** (rendimiento): Optimizé `entries_from_registry` para evitar el uso redundante de `parse_registry_csv` dentro de un loop, procesando el bloque completo de salida de PowerShell de una vez y reduciendo drásticamente las operaciones de split/join en cada línea.
 - `2026-07-30T01:20:47` **scanner.py** (rendimiento): Se optimizó el escaneo del directorio convirtiendo `SYSTEM_LOOKALIKES` y `SUSPICIOUS_EXECUTABLE_EXT` a `frozenset` para obtener búsquedas O(1) más rápidas, y se evitó la resolución costosa de `Path` mediante `resolve()` dentro del bucle crítico, usando en su lugar la comparación directa de rutas `str` optimizada.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-30T00:50:39` **branding.py** (rendimiento): Optimicé el método `draw_logo` para evitar la creación innecesaria de objetos `Canvas` y el re-cálculo de parámetros mediante la pre-computación de la lista `franjas` y el uso eficiente de `gradient_colors`, reduciendo el uso de CPU durante el refresco de la UI.
 - `2026-07-30T00:40:51` **startup.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de la clase `StartupEntry` documentando exhaustivamente su lógica de extracción de rutas, y agregué type hints y docstrings explicativos en `entries_from_registry` para clarificar el flujo de procesamiento del CSV de PowerShell.
 - `2026-07-30T00:40:42` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del código añadiendo docstrings más detallados y tipado explícito a funciones internas, además de documentar claramente las suposiciones de validación mediante `type hints`.
-- `2026-07-30T00:40:17` **scanner.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `scan_directory` mediante la extracción de la lógica de procesamiento de entradas del bucle, documentando claramente la gestión de reparse points y la validación de rutas para evitar escapes del directorio raíz.
-- `2026-07-30T00:30:32` **quarantine.py** (legibilidad y documentación): He mejorado la documentación interna y la robustez del código mediante la adición de Type Hints faltantes, la corrección de una inconsistencia en el manejo del caché del manifiesto y la mejora de los docstrings para clarificar el comportamiento ante errores.
-- `2026-07-30T00:30:07` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de docstrings estructurados (usando el estándar Google) para las funciones que carecían de ellos, especificando explícitamente las excepciones que pueden ser lanzadas y los tipos de datos esperados, facilitando el mantenimiento y la comprensión de los flujos de seguridad.
-- `2026-07-30T00:29:43` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de Type Hints en la firma de `_read_windows_snapshot` y `diagnose`, y se ha documentado la lógica de exclusión de procesos de sistema en `trim_working_set` para clarificar las salvaguardas de seguridad.

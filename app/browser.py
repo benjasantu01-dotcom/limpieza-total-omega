@@ -117,7 +117,10 @@ def directory_size(path: str | os.PathLike) -> int:
     Ignora enlaces simbólicos para evitar bucles infinitos y
     saltea archivos cuyo acceso esté restringido.
     """
-    root_path = Path(path).resolve()
+    try:
+        root_path = Path(path).resolve()
+    except (OSError, RuntimeError):
+        return 0
     
     if not root_path.is_dir() or is_protected_path(root_path):
         return 0
@@ -130,17 +133,17 @@ def directory_size(path: str | os.PathLike) -> int:
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:
-                    if entry.is_symlink():
-                        continue
-                    if entry.is_dir():
-                        entry_path = Path(entry.path).resolve()
-                        if root_path in entry_path.parents and not is_protected_path(entry_path):
-                            stack.append(entry_path)
-                    elif entry.is_file():
-                        try:
-                            total_bytes += entry.stat().st_size
-                        except (OSError, PermissionError):
+                    try:
+                        if entry.is_symlink():
                             continue
+                        if entry.is_dir():
+                            entry_path = Path(entry.path).resolve()
+                            if root_path in entry_path.parents and not is_protected_path(entry_path):
+                                stack.append(entry_path)
+                        elif entry.is_file():
+                            total_bytes += entry.stat().st_size
+                    except (OSError, PermissionError):
+                        continue
         except (OSError, PermissionError):
             continue
     return total_bytes

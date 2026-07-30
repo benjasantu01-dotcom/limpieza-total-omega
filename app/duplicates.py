@@ -243,10 +243,8 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
         if not isinstance(p, Path) or is_protected_path(p):
             continue
         try:
-            if not p.is_file():
-                continue
+            # Usamos stat() en lugar de lstat() para asegurar que el archivo es real
             stat = p.stat()
-            # Tupla de prioridad: (tiempo_modificacion, longitud_path)
             valid_paths.append((stat.st_mtime, len(str(p)), p))
         except (OSError, PermissionError, FileNotFoundError):
             continue
