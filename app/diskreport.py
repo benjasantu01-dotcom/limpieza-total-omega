@@ -264,6 +264,7 @@ def total_size(directory: str | os.PathLike, skip_protected: bool = True) -> tup
         return 0, 0
     total = 0
     count = 0
+    # walk_files ya maneja internamente la validación de la existencia de la ruta
     for _, size in walk_files(directory, skip_protected):
         total += size
         count += 1
@@ -275,14 +276,14 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
     Genera un informe textual resumen del uso de disco en el directorio especificado.
     """
     if not directory:
-        return ["Error: Ruta vacía."]
+        return ["Error: Ruta no especificada."]
         
     try:
         path_obj = Path(directory).expanduser().resolve(strict=True)
         if not path_obj.is_dir():
-            return [f"Error: La carpeta '{directory}' no es válida."]
+            return [f"Error: La ruta '{directory}' no es un directorio válido."]
     except (OSError, RuntimeError):
-        return ["Error: No se pudo acceder a la ruta."]
+        return ["Error: No se pudo acceder a la ruta especificada."]
         
     total_bytes: int = 0
     total_files: int = 0

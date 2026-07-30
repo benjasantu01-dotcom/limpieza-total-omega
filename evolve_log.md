@@ -608,3 +608,43 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption
 - `2026-07-30T03:56:42` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `build_context` y `ask` mediante la validación proactiva de tipos y el manejo explícito de errores, evitando que la IA intente operar con datos corruptos o mal formateados provenientes de `settings`.
 - `2026-07-30T03:56:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-30T03:56:42` Corrida terminada. Total usado hoy: 92.
+- `2026-07-30T04:03:29` Arrancando corrida. Quedan hoy ~208 peticiones objetivo.
+- `2026-07-30T04:04:14` Tests FALLARON:
+```
+=============
+______________________ test_score_color_survives_garbage _______________________
+
+    def test_score_color_survives_garbage():
+>       assert branding.score_color(None) == branding.PALETTE["text_muted"]
+E       AssertionError: assert '#ff4757' == '#94a3b8'
+E         
+E         - #94a3b8
+E         + #ff4757
+
+evolve/tests/test_modules.py:167: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:72: SyntaxWarning: invalid escape sequence '\R'
+    raw_cmd: Cadena de comando cruda (ej. '"C:\Ruta\App.exe" /param').
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_score_color_survives_garbage - AssertionError: assert '#ff4757' == '#94a3b8'
+  
+  - #94a3b8
+  + #ff4757
+1 failed, 298 passed, 7 warnings in 1.13s
+
+```
+- `2026-07-30T04:04:14` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `save_logo_svg` y `draw_logo` validando explícitamente la entrada de parámetros (`destination` y `canvas`) y capturando errores de forma granular para evitar fallos silenciosos o inesperados en la interfaz.
+- `2026-07-30T04:04:37` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Reforcé la robustez de `directory_size` y `detect_profiles` añadiendo validaciones de tipo explícitas y manejo de excepciones ante rutas inexistentes o inaccesibles, evitando que valores inesperados (como `None` o rutas mal formadas) interrumpan el flujo del escáner.
+- `2026-07-30T04:05:01` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `summarize` y `total_size` añadiendo validación explícita de `None` y rutas inexistentes, asegurando que las funciones no fallen silenciosamente ante parámetros inválidos o errores de resolución de ruta, alineado con el enfoque de validación de entradas.
+- `2026-07-30T04:05:09` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `find_duplicates` añadiendo validaciones preventivas de entrada y manejo de listas vacías, asegurando que el pipeline no procese iterables nulos o malformados que podrían causar errores inesperados en tiempo de ejecución.
+- `2026-07-30T04:05:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-30T04:05:09` Corrida terminada. Total usado hoy: 96.

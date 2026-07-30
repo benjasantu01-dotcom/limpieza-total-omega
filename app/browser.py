@@ -111,18 +111,20 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
 
 
 @lru_cache(maxsize=32)
-def directory_size(path: str | os.PathLike) -> int:
+def directory_size(path: str | os.PathLike | None) -> int:
     """
     Calcula el tamaño total en bytes mediante suma recursiva.
     Ignora enlaces simbólicos y valida contención estricta para
     evitar escapes de directorio.
     """
+    if path is None:
+        return 0
     try:
         root_path = Path(path).resolve()
     except (OSError, RuntimeError):
         return 0
     
-    if not root_path.is_dir() or is_protected_path(root_path):
+    if not root_path.exists() or not root_path.is_dir() or is_protected_path(root_path):
         return 0
     
     total_bytes: int = 0
@@ -134,12 +136,10 @@ def directory_size(path: str | os.PathLike) -> int:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
-                        # Si es link, ignorar para evitar bucles y bypass de seguridad
                         if entry.is_symlink():
                             continue
                         if entry.is_dir():
                             entry_path = Path(entry.path).resolve()
-                            # Validar contención estricta: debe estar bajo el root_path
                             if root_path in entry_path.parents and not is_protected_path(entry_path):
                                 stack.append(entry_path)
                         elif entry.is_file():
@@ -177,8 +177,8 @@ def detect_profiles(
     Explora directorios base en busca de cachés definidas en `cache_paths`.
     Retorna una lista ordenada de objetos `BrowserCache` por tamaño descendente.
     """
-    bases = bases or base_directories()
-    cache_paths = cache_paths or BROWSER_CACHE_PATHS
+    bases = bases if bases is not None else base_directories()
+    cache_paths = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
 
     found: List[BrowserCache] = []
     for base in bases:
@@ -186,13 +186,16 @@ def detect_profiles(
             continue
             
         for browser_name, relative_path_str in cache_paths.items():
-            candidate = base.joinpath(*relative_path_str.split("\\"))
-            if _is_valid_cache_path(candidate, base):
-                found.append(BrowserCache(
-                    browser=browser_name,
-                    path=candidate,
-                    size_bytes=directory_size(str(candidate)),
-                ))
+            try:
+                candidate = base.joinpath(*relative_path_str.split("\\"))
+                if _is_valid_cache_path(candidate, base):
+                    found.append(BrowserCache(
+                        browser=browser_name,
+                        path=candidate,
+                        size_bytes=directory_size(candidate),
+                    ))
+            except (TypeError, AttributeError):
+                continue
                 
     found.sort(key=lambda c: c.size_bytes, reverse=True)
     return found

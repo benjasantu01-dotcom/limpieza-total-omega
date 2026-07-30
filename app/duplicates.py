@@ -122,9 +122,11 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     Agrupa rutas de archivos por su tamaño en bytes. 
     Ignora archivos protegidos o inaccesibles.
     """
+    if paths is None:
+        return {}
     groups: Dict[int, List[Path]] = defaultdict(list)
     for p in paths:
-        if is_protected_path(p):
+        if not p or is_protected_path(p):
             continue
         try:
             size = p.lstat().st_size
@@ -201,11 +203,17 @@ def find_duplicates(
 
     Retorna: Lista de DuplicateGroup ordenados por mayor impacto en bytes.
     """
+    if not directories:
+        return []
+
     candidates = _collect_candidates(directories, min_size, skip_protected)
     if not candidates:
         return []
 
     size_map = {s: p for s, p in group_by_size(candidates).items() if len(p) > 1}
+    if not size_map:
+        return []
+
     groups: List[DuplicateGroup] = []
     
     for size, same_size in size_map.items():
@@ -243,6 +251,8 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
 
     valid_paths: List[Tuple[float, int, Path]] = []
     for p in group.paths:
+        if not p:
+            continue
         path_obj = Path(p)
         if not path_obj.is_file() or is_protected_path(path_obj):
             continue
