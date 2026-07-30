@@ -108,6 +108,15 @@ def _generate_unique_target(target: Path) -> Path:
     return candidate
 
 
+def _is_junk_file(entry: os.DirEntry) -> bool:
+    """Valida si un archivo de sistema es un archivo basura y es seguro manipularlo."""
+    if not entry.is_file(follow_symlinks=False):
+        return False
+    if not entry.name.lower().endswith(_JUNK_EXTS_TUPLE):
+        return False
+    return is_safe_to_modify(Path(entry.path))
+
+
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     """
     Escanea directorios en busca de archivos temporales mediante recursión segura.
@@ -128,33 +137,27 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     dirs = directories or DEFAULT_SCAN_DIRS
     found: List[JunkFile] = []
     blocklist = SYSTEM_FOLDER_BLOCKLIST
-    ext_tuple = _JUNK_EXTS_TUPLE
 
     def _walk_dir(base_path: str) -> None:
         try:
             with os.scandir(base_path) as it:
                 for entry in it:
                     try:
-                        # Exclusión de enlaces simbólicos para evitar bucles infinitos
                         if entry.is_symlink():
                             continue
                         
                         if entry.is_dir(follow_symlinks=False):
                             if entry.name.lower() not in blocklist:
                                 _walk_dir(entry.path)
-                        elif entry.is_file(follow_symlinks=False):
-                            if entry.name.lower().endswith(ext_tuple):
-                                p_obj = Path(entry.path)
-                                # is_safe_to_modify: chequeo de solo lectura, no altera el disco
-                                if is_safe_to_modify(p_obj):
-                                    stat = entry.stat()
-                                    found.append(
-                                        JunkFile(
-                                            path=p_obj,
-                                            size_bytes=stat.st_size,
-                                            modified=datetime.fromtimestamp(stat.st_mtime),
-                                        )
-                                    )
+                        elif _is_junk_file(entry):
+                            stat = entry.stat()
+                            found.append(
+                                JunkFile(
+                                    path=Path(entry.path),
+                                    size_bytes=stat.st_size,
+                                    modified=datetime.fromtimestamp(stat.st_mtime),
+                                )
+                            )
                     except (PermissionError, OSError):
                         continue
         except (PermissionError, OSError):
@@ -223,7 +226,6 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             if not full_source_path.exists() or not full_source_path.is_file() or full_source_path.is_symlink():
                 continue
             
-            # Validación de seguridad defensiva
             if not is_safe_to_modify(full_source_path):
                 continue
             

@@ -27,7 +27,7 @@ import hashlib
 from dataclasses import dataclass, asdict
 from datetime import datetime
 from pathlib import Path
-from typing import List, Union, Dict, Tuple
+from typing import List, Union, Dict, Tuple, Optional
 
 from safety import (
     UnsafePathError,
@@ -282,7 +282,7 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
         raise ValueError("El ID debe ser una cadena válida.")
 
     items = load_manifest(base)
-    match = next((i for i in items if i.item_id == item_id), None)
+    match: Optional[QuarantineItem] = next((i for i in items if i.item_id == item_id), None)
     
     if match is None:
         raise KeyError(f"No se encontró ítem con ID: {item_id}")
@@ -332,7 +332,7 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
         return False
     
     items = load_manifest(base)
-    match = next((i for i in items if i.item_id == item_id), None)
+    match: Optional[QuarantineItem] = next((i for i in items if i.item_id == item_id), None)
     
     if match is None:
         return False

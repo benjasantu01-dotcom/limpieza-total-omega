@@ -76,9 +76,12 @@ _ALL_PROTECTED_TOKENS: Final[frozenset[str]] = PROTECTED_DIR_NAMES | _SYSTEM_ROO
 
 def _is_reparse_point(path: Path) -> bool:
     """
-    Verifica atributos de sistema (reparse points) para evitar seguir Junctions
-    o Symlinks. Un reparse point es un punto de entrada que redirige a otra ruta,
-    lo que puede causar bucles infinitos o fugas fuera del directorio escaneado.
+    Verifica si la ruta es un punto de reparse (Junction/Symlink).
+    
+    Args:
+        path: Objeto Path resuelto del archivo o carpeta.
+    Returns:
+        bool: True si es un reparse point, evitando así bucles o fugas de directorio.
     """
     try:
         # 0x400 es FILE_ATTRIBUTE_REPARSE_POINT en la API de Windows
@@ -90,9 +93,15 @@ def _is_reparse_point(path: Path) -> bool:
 
 def normalize(path: PathLike) -> Path:
     """
-    Convierte una entrada arbitraria (str/Path) en un objeto Path absoluto,
-    resolviendo alias de usuario y enlaces simbólicos. 
-    Crucial: Toda validación posterior depende de que la ruta esté resuelta.
+    Normaliza rutas para comparaciones seguras.
+    
+    Args:
+        path: Ruta como string o objeto Path.
+    Returns:
+        Path: Ruta absoluta y resuelta del sistema de archivos.
+    Raises:
+        TypeError: Si la entrada no es de un tipo compatible.
+        ValueError: Si la ruta está vacía.
     """
     if not isinstance(path, (str, os.PathLike)):
         raise TypeError(f"Entrada inválida: se esperaba str o PathLike, recibió {type(path)}")
@@ -109,7 +118,7 @@ def normalize(path: PathLike) -> Path:
 
 
 def is_drive_root(path: PathLike) -> bool:
-    """Verifica si la ruta apunta a la raíz de una unidad (ej. C:\\), donde se encuentran tablas de partición."""
+    """Verifica si la ruta apunta a la raíz de una unidad (ej. C:\\)."""
     try:
         p = normalize(path)
         return p == Path(p.anchor)
@@ -120,9 +129,10 @@ def is_drive_root(path: PathLike) -> bool:
 @lru_cache(maxsize=1024)
 def is_protected_path(path: PathLike) -> bool:
     """
-    Verifica si una ruta es peligrosa por definición. 
-    Bloquea: rutas UNC (red), raíces de disco, directorios del sistema,
-    y reparse points que podrían romper la estructura lógica del escaneo.
+    Evalúa si una ruta es peligrosa por definición.
+    
+    Returns:
+        bool: True si la ruta es inaccesible (red, sistema, reparse point).
     """
     if not path or not isinstance(path, (str, os.PathLike)):
         return True
@@ -136,7 +146,7 @@ def is_protected_path(path: PathLike) -> bool:
         if not p.is_absolute():
             return True
 
-        # Verifica si algún segmento del path está en la lista negra (ej. .../Windows/...)
+        # Verifica si algún segmento del path está en la lista negra
         if p.parts and not _ALL_PROTECTED_TOKENS.isdisjoint(part.lower() for part in p.parts):
             return True
             
@@ -153,8 +163,8 @@ def is_protected_path(path: PathLike) -> bool:
 
 def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = False) -> bool:
     """
-    Valida confinamiento: retorna True si 'child' está contenido dentro de 'parent'.
-    Evita path traversal (ataques '..') comparando rutas normalizadas.
+    Valida confinamiento: retorna True si 'child' está dentro de 'parent'.
+    Evita path traversal comparando rutas normalizadas.
     """
     if child is None or parent is None:
         return False
@@ -170,7 +180,7 @@ def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = F
 
 @lru_cache(maxsize=512)
 def is_sensitive_file(path: PathLike) -> bool:
-    """Determina si un archivo es crítico por su extensión. Extensiones protegidas impiden la ejecución accidental."""
+    """Determina si la extensión de archivo está en SENSITIVE_EXTENSIONS."""
     if path is None:
         return True
     try:
@@ -181,8 +191,15 @@ def is_sensitive_file(path: PathLike) -> bool:
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> Path:
     """
-    Operación crítica: Valida seguridad antes de modificar el disco.
-    Si la ruta es sospechosa, lanza UnsafePathError. Nunca debe usarse como booleano en un 'if'.
+    Valida integridad antes de una modificación.
+    
+    Args:
+        path: Ruta a evaluar.
+        allow_sensitive: Si es False, bloquea archivos con extensiones críticas.
+    Returns:
+        Path: Retorna la ruta normalizada si es segura.
+    Raises:
+        UnsafePathError: Si la ruta infringe las reglas de seguridad.
     """
     if path is None:
         raise UnsafePathError("Ruta nula recibida.")
@@ -211,8 +228,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
 
 def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> bool:
     """
-    Versión booleana segura para usar en bucles de filtrado.
-    No lanza excepciones, retorna False si la ruta no cumple los estándares de seguridad.
+    Versión booleana para bucles. No lanza excepciones.
     """
     try:
         return isinstance(ensure_safe_to_modify(path, allow_sensitive=allow_sensitive), Path)
@@ -221,14 +237,13 @@ def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> bool:
 
 
 def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = False) -> list[Path]:
-    """Filtra una lista de rutas y devuelve solo aquellas que pasaron las pruebas de seguridad."""
+    """Filtra una colección de rutas, retornando solo las validadas."""
     if not isinstance(paths, Iterable):
         return []
         
     safe_list = []
     for p in paths:
         try:
-            # Intentamos normalizar una vez y verificamos seguridad sin re-normalizar
             normalized_p = normalize(p)
             if is_safe_to_modify(normalized_p, allow_sensitive=allow_sensitive):
                 safe_list.append(normalized_p)
@@ -238,7 +253,7 @@ def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = Fals
 
 
 def describe_protection(path: PathLike) -> str:
-    """Provee una descripción humana de por qué una ruta ha sido bloqueada (útil para logs/UI)."""
+    """Provee la causa del bloqueo de una ruta para la UI o logs."""
     if not path:
         return "La ruta está vacía."
     try:
