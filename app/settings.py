@@ -170,19 +170,29 @@ def _apply_validation_by_type(clave: str, valor: Any, defecto: Any) -> Any:
 
 
 def settings_path(path_or_base: PathLike | None = None) -> Path:
-    """Resuelve la ruta absoluta del archivo de configuración, asegurando seguridad."""
+    """
+    Resuelve la ruta absoluta del archivo de configuración.
+    
+    Args:
+        path_or_base: Directorio base opcional para el archivo.
+        
+    Returns:
+        Ruta absoluta validada como segura.
+    """
     base = Path(path_or_base).expanduser().resolve() if path_or_base else SETTINGS_DIR
-    
-    # Asegurar que el directorio base es seguro antes de intentar usarlo
     ensure_safe_to_modify(str(base))
-    
     return base / SETTINGS_FILE
 
 
 def validate(values: Any) -> dict[str, Any]:
     """
     Valida un diccionario externo contra el esquema de DEFAULTS.
-    Cualquier clave inválida o ausente es rellenada con sus valores por defecto.
+    
+    Args:
+        values: Diccionario crudo a validar.
+        
+    Returns:
+        Diccionario garantizado con todas las claves y tipos correctos.
     """
     limpio = dict(DEFAULTS)
     if not isinstance(values, dict):
@@ -229,7 +239,16 @@ def load(path_or_base: PathLike | None = None) -> dict[str, Any]:
 
 
 def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
-    """Persistencia atómica: escribe en archivo temporal y luego reemplaza."""
+    """
+    Persistencia atómica: escribe en archivo temporal y luego reemplaza.
+    
+    Args:
+        values: Configuración a persistir.
+        path_or_base: Ubicación opcional.
+        
+    Returns:
+        Ruta del archivo guardado o None si falló la operación.
+    """
     global _cached_settings, _last_path_str, _last_mtime
     
     ruta = settings_path(path_or_base)
@@ -249,7 +268,7 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
             temp_name = tf.name
             tf.write(json_data)
             tf.flush()
-            os.fsync(tf.fileno()) # Garantizar persistencia física
+            os.fsync(tf.fileno())
         
         os.replace(temp_name, ruta)
         _cached_settings = limpio

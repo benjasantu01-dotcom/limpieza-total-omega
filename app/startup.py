@@ -62,17 +62,11 @@ class StartupEntry:
 
     def _extract_quoted_path(self, raw_cmd: str) -> str:
         """
-        Analiza cadenas de comandos que envuelven rutas en comillas.
+        Extrae la ruta de un ejecutable envuelto en comillas dobles.
         
-        El proceso busca la segunda comilla para aislar la ruta del resto de
-        argumentos o parámetros, validando además la ausencia de caracteres 
-        prohibidos en el sistema de archivos de Windows.
-        
-        Args:
-            raw_cmd: Cadena de comando cruda (ej. '"C:\Ruta\App.exe" /param').
-            
-        Returns:
-            Ruta absoluta del ejecutable si es válida, caso contrario string vacío.
+        Asume que la ruta termina en la siguiente comilla encontrada. Si el 
+        formato es inválido (ej. falta la comilla de cierre o contiene caracteres 
+        prohibidos por el sistema), retorna un string vacío.
         """
         end_quote: int = raw_cmd.find('"', 1)
         if end_quote == -1:
@@ -92,7 +86,8 @@ class StartupEntry:
         Obtiene la ruta normalizada del ejecutable.
         
         Si el comando utiliza comillas (típico de rutas con espacios), delega
-        en el extractor especializado; si no, asume el primer bloque de texto.
+        en el extractor especializado; si no, asume que el ejecutable es el 
+        primer componente de la cadena antes del primer espacio.
         """
         cmd: str = self.command.strip()
         if not cmd:
@@ -126,12 +121,17 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
     """
     Escanea las carpetas de inicio en busca de ejecutables o accesos directos.
 
-    Seguridad: Ignora 'desktop.ini', enlaces simbólicos y puntos de reparse.
+    Seguridad: Ignora 'desktop.ini', enlaces simbólicos, puntos de reparse y 
+    carpetas protegidas del sistema.
     """
     if folders is None:
         folders = startup_folders()
     found_entries: List[StartupEntry] = []
     for folder in folders:
+        # Verificar que la carpeta no sea una ruta protegida antes de procesar
+        if is_protected_path(folder):
+            continue
+            
         try:
             base_path: Path = folder.resolve()
         except (ValueError, PermissionError, OSError):

@@ -1147,3 +1147,10 @@ assert not True
 - `2026-07-30T09:32:06` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante la adición de docstrings estructuradas en las funciones auxiliares de escaneo, especificando las precondiciones, el valor de retorno y el propósito de cada chequeo heurístico para mayor claridad del equipo.
 - `2026-07-30T09:32:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-30T09:32:06` Corrida terminada. Total usado hoy: 224.
+- `2026-07-30T09:41:01` Arrancando corrida. Quedan hoy ~76 peticiones objetivo.
+- `2026-07-30T09:41:29` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica mediante la adición de docstrings estructurados con secciones "Args" y "Returns", clarificando las responsabilidades de las funciones de validación y persistencia sin alterar su lógica operativa.
+- `2026-07-30T09:41:53` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación de los métodos de `StartupEntry` para aclarar las asunciones técnicas sobre el parseo de rutas y se añadió una validación explícita de `is_protected_path` en `entries_from_folders` para asegurar que el escáner no intente acceder a rutas sensibles del sistema.
+- `2026-07-30T09:42:23` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `_rank_problems` convirtiendo la tupla de reglas en una estructura que se procesa de forma más eficiente y evitando la recreación innecesaria de objetos en cada iteración del bucle autónomo.
+- `2026-07-30T09:42:41` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-07-30T09:42:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-30T09:42:41` Corrida terminada. Total usado hoy: 228.
