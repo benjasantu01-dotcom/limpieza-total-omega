@@ -165,11 +165,12 @@ def grade_color(grade: str | None) -> HexColor:
 
 def score_color(score: float | int | None) -> HexColor:
     """
-    Retorna el color basado en un puntaje numérico (0-100).
+    Calcula el color representativo de un puntaje de salud (0-100).
+    
     Args:
-        score: Valor numérico del puntaje.
+        score: Valor numérico del puntaje. Se normaliza mediante float().
     Returns:
-        HexColor correspondiente al rango del puntaje.
+        HexColor: Código de color asociado al rango (Éxito a Peligro).
     """
     try:
         valor = float(score)
@@ -185,12 +186,15 @@ def score_color(score: float | int | None) -> HexColor:
 def bar(percent: float | int | None, width: int = 24,
         filled: str = "\u2588", empty: str = "\u2591") -> str:
     """
-    Genera una representación visual de progreso mediante caracteres ASCII/Unicode.
+    Genera una barra de progreso visual en texto plano.
+    
     Args:
-        percent: Valor de 0 a 100.
-        width: Cantidad total de caracteres para la barra.
+        percent: Valor entre 0 y 100.
+        width: Longitud total de la cadena resultante.
+        filled: Carácter para el segmento relleno.
+        empty: Carácter para el segmento vacío.
     Returns:
-        String conteniendo la barra renderizada.
+        Cadena formateada con la representación de progreso.
     """
     try:
         valor = max(0.0, min(100.0, float(percent)))
@@ -203,7 +207,10 @@ def bar(percent: float | int | None, width: int = 24,
 
 @lru_cache(maxsize=128)
 def _hex_to_rgb(value: HexColor) -> tuple[int, int, int]:
-    """Convierte un color '#rrggbb' a tupla (R, G, B). Retorna (0,0,0) en error."""
+    """
+    Convierte un color hexadecimal '#rrggbb' a tupla (R, G, B).
+    En caso de formato inválido, retorna (0, 0, 0) de forma segura.
+    """
     try:
         limpio = value.lstrip("#")
         if len(limpio) != 6: raise ValueError("Invalid length")
@@ -215,12 +222,14 @@ def _hex_to_rgb(value: HexColor) -> tuple[int, int, int]:
 @lru_cache(maxsize=64)
 def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
     """
-    Interpola linealmente entre dos colores Hex.
+    Interpola linealmente entre dos colores Hex mediante mezcla RGB.
+    
     Args:
-        start, end: Colores hexadecimales de origen y destino.
-        ratio: Valor entre 0.0 y 1.0 que indica la mezcla.
+        start: Color hexadecimal de inicio.
+        end: Color hexadecimal de destino.
+        ratio: Factor de mezcla (0.0=start, 1.0=end).
     Returns:
-        Color hexadecimal resultante.
+        Color resultante en formato '#rrggbb'.
     """
     proporcion = max(0.0, min(1.0, float(ratio)))
     r1, g1, b1 = _hex_to_rgb(start)
@@ -235,7 +244,8 @@ def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
 @lru_cache(maxsize=16)
 def gradient_colors(steps: int, stops: tuple[HexColor, ...] = GRADIENT_STOPS) -> List[HexColor]:
     """
-    Genera una secuencia de colores interpolados basada en puntos de control (stops).
+    Genera una lista de colores interpolados basada en puntos de control.
+    Si `steps` es mayor a la cantidad de `stops`, interpola suavemente entre ellos.
     """
     cantidad = max(1, int(steps))
     if not stops: return [PALETTE["accent"]] * cantidad
@@ -313,10 +323,11 @@ def logo_ascii() -> str:
 def draw_logo(canvas: Any, size: int = 56, x: int = 0, y: int = 0) -> None:
     """
     Renderiza el logo (escudo Omega) en un widget canvas de Tkinter.
+    
     Args:
         canvas: Widget Tkinter Canvas de destino.
-        size: Dimensiones base del logo.
-        x, y: Coordenadas de posicionamiento.
+        size: Escala base (se utiliza para calcular el radio y los trazos).
+        x, y: Coordenadas de origen para el renderizado.
     """
     if canvas is None or not hasattr(canvas, "create_polygon"): return
     try:
@@ -362,7 +373,12 @@ def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
                       x: int = 0, y: int = 0,
                       stops: tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
     """
-    Pinta una franja de degradado sobre un canvas Tkinter.
+    Dibuja una franja horizontal con degradado de color.
+    
+    Args:
+        canvas: Widget Canvas de destino.
+        width: Ancho total de la franja en píxeles.
+        height: Altura del elemento visual.
     """
     if canvas is None or not hasattr(canvas, "create_line"): return
     try:
@@ -378,12 +394,13 @@ def draw_ring(canvas: Any, percent: float | int, size: int = 150,
               track: HexColor | None = None,
               fill: HexColor | None = None) -> None:
     """
-    Dibuja un medidor circular (HealthScore) usando arcos de Tkinter.
+    Dibuja un medidor circular (HealthScore) usando arcos.
+    
     Args:
         canvas: Widget Canvas de destino.
-        percent: Porcentaje del avance (0-100).
-        size: Tamaño total del diámetro.
-        x, y: Origen de coordenadas.
+        percent: Valor de progreso (0-100).
+        size: Diámetro total del anillo.
+        x, y: Posición del centro.
         thickness: Grosor de la línea del medidor.
     """
     if canvas is None or not hasattr(canvas, "create_arc"): return

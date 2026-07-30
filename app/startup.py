@@ -153,10 +153,6 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
 def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry]:
     """
     Transforma el volcado CSV de PowerShell en objetos StartupEntry.
-    
-    Args:
-        text: Salida cruda de PowerShell en formato CSV.
-        source: Identificador de la fuente (usualmente la clave de registro).
     """
     parsed_entries: List[StartupEntry] = []
     if not isinstance(text, str) or not text.strip():
@@ -164,14 +160,20 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
         
     for line in text.splitlines():
         clean_line: str = line.strip()
+        # Validar estructura mínima de CSV (debe contener coma)
         if not clean_line or ',' not in clean_line:
             continue
             
-        csv_row_parts: List[str] = clean_line.split(",", 1)
-        name_raw: str = csv_row_parts[0].strip().strip('"').strip("'")
-        value_raw: str = csv_row_parts[1].strip().strip('"').strip("'")
+        parts: List[str] = clean_line.split(",", 1)
+        # Validación de integridad de los campos esperados
+        if len(parts) < 2:
+            continue
+            
+        name_raw: str = parts[0].strip().strip('"\'')
+        value_raw: str = parts[1].strip().strip('"\'')
         
-        if not name_raw or not value_raw or name_raw.lower() in ("name", "pscustomobject") or name_raw.upper().startswith("PS"):
+        # Filtrar cabeceras de tabla de PowerShell
+        if not name_raw or name_raw.lower() in ("name", "pscustomobject") or name_raw.upper().startswith("PS"):
             continue
             
         parsed_entries.append(StartupEntry(name=name_raw, command=value_raw, source=source))

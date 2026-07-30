@@ -77,7 +77,11 @@ class BrowserCache:
 
 
 def base_directories() -> List[Path]:
-    """Obtiene directorios base (LOCALAPPDATA) para búsqueda de perfiles (Windows)."""
+    """
+    Obtiene directorios base (LOCALAPPDATA) para búsqueda de perfiles.
+    Retorna una lista vacía si el sistema no es Windows o la variable
+    no está definida.
+    """
     if os.name != "nt":
         return []
     local = os.environ.get("LOCALAPPDATA")
@@ -90,7 +94,8 @@ def base_directories() -> List[Path]:
 
 def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> bool:
     """
-    Verifica que la ruta sea un descendiente legítimo de base_path.
+    Verifica que la ruta sea un descendiente legítimo de base_path y
+    no esté marcada como protegida por `safety.py`.
     """
     if not target_path or not base_path or not isinstance(target_path, Path):
         return False
@@ -108,8 +113,9 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
 @lru_cache(maxsize=32)
 def directory_size(path: str | os.PathLike) -> int:
     """
-    Calcula el tamaño total en bytes de un directorio mediante suma recursiva,
-    validando que cada subdirectorio esté contenido en el root original.
+    Calcula el tamaño total en bytes mediante suma recursiva.
+    Ignora enlaces simbólicos para evitar bucles infinitos y
+    saltea archivos cuyo acceso esté restringido.
     """
     root_path = Path(path).resolve()
     
@@ -141,7 +147,10 @@ def directory_size(path: str | os.PathLike) -> int:
 
 
 def _is_valid_cache_path(candidate: Path, base_path: Path) -> bool:
-    """Filtro estricto: valida existencia, seguridad y exclusión de sensibles."""
+    """
+    Filtro estricto: valida que la ruta sea un directorio existente,
+    no sea un enlace simbólico y contenga componentes seguros.
+    """
     try:
         return (
             isinstance(candidate, Path) and
@@ -159,7 +168,10 @@ def detect_profiles(
     bases: Sequence[Path] | None = None, 
     cache_paths: Dict[str, str] | None = None
 ) -> List[BrowserCache]:
-    """Explora directorios base en busca de cachés definidas."""
+    """
+    Explora directorios base en busca de cachés definidas en `cache_paths`.
+    Retorna una lista ordenada de objetos `BrowserCache` por tamaño descendente.
+    """
     bases = bases or base_directories()
     cache_paths = cache_paths or BROWSER_CACHE_PATHS
 
@@ -182,13 +194,16 @@ def detect_profiles(
 
 
 def total_cache_bytes(caches: Iterable[BrowserCache] | None = None) -> int:
-    """Calcula el total de bytes de una lista de objetos BrowserCache."""
+    """Suma los bytes de una colección de objetos BrowserCache."""
     return sum(cache.size_bytes for cache in (caches or []))
 
 
-def summarize(caches: List[BrowserCache] | None = None) -> List[str]:
-    """Formatea el reporte de caché para visualización en la interfaz (UI)."""
-    current_caches = caches if caches is not None else detect_profiles()
+def summarize(caches: Optional[List[BrowserCache]] = None) -> List[str]:
+    """
+    Genera un informe textual listo para la UI, resumiendo el uso
+    de disco de los cachés detectados.
+    """
+    current_caches: List[BrowserCache] = caches if caches is not None else detect_profiles()
     
     if not current_caches:
         return ["No se detectaron cachés de navegador en este sistema."]

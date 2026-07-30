@@ -46,7 +46,7 @@ import re
 import math
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Final, TypeAlias, Callable, Optional
+from typing import Any, Final, TypeAlias, Callable, Optional, Sequence
 
 import settings
 
@@ -72,7 +72,7 @@ ScoreSource: TypeAlias = Any
 
 # Documentación ejecutable de lo que nunca sale del equipo. El test de
 # privacidad recorre esta lista, así que agregar algo acá lo protege de verdad.
-SENSITIVE_KEYS_NEVER_SENT: Final = (
+SENSITIVE_KEYS_NEVER_SENT: Final[tuple[str, ...]] = (
     "rutas de archivos",
     "nombres de archivos",
     "contenido de archivos",
@@ -82,19 +82,19 @@ SENSITIVE_KEYS_NEVER_SENT: Final = (
     "números de serie",
 )
 
-PRIVACY_NOTICE: Final = (
+PRIVACY_NOTICE: Final[str] = (
     "El asistente en línea envía a Google solo números agregados: MB de "
     "basura, cantidad de archivos sospechosos, porcentaje de RAM y disco "
     "libres, cantidad de programas de inicio y el puntaje de salud. Nunca "
     "envía rutas, nombres ni contenido de archivos. Podés apagarlo en Ajustes."
 )
 
-OFFLINE_NOTICE: Final = (
+OFFLINE_NOTICE: Final[str] = (
     "Respondido por el motor local, sin conexión ni envío de datos. "
     "Para preguntas escritas con tus palabras, activá el asistente en Ajustes."
 )
 
-SUGGESTED_QUESTIONS: Final = (
+SUGGESTED_QUESTIONS: Final[tuple[str, ...]] = (
     "¿Qué es lo más urgente que debería arreglar?",
     "¿Por qué mi PC está lenta?",
     "¿Es seguro borrar lo que encontró la limpieza?",
@@ -103,9 +103,9 @@ SUGGESTED_QUESTIONS: Final = (
     "¿Conviene desactivar programas de inicio?",
 )
 
-SUGGESTED_QUESTIONS_LIST: Final = list(SUGGESTED_QUESTIONS)
+SUGGESTED_QUESTIONS_LIST: Final[list[str]] = list(SUGGESTED_QUESTIONS)
 
-SYSTEM_PROMPT: Final = (
+SYSTEM_PROMPT: Final[str] = (
     "Sos el asistente de Limpieza Total Omega, una app de mantenimiento para "
     "Windows 11. Respondés en castellano rioplatense, de forma breve y "
     "concreta, sin tecnicismos innecesarios.\n\n"
@@ -122,12 +122,12 @@ SYSTEM_PROMPT: Final = (
     "- Máximo 6 líneas."
 )
 
-_ENDPOINT: Final = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
-_TIMEOUT_SECONDS: Final = 30
-_PATH_REGEX: Final = re.compile(r"([a-zA-Z]:\\|/|\\|\.\.|\0)")
+_ENDPOINT: Final[str] = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+_TIMEOUT_SECONDS: Final[int] = 30
+_PATH_REGEX: Final[re.Pattern] = re.compile(r"([a-zA-Z]:\\|/|\\|\.\.|\0)")
 
 # Mapeo precompilado para búsqueda eficiente
-_HANDLER_PATTERNS: Final = (
+_HANDLER_PATTERNS: Final[tuple[tuple[re.Pattern, str], ...]] = (
     (re.compile(r"ram|memoria|lenta|lento|acelerar"), "ram"),
     (re.compile(r"espacio|disco|lleno|recuperar|liberar"), "disco"),
     (re.compile(r"seguro|virus|sospechos|borrar|peligro"), "security"),
@@ -168,8 +168,9 @@ class Answer:
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
     """
-    Crea un contexto de forma defensiva filtrando tipos no numéricos y validando
-    cada campo de forma estricta para evitar datos mal formados.
+    Transforma fuentes de datos crudos en un objeto SystemContext validado.
+    Filtra tipos no numéricos y normaliza valores fuera de rango para garantizar
+    que los datos enviados al motor de IA sean seguros y coherentes.
     """
     contexto = SystemContext()
     
@@ -178,7 +179,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         return isinstance(val, (int, float)) and math.isfinite(val)
 
     def extraer(fuente: Any, attr: str, tipo: type, default: Any) -> Any:
-        """Extrae, valida y convierte de forma segura un atributo."""
+        """Extrae de forma segura un atributo de un objeto."""
         try:
             val = getattr(fuente, attr, default)
             return tipo(val) if es_num_valido(val) else default
@@ -211,7 +212,10 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
 
 
 def context_as_text(context: SystemContext) -> str:
-    """Convierte el contexto en el texto exacto que viaja a la API."""
+    """
+    Serializa el estado del sistema en un formato de texto compacto.
+    Este string es el único dato enviado a la API de Gemini (si está activo).
+    """
     if not isinstance(context, SystemContext) or not context.analyzed:
         return "No hay métricas disponibles todavía."
 
@@ -233,7 +237,7 @@ def context_as_text(context: SystemContext) -> str:
 
 
 def explain_area(area: str) -> str:
-    """Explicación fija de qué mide cada área del puntaje."""
+    """Devuelve una descripción pedagógica de un área específica del análisis."""
     explicaciones = {
         "basura": "Archivos temporales y restos de instaladores. Ocupan espacio "
                   "sin dar nada a cambio, y son lo más seguro de limpiar.",
@@ -338,7 +342,7 @@ def handle_startup(ctx: SystemContext, text: str) -> Answer:
                 "cambio y te deja revertirlo.")
     return Answer(cuerpo, notice=OFFLINE_NOTICE)
 
-_HANDLERS = {
+_HANDLERS: Final[dict[str, Callable[[SystemContext, str], Answer]]] = {
     "ram": handle_ram,
     "disco": handle_disk,
     "security": handle_security,
@@ -347,7 +351,10 @@ _HANDLERS = {
 }
 
 def local_answer(question: str, context: SystemContext) -> Answer:
-    """Responde con reglas locales, tras sanear el input."""
+    """
+    Procesa la pregunta del usuario utilizando reglas de negocio estáticas
+    (motor local). Sanea el input y clasifica la intención mediante patrones regex.
+    """
     raw_text = (question or "").strip()
     clean_text = re.sub(r'[\x00-\x1f\x7f]', '', raw_text)[:200].lower()
 
@@ -375,7 +382,7 @@ def local_answer(question: str, context: SystemContext) -> Answer:
 
 
 def _rank_problems(context: SystemContext) -> list[str]:
-    """Problemas detectados, del más grave al más leve."""
+    """Calcula y ordena los problemas más críticos del sistema para priorizar la asistencia."""
     res = []
     disk = context.disk_free_percent
     warns = context.suspicious_warnings
@@ -400,7 +407,7 @@ def _rank_problems(context: SystemContext) -> list[str]:
 
 
 def available(base: str | Path | None = None) -> bool:
-    """True si el motor en línea está activado y tiene clave."""
+    """Verifica si el asistente en línea está configurado y habilitado."""
     try:
         return settings.assistant_enabled(base)
     except Exception:
@@ -408,7 +415,10 @@ def available(base: str | Path | None = None) -> bool:
 
 
 def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> Optional[str]:
-    """Consulta a Gemini con la librería estándar. Devuelve None si falla."""
+    """
+    Envía métricas agregadas a Gemini usando la librería estándar urllib.
+    Aplica filtros estrictos al contenido de respuesta para prevenir inyecciones.
+    """
     if not api_key or not model:
         return None
         
@@ -450,7 +460,11 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
 
 def ask(question: str, context: SystemContext | None = None,
         base: str | Path | None = None) -> Answer:
-    """Coordina el flujo de respuesta combinando motores locales y remotos."""
+    """
+    Coordina la resolución de la consulta del usuario.
+    Intenta utilizar el motor en línea si está activo; de lo contrario, 
+    delega la respuesta al motor local.
+    """
     contexto = context if isinstance(context, SystemContext) else SystemContext()
     respaldo = local_answer(question, contexto)
 
