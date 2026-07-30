@@ -131,9 +131,11 @@ def is_protected_path(path: PathLike) -> bool:
     try:
         p = normalize(path)
         
-        # Optimización: buscar coincidencias en los nombres de los componentes (parts)
-        # usando sets en lugar de iteración simple si la ruta es muy profunda.
-        if not _PROTECTED_AND_SYSTEM.isdisjoint(part.lower() for part in p.parts):
+        # Bloquear rutas relativas que no fueron resueltas a absolutas por el OS
+        if not p.is_absolute():
+            return True
+
+        if p.parts and not _PROTECTED_AND_SYSTEM.isdisjoint(part.lower() for part in p.parts):
             return True
             
         if p == Path(p.anchor):

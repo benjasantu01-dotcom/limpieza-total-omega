@@ -246,10 +246,10 @@ def quarantine_file(
         items.append(item)
         save_manifest(items, base)
         return item
-    except (OSError, Exception) as e:
+    except Exception as e:
         if destination.exists():
             try:
-                destination.unlink()
+                shutil.move(str(destination), str(origin))
             except OSError:
                 pass
         raise RuntimeError(f"Error irrecuperable al procesar archivo en cuarentena: {e}")

@@ -830,3 +830,36 @@ FAILED evolve/tests/test_modules.py::test_score_color_survives_garbage - Asserti
 - `2026-07-30T06:08:12` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
 - `2026-07-30T06:08:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-30T06:08:12` Corrida terminada. Total usado hoy: 144.
+- `2026-07-30T06:16:25` Arrancando corrida. Quedan hoy ~156 peticiones objetivo.
+- `2026-07-30T06:16:50` Tests FALLARON:
+```
+ +  where True = exists()
+E        +    where exists = PosixPath('/tmp/pytest-of-runner/pytest-1/test_stage_for_review_moves_fi0/origen/mover.tmp').exists
+
+evolve/tests/test_basic.py:144: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:72: SyntaxWarning: invalid escape sequence '\R'
+    raw_cmd: Cadena de comando cruda (ej. '"C:\Ruta\App.exe" /param').
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_stage_for_review_moves_files_without_deleting_them - AssertionError: el archivo debe salir de su lugar original
+assert not True
+ +  where True = exists()
+ +    where exists = PosixPath('/tmp/pytest-of-runner/pytest-1/test_stage_for_review_moves_fi0/origen/mover.tmp').exists
+1 failed, 298 passed, 7 warnings in 1.04s
+
+```
+- `2026-07-30T06:16:50` ❌ Mejora descartada en organizer.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez de `stage_for_review` ante condiciones de carrera (archivos bloqueados durante el movimiento) y se mejoró la integridad del proceso de escaneo al filtrar rutas inválidas o con caracteres nulos mediante el uso de `pathlib` robusto antes de procesar cada entrada.
+- `2026-07-30T06:17:17` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se mejora la robustez de `quarantine_file` ante condiciones de carrera y fallos de escritura parciales, asegurando que si el hash no coincide con el archivo almacenado o el movimiento falla, el archivo no quede en un estado inconsistente en el manifiesto.
+- `2026-07-30T06:17:36` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-07-30T06:17:44` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante casos límite en `is_protected_path` al validar explícitamente la existencia de componentes de la ruta antes de iterarlos, evitando errores potenciales al manejar rutas mal formadas que `normalize` pudiera devolver parcialmente, y se centralizó la exclusión de rutas relativas peligrosas.
+- `2026-07-30T06:17:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-30T06:17:44` Corrida terminada. Total usado hoy: 148.

@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **247** (49.0% de aceptación)
-- Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 25
+- Mejoras aceptadas: **249** (49.4% de aceptación)
+- Rechazadas por tests: 19
+- Rechazadas por guardia de seguridad: 26
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 201
+- Sin respuesta de la IA (error o límite): 197
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-28 | 0 | 0 | 0 | 0 | 10 |
+| 2026-07-28 | 0 | 0 | 0 | 0 | 6 |
 | 2026-07-29 | 171 | 10 | 18 | 8 | 143 |
-| 2026-07-30 | 76 | 8 | 7 | 5 | 48 |
+| 2026-07-30 | 78 | 9 | 8 | 5 | 48 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **64**
 - manejo de errores y validación de entradas: **53**
 - rendimiento: **45**
-- robustez ante casos límite: **43**
+- robustez ante casos límite: **45**
 - seguridad defensiva: **42**
 
 ## Mejoras aceptadas por archivo
@@ -35,18 +35,20 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **20**
 - `settings.py`: **20**
 - `healthscore.py`: **19**
+- `quarantine.py`: **19**
 - `diskreport.py`: **18**
-- `quarantine.py`: **18**
 - `duplicates.py`: **17**
 - `organizer.py`: **17**
 - `main.py`: **16**
+- `safety.py`: **16**
 - `memory.py`: **15**
-- `safety.py`: **15**
 - `branding.py`: **14**
 - `startup.py`: **13**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-30T06:17:44` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en `is_protected_path` al validar explícitamente la existencia de componentes de la ruta antes de iterarlos, evitando errores potenciales al manejar rutas mal formadas que `normalize` pudiera devolver parcialmente, y se centralizó la exclusión de rutas relativas peligrosas.
+- `2026-07-30T06:17:17` **quarantine.py** (robustez ante casos límite): Se mejora la robustez de `quarantine_file` ante condiciones de carrera y fallos de escritura parciales, asegurando que si el hash no coincide con el archivo almacenado o el movimiento falla, el archivo no quede en un estado inconsistente en el manifiesto.
 - `2026-07-30T06:08:04` **main.py** (robustez ante casos límite): Mejoré la robustez de `on_restore_quarantine` añadiendo una validación explícita mediante `safety.is_protected_path` para evitar restauraciones malintencionadas en ubicaciones críticas, complementando el chequeo de escritura actual con una comprobación preventiva antes de procesar el manifiesto.
 - `2026-07-30T06:07:04` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `score_security` ante entradas negativas o inesperadas y aseguré que `compute_score` maneje una posible desconfiguración en `WEIGHTS` que podría causar un `KeyError` o resultados fuera de rango.
 - `2026-07-30T05:57:33` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `walk_files` y las funciones de análisis asociadas mediante la adición de una gestión explícita de `PermissionError` y `OSError` en la resolución inicial de rutas, además de asegurar que `os.scandir` maneje el acceso a directorios denegados de manera silenciosa para evitar interrupciones en el escaneo.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-30T05:16:04` **assistant.py** (rendimiento): Se optimizó `_rank_problems` convirtiendo la lista `reglas` en una constante estática fuera de la función, evitando así la creación y asignación repetitiva de objetos en cada consulta.
 - `2026-07-30T05:15:33` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `startup.py` mediante la adición de docstrings técnicos detallados en `entries_from_registry` y `list_startup_entries`, aclarando el flujo de datos y la gestión de fuentes, facilitando el mantenimiento a futuro.
 - `2026-07-30T05:06:13` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del proceso de validación al reemplazar el `dispatch` basado en lambdas por una estructura de mapeo de funciones explícitas y añadiendo docstrings que clarifican las reglas de negocio sobre los tipos de datos.
-- `2026-07-30T05:06:03` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la inclusión de docstrings detallados en las funciones de escaneo, especificando el contrato de entrada/salida y el propósito de cada heurística para facilitar el mantenimiento y la auditoría del motor de detección.
-- `2026-07-30T05:05:40` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `safety.py` mediante la adición de docstrings técnicos específicos y clarificación de los criterios de seguridad, facilitando el mantenimiento y auditoría por parte del dueño del proyecto.
