@@ -171,21 +171,12 @@ def _apply_validation_by_type(clave: str, valor: Any, defecto: Any) -> Any:
 
 def settings_path(path_or_base: PathLike | None = None) -> Path:
     """Resuelve la ruta absoluta del archivo de configuración, asegurando seguridad."""
-    try:
-        if path_or_base is not None:
-            base = Path(path_or_base).expanduser().resolve()
-        else:
-            base = SETTINGS_DIR
-        
-        # Verificar seguridad antes de crear la ruta o acceder
-        if not base.exists():
-            ensure_safe_to_modify(str(base.parent))
-        else:
-            ensure_safe_to_modify(str(base))
-        return base / SETTINGS_FILE
-    except (OSError, RuntimeError, PermissionError, ValueError):
-        # Fallback seguro a la carpeta predeterminada si la resuelta falla
-        return SETTINGS_DIR / SETTINGS_FILE
+    base = Path(path_or_base).expanduser().resolve() if path_or_base else SETTINGS_DIR
+    
+    # Asegurar que el directorio base es seguro antes de intentar usarlo
+    ensure_safe_to_modify(str(base))
+    
+    return base / SETTINGS_FILE
 
 
 def validate(values: Any) -> dict[str, Any]:

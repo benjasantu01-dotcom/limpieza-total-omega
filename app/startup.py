@@ -182,7 +182,15 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
         if not name_raw or name_raw.lower() in ("name", "pscustomobject") or name_raw.upper().startswith("PS"):
             continue
             
-        parsed_entries.append(StartupEntry(name=name_raw, command=value_raw, source=source))
+        entry = StartupEntry(name=name_raw, command=value_raw, source=source)
+        
+        # Protección defensiva: filtrar si el comando apunta a rutas protegidas
+        executable_path = entry.executable
+        if executable_path and os.path.exists(executable_path):
+            if is_protected_path(Path(executable_path)):
+                continue
+                
+        parsed_entries.append(entry)
     return parsed_entries
 
 
