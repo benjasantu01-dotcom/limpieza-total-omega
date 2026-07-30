@@ -111,6 +111,7 @@ _DEFAULTS_KEYS: Final = set(DEFAULTS.keys())
 def _coerce_bool(raw_value: Any) -> bool | None:
     """
     Normaliza entradas no booleanas (strings tipo 'true'/'1'/'si') a booleano real.
+    Devuelve None si el valor no es un booleano válido tras la coerción.
     """
     if isinstance(raw_value, bool):
         return raw_value
@@ -122,6 +123,7 @@ def _coerce_bool(raw_value: Any) -> bool | None:
 def _coerce_int(raw_value: Any, setting_key: str) -> int | None:
     """
     Intenta convertir a entero, aplicando límites definidos en _NUMERIC_LIMITS.
+    Retorna el valor truncado a los límites permitidos o None si la conversión falla.
     """
     if not isinstance(raw_value, (int, str)):
         return None
@@ -193,6 +195,7 @@ def settings_path(path_or_base: PathLike | None = None) -> Path:
 def validate(values: Any) -> dict[str, Any]:
     """
     Valida un diccionario externo contra el esquema de DEFAULTS.
+    Cualquier clave inválida o ausente es rellenada con sus valores por defecto.
     """
     limpio = dict(DEFAULTS)
     if not isinstance(values, dict):

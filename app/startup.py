@@ -61,22 +61,26 @@ class StartupEntry:
 
     def _extract_quoted_path(self, raw_cmd: str) -> str:
         """
-        Extrae la ruta absoluta de una cadena delimitada por comillas dobles.
+        Analiza cadenas de comandos que envuelven rutas en comillas.
+        
+        El proceso busca la segunda comilla para aislar la ruta del resto de
+        argumentos o parámetros, validando además la ausencia de caracteres 
+        prohibidos en el sistema de archivos de Windows.
         
         Args:
-            raw_cmd: Cadena de comando cruda que comienza con comillas.
+            raw_cmd: Cadena de comando cruda (ej. '"C:\Ruta\App.exe" /param').
             
         Returns:
-            La ruta extraída si es válida y existe, o una cadena vacía en caso contrario.
+            Ruta absoluta del ejecutable si es válida, caso contrario string vacío.
         """
         end_quote: int = raw_cmd.find('"', 1)
         if end_quote == -1:
             return ""
         path = raw_cmd[1:end_quote]
-        # Validación de integridad de ruta ante caracteres ilegales o rutas vacías
+        # Validación: evita rutas con caracteres reservados o vacías
         if not path or any(c in path for c in '<>|?*'):
             return ""
-        # Valida que sea ejecutable real o exista antes de retornarlo
+        # Criterio: se considera ejecutable si tiene extensión binaria o si existe físicamente
         if path.lower().endswith(('.exe', '.bat', '.cmd', '.scr')) or os.path.exists(path):
             return path
         return ""
@@ -84,10 +88,10 @@ class StartupEntry:
     @property
     def executable(self) -> str:
         """
-        Extrae y normaliza la ruta del archivo ejecutable de la línea de comando.
+        Obtiene la ruta normalizada del ejecutable.
         
-        Si la cadena comienza con comillas, utiliza el extractor de rutas citado; 
-        en caso contrario, asume que el primer token es el binario.
+        Si el comando utiliza comillas (típico de rutas con espacios), delega
+        en el extractor especializado; si no, asume el primer bloque de texto.
         """
         cmd: str = self.command.strip()
         if not cmd:
@@ -104,8 +108,6 @@ class StartupEntry:
 def startup_folders() -> List[Path]:
     """
     Retorna las rutas a las carpetas 'Inicio' (usuario y sistema) del sistema.
-    
-    Verifica la existencia del directorio antes de incluirlo en la lista.
     """
     if os.name != "nt":
         return []
@@ -137,10 +139,9 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
         try:
             for item in base_path.iterdir():
                 try:
-                    # Chequeo defensivo: no seguir symlinks ni puntos de reparse (junctions)
                     if item.is_file() and not item.is_symlink():
                         resolved_item: Path = item.resolve()
-                        # Verificar que el ítem resuelto esté efectivamente bajo la carpeta base
+                        # Verificación estricta de jerarquía para evitar escapes de carpeta
                         if item.name.lower() != "desktop.ini" and base_path == resolved_item.parent:
                             found_entries.append(StartupEntry(name=item.stem, command=str(item), source="carpeta"))
                 except (OSError, PermissionError, RuntimeError):
@@ -152,7 +153,7 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
 
 def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry]:
     """
-    Transforma el volcado CSV de PowerShell en objetos StartupEntry.
+    Convierte el CSV de PowerShell en objetos de dominio StartupEntry.
     """
     parsed_entries: List[StartupEntry] = []
     if not isinstance(text, str) or not text.strip():
@@ -160,19 +161,17 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
         
     for line in text.splitlines():
         clean_line: str = line.strip()
-        # Validar estructura mínima de CSV (debe contener coma)
         if not clean_line or ',' not in clean_line:
             continue
             
         parts: List[str] = clean_line.split(",", 1)
-        # Validación de integridad de los campos esperados
         if len(parts) < 2:
             continue
             
         name_raw: str = parts[0].strip().strip('"\'')
         value_raw: str = parts[1].strip().strip('"\'')
         
-        # Filtrar cabeceras de tabla de PowerShell
+        # Ignorar metadatos de PowerShell que no son entradas del sistema
         if not name_raw or name_raw.lower() in ("name", "pscustomobject") or name_raw.upper().startswith("PS"):
             continue
             
@@ -182,21 +181,22 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
 
 def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[StartupEntry]:
     """
-    Obtiene los programas de inicio consultando las claves del Registro vía PowerShell.
+    Consulta las claves del Registro de Windows vía PowerShell.
     
-    Genera un único script consolidado para minimizar el costo de invocación 
-    de procesos externos.
+    Genera un script consolidado para cada clave (prefijado por 'SRCDATA') 
+    para identificar la fuente de cada entrada tras el parseo del CSV resultante.
     """
     if os.name != "nt":
         return []
     
-    query_parts = []
+    query_parts: List[str] = []
     for key in keys:
         if isinstance(key, str):
-            safe_key = subprocess.list2cmdline([key])
+            safe_key: str = subprocess.list2cmdline([key])
+            # La consulta extrae solo los pares Name/Value del registro
             query_parts.append(f"Write-Host 'SRCDATA:{key}'; (Get-ItemProperty {safe_key}).psobject.properties | Select-Object Name, Value | ConvertTo-Csv -NoTypeInformation")
     
-    ps_cmd = " ; ".join(query_parts)
+    ps_cmd: str = " ; ".join(query_parts)
     
     try:
         result: subprocess.CompletedProcess = subprocess.run(
@@ -204,8 +204,8 @@ def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[Start
             capture_output=True, text=True, timeout=30,
         )
         if result.returncode == 0 and result.stdout:
-            entries = []
-            current_source = "registro"
+            entries: List[StartupEntry] = []
+            current_source: str = "registro"
             for line in result.stdout.splitlines():
                 if line.startswith("SRCDATA:"):
                     current_source = line[8:]
@@ -237,8 +237,8 @@ def list_startup_entries() -> List[StartupEntry]:
 
 def estimate_impact(entries: Sequence[StartupEntry]) -> str:
     """Clasifica el impacto en el rendimiento basado en la cantidad de entradas."""
-    count = len(entries)
-    thresholds = [(5, "ok"), (10, "info"), (18, "warning")]
+    count: int = len(entries)
+    thresholds: List[Tuple[int, str]] = [(5, "ok"), (10, "info"), (18, "warning")]
     for limit, label in thresholds:
         if count <= limit:
             return label

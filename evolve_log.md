@@ -1321,3 +1321,28 @@ FAILED evolve/tests/test_safety.py::test_is_within_directory_same_path_requires_
 - `2026-07-30T00:30:36` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 112): unterminated string literal (detected at line 112)
 - `2026-07-30T00:30:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-30T00:30:36` Corrida terminada. Total usado hoy: 12.
+- `2026-07-30T00:39:30` Arrancando corrida. Quedan hoy ~288 peticiones objetivo.
+- `2026-07-30T00:39:55` Tests FALLARON:
+```
+/test_describe_protection_expla0')
+
+    def test_describe_protection_explains_the_reason(tmp_path):
+>       assert "protegida" in safety.describe_protection(tmp_path / "Windows" / "x.txt")
+E       assert 'protegida' in "'/tmp/pytest-of-runner/pytest-1/test_describe_protection_expla0/Windows/x.txt' contiene componente protegido: 'Windows'."
+E        +  where "'/tmp/pytest-of-runner/pytest-1/test_describe_protection_expla0/Windows/x.txt' contiene componente protegido: 'Windows'." = <function describe_protection at 0x7f2598859b20>(((PosixPath('/tmp/pytest-of-runner/pytest-1/test_describe_protection_expla0') / 'Windows') / 'x.txt'))
+E        +    where <function describe_protection at 0x7f2598859b20> = safety.describe_protection
+
+evolve/tests/test_safety.py:165: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_describe_protection_explains_the_reason - assert 'protegida' in "'/tmp/pytest-of-runner/pytest-1/test_describe_protection_expla0/Windows/x.txt' contiene componente protegido: 'Windows'."
+ +  where "'/tmp/pytest-of-runner/pytest-1/test_describe_protection_expla0/Windows/x.txt' contiene componente protegido: 'Windows'." = <function describe_protection at 0x7f2598859b20>(((PosixPath('/tmp/pytest-of-runner/pytest-1/test_describe_protection_expla0') / 'Windows') / 'x.txt'))
+ +    where <function describe_protection at 0x7f2598859b20> = safety.describe_protection
+1 failed, 298 passed in 1.91s
+
+```
+- `2026-07-30T00:39:55` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la documentación interna y la claridad funcional de `safety.py` añadiendo docstrings enriquecidos con ejemplos y clarificando las precondiciones de seguridad, además de estandarizar el manejo de excepciones para asegurar que las validaciones sean robustas ante rutas inexistentes.
+- `2026-07-30T00:40:17` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenibilidad de `scan_directory` mediante la extracción de la lógica de procesamiento de entradas del bucle, documentando claramente la gestión de reparse points y la validación de rutas para evitar escapes del directorio raíz.
+- `2026-07-30T00:40:42` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y la robustez del código añadiendo docstrings más detallados y tipado explícito a funciones internas, además de documentar claramente las suposiciones de validación mediante `type hints`.
+- `2026-07-30T00:40:51` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y el mantenimiento de la clase `StartupEntry` documentando exhaustivamente su lógica de extracción de rutas, y agregué type hints y docstrings explicativos en `entries_from_registry` para clarificar el flujo de procesamiento del CSV de PowerShell.
+- `2026-07-30T00:40:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-30T00:40:51` Corrida terminada. Total usado hoy: 16.

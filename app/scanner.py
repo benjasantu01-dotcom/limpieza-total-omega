@@ -64,6 +64,28 @@ def _is_reparse_point(entry: os.DirEntry) -> bool:
         return False
 
 
+def _process_directory_entry(entry: os.DirEntry, root_path: Path, results: List[Suspicion], stack: List[str]) -> None:
+    """
+    Evalúa una entrada individual del sistema de archivos.
+    Si es un directorio, lo añade a la pila para escaneo recursivo. 
+    Si es un archivo, ejecuta los chequeos heurísticos.
+    """
+    try:
+        path_entry = Path(entry.path).resolve()
+        
+        # Saltos de seguridad: omitir protegidos o intentos de escape fuera del root
+        if not path_entry.exists() or is_protected_path(path_entry) or not str(path_entry).startswith(str(root_path)):
+            return
+            
+        if entry.is_dir(follow_symlinks=False):
+            if not _is_reparse_point(entry):
+                stack.append(str(path_entry))
+        elif entry.is_file():
+            results.extend(scan_file(path_entry))
+    except (PermissionError, OSError, ValueError):
+        pass
+
+
 def check_double_extension(path: Path) -> Optional[Suspicion]:
     """Analiza si el nombre del archivo contiene una doble extensión (ej. .pdf.exe)."""
     if DOUBLE_EXTENSION_RE.search(path.name):
@@ -126,48 +148,28 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
         return []
         
     try:
-        # Validación estricta del tipo de entrada antes de operar
         path_obj = Path(directory)
         root = path_obj.resolve()
     except (TypeError, ValueError, OSError) as e:
         logger.error("Error al resolver la ruta base %s: %s", directory, e)
         return []
 
-    try:
-        if not root.exists() or not root.is_dir() or is_protected_path(root):
-            return []
-            
-        results: List[Suspicion] = []
-        stack: List[str] = [str(root)]
-        
-        while stack:
-            current_dir = stack.pop()
-            try:
-                with os.scandir(current_dir) as it:
-                    for entry in it:
-                        try:
-                            # Verificación robusta: existencia y protección
-                            path_entry = Path(entry.path).resolve()
-                            if not path_entry.exists() or is_protected_path(path_entry):
-                                continue
-                            
-                            # Seguridad defensiva: validar que no escape del root original
-                            if not str(path_entry).startswith(str(root)):
-                                continue
-                                
-                            if entry.is_dir(follow_symlinks=False):
-                                if not _is_reparse_point(entry):
-                                    stack.append(str(path_entry))
-                            elif entry.is_file():
-                                results.extend(scan_file(path_entry))
-                        except (PermissionError, OSError, ValueError):
-                            continue
-            except (PermissionError, OSError):
-                continue
-        return results
-    except (OSError, RuntimeError) as e:
-        logger.error("Error crítico al acceder al directorio %s: %s", directory, e)
+    if not root.exists() or not root.is_dir() or is_protected_path(root):
         return []
+        
+    results: List[Suspicion] = []
+    stack: List[str] = [str(root)]
+    
+    while stack:
+        current_dir = stack.pop()
+        try:
+            with os.scandir(current_dir) as it:
+                for entry in it:
+                    _process_directory_entry(entry, root, results, stack)
+        except (PermissionError, OSError):
+            continue
+            
+    return results
 
 
 def run_windows_defender_quick_scan() -> str:
