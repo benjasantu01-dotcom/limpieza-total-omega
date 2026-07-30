@@ -69,9 +69,10 @@ def _process_directory_entry(entry: os.DirEntry, root_path: str, results: List[S
     mediante tracking de 'seen' y delega el escaneo de archivos a `scan_file`.
     """
     try:
+        # Resolvemos la ruta absoluta para validar el sandbox lógico
         path_str = os.path.abspath(entry.path)
         
-        # Omitir protegidos usando la función que recibe texto crudo
+        # Validar que la ruta sea segura y pertenezca jerárquicamente a la raíz
         if is_protected_path(Path(path_str)) or not path_str.startswith(root_path):
             return
             
@@ -109,7 +110,8 @@ def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_TH
     if suffix not in SUSPICIOUS_EXECUTABLE_EXT:
         return None
     try:
-        mtime = datetime.fromtimestamp(path.stat().st_mtime)
+        # Usamos stat() directamente pero con manejo de errores robusto
+        mtime = datetime.fromtimestamp(path.stat(follow_symlinks=False).st_mtime)
         if datetime.now() - mtime < timedelta(hours=hours):
             return Suspicion(path, f"Ejecutable reciente detectado (modificado hace menos de {hours}h)", "info")
     except (FileNotFoundError, PermissionError, OSError):

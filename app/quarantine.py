@@ -346,6 +346,8 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
 def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     """Limpia el directorio y resetea el manifiesto tras validar integridad."""
     quarantine_root = quarantine_dir(base)
+    ensure_safe_to_modify(quarantine_root, allow_sensitive=False)
+    
     items = load_manifest(base)
     count = 0
     for item in items:

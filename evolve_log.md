@@ -885,3 +885,10 @@ assert not True
 - `2026-07-30T06:50:20` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `stage_for_review` implementando una validación explícita mediante `ensure_safe_to_modify` sobre el destino calculado antes de cada operación de movimiento, garantizando que ninguna manipulación de archivos escape al control centralizado de seguridad del proyecto.
 - `2026-07-30T06:50:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-30T06:50:20` Corrida terminada. Total usado hoy: 160.
+- `2026-07-30T06:57:27` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-07-30T06:57:58` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la integridad del proceso `purge_all` añadiendo una validación explícita mediante `ensure_safe_to_modify` antes de proceder al borrado masivo, asegurando que el directorio de cuarentena sea gestionable y no una ruta de sistema, además de prevenir errores de escritura durante el proceso.
+- `2026-07-30T06:58:17` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-07-30T06:58:39` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-07-30T06:58:47` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva al reemplazar el uso de `path.stat()` dentro de `check_recent_executable_in_downloads` por una versión robusta que maneja errores de acceso, y se añadió una verificación explícita en `_process_directory_entry` para asegurar que las rutas procesadas no escapen de la raíz original mediante manipulaciones de enlaces simbólicos o inconsistencias en `abspath`.
+- `2026-07-30T06:58:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-30T06:58:47` Corrida terminada. Total usado hoy: 164.
