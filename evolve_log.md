@@ -676,3 +676,29 @@ FAILED evolve/tests/test_modules.py::test_score_color_survives_garbage - Asserti
 - `2026-07-30T04:45:53` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenibilidad del módulo añadiendo type hints faltantes en las funciones de cálculo de puntaje y documentando el propósito de cada ratio mediante docstrings, facilitando la comprensión de las heurísticas aplicadas.
 - `2026-07-30T04:45:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-30T04:45:53` Corrida terminada. Total usado hoy: 112.
+- `2026-07-30T04:54:46` Arrancando corrida. Quedan hoy ~188 peticiones objetivo.
+- `2026-07-30T04:55:47` ➖ Sin cambios en main.py (enfoque: legibilidad y documentación). Motivo: Mejoré la legibilidad y mantenibilidad de `_build_tab_salud` mediante la extracción de la lógica de construcción de tarjetas y barras en métodos específicos, reduciendo la complejidad ciclomática del método principal y facilitando futuras modificaciones en el diseño del panel.
+- `2026-07-30T04:56:13` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Mejora de la legibilidad y mantenimiento mediante la adición de docstrings técnicos detallados, type hints precisos y la extracción de la lógica de conversión de unidades de `format_bytes` hacia una constante, facilitando la comprensión del flujo de datos en el módulo.
+- `2026-07-30T04:56:37` Tests FALLARON:
+```
+never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:72: SyntaxWarning: invalid escape sequence '\R'
+    raw_cmd: Cadena de comando cruda (ej. '"C:\Ruta\App.exe" /param').
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_sort_junk_by_size_ascending_and_descending - TypeError: sort_junk() got an unexpected keyword argument 'by'
+FAILED evolve/tests/test_basic.py::test_sort_junk_by_date_puts_oldest_first_when_ascending - TypeError: sort_junk() got an unexpected keyword argument 'by'
+FAILED evolve/tests/test_basic.py::test_sort_junk_does_not_mutate_the_original_list - TypeError: sort_junk() got an unexpected keyword argument 'by'
+FAILED evolve/tests/test_basic.py::test_stage_for_review_moves_files_without_deleting_them - TypeError: stage_for_review() got an unexpected keyword argument 'review_dir'
+FAILED evolve/tests/test_basic.py::test_delete_reviewed_only_touches_the_review_folder - TypeError: delete_reviewed() got an unexpected keyword argument 'review_dir'
+FAILED evolve/tests/test_basic.py::test_delete_reviewed_on_missing_folder_returns_zero - TypeError: delete_reviewed() got an unexpected keyword argument 'review_dir'
+6 failed, 293 passed, 7 warnings in 1.06s
+
+```
+- `2026-07-30T04:56:37` ❌ Mejora descartada en organizer.py (no pasó los tests), se revirtió. Intento: Se mejoró la documentación mediante type hints explícitos, docstrings detallados que explican el "porqué" de las validaciones de seguridad y se renombraron parámetros para mejorar la claridad semántica de las operaciones de escaneo y staging.
+- `2026-07-30T04:56:48` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints en las colecciones del manifiesto, docstrings extendidos para clarificar el flujo de control en las funciones críticas y el uso de `pathlib` de forma consistente para evitar posibles errores de concatenación de rutas.
+- `2026-07-30T04:56:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-30T04:56:48` Corrida terminada. Total usado hoy: 116.

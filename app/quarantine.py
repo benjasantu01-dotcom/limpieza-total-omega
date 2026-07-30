@@ -56,6 +56,8 @@ __all__ = [
 DEFAULT_QUARANTINE_DIR = "~/LimpiezaTotalOmega/_Cuarentena"
 MANIFEST_NAME = "manifest.json"
 
+# Almacena el estado del manifiesto en memoria para evitar I/O redundante:
+# { str(base_path): (mtime_del_archivo, lista_de_items) }
 _manifest_cache: Dict[str, Tuple[float, List[QuarantineItem]]] = {}
 
 @dataclass
@@ -116,8 +118,8 @@ def _manifest_path(base_dir: Path) -> Path:
 
 def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload: bool = False) -> List[QuarantineItem]:
     """
-    Carga el manifiesto. Si el archivo no existe o es inválido, retorna una lista vacía.
-    Usa caché basado en el timestamp del archivo para optimizar operaciones.
+    Carga el manifiesto desde JSON. Implementa caché basado en mtime.
+    Si el manifiesto es inválido o corrupto, retorna una lista vacía por seguridad.
     """
     base_path = quarantine_dir(base)
     path = _manifest_path(base_path)
@@ -184,8 +186,8 @@ def quarantine_file(
     base: Union[str, Path] = DEFAULT_QUARANTINE_DIR,
 ) -> QuarantineItem:
     """
-    Mueve un archivo a la carpeta de cuarentena. 
-    Lanza excepciones ante errores de seguridad o falta de recursos.
+    Mueve un archivo a la carpeta de cuarentena, calcula su hash y actualiza el manifiesto.
+    Valida previamente la seguridad de la ruta mediante `safety.ensure_safe_to_modify`.
     """
     if not source:
         raise ValueError("La ruta de origen no puede estar vacía.")
@@ -261,7 +263,7 @@ def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[Quaranti
 def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
     """
     Restaura un archivo a su ubicación original validando integridad y seguridad.
-    Si el destino no existe, crea los directorios necesarios de forma segura.
+    Crea las carpetas necesarias si no existen (vía `mkdir`).
     """
     if not item_id or not isinstance(item_id, str):
         raise ValueError("El ID debe ser una cadena válida.")
@@ -348,10 +350,8 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     count = 0
     for item in items:
         stored_file = quarantine_root / item.stored_name
-        # Validar confinamiento y que el archivo exista antes de intentar borrar
         if stored_file.is_file() and is_within_directory(stored_file, quarantine_root):
             try:
-                # Verificamos hash si existe para prevenir borrado de basura inyectada
                 if not item.sha256 or _get_sha256(stored_file) == item.sha256:
                     stored_file.unlink()
                     count += 1
@@ -368,7 +368,7 @@ def total_quarantined_bytes(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> 
 
 
 def summarize(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[str]:
-    """Genera un reporte legible para la interfaz de usuario."""
+    """Genera un reporte legible para la interfaz de usuario con métricas actuales."""
     items = load_manifest(base)
     if not items:
         return ["La cuarentena está vacía."]
