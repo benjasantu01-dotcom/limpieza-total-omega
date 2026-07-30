@@ -191,6 +191,12 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         except (TypeError, ValueError):
             return default
 
+    # Validamos que los objetos fuente sean instancias válidas antes de procesar
+    if metrics is not None and not isinstance(metrics, object):
+        metrics = None
+    if health is not None and not isinstance(health, object):
+        health = None
+
     if metrics:
         contexto.junk_mb = float(extraer(metrics, "junk_mb", float, 0.0))
         contexto.suspicious_count = int(extraer(metrics, "suspicious_count", int, 0))

@@ -289,7 +289,7 @@ def logo_svg(size: int = 128) -> str:
 
 def save_logo_svg(destination: str | Path | None) -> Path | None:
     """Persiste el logo en disco. Valida la ruta de destino antes de escribir."""
-    if not destination:
+    if destination is None:
         return None
     try:
         path = Path(destination).expanduser().resolve()
@@ -303,7 +303,7 @@ def save_logo_svg(destination: str | Path | None) -> Path | None:
             
         path.write_text(logo_svg(), encoding="utf-8")
         return path
-    except (OSError, PermissionError, RuntimeError, TypeError):
+    except (OSError, PermissionError, RuntimeError, TypeError, ValueError):
         return None
 
 

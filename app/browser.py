@@ -122,7 +122,7 @@ def directory_size(path: str | os.PathLike | None) -> int:
         return 0
     try:
         root = Path(path).resolve(strict=False)
-        if not root.is_dir() or root.is_symlink() or is_protected_path(root):
+        if not root.exists() or not root.is_dir() or root.is_symlink() or is_protected_path(root):
             return 0
     except (OSError, RuntimeError, PermissionError):
         return 0
@@ -149,11 +149,13 @@ def directory_size(path: str | os.PathLike | None) -> int:
     return total_bytes
 
 
-def _is_valid_cache_path(candidate: Path, base_path: Path) -> bool:
+def _is_valid_cache_path(candidate: Path | None, base_path: Path) -> bool:
     """
     Filtro estricto para validar que la ruta candidata pertenezca a un 
     navegador y sea un directorio de caché seguro.
     """
+    if not candidate:
+        return False
     try:
         return (
             candidate.exists() and 
@@ -178,20 +180,26 @@ def detect_profiles(
     cache_paths = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
 
     found: List[BrowserCache] = []
+    if not bases:
+        return found
+        
     for base in bases:
-        if not base.is_dir():
+        if not isinstance(base, Path) or not base.is_dir():
             continue
             
         for browser_name, relative_path_str in cache_paths.items():
             try:
-                candidate = base.joinpath(*relative_path_str.split("\\"))
+                parts = relative_path_str.split("\\")
+                candidate = base.joinpath(*parts)
                 if _is_valid_cache_path(candidate, base):
-                    found.append(BrowserCache(
-                        browser=browser_name,
-                        path=candidate,
-                        size_bytes=directory_size(str(candidate)),
-                    ))
-            except (TypeError, AttributeError):
+                    size = directory_size(str(candidate))
+                    if size > 0:
+                        found.append(BrowserCache(
+                            browser=browser_name,
+                            path=candidate,
+                            size_bytes=size,
+                        ))
+            except (TypeError, AttributeError, OSError):
                 continue
                 
     found.sort(key=lambda c: c.size_bytes, reverse=True)
