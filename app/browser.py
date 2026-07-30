@@ -94,18 +94,18 @@ def base_directories() -> List[Path]:
 
 def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> bool:
     """
-    Verifica que la ruta sea un descendiente legítimo de base_path y
-    no esté marcada como protegida por `safety.py`.
+    Valida la integridad de la ruta para prevenir escapes.
     
-    Realiza una resolución de rutas absoluta para prevenir ataques por
-    traversal o rutas relativas ambiguas.
+    Comprueba:
+    1. Si la ruta está en la lista de bloqueados de seguridad global.
+    2. Si 'target_path' es efectivamente un subdirectorio de 'base_path'.
+    3. Resuelve rutas para evitar ataques de 'path traversal' (../).
     """
     if not target_path or not base_path:
         return False
     try:
         if is_protected_path(target_path):
             return False
-        # Normalización robusta para evitar errores de comparación entre sistemas de archivos
         abs_base = base_path.resolve(strict=False)
         abs_target = target_path.resolve(strict=False)
         return abs_base in abs_target.parents or abs_base == abs_target
@@ -133,7 +133,6 @@ def directory_size(path: str | os.PathLike | None) -> int:
     while stack:
         current_dir = stack.pop()
         try:
-            # Comprobación de acceso necesaria antes de iterar
             if not os.access(current_dir, os.R_OK):
                 continue
             with os.scandir(current_dir) as it:
@@ -151,8 +150,11 @@ def directory_size(path: str | os.PathLike | None) -> int:
 
 def _is_valid_cache_path(candidate: Path | None, base_path: Path) -> bool:
     """
-    Filtro estricto para validar que la ruta candidata pertenezca a un 
-    navegador y sea un directorio de caché seguro.
+    Filtro de validación para carpetas de caché:
+    - Asegura la existencia física del directorio.
+    - Rechaza enlaces simbólicos (prevención de bucles/círculos).
+    - Valida que no sea un archivo de datos crítico ('NEVER_TOUCH').
+    - Llama a `_is_safe_path` para garantizar confinamiento dentro de LOCALAPPDATA.
     """
     if not candidate:
         return False

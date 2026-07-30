@@ -46,7 +46,7 @@ import re
 import math
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Final, TypeAlias, Callable, Optional, Sequence
+from typing import Any, Final, TypeAlias, Callable, Optional, Sequence, Union
 
 import settings
 
@@ -191,7 +191,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         except (TypeError, ValueError):
             return default
 
-    # Validamos que los objetos fuente sean instancias válidas antes de procesar
+    # Guard clauses para asegurar que las fuentes sean objetos válidos
     if metrics is not None and not isinstance(metrics, object):
         metrics = None
     if health is not None and not isinstance(health, object):
@@ -425,7 +425,12 @@ def available(base: str | Path | None = None) -> bool:
         return False
 
 
-def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> Optional[str]:
+def _call_gemini(
+    question: str, 
+    context_text: str, 
+    api_key: str, 
+    model: str
+) -> Optional[str]:
     """
     Envía métricas agregadas a Gemini usando la librería estándar urllib.
     """
@@ -433,7 +438,7 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
         return None
         
     try:
-        cuerpo = json.dumps({
+        cuerpo_json: bytes = json.dumps({
             "contents": [{
                 "parts": [{
                     "text": f"{SYSTEM_PROMPT}\n\nMétricas del sistema:\n{context_text}\n\n"
@@ -442,24 +447,27 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
             }]
         }).encode("utf-8")
 
-        url = _ENDPOINT.format(model=model) + f"?key={api_key}"
-        peticion = urllib.request.Request(
-            url, data=cuerpo, headers={"Content-Type": "application/json"}, method="POST"
+        url: str = _ENDPOINT.format(model=model) + f"?key={api_key}"
+        peticion: urllib.request.Request = urllib.request.Request(
+            url, 
+            data=cuerpo_json, 
+            headers={"Content-Type": "application/json"}, 
+            method="POST"
         )
+        
         with urllib.request.urlopen(peticion, timeout=_TIMEOUT_SECONDS) as respuesta:
             if respuesta.status != 200:
                 return None
-            datos = json.loads(respuesta.read().decode("utf-8"))
+            datos: dict[str, Any] = json.loads(respuesta.read().decode("utf-8"))
         
-        candidatos = datos.get("candidates", [])
+        candidatos: list[dict[str, Any]] = datos.get("candidates", [])
         if not candidatos or "content" not in candidatos[0]:
             return None
             
-        partes = candidatos[0]["content"].get("parts", [])
-        texto = "".join(p.get("text", "") for p in partes).strip()
+        partes: list[dict[str, Any]] = candidatos[0]["content"].get("parts", [])
+        texto: str = "".join(p.get("text", "") for p in partes).strip()
         
-        # Validación de seguridad defensiva: no aceptamos respuestas sospechosas, 
-        # excesivamente largas o que intenten codificar rutas.
+        # Validación de seguridad defensiva
         if not texto or len(texto) > 1200:
             return None
         if _PATH_REGEX.search(texto) or _CONTROL_CHARS_REGEX.search(texto):

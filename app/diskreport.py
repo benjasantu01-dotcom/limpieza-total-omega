@@ -161,6 +161,7 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
         return
 
     def should_ignore_entry(entry: os.DirEntry) -> bool:
+        """Verifica restricciones de seguridad para saltar enlaces o carpetas bloqueadas."""
         try:
             if entry.is_symlink():
                 return True
@@ -176,6 +177,7 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
         return False
 
     def recursive_scan(root_path: str) -> Generator[tuple[Path, int], None, None]:
+        """Motor recursivo de escaneo utilizando os.scandir para mejor performance."""
         try:
             with os.scandir(root_path) as iterator:
                 for entry in iterator:
@@ -276,9 +278,13 @@ def total_size(directory: str | os.PathLike, skip_protected: bool = True) -> tup
 
 
 def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list[str]:
-    """
-    Genera un informe textual resumen del uso de disco en el directorio especificado.
-    """
+    """Genera un informe textual resumen del uso de disco en el directorio especificado."""
+    
+    @dataclass
+    class ExtStat:
+        size: int = 0
+        count: int = 0
+
     if not directory:
         return ["Error: Ruta no especificada."]
         
@@ -291,7 +297,7 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
         
     total_bytes: int = 0
     total_files: int = 0
-    ext_data_map: Dict[str, List[int]] = defaultdict(lambda: [0, 0])
+    ext_map: Dict[str, ExtStat] = defaultdict(ExtStat)
     top_heap: List[Tuple[int, Path]] = []
 
     for path, size in walk_files(path_obj, skip_protected):
@@ -299,10 +305,11 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
         total_files += 1
             
         ext_name = path.suffix.lower() or "(sin extensión)"
-        record = ext_data_map[ext_name]
-        record[0] += size
-        record[1] += 1
+        stat = ext_map[ext_name]
+        stat.size += size
+        stat.count += 1
         
+        # Mantiene el top 8 de archivos más grandes en memoria
         if len(top_heap) < 8:
             heapq.heappush(top_heap, (size, path))
         elif size > top_heap[0][0]:
@@ -315,10 +322,10 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
         "Por tipo de archivo:",
     ]
     
-    sorted_exts = heapq.nlargest(8, ext_data_map.items(), key=lambda x: x[1][0])
+    sorted_exts = heapq.nlargest(8, ext_map.items(), key=lambda item: item[1].size)
     
-    for ext, data in sorted_exts:
-        lines.append(f"  {ext:<18} {format_size(data[0]):>10}  ({data[1]} archivos)")
+    for ext, stat in sorted_exts:
+        lines.append(f"  {ext:<18} {format_size(stat.size):>10}  ({stat.count} archivos)")
         
     lines.append("")
     lines.append("Archivos más grandes:")
