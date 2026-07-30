@@ -149,11 +149,7 @@ def all_drives_usage(mounts: Iterable[str] | None = None) -> list[DriveUsage]:
 def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Generator[tuple[Path, int], None, None]:
     """
     Recorre recursivamente un directorio y genera tuplas (Path, size_bytes).
-    
-    El escaneo evita seguir enlaces simbólicos y puntos de reparse (junctions) 
-    en Windows para prevenir bucles infinitos o escaneos fuera de la ruta objetivo.
-    Captura excepciones de acceso (Permisos/Archivos no encontrados) localmente
-    para permitir que el escaneo continúe con el resto del árbol.
+    Valida la integridad de la ruta para asegurar que no se haya escapado del root.
     """
     if not directory:
         return
@@ -165,21 +161,22 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
         return
 
     def should_ignore_entry(entry: os.DirEntry) -> bool:
-        """Valida si una entrada debe excluirse por ser sistema, enlace o punto de reparse."""
         try:
             if entry.is_symlink():
                 return True
             if os.name == 'nt':
                 if entry.stat(follow_symlinks=False).st_reparse_tag != 0:
                     return True
-            if skip_protected and is_protected_path(Path(entry.path)):
+            path = Path(entry.path)
+            if skip_protected and is_protected_path(path):
                 return True
+            # Verificación de confinamiento
+            path.relative_to(base_path)
         except (OSError, ValueError):
             return True
         return False
 
     def recursive_scan(root_path: str) -> Generator[tuple[Path, int], None, None]:
-        """Iterador recursivo protegido contra errores de acceso al sistema de archivos."""
         try:
             with os.scandir(root_path) as iterator:
                 for entry in iterator:
