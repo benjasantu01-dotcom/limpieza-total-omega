@@ -391,14 +391,15 @@ def local_answer(question: str, context: SystemContext) -> Answer:
 
 def _rank_problems(context: SystemContext) -> list[str]:
     """Calcula y ordena los problemas más críticos del sistema usando reglas declarativas."""
-    reglas: list[tuple[bool, str]] = [
+    # Las reglas se evalúan dinámicamente con los valores del contexto actual
+    reglas = (
         (context.disk_free_percent < 10, f"queda solo {context.disk_free_percent:.0f}% de disco libre, atendelo primero (pestaña Disco y Limpieza)"),
         (context.suspicious_warnings > 0, f"{context.suspicious_warnings} archivo(s) sospechosos con advertencia (pestaña Seguridad)"),
         (context.memory_available_percent < 15, f"queda {context.memory_available_percent:.0f}% de RAM disponible (pestaña Memoria)"),
         (context.junk_mb > 1000, f"{context.junk_mb:.0f} MB de archivos basura (pestaña Limpieza)"),
         (context.duplicate_mb > 500, f"{context.duplicate_mb:.0f} MB en duplicados (pestaña Duplicados)"),
         (context.startup_count > 15, f"{context.startup_count} programas de inicio (pestaña Inicio)")
-    ]
+    )
     return [msg for condicion, msg in reglas if condicion]
 
 

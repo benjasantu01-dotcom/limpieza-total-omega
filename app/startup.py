@@ -188,10 +188,14 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
 
 def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[StartupEntry]:
     """
-    Consulta las claves del Registro de Windows vía PowerShell.
+    Ejecuta consultas de PowerShell para extraer entradas de las claves del Registro.
     
-    Genera un script consolidado para cada clave (prefijado por 'SRCDATA') 
-    para identificar la fuente de cada entrada tras el parseo del CSV resultante.
+    El proceso invoca PowerShell para listar propiedades de registro, formatea la 
+    salida como CSV y las parsea posteriormente. Se filtran errores de ejecución 
+    silenciosamente si el sistema no permite el acceso al registro.
+    
+    Returns:
+        Lista de StartupEntry detectadas en todas las claves proporcionadas.
     """
     if os.name != "nt":
         return []
@@ -222,7 +226,15 @@ def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[Start
 
 
 def list_startup_entries() -> List[StartupEntry]:
-    """Consolida las entradas de carpetas y registro, eliminando duplicados por nombre."""
+    """
+    Consolida las entradas provenientes de carpetas del sistema y del Registro.
+    
+    Aplica una política de deduplicación basada en el nombre del programa,
+    priorizando la primera instancia encontrada.
+    
+    Returns:
+        Lista filtrada de StartupEntry únicas según su nombre.
+    """
     seen_names: set[str] = set()
     unique_entries: List[StartupEntry] = []
     

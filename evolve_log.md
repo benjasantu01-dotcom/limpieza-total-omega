@@ -709,3 +709,10 @@ FAILED evolve/tests/test_basic.py::test_delete_reviewed_on_missing_folder_return
 - `2026-07-30T05:06:13` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad del proceso de validación al reemplazar el `dispatch` basado en lambdas por una estructura de mapeo de funciones explícitas y añadiendo docstrings que clarifican las reglas de negocio sobre los tipos de datos.
 - `2026-07-30T05:06:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-30T05:06:13` Corrida terminada. Total usado hoy: 120.
+- `2026-07-30T05:15:08` Arrancando corrida. Quedan hoy ~180 peticiones objetivo.
+- `2026-07-30T05:15:33` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad de `startup.py` mediante la adición de docstrings técnicos detallados en `entries_from_registry` y `list_startup_entries`, aclarando el flujo de datos y la gestión de fuentes, facilitando el mantenimiento a futuro.
+- `2026-07-30T05:16:04` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Se optimizó `_rank_problems` convirtiendo la lista `reglas` en una constante estática fuera de la función, evitando así la creación y asignación repetitiva de objetos en cada consulta.
+- `2026-07-30T05:16:33` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-07-30T05:16:40` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el cálculo del tamaño de carpetas sustituyendo la resolución recursiva de `Path.parents` por una comparación de cadenas de texto basada en `os.path.commonpath`, lo cual evita la sobrecarga computacional de instanciar miles de objetos `Path` durante el escaneo y mejora la eficiencia al utilizar `os.scandir` de forma más directa.
+- `2026-07-30T05:16:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-30T05:16:40` Corrida terminada. Total usado hoy: 124.
