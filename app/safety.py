@@ -158,6 +158,7 @@ def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = F
         return False
     try:
         c, p = normalize(child), normalize(parent)
+        # Aseguramos que ambas sean absolutas; is_within requiere estructura de árbol resuelta
         if not c.is_absolute() or not p.is_absolute():
             return False
             
@@ -185,7 +186,11 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
     if path is None:
         raise UnsafePathError("Ruta nula recibida.")
         
-    p = normalize(path)
+    try:
+        p = normalize(path)
+    except (TypeError, ValueError, OSError) as e:
+        raise UnsafePathError(f"Error al normalizar la ruta: {e}")
+
     if not p.parts:
         raise UnsafePathError("Ruta inválida: no contiene componentes detectables.")
 
