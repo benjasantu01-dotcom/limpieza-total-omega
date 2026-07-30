@@ -21,6 +21,7 @@ import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable, Optional, Iterator, List, Tuple, Dict, Sequence
+from safety import is_protected_path
 
 __all__ = [
     "StartupEntry",
@@ -140,6 +141,10 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
             for item in base_path.iterdir():
                 try:
                     if item.is_file() and not item.is_symlink():
+                        # Protección defensiva: no procesar rutas marcadas como prohibidas
+                        if is_protected_path(item):
+                            continue
+                        
                         resolved_item: Path = item.resolve()
                         # Verificación estricta de jerarquía para evitar escapes de carpeta
                         if item.name.lower() != "desktop.ini" and base_path == resolved_item.parent:
