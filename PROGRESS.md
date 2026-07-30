@@ -16,29 +16,29 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-28 | 52 | 6 | 5 | 1 | 54 |
+| 2026-07-28 | 50 | 6 | 5 | 1 | 52 |
 | 2026-07-29 | 171 | 10 | 18 | 8 | 143 |
-| 2026-07-30 | 27 | 3 | 2 | 1 | 3 |
+| 2026-07-30 | 29 | 3 | 2 | 1 | 5 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **65**
 - manejo de errores y validación de entradas: **51**
 - rendimiento: **47**
-- seguridad defensiva: **44**
-- robustez ante casos límite: **43**
+- robustez ante casos límite: **45**
+- seguridad defensiva: **42**
 
 ## Mejoras aceptadas por archivo
 
-- `scanner.py`: **22**
-- `settings.py`: **22**
 - `browser.py`: **22**
+- `scanner.py`: **21**
+- `settings.py`: **21**
 - `assistant.py`: **20**
 - `quarantine.py`: **20**
+- `healthscore.py`: **19**
+- `main.py`: **19**
 - `organizer.py`: **19**
 - `diskreport.py`: **18**
-- `healthscore.py`: **18**
-- `main.py`: **18**
 - `duplicates.py`: **17**
 - `memory.py`: **15**
 - `branding.py`: **15**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-30T01:42:00` **main.py** (robustez ante casos límite): Se mejora la robustez ante errores de ejecución asíncrona en la pestaña de Salud, asegurando que si `_compile_metrics` falla (por ejemplo, por denegación de acceso al listar unidades o registros), el hilo no se silencie y el asistente reciba un contexto válido, evitando caídas en la interfaz.
+- `2026-07-30T01:41:06` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez de `compute_score` ante estados de configuración incoherentes, asegurando que el cálculo sea siempre seguro aunque los pesos definidos en `WEIGHTS` sean modificados accidentalmente o por error de usuario, evitando resultados matemáticos inesperados.
 - `2026-07-30T01:31:55` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `suggest_keeper` y `_collect_candidates` ante archivos que desaparecen durante el procesamiento (condición de carrera o cambio de estado) y mejoré la gestión de excepciones en `suggest_keeper` para evitar que un solo archivo inaccesible invalide la sugerencia de todo un grupo.
 - `2026-07-30T01:31:47` **diskreport.py** (robustez ante casos límite): Se reforzó `walk_files` y `largest_folders` para manejar correctamente rutas que desaparecen durante el recorrido (race conditions), evitando que excepciones de sistema interrumpan el escaneo de disco.
 - `2026-07-30T01:31:23` **browser.py** (robustez ante casos límite): Se ha mejorado la robustez de `directory_size` ante errores de acceso a disco (como archivos bloqueados o denegados durante la iteración) envolviendo la lectura de `st_size` y la navegación del árbol en bloques `try-except` más granulares y resilientes, evitando que un fallo puntual detenga el cálculo total del tamaño.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-30T01:00:37` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje global en `compute_score` eliminando iteraciones redundantes y consolidando las operaciones de validación y cálculo en un flujo más eficiente, reduciendo la creación innecesaria de objetos intermedios.
 - `2026-07-30T00:51:10` **diskreport.py** (rendimiento): Optimicé `summarize` para realizar una sola pasada por los datos, eliminando la redundancia de llamar a `walk_files` y consolidando toda la lógica de recolección (estadísticas globales, mapa de extensiones y heap de archivos pesados) en un único ciclo de iteración, lo cual reduce significativamente el uso de CPU y E/S al evitar recorridos múltiples sobre el mismo árbol de archivos.
 - `2026-07-30T00:50:39` **branding.py** (rendimiento): Optimicé el método `draw_logo` para evitar la creación innecesaria de objetos `Canvas` y el re-cálculo de parámetros mediante la pre-computación de la lista `franjas` y el uso eficiente de `gradient_colors`, reduciendo el uso de CPU durante el refresco de la UI.
-- `2026-07-30T00:40:51` **startup.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de la clase `StartupEntry` documentando exhaustivamente su lógica de extracción de rutas, y agregué type hints y docstrings explicativos en `entries_from_registry` para clarificar el flujo de procesamiento del CSV de PowerShell.
-- `2026-07-30T00:40:42` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del código añadiendo docstrings más detallados y tipado explícito a funciones internas, además de documentar claramente las suposiciones de validación mediante `type hints`.

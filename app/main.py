@@ -863,7 +863,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.clear("Salud")
             self.log("Analizando... esto no modifica nada.", "Salud")
 
-            metrics, snapshot, unidad = self._compile_metrics()
+            try:
+                metrics, snapshot, unidad = self._compile_metrics()
+            except Exception as e:
+                self.log(f"Error recopilando métricas: {e}", "Salud")
+                return
+            
             resultado = healthscore.compute_score(metrics)
 
             self.assistant_context = assistant.build_context(

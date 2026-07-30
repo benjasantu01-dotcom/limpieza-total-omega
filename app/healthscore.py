@@ -168,17 +168,17 @@ def _generate_recommendations(m: SystemMetrics, ratios: Dict[str, float]) -> Lis
     """Genera sugerencias accionables basadas en los ratios obtenidos."""
     recs: List[str] = []
     
-    if ratios["seguridad"] < 0.9:
+    if ratios.get("seguridad", 1.0) < 0.9:
         recs.append(f"Revisá los {max(0, int(m.suspicious_count))} hallazgo(s) de seguridad; podés aislarlos en cuarentena sin borrarlos.")
-    if ratios["disco"] < 0.6:
+    if ratios.get("disco", 1.0) < 0.6:
         recs.append(f"Queda {round(_clamp(float(m.disk_free_percent), 0.0, 100.0), 1)}% de disco libre. Mirá el análisis de disco para ver qué ocupa más.")
-    if ratios["memoria"] < 0.6:
+    if ratios.get("memoria", 1.0) < 0.6:
         recs.append("Memoria disponible baja: cerrá programas que no uses. Ojo, 'liberar RAM' no sirve, cerrar procesos sí.")
-    if ratios["basura"] < 0.8:
+    if ratios.get("basura", 1.0) < 0.8:
         recs.append(f"Hay unos {int(max(0.0, float(m.junk_mb)))} MB de archivos temporales para revisar.")
-    if ratios["duplicados"] < 0.8:
+    if ratios.get("duplicados", 1.0) < 0.8:
         recs.append(f"Podrías recuperar ~{int(max(0.0, float(m.duplicate_mb)))} MB eliminando copias duplicadas.")
-    if ratios["arranque"] < 0.6:
+    if ratios.get("arranque", 1.0) < 0.6:
         recs.append(f"{max(0, int(m.startup_count))} programas arrancan con Windows; desactivá los que no necesites desde el Administrador de tareas.")
     
     if m.quarantined_count > 0:
@@ -208,11 +208,17 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
             "arranque": score_startup(metrics.startup_count),
         }
 
-        breakdown = {k: int(round(ratios[k] * w)) for k, w in WEIGHTS.items()}
-        total_score = max(0, min(100, sum(breakdown.values())))
+        # Cálculo defensivo: sumamos cada parte escalada según su peso
+        total_score = 0
+        breakdown = {}
+        for area, weight in WEIGHTS.items():
+            ratio = ratios.get(area, 0.0)
+            score_part = int(round(ratio * weight))
+            breakdown[area] = score_part
+            total_score += score_part
 
         return HealthResult(
-            score=total_score,
+            score=max(0, min(100, total_score)),
             grade=grade_for_score(total_score),
             breakdown=breakdown,
             recommendations=_generate_recommendations(metrics, ratios),
@@ -229,7 +235,7 @@ def summarize(result: HealthResult) -> List[str]:
     orden = sorted(result.breakdown.items(), key=lambda item: item[1] - WEIGHTS[item[0]])
     
     for area, puntos in orden:
-        maximo = WEIGHTS[area]
+        maximo = WEIGHTS.get(area, 0)
         lines.append(f"  {area.capitalize():<12} {puntos:>2}/{maximo:<2} [{'#' * puntos}{'.' * (maximo - puntos)}]")
     
     lines.extend(["", "Recomendaciones:"])

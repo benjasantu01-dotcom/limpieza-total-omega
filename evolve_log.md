@@ -1435,3 +1435,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption
 - `2026-07-30T01:31:55` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Mejoré la robustez de `suggest_keeper` y `_collect_candidates` ante archivos que desaparecen durante el procesamiento (condición de carrera o cambio de estado) y mejoré la gestión de excepciones en `suggest_keeper` para evitar que un solo archivo inaccesible invalide la sugerencia de todo un grupo.
 - `2026-07-30T01:31:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-30T01:31:55` Corrida terminada. Total usado hoy: 36.
+- `2026-07-30T01:40:39` Arrancando corrida. Quedan hoy ~264 peticiones objetivo.
+- `2026-07-30T01:41:06` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `compute_score` ante estados de configuración incoherentes, asegurando que el cálculo sea siempre seguro aunque los pesos definidos en `WEIGHTS` sean modificados accidentalmente o por error de usuario, evitando resultados matemáticos inesperados.
+- `2026-07-30T01:42:00` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se mejora la robustez ante errores de ejecución asíncrona en la pestaña de Salud, asegurando que si `_compile_metrics` falla (por ejemplo, por denegación de acceso al listar unidades o registros), el hilo no se silencie y el asistente reciba un contexto válido, evitando caídas en la interfaz.
+- `2026-07-30T01:42:24` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-07-30T01:42:31` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-07-30T01:42:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-30T01:42:31` Corrida terminada. Total usado hoy: 40.
