@@ -294,6 +294,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     
     try:
         target_pid = int(pid)
+        # Excluir procesos de sistema (Idle, System) que tienen PID <= 4
         if target_pid <= 4:
             return False, "Operación denegada: PID de sistema protegido."
     except (ValueError, TypeError):

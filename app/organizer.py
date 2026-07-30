@@ -110,7 +110,7 @@ def _generate_unique_target(target: Path) -> Path:
 
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     """
-    Escanea directorios en busca de archivos temporales.
+    Escanea directorios en busca de archivos temporales mediante recursión segura.
 
     Args:
         directories: Lista opcional de rutas a escanear. Si es None, usa DEFAULT_SCAN_DIRS.
@@ -167,12 +167,12 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
     Ordena una lista de objetos JunkFile según tamaño o fecha.
 
     Args:
-        files: Lista de objetos JunkFile.
+        files: Lista de objetos JunkFile a ordenar.
         by: Atributo de ordenamiento ('size' o 'date').
         ascending: Booleano para orden ascendente.
 
     Returns:
-        List[JunkFile]: Lista ordenada.
+        List[JunkFile]: Nueva lista ordenada.
     """
     if not isinstance(files, list):
         return []
@@ -190,6 +190,18 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Path:
     """
     Mueve archivos candidatos a una carpeta de cuarentena para revisión humana.
+    
+    Verifica que el destino sea seguro y que los archivos no estén en uso.
+    
+    Args:
+        files: Lista de objetos JunkFile a mover.
+        review_dir: Ruta destino de la carpeta de revisión.
+
+    Returns:
+        Path: Ruta absoluta donde se centralizaron los archivos.
+        
+    Raises:
+        OSError: Si no se puede crear o validar la carpeta de destino.
     """
     if not isinstance(files, list) or not isinstance(review_dir, str):
         logger.warning("Entrada inválida en stage_for_review.")
@@ -253,7 +265,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
     """
-    Elimina permanentemente archivos desde la carpeta de revisión.
+    Elimina permanentemente archivos desde la carpeta de revisión tras validación.
 
     Args:
         review_dir: Directorio base de revisión.
