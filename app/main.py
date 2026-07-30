@@ -1150,10 +1150,17 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             
             # Obtener el manifiesto para verificar la ruta original antes de restaurar
             item = quarantine.get_item(raw_id)
+            ruta_orig = Path(item.original_path)
+            
+            # Chequeo preventivo de seguridad: protección de lectura contra rutas de sistema
+            if safety.is_protected_path(ruta_orig):
+                self.log(f"Error: La ruta original '{ruta_orig}' es protegida. Restauración denegada.", "Cuarentena")
+                return
+
             try:
-                safety.ensure_safe_to_modify(Path(item.original_path))
+                safety.ensure_safe_to_modify(ruta_orig)
             except safety.UnsafePathError:
-                self.log(f"Error: La ruta original '{item.original_path}' es insegura. Restauración bloqueada.", "Cuarentena")
+                self.log(f"Error: La ruta original '{ruta_orig}' es insegura. Restauración bloqueada.", "Cuarentena")
                 return
 
             try:

@@ -129,7 +129,9 @@ def score_junk(junk_mb: float) -> float:
 
 def score_security(suspicious_count: int, warnings: int = 0) -> float:
     """Calcula ratio [0.0, 1.0] penalizando hallazgos de seguridad y advertencias."""
-    penalty: float = float(suspicious_count) * 0.05 + float(warnings) * 0.25
+    count = max(0, int(suspicious_count))
+    warns = max(0, int(warnings))
+    penalty: float = float(count) * 0.05 + float(warns) * 0.25
     return _clamp(1.0 - penalty, 0.0, 1.0)
 
 
@@ -213,10 +215,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         total_score = 0
         breakdown = {}
         for area, weight in WEIGHTS.items():
-            if area not in ratios:
-                raise KeyError(f"Métrica faltante para el área: {area}")
-            
-            ratio = ratios[area]
+            ratio = ratios.get(area, 0.0)
             score_part = int(round(ratio * weight))
             breakdown[area] = score_part
             total_score += score_part
@@ -236,7 +235,7 @@ def summarize(result: HealthResult) -> List[str]:
     """Genera una representación visual y textual del resultado de salud."""
     lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     
-    orden = sorted(result.breakdown.items(), key=lambda item: item[1] - WEIGHTS[item[0]])
+    orden = sorted(result.breakdown.items(), key=lambda item: item[1] - WEIGHTS.get(item[0], 0))
     
     for area, puntos in orden:
         maximo = WEIGHTS.get(area, 0)

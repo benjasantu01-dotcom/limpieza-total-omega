@@ -823,3 +823,10 @@ FAILED evolve/tests/test_modules.py::test_score_color_survives_garbage - Asserti
 - `2026-07-30T05:57:33` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `walk_files` y las funciones de análisis asociadas mediante la adición de una gestión explícita de `PermissionError` y `OSError` en la resolución inicial de rutas, además de asegurar que `os.scandir` maneje el acceso a directorios denegados de manera silenciosa para evitar interrupciones en el escaneo.
 - `2026-07-30T05:57:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-30T05:57:33` Corrida terminada. Total usado hoy: 140.
+- `2026-07-30T06:06:16` Arrancando corrida. Quedan hoy ~160 peticiones objetivo.
+- `2026-07-30T06:06:39` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-07-30T06:07:04` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `score_security` ante entradas negativas o inesperadas y aseguré que `compute_score` maneje una posible desconfiguración en `WEIGHTS` que podría causar un `KeyError` o resultados fuera de rango.
+- `2026-07-30T06:08:04` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Mejoré la robustez de `on_restore_quarantine` añadiendo una validación explícita mediante `safety.is_protected_path` para evitar restauraciones malintencionadas en ubicaciones críticas, complementando el chequeo de escritura actual con una comprobación preventiva antes de procesar el manifiesto.
+- `2026-07-30T06:08:12` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-07-30T06:08:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-30T06:08:12` Corrida terminada. Total usado hoy: 144.
