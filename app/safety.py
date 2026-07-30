@@ -94,14 +94,6 @@ def _is_reparse_point(path: Path) -> bool:
 def normalize(path: PathLike) -> Path:
     """
     Normaliza rutas para comparaciones seguras.
-    
-    Args:
-        path: Ruta como string o objeto Path.
-    Returns:
-        Path: Ruta absoluta y resuelta del sistema de archivos.
-    Raises:
-        TypeError: Si la entrada no es de un tipo compatible.
-        ValueError: Si la ruta está vacía.
     """
     if not isinstance(path, (str, os.PathLike)):
         raise TypeError(f"Entrada inválida: se esperaba str o PathLike, recibió {type(path)}")
@@ -130,9 +122,6 @@ def is_drive_root(path: PathLike) -> bool:
 def is_protected_path(path: PathLike) -> bool:
     """
     Evalúa si una ruta es peligrosa por definición.
-    
-    Returns:
-        bool: True si la ruta es inaccesible (red, sistema, reparse point).
     """
     if not path or not isinstance(path, (str, os.PathLike)):
         return True
@@ -146,8 +135,9 @@ def is_protected_path(path: PathLike) -> bool:
         if not p.is_absolute():
             return True
 
-        # Verifica si algún segmento del path está en la lista negra
-        if p.parts and not _ALL_PROTECTED_TOKENS.isdisjoint(part.lower() for part in p.parts):
+        # Optimización: chequeo rápido antes de llamadas al disco
+        path_parts = {part.lower() for part in p.parts}
+        if not _ALL_PROTECTED_TOKENS.isdisjoint(path_parts):
             return True
             
         if p == Path(p.anchor):
@@ -164,7 +154,6 @@ def is_protected_path(path: PathLike) -> bool:
 def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = False) -> bool:
     """
     Valida confinamiento: retorna True si 'child' está dentro de 'parent'.
-    Evita path traversal comparando rutas normalizadas.
     """
     if child is None or parent is None:
         return False
@@ -192,14 +181,6 @@ def is_sensitive_file(path: PathLike) -> bool:
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> Path:
     """
     Valida integridad antes de una modificación.
-    
-    Args:
-        path: Ruta a evaluar.
-        allow_sensitive: Si es False, bloquea archivos con extensiones críticas.
-    Returns:
-        Path: Retorna la ruta normalizada si es segura.
-    Raises:
-        UnsafePathError: Si la ruta infringe las reglas de seguridad.
     """
     if path is None:
         raise UnsafePathError("Ruta nula recibida.")

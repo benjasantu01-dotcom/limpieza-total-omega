@@ -210,7 +210,6 @@ def quarantine_file(
     if is_within_directory(source_path, dest_dir):
         raise UnsafePathError(f"El archivo ya reside en la carpeta de cuarentena: {source_path}")
 
-    # Validaciones críticas para evitar modificaciones no autorizadas en carpetas sensibles
     ensure_safe_to_modify(source_path, allow_sensitive=True)
     ensure_safe_to_modify(dest_dir, allow_sensitive=False)
     
@@ -226,7 +225,6 @@ def quarantine_file(
         raise OSError(f"Error al verificar espacio disponible: {e}")
 
     item_id = uuid.uuid4().hex[:12]
-    # Sanitización de nombre para evitar caracteres inválidos en sistemas de archivos
     safe_name = "".join(c for c in source_path.name if c.isalnum() or c in "._-")
     stored_name = f"{item_id}__{safe_name}"[:250] 
     destination = dest_dir / stored_name
@@ -243,7 +241,6 @@ def quarantine_file(
         raise RuntimeError("El archivo no pudo localizarse en el destino tras el movimiento.")
 
     try:
-        # Verificación post-movimiento: el hash garantiza que el archivo no fue corrupto durante el IO
         file_hash = _get_sha256(destination)
         item = QuarantineItem(
             item_id=item_id,
@@ -259,7 +256,6 @@ def quarantine_file(
         save_manifest(items, base)
         return item
     except Exception as e:
-        # Intento de roll-back en caso de fallo al actualizar el manifiesto o calcular hash
         if destination.exists():
             try:
                 shutil.move(str(destination), str(source_path))
@@ -340,7 +336,6 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
     quarantine_root = quarantine_dir(base)
     stored_file = quarantine_root / match.stored_name
     
-    # Doble verificación: que sea seguro, que exista y que esté confinado en cuarentena
     if is_protected_path(stored_file) or not stored_file.is_file() or not is_within_directory(stored_file, quarantine_root):
         raise UnsafePathError(f"Intento de borrado fuera de cuarentena: {stored_file}")
 
@@ -371,7 +366,6 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
         stored_file = quarantine_root / item.stored_name
         if not is_protected_path(stored_file) and stored_file.is_file() and is_within_directory(stored_file, quarantine_root):
             try:
-                # Se eliminan solo los archivos que mantienen su integridad
                 if not item.sha256 or _get_sha256(stored_file) == item.sha256:
                     stored_file.unlink()
                     count += 1
@@ -383,8 +377,7 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
 
 def total_quarantined_bytes(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     """Calcula el peso total en bytes de los archivos bajo cuarentena."""
-    items = load_manifest(base)
-    return sum(item.size_bytes for item in items)
+    return sum(item.size_bytes for item in load_manifest(base))
 
 
 def summarize(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[str]:

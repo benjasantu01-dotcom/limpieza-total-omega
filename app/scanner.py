@@ -53,15 +53,6 @@ class Suspicion:
 def _is_reparse_point(entry: os.DirEntry) -> bool:
     """
     Verifica si la entrada es un punto de reparse (Junction/Symlink).
-    
-    Usa el atributo FILE_ATTRIBUTE_REPARSE_POINT (0x400) para evitar recursiones
-    infinitas en el sistema de archivos al encontrar enlaces simbólicos o junctions.
-    
-    Args:
-        entry: Objeto DirEntry que representa el archivo o carpeta.
-        
-    Returns:
-        True si es un punto de reparse, False en caso contrario o error.
     """
     try:
         return bool(entry.stat(follow_symlinks=False).st_file_attributes & 0x400)
@@ -69,93 +60,51 @@ def _is_reparse_point(entry: os.DirEntry) -> bool:
         return False
 
 
-def _process_directory_entry(entry: os.DirEntry, root_path: str, results: List[Suspicion], stack: List[str], seen: set[str]) -> None:
+def _process_directory_entry(entry: os.DirEntry, root_str: str, results: List[Suspicion], stack: List[str], seen: set[str]) -> None:
     """
     Procesa una entrada de directorio: filtra rutas protegidas, evita recursión infinita
     mediante tracking de 'seen' y delega el escaneo de archivos a `scan_file`.
     """
-    if not entry or not isinstance(entry.path, str):
-        return
-
     try:
-        # Resolvemos ruta absoluta para evitar ataques de salto de directorio
-        path_str = os.path.abspath(entry.path)
-        path_obj = Path(path_str)
-        
-        # Validar sandbox lógico: la ruta debe estar dentro de root_path
-        if not path_str.startswith(root_path) or is_protected_path(path_obj):
-            return
-            
         if entry.is_dir(follow_symlinks=False):
-            if not _is_reparse_point(entry) and path_str not in seen:
-                seen.add(path_str)
-                stack.append(path_str)
+            if not _is_reparse_point(entry):
+                path_str = os.path.abspath(entry.path)
+                if path_str not in seen and not is_protected_path(Path(path_str)):
+                    seen.add(path_str)
+                    stack.append(path_str)
         elif entry.is_file():
-            results.extend(scan_file(path_obj))
-    except (PermissionError, OSError, ValueError):
+            results.extend(scan_file(Path(entry.path)))
+    except (PermissionError, OSError):
         pass
 
 
 def check_double_extension(path: Path) -> Optional[Suspicion]:
-    """
-    Analiza si el nombre del archivo contiene una extensión doble sospechosa.
-    
-    Args:
-        path: Objeto Path del archivo a inspeccionar.
-    Returns:
-        Un objeto Suspicion si se detecta doble extensión, None en caso contrario.
-    """
-    if not path or not path.name:
-        return None
-    if DOUBLE_EXTENSION_RE.search(path.name):
+    """Analiza si el nombre del archivo contiene una extensión doble sospechosa."""
+    if path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
     return None
 
 
 def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_THRESHOLD_HOURS) -> Optional[Suspicion]:
-    """
-    Evalúa si un archivo ejecutable ha sido modificado recientemente.
-    
-    Args:
-        path: Objeto Path del archivo a inspeccionar.
-        hours: Límite de tiempo en horas para considerar el archivo como 'reciente'.
-    Returns:
-        Un objeto Suspicion si el archivo fue modificado dentro del umbral definido.
-    """
-    if not path:
-        return None
-    
-    suffix = path.suffix.lower()
-    if suffix not in SUSPICIOUS_EXECUTABLE_EXT:
-        return None
-    try:
-        mtime = datetime.fromtimestamp(path.stat(follow_symlinks=False).st_mtime)
-        if datetime.now() - mtime < timedelta(hours=hours):
-            return Suspicion(path, f"Ejecutable reciente detectado (modificado hace menos de {hours}h)", "info")
-    except (FileNotFoundError, PermissionError, OSError):
-        return None
+    """Evalúa si un archivo ejecutable ha sido modificado recientemente."""
+    if path.suffix.lower() in SUSPICIOUS_EXECUTABLE_EXT:
+        try:
+            mtime = datetime.fromtimestamp(path.stat(follow_symlinks=False).st_mtime)
+            if datetime.now() - mtime < timedelta(hours=hours):
+                return Suspicion(path, f"Ejecutable reciente detectado (modificado hace menos de {hours}h)", "info")
+        except (FileNotFoundError, PermissionError, OSError):
+            pass
     return None
 
 
 def check_system_lookalike(path: Path) -> Optional[Suspicion]:
-    """
-    Detecta archivos que imitan nombres de procesos críticos del sistema operativo
-    estando ubicados fuera del directorio System32.
-    
-    Args:
-        path: Objeto Path del archivo a validar.
-    Returns:
-        Un objeto Suspicion si el nombre coincide con un proceso crítico fuera de lugar.
-    """
-    if not path or not path.name:
-        return None
+    """Detecta archivos que imitan nombres de procesos críticos del sistema operativo."""
     try:
         if path.name.lower() in SYSTEM_LOOKALIKES:
-            parent_str = str(path.parent).lower()
-            if SYSTEM32_LOWER not in parent_str:
+            if SYSTEM32_LOWER not in str(path.parent).lower():
                 return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
     except (AttributeError, ValueError, OSError):
-        return None
+        pass
     return None
 
 # Lista inmutable de funciones de análisis heurístico
@@ -166,63 +115,25 @@ CHECK_FUNCS: Final[List[SuspicionCheck]] = [
 ]
 
 def scan_file(path: Path) -> List[Suspicion]:
-    """
-    Aplica secuencialmente todas las funciones de `CHECK_FUNCS` sobre una ruta.
-    
-    Args:
-        path: Ruta absoluta al archivo a escanear.
-        
-    Returns:
-        Lista de objetos Suspicion encontrados.
-    """
-    try:
-        # Validación defensiva estricta: normalizar y verificar protección
-        abs_path = path.resolve()
-        if not abs_path.exists() or is_protected_path(abs_path):
-            return []
-    except (PermissionError, OSError):
-        return []
-
+    """Aplica secuencialmente todas las funciones de `CHECK_FUNCS` sobre una ruta."""
     results: List[Suspicion] = []
     for check_func in CHECK_FUNCS:
         try:
-            res = check_func(abs_path)
-            if res is not None:
+            res = check_func(path)
+            if res:
                 results.append(res)
         except (PermissionError, OSError):
             continue
-        except Exception as e:
-            logger.debug(f"Error inesperado en chequeo {check_func.__name__} para {abs_path}: {e}")
-            continue
-    
     return results
 
 
 def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
-    """
-    Realiza un recorrido recursivo iterativo sobre `directory`.
-    Utiliza un stack para la gestión del árbol y `os.scandir` para maximizar 
-    el rendimiento en la enumeración de archivos.
-    
-    Args:
-        directory: Ruta base desde donde comenzar el escaneo.
-        
-    Returns:
-        Lista de todos los objetos Suspicion encontrados en el árbol.
-    """
-    if not directory:
+    """Realiza un recorrido recursivo iterativo optimizado."""
+    path_obj = Path(directory)
+    if not path_obj.exists() or not path_obj.is_dir() or is_protected_path(path_obj):
         return []
         
-    try:
-        path_obj = Path(directory)
-        if not path_obj.exists() or not path_obj.is_dir() or is_protected_path(path_obj):
-            return []
-            
-        root_path = path_obj.resolve()
-        root_str = os.path.abspath(str(root_path))
-    except (TypeError, ValueError, OSError):
-        return []
-        
+    root_str = os.path.abspath(str(path_obj.resolve()))
     results: List[Suspicion] = []
     stack: List[str] = [root_str]
     seen: set[str] = {root_str}
@@ -240,12 +151,7 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
 
 
 def run_windows_defender_quick_scan() -> str:
-    """
-    Invoca `Start-MpScan` mediante PowerShell para disparar un escaneo de Defender.
-    
-    Returns:
-        Cadena con el resultado del comando o mensaje de error.
-    """
+    """Invoca `Start-MpScan` mediante PowerShell para disparar un escaneo de Defender."""
     try:
         result = subprocess.run(
             ["powershell", "-Command", "Start-MpScan -ScanType QuickScan"],
