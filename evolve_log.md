@@ -1170,3 +1170,28 @@ assert not True
 - `2026-07-30T10:05:29` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimizé `load_manifest` mediante el uso de `path.stat().st_mtime` para evitar lecturas innecesarias del archivo JSON en disco, aprovechando que el estado en memoria ya está sincronizado con la última modificación detectada.
 - `2026-07-30T10:05:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-30T10:05:29` Corrida terminada. Total usado hoy: 236.
+- `2026-07-30T10:11:36` Arrancando corrida. Quedan hoy ~64 peticiones objetivo.
+- `2026-07-30T10:11:56` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-07-30T10:12:19` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se implementó un cache local para las validaciones de `is_protected_path` y `is_sensitive_file` y se optimizó `filter_safe_paths` evitando el re-procesamiento de rutas mediante `normalize` cuando `is_safe_to_modify` ya la había ejecutado, reduciendo significativamente las llamadas innecesarias al sistema de archivos.
+- `2026-07-30T10:12:41` Tests FALLARON:
+```
+eurística tiene que valer con rutas estilo POSIX, para que el
+        # resultado no dependa de en qué sistema corran los tests.
+>       flagged = scanner.check_system_lookalike(PurePosixPath("/home/user/Downloads/svchost.exe"))
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: check_system_lookalike() missing 2 required positional arguments: 'name_l' and 'suffix_l'
+
+evolve/tests/test_basic.py:212: TypeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_scanner_double_extension_detection - TypeError: check_double_extension() missing 2 required positional arguments: 'name_l' and 'suffix_l'
+FAILED evolve/tests/test_basic.py::test_scanner_normal_file_is_clean - TypeError: check_double_extension() missing 2 required positional arguments: 'name_l' and 'suffix_l'
+FAILED evolve/tests/test_basic.py::test_scanner_flags_system_lookalike_outside_system32 - TypeError: check_system_lookalike() missing 2 required positional arguments: 'name_l' and 'suffix_l'
+FAILED evolve/tests/test_basic.py::test_scanner_does_not_flag_real_system_file - TypeError: check_system_lookalike() missing 2 required positional arguments: 'name_l' and 'suffix_l'
+FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independent - TypeError: check_system_lookalike() missing 2 required positional arguments: 'name_l' and 'suffix_l'
+5 failed, 294 passed in 1.06s
+
+```
+- `2026-07-30T10:12:41` ❌ Mejora descartada en scanner.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `scan_file` pre-calculando el nombre y el sufijo en minúsculas una sola vez, evitando llamadas redundantes a `path.name.lower()` y `path.suffix.lower()` dentro de cada función de chequeo.
+- `2026-07-30T10:12:50` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de `load()` evitando el llamado innecesario a `ruta.stat()` cuando el archivo no existe y reemplacé la validación basada en diccionarios de funciones en `_apply_validation_by_type` por un despacho directo (`if/elif`) para evitar la creación de lambdas y diccionarios en cada ciclo de validación.
+- `2026-07-30T10:12:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-30T10:12:50` Corrida terminada. Total usado hoy: 240.

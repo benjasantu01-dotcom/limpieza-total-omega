@@ -153,47 +153,26 @@ def _validate_str(clave: str, valor: Any) -> str | None:
 
 
 def _apply_validation_by_type(clave: str, valor: Any, defecto: Any) -> Any:
-    """
-    Despacha la validación según el tipo de dato del valor de fábrica.
-    """
-    if valor is None:
-        return None
-    
-    validators = {
-        bool: _coerce_bool,
-        int: lambda v: _coerce_int(v, clave),
-        str: lambda v: _validate_str(clave, v)
-    }
-    
-    validator = validators.get(type(defecto))
-    return validator(valor) if validator else None
+    """Despacha la validación de forma eficiente sin crear estructuras innecesarias."""
+    tipo = type(defecto)
+    if tipo is bool:
+        return _coerce_bool(valor)
+    if tipo is int:
+        return _coerce_int(valor, clave)
+    if tipo is str:
+        return _validate_str(clave, valor)
+    return None
 
 
 def settings_path(path_or_base: PathLike | None = None) -> Path:
-    """
-    Resuelve la ruta absoluta del archivo de configuración.
-    
-    Args:
-        path_or_base: Directorio base opcional para el archivo.
-        
-    Returns:
-        Ruta absoluta validada como segura.
-    """
+    """Resuelve la ruta absoluta del archivo de configuración."""
     base = Path(path_or_base).expanduser().resolve() if path_or_base else SETTINGS_DIR
     ensure_safe_to_modify(str(base))
     return base / SETTINGS_FILE
 
 
 def validate(values: Any) -> dict[str, Any]:
-    """
-    Valida un diccionario externo contra el esquema de DEFAULTS.
-    
-    Args:
-        values: Diccionario crudo a validar.
-        
-    Returns:
-        Diccionario garantizado con todas las claves y tipos correctos.
-    """
+    """Valida un diccionario externo contra el esquema de DEFAULTS."""
     limpio = dict(DEFAULTS)
     if not isinstance(values, dict):
         return limpio
@@ -211,11 +190,11 @@ def load(path_or_base: PathLike | None = None) -> dict[str, Any]:
     """Carga configuración con caché por mtime y chequeos de seguridad."""
     global _cached_settings, _last_path_str, _last_mtime
     
+    ruta = settings_path(path_or_base)
+    if not ruta.exists():
+        return dict(DEFAULTS)
+    
     try:
-        ruta = settings_path(path_or_base)
-        if not ruta.exists():
-            return dict(DEFAULTS)
-        
         stat = ruta.stat()
         if stat.st_size > MAX_SETTINGS_SIZE:
             return dict(DEFAULTS)
@@ -239,16 +218,7 @@ def load(path_or_base: PathLike | None = None) -> dict[str, Any]:
 
 
 def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
-    """
-    Persistencia atómica: escribe en archivo temporal y luego reemplaza.
-    
-    Args:
-        values: Configuración a persistir.
-        path_or_base: Ubicación opcional.
-        
-    Returns:
-        Ruta del archivo guardado o None si falló la operación.
-    """
+    """Persistencia atómica: escribe en archivo temporal y luego reemplaza."""
     global _cached_settings, _last_path_str, _last_mtime
     
     ruta = settings_path(path_or_base)

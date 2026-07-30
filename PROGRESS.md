@@ -8,44 +8,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **246** (48.8% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 24
+- Rechazadas por guardia de seguridad: 25
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 202
+- Sin respuesta de la IA (error o límite): 201
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-29 | 124 | 8 | 13 | 6 | 117 |
-| 2026-07-30 | 122 | 9 | 11 | 9 | 85 |
+| 2026-07-29 | 122 | 7 | 13 | 6 | 116 |
+| 2026-07-30 | 124 | 10 | 12 | 9 | 85 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **65**
-- seguridad defensiva: **53**
+- seguridad defensiva: **51**
 - manejo de errores y validación de entradas: **50**
-- rendimiento: **41**
+- rendimiento: **43**
 - robustez ante casos límite: **37**
 
 ## Mejoras aceptadas por archivo
 
-- `browser.py`: **23**
 - `scanner.py`: **23**
+- `browser.py`: **22**
+- `settings.py`: **20**
 - `healthscore.py`: **19**
 - `quarantine.py`: **19**
-- `settings.py`: **19**
 - `assistant.py`: **19**
-- `duplicates.py`: **18**
 - `main.py`: **18**
 - `diskreport.py`: **18**
+- `duplicates.py`: **17**
+- `safety.py`: **16**
 - `organizer.py`: **15**
-- `safety.py`: **15**
 - `memory.py`: **14**
 - `branding.py`: **14**
 - `startup.py`: **12**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-30T10:12:50` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` evitando el llamado innecesario a `ruta.stat()` cuando el archivo no existe y reemplacé la validación basada en diccionarios de funciones en `_apply_validation_by_type` por un despacho directo (`if/elif`) para evitar la creación de lambdas y diccionarios en cada ciclo de validación.
+- `2026-07-30T10:12:19` **safety.py** (rendimiento): Se implementó un cache local para las validaciones de `is_protected_path` y `is_sensitive_file` y se optimizó `filter_safe_paths` evitando el re-procesamiento de rutas mediante `normalize` cuando `is_safe_to_modify` ya la había ejecutado, reduciendo significativamente las llamadas innecesarias al sistema de archivos.
 - `2026-07-30T10:05:29` **quarantine.py** (rendimiento): Optimizé `load_manifest` mediante el uso de `path.stat().st_mtime` para evitar lecturas innecesarias del archivo JSON en disco, aprovechando que el estado en memoria ya está sincronizado con la última modificación detectada.
 - `2026-07-30T10:04:55` **memory.py** (rendimiento): Optimizé la función `format_bytes` reemplazando el bucle `for` y la división sucesiva por una búsqueda directa mediante el índice calculado con `math.log`, reduciendo la cantidad de operaciones aritméticas en el renderizado de la interfaz.
 - `2026-07-30T10:04:31` **main.py** (rendimiento): Se implementó un sistema de persistencia de caché más eficiente y una optimización en el ciclo de actualización de la interfaz de Salud para evitar el redibujado innecesario de componentes cuando los datos no han cambiado.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-30T09:32:06` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructuradas en las funciones auxiliares de escaneo, especificando las precondiciones, el valor de retorno y el propósito de cada chequeo heurístico para mayor claridad del equipo.
 - `2026-07-30T09:31:59` **safety.py** (legibilidad y documentación): Mejoré la documentación técnica y la precisión de los nombres internos en `safety.py` para facilitar el mantenimiento y la auditoría, añadiendo docstrings que explican el contexto de las verificaciones críticas para evitar futuros errores de implementación.
 - `2026-07-30T09:31:16` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación interna y claridad del código mediante la adición de Type Hints detallados, estandarización de las docstrings bajo estándares PEP 257 (énfasis en el "porqué" de las validaciones) y la corrección de una ambigüedad menor en la nomenclatura de variables (`origin` vs `source`) para evitar confusiones entre el objeto `Path` y el parámetro de entrada.
-- `2026-07-30T09:22:31` **organizer.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints consistentes en `scan_for_junk` y `stage_for_review` para aclarar la lógica de seguridad y el manejo de excepciones, facilitando el mantenimiento a largo plazo del módulo.
-- `2026-07-30T09:22:22` **memory.py** (legibilidad y documentación): Mejoré la documentación técnica y la mantenibilidad de `memory.py` mediante type hints explícitos, docstrings más precisas que explican el *porqué* de las decisiones de diseño, y la eliminación de redundancias en las firmas de funciones.

@@ -215,7 +215,6 @@ def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> bool:
     No lanza excepciones, retorna False si la ruta no cumple los estándares de seguridad.
     """
     try:
-        # Intentamos asegurar la ruta; si el proceso es exitoso, es segura.
         return isinstance(ensure_safe_to_modify(path, allow_sensitive=allow_sensitive), Path)
     except (UnsafePathError, TypeError, ValueError, OSError):
         return False
@@ -223,14 +222,16 @@ def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> bool:
 
 def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = False) -> list[Path]:
     """Filtra una lista de rutas y devuelve solo aquellas que pasaron las pruebas de seguridad."""
-    if not isinstance(paths, Iterable) or paths is None:
+    if not isinstance(paths, Iterable):
         return []
         
     safe_list = []
     for p in paths:
         try:
-            if p and is_safe_to_modify(p, allow_sensitive=allow_sensitive):
-                safe_list.append(normalize(p))
+            # Intentamos normalizar una vez y verificamos seguridad sin re-normalizar
+            normalized_p = normalize(p)
+            if is_safe_to_modify(normalized_p, allow_sensitive=allow_sensitive):
+                safe_list.append(normalized_p)
         except (TypeError, ValueError, OSError):
             continue
     return safe_list
