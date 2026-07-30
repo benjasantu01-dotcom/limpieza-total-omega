@@ -294,7 +294,7 @@ def save_logo_svg(destination: str | Path | None) -> Path | None:
     try:
         path = Path(destination).expanduser().resolve()
         
-        # Validar si el directorio o archivo es seguro para modificar antes de cualquier operación
+        # Validar si el directorio o archivo es seguro para modificar
         if not is_safe_to_modify(path):
             return None
             
@@ -305,7 +305,7 @@ def save_logo_svg(destination: str | Path | None) -> Path | None:
         path.write_text(logo_svg(), encoding="utf-8")
         return path
     except (OSError, PermissionError, RuntimeError, TypeError):
-        # Capturamos excepciones de IO o tipos incorrectos sin romper la app
+        # Fallo de sistema capturado para evitar bloqueos
         return None
 
 
@@ -324,17 +324,14 @@ def logo_ascii() -> str:
 def draw_logo(canvas: Any, size: int = 56, canvas_x: int = 0, canvas_y: int = 0) -> None:
     """
     Renderiza el logo (escudo Omega) en un widget canvas de Tkinter.
-    Utiliza coordenadas locales para el dibujo escalable del escudo.
     """
     if canvas is None or not hasattr(canvas, "create_polygon"): return
     try:
         s = max(0.1, float(size) / 128)
         x_val, y_val = float(canvas_x), float(canvas_y)
-        # Pre-cálculo de coordenadas relativas al escudo (base 128x128)
         c = [64, 18, 100, 31, 100, 67, 90, 90, 64, 110, 38, 90, 28, 67, 28, 31]
         contorno = [x_val + v * s if i % 2 == 0 else y_val + v * s for i, v in enumerate(c)]
         
-        # Resplandor radial: dibujado en capas para efecto de desenfoque
         for paso in range(4, 0, -1):
             radio = 56 * s * (0.6 + paso * 0.12)
             canvas.create_oval(
@@ -345,7 +342,6 @@ def draw_logo(canvas: Any, size: int = 56, canvas_x: int = 0, canvas_y: int = 0)
 
         canvas.create_polygon(contorno, fill=GRADIENT_STOPS[1], outline="")
         
-        # Relleno del escudo con franjas de color degradado
         franjas = max(6, int(28 * s))
         alto = 92 * s / franjas
         colores_grad = gradient_colors(franjas)
@@ -361,7 +357,7 @@ def draw_logo(canvas: Any, size: int = 56, canvas_x: int = 0, canvas_y: int = 0)
         canvas.create_line(x_val + 41 * s, y_val + 75 * s, x_val + 75 * s, y_val + 41 * s, fill=PALETTE["background"], width=max(2, int(8 * s)), capstyle="round")
         canvas.create_polygon(x_val + 75 * s, y_val + 41 * s, x_val + 89 * s, y_val + 38 * s, x_val + 92 * s, y_val + 52 * s, fill=PALETTE["background"], outline="")
         canvas.create_text(x_val + 64 * s, y_val + 96 * s, text="\u03a9", fill=PALETTE["background"], font=("Segoe UI", max(8, int(23 * s)), "bold"))
-    except Exception:
+    except (ValueError, TypeError, AttributeError):
         return
 
 
@@ -384,7 +380,6 @@ def draw_ring(canvas: Any, percent: float | int, size: int = 150,
               fill: HexColor | None = None) -> None:
     """
     Dibuja un medidor circular de estado usando arcos concéntricos.
-    Calcula el diámetro en función de `size` y aplica el color de `fill` dinámicamente.
     """
     if canvas is None or not hasattr(canvas, "create_arc"): return
     try:

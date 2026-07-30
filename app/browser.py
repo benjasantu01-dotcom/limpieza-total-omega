@@ -133,6 +133,9 @@ def directory_size(path: str | os.PathLike | None) -> int:
     while stack:
         current_dir = stack.pop()
         try:
+            # Comprobación de acceso necesaria antes de iterar
+            if not os.access(current_dir, os.R_OK):
+                continue
             with os.scandir(current_dir) as it:
                 for entry in it:
                     if entry.is_symlink():

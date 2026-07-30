@@ -198,12 +198,7 @@ def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[Start
     """
     Ejecuta consultas de PowerShell para extraer entradas de las claves del Registro.
     
-    El proceso invoca PowerShell para listar propiedades de registro, formatea la 
-    salida como CSV y las parsea posteriormente. Se filtran errores de ejecución 
-    silenciosamente si el sistema no permite el acceso al registro.
-    
-    Returns:
-        Lista de StartupEntry detectadas en todas las claves proporcionadas.
+    El proceso invoca PowerShell en una sola llamada consolidada.
     """
     if os.name != "nt":
         return []
@@ -212,22 +207,18 @@ def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[Start
     for key in keys:
         if isinstance(key, str):
             safe_key: str = subprocess.list2cmdline([key])
-            # La consulta extrae solo los pares Name/Value del registro
-            query_parts.append(f"Write-Host 'SRCDATA:{key}'; (Get-ItemProperty {safe_key}).psobject.properties | Select-Object Name, Value | ConvertTo-Csv -NoTypeInformation")
+            # Extraer propiedades ignorando errores si la clave no existe
+            query_parts.append(f"try {{ (Get-ItemProperty {safe_key} -ErrorAction SilentlyContinue).psobject.properties | Select-Object Name, Value | ConvertTo-Csv -NoTypeInformation }} catch {{ }}")
     
     ps_cmd: str = " ; ".join(query_parts)
     
     try:
         result: subprocess.CompletedProcess = subprocess.run(
-            ["powershell", "-NoProfile", "-Command", ps_cmd],
+            ["powershell", "-NoProfile", "-NonInteractive", "-Command", ps_cmd],
             capture_output=True, text=True, timeout=30,
         )
         if result.returncode == 0 and result.stdout:
-            entries: List[StartupEntry] = []
-            current_source: str = "registro"
-            # Procesar bloque completo para evitar múltiples llamadas de parseo
-            entries.extend(parse_registry_csv(result.stdout, source=current_source))
-            return entries
+            return parse_registry_csv(result.stdout)
     except (OSError, subprocess.SubprocessError):
         pass
     return []
