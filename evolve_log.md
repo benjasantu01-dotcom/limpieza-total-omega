@@ -662,3 +662,10 @@ FAILED evolve/tests/test_modules.py::test_score_color_survives_garbage - Asserti
 - `2026-07-30T04:25:18` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `scan_file` y `scan_directory` mediante la validación explícita de `path` contra nulos o tipos incorrectos, evitando que errores de resolución en el sistema de archivos (como `OSError` al acceder a metadatos) detengan el escaneo de forma silenciosa.
 - `2026-07-30T04:25:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-30T04:25:18` Corrida terminada. Total usado hoy: 104.
+- `2026-07-30T04:34:12` Arrancando corrida. Quedan hoy ~196 peticiones objetivo.
+- `2026-07-30T04:34:40` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_coerce_int` añadiendo un manejo de excepciones más granular y específico para evitar que valores mal formados (como listas o diccionarios pasados accidentalmente como `raw_value`) causen comportamientos inesperados, garantizando que siempre se devuelva un `int` validado o `None`.
+- `2026-07-30T04:35:03` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Mejoré `entries_from_folders` para validar que el resultado de `base_path.iterdir()` no contenga nombres de archivos vacíos o rutas malformadas antes de procesarlos, asegurando robustez ante errores de entrada y evitando accesos innecesarios a archivos protegidos.
+- `2026-07-30T04:35:34` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenibilidad de la lógica de priorización extrayendo el ranking de problemas a una estructura de datos declarativa y eliminando la redundancia en los mensajes de salida.
+- `2026-07-30T04:35:45` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: legibilidad y documentación).
+- `2026-07-30T04:35:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-30T04:35:45` Corrida terminada. Total usado hoy: 108.

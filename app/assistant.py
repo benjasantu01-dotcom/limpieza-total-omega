@@ -390,28 +390,16 @@ def local_answer(question: str, context: SystemContext) -> Answer:
 
 
 def _rank_problems(context: SystemContext) -> list[str]:
-    """Calcula y ordena los problemas más críticos del sistema."""
-    res = []
-    disk = context.disk_free_percent
-    warns = context.suspicious_warnings
-    mem = context.memory_available_percent
-    junk = context.junk_mb
-    dups = context.duplicate_mb
-    start = context.startup_count
-
-    if disk < 10:
-        res.append(f"queda solo {disk:.0f}% de disco libre, atendelo primero (pestaña Disco y Limpieza)")
-    if warns > 0:
-        res.append(f"{warns} archivo(s) sospechosos con advertencia (pestaña Seguridad)")
-    if mem < 15:
-        res.append(f"queda {mem:.0f}% de RAM disponible (pestaña Memoria)")
-    if junk > 1000:
-        res.append(f"{junk:.0f} MB de archivos basura (pestaña Limpieza)")
-    if dups > 500:
-        res.append(f"{dups:.0f} MB en duplicados (pestaña Duplicados)")
-    if start > 15:
-        res.append(f"{start} programas de inicio (pestaña Inicio)")
-    return res
+    """Calcula y ordena los problemas más críticos del sistema usando reglas declarativas."""
+    reglas: list[tuple[bool, str]] = [
+        (context.disk_free_percent < 10, f"queda solo {context.disk_free_percent:.0f}% de disco libre, atendelo primero (pestaña Disco y Limpieza)"),
+        (context.suspicious_warnings > 0, f"{context.suspicious_warnings} archivo(s) sospechosos con advertencia (pestaña Seguridad)"),
+        (context.memory_available_percent < 15, f"queda {context.memory_available_percent:.0f}% de RAM disponible (pestaña Memoria)"),
+        (context.junk_mb > 1000, f"{context.junk_mb:.0f} MB de archivos basura (pestaña Limpieza)"),
+        (context.duplicate_mb > 500, f"{context.duplicate_mb:.0f} MB en duplicados (pestaña Duplicados)"),
+        (context.startup_count > 15, f"{context.startup_count} programas de inicio (pestaña Inicio)")
+    ]
+    return [msg for condicion, msg in reglas if condicion]
 
 
 def available(base: str | Path | None = None) -> bool:

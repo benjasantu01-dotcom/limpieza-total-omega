@@ -125,7 +125,7 @@ def _coerce_int(raw_value: Any, setting_key: str) -> int | None:
     Intenta convertir a entero, aplicando límites definidos en _NUMERIC_LIMITS.
     Retorna el valor truncado a los límites permitidos o None si la conversión falla.
     """
-    if not isinstance(raw_value, (int, str)):
+    if isinstance(raw_value, bool):
         return None
     try:
         parsed_val = int(raw_value)

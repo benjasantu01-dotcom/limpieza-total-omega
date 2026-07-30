@@ -140,6 +140,8 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
         try:
             for item in base_path.iterdir():
                 try:
+                    if not item.name or item.name.lower() == "desktop.ini":
+                        continue
                     if item.is_file() and not item.is_symlink():
                         # Protección defensiva: no procesar rutas marcadas como prohibidas
                         if is_protected_path(item):
@@ -147,7 +149,7 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
                         
                         resolved_item: Path = item.resolve()
                         # Verificación estricta de jerarquía para evitar escapes de carpeta
-                        if item.name.lower() != "desktop.ini" and base_path == resolved_item.parent:
+                        if base_path == resolved_item.parent:
                             found_entries.append(StartupEntry(name=item.stem, command=str(item), source="carpeta"))
                 except (OSError, PermissionError, RuntimeError):
                     continue

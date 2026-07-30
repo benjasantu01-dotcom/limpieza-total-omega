@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **249** (49.4% de aceptación)
+- Mejoras aceptadas: **251** (49.8% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 26
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 200
+- Sin respuesta de la IA (error o límite): 198
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-28 | 26 | 3 | 3 | 1 | 17 |
+| 2026-07-28 | 25 | 3 | 3 | 1 | 14 |
 | 2026-07-29 | 171 | 10 | 18 | 8 | 143 |
-| 2026-07-30 | 52 | 4 | 5 | 3 | 40 |
+| 2026-07-30 | 55 | 4 | 5 | 3 | 41 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **54**
-- legibilidad y documentación: **53**
-- manejo de errores y validación de entradas: **51**
+- legibilidad y documentación: **54**
+- manejo de errores y validación de entradas: **53**
 - robustez ante casos límite: **47**
-- rendimiento: **44**
+- rendimiento: **43**
 
 ## Mejoras aceptadas por archivo
 
 - `scanner.py`: **22**
+- `settings.py`: **22**
 - `browser.py`: **22**
-- `settings.py`: **21**
 - `quarantine.py`: **20**
-- `assistant.py`: **19**
+- `assistant.py`: **20**
 - `healthscore.py`: **19**
 - `organizer.py`: **18**
-- `main.py`: **17**
 - `diskreport.py`: **17**
 - `duplicates.py`: **17**
 - `memory.py`: **16**
+- `main.py`: **16**
 - `safety.py`: **15**
 - `branding.py`: **15**
-- `startup.py`: **11**
+- `startup.py`: **12**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-30T04:35:34` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de la lógica de priorización extrayendo el ranking de problemas a una estructura de datos declarativa y eliminando la redundancia en los mensajes de salida.
+- `2026-07-30T04:35:03` **startup.py** (manejo de errores y validación de entradas): Mejoré `entries_from_folders` para validar que el resultado de `base_path.iterdir()` no contenga nombres de archivos vacíos o rutas malformadas antes de procesarlos, asegurando robustez ante errores de entrada y evitando accesos innecesarios a archivos protegidos.
+- `2026-07-30T04:34:40` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_coerce_int` añadiendo un manejo de excepciones más granular y específico para evitar que valores mal formados (como listas o diccionarios pasados accidentalmente como `raw_value`) causen comportamientos inesperados, garantizando que siempre se devuelva un `int` validado o `None`.
 - `2026-07-30T04:25:18` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `scan_file` y `scan_directory` mediante la validación explícita de `path` contra nulos o tipos incorrectos, evitando que errores de resolución en el sistema de archivos (como `OSError` al acceder a metadatos) detengan el escaneo de forma silenciosa.
 - `2026-07-30T04:25:11` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `is_within_directory` y `filter_safe_paths` ante entradas malformadas o tipos inesperados, asegurando que las funciones de validación devuelvan resultados predecibles (False/lista vacía) en lugar de propagar errores o excepciones imprevistas.
 - `2026-07-30T04:24:30` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` añadiendo una validación explícita de `OSError` al calcular el hash y al realizar operaciones de sistema, asegurando que si ocurre un fallo durante la lectura o escritura, el estado del sistema permanezca consistente y se notifique con un mensaje claro en lugar de propagar excepciones ambiguas.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-30T02:42:13` **startup.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `entries_from_folders` añadiendo una validación explícita mediante `is_protected_path` (importado de `safety.py`) para evitar que la aplicación intente procesar o mostrar rutas críticas del sistema operativo, incluso si están dentro de carpetas de inicio.
 - `2026-07-30T02:32:50` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save()` y `settings_path()` mediante una validación más estricta de las rutas base, asegurando que `ensure_safe_to_modify` se aplique sobre la carpeta de configuración real antes de intentar cualquier operación de I/O, evitando así inyecciones de rutas fuera del ámbito permitido.
 - `2026-07-30T02:32:40` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez de `scan_directory` introduciendo una normalización de rutas previa mediante `os.path.abspath` y el uso de un conjunto `seen` para evitar ciclos infinitos en caso de que existan estructuras de directorios inusuales, garantizando además que la validación de `root_path` sea consistente con el filtrado de seguridad.
-- `2026-07-30T02:32:19` **safety.py** (seguridad defensiva): Se ha mejorado `is_protected_path` para que no dependa únicamente de `normalize` (que puede fallar ante rutas inexistentes o sin permisos), garantizando que las rutas de sistema y los nombres protegidos se detecten incluso cuando el archivo no existe físicamente, manteniendo la robustez del chequeo defensivo.
-- `2026-07-30T02:23:46` **quarantine.py** (seguridad defensiva): Se ha implementado una validación de integridad previa al borrado en `purge_item` y `purge_all`, asegurando mediante `is_within_directory` y una verificación de coincidencia del hash SHA-256 (si está presente) que solo se eliminen los archivos legítimamente gestionados por el sistema de cuarentena, protegiendo contra posibles ataques de "path traversal" o archivos externos inyectados manualmente en la carpeta.
-- `2026-07-30T02:23:35` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de `stage_for_review` implementando una validación de ruta absoluta antes de la operación de movimiento, asegurando que la ruta de destino no sea un punto de reparse ni un enlace simbólico, reforzando la seguridad frente a posibles ataques de escalada de privilegios o manipulación de rutas externas.
