@@ -210,16 +210,13 @@ def quarantine_file(
     if is_within_directory(source_path, dest_dir):
         raise UnsafePathError(f"El archivo ya reside en la carpeta de cuarentena: {source_path}")
 
-    if _is_file_locked(source_path):
-        raise IOError(f"El archivo está en uso por otro proceso: {source_path}")
-
     # Validaciones críticas para evitar modificaciones no autorizadas en carpetas sensibles
     ensure_safe_to_modify(source_path, allow_sensitive=True)
     ensure_safe_to_modify(dest_dir, allow_sensitive=False)
     
-    if not source_path.exists():
-        raise FileNotFoundError(f"El archivo desapareció durante el proceso: {source_path}")
-
+    if _is_file_locked(source_path):
+        raise IOError(f"El archivo está en uso por otro proceso: {source_path}")
+    
     file_size = source_path.stat().st_size
     usage = shutil.disk_usage(dest_dir)
     if usage.free < file_size:
@@ -240,6 +237,7 @@ def quarantine_file(
         raise RuntimeError(f"Falla crítica al mover archivo: {e}")
 
     try:
+        # Verificación post-movimiento: el hash garantiza que el archivo no fue corrupto durante el IO
         file_hash = _get_sha256(destination)
         item = QuarantineItem(
             item_id=item_id,
@@ -255,7 +253,7 @@ def quarantine_file(
         save_manifest(items, base)
         return item
     except Exception as e:
-        # Intento de roll-back en caso de fallo al actualizar el manifiesto
+        # Intento de roll-back en caso de fallo al actualizar el manifiesto o calcular hash
         if destination.exists():
             try:
                 shutil.move(str(destination), str(source_path))

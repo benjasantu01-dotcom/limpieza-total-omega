@@ -197,21 +197,6 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Path:
     """
     Mueve archivos candidatos a una carpeta de cuarentena para revisión humana.
-    
-    Aplica chequeos estrictos:
-    1. Verifica que el destino no sea una ruta de sistema (ensure_safe_to_modify).
-    2. Valida que el archivo no esté en uso abriéndolo temporalmente.
-    3. Asegura que el archivo original y el destino sean rutas disjuntas.
-
-    Args:
-        files: Lista de objetos JunkFile a mover.
-        review_dir: Ruta destino de la carpeta de revisión.
-
-    Returns:
-        Path: Ruta absoluta donde se centralizaron los archivos.
-        
-    Raises:
-        OSError: Si el directorio destino no puede ser validado o creado.
     """
     if not isinstance(files, list) or not isinstance(review_dir, str):
         logger.warning("Entrada inválida en stage_for_review.")
@@ -220,7 +205,6 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
     dest = Path(review_dir).expanduser().resolve()
     
     try:
-        # ensure_safe_to_modify lanza excepción si la ruta es peligrosa
         ensure_safe_to_modify(dest)
         dest.mkdir(parents=True, exist_ok=True)
     except (OSError, Exception) as e:
@@ -234,26 +218,21 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         try:
             full_source_path = jf.path.resolve()
             
-            # Validación: no mover enlaces o rutas fuera de control
             if not full_source_path.exists() or not full_source_path.is_file() or full_source_path.is_symlink():
                 continue
             
-            # Filtro lógico previo al movimiento
             if not is_safe_to_modify(full_source_path):
                 continue
             
-            # Prevenir colisión de jerarquía: origen dentro de destino o viceversa
             if dest == full_source_path or dest in full_source_path.parents or full_source_path.parent == dest:
                 continue
                 
-            # Verificar si el archivo está bloqueado por otro proceso
             try:
                 with open(full_source_path, 'rb+'):
                     pass
             except (PermissionError, OSError):
                 continue
 
-            # Verificar espacio libre antes de mover
             usage = shutil.disk_usage(dest.anchor)
             if usage.free < (jf.size_bytes + 10 * 1024 * 1024):
                 continue
@@ -264,11 +243,9 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             initial_target = (dest / f"{base_name}_{timestamp}{ext}").resolve()
             target = _generate_unique_target(initial_target)
             
-            # Validación de integridad de ruta destino
             if not str(target).startswith(str(dest)):
                 continue
             
-            # Confirmación final de seguridad antes de la escritura física
             ensure_safe_to_modify(full_source_path)
             ensure_safe_to_modify(target)
             shutil.move(str(full_source_path), str(target))
@@ -281,12 +258,6 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
     """
     Elimina permanentemente archivos desde la carpeta de revisión tras validación.
-
-    Args:
-        review_dir: Directorio base de revisión.
-
-    Returns:
-        int: Cantidad de archivos eliminados con éxito.
     """
     if not isinstance(review_dir, str):
         return 0
@@ -298,7 +269,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     count = 0
     for f in dest.iterdir():
         try:
-            if f.is_file():
+            if f.is_file() and f.exists():
                 resolved_f = f.resolve()
                 if is_safe_to_modify(resolved_f) and str(resolved_f).startswith(str(dest)):
                     f.unlink()

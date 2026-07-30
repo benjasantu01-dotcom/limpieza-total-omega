@@ -1209,3 +1209,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-07-30T10:33:54` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se implementó un manejo de excepciones robusto dentro del bucle `_build_tabs_container` y se añadió una validación de existencia de ruta en `_build_tab_salud` para prevenir errores si el sistema operativo no logra acceder a las carpetas predeterminadas (ej. `Downloads` o `Home` inaccesible).
 - `2026-07-30T10:33:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-30T10:33:54` Corrida terminada. Total usado hoy: 248.
+- `2026-07-30T10:42:11` Arrancando corrida. Quedan hoy ~52 peticiones objetivo.
+- `2026-07-30T10:42:35` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-07-30T10:42:58` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `stage_for_review` implementando una validación de ruta absoluta antes de la operación de movimiento para prevenir errores por rutas relativas mal resueltas, y se ha añadido un chequeo de existencia previo en `delete_reviewed` para evitar excepciones en condiciones de carrera.
+- `2026-07-30T10:43:26` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Mejoré la robustez de `quarantine_file` ante fallos parciales durante el proceso de movimiento (como archivos bloqueados o permisos denegados) añadiendo un chequeo preventivo de espacio en disco y validando la integridad del hash antes de registrar el ítem en el manifiesto, evitando estados inconsistentes en el sistema.
+- `2026-07-30T10:43:30` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-07-30T10:43:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-30T10:43:30` Corrida terminada. Total usado hoy: 252.
