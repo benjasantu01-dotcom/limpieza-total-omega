@@ -360,13 +360,14 @@ _HANDLERS: Final[dict[str, Callable[[SystemContext, str], Answer]]] = {
     "startup": handle_startup
 }
 
+def _sanitize_query(question: str) -> str:
+    """Limpia la entrada del usuario para procesamiento de texto seguro."""
+    return re.sub(r'[\x00-\x1f\x7f]', '', (question or "").strip())[:200].lower()
+
 def local_answer(question: str, context: SystemContext) -> Answer:
     """
     Procesa la pregunta del usuario utilizando reglas de negocio estáticas.
     """
-    raw_text = (question or "").strip()
-    clean_text = re.sub(r'[\x00-\x1f\x7f]', '', raw_text)[:200].lower()
-
     if not isinstance(context, SystemContext) or not context.analyzed:
         return Answer(
             text="Todavía no corriste ningún análisis, así que no tengo datos de "
@@ -375,6 +376,8 @@ def local_answer(question: str, context: SystemContext) -> Answer:
             notice=OFFLINE_NOTICE,
             suggestions=SUGGESTED_QUESTIONS_LIST[:3],
         )
+
+    clean_text = _sanitize_query(question)
 
     for pattern, key in _HANDLER_PATTERNS:
         if pattern.search(clean_text):

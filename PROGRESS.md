@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **243** (48.2% de aceptación)
+- Mejoras aceptadas: **242** (48.0% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 25
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 203
+- Sin respuesta de la IA (error o límite): 204
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-29 | 144 | 9 | 15 | 8 | 120 |
-| 2026-07-30 | 99 | 9 | 10 | 7 | 83 |
+| 2026-07-29 | 141 | 9 | 15 | 7 | 120 |
+| 2026-07-30 | 101 | 9 | 10 | 8 | 84 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **54**
-- legibilidad y documentación: **51**
-- manejo de errores y validación de entradas: **49**
+- legibilidad y documentación: **52**
+- manejo de errores y validación de entradas: **50**
 - robustez ante casos límite: **47**
-- rendimiento: **42**
+- rendimiento: **39**
 
 ## Mejoras aceptadas por archivo
 
-- `scanner.py`: **23**
+- `scanner.py`: **24**
 - `browser.py`: **22**
 - `settings.py`: **20**
-- `assistant.py`: **19**
-- `diskreport.py`: **18**
-- `healthscore.py`: **18**
+- `assistant.py`: **20**
 - `quarantine.py`: **18**
-- `duplicates.py`: **17**
+- `diskreport.py`: **17**
 - `main.py`: **17**
+- `healthscore.py`: **17**
 - `organizer.py`: **16**
+- `duplicates.py`: **16**
 - `safety.py`: **15**
 - `branding.py`: **14**
 - `memory.py`: **13**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-30T09:01:33` **assistant.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints detallados en las funciones de manejo de consultas y utilidades, y extraje la lógica de validación de entradas de `local_answer` a una función auxiliar nombrada, incrementando la legibilidad y la claridad sobre qué datos se consideran "seguros" para procesar.
+- `2026-07-30T09:00:30` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `scan_file` y las funciones de validación mediante la centralización de chequeos de nulidad y manejo de excepciones específicas, asegurando que el scanner no aborte ante rutas con formato inesperado o estados de archivo bloqueados por el sistema operativo.
 - `2026-07-30T08:51:13` **safety.py** (manejo de errores y validación de entradas): Mejora la robustez de `is_within_directory` y `ensure_safe_to_modify` añadiendo validaciones preventivas ante rutas que contienen caracteres inválidos o entradas de tipo inesperado, evitando excepciones no capturadas durante operaciones de resolución de rutas.
 - `2026-07-30T08:41:21` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de las entradas de texto en la pestaña de Ajustes (`min_dup_entry` y `top_files_entry`) validando que los valores sean números positivos y no vacíos antes de intentar guardarlos, evitando errores de conversión y configuraciones inválidas.
 - `2026-07-30T08:39:58` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez del manejo de archivos en `_collect_candidates` y `suggest_keeper` asegurando que las rutas se validen exhaustivamente antes de intentar acceder a sus metadatos (lstat/stat), evitando excepciones inesperadas por archivos desaparecidos o bloqueados durante la iteración.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-30T06:57:58` **quarantine.py** (seguridad defensiva): Se reforzó la integridad del proceso `purge_all` añadiendo una validación explícita mediante `ensure_safe_to_modify` antes de proceder al borrado masivo, asegurando que el directorio de cuarentena sea gestionable y no una ruta de sistema, además de prevenir errores de escritura durante el proceso.
 - `2026-07-30T06:50:20` **organizer.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `stage_for_review` implementando una validación explícita mediante `ensure_safe_to_modify` sobre el destino calculado antes de cada operación de movimiento, garantizando que ninguna manipulación de archivos escape al control centralizado de seguridad del proyecto.
 - `2026-07-30T06:49:48` **main.py** (seguridad defensiva): Se ha mejorado `on_stage` y `on_quarantine_findings` en `main.py` para realizar una validación de seguridad proactiva mediante `is_safe_to_modify` antes de proceder con cualquier confirmación o movimiento, asegurando que los archivos bajo procesos de limpieza o aislamiento no residan en rutas protegidas incluso antes de solicitar permiso al usuario.
-- `2026-07-30T06:47:47` **healthscore.py** (seguridad defensiva): Se reforzó la robustez de `SystemMetrics.validate` y `compute_score` ante valores atípicos mediante el uso de `math.isfinite` y `_clamp` adicional, asegurando que los cálculos aritméticos en `compute_score` no deriven en estados de excepción inesperados ni corrompan el puntaje final con valores fuera de rango.
-- `2026-07-30T06:38:28` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `_collect_candidates` asegurando mediante `resolve()` y `is_relative_to` que el escaneo no escape accidentalmente de los directorios raíz solicitados, previniendo el procesamiento de rutas fuera del alcance deseado incluso ante manipulaciones de enlaces simbólicos o rutas absolutas inesperadas.

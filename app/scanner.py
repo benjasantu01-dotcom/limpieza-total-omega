@@ -147,15 +147,22 @@ def scan_file(path: Path) -> List[Suspicion]:
     Aplica secuencialmente todas las funciones de `CHECK_FUNCS` sobre una ruta.
     Retorna una lista con todos los objetos `Suspicion` hallados.
     """
-    if not path or is_protected_path(path):
+    if not isinstance(path, Path) or not path.exists():
+        return []
+    
+    if is_protected_path(path):
         return []
 
     results: List[Suspicion] = []
     for check_func in CHECK_FUNCS:
         try:
-            if (res := check_func(path)):
+            res = check_func(path)
+            if res is not None:
                 results.append(res)
-        except Exception:
+        except (PermissionError, OSError):
+            continue
+        except Exception as e:
+            logger.debug(f"Error inesperado en chequeo {check_func.__name__} para {path}: {e}")
             continue
     
     return results
