@@ -294,8 +294,9 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
         
     total_bytes: int = 0
     total_files: int = 0
-    # ext_data_map: {ext: [tamaño_total, contador_archivos]}
+    # Map: {ext: [tamaño_total_bytes, contador_archivos]}
     ext_data_map: Dict[str, List[int]] = defaultdict(lambda: [0, 0])
+    # Heap: almacena tuplas (tamaño, ruta) para encontrar los archivos más pesados
     top_heap: List[Tuple[int, Path]] = []
 
     for path, size in walk_files(path_obj, skip_protected):

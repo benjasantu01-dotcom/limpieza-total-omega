@@ -14,7 +14,7 @@ vive en los otros módulos; acá solo se puntúa.
 
 from __future__ import annotations
 from dataclasses import dataclass, field
-from typing import Dict, List, Any, Final
+from typing import Dict, List, Any, Final, Tuple
 import math
 
 __all__ = [
@@ -32,12 +32,13 @@ __all__ = [
     "summarize",
 ]
 
-# Umbrales para normalización de métricas (valores críticos donde el puntaje llega a 0)
+# Umbrales críticos para la normalización: definen el punto de saturación (ratio 0.0).
+# Superar estos valores implica un sistema degradado en esa categoría específica.
 JUNK_LIMIT_MB: float = 5000.0          
 DUPLICATE_LIMIT_MB: float = 2000.0     
 STARTUP_LIMIT_COUNT: int = 20          
-RAM_IDEAL_PERCENT: float = 35.0        # Ratio de 1.0 (óptimo) si el libre >= 35%
-DISK_IDEAL_PERCENT: float = 25.0       # Ratio de 1.0 (óptimo) si el libre >= 25%
+RAM_IDEAL_PERCENT: float = 35.0        # Basado en el estándar de capacidad disponible.
+DISK_IDEAL_PERCENT: float = 25.0       # El 25% libre es el límite inferior recomendado antes de alertar.
 
 # Peso relativo de cada área en el puntaje total (sumatoria debe ser 100).
 WEIGHTS: Final[Dict[str, int]] = {
@@ -229,7 +230,8 @@ def summarize(result: HealthResult) -> List[str]:
     """Genera una representación visual y textual del resultado de salud."""
     lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     
-    def calculate_deviation(item: tuple[str, int]) -> int:
+    def calculate_deviation(item: Tuple[str, int]) -> int:
+        # Prioriza mostrar áreas con mayor desviación negativa respecto a su peso ideal.
         return item[1] - WEIGHTS.get(item[0], 0)
 
     orden = sorted(result.breakdown.items(), key=calculate_deviation)

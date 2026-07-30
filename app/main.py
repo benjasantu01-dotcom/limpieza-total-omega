@@ -830,6 +830,35 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     # Salud general
     # ------------------------------------------------------------------
 
+    def _compile_metrics(self) -> Tuple[healthscore.SystemMetrics, memory_mod.Snapshot, diskreport.DriveInfo]:
+        """Recopila y consolida todas las métricas necesarias para el análisis de salud."""
+        descargas = os.path.expanduser("~/Downloads")
+        hallazgos = self._get_cached("suspicions", lambda: scan_directory(descargas) if os.path.isdir(descargas) else [])
+        snapshot = memory_mod.read_snapshot()
+        unidad = diskreport.drive_usage(os.path.expanduser("~"))
+        arranque = self._get_cached("startup", startup_mod.list_startup_entries)
+        
+        junk = self._get_cached("junk", scan_for_junk)
+        dups = self._cache.get("dups", [])
+
+        junk_mb = sum(j.size_bytes for j in junk) / (1024 * 1024)
+        advertencias = sum(1 for h in hallazgos if h.severity == "warning")
+        libre_pct = (unidad.free / unidad.total * 100) if unidad and unidad.total else 100.0
+        en_cuarentena = quarantine.list_items()
+        duplicado_mb = duplicates_mod.reclaimable_bytes(dups) / (1024 * 1024)
+
+        metrics = healthscore.SystemMetrics(
+            junk_mb=junk_mb,
+            suspicious_count=len(hallazgos),
+            suspicious_warnings=advertencias,
+            memory_available_percent=snapshot.available_percent,
+            disk_free_percent=libre_pct,
+            duplicate_mb=duplicado_mb,
+            startup_count=len(arranque),
+            quarantined_count=len(en_cuarentena),
+        )
+        return metrics, snapshot, unidad
+
     def on_full_analysis(self):
         """Ejecuta todos los análisis de salud de forma eficiente."""
         def task():
@@ -837,32 +866,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.clear("Salud")
             self.log("Analizando... esto no modifica nada.", "Salud")
 
-            # Ejecución centralizada y coherente de los módulos con caché.
-            descargas = os.path.expanduser("~/Downloads")
-            hallazgos = self._get_cached("suspicions", lambda: scan_directory(descargas) if os.path.isdir(descargas) else [])
-            snapshot = memory_mod.read_snapshot()
-            unidad = diskreport.drive_usage(os.path.expanduser("~"))
-            arranque = self._get_cached("startup", startup_mod.list_startup_entries)
-            
-            junk = self._get_cached("junk", scan_for_junk)
-            dups = self._cache.get("dups", [])
-
-            junk_mb = sum(j.size_bytes for j in junk) / (1024 * 1024)
-            advertencias = sum(1 for h in hallazgos if h.severity == "warning")
-            libre_pct = (unidad.free / unidad.total * 100) if unidad and unidad.total else 100.0
-            en_cuarentena = quarantine.list_items()
-            duplicado_mb = duplicates_mod.reclaimable_bytes(dups) / (1024 * 1024)
-
-            metrics = healthscore.SystemMetrics(
-                junk_mb=junk_mb,
-                suspicious_count=len(hallazgos),
-                suspicious_warnings=advertencias,
-                memory_available_percent=snapshot.available_percent,
-                disk_free_percent=libre_pct,
-                duplicate_mb=duplicado_mb,
-                startup_count=len(arranque),
-                quarantined_count=len(en_cuarentena),
-            )
+            metrics, snapshot, unidad = self._compile_metrics()
             resultado = healthscore.compute_score(metrics)
 
             self.assistant_context = assistant.build_context(
@@ -870,11 +874,13 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 memory_total_gb=snapshot.total / (1024 ** 3) if snapshot.total else 0.0,
             )
 
-            self._update_health_visuals(resultado, junk_mb, len(hallazgos),
-                                        snapshot.available_percent, libre_pct)
+            self._update_health_visuals(
+                resultado, metrics.junk_mb, metrics.suspicious_count,
+                snapshot.available_percent, metrics.disk_free_percent
+            )
 
             lineas = healthscore.summarize(resultado)
-            if not dups:
+            if not self._cache.get("dups"):
                 lineas += ["", "Nota: los duplicados no se contaron todavía. "
                                "Corré la pestaña Duplicados para incluirlos."]
             self.log_lines(lineas, "Salud")
