@@ -1010,23 +1010,34 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     # ------------------------------------------------------------------
 
     def _run_heuristic_scan(self, folder: str):
-        """Wrapper para ejecutar escaneos heurísticos."""
+        """Wrapper para ejecutar escaneos heurísticos con validaciones de existencia."""
         def task():
+            if not os.path.exists(folder):
+                self.log(f"Error: La carpeta {folder} no es accesible.", "Seguridad")
+                return
+            
             self.set_status(f"Escaneando {folder}...")
             self.clear("Seguridad")
             self.log(f"Escaneo heurístico en: {folder}", "Seguridad")
-            self._cache["suspicions"] = scan_directory(folder)
-            suspicions = self._cache["suspicions"]
-            if not suspicions:
+            
+            try:
+                results = scan_directory(folder)
+                self._cache["suspicions"] = results
+            except Exception as e:
+                self.log(f"Error durante el escaneo: {e}", "Seguridad")
+                return
+
+            if not results:
                 self.log("Sin hallazgos sospechosos.", "Seguridad")
                 self.report_data["seguridad"] = ["Sin hallazgos sospechosos."]
                 return
+
             lineas = []
-            for r in suspicions:
+            for r in results:
                 marca = branding.severity_icon(r.severity)
                 etiqueta = branding.severity_label(r.severity)
                 lineas.append(f"{marca} [{etiqueta}] {r.path} — {r.reason}")
-            self.log_lines([f"{len(suspicions)} hallazgo(s):", ""] + lineas, "Seguridad")
+            self.log_lines([f"{len(results)} hallazgo(s):", ""] + lineas, "Seguridad")
             self.log("", "Seguridad")
             self.log("Recordá: son señales, no una condena. Usá 'Aislar hallazgos' "
                      "para moverlos a cuarentena sin borrarlos.", "Seguridad")

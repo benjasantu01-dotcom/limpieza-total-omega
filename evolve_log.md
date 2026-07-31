@@ -416,3 +416,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-07-31T08:52:51` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Reforcé la robustez de `score_startup` y `score_security` ante entradas no finitas o malformadas, alineándolas con la estrategia defensiva del resto del módulo para evitar el colapso del cálculo ante valores inesperados.
 - `2026-07-31T08:52:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-31T08:52:51` Corrida terminada. Total usado hoy: 212.
+- `2026-07-31T09:01:47` Arrancando corrida. Quedan hoy ~88 peticiones objetivo.
+- `2026-07-31T09:02:48` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se implementó un manejo robusto de excepciones y validación de estado en `_run_heuristic_scan` para evitar errores cuando la carpeta objetivo no existe o pierde permisos durante la ejecución, asegurando que la interfaz no quede bloqueada ni reporte estados inconsistentes.
+- `2026-07-31T09:03:11` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-07-31T09:03:32` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-07-31T09:03:43` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: robustez ante casos límite).
+- `2026-07-31T09:03:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-31T09:03:43` Corrida terminada. Total usado hoy: 216.
