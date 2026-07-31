@@ -126,37 +126,38 @@ def _to_int(value: Any, default: int = 0) -> int:
 
 def score_junk(junk_mb: float) -> float:
     """Normaliza MB de basura a un ratio [0.0, 1.0]."""
-    if JUNK_LIMIT_MB <= 0: return 0.0
+    if JUNK_LIMIT_MB <= 0 or not math.isfinite(junk_mb): return 0.0
     return _clamp(1.0 - (junk_mb / JUNK_LIMIT_MB))
 
 
 def score_security(suspicious_count: int, warnings: int = 0) -> float:
     """Calcula ratio [0.0, 1.0] penalizando hallazgos de seguridad."""
+    if not math.isfinite(suspicious_count) or not math.isfinite(warnings): return 0.0
     penalty: float = float(suspicious_count) * 0.05 + float(warnings) * 0.25
     return _clamp(1.0 - penalty, 0.0, 1.0)
 
 
 def score_memory(available_percent: float) -> float:
     """Normaliza el porcentaje de RAM disponible a un ratio [0.0, 1.0]."""
-    if RAM_IDEAL_PERCENT <= 0: return 0.0
+    if RAM_IDEAL_PERCENT <= 0 or not math.isfinite(available_percent): return 0.0
     return _clamp(available_percent / RAM_IDEAL_PERCENT)
 
 
 def score_disk(free_percent: float) -> float:
     """Normaliza el porcentaje de espacio en disco libre a un ratio [0.0, 1.0]."""
-    if DISK_IDEAL_PERCENT <= 0: return 0.0
+    if DISK_IDEAL_PERCENT <= 0 or not math.isfinite(free_percent): return 0.0
     return _clamp(free_percent / DISK_IDEAL_PERCENT)
 
 
 def score_duplicates(duplicate_mb: float) -> float:
     """Normaliza MB de duplicados a un ratio [0.0, 1.0]."""
-    if DUPLICATE_LIMIT_MB <= 0: return 0.0
+    if DUPLICATE_LIMIT_MB <= 0 or not math.isfinite(duplicate_mb): return 0.0
     return _clamp(1.0 - (duplicate_mb / DUPLICATE_LIMIT_MB))
 
 
 def score_startup(startup_count: int) -> float:
     """Normaliza el conteo de programas de inicio a un ratio [0.0, 1.0]."""
-    if STARTUP_LIMIT_COUNT <= 0: return 0.0
+    if STARTUP_LIMIT_COUNT <= 0 or not math.isfinite(startup_count): return 0.0
     return _clamp(1.0 - (float(startup_count) / STARTUP_LIMIT_COUNT))
 
 

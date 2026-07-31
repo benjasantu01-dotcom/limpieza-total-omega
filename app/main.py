@@ -1417,15 +1417,15 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         
         try:
             val_dup = self.min_dup_entry.get().strip()
-            # Validación: solo aceptar números positivos
+            # Validación robusta: solo aceptar números enteros positivos
             if val_dup.isdigit() and int(val_dup) > 0:
                 valores["duplicados_tamano_minimo_kb"] = int(val_dup)
             
             val_top = self.top_files_entry.get().strip()
-            # Validación: solo aceptar números positivos
+            # Validación robusta: solo aceptar números enteros positivos
             if val_top.isdigit() and int(val_top) > 0:
                 valores["top_archivos"] = int(val_top)
-        except ValueError:
+        except (ValueError, AttributeError):
             pass
             
         clave_api = self.api_key_entry.get().strip()
@@ -1475,7 +1475,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.settings = settings_mod.reset()
             for clave, variable in self.setting_vars.items():
                 try:
-                    variable.set(settings_mod.DEFAULTS[clave])
+                    if clave in settings_mod.DEFAULTS:
+                        variable.set(settings_mod.DEFAULTS[clave])
                 except Exception:
                     continue
             self.log_lines(["Ajustes restaurados a los valores de fábrica.", ""]

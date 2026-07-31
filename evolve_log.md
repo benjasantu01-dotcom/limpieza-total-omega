@@ -636,3 +636,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-07-30T23:30:07` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-07-30T23:40:25` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-07-30T23:50:38` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-07-31T00:00:47` Arrancando corrida. Quedan hoy ~300 peticiones objetivo.
+- `2026-07-31T00:01:12` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se mejora la robustez de `_collect_candidates` ante casos límite mediante la resolución de rutas relativas y el manejo explícito de excepciones durante la enumeración del sistema de archivos, asegurando que la interrupción en un subdirectorio no invalide la recolección total.
+- `2026-07-31T00:01:37` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Reforcé la robustez de `compute_score` ante valores inesperados de `metrics` (como `None` o estados parciales) y añadí verificaciones de `math.isfinite` en las funciones de cálculo individual para evitar que un valor inesperado (NaN/Inf) corrompa el puntaje global o provoque errores silenciosos.
+- `2026-07-31T00:02:37` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-07-31T00:03:40` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Mejoré la robustez ante casos límite en la carga de archivos de configuración y la validación de entradas de usuario, evitando fallos inesperados al manipular entradas malformadas o tipos de datos inconsistentes en los campos de `Ajustes`.
+- `2026-07-31T00:03:49` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-07-31T00:03:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-31T00:03:49` Corrida terminada. Total usado hoy: 4.

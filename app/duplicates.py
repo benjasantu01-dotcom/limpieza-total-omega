@@ -167,32 +167,32 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
         if not directory:
             continue
         try:
-            base_dir = Path(directory).resolve(strict=True)
+            base_dir = Path(directory).expanduser().resolve()
             if not base_dir.is_dir() or (skip_protected and is_protected_path(base_dir)):
                 continue
             
-            for root, subdirs, files in os.walk(base_dir, followlinks=False):
+            for root, subdirs, files in os.walk(base_dir):
                 root_path = Path(root)
+                # Filtrar subdirectorios in situ para evitar entrar en zonas protegidas o enlaces
                 subdirs[:] = [
                     d for d in subdirs 
-                    if not (root_path / d).is_symlink() 
-                    and not (getattr((root_path / d), "is_junction", lambda: False)())
+                    if not (root_path / d).is_symlink()
                     and not (skip_protected and is_protected_path(root_path / d))
                 ]
                 
                 for name in files:
                     file_path = root_path / name
-                    if file_path.is_symlink() or getattr(file_path, "is_junction", lambda: False)():
-                        continue
-                    if skip_protected and is_protected_path(file_path):
-                        continue
                     try:
+                        if file_path.is_symlink():
+                            continue
+                        if skip_protected and is_protected_path(file_path):
+                            continue
                         st = file_path.lstat()
                         if st.st_size >= min_size:
                             candidates.append(file_path)
                     except (OSError, PermissionError, FileNotFoundError):
                         continue
-        except (OSError, RuntimeError, FileNotFoundError):
+        except (OSError, RuntimeError):
             continue
     return candidates
 
