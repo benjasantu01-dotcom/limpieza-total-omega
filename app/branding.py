@@ -208,12 +208,8 @@ def bar(percent: float | int | None, width: int = 24,
 @lru_cache(maxsize=128)
 def _hex_to_rgb(value: HexColor) -> tuple[int, int, int]:
     """
-    Convierte un color hexadecimal '#rrggbb' a tupla (R, G, B).
-    
-    Args:
-        value: Cadena hexadecimal (ej: "#ff0000").
-    Returns:
-        Tupla (R, G, B) de enteros.
+    Convierte una cadena hexadecimal #RRGGBB a una tupla de enteros (R, G, B).
+    Utiliza slicing de 2 caracteres en base 16 para extraer cada canal.
     """
     if not isinstance(value, str) or not value.startswith("#"):
         return (0, 0, 0)
@@ -228,14 +224,11 @@ def _hex_to_rgb(value: HexColor) -> tuple[int, int, int]:
 @lru_cache(maxsize=64)
 def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
     """
-    Interpola linealmente entre dos colores Hex mediante mezcla RGB.
+    Interpola linealmente (Lerp) entre dos colores mediante sus valores RGB.
     
-    Args:
-        start: Color hexadecimal de inicio.
-        end: Color hexadecimal de destino.
-        ratio: Factor de mezcla (0.0=start, 1.0=end).
-    Returns:
-        Color resultante en formato '#rrggbb'.
+    El factor ratio [0.0, 1.0] define la posición del color resultante:
+    0.0 retorna el color 'start' completamente, 1.0 retorna 'end'.
+    La mezcla se aplica independientemente por cada canal de color.
     """
     proporcion = max(0.0, min(1.0, float(ratio)))
     r1, g1, b1 = _hex_to_rgb(start)
@@ -250,13 +243,11 @@ def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
 @lru_cache(maxsize=16)
 def gradient_colors(steps: int, stops: tuple[HexColor, ...] = GRADIENT_STOPS) -> List[HexColor]:
     """
-    Genera una lista de colores interpolados basada en puntos de control.
+    Genera una secuencia de colores interpolados a partir de puntos de control.
     
-    Args:
-        steps: Cantidad de pasos deseados en la paleta.
-        stops: Tupla de colores que definen los hitos del gradiente.
-    Returns:
-        Lista de colores hexadecimales.
+    Divide el rango de 'steps' proporcionalmente según la cantidad de 'stops'.
+    Si el índice de paso cae entre dos stops, calcula el color intermedio
+    mediante mezcla lineal (blend).
     """
     cantidad = max(1, int(steps))
     if not stops: return [PALETTE["accent"]] * cantidad
@@ -265,6 +256,7 @@ def gradient_colors(steps: int, stops: tuple[HexColor, ...] = GRADIENT_STOPS) ->
     tramos = len(stops) - 1
     salida: List[HexColor] = []
     for i in range(cantidad):
+        # Mapea el paso actual a la posición relativa en el conjunto de stops
         posicion = i / max(1, cantidad - 1) * tramos
         indice = min(tramos - 1, int(posicion))
         salida.append(blend(stops[indice], stops[indice + 1], posicion - indice))

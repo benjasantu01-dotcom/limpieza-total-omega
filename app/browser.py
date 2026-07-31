@@ -107,6 +107,8 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
     try:
         if is_protected_path(target_path):
             return False
+        # Se normaliza la ruta para asegurar que el target esté realmente contenido
+        # dentro de la estructura esperada del directorio base.
         abs_base = base_path.resolve(strict=False)
         abs_target = target_path.resolve(strict=False)
         return abs_base in abs_target.parents or abs_base == abs_target
@@ -117,6 +119,7 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
 def directory_size(path: str | os.PathLike | None) -> int:
     """
     Calcula el tamaño total en bytes mediante suma recursiva.
+    Usa un caché basado en el tiempo de modificación del directorio.
     """
     if not path:
         return 0
@@ -144,7 +147,8 @@ def directory_size(path: str | os.PathLike | None) -> int:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
-                        # Prevenir seguir enlaces o puntos de unión (junctions)
+                        # Saltar enlaces simbólicos y puntos de unión para evitar bucles
+                        # infinitos o conteo duplicado de datos externos al caché.
                         if entry.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(entry.path)):
                             continue
                         if entry.is_dir():

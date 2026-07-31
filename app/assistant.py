@@ -46,7 +46,7 @@ import re
 import math
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Final, TypeAlias, Callable, Optional, Sequence, Union
+from typing import Any, Final, TypeAlias, Callable, Optional, Union
 
 import settings
 
@@ -157,7 +157,7 @@ class SystemContext:
 
 @dataclass
 class Answer:
-    """Respuesta del asistente, con el origen a la vista."""
+    """Respuesta del asistente, incluyendo metadatos de origen y sugerencias."""
     text: str
     source: str = "local"
     notice: str = ""
@@ -169,7 +169,10 @@ class Answer:
 
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
-    """Transforma fuentes de datos crudos en un objeto SystemContext validado."""
+    """
+    Transforma fuentes de datos crudos en un objeto SystemContext validado.
+    Filtra entradas no numéricas o infinitas por seguridad y estabilidad.
+    """
     ctx = SystemContext()
 
     def is_valid_num(v: Any) -> bool:
@@ -209,9 +212,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
 
 
 def context_as_text(context: SystemContext) -> str:
-    """
-    Serializa el estado del sistema en un formato de texto compacto.
-    """
+    """Serializa el estado del sistema en un formato de texto compacto para prompts."""
     if not isinstance(context, SystemContext) or not context.analyzed:
         return "No hay métricas disponibles todavía."
 
@@ -233,7 +234,7 @@ def context_as_text(context: SystemContext) -> str:
 
 
 def explain_area(area: str) -> str:
-    """Devuelve una descripción pedagógica de un área específica del análisis."""
+    """Proporciona una breve explicación pedagógica de un área específica."""
     explicaciones = {
         "basura": "Archivos temporales y restos de instaladores. Ocupan espacio "
                   "sin dar nada a cambio, y son lo más seguro de limpiar.",
@@ -278,7 +279,7 @@ def handle_ram(ctx: SystemContext, text: str) -> Answer:
                     suggestions=["¿Conviene desactivar programas de inicio?"])
 
 def handle_disk(ctx: SystemContext, text: str) -> Answer:
-    """Handler local para consultas sobre almacenamiento y limpieza de disco."""
+    """Handler local para consultas sobre almacenamiento y limpieza."""
     recuperable = ctx.junk_mb + ctx.duplicate_mb + ctx.browser_cache_mb
     partes = [
         f"Tenés {ctx.disk_free_percent:.0f}% libre en disco.",
@@ -296,7 +297,7 @@ def handle_disk(ctx: SystemContext, text: str) -> Answer:
     return Answer(" ".join(partes), notice=OFFLINE_NOTICE)
 
 def handle_security(ctx: SystemContext, text: str) -> Answer:
-    """Handler local para consultas sobre archivos sospechosos y seguridad."""
+    """Handler local para consultas sobre seguridad y sospechosos."""
     if ctx.suspicious_count == 0:
         cuerpo = ("No hay archivos sospechosos en tus Descargas. Sobre borrar: la "
                     "app nunca borra sola. La limpieza mueve todo a una carpeta de "
@@ -311,7 +312,7 @@ def handle_security(ctx: SystemContext, text: str) -> Answer:
     return Answer(cuerpo, notice=OFFLINE_NOTICE)
 
 def handle_score(ctx: SystemContext, text: str) -> Answer:
-    """Handler local para explicar el estado general y el puntaje de salud."""
+    """Handler local para explicar el estado general y el puntaje."""
     detalle = (f"Tu puntaje es {ctx.score}/100"
                 f"{f' (nota {ctx.grade})' if ctx.grade else ''}. ")
     problemas = _rank_problems(ctx)
@@ -324,7 +325,7 @@ def handle_score(ctx: SystemContext, text: str) -> Answer:
     return Answer(detalle, notice=OFFLINE_NOTICE)
 
 def handle_startup(ctx: SystemContext, text: str) -> Answer:
-    """Handler local para programas que inician con el sistema."""
+    """Handler local para programas de arranque."""
     cuerpo = f"Tenés {ctx.startup_count} programas que arrancan con Windows. "
     if ctx.startup_count > 15:
         cuerpo += ("Son bastantes, y cada uno suma tiempo de encendido. Vale la "
@@ -381,7 +382,7 @@ def local_answer(question: str, context: SystemContext) -> Answer:
 
 
 def _rank_problems(context: SystemContext) -> list[str]:
-    """Calcula y ordena los problemas más críticos del sistema."""
+    """Calcula y ordena los problemas más críticos del sistema según prioridad."""
     problemas = []
     if context.disk_free_percent < 10:
         problemas.append(f"queda solo {context.disk_free_percent:.0f}% de disco libre, atendelo primero (pestaña Disco y Limpieza)")
@@ -414,6 +415,7 @@ def _call_gemini(
 ) -> Optional[str]:
     """
     Envía métricas agregadas a Gemini usando la librería estándar urllib.
+    Validaciones de seguridad garantizan que no salgan rutas del sistema.
     """
     if not api_key or not model:
         return None
@@ -469,7 +471,8 @@ def _call_gemini(
 def ask(question: str, context: SystemContext | None = None,
         base: str | Path | None = None) -> Answer:
     """
-    Coordina la resolución de la consulta del usuario.
+    Coordina la resolución de la consulta: primero intenta el motor local,
+    y si está habilitado y es seguro, consulta al modelo remoto.
     """
     ctx = context if isinstance(context, SystemContext) else SystemContext()
     respaldo = local_answer(question, ctx)

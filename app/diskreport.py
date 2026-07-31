@@ -148,8 +148,12 @@ def all_drives_usage(mounts: Iterable[str] | None = None) -> list[DriveUsage]:
 
 def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Generator[tuple[Path, int], None, None]:
     """
-    Recorre recursivamente un directorio y genera tuplas (Path, size_bytes).
-    Valida la integridad de la ruta para asegurar que no se haya escapado del root.
+    Recorre recursivamente un directorio usando os.scandir para rendimiento.
+    
+    La lógica de exclusión sigue estrictamente las reglas de seguridad:
+    1. Si skip_protected es True, utiliza `is_protected_path` para evitar acceso a rutas críticas.
+    2. Ignora enlaces simbólicos y puntos de reparse en Windows para evitar bucles infinitos.
+    3. Verifica que la resolución de rutas no escape al directorio raíz (evitar ataques de path traversal).
     """
     if not directory:
         return
@@ -161,11 +165,18 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
         return
 
     def should_ignore_entry(entry: os.DirEntry, base: Path) -> bool:
-        """Verifica restricciones de seguridad para saltar enlaces o carpetas bloqueadas."""
+        """
+        Determina si una entrada de sistema debe ser omitida del análisis.
+        
+        Realiza chequeos de seguridad de tipo 'read-only' antes de procesar
+        el archivo o carpeta para garantizar que la app nunca intente
+        interactuar con zonas bloqueadas o enlaces peligrosos.
+        """
         try:
             if entry.is_symlink():
                 return True
             if os.name == 'nt':
+                # Detecta reparse points (junctions) que pueden llevar a discos fuera del root
                 if entry.stat(follow_symlinks=False).st_reparse_tag != 0:
                     return True
             
