@@ -116,6 +116,9 @@ CHECK_FUNCS: Final[List[SuspicionCheck]] = [
 
 def scan_file(path: Path) -> List[Suspicion]:
     """Aplica secuencialmente todas las funciones de `CHECK_FUNCS` sobre una ruta."""
+    if not path.exists():
+        return []
+        
     results: List[Suspicion] = []
     for check_func in CHECK_FUNCS:
         try:

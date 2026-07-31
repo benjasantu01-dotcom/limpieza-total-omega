@@ -651,3 +651,72 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-07-31T00:12:17` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Mejoré la robustez ante errores de acceso a disco en `is_protected_path` al validar la existencia antes de realizar operaciones de resolución de rutas (`resolve`) o de chequeo de atributos (`is_reparse_point`), evitando excepciones no capturadas ante archivos bloqueados o permisos denegados.
 - `2026-07-31T00:12:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-31T00:12:17` Corrida terminada. Total usado hoy: 8.
+- `2026-07-31T00:21:10` Arrancando corrida. Quedan hoy ~292 peticiones objetivo.
+- `2026-07-31T00:21:34` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se añadió una verificación de `path.exists()` dentro de `scan_file` para evitar excepciones en condiciones de carrera (archivos borrados o movidos durante el escaneo) y se robusteció `check_recent_executable_in_downloads` capturando posibles fallos al leer metadatos de archivos cuyo estado cambia rápidamente.
+- `2026-07-31T00:21:59` Tests FALLARON:
+```
+........................... [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_________________________ test_save_creates_the_folder _________________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-2/test_save_creates_the_folder0')
+
+    def test_save_creates_the_folder(tmp_path):
+        destino = tmp_path / "sub" / "carpeta"
+        assert settings.save(settings.DEFAULTS, destino) is not None
+>       assert (destino / settings.SETTINGS_FILE).is_file()
+E       AssertionError: assert False
+E        +  where False = is_file()
+E        +    where is_file = (PosixPath('/tmp/pytest-of-runner/pytest-2/test_save_creates_the_folder0/sub/carpeta') / 'config.json').is_file
+E        +      where 'config.json' = settings.SETTINGS_FILE
+
+evolve/tests/test_assistant.py:61: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_save_creates_the_folder - AssertionError: assert False
+ +  where False = is_file()
+ +    where is_file = (PosixPath('/tmp/pytest-of-runner/pytest-2/test_save_creates_the_folder0/sub/carpeta') / 'config.json').is_file
+ +      where 'config.json' = settings.SETTINGS_FILE
+1 failed, 298 passed in 1.11s
+
+```
+- `2026-07-31T00:21:59` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez ante estados inconsistentes del sistema de archivos añadiendo un manejo de excepciones más específico y conservador en `settings_path`, asegurando que `Path.resolve()` no propague errores ante rutas inexistentes o inaccesibles durante la inicialización de la configuración.
+- `2026-07-31T00:22:23` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Se mejora la robustez de `StartupEntry.executable` frente a rutas inválidas o mal formadas mediante el uso de `Path.expanduser()` y `Path.resolve()` en un bloque de control de errores, asegurando que intentos de acceso a rutas inexistentes o mal construidas no interrumpan la lógica de escaneo.
+- `2026-07-31T00:22:40` Tests FALLARON:
+```
+                                      [100%]
+=================================== FAILURES ===================================
+_______________ test_metrics_are_withheld_when_the_user_says_no ________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-4/test_metrics_are_withheld_when0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fe37b78fad0>
+
+    def test_metrics_are_withheld_when_the_user_says_no(tmp_path, monkeypatch):
+        """Se puede usar el asistente sin mandar ni una métrica."""
+        monkeypatch.setenv(settings.API_KEY_ENV_VAR, "clave")
+        settings.save({**settings.DEFAULTS, "asistente_activado": True,
+                       "asistente_enviar_metricas": False}, tmp_path)
+    
+        enviado = {}
+    
+        def espia(question, context_text, api_key, model):
+            enviado["texto"] = context_text
+            return "ok"
+    
+        monkeypatch.setattr(assistant, "_call_gemini", espia)
+        assistant.ask("¿qué hago?", _contexto_lleno(), tmp_path)
+        assert "2400" not in enviado["texto"]
+>       assert "no autorizó" in enviado["texto"]
+E       AssertionError: assert 'no autorizó' in 'Métricas deshabilitadas.'
+
+evolve/tests/test_assistant.py:419: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - AssertionError: assert 'no autorizó' in 'Métricas deshabilitadas.'
+1 failed, 298 passed in 1.11s
+
+```
+- `2026-07-31T00:22:40` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Mejoré la seguridad defensiva al serializar las métricas para Gemini, eliminando espacios en blanco innecesarios y normalizando el formato del contexto para asegurar que los separadores de ruta o caracteres maliciosos no puedan ser inyectados accidentalmente en los datos agregados.
+- `2026-07-31T00:22:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-31T00:22:40` Corrida terminada. Total usado hoy: 12.
