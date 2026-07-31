@@ -1545,3 +1545,10 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-07-31T08:01:58` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `local_answer` y el acceso a los datos precalculados mediante la eliminación de la re-tokenización innecesaria y el uso de un diccionario de acceso directo más eficiente, evitando el recorrido de la lista de problemas si no es estrictamente necesario.
 - `2026-07-31T08:01:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-31T08:01:58` Corrida terminada. Total usado hoy: 192.
+- `2026-07-31T08:10:47` Arrancando corrida. Quedan hoy ~108 peticiones objetivo.
+- `2026-07-31T08:11:18` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimicé el cálculo de colores en `draw_logo` pre-calculando el gradiente y reemplazando bucles repetitivos de llamadas a `gradient_colors` por un acceso directo al caché, mejorando el rendimiento en la renderización de la interfaz.
+- `2026-07-31T08:11:41` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimizamos `directory_size` cambiando la lógica de cacheo: el tiempo de modificación (`st_mtime`) de una carpeta no garantiza que su contenido interno no haya cambiado, por lo que reemplazamos el chequeo por un `frozenset` de rutas ignoradas para evitar bucles y mejoramos la robustez del escaneo de directorios eliminando el riesgo de re-procesar subdirectorios innecesariamente.
+- `2026-07-31T08:12:05` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé `walk_files` eliminando la resolución constante de `Path(entry.path).resolve()` dentro del bucle, la cual es una operación de E/S costosa que ralentizaba drásticamente el escaneo en directorios profundos.
+- `2026-07-31T08:12:14` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-07-31T08:12:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-31T08:12:14` Corrida terminada. Total usado hoy: 196.

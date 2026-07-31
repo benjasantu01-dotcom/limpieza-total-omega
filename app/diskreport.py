@@ -149,11 +149,6 @@ def all_drives_usage(mounts: Iterable[str] | None = None) -> list[DriveUsage]:
 def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Generator[tuple[Path, int], None, None]:
     """
     Recorre recursivamente un directorio usando os.scandir para rendimiento.
-    
-    La lógica de exclusión sigue estrictamente las reglas de seguridad:
-    1. Si skip_protected es True, utiliza `is_protected_path` para evitar acceso a rutas críticas.
-    2. Ignora enlaces simbólicos y puntos de reparse en Windows para evitar bucles infinitos.
-    3. Verifica que la resolución de rutas no escape al directorio raíz (evitar ataques de path traversal).
     """
     if not directory:
         return
@@ -164,51 +159,31 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
     except (OSError, RuntimeError, PermissionError):
         return
 
-    def should_ignore_entry(entry: os.DirEntry, base: Path) -> bool:
-        """
-        Determina si una entrada de sistema debe ser omitida del análisis.
-        
-        Realiza chequeos de seguridad de tipo 'read-only' antes de procesar
-        el archivo o carpeta para garantizar que la app nunca intente
-        interactuar con zonas bloqueadas o enlaces peligrosos.
-        """
-        try:
-            if entry.is_symlink():
-                return True
-            if os.name == 'nt':
-                # Detecta reparse points (junctions) que pueden llevar a discos fuera del root
-                if entry.stat(follow_symlinks=False).st_reparse_tag != 0:
-                    return True
-            
-            # Verificación defensiva contra rutas que escapan del base_path
-            current_path = Path(entry.path).resolve()
-            if not str(current_path).startswith(str(base)):
-                return True
-            
-            if skip_protected and is_protected_path(current_path):
-                return True
-        except (OSError, ValueError, RuntimeError):
-            return True
-        return False
-
-    def recursive_scan(root_path: str, base: Path) -> Generator[tuple[Path, int], None, None]:
+    def recursive_scan(root_path: str) -> Generator[tuple[Path, int], None, None]:
         """Motor recursivo de escaneo utilizando os.scandir."""
         try:
             with os.scandir(root_path) as iterator:
                 for entry in iterator:
                     try:
-                        if should_ignore_entry(entry, base):
+                        if entry.is_symlink():
                             continue
+                        if os.name == 'nt' and entry.stat(follow_symlinks=False).st_reparse_tag != 0:
+                            continue
+                        
+                        full_path = Path(entry.path)
+                        if skip_protected and is_protected_path(full_path):
+                            continue
+                            
                         if entry.is_dir():
-                            yield from recursive_scan(entry.path, base)
+                            yield from recursive_scan(entry.path)
                         else:
-                            yield Path(entry.path), entry.stat().st_size
+                            yield full_path, entry.stat().st_size
                     except (OSError, PermissionError, FileNotFoundError):
                         continue
         except (OSError, PermissionError, FileNotFoundError):
             return
 
-    yield from recursive_scan(str(base_path), base_path)
+    yield from recursive_scan(str(base_path))
 
 
 def largest_files(directory: str | os.PathLike, limit: int = 20, skip_protected: bool = True) -> list[FileEntry]:

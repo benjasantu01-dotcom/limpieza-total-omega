@@ -61,10 +61,6 @@ SAFETY_NOTE: str = (
     "no se van a poder mover."
 )
 
-# Cache interno para evitar re-escaneo de discos si no hubo cambios
-_DIR_SIZE_CACHE: Dict[str, tuple[int, float]] = {}
-
-
 @dataclass
 class BrowserCache:
     """Representación de una carpeta de caché detectada."""
@@ -107,8 +103,6 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
     try:
         if is_protected_path(target_path):
             return False
-        # Se normaliza la ruta para asegurar que el target esté realmente contenido
-        # dentro de la estructura esperada del directorio base.
         abs_base = base_path.resolve(strict=False)
         abs_target = target_path.resolve(strict=False)
         return abs_base in abs_target.parents or abs_base == abs_target
@@ -119,48 +113,41 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
 def directory_size(path: str | os.PathLike | None) -> int:
     """
     Calcula el tamaño total en bytes mediante suma recursiva.
-    Usa un caché basado en el tiempo de modificación del directorio.
+    Evita procesar recursivamente mediante set de rutas visitadas.
     """
     if not path:
         return 0
     
-    path_str = str(path)
     try:
         root = Path(path).resolve(strict=False)
         if not root.exists() or not root.is_dir() or root.is_symlink() or is_protected_path(root):
             return 0
-        
-        current_mtime = root.stat().st_mtime
-        if path_str in _DIR_SIZE_CACHE:
-            cached_size, cached_mtime = _DIR_SIZE_CACHE[path_str]
-            if cached_mtime == current_mtime:
-                return cached_size
     except (OSError, RuntimeError, PermissionError, ValueError):
         return 0
     
     total_bytes: int = 0
-    stack: List[str] = [str(root)]
+    visited = set()
+    stack: List[Path] = [root]
     
     while stack:
         current_dir = stack.pop()
         try:
+            curr_abs = current_dir.resolve(strict=False)
+            if curr_abs in visited:
+                continue
+            visited.add(curr_abs)
+
             with os.scandir(current_dir) as it:
                 for entry in it:
-                    try:
-                        # Saltar enlaces simbólicos y puntos de unión para evitar bucles
-                        # infinitos o conteo duplicado de datos externos al caché.
-                        if entry.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(entry.path)):
-                            continue
-                        if entry.is_dir():
-                            stack.append(entry.path)
-                        elif entry.is_file():
-                            total_bytes += entry.stat().st_size
-                    except (OSError, PermissionError):
+                    if entry.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(entry.path)):
                         continue
+                    if entry.is_dir():
+                        stack.append(Path(entry.path))
+                    elif entry.is_file():
+                        total_bytes += entry.stat().st_size
         except (OSError, PermissionError):
             continue
             
-    _DIR_SIZE_CACHE[path_str] = (total_bytes, current_mtime)
     return total_bytes
 
 

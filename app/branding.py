@@ -348,9 +348,10 @@ def draw_logo(canvas: Any, size: int = 56, canvas_x: int = 0, canvas_y: int = 0)
         canvas.create_polygon(contorno, fill=GRADIENT_STOPS[1], outline="")
         
         franjas = max(6, int(28 * s))
-        alto = 92 * s / franjas
         colores_grad = gradient_colors(franjas)
+        alto = 92 * s / franjas
         for i, tono in enumerate(colores_grad):
+            # Optimización: el cálculo de w depende linealmente de i
             w = 36 * s * (1.0 if i / (franjas - 1) < 0.55 else 1.0 - (i / (franjas - 1) - 0.55) * 1.9)
             canvas.create_rectangle(
                 x_val + 64 * s - w, y_val + 18 * s + i * alto, 
