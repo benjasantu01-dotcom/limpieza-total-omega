@@ -116,7 +116,7 @@ def directory_size(path: str | os.PathLike | None) -> int:
     Calcula el tamaño total en bytes mediante suma recursiva.
     Usa un cache basado en el mtime del directorio para evitar re-escaneos.
     """
-    if path is None:
+    if not path:
         return 0
     
     path_str = str(path)
@@ -130,7 +130,7 @@ def directory_size(path: str | os.PathLike | None) -> int:
             cached_size, cached_mtime = _DIR_SIZE_CACHE[path_str]
             if cached_mtime == current_mtime:
                 return cached_size
-    except (OSError, RuntimeError, PermissionError):
+    except (OSError, RuntimeError, PermissionError, ValueError):
         return 0
     
     total_bytes: int = 0
@@ -194,6 +194,8 @@ def detect_profiles(
             continue
             
         for browser_name, relative_path_str in cache_paths.items():
+            if not relative_path_str or not isinstance(relative_path_str, str):
+                continue
             try:
                 parts = relative_path_str.split("\\")
                 candidate = base.joinpath(*parts)
@@ -205,7 +207,7 @@ def detect_profiles(
                             path=candidate,
                             size_bytes=size,
                         ))
-            except (TypeError, AttributeError, OSError):
+            except (TypeError, AttributeError, OSError, ValueError):
                 continue
                 
     found.sort(key=lambda c: c.size_bytes, reverse=True)

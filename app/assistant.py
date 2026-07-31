@@ -191,7 +191,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         except (TypeError, ValueError):
             return default
 
-    # Guard clauses para asegurar que las fuentes sean objetos válidos
+    # Validación estricta de tipo para evitar proxies u objetos no esperados
     if metrics is not None and not isinstance(metrics, object):
         metrics = None
     if health is not None and not isinstance(health, object):
@@ -222,7 +222,6 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
 
     for clave, valor in extra.items():
         if hasattr(contexto, clave) and clave not in ["analyzed", "grade"]:
-            # Validar tipo de dato de entrada extra para evitar errores de set en dataclass
             if es_num_valido(valor):
                 setattr(contexto, clave, float(valor))
 

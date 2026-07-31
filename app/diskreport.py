@@ -134,7 +134,7 @@ def all_drives_usage(mounts: Iterable[str] | None = None) -> list[DriveUsage]:
         if os.name == "nt":
             import string
             mounts = [f"{letter}:\\" for letter in string.ascii_uppercase
-                      if os.path.isdir(f"{letter}:\\")]
+                      if os.path.exists(f"{letter}:\\")]
         else:
             mounts = ["/"]
     results = []
@@ -163,16 +163,17 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
     def should_ignore_entry(entry: os.DirEntry) -> bool:
         """Verifica restricciones de seguridad para saltar enlaces o carpetas bloqueadas."""
         try:
-            # Prevenir escape mediante symlinks o reparse points
             if entry.is_symlink():
                 return True
             if os.name == 'nt':
+                # Identifica reparse points (junctions, etc) sin seguir enlaces
                 if entry.stat(follow_symlinks=False).st_reparse_tag != 0:
                     return True
             
-            # Validar que la ruta resultante siga dentro de base_path
+            # Validar que la ruta resuelta siga dentro de base_path
             current_path = Path(entry.path).resolve()
-            current_path.relative_to(base_path)
+            if base_path not in current_path.parents and current_path != base_path:
+                return True
             
             if skip_protected and is_protected_path(current_path):
                 return True
@@ -309,7 +310,6 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
         stat.size += size
         stat.count += 1
         
-        # Mantiene el top 8 de archivos más grandes en memoria
         if len(top_heap) < 8:
             heapq.heappush(top_heap, (size, path))
         elif size > top_heap[0][0]:

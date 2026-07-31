@@ -296,7 +296,6 @@ def save_logo_svg(destination: str | Path | None) -> Path | None:
     try:
         path = Path(destination).expanduser().resolve()
         
-        # Validación de seguridad defensiva antes de cualquier operación de disco
         if not is_safe_to_modify(path):
             return None
             
@@ -323,15 +322,7 @@ def logo_ascii() -> str:
 
 
 def draw_logo(canvas: Any, size: int = 56, canvas_x: int = 0, canvas_y: int = 0) -> None:
-    """
-    Renderiza el logo (escudo Omega) en un widget Tkinter.Canvas.
-    
-    Args:
-        canvas: Objeto Tkinter Canvas donde dibujar.
-        size: Tamaño base del logo.
-        canvas_x: Coordenada X de origen.
-        canvas_y: Coordenada Y de origen.
-    """
+    """Renderiza el logo (escudo Omega) en un widget Tkinter.Canvas."""
     if canvas is None or not hasattr(canvas, "create_polygon"): return
     try:
         s = max(0.1, float(size) / 128)
@@ -364,22 +355,13 @@ def draw_logo(canvas: Any, size: int = 56, canvas_x: int = 0, canvas_y: int = 0)
         canvas.create_polygon(x_val + 75 * s, y_val + 41 * s, x_val + 89 * s, y_val + 38 * s, x_val + 92 * s, y_val + 52 * s, fill=PALETTE["background"], outline="")
         canvas.create_text(x_val + 64 * s, y_val + 96 * s, text="\u03a9", fill=PALETTE["background"], font=("Segoe UI", max(8, int(23 * s)), "bold"))
     except (ValueError, TypeError, AttributeError):
-        return
+        pass
 
 
 def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
                       canvas_x: int = 0, canvas_y: int = 0,
                       stops: tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
-    """
-    Dibuja una franja horizontal de gradiente en un Tkinter.Canvas.
-    
-    Args:
-        canvas: Objeto Tkinter Canvas donde dibujar.
-        width: Ancho de la barra.
-        height: Altura de la barra.
-        canvas_x: Coordenada X inicial.
-        canvas_y: Coordenada Y inicial.
-    """
+    """Dibuja una franja horizontal de gradiente en un Tkinter.Canvas."""
     if canvas is None or not hasattr(canvas, "create_line"): return
     try:
         ancho, alto = max(1, int(width)), max(1, int(height))
@@ -393,15 +375,7 @@ def draw_ring(canvas: Any, percent: float | int, size: int = 150,
               canvas_x: int = 0, canvas_y: int = 0, thickness: int = 14,
               track: HexColor | None = None,
               fill: HexColor | None = None) -> None:
-    """
-    Dibuja un medidor circular de estado en un Tkinter.Canvas.
-    
-    Args:
-        canvas: Objeto Tkinter Canvas donde dibujar.
-        percent: Porcentaje (0-100).
-        size: Diámetro del anillo.
-        thickness: Grosor del trazo.
-    """
+    """Dibuja un medidor circular de estado en un Tkinter.Canvas."""
     if canvas is None or not hasattr(canvas, "create_arc"): return
     try:
         valor = max(0.0, min(100.0, float(percent))) # type: ignore
