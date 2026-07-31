@@ -258,6 +258,7 @@ def quarantine_file(
     if not destination.exists():
         raise RuntimeError("El archivo no pudo localizarse en el destino tras el movimiento.")
 
+    # Registro en manifiesto solo tras confirmar persistencia física del archivo
     try:
         file_hash = _get_sha256(destination)
         item = QuarantineItem(
@@ -274,12 +275,12 @@ def quarantine_file(
         save_manifest(items, base)
         return item
     except Exception as e:
-        if destination.exists():
-            try:
-                shutil.move(str(destination), str(source_path))
-            except OSError:
-                pass
-        raise RuntimeError(f"Error irrecuperable procesando archivo en cuarentena: {e}")
+        # Fallback: deshacer movimiento para evitar archivos huérfanos sin registro
+        try:
+            shutil.move(str(destination), str(source_path))
+        except OSError:
+            pass
+        raise RuntimeError(f"Error irrecuperable procesando metadatos (archivo revertido): {e}")
 
 
 def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:

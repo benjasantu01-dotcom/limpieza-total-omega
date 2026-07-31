@@ -300,16 +300,16 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
 
     handle = kernel32.OpenProcess(0x1100, False, target_pid)
     if not handle:
-        return False, f"No se pudo abrir el proceso {target_pid}."
+        return False, f"No se pudo acceder al proceso {target_pid}."
     
     try:
         if handle == kernel32.GetCurrentProcess():
             return False, "Operación denegada: proceso de la app."
         if not psapi.EmptyWorkingSet(handle):
             err_code = kernel32.GetLastError()
-            return False, f"Error en la operación (WinError {err_code})."
+            return False, f"Error al limpiar memoria (WinError {err_code})."
         return True, f"Working set liberado. {TRIM_WARNING}"
-    except Exception:
+    except (Exception, ctypes.ArgumentError):
         return False, "Error inesperado al intentar limpiar la memoria."
     finally:
         kernel32.CloseHandle(handle)

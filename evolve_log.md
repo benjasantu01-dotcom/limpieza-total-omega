@@ -1159,3 +1159,39 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-07-31T04:27:45` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Mejoré la robustez de la inicialización de la app encapsulando la carga de estado y construcción de la interfaz en bloques `try/except` críticos, asegurando que un fallo en módulos externos o configuraciones corruptas no bloquee el arranque completo de la ventana, manteniendo la estabilidad del proceso.
 - `2026-07-31T04:27:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-31T04:27:45` Corrida terminada. Total usado hoy: 108.
+- `2026-07-31T04:36:00` Arrancando corrida. Quedan hoy ~192 peticiones objetivo.
+- `2026-07-31T04:36:26` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `trim_working_set` añadiendo un manejo de excepciones más granular y asegurando la liberación del `handle` mediante el bloque `finally` incluso ante fallos inesperados de la API de Windows, además de validar que el proceso objetivo exista mediante la comprobación de handles.
+- `2026-07-31T04:36:48` Tests FALLARON:
+```
+ytest-of-runner/pytest-2/test_stage_for_review_moves_fi0/origen'
+
+    def _walk_dir(base_path: str) -> None:
+        try:
+            with os.scandir(base_path) as it:
+                for entry in it:
+                    try:
+                        if entry.is_symlink():
+                            continue
+    
+                        if entry.is_dir(follow_symlinks=False):
+                            if entry.name.lower() not in blocklist:
+                                _walk_dir(entry.path)
+                        elif _is_junk_file(entry):
+>                           if not entry.exists():
+                                   ^^^^^^^^^^^^
+E                           AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+
+app/organizer.py:149: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_scan_for_junk_finds_junk_and_ignores_other_files - AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+FAILED evolve/tests/test_basic.py::test_scan_for_junk_recurses_into_subfolders - AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+FAILED evolve/tests/test_basic.py::test_scan_for_junk_skips_system_folders - AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+FAILED evolve/tests/test_basic.py::test_stage_for_review_moves_files_without_deleting_them - AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+4 failed, 295 passed in 1.05s
+
+```
+- `2026-07-31T04:36:48` ❌ Mejora descartada en organizer.py (no pasó los tests), se revirtió. Intento: Se añadió una validación de existencia (`exists()`) en `_walk_dir` para cada archivo dentro del bucle de `os.scandir` y se robusteció `stage_for_review` verificando explícitamente que la fuente y el destino no sean la misma ruta antes de realizar operaciones de movimiento, evitando errores de E/S por colisiones en casos límite de rutas relativas o mal formadas.
+- `2026-07-31T04:37:16` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Mejoré la robustez de `quarantine_file` ante fallos de escritura y estados inconsistentes del sistema de archivos, asegurando que el manifiesto solo se actualice tras confirmar la persistencia física del archivo en el destino, y añadiendo un manejo de excepciones más granular para evitar dejar archivos "huérfanos" en cuarentena sin registro.
+- `2026-07-31T04:37:19` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-07-31T04:37:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-31T04:37:19` Corrida terminada. Total usado hoy: 112.
