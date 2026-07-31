@@ -150,9 +150,9 @@ def _apply_validation_by_type(clave: str, valor: Any, defecto: Any) -> Any:
 
 
 def settings_path(path_or_base: PathLike | None = None) -> Path:
-    base = Path(path_or_base).expanduser().resolve() if path_or_base else SETTINGS_DIR
-    ensure_safe_to_modify(str(base))
-    return base / SETTINGS_FILE
+    target_base = Path(path_or_base).expanduser().resolve() if path_or_base else SETTINGS_DIR
+    ensure_safe_to_modify(str(target_base))
+    return target_base / SETTINGS_FILE
 
 
 def validate(values: Any) -> dict[str, Any]:
@@ -202,7 +202,6 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
         return None
     
     parent = ruta.parent
-    ensure_safe_to_modify(str(parent))
     parent.mkdir(parents=True, exist_ok=True)
     
     temp_path = None

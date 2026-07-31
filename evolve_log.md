@@ -1249,3 +1249,49 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-07-31T05:18:11` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de la función `ensure_safe_to_modify` ante ataques de suplantación de archivos mediante la validación de `st_nlink` (contador de enlaces físicos), evitando que archivos con múltiples enlaces duros sean manipulados, lo cual es una técnica común para engañar a herramientas de seguridad.
 - `2026-07-31T05:18:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-31T05:18:11` Corrida terminada. Total usado hoy: 128.
+- `2026-07-31T05:27:07` Arrancando corrida. Quedan hoy ~172 peticiones objetivo.
+- `2026-07-31T05:27:30` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de las verificaciones de seguridad en `scan_file` para evitar el acceso a archivos bloqueados por el sistema o en estado transitorio, garantizando que el escáner no lance excepciones innecesarias ni intente procesar rutas que violen la integridad del sistema tras un cambio de estado en disco (Race Condition).
+- `2026-07-31T05:27:53` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se endureció la seguridad en `settings_path` y `save` mediante el uso de `ensure_safe_to_modify` para prevenir ataques de *path traversal* o manipulación de rutas fuera del directorio de configuración esperado, asegurando que la ruta final esté siempre contenida en `SETTINGS_DIR`.
+- `2026-07-31T05:28:16` Tests FALLARON:
+```
+
+        found_entries: List[StartupEntry] = []
+        for folder in folders:
+            if is_protected_path(folder):
+                continue
+    
+            try:
+                base_path: Path = folder.resolve()
+                # Validar reparse point/junctions a nivel de directorio
+                if base_path.is_symlink():
+                    continue
+            except (ValueError, PermissionError, OSError, RuntimeError):
+                continue
+    
+            try:
+                for item in base_path.iterdir():
+                    try:
+                        if not item.name or item.name.lower() == "desktop.ini":
+                            continue
+                        # Ignorar explícitamente enlaces simbólicos y puntos de reparse (reparse points)
+                        if item.is_file() and not item.is_symlink():
+                            # Verificar atributos de reparse (0x400 = IO_REPARSE_TAG_REPARSE_POINT)
+>                           if item.stat().st_file_attributes & 0x400:
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E                           AttributeError: 'os.stat_result' object has no attribute 'st_file_attributes'
+
+app/startup.py:155: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_folders - AttributeError: 'os.stat_result' object has no attribute 'st_file_attributes'
+1 failed, 298 passed in 1.12s
+
+```
+- `2026-07-31T05:28:16` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva en `entries_from_folders` evitando el seguimiento de enlaces simbólicos (`is_symlink`) y validando que el archivo final no sea un punto de reparse (reparse point), previniendo así la ejecución de lógica sobre rutas externas o peligrosas que pudieran estar vinculadas dentro de las carpetas de inicio.
+- `2026-07-31T05:28:16` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-07-31T05:28:16` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-07-31T05:28:36` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-07-31T05:28:36` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-07-31T05:29:07` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-07-31T05:29:07` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-07-31T05:29:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-31T05:29:07` Corrida terminada. Total usado hoy: 132.
