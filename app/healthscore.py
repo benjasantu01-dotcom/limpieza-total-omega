@@ -217,6 +217,9 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         total_score: float = 0.0
         breakdown: Dict[str, int] = {}
         for area, weight in WEIGHTS.items():
+            # Validación defensiva: asegurar que el área existe en los ratios calculados
+            if area not in ratios:
+                continue
             score_part = int(ratios.get(area, 0.0) * weight + 0.5)
             breakdown[area] = score_part
             total_score += score_part

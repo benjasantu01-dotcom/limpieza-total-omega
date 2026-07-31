@@ -279,6 +279,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     
     try:
         target_pid = int(pid)
+        # Bloquea procesos de sistema (PID 0, 4 son System/Idle)
         if target_pid <= 4:
             return False, "Operación denegada: PID de sistema protegido."
     except (ValueError, TypeError):
@@ -291,7 +292,9 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if not hasattr(kernel32, "OpenProcess") or not hasattr(psapi, "EmptyWorkingSet"):
         return False, "APIs de sistema no disponibles."
 
-    handle = kernel32.OpenProcess(0x1000 | 0x0100, False, target_pid)
+    # PROCESS_QUERY_LIMITED_INFORMATION (0x1000) | PROCESS_SET_QUOTAS (0x0100)
+    # Usamos acceso mínimo para seguridad defensiva.
+    handle = kernel32.OpenProcess(0x1100, False, target_pid)
     if not handle:
         return False, f"No se pudo abrir el proceso {target_pid}."
     

@@ -234,7 +234,8 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
                 continue
                 
             try:
-                with open(full_source_path, 'rb+'):
+                # Comprobar si el archivo está siendo usado por otro proceso
+                with open(full_source_path, 'rb'):
                     pass
             except (PermissionError, OSError):
                 continue
