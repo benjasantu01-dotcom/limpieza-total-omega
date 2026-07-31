@@ -202,6 +202,7 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
         return None
     
     parent = ruta.parent
+    ensure_safe_to_modify(str(parent))
     parent.mkdir(parents=True, exist_ok=True)
     
     temp_path = None

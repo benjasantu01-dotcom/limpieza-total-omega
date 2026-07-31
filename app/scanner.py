@@ -120,7 +120,8 @@ CHECK_FUNCS: Final[List[SuspicionCheck]] = [
 
 def scan_file(path: Path) -> List[Suspicion]:
     """Aplica secuencialmente todas las funciones de `CHECK_FUNCS` sobre una ruta."""
-    if not isinstance(path, Path) or not path.exists():
+    # Validación extra: re-verificar seguridad ante Race Conditions o cambios de estado en el disco
+    if not isinstance(path, Path) or not path.exists() or is_protected_path(path):
         return []
         
     results: List[Suspicion] = []

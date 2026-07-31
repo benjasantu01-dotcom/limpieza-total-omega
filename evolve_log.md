@@ -1195,3 +1195,35 @@ FAILED evolve/tests/test_basic.py::test_stage_for_review_moves_files_without_del
 - `2026-07-31T04:37:19` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-07-31T04:37:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-31T04:37:19` Corrida terminada. Total usado hoy: 112.
+- `2026-07-31T04:46:12` Arrancando corrida. Quedan hoy ~188 peticiones objetivo.
+- `2026-07-31T04:46:38` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
+- `2026-07-31T04:47:08` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se mejoró la robustez de `scan_file` añadiendo una validación explícita de `is_protected_path` sobre el objeto `Path` antes de procesarlo, evitando errores de acceso a archivos bloqueados por el sistema y garantizando que el escáner sea pasivo incluso ante rutas que pudieron haber cambiado de estado o permisos entre el listado del directorio y el procesamiento individual.
+- `2026-07-31T04:47:32` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `save()` implementando una verificación de seguridad con `ensure_safe_to_modify` sobre el directorio padre antes de intentar escribir, mitigando riesgos de manipulación de rutas en entornos de ejecución inesperados.
+- `2026-07-31T04:47:40` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+........................................F............................... [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+1 failed, 298 passed in 1.10s
+
+```
+- `2026-07-31T04:47:40` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez de `StartupEntry.executable` manejando explícitamente rutas relativas y caracteres nulos en los comandos, evitando excepciones ante entradas malformadas o inesperadas que podrían bloquear el análisis.
+- `2026-07-31T04:47:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-31T04:47:40` Corrida terminada. Total usado hoy: 116.
