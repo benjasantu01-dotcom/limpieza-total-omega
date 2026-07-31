@@ -20,7 +20,6 @@ import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable, Sequence, Dict, List, Optional
-from functools import lru_cache
 from safety import is_protected_path
 
 __all__ = [
@@ -115,10 +114,6 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
 def directory_size(path: str | os.PathLike | None) -> int:
     """
     Calcula el tamaño total en bytes mediante suma recursiva.
-    
-    Excluye explícitamente symlinks y junctions (puntos de reparse) para evitar
-    contar datos fuera del árbol de caché del navegador y prevenir ciclos
-    infinitos o escaneos accidentales de unidades de red.
     """
     if not path:
         return 0
@@ -145,17 +140,12 @@ def directory_size(path: str | os.PathLike | None) -> int:
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:
-                    try:
-                        # Se omiten symlinks para garantizar que el cálculo sea
-                        # local y seguro bajo las reglas de no seguir punteros.
-                        if entry.is_symlink():
-                            continue
-                        if entry.is_dir():
-                            stack.append(entry.path)
-                        elif entry.is_file():
-                            total_bytes += entry.stat().st_size
-                    except (OSError, PermissionError):
+                    if entry.is_symlink():
                         continue
+                    if entry.is_dir():
+                        stack.append(entry.path)
+                    elif entry.is_file():
+                        total_bytes += entry.stat().st_size
         except (OSError, PermissionError):
             continue
             
@@ -168,18 +158,14 @@ def _is_valid_cache_path(candidate: Path | None, base_path: Path) -> bool:
     Valida que la ruta exista, sea un directorio, no sea un enlace simbólico
     y cumpla con las políticas de seguridad de la app.
     """
-    if not candidate:
-        return False
-    try:
-        return (
-            candidate.exists() and 
-            candidate.is_dir() and 
-            not candidate.is_symlink() and
-            _is_safe_path(candidate, base_path) and
-            candidate.name.lower() not in NEVER_TOUCH
-        )
-    except (ValueError, OSError, RuntimeError, TypeError, PermissionError):
-        return False
+    return (
+        candidate is not None and
+        candidate.exists() and 
+        candidate.is_dir() and 
+        not candidate.is_symlink() and
+        _is_safe_path(candidate, base_path) and
+        candidate.name.lower() not in NEVER_TOUCH
+    )
 
 
 def detect_profiles(
@@ -188,10 +174,6 @@ def detect_profiles(
 ) -> List[BrowserCache]:
     """
     Explora los directorios base buscando las rutas de caché predefinidas.
-    
-    Utiliza una estrategia de unión de rutas desde el directorio local del usuario,
-    validando contra `NEVER_TOUCH` antes de procesar el tamaño para evitar
-    acceder a carpetas de configuración sensible.
     """
     bases = bases if bases is not None else base_directories()
     cache_paths = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
@@ -201,25 +183,17 @@ def detect_profiles(
         return found
         
     for base in bases:
-        if not isinstance(base, Path) or not base.is_dir():
-            continue
-            
         for browser_name, relative_path_str in cache_paths.items():
-            if not relative_path_str or not isinstance(relative_path_str, str):
-                continue
-            try:
-                parts = relative_path_str.split("\\")
-                candidate = base.joinpath(*parts)
-                if _is_valid_cache_path(candidate, base):
-                    size = directory_size(str(candidate))
-                    if size > 0:
-                        found.append(BrowserCache(
-                            browser=browser_name,
-                            path=candidate,
-                            size_bytes=size,
-                        ))
-            except (TypeError, AttributeError, OSError, ValueError):
-                continue
+            candidate = base.joinpath(*relative_path_str.split("\\"))
+            
+            if _is_valid_cache_path(candidate, base):
+                size = directory_size(str(candidate))
+                if size > 0:
+                    found.append(BrowserCache(
+                        browser=browser_name,
+                        path=candidate,
+                        size_bytes=size,
+                    ))
                 
     found.sort(key=lambda c: c.size_bytes, reverse=True)
     return found
@@ -234,7 +208,7 @@ def summarize(caches: Optional[List[BrowserCache]] = None) -> List[str]:
     """
     Genera un informe textual listo para la UI con el total de MB detectados.
     """
-    current_caches: List[BrowserCache] = caches if caches is not None else detect_profiles()
+    current_caches = caches if caches is not None else detect_profiles()
     
     if not current_caches:
         return ["No se detectaron cachés de navegador en este sistema."]

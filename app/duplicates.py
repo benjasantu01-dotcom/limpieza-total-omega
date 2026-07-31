@@ -133,9 +133,6 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
 def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     """
     Organiza rutas de archivos en un diccionario indexado por su tamaño en bytes.
-    
-    Usa el par (dispositivo, inodo) para identificar archivos únicos físicamente
-    y omitir hardlinks redundantes que reportarían el mismo contenido.
     """
     if paths is None:
         return {}
@@ -145,16 +142,17 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
         if not isinstance(p, Path):
             continue
         try:
-            resolved_p = p.resolve()
-            if is_protected_path(resolved_p):
+            st = p.lstat()
+            # Filtramos protegidos y symlinks antes de cualquier operación costosa
+            if st.st_size <= 0 or p.is_symlink() or is_protected_path(p.resolve()):
                 continue
-            st = resolved_p.lstat()
-            if st.st_size > 0:
-                inode_id = (st.st_dev, st.st_ino)
-                if inode_id in seen_inodes:
-                    continue
-                seen_inodes.add(inode_id)
-                groups[st.st_size].append(resolved_p)
+            
+            inode_id = (st.st_dev, st.st_ino)
+            if inode_id in seen_inodes:
+                continue
+                
+            seen_inodes.add(inode_id)
+            groups[st.st_size].append(p)
         except (OSError, PermissionError, FileNotFoundError, AttributeError):
             continue
     return groups

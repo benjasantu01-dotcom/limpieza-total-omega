@@ -1097,3 +1097,10 @@ FAILED evolve/tests/test_modules.py::test_gradient_starts_and_ends_on_its_stops 
 - `2026-07-31T03:36:17` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `gradient_colors` eliminando la creación de objetos intermedios y el cálculo redundante de `blend` dentro del bucle, además de ajustar la lógica de los pasos para evitar iteraciones innecesarias cuando el gradiente es constante.
 - `2026-07-31T03:36:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-31T03:36:17` Corrida terminada. Total usado hoy: 88.
+- `2026-07-31T03:44:58` Arrancando corrida. Quedan hoy ~212 peticiones objetivo.
+- `2026-07-31T03:45:23` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Se optimizó el rendimiento del escaneo implementando una validación previa de existencia y permisos antes de entrar en los bucles de `detect_profiles`, y se consolidó el acceso a `_DIR_SIZE_CACHE` para reducir llamadas redundantes al sistema de archivos durante la iteración.
+- `2026-07-31T03:45:47` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé `summarize` para realizar una sola pasada por los archivos en lugar de múltiples recorridos (`total_size` + `walk_files` + procesamiento posterior), reduciendo drásticamente el uso de CPU y I/O en carpetas grandes.
+- `2026-07-31T03:46:11` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé `group_by_size` para realizar una sola llamada al sistema `lstat` y mejorar la eficiencia del proceso de filtrado, evitando accesos redundantes a metadatos de archivos antes de procesar el tamaño.
+- `2026-07-31T03:46:22` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
+- `2026-07-31T03:46:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-31T03:46:22` Corrida terminada. Total usado hoy: 92.

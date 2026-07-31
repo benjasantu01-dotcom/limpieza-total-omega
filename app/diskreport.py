@@ -300,11 +300,16 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
     except (OSError, RuntimeError, PermissionError):
         return ["Error: No se pudo acceder a la ruta especificada."]
         
-    total_bytes, total_files = total_size(path_obj, skip_protected)
     ext_map: Dict[str, ExtStat] = defaultdict(ExtStat)
     top_heap: List[Tuple[int, Path]] = []
+    total_bytes = 0
+    total_files = 0
 
+    # Realizamos una sola iteración para obtener todos los datos
     for path, size in walk_files(path_obj, skip_protected):
+        total_bytes += size
+        total_files += 1
+        
         ext_name = path.suffix.lower() or "(sin extensión)"
         stat = ext_map[ext_name]
         stat.size += size
