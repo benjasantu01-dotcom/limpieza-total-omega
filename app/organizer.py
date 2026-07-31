@@ -40,7 +40,9 @@ DEFAULT_SCAN_DIRS: Final = [
 ]
 
 # Carpetas de sistema críticas que nunca se recorren para prevenir daños al SO
-SYSTEM_FOLDER_BLOCKLIST: Final = frozenset({"windows", "program files", "program files (x86)", "$recycle.bin", "system volume information"})
+SYSTEM_FOLDER_BLOCKLIST: Final = {
+    "windows", "program files", "program files (x86)", "$recycle.bin", "system volume information"
+}
 
 
 def list_available_drives() -> List[str]:
@@ -124,13 +126,14 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
                         if entry.is_dir(follow_symlinks=False):
                             if entry.name.lower() not in blocklist:
                                 _walk_dir(entry.path)
-                        elif _is_junk_file(entry):
-                            stat = entry.stat()
-                            found.append(JunkFile(
-                                path=Path(entry.path),
-                                size_bytes=stat.st_size,
-                                modified=datetime.fromtimestamp(stat.st_mtime)
-                            ))
+                        elif entry.name.lower().endswith(_JUNK_EXTS_TUPLE):
+                            if is_safe_to_modify(Path(entry.path)):
+                                stat = entry.stat()
+                                found.append(JunkFile(
+                                    path=Path(entry.path),
+                                    size_bytes=stat.st_size,
+                                    modified=datetime.fromtimestamp(stat.st_mtime)
+                                ))
                     except (PermissionError, OSError):
                         continue
         except (PermissionError, OSError):

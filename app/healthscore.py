@@ -132,8 +132,8 @@ def score_junk(junk_mb: float) -> float:
 
 def score_security(suspicious_count: int, warnings: int = 0) -> float:
     """Calcula ratio [0.0, 1.0] penalizando hallazgos de seguridad y advertencias."""
-    s = float(_to_int(suspicious_count))
-    w = float(_to_int(warnings))
+    s = float(suspicious_count)
+    w = float(warnings)
     penalty: float = s * 0.05 + w * 0.25
     return _clamp(1.0 - penalty, 0.0, 1.0)
 
@@ -158,9 +158,8 @@ def score_duplicates(duplicate_mb: float) -> float:
 
 def score_startup(startup_count: int) -> float:
     """Normaliza el conteo de programas de inicio a un ratio [0.0, 1.0] contra STARTUP_LIMIT_COUNT."""
-    count = _to_int(startup_count)
     if STARTUP_LIMIT_COUNT <= 0: return 0.0
-    return _clamp(1.0 - (float(count) / STARTUP_LIMIT_COUNT))
+    return _clamp(1.0 - (float(startup_count) / STARTUP_LIMIT_COUNT))
 
 
 def grade_for_score(score: int) -> str:
@@ -199,7 +198,6 @@ def _generate_recommendations(m: SystemMetrics, ratios: Dict[str, float]) -> Lis
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
     """Calcula el puntaje global de salud del sistema normalizando áreas según sus pesos."""
-    # Validación explícita de pre-condiciones de integridad antes de proceder
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Instancia de métricas no válida."])
     
@@ -221,15 +219,16 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
 
     total_score: float = 0.0
     breakdown: Dict[str, int] = {}
+    
     for area, weight in WEIGHTS.items():
-        score_part = int(ratios.get(area, 0.0) * weight + 0.5)
+        ratio = ratios.get(area, 0.0)
+        score_part = int(ratio * weight + 0.5)
         breakdown[area] = score_part
         total_score += score_part
 
-    final_score = int(total_score)
     return HealthResult(
-        score=final_score,
-        grade=grade_for_score(final_score),
+        score=int(total_score),
+        grade=grade_for_score(int(total_score)),
         breakdown=breakdown,
         recommendations=_generate_recommendations(metrics, ratios),
     )

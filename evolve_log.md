@@ -1552,3 +1552,10 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-07-31T08:12:14` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
 - `2026-07-31T08:12:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-31T08:12:14` Corrida terminada. Total usado hoy: 196.
+- `2026-07-31T08:20:47` Arrancando corrida. Quedan hoy ~104 peticiones objetivo.
+- `2026-07-31T08:21:14` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimizé `compute_score` eliminando conversiones repetitivas de tipos y recalculaciones innecesarias dentro del bucle de agregación, almacenando los ratios en variables locales para evitar múltiples búsquedas en diccionario y llamadas redundantes.
+- `2026-07-31T08:22:14` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Optimicé el manejo de la memoria y la capacidad de respuesta de la interfaz al convertir `self._cache` en una estructura que previene el crecimiento indefinido, y al implementar una invalidación inteligente de las métricas de salud (que antes se recalculaban innecesariamente en cada llamado a `_compile_metrics`).
+- `2026-07-31T08:22:37` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: rendimiento).
+- `2026-07-31T08:22:44` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Se optimizó el rendimiento de `scan_for_junk` convirtiendo la `SYSTEM_FOLDER_BLOCKLIST` en un conjunto de comparación pre-normalizado a minúsculas y evitando múltiples llamadas innecesarias a `Path` y `stat` dentro del bucle de escaneo.
+- `2026-07-31T08:22:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-31T08:22:44` Corrida terminada. Total usado hoy: 200.

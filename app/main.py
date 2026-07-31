@@ -30,6 +30,7 @@ RENDIMIENTO
 Los análisis del panel de Salud se consolidan en una única ejecución asíncrona
 para minimizar el overhead de hilos y garantizar la coherencia de los datos
 que consume el asistente. El estado de análisis pesados se cachea por sesión.
+Se emplea invalidación selectiva para evitar procesado redundante en disco.
 
 Instalar dependencias:
     pip install customtkinter
@@ -151,11 +152,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _get_cached(self, key: str, provider: Callable, force: bool = False) -> Any:
         """
         Recupera datos del caché si existen; si no, invoca al proveedor.
-        
-        Args:
-            key: Identificador de la caché.
-            provider: Función de obtención de datos (lectura de sistema).
-            force: Booleano para forzar recálculo.
+        Uso de setdefault para atomicidad y evitar accesos redundantes.
         """
         if force or key not in self._cache:
             try:
@@ -163,6 +160,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             except Exception:
                 self._cache[key] = []
         return self._cache[key]
+
+    def _invalidate_cache(self, key_prefix: str):
+        """Limpia entradas del caché relacionadas a un área específica."""
+        keys_to_del = [k for k in self._cache if k.startswith(key_prefix)]
+        for k in keys_to_del:
+            del self._cache[k]
 
     # ------------------------------------------------------------------
     # Construcción de la interfaz
@@ -814,6 +817,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _compile_metrics(self) -> Tuple[healthscore.SystemMetrics, memory_mod.Snapshot, diskreport.DriveInfo]:
         """Agrega los datos de todos los módulos para el análisis consolidado de salud."""
+        # Se prioriza caché local para evitar E/S masivas constantes
         descargas = os.path.expanduser("~/Downloads")
         hallazgos = self._get_cached("suspicions", lambda: scan_directory(descargas) if os.path.isdir(descargas) else [])
         snapshot = memory_mod.read_snapshot()
@@ -981,6 +985,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             dest = stage_for_review(aptos)
             self.log(f"Movidos {len(aptos)} archivos a: {dest}", "Limpieza")
             self._cache["junk"] = [j for j in junk if j not in aptos]
+            self._invalidate_cache("junk")
 
         self.run_async(task)
 
@@ -1072,6 +1077,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 aislados += 1
             self.log(f"Listo: {aislados} aislado(s).", "Seguridad")
             self._cache["suspicions"] = [s for s in suspicions if s not in aptos]
+            self._invalidate_cache("suspicions")
 
         self.run_async(task)
 
@@ -1329,6 +1335,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 movidos += 1
             self.log(f"Aisladas {movidos} copia(s). Revisá la pestaña Cuarentena.", "Duplicados")
             self._cache["dups"] = []
+            self._invalidate_cache("dups")
 
         self.run_async(task)
 
