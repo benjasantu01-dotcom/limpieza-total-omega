@@ -416,16 +416,20 @@ def _call_gemini(
 ) -> Optional[str]:
     """
     Envía métricas agregadas a Gemini usando la librería estándar urllib.
-    Validaciones de seguridad garantizan que no salgan rutas del sistema.
+    Validaciones de seguridad garantizan que no salgan rutas del sistema y
+    que la respuesta no contenga caracteres sospechosos.
     """
     if not api_key or not model:
         return None
         
     try:
+        # Sanitización estricta antes de enviar
+        sanitized_context = _CONTROL_CHARS_REGEX.sub("", context_text)
+        
         cuerpo_json: bytes = json.dumps({
             "contents": [{
                 "parts": [{
-                    "text": f"{SYSTEM_PROMPT}\n\nMétricas del sistema:\n{context_text}\n\n"
+                    "text": f"{SYSTEM_PROMPT}\n\nMétricas del sistema:\n{sanitized_context}\n\n"
                             f"Pregunta del usuario: {question}"
                 }]
             }]
@@ -458,9 +462,8 @@ def _call_gemini(
         texto: str = "".join(p.get("text", "") for p in partes if isinstance(p, dict)).strip()
         
         # Validación de seguridad defensiva estricta sobre la salida del modelo
-        if not texto or len(texto) > 1200:
-            return None
-        if _PATH_REGEX.search(texto) or _CONTROL_CHARS_REGEX.search(texto):
+        # Se rechaza si detectamos patrones de rutas, caracteres de control o exceso de longitud
+        if not texto or len(texto) > 1200 or _PATH_REGEX.search(texto) or _CONTROL_CHARS_REGEX.search(texto):
             return None
             
         return texto

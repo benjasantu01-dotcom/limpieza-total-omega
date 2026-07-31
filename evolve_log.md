@@ -430,3 +430,37 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-07-31T09:13:12` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `save()` ante fallos de escritura en disco, asegurando que si ocurre un `PermissionError` o `OSError` durante la creación del archivo temporal, el sistema no deje residuos innecesarios y maneje correctamente la persistencia sin corromper el estado de la aplicación.
 - `2026-07-31T09:13:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-31T09:13:12` Corrida terminada. Total usado hoy: 220.
+- `2026-07-31T09:22:09` Arrancando corrida. Quedan hoy ~80 peticiones objetivo.
+- `2026-07-31T09:22:35` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+........................................F............................... [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '/home/runner...\App\\app.exe' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+E         + /home/runner/work/limpieza-total-omega/limpieza-total-omega/C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '/home/runner...\App\\app.exe' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+  + /home/runner/work/limpieza-total-omega/limpieza-total-omega/C:\Program Files\App\app.exe
+1 failed, 298 passed in 1.05s
+
+```
+- `2026-07-31T09:22:35` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `StartupEntry.executable` manejando explícitamente rutas relativas y denegaciones de acceso mediante un bloque `try-except` robusto, evitando que errores de permisos en `Path.exists()` o `Path.expanduser()` rompan el análisis del inventario.
+- `2026-07-31T09:23:07` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se endureció la validación de seguridad en `_call_gemini` para asegurar que el texto enviado al modelo externo sea sanitizado contra caracteres de control adicionales y para garantizar que la respuesta del modelo no contenga trazas de posibles rutas o comandos, reforzando la naturaleza "sandbox" del asistente.
+- `2026-07-31T09:23:37` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se ha refactorizado `save_logo_svg` para asegurar que la validación de seguridad cubra explícitamente tanto el archivo de destino como el directorio padre, utilizando `ensure_safe_to_modify` para garantizar que cualquier intento de escritura no autorizado sea interceptado por el mecanismo de protección del sistema.
+- `2026-07-31T09:23:43` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
+- `2026-07-31T09:23:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-31T09:23:43` Corrida terminada. Total usado hoy: 224.

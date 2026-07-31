@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **257** (51.0% de aceptación)
-- Rechazadas por tests: 21
+- Mejoras aceptadas: **259** (51.4% de aceptación)
+- Rechazadas por tests: 22
 - Rechazadas por guardia de seguridad: 25
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 188
+- Sin respuesta de la IA (error o límite): 185
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-30 | 138 | 11 | 14 | 10 | 111 |
-| 2026-07-31 | 119 | 10 | 11 | 3 | 77 |
+| 2026-07-30 | 138 | 11 | 14 | 10 | 107 |
+| 2026-07-31 | 121 | 11 | 11 | 3 | 78 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,27 +25,29 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **54**
 - rendimiento: **49**
 - robustez ante casos límite: **47**
-- seguridad defensiva: **43**
+- seguridad defensiva: **45**
 
 ## Mejoras aceptadas por archivo
 
+- `assistant.py`: **22**
 - `browser.py`: **22**
 - `diskreport.py`: **22**
 - `scanner.py`: **22**
-- `assistant.py`: **21**
 - `quarantine.py`: **20**
 - `settings.py`: **20**
 - `duplicates.py`: **19**
 - `healthscore.py`: **19**
 - `safety.py`: **18**
+- `branding.py`: **18**
 - `main.py`: **17**
-- `branding.py`: **17**
 - `organizer.py`: **15**
 - `startup.py`: **13**
 - `memory.py`: **12**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-31T09:23:37` **branding.py** (seguridad defensiva): Se ha refactorizado `save_logo_svg` para asegurar que la validación de seguridad cubra explícitamente tanto el archivo de destino como el directorio padre, utilizando `ensure_safe_to_modify` para garantizar que cualquier intento de escritura no autorizado sea interceptado por el mecanismo de protección del sistema.
+- `2026-07-31T09:23:07` **assistant.py** (seguridad defensiva): Se endureció la validación de seguridad en `_call_gemini` para asegurar que el texto enviado al modelo externo sea sanitizado contra caracteres de control adicionales y para garantizar que la respuesta del modelo no contenga trazas de posibles rutas o comandos, reforzando la naturaleza "sandbox" del asistente.
 - `2026-07-31T09:13:12` **settings.py** (robustez ante casos límite): Mejoré la robustez de `save()` ante fallos de escritura en disco, asegurando que si ocurre un `PermissionError` o `OSError` durante la creación del archivo temporal, el sistema no deje residuos innecesarios y maneje correctamente la persistencia sin corromper el estado de la aplicación.
 - `2026-07-31T09:13:03` **scanner.py** (robustez ante casos límite): Se ha añadido robustez frente a errores de acceso y rutas inválidas dentro de `_process_directory_entry` y `scan_directory` utilizando el manejo explícito de excepciones, asegurando que el proceso de escaneo no se interrumpa ante archivos bloqueados o enlaces simbólicos rotos, y garantizando la integridad mediante una validación más estricta del estado de los archivos (`is_file()` con chequeo de excepción).
 - `2026-07-31T09:12:41` **safety.py** (robustez ante casos límite): Se añadió una verificación de archivos en uso mediante el intento de apertura en modo escritura exclusiva (`os.O_EXCL`), una técnica robusta y estándar para detectar bloqueos por otros procesos sin requerir dependencias externas.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-31T08:32:10` **safety.py** (rendimiento): Se ha optimizado la validación de rutas mediante la implementación de `lru_cache` en `is_protected_path` y la pre-compilación de `_ALL_PROTECTED_TOKENS` como un `frozenset`, evitando conversiones repetitivas de tipos y cálculos redundantes en cada iteración de los bucles de escaneo.
 - `2026-07-31T08:31:28` **quarantine.py** (rendimiento): Optimizé `list_items` y `summarize` para que no re-lean ni re-procesen el manifiesto innecesariamente, aprovechando que `load_manifest` ya implementa caché de memoria y `mtime`, eliminando llamadas redundantes a funciones costosas en bucles.
 - `2026-07-31T08:22:44` **organizer.py** (rendimiento): Se optimizó el rendimiento de `scan_for_junk` convirtiendo la `SYSTEM_FOLDER_BLOCKLIST` en un conjunto de comparación pre-normalizado a minúsculas y evitando múltiples llamadas innecesarias a `Path` y `stat` dentro del bucle de escaneo.
-- `2026-07-31T08:22:14` **main.py** (rendimiento): Optimicé el manejo de la memoria y la capacidad de respuesta de la interfaz al convertir `self._cache` en una estructura que previene el crecimiento indefinido, y al implementar una invalidación inteligente de las métricas de salud (que antes se recalculaban innecesariamente en cada llamado a `_compile_metrics`).
-- `2026-07-31T08:21:14` **healthscore.py** (rendimiento): Optimizé `compute_score` eliminando conversiones repetitivas de tipos y recalculaciones innecesarias dentro del bucle de agregación, almacenando los ratios en variables locales para evitar múltiples búsquedas en diccionario y llamadas redundantes.
