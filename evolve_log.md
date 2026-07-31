@@ -909,3 +909,4 @@ FAILED evolve/tests/test_safety.py::test_describe_protection_explains_the_reason
 - `2026-07-31T14:51:59` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
 - `2026-07-31T14:51:59` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-31T14:51:59` Corrida terminada. Total usado hoy: 350.
+- `2026-07-31T14:59:57` Presupuesto diario agotado (350 usados). Corte hasta mañana.
