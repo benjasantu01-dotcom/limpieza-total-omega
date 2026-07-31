@@ -171,7 +171,10 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
         if not directory:
             continue
         try:
-            base_dir = Path(directory).expanduser().resolve()
+            path_obj = Path(directory)
+            if not path_obj.exists():
+                continue
+            base_dir = path_obj.expanduser().resolve()
             if not base_dir.is_dir() or (skip_protected and is_protected_path(base_dir)):
                 continue
             
@@ -201,7 +204,7 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
                             candidates.append(file_path)
                     except (OSError, PermissionError, FileNotFoundError):
                         continue
-        except (OSError, RuntimeError):
+        except (OSError, RuntimeError, ValueError):
             continue
     return candidates
 

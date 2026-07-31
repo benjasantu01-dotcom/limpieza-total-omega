@@ -123,9 +123,9 @@ def drive_usage(mount: str | os.PathLike) -> DriveUsage | None:
         if not os.path.exists(path_str):
             return None
         usage = shutil.disk_usage(path_str)
+        return DriveUsage(mount=str(mount), total=usage.total, used=usage.used, free=usage.free)
     except (OSError, ValueError, TypeError):
         return None
-    return DriveUsage(mount=str(mount), total=usage.total, used=usage.used, free=usage.free)
 
 
 def all_drives_usage(mounts: Iterable[str] | None = None) -> list[DriveUsage]:
@@ -204,34 +204,28 @@ def largest_files(directory: str | os.PathLike, limit: int = 20, skip_protected:
     """Los archivos más grandes bajo una carpeta, de mayor a menor."""
     if not directory:
         return []
-    try:
-        return heapq.nlargest(
-            max(0, limit), 
-            (FileEntry(path=p, size_bytes=s) for p, s in walk_files(directory, skip_protected)),
-            key=lambda e: e.size_bytes
-        )
-    except (OSError, ValueError):
-        return []
+    return heapq.nlargest(
+        max(0, limit), 
+        (FileEntry(path=p, size_bytes=s) for p, s in walk_files(directory, skip_protected)),
+        key=lambda e: e.size_bytes
+    )
 
 
 def usage_by_extension(directory: str | os.PathLike, limit: int = 15, skip_protected: bool = True) -> list[ExtensionUsage]:
     """Espacio agrupado por extensión, de mayor a menor."""
     if not directory:
         return []
-    try:
-        sizes: dict[str, int] = defaultdict(int)
-        counts: dict[str, int] = defaultdict(int)
-        for path, size in walk_files(directory, skip_protected):
-            ext = path.suffix.lower() or "(sin extensión)"
-            sizes[ext] += size
-            counts[ext] += 1
-        
-        usage_list = [ExtensionUsage(extension=ext, size_bytes=size, count=counts[ext])
-                      for ext, size in sizes.items()]
-        
-        return heapq.nlargest(max(0, limit), usage_list, key=lambda u: u.size_bytes)
-    except (OSError, ValueError):
-        return []
+    sizes: dict[str, int] = defaultdict(int)
+    counts: dict[str, int] = defaultdict(int)
+    for path, size in walk_files(directory, skip_protected):
+        ext = path.suffix.lower() or "(sin extensión)"
+        sizes[ext] += size
+        counts[ext] += 1
+    
+    usage_list = [ExtensionUsage(extension=ext, size_bytes=size, count=counts[ext])
+                  for ext, size in sizes.items()]
+    
+    return heapq.nlargest(max(0, limit), usage_list, key=lambda u: u.size_bytes)
 
 
 def largest_folders(directory: str | os.PathLike, limit: int = 10, skip_protected: bool = True) -> list[FolderUsage]:
@@ -270,15 +264,12 @@ def total_size(directory: str | os.PathLike, skip_protected: bool = True) -> tup
     """Devuelve (bytes totales, cantidad de archivos) bajo una carpeta."""
     if not directory:
         return 0, 0
-    try:
-        total = 0
-        count = 0
-        for _, size in walk_files(directory, skip_protected):
-            total += size
-            count += 1
-        return total, count
-    except (OSError, ValueError):
-        return 0, 0
+    total = 0
+    count = 0
+    for _, size in walk_files(directory, skip_protected):
+        total += size
+        count += 1
+    return total, count
 
 
 def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list[str]:
