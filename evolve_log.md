@@ -765,3 +765,10 @@ FAILED evolve/tests/test_safety.py::test_describe_protection_explains_the_reason
 - `2026-07-31T12:27:35` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Mejora la legibilidad del método `StartupEntry.executable` extrayendo la lógica de validación de rutas a un método privado más claro, facilitando el mantenimiento y el cumplimiento de las normas de estilo.
 - `2026-07-31T12:27:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-31T12:27:36` Corrida terminada. Total usado hoy: 296.
+- `2026-07-31T12:36:53` Arrancando corrida. Quedan hoy ~4 peticiones objetivo.
+- `2026-07-31T12:37:26` Gemini no devolvió un bloque de archivo válido para assistant.py (enfoque: rendimiento).
+- `2026-07-31T12:37:55` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimicé el cálculo de colores en `draw_logo` y `draw_gradient_bar` sustituyendo bucles costosos de creación de objetos gráficos por llamadas únicas a `gradient_colors`, permitiendo que el motor de `tkinter` renderice de forma más eficiente y reduciendo el consumo de CPU durante el refresco de la UI.
+- `2026-07-31T12:38:18` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimizé `directory_size` cambiando el uso de `os.scandir` para que procese el tamaño de archivos directamente durante la iteración y evite realizar llamadas adicionales a `stat()` o recorridos redundantes, mejorando la eficiencia en carpetas con muchos archivos pequeños.
+- `2026-07-31T12:38:27` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el método `walk_files` eliminando la llamada innecesaria a `.resolve()` dentro del bucle interno, reduciendo drásticamente las llamadas al sistema operativo (I/O) que penalizaban el rendimiento en directorios profundos.
+- `2026-07-31T12:38:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-31T12:38:27` Corrida terminada. Total usado hoy: 300.

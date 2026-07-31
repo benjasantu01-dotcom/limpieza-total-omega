@@ -132,24 +132,22 @@ def directory_size(path: str | os.PathLike | None) -> int:
         return 0
     
     total_bytes: int = 0
-    visited = set()
+    visited = {root}
     stack: List[Path] = [root]
     
     while stack:
         current_dir = stack.pop()
         try:
-            curr_abs = current_dir.resolve(strict=False)
-            if curr_abs in visited:
-                continue
-            visited.add(curr_abs)
-
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
                         if entry.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(entry.path)):
                             continue
                         if entry.is_dir():
-                            stack.append(Path(entry.path))
+                            dir_path = Path(entry.path).resolve(strict=False)
+                            if dir_path not in visited:
+                                visited.add(dir_path)
+                                stack.append(dir_path)
                         elif entry.is_file():
                             total_bytes += entry.stat().st_size
                     except (OSError, PermissionError):

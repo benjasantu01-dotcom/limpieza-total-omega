@@ -149,10 +149,6 @@ def all_drives_usage(mounts: Iterable[str] | None = None) -> list[DriveUsage]:
 def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Generator[tuple[Path, int], None, None]:
     """
     Recorre recursivamente un directorio usando os.scandir para rendimiento.
-    
-    Aplica filtros de seguridad para ignorar symlinks, puntos de reparse (junctions) 
-    y rutas definidas como protegidas en safety.py para evitar ciclos infinitos o 
-    modificaciones accidentales en áreas críticas del sistema.
     """
     if not directory:
         return
@@ -163,34 +159,31 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
     except (OSError, RuntimeError, PermissionError):
         return
 
-    visited = set()
+    visited = {base_path}
 
     def recursive_scan(root_path: Path) -> Generator[tuple[Path, int], None, None]:
-        """Motor recursivo que valida que cada subruta se mantenga dentro del ámbito raíz."""
         try:
-            resolved_root = root_path.resolve()
-            if resolved_root in visited or not resolved_root.is_relative_to(base_path):
-                return
-            visited.add(resolved_root)
-            
             with os.scandir(root_path) as iterator:
                 for entry in iterator:
                     try:
-                        # Prevenir seguir enlaces simbólicos o junctions de NTFS
                         if entry.is_symlink():
                             continue
                         if os.name == 'nt' and entry.stat(follow_symlinks=False).st_reparse_tag != 0:
                             continue
                         
-                        full_path = Path(entry.path).resolve()
-                        if not full_path.is_relative_to(base_path):
-                            continue
-                        if skip_protected and is_protected_path(full_path):
-                            continue
-                            
+                        full_path = Path(entry.path)
+                        
                         if entry.is_dir():
+                            resolved = full_path.resolve()
+                            if resolved in visited:
+                                continue
+                            if skip_protected and is_protected_path(resolved):
+                                continue
+                            visited.add(resolved)
                             yield from recursive_scan(full_path)
                         else:
+                            if skip_protected and is_protected_path(full_path):
+                                continue
                             yield full_path, entry.stat().st_size
                     except (OSError, PermissionError, FileNotFoundError):
                         continue
@@ -229,12 +222,7 @@ def usage_by_extension(directory: str | os.PathLike, limit: int = 15, skip_prote
 
 
 def largest_folders(directory: str | os.PathLike, limit: int = 10, skip_protected: bool = True) -> list[FolderUsage]:
-    """
-    Calcula el peso total acumulado de las carpetas de primer nivel bajo el directorio dado.
-    
-    Utiliza el motor de escaneo validado `walk_files` para asegurar que solo se 
-    contabilicen rutas permitidas por las reglas de seguridad.
-    """
+    """Calcula el peso total acumulado de las carpetas de primer nivel."""
     if not directory:
         return []
     try:
@@ -247,14 +235,7 @@ def largest_folders(directory: str | os.PathLike, limit: int = 10, skip_protecte
         for path, size in walk_files(base, skip_protected):
             try:
                 rel = path.relative_to(base)
-                if not rel.parts:
-                    continue
-                # Identificar la subcarpeta raíz de este archivo para la agrupación
                 top_level = base / rel.parts[0]
-                if not top_level.resolve().is_relative_to(base):
-                    continue
-                if skip_protected and is_protected_path(top_level):
-                    continue
                 
                 if top_level not in folder_map:
                     folder_map[top_level] = FolderUsage(path=top_level, size_bytes=0, file_count=0)
@@ -283,8 +264,7 @@ def total_size(directory: str | os.PathLike, skip_protected: bool = True) -> tup
 
 
 def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list[str]:
-    """Genera un informe textual resumen del uso de disco en el directorio especificado."""
-    
+    """Genera un informe textual resumen del uso de disco."""
     @dataclass
     class ExtStat:
         size: int = 0

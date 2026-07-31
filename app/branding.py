@@ -320,8 +320,6 @@ def logo_ascii() -> str:
 def draw_logo(canvas: Any, size: int = 56, canvas_x: int = 0, canvas_y: int = 0) -> None:
     """
     Renderiza el logo (escudo Omega) en un widget Tkinter.Canvas.
-    Escala dinámicamente según el tamaño proporcionado mediante cálculos 
-    geométricos de los vértices del escudo.
     """
     if canvas is None or not hasattr(canvas, "create_polygon"): return
     try:
@@ -341,9 +339,8 @@ def draw_logo(canvas: Any, size: int = 56, canvas_x: int = 0, canvas_y: int = 0)
         canvas.create_polygon(contorno, fill=GRADIENT_STOPS[1], outline="")
         
         franjas = max(6, int(28 * s))
-        colores_grad = gradient_colors(franjas)
         alto = 92 * s / franjas
-        for i, tono in enumerate(colores_grad):
+        for i, tono in enumerate(gradient_colors(franjas)):
             w = 36 * s * (1.0 if i / (franjas - 1) < 0.55 else 1.0 - (i / (franjas - 1) - 0.55) * 1.9)
             canvas.create_rectangle(
                 x_val + 64 * s - w, y_val + 18 * s + i * alto, 
@@ -363,13 +360,11 @@ def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
                       stops: tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
     """
     Dibuja una franja horizontal de gradiente en un Tkinter.Canvas.
-    Itera sobre el ancho solicitado aplicando una mezcla de colores.
     """
     if canvas is None or not hasattr(canvas, "create_line"): return
     try:
         ancho, alto = max(1, int(width)), max(1, int(height))
-        colores = gradient_colors(ancho, stops)
-        for i, tono in enumerate(colores):
+        for i, tono in enumerate(gradient_colors(ancho, stops)):
             canvas.create_line(canvas_x + i, canvas_y, canvas_x + i, canvas_y + alto, fill=tono)
     except (ValueError, TypeError, AttributeError): pass
 
