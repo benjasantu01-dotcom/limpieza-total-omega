@@ -277,34 +277,37 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
-    Solicita al OS liberar el working set de un proceso específico.
+    Solicita al OS liberar el working set de un proceso específico tras validación de seguridad.
     """
     if os.name != "nt":
         return False, "Solo disponible en Windows."
     
     try:
         target_pid = int(pid)
-        if target_pid < 0:
-            return False, "PID inválido."
-        if target_pid <= 4:
-            return False, "Operación denegada: PID de sistema protegido."
     except (ValueError, TypeError):
         return False, "El PID debe ser un número entero válido."
 
+    # Seguridad defensiva: bloquear PID de sistema o procesos críticos
+    if target_pid <= 4:
+        return False, "Operación denegada: PID de sistema protegido."
+    
     import ctypes
     kernel32 = ctypes.windll.kernel32
     psapi = ctypes.windll.psapi
 
+    # Validar que somos dueños del proceso (evitar modificar procesos ajenos de alto nivel)
+    if target_pid == os.getpid():
+        return False, "Operación denegada: proceso de la app."
+
     if not hasattr(kernel32, "OpenProcess") or not hasattr(psapi, "EmptyWorkingSet"):
         return False, "APIs de sistema no disponibles."
 
+    # PROCESS_QUERY_LIMITED_INFORMATION (0x1000) | PROCESS_SET_QUOTA (0x0100)
     handle = kernel32.OpenProcess(0x1100, False, target_pid)
     if not handle:
         return False, f"No se pudo acceder al proceso {target_pid}."
     
     try:
-        if handle == kernel32.GetCurrentProcess():
-            return False, "Operación denegada: proceso de la app."
         if not psapi.EmptyWorkingSet(handle):
             err_code = kernel32.GetLastError()
             return False, f"Error al limpiar memoria (WinError {err_code})."

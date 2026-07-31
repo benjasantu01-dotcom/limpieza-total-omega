@@ -118,7 +118,7 @@ def _to_float(value: Any, default: float = 0.0) -> float:
 def _to_int(value: Any, default: int = 0) -> int:
     """Intenta convertir un valor arbitrario a int; valida finitud antes de convertir."""
     try:
-        val = int(value) if value is not None else default
+        val = int(float(value)) if value is not None else default
         return val if math.isfinite(float(val)) else default
     except (TypeError, ValueError):
         return default

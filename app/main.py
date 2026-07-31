@@ -1190,6 +1190,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         if pid <= 0:
             messagebox.showwarning("PID inválido", "El PID debe ser mayor a 0.")
             return
+        
+        # Seguridad: Bloquear PIDs del sistema crítico
+        if pid < 100:
+            messagebox.showwarning("Acción denegada", "No se permite manipular procesos del sistema.")
+            return
 
         if not self._confirm("Liberar working set", memory_mod.TRIM_WARNING + "\n\n¿Seguimos?"):
             return

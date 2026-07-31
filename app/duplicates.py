@@ -165,6 +165,7 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
     if directories is None:
         return []
     candidates: List[Path] = []
+    visited_inodes: set[Tuple[int, int]] = set()
     
     for directory in directories:
         if not directory:
@@ -190,6 +191,12 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
                         if skip_protected and is_protected_path(file_path.resolve()):
                             continue
                         st = file_path.lstat()
+                        # Evitar procesar el mismo archivo múltiples veces por enlaces duros
+                        inode_id = (st.st_dev, st.st_ino)
+                        if inode_id in visited_inodes:
+                            continue
+                        visited_inodes.add(inode_id)
+                        
                         if st.st_size >= min_size:
                             candidates.append(file_path)
                     except (OSError, PermissionError, FileNotFoundError):

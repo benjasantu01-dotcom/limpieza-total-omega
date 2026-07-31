@@ -6,47 +6,51 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **255** (50.6% de aceptación)
+- Mejoras aceptadas: **259** (51.4% de aceptación)
 - Rechazadas por tests: 23
 - Rechazadas por guardia de seguridad: 25
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 185
+- Sin respuesta de la IA (error o límite): 181
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-29 | 9 | 1 | 1 | 2 | 21 |
+| 2026-07-29 | 9 | 1 | 1 | 2 | 17 |
 | 2026-07-30 | 181 | 14 | 18 | 12 | 125 |
-| 2026-07-31 | 65 | 8 | 6 | 2 | 39 |
+| 2026-07-31 | 69 | 8 | 6 | 2 | 39 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **63**
 - manejo de errores y validación de entradas: **51**
+- seguridad defensiva: **51**
 - rendimiento: **47**
 - robustez ante casos límite: **47**
-- seguridad defensiva: **47**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **23**
 - `scanner.py`: **23**
 - `browser.py`: **22**
+- `healthscore.py`: **20**
 - `quarantine.py`: **20**
 - `assistant.py`: **20**
-- `healthscore.py`: **19**
+- `duplicates.py`: **20**
 - `settings.py`: **19**
-- `duplicates.py`: **19**
 - `branding.py`: **17**
+- `main.py`: **17**
 - `organizer.py`: **16**
-- `main.py`: **16**
 - `startup.py`: **15**
 - `safety.py`: **14**
-- `memory.py`: **12**
+- `memory.py`: **13**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-31T05:09:29` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `trim_working_set` validando explícitamente el PID antes de intentar abrir el proceso, asegurando que el proceso de la aplicación no sea blanco de su propia operación de limpieza y restringiendo el acceso solo a procesos de usuario.
+- `2026-07-31T05:09:20` **main.py** (seguridad defensiva): Se añadió una validación crítica en `on_trim_process` para asegurar que el PID ingresado por el usuario no apunte a procesos del sistema, previniendo la manipulación de procesos protegidos (`PID 0` o del sistema) mediante un chequeo de seguridad antes de intentar cualquier acción sobre ellos.
+- `2026-07-31T05:07:24` **healthscore.py** (seguridad defensiva): Se reforzó la robustez defensiva de `healthscore.py` mediante la implementación de límites estrictos (clamping) en los contadores de `SystemMetrics` y la adición de una validación de `math.isfinite` en `_to_int`, evitando que valores corruptos o fuera de rango propaguen cálculos erróneos en el motor de puntuación.
+- `2026-07-31T05:06:59` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` para prevenir la recursión infinita en directorios mediante la validación de `st_ino` y `st_dev`, protegiendo la integridad del escaneo frente a puntos de montaje o ciclos en el sistema de archivos.
 - `2026-07-31T04:57:54` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez de `walk_files` y las funciones auxiliares ante errores de acceso (como `PermissionError` o `FileNotFoundError`) al procesar enlaces simbólicos o rutas dinámicas, asegurando que el uso de `path.resolve()` sea defensivo frente a posibles archivos o directorios que desaparezcan durante el escaneo.
 - `2026-07-31T04:57:46` **browser.py** (seguridad defensiva): Se ha mejorado la robustez de `directory_size` para prevenir la recursión infinita o el procesamiento indebido de puntos de reparse (reparse points) o uniones de disco (junctions), verificando explícitamente mediante `os.path.isjunction` que la entrada no sea un punto de unión, lo cual es crítico en la estructura de perfiles de Windows.
 - `2026-07-31T04:57:23` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` validando la existencia de la ruta antes de intentar cualquier operación de escritura, asegurando que `mkdir` solo se ejecute sobre rutas que ya fueron validadas por `is_safe_to_modify`.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-31T04:27:45` **main.py** (robustez ante casos límite): Mejoré la robustez de la inicialización de la app encapsulando la carga de estado y construcción de la interfaz en bloques `try/except` críticos, asegurando que un fallo en módulos externos o configuraciones corruptas no bloquee el arranque completo de la ventana, manteniendo la estabilidad del proceso.
 - `2026-07-31T04:17:09` **browser.py** (robustez ante casos límite): Mejoré la robustez de `directory_size` ante el acceso a directorios con permisos denegados o errores de lectura durante el escaneo recursivo mediante la inclusión explícita de un manejo de errores en el bucle `while` que asegura la continuidad del proceso sin abortar ante excepciones de acceso (`PermissionError`, `OSError`).
 - `2026-07-31T04:16:35` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` ante valores corruptos o inesperados en `metrics` usando `getattr` con un valor por defecto consistente, evitando posibles excepciones de acceso a atributos `None` y garantizando que el asistente nunca procese tipos inválidos.
-- `2026-07-31T04:16:04` **startup.py** (rendimiento): Optimicé el método `StartupEntry.executable` para evitar llamadas redundantes a `Path.exists()` y `Path.expanduser()` mediante un cache simple, reduciendo drásticamente las operaciones de I/O de disco durante la consolidación de entradas.
-- `2026-07-31T04:06:36` **settings.py** (rendimiento): Se implementó un mecanismo de caché más robusto mediante el uso de `pathlib.Path.stat()` para verificar cambios en el archivo sin necesidad de procesar strings constantemente, y se optimizó `validate` evitando la creación de copias innecesarias del diccionario de valores durante iteraciones.
-- `2026-07-31T04:06:27` **scanner.py** (rendimiento): Se optimizó el rendimiento del recorrido de directorios reemplazando múltiples llamadas costosas a `os.path.abspath` y `Path()` dentro del bucle crítico por operaciones directas sobre el string de la ruta, reduciendo drásticamente la carga de objetos y llamadas al sistema.
-- `2026-07-31T04:06:06` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` reemplazando la creación de un nuevo `set` con cada llamada por una verificación directa sobre la tupla `p.parts` (que es inmutable y eficiente), evitando asignaciones de memoria innecesarias en cada iteración de los escaneos de disco.
