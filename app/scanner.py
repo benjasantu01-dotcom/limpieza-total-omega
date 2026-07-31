@@ -61,7 +61,7 @@ def _is_reparse_point(entry: os.DirEntry) -> bool:
         return False
 
 
-def _process_directory_entry(entry: os.DirEntry, root_str: str, results: List[Suspicion], stack: List[str], seen: set[str]) -> None:
+def _process_directory_entry(entry: os.DirEntry, results: List[Suspicion], stack: List[str], seen: set[str]) -> None:
     """
     Procesa una entrada de directorio: filtra rutas protegidas, evita recursión infinita
     mediante tracking de 'seen' y delega el escaneo de archivos a `scan_file`.
@@ -69,14 +69,12 @@ def _process_directory_entry(entry: os.DirEntry, root_str: str, results: List[Su
     try:
         if entry.is_dir(follow_symlinks=False):
             if not _is_reparse_point(entry):
-                path_str = os.path.abspath(entry.path)
-                # Verifica duplicidad de ruta y seguridad antes de seguir descendiendo
+                path_str = entry.path
                 if path_str not in seen and not is_protected_path(Path(path_str)):
                     seen.add(path_str)
                     stack.append(path_str)
         elif entry.is_file():
             path_obj = Path(entry.path)
-            # Solo escaneamos archivos que no residan en zonas críticas del sistema
             if not is_protected_path(path_obj):
                 results.extend(scan_file(path_obj))
     except (PermissionError, OSError):
@@ -146,7 +144,7 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
     if not path_obj.exists() or not path_obj.is_dir() or is_protected_path(path_obj):
         return []
         
-    root_str = os.path.abspath(str(path_obj.resolve()))
+    root_str = str(path_obj.resolve())
     results: List[Suspicion] = []
     stack: List[str] = [root_str]
     seen: set[str] = {root_str}
@@ -156,7 +154,7 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:
-                    _process_directory_entry(entry, root_str, results, stack, seen)
+                    _process_directory_entry(entry, results, stack, seen)
         except (PermissionError, OSError):
             continue
             

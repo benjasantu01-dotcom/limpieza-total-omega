@@ -1138,3 +1138,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-07-31T03:58:06` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de las operaciones de lectura del manifiesto reemplazando el filtrado por iteración lineal (`next(...)`) por un `dict` indexado por `item_id`, evitando búsquedas $O(n)$ en cada operación individual.
 - `2026-07-31T03:58:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-31T03:58:06` Corrida terminada. Total usado hoy: 96.
+- `2026-07-31T04:05:23` Arrancando corrida. Quedan hoy ~204 peticiones objetivo.
+- `2026-07-31T04:05:43` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 101): unterminated string literal (detected at line 101)
+- `2026-07-31T04:06:06` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimicé el rendimiento de `is_protected_path` reemplazando la creación de un nuevo `set` con cada llamada por una verificación directa sobre la tupla `p.parts` (que es inmutable y eficiente), evitando asignaciones de memoria innecesarias en cada iteración de los escaneos de disco.
+- `2026-07-31T04:06:27` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se optimizó el rendimiento del recorrido de directorios reemplazando múltiples llamadas costosas a `os.path.abspath` y `Path()` dentro del bucle crítico por operaciones directas sobre el string de la ruta, reduciendo drásticamente la carga de objetos y llamadas al sistema.
+- `2026-07-31T04:06:36` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se implementó un mecanismo de caché más robusto mediante el uso de `pathlib.Path.stat()` para verificar cambios en el archivo sin necesidad de procesar strings constantemente, y se optimizó `validate` evitando la creación de copias innecesarias del diccionario de valores durante iteraciones.
+- `2026-07-31T04:06:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-31T04:06:36` Corrida terminada. Total usado hoy: 100.

@@ -66,54 +66,41 @@ API_KEY_ENV_VAR: Final = "OMEGA_GEMINI_KEY"
 VALID_THEMES: Final = ("oscuro", "claro", "sistema")
 VALID_ACCENTS: Final = ("menta", "violeta", "magenta", "cian", "ambar")
 
-# Caché interno para evitar lectura repetitiva de disco y re-validación
+# Caché interno
 _cached_settings: dict[str, Any] | None = None
-_last_path_str: str | None = None
+_last_path: Path | None = None
 _last_mtime: float = 0.0
 
-# Valores de fábrica. Cada clave define además el tipo esperado: si el archivo
-# trae otra cosa, se descarta ese valor y se usa este.
+# Valores de fábrica.
 DEFAULTS: Final[dict[str, Any]] = {
-    # Apariencia
     "tema": "oscuro",
     "acento": "menta",
     "mostrar_barras": True,
     "animaciones": True,
-    # Comportamiento
     "confirmar_siempre": True,
     "abrir_en": "Salud",
     "recordar_ultima_carpeta": True,
     "ultima_carpeta": "",
-    # Límites de análisis (rendimiento)
     "duplicados_tamano_minimo_kb": 64,
     "top_archivos": 15,
     "top_procesos": 15,
     "analisis_en_paralelo": True,
-    # Asistente IA
     "asistente_activado": False,
     "asistente_clave_api": "",
     "asistente_enviar_metricas": True,
     "asistente_modelo": "gemini-3.1-flash-lite",
 }
 
-# Límites de los valores numéricos permitidos para prevenir configuraciones extremas.
-# Estructura: clave -> (minimo_inclusivo, maximo_inclusivo).
 _NUMERIC_LIMITS: Final[dict[str, tuple[int, int]]] = {
     "duplicados_tamano_minimo_kb": (0, 1024 * 1024),
     "top_archivos": (1, 500),
     "top_procesos": (1, 500),
 }
 
-# Pre-cálculo para optimizar validación al verificar claves presentes en DEFAULTS
 _DEFAULTS_KEYS: Final = set(DEFAULTS.keys())
 
 
 def _coerce_bool(raw_value: Any) -> bool | None:
-    """
-    Intenta normalizar entradas a booleano. 
-    Acepta strings representativos de verdad ('true', 'si', '1') para mayor robustez
-    en casos donde el JSON fue editado manualmente. Retorna None si es irrecuperable.
-    """
     if isinstance(raw_value, bool):
         return raw_value
     if isinstance(raw_value, str):
@@ -122,10 +109,6 @@ def _coerce_bool(raw_value: Any) -> bool | None:
 
 
 def _coerce_int(raw_value: Any, setting_key: str) -> int | None:
-    """
-    Convierte a entero aplicando límites de seguridad para evitar overflow o valores
-    absurdos que degraden el rendimiento del motor de escaneo.
-    """
     if isinstance(raw_value, bool):
         return None
     try:
@@ -137,10 +120,6 @@ def _coerce_int(raw_value: Any, setting_key: str) -> int | None:
 
 
 def _validate_str(clave: str, valor: Any) -> str | None:
-    """
-    Valida strings contra esquemas permitidos (temas/acentos) o chequeos de seguridad
-    de sistema (rutas de carpetas). Retorna None si la validación falla.
-    """
     if not isinstance(valor, str):
         return None
     texto = valor.strip()
@@ -154,7 +133,6 @@ def _validate_str(clave: str, valor: Any) -> str | None:
     if clave == "ultima_carpeta":
         try:
             ruta_candidata = Path(texto).expanduser().resolve()
-            # Se usa is_safe_to_modify para filtrar sin abortar el proceso.
             if not is_safe_to_modify(str(ruta_candidata)):
                 return None
             return str(ruta_candidata)
@@ -164,84 +142,58 @@ def _validate_str(clave: str, valor: Any) -> str | None:
 
 
 def _apply_validation_by_type(clave: str, valor: Any, defecto: Any) -> Any:
-    """
-    Función de despacho (dispatcher) que determina qué validador aplicar
-    basado en la firma de tipos del valor por defecto en DEFAULTS.
-    """
     tipo = type(defecto)
-    if tipo is bool:
-        return _coerce_bool(valor)
-    if tipo is int:
-        return _coerce_int(valor, clave)
-    if tipo is str:
-        return _validate_str(clave, valor)
+    if tipo is bool: return _coerce_bool(valor)
+    if tipo is int: return _coerce_int(valor, clave)
+    if tipo is str: return _validate_str(clave, valor)
     return None
 
 
 def settings_path(path_or_base: PathLike | None = None) -> Path:
-    """Resuelve la ruta absoluta del archivo de configuración, verificando permisos."""
     base = Path(path_or_base).expanduser().resolve() if path_or_base else SETTINGS_DIR
     ensure_safe_to_modify(str(base))
     return base / SETTINGS_FILE
 
 
 def validate(values: Any) -> dict[str, Any]:
-    """
-    Crea una copia segura del diccionario de configuración. 
-    Descarta cualquier clave desconocida y valida todos los valores existentes.
-    """
-    limpio = dict(DEFAULTS)
+    limpio = DEFAULTS.copy()
     if not isinstance(values, dict):
         return limpio
 
-    for clave in _DEFAULTS_KEYS:
+    for clave, defecto in DEFAULTS.items():
         if clave in values:
-            coerced = _apply_validation_by_type(clave, values[clave], DEFAULTS[clave])
+            coerced = _apply_validation_by_type(clave, values[clave], defecto)
             if coerced is not None:
                 limpio[clave] = coerced
-
     return limpio
 
 
 def load(path_or_base: PathLike | None = None) -> dict[str, Any]:
-    """Carga configuración con caché por mtime y chequeos de integridad de lectura."""
-    global _cached_settings, _last_path_str, _last_mtime
+    global _cached_settings, _last_path, _last_mtime
     
     ruta = settings_path(path_or_base)
-    ruta_str = str(ruta)
-    
     if not ruta.exists():
-        return dict(DEFAULTS)
+        return DEFAULTS.copy()
     
     try:
         stat = ruta.stat()
-        if _cached_settings is not None and ruta_str == _last_path_str and stat.st_mtime == _last_mtime:
+        if _cached_settings is not None and ruta == _last_path and stat.st_mtime == _last_mtime:
             return _cached_settings
             
         if stat.st_size > MAX_SETTINGS_SIZE:
-            return dict(DEFAULTS)
+            return DEFAULTS.copy()
 
-        raw_data = ruta.read_text(encoding="utf-8")
-        data = json.loads(raw_data)
-        
-        if not isinstance(data, dict):
-            return dict(DEFAULTS)
-
+        data = json.loads(ruta.read_text(encoding="utf-8"))
         _cached_settings = validate(data)
-        _last_path_str = ruta_str
-        _last_mtime = stat.st_mtime
+        _last_path, _last_mtime = ruta, stat.st_mtime
         return _cached_settings
     except (OSError, json.JSONDecodeError, UnicodeDecodeError):
-        return dict(DEFAULTS)
+        return DEFAULTS.copy()
 
 
 def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
-    """Persistencia atómica: escribe en archivo temporal y luego reemplaza."""
-    global _cached_settings, _last_path_str, _last_mtime
+    global _cached_settings, _last_path, _last_mtime
     
-    if values is None:
-        return None
-        
     ruta = settings_path(path_or_base)
     limpio = validate(values)
     try:
@@ -250,39 +202,27 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
         return None
     
     parent = ruta.parent
-    try:
-        parent.mkdir(parents=True, exist_ok=True)
-        ensure_safe_to_modify(str(parent))
-        ensure_safe_to_modify(str(ruta))
-    except (OSError, RuntimeError, PermissionError):
-        return None
+    parent.mkdir(parents=True, exist_ok=True)
     
-    temp_file = None
+    temp_path = None
     try:
-        temp_file = tempfile.NamedTemporaryFile("w", dir=parent, delete=False, encoding="utf-8")
-        temp_file.write(json_data)
-        temp_file.flush()
-        os.fsync(temp_file.fileno())
-        temp_file.close()
+        with tempfile.NamedTemporaryFile("w", dir=parent, delete=False, encoding="utf-8") as tf:
+            temp_path = Path(tf.name)
+            tf.write(json_data)
+            tf.flush()
+            os.fsync(tf.fileno())
         
-        ensure_safe_to_modify(str(ruta))
-        os.replace(temp_file.name, ruta)
-        
+        os.replace(temp_path, ruta)
         _cached_settings = limpio
-        _last_path_str = str(ruta)
-        _last_mtime = ruta.stat().st_mtime
+        _last_path, _last_mtime = ruta, ruta.stat().st_mtime
         return ruta
     except (OSError, RuntimeError, PermissionError):
-        if temp_file is not None and os.path.exists(temp_file.name):
-            try:
-                os.remove(temp_file.name)
-            except OSError:
-                pass
+        if temp_path and temp_path.exists():
+            temp_path.unlink()
         return None
 
 
 def update(changes: dict[str, Any], path_or_base: PathLike | None = None) -> dict[str, Any]:
-    """Actualiza claves específicas y persiste el estado resultante completo."""
     actual = load(path_or_base)
     actual.update(changes)
     save(actual, path_or_base)
@@ -290,30 +230,25 @@ def update(changes: dict[str, Any], path_or_base: PathLike | None = None) -> dic
 
 
 def reset(path_or_base: PathLike | None = None) -> dict[str, Any]:
-    """Resetea el archivo de configuración a los valores de fábrica."""
-    save(dict(DEFAULTS), path_or_base)
-    return dict(DEFAULTS)
+    save(DEFAULTS, path_or_base)
+    return DEFAULTS.copy()
 
 
 def get(key: str, path_or_base: PathLike | None = None) -> Any:
-    """Getter de alto nivel: obtiene valor configurado o el default si no existe."""
     return load(path_or_base).get(key, DEFAULTS.get(key))
 
 
 def assistant_api_key(path_or_base: PathLike | None = None) -> str:
-    """Obtiene API key con prioridad absoluta en variable de entorno."""
     desde_entorno = os.environ.get(API_KEY_ENV_VAR, "").strip()
     return desde_entorno or load(path_or_base).get("asistente_clave_api", "").strip()
 
 
 def assistant_enabled(path_or_base: PathLike | None = None) -> bool:
-    """Verifica si el asistente está activado y posee una API key válida."""
     config = load(path_or_base)
     return bool(config.get("asistente_activado")) and bool(assistant_api_key(path_or_base))
 
 
 def describe(path_or_base: PathLike | None = None) -> list[str]:
-    """Genera una representación textual legible de la configuración actual."""
     actual = load(path_or_base)
     clave = assistant_api_key(path_or_base)
     origen = f"variable de entorno {API_KEY_ENV_VAR}" if os.environ.get(API_KEY_ENV_VAR) else ("archivo de configuración" if clave else "no configurada")

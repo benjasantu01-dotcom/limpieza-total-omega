@@ -139,10 +139,10 @@ def is_protected_path(path: PathLike) -> bool:
         if not p.is_absolute():
             return True
 
-        # Optimización: chequeo rápido antes de llamadas al disco
-        path_parts = {part.lower() for part in p.parts}
-        if not _ALL_PROTECTED_TOKENS.isdisjoint(path_parts):
-            return True
+        # Optimización: evitar crear sets adicionales, iterar sobre la tupla de partes
+        for part in p.parts:
+            if part.lower() in _ALL_PROTECTED_TOKENS:
+                return True
             
         if p == Path(p.anchor):
             return True
