@@ -471,3 +471,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-07-31T09:34:16` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Se implementó una capa de validación de seguridad en `_ask_folder` utilizando `safety.ensure_safe_to_modify` antes de asignar la ruta a la aplicación, garantizando que el usuario no pueda seleccionar directorios críticos del sistema como objetivo de análisis incluso si intenta evadir las restricciones mediante el diálogo.
 - `2026-07-31T09:34:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-31T09:34:16` Corrida terminada. Total usado hoy: 228.
+- `2026-07-31T09:42:39` Arrancando corrida. Quedan hoy ~72 peticiones objetivo.
+- `2026-07-31T09:43:06` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se añadió una validación explícita mediante `is_protected_path` al intentar manipular procesos por PID para prevenir la interacción accidental con procesos de sistema o protegidos, reforzando la seguridad defensiva.
+- `2026-07-31T09:43:28` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se añadió una validación explícita en `stage_for_review` para impedir el movimiento si el archivo origen se encuentra dentro de un punto de reparse o enlace simbólico, reforzando la seguridad defensiva contra el acceso inadvertido a rutas fuera del scope de la aplicación.
+- `2026-07-31T09:43:56` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad en `purge_all` y `quarantine_file` añadiendo una validación explícita de `is_protected_path` sobre la ruta final antes de ejecutar cualquier operación, reforzando el cumplimiento de las reglas de seguridad defensiva para evitar tocar rutas críticas.
+- `2026-07-31T09:43:59` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-07-31T09:43:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-31T09:43:59` Corrida terminada. Total usado hoy: 232.

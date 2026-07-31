@@ -287,7 +287,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except (ValueError, TypeError):
         return False, "El PID debe ser un número entero válido."
 
-    if target_pid <= 4:
+    if target_pid <= 4 or is_protected_path(str(target_pid)):
         return False, "Operación denegada: PID de sistema protegido."
     
     import ctypes

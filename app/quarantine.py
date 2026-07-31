@@ -206,6 +206,8 @@ def quarantine_file(
         raise UnsafePathError(f"Operación prohibida en ruta del sistema: {source_path}")
         
     dest_dir = quarantine_dir(base)
+    if is_protected_path(dest_dir):
+        raise UnsafePathError(f"Directorio de cuarentena protegido o inválido: {dest_dir}")
 
     if not source_path.is_file():
         raise FileNotFoundError(f"El objeto origen no es un archivo válido: {source_path}")

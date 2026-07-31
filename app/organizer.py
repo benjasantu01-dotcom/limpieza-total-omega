@@ -171,7 +171,10 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         try:
             full_source_path = jf.path.resolve()
             
-            if not full_source_path.is_file() or not is_safe_to_modify(full_source_path):
+            # Validar integridad y enlaces simbólicos/puntos de reparse
+            if not full_source_path.is_file() or full_source_path.is_symlink():
+                continue
+            if not is_safe_to_modify(full_source_path):
                 continue
             
             # Evitar bucles de movimiento o mover a sí mismo
