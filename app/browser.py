@@ -113,7 +113,7 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
 def directory_size(path: str | os.PathLike | None) -> int:
     """
     Calcula el tamaño total en bytes mediante suma recursiva.
-    Evita procesar recursivamente mediante set de rutas visitadas.
+    Resiliente ante archivos bloqueados o errores de acceso parcial.
     """
     if not path:
         return 0
@@ -139,12 +139,15 @@ def directory_size(path: str | os.PathLike | None) -> int:
 
             with os.scandir(current_dir) as it:
                 for entry in it:
-                    if entry.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(entry.path)):
+                    try:
+                        if entry.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(entry.path)):
+                            continue
+                        if entry.is_dir():
+                            stack.append(Path(entry.path))
+                        elif entry.is_file():
+                            total_bytes += entry.stat().st_size
+                    except (OSError, PermissionError):
                         continue
-                    if entry.is_dir():
-                        stack.append(Path(entry.path))
-                    elif entry.is_file():
-                        total_bytes += entry.stat().st_size
         except (OSError, PermissionError):
             continue
             

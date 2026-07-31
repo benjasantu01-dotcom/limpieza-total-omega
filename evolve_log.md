@@ -409,3 +409,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-07-31T08:42:49` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `save_logo_svg` ante casos límite de E/S, incluyendo la verificación de la existencia del directorio padre antes de intentar crearlo y un manejo explícito de errores de sistema durante la escritura.
 - `2026-07-31T08:42:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-31T08:42:49` Corrida terminada. Total usado hoy: 208.
+- `2026-07-31T08:51:29` Arrancando corrida. Quedan hoy ~92 peticiones objetivo.
+- `2026-07-31T08:51:53` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se mejoró la robustez de `directory_size` ante el bloqueo de archivos por procesos activos (muy común en cachés de navegadores) y se añadió una verificación de integridad más estricta para evitar que errores en el sistema de archivos (como puntos de reparse malformados) interrumpan el conteo total.
+- `2026-07-31T08:52:17` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la robustez de `walk_files` y `largest_folders` ante la existencia de enlaces simbólicos circulares y errores de resolución de rutas en sistemas de archivos complejos, asegurando que la recursión no se detenga inesperadamente y que las rutas base no existan sea un caso manejado explícitamente sin colapsar.
+- `2026-07-31T08:52:41` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-07-31T08:52:51` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Reforcé la robustez de `score_startup` y `score_security` ante entradas no finitas o malformadas, alineándolas con la estrategia defensiva del resto del módulo para evitar el colapso del cálculo ante valores inesperados.
+- `2026-07-31T08:52:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-31T08:52:51` Corrida terminada. Total usado hoy: 212.

@@ -159,9 +159,16 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
     except (OSError, RuntimeError, PermissionError):
         return
 
-    def recursive_scan(root_path: str) -> Generator[tuple[Path, int], None, None]:
+    visited = set()
+
+    def recursive_scan(root_path: Path) -> Generator[tuple[Path, int], None, None]:
         """Motor recursivo de escaneo utilizando os.scandir."""
         try:
+            resolved_root = root_path.resolve()
+            if resolved_root in visited:
+                return
+            visited.add(resolved_root)
+            
             with os.scandir(root_path) as iterator:
                 for entry in iterator:
                     try:
@@ -175,7 +182,7 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
                             continue
                             
                         if entry.is_dir():
-                            yield from recursive_scan(entry.path)
+                            yield from recursive_scan(full_path)
                         else:
                             yield full_path, entry.stat().st_size
                     except (OSError, PermissionError, FileNotFoundError):
@@ -183,7 +190,7 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
         except (OSError, PermissionError, FileNotFoundError):
             return
 
-    yield from recursive_scan(str(base_path))
+    yield from recursive_scan(base_path)
 
 
 def largest_files(directory: str | os.PathLike, limit: int = 20, skip_protected: bool = True) -> list[FileEntry]:
