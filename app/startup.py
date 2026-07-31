@@ -61,6 +61,13 @@ class StartupEntry:
     source: str  # Indica si proviene de una carpeta o una ruta de registro específica
     _exec_cache: Optional[str] = None
 
+    def _is_valid_executable(self, path: Path) -> bool:
+        """Verifica si la ruta apunta a un ejecutable reconocido o existe físicamente."""
+        try:
+            return path.suffix.lower() in ('.exe', '.bat', '.cmd', '.scr') or path.exists()
+        except (OSError, ValueError, RuntimeError, TypeError):
+            return False
+
     def _extract_quoted_path(self, raw_cmd: str) -> str:
         """
         Extrae la ruta de un ejecutable envuelto en comillas dobles.
@@ -73,13 +80,8 @@ class StartupEntry:
         if not path_str or any(c in path_str for c in '<>|?*'):
             return ""
         
-        try:
-            path = Path(path_str).expanduser()
-            if path.suffix.lower() in ('.exe', '.bat', '.cmd', '.scr') or path.exists():
-                return str(path)
-        except (OSError, ValueError, RuntimeError, TypeError):
-            return ""
-        return ""
+        path = Path(path_str).expanduser()
+        return str(path) if self._is_valid_executable(path) else ""
 
     @property
     def executable(self) -> str:

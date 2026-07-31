@@ -77,24 +77,25 @@ _ALL_PROTECTED_TOKENS: Final[frozenset[str]] = PROTECTED_DIR_NAMES | _SYSTEM_ROO
 
 def _is_reparse_point(path: Path) -> bool:
     """
-    Verifica si una ruta es un punto de reparse (Junction o Symlink).
-    Utiliza el bit de atributo FILE_ATTRIBUTE_REPARSE_POINT (0x400).
+    Verifica si una ruta es un punto de reparse (Junction/Symlink).
+    Retorna True si es inseguro seguir el link o si el acceso falla.
     """
     try:
-        # st_file_attributes es específico de Windows en la librería estándar
         stats = path.lstat()
         is_reparse = bool(getattr(stats, "st_file_attributes", 0) & 0x400)
         return is_reparse or path.is_symlink()
     except (OSError, PermissionError):
-        return False
+        return True # Por seguridad, ante la duda, denegar el acceso.
 
 
 def _is_file_in_use(path: Path) -> bool:
-    """Intenta abrir el archivo en modo exclusivo para detectar bloqueos."""
+    """
+    Intenta abrir el archivo en modo exclusivo. 
+    Retorna True si el archivo está bloqueado o inaccesible.
+    """
     if not path.is_file():
         return False
     try:
-        # Intenta abrir para escritura exclusiva sin truncar
         fd = os.open(path, os.O_RDWR | os.O_EXCL)
         os.close(fd)
         return False
@@ -103,7 +104,7 @@ def _is_file_in_use(path: Path) -> bool:
 
 
 def _is_readonly(path: Path) -> bool:
-    """Verifica si el archivo tiene el atributo de solo lectura activado."""
+    """Verifica si el atributo de solo lectura (S_IWRITE) está ausente."""
     try:
         return not bool(path.stat().st_mode & stat.S_IWRITE)
     except (OSError, PermissionError):
@@ -112,7 +113,8 @@ def _is_readonly(path: Path) -> bool:
 
 def normalize(path: PathLike) -> Path:
     """
-    Normaliza rutas para comparaciones seguras.
+    Convierte una ruta a un objeto Path absoluto y resuelto.
+    Lanza TypeError o ValueError si la entrada es inválida.
     """
     if not isinstance(path, (str, os.PathLike)):
         raise TypeError(f"Entrada inválida: se esperaba str o PathLike, recibió {type(path)}")
@@ -122,15 +124,13 @@ def normalize(path: PathLike) -> Path:
         raise ValueError("La ruta proporcionada está vacía.")
         
     try:
-        # Resolvemos a absoluto para evitar confusiones de ruta relativa
         return Path(str_path).expanduser().resolve()
     except (OSError, RuntimeError, ValueError):
-        # Fallback a una normalización de cadena pura si el filesystem bloquea la resolución
         return Path(os.path.abspath(os.path.expanduser(str_path)))
 
 
 def is_drive_root(path: PathLike) -> bool:
-    """Verifica si la ruta apunta a la raíz de una unidad (ej. C:\\)."""
+    """Verifica si la ruta normalizada coincide con la raíz (anchor) de su unidad."""
     try:
         p = normalize(path)
         return p == Path(p.anchor)
@@ -141,7 +141,8 @@ def is_drive_root(path: PathLike) -> bool:
 @lru_cache(maxsize=1024)
 def is_protected_path(path: PathLike) -> bool:
     """
-    Evalúa si una ruta es peligrosa por definición.
+    Evalúa si la ruta está dentro de las jerarquías de sistema protegidas
+    o si apunta a una raíz de unidad.
     """
     if not path:
         return True
@@ -151,7 +152,6 @@ def is_protected_path(path: PathLike) -> bool:
         if not p.is_absolute():
             return True
 
-        # Verificar tokens de sistema en los nombres de los componentes (set lookup es O(1))
         if any(part.lower() in _ALL_PROTECTED_TOKENS for part in p.parts):
             return True
             
@@ -167,9 +167,7 @@ def is_protected_path(path: PathLike) -> bool:
 
 
 def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = False) -> bool:
-    """
-    Valida confinamiento: retorna True si 'child' está dentro de 'parent'.
-    """
+    """Valida si 'child' es descendiente de 'parent' (confinamiento)."""
     if child is None or parent is None:
         return False
     try:
@@ -181,7 +179,7 @@ def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = F
 
 @lru_cache(maxsize=512)
 def is_sensitive_file(path: PathLike) -> bool:
-    """Determina si la extensión de archivo está en SENSITIVE_EXTENSIONS."""
+    """Retorna True si el archivo posee una extensión potencialmente crítica."""
     if path is None:
         return True
     try:
@@ -192,7 +190,8 @@ def is_sensitive_file(path: PathLike) -> bool:
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> Path:
     """
-    Valida rigurosamente si una ruta es apta para modificación.
+    Valida si una ruta puede ser modificada.
+    Lanza UnsafePathError ante cualquier condición de riesgo detectada.
     """
     if path is None:
         raise UnsafePathError("Ruta nula recibida.")
@@ -228,16 +227,18 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
 
 def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> bool:
     """
-    Versión booleana de seguridad para uso en bucles. 
+    Interfaz booleana segura para validación de rutas en bucles iterativos.
+    Encapsula ensure_safe_to_modify evitando excepciones.
     """
     try:
-        return isinstance(ensure_safe_to_modify(path, allow_sensitive=allow_sensitive), Path)
+        ensure_safe_to_modify(path, allow_sensitive=allow_sensitive)
+        return True
     except (UnsafePathError, TypeError, ValueError, OSError):
         return False
 
 
 def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = False) -> list[Path]:
-    """Filtra una colección de rutas, retornando solo las validadas."""
+    """Filtra una colección de rutas, retornando solo aquellas que son seguras."""
     if not isinstance(paths, Iterable):
         return []
         
@@ -252,7 +253,7 @@ def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = Fals
 
 
 def describe_protection(path: PathLike) -> str:
-    """Provee la causa del bloqueo de una ruta para la UI o logs."""
+    """Retorna una descripción legible de por qué una ruta fue marcada como insegura."""
     if not path:
         return "La ruta está vacía."
     try:

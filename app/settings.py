@@ -96,6 +96,7 @@ _NUMERIC_LIMITS: Final[dict[str, tuple[int, int]]] = {
 
 
 def _coerce_bool(raw_value: Any) -> bool | None:
+    """Convierte tipos variados a booleano de forma estricta."""
     if isinstance(raw_value, bool):
         return raw_value
     if isinstance(raw_value, str):
@@ -104,6 +105,7 @@ def _coerce_bool(raw_value: Any) -> bool | None:
 
 
 def _coerce_int(raw_value: Any, setting_key: str) -> int | None:
+    """Convierte a int y aplica límites definidos en _NUMERIC_LIMITS."""
     if isinstance(raw_value, bool):
         return None
     try:
@@ -115,6 +117,7 @@ def _coerce_int(raw_value: Any, setting_key: str) -> int | None:
 
 
 def _validate_str(clave: str, valor: Any) -> str | None:
+    """Valida cadenas, incluyendo validación de seguridad de rutas."""
     if not isinstance(valor, str):
         return None
     texto = valor.strip()
@@ -137,13 +140,15 @@ def _validate_str(clave: str, valor: Any) -> str | None:
 
 
 def _apply_validation_by_type(clave: str, valor: Any, defecto: Any) -> Any:
-    validators: dict[type, Callable] = {
+    """Mapea tipos de datos a sus validadores correspondientes."""
+    SCHEMA: dict[type, Callable[[Any], Any]] = {
         bool: _coerce_bool,
         int: lambda v: _coerce_int(v, clave),
         str: lambda v: _validate_str(clave, v)
     }
-    validator = validators.get(type(defecto))
-    return validator(valor) if validator else None
+    
+    validador = SCHEMA.get(type(defecto))
+    return validador(valor) if validador else None
 
 
 def settings_path(path_or_base: PathLike | None = None) -> Path:

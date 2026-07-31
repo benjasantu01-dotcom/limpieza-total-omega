@@ -6,46 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **255** (50.6% de aceptación)
+- Mejoras aceptadas: **256** (50.8% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 25
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 192
+- Sin respuesta de la IA (error o límite): 191
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-30 | 109 | 6 | 11 | 7 | 79 |
-| 2026-07-31 | 146 | 12 | 14 | 7 | 113 |
+| 2026-07-30 | 106 | 6 | 11 | 7 | 78 |
+| 2026-07-31 | 150 | 12 | 14 | 7 | 113 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **61**
+- legibilidad y documentación: **65**
 - seguridad defensiva: **54**
 - manejo de errores y validación de entradas: **51**
-- robustez ante casos límite: **46**
+- robustez ante casos límite: **43**
 - rendimiento: **43**
 
 ## Mejoras aceptadas por archivo
 
-- `browser.py`: **21**
-- `diskreport.py`: **21**
 - `quarantine.py`: **21**
-- `scanner.py`: **20**
+- `scanner.py`: **21**
+- `settings.py`: **20**
 - `branding.py`: **20**
-- `healthscore.py`: **19**
-- `settings.py`: **19**
+- `browser.py`: **20**
+- `diskreport.py`: **20**
 - `assistant.py`: **19**
 - `duplicates.py`: **19**
 - `main.py`: **18**
+- `healthscore.py`: **18**
 - `organizer.py`: **17**
-- `safety.py`: **15**
-- `startup.py`: **13**
+- `safety.py`: **16**
+- `startup.py`: **14**
 - `memory.py`: **13**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-31T12:27:35` **startup.py** (legibilidad y documentación): Mejora la legibilidad del método `StartupEntry.executable` extrayendo la lógica de validación de rutas a un método privado más claro, facilitando el mantenimiento y el cumplimiento de las normas de estilo.
+- `2026-07-31T12:27:24` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del proceso de validación al extraer la lógica de coerción y validación específica en una estructura de datos `SCHEMA` declarativa, eliminando el `if/else` encadenado en `_apply_validation_by_type` y documentando explícitamente las reglas de negocio de los tipos de datos.
+- `2026-07-31T12:26:59` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del flujo de escaneo mediante la introducción de una clase `Scanner` que encapsula la lógica de estado (ej. `seen`, `stack`) y documenté explícitamente los contratos de las funciones de chequeo mediante type hints y docstrings reforzados.
+- `2026-07-31T12:26:34` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad de las funciones de chequeo mediante la adición de docstrings estructuradas en las funciones auxiliares de bajo nivel y la simplificación de la lógica de evaluación en `is_safe_to_modify` para asegurar que el comportamiento booleano sea consistente y legible.
 - `2026-07-31T12:17:18` **quarantine.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints detallados en las funciones críticas y docstrings estandarizadas (formato Google style) que explican el "porqué" de las validaciones de seguridad, facilitando el mantenimiento del bucle autónomo.
 - `2026-07-31T12:16:49` **organizer.py** (legibilidad y documentación): Mejora la documentación técnica de `stage_for_review` y `scan_for_junk` mediante la adición de docstrings detallados que explican el contrato de seguridad, el manejo de errores y la lógica de resolución de rutas, facilitando el mantenimiento y la auditoría del flujo de archivos.
 - `2026-07-31T12:16:26` **memory.py** (legibilidad y documentación): Mejoré la documentación técnica y la mantenibilidad de `memory.py` mediante docstrings detallados en funciones críticas y la parametrización de tipos en `trim_working_set`, aclarando el propósito y las restricciones de seguridad sin alterar la lógica de negocio.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-31T11:56:02` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo validación de tipo y estructura a los datos crudos del CSV para evitar excepciones inesperadas al procesar salidas malformadas de PowerShell, garantizando que el bucle de procesamiento sea resiliente.
 - `2026-07-31T11:37:24` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` agregando validaciones preventivas sobre la existencia de la ruta origen y posibles errores de E/S antes de iniciar el movimiento, asegurando que el estado del sistema sea consistente antes de realizar operaciones destructivas de archivo.
 - `2026-07-31T11:37:10` **organizer.py** (manejo de errores y validación de entradas): Mejora la robustez del manejo de archivos al añadir validación estricta de parámetros en `stage_for_review` y `delete_reviewed`, previniendo errores por rutas inexistentes, None o de tipo incorrecto que podrían romper el flujo de ejecución.
-- `2026-07-31T11:36:48` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez de `parse_windows_process_csv` implementando validación estricta de tipos y valores, evitando fallos silenciosos al procesar entradas de PowerShell potencialmente incompletas o malformadas.
-- `2026-07-31T11:26:25` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` validando que los pesos existan en el diccionario de resultados antes de iterar, evitando posibles errores de `KeyError` o desajustes de cálculo si `WEIGHTS` fuera alterado externamente.
-- `2026-07-31T11:25:29` **browser.py** (manejo de errores y validación de entradas): Reforcé la robustez de `directory_size` y `_is_safe_path` ante errores de resolución de rutas (como bloqueos de I/O o caracteres inválidos) capturando excepciones de forma específica y validando explícitamente los tipos de entrada para evitar fallos silenciosos en tiempo de ejecución.
-- `2026-07-31T11:17:51` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y `draw_logo` mediante la captura explícita de errores potenciales en las conversiones de tipos y accesos al sistema de archivos, asegurando que fallos en la entrada de datos no provoquen el cierre de la aplicación.

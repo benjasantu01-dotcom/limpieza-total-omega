@@ -26,6 +26,7 @@ from safety import is_protected_path
 logger = logging.getLogger(__name__)
 
 # Alias para facilitar la lectura de tipos de funciones de chequeo
+# Una función de chequeo debe recibir una ruta absoluta y retornar una sospecha o None
 SuspicionCheck: TypeAlias = Callable[[Path], Optional["Suspicion"]]
 
 # Expresión regular para detectar extensiones dobles donde la final es ejecutable
@@ -50,53 +51,48 @@ class Suspicion:
     severity: str  # "info" | "warning"
 
 
-def _is_reparse_point(entry: os.DirEntry) -> bool:
-    """
-    Verifica si la entrada es un punto de reparse (Junction/Symlink).
-    Evita que el escáner entre en bucles infinitos por enlaces simbólicos.
-    """
-    try:
-        return bool(entry.stat(follow_symlinks=False).st_file_attributes & 0x400)
-    except (OSError, AttributeError):
-        return False
+class Scanner:
+    """Encapsula el estado y la lógica de recorrido del sistema de archivos."""
+    
+    def __init__(self) -> None:
+        self.results: List[Suspicion] = []
+        self.seen: set[str] = set()
 
+    def _is_reparse_point(self, entry: os.DirEntry) -> bool:
+        """Verifica si la entrada es un enlace simbólico o junction para evitar bucles."""
+        try:
+            return bool(entry.stat(follow_symlinks=False).st_file_attributes & 0x400)
+        except (OSError, AttributeError):
+            return False
 
-def _process_directory_entry(entry: os.DirEntry, results: List[Suspicion], stack: List[str], seen: set[str]) -> None:
-    """
-    Procesa una entrada de directorio: filtra rutas protegidas, evita recursión infinita
-    mediante tracking de 'seen' y delega el escaneo de archivos a `scan_file`.
-    """
-    try:
-        if entry.is_dir(follow_symlinks=False):
-            if not _is_reparse_point(entry):
-                path_str = entry.path
-                if path_str and path_str not in seen and not is_protected_path(Path(path_str)):
-                    seen.add(path_str)
-                    stack.append(path_str)
-        elif entry.is_file():
-            path_obj = Path(entry.path)
-            # Validar existencia real antes de escanear por si hubo race condition
-            if path_obj.exists() and not is_protected_path(path_obj):
-                results.extend(scan_file(path_obj))
-    except (PermissionError, OSError):
-        pass
+    def process_entry(self, entry: os.DirEntry, stack: List[str]) -> None:
+        """
+        Analiza una entrada: si es directorio, lo apila; si es archivo, ejecuta los checks.
+        """
+        try:
+            if entry.is_dir(follow_symlinks=False):
+                if not self._is_reparse_point(entry):
+                    path_str = entry.path
+                    if path_str and path_str not in self.seen and not is_protected_path(Path(path_str)):
+                        self.seen.add(path_str)
+                        stack.append(path_str)
+            elif entry.is_file():
+                path_obj = Path(entry.path)
+                if path_obj.exists() and not is_protected_path(path_obj):
+                    self.results.extend(scan_file(path_obj))
+        except (PermissionError, OSError):
+            pass
 
 
 def check_double_extension(path: Path) -> Optional[Suspicion]:
-    """
-    Detecta archivos con doble extensión (ej: 'foto.jpg.exe').
-    La técnica busca confundir al usuario ocultando la extensión real.
-    """
+    """Detecta archivos con doble extensión que intentan engañar al usuario."""
     if path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
     return None
 
 
 def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_THRESHOLD_HOURS) -> Optional[Suspicion]:
-    """
-    Identifica ejecutables creados o modificados recientemente.
-    Un ejecutable nuevo en carpetas de usuario suele requerir inspección del usuario.
-    """
+    """Detecta ejecutables nuevos; su presencia reciente suele ser un indicador de riesgo."""
     if path.suffix.lower() in SUSPICIOUS_EXECUTABLE_EXT:
         try:
             mtime = datetime.fromtimestamp(path.stat(follow_symlinks=False).st_mtime)
@@ -108,10 +104,7 @@ def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_TH
 
 
 def check_system_lookalike(path: Path) -> Optional[Suspicion]:
-    """
-    Detecta archivos ejecutables que utilizan nombres de procesos críticos del sistema.
-    Los atacantes intentan ocultar procesos maliciosos usando nombres de servicios legítimos.
-    """
+    """Detecta ejecutables que suplantan nombres de procesos críticos fuera de System32."""
     try:
         if path.name and path.name.lower() in SYSTEM_LOOKALIKES:
             parent = path.parent
@@ -129,56 +122,42 @@ CHECK_FUNCS: Final[List[SuspicionCheck]] = [
 ]
 
 def scan_file(path: Path) -> List[Suspicion]:
-    """Aplica secuencialmente todas las funciones de `CHECK_FUNCS` sobre una ruta."""
-    try:
-        if not path or not path.is_file() or is_protected_path(path):
-            return []
-    except (OSError, PermissionError):
+    """Ejecuta los tests definidos en CHECK_FUNCS sobre un archivo individual."""
+    if not path.is_file() or is_protected_path(path):
         return []
         
-    results: List[Suspicion] = []
+    findings: List[Suspicion] = []
     for check_func in CHECK_FUNCS:
         try:
             res = check_func(path)
             if res:
-                results.append(res)
+                findings.append(res)
         except (PermissionError, OSError, AttributeError):
             continue
-    return results
+    return findings
 
 
 def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
-    """
-    Realiza un recorrido recursivo iterativo optimizado sobre un directorio,
-    utilizando una pila para evitar desbordamiento de memoria y `is_protected_path`
-    para asegurar el cumplimiento de la política de seguridad global.
-    """
-    if not directory:
-        return []
-
+    """Realiza el escaneo recursivo iterativo utilizando la clase Scanner para mantener estado."""
     path_obj = Path(directory)
-    try:
-        if not path_obj.exists() or not path_obj.is_dir() or is_protected_path(path_obj):
-            return []
-        # Resolver ruta canónica para asegurar que no escape del punto de inicio
-        root_str = str(path_obj.resolve())
-    except (OSError, RuntimeError):
+    if not path_obj.exists() or not path_obj.is_dir() or is_protected_path(path_obj):
         return []
 
-    results: List[Suspicion] = []
+    scanner = Scanner()
+    root_str = str(path_obj.resolve())
     stack: List[str] = [root_str]
-    seen: set[str] = {root_str}
+    scanner.seen.add(root_str)
     
     while stack:
         current_dir = stack.pop()
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:
-                    _process_directory_entry(entry, results, stack, seen)
+                    scanner.process_entry(entry, stack)
         except (PermissionError, OSError):
             continue
             
-    return results
+    return scanner.results
 
 
 def run_windows_defender_quick_scan() -> str:
