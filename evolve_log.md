@@ -716,3 +716,10 @@ FAILED evolve/tests/test_safety.py::test_describe_protection_explains_the_reason
 - `2026-07-31T11:17:51` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save_logo_svg` y `draw_logo` mediante la captura explícita de errores potenciales en las conversiones de tipos y accesos al sistema de archivos, asegurando que fallos en la entrada de datos no provoquen el cierre de la aplicación.
 - `2026-07-31T11:17:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-31T11:17:51` Corrida terminada. Total usado hoy: 268.
+- `2026-07-31T11:25:04` Arrancando corrida. Quedan hoy ~32 peticiones objetivo.
+- `2026-07-31T11:25:29` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Reforcé la robustez de `directory_size` y `_is_safe_path` ante errores de resolución de rutas (como bloqueos de I/O o caracteres inválidos) capturando excepciones de forma específica y validando explícitamente los tipos de entrada para evitar fallos silenciosos en tiempo de ejecución.
+- `2026-07-31T11:25:52` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: manejo de errores y validación de entradas).
+- `2026-07-31T11:26:15` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-07-31T11:26:25` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `compute_score` validando que los pesos existan en el diccionario de resultados antes de iterar, evitando posibles errores de `KeyError` o desajustes de cálculo si `WEIGHTS` fuera alterado externamente.
+- `2026-07-31T11:26:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-31T11:26:25` Corrida terminada. Total usado hoy: 272.

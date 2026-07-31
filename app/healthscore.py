@@ -222,10 +222,11 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     breakdown: Dict[str, int] = {}
     
     for area, weight in WEIGHTS.items():
-        ratio = ratios.get(area, 0.0)
-        score_part = int(ratio * weight + 0.5)
-        breakdown[area] = score_part
-        total_score += score_part
+        if area in ratios:
+            ratio = ratios[area]
+            score_part = int(ratio * weight + 0.5)
+            breakdown[area] = score_part
+            total_score += score_part
 
     return HealthResult(
         score=int(total_score),

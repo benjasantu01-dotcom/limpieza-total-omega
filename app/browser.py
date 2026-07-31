@@ -98,7 +98,7 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
     Valida la integridad de la ruta para prevenir escapes de directorio
     mediante resolución de rutas absolutas.
     """
-    if not target_path or not base_path:
+    if not isinstance(target_path, Path) or not isinstance(base_path, Path):
         return False
     try:
         if is_protected_path(target_path):
@@ -159,9 +159,10 @@ def _is_valid_cache_path(candidate: Path | None, base_path: Path) -> bool:
     Valida que la ruta exista, sea un directorio, no sea un enlace simbólico
     y cumpla con las políticas de seguridad de la app.
     """
+    if not isinstance(candidate, Path):
+        return False
     try:
         return (
-            candidate is not None and
             candidate.exists() and 
             candidate.is_dir() and 
             not candidate.is_symlink() and
@@ -192,7 +193,7 @@ def detect_profiles(
                 candidate = base.joinpath(*relative_path_str.split("\\"))
                 
                 if _is_valid_cache_path(candidate, base):
-                    size = directory_size(str(candidate))
+                    size = directory_size(candidate)
                     if size > 0:
                         found.append(BrowserCache(
                             browser=browser_name,
