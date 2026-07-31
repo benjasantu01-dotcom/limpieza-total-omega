@@ -97,16 +97,17 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
     """
     Verifica que la ruta candidata resida dentro de la base permitida.
     Previene vulnerabilidades de traversal (ej. carpetas superiores al perfil).
-    Usa resolve() para comparar rutas reales, ignorando enlaces simbólicos si
-    la validación de existencia es estricta.
     """
     if not isinstance(target_path, Path) or not isinstance(base_path, Path):
         return False
     try:
-        if is_protected_path(target_path):
-            return False
         abs_base = base_path.resolve(strict=False)
         abs_target = target_path.resolve(strict=False)
+        
+        # Validar contra safety.py antes de cualquier jerarquía
+        if is_protected_path(abs_target):
+            return False
+            
         return abs_base in abs_target.parents or abs_base == abs_target
     except (OSError, RuntimeError, ValueError, PermissionError):
         return False
@@ -145,7 +146,7 @@ def directory_size(path: str | os.PathLike | None) -> int:
                             continue
                         if entry.is_dir():
                             dir_path = Path(entry.path).resolve(strict=False)
-                            if dir_path not in visited:
+                            if dir_path not in visited and not is_protected_path(dir_path):
                                 visited.add(dir_path)
                                 stack.append(dir_path)
                         elif entry.is_file():
@@ -167,6 +168,10 @@ def _is_valid_cache_path(candidate: Path | None, base_path: Path) -> bool:
     if not isinstance(candidate, Path):
         return False
     try:
+        # Pre-validar contra safety.py antes de tocar el sistema de archivos intensivamente
+        if is_protected_path(candidate):
+            return False
+            
         return (
             candidate.exists() and 
             candidate.is_dir() and 

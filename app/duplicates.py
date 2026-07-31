@@ -194,7 +194,10 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
                     try:
                         if file_path.is_symlink():
                             continue
-                        if skip_protected and is_protected_path(file_path.resolve()):
+                        resolved_file = file_path.resolve()
+                        if not str(resolved_file).startswith(str(base_dir)):
+                            continue
+                        if skip_protected and is_protected_path(resolved_file):
                             continue
                         st = file_path.stat()
                         # Evitar procesar el mismo archivo múltiples veces por enlaces duros

@@ -76,13 +76,13 @@ class SystemMetrics:
         self.quarantined_count = max(0, _to_int(self.quarantined_count))
 
     def is_finite(self) -> bool:
-        """Verifica que todas las métricas críticas sean números finitos."""
+        """Verifica que todas las métricas críticas sean números finitos y no NaN."""
         return (math.isfinite(self.junk_mb) and 
                 math.isfinite(self.memory_available_percent) and 
                 math.isfinite(self.disk_free_percent) and 
                 math.isfinite(self.duplicate_mb) and
-                math.isfinite(self.suspicious_count) and
-                math.isfinite(self.startup_count))
+                math.isfinite(float(self.suspicious_count)) and
+                math.isfinite(float(self.startup_count)))
 
 
 @dataclass
@@ -107,7 +107,7 @@ def _clamp(value: float, low: float = 0.0, high: float = 1.0) -> float:
 
 
 def _to_float(value: Any, default: float = 0.0) -> float:
-    """Convierte entrada a float; retorna default si no es numérico o es infinito."""
+    """Convierte entrada a float; retorna default si no es numérico o es infinito/NaN."""
     try:
         val = float(value) if value is not None else default
         return val if math.isfinite(val) else default

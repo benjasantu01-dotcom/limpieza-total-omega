@@ -171,20 +171,23 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
                         if os.name == 'nt' and entry.stat(follow_symlinks=False).st_reparse_tag != 0:
                             continue
                         
+                        full_entry_path = Path(entry.path).resolve()
+                        
+                        # Seguridad: validar que la entrada resuelta siga bajo la base original
+                        if base_path not in full_entry_path.parents and full_entry_path != base_path:
+                            continue
+
                         if entry.is_dir():
-                            # Resolvemos con cuidado ante posibles desapariciones
-                            resolved = Path(entry.path).resolve()
-                            if resolved in visited:
+                            if full_entry_path in visited:
                                 continue
-                            if skip_protected and is_protected_path(resolved):
+                            if skip_protected and is_protected_path(full_entry_path):
                                 continue
-                            visited.add(resolved)
-                            yield from recursive_scan(resolved)
+                            visited.add(full_entry_path)
+                            yield from recursive_scan(full_entry_path)
                         else:
-                            full_path = Path(entry.path)
-                            if skip_protected and is_protected_path(full_path):
+                            if skip_protected and is_protected_path(full_entry_path):
                                 continue
-                            yield full_path, entry.stat().st_size
+                            yield full_entry_path, entry.stat().st_size
                     except (OSError, PermissionError, FileNotFoundError):
                         continue
         except (OSError, PermissionError, FileNotFoundError):
