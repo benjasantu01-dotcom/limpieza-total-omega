@@ -305,13 +305,16 @@ def save_logo_svg(destination: str | Path | None) -> Path | None:
     try:
         path = Path(destination).expanduser().resolve()
         
+        # Validación de seguridad preventiva
         if not is_safe_to_modify(path):
             return None
             
         parent = path.parent
-        # Solo creamos directorios si la ruta padre es segura de modificar
-        if not parent.exists() and is_safe_to_modify(parent):
-            parent.mkdir(parents=True, exist_ok=True)
+        if not parent.exists():
+            if is_safe_to_modify(parent):
+                parent.mkdir(parents=True, exist_ok=True)
+            else:
+                return None
             
         path.write_text(logo_svg(), encoding="utf-8")
         return path
@@ -334,11 +337,6 @@ def logo_ascii() -> str:
 def draw_logo(canvas: Any, size: int = 56, canvas_x: int = 0, canvas_y: int = 0) -> None:
     """
     Renderiza el logo (escudo Omega) en un widget Tkinter.Canvas.
-    
-    Args:
-        canvas: Widget Canvas de Tkinter donde dibujar.
-        size: Escalado base del logo.
-        canvas_x, canvas_y: Posición de anclaje (top-left).
     """
     if canvas is None or not hasattr(canvas, "create_polygon"): return
     try:
@@ -380,13 +378,6 @@ def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
                       stops: tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
     """
     Dibuja una franja horizontal de gradiente en un Tkinter.Canvas.
-    
-    Args:
-        canvas: Widget Canvas destino.
-        width: Ancho total de la franja.
-        height: Espesor de la franja.
-        canvas_x, canvas_y: Posición inicial.
-        stops: Puntos de color para el gradiente.
     """
     if canvas is None or not hasattr(canvas, "create_line"): return
     try:
@@ -403,14 +394,6 @@ def draw_ring(canvas: Any, percent: float | int, size: int = 150,
               fill: HexColor | None = None) -> None:
     """
     Dibuja un medidor circular de estado en un Tkinter.Canvas.
-    
-    Args:
-        canvas: Widget Canvas destino.
-        percent: Porcentaje completado (0-100).
-        size: Diámetro del anillo.
-        thickness: Grosor del trazo.
-        track: Color de fondo del anillo (track).
-        fill: Color del segmento de progreso.
     """
     if canvas is None or not hasattr(canvas, "create_arc"): return
     try:

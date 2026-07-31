@@ -90,8 +90,11 @@ def base_directories() -> List[Path]:
     if not local or not isinstance(local, str):
         return []
     
-    path_local = Path(local)
-    return [path_local] if path_local.is_dir() else []
+    try:
+        path_local = Path(local)
+        return [path_local] if path_local.is_dir() else []
+    except (OSError, RuntimeError):
+        return []
 
 
 def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> bool:
@@ -162,14 +165,17 @@ def _is_valid_cache_path(candidate: Path | None, base_path: Path) -> bool:
     Valida que la ruta exista, sea un directorio, no sea un enlace simbólico
     y cumpla con las políticas de seguridad de la app.
     """
-    return (
-        candidate is not None and
-        candidate.exists() and 
-        candidate.is_dir() and 
-        not candidate.is_symlink() and
-        _is_safe_path(candidate, base_path) and
-        candidate.name.lower() not in NEVER_TOUCH
-    )
+    try:
+        return (
+            candidate is not None and
+            candidate.exists() and 
+            candidate.is_dir() and 
+            not candidate.is_symlink() and
+            _is_safe_path(candidate, base_path) and
+            candidate.name.lower() not in NEVER_TOUCH
+        )
+    except (OSError, PermissionError):
+        return False
 
 
 def detect_profiles(
@@ -188,16 +194,19 @@ def detect_profiles(
         
     for base in bases:
         for browser_name, relative_path_str in cache_paths.items():
-            candidate = base.joinpath(*relative_path_str.split("\\"))
-            
-            if _is_valid_cache_path(candidate, base):
-                size = directory_size(str(candidate))
-                if size > 0:
-                    found.append(BrowserCache(
-                        browser=browser_name,
-                        path=candidate,
-                        size_bytes=size,
-                    ))
+            try:
+                candidate = base.joinpath(*relative_path_str.split("\\"))
+                
+                if _is_valid_cache_path(candidate, base):
+                    size = directory_size(str(candidate))
+                    if size > 0:
+                        found.append(BrowserCache(
+                            browser=browser_name,
+                            path=candidate,
+                            size_bytes=size,
+                        ))
+            except (OSError, ValueError, TypeError):
+                continue
                 
     found.sort(key=lambda c: c.size_bytes, reverse=True)
     return found

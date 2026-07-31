@@ -441,12 +441,18 @@ def _call_gemini(
                 return None
             datos: dict[str, Any] = json.loads(respuesta.read().decode("utf-8"))
         
-        candidatos: list[dict[str, Any]] = datos.get("candidates", [])
-        if not candidatos or "content" not in candidatos[0]:
+        if not isinstance(datos, dict):
+            return None
+
+        candidatos: list[Any] = datos.get("candidates", [])
+        if not isinstance(candidatos, list) or not candidatos or not isinstance(candidatos[0], dict):
             return None
             
-        partes: list[dict[str, Any]] = candidatos[0]["content"].get("parts", [])
-        texto: str = "".join(p.get("text", "") for p in partes).strip()
+        partes: list[Any] = candidatos[0].get("content", {}).get("parts", [])
+        if not isinstance(partes, list):
+            return None
+            
+        texto: str = "".join(p.get("text", "") for p in partes if isinstance(p, dict)).strip()
         
         # Validación de seguridad defensiva estricta sobre la salida del modelo
         if not texto or len(texto) > 1200:

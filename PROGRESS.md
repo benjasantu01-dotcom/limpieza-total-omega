@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **248** (49.2% de aceptación)
+- Mejoras aceptadas: **247** (49.0% de aceptación)
 - Rechazadas por tests: 23
 - Rechazadas por guardia de seguridad: 25
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 194
+- Sin respuesta de la IA (error o límite): 195
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-30 | 175 | 14 | 18 | 12 | 125 |
-| 2026-07-31 | 73 | 9 | 7 | 2 | 69 |
+| 2026-07-30 | 171 | 14 | 18 | 12 | 125 |
+| 2026-07-31 | 76 | 9 | 7 | 2 | 70 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **58**
 - seguridad defensiva: **55**
+- legibilidad y documentación: **54**
 - rendimiento: **47**
 - robustez ante casos límite: **47**
-- manejo de errores y validación de entradas: **41**
+- manejo de errores y validación de entradas: **44**
 
 ## Mejoras aceptadas por archivo
 
 - `scanner.py`: **23**
 - `diskreport.py`: **21**
+- `browser.py`: **21**
 - `quarantine.py`: **20**
-- `browser.py`: **20**
-- `healthscore.py`: **19**
+- `assistant.py`: **20**
 - `settings.py`: **19**
-- `assistant.py`: **19**
 - `duplicates.py`: **19**
-- `main.py`: **17**
-- `organizer.py`: **15**
-- `branding.py`: **15**
+- `healthscore.py`: **18**
+- `branding.py`: **16**
+- `main.py`: **16**
 - `safety.py`: **15**
 - `startup.py`: **14**
-- `memory.py`: **12**
+- `organizer.py`: **14**
+- `memory.py`: **11**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-31T06:51:10` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `directory_size` y `_is_safe_path` ante errores de resolución de rutas (como accesos denegados o caracteres inválidos) mediante un manejo de excepciones más granular y validación de tipos, evitando que fallos parciales en el escaneo de un navegador invaliden el reporte total.
+- `2026-07-31T06:51:02` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y `draw_logo` validando que las rutas y parámetros numéricos sean seguros, evitando errores de ejecución ante entradas malformadas o permisos denegados, alineándolo con el enfoque de manejo de errores y validación.
+- `2026-07-31T06:50:33` **assistant.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_call_gemini` mediante la adición de validaciones explícitas de tipo y estructura sobre los datos recibidos de la API, evitando errores silenciosos o excepciones no capturadas al procesar respuestas JSON mal formadas o inesperadas.
 - `2026-07-31T05:27:53` **settings.py** (seguridad defensiva): Se endureció la seguridad en `settings_path` y `save` mediante el uso de `ensure_safe_to_modify` para prevenir ataques de *path traversal* o manipulación de rutas fuera del directorio de configuración esperado, asegurando que la ruta final esté siempre contenida en `SETTINGS_DIR`.
 - `2026-07-31T05:27:30` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez de las verificaciones de seguridad en `scan_file` para evitar el acceso a archivos bloqueados por el sistema o en estado transitorio, garantizando que el escáner no lance excepciones innecesarias ni intente procesar rutas que violen la integridad del sistema tras un cambio de estado en disco (Race Condition).
 - `2026-07-31T05:18:11` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de la función `ensure_safe_to_modify` ante ataques de suplantación de archivos mediante la validación de `st_nlink` (contador de enlaces físicos), evitando que archivos con múltiples enlaces duros sean manipulados, lo cual es una técnica común para engañar a herramientas de seguridad.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-31T04:57:46` **browser.py** (seguridad defensiva): Se ha mejorado la robustez de `directory_size` para prevenir la recursión infinita o el procesamiento indebido de puntos de reparse (reparse points) o uniones de disco (junctions), verificando explícitamente mediante `os.path.isjunction` que la entrada no sea un punto de unión, lo cual es crítico en la estructura de perfiles de Windows.
 - `2026-07-31T04:57:23` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` validando la existencia de la ruta antes de intentar cualquier operación de escritura, asegurando que `mkdir` solo se ejecute sobre rutas que ya fueron validadas por `is_safe_to_modify`.
 - `2026-07-31T04:56:54` **assistant.py** (seguridad defensiva): Se ha añadido una validación estricta de "input sanitization" en `_call_gemini` para asegurar que el texto generado por el modelo remoto no contenga secuencias sospechosas, complementando la inspección de rutas con una verificación de longitud y caracteres de control para evitar inyecciones o salidas anómalas.
-- `2026-07-31T04:47:32` **settings.py** (robustez ante casos límite): Se ha mejorado la robustez de `save()` implementando una verificación de seguridad con `ensure_safe_to_modify` sobre el directorio padre antes de intentar escribir, mitigando riesgos de manipulación de rutas en entornos de ejecución inesperados.
-- `2026-07-31T04:47:08` **scanner.py** (robustez ante casos límite): Se mejoró la robustez de `scan_file` añadiendo una validación explícita de `is_protected_path` sobre el objeto `Path` antes de procesarlo, evitando errores de acceso a archivos bloqueados por el sistema y garantizando que el escáner sea pasivo incluso ante rutas que pudieron haber cambiado de estado o permisos entre el listado del directorio y el procesamiento individual.
-- `2026-07-31T04:37:16` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` ante fallos de escritura y estados inconsistentes del sistema de archivos, asegurando que el manifiesto solo se actualice tras confirmar la persistencia física del archivo en el destino, y añadiendo un manejo de excepciones más granular para evitar dejar archivos "huérfanos" en cuarentena sin registro.
