@@ -16,6 +16,7 @@ Este módulo convierte el cuidado en una regla que se puede verificar:
 
 from __future__ import annotations
 import os
+import stat
 from pathlib import Path
 from typing import Union, Iterable, TypeAlias, Final
 from functools import lru_cache
@@ -77,11 +78,6 @@ _ALL_PROTECTED_TOKENS: Final[frozenset[str]] = PROTECTED_DIR_NAMES | _SYSTEM_ROO
 def _is_reparse_point(path: Path) -> bool:
     """
     Verifica si la ruta es un punto de reparse (Junction/Symlink).
-    
-    Args:
-        path: Objeto Path resuelto del archivo o carpeta.
-    Returns:
-        bool: True si es un reparse point, evitando así bucles o fugas de directorio.
     """
     try:
         # 0x400 es FILE_ATTRIBUTE_REPARSE_POINT en la API de Windows
@@ -89,6 +85,14 @@ def _is_reparse_point(path: Path) -> bool:
         return bool(getattr(stats, "st_file_attributes", 0) & 0x400) or path.is_symlink()
     except (OSError, PermissionError):
         return False
+
+
+def _is_readonly(path: Path) -> bool:
+    """Verifica si el archivo tiene el atributo de solo lectura activado."""
+    try:
+        return not bool(path.stat().st_mode & stat.S_IWRITE)
+    except (OSError, PermissionError):
+        return True
 
 
 def normalize(path: PathLike) -> Path:
@@ -197,8 +201,11 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
     if str(p).startswith(("\\\\", "//")):
         raise UnsafePathError("Operación bloqueada: rutas UNC o de red no permitidas.")
     
-    if p.exists() and _is_reparse_point(p):
-        raise UnsafePathError("Operación bloqueada: punto de reparse detectado.")
+    if p.exists():
+        if _is_reparse_point(p):
+            raise UnsafePathError("Operación bloqueada: punto de reparse detectado.")
+        if _is_readonly(p):
+            raise UnsafePathError("Operación bloqueada: el archivo es de solo lectura.")
 
     if is_drive_root(p) or is_protected_path(p):
         raise UnsafePathError("Operación bloqueada: ruta de sistema protegida o raíz.")
@@ -252,6 +259,8 @@ def describe_protection(path: PathLike) -> str:
             "ruta de sistema",
         )
         return f"'{p}' está protegida por contener '{protegida}'."
+    if p.exists() and _is_readonly(p):
+        return f"'{p}' tiene atributos de solo lectura."
     if is_sensitive_file(p):
         return f"'{p.name}' tiene extensión sensible ({p.suffix})."
     return f"'{p}' se puede modificar con confirmación."

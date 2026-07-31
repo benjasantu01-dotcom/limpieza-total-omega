@@ -207,6 +207,10 @@ def quarantine_file(
     if source_path.is_symlink():
         raise UnsafePathError(f"Operación denegada: {source_path} es un enlace simbólico.")
     
+    # Prevenir cruce de puntos de reparse en destino
+    if dest_dir.is_symlink() or (hasattr(dest_dir, 'is_junction') and dest_dir.is_junction()):
+        raise UnsafePathError("La ruta de cuarentena es un punto de reparse (prohibido).")
+
     if is_within_directory(source_path, dest_dir):
         raise UnsafePathError(f"El archivo ya reside en la carpeta de cuarentena: {source_path}")
 

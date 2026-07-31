@@ -73,7 +73,9 @@ def _process_directory_entry(entry: os.DirEntry, root_str: str, results: List[Su
                     seen.add(path_str)
                     stack.append(path_str)
         elif entry.is_file():
-            results.extend(scan_file(Path(entry.path)))
+            path_obj = Path(entry.path)
+            if not is_protected_path(path_obj):
+                results.extend(scan_file(path_obj))
     except (PermissionError, OSError):
         pass
 
