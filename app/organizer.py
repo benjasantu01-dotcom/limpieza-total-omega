@@ -111,14 +111,6 @@ def _is_junk_file(entry: os.DirEntry[str]) -> bool:
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     """
     Realiza un escaneo recursivo buscando archivos temporales candidatos.
-
-    Este método implementa una estrategia de "traversal" seguro:
-    1. Filtra symlinks para evitar bucles o escapes de directorio.
-    2. Aplica 'SYSTEM_FOLDER_BLOCKLIST' antes de descender.
-    3. Valida la seguridad de cada archivo hallado mediante 'is_safe_to_modify' 
-       antes de instanciar JunkFile.
-    4. Ignora silenciosamente errores de acceso (permisos) para mantener la 
-       continuidad operativa.
     """
     dirs = directories or DEFAULT_SCAN_DIRS
     found: List[JunkFile] = []
@@ -171,23 +163,15 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Path:
     """
     Mueve archivos candidatos a una carpeta de revisión segura.
-
-    Esta función garantiza la integridad del sistema mediante:
-    1. Validación estricta: Cada operación de movimiento está protegida por 
-       'ensure_safe_to_modify' tanto para el origen como para el destino.
-    2. Prevención de colisiones: Utiliza '_generate_unique_target' para evitar 
-       sobreescrituras accidentales durante el movimiento.
-    3. Protección recursiva: Verifica que el archivo a mover no resida ya en 
-       la carpeta de revisión para evitar bucles.
-    
-    Args:
-        files: Lista de objetos JunkFile.
-        review_dir: Ruta destino para la revisión humana.
     """
     if not review_dir:
         raise ValueError("La ruta de revisión no puede estar vacía")
 
     dest = Path(review_dir).expanduser().resolve()
+    # Asegurar que el destino final no sea un symlink o punto de reparse
+    if dest.is_symlink():
+        raise PermissionError("Ruta de destino inválida: symlink detectado.")
+        
     ensure_safe_to_modify(dest)
     dest.mkdir(parents=True, exist_ok=True)
 
@@ -223,13 +207,13 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         return 0
 
     dest = Path(review_dir).expanduser().resolve()
-    if not dest.exists() or not dest.is_dir():
+    if not dest.exists() or not dest.is_dir() or dest.is_symlink():
         return 0
 
     count = 0
     for f in dest.iterdir():
         try:
-            if f.is_file() and is_safe_to_modify(f):
+            if f.is_file() and not f.is_symlink() and is_safe_to_modify(f):
                 f.unlink()
                 count += 1
         except (PermissionError, OSError):
