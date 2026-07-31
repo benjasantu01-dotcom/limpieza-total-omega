@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **255** (50.6% de aceptación)
+- Mejoras aceptadas: **254** (50.4% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 25
-- Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 192
+- Rechazadas por guardia de seguridad: 24
+- Sin cambios (nada sustancial que mejorar): 16
+- Sin respuesta de la IA (error o límite): 193
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-30 | 94 | 5 | 10 | 7 | 76 |
-| 2026-07-31 | 161 | 12 | 15 | 8 | 116 |
+| 2026-07-30 | 92 | 5 | 9 | 7 | 75 |
+| 2026-07-31 | 162 | 12 | 15 | 9 | 118 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **65**
 - rendimiento: **53**
 - manejo de errores y validación de entradas: **51**
-- seguridad defensiva: **47**
-- robustez ante casos límite: **39**
+- seguridad defensiva: **45**
+- robustez ante casos límite: **40**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **21**
 - `scanner.py`: **21**
+- `diskreport.py`: **21**
 - `settings.py`: **20**
 - `branding.py`: **20**
 - `browser.py`: **20**
-- `diskreport.py`: **20**
+- `quarantine.py`: **20**
 - `assistant.py`: **19**
 - `duplicates.py`: **19**
-- `organizer.py`: **17**
 - `main.py`: **17**
 - `healthscore.py`: **17**
 - `safety.py`: **16**
+- `organizer.py`: **16**
 - `startup.py`: **15**
 - `memory.py`: **13**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-31T13:19:08` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `largest_folders` ante archivos desaparecidos durante la iteración (condición de carrera) o rutas con errores de resolución, utilizando un manejo de excepciones más granular que evita la interrupción prematura del análisis.
 - `2026-07-31T13:09:07` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` ante valores `NaN` o `inf` utilizando `math.isfinite` de forma más exhaustiva y asegurando que cualquier entrada externa que intente inyectar tipos inesperados sea descartada, protegiendo al asistente de estados inconsistentes.
 - `2026-07-31T13:08:51` **startup.py** (rendimiento): Optimicé el método `StartupEntry.executable` para realizar el chequeo de existencia `path.exists()` solo una vez, utilizando una bandera lógica (`_checked_exists`) y almacenando el resultado en `_exec_cache` para evitar I/O redundante en cada acceso a la propiedad durante el renderizado de la UI.
 - `2026-07-31T13:08:26` **settings.py** (rendimiento): Implementé un mecanismo de validación de esquema en `validate` que pre-compila el `SCHEMA` fuera del ciclo iterativo, evitando la creación innecesaria de objetos diccionario y funciones lambda en cada llamada, optimizando así el rendimiento durante las lecturas frecuentes.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-31T12:27:35` **startup.py** (legibilidad y documentación): Mejora la legibilidad del método `StartupEntry.executable` extrayendo la lógica de validación de rutas a un método privado más claro, facilitando el mantenimiento y el cumplimiento de las normas de estilo.
 - `2026-07-31T12:27:24` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del proceso de validación al extraer la lógica de coerción y validación específica en una estructura de datos `SCHEMA` declarativa, eliminando el `if/else` encadenado en `_apply_validation_by_type` y documentando explícitamente las reglas de negocio de los tipos de datos.
 - `2026-07-31T12:26:59` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del flujo de escaneo mediante la introducción de una clase `Scanner` que encapsula la lógica de estado (ej. `seen`, `stack`) y documenté explícitamente los contratos de las funciones de chequeo mediante type hints y docstrings reforzados.
-- `2026-07-31T12:26:34` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad de las funciones de chequeo mediante la adición de docstrings estructuradas en las funciones auxiliares de bajo nivel y la simplificación de la lógica de evaluación en `is_safe_to_modify` para asegurar que el comportamiento booleano sea consistente y legible.

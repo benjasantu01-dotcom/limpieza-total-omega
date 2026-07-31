@@ -171,17 +171,17 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
                         if os.name == 'nt' and entry.stat(follow_symlinks=False).st_reparse_tag != 0:
                             continue
                         
-                        full_path = Path(entry.path)
-                        
                         if entry.is_dir():
-                            resolved = full_path.resolve()
+                            # Resolvemos con cuidado ante posibles desapariciones
+                            resolved = Path(entry.path).resolve()
                             if resolved in visited:
                                 continue
                             if skip_protected and is_protected_path(resolved):
                                 continue
                             visited.add(resolved)
-                            yield from recursive_scan(full_path)
+                            yield from recursive_scan(resolved)
                         else:
+                            full_path = Path(entry.path)
                             if skip_protected and is_protected_path(full_path):
                                 continue
                             yield full_path, entry.stat().st_size
@@ -235,6 +235,7 @@ def largest_folders(directory: str | os.PathLike, limit: int = 10, skip_protecte
         for path, size in walk_files(base, skip_protected):
             try:
                 rel = path.relative_to(base)
+                # Obtenemos la parte superior incluso si es el propio archivo
                 top_level = base / rel.parts[0]
                 
                 if top_level not in folder_map:

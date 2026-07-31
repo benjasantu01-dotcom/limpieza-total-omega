@@ -793,3 +793,10 @@ FAILED evolve/tests/test_safety.py::test_describe_protection_explains_the_reason
 - `2026-07-31T13:09:07` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `build_context` ante valores `NaN` o `inf` utilizando `math.isfinite` de forma más exhaustiva y asegurando que cualquier entrada externa que intente inyectar tipos inesperados sea descartada, protegiendo al asistente de estados inconsistentes.
 - `2026-07-31T13:09:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-31T13:09:07` Corrida terminada. Total usado hoy: 312.
+- `2026-07-31T13:17:51` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-07-31T13:18:22` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-07-31T13:18:44` ➖ Sin cambios en browser.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `directory_size` ante el acceso a archivos bloqueados por el sistema operativo, envolviendo `entry.stat()` en un bloque try-except para evitar que una excepción por "Acceso denegado" (frecuente en cachés de navegadores abiertos) interrumpa el cálculo total del resto de los archivos.
+- `2026-07-31T13:19:08` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la robustez de `walk_files` y `largest_folders` ante archivos desaparecidos durante la iteración (condición de carrera) o rutas con errores de resolución, utilizando un manejo de excepciones más granular que evita la interrupción prematura del análisis.
+- `2026-07-31T13:19:16` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-07-31T13:19:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-31T13:19:16` Corrida terminada. Total usado hoy: 316.
