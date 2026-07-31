@@ -282,7 +282,9 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
-    Solicita al OS liberar el working set de un proceso específico tras validación de seguridad.
+    Solicita al SO liberar el working set de un proceso específico.
+    Realiza validaciones previas de PID para evitar la manipulación de 
+    procesos críticos o del sistema.
     """
     if os.name != "nt":
         return False, "Solo disponible en Windows."
@@ -292,6 +294,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except (ValueError, TypeError):
         return False, "El PID debe ser un número entero válido."
 
+    # Procesos con PID <= 4 (Idle/System) son intocables por seguridad
     if target_pid <= 4 or is_protected_path(str(target_pid)):
         return False, "Operación denegada: PID de sistema protegido."
     
