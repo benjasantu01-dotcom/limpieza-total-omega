@@ -730,3 +730,10 @@ FAILED evolve/tests/test_safety.py::test_describe_protection_explains_the_reason
 - `2026-07-31T11:37:24` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `quarantine_file` agregando validaciones preventivas sobre la existencia de la ruta origen y posibles errores de E/S antes de iniciar el movimiento, asegurando que el estado del sistema sea consistente antes de realizar operaciones destructivas de archivo.
 - `2026-07-31T11:37:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-31T11:37:24` Corrida terminada. Total usado hoy: 276.
+- `2026-07-31T11:45:27` Arrancando corrida. Quedan hoy ~24 peticiones objetivo.
+- `2026-07-31T11:45:47` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-07-31T11:46:10` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: manejo de errores y validación de entradas).
+- `2026-07-31T11:46:31` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
+- `2026-07-31T11:46:39` ➖ Sin cambios en settings.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `save()` capturando explícitamente `PermissionError` y `OSError` al realizar el `os.replace` para evitar estados inconsistentes si el sistema operativo bloquea la sobrescritura del archivo de configuración.
+- `2026-07-31T11:46:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-31T11:46:39` Corrida terminada. Total usado hoy: 280.
