@@ -303,6 +303,7 @@ def save_logo_svg(destination: str | Path | None) -> Path | None:
             
         parent = path.parent
         if not parent.exists():
+            # Crear directorio solo si la ruta es segura
             if is_safe_to_modify(parent):
                 parent.mkdir(parents=True, exist_ok=True)
             else:

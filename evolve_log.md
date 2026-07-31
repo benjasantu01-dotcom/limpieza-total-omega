@@ -402,3 +402,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-07-31T08:32:16` ❌ Mejora descartada en scanner.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `scan_file` al evitar múltiples llamadas a `path.stat()` y validaciones redundantes de `is_protected_path`, consolidando la lógica de filtrado inicial y cacheando la extensión del archivo antes de iterar las funciones de escaneo.
 - `2026-07-31T08:32:16` Rotación — log: 1185 líneas archivadas; metrics: 4 registros archivados; 2 archivo(s) histórico(s) descartado(s)
 - `2026-07-31T08:32:16` Corrida terminada. Total usado hoy: 204.
+- `2026-07-31T08:41:16` Arrancando corrida. Quedan hoy ~96 peticiones objetivo.
+- `2026-07-31T08:41:41` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimizé la validación de configuraciones utilizando un mapeo directo de funciones en `_apply_validation_by_type` y eliminando la creación repetitiva de un nuevo diccionario en cada ciclo de `validate`, mejorando tanto la velocidad de ejecución como la legibilidad del flujo de datos.
+- `2026-07-31T08:42:04` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-07-31T08:42:36` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `build_context` ante entradas malformadas o tipos inesperados que podrían provenir de otros módulos, asegurando que los valores de porcentaje y numéricos se mantengan dentro de rangos lógicos y no causen errores de serialización o visualización.
+- `2026-07-31T08:42:49` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `save_logo_svg` ante casos límite de E/S, incluyendo la verificación de la existencia del directorio padre antes de intentar crearlo y un manejo explícito de errores de sistema durante la escritura.
+- `2026-07-31T08:42:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-31T08:42:49` Corrida terminada. Total usado hoy: 208.

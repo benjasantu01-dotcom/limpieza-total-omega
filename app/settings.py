@@ -31,7 +31,7 @@ import json
 import os
 import tempfile
 from pathlib import Path
-from typing import Any, Final, TypeAlias
+from typing import Any, Final, TypeAlias, Callable
 
 from safety import is_safe_to_modify, ensure_safe_to_modify
 
@@ -58,20 +58,17 @@ __all__ = [
 
 SETTINGS_DIR: Final = Path("~/LimpiezaTotalOmega").expanduser()
 SETTINGS_FILE: Final = "config.json"
-MAX_SETTINGS_SIZE: Final = 1024 * 64  # Límite de 64KB para evitar ataques de desbordamiento
+MAX_SETTINGS_SIZE: Final = 1024 * 64
 
-# Variable de entorno preferida para la clave del asistente.
 API_KEY_ENV_VAR: Final = "OMEGA_GEMINI_KEY"
 
 VALID_THEMES: Final = ("oscuro", "claro", "sistema")
 VALID_ACCENTS: Final = ("menta", "violeta", "magenta", "cian", "ambar")
 
-# Caché interno
 _cached_settings: dict[str, Any] | None = None
 _last_path: Path | None = None
 _last_mtime: float = 0.0
 
-# Valores de fábrica.
 DEFAULTS: Final[dict[str, Any]] = {
     "tema": "oscuro",
     "acento": "menta",
@@ -97,11 +94,8 @@ _NUMERIC_LIMITS: Final[dict[str, tuple[int, int]]] = {
     "top_procesos": (1, 500),
 }
 
-_DEFAULTS_KEYS: Final = set(DEFAULTS.keys())
-
 
 def _coerce_bool(raw_value: Any) -> bool | None:
-    """Convierte tipos arbitrarios a booleano. Retorna None si no es convertible."""
     if isinstance(raw_value, bool):
         return raw_value
     if isinstance(raw_value, str):
@@ -110,7 +104,6 @@ def _coerce_bool(raw_value: Any) -> bool | None:
 
 
 def _coerce_int(raw_value: Any, setting_key: str) -> int | None:
-    """Convierte a entero y asegura que esté dentro de los límites definidos en _NUMERIC_LIMITS."""
     if isinstance(raw_value, bool):
         return None
     try:
@@ -122,7 +115,6 @@ def _coerce_int(raw_value: Any, setting_key: str) -> int | None:
 
 
 def _validate_str(clave: str, valor: Any) -> str | None:
-    """Valida cadenas, aplicando reglas de negocio (temas, acentos, rutas seguras)."""
     if not isinstance(valor, str):
         return None
     texto = valor.strip()
@@ -136,7 +128,6 @@ def _validate_str(clave: str, valor: Any) -> str | None:
     if clave == "ultima_carpeta":
         try:
             ruta_candidata = Path(texto).expanduser()
-            # Validamos seguridad en el sistema de archivos antes de aceptar la ruta
             if not is_safe_to_modify(str(ruta_candidata)):
                 return None
             return str(ruta_candidata)
@@ -146,40 +137,39 @@ def _validate_str(clave: str, valor: Any) -> str | None:
 
 
 def _apply_validation_by_type(clave: str, valor: Any, defecto: Any) -> Any:
-    """Dispatch según el tipo de dato del valor por defecto para validar el valor entrante."""
-    tipo = type(defecto)
-    if tipo is bool: return _coerce_bool(valor)
-    if tipo is int: return _coerce_int(valor, clave)
-    if tipo is str: return _validate_str(clave, valor)
-    return None
+    # Mapeo directo para evitar if-elif anidados
+    validators: dict[type, Callable] = {
+        bool: _coerce_bool,
+        int: lambda v: _coerce_int(v, clave),
+        str: lambda v: _validate_str(clave, v)
+    }
+    validator = validators.get(type(defecto))
+    return validator(valor) if validator else None
 
 
 def settings_path(path_or_base: PathLike | None = None) -> Path:
-    """Calcula la ruta absoluta del archivo de configuración, asegurando seguridad del directorio."""
     target_base = Path(path_or_base).expanduser().resolve() if path_or_base else SETTINGS_DIR
     ensure_safe_to_modify(str(target_base))
     return target_base / SETTINGS_FILE
 
 
 def validate(values: Any) -> dict[str, Any]:
-    """Valida un diccionario de configuración y lo sanitiza comparándolo contra DEFAULTS."""
-    limpio = DEFAULTS.copy()
     if not isinstance(values, dict):
-        return limpio
-
+        return DEFAULTS.copy()
+    
+    limpio = {}
     for clave, defecto in DEFAULTS.items():
-        if clave in values:
-            val_raw = values[clave]
-            if val_raw is None:
-                continue
-            coerced = _apply_validation_by_type(clave, val_raw, defecto)
-            if coerced is not None:
-                limpio[clave] = coerced
+        val_raw = values.get(clave)
+        if val_raw is None:
+            limpio[clave] = defecto
+            continue
+            
+        coerced = _apply_validation_by_type(clave, val_raw, defecto)
+        limpio[clave] = coerced if coerced is not None else defecto
     return limpio
 
 
 def load(path_or_base: PathLike | None = None) -> dict[str, Any]:
-    """Carga configuraciones con caché basada en mtime para optimizar lecturas frecuentes."""
     global _cached_settings, _last_path, _last_mtime
     
     ruta = settings_path(path_or_base)
@@ -203,7 +193,6 @@ def load(path_or_base: PathLike | None = None) -> dict[str, Any]:
 
 
 def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
-    """Guarda configuraciones de forma atómica usando archivos temporales para evitar corrupción."""
     global _cached_settings, _last_path, _last_mtime
     
     ruta = settings_path(path_or_base)

@@ -182,19 +182,20 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         if source is None: return default
         try:
             val = getattr(source, attr, None)
+            if val is None: return default
             return transform(val) if is_valid_num(val) else default
         except Exception:
             return default
 
     if metrics:
-        ctx.junk_mb = extract(metrics, "junk_mb", 0.0)
-        ctx.suspicious_count = extract(metrics, "suspicious_count", 0, int)
-        ctx.suspicious_warnings = extract(metrics, "suspicious_warnings", 0, int)
+        ctx.junk_mb = max(0.0, extract(metrics, "junk_mb", 0.0))
+        ctx.suspicious_count = max(0, extract(metrics, "suspicious_count", 0, int))
+        ctx.suspicious_warnings = max(0, extract(metrics, "suspicious_warnings", 0, int))
         ctx.memory_available_percent = max(0.0, min(extract(metrics, "memory_available_percent", 0.0), 100.0))
         ctx.disk_free_percent = max(0.0, min(extract(metrics, "disk_free_percent", 0.0), 100.0))
-        ctx.duplicate_mb = extract(metrics, "duplicate_mb", 0.0)
-        ctx.startup_count = extract(metrics, "startup_count", 0, int)
-        ctx.quarantined_count = extract(metrics, "quarantined_count", 0, int)
+        ctx.duplicate_mb = max(0.0, extract(metrics, "duplicate_mb", 0.0))
+        ctx.startup_count = max(0, extract(metrics, "startup_count", 0, int))
+        ctx.quarantined_count = max(0, extract(metrics, "quarantined_count", 0, int))
         ctx.analyzed = True
 
     if health:
