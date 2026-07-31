@@ -1145,3 +1145,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-07-31T04:06:36` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se implementó un mecanismo de caché más robusto mediante el uso de `pathlib.Path.stat()` para verificar cambios en el archivo sin necesidad de procesar strings constantemente, y se optimizó `validate` evitando la creación de copias innecesarias del diccionario de valores durante iteraciones.
 - `2026-07-31T04:06:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-31T04:06:36` Corrida terminada. Total usado hoy: 100.
+- `2026-07-31T04:15:38` Arrancando corrida. Quedan hoy ~200 peticiones objetivo.
+- `2026-07-31T04:16:04` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Optimicé el método `StartupEntry.executable` para evitar llamadas redundantes a `Path.exists()` y `Path.expanduser()` mediante un cache simple, reduciendo drásticamente las operaciones de I/O de disco durante la consolidación de entradas.
+- `2026-07-31T04:16:35` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `build_context` ante valores corruptos o inesperados en `metrics` usando `getattr` con un valor por defecto consistente, evitando posibles excepciones de acceso a atributos `None` y garantizando que el asistente nunca procese tipos inválidos.
+- `2026-07-31T04:17:03` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-07-31T04:17:09` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Mejoré la robustez de `directory_size` ante el acceso a directorios con permisos denegados o errores de lectura durante el escaneo recursivo mediante la inclusión explícita de un manejo de errores en el bucle `while` que asegura la continuidad del proceso sin abortar ante excepciones de acceso (`PermissionError`, `OSError`).
+- `2026-07-31T04:17:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-31T04:17:09` Corrida terminada. Total usado hoy: 104.

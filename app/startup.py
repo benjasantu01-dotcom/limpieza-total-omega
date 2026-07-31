@@ -59,6 +59,7 @@ class StartupEntry:
     name: str
     command: str
     source: str  # Indica si proviene de una carpeta o una ruta de registro específica
+    _exec_cache: Optional[str] = None
 
     def _extract_quoted_path(self, raw_cmd: str) -> str:
         """
@@ -84,9 +85,11 @@ class StartupEntry:
     def executable(self) -> str:
         """
         Obtiene la ruta normalizada del ejecutable.
-        Limpia caracteres de control, gestiona rutas entrecomilladas y 
-        valida la existencia física del archivo. Retorna ruta o comando original.
+        Utiliza cache interno para evitar llamadas repetidas al sistema de archivos.
         """
+        if self._exec_cache is not None:
+            return self._exec_cache
+            
         if not self.command:
             return ""
         cmd: str = "".join(c for c in self.command.strip() if ord(c) >= 32)
@@ -94,7 +97,8 @@ class StartupEntry:
             return ""
         
         if cmd.startswith('"'):
-            return self._extract_quoted_path(cmd)
+            self._exec_cache = self._extract_quoted_path(cmd)
+            return self._exec_cache
         
         parts: List[str] = cmd.split()
         if not parts:
@@ -102,9 +106,11 @@ class StartupEntry:
             
         try:
             path = Path(parts[0]).expanduser()
-            return str(path) if path.exists() else parts[0]
+            self._exec_cache = str(path) if path.exists() else parts[0]
+            return self._exec_cache
         except (OSError, ValueError, RuntimeError, TypeError):
-            return parts[0]
+            self._exec_cache = parts[0]
+            return self._exec_cache
 
 
 def startup_folders() -> List[Path]:

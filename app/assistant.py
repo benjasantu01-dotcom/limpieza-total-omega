@@ -177,8 +177,11 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
 
     def extract(source: Any, attr: str, default: Any, transform: Callable = float) -> Any:
         if source is None: return default
-        val = getattr(source, attr, None)
-        return transform(val) if is_valid_num(val) else default
+        try:
+            val = getattr(source, attr, None)
+            return transform(val) if is_valid_num(val) else default
+        except Exception:
+            return default
 
     if metrics:
         ctx.junk_mb = extract(metrics, "junk_mb", 0.0)

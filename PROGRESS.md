@@ -16,37 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-29 | 16 | 1 | 2 | 2 | 33 |
+| 2026-07-29 | 13 | 1 | 2 | 2 | 32 |
 | 2026-07-30 | 181 | 14 | 18 | 12 | 125 |
-| 2026-07-31 | 53 | 6 | 5 | 1 | 35 |
+| 2026-07-31 | 56 | 6 | 5 | 1 | 36 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **63**
 - manejo de errores y validación de entradas: **51**
-- seguridad defensiva: **50**
-- rendimiento: **46**
-- robustez ante casos límite: **40**
+- seguridad defensiva: **47**
+- rendimiento: **47**
+- robustez ante casos límite: **42**
 
 ## Mejoras aceptadas por archivo
 
 - `scanner.py`: **23**
 - `diskreport.py`: **22**
-- `healthscore.py`: **20**
+- `browser.py`: **21**
 - `quarantine.py`: **20**
-- `browser.py`: **20**
 - `settings.py`: **19**
+- `healthscore.py`: **19**
+- `assistant.py`: **19**
 - `duplicates.py`: **19**
-- `assistant.py`: **18**
-- `organizer.py`: **17**
-- `main.py`: **16**
 - `branding.py`: **16**
+- `organizer.py`: **16**
 - `safety.py`: **15**
-- `startup.py`: **14**
+- `startup.py`: **15**
+- `main.py`: **15**
 - `memory.py`: **11**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-31T04:17:09` **browser.py** (robustez ante casos límite): Mejoré la robustez de `directory_size` ante el acceso a directorios con permisos denegados o errores de lectura durante el escaneo recursivo mediante la inclusión explícita de un manejo de errores en el bucle `while` que asegura la continuidad del proceso sin abortar ante excepciones de acceso (`PermissionError`, `OSError`).
+- `2026-07-31T04:16:35` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` ante valores corruptos o inesperados en `metrics` usando `getattr` con un valor por defecto consistente, evitando posibles excepciones de acceso a atributos `None` y garantizando que el asistente nunca procese tipos inválidos.
+- `2026-07-31T04:16:04` **startup.py** (rendimiento): Optimicé el método `StartupEntry.executable` para evitar llamadas redundantes a `Path.exists()` y `Path.expanduser()` mediante un cache simple, reduciendo drásticamente las operaciones de I/O de disco durante la consolidación de entradas.
 - `2026-07-31T04:06:36` **settings.py** (rendimiento): Se implementó un mecanismo de caché más robusto mediante el uso de `pathlib.Path.stat()` para verificar cambios en el archivo sin necesidad de procesar strings constantemente, y se optimizó `validate` evitando la creación de copias innecesarias del diccionario de valores durante iteraciones.
 - `2026-07-31T04:06:27` **scanner.py** (rendimiento): Se optimizó el rendimiento del recorrido de directorios reemplazando múltiples llamadas costosas a `os.path.abspath` y `Path()` dentro del bucle crítico por operaciones directas sobre el string de la ruta, reduciendo drásticamente la carga de objetos y llamadas al sistema.
 - `2026-07-31T04:06:06` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` reemplazando la creación de un nuevo `set` con cada llamada por una verificación directa sobre la tupla `p.parts` (que es inmutable y eficiente), evitando asignaciones de memoria innecesarias en cada iteración de los escaneos de disco.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-31T03:35:33` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo incorporando tipos de retorno explícitos en los docstrings y refinando la explicación del método `executable` para clarificar la lógica de resolución de rutas en condiciones de ambigüedad.
 - `2026-07-31T03:35:09` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en las funciones de validación, clarificando la lógica de coerción de tipos y asegurando que las responsabilidades de cada helper privado sean evidentes para futuros desarrolladores.
 - `2026-07-31T03:25:56` **scanner.py** (legibilidad y documentación): Documenté el propósito de los métodos de escaneo y las restricciones de seguridad en las funciones de recorrido de directorios para aclarar la lógica de prevención de recursión infinita y filtrado de rutas.
-- `2026-07-31T03:25:50` **safety.py** (legibilidad y documentación): Se ha añadido un docstring estructurado a la función `ensure_safe_to_modify` para documentar explícitamente sus condiciones de validación, comportamiento ante errores y restricciones de uso, facilitando su mantenimiento y evitando el uso incorrecto en condicionales.
-- `2026-07-31T03:25:01` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings descriptivos con las secciones "Argumentos", "Retorna" y "Excepciones" en las funciones principales para facilitar el mantenimiento y la auditoría de seguridad del módulo.
-- `2026-07-31T03:16:23` **organizer.py** (legibilidad y documentación): Mejoré la documentación de `stage_for_review` y `_is_junk_file` mediante type hinting explícito y docstrings que clarifican las salvaguardas de seguridad, facilitando la auditoría del código bajo las estrictas reglas de este proyecto.

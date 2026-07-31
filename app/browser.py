@@ -140,12 +140,15 @@ def directory_size(path: str | os.PathLike | None) -> int:
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:
-                    if entry.is_symlink():
+                    try:
+                        if entry.is_symlink():
+                            continue
+                        if entry.is_dir():
+                            stack.append(entry.path)
+                        elif entry.is_file():
+                            total_bytes += entry.stat().st_size
+                    except (OSError, PermissionError):
                         continue
-                    if entry.is_dir():
-                        stack.append(entry.path)
-                    elif entry.is_file():
-                        total_bytes += entry.stat().st_size
         except (OSError, PermissionError):
             continue
             
