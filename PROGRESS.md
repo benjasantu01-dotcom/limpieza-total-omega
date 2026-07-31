@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **254** (50.4% de aceptación)
+- Mejoras aceptadas: **253** (50.2% de aceptación)
 - Rechazadas por tests: 22
 - Rechazadas por guardia de seguridad: 25
-- Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 191
+- Sin cambios (nada sustancial que mejorar): 11
+- Sin respuesta de la IA (error o límite): 193
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-30 | 124 | 10 | 13 | 9 | 84 |
-| 2026-07-31 | 130 | 12 | 12 | 3 | 107 |
+| 2026-07-30 | 121 | 10 | 13 | 8 | 84 |
+| 2026-07-31 | 132 | 12 | 12 | 3 | 109 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **61**
+- legibilidad y documentación: **58**
 - seguridad defensiva: **54**
 - rendimiento: **49**
 - robustez ante casos límite: **47**
-- manejo de errores y validación de entradas: **43**
+- manejo de errores y validación de entradas: **45**
 
 ## Mejoras aceptadas por archivo
 
 - `scanner.py`: **22**
+- `assistant.py`: **21**
 - `diskreport.py`: **21**
 - `quarantine.py`: **20**
 - `settings.py`: **20**
-- `assistant.py`: **20**
 - `browser.py`: **20**
-- `duplicates.py`: **19**
-- `healthscore.py`: **18**
+- `branding.py`: **19**
 - `main.py`: **18**
-- `branding.py`: **18**
+- `duplicates.py`: **18**
 - `safety.py`: **17**
+- `healthscore.py`: **17**
 - `organizer.py`: **16**
 - `startup.py`: **13**
-- `memory.py`: **12**
+- `memory.py`: **11**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-31T11:17:51` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y `draw_logo` mediante la captura explícita de errores potenciales en las conversiones de tipos y accesos al sistema de archivos, asegurando que fallos en la entrada de datos no provoquen el cierre de la aplicación.
+- `2026-07-31T11:17:37` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `build_context` y `ask` mediante la validación proactiva de tipos y el manejo de excepciones específicas, evitando que datos malformados o fallos de configuración provoquen errores en tiempo de ejecución o respuestas ininteligibles.
 - `2026-07-31T09:54:23` **startup.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `entries_from_folders` añadiendo `item.is_symlink()` para evitar seguir puntos de reparse o enlaces simbólicos malintencionados, y se aseguró la integridad de la ruta mediante `item.resolve()` antes de comparar con `base_path` para prevenir ataques de *path traversal* (ej. el uso de `..`).
 - `2026-07-31T09:54:13` **settings.py** (seguridad defensiva): Se ha restringido `settings_path` para que no permita rutas arbitrarias mediante `ensure_safe_to_modify` antes de expandir el path, evitando inyecciones de rutas fuera del directorio de configuración protegido.
 - `2026-07-31T09:53:50` **scanner.py** (seguridad defensiva): Se añadió una validación de ruta absoluta en `scan_directory` para garantizar que la resolución de la ruta `root_str` no escape del directorio base mediante manipulación de symlinks o entradas maliciosas, reforzando la seguridad defensiva del recorrido.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-31T09:23:07` **assistant.py** (seguridad defensiva): Se endureció la validación de seguridad en `_call_gemini` para asegurar que el texto enviado al modelo externo sea sanitizado contra caracteres de control adicionales y para garantizar que la respuesta del modelo no contenga trazas de posibles rutas o comandos, reforzando la naturaleza "sandbox" del asistente.
 - `2026-07-31T09:13:12` **settings.py** (robustez ante casos límite): Mejoré la robustez de `save()` ante fallos de escritura en disco, asegurando que si ocurre un `PermissionError` o `OSError` durante la creación del archivo temporal, el sistema no deje residuos innecesarios y maneje correctamente la persistencia sin corromper el estado de la aplicación.
 - `2026-07-31T09:13:03` **scanner.py** (robustez ante casos límite): Se ha añadido robustez frente a errores de acceso y rutas inválidas dentro de `_process_directory_entry` y `scan_directory` utilizando el manejo explícito de excepciones, asegurando que el proceso de escaneo no se interrumpa ante archivos bloqueados o enlaces simbólicos rotos, y garantizando la integridad mediante una validación más estricta del estado de los archivos (`is_file()` con chequeo de excepción).
-- `2026-07-31T09:12:41` **safety.py** (robustez ante casos límite): Se añadió una verificación de archivos en uso mediante el intento de apertura en modo escritura exclusiva (`os.O_EXCL`), una técnica robusta y estándar para detectar bloqueos por otros procesos sin requerir dependencias externas.
-- `2026-07-31T09:02:48` **main.py** (robustez ante casos límite): Se implementó un manejo robusto de excepciones y validación de estado en `_run_heuristic_scan` para evitar errores cuando la carpeta objetivo no existe o pierde permisos durante la ejecución, asegurando que la interfaz no quede bloqueada ni reporte estados inconsistentes.

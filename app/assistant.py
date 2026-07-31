@@ -184,7 +184,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
             val = getattr(source, attr, None)
             if val is None: return default
             return transform(val) if is_valid_num(val) else default
-        except Exception:
+        except (AttributeError, ValueError, TypeError):
             return default
 
     if metrics:

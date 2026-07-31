@@ -249,7 +249,11 @@ def gradient_colors(steps: int, stops: tuple[HexColor, ...] = GRADIENT_STOPS) ->
     Si el índice de paso cae entre dos stops, calcula el color intermedio
     mediante mezcla lineal (blend).
     """
-    cantidad = max(1, int(steps))
+    try:
+        cantidad = max(1, int(steps))
+    except (TypeError, ValueError):
+        cantidad = 1
+        
     if not stops: return [PALETTE["accent"]] * cantidad
     if len(stops) < 2: return [stops[0]] * cantidad
     
@@ -308,7 +312,7 @@ def save_logo_svg(destination: str | Path | None) -> Path | None:
             
         path.write_text(logo_svg(), encoding="utf-8")
         return path
-    except (OSError, PermissionError, TypeError, ValueError):
+    except (OSError, PermissionError, TypeError, ValueError, AttributeError):
         return None
 
 
@@ -349,7 +353,6 @@ def draw_logo(canvas: Any, size: int = 56, canvas_x: int = 0, canvas_y: int = 0)
         colores_grad = gradient_colors(franjas)
         alto = 92 * s / franjas
         for i, tono in enumerate(colores_grad):
-            # Optimización: el cálculo de w depende linealmente de i
             w = 36 * s * (1.0 if i / (franjas - 1) < 0.55 else 1.0 - (i / (franjas - 1) - 0.55) * 1.9)
             canvas.create_rectangle(
                 x_val + 64 * s - w, y_val + 18 * s + i * alto, 
@@ -360,7 +363,7 @@ def draw_logo(canvas: Any, size: int = 56, canvas_x: int = 0, canvas_y: int = 0)
         canvas.create_line(x_val + 41 * s, y_val + 75 * s, x_val + 75 * s, y_val + 41 * s, fill=PALETTE["background"], width=max(2, int(8 * s)), capstyle="round")
         canvas.create_polygon(x_val + 75 * s, y_val + 41 * s, x_val + 89 * s, y_val + 38 * s, x_val + 92 * s, y_val + 52 * s, fill=PALETTE["background"], outline="")
         canvas.create_text(x_val + 64 * s, y_val + 96 * s, text="\u03a9", fill=PALETTE["background"], font=("Segoe UI", max(8, int(23 * s)), "bold"))
-    except (ValueError, TypeError, AttributeError):
+    except (ValueError, TypeError, AttributeError, ZeroDivisionError):
         pass
 
 
