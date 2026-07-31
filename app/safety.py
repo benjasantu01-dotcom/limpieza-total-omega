@@ -111,6 +111,7 @@ def _is_readonly(path: Path) -> bool:
         return True
 
 
+@lru_cache(maxsize=2048)
 def normalize(path: PathLike) -> Path:
     """
     Convierte una ruta a un objeto Path absoluto y resuelto.

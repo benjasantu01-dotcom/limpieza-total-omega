@@ -140,7 +140,8 @@ def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload:
     if not path.exists():
         return []
     try:
-        raw_data = json.loads(path.read_text(encoding="utf-8"))
+        with open(path, "r", encoding="utf-8") as f:
+            raw_data = json.load(f)
     except (json.JSONDecodeError, OSError):
         return []
     
