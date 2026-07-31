@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **249** (49.4% de aceptación)
-- Rechazadas por tests: 19
+- Mejoras aceptadas: **251** (49.8% de aceptación)
+- Rechazadas por tests: 20
 - Rechazadas por guardia de seguridad: 26
-- Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 195
+- Sin cambios (nada sustancial que mejorar): 14
+- Sin respuesta de la IA (error o límite): 193
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-29 | 26 | 1 | 4 | 3 | 36 |
+| 2026-07-29 | 25 | 1 | 4 | 2 | 34 |
 | 2026-07-30 | 181 | 14 | 18 | 12 | 125 |
-| 2026-07-31 | 42 | 4 | 4 | 0 | 34 |
+| 2026-07-31 | 45 | 5 | 4 | 0 | 34 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **61**
+- legibilidad y documentación: **63**
 - seguridad defensiva: **54**
 - manejo de errores y validación de entradas: **51**
-- robustez ante casos límite: **46**
-- rendimiento: **37**
+- robustez ante casos límite: **45**
+- rendimiento: **38**
 
 ## Mejoras aceptadas por archivo
 
 - `scanner.py`: **23**
-- `healthscore.py`: **21**
 - `quarantine.py`: **21**
 - `diskreport.py`: **21**
 - `browser.py`: **20**
+- `healthscore.py`: **20**
+- `settings.py`: **19**
+- `assistant.py`: **19**
 - `duplicates.py`: **19**
-- `settings.py`: **18**
-- `assistant.py`: **18**
 - `organizer.py`: **17**
 - `branding.py`: **17**
 - `main.py`: **16**
 - `safety.py`: **15**
-- `startup.py`: **13**
+- `startup.py`: **14**
 - `memory.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-31T03:36:03` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` y `ask` eliminando la regeneración innecesaria de objetos `SystemContext` y pre-compilando expresiones regulares fuera de los loops, además de asegurar que `_rank_problems` sea invocado solo cuando es estrictamente necesario para reducir la carga de cómputo en cada consulta.
+- `2026-07-31T03:35:33` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo incorporando tipos de retorno explícitos en los docstrings y refinando la explicación del método `executable` para clarificar la lógica de resolución de rutas en condiciones de ambigüedad.
+- `2026-07-31T03:35:09` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en las funciones de validación, clarificando la lógica de coerción de tipos y asegurando que las responsabilidades de cada helper privado sean evidentes para futuros desarrolladores.
 - `2026-07-31T03:25:56` **scanner.py** (legibilidad y documentación): Documenté el propósito de los métodos de escaneo y las restricciones de seguridad en las funciones de recorrido de directorios para aclarar la lógica de prevención de recursión infinita y filtrado de rutas.
 - `2026-07-31T03:25:50` **safety.py** (legibilidad y documentación): Se ha añadido un docstring estructurado a la función `ensure_safe_to_modify` para documentar explícitamente sus condiciones de validación, comportamiento ante errores y restricciones de uso, facilitando su mantenimiento y evitando el uso incorrecto en condicionales.
 - `2026-07-31T03:25:01` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings descriptivos con las secciones "Argumentos", "Retorna" y "Excepciones" en las funciones principales para facilitar el mantenimiento y la auditoría de seguridad del módulo.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-31T03:04:41` **branding.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos con las secciones `Args` y `Returns` en todas las funciones públicas que carecían de ellos, mejorando la legibilidad técnica y facilitando el mantenimiento para futuros colaboradores.
 - `2026-07-31T02:55:24` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `build_context` para usar una estructura de validación más limpia, reemplazando la lógica anidada y repetitiva con un enfoque basado en diccionarios y funciones de transformación, facilitando la comprensión del flujo de datos de entrada.
 - `2026-07-31T02:55:08` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `StartupEntry.executable` y `parse_registry_csv` añadiendo validaciones preventivas de tipos y excepciones específicas para evitar errores inesperados durante el procesamiento de entradas de registro malformadas o rutas inválidas.
-- `2026-07-31T02:54:19` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `check_system_lookalike` y `scan_file` añadiendo validaciones preventivas para evitar errores en llamadas a `path.parent` o cuando `path` apunta a elementos inexistentes, capturando excepciones de forma más específica.
-- `2026-07-31T02:44:37` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `quarantine_file` añadiendo una validación explícita de `is_protected_path(source_path)` antes de cualquier operación, garantizando que no se intenten poner en cuarentena archivos críticos del sistema incluso si el `ensure_safe_to_modify` fuera esquivado.
-- `2026-07-31T02:44:10` **organizer.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `stage_for_review` implementando una validación explícita de tipos y estados para los objetos `JunkFile` recibidos, evitando procesar instancias incompletas o nulas y asegurando que `ensure_safe_to_modify` no se invoque con rutas inválidas.

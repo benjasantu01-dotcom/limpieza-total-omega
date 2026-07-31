@@ -126,6 +126,7 @@ _ENDPOINT: Final[str] = "https://generativelanguage.googleapis.com/v1beta/models
 _TIMEOUT_SECONDS: Final[int] = 30
 _PATH_REGEX: Final[re.Pattern] = re.compile(r"([a-zA-Z]:\\|/|\\|\.\.|\0)")
 _CONTROL_CHARS_REGEX: Final[re.Pattern] = re.compile(r"[\x00-\x1f\x7f]")
+_TOKEN_REGEX: Final[re.Pattern] = re.compile(r"\w+")
 
 # Mapeo optimizado mediante conjuntos de palabras clave
 _KEYWORD_MAP: Final[dict[str, str]] = {
@@ -360,7 +361,7 @@ def local_answer(question: str, context: SystemContext) -> Answer:
         )
 
     clean_text = _sanitize_query(question)
-    tokens = set(re.findall(r"\w+", clean_text))
+    tokens = set(_TOKEN_REGEX.findall(clean_text))
 
     for token in tokens:
         if token in _KEYWORD_MAP:
@@ -461,8 +462,8 @@ def ask(question: str, context: SystemContext | None = None,
     """
     Coordina la resolución de la consulta del usuario.
     """
-    contexto = context if isinstance(context, SystemContext) else SystemContext()
-    respaldo = local_answer(question, contexto)
+    ctx = context if isinstance(context, SystemContext) else SystemContext()
+    respaldo = local_answer(question, ctx)
 
     if not available(base):
         return respaldo
@@ -476,7 +477,7 @@ def ask(question: str, context: SystemContext | None = None,
         modelo = str(configuracion.get("asistente_modelo", "gemini-3.1-flash-lite"))
         enviar = bool(configuracion.get("asistente_enviar_metricas", True))
         
-        texto_contexto = context_as_text(contexto) if enviar else "El usuario no autorizó enviar métricas."
+        texto_contexto = context_as_text(ctx) if enviar else "El usuario no autorizó enviar métricas."
         remoto = _call_gemini(question, texto_contexto, clave, modelo)
 
         if not remoto:

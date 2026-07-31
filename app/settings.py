@@ -31,7 +31,7 @@ import json
 import os
 import tempfile
 from pathlib import Path
-from typing import Any, Final, TypeAlias, cast
+from typing import Any, Final, TypeAlias
 
 from safety import is_safe_to_modify, ensure_safe_to_modify
 
@@ -109,7 +109,11 @@ _DEFAULTS_KEYS: Final = set(DEFAULTS.keys())
 
 
 def _coerce_bool(raw_value: Any) -> bool | None:
-    """Normaliza entradas a booleano (soporta strings como 'si' o 'true')."""
+    """
+    Intenta normalizar entradas a booleano. 
+    Acepta strings representativos de verdad ('true', 'si', '1') para mayor robustez
+    en casos donde el JSON fue editado manualmente. Retorna None si es irrecuperable.
+    """
     if isinstance(raw_value, bool):
         return raw_value
     if isinstance(raw_value, str):
@@ -118,7 +122,10 @@ def _coerce_bool(raw_value: Any) -> bool | None:
 
 
 def _coerce_int(raw_value: Any, setting_key: str) -> int | None:
-    """Convierte a entero aplicando los límites de seguridad definidos en _NUMERIC_LIMITS."""
+    """
+    Convierte a entero aplicando límites de seguridad para evitar overflow o valores
+    absurdos que degraden el rendimiento del motor de escaneo.
+    """
     if isinstance(raw_value, bool):
         return None
     try:
@@ -130,7 +137,10 @@ def _coerce_int(raw_value: Any, setting_key: str) -> int | None:
 
 
 def _validate_str(clave: str, valor: Any) -> str | None:
-    """Valida strings y aplica chequeos de seguridad a rutas de archivos."""
+    """
+    Valida strings contra esquemas permitidos (temas/acentos) o chequeos de seguridad
+    de sistema (rutas de carpetas). Retorna None si la validación falla.
+    """
     if not isinstance(valor, str):
         return None
     texto = valor.strip()
@@ -144,6 +154,7 @@ def _validate_str(clave: str, valor: Any) -> str | None:
     if clave == "ultima_carpeta":
         try:
             ruta_candidata = Path(texto).expanduser().resolve()
+            # Se usa is_safe_to_modify para filtrar sin abortar el proceso.
             if not is_safe_to_modify(str(ruta_candidata)):
                 return None
             return str(ruta_candidata)
@@ -154,8 +165,8 @@ def _validate_str(clave: str, valor: Any) -> str | None:
 
 def _apply_validation_by_type(clave: str, valor: Any, defecto: Any) -> Any:
     """
-    Despacha la validación de forma eficiente.
-    Retorna el valor validado o None si el valor crudo no es compatible con el tipo del defecto.
+    Función de despacho (dispatcher) que determina qué validador aplicar
+    basado en la firma de tipos del valor por defecto en DEFAULTS.
     """
     tipo = type(defecto)
     if tipo is bool:
@@ -168,14 +179,17 @@ def _apply_validation_by_type(clave: str, valor: Any, defecto: Any) -> Any:
 
 
 def settings_path(path_or_base: PathLike | None = None) -> Path:
-    """Resuelve la ruta absoluta del archivo de configuración."""
+    """Resuelve la ruta absoluta del archivo de configuración, verificando permisos."""
     base = Path(path_or_base).expanduser().resolve() if path_or_base else SETTINGS_DIR
     ensure_safe_to_modify(str(base))
     return base / SETTINGS_FILE
 
 
 def validate(values: Any) -> dict[str, Any]:
-    """Valida un diccionario externo contra el esquema de DEFAULTS."""
+    """
+    Crea una copia segura del diccionario de configuración. 
+    Descarta cualquier clave desconocida y valida todos los valores existentes.
+    """
     limpio = dict(DEFAULTS)
     if not isinstance(values, dict):
         return limpio
@@ -190,7 +204,7 @@ def validate(values: Any) -> dict[str, Any]:
 
 
 def load(path_or_base: PathLike | None = None) -> dict[str, Any]:
-    """Carga configuración con caché por mtime y chequeos de seguridad."""
+    """Carga configuración con caché por mtime y chequeos de integridad de lectura."""
     global _cached_settings, _last_path_str, _last_mtime
     
     ruta = settings_path(path_or_base)
@@ -238,7 +252,6 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     parent = ruta.parent
     try:
         parent.mkdir(parents=True, exist_ok=True)
-        # Verificación doble de seguridad defensiva para garantizar contexto persistente seguro
         ensure_safe_to_modify(str(parent))
         ensure_safe_to_modify(str(ruta))
     except (OSError, RuntimeError, PermissionError):
@@ -246,14 +259,12 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     
     temp_file = None
     try:
-        # Usar dir=parent garantiza que el temp esté en la misma partición para os.replace
         temp_file = tempfile.NamedTemporaryFile("w", dir=parent, delete=False, encoding="utf-8")
         temp_file.write(json_data)
         temp_file.flush()
         os.fsync(temp_file.fileno())
         temp_file.close()
         
-        # Validar ruta de destino antes de reemplazar
         ensure_safe_to_modify(str(ruta))
         os.replace(temp_file.name, ruta)
         
@@ -271,7 +282,7 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
 
 
 def update(changes: dict[str, Any], path_or_base: PathLike | None = None) -> dict[str, Any]:
-    """Actualiza solo las claves provistas y persiste el estado completo."""
+    """Actualiza claves específicas y persiste el estado resultante completo."""
     actual = load(path_or_base)
     actual.update(changes)
     save(actual, path_or_base)
