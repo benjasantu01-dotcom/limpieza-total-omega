@@ -300,7 +300,9 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if not hasattr(kernel32, "OpenProcess") or not hasattr(psapi, "EmptyWorkingSet"):
         return False, "APIs de sistema no disponibles."
 
-    handle = kernel32.OpenProcess(0x1100, False, target_pid)
+    # PROCESS_QUERY_INFORMATION (0x0400) | PROCESS_SET_QUOTA (0x0100) | PROCESS_VM_WRITE (0x0020)
+    # Requerido para invocar EmptyWorkingSet sobre un proceso externo.
+    handle = kernel32.OpenProcess(0x0520, False, target_pid)
     if not handle:
         return False, f"No se pudo acceder al proceso {target_pid}."
     

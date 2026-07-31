@@ -133,6 +133,7 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
 def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     """
     Organiza rutas de archivos en un diccionario indexado por su tamaño en bytes.
+    El tamaño es la primera clave de descarte en el pipeline.
     """
     if paths is None:
         return {}
@@ -160,7 +161,8 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
 
 def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, skip_protected: bool) -> List[Path]:
     """
-    Explora directorios para identificar candidatos a duplicados filtrando enlaces y rutas seguras.
+    Explora directorios recursivamente para identificar candidatos a duplicados.
+    Descarta rutas protegidas y enlaces simbólicos para prevenir bucles de recursión.
     """
     if directories is None:
         return []
@@ -212,6 +214,7 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
 def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
     """
     Aplica una función de hash para subdividir una lista de rutas en grupos coincidentes.
+    Filtra grupos resultantes que tengan un solo elemento (no duplicados).
     """
     if paths is None:
         return {}
@@ -229,6 +232,7 @@ def find_duplicates(
 ) -> List[DuplicateGroup]:
     """
     Ejecuta el pipeline completo de detección de duplicados por tamaño y hash.
+    Retorna una lista de grupos, ordenados de mayor a menor impacto (bytes recuperables).
     """
     if not directories:
         return []
@@ -269,6 +273,7 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
     """
     Determina la mejor ruta para conservar basada en antigüedad (mtime) y longitud de ruta.
+    Prioriza el archivo más antiguo (menor mtime) y, en caso de empate, el de ruta más corta.
     """
     if group is None or not group.paths:
         return None
@@ -288,12 +293,14 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
     if not valid_paths:
         return group.paths[0] if group.paths else None
 
+    # Ordenar por: tiempo de modificación (asc), longitud de cadena de ruta (asc)
     return min(valid_paths, key=lambda x: (x[0], x[1]))[2]
 
 
 def format_group(group: DuplicateGroup) -> List[str]:
     """
     Genera un listado descriptivo de un grupo de duplicados para interfaces de usuario.
+    Incluye etiquetas de 'conservar' para el archivo sugerido.
     """
     if not group or not group.paths:
         return []

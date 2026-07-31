@@ -14,7 +14,7 @@ vive en los otros módulos; acá solo se puntúa.
 
 from __future__ import annotations
 from dataclasses import dataclass, field
-from typing import Dict, List, Any, Final
+from typing import Dict, List, Any, Final, Tuple
 import math
 
 __all__ = [
@@ -199,46 +199,43 @@ def _generate_recommendations(m: SystemMetrics, ratios: Dict[str, float]) -> Lis
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
     """Calcula el puntaje global de salud del sistema normalizando áreas según sus pesos."""
+    # Validación explícita de pre-condiciones de integridad antes de proceder
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Instancia de métricas no válida."])
     
     if sum(WEIGHTS.values()) != 100:
         return HealthResult(0, "F", {}, ["Error: Configuración de pesos desbalanceada."])
 
-    try:
-        metrics.validate()
-        if not metrics.is_finite():
-            return HealthResult(0, "F", {}, ["Error: Métricas contienen datos no procesables."])
-        
-        ratios: Dict[str, float] = {
-            "seguridad": score_security(metrics.suspicious_count, metrics.suspicious_warnings),
-            "disco": score_disk(metrics.disk_free_percent),
-            "memoria": score_memory(metrics.memory_available_percent),
-            "basura": score_junk(metrics.junk_mb),
-            "duplicados": score_duplicates(metrics.duplicate_mb),
-            "arranque": score_startup(metrics.startup_count),
-        }
+    metrics.validate()
+    if not metrics.is_finite():
+        return HealthResult(0, "F", {}, ["Error: Métricas contienen datos no procesables."])
+    
+    ratios: Dict[str, float] = {
+        "seguridad": score_security(metrics.suspicious_count, metrics.suspicious_warnings),
+        "disco": score_disk(metrics.disk_free_percent),
+        "memoria": score_memory(metrics.memory_available_percent),
+        "basura": score_junk(metrics.junk_mb),
+        "duplicados": score_duplicates(metrics.duplicate_mb),
+        "arranque": score_startup(metrics.startup_count),
+    }
 
-        total_score: float = 0.0
-        breakdown: Dict[str, int] = {}
-        for area, weight in WEIGHTS.items():
-            score_part = int(ratios.get(area, 0.0) * weight + 0.5)
-            breakdown[area] = score_part
-            total_score += score_part
+    total_score: float = 0.0
+    breakdown: Dict[str, int] = {}
+    for area, weight in WEIGHTS.items():
+        score_part = int(ratios.get(area, 0.0) * weight + 0.5)
+        breakdown[area] = score_part
+        total_score += score_part
 
-        final_score = int(total_score)
-        return HealthResult(
-            score=final_score,
-            grade=grade_for_score(final_score),
-            breakdown=breakdown,
-            recommendations=_generate_recommendations(metrics, ratios),
-        )
-
-    except Exception:
-        return HealthResult(0, "F", {}, ["Error crítico inesperado al procesar métricas."])
+    final_score = int(total_score)
+    return HealthResult(
+        score=final_score,
+        grade=grade_for_score(final_score),
+        breakdown=breakdown,
+        recommendations=_generate_recommendations(metrics, ratios),
+    )
 
 
-def _sort_by_performance_delta(item: tuple[str, int]) -> int:
+def _sort_by_performance_delta(item: Tuple[str, int]) -> int:
     """Calcula la desviación respecto al peso ideal para ordenar áreas prioritarias."""
     area, puntos = item
     return puntos - WEIGHTS.get(area, 0)

@@ -118,20 +118,20 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._init_state()
         self._build_layout()
 
-    def _init_window_properties(self):
-        """Define dimensiones, títulos y propiedades base del motor de renderizado."""
+    def _init_window_properties(self) -> None:
+        """Configura los parámetros visuales básicos de la ventana principal."""
         self.title(branding.app_title())
         self.geometry("1120x780")
         self.minsize(980, 680)
         self.configure(fg_color=branding.color("background"))
 
-    def _init_state(self):
-        """Prepara el almacenamiento volátil (memoria de sesión) y gestores de hilos."""
-        self._cache = {}
-        self._last_health_state = None
-        self.scan_target = None  # None = carpetas por defecto (Temp/Descargas)
-        self.analysis_folder = None
-        self.report_data = {}
+    def _init_state(self) -> None:
+        """Inicializa estructuras de datos volátiles y el pool de hilos para procesamiento."""
+        self._cache: Dict[str, Any] = {}
+        self._last_health_state: Optional[Tuple] = None
+        self.scan_target: Optional[str] = None
+        self.analysis_folder: Optional[str] = None
+        self.report_data: Dict[str, List[str]] = {}
         self.assistant_context = assistant.SystemContext()
         
         try:
@@ -140,16 +140,23 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             logging.error("Fallo al cargar ajustes, usando defaults: %s", e)
             self.settings = settings_mod.reset()
             
-        self.setting_vars = {}
-        self.outputs = {}
-        self.tabs = {}
-        self.cards = {}
-        self.area_bars = {}
+        self.setting_vars: Dict[str, Any] = {}
+        self.outputs: Dict[str, ctk.CTkTextbox] = {}
+        self.tabs: Dict[str, ctk.CTkFrame] = {}
+        self.cards: Dict[str, ctk.CTkLabel] = {}
+        self.area_bars: Dict[str, Tuple[ctk.CTkProgressBar, ctk.CTkLabel]] = {}
         self._tasks_running = 0
         self._executor = concurrent.futures.ThreadPoolExecutor(max_workers=5)
 
     def _get_cached(self, key: str, provider: Callable, force: bool = False) -> Any:
-        """Provee acceso memoizado a datos de lectura pesada (disco/sistema)."""
+        """
+        Recupera datos del caché si existen; si no, invoca al proveedor.
+        
+        Args:
+            key: Identificador de la caché.
+            provider: Función de obtención de datos (lectura de sistema).
+            force: Booleano para forzar recálculo.
+        """
         if force or key not in self._cache:
             try:
                 self._cache[key] = provider()
@@ -161,14 +168,17 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     # Construcción de la interfaz
     # ------------------------------------------------------------------
 
-    def _build_layout(self):
-        """Define el flujo jerárquico de la composición de la ventana."""
+    def _build_layout(self) -> None:
+        """Ensambla la jerarquía de componentes: encabezado, pestañas y pie de página."""
         self._build_header()
         self._build_tabs_container()
         self._build_footer()
 
-    def _build_tabs_container(self):
-        """Inicializa el contenedor de pestañas y mapea los constructores de cada sección."""
+    def _build_tabs_container(self) -> None:
+        """
+        Inicializa el contenedor de pestañas (Tabview) y delega la 
+        construcción de cada pestaña individual a sus métodos correspondientes.
+        """
         self.tabview = ctk.CTkTabview(
             self,
             fg_color=branding.color("surface"),
@@ -209,8 +219,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
         self.output = self.outputs.get("Limpieza")
 
-    def _build_header(self):
-        """Genera el branding superior, incluyendo el logo y el degradado decorativo."""
+    def _build_header(self) -> None:
+        """Genera el encabezado con el logo, branding y la barra decorativa."""
         header = ctk.CTkFrame(self, fg_color="transparent")
         header.pack(fill="x", padx=18, pady=(16, 0))
 
@@ -250,8 +260,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             lambda e, c=franja: (c.delete("all"), branding.draw_gradient_bar(c, e.width, 3)),
         )
 
-    def _build_footer(self):
-        """Crea la barra de estado inferior que indica actividad asíncrona."""
+    def _build_footer(self) -> None:
+        """Crea la barra de estado inferior que indica actividad asíncrona mediante un indicador visual."""
         pie = ctk.CTkFrame(self, fg_color="transparent")
         pie.pack(fill="x", padx=18, pady=(0, 12))
 
@@ -313,7 +323,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         button.grid(row=0, column=column, padx=6, pady=4, sticky="w")
         return button
 
-    def _hint(self, parent: ctk.CTk, text: str):
+    def _hint(self, parent: ctk.CTk, text: str) -> None:
         """Etiqueta informativa sutil para guiar al usuario en el uso de la pestaña."""
         ctk.CTkLabel(
             parent, text=text, text_color=branding.color("text_muted"),
@@ -348,7 +358,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     # -- Pestañas ------------------------------------------------------
 
-    def _build_tab_salud(self):
+    def _build_tab_salud(self) -> None:
         """Interfaz principal: Resumen del estado del sistema y métricas clave."""
         tab = self.tabs["Salud"]
         row = self._button_row(tab)
@@ -377,7 +387,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                         "puntaje. Es un análisis de solo lectura: no modifica nada.")
         self._make_output("Salud", tab)
 
-    def _build_health_metrics_row(self, container: ctk.CTkFrame):
+    def _build_health_metrics_row(self, container: ctk.CTkFrame) -> None:
         """Crea tarjetas de resumen (métricas numéricas rápidas)."""
         metrics = (("basura", "Basura"), ("sospechosos", "Sospechosos"),
                    ("ram", "RAM libre"), ("disco", "Disco libre"))
@@ -385,7 +395,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             container.grid_columnconfigure(i, weight=1)
             self.cards[clave] = self._metric_card(container, titulo, i)
 
-    def _build_health_area_bars(self, parent: ctk.CTk):
+    def _build_health_area_bars(self, parent: ctk.CTk) -> None:
         """Crea las barras de progreso proporcionales para el desglosado de salud."""
         area_container = ctk.CTkFrame(parent, fg_color="transparent")
         area_container.grid(row=0, column=1, sticky="ew")
@@ -393,7 +403,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         for fila, (clave, etiqueta) in enumerate(HEALTH_AREAS):
             self._build_single_health_bar(area_container, clave, etiqueta, fila)
 
-    def _build_single_health_bar(self, container: ctk.CTkFrame, clave: str, etiqueta: str, fila: int):
+    def _build_single_health_bar(self, container: ctk.CTkFrame, clave: str, etiqueta: str, fila: int) -> None:
         """Renderiza una única barra de progreso de salud."""
         ctk.CTkLabel(
             container, text=etiqueta, anchor="w", width=150,
@@ -438,7 +448,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         ).pack(pady=(0, 14))
         return valor_label
 
-    def _draw_gauge(self, score: int, grade: str):
+    def _draw_gauge(self, score: int, grade: str) -> None:
         """Solicita el redibujado de la interfaz circular de salud en el hilo principal."""
         def update_canvas():
             if not self.gauge.winfo_exists(): return
@@ -455,7 +465,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             )
         self.after(0, update_canvas)
 
-    def _build_tab_limpieza(self):
+    def _build_tab_limpieza(self) -> None:
         """Interfaz de gestión: búsqueda y eliminación de archivos basura."""
         tab = self.tabs["Limpieza"]
         row = self._button_row(tab)
@@ -485,7 +495,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
         self._make_output("Limpieza", tab)
 
-    def _build_tab_seguridad(self):
+    def _build_tab_seguridad(self) -> None:
         """Interfaz de análisis heurístico y control de Windows Defender."""
         tab = self.tabs["Seguridad"]
         row = self._button_row(tab)
@@ -498,7 +508,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                      secondary=True, column=3)
         self._make_output("Seguridad", tab)
 
-    def _build_tab_cuarentena(self):
+    def _build_tab_cuarentena(self) -> None:
         """Interfaz de gestión del almacén de seguridad: restauración y purga."""
         tab = self.tabs["Cuarentena"]
         row = self._button_row(tab)
@@ -516,7 +526,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.quarantine_id.grid(row=0, column=1, padx=4)
         self._make_output("Cuarentena", tab)
 
-    def _build_tab_memoria(self):
+    def _build_tab_memoria(self) -> None:
         """Interfaz de diagnóstico: monitoreo de RAM y gestión de procesos."""
         tab = self.tabs["Memoria"]
         row = self._button_row(tab)
@@ -534,7 +544,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.pid_entry.grid(row=0, column=1, padx=4)
         self._make_output("Memoria", tab)
 
-    def _build_tab_disco(self):
+    def _build_tab_disco(self) -> None:
         """Interfaz de reporte: utilización de almacenamiento por unidad y carpeta."""
         tab = self.tabs["Disco"]
         row = self._button_row(tab)
@@ -543,7 +553,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                      secondary=True, column=1)
         self._make_output("Disco", tab)
 
-    def _build_tab_duplicados(self):
+    def _build_tab_duplicados(self) -> None:
         """Interfaz de análisis: detección y aislamiento de archivos duplicados."""
         tab = self.tabs["Duplicados"]
         row = self._button_row(tab)
@@ -552,21 +562,21 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                      danger=True, column=1)
         self._make_output("Duplicados", tab)
 
-    def _build_tab_navegadores(self):
+    def _build_tab_navegadores(self) -> None:
         """Interfaz de diagnóstico: reporte de cachés de navegadores detectados."""
         tab = self.tabs["Navegadores"]
         row = self._button_row(tab)
         self._action(row, "Detectar caché", self.on_browser_report, column=0)
         self._make_output("Navegadores", tab)
 
-    def _build_tab_inicio(self):
+    def _build_tab_inicio(self) -> None:
         """Interfaz de inventario: programas configurados para iniciar con Windows."""
         tab = self.tabs["Inicio"]
         row = self._button_row(tab)
         self._action(row, "Ver programas de inicio", self.on_startup_report, column=0)
         self._make_output("Inicio", tab)
 
-    def _build_tab_informe(self):
+    def _build_tab_informe(self) -> None:
         """Interfaz de reportes: generación y exportación a archivos."""
         tab = self.tabs["Informe"]
         row = self._button_row(tab)
@@ -577,7 +587,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                      secondary=True, column=2)
         self._make_output("Informe", tab)
 
-    def _build_tab_asistente(self):
+    def _build_tab_asistente(self) -> None:
         """Interfaz: motor de consulta al asistente local/remoto."""
         tab = self.tabs["Asistente"]
         row = self._button_row(tab)
@@ -608,7 +618,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             ).grid(row=i // 3, column=i % 3, padx=4, pady=4, sticky="w")
         self._make_output("Asistente", tab)
 
-    def _build_tab_ajustes(self):
+    def _build_tab_ajustes(self) -> None:
         """Interfaz: configuración de parámetros y preferencias del usuario."""
         tab = self.tabs["Ajustes"]
         row = self._button_row(tab)
