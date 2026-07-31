@@ -292,6 +292,10 @@ def save_logo_svg(destination: str | Path | None) -> Path | None:
         path = Path(destination).expanduser().resolve()
         parent = path.parent
         
+        # Validar ruta de manera segura antes de intentar crear directorios
+        if not is_safe_to_modify(parent):
+            return None
+            
         ensure_safe_to_modify(parent)
         if path.exists():
             ensure_safe_to_modify(path)

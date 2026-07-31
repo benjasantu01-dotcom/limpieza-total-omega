@@ -6,46 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **255** (50.6% de aceptación)
+- Mejoras aceptadas: **259** (51.4% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 25
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 191
+- Sin respuesta de la IA (error o límite): 187
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-30 | 89 | 5 | 9 | 7 | 70 |
-| 2026-07-31 | 166 | 12 | 16 | 9 | 121 |
+| 2026-07-30 | 89 | 5 | 9 | 7 | 66 |
+| 2026-07-31 | 170 | 12 | 16 | 9 | 121 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **65**
 - rendimiento: **53**
 - manejo de errores y validación de entradas: **51**
-- robustez ante casos límite: **44**
-- seguridad defensiva: **42**
+- robustez ante casos límite: **46**
+- seguridad defensiva: **44**
 
 ## Mejoras aceptadas por archivo
 
+- `branding.py`: **21**
 - `diskreport.py`: **21**
 - `scanner.py`: **21**
 - `quarantine.py`: **21**
-- `branding.py`: **20**
+- `assistant.py`: **20**
 - `browser.py`: **20**
-- `assistant.py`: **19**
+- `settings.py`: **20**
 - `duplicates.py`: **19**
-- `settings.py`: **19**
 - `main.py`: **18**
 - `safety.py`: **17**
 - `healthscore.py`: **17**
 - `organizer.py`: **16**
-- `startup.py`: **14**
+- `startup.py`: **15**
 - `memory.py`: **13**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-31T13:50:11` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad en `save_logo_svg` al verificar la existencia del directorio padre mediante `is_safe_to_modify` (booleano) en lugar de una comprobación que solo ocurre tras intentar la operación, evitando así posibles excepciones bloqueantes innecesarias y siguiendo estrictamente el patrón defensivo de no modificar nada inseguro.
+- `2026-07-31T13:49:43` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_call_gemini` añadiendo una validación explícita para asegurar que el `model` solicitado por `settings` no contenga caracteres potencialmente maliciosos antes de interpolarlo en la URL, previniendo inyecciones de parámetros o rutas.
+- `2026-07-31T13:49:09` **startup.py** (robustez ante casos límite): Mejora la robustez de `StartupEntry.executable` al manejar excepciones durante la expansión de rutas y validación de archivos, evitando fallos ante entradas de registro mal formadas o rutas con caracteres inválidos.
+- `2026-07-31T13:48:45` **settings.py** (robustez ante casos límite): Se mejora la robustez de `settings_path` ante rutas inválidas o permisos denegados al invocar `ensure_safe_to_modify`, garantizando que la aplicación no colapse si el directorio base es inaccesible o si el usuario proporciona una ruta malformada.
 - `2026-07-31T13:39:28` **scanner.py** (robustez ante casos límite): Se reforzó la resiliencia del módulo ante rutas inexistentes y errores de acceso integrando verificaciones `is_file()` seguras y `exists()` dentro de los chequeos heurísticos, evitando excepciones innecesarias en `path.stat()` para archivos que podrían haber sido eliminados durante la ejecución del escaneo.
 - `2026-07-31T13:39:21` **safety.py** (robustez ante casos límite): Mejoré `is_protected_path` para prevenir ataques de "Path Traversal" (ej. `C:\Users\Admin\.. \Windows`) mediante el uso de `resolve()` antes de comprobar la existencia de tokens protegidos en los segmentos de la ruta, asegurando que la validación ocurra sobre la ruta real del sistema de archivos y no sobre la cadena de texto manipulable.
 - `2026-07-31T13:38:36` **quarantine.py** (robustez ante casos límite): Se añadió una validación explícita para evitar colisiones de rutas al restaurar archivos, verificando que no existan archivos ocultos o de sistema con el mismo nombre en la ruta de destino, y reforzando la seguridad al impedir restauraciones si el directorio padre no es un directorio válido (evitando "path hijacking" mediante archivos existentes que bloqueen la creación de la estructura).
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-31T13:08:02` **scanner.py** (rendimiento): Optimizé la performance del escaneo moviendo la comprobación de la extensión del archivo antes de realizar llamadas costosas al sistema de archivos (`stat`) dentro de las funciones de chequeo, evitando procesos innecesarios para archivos irrelevantes.
 - `2026-07-31T12:58:50` **safety.py** (rendimiento): Optimicé el uso del cache agregando un `lru_cache` a `normalize`, eliminando el recálculo constante de rutas absolutas que ocurre en cada validación de seguridad dentro de bucles intensivos.
 - `2026-07-31T12:58:22` **quarantine.py** (rendimiento): Optimicé el rendimiento de `load_manifest` mediante el uso de `json.load` sobre un file descriptor en lugar de `read_text`, evitando la carga completa del archivo en memoria como string antes de procesarlo, lo cual es más eficiente para manifiestos que podrían crecer.
-- `2026-07-31T12:49:00` **main.py** (rendimiento): Optimicé el método `_compile_metrics` reemplazando llamadas redundantes a funciones que recorren disco por el uso del caché ya implementado, asegurando que `scan_for_junk` y `startup_mod.list_startup_entries` solo se ejecuten bajo demanda en lugar de en cada consolidación de salud.
-- `2026-07-31T12:47:36` **duplicates.py** (rendimiento): Optimizamos la lectura de archivos en `hash_file` y `partial_hash` implementando un manejo de buffers más eficiente y evitando cierres prematuros, además de asegurar que las rutas se resuelvan una sola vez antes de cualquier operación de I/O para reducir el overhead del sistema de archivos.
-- `2026-07-31T12:38:27` **diskreport.py** (rendimiento): Optimicé el método `walk_files` eliminando la llamada innecesaria a `.resolve()` dentro del bucle interno, reduciendo drásticamente las llamadas al sistema operativo (I/O) que penalizaban el rendimiento en directorios profundos.
-- `2026-07-31T12:38:18` **browser.py** (rendimiento): Optimizé `directory_size` cambiando el uso de `os.scandir` para que procese el tamaño de archivos directamente durante la iteración y evite realizar llamadas adicionales a `stat()` o recorridos redundantes, mejorando la eficiencia en carpetas con muchos archivos pequeños.

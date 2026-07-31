@@ -139,9 +139,12 @@ _VALIDATION_SCHEMA: Final = {
 }
 
 def settings_path(path_or_base: PathLike | None = None) -> Path:
-    base = Path(path_or_base).expanduser() if path_or_base else SETTINGS_DIR
-    ensure_safe_to_modify(str(base))
-    return base.resolve() / SETTINGS_FILE
+    try:
+        base = Path(path_or_base).expanduser() if path_or_base else SETTINGS_DIR
+        ensure_safe_to_modify(str(base))
+        return base.resolve() / SETTINGS_FILE
+    except (OSError, RuntimeError, ValueError):
+        return SETTINGS_DIR.resolve() / SETTINGS_FILE
 
 def validate(values: Any) -> dict[str, Any]:
     if not isinstance(values, dict):

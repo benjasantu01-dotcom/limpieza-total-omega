@@ -81,9 +81,12 @@ class StartupEntry:
         if not path_str or any(c in path_str for c in '<>|?*'):
             return ""
         
-        path = Path(path_str).expanduser()
-        return str(path) if self._is_valid_executable(path) else ""
-
+        try:
+            path = Path(path_str).expanduser()
+            return str(path) if self._is_valid_executable(path) else ""
+        except (OSError, ValueError, RuntimeError, TypeError):
+            return ""
+        
     @property
     def executable(self) -> str:
         """

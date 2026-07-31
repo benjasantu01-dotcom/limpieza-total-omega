@@ -127,6 +127,7 @@ _TIMEOUT_SECONDS: Final[int] = 30
 _PATH_REGEX: Final[re.Pattern] = re.compile(r"([a-zA-Z]:\\|/|\\|\.\.|\0)")
 _CONTROL_CHARS_REGEX: Final[re.Pattern] = re.compile(r"[\x00-\x1f\x7f]")
 _TOKEN_REGEX: Final[re.Pattern] = re.compile(r"\w+")
+_MODEL_NAME_REGEX: Final[re.Pattern] = re.compile(r"^[a-zA-Z0-9\.\-_]+$")
 
 # Mapeo optimizado mediante conjuntos de palabras clave
 _KEYWORD_MAP: Final[dict[str, str]] = {
@@ -420,7 +421,7 @@ def _call_gemini(
     Validaciones de seguridad garantizan que no salgan rutas del sistema y
     que la respuesta no contenga caracteres sospechosos.
     """
-    if not api_key or not model:
+    if not api_key or not model or not _MODEL_NAME_REGEX.match(model):
         return None
         
     try:
