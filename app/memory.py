@@ -73,14 +73,14 @@ class MemorySnapshot:
         """Retorna el porcentaje de uso (0-100) basado en la capacidad total."""
         if self.total <= 0:
             return 0.0
-        return round(self.used / self.total * 100, 1)
+        return round((self.used / self.total) * 100, 1)
 
     @property
     def available_percent(self) -> float:
         """Retorna el porcentaje disponible (0-100) basado en la capacidad total."""
         if self.total <= 0:
             return 0.0
-        return round(self.available / self.total * 100, 1)
+        return round((self.available / self.total) * 100, 1)
 
 
 @dataclass
@@ -279,6 +279,8 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     
     try:
         target_pid = int(pid)
+        if target_pid < 0:
+            return False, "PID inválido."
         # Bloquea procesos de sistema (PID 0, 4 son System/Idle)
         if target_pid <= 4:
             return False, "Operación denegada: PID de sistema protegido."
@@ -292,8 +294,6 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if not hasattr(kernel32, "OpenProcess") or not hasattr(psapi, "EmptyWorkingSet"):
         return False, "APIs de sistema no disponibles."
 
-    # PROCESS_QUERY_LIMITED_INFORMATION (0x1000) | PROCESS_SET_QUOTAS (0x0100)
-    # Usamos acceso mínimo para seguridad defensiva.
     handle = kernel32.OpenProcess(0x1100, False, target_pid)
     if not handle:
         return False, f"No se pudo abrir el proceso {target_pid}."
@@ -302,7 +302,10 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         if handle == kernel32.GetCurrentProcess():
             return False, "Operación denegada: proceso de la app."
         if not psapi.EmptyWorkingSet(handle):
-            return False, f"Error en la operación (WinError {kernel32.GetLastError()})."
+            err_code = kernel32.GetLastError()
+            return False, f"Error en la operación (WinError {err_code})."
         return True, f"Working set liberado. {TRIM_WARNING}"
+    except Exception:
+        return False, "Error inesperado al intentar limpiar la memoria."
     finally:
         kernel32.CloseHandle(handle)

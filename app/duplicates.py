@@ -261,17 +261,18 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
     """
     Determina la mejor ruta para conservar basada en antigüedad (mtime) y longitud de ruta.
     """
-    if not group or not group.paths:
+    if group is None or not group.paths:
         return None
 
     valid_paths: List[Tuple[float, int, Path]] = []
     for p in group.paths:
-        path_obj = Path(p)
-        if not path_obj.exists() or not path_obj.is_file():
+        if not isinstance(p, Path):
+            p = Path(p)
+        if not p.exists() or not p.is_file():
             continue
         try:
-            stat = path_obj.stat()
-            valid_paths.append((stat.st_mtime, len(str(path_obj)), path_obj))
+            stat = p.stat()
+            valid_paths.append((stat.st_mtime, len(str(p)), p))
         except (OSError, PermissionError):
             continue
             

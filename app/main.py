@@ -1426,7 +1426,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             if val_top.isdigit() and int(val_top) > 0:
                 valores["top_archivos"] = int(val_top)
         except (ValueError, AttributeError):
-            pass
+            logging.error("Error al validar campos de entrada en Ajustes")
             
         clave_api = self.api_key_entry.get().strip()
         if clave_api:

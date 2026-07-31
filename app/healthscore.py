@@ -197,13 +197,16 @@ def _generate_recommendations(m: SystemMetrics, ratios: Dict[str, float]) -> Lis
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
     """Calcula el puntaje global de salud del sistema."""
-    if not isinstance(metrics, SystemMetrics) or sum(WEIGHTS.values()) != 100:
-        return HealthResult(0, "F", {}, ["Error: Datos de entrada faltantes, inválidos o configuración desbalanceada."])
+    if not isinstance(metrics, SystemMetrics):
+        return HealthResult(0, "F", {}, ["Error: Instancia de métricas no válida."])
+    
+    if sum(WEIGHTS.values()) != 100:
+        return HealthResult(0, "F", {}, ["Error: Configuración de pesos desbalanceada."])
 
     try:
         metrics.validate()
         if not metrics.is_finite():
-            return HealthResult(0, "F", {}, ["Error: Las métricas contienen datos numéricos no procesables."])
+            return HealthResult(0, "F", {}, ["Error: Métricas contienen datos no procesables."])
         
         ratios = {
             "seguridad": score_security(metrics.suspicious_count, metrics.suspicious_warnings),
@@ -217,9 +220,6 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         total_score: float = 0.0
         breakdown: Dict[str, int] = {}
         for area, weight in WEIGHTS.items():
-            # Validación defensiva: asegurar que el área existe en los ratios calculados
-            if area not in ratios:
-                continue
             score_part = int(ratios.get(area, 0.0) * weight + 0.5)
             breakdown[area] = score_part
             total_score += score_part
