@@ -82,14 +82,20 @@ def _process_directory_entry(entry: os.DirEntry, results: List[Suspicion], stack
 
 
 def check_double_extension(path: Path) -> Optional[Suspicion]:
-    """Analiza si el nombre del archivo contiene una extensión doble sospechosa."""
+    """
+    Detecta archivos con doble extensión (ej: 'foto.jpg.exe').
+    La técnica busca confundir al usuario ocultando la extensión real.
+    """
     if path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
     return None
 
 
 def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_THRESHOLD_HOURS) -> Optional[Suspicion]:
-    """Evalúa si un archivo ejecutable ha sido modificado recientemente."""
+    """
+    Identifica ejecutables creados o modificados recientemente.
+    Un ejecutable nuevo en carpetas de usuario suele requerir inspección del usuario.
+    """
     if path.suffix.lower() in SUSPICIOUS_EXECUTABLE_EXT:
         try:
             mtime = datetime.fromtimestamp(path.stat(follow_symlinks=False).st_mtime)
@@ -101,7 +107,10 @@ def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_TH
 
 
 def check_system_lookalike(path: Path) -> Optional[Suspicion]:
-    """Detecta archivos que imitan nombres de procesos críticos del sistema operativo."""
+    """
+    Detecta archivos ejecutables que utilizan nombres de procesos críticos del sistema.
+    Los atacantes intentan ocultar procesos maliciosos usando nombres de servicios legítimos.
+    """
     try:
         if path.name and path.name.lower() in SYSTEM_LOOKALIKES:
             parent = path.parent

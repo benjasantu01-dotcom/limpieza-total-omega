@@ -84,7 +84,7 @@ class StartupEntry:
     @property
     def executable(self) -> str:
         """
-        Obtiene la ruta normalizada del ejecutable.
+        Normaliza la ruta del ejecutable analizando el comando de inicio.
         Utiliza cache interno para evitar llamadas repetidas al sistema de archivos.
         """
         if self._exec_cache is not None:
@@ -92,6 +92,7 @@ class StartupEntry:
             
         if not self.command:
             return ""
+        # Limpieza de caracteres no imprimibles del comando crudo
         cmd: str = "".join(c for c in self.command.strip() if ord(c) >= 32)
         if not cmd:
             return ""
@@ -128,7 +129,7 @@ def startup_folders() -> List[Path]:
 
 
 def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[StartupEntry]:
-    """Escanea las carpetas de inicio en busca de ejecutables o accesos directos."""
+    """Escanea las carpetas de inicio detectando ejecutables accesibles."""
     if folders is None:
         folders = startup_folders()
     found_entries: List[StartupEntry] = []
@@ -161,7 +162,10 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
 
 
 def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry]:
-    """Convierte el CSV de PowerShell en una lista de objetos StartupEntry."""
+    """
+    Procesa el output crudo de PowerShell en formato CSV.
+    Aplica filtros de seguridad sobre la existencia y protección de las rutas.
+    """
     parsed_entries: List[StartupEntry] = []
     if not isinstance(text, str) or not text.strip():
         return parsed_entries
@@ -175,7 +179,6 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
         if len(columns) < 2:
             continue
             
-        # Limpieza robusta de valores, asegurando que existan
         name_key: str = columns[0].strip().strip('"\'')
         value_cmd: str = columns[1].strip().strip('"\'')
         
@@ -198,7 +201,10 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
 
 
 def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[StartupEntry]:
-    """Ejecuta consultas de PowerShell para extraer entradas del Registro."""
+    """
+    Ejecuta consultas de PowerShell para extraer entradas del Registro de Windows.
+    Utiliza un comando unificado para minimizar el número de procesos externos.
+    """
     if os.name != "nt":
         return []
     
@@ -250,7 +256,10 @@ def estimate_impact(entries: Sequence[StartupEntry]) -> str:
 
 
 def summarize(entries: Optional[Sequence[StartupEntry]] = None) -> List[str]:
-    """Genera un informe textual (List[str]) para la UI con los programas detectados."""
+    """
+    Genera un informe detallado para la interfaz de usuario.
+    Incluye un desglose por origen y recomendaciones de seguridad.
+    """
     entries_list: Sequence[StartupEntry] = entries if entries is not None else list_startup_entries()
     total_count: int = len(entries_list)
         

@@ -16,36 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-30 | 156 | 11 | 16 | 11 | 122 |
-| 2026-07-31 | 97 | 9 | 9 | 3 | 70 |
+| 2026-07-30 | 152 | 11 | 16 | 11 | 122 |
+| 2026-07-31 | 101 | 9 | 9 | 3 | 70 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **61**
+- legibilidad y documentación: **64**
 - seguridad defensiva: **55**
 - manejo de errores y validación de entradas: **54**
-- robustez ante casos límite: **44**
-- rendimiento: **39**
+- robustez ante casos límite: **40**
+- rendimiento: **40**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **22**
-- `scanner.py`: **22**
-- `duplicates.py`: **21**
+- `scanner.py`: **23**
+- `assistant.py`: **21**
 - `browser.py`: **21**
-- `assistant.py`: **20**
+- `diskreport.py`: **21**
+- `settings.py`: **20**
+- `duplicates.py`: **20**
 - `quarantine.py`: **20**
-- `healthscore.py`: **19**
-- `settings.py`: **19**
+- `healthscore.py`: **18**
 - `safety.py`: **17**
-- `main.py`: **16**
 - `organizer.py`: **15**
+- `main.py`: **15**
 - `branding.py`: **15**
+- `startup.py`: **14**
 - `memory.py`: **13**
-- `startup.py`: **13**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-31T08:01:58` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` y el acceso a los datos precalculados mediante la eliminación de la re-tokenización innecesaria y el uso de un diccionario de acceso directo más eficiente, evitando el recorrido de la lista de problemas si no es estrictamente necesario.
+- `2026-07-31T08:01:41` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `startup.py` mediante type hints más precisos, unificando el estilo de los docstrings e integrando explicaciones sobre el flujo de datos para facilitar el mantenimiento y la comprensión de las heurísticas de seguridad aplicadas.
+- `2026-07-31T08:01:16` **settings.py** (legibilidad y documentación): Mejoré la documentación técnica y la legibilidad mediante docstrings en las funciones críticas de validación y conversión, aclarando las restricciones de seguridad y el manejo de valores inválidos.
+- `2026-07-31T08:00:52` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación de las funciones de chequeo mediante docstrings detallados que explican el contexto de seguridad de cada heurística y se ha refinado el tipado de los retornos para asegurar que las funciones de análisis sean consistentes y legibles.
 - `2026-07-31T07:51:29` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación de `ensure_safe_to_modify` y `is_safe_to_modify` con docstrings que detallan los riesgos de seguridad manejados y los tipos de retorno, además de refactorizar `_is_reparse_point` para mejorar su legibilidad y precisión técnica al manejar atributos de archivos.
 - `2026-07-31T07:51:02` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de Type Hints explícitos, la corrección de un docstring ambiguo en `_is_file_locked`, y la extracción de una lógica de validación repetitiva en `purge_all` a un flujo más claro, manteniendo la robustez del módulo.
 - `2026-07-31T07:50:35` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `organizer.py` añadiendo Type Hints precisos, eliminando redundancias en la lógica de guardas y estandarizando los docstrings siguiendo las convenciones del proyecto, asegurando que las funciones de seguridad sean invocadas correctamente según las reglas establecidas.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-31T07:31:10` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica y la robustez de `directory_size` y `_is_safe_path` mediante la clarificación de excepciones y la especificación de tipos, asegurando que la intención del código sea evidente ante futuros cambios.
 - `2026-07-31T07:30:47` **branding.py** (legibilidad y documentación): Se introdujeron docstrings técnicos detallados en las funciones de manipulación de color y gradientes para explicar el fundamento de la interpolación lineal (lerp) y la normalización de rangos, facilitando el mantenimiento futuro del motor gráfico.
 - `2026-07-31T07:30:18` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y mantenimiento del módulo mediante la adición de docstrings precisos en las funciones críticas, la estandarización de los tipos de retorno y la organización semántica de los helpers internos.
-- `2026-07-31T07:20:52` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo validación de tipo y contenido sobre los datos crudos del CSV para evitar excepciones inesperadas al procesar salidas malformadas de PowerShell, garantizando que solo se creen entradas con datos válidos.
-- `2026-07-31T07:20:44` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `settings.py` implementando una validación estricta de las rutas en `validate`, asegurando que `ultima_carpeta` no solo sea una ruta sintácticamente válida, sino que también verifique su existencia o capacidad de ser resuelta, previniendo inyecciones de rutas inseguras mediante la reutilización del validador de `safety` de forma más granular.
-- `2026-07-31T07:20:19` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `scan_directory` y `_process_directory_entry` implementando validaciones de entrada (`None`/`Path` inválidos) y manejando errores de forma específica al resolver rutas, evitando que condiciones de carrera o rutas corruptas bloqueen el escáner.
-- `2026-07-31T07:19:58` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `normalize` y `is_protected_path` al encapsular la lógica de resolución de rutas en un bloque `try-except` más estricto, asegurando que `Path.resolve()` no falle ante rutas inválidas o con caracteres prohibidos por el sistema operativo, devolviendo siempre una estructura predecible.

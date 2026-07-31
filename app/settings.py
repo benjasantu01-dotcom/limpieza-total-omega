@@ -101,6 +101,7 @@ _DEFAULTS_KEYS: Final = set(DEFAULTS.keys())
 
 
 def _coerce_bool(raw_value: Any) -> bool | None:
+    """Convierte tipos arbitrarios a booleano. Retorna None si no es convertible."""
     if isinstance(raw_value, bool):
         return raw_value
     if isinstance(raw_value, str):
@@ -109,6 +110,7 @@ def _coerce_bool(raw_value: Any) -> bool | None:
 
 
 def _coerce_int(raw_value: Any, setting_key: str) -> int | None:
+    """Convierte a entero y asegura que esté dentro de los límites definidos en _NUMERIC_LIMITS."""
     if isinstance(raw_value, bool):
         return None
     try:
@@ -120,6 +122,7 @@ def _coerce_int(raw_value: Any, setting_key: str) -> int | None:
 
 
 def _validate_str(clave: str, valor: Any) -> str | None:
+    """Valida cadenas, aplicando reglas de negocio (temas, acentos, rutas seguras)."""
     if not isinstance(valor, str):
         return None
     texto = valor.strip()
@@ -133,7 +136,7 @@ def _validate_str(clave: str, valor: Any) -> str | None:
     if clave == "ultima_carpeta":
         try:
             ruta_candidata = Path(texto).expanduser()
-            # Validamos que la ruta, de existir, sea segura, o que su padre sea seguro.
+            # Validamos seguridad en el sistema de archivos antes de aceptar la ruta
             if not is_safe_to_modify(str(ruta_candidata)):
                 return None
             return str(ruta_candidata)
@@ -143,6 +146,7 @@ def _validate_str(clave: str, valor: Any) -> str | None:
 
 
 def _apply_validation_by_type(clave: str, valor: Any, defecto: Any) -> Any:
+    """Dispatch según el tipo de dato del valor por defecto para validar el valor entrante."""
     tipo = type(defecto)
     if tipo is bool: return _coerce_bool(valor)
     if tipo is int: return _coerce_int(valor, clave)
@@ -151,12 +155,14 @@ def _apply_validation_by_type(clave: str, valor: Any, defecto: Any) -> Any:
 
 
 def settings_path(path_or_base: PathLike | None = None) -> Path:
+    """Calcula la ruta absoluta del archivo de configuración, asegurando seguridad del directorio."""
     target_base = Path(path_or_base).expanduser().resolve() if path_or_base else SETTINGS_DIR
     ensure_safe_to_modify(str(target_base))
     return target_base / SETTINGS_FILE
 
 
 def validate(values: Any) -> dict[str, Any]:
+    """Valida un diccionario de configuración y lo sanitiza comparándolo contra DEFAULTS."""
     limpio = DEFAULTS.copy()
     if not isinstance(values, dict):
         return limpio
@@ -164,7 +170,6 @@ def validate(values: Any) -> dict[str, Any]:
     for clave, defecto in DEFAULTS.items():
         if clave in values:
             val_raw = values[clave]
-            # Validar que el valor no sea None para prevenir errores de tipo inesperados
             if val_raw is None:
                 continue
             coerced = _apply_validation_by_type(clave, val_raw, defecto)
@@ -174,6 +179,7 @@ def validate(values: Any) -> dict[str, Any]:
 
 
 def load(path_or_base: PathLike | None = None) -> dict[str, Any]:
+    """Carga configuraciones con caché basada en mtime para optimizar lecturas frecuentes."""
     global _cached_settings, _last_path, _last_mtime
     
     ruta = settings_path(path_or_base)
@@ -197,6 +203,7 @@ def load(path_or_base: PathLike | None = None) -> dict[str, Any]:
 
 
 def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
+    """Guarda configuraciones de forma atómica usando archivos temporales para evitar corrupción."""
     global _cached_settings, _last_path, _last_mtime
     
     ruta = settings_path(path_or_base)

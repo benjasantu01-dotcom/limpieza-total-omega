@@ -365,12 +365,12 @@ def local_answer(question: str, context: SystemContext) -> Answer:
         )
 
     clean_text = _sanitize_query(question)
-    tokens = set(_TOKEN_REGEX.findall(clean_text))
-
-    for token in tokens:
+    # Buscamos coincidencias directas en los tokens del input
+    for token in _TOKEN_REGEX.findall(clean_text):
         if token in _KEYWORD_MAP:
             return _HANDLERS[_KEYWORD_MAP[token]](context, clean_text)
 
+    # Solo calculamos la lista de problemas si no hubo un match directo
     problemas = _rank_problems(context)
     if problemas:
         cuerpo = (f"Con un puntaje de {context.score}/100, por orden de prioridad: "
