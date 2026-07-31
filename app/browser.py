@@ -97,7 +97,8 @@ def base_directories() -> List[Path]:
 
 def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> bool:
     """
-    Valida la integridad de la ruta para prevenir escapes.
+    Valida la integridad de la ruta para prevenir escapes de directorio
+    mediante resolución de rutas absolutas.
     """
     if not target_path or not base_path:
         return False
@@ -114,7 +115,10 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
 def directory_size(path: str | os.PathLike | None) -> int:
     """
     Calcula el tamaño total en bytes mediante suma recursiva.
-    Usa un cache basado en el mtime del directorio para evitar re-escaneos.
+    
+    Excluye explícitamente symlinks y junctions (puntos de reparse) para evitar
+    contar datos fuera del árbol de caché del navegador y prevenir ciclos
+    infinitos o escaneos accidentales de unidades de red.
     """
     if not path:
         return 0
@@ -142,6 +146,8 @@ def directory_size(path: str | os.PathLike | None) -> int:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
+                        # Se omiten symlinks para garantizar que el cálculo sea
+                        # local y seguro bajo las reglas de no seguir punteros.
                         if entry.is_symlink():
                             continue
                         if entry.is_dir():
@@ -159,7 +165,8 @@ def directory_size(path: str | os.PathLike | None) -> int:
 
 def _is_valid_cache_path(candidate: Path | None, base_path: Path) -> bool:
     """
-    Filtro de validación para carpetas de caché.
+    Valida que la ruta exista, sea un directorio, no sea un enlace simbólico
+    y cumpla con las políticas de seguridad de la app.
     """
     if not candidate:
         return False
@@ -176,11 +183,15 @@ def _is_valid_cache_path(candidate: Path | None, base_path: Path) -> bool:
 
 
 def detect_profiles(
-    bases: Sequence[Path] | None = None, 
-    cache_paths: Dict[str, str] | None = None
+    bases: Optional[Sequence[Path]] = None, 
+    cache_paths: Optional[Dict[str, str]] = None
 ) -> List[BrowserCache]:
     """
-    Explora directorios base en busca de cachés definidas en `cache_paths`.
+    Explora los directorios base buscando las rutas de caché predefinidas.
+    
+    Utiliza una estrategia de unión de rutas desde el directorio local del usuario,
+    validando contra `NEVER_TOUCH` antes de procesar el tamaño para evitar
+    acceder a carpetas de configuración sensible.
     """
     bases = bases if bases is not None else base_directories()
     cache_paths = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
@@ -221,7 +232,7 @@ def total_cache_bytes(caches: Iterable[BrowserCache] | None = None) -> int:
 
 def summarize(caches: Optional[List[BrowserCache]] = None) -> List[str]:
     """
-    Genera un informe textual listo para la UI.
+    Genera un informe textual listo para la UI con el total de MB detectados.
     """
     current_caches: List[BrowserCache] = caches if caches is not None else detect_profiles()
     

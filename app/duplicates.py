@@ -132,8 +132,10 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
 
 def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     """
-    Organiza rutas de archivos en un diccionario indexado por su tamaño en bytes,
-    evitando procesar múltiples hardlinks al mismo archivo físico.
+    Organiza rutas de archivos en un diccionario indexado por su tamaño en bytes.
+    
+    Usa el par (dispositivo, inodo) para identificar archivos únicos físicamente
+    y omitir hardlinks redundantes que reportarían el mismo contenido.
     """
     if paths is None:
         return {}
@@ -143,7 +145,6 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
         if not isinstance(p, Path):
             continue
         try:
-            # Resolucion absoluta obligatoria para chequeos de seguridad consistentes
             resolved_p = p.resolve()
             if is_protected_path(resolved_p):
                 continue
@@ -228,18 +229,18 @@ def find_duplicates(
     if not candidates:
         return []
 
-    raw_groups = group_by_size(candidates)
-    size_map = {s: p for s, p in raw_groups.items() if len(p) > 1}
+    raw_groups: Dict[int, List[Path]] = group_by_size(candidates)
+    size_map: Dict[int, List[Path]] = {s: p for s, p in raw_groups.items() if len(p) > 1}
     if not size_map:
         return []
 
     groups: List[DuplicateGroup] = []
     
     for size, same_size in size_map.items():
-        by_partial = _refine_by_hash(same_size, partial_hash)
+        by_partial: Dict[str, List[Path]] = _refine_by_hash(same_size, partial_hash)
         
         for partial_candidates in by_partial.values():
-            by_full = _refine_by_hash(partial_candidates, hash_file)
+            by_full: Dict[str, List[Path]] = _refine_by_hash(partial_candidates, hash_file)
             
             for digest, confirmed in by_full.items():
                 groups.append(DuplicateGroup(

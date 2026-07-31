@@ -209,7 +209,11 @@ def bar(percent: float | int | None, width: int = 24,
 def _hex_to_rgb(value: HexColor) -> tuple[int, int, int]:
     """
     Convierte un color hexadecimal '#rrggbb' a tupla (R, G, B).
-    En caso de formato inválido o entrada inesperada, retorna (0, 0, 0).
+    
+    Args:
+        value: Cadena hexadecimal (ej: "#ff0000").
+    Returns:
+        Tupla (R, G, B) de enteros.
     """
     if not isinstance(value, str) or not value.startswith("#"):
         return (0, 0, 0)
@@ -247,7 +251,12 @@ def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
 def gradient_colors(steps: int, stops: tuple[HexColor, ...] = GRADIENT_STOPS) -> List[HexColor]:
     """
     Genera una lista de colores interpolados basada en puntos de control.
-    Si `steps` es mayor a la cantidad de `stops`, interpola suavemente entre ellos.
+    
+    Args:
+        steps: Cantidad de pasos deseados en la paleta.
+        stops: Tupla de colores que definen los hitos del gradiente.
+    Returns:
+        Lista de colores hexadecimales.
     """
     cantidad = max(1, int(steps))
     if not stops: return [PALETTE["accent"]] * cantidad
@@ -322,7 +331,14 @@ def logo_ascii() -> str:
 
 
 def draw_logo(canvas: Any, size: int = 56, canvas_x: int = 0, canvas_y: int = 0) -> None:
-    """Renderiza el logo (escudo Omega) en un widget Tkinter.Canvas."""
+    """
+    Renderiza el logo (escudo Omega) en un widget Tkinter.Canvas.
+    
+    Args:
+        canvas: Widget Canvas de Tkinter donde dibujar.
+        size: Escalado base del logo.
+        canvas_x, canvas_y: Posición de anclaje (top-left).
+    """
     if canvas is None or not hasattr(canvas, "create_polygon"): return
     try:
         s = max(0.1, float(size) / 128)
@@ -361,7 +377,16 @@ def draw_logo(canvas: Any, size: int = 56, canvas_x: int = 0, canvas_y: int = 0)
 def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
                       canvas_x: int = 0, canvas_y: int = 0,
                       stops: tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
-    """Dibuja una franja horizontal de gradiente en un Tkinter.Canvas."""
+    """
+    Dibuja una franja horizontal de gradiente en un Tkinter.Canvas.
+    
+    Args:
+        canvas: Widget Canvas destino.
+        width: Ancho total de la franja.
+        height: Espesor de la franja.
+        canvas_x, canvas_y: Posición inicial.
+        stops: Puntos de color para el gradiente.
+    """
     if canvas is None or not hasattr(canvas, "create_line"): return
     try:
         ancho, alto = max(1, int(width)), max(1, int(height))
@@ -375,7 +400,17 @@ def draw_ring(canvas: Any, percent: float | int, size: int = 150,
               canvas_x: int = 0, canvas_y: int = 0, thickness: int = 14,
               track: HexColor | None = None,
               fill: HexColor | None = None) -> None:
-    """Dibuja un medidor circular de estado en un Tkinter.Canvas."""
+    """
+    Dibuja un medidor circular de estado en un Tkinter.Canvas.
+    
+    Args:
+        canvas: Widget Canvas destino.
+        percent: Porcentaje completado (0-100).
+        size: Diámetro del anillo.
+        thickness: Grosor del trazo.
+        track: Color de fondo del anillo (track).
+        fill: Color del segmento de progreso.
+    """
     if canvas is None or not hasattr(canvas, "create_arc"): return
     try:
         valor = max(0.0, min(100.0, float(percent))) # type: ignore
