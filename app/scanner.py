@@ -70,7 +70,7 @@ def _process_directory_entry(entry: os.DirEntry, results: List[Suspicion], stack
         if entry.is_dir(follow_symlinks=False):
             if not _is_reparse_point(entry):
                 path_str = entry.path
-                if path_str not in seen and not is_protected_path(Path(path_str)):
+                if path_str and path_str not in seen and not is_protected_path(Path(path_str)):
                     seen.add(path_str)
                     stack.append(path_str)
         elif entry.is_file():
@@ -103,7 +103,7 @@ def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_TH
 def check_system_lookalike(path: Path) -> Optional[Suspicion]:
     """Detecta archivos que imitan nombres de procesos críticos del sistema operativo."""
     try:
-        if path.name.lower() in SYSTEM_LOOKALIKES:
+        if path.name and path.name.lower() in SYSTEM_LOOKALIKES:
             parent = path.parent
             if parent and SYSTEM32_LOWER not in str(parent).lower():
                 return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
@@ -122,7 +122,7 @@ def scan_file(path: Path) -> List[Suspicion]:
     """Aplica secuencialmente todas las funciones de `CHECK_FUNCS` sobre una ruta."""
     # Validación defensiva estricta para evitar procesamiento de rutas inválidas o protegidas
     try:
-        if not path.is_file() or is_protected_path(path):
+        if not path or not path.is_file() or is_protected_path(path):
             return []
     except (OSError, PermissionError):
         return []
@@ -144,11 +144,17 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
     utilizando una pila para evitar desbordamiento de memoria y `is_protected_path`
     para asegurar el cumplimiento de la política de seguridad global.
     """
-    path_obj = Path(directory)
-    if not path_obj.exists() or not path_obj.is_dir() or is_protected_path(path_obj):
+    if not directory:
         return []
-        
-    root_str = str(path_obj.resolve())
+
+    path_obj = Path(directory)
+    try:
+        if not path_obj.exists() or not path_obj.is_dir() or is_protected_path(path_obj):
+            return []
+        root_str = str(path_obj.resolve())
+    except (OSError, RuntimeError):
+        return []
+
     results: List[Suspicion] = []
     stack: List[str] = [root_str]
     seen: set[str] = {root_str}

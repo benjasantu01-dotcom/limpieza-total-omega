@@ -175,6 +175,7 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
         if len(columns) < 2:
             continue
             
+        # Limpieza robusta de valores, asegurando que existan
         name_key: str = columns[0].strip().strip('"\'')
         value_cmd: str = columns[1].strip().strip('"\'')
         
@@ -185,11 +186,12 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
         
         try:
             executable_path = entry.executable
-            if executable_path and os.path.exists(executable_path):
+            # Validar existencia solo si la ruta parece absoluta
+            if executable_path and os.path.isabs(executable_path) and os.path.exists(executable_path):
                 if is_protected_path(Path(executable_path)):
                     continue
         except (OSError, ValueError, TypeError):
-            pass
+            continue
                 
         parsed_entries.append(entry)
     return parsed_entries

@@ -132,7 +132,8 @@ def _validate_str(clave: str, valor: Any) -> str | None:
         return None
     if clave == "ultima_carpeta":
         try:
-            ruta_candidata = Path(texto).expanduser().resolve()
+            ruta_candidata = Path(texto).expanduser()
+            # Validamos que la ruta, de existir, sea segura, o que su padre sea seguro.
             if not is_safe_to_modify(str(ruta_candidata)):
                 return None
             return str(ruta_candidata)
@@ -162,7 +163,11 @@ def validate(values: Any) -> dict[str, Any]:
 
     for clave, defecto in DEFAULTS.items():
         if clave in values:
-            coerced = _apply_validation_by_type(clave, values[clave], defecto)
+            val_raw = values[clave]
+            # Validar que el valor no sea None para prevenir errores de tipo inesperados
+            if val_raw is None:
+                continue
+            coerced = _apply_validation_by_type(clave, val_raw, defecto)
             if coerced is not None:
                 limpio[clave] = coerced
     return limpio

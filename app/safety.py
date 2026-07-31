@@ -80,7 +80,6 @@ def _is_reparse_point(path: Path) -> bool:
     Verifica si la ruta es un punto de reparse (Junction/Symlink).
     """
     try:
-        # 0x400 es FILE_ATTRIBUTE_REPARSE_POINT en la API de Windows
         stats = path.lstat()
         return bool(getattr(stats, "st_file_attributes", 0) & 0x400) or path.is_symlink()
     except (OSError, PermissionError):
@@ -107,9 +106,10 @@ def normalize(path: PathLike) -> Path:
         raise ValueError("La ruta proporcionada está vacía.")
         
     try:
-        p = Path(str_path).expanduser()
-        return p.resolve(strict=False)
+        # Resolvemos a absoluto para evitar confusiones de ruta relativa
+        return Path(str_path).expanduser().resolve()
     except (OSError, RuntimeError, ValueError):
+        # Fallback a una normalización de cadena pura si el filesystem bloquea la resolución
         return Path(os.path.abspath(os.path.expanduser(str_path)))
 
 
@@ -127,21 +127,17 @@ def is_protected_path(path: PathLike) -> bool:
     """
     Evalúa si una ruta es peligrosa por definición.
     """
-    if not path or not isinstance(path, (str, os.PathLike)):
+    if not path:
         return True
     
-    raw_path = str(path).strip()
-    if not raw_path or raw_path.startswith(("\\\\", "//")):
-        return True
-        
     try:
         p = normalize(path)
         if not p.is_absolute():
             return True
 
-        for part in p.parts:
-            if part.lower() in _ALL_PROTECTED_TOKENS:
-                return True
+        # Verificar tokens de sistema en los nombres de los componentes
+        if any(part.lower() in _ALL_PROTECTED_TOKENS for part in p.parts):
+            return True
             
         if p == Path(p.anchor):
             return True
@@ -162,9 +158,6 @@ def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = F
         return False
     try:
         c, p = normalize(child), normalize(parent)
-        if not c.is_absolute() or not p.is_absolute():
-            return False
-            
         return p in c.parents or (allow_equal and c == p)
     except (ValueError, TypeError, OSError):
         return False
@@ -204,7 +197,6 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
             raise UnsafePathError("Operación bloqueada: punto de reparse detectado.")
         if _is_readonly(p):
             raise UnsafePathError("Operación bloqueada: el archivo es de solo lectura.")
-        # Verificación de integridad: evitar Hard Links múltiples
         if p.is_file() and p.stat().st_nlink > 1:
             raise UnsafePathError("Operación bloqueada: el archivo tiene múltiples enlaces físicos.")
 
@@ -234,9 +226,8 @@ def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = Fals
     safe_list = []
     for p in paths:
         try:
-            normalized_p = normalize(p)
-            if is_safe_to_modify(normalized_p, allow_sensitive=allow_sensitive):
-                safe_list.append(normalized_p)
+            if is_safe_to_modify(p, allow_sensitive=allow_sensitive):
+                safe_list.append(normalize(p))
         except (TypeError, ValueError, OSError):
             continue
     return safe_list
