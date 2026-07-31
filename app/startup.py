@@ -60,6 +60,7 @@ class StartupEntry:
     command: str
     source: str  # Indica si proviene de una carpeta o una ruta de registro específica
     _exec_cache: Optional[str] = None
+    _checked_exists: bool = False
 
     def _is_valid_executable(self, path: Path) -> bool:
         """Verifica si la ruta apunta a un ejecutable reconocido o existe físicamente."""
@@ -89,16 +90,20 @@ class StartupEntry:
         Normaliza la ruta del ejecutable analizando el comando de inicio.
         Utiliza cache interno para evitar llamadas repetidas al sistema de archivos.
         """
-        if self._exec_cache is not None:
-            return self._exec_cache
+        if self._checked_exists:
+            return self._exec_cache or ""
             
         if not self.command:
+            self._checked_exists = True
             return ""
+
         # Limpieza de caracteres no imprimibles del comando crudo
         cmd: str = "".join(c for c in self.command.strip() if ord(c) >= 32)
         if not cmd:
+            self._checked_exists = True
             return ""
         
+        self._checked_exists = True
         if cmd.startswith('"'):
             self._exec_cache = self._extract_quoted_path(cmd)
             return self._exec_cache

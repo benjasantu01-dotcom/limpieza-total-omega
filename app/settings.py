@@ -94,18 +94,14 @@ _NUMERIC_LIMITS: Final[dict[str, tuple[int, int]]] = {
     "top_procesos": (1, 500),
 }
 
-
 def _coerce_bool(raw_value: Any) -> bool | None:
-    """Convierte tipos variados a booleano de forma estricta."""
     if isinstance(raw_value, bool):
         return raw_value
     if isinstance(raw_value, str):
         return raw_value.strip().lower() in ("1", "true", "si", "sí", "yes")
     return None
 
-
 def _coerce_int(raw_value: Any, setting_key: str) -> int | None:
-    """Convierte a int y aplica límites definidos en _NUMERIC_LIMITS."""
     if isinstance(raw_value, bool):
         return None
     try:
@@ -115,9 +111,7 @@ def _coerce_int(raw_value: Any, setting_key: str) -> int | None:
     except (TypeError, ValueError):
         return None
 
-
 def _validate_str(clave: str, valor: Any) -> str | None:
-    """Valida cadenas, incluyendo validación de seguridad de rutas."""
     if not isinstance(valor, str):
         return None
     texto = valor.strip()
@@ -138,24 +132,16 @@ def _validate_str(clave: str, valor: Any) -> str | None:
             return None
     return texto.lower() if clave in ("tema", "acento") else texto
 
-
-def _apply_validation_by_type(clave: str, valor: Any, defecto: Any) -> Any:
-    """Mapea tipos de datos a sus validadores correspondientes."""
-    SCHEMA: dict[type, Callable[[Any], Any]] = {
-        bool: _coerce_bool,
-        int: lambda v: _coerce_int(v, clave),
-        str: lambda v: _validate_str(clave, v)
-    }
-    
-    validador = SCHEMA.get(type(defecto))
-    return validador(valor) if validador else None
-
+_VALIDATION_SCHEMA: Final = {
+    bool: _coerce_bool,
+    int: _coerce_int,
+    str: _validate_str
+}
 
 def settings_path(path_or_base: PathLike | None = None) -> Path:
     base = Path(path_or_base).expanduser() if path_or_base else SETTINGS_DIR
     ensure_safe_to_modify(str(base))
     return base.resolve() / SETTINGS_FILE
-
 
 def validate(values: Any) -> dict[str, Any]:
     if not isinstance(values, dict):
@@ -168,10 +154,18 @@ def validate(values: Any) -> dict[str, Any]:
             limpio[clave] = defecto
             continue
             
-        coerced = _apply_validation_by_type(clave, val_raw, defecto)
+        tipo_defecto = type(defecto)
+        validador = _VALIDATION_SCHEMA.get(tipo_defecto)
+        
+        if tipo_defecto is int:
+            coerced = validador(val_raw, clave)
+        elif tipo_defecto is str:
+            coerced = validador(clave, val_raw)
+        else:
+            coerced = validador(val_raw) if validador else None
+            
         limpio[clave] = coerced if coerced is not None else defecto
     return limpio
-
 
 def load(path_or_base: PathLike | None = None) -> dict[str, Any]:
     global _cached_settings, _last_path, _last_mtime
@@ -194,7 +188,6 @@ def load(path_or_base: PathLike | None = None) -> dict[str, Any]:
         return _cached_settings
     except (OSError, json.JSONDecodeError, UnicodeDecodeError):
         return DEFAULTS.copy()
-
 
 def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     global _cached_settings, _last_path, _last_mtime
@@ -232,32 +225,26 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
                 pass
         return None
 
-
 def update(changes: dict[str, Any], path_or_base: PathLike | None = None) -> dict[str, Any]:
     actual = load(path_or_base)
     actual.update(changes)
     save(actual, path_or_base)
     return actual
 
-
 def reset(path_or_base: PathLike | None = None) -> dict[str, Any]:
     save(DEFAULTS, path_or_base)
     return DEFAULTS.copy()
 
-
 def get(key: str, path_or_base: PathLike | None = None) -> Any:
     return load(path_or_base).get(key, DEFAULTS.get(key))
-
 
 def assistant_api_key(path_or_base: PathLike | None = None) -> str:
     desde_entorno = os.environ.get(API_KEY_ENV_VAR, "").strip()
     return desde_entorno or load(path_or_base).get("asistente_clave_api", "").strip()
 
-
 def assistant_enabled(path_or_base: PathLike | None = None) -> bool:
     config = load(path_or_base)
     return bool(config.get("asistente_activado")) and bool(assistant_api_key(path_or_base))
-
 
 def describe(path_or_base: PathLike | None = None) -> list[str]:
     actual = load(path_or_base)

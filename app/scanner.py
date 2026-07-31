@@ -78,7 +78,7 @@ class Scanner:
                         stack.append(path_str)
             elif entry.is_file():
                 path_obj = Path(entry.path)
-                if path_obj.exists() and not is_protected_path(path_obj):
+                if not is_protected_path(path_obj):
                     self.results.extend(scan_file(path_obj))
         except (PermissionError, OSError):
             pass
@@ -93,6 +93,7 @@ def check_double_extension(path: Path) -> Optional[Suspicion]:
 
 def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_THRESHOLD_HOURS) -> Optional[Suspicion]:
     """Detecta ejecutables nuevos; su presencia reciente suele ser un indicador de riesgo."""
+    # Pre-filtro por extensión antes de llamar a stat()
     if path.suffix.lower() in SUSPICIOUS_EXECUTABLE_EXT:
         try:
             mtime = datetime.fromtimestamp(path.stat(follow_symlinks=False).st_mtime)
@@ -105,13 +106,13 @@ def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_TH
 
 def check_system_lookalike(path: Path) -> Optional[Suspicion]:
     """Detecta ejecutables que suplantan nombres de procesos críticos fuera de System32."""
-    try:
-        if path.name and path.name.lower() in SYSTEM_LOOKALIKES:
+    if path.name and path.name.lower() in SYSTEM_LOOKALIKES:
+        try:
             parent = path.parent
             if parent and SYSTEM32_LOWER not in str(parent).lower():
                 return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
-    except (AttributeError, ValueError, OSError):
-        pass
+        except (AttributeError, ValueError, OSError):
+            pass
     return None
 
 # Lista inmutable de funciones de análisis heurístico
@@ -123,7 +124,7 @@ CHECK_FUNCS: Final[List[SuspicionCheck]] = [
 
 def scan_file(path: Path) -> List[Suspicion]:
     """Ejecuta los tests definidos en CHECK_FUNCS sobre un archivo individual."""
-    if not path.is_file() or is_protected_path(path):
+    if is_protected_path(path):
         return []
         
     findings: List[Suspicion] = []
