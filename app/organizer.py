@@ -213,6 +213,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             if not is_safe_to_modify(full_source_path):
                 continue
             
+            # Evitar mover el archivo a su propio directorio o recursión de carpetas
             if dest == full_source_path or dest in full_source_path.parents or full_source_path.parent == dest:
                 continue
                 
@@ -260,7 +261,8 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         try:
             if f.is_file() and f.exists():
                 resolved_f = f.resolve()
-                if is_safe_to_modify(resolved_f) and str(resolved_f).startswith(str(dest)):
+                # Validar que el archivo reside estrictamente dentro de dest
+                if dest in resolved_f.parents and is_safe_to_modify(resolved_f):
                     f.unlink()
                     count += 1
         except (PermissionError, OSError):

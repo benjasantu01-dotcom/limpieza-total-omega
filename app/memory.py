@@ -287,7 +287,6 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except (ValueError, TypeError):
         return False, "El PID debe ser un número entero válido."
 
-    # Seguridad defensiva: bloquear PID de sistema o procesos críticos
     if target_pid <= 4:
         return False, "Operación denegada: PID de sistema protegido."
     
@@ -295,14 +294,12 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     kernel32 = ctypes.windll.kernel32
     psapi = ctypes.windll.psapi
 
-    # Validar que somos dueños del proceso (evitar modificar procesos ajenos de alto nivel)
     if target_pid == os.getpid():
         return False, "Operación denegada: proceso de la app."
 
     if not hasattr(kernel32, "OpenProcess") or not hasattr(psapi, "EmptyWorkingSet"):
         return False, "APIs de sistema no disponibles."
 
-    # PROCESS_QUERY_LIMITED_INFORMATION (0x1000) | PROCESS_SET_QUOTA (0x0100)
     handle = kernel32.OpenProcess(0x1100, False, target_pid)
     if not handle:
         return False, f"No se pudo acceder al proceso {target_pid}."
@@ -312,7 +309,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
             err_code = kernel32.GetLastError()
             return False, f"Error al limpiar memoria (WinError {err_code})."
         return True, f"Working set liberado. {TRIM_WARNING}"
-    except (Exception, ctypes.ArgumentError):
+    except (ctypes.ArgumentError, Exception):
         return False, "Error inesperado al intentar limpiar la memoria."
     finally:
         kernel32.CloseHandle(handle)
