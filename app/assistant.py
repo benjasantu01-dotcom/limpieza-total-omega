@@ -448,7 +448,7 @@ def _call_gemini(
         partes: list[dict[str, Any]] = candidatos[0]["content"].get("parts", [])
         texto: str = "".join(p.get("text", "") for p in partes).strip()
         
-        # Validación de seguridad defensiva
+        # Validación de seguridad defensiva estricta sobre la salida del modelo
         if not texto or len(texto) > 1200:
             return None
         if _PATH_REGEX.search(texto) or _CONTROL_CHARS_REGEX.search(texto):

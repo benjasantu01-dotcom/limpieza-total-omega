@@ -160,19 +160,18 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
     except (OSError, RuntimeError, PermissionError):
         return
 
-    def should_ignore_entry(entry: os.DirEntry) -> bool:
+    def should_ignore_entry(entry: os.DirEntry, base: Path) -> bool:
         """Verifica restricciones de seguridad para saltar enlaces o carpetas bloqueadas."""
         try:
             if entry.is_symlink():
                 return True
             if os.name == 'nt':
-                # Identifica reparse points (junctions, etc) sin seguir enlaces
                 if entry.stat(follow_symlinks=False).st_reparse_tag != 0:
                     return True
             
-            # Validar que la ruta resuelta siga dentro de base_path
+            # Verificación defensiva contra rutas que escapan del base_path
             current_path = Path(entry.path).resolve()
-            if base_path not in current_path.parents and current_path != base_path:
+            if not str(current_path).startswith(str(base)):
                 return True
             
             if skip_protected and is_protected_path(current_path):
@@ -181,16 +180,16 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
             return True
         return False
 
-    def recursive_scan(root_path: str) -> Generator[tuple[Path, int], None, None]:
-        """Motor recursivo de escaneo utilizando os.scandir para mejor performance."""
+    def recursive_scan(root_path: str, base: Path) -> Generator[tuple[Path, int], None, None]:
+        """Motor recursivo de escaneo utilizando os.scandir."""
         try:
             with os.scandir(root_path) as iterator:
                 for entry in iterator:
                     try:
-                        if should_ignore_entry(entry):
+                        if should_ignore_entry(entry, base):
                             continue
                         if entry.is_dir():
-                            yield from recursive_scan(entry.path)
+                            yield from recursive_scan(entry.path, base)
                         else:
                             yield Path(entry.path), entry.stat().st_size
                     except (OSError, PermissionError, FileNotFoundError):
@@ -198,7 +197,7 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
         except (OSError, PermissionError, FileNotFoundError):
             return
 
-    yield from recursive_scan(str(base_path))
+    yield from recursive_scan(str(base_path), base_path)
 
 
 def largest_files(directory: str | os.PathLike, limit: int = 20, skip_protected: bool = True) -> list[FileEntry]:
@@ -305,7 +304,6 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
     total_bytes = 0
     total_files = 0
 
-    # Realizamos una sola iteración para obtener todos los datos
     for path, size in walk_files(path_obj, skip_protected):
         total_bytes += size
         total_files += 1

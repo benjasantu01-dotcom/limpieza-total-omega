@@ -141,7 +141,8 @@ def directory_size(path: str | os.PathLike | None) -> int:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
-                        if entry.is_symlink():
+                        # Prevenir seguir enlaces o puntos de unión (junctions)
+                        if entry.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(entry.path)):
                             continue
                         if entry.is_dir():
                             stack.append(entry.path)

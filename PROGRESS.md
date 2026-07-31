@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **251** (49.8% de aceptación)
+- Mejoras aceptadas: **255** (50.6% de aceptación)
 - Rechazadas por tests: 23
 - Rechazadas por guardia de seguridad: 25
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 189
+- Sin respuesta de la IA (error o límite): 185
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-29 | 9 | 1 | 1 | 2 | 25 |
+| 2026-07-29 | 9 | 1 | 1 | 2 | 21 |
 | 2026-07-30 | 181 | 14 | 18 | 12 | 125 |
-| 2026-07-31 | 61 | 8 | 6 | 2 | 39 |
+| 2026-07-31 | 65 | 8 | 6 | 2 | 39 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,19 +26,19 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **51**
 - rendimiento: **47**
 - robustez ante casos límite: **47**
-- seguridad defensiva: **43**
+- seguridad defensiva: **47**
 
 ## Mejoras aceptadas por archivo
 
+- `diskreport.py`: **23**
 - `scanner.py`: **23**
-- `diskreport.py`: **22**
-- `browser.py`: **21**
+- `browser.py`: **22**
 - `quarantine.py`: **20**
+- `assistant.py`: **20**
 - `healthscore.py`: **19**
 - `settings.py`: **19**
-- `assistant.py`: **19**
 - `duplicates.py`: **19**
-- `branding.py`: **16**
+- `branding.py`: **17**
 - `organizer.py`: **16**
 - `main.py`: **16**
 - `startup.py`: **15**
@@ -47,6 +47,10 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-31T04:57:54` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez de `walk_files` y las funciones auxiliares ante errores de acceso (como `PermissionError` o `FileNotFoundError`) al procesar enlaces simbólicos o rutas dinámicas, asegurando que el uso de `path.resolve()` sea defensivo frente a posibles archivos o directorios que desaparezcan durante el escaneo.
+- `2026-07-31T04:57:46` **browser.py** (seguridad defensiva): Se ha mejorado la robustez de `directory_size` para prevenir la recursión infinita o el procesamiento indebido de puntos de reparse (reparse points) o uniones de disco (junctions), verificando explícitamente mediante `os.path.isjunction` que la entrada no sea un punto de unión, lo cual es crítico en la estructura de perfiles de Windows.
+- `2026-07-31T04:57:23` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` validando la existencia de la ruta antes de intentar cualquier operación de escritura, asegurando que `mkdir` solo se ejecute sobre rutas que ya fueron validadas por `is_safe_to_modify`.
+- `2026-07-31T04:56:54` **assistant.py** (seguridad defensiva): Se ha añadido una validación estricta de "input sanitization" en `_call_gemini` para asegurar que el texto generado por el modelo remoto no contenga secuencias sospechosas, complementando la inspección de rutas con una verificación de longitud y caracteres de control para evitar inyecciones o salidas anómalas.
 - `2026-07-31T04:47:32` **settings.py** (robustez ante casos límite): Se ha mejorado la robustez de `save()` implementando una verificación de seguridad con `ensure_safe_to_modify` sobre el directorio padre antes de intentar escribir, mitigando riesgos de manipulación de rutas en entornos de ejecución inesperados.
 - `2026-07-31T04:47:08` **scanner.py** (robustez ante casos límite): Se mejoró la robustez de `scan_file` añadiendo una validación explícita de `is_protected_path` sobre el objeto `Path` antes de procesarlo, evitando errores de acceso a archivos bloqueados por el sistema y garantizando que el escáner sea pasivo incluso ante rutas que pudieron haber cambiado de estado o permisos entre el listado del directorio y el procesamiento individual.
 - `2026-07-31T04:37:16` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` ante fallos de escritura y estados inconsistentes del sistema de archivos, asegurando que el manifiesto solo se actualice tras confirmar la persistencia física del archivo en el destino, y añadiendo un manejo de excepciones más granular para evitar dejar archivos "huérfanos" en cuarentena sin registro.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-31T04:06:36` **settings.py** (rendimiento): Se implementó un mecanismo de caché más robusto mediante el uso de `pathlib.Path.stat()` para verificar cambios en el archivo sin necesidad de procesar strings constantemente, y se optimizó `validate` evitando la creación de copias innecesarias del diccionario de valores durante iteraciones.
 - `2026-07-31T04:06:27` **scanner.py** (rendimiento): Se optimizó el rendimiento del recorrido de directorios reemplazando múltiples llamadas costosas a `os.path.abspath` y `Path()` dentro del bucle crítico por operaciones directas sobre el string de la ruta, reduciendo drásticamente la carga de objetos y llamadas al sistema.
 - `2026-07-31T04:06:06` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` reemplazando la creación de un nuevo `set` con cada llamada por una verificación directa sobre la tupla `p.parts` (que es inmutable y eficiente), evitando asignaciones de memoria innecesarias en cada iteración de los escaneos de disco.
-- `2026-07-31T03:57:55` **organizer.py** (rendimiento): Se optimizó el escaneo de directorios reemplazando el uso intensivo de `pathlib.Path` dentro del bucle crítico de `_walk_dir` por operaciones directas de `os.DirEntry` y strings, reduciendo drásticamente la creación de objetos y el consumo de memoria durante la recursión.
-- `2026-07-31T03:57:33` **memory.py** (rendimiento): Optimizé `format_bytes` reemplazando el uso de `math.log` por una iteración simple y eficiente para evitar la sobrecarga de funciones matemáticas en llamadas repetitivas, y apliqué `lru_cache` (vía `functools`) en las funciones que transforman datos para evitar re-cálculos redundantes en la UI.
-- `2026-07-31T03:46:11` **duplicates.py** (rendimiento): Optimizé `group_by_size` para realizar una sola llamada al sistema `lstat` y mejorar la eficiencia del proceso de filtrado, evitando accesos redundantes a metadatos de archivos antes de procesar el tamaño.
-- `2026-07-31T03:45:47` **diskreport.py** (rendimiento): Optimicé `summarize` para realizar una sola pasada por los archivos en lugar de múltiples recorridos (`total_size` + `walk_files` + procesamiento posterior), reduciendo drásticamente el uso de CPU y I/O en carpetas grandes.
