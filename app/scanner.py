@@ -103,7 +103,8 @@ def check_system_lookalike(path: Path) -> Optional[Suspicion]:
     """Detecta archivos que imitan nombres de procesos críticos del sistema operativo."""
     try:
         if path.name.lower() in SYSTEM_LOOKALIKES:
-            if SYSTEM32_LOWER not in str(path.parent).lower():
+            parent = path.parent
+            if parent and SYSTEM32_LOWER not in str(parent).lower():
                 return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
     except (AttributeError, ValueError, OSError):
         pass
@@ -118,7 +119,7 @@ CHECK_FUNCS: Final[List[SuspicionCheck]] = [
 
 def scan_file(path: Path) -> List[Suspicion]:
     """Aplica secuencialmente todas las funciones de `CHECK_FUNCS` sobre una ruta."""
-    if not path.exists():
+    if not isinstance(path, Path) or not path.exists():
         return []
         
     results: List[Suspicion] = []
@@ -127,7 +128,7 @@ def scan_file(path: Path) -> List[Suspicion]:
             res = check_func(path)
             if res:
                 results.append(res)
-        except (PermissionError, OSError):
+        except (PermissionError, OSError, AttributeError):
             continue
     return results
 

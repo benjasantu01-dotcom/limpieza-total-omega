@@ -75,7 +75,7 @@ class StartupEntry:
             path = Path(path_str).expanduser()
             if path.suffix.lower() in ('.exe', '.bat', '.cmd', '.scr') or path.exists():
                 return str(path)
-        except (OSError, ValueError, RuntimeError):
+        except (OSError, ValueError, RuntimeError, TypeError):
             return ""
         return ""
 
@@ -84,6 +84,8 @@ class StartupEntry:
         """
         Obtiene la ruta normalizada del ejecutable tras validar su existencia.
         """
+        if not self.command:
+            return ""
         cmd: str = "".join(c for c in self.command.strip() if ord(c) >= 32)
         if not cmd:
             return ""
@@ -98,7 +100,7 @@ class StartupEntry:
         try:
             path = Path(parts[0]).expanduser()
             return str(path) if path.exists() else parts[0]
-        except (OSError, ValueError, RuntimeError):
+        except (OSError, ValueError, RuntimeError, TypeError):
             return parts[0]
 
 
@@ -131,7 +133,7 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
             
         try:
             base_path: Path = folder.resolve()
-        except (ValueError, PermissionError, OSError):
+        except (ValueError, PermissionError, OSError, RuntimeError):
             continue
 
         try:
@@ -148,7 +150,7 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
                             found_entries.append(StartupEntry(name=item.stem, command=str(item), source="carpeta"))
                 except (OSError, PermissionError, RuntimeError):
                     continue
-        except (OSError, PermissionError):
+        except (OSError, PermissionError, RuntimeError):
             continue
     return found_entries
 
@@ -178,13 +180,13 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
             
         entry = StartupEntry(name=name_key, command=value_cmd, source=source)
         
-        executable_path = entry.executable
-        if executable_path:
-            try:
-                if os.path.exists(executable_path) and is_protected_path(Path(executable_path)):
+        try:
+            executable_path = entry.executable
+            if executable_path and os.path.exists(executable_path):
+                if is_protected_path(Path(executable_path)):
                     continue
-            except (OSError, ValueError):
-                pass
+        except (OSError, ValueError, TypeError):
+            pass
                 
         parsed_entries.append(entry)
     return parsed_entries

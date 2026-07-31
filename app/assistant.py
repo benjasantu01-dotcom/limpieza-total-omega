@@ -168,64 +168,40 @@ class Answer:
 
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
-    """
-    Transforma fuentes de datos crudos en un objeto SystemContext validado.
-    """
-    contexto = SystemContext()
-    
-    def es_num_valido(val: Any) -> bool:
-        """Verifica que el valor sea un número real finito."""
-        if not isinstance(val, (int, float)) or isinstance(val, bool):
-            return False
-        return math.isfinite(val)
+    """Transforma fuentes de datos crudos en un objeto SystemContext validado."""
+    ctx = SystemContext()
 
-    def extraer(fuente: Any, attr: str, tipo: type, default: Any) -> Any:
-        """Extrae de forma segura un atributo de un objeto."""
-        if fuente is None:
-            return default
-        try:
-            val = getattr(fuente, attr, None)
-            if val is None or not es_num_valido(val):
-                return default
-            return tipo(val)
-        except (TypeError, ValueError):
-            return default
+    def is_valid_num(v: Any) -> bool:
+        return isinstance(v, (int, float)) and not isinstance(v, bool) and math.isfinite(v)
 
-    # Validación estricta de tipo para evitar proxies u objetos no esperados
-    if metrics is not None and not isinstance(metrics, object):
-        metrics = None
-    if health is not None and not isinstance(health, object):
-        health = None
+    def extract(source: Any, attr: str, default: Any, transform: Callable = float) -> Any:
+        if source is None: return default
+        val = getattr(source, attr, None)
+        return transform(val) if is_valid_num(val) else default
 
     if metrics:
-        contexto.junk_mb = float(extraer(metrics, "junk_mb", float, 0.0))
-        contexto.suspicious_count = int(extraer(metrics, "suspicious_count", int, 0))
-        contexto.suspicious_warnings = int(extraer(metrics, "suspicious_warnings", int, 0))
-        
-        mem_pct = extraer(metrics, "memory_available_percent", float, 0.0)
-        contexto.memory_available_percent = max(0.0, min(float(mem_pct), 100.0))
-        
-        disk_pct = extraer(metrics, "disk_free_percent", float, 0.0)
-        contexto.disk_free_percent = max(0.0, min(float(disk_pct), 100.0))
-        
-        contexto.duplicate_mb = float(extraer(metrics, "duplicate_mb", float, 0.0))
-        contexto.startup_count = int(extraer(metrics, "startup_count", int, 0))
-        contexto.quarantined_count = int(extraer(metrics, "quarantined_count", int, 0))
-        contexto.analyzed = True
+        ctx.junk_mb = extract(metrics, "junk_mb", 0.0)
+        ctx.suspicious_count = extract(metrics, "suspicious_count", 0, int)
+        ctx.suspicious_warnings = extract(metrics, "suspicious_warnings", 0, int)
+        ctx.memory_available_percent = max(0.0, min(extract(metrics, "memory_available_percent", 0.0), 100.0))
+        ctx.disk_free_percent = max(0.0, min(extract(metrics, "disk_free_percent", 0.0), 100.0))
+        ctx.duplicate_mb = extract(metrics, "duplicate_mb", 0.0)
+        ctx.startup_count = extract(metrics, "startup_count", 0, int)
+        ctx.quarantined_count = extract(metrics, "quarantined_count", 0, int)
+        ctx.analyzed = True
 
     if health:
-        score_val = extraer(health, "score", int, 0)
-        contexto.score = max(0, min(int(score_val), 100))
-        grado = getattr(health, "grade", "")
-        contexto.grade = str(grado) if isinstance(grado, (str, int, float)) else ""
-        contexto.analyzed = True
+        score_raw = extract(health, "score", 0, int)
+        ctx.score = max(0, min(score_raw, 100))
+        grade = getattr(health, "grade", "")
+        ctx.grade = str(grade) if isinstance(grade, (str, int, float)) else ""
+        ctx.analyzed = True
 
-    for clave, valor in extra.items():
-        if hasattr(contexto, clave) and clave not in ["analyzed", "grade"]:
-            if es_num_valido(valor):
-                setattr(contexto, clave, float(valor))
+    for k, v in extra.items():
+        if hasattr(ctx, k) and k not in ["analyzed", "grade"] and is_valid_num(v):
+            setattr(ctx, k, float(v))
 
-    return contexto
+    return ctx
 
 
 def context_as_text(context: SystemContext) -> str:

@@ -1003,3 +1003,37 @@ FAILED evolve/tests/test_modules.py::test_directory_size_adds_up_recursively - A
 - `2026-07-31T02:45:02` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: manejo de errores y validación de entradas).
 - `2026-07-31T02:45:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-31T02:45:02` Corrida terminada. Total usado hoy: 68.
+- `2026-07-31T02:53:56` Arrancando corrida. Quedan hoy ~232 peticiones objetivo.
+- `2026-07-31T02:54:19` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `check_system_lookalike` y `scan_file` añadiendo validaciones preventivas para evitar errores en llamadas a `path.parent` o cuando `path` apunta a elementos inexistentes, capturando excepciones de forma más específica.
+- `2026-07-31T02:54:45` Tests FALLARON:
+```
+...............F........................................................ [ 24%]
+........................................................................ [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+______________________ test_a_normal_folder_is_remembered ______________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-2/test_a_normal_folder_is_rememb0')
+
+    def test_a_normal_folder_is_remembered(tmp_path):
+        segura = str(tmp_path / "Descargas")
+>       assert settings.validate({"ultima_carpeta": segura})["ultima_carpeta"] == segura
+E       AssertionError: assert '' == '/tmp/pytest-...mb0/Descargas'
+E         
+E         - /tmp/pytest-of-runner/pytest-2/test_a_normal_folder_is_rememb0/Descargas
+
+evolve/tests/test_assistant.py:124: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - AssertionError: assert '' == '/tmp/pytest-...mb0/Descargas'
+  
+  - /tmp/pytest-of-runner/pytest-2/test_a_normal_folder_is_rememb0/Descargas
+1 failed, 298 passed in 1.10s
+
+```
+- `2026-07-31T02:54:45` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Reforcé la robustez del manejo de archivos de configuración mediante el uso explícito de bloques `try-except` granulares en `_validate_str` y la normalización de rutas, evitando que una ruta mal formada o con caracteres especiales (como los de reparse points) cause fallas silenciosas o errores inesperados al validar `ultima_carpeta`.
+- `2026-07-31T02:55:08` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `StartupEntry.executable` y `parse_registry_csv` añadiendo validaciones preventivas de tipos y excepciones específicas para evitar errores inesperados durante el procesamiento de entradas de registro malformadas o rutas inválidas.
+- `2026-07-31T02:55:24` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `build_context` para usar una estructura de validación más limpia, reemplazando la lógica anidada y repetitiva con un enfoque basado en diccionarios y funciones de transformación, facilitando la comprensión del flujo de datos de entrada.
+- `2026-07-31T02:55:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-31T02:55:24` Corrida terminada. Total usado hoy: 72.
