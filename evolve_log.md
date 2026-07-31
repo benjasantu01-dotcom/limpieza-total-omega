@@ -928,3 +928,4 @@ FAILED evolve/tests/test_safety.py::test_describe_protection_explains_the_reason
 - `2026-07-31T17:50:20` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-07-31T18:00:34` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-07-31T18:10:49` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-07-31T18:21:21` Presupuesto diario agotado (350 usados). Corte hasta mañana.
