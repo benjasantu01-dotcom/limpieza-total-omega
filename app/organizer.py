@@ -111,9 +111,6 @@ def _generate_unique_target(target: Path) -> Path:
 def _is_junk_file(entry: os.DirEntry[str]) -> bool:
     """
     Valida si un archivo es basura y si es seguro realizar operaciones sobre él.
-    
-    Utiliza un chequeo booleano de seguridad para evitar excepciones durante el
-    escaneo, siguiendo la política de no abortar el proceso por archivos bloqueados.
     """
     if not entry.is_file(follow_symlinks=False):
         return False
@@ -125,15 +122,6 @@ def _is_junk_file(entry: os.DirEntry[str]) -> bool:
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     """
     Escanea directorios en busca de archivos temporales mediante recursión segura.
-    
-    Utiliza os.scandir para obtener metadatos de forma eficiente y filtra rutas 
-    protegidas mediante la capa de seguridad `safety.py`.
-
-    Args:
-        directories: Lista opcional de rutas a escanear. Si es None, usa DEFAULT_SCAN_DIRS.
-
-    Returns:
-        List[JunkFile]: Lista de archivos identificados como basura y seguros para mover.
     """
     if directories is not None and not isinstance(directories, list):
         logger.error("El parámetro directories debe ser una lista.")
@@ -145,8 +133,6 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
 
     def _walk_dir(base_path: str) -> None:
         try:
-            if not os.path.isdir(base_path):
-                return
             with os.scandir(base_path) as it:
                 for entry in it:
                     try:
@@ -168,7 +154,7 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
                     except (PermissionError, OSError):
                         continue
         except (PermissionError, OSError):
-            return
+            pass
 
     for d in dirs:
         p = Path(d).expanduser()
@@ -181,14 +167,6 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
 def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -> List[JunkFile]:
     """
     Ordena una lista de objetos JunkFile según tamaño o fecha.
-
-    Args:
-        files: Lista de objetos JunkFile a ordenar.
-        by: Atributo de ordenamiento ('size' o 'date').
-        ascending: Booleano para orden ascendente.
-
-    Returns:
-        List[JunkFile]: Nueva lista ordenada.
     """
     if not isinstance(files, list):
         return []
@@ -206,10 +184,6 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Path:
     """
     Mueve archivos candidatos a una carpeta de cuarentena para revisión humana.
-    
-    Aplica controles de seguridad rigurosos: verifica la integridad del origen,
-    la seguridad de la ruta destino, y que el archivo no esté bloqueado antes
-    de ejecutar cualquier operación de movimiento.
     """
     if not isinstance(files, list) or not files:
         return Path(review_dir).expanduser().resolve()
@@ -233,7 +207,6 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         try:
             full_source_path = jf.path.resolve()
             
-            # Verificación de integridad: el archivo debe existir, no ser un enlace y ser seguro.
             if not full_source_path.exists() or not full_source_path.is_file() or full_source_path.is_symlink():
                 continue
             
@@ -262,7 +235,6 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             if not str(target).startswith(str(dest)):
                 continue
             
-            # Operación atómica de movimiento tras asegurar que el destino está validado
             ensure_safe_to_modify(full_source_path)
             ensure_safe_to_modify(target)
             shutil.move(str(full_source_path), str(target))

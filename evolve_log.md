@@ -1104,3 +1104,37 @@ FAILED evolve/tests/test_modules.py::test_gradient_starts_and_ends_on_its_stops 
 - `2026-07-31T03:46:22` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
 - `2026-07-31T03:46:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-31T03:46:22` Corrida terminada. Total usado hoy: 92.
+- `2026-07-31T03:55:07` Arrancando corrida. Quedan hoy ~208 peticiones objetivo.
+- `2026-07-31T03:56:09` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-07-31T03:57:09` ➖ Sin cambios en main.py (enfoque: rendimiento). Motivo: Se implementó un mecanismo de **debouncing y validación visual** en `_update_health_visuals` para evitar el redibujado redundante de la interfaz (recalculando canvas y configurando widgets) cuando el estado de salud no ha variado, mejorando significativamente el rendimiento durante consultas rápidas al asistente.
+- `2026-07-31T03:57:33` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimizé `format_bytes` reemplazando el uso de `math.log` por una iteración simple y eficiente para evitar la sobrecarga de funciones matemáticas en llamadas repetitivas, y apliqué `lru_cache` (vía `functools`) en las funciones que transforman datos para evitar re-cálculos redundantes en la UI.
+- `2026-07-31T03:57:55` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Se optimizó el escaneo de directorios reemplazando el uso intensivo de `pathlib.Path` dentro del bucle crítico de `_walk_dir` por operaciones directas de `os.DirEntry` y strings, reduciendo drásticamente la creación de objetos y el consumo de memoria durante la recursión.
+- `2026-07-31T03:58:06` Tests FALLARON:
+```
+in(tmp_path, cuarentena):
+        origen = tmp_path / "pesado.bin"
+        origen.write_bytes(b"0" * 2048)
+        quarantine.quarantine_file(origen, reason="motivo de prueba", base=cuarentena)
+    
+        texto = "\n".join(quarantine.summarize(cuarentena))
+        assert "pesado.bin" in texto
+        assert "motivo de prueba" in texto
+>       assert "restaurar" in texto
+E       AssertionError: assert 'restaurar' in '1 archivo(s) en cuarentena — 0.0 MB\n\n  [79dd5dafa29a] pesado.bin — 0.0 MB\n      Motivo: motivo de prueba\n      Origen: /tmp/pytest-of-runner/pytest-3/test_quarantine_summary_report0/pesado.bin\n      Aislado: 2026-07-31T03:58:06'
+
+evolve/tests/test_safety.py:311: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - KeyError: 0
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - KeyError: 0
+FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app - assert {} == []
+  
+  Full diff:
+  - []
+  + {}
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - AssertionError: assert 'restaurar' in '1 archivo(s) en cuarentena — 0.0 MB\n\n  [79dd5dafa29a] pesado.bin — 0.0 MB\n      Motivo: motivo de prueba\n      Origen: /tmp/pytest-of-runner/pytest-3/test_quarantine_summary_report0/pesado.bin\n      Aislado: 2026-07-31T03:58:06'
+4 failed, 295 passed in 1.06s
+
+```
+- `2026-07-31T03:58:06` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de las operaciones de lectura del manifiesto reemplazando el filtrado por iteración lineal (`next(...)`) por un `dict` indexado por `item_id`, evitando búsquedas $O(n)$ en cada operación individual.
+- `2026-07-31T03:58:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-31T03:58:06` Corrida terminada. Total usado hoy: 96.

@@ -25,8 +25,8 @@ la lógica se prueba en CI sobre Linux sin depender de Windows.
 from __future__ import annotations
 import os
 import re
-import math
 import subprocess
+from functools import lru_cache
 from dataclasses import dataclass, field
 from typing import List, Tuple, Optional, Dict, Iterator
 from safety import is_protected_path
@@ -94,24 +94,27 @@ class ProcessMemory:
     @property
     def working_set_mb(self) -> float:
         """Convierte bytes a MB para legibilidad en la UI."""
-        return round(self.working_set / (1024 * 1024), 1)
+        return round(self.working_set / 1048576, 1)
 
 
 def format_bytes(num: int | float | None) -> str:
     """
-    Convierte un valor numérico en bytes a formato de cadena legible (ej: 1.5 MB).
-    Usa logaritmo base 1024 para calcular la unidad de forma directa.
+    Convierte un valor numérico en bytes a formato de cadena legible.
+    Optimizado para evitar cálculos logarítmicos innecesarios.
     """
     if not isinstance(num, (int, float)) or num <= 0:
         return "0 B"
     
-    idx = min(int(math.log(num, 1024)), len(BYTE_UNITS) - 1)
-    val = num / (1024 ** idx)
-    unit = BYTE_UNITS[idx]
-    decimals = 0 if unit == "B" else 1
-    return f"{val:.{decimals}f} {unit}"
+    val = float(num)
+    idx = 0
+    while val >= 1024 and idx < len(BYTE_UNITS) - 1:
+        val /= 1024
+        idx += 1
+        
+    return f"{val:.{0 if idx == 0 else 1}f} {BYTE_UNITS[idx]}"
 
 
+@lru_cache(maxsize=4)
 def parse_linux_meminfo(text: str) -> MemorySnapshot:
     """
     Parsea /proc/meminfo. Convierte la escala original en kB a bytes.
@@ -164,8 +167,6 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
 def _read_windows_snapshot() -> MemorySnapshot:
     """
     Accede a la API Win32 GlobalMemoryStatusEx vía ctypes.
-    Define la estructura MEMORYSTATUSEX para recibir los datos de memoria
-    del kernel de Windows (TotalPhys, AvailPhys, etc).
     """
     import ctypes
 
@@ -214,8 +215,6 @@ def read_snapshot() -> MemorySnapshot:
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     """
     Obtiene los procesos de mayor consumo en Windows ejecutando PowerShell.
-    Utiliza un comando de una línea para filtrar, ordenar y convertir a CSV,
-    minimizando el tiempo de ejecución del subproceso.
     """
     if os.name != "nt":
         return []
@@ -238,7 +237,6 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
 def pressure_level(snapshot: MemorySnapshot) -> str:
     """
     Clasifica la salud de la RAM basándose en el porcentaje disponible.
-    Devuelve etiquetas que mapean al sistema de diagnóstico.
     """
     if snapshot.total <= 0:
         return "info"
@@ -280,8 +278,6 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
     Solicita al OS liberar el working set de un proceso específico.
-    Utiliza OpenProcess (acceso 0x1100: PROCESS_QUERY_INFORMATION | PROCESS_SET_QUOTA)
-    y psapi.EmptyWorkingSet para pedir al kernel que libere páginas físicas.
     """
     if os.name != "nt":
         return False, "Solo disponible en Windows."
@@ -290,7 +286,6 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         target_pid = int(pid)
         if target_pid < 0:
             return False, "PID inválido."
-        # Bloquea procesos de sistema (PID 0, 4 son System/Idle)
         if target_pid <= 4:
             return False, "Operación denegada: PID de sistema protegido."
     except (ValueError, TypeError):
