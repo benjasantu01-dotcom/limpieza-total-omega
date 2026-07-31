@@ -99,13 +99,13 @@ def _get_sha256(path: Path) -> str:
 
 def _is_file_locked(path: Path) -> bool:
     """
-    Verifica si un archivo está en uso exclusivo intentando una operación de renombrado.
-    Si `rename` falla, se asume que otro proceso mantiene un lock sobre el archivo.
+    Determina si un archivo está bloqueado por otro proceso intentando 
+    abrirlo en modo de acceso exclusivo para escritura.
     """
     try:
-        path.rename(path)
-        return False
-    except OSError:
+        with open(path, "a+b") as f:
+            return False
+    except (OSError, PermissionError):
         return True
 
 
@@ -380,13 +380,21 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     
     items = load_manifest(base)
     count = 0
+    
+    def _is_safe_to_purge(path: Path, item: QuarantineItem) -> bool:
+        """Verifica restricciones de seguridad para borrar un ítem específico."""
+        return (
+            is_within_directory(path, quarantine_root) and
+            not is_protected_path(path) and
+            (not item.sha256 or _get_sha256(path) == item.sha256)
+        )
+
     for item in items:
         stored_file = quarantine_root / item.stored_name
-        if not is_protected_path(stored_file) and stored_file.exists() and is_within_directory(stored_file, quarantine_root):
+        if stored_file.exists() and _is_safe_to_purge(stored_file, item):
             try:
-                if not item.sha256 or _get_sha256(stored_file) == item.sha256:
-                    stored_file.unlink()
-                    count += 1
+                stored_file.unlink()
+                count += 1
             except (OSError, PermissionError):
                 continue
     save_manifest([], base)

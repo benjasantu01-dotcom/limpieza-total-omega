@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **254** (50.4% de aceptación)
+- Mejoras aceptadas: **253** (50.2% de aceptación)
 - Rechazadas por tests: 20
-- Rechazadas por guardia de seguridad: 24
+- Rechazadas por guardia de seguridad: 25
 - Sin cambios (nada sustancial que mejorar): 14
 - Sin respuesta de la IA (error o límite): 192
 
@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-30 | 160 | 11 | 16 | 11 | 122 |
-| 2026-07-31 | 94 | 9 | 8 | 3 | 70 |
+| 2026-07-30 | 156 | 11 | 16 | 11 | 122 |
+| 2026-07-31 | 97 | 9 | 9 | 3 | 70 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **58**
+- legibilidad y documentación: **61**
 - seguridad defensiva: **55**
 - manejo de errores y validación de entradas: **54**
-- robustez ante casos límite: **47**
-- rendimiento: **40**
+- robustez ante casos límite: **44**
+- rendimiento: **39**
 
 ## Mejoras aceptadas por archivo
 
-- `browser.py`: **22**
 - `diskreport.py`: **22**
 - `scanner.py`: **22**
-- `assistant.py`: **21**
 - `duplicates.py`: **21**
+- `browser.py`: **21**
+- `assistant.py`: **20**
+- `quarantine.py`: **20**
 - `healthscore.py`: **19**
 - `settings.py`: **19**
-- `quarantine.py`: **19**
-- `branding.py`: **16**
+- `safety.py`: **17**
 - `main.py`: **16**
-- `safety.py`: **16**
-- `startup.py`: **14**
-- `organizer.py`: **14**
+- `organizer.py`: **15**
+- `branding.py`: **15**
 - `memory.py`: **13**
+- `startup.py`: **13**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-31T07:51:29` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación de `ensure_safe_to_modify` y `is_safe_to_modify` con docstrings que detallan los riesgos de seguridad manejados y los tipos de retorno, además de refactorizar `_is_reparse_point` para mejorar su legibilidad y precisión técnica al manejar atributos de archivos.
+- `2026-07-31T07:51:02` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de Type Hints explícitos, la corrección de un docstring ambiguo en `_is_file_locked`, y la extracción de una lógica de validación repetitiva en `purge_all` a un flujo más claro, manteniendo la robustez del módulo.
+- `2026-07-31T07:50:35` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `organizer.py` añadiendo Type Hints precisos, eliminando redundancias en la lógica de guardas y estandarizando los docstrings siguiendo las convenciones del proyecto, asegurando que las funciones de seguridad sean invocadas correctamente según las reglas establecidas.
 - `2026-07-31T07:41:58` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación y la legibilidad añadiendo type hints faltantes en las funciones clave y documentando el propósito de los flags hexadecimales de acceso en `trim_working_set` para clarificar qué permisos se están solicitando al SO.
 - `2026-07-31T07:41:49` **main.py** (legibilidad y documentación): Mejora la legibilidad del código mediante el uso de docstrings detallados en métodos críticos y la reorganización de la lógica de inicialización en `__init__`, facilitando el mantenimiento conforme al enfoque de calidad exigido.
 - `2026-07-31T07:40:48` **healthscore.py** (legibilidad y documentación): Se ha mejorado la legibilidad y la robustez del código mediante la adición de Type Hints en la función `_sort_by_performance_delta` y la clarificación de las condiciones en `compute_score`, reemplazando el `try-except` genérico por validaciones explícitas de integridad que siguen el enfoque de documentación técnica.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-31T07:20:44` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `settings.py` implementando una validación estricta de las rutas en `validate`, asegurando que `ultima_carpeta` no solo sea una ruta sintácticamente válida, sino que también verifique su existencia o capacidad de ser resuelta, previniendo inyecciones de rutas inseguras mediante la reutilización del validador de `safety` de forma más granular.
 - `2026-07-31T07:20:19` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `scan_directory` y `_process_directory_entry` implementando validaciones de entrada (`None`/`Path` inválidos) y manejando errores de forma específica al resolver rutas, evitando que condiciones de carrera o rutas corruptas bloqueen el escáner.
 - `2026-07-31T07:19:58` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `normalize` y `is_protected_path` al encapsular la lógica de resolución de rutas en un bloque `try-except` más estricto, asegurando que `Path.resolve()` no falle ante rutas inválidas o con caracteres prohibidos por el sistema operativo, devolviendo siempre una estructura predecible.
-- `2026-07-31T07:10:35` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `load_manifest` validando explícitamente el esquema del JSON tras cargarlo, evitando fallos silenciosos ante archivos corrompidos o maliciosamente modificados y asegurando que las claves esperadas siempre existan antes de instanciar `QuarantineItem`.
-- `2026-07-31T07:10:07` **organizer.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `stage_for_review` validando explícitamente que los archivos a mover no sean el mismo objeto o contengan rutas mal formadas/vacías, y se consolidó el manejo de errores en `delete_reviewed` para evitar el procesamiento de rutas que escapan del directorio de cuarentena mediante una validación de `parents`.
-- `2026-07-31T07:09:45` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` añadiendo una validación explícita para evitar que `psapi.EmptyWorkingSet` sea llamado con un handle nulo o inválido y capturando excepciones de bajo nivel de forma más granular para asegurar que el `kernel32.CloseHandle` siempre se ejecute mediante un bloque `finally` robusto.

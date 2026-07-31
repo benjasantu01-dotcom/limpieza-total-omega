@@ -77,11 +77,14 @@ _ALL_PROTECTED_TOKENS: Final[frozenset[str]] = PROTECTED_DIR_NAMES | _SYSTEM_ROO
 
 def _is_reparse_point(path: Path) -> bool:
     """
-    Verifica si la ruta es un punto de reparse (Junction/Symlink).
+    Verifica si una ruta es un punto de reparse (Junction o Symlink).
+    Utiliza el bit de atributo FILE_ATTRIBUTE_REPARSE_POINT (0x400).
     """
     try:
+        # st_file_attributes es específico de Windows en la librería estándar
         stats = path.lstat()
-        return bool(getattr(stats, "st_file_attributes", 0) & 0x400) or path.is_symlink()
+        is_reparse = bool(getattr(stats, "st_file_attributes", 0) & 0x400)
+        return is_reparse or path.is_symlink()
     except (OSError, PermissionError):
         return False
 
@@ -176,7 +179,12 @@ def is_sensitive_file(path: PathLike) -> bool:
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> Path:
     """
-    Valida que una ruta sea apta para operaciones de escritura/modificación.
+    Valida rigurosamente si una ruta es apta para modificación.
+    
+    Lanza UnsafePathError si detecta: rutas UNC, puntos de reparse, 
+    archivos de solo lectura, enlaces físicos múltiples, o rutas de sistema.
+    
+    Retorna la ruta normalizada como Path si es segura.
     """
     if path is None:
         raise UnsafePathError("Ruta nula recibida.")
@@ -210,7 +218,10 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
 
 def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> bool:
     """
-    Versión booleana para bucles. No lanza excepciones.
+    Versión booleana de seguridad para uso en bucles. 
+    
+    No lanza excepciones. Retorna True solo si la ruta pasa todos los controles 
+    de seguridad definidos en ensure_safe_to_modify.
     """
     try:
         return isinstance(ensure_safe_to_modify(path, allow_sensitive=allow_sensitive), Path)

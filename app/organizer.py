@@ -28,11 +28,11 @@ logger = logging.getLogger(__name__)
 JUNK_EXTENSIONS: Final = {
     ".tmp", ".temp", ".log", ".bak", ".old", ".dmp", ".chk", ".cache",
 }
-# Pre-calculado para eficiencia en loops; evita conversiones repetidas a minúsculas
+# Pre-calculado para eficiencia en loops
 _LOWER_JUNK_EXTS: Final = {ext.lower() for ext in JUNK_EXTENSIONS}
 _JUNK_EXTS_TUPLE: Final = tuple(_LOWER_JUNK_EXTS)
 
-# Carpetas típicas donde se acumula basura en Windows 11
+# Carpetas típicas donde se acumula basura
 DEFAULT_SCAN_DIRS: Final = [
     os.path.expandvars(r"%TEMP%"),
     os.path.expandvars(r"%LOCALAPPDATA%\Temp"),
@@ -48,7 +48,7 @@ def list_available_drives() -> List[str]:
     Detecta unidades montadas en sistemas Windows.
 
     Returns:
-        List[str]: Lista de rutas raíz (ej. ['C:\\', 'D:\\']). Retorna lista vacía en entornos no-NT.
+        List[str]: Lista de rutas raíz (ej. ['C:\\', 'D:\\']). Retorna lista vacía si no es Windows.
     """
     if os.name != "nt":
         return []
@@ -64,11 +64,6 @@ def list_available_drives() -> List[str]:
 class JunkFile:
     """
     Representa un archivo candidato a limpieza.
-    
-    Attributes:
-        path: Objeto Path con la ubicación del archivo.
-        size_bytes: Tamaño original en bytes.
-        modified: Fecha y hora de la última modificación.
     """
     path: Path
     size_bytes: int
@@ -76,31 +71,23 @@ class JunkFile:
 
     @property
     def size_mb(self) -> float:
-        """Calcula el tamaño del archivo en Megabytes."""
+        """Calcula el tamaño del archivo en Megabytes (redondeado a 2 decimales)."""
         return round(self.size_bytes / (1024 * 1024), 2)
 
     @property
     def is_junk_extension(self) -> bool:
-        """Verifica si la extensión del archivo coincide con los criterios de basura predefinidos."""
+        """Valida si la extensión está en la lista de permitidas."""
         return self.path.suffix.lower() in _LOWER_JUNK_EXTS
 
 
 def _generate_unique_target(target: Path) -> Path:
     """
     Genera una ruta única iterando un contador si el archivo destino ya existe.
-    
-    Args:
-        target: La ruta base deseada para el archivo.
-        
-    Returns:
-        Path: Una ruta única que no colisiona con archivos existentes.
     """
     if not target.exists():
         return target
         
-    parent = target.parent
-    stem = target.stem
-    suffix = target.suffix
+    parent, stem, suffix = target.parent, target.stem, target.suffix
     counter = 1
     
     while (candidate := parent / f"{stem}_{counter}{suffix}").exists():
@@ -123,10 +110,6 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     """
     Escanea directorios en busca de archivos temporales mediante recursión segura.
     """
-    if directories is not None and not isinstance(directories, list):
-        logger.error("El parámetro directories debe ser una lista.")
-        return []
-
     dirs = directories or DEFAULT_SCAN_DIRS
     found: List[JunkFile] = []
     blocklist = SYSTEM_FOLDER_BLOCKLIST
@@ -138,19 +121,16 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
                     try:
                         if entry.is_symlink():
                             continue
-                        
                         if entry.is_dir(follow_symlinks=False):
                             if entry.name.lower() not in blocklist:
                                 _walk_dir(entry.path)
                         elif _is_junk_file(entry):
                             stat = entry.stat()
-                            found.append(
-                                JunkFile(
-                                    path=Path(entry.path),
-                                    size_bytes=stat.st_size,
-                                    modified=datetime.fromtimestamp(stat.st_mtime),
-                                )
-                            )
+                            found.append(JunkFile(
+                                path=Path(entry.path),
+                                size_bytes=stat.st_size,
+                                modified=datetime.fromtimestamp(stat.st_mtime)
+                            ))
                     except (PermissionError, OSError):
                         continue
         except (PermissionError, OSError):
@@ -160,7 +140,6 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
         p = Path(d).expanduser()
         if p.exists() and p.is_dir():
             _walk_dir(str(p))
-            
     return found
 
 
@@ -168,11 +147,7 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
     """
     Ordena una lista de objetos JunkFile según tamaño o fecha.
     """
-    if not isinstance(files, list):
-        return []
-        
     if by not in ("size", "date"):
-        logger.warning("Criterio de ordenación desconocido '%s', usando 'size' por defecto.", by)
         by = "size"
 
     key_func: Callable[[JunkFile], Union[int, datetime]] = (
@@ -185,61 +160,26 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
     """
     Mueve archivos candidatos a una carpeta de cuarentena para revisión humana.
     """
-    if not isinstance(files, list) or not files:
-        return Path(review_dir).expanduser().resolve()
-        
-    if not isinstance(review_dir, str):
-        raise ValueError("La ruta de revisión debe ser un string válido.")
-
     dest = Path(review_dir).expanduser().resolve()
-    
-    try:
-        ensure_safe_to_modify(dest)
-        dest.mkdir(parents=True, exist_ok=True)
-    except (OSError, Exception) as e:
-        logger.error("No se pudo preparar el directorio de revisión %s: %s", dest, e)
-        raise
+    ensure_safe_to_modify(dest)
+    dest.mkdir(parents=True, exist_ok=True)
 
     for jf in files:
-        if not isinstance(jf, JunkFile) or not jf.path or not isinstance(jf.path, Path):
-            continue
-            
         try:
             full_source_path = jf.path.resolve()
             
-            if not full_source_path.exists() or not full_source_path.is_file() or full_source_path.is_symlink():
+            if not full_source_path.is_file() or not is_safe_to_modify(full_source_path):
                 continue
             
-            if not is_safe_to_modify(full_source_path):
-                continue
-            
-            # Evitar mover el archivo a su propio directorio o recursión de carpetas
-            if dest == full_source_path or dest in full_source_path.parents or full_source_path.parent == dest:
-                continue
-                
-            try:
-                with open(full_source_path, 'rb'):
-                    pass
-            except (PermissionError, OSError):
+            # Evitar bucles de movimiento o mover a sí mismo
+            if dest in full_source_path.parents or full_source_path.parent == dest:
                 continue
 
-            usage = shutil.disk_usage(dest.anchor)
-            if usage.free < (jf.size_bytes + 10 * 1024 * 1024):
-                continue
-
-            base_name = jf.path.stem
-            ext = jf.path.suffix
-            timestamp = int(jf.modified.timestamp())
-            initial_target = (dest / f"{base_name}_{timestamp}{ext}").resolve()
-            target = _generate_unique_target(initial_target)
-            
-            if not str(target).startswith(str(dest)):
-                continue
+            target = _generate_unique_target(dest / f"{jf.path.stem}_{int(jf.modified.timestamp())}{jf.path.suffix}")
             
             ensure_safe_to_modify(full_source_path)
             ensure_safe_to_modify(target)
             shutil.move(str(full_source_path), str(target))
-                
         except (PermissionError, OSError, shutil.Error):
             continue
     return dest
@@ -249,9 +189,6 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     """
     Elimina permanentemente archivos desde la carpeta de revisión tras validación.
     """
-    if not isinstance(review_dir, str):
-        return 0
-        
     dest = Path(review_dir).expanduser().resolve()
     if not dest.exists() or not dest.is_dir():
         return 0
@@ -259,12 +196,9 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     count = 0
     for f in dest.iterdir():
         try:
-            if f.is_file() and f.exists():
-                resolved_f = f.resolve()
-                # Validar que el archivo reside estrictamente dentro de dest
-                if dest in resolved_f.parents and is_safe_to_modify(resolved_f):
-                    f.unlink()
-                    count += 1
+            if f.is_file() and is_safe_to_modify(f):
+                f.unlink()
+                count += 1
         except (PermissionError, OSError):
             continue
     return count
