@@ -185,7 +185,18 @@ def is_sensitive_file(path: PathLike) -> bool:
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> Path:
     """
-    Valida integridad antes de una modificación.
+    Valida que una ruta sea apta para operaciones de escritura/modificación.
+
+    Esta función actúa como una guardia estricta: si la ruta presenta cualquier
+    riesgo (sistema, raíz, reparse point, solo lectura o extensión prohibida),
+    lanza UnsafePathError.
+
+    Reglas de uso:
+    - NUNCA usar como condicional (if ensure_safe_to_modify(...)). La función
+      siempre devuelve el objeto Path si es segura.
+    - Úsela para preparar la ruta antes de una operación de disco, dejando que
+      la excepción interrumpa el flujo si la validación falla.
+    - Si necesita un booleano, use is_safe_to_modify() en su lugar.
     """
     if path is None:
         raise UnsafePathError("Ruta nula recibida.")

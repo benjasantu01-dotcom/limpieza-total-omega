@@ -53,6 +53,7 @@ class Suspicion:
 def _is_reparse_point(entry: os.DirEntry) -> bool:
     """
     Verifica si la entrada es un punto de reparse (Junction/Symlink).
+    Evita que el escáner entre en bucles infinitos por enlaces simbólicos.
     """
     try:
         return bool(entry.stat(follow_symlinks=False).st_file_attributes & 0x400)
@@ -69,11 +70,13 @@ def _process_directory_entry(entry: os.DirEntry, root_str: str, results: List[Su
         if entry.is_dir(follow_symlinks=False):
             if not _is_reparse_point(entry):
                 path_str = os.path.abspath(entry.path)
+                # Verifica duplicidad de ruta y seguridad antes de seguir descendiendo
                 if path_str not in seen and not is_protected_path(Path(path_str)):
                     seen.add(path_str)
                     stack.append(path_str)
         elif entry.is_file():
             path_obj = Path(entry.path)
+            # Solo escaneamos archivos que no residan en zonas críticas del sistema
             if not is_protected_path(path_obj):
                 results.extend(scan_file(path_obj))
     except (PermissionError, OSError):
@@ -134,7 +137,11 @@ def scan_file(path: Path) -> List[Suspicion]:
 
 
 def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
-    """Realiza un recorrido recursivo iterativo optimizado."""
+    """
+    Realiza un recorrido recursivo iterativo optimizado sobre un directorio,
+    utilizando una pila para evitar desbordamiento de memoria y `is_protected_path`
+    para asegurar el cumplimiento de la política de seguridad global.
+    """
     path_obj = Path(directory)
     if not path_obj.exists() or not path_obj.is_dir() or is_protected_path(path_obj):
         return []

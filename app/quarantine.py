@@ -125,7 +125,13 @@ def _manifest_path(base_dir: Path) -> Path:
 def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload: bool = False) -> List[QuarantineItem]:
     """
     Carga el manifiesto. Utiliza una caché basada en `mtime` para evitar lecturas de disco innecesarias.
-    Si el manifiesto es inválido (JSON roto o formato incorrecto), retorna una lista vacía para no romper la app.
+    
+    Args:
+        base: Directorio base de cuarentena.
+        force_reload: Si es True, ignora la caché.
+        
+    Retorna:
+        Lista de objetos QuarantineItem. Retorna lista vacía si el archivo no existe o es ilegible.
     """
     base_path = quarantine_dir(base)
     path = _manifest_path(base_path)
@@ -194,6 +200,10 @@ def quarantine_file(
     """
     Aísla un archivo moviéndolo a la carpeta de cuarentena.
     Realiza validaciones de seguridad: symlinks, permisos, ocupación y espacio en disco.
+    
+    Raises:
+        UnsafePathError: Si la ruta es protegida o un enlace simbólico.
+        RuntimeError: Si ocurre un error irrecuperable durante el movimiento.
     """
     if not source:
         raise ValueError("La ruta de origen no puede estar vacía.")
@@ -281,6 +291,10 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
     """
     Restaura un archivo a su ruta original. Valida la integridad (SHA256) antes del movimiento.
     Recrea directorios padre si es necesario, asegurando que no se restaure en rutas protegidas.
+    
+    Raises:
+        KeyError: Si el item_id no existe.
+        RuntimeError: Si la integridad del hash falla o el movimiento es denegado.
     """
     if not item_id or not isinstance(item_id, str):
         raise ValueError("El ID debe ser una cadena válida.")
@@ -331,7 +345,14 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
 
 
 def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> bool:
-    """Elimina físicamente un ítem de la cuarentena tras validar que se encuentra en la ruta correcta."""
+    """
+    Elimina físicamente un ítem de la cuarentena.
+    
+    Returns:
+        True si se eliminó, False si no se encontró.
+    Raises:
+        UnsafePathError: Si se intenta borrar fuera del directorio de cuarentena.
+    """
     if not item_id or not isinstance(item_id, str):
         return False
     
@@ -361,7 +382,12 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
 
 
 def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
-    """Limpia el almacén completo y resetea el manifiesto."""
+    """
+    Limpia el almacén completo, borrando solo los archivos validados por hash.
+    
+    Returns:
+        Cantidad de archivos eliminados.
+    """
     quarantine_root = quarantine_dir(base)
     if is_protected_path(quarantine_root):
         raise UnsafePathError("Operación denegada en ruta protegida.")
