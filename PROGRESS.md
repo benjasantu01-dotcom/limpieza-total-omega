@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **254** (50.4% de aceptación)
+- Mejoras aceptadas: **252** (50.0% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 24
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 193
+- Sin respuesta de la IA (error o límite): 195
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-30 | 92 | 5 | 9 | 7 | 75 |
-| 2026-07-31 | 162 | 12 | 15 | 9 | 118 |
+| 2026-07-30 | 89 | 5 | 9 | 7 | 74 |
+| 2026-07-31 | 163 | 12 | 15 | 9 | 121 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **65**
 - rendimiento: **53**
 - manejo de errores y validación de entradas: **51**
-- seguridad defensiva: **45**
-- robustez ante casos límite: **40**
+- seguridad defensiva: **42**
+- robustez ante casos límite: **41**
 
 ## Mejoras aceptadas por archivo
 
-- `scanner.py`: **21**
 - `diskreport.py`: **21**
-- `settings.py`: **20**
 - `branding.py`: **20**
 - `browser.py`: **20**
+- `scanner.py`: **20**
 - `quarantine.py`: **20**
 - `assistant.py`: **19**
 - `duplicates.py`: **19**
-- `main.py`: **17**
+- `settings.py`: **19**
+- `main.py`: **18**
 - `healthscore.py`: **17**
 - `safety.py`: **16**
 - `organizer.py`: **16**
-- `startup.py`: **15**
+- `startup.py`: **14**
 - `memory.py`: **13**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-31T13:30:34` **main.py** (robustez ante casos límite): Mejoré la robustez de la selección de carpetas en `on_target_choice_changed` implementando una validación de existencia `os.path.exists` antes de asignar la ruta a `self.scan_target` y un manejo de errores más explícito, previniendo que la interfaz se quede en un estado inconsistente si la ruta fue eliminada externamente.
 - `2026-07-31T13:19:08` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `largest_folders` ante archivos desaparecidos durante la iteración (condición de carrera) o rutas con errores de resolución, utilizando un manejo de excepciones más granular que evita la interrupción prematura del análisis.
 - `2026-07-31T13:09:07` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` ante valores `NaN` o `inf` utilizando `math.isfinite` de forma más exhaustiva y asegurando que cualquier entrada externa que intente inyectar tipos inesperados sea descartada, protegiendo al asistente de estados inconsistentes.
 - `2026-07-31T13:08:51` **startup.py** (rendimiento): Optimicé el método `StartupEntry.executable` para realizar el chequeo de existencia `path.exists()` solo una vez, utilizando una bandera lógica (`_checked_exists`) y almacenando el resultado en `_exec_cache` para evitar I/O redundante en cada acceso a la propiedad durante el renderizado de la UI.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-31T12:37:55` **branding.py** (rendimiento): Optimicé el cálculo de colores en `draw_logo` y `draw_gradient_bar` sustituyendo bucles costosos de creación de objetos gráficos por llamadas únicas a `gradient_colors`, permitiendo que el motor de `tkinter` renderice de forma más eficiente y reduciendo el consumo de CPU durante el refresco de la UI.
 - `2026-07-31T12:27:35` **startup.py** (legibilidad y documentación): Mejora la legibilidad del método `StartupEntry.executable` extrayendo la lógica de validación de rutas a un método privado más claro, facilitando el mantenimiento y el cumplimiento de las normas de estilo.
 - `2026-07-31T12:27:24` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del proceso de validación al extraer la lógica de coerción y validación específica en una estructura de datos `SCHEMA` declarativa, eliminando el `if/else` encadenado en `_apply_validation_by_type` y documentando explícitamente las reglas de negocio de los tipos de datos.
-- `2026-07-31T12:26:59` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del flujo de escaneo mediante la introducción de una clase `Scanner` que encapsula la lógica de estado (ej. `seen`, `stack`) y documenté explícitamente los contratos de las funciones de chequeo mediante type hints y docstrings reforzados.

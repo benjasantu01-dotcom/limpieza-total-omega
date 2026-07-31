@@ -800,3 +800,11 @@ FAILED evolve/tests/test_safety.py::test_describe_protection_explains_the_reason
 - `2026-07-31T13:19:16` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
 - `2026-07-31T13:19:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-31T13:19:16` Corrida terminada. Total usado hoy: 316.
+- `2026-07-31T13:27:58` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-07-31T13:28:29` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: robustez ante casos límite).
+- `2026-07-31T13:29:29` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-07-31T13:30:34` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Mejoré la robustez de la selección de carpetas en `on_target_choice_changed` implementando una validación de existencia `os.path.exists` antes de asignar la ruta a `self.scan_target` y un manejo de errores más explícito, previniendo que la interfaz se quede en un estado inconsistente si la ruta fue eliminada externamente.
+- `2026-07-31T13:30:58` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-07-31T13:31:04` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-07-31T13:31:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-31T13:31:04` Corrida terminada. Total usado hoy: 320.

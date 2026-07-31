@@ -935,8 +935,14 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.scan_target = None
             self.target_label.configure(text="")
         else:
-            self.scan_target = choice
-            self.target_label.configure(text=f"Unidad completa: {choice}")
+            if os.path.exists(choice):
+                self.scan_target = choice
+                self.target_label.configure(text=f"Unidad completa: {choice}")
+            else:
+                self.log(f"Error: La unidad {choice} ya no es accesible.", "Limpieza")
+                self.target_choice.set("Por defecto (Temp + Descargas)")
+                self.scan_target = None
+                self.target_label.configure(text="")
 
     def on_scan_junk(self):
         """Inicia el proceso de recolección de archivos basura."""
