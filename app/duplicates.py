@@ -88,7 +88,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
     if not path:
         return None
     
-    p = Path(path)
+    p = Path(path).resolve()
     if not p.is_file() or p.is_symlink() or is_protected_path(p):
         return None
         
@@ -116,7 +116,7 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
     if not path:
         return None
 
-    p = Path(path)
+    p = Path(path).resolve()
     if not p.is_file() or p.is_symlink() or is_protected_path(p):
         return None
 
@@ -143,13 +143,17 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
         if not isinstance(p, Path):
             continue
         try:
-            st = p.lstat()
+            # Resolucion absoluta obligatoria para chequeos de seguridad consistentes
+            resolved_p = p.resolve()
+            if is_protected_path(resolved_p):
+                continue
+            st = resolved_p.lstat()
             if st.st_size > 0:
                 inode_id = (st.st_dev, st.st_ino)
                 if inode_id in seen_inodes:
                     continue
                 seen_inodes.add(inode_id)
-                groups[st.st_size].append(p)
+                groups[st.st_size].append(resolved_p)
         except (OSError, PermissionError, FileNotFoundError, AttributeError):
             continue
     return groups
@@ -173,11 +177,10 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
             
             for root, subdirs, files in os.walk(base_dir):
                 root_path = Path(root)
-                # Filtrar subdirectorios in situ para evitar entrar en zonas protegidas o enlaces
                 subdirs[:] = [
                     d for d in subdirs 
                     if not (root_path / d).is_symlink()
-                    and not (skip_protected and is_protected_path(root_path / d))
+                    and not (skip_protected and is_protected_path((root_path / d).resolve()))
                 ]
                 
                 for name in files:
@@ -185,7 +188,7 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
                     try:
                         if file_path.is_symlink():
                             continue
-                        if skip_protected and is_protected_path(file_path):
+                        if skip_protected and is_protected_path(file_path.resolve()):
                             continue
                         st = file_path.lstat()
                         if st.st_size >= min_size:

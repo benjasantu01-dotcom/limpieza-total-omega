@@ -720,3 +720,44 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-07-31T00:22:40` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Mejoré la seguridad defensiva al serializar las métricas para Gemini, eliminando espacios en blanco innecesarios y normalizando el formato del contexto para asegurar que los separadores de ruta o caracteres maliciosos no puedan ser inyectados accidentalmente en los datos agregados.
 - `2026-07-31T00:22:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-31T00:22:40` Corrida terminada. Total usado hoy: 12.
+- `2026-07-31T00:31:21` Arrancando corrida. Quedan hoy ~288 peticiones objetivo.
+- `2026-07-31T00:31:54` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Mejoré la seguridad en `save_logo_svg` eliminando el uso redundante de `ensure_safe_to_modify` (que lanzaba excepciones innecesarias ante fallos de permisos) y priorizando `is_safe_to_modify` para un flujo de control limpio y sin excepciones no controladas.
+- `2026-07-31T00:32:16` Tests FALLARON:
+```
+tes de procesar
+            if not root.exists() or not root.is_dir() or root.is_symlink() or is_protected_path(root):
+                return 0
+    
+            current_mtime = root.stat().st_mtime
+            if path_str in _DIR_SIZE_CACHE:
+                cached_size, cached_mtime = _DIR_SIZE_CACHE[path_str]
+                if cached_mtime == current_mtime:
+                    return cached_size
+        except (OSError, RuntimeError, PermissionError):
+            return 0
+    
+        total_bytes: int = 0
+        stack: List[str] = [str(root)]
+    
+        while stack:
+            current_dir = stack.pop()
+            try:
+                with os.scandir(current_dir) as it:
+                    for entry in it:
+                        try:
+                            # Exclusión estricta de puntos de reparse (junctions/symlinks)
+>                           if entry.is_symlink() or (entry.is_dir() and entry.stat().st_file_attributes & stat.FILE_ATTRIBUTE_REPARSE_POINT):
+                                                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E                           AttributeError: 'os.stat_result' object has no attribute 'st_file_attributes'
+
+app/browser.py:148: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_directory_size_adds_up_recursively - AttributeError: 'os.stat_result' object has no attribute 'st_file_attributes'
+1 failed, 298 passed in 1.11s
+
+```
+- `2026-07-31T00:32:16` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva en la función `directory_size` para prevenir el seguimiento de puntos de reparse (junctions) mediante `entry.is_junction()` (disponible en Python 3.10+ o vía `S_IFLNK` en `stat_result`) y validación explícita de `is_reparse_point`, evitando así escapes accidentales del árbol de directorios durante el escaneo de caché.
+- `2026-07-31T00:32:40` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). He mejorado `walk_files` implementando una validación estricta de "alcance de ruta" (path scoping) al resolver el `base_path` antes de iniciar el escaneo, y endureciendo la validación dentro de `should_ignore_entry` para prevenir cualquier posibilidad de que un enlace simbólico o un reparse point alteren el escaneo fuera del directorio raíz configurado, siguiendo el enfoque de seguridad defensiva.
+- `2026-07-31T00:32:48` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_collect_candidates` y `group_by_size` mediante el uso de `resolve()` antes de realizar chequeos de seguridad y añadiendo una validación explícita de `is_protected_path` sobre la ruta absoluta, asegurando que las comparaciones contra el bloqueo de sistema sean consistentes independientemente de si la ruta recibida es relativa o contiene segmentos de navegación.
+- `2026-07-31T00:32:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-31T00:32:48` Corrida terminada. Total usado hoy: 16.

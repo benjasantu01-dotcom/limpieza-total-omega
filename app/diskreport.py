@@ -163,16 +163,20 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
     def should_ignore_entry(entry: os.DirEntry) -> bool:
         """Verifica restricciones de seguridad para saltar enlaces o carpetas bloqueadas."""
         try:
+            # Prevenir escape mediante symlinks o reparse points
             if entry.is_symlink():
                 return True
             if os.name == 'nt':
                 if entry.stat(follow_symlinks=False).st_reparse_tag != 0:
                     return True
-            path = Path(entry.path)
-            if skip_protected and is_protected_path(path):
+            
+            # Validar que la ruta resultante siga dentro de base_path
+            current_path = Path(entry.path).resolve()
+            current_path.relative_to(base_path)
+            
+            if skip_protected and is_protected_path(current_path):
                 return True
-            path.relative_to(base_path)
-        except (OSError, ValueError):
+        except (OSError, ValueError, RuntimeError):
             return True
         return False
 
@@ -187,7 +191,6 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
                         if entry.is_dir():
                             yield from recursive_scan(entry.path)
                         else:
-                            # Se captura excepcion individual si el archivo desaparece o deniega acceso
                             yield Path(entry.path), entry.stat().st_size
                     except (OSError, PermissionError, FileNotFoundError):
                         continue
