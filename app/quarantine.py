@@ -411,7 +411,10 @@ def summarize(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[str]:
     items = load_manifest(base)
     if not items:
         return ["La cuarentena está vacía."]
-    total_mb = round(total_quarantined_bytes(base) / (1024 * 1024), 2)
+    
+    total_bytes = sum(i.size_bytes for i in items)
+    total_mb = round(total_bytes / (1024 * 1024), 2)
+    
     lines = [f"{len(items)} archivo(s) en cuarentena — {total_mb} MB", ""]
     for item in items:
         lines.append(f"  [{item.item_id}] {Path(item.original_path).name} — {item.size_mb} MB")
