@@ -6,47 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **250** (49.6% de aceptación)
+- Mejoras aceptadas: **248** (49.2% de aceptación)
 - Rechazadas por tests: 21
-- Rechazadas por guardia de seguridad: 25
-- Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 193
+- Rechazadas por guardia de seguridad: 24
+- Sin cambios (nada sustancial que mejorar): 16
+- Sin respuesta de la IA (error o límite): 195
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-29 | 13 | 1 | 2 | 2 | 32 |
+| 2026-07-29 | 10 | 1 | 1 | 2 | 32 |
 | 2026-07-30 | 181 | 14 | 18 | 12 | 125 |
-| 2026-07-31 | 56 | 6 | 5 | 1 | 36 |
+| 2026-07-31 | 57 | 6 | 5 | 2 | 38 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **63**
 - manejo de errores y validación de entradas: **51**
-- seguridad defensiva: **47**
 - rendimiento: **47**
-- robustez ante casos límite: **42**
+- seguridad defensiva: **44**
+- robustez ante casos límite: **43**
 
 ## Mejoras aceptadas por archivo
 
-- `scanner.py`: **23**
 - `diskreport.py`: **22**
+- `scanner.py`: **22**
 - `browser.py`: **21**
-- `quarantine.py`: **20**
 - `settings.py`: **19**
 - `healthscore.py`: **19**
+- `quarantine.py`: **19**
 - `assistant.py`: **19**
 - `duplicates.py`: **19**
 - `branding.py`: **16**
 - `organizer.py`: **16**
-- `safety.py`: **15**
+- `main.py`: **16**
 - `startup.py`: **15**
-- `main.py`: **15**
+- `safety.py`: **14**
 - `memory.py`: **11**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-31T04:27:45` **main.py** (robustez ante casos límite): Mejoré la robustez de la inicialización de la app encapsulando la carga de estado y construcción de la interfaz en bloques `try/except` críticos, asegurando que un fallo en módulos externos o configuraciones corruptas no bloquee el arranque completo de la ventana, manteniendo la estabilidad del proceso.
 - `2026-07-31T04:17:09` **browser.py** (robustez ante casos límite): Mejoré la robustez de `directory_size` ante el acceso a directorios con permisos denegados o errores de lectura durante el escaneo recursivo mediante la inclusión explícita de un manejo de errores en el bucle `while` que asegura la continuidad del proceso sin abortar ante excepciones de acceso (`PermissionError`, `OSError`).
 - `2026-07-31T04:16:35` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` ante valores corruptos o inesperados en `metrics` usando `getattr` con un valor por defecto consistente, evitando posibles excepciones de acceso a atributos `None` y garantizando que el asistente nunca procese tipos inválidos.
 - `2026-07-31T04:16:04` **startup.py** (rendimiento): Optimicé el método `StartupEntry.executable` para evitar llamadas redundantes a `Path.exists()` y `Path.expanduser()` mediante un cache simple, reduciendo drásticamente las operaciones de I/O de disco durante la consolidación de entradas.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-31T03:36:03` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` y `ask` eliminando la regeneración innecesaria de objetos `SystemContext` y pre-compilando expresiones regulares fuera de los loops, además de asegurar que `_rank_problems` sea invocado solo cuando es estrictamente necesario para reducir la carga de cómputo en cada consulta.
 - `2026-07-31T03:35:33` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo incorporando tipos de retorno explícitos en los docstrings y refinando la explicación del método `executable` para clarificar la lógica de resolución de rutas en condiciones de ambigüedad.
 - `2026-07-31T03:35:09` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en las funciones de validación, clarificando la lógica de coerción de tipos y asegurando que las responsabilidades de cada helper privado sean evidentes para futuros desarrolladores.
-- `2026-07-31T03:25:56` **scanner.py** (legibilidad y documentación): Documenté el propósito de los métodos de escaneo y las restricciones de seguridad en las funciones de recorrido de directorios para aclarar la lógica de prevención de recursión infinita y filtrado de rutas.

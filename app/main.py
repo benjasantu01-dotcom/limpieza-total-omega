@@ -133,7 +133,13 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.analysis_folder = None
         self.report_data = {}
         self.assistant_context = assistant.SystemContext()
-        self.settings = settings_mod.load()
+        
+        try:
+            self.settings = settings_mod.load()
+        except Exception as e:
+            logging.error("Fallo al cargar ajustes, usando defaults: %s", e)
+            self.settings = settings_mod.reset()
+            
         self.setting_vars = {}
         self.outputs = {}
         self.tabs = {}
@@ -145,7 +151,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _get_cached(self, key: str, provider: Callable, force: bool = False) -> Any:
         """Provee acceso memoizado a datos de lectura pesada (disco/sistema)."""
         if force or key not in self._cache:
-            self._cache[key] = provider()
+            try:
+                self._cache[key] = provider()
+            except Exception:
+                self._cache[key] = []
         return self._cache[key]
 
     # ------------------------------------------------------------------

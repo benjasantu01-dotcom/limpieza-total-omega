@@ -1152,3 +1152,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-07-31T04:17:09` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Mejoré la robustez de `directory_size` ante el acceso a directorios con permisos denegados o errores de lectura durante el escaneo recursivo mediante la inclusión explícita de un manejo de errores en el bucle `while` que asegura la continuidad del proceso sin abortar ante excepciones de acceso (`PermissionError`, `OSError`).
 - `2026-07-31T04:17:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-31T04:17:09` Corrida terminada. Total usado hoy: 104.
+- `2026-07-31T04:25:51` Arrancando corrida. Quedan hoy ~196 peticiones objetivo.
+- `2026-07-31T04:26:16` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: robustez ante casos límite).
+- `2026-07-31T04:26:38` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-07-31T04:27:01` ➖ Sin cambios en healthscore.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `score_security` y `score_memory` para evitar divisiones por cero o cálculos inválidos ante métricas mal configuradas, reforzando la integridad del proceso de cómputo ante casos límite.
+- `2026-07-31T04:27:45` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Mejoré la robustez de la inicialización de la app encapsulando la carga de estado y construcción de la interfaz en bloques `try/except` críticos, asegurando que un fallo en módulos externos o configuraciones corruptas no bloquee el arranque completo de la ventana, manteniendo la estabilidad del proceso.
+- `2026-07-31T04:27:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-31T04:27:45` Corrida terminada. Total usado hoy: 108.
