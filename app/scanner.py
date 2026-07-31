@@ -75,7 +75,8 @@ def _process_directory_entry(entry: os.DirEntry, results: List[Suspicion], stack
                     stack.append(path_str)
         elif entry.is_file():
             path_obj = Path(entry.path)
-            if not is_protected_path(path_obj):
+            # Validar existencia real antes de escanear por si hubo race condition
+            if path_obj.exists() and not is_protected_path(path_obj):
                 results.extend(scan_file(path_obj))
     except (PermissionError, OSError):
         pass
@@ -129,7 +130,6 @@ CHECK_FUNCS: Final[List[SuspicionCheck]] = [
 
 def scan_file(path: Path) -> List[Suspicion]:
     """Aplica secuencialmente todas las funciones de `CHECK_FUNCS` sobre una ruta."""
-    # Validación defensiva estricta para evitar procesamiento de rutas inválidas o protegidas
     try:
         if not path or not path.is_file() or is_protected_path(path):
             return []

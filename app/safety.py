@@ -89,6 +89,19 @@ def _is_reparse_point(path: Path) -> bool:
         return False
 
 
+def _is_file_in_use(path: Path) -> bool:
+    """Intenta abrir el archivo en modo exclusivo para detectar bloqueos."""
+    if not path.is_file():
+        return False
+    try:
+        # Intenta abrir para escritura exclusiva sin truncar
+        fd = os.open(path, os.O_RDWR | os.O_EXCL)
+        os.close(fd)
+        return False
+    except (OSError, PermissionError):
+        return True
+
+
 def _is_readonly(path: Path) -> bool:
     """Verifica si el archivo tiene el atributo de solo lectura activado."""
     try:
@@ -200,6 +213,8 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
             raise UnsafePathError("Operación bloqueada: punto de reparse detectado.")
         if _is_readonly(p):
             raise UnsafePathError("Operación bloqueada: el archivo es de solo lectura.")
+        if _is_file_in_use(p):
+            raise UnsafePathError("Operación bloqueada: el archivo está en uso por otro proceso.")
         if p.is_file() and p.stat().st_nlink > 1:
             raise UnsafePathError("Operación bloqueada: el archivo tiene múltiples enlaces físicos.")
 
@@ -257,6 +272,8 @@ def describe_protection(path: PathLike) -> str:
     if p.exists():
         if _is_readonly(p):
             return f"'{p}' tiene atributos de solo lectura."
+        if _is_file_in_use(p):
+            return f"'{p}' está en uso por otro programa."
         if p.is_file() and p.stat().st_nlink > 1:
             return f"'{p}' tiene múltiples enlaces físicos (potencial riesgo)."
     if is_sensitive_file(p):

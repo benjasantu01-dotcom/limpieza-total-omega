@@ -137,7 +137,6 @@ def _validate_str(clave: str, valor: Any) -> str | None:
 
 
 def _apply_validation_by_type(clave: str, valor: Any, defecto: Any) -> Any:
-    # Mapeo directo para evitar if-elif anidados
     validators: dict[type, Callable] = {
         bool: _coerce_bool,
         int: lambda v: _coerce_int(v, clave),
@@ -203,9 +202,12 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
         return None
     
     parent = ruta.parent
-    parent.mkdir(parents=True, exist_ok=True)
+    try:
+        parent.mkdir(parents=True, exist_ok=True)
+    except OSError:
+        return None
     
-    temp_path = None
+    temp_path: Path | None = None
     try:
         with tempfile.NamedTemporaryFile("w", dir=parent, delete=False, encoding="utf-8") as tf:
             temp_path = Path(tf.name)
@@ -219,7 +221,10 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
         return ruta
     except (OSError, RuntimeError, PermissionError):
         if temp_path and temp_path.exists():
-            temp_path.unlink()
+            try:
+                temp_path.unlink()
+            except OSError:
+                pass
         return None
 
 
