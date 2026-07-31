@@ -3,7 +3,7 @@ startup.py — inventario de programas que arrancan con Windows.
 
 SOLO LECTURA: lista lo que arranca con el sistema y estima su impacto, pero
 **no deshabilita ni borra nada**. Tocar las claves de arranque del registro
-de forma automática es una de las maneras más rápidas de dejar una PC en
+de forma administrativa es una de las maneras más rápidas de dejar una PC en
 mal estado, así que acá se reporta y se explica; deshabilitar queda para el
 Administrador de tareas de Windows, que además guarda respaldo.
 
@@ -173,16 +173,17 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
         
     for line in text.splitlines():
         clean_line: str = line.strip()
-        if not clean_line or ',' not in clean_line:
+        if not clean_line:
             continue
             
-        columns: List[str] = line.split(",", 1)
+        columns: List[str] = clean_line.split(",", 1)
         if len(columns) < 2:
             continue
             
         name_key: str = columns[0].strip().strip('"\'')
         value_cmd: str = columns[1].strip().strip('"\'')
         
+        # Validar que los valores extraídos sean strings útiles y no cabeceras de PS
         if not name_key or name_key.lower() in ("name", "pscustomobject") or name_key.upper().startswith("PS"):
             continue
             

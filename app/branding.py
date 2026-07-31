@@ -32,7 +32,9 @@ APP_SHORT_NAME: Final = "Omega"
 APP_TAGLINE: Final = "Limpieza y seguridad, en un solo lugar"
 APP_VERSION: Final = "2.1.0"
 
-# Paleta oscura de alto contraste con tres acentos vivos.
+# Paleta centralizada. Los acentos son usados por `blend` para generar 
+# gradientes dinámicos, mientras que los estados (success, danger, etc.)
+# definen la semántica de color en componentes de diagnóstico.
 PALETTE: Final = MappingProxyType({
     "background": "#0a0e17",
     "surface": "#141b2d",
@@ -82,6 +84,8 @@ GRADE_COLORS: Final[Mapping[str, HexColor]] = MappingProxyType({
     "F": "#ff4757",
 })
 
+# Mapeo de secciones a glifos Unicode para estandarizar la iconografía 
+# en menús, pestañas y reportes.
 ICONS: Final[Mapping[str, str]] = MappingProxyType({
     "Salud": "\u25c9",        
     "Limpieza": "\u2726",     
@@ -166,11 +170,7 @@ def grade_color(grade: str | None) -> HexColor:
 def score_color(score: float | int | None) -> HexColor:
     """
     Calcula el color representativo de un puntaje de salud (0-100).
-    
-    Args:
-        score: Valor numérico del puntaje. Se normaliza mediante float().
-    Returns:
-        HexColor: Código de color asociado al rango (Éxito a Peligro).
+    Normaliza el valor y aplica umbrales definidos para alertas visuales.
     """
     try:
         valor = float(score)  # type: ignore
@@ -186,15 +186,8 @@ def score_color(score: float | int | None) -> HexColor:
 def bar(percent: float | int | None, width: int = 24,
         filled: str = "\u2588", empty: str = "\u2591") -> str:
     """
-    Genera una barra de progreso visual en texto plano.
-    
-    Args:
-        percent: Valor entre 0 y 100.
-        width: Longitud total de la cadena resultante.
-        filled: Carácter para el segmento relleno.
-        empty: Carácter para el segmento vacío.
-    Returns:
-        Cadena formateada con la representación de progreso.
+    Genera una barra de progreso visual en texto plano para logs o CLI.
+    Calcula el ratio de caracteres 'filled' vs 'empty' según el porcentaje.
     """
     try:
         valor = max(0.0, min(100.0, float(percent))) # type: ignore
@@ -208,8 +201,8 @@ def bar(percent: float | int | None, width: int = 24,
 @lru_cache(maxsize=128)
 def _hex_to_rgb(value: HexColor) -> tuple[int, int, int]:
     """
-    Convierte una cadena hexadecimal #RRGGBB a una tupla de enteros (R, G, B).
-    Utiliza slicing de 2 caracteres en base 16 para extraer cada canal.
+    Convierte hexadecimal (#RRGGBB) a tupla RGB. Usado internamente para
+    cálculos de mezcla (blend) en gradientes dinámicos.
     """
     if not isinstance(value, str) or not value.startswith("#"):
         return (0, 0, 0)
@@ -224,11 +217,8 @@ def _hex_to_rgb(value: HexColor) -> tuple[int, int, int]:
 @lru_cache(maxsize=64)
 def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
     """
-    Interpola linealmente (Lerp) entre dos colores mediante sus valores RGB.
-    
-    El factor ratio [0.0, 1.0] define la posición del color resultante:
-    0.0 retorna el color 'start' completamente, 1.0 retorna 'end'.
-    La mezcla se aplica independientemente por cada canal de color.
+    Interpola linealmente entre dos colores (Lerp). Es el motor matemático
+    detrás de los gradientes fluidos y las transiciones de color en el UI.
     """
     proporcion = max(0.0, min(1.0, float(ratio)))
     r1, g1, b1 = _hex_to_rgb(start)
@@ -243,11 +233,8 @@ def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
 @lru_cache(maxsize=16)
 def gradient_colors(steps: int, stops: tuple[HexColor, ...] = GRADIENT_STOPS) -> List[HexColor]:
     """
-    Genera una secuencia de colores interpolados a partir de puntos de control.
-    
-    Divide el rango de 'steps' proporcionalmente según la cantidad de 'stops'.
-    Si el índice de paso cae entre dos stops, calcula el color intermedio
-    mediante mezcla lineal (blend).
+    Genera una lista de colores interpolados basada en puntos de control (stops).
+    Divide 'steps' en segmentos y aplica `blend` entre los colores definidos.
     """
     try:
         cantidad = max(1, int(steps))
@@ -260,7 +247,6 @@ def gradient_colors(steps: int, stops: tuple[HexColor, ...] = GRADIENT_STOPS) ->
     tramos = len(stops) - 1
     salida: List[HexColor] = []
     for i in range(cantidad):
-        # Mapea el paso actual a la posición relativa en el conjunto de stops
         posicion = i / max(1, cantidad - 1) * tramos
         indice = min(tramos - 1, int(posicion))
         salida.append(blend(stops[indice], stops[indice + 1], posicion - indice))
@@ -295,14 +281,17 @@ def logo_svg(size: int = 128) -> str:
 
 
 def save_logo_svg(destination: str | Path | None) -> Path | None:
-    """Persiste el logo en disco. Valida la ruta de destino antes de escribir."""
+    """
+    Persiste el archivo SVG del logo en disco.
+    Aplica `ensure_safe_to_modify` antes de cualquier escritura para
+    garantizar que el destino esté fuera de rutas bloqueadas.
+    """
     if destination is None:
         return None
     try:
         path = Path(destination).expanduser().resolve()
         parent = path.parent
         
-        # Validación de seguridad: debe ser seguro escribir en el directorio padre y en el archivo mismo
         ensure_safe_to_modify(parent)
         if path.exists():
             ensure_safe_to_modify(path)
@@ -331,6 +320,8 @@ def logo_ascii() -> str:
 def draw_logo(canvas: Any, size: int = 56, canvas_x: int = 0, canvas_y: int = 0) -> None:
     """
     Renderiza el logo (escudo Omega) en un widget Tkinter.Canvas.
+    Escala dinámicamente según el tamaño proporcionado mediante cálculos 
+    geométricos de los vértices del escudo.
     """
     if canvas is None or not hasattr(canvas, "create_polygon"): return
     try:
@@ -372,6 +363,7 @@ def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
                       stops: tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
     """
     Dibuja una franja horizontal de gradiente en un Tkinter.Canvas.
+    Itera sobre el ancho solicitado aplicando una mezcla de colores.
     """
     if canvas is None or not hasattr(canvas, "create_line"): return
     try:
@@ -387,7 +379,8 @@ def draw_ring(canvas: Any, percent: float | int, size: int = 150,
               track: HexColor | None = None,
               fill: HexColor | None = None) -> None:
     """
-    Dibuja un medidor circular de estado en un Tkinter.Canvas.
+    Dibuja un medidor circular de estado. Utiliza arcos de Tkinter calculando 
+    la extensión del mismo en base al porcentaje de salud.
     """
     if canvas is None or not hasattr(canvas, "create_arc"): return
     try:

@@ -95,8 +95,10 @@ def base_directories() -> List[Path]:
 
 def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> bool:
     """
-    Valida la integridad de la ruta para prevenir escapes de directorio
-    mediante resolución de rutas absolutas.
+    Verifica que la ruta candidata resida dentro de la base permitida.
+    Previene vulnerabilidades de traversal (ej. carpetas superiores al perfil).
+    Usa resolve() para comparar rutas reales, ignorando enlaces simbólicos si
+    la validación de existencia es estricta.
     """
     if not isinstance(target_path, Path) or not isinstance(base_path, Path):
         return False
@@ -112,8 +114,12 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
 
 def directory_size(path: str | os.PathLike | None) -> int:
     """
-    Calcula el tamaño total en bytes mediante suma recursiva.
-    Resiliente ante archivos bloqueados o errores de acceso parcial.
+    Calcula el tamaño total en bytes de un directorio de forma iterativa.
+    
+    Ignora:
+    - Enlaces simbólicos y puntos de reparse (junctions) para evitar bucles.
+    - Archivos inaccesibles por permisos.
+    - Rutas marcadas como protegidas por safety.py.
     """
     if not path:
         return 0
@@ -156,8 +162,9 @@ def directory_size(path: str | os.PathLike | None) -> int:
 
 def _is_valid_cache_path(candidate: Path | None, base_path: Path) -> bool:
     """
-    Valida que la ruta exista, sea un directorio, no sea un enlace simbólico
-    y cumpla con las políticas de seguridad de la app.
+    Valida que una ruta cumpla con los requisitos de seguridad y caché.
+    Verifica existencia, que sea un directorio real (no link), que esté
+    dentro de la ruta base permitida y que no esté en la lista negra (NEVER_TOUCH).
     """
     if not isinstance(candidate, Path):
         return False
