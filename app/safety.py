@@ -139,7 +139,6 @@ def is_protected_path(path: PathLike) -> bool:
         if not p.is_absolute():
             return True
 
-        # Optimización: evitar crear sets adicionales, iterar sobre la tupla de partes
         for part in p.parts:
             if part.lower() in _ALL_PROTECTED_TOKENS:
                 return True
@@ -147,7 +146,6 @@ def is_protected_path(path: PathLike) -> bool:
         if p == Path(p.anchor):
             return True
         
-        # Solo verificar estado del disco si la ruta realmente existe
         if p.exists() and _is_reparse_point(p):
             return True
 
@@ -186,17 +184,6 @@ def is_sensitive_file(path: PathLike) -> bool:
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> Path:
     """
     Valida que una ruta sea apta para operaciones de escritura/modificación.
-
-    Esta función actúa como una guardia estricta: si la ruta presenta cualquier
-    riesgo (sistema, raíz, reparse point, solo lectura o extensión prohibida),
-    lanza UnsafePathError.
-
-    Reglas de uso:
-    - NUNCA usar como condicional (if ensure_safe_to_modify(...)). La función
-      siempre devuelve el objeto Path si es segura.
-    - Úsela para preparar la ruta antes de una operación de disco, dejando que
-      la excepción interrumpa el flujo si la validación falla.
-    - Si necesita un booleano, use is_safe_to_modify() en su lugar.
     """
     if path is None:
         raise UnsafePathError("Ruta nula recibida.")
@@ -217,6 +204,9 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
             raise UnsafePathError("Operación bloqueada: punto de reparse detectado.")
         if _is_readonly(p):
             raise UnsafePathError("Operación bloqueada: el archivo es de solo lectura.")
+        # Verificación de integridad: evitar Hard Links múltiples
+        if p.is_file() and p.stat().st_nlink > 1:
+            raise UnsafePathError("Operación bloqueada: el archivo tiene múltiples enlaces físicos.")
 
     if is_drive_root(p) or is_protected_path(p):
         raise UnsafePathError("Operación bloqueada: ruta de sistema protegida o raíz.")
@@ -270,8 +260,11 @@ def describe_protection(path: PathLike) -> str:
             "ruta de sistema",
         )
         return f"'{p}' está protegida por contener '{protegida}'."
-    if p.exists() and _is_readonly(p):
-        return f"'{p}' tiene atributos de solo lectura."
+    if p.exists():
+        if _is_readonly(p):
+            return f"'{p}' tiene atributos de solo lectura."
+        if p.is_file() and p.stat().st_nlink > 1:
+            return f"'{p}' tiene múltiples enlaces físicos (potencial riesgo)."
     if is_sensitive_file(p):
         return f"'{p.name}' tiene extensión sensible ({p.suffix})."
     return f"'{p}' se puede modificar con confirmación."

@@ -21,6 +21,7 @@ Garantías de seguridad que este módulo respeta siempre:
 
 from __future__ import annotations
 import json
+import os
 import shutil
 import uuid
 import hashlib
@@ -230,6 +231,9 @@ def quarantine_file(
 
     ensure_safe_to_modify(source_path, allow_sensitive=True)
     ensure_safe_to_modify(dest_dir, allow_sensitive=False)
+    
+    if not os.access(dest_dir, os.W_OK):
+        raise PermissionError(f"El directorio de cuarentena no tiene permisos de escritura: {dest_dir}")
     
     if _is_file_locked(source_path):
         raise IOError(f"El archivo está en uso por otro proceso: {source_path}")

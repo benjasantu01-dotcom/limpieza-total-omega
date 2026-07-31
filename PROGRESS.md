@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **259** (51.4% de aceptación)
+- Mejoras aceptadas: **261** (51.8% de aceptación)
 - Rechazadas por tests: 23
-- Rechazadas por guardia de seguridad: 25
+- Rechazadas por guardia de seguridad: 26
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 181
+- Sin respuesta de la IA (error o límite): 178
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-29 | 9 | 1 | 1 | 2 | 17 |
+| 2026-07-29 | 9 | 1 | 1 | 2 | 13 |
 | 2026-07-30 | 181 | 14 | 18 | 12 | 125 |
-| 2026-07-31 | 69 | 8 | 6 | 2 | 39 |
+| 2026-07-31 | 71 | 8 | 7 | 2 | 40 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **63**
+- seguridad defensiva: **53**
 - manejo de errores y validación de entradas: **51**
-- seguridad defensiva: **51**
 - rendimiento: **47**
 - robustez ante casos límite: **47**
 
@@ -33,8 +33,8 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **23**
 - `scanner.py`: **23**
 - `browser.py`: **22**
+- `quarantine.py`: **21**
 - `healthscore.py`: **20**
-- `quarantine.py`: **20**
 - `assistant.py`: **20**
 - `duplicates.py`: **20**
 - `settings.py`: **19**
@@ -42,11 +42,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - `main.py`: **17**
 - `organizer.py`: **16**
 - `startup.py`: **15**
-- `safety.py`: **14**
+- `safety.py`: **15**
 - `memory.py`: **13**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-31T05:18:11` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de la función `ensure_safe_to_modify` ante ataques de suplantación de archivos mediante la validación de `st_nlink` (contador de enlaces físicos), evitando que archivos con múltiples enlaces duros sean manipulados, lo cual es una técnica común para engañar a herramientas de seguridad.
+- `2026-07-31T05:17:42` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `quarantine_file` validando el estado del sistema de archivos mediante `os.access` con `os.W_OK` antes de intentar el movimiento, asegurando que el directorio de destino sea realmente escribible y no solo existente, previniendo fallos en tiempo de ejecución.
 - `2026-07-31T05:09:29` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `trim_working_set` validando explícitamente el PID antes de intentar abrir el proceso, asegurando que el proceso de la aplicación no sea blanco de su propia operación de limpieza y restringiendo el acceso solo a procesos de usuario.
 - `2026-07-31T05:09:20` **main.py** (seguridad defensiva): Se añadió una validación crítica en `on_trim_process` para asegurar que el PID ingresado por el usuario no apunte a procesos del sistema, previniendo la manipulación de procesos protegidos (`PID 0` o del sistema) mediante un chequeo de seguridad antes de intentar cualquier acción sobre ellos.
 - `2026-07-31T05:07:24` **healthscore.py** (seguridad defensiva): Se reforzó la robustez defensiva de `healthscore.py` mediante la implementación de límites estrictos (clamping) en los contadores de `SystemMetrics` y la adición de una validación de `math.isfinite` en `_to_int`, evitando que valores corruptos o fuera de rango propaguen cálculos erróneos en el motor de puntuación.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-31T04:37:16` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` ante fallos de escritura y estados inconsistentes del sistema de archivos, asegurando que el manifiesto solo se actualice tras confirmar la persistencia física del archivo en el destino, y añadiendo un manejo de excepciones más granular para evitar dejar archivos "huérfanos" en cuarentena sin registro.
 - `2026-07-31T04:36:26` **memory.py** (robustez ante casos límite): Se reforzó la robustez de `trim_working_set` añadiendo un manejo de excepciones más granular y asegurando la liberación del `handle` mediante el bloque `finally` incluso ante fallos inesperados de la API de Windows, además de validar que el proceso objetivo exista mediante la comprobación de handles.
 - `2026-07-31T04:27:45` **main.py** (robustez ante casos límite): Mejoré la robustez de la inicialización de la app encapsulando la carga de estado y construcción de la interfaz en bloques `try/except` críticos, asegurando que un fallo en módulos externos o configuraciones corruptas no bloquee el arranque completo de la ventana, manteniendo la estabilidad del proceso.
-- `2026-07-31T04:17:09` **browser.py** (robustez ante casos límite): Mejoré la robustez de `directory_size` ante el acceso a directorios con permisos denegados o errores de lectura durante el escaneo recursivo mediante la inclusión explícita de un manejo de errores en el bucle `while` que asegura la continuidad del proceso sin abortar ante excepciones de acceso (`PermissionError`, `OSError`).
-- `2026-07-31T04:16:35` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` ante valores corruptos o inesperados en `metrics` usando `getattr` con un valor por defecto consistente, evitando posibles excepciones de acceso a atributos `None` y garantizando que el asistente nunca procese tipos inválidos.
