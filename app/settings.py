@@ -238,6 +238,7 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     parent = ruta.parent
     try:
         parent.mkdir(parents=True, exist_ok=True)
+        # Verificación doble de seguridad defensiva para garantizar contexto persistente seguro
         ensure_safe_to_modify(str(parent))
         ensure_safe_to_modify(str(ruta))
     except (OSError, RuntimeError, PermissionError):
@@ -252,6 +253,8 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
         os.fsync(temp_file.fileno())
         temp_file.close()
         
+        # Validar ruta de destino antes de reemplazar
+        ensure_safe_to_modify(str(ruta))
         os.replace(temp_file.name, ruta)
         
         _cached_settings = limpio
