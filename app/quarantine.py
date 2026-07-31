@@ -196,11 +196,6 @@ def quarantine_file(
 ) -> QuarantineItem:
     """
     Mueve un archivo a cuarentena tras validar que es seguro operarlo.
-    
-    Aplica restricciones de seguridad estrictas:
-    1. Verifica que la ruta no sea protegida del sistema.
-    2. Impide mover symlinks para evitar recorridos infinitos o saltos fuera del entorno.
-    3. Asegura espacio en disco antes de la operación física.
     """
     if not source:
         raise ValueError("La ruta de origen no puede estar vacía.")
@@ -293,11 +288,6 @@ def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[Quaranti
 def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
     """
     Restaura un archivo a su ruta original tras verificar su hash SHA-256.
-    
-    Validaciones:
-    - Asegura que el archivo no ha sido alterado mientras estuvo aislado.
-    - Evita restaurar sobre rutas protegidas.
-    - Recrea recursivamente el árbol de carpetas destino si es necesario.
     """
     if not item_id or not isinstance(item_id, str):
         raise ValueError("El ID debe ser una cadena válida.")
@@ -332,6 +322,7 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
 
     try:
         parent_dir = destination.parent
+        # Evitar restaurar si el padre existe y no es un directorio (posible ataque)
         if parent_dir.exists() and not parent_dir.is_dir():
             raise NotADirectoryError(f"La ruta padre no es un directorio: {parent_dir}")
         

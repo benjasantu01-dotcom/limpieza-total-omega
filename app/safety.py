@@ -153,6 +153,7 @@ def is_protected_path(path: PathLike) -> bool:
         if not p.is_absolute():
             return True
 
+        # Validamos usando la ruta resuelta para evitar bypass por '..'
         if any(part.lower() in _ALL_PROTECTED_TOKENS for part in p.parts):
             return True
             

@@ -93,8 +93,8 @@ def check_double_extension(path: Path) -> Optional[Suspicion]:
 
 def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_THRESHOLD_HOURS) -> Optional[Suspicion]:
     """Detecta ejecutables nuevos; su presencia reciente suele ser un indicador de riesgo."""
-    # Pre-filtro por extensión antes de llamar a stat()
-    if path.suffix.lower() in SUSPICIOUS_EXECUTABLE_EXT:
+    # Pre-filtro por extensión y verificación de existencia física
+    if path.suffix.lower() in SUSPICIOUS_EXECUTABLE_EXT and path.is_file():
         try:
             mtime = datetime.fromtimestamp(path.stat(follow_symlinks=False).st_mtime)
             if datetime.now() - mtime < timedelta(hours=hours):
@@ -124,7 +124,7 @@ CHECK_FUNCS: Final[List[SuspicionCheck]] = [
 
 def scan_file(path: Path) -> List[Suspicion]:
     """Ejecuta los tests definidos en CHECK_FUNCS sobre un archivo individual."""
-    if is_protected_path(path):
+    if is_protected_path(path) or not path.exists():
         return []
         
     findings: List[Suspicion] = []
