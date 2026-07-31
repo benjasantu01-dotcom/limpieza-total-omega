@@ -31,9 +31,9 @@ import json
 import os
 import tempfile
 from pathlib import Path
-from typing import Any, Final, TypeAlias, Callable
+from typing import Any, Final, TypeAlias
 
-from safety import is_safe_to_modify, ensure_safe_to_modify
+from safety import is_safe_to_modify
 
 PathLike: TypeAlias = str | Path
 
@@ -141,7 +141,9 @@ _VALIDATION_SCHEMA: Final = {
 def settings_path(path_or_base: PathLike | None = None) -> Path:
     try:
         base = Path(path_or_base).expanduser() if path_or_base else SETTINGS_DIR
-        ensure_safe_to_modify(str(base))
+        # Si la ruta no es segura, buscamos el padre más cercano que sí lo sea
+        while not is_safe_to_modify(str(base)) and base != base.parent:
+            base = base.parent
         return base.resolve() / SETTINGS_FILE
     except (OSError, RuntimeError, ValueError):
         return SETTINGS_DIR.resolve() / SETTINGS_FILE

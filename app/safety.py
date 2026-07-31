@@ -203,6 +203,10 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
     except (TypeError, ValueError, OSError) as e:
         raise UnsafePathError(f"Error al normalizar la ruta: {e}")
 
+    # Chequeo preventivo de integridad de ruta
+    if len(str(p)) > 260:
+        raise UnsafePathError("Operación bloqueada: ruta demasiado larga (posible error de acceso).")
+
     if not p.parts:
         raise UnsafePathError("Ruta inválida: no contiene componentes detectables.")
 
@@ -210,6 +214,8 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
         raise UnsafePathError("Operación bloqueada: rutas UNC o de red no permitidas.")
     
     if p.exists():
+        if not os.access(p, os.W_OK):
+            raise UnsafePathError("Operación bloqueada: sin permisos de escritura en la ruta.")
         if _is_reparse_point(p):
             raise UnsafePathError("Operación bloqueada: punto de reparse detectado.")
         if _is_readonly(p):
@@ -273,6 +279,8 @@ def describe_protection(path: PathLike) -> str:
         )
         return f"'{p}' está protegida por contener '{protegida}'."
     if p.exists():
+        if not os.access(p, os.W_OK):
+            return f"'{p}' no tiene permisos de escritura."
         if _is_readonly(p):
             return f"'{p}' tiene atributos de solo lectura."
         if _is_file_in_use(p):

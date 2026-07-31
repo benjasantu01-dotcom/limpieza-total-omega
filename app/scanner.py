@@ -73,11 +73,13 @@ class Scanner:
             if entry.is_dir(follow_symlinks=False):
                 if not self._is_reparse_point(entry):
                     path_str = entry.path
-                    if path_str and path_str not in self.seen and not is_protected_path(Path(path_str)):
-                        self.seen.add(path_str)
-                        stack.append(path_str)
+                    if path_str:
+                        resolved_path = Path(path_str).resolve()
+                        if str(resolved_path) not in self.seen and not is_protected_path(resolved_path):
+                            self.seen.add(str(resolved_path))
+                            stack.append(path_str)
             elif entry.is_file():
-                path_obj = Path(entry.path)
+                path_obj = Path(entry.path).resolve()
                 if not is_protected_path(path_obj):
                     self.results.extend(scan_file(path_obj))
         except (PermissionError, OSError):
@@ -124,13 +126,14 @@ CHECK_FUNCS: Final[List[SuspicionCheck]] = [
 
 def scan_file(path: Path) -> List[Suspicion]:
     """Ejecuta los tests definidos en CHECK_FUNCS sobre un archivo individual."""
-    if is_protected_path(path) or not path.exists():
+    resolved_path = path.resolve()
+    if is_protected_path(resolved_path) or not resolved_path.exists():
         return []
         
     findings: List[Suspicion] = []
     for check_func in CHECK_FUNCS:
         try:
-            res = check_func(path)
+            res = check_func(resolved_path)
             if res:
                 findings.append(res)
         except (PermissionError, OSError, AttributeError):
@@ -140,12 +143,12 @@ def scan_file(path: Path) -> List[Suspicion]:
 
 def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
     """Realiza el escaneo recursivo iterativo utilizando la clase Scanner para mantener estado."""
-    path_obj = Path(directory)
+    path_obj = Path(directory).resolve()
     if not path_obj.exists() or not path_obj.is_dir() or is_protected_path(path_obj):
         return []
 
     scanner = Scanner()
-    root_str = str(path_obj.resolve())
+    root_str = str(path_obj)
     stack: List[str] = [root_str]
     scanner.seen.add(root_str)
     
