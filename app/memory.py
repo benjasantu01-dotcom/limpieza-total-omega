@@ -142,10 +142,15 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
 
     def _safe_create_proc(parts: List[str]) -> Optional[ProcessMemory]:
         try:
+            name = parts[0].strip()
+            pid = int(parts[1])
+            working_set = int(parts[2])
+            if pid < 0 or working_set < 0:
+                return None
             return ProcessMemory(
-                name=parts[0] or "Unknown",
-                pid=int(parts[1]),
-                working_set=int(parts[2])
+                name=name if name else "Unknown",
+                pid=pid,
+                working_set=working_set
             )
         except (ValueError, IndexError):
             return None

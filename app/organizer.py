@@ -140,6 +140,7 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
             pass
 
     for d in dirs:
+        if not d: continue
         p = Path(d).expanduser()
         if p.exists() and p.is_dir():
             _walk_dir(str(p))
@@ -163,21 +164,24 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
     """
     Mueve archivos candidatos a una carpeta de cuarentena para revisión humana.
     """
+    if not review_dir:
+        raise ValueError("La ruta de revisión no puede estar vacía")
+
     dest = Path(review_dir).expanduser().resolve()
     ensure_safe_to_modify(dest)
     dest.mkdir(parents=True, exist_ok=True)
 
     for jf in files:
+        if not isinstance(jf, JunkFile) or not jf.path:
+            continue
         try:
             full_source_path = jf.path.resolve()
             
-            # Validar integridad y enlaces simbólicos/puntos de reparse
-            if not full_source_path.is_file() or full_source_path.is_symlink():
+            if not full_source_path.exists() or not full_source_path.is_file() or full_source_path.is_symlink():
                 continue
             if not is_safe_to_modify(full_source_path):
                 continue
             
-            # Evitar bucles de movimiento o mover a sí mismo
             if dest in full_source_path.parents or full_source_path.parent == dest:
                 continue
 
@@ -195,6 +199,9 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     """
     Elimina permanentemente archivos desde la carpeta de revisión tras validación.
     """
+    if not review_dir:
+        return 0
+
     dest = Path(review_dir).expanduser().resolve()
     if not dest.exists() or not dest.is_dir():
         return 0

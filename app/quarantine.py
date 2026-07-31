@@ -202,6 +202,9 @@ def quarantine_file(
     
     source_path = normalize(source)
     
+    if not source_path.exists():
+        raise FileNotFoundError(f"El archivo de origen no existe: {source_path}")
+    
     if is_protected_path(source_path):
         raise UnsafePathError(f"Operación prohibida en ruta del sistema: {source_path}")
         
@@ -210,7 +213,7 @@ def quarantine_file(
         raise UnsafePathError(f"Directorio de cuarentena protegido o inválido: {dest_dir}")
 
     if not source_path.is_file():
-        raise FileNotFoundError(f"El objeto origen no es un archivo válido: {source_path}")
+        raise ValueError(f"El objeto origen no es un archivo válido: {source_path}")
     
     if source_path.is_symlink():
         raise UnsafePathError(f"Operación denegada: {source_path} es un enlace simbólico.")
@@ -231,13 +234,13 @@ def quarantine_file(
     if _is_file_locked(source_path):
         raise IOError(f"El archivo está en uso por otro proceso: {source_path}")
     
-    file_size = source_path.stat().st_size
     try:
+        file_size = source_path.stat().st_size
         usage = shutil.disk_usage(dest_dir)
         if usage.free < file_size:
             raise OSError(f"Espacio insuficiente en disco para mover: {dest_dir}")
     except OSError as e:
-        raise OSError(f"Error al verificar espacio disponible: {e}")
+        raise OSError(f"Error al verificar metadatos de archivo/disco: {e}")
 
     item_id = uuid.uuid4().hex[:12]
     safe_name = "".join(c for c in source_path.name if c.isalnum() or c in "._-")
