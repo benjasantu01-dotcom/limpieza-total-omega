@@ -199,6 +199,10 @@ def quarantine_file(
         raise ValueError("La ruta de origen no puede estar vacía.")
     
     source_path = normalize(source)
+    
+    if is_protected_path(source_path):
+        raise UnsafePathError(f"Operación prohibida en ruta del sistema: {source_path}")
+        
     dest_dir = quarantine_dir(base)
 
     if not source_path.is_file():

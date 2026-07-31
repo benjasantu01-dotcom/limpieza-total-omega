@@ -218,7 +218,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         raise
 
     for jf in files:
-        if not isinstance(jf, JunkFile) or not jf.path:
+        if not isinstance(jf, JunkFile) or not jf.path or not isinstance(jf.path, Path):
             continue
             
         try:
@@ -253,6 +253,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             if not str(target).startswith(str(dest)):
                 continue
             
+            # Chequeo explícito previo a la operación destructiva/movimiento
             ensure_safe_to_modify(full_source_path)
             ensure_safe_to_modify(target)
             shutil.move(str(full_source_path), str(target))
