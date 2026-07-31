@@ -772,3 +772,10 @@ FAILED evolve/tests/test_safety.py::test_describe_protection_explains_the_reason
 - `2026-07-31T12:38:27` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el método `walk_files` eliminando la llamada innecesaria a `.resolve()` dentro del bucle interno, reduciendo drásticamente las llamadas al sistema operativo (I/O) que penalizaban el rendimiento en directorios profundos.
 - `2026-07-31T12:38:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-31T12:38:27` Corrida terminada. Total usado hoy: 300.
+- `2026-07-31T12:47:08` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-07-31T12:47:36` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizamos la lectura de archivos en `hash_file` y `partial_hash` implementando un manejo de buffers más eficiente y evitando cierres prematuros, además de asegurar que las rutas se resuelvan una sola vez antes de cualquier operación de I/O para reducir el overhead del sistema de archivos.
+- `2026-07-31T12:48:00` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
+- `2026-07-31T12:49:00` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Optimicé el método `_compile_metrics` reemplazando llamadas redundantes a funciones que recorren disco por el uso del caché ya implementado, asegurando que `scan_for_junk` y `startup_mod.list_startup_entries` solo se ejecuten bajo demanda en lugar de en cada consolidación de salud.
+- `2026-07-31T12:49:09` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: rendimiento).
+- `2026-07-31T12:49:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-31T12:49:09` Corrida terminada. Total usado hoy: 304.

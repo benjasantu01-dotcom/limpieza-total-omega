@@ -94,7 +94,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
             return None
             
         digest = hashlib.sha256()
-        with open(p, "rb") as f:
+        with open(p, "rb", buffering=chunk_size) as f:
             while chunk := f.read(chunk_size):
                 digest.update(chunk)
         return digest.hexdigest()
@@ -121,7 +121,7 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
         if not p.is_file() or p.is_symlink() or is_protected_path(p):
             return None
 
-        with open(p, "rb") as f:
+        with open(p, "rb", buffering=read_bytes) as f:
             content = f.read(read_bytes)
             if not content:
                 return None
@@ -143,9 +143,10 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
         if not isinstance(p, Path):
             continue
         try:
-            st = p.lstat()
+            p_res = p.resolve()
+            st = p_res.stat()
             # Filtramos protegidos y symlinks antes de cualquier operación costosa
-            if st.st_size <= 0 or p.is_symlink() or is_protected_path(p.resolve()):
+            if st.st_size <= 0 or p.is_symlink() or is_protected_path(p_res):
                 continue
             
             inode_id = (st.st_dev, st.st_ino)
@@ -195,7 +196,7 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
                             continue
                         if skip_protected and is_protected_path(file_path.resolve()):
                             continue
-                        st = file_path.lstat()
+                        st = file_path.stat()
                         # Evitar procesar el mismo archivo múltiples veces por enlaces duros
                         inode_id = (st.st_dev, st.st_ino)
                         if inode_id in visited_inodes:

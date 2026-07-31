@@ -825,9 +825,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         snapshot = memory_mod.read_snapshot()
         home = os.path.expanduser("~")
         unidad = diskreport.drive_usage(home) if os.path.exists(home) else None
-        arranque = self._get_cached("startup", startup_mod.list_startup_entries)
         
-        junk = self._get_cached("junk", scan_for_junk)
+        # Recuperamos del caché sin forzar re-análisis
+        arranque = self._cache.get("startup", [])
+        junk = self._cache.get("junk", [])
         dups = self._cache.get("dups", [])
 
         junk_mb = sum(j.size_bytes for j in junk) / (1024 * 1024)
@@ -1368,6 +1369,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """Lista el inventario de programas en inicio."""
         def task():
             self.set_status("Leyendo programas de inicio...")
+            entries = self._get_cached("startup", startup_mod.list_startup_entries)
             self.log_lines(startup_mod.summarize(), "Inicio")
 
         self.run_async(task)
