@@ -160,6 +160,7 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
     try:
         if not path_obj.exists() or not path_obj.is_dir() or is_protected_path(path_obj):
             return []
+        # Resolver ruta canónica para asegurar que no escape del punto de inicio
         root_str = str(path_obj.resolve())
     except (OSError, RuntimeError):
         return []

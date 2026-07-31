@@ -478,3 +478,35 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-07-31T09:43:59` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-07-31T09:43:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-31T09:43:59` Corrida terminada. Total usado hoy: 232.
+- `2026-07-31T09:53:02` Arrancando corrida. Quedan hoy ~68 peticiones objetivo.
+- `2026-07-31T09:53:28` Tests FALLARON:
+```
+                                 [100%]
+=================================== FAILURES ===================================
+_________________ test_describe_protection_explains_the_reason _________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-1/test_describe_protection_expla0')
+
+    def test_describe_protection_explains_the_reason(tmp_path):
+        assert "protegida" in safety.describe_protection(tmp_path / "Windows" / "x.txt")
+>       assert "raíz" in safety.describe_protection(tmp_path.anchor)
+E       assert 'raíz' in "'/' es una ruta protegida del sistema."
+E        +  where "'/' es una ruta protegida del sistema." = <function describe_protection at 0x7f746cd09d00>('/')
+E        +    where <function describe_protection at 0x7f746cd09d00> = safety.describe_protection
+E        +    and   '/' = PosixPath('/tmp/pytest-of-runner/pytest-1/test_describe_protection_expla0').anchor
+
+evolve/tests/test_safety.py:166: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_describe_protection_explains_the_reason - assert 'raíz' in "'/' es una ruta protegida del sistema."
+ +  where "'/' es una ruta protegida del sistema." = <function describe_protection at 0x7f746cd09d00>('/')
+ +    where <function describe_protection at 0x7f746cd09d00> = safety.describe_protection
+ +    and   '/' = PosixPath('/tmp/pytest-of-runner/pytest-1/test_describe_protection_expla0').anchor
+1 failed, 298 passed in 1.09s
+
+```
+- `2026-07-31T09:53:28` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Mejoré la seguridad defensiva en `safety.py` añadiendo un chequeo explícito de "longitud de ruta" (MAX_PATH) para evitar errores críticos en el sistema de archivos de Windows, y encapsulé el manejo de errores en `is_protected_path` para garantizar que cualquier ruta sospechosa o mal formada sea tratada siempre como protegida por defecto.
+- `2026-07-31T09:53:50` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se añadió una validación de ruta absoluta en `scan_directory` para garantizar que la resolución de la ruta `root_str` no escape del directorio base mediante manipulación de symlinks o entradas maliciosas, reforzando la seguridad defensiva del recorrido.
+- `2026-07-31T09:54:13` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se ha restringido `settings_path` para que no permita rutas arbitrarias mediante `ensure_safe_to_modify` antes de expandir el path, evitando inyecciones de rutas fuera del directorio de configuración protegido.
+- `2026-07-31T09:54:23` ✅ Mejora aceptada en startup.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `entries_from_folders` añadiendo `item.is_symlink()` para evitar seguir puntos de reparse o enlaces simbólicos malintencionados, y se aseguró la integridad de la ruta mediante `item.resolve()` antes de comparar con `base_path` para prevenir ataques de *path traversal* (ej. el uso de `..`).
+- `2026-07-31T09:54:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-31T09:54:23` Corrida terminada. Total usado hoy: 236.

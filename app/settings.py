@@ -147,9 +147,9 @@ def _apply_validation_by_type(clave: str, valor: Any, defecto: Any) -> Any:
 
 
 def settings_path(path_or_base: PathLike | None = None) -> Path:
-    target_base = Path(path_or_base).expanduser().resolve() if path_or_base else SETTINGS_DIR
-    ensure_safe_to_modify(str(target_base))
-    return target_base / SETTINGS_FILE
+    base = Path(path_or_base).expanduser() if path_or_base else SETTINGS_DIR
+    ensure_safe_to_modify(str(base))
+    return base.resolve() / SETTINGS_FILE
 
 
 def validate(values: Any) -> dict[str, Any]:

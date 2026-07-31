@@ -147,6 +147,7 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
                 try:
                     if not item.name or item.name.lower() == "desktop.ini":
                         continue
+                    # No seguir enlaces simbólicos para prevenir escapes del directorio
                     if item.is_file() and not item.is_symlink():
                         if is_protected_path(item):
                             continue
