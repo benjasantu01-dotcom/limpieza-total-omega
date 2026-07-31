@@ -797,7 +797,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         if not folder:
             return None
         
-        if not safety.is_safe_to_modify(Path(folder)):
+        try:
+            safety.ensure_safe_to_modify(Path(folder))
+        except safety.UnsafePathError:
             messagebox.showwarning(
                 "Carpeta protegida",
                 "Esa carpeta es vital para el sistema y no puede ser analizada.\n\n"

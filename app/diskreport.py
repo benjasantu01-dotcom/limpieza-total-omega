@@ -165,7 +165,7 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
         """Motor recursivo de escaneo utilizando os.scandir."""
         try:
             resolved_root = root_path.resolve()
-            if resolved_root in visited:
+            if resolved_root in visited or not resolved_root.is_relative_to(base_path):
                 return
             visited.add(resolved_root)
             
@@ -177,7 +177,9 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
                         if os.name == 'nt' and entry.stat(follow_symlinks=False).st_reparse_tag != 0:
                             continue
                         
-                        full_path = Path(entry.path)
+                        full_path = Path(entry.path).resolve()
+                        if not full_path.is_relative_to(base_path):
+                            continue
                         if skip_protected and is_protected_path(full_path):
                             continue
                             
@@ -238,6 +240,8 @@ def largest_folders(directory: str | os.PathLike, limit: int = 10, skip_protecte
                 if not rel.parts:
                     continue
                 top_level = base / rel.parts[0]
+                if not top_level.resolve().is_relative_to(base):
+                    continue
                 if skip_protected and is_protected_path(top_level):
                     continue
                 if top_level not in folder_map:

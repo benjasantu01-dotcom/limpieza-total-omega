@@ -88,12 +88,12 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
     if not path:
         return None
     
-    p = Path(path).resolve()
-    if not p.is_file() or p.is_symlink() or is_protected_path(p):
-        return None
-        
-    digest = hashlib.sha256()
     try:
+        p = Path(path).resolve()
+        if not p.is_file() or p.is_symlink() or is_protected_path(p):
+            return None
+            
+        digest = hashlib.sha256()
         with open(p, "rb") as f:
             while chunk := f.read(chunk_size):
                 digest.update(chunk)
@@ -116,11 +116,11 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
     if not path:
         return None
 
-    p = Path(path).resolve()
-    if not p.is_file() or p.is_symlink() or is_protected_path(p):
-        return None
-
     try:
+        p = Path(path).resolve()
+        if not p.is_file() or p.is_symlink() or is_protected_path(p):
+            return None
+
         with open(p, "rb") as f:
             content = f.read(read_bytes)
             if not content:

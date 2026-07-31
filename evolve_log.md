@@ -464,3 +464,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-07-31T09:23:43` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
 - `2026-07-31T09:23:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-31T09:23:43` Corrida terminada. Total usado hoy: 224.
+- `2026-07-31T09:32:21` Arrancando corrida. Quedan hoy ~76 peticiones objetivo.
+- `2026-07-31T09:32:48` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `walk_files` y `largest_folders` validando explícitamente que las rutas procesadas permanezcan dentro del ámbito del directorio base mediante `path.resolve().is_relative_to(base_path)`, evitando así ataques de escape de directorio mediante enlaces simbólicos o manipulaciones de rutas.
+- `2026-07-31T09:33:12` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha añadido un chequeo de seguridad preventivo en `hash_file` y `partial_hash` utilizando `is_protected_path` sobre la ruta resuelta antes de intentar abrir cualquier archivo, reforzando la defensa contra intentos de acceso a recursos del sistema si la ruta fuera manipulada mediante enlaces simbólicos complejos o rutas relativas.
+- `2026-07-31T09:33:35` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: seguridad defensiva).
+- `2026-07-31T09:34:16` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Se implementó una capa de validación de seguridad en `_ask_folder` utilizando `safety.ensure_safe_to_modify` antes de asignar la ruta a la aplicación, garantizando que el usuario no pueda seleccionar directorios críticos del sistema como objetivo de análisis incluso si intenta evadir las restricciones mediante el diálogo.
+- `2026-07-31T09:34:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-31T09:34:16` Corrida terminada. Total usado hoy: 228.
