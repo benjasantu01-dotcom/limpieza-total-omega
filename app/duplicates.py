@@ -133,7 +133,7 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
 def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     """
     Organiza rutas de archivos en un diccionario indexado por su tamaño en bytes.
-    El tamaño es la primera clave de descarte en el pipeline.
+    Filtra entradas basadas en la unicidad del Inode para manejar hardlinks.
     """
     if paths is None:
         return {}
@@ -214,7 +214,7 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
 def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
     """
     Aplica una función de hash para subdividir una lista de rutas en grupos coincidentes.
-    Filtra grupos resultantes que tengan un solo elemento (no duplicados).
+    Filtra los grupos resultantes que tengan un solo elemento, descartando los no duplicados.
     """
     if paths is None:
         return {}
@@ -231,7 +231,7 @@ def find_duplicates(
     skip_protected: bool = True,
 ) -> List[DuplicateGroup]:
     """
-    Ejecuta el pipeline completo de detección de duplicados por tamaño y hash.
+    Ejecuta el pipeline completo de detección: colecta -> agrupa por tamaño -> refina por hash.
     Retorna una lista de grupos, ordenados de mayor a menor impacto (bytes recuperables).
     """
     if not directories:
@@ -249,9 +249,11 @@ def find_duplicates(
     groups: List[DuplicateGroup] = []
     
     for size, same_size in size_map.items():
+        # Reducción de conjunto mediante hash parcial (64KB)
         by_partial: Dict[str, List[Path]] = _refine_by_hash(same_size, partial_hash)
         
         for partial_candidates in by_partial.values():
+            # Verificación final mediante hash SHA256 completo
             by_full: Dict[str, List[Path]] = _refine_by_hash(partial_candidates, hash_file)
             
             for digest, confirmed in by_full.items():

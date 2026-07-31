@@ -149,6 +149,10 @@ def all_drives_usage(mounts: Iterable[str] | None = None) -> list[DriveUsage]:
 def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Generator[tuple[Path, int], None, None]:
     """
     Recorre recursivamente un directorio usando os.scandir para rendimiento.
+    
+    Aplica filtros de seguridad para ignorar symlinks, puntos de reparse (junctions) 
+    y rutas definidas como protegidas en safety.py para evitar ciclos infinitos o 
+    modificaciones accidentales en áreas críticas del sistema.
     """
     if not directory:
         return
@@ -162,7 +166,7 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
     visited = set()
 
     def recursive_scan(root_path: Path) -> Generator[tuple[Path, int], None, None]:
-        """Motor recursivo de escaneo utilizando os.scandir."""
+        """Motor recursivo que valida que cada subruta se mantenga dentro del ámbito raíz."""
         try:
             resolved_root = root_path.resolve()
             if resolved_root in visited or not resolved_root.is_relative_to(base_path):
@@ -172,6 +176,7 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
             with os.scandir(root_path) as iterator:
                 for entry in iterator:
                     try:
+                        # Prevenir seguir enlaces simbólicos o junctions de NTFS
                         if entry.is_symlink():
                             continue
                         if os.name == 'nt' and entry.stat(follow_symlinks=False).st_reparse_tag != 0:
@@ -224,7 +229,12 @@ def usage_by_extension(directory: str | os.PathLike, limit: int = 15, skip_prote
 
 
 def largest_folders(directory: str | os.PathLike, limit: int = 10, skip_protected: bool = True) -> list[FolderUsage]:
-    """Calcula el peso total de los elementos contenidos en cada carpeta de primer nivel."""
+    """
+    Calcula el peso total acumulado de las carpetas de primer nivel bajo el directorio dado.
+    
+    Utiliza el motor de escaneo validado `walk_files` para asegurar que solo se 
+    contabilicen rutas permitidas por las reglas de seguridad.
+    """
     if not directory:
         return []
     try:
@@ -239,13 +249,16 @@ def largest_folders(directory: str | os.PathLike, limit: int = 10, skip_protecte
                 rel = path.relative_to(base)
                 if not rel.parts:
                     continue
+                # Identificar la subcarpeta raíz de este archivo para la agrupación
                 top_level = base / rel.parts[0]
                 if not top_level.resolve().is_relative_to(base):
                     continue
                 if skip_protected and is_protected_path(top_level):
                     continue
+                
                 if top_level not in folder_map:
                     folder_map[top_level] = FolderUsage(path=top_level, size_bytes=0, file_count=0)
+                
                 stats = folder_map[top_level]
                 stats.size_bytes += size
                 stats.file_count += 1

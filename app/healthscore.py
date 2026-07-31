@@ -107,7 +107,7 @@ def _clamp(value: float, low: float = 0.0, high: float = 1.0) -> float:
 
 
 def _to_float(value: Any, default: float = 0.0) -> float:
-    """Intenta convertir un valor arbitrario a float; retorna el default en caso de fallo."""
+    """Convierte entrada a float; retorna default si no es numérico o es infinito."""
     try:
         val = float(value) if value is not None else default
         return val if math.isfinite(val) else default
@@ -116,7 +116,7 @@ def _to_float(value: Any, default: float = 0.0) -> float:
 
 
 def _to_int(value: Any, default: int = 0) -> int:
-    """Intenta convertir un valor arbitrario a int; valida finitud antes de convertir."""
+    """Convierte entrada a int; valida finitud mediante conversión intermedia a float."""
     try:
         val = int(float(value)) if value is not None else default
         return val if math.isfinite(float(val)) else default
@@ -125,13 +125,13 @@ def _to_int(value: Any, default: int = 0) -> int:
 
 
 def score_junk(junk_mb: float) -> float:
-    """Normaliza MB de basura a un ratio [0.0, 1.0] basado en JUNK_LIMIT_MB."""
+    """Normaliza MB de archivos basura: ratio = 1.0 - (valor / límite)."""
     if JUNK_LIMIT_MB <= 0 or not math.isfinite(float(junk_mb)): return 0.0
     return _clamp(1.0 - (float(junk_mb) / JUNK_LIMIT_MB))
 
 
 def score_security(suspicious_count: int, warnings: int = 0) -> float:
-    """Calcula ratio [0.0, 1.0] penalizando hallazgos de seguridad y advertencias."""
+    """Normaliza seguridad: penaliza cada hallazgo y advertencia con pesos fijos."""
     s = _to_float(suspicious_count)
     w = _to_float(warnings)
     penalty: float = s * 0.05 + w * 0.25
@@ -139,25 +139,25 @@ def score_security(suspicious_count: int, warnings: int = 0) -> float:
 
 
 def score_memory(available_percent: float) -> float:
-    """Normaliza el porcentaje de RAM disponible a un ratio [0.0, 1.0] contra RAM_IDEAL_PERCENT."""
+    """Normaliza RAM: ratio = disponible / ideal (donde ideal es el objetivo mínimo)."""
     if RAM_IDEAL_PERCENT <= 0 or not math.isfinite(float(available_percent)): return 0.0
     return _clamp(float(available_percent) / RAM_IDEAL_PERCENT)
 
 
 def score_disk(free_percent: float) -> float:
-    """Normaliza el porcentaje de espacio libre a un ratio [0.0, 1.0] contra DISK_IDEAL_PERCENT."""
+    """Normaliza disco: ratio = libre / ideal (donde ideal es el porcentaje objetivo)."""
     if DISK_IDEAL_PERCENT <= 0 or not math.isfinite(float(free_percent)): return 0.0
     return _clamp(float(free_percent) / DISK_IDEAL_PERCENT)
 
 
 def score_duplicates(duplicate_mb: float) -> float:
-    """Normaliza MB de duplicados a un ratio [0.0, 1.0] basado en DUPLICATE_LIMIT_MB."""
+    """Normaliza duplicados: ratio = 1.0 - (MB duplicados / límite tolerable)."""
     if DUPLICATE_LIMIT_MB <= 0 or not math.isfinite(float(duplicate_mb)): return 0.0
     return _clamp(1.0 - (float(duplicate_mb) / DUPLICATE_LIMIT_MB))
 
 
 def score_startup(startup_count: int) -> float:
-    """Normaliza el conteo de programas de inicio a un ratio [0.0, 1.0] contra STARTUP_LIMIT_COUNT."""
+    """Normaliza programas de inicio: ratio = 1.0 - (conteo / límite máximo)."""
     count = _to_int(startup_count)
     if STARTUP_LIMIT_COUNT <= 0: return 0.0
     return _clamp(1.0 - (float(count) / STARTUP_LIMIT_COUNT))
@@ -244,12 +244,12 @@ def _sort_by_performance_delta(item: Tuple[str, int]) -> int:
 
 def summarize(result: HealthResult) -> List[str]:
     """Genera una representación visual y textual detallada del resultado de salud."""
-    lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
+    lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     
-    orden = sorted(result.breakdown.items(), key=_sort_by_performance_delta)
+    orden: List[Tuple[str, int]] = sorted(result.breakdown.items(), key=_sort_by_performance_delta)
     
     for area, puntos in orden:
-        maximo = WEIGHTS.get(area, 0)
+        maximo: int = WEIGHTS.get(area, 0)
         lines.append(f"  {area.capitalize():<12} {puntos:>2}/{maximo:<2} [{'#' * puntos}{'.' * (maximo - puntos)}]")
     
     lines.extend(["", "Recomendaciones:"])
