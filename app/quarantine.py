@@ -91,7 +91,7 @@ def _get_sha256(path: Path) -> str:
         with open(path, "rb") as f:
             for byte_block in iter(lambda: f.read(4096), b""):
                 sha256_hash.update(byte_block)
-    except OSError as e:
+    except (OSError, IOError) as e:
         raise OSError(f"Falla crítica al leer archivo para hash: {e}")
     return sha256_hash.hexdigest()
 
@@ -286,7 +286,7 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
     base_path = quarantine_dir(base)
     stored_file = base_path / match.stored_name
     
-    if not stored_file.is_file():
+    if not stored_file.exists():
         raise FileNotFoundError(f"Archivo inexistente en el almacén: {stored_file}")
         
     if match.sha256 and _get_sha256(stored_file) != match.sha256:
@@ -336,7 +336,7 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
     quarantine_root = quarantine_dir(base)
     stored_file = quarantine_root / match.stored_name
     
-    if is_protected_path(stored_file) or not stored_file.is_file() or not is_within_directory(stored_file, quarantine_root):
+    if is_protected_path(stored_file) or not stored_file.exists() or not is_within_directory(stored_file, quarantine_root):
         raise UnsafePathError(f"Intento de borrado fuera de cuarentena: {stored_file}")
 
     if match.sha256 and _get_sha256(stored_file) != match.sha256:
@@ -364,7 +364,7 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     count = 0
     for item in items:
         stored_file = quarantine_root / item.stored_name
-        if not is_protected_path(stored_file) and stored_file.is_file() and is_within_directory(stored_file, quarantine_root):
+        if not is_protected_path(stored_file) and stored_file.exists() and is_within_directory(stored_file, quarantine_root):
             try:
                 if not item.sha256 or _get_sha256(stored_file) == item.sha256:
                     stored_file.unlink()

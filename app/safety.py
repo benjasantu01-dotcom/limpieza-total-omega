@@ -143,6 +143,7 @@ def is_protected_path(path: PathLike) -> bool:
         if p == Path(p.anchor):
             return True
         
+        # Solo verificar estado del disco si la ruta realmente existe
         if p.exists() and _is_reparse_point(p):
             return True
 

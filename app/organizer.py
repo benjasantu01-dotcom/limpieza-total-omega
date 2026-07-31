@@ -140,6 +140,8 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
 
     def _walk_dir(base_path: str) -> None:
         try:
+            if not os.path.isdir(base_path):
+                return
             with os.scandir(base_path) as it:
                 for entry in it:
                     try:
@@ -165,7 +167,7 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
 
     for d in dirs:
         p = Path(d).expanduser()
-        if p.is_dir():
+        if p.exists() and p.is_dir():
             _walk_dir(str(p))
             
     return found

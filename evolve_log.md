@@ -644,3 +644,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-07-31T00:03:49` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
 - `2026-07-31T00:03:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-07-31T00:03:49` Corrida terminada. Total usado hoy: 4.
+- `2026-07-31T00:10:59` Arrancando corrida. Quedan hoy ~296 peticiones objetivo.
+- `2026-07-31T00:11:23` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `scan_for_junk` al añadir un chequeo explícito de existencia para la ruta base y un manejo de errores más específico para los casos donde `scandir` recibe una ruta que, aunque es un directorio, puede presentar problemas de acceso profundo o ser un punto de reparse que no fue detectado anteriormente.
+- `2026-07-31T00:11:49` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se introdujo una validación de existencia previa en `restore_item` antes de procesar el archivo para prevenir condiciones de carrera, y se mejoró la resiliencia ante errores de I/O en `_get_sha256` evitando que excepciones no manejadas aborten el proceso de limpieza o restauración.
+- `2026-07-31T00:12:08` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-07-31T00:12:17` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Mejoré la robustez ante errores de acceso a disco en `is_protected_path` al validar la existencia antes de realizar operaciones de resolución de rutas (`resolve`) o de chequeo de atributos (`is_reparse_point`), evitando excepciones no capturadas ante archivos bloqueados o permisos denegados.
+- `2026-07-31T00:12:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-07-31T00:12:17` Corrida terminada. Total usado hoy: 8.
