@@ -16,37 +16,41 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-29 | 33 | 1 | 4 | 3 | 37 |
+| 2026-07-29 | 29 | 1 | 4 | 3 | 37 |
 | 2026-07-30 | 181 | 14 | 18 | 12 | 125 |
-| 2026-07-31 | 35 | 4 | 3 | 0 | 34 |
+| 2026-07-31 | 39 | 4 | 3 | 0 | 34 |
 
 ## Mejoras aceptadas por enfoque
 
+- legibilidad y documentación: **58**
 - seguridad defensiva: **54**
-- legibilidad y documentación: **54**
 - manejo de errores y validación de entradas: **51**
 - robustez ante casos límite: **49**
-- rendimiento: **41**
+- rendimiento: **37**
 
 ## Mejoras aceptadas por archivo
 
-- `scanner.py`: **23**
 - `diskreport.py`: **22**
+- `scanner.py`: **22**
 - `browser.py`: **21**
-- `healthscore.py`: **20**
+- `healthscore.py`: **21**
 - `quarantine.py`: **20**
-- `settings.py`: **19**
 - `assistant.py`: **19**
 - `duplicates.py`: **19**
+- `settings.py`: **18**
+- `organizer.py`: **17**
 - `branding.py`: **17**
-- `organizer.py`: **16**
-- `safety.py`: **15**
-- `main.py`: **15**
-- `startup.py`: **14**
-- `memory.py`: **9**
+- `main.py`: **16**
+- `safety.py`: **14**
+- `startup.py`: **13**
+- `memory.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-07-31T03:16:23` **organizer.py** (legibilidad y documentación): Mejoré la documentación de `stage_for_review` y `_is_junk_file` mediante type hinting explícito y docstrings que clarifican las salvaguardas de seguridad, facilitando la auditoría del código bajo las estrictas reglas de este proyecto.
+- `2026-07-31T03:16:14` **memory.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `memory.py` mediante docstrings detallados en las funciones de bajo nivel, aclarando los propósitos de las interacciones con `ctypes` y `PowerShell` para facilitar el mantenimiento y la comprensión de las APIs de sistema invocadas.
+- `2026-07-31T03:15:49` **main.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `main.py` mediante la adición de docstrings técnicos en los métodos de la interfaz, explicitando el rol de `threading` y `branding` en la arquitectura, y estandarizando los nombres de variables internas relacionadas con el estado y la configuración para alinearlas con la nomenclatura de los módulos de soporte.
+- `2026-07-31T03:14:48` **healthscore.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad añadiendo type hints faltantes y documentando mediante docstrings el propósito técnico de las funciones auxiliares de normalización, asegurando la consistencia en la nomenclatura de los límites.
 - `2026-07-31T03:05:43` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica añadiendo type hints faltantes en el pipeline de filtrado y clarifiqué mediante docstrings los criterios de exclusión de inodos para evitar el procesamiento redundante de hardlinks, fortaleciendo la mantenibilidad del código sin alterar su lógica.
 - `2026-07-31T03:05:12` **browser.py** (legibilidad y documentación): Mejoré la documentación de `directory_size` y `detect_profiles` añadiendo Type Hints precisos y docstrings que explican el "porqué" de las exclusiones (symlinks/repase points) para asegurar que un desarrollador futuro entienda los límites de seguridad aplicados.
 - `2026-07-31T03:04:41` **branding.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos con las secciones `Args` y `Returns` en todas las funciones públicas que carecían de ellos, mejorando la legibilidad técnica y facilitando el mantenimiento para futuros colaboradores.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-31T02:35:30` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` añadiendo una validación explícita para evitar intentar manipular procesos con PID inválido o negativo y capturando de forma granular posibles errores durante la liberación, además de asegurar que `MemorySnapshot` no permita divisiones por cero mediante protecciones adicionales en las propiedades calculadas.
 - `2026-07-31T02:35:19` **main.py** (manejo de errores y validación de entradas): Se reforzó la validación de las entradas en `_collect_settings` agregando un manejo de excepciones explícito al procesar los campos numéricos, evitando que valores malintencionados o inesperados bloqueen la lógica de guardado de ajustes de la aplicación.
 - `2026-07-31T02:34:24` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` implementando una validación exhaustiva de los datos de entrada para evitar cálculos con estructuras de datos corrompidas o mal formadas.
-- `2026-07-31T02:33:59` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `suggest_keeper` y `_collect_candidates` mediante la validación proactiva de entrada, asegurando que el manejo de `None` o listas vacías no resulte en comportamientos inesperados, manteniendo la integridad del pipeline ante errores de sistema.
-- `2026-07-31T02:24:58` **diskreport.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `walk_files` y las funciones auxiliares mediante la validación proactiva de rutas y el manejo explícito de errores de permisos o rutas inexistentes, evitando que condiciones de carrera o accesos denegados interrumpan el análisis del reporte.
-- `2026-07-31T02:24:48` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `directory_size` y `detect_profiles` mediante la validación proactiva de tipos y estados, asegurando que `directory_size` maneje explícitamente rutas inexistentes o corrompidas y que `detect_profiles` valide que las rutas de caché sean relativas y seguras antes de procesarlas.
-- `2026-07-31T02:24:25` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y `draw_logo` mediante la validación proactiva de tipos y valores, evitando conversiones implícitas peligrosas y utilizando bloques `try-except` más granulares para asegurar que el motor gráfico no se detenga ante parámetros mal formados.

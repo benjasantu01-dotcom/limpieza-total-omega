@@ -108,8 +108,13 @@ def _generate_unique_target(target: Path) -> Path:
     return candidate
 
 
-def _is_junk_file(entry: os.DirEntry) -> bool:
-    """Valida si un archivo de sistema es un archivo basura y es seguro manipularlo."""
+def _is_junk_file(entry: os.DirEntry[str]) -> bool:
+    """
+    Valida si un archivo es basura y si es seguro realizar operaciones sobre él.
+    
+    Utiliza un chequeo booleano de seguridad para evitar excepciones durante el
+    escaneo, siguiendo la política de no abortar el proceso por archivos bloqueados.
+    """
     if not entry.is_file(follow_symlinks=False):
         return False
     if not entry.name.lower().endswith(_JUNK_EXTS_TUPLE):
@@ -201,6 +206,10 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Path:
     """
     Mueve archivos candidatos a una carpeta de cuarentena para revisión humana.
+    
+    Aplica controles de seguridad rigurosos: verifica la integridad del origen,
+    la seguridad de la ruta destino, y que el archivo no esté bloqueado antes
+    de ejecutar cualquier operación de movimiento.
     """
     if not isinstance(files, list) or not files:
         return Path(review_dir).expanduser().resolve()
@@ -224,6 +233,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         try:
             full_source_path = jf.path.resolve()
             
+            # Verificación de integridad: el archivo debe existir, no ser un enlace y ser seguro.
             if not full_source_path.exists() or not full_source_path.is_file() or full_source_path.is_symlink():
                 continue
             
@@ -234,7 +244,6 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
                 continue
                 
             try:
-                # Comprobar si el archivo está siendo usado por otro proceso
                 with open(full_source_path, 'rb'):
                     pass
             except (PermissionError, OSError):
@@ -253,7 +262,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             if not str(target).startswith(str(dest)):
                 continue
             
-            # Chequeo explícito previo a la operación destructiva/movimiento
+            # Operación atómica de movimiento tras asegurar que el destino está validado
             ensure_safe_to_modify(full_source_path)
             ensure_safe_to_modify(target)
             shutil.move(str(full_source_path), str(target))

@@ -162,7 +162,11 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
 
 
 def _read_windows_snapshot() -> MemorySnapshot:
-    """Accede a la API Win32 GlobalMemoryStatusEx vía ctypes."""
+    """
+    Accede a la API Win32 GlobalMemoryStatusEx vía ctypes.
+    Define la estructura MEMORYSTATUSEX para recibir los datos de memoria
+    del kernel de Windows (TotalPhys, AvailPhys, etc).
+    """
     import ctypes
 
     class MEMORYSTATUSEX(ctypes.Structure):
@@ -208,7 +212,11 @@ def read_snapshot() -> MemorySnapshot:
 
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
-    """Obtiene los procesos de mayor consumo en Windows ejecutando PowerShell."""
+    """
+    Obtiene los procesos de mayor consumo en Windows ejecutando PowerShell.
+    Utiliza un comando de una línea para filtrar, ordenar y convertir a CSV,
+    minimizando el tiempo de ejecución del subproceso.
+    """
     if os.name != "nt":
         return []
     command = (
@@ -272,7 +280,8 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
     Solicita al OS liberar el working set de un proceso específico.
-    Solo disponible en Windows (WinAPI psapi.EmptyWorkingSet).
+    Utiliza OpenProcess (acceso 0x1100: PROCESS_QUERY_INFORMATION | PROCESS_SET_QUOTA)
+    y psapi.EmptyWorkingSet para pedir al kernel que libere páginas físicas.
     """
     if os.name != "nt":
         return False, "Solo disponible en Windows."
