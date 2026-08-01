@@ -137,7 +137,7 @@ CHECK_FUNCS: Final[List[SuspicionCheck]] = [
 
 def scan_file(path: Path) -> List[Suspicion]:
     """Ejecuta los tests definidos en CHECK_FUNCS sobre un archivo individual."""
-    if not path or not path.exists():
+    if not path or not path.exists() or is_protected_path(path):
         return []
         
     try:

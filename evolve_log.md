@@ -1334,3 +1334,34 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-01T04:02:02` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-08-01T04:02:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-01T04:02:02` Corrida terminada. Total usado hoy: 92.
+- `2026-08-01T04:10:52` Arrancando corrida. Quedan hoy ~208 peticiones objetivo.
+- `2026-08-01T04:11:18` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha añadido una validación de rutas con caracteres de control (Unicode RTL/LTR) para prevenir la ofuscación de nombres de archivos que intentan engañar al usuario o al sistema de escaneo.
+- `2026-08-01T04:11:40` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha añadido una validación explícita mediante `is_protected_path` antes de procesar archivos dentro de `scan_file`, garantizando que el motor heurístico nunca intente realizar operaciones de estado sobre rutas protegidas, reforzando la seguridad defensiva ante posibles inconsistencias en el recorrido.
+- `2026-08-01T04:12:03` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva al validar que la `ultima_carpeta` no sea una ruta absoluta fuera del alcance permitido, asegurando que `Path(texto).expanduser()` se convierta a una ruta absoluta antes de pasar por `is_safe_to_modify`, evitando así ambigüedades en la resolución de rutas relativas o maliciosas.
+- `2026-08-01T04:12:12` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.08s
+
+```
+- `2026-08-01T04:12:12` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva en `StartupEntry.executable` integrando `is_protected_path` directamente en la resolución de rutas, garantizando que el asistente nunca procese o muestre rutas de archivos críticos del sistema incluso si son halladas en el registro o carpetas de inicio.
+- `2026-08-01T04:12:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-01T04:12:12` Corrida terminada. Total usado hoy: 96.

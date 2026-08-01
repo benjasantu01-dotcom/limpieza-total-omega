@@ -203,6 +203,10 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
     # Protección contra inyección de caracteres nulos (null bytes)
     if isinstance(path, str) and "\0" in path:
         raise UnsafePathError("Ruta maliciosa detectada: contiene caracteres nulos.")
+    
+    # Protección contra caracteres de control bidireccionales (RTL/LTR)
+    if isinstance(path, str) and any(c in path for c in ("\u202e", "\u202d", "\u202a", "\u202b")):
+        raise UnsafePathError("Ruta maliciosa detectada: caracteres de control sospechosos.")
 
     try:
         p = normalize(path)
