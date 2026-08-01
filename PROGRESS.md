@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **250** (49.6% de aceptación)
+- Mejoras aceptadas: **251** (49.8% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 24
+- Rechazadas por guardia de seguridad: 23
 - Sin cambios (nada sustancial que mejorar): 14
 - Sin respuesta de la IA (error o límite): 199
 
@@ -16,37 +16,41 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-30 | 8 | 1 | 1 | 0 | 0 |
+| 2026-07-30 | 5 | 1 | 0 | 0 | 0 |
 | 2026-07-31 | 179 | 12 | 17 | 10 | 132 |
-| 2026-08-01 | 63 | 4 | 6 | 4 | 67 |
+| 2026-08-01 | 67 | 4 | 6 | 4 | 67 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **56**
+- legibilidad y documentación: **60**
 - seguridad defensiva: **53**
 - manejo de errores y validación de entradas: **53**
 - robustez ante casos límite: **45**
-- rendimiento: **43**
+- rendimiento: **40**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **22**
-- `scanner.py`: **22**
+- `quarantine.py`: **21**
+- `scanner.py`: **21**
 - `browser.py`: **20**
 - `settings.py`: **19**
-- `safety.py`: **18**
+- `main.py`: **19**
 - `assistant.py`: **18**
 - `branding.py`: **18**
-- `main.py`: **18**
-- `diskreport.py`: **17**
-- `healthscore.py`: **17**
+- `diskreport.py`: **18**
+- `healthscore.py`: **18**
 - `organizer.py`: **17**
-- `duplicates.py`: **15**
+- `safety.py`: **17**
+- `duplicates.py`: **16**
 - `memory.py`: **15**
 - `startup.py`: **14**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-01T06:25:31` **main.py** (legibilidad y documentación): He refactorizado la jerarquía de construcción de la interfaz en `_build_tabs_container` y sus métodos delegados mediante una estructura de datos clara y un registro centralizado, mejorando drásticamente la mantenibilidad y evitando el crecimiento desordenado de métodos monolíticos.
+- `2026-08-01T06:24:45` **healthscore.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo `healthscore.py` mediante la adición de docstrings técnicos detallados en las funciones de cálculo, aclarando la lógica de normalización y el uso de los umbrales globales.
+- `2026-08-01T06:24:21` **duplicates.py** (legibilidad y documentación): Se introdujeron type hints más precisos (usando `Iterable` y `List` consistentes), se añadieron docstrings explicativos sobre las políticas de seguridad (por qué se evitan symlinks) y se clarificaron los nombres de variables internas en los bucles de refinado para mejorar la legibilidad del pipeline de deduplicación.
+- `2026-08-01T06:23:56` **diskreport.py** (legibilidad y documentación): Mejore la claridad y mantenibilidad de `diskreport.py` añadiendo docstrings descriptivos a los parámetros de las funciones principales y documentando la lógica de los chequeos de seguridad (symlinks/reparse points) en `walk_files`.
 - `2026-08-01T06:14:53` **browser.py** (legibilidad y documentación): Mejoré la robustez de `directory_size` y `_is_safe_path` documentando explícitamente el manejo de puntos de reparse (junctions) y añadiendo type hints para clarificar el flujo de datos, asegurando que la lógica de escaneo sea autodescriptiva y segura ante errores de sistema.
 - `2026-08-01T06:14:46` **branding.py** (legibilidad y documentación): Se han mejorado las docstrings de las funciones de alto nivel (`draw_logo`, `draw_ring`, `draw_gradient_bar`) para documentar explícitamente sus parámetros y comportamientos ante entradas inválidas, clarificando las expectativas del sistema gráfico de la app.
 - `2026-08-01T06:14:17` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints en las funciones de manejo de respuestas y una reestructuración de la lógica de `handle_disk` para facilitar su auditoría.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-01T05:54:36` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_windows_process_csv` añadiendo validaciones estrictas y manejo de excepciones para evitar errores al procesar entradas malformadas o inesperadas provenientes de PowerShell.
 - `2026-08-01T05:54:11` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `main.py` mediante una validación proactiva y centralizada en `on_trim_process`, asegurando que el PID ingresado por el usuario no solo sea un entero, sino que sea objeto de validación de seguridad (preveniendo intentos de manipulación sobre procesos del sistema) antes de ejecutar cualquier acción, complementando el manejo de errores del handler `_validate_and_log_error`.
 - `2026-08-01T05:44:07` **healthscore.py** (manejo de errores y validación de entradas): Reforcé la robustez de `compute_score` implementando una validación temprana de `metrics` ante valores `None` inesperados y asegurando que las funciones de puntuación manejen casos de límites de configuración erróneos de forma defensiva sin interrumpir la ejecución.
-- `2026-08-01T05:43:36` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y las funciones de análisis al encapsular la resolución de rutas en un bloque `try-except` más específico y validar la existencia de `base_path` antes de iniciar cualquier operación recursiva, previniendo fallos ante rutas inválidas o inaccesibles.
-- `2026-08-01T05:43:13` **browser.py** (manejo de errores y validación de entradas): Reforcé la robustez de `directory_size` validando explícitamente los parámetros y capturando excepciones de sistema (como `OSError` al acceder a entradas) en todas las fases de iteración, asegurando que el bucle no aborte ante archivos bloqueados o con nombres inválidos.
-- `2026-08-01T05:35:21` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ask` y `_call_gemini` ante configuraciones inválidas o datos de entrada malformados, asegurando que cualquier fallo al cargar ajustes o procesar la respuesta no interrumpa el flujo de la aplicación ni cause excepciones no capturadas.
-- `2026-08-01T04:12:03` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva al validar que la `ultima_carpeta` no sea una ruta absoluta fuera del alcance permitido, asegurando que `Path(texto).expanduser()` se convierta a una ruta absoluta antes de pasar por `is_safe_to_modify`, evitando así ambigüedades en la resolución de rutas relativas o maliciosas.

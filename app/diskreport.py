@@ -149,6 +149,9 @@ def all_drives_usage(mounts: Iterable[str] | None = None) -> list[DriveUsage]:
 def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Generator[tuple[Path, int], None, None]:
     """
     Recorre recursivamente un directorio.
+    
+    :param directory: Ruta raíz del análisis.
+    :param skip_protected: Si es True, usa `safety.is_protected_path` para omitir carpetas de sistema.
     """
     if not directory:
         return
@@ -166,6 +169,7 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
             with os.scandir(root_path) as iterator:
                 for entry in iterator:
                     try:
+                        # Evitar bucles infinitos por symlinks y puntos de reparse (Windows Junctions)
                         if entry.is_symlink():
                             continue
                         if os.name == 'nt' and entry.stat(follow_symlinks=False).st_reparse_tag != 0:
@@ -196,7 +200,10 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
 
 
 def largest_files(directory: str | os.PathLike, limit: int = 20, skip_protected: bool = True) -> list[FileEntry]:
-    """Los archivos más grandes bajo una carpeta, de mayor a menor."""
+    """
+    Los archivos más grandes bajo una carpeta, de mayor a menor.
+    :param limit: Cantidad máxima de resultados.
+    """
     if not directory:
         return []
     return heapq.nlargest(

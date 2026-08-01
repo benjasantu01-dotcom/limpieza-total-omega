@@ -90,6 +90,7 @@ def hash_file(path: Union[str, Path, None], chunk_size: int = 1024 * 1024) -> Op
     
     try:
         p = Path(path).resolve()
+        # Se omiten symlinks y rutas protegidas por política de seguridad estricta
         if not p.is_file() or p.is_symlink() or is_protected_path(p):
             return None
             
@@ -163,11 +164,6 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
 def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, skip_protected: bool) -> List[Path]:
     """
     Explora directorios recursivamente para identificar candidatos a duplicados.
-    
-    Args:
-        directories: Lista de rutas raíz a escanear.
-        min_size: Tamaño mínimo en bytes para considerar un archivo.
-        skip_protected: Si es True, ignora rutas marcadas por safety.py.
     """
     if directories is None:
         return []
@@ -220,11 +216,9 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
 
 def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
     """
-    Aplica un hash (parcial o total) para subdividir una lista de rutas en grupos coincidentes.
-    Filtra los grupos resultantes que tengan un solo elemento.
+    Aplica una función de hash para subdividir una lista de rutas en grupos coincidentes.
+    Filtra los grupos resultantes que tengan un solo elemento (ya no son duplicados).
     """
-    if paths is None:
-        return {}
     by_hash: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
         if path:
@@ -234,7 +228,8 @@ def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[
                     by_hash[digest].append(path)
             except Exception:
                 continue
-    return {h: p for h, p in by_hash.items() if len(p) > 1}
+    # Solo retornamos aquellos grupos con colisiones (duplicados confirmados)
+    return {digest: paths_list for digest, paths_list in by_hash.items() if len(paths_list) > 1}
 
 
 def find_duplicates(
@@ -253,26 +248,28 @@ def find_duplicates(
     if not candidates:
         return []
 
-    raw_groups: Dict[int, List[Path]] = group_by_size(candidates)
-    size_map: Dict[int, List[Path]] = {s: p for s, p in raw_groups.items() if len(p) > 1}
-    if not size_map:
+    # Map: size -> List[Path]
+    size_map = group_by_size(candidates)
+    potential_groups = [paths for paths in size_map.values() if len(paths) > 1]
+    
+    if not potential_groups:
         return []
 
     groups: List[DuplicateGroup] = []
     
-    for size, same_size in size_map.items():
-        # Reducción de conjunto mediante hash parcial (64KB)
-        by_partial: Dict[str, List[Path]] = _refine_by_hash(same_size, partial_hash)
+    for same_size_paths in potential_groups:
+        # Refinado 1: Hash parcial (64KB) para reducir el set
+        partial_map = _refine_by_hash(same_size_paths, partial_hash)
         
-        for partial_candidates in by_partial.values():
-            # Verificación final mediante hash SHA256 completo
-            by_full: Dict[str, List[Path]] = _refine_by_hash(partial_candidates, hash_file)
+        for partial_candidates in partial_map.values():
+            # Refinado 2: Verificación final mediante hash SHA256 completo
+            full_map = _refine_by_hash(partial_candidates, hash_file)
             
-            for digest, confirmed in by_full.items():
+            for digest, confirmed_paths in full_map.items():
                 groups.append(DuplicateGroup(
                     digest=digest, 
-                    size_bytes=size, 
-                    paths=sorted(confirmed)
+                    size_bytes=confirmed_paths[0].stat().st_size, 
+                    paths=sorted(confirmed_paths)
                 ))
 
     groups.sort(key=lambda g: g.wasted_bytes, reverse=True)

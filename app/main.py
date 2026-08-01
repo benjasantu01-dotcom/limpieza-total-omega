@@ -206,6 +206,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         )
         self.tabview.pack(fill="both", expand=True, padx=18, pady=(4, 8))
 
+        # Mapa de constructores: vincula el nombre de la pestaña con su lógica de construcción
         tab_constructors: Dict[str, Callable] = {
             "Salud": self._build_tab_salud,
             "Limpieza": self._build_tab_limpieza,
