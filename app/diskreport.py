@@ -147,16 +147,7 @@ def all_drives_usage(mounts: Iterable[str] | None = None) -> list[DriveUsage]:
 
 
 def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Generator[tuple[Path, int], None, None]:
-    """
-    Recorre recursivamente un directorio devolviendo archivos y su tamaño.
-
-    La lógica implementa:
-    1. Resolución de ruta absoluta: Evita el uso de rutas relativas ambiguas.
-    2. Validación de sandbox: Asegura que el escaneo no escape del directorio base
-       (previniendo riesgos de traversal con enlaces simbólicos).
-    3. Seguridad de sistema: Omitimos nodos de reparse (Junctions en NTFS) y carpetas
-       protegidas vía `safety.is_protected_path` para evitar bloqueos del SO.
-    """
+    """Recorre recursivamente un directorio devolviendo archivos y su tamaño."""
     if not directory:
         return
     try:
@@ -173,15 +164,14 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
             with os.scandir(root_path) as iterator:
                 for entry in iterator:
                     try:
-                        # Verificación de seguridad defensiva: no seguir enlaces simbólicos/reparse points
                         if entry.is_symlink():
                             continue
                         if os.name == 'nt' and entry.stat(follow_symlinks=False).st_reparse_tag != 0:
                             continue
                         
-                        full_entry_path = Path(entry.path).resolve()
+                        entry_path = Path(entry.path)
+                        full_entry_path = entry_path.resolve()
                         
-                        # Validación de que la ruta resuelta está contenida estrictamente en base_path
                         if base_path not in full_entry_path.parents and full_entry_path != base_path:
                             continue
 
@@ -195,10 +185,7 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
                         else:
                             if skip_protected and is_protected_path(full_entry_path):
                                 continue
-                            try:
-                                yield full_entry_path, entry.stat().st_size
-                            except OSError:
-                                continue
+                            yield full_entry_path, entry.stat().st_size
                     except (OSError, PermissionError, FileNotFoundError):
                         continue
         except (OSError, PermissionError, FileNotFoundError):
@@ -208,10 +195,7 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
 
 
 def largest_files(directory: str | os.PathLike, limit: int = 20, skip_protected: bool = True) -> list[FileEntry]:
-    """
-    Los archivos más grandes bajo una carpeta, de mayor a menor.
-    :param limit: Cantidad máxima de resultados.
-    """
+    """Los archivos más grandes bajo una carpeta, de mayor a menor."""
     if not directory:
         return []
     return heapq.nlargest(
@@ -304,7 +288,6 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
     total_bytes = 0
     total_files = 0
 
-    # Escaneo único optimizado
     for path, size in walk_files(path_obj, skip_protected):
         total_bytes += size
         total_files += 1

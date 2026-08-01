@@ -1030,3 +1030,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-08-01T11:21:10` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimizé la función `directory_size` para reducir llamadas costosas a `path.resolve()` y `is_protected_path()` moviendo el chequeo de seguridad fuera del loop interno y utilizando atributos de `os.DirEntry` para obtener el tamaño y el estado del archivo, evitando así llamadas repetitivas a `stat()` y `Path` objetos.
 - `2026-08-01T11:21:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-01T11:21:10` Corrida terminada. Total usado hoy: 264.
+- `2026-08-01T11:29:48` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-08-01T11:30:13` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el método `summarize` para reducir las llamadas repetitivas a `path.suffix.lower()` y el acceso al diccionario, y mejoré `walk_files` usando `os.scandir` de forma más directa para evitar la sobrecarga de crear objetos `Path` innecesarios dentro del bucle interno, mejorando el rendimiento en directorios grandes.
+- `2026-08-01T11:30:38` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-08-01T11:31:00` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
+- `2026-08-01T11:31:45` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Optimicé el método `_compile_metrics` reemplazando llamadas múltiples a `self._get_cached` con una lógica de consolidación asíncrona más eficiente, reduciendo el riesgo de redundancia en la recolección de datos durante el análisis de salud.
+- `2026-08-01T11:31:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-01T11:31:45` Corrida terminada. Total usado hoy: 268.

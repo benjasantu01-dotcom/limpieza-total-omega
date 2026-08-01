@@ -838,13 +838,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _compile_metrics(self) -> Tuple[healthscore.SystemMetrics, memory_mod.Snapshot, diskreport.DriveInfo]:
         """Agrega los datos de todos los módulos para el análisis consolidado de salud."""
-        descargas = os.path.expanduser("~/Downloads")
-        hallazgos = self._get_cached("suspicions", lambda: scan_directory(descargas) if os.path.isdir(descargas) else []) or []
+        # Caché de recuperación inmediata
+        hallazgos = self._get_cached("suspicions") or []
         snapshot = memory_mod.read_snapshot()
         home = os.path.expanduser("~")
         unidad = diskreport.drive_usage(home) if os.path.exists(home) else None
         
-        # Recuperamos del caché sin forzar re-análisis
         arranque = self._get_cached("startup") or []
         junk = self._get_cached("junk") or []
         dups = self._get_cached("dups") or []
