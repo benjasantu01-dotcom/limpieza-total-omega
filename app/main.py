@@ -140,9 +140,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         
         try:
             self.settings = settings_mod.load()
-            if not isinstance(self.settings, dict): raise ValueError("Formato inválido")
+            if not isinstance(self.settings, dict): 
+                raise ValueError("Configuración no es un diccionario")
         except Exception as e:
-            logging.error("Fallo al cargar ajustes, usando defaults: %s", e)
+            logging.error("Fallo al cargar ajustes, reseteando: %s", e)
             self.settings = settings_mod.reset()
             
         self.setting_vars: Dict[str, Any] = {}
@@ -168,8 +169,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 data = provider()
                 self._cache[key] = (data, now)
                 return data
-            except Exception:
-                pass
+            except Exception as e:
+                logging.error("Error al obtener datos para caché %s: %s", key, e)
         return None
 
     def _invalidate_cache(self, key_prefix: str) -> None:
@@ -813,11 +814,16 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _ask_folder(self, title: str) -> Optional[str]:
         """Diálogo de selección de carpeta con filtrado de seguridad estricto."""
         folder = filedialog.askdirectory(title=title)
-        if not folder or not os.path.exists(folder):
+        if not folder:
             return None
         
+        path_obj = Path(folder)
+        if not path_obj.exists():
+            return None
+        
+        # Validar que no sea ruta de sistema antes de retornar
         try:
-            safety.ensure_safe_to_modify(Path(folder))
+            safety.ensure_safe_to_modify(path_obj)
         except (safety.UnsafePathError, PermissionError):
             messagebox.showwarning(
                 "Carpeta protegida o inaccesible",

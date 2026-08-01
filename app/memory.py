@@ -288,7 +288,6 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except (ValueError, TypeError):
         return False, "El PID debe ser un número entero válido."
 
-    # Procesos con PID <= 4 (Idle/System) son intocables por seguridad
     if target_pid <= 4 or is_protected_path(str(target_pid)):
         return False, "Operación denegada: PID de sistema protegido."
     
@@ -302,7 +301,6 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if not hasattr(kernel32, "OpenProcess") or not hasattr(psapi, "EmptyWorkingSet"):
         return False, "APIs de sistema no disponibles."
 
-    # Solicitar acceso al proceso y ejecutar la purga de memoria
     handle = kernel32.OpenProcess(REQUIRED_ACCESS, False, target_pid)
     if not handle:
         err: int = kernel32.GetLastError()
@@ -316,6 +314,6 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except (ctypes.ArgumentError, Exception):
         return False, "Error inesperado al intentar limpiar la memoria."
     finally:
-        # Asegurar siempre el cierre del handle si existe
-        if handle:
-            kernel32.CloseHandle(handle)
+        if handle and not kernel32.CloseHandle(handle):
+            # Fallo al cerrar handle, loguear si fuera posible
+            pass

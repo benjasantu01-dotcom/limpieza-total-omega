@@ -148,10 +148,10 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     groups: Dict[int, List[Path]] = defaultdict(list)
     seen_inodes: set[Tuple[int, int]] = set()
     for p in paths:
-        if not isinstance(p, Path):
+        if not isinstance(p, (str, Path)):
             continue
         try:
-            p_res = p.resolve()
+            p_res = Path(p).resolve()
             if not p_res.is_file() or p_res.is_symlink() or is_protected_path(p_res):
                 continue
             
@@ -176,7 +176,7 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
     
     Evita ciclos y reparse points verificando Inodes y symlinks durante la iteración.
     """
-    if directories is None:
+    if not directories:
         return []
     candidates: List[Path] = []
     visited_inodes: set[Tuple[int, int]] = set()
@@ -228,7 +228,6 @@ def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[
                     by_hash[digest].append(path)
             except Exception:
                 continue
-    # Solo retornamos aquellos grupos con colisiones (duplicados confirmados)
     return {digest: paths_list for digest, paths_list in by_hash.items() if len(paths_list) > 1}
 
 
@@ -248,7 +247,6 @@ def find_duplicates(
     if not candidates:
         return []
 
-    # Map: size -> List[Path]
     size_map = group_by_size(candidates)
     potential_groups = [paths for paths in size_map.values() if len(paths) > 1]
     
@@ -258,17 +256,16 @@ def find_duplicates(
     groups: List[DuplicateGroup] = []
     
     for same_size_paths in potential_groups:
-        # Refinado 1: Hash parcial (64KB) para reducir el set
         partial_map = _refine_by_hash(same_size_paths, partial_hash)
         
         for partial_candidates in partial_map.values():
-            # Refinado 2: Verificación final mediante hash SHA256 completo
             full_map = _refine_by_hash(partial_candidates, hash_file)
             
             for digest, confirmed_paths in full_map.items():
+                size = confirmed_paths[0].stat().st_size
                 groups.append(DuplicateGroup(
                     digest=digest, 
-                    size_bytes=confirmed_paths[0].stat().st_size, 
+                    size_bytes=size, 
                     paths=sorted(confirmed_paths)
                 ))
 
@@ -291,8 +288,8 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
 
     valid_paths: List[Tuple[float, int, Path]] = []
     for p in group.paths:
-        p_obj = Path(p) if not isinstance(p, Path) else p
         try:
+            p_obj = Path(p)
             if not p_obj.exists() or not p_obj.is_file():
                 continue
             stat = p_obj.stat()
@@ -303,7 +300,6 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     if not valid_paths:
         return group.paths[0] if group.paths else None
 
-    # Ordenar por: tiempo de modificación (asc), longitud de cadena de ruta (asc)
     return min(valid_paths, key=lambda x: (x[0], x[1]))[2]
 
 

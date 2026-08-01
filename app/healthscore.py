@@ -185,6 +185,9 @@ def grade_for_score(score: int) -> str:
 
 def _generate_recommendations(m: SystemMetrics, ratios: Dict[str, float]) -> List[str]:
     """Genera acciones correctivas si los ratios individuales caen por debajo de los umbrales."""
+    if not isinstance(m, SystemMetrics):
+        return ["Error interno: Métricas no disponibles para generar recomendaciones."]
+    
     recs: List[str] = []
     
     if ratios.get("seguridad", 1.0) < WARN_THRESHOLD_HIGH:
