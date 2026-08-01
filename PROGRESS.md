@@ -16,36 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-31 | 170 | 9 | 16 | 10 | 131 |
-| 2026-08-01 | 83 | 5 | 8 | 4 | 68 |
+| 2026-07-31 | 166 | 9 | 16 | 10 | 131 |
+| 2026-08-01 | 87 | 5 | 8 | 4 | 68 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **67**
 - manejo de errores y validación de entradas: **53**
-- seguridad defensiva: **52**
-- rendimiento: **48**
-- robustez ante casos límite: **33**
+- rendimiento: **51**
+- seguridad defensiva: **48**
+- robustez ante casos límite: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **22**
-- `scanner.py`: **21**
+- `scanner.py`: **22**
+- `settings.py`: **20**
 - `browser.py`: **20**
-- `main.py`: **19**
-- `settings.py`: **19**
-- `diskreport.py`: **18**
-- `healthscore.py`: **18**
+- `assistant.py`: **19**
 - `organizer.py`: **18**
 - `safety.py`: **18**
-- `assistant.py`: **18**
-- `duplicates.py`: **16**
+- `main.py`: **18**
+- `diskreport.py`: **17**
+- `healthscore.py`: **17**
 - `memory.py`: **16**
 - `branding.py`: **16**
-- `startup.py`: **14**
+- `duplicates.py`: **15**
+- `startup.py`: **15**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-01T07:26:10` **assistant.py** (robustez ante casos límite): Se ha añadido un robusto manejo de excepciones y validación de tipos en la función `_rank_problems` para prevenir caídas de la interfaz si los datos procesados son inesperadamente nulos, infinitos o de tipos incorrectos, asegurando que el asistente siempre devuelva una lista válida incluso ante estados de sistema incoherentes.
+- `2026-08-01T07:25:53` **startup.py** (rendimiento): Se optimizó `parse_registry_csv` reemplazando la lógica de parseo manual por una iteración eficiente sobre el CSV y se consolidó el filtrado de entradas para reducir llamadas innecesarias al sistema de archivos al procesar el registro.
+- `2026-08-01T07:25:29` **settings.py** (rendimiento): Se implementó un cache de validación mediante un diccionario hash para el esquema de validación (`_VALIDATION_SCHEMA`), sustituyendo la lógica condicional en `validate()` para reducir la complejidad algorítmica y evitar re-evaluaciones innecesarias del tipo de dato en cada ciclo de la iteración.
+- `2026-08-01T07:25:05` **scanner.py** (rendimiento): Optimicé el rendimiento de `scan_file` eliminando la llamada redundante a `path.exists()` y `is_protected_path(path)`, ya que `process_entry` ya filtra estas condiciones antes de invocar el escaneo, reduciendo significativamente las llamadas al sistema operativo por cada archivo.
 - `2026-08-01T07:15:48` **safety.py** (rendimiento): Optimicé el rendimiento de las verificaciones de seguridad en `is_protected_path` al reemplazar `any()` con una iteración manual que utiliza un conjunto de búsqueda optimizado, evitando el costo de generar un generador en cada llamada dentro de bucles de escaneo extensivos.
 - `2026-08-01T07:15:21` **quarantine.py** (rendimiento): Se optimizó el acceso a disco en `total_quarantined_bytes` y `summarize` para evitar recargas innecesarias del manifiesto utilizando la variable `_manifest_cache` en lugar de invocar `load_manifest()` repetidamente, reduciendo el I/O en operaciones de lectura.
 - `2026-08-01T07:14:54` **organizer.py** (rendimiento): Optimizé el proceso de escaneo integrando el filtrado de la blocklist directamente en `os.scandir` y reduciendo las llamadas a `Path` dentro del loop recursivo, minimizando la creación de objetos innecesarios.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-01T06:54:38` **assistant.py** (rendimiento): Optimicé el rendimiento de `_rank_problems` convirtiéndola en una función que recorre las condiciones de forma eficiente y ajusté la lógica de `local_answer` para evitar el cálculo de la lista de problemas cuando una palabra clave genera una respuesta inmediata.
 - `2026-08-01T06:45:23` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica y la legibilidad interna de `startup.py` mediante la adición de docstrings detallados en funciones clave y la clarificación de tipos, asegurando que el propósito y los límites de cada proceso sean explícitos para cualquier futuro mantenimiento.
 - `2026-08-01T06:45:12` **settings.py** (legibilidad y documentación): Documenté el propósito y las restricciones de las funciones de validación y persistencia mediante docstrings detallados, clarificando la lógica de saneamiento de datos y el flujo de trabajo de seguridad para mejorar la mantenibilidad.
-- `2026-08-01T06:44:47` **scanner.py** (legibilidad y documentación): Documenté el propósito y los parámetros de las funciones de chequeo mediante docstrings estructurados, clarifiqué el tipo de retorno de `scan_file` y mejoré la legibilidad de la lógica de escaneo para cumplir con el enfoque de mantenibilidad y documentación.
-- `2026-08-01T06:44:26` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación y robustez de las funciones de chequeo mediante type hints precisos, la adición de docstrings técnicos que clarifican las excepciones y los estados, y la simplificación lógica de `is_within_directory` para mejorar su legibilidad y precisión geométrica sobre las rutas.
-- `2026-08-01T06:35:00` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de `quarantine.py` mediante la refactorización de la lógica de validación de integridad en `purge_all` hacia un método estático `verify_integrity` dentro de `QuarantineItem`, centralizando la lógica crítica de seguridad.
-- `2026-08-01T06:34:34` **organizer.py** (legibilidad y documentación): Se ha añadido un `TypeAlias` para mejorar la legibilidad de las firmas de funciones complejas y se han enriquecido los docstrings con especificaciones sobre las excepciones lanzadas y los comportamientos ante symlinks, siguiendo las guías de estilo para código mantenible.

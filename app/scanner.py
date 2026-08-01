@@ -152,9 +152,6 @@ def scan_file(path: Path) -> List[Suspicion]:
     :param path: Ruta absoluta del archivo a analizar.
     :return: Lista de objetos Suspicion encontrados.
     """
-    if not path or not path.exists() or is_protected_path(path):
-        return []
-        
     findings: List[Suspicion] = []
     for check_func in CHECK_FUNCS:
         try:

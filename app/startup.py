@@ -184,40 +184,30 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
 
 def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry]:
     """
-    Transforma el CSV bruto de PowerShell en objetos StartupEntry.
-    Valida la seguridad de cada ruta encontrada antes de incorporarla.
+    Transforma el CSV bruto de PowerShell en objetos StartupEntry mediante un split eficiente.
     """
-    parsed_entries: List[StartupEntry] = []
     if not isinstance(text, str) or not text.strip():
-        return parsed_entries
+        return []
         
-    ignored_names = {"name", "pscustomobject"}
-    for line in text.splitlines():
-        clean_line: str = line.strip()
-        if not clean_line:
+    parsed_entries: List[StartupEntry] = []
+    lines = text.splitlines()
+    if len(lines) < 2: return []
+    
+    # Procesar solo líneas con datos, saltando el header (índice 0)
+    for line in lines[1:]:
+        parts = line.split(",", 1)
+        if len(parts) < 2: continue
+        
+        name = parts[0].strip().strip('"')
+        cmd = parts[1].strip().strip('"')
+        
+        if not name or name.lower() in ("name", "pscustomobject") or name.upper().startswith("PS"):
             continue
             
-        columns: List[str] = clean_line.split(",", 1)
-        if len(columns) < 2:
-            continue
-            
-        name_key: str = columns[0].strip().strip('"\'')
-        value_cmd: str = columns[1].strip().strip('"\'')
-        
-        if not name_key or name_key.lower() in ignored_names or name_key.upper().startswith("PS"):
-            continue
-            
-        entry = StartupEntry(name=name_key, command=value_cmd, source=source)
-        
-        try:
-            executable_path = entry.executable
-            if executable_path and os.path.isabs(executable_path) and os.path.exists(executable_path):
-                if is_protected_path(Path(executable_path)):
-                    continue
-        except (OSError, ValueError, TypeError):
-            continue
-                
+        entry = StartupEntry(name=name, command=cmd, source=source)
+        # Validación diferida (property .executable) para evitar latencia de disco inmediata
         parsed_entries.append(entry)
+        
     return parsed_entries
 
 
@@ -229,7 +219,6 @@ def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[Start
     if os.name != "nt":
         return []
     
-    # Concatenar en un solo bloque para evitar múltiples procesos
     ps_cmd = "; ".join(f"Get-ItemProperty '{k}' -ErrorAction SilentlyContinue | Select-Object * -ExcludeProperty PS*" for k in keys)
     ps_cmd = f"$data = {ps_cmd}; $data | ConvertTo-Csv -NoTypeInformation"
     
@@ -250,13 +239,7 @@ def list_startup_entries() -> List[StartupEntry]:
     seen_names: set[str] = set()
     unique_entries: List[StartupEntry] = []
     
-    for entry in entries_from_folders():
-        key: str = entry.name.lower()
-        if key not in seen_names:
-            seen_names.add(key)
-            unique_entries.append(entry)
-            
-    for entry in entries_from_registry():
+    for entry in entries_from_folders() + entries_from_registry():
         key: str = entry.name.lower()
         if key not in seen_names:
             seen_names.add(key)

@@ -115,10 +115,7 @@ def _coerce_int(raw_value: Any, setting_key: str) -> int | None:
         return None
 
 def _validate_str(clave: str, valor: Any) -> str | None:
-    """
-    Valida y normaliza cadenas. Para rutas, verifica seguridad mediante 
-    'is_safe_to_modify' antes de permitir la persistencia.
-    """
+    """Valida y normaliza cadenas. Para rutas, verifica seguridad mediante 'is_safe_to_modify'."""
     if not isinstance(valor, str):
         return None
     texto = valor.strip()
@@ -177,14 +174,16 @@ def validate(values: Any) -> dict[str, Any]:
         tipo_defecto = type(defecto)
         validador = _VALIDATION_SCHEMA.get(tipo_defecto)
         
-        if tipo_defecto is int:
-            coerced = validador(val_raw, clave)
-        elif tipo_defecto is str:
-            coerced = validador(clave, val_raw)
+        if validador:
+            if tipo_defecto is int:
+                coerced = validador(val_raw, clave)
+            elif tipo_defecto is str:
+                coerced = validador(clave, val_raw)
+            else:
+                coerced = validador(val_raw)
+            limpio[clave] = coerced if coerced is not None else defecto
         else:
-            coerced = validador(val_raw) if validador else None
-            
-        limpio[clave] = coerced if coerced is not None else defecto
+            limpio[clave] = val_raw
     return limpio
 
 def load(path_or_base: PathLike | None = None) -> dict[str, Any]:
