@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **251** (49.8% de aceptación)
-- Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 23
+- Mejoras aceptadas: **252** (50.0% de aceptación)
+- Rechazadas por tests: 16
+- Rechazadas por guardia de seguridad: 24
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 201
+- Sin respuesta de la IA (error o límite): 197
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-31 | 160 | 9 | 15 | 10 | 130 |
-| 2026-08-01 | 91 | 5 | 8 | 5 | 71 |
+| 2026-07-31 | 160 | 9 | 15 | 10 | 126 |
+| 2026-08-01 | 92 | 7 | 9 | 5 | 71 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,11 +25,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **53**
 - rendimiento: **51**
 - seguridad defensiva: **42**
-- robustez ante casos límite: **38**
+- robustez ante casos límite: **39**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **21**
+- `quarantine.py`: **22**
 - `scanner.py`: **21**
 - `browser.py`: **20**
 - `assistant.py`: **19**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-01T07:55:56` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` ante condiciones de carrera y archivos inconsistentes, añadiendo una verificación de tamaño previa y posterior al movimiento, y asegurando que la integridad se valide antes de persistir cualquier metadato.
 - `2026-08-01T07:47:03` **organizer.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `scan_for_junk` y `stage_for_review` para validar que los archivos no sean puntos de reparse o junctions mediante el atributo `is_junction` (o `is_symlink` + `exists` en el caso de enlaces), evitando así recursiones infinitas o errores al intentar procesar rutas virtuales del sistema.
 - `2026-08-01T07:46:31` **main.py** (robustez ante casos límite): Se implementó un método centralizado `_safe_run` para las tareas asíncronas, que asegura el manejo consistente de errores inesperados y estados de interfaz, previniendo cuelgues ante excepciones inesperadas (como fallos en el sistema de archivos o hilos interrumpidos) y mejorando la robustez frente a casos límite de concurrencia.
 - `2026-08-01T07:45:31` **healthscore.py** (robustez ante casos límite): Se ha robustecido el cálculo de `breakdown` en `compute_score` para manejar el caso límite donde los pesos configurados (`WEIGHTS`) podrían no sumar exactamente 100, evitando errores de precisión o truncamiento, y se añadió una validación adicional para asegurar que `metrics` tenga datos consistentes antes de procesarlos.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-01T07:06:11` **main.py** (rendimiento): Optimicé el manejo de la caché en `_get_cached` y `on_full_analysis` para evitar cálculos redundantes, delegando la invalidación y el acceso a los datos de forma más eficiente y consistente con el TTL definido.
 - `2026-08-01T07:05:11` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje global transformando el diccionario `ratios` en un generador local y eliminando iteraciones redundantes, además de pre-calcular el límite de `breakdown` evitando la creación de estructuras intermedias innecesarias.
 - `2026-08-01T07:04:47` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` utilizando `os.scandir` en lugar de `os.walk` para evitar realizar múltiples llamadas a `stat()` y `is_symlink()` innecesarias, aprovechando que `DirEntry` ya tiene esta información en caché en la mayoría de los sistemas de archivos.
-- `2026-08-01T06:55:37` **diskreport.py** (rendimiento): Optimizé la función `summarize` para reducir las llamadas a `walk_files` y evitar el re-procesamiento de datos, consolidando el escaneo en una sola pasada eficiente que mantiene los totales, estadísticas por extensión y el top de archivos simultáneamente.

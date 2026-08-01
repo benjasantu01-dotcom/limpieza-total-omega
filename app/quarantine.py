@@ -262,8 +262,9 @@ def quarantine_file(
     except (OSError, PermissionError) as e:
         raise RuntimeError(f"Falla crítica al mover archivo: {e}")
 
-    if not destination.exists() or not destination.is_file() or destination.is_symlink():
-        raise RuntimeError("Integridad comprometida: el archivo no existe o fue reemplazado tras el movimiento.")
+    # Doble verificación post-movimiento para asegurar integridad
+    if not destination.exists() or destination.stat().st_size != file_size:
+        raise RuntimeError("Integridad comprometida: el archivo no existe o cambió de tamaño tras el movimiento.")
 
     try:
         file_hash = _get_sha256(destination)

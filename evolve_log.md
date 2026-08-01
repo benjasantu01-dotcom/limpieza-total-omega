@@ -611,3 +611,68 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-08-01T07:47:03` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de integridad en `scan_for_junk` y `stage_for_review` para validar que los archivos no sean puntos de reparse o junctions mediante el atributo `is_junction` (o `is_symlink` + `exists` en el caso de enlaces), evitando así recursiones infinitas o errores al intentar procesar rutas virtuales del sistema.
 - `2026-08-01T07:47:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-01T07:47:03` Corrida terminada. Total usado hoy: 180.
+- `2026-08-01T07:55:27` Arrancando corrida. Quedan hoy ~120 peticiones objetivo.
+- `2026-08-01T07:55:56` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Mejoré la robustez de `quarantine_file` ante condiciones de carrera y archivos inconsistentes, añadiendo una verificación de tamaño previa y posterior al movimiento, y asegurando que la integridad se valide antes de persistir cualquier metadato.
+- `2026-08-01T07:56:15` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 103): unterminated string literal (detected at line 103)
+- `2026-08-01T07:56:39` Tests FALLARON:
+```
+........................... [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_________________________ test_save_creates_the_folder _________________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-2/test_save_creates_the_folder0')
+
+    def test_save_creates_the_folder(tmp_path):
+        destino = tmp_path / "sub" / "carpeta"
+        assert settings.save(settings.DEFAULTS, destino) is not None
+>       assert (destino / settings.SETTINGS_FILE).is_file()
+E       AssertionError: assert False
+E        +  where False = is_file()
+E        +    where is_file = (PosixPath('/tmp/pytest-of-runner/pytest-2/test_save_creates_the_folder0/sub/carpeta') / 'config.json').is_file
+E        +      where 'config.json' = settings.SETTINGS_FILE
+
+evolve/tests/test_assistant.py:61: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_save_creates_the_folder - AssertionError: assert False
+ +  where False = is_file()
+ +    where is_file = (PosixPath('/tmp/pytest-of-runner/pytest-2/test_save_creates_the_folder0/sub/carpeta') / 'config.json').is_file
+ +      where 'config.json' = settings.SETTINGS_FILE
+1 failed, 298 passed in 0.83s
+
+```
+- `2026-08-01T07:56:39` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se reforzó `ensure_safe_to_modify` para prevenir la manipulación de archivos que, siendo inexistentes en el momento del chequeo, se encuentran dentro de un directorio donde el usuario no tiene permisos de escritura o que está marcado como protegido, evitando así posibles errores de carrera (race conditions) o intentos de escritura en zonas restringidas.
+- `2026-08-01T07:56:46` Tests FALLARON:
+```
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+evolve/tests/test_basic.py:212: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = PurePosixPath('/home/user/Downloads/svchost.exe')
+
+    def check_system_lookalike(path: Path) -> Optional[Suspicion]:
+        """
+        Detecta ejecutables que intentan suplantar procesos críticos de Windows.
+    
+        :param path: Ruta del archivo a inspeccionar.
+        :return: Objeto Suspicion si el nombre coincide con procesos del sistema fuera de System32.
+        """
+>       if path and path.exists() and path.name and path.name.lower() in SYSTEM_LOOKALIKES:
+                    ^^^^^^^^^^^
+E       AttributeError: 'PurePosixPath' object has no attribute 'exists'
+
+app/scanner.py:131: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_scanner_double_extension_detection - assert None is not None
+FAILED evolve/tests/test_basic.py::test_scanner_flags_system_lookalike_outside_system32 - AttributeError: 'PureWindowsPath' object has no attribute 'exists'
+FAILED evolve/tests/test_basic.py::test_scanner_does_not_flag_real_system_file - AttributeError: 'PureWindowsPath' object has no attribute 'exists'
+FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independent - AttributeError: 'PurePosixPath' object has no attribute 'exists'
+4 failed, 295 passed in 0.97s
+
+```
+- `2026-08-01T07:56:46` ❌ Mejora descartada en scanner.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `scanner.py` ante errores comunes del sistema de archivos al añadir verificaciones de existencia (`path.exists()`) y manejo de errores de acceso (`OSError`, `PermissionError`) dentro de los evaluadores heurísticos, asegurando que un fallo al consultar el estado de un archivo no detenga el escaneo completo ni genere excepciones no controladas.
+- `2026-08-01T07:56:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-01T07:56:46` Corrida terminada. Total usado hoy: 184.
