@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **258** (51.2% de aceptación)
+- Mejoras aceptadas: **260** (51.6% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 25
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 188
+- Sin respuesta de la IA (error o límite): 186
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-30 | 38 | 3 | 4 | 1 | 28 |
+| 2026-07-30 | 38 | 3 | 4 | 1 | 24 |
 | 2026-07-31 | 179 | 12 | 17 | 10 | 132 |
-| 2026-08-01 | 41 | 3 | 4 | 4 | 28 |
+| 2026-08-01 | 43 | 3 | 4 | 4 | 30 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **65**
 - manejo de errores y validación de entradas: **52**
 - rendimiento: **51**
+- seguridad defensiva: **47**
 - robustez ante casos límite: **45**
-- seguridad defensiva: **45**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **22**
 - `scanner.py`: **22**
+- `browser.py`: **21**
 - `branding.py`: **20**
-- `browser.py`: **20**
+- `assistant.py`: **19**
 - `diskreport.py`: **19**
 - `healthscore.py`: **19**
 - `settings.py`: **19**
-- `assistant.py`: **18**
 - `duplicates.py`: **18**
 - `organizer.py`: **18**
 - `safety.py`: **17**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-01T03:41:48` **browser.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `directory_size` asegurando que las rutas extraídas de `os.scandir` se validen contra `is_protected_path` antes de ser procesadas o añadidas al stack, mitigando riesgos ante estructuras de directorios inesperadas o intentos de acceso a zonas protegidas que pudieran aparecer dinámicamente.
+- `2026-08-01T03:41:13` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_call_gemini` integrando un chequeo explícito de contenido mediante `is_protected_path` (importada de `safety`), asegurando que, incluso ante un fallo del regex, la respuesta del modelo no pueda contener referencias a rutas protegidas del sistema.
 - `2026-08-01T03:31:13` **scanner.py** (robustez ante casos límite): Se reforzó `scan_file` para manejar robustamente archivos que desaparecen entre la detección y el acceso (Race Condition) y se añadió validación de existencia `path.exists()` antes de realizar operaciones de metadatos, evitando excepciones innecesarias en entornos de alta actividad.
 - `2026-08-01T03:30:51` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la función `ensure_safe_to_modify` añadiendo una comprobación para archivos cuyo nombre o ruta contengan caracteres nulos (`\0`) o secuencias de control potencialmente maliciosas que podrían engañar a las APIs de bajo nivel del sistema operativo.
 - `2026-08-01T03:21:54` **quarantine.py** (robustez ante casos límite): Se reforzó la robustez de `quarantine_file` añadiendo una validación explícita para evitar que se intente poner en cuarentena un directorio o un archivo especial (device, pipe, socket) que no sea un archivo regular, previniendo errores de sistema al intentar moverlos.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-01T03:00:05` **settings.py** (rendimiento): Se implementó un cache de validación de rutas en `settings_path` para evitar llamadas redundantes y costosas a `is_safe_to_modify` y `expanduser` cada vez que se accede a la configuración.
 - `2026-08-01T02:50:36` **scanner.py** (rendimiento): Optimizé el rendimiento de `scan_file` y `check_recent_executable_in_downloads` eliminando llamadas redundantes a `path.exists()` y `path.stat()`, las cuales generan operaciones de entrada/salida innecesarias que ralentizan significativamente el escaneo profundo.
 - `2026-08-01T02:49:46` **quarantine.py** (rendimiento): Optimicé el rendimiento de `load_manifest` para evitar lecturas de disco innecesarias mediante una validación de `st_mtime` del archivo de manifiesto, eliminando el re-procesamiento de JSON cuando el archivo no ha sido modificado.
-- `2026-08-01T02:40:52` **organizer.py** (rendimiento): Optimicé el rendimiento de `scan_for_junk` convirtiendo la `SYSTEM_FOLDER_BLOCKLIST` en un `set` (ya lo era, pero ahora se accede directamente) y evitando múltiples llamadas a `Path.expanduser()` dentro del bucle recursivo, además de cachear el acceso a `entry.name.lower()` para reducir operaciones redundantes de strings en el árbol de directorios.
-- `2026-08-01T02:40:45` **memory.py** (rendimiento): Optimizado `parse_windows_process_csv` reemplazando la lectura línea a línea con `splitlines()` seguida de procesamiento por iterador eficiente, eliminando la creación de listas intermedias innecesarias para mejorar el uso de CPU y memoria en el escaneo de procesos.

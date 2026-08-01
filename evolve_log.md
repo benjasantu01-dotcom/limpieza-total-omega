@@ -1313,3 +1313,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-01T03:31:22` ➖ Sin cambios en settings.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `save()` ante errores de permisos o fallos de escritura atómica, asegurando que el estado en caché no se corrompa si el guardado falla y manejando explícitamente el caso donde `os.replace` pueda fallar debido a bloqueos de archivos en sistemas Windows.
 - `2026-08-01T03:31:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-01T03:31:22` Corrida terminada. Total usado hoy: 80.
+- `2026-08-01T03:40:19` Arrancando corrida. Quedan hoy ~220 peticiones objetivo.
+- `2026-08-01T03:40:44` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-08-01T03:41:13` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_call_gemini` integrando un chequeo explícito de contenido mediante `is_protected_path` (importada de `safety`), asegurando que, incluso ante un fallo del regex, la respuesta del modelo no pueda contener referencias a rutas protegidas del sistema.
+- `2026-08-01T03:41:41` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-08-01T03:41:48` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva en `directory_size` asegurando que las rutas extraídas de `os.scandir` se validen contra `is_protected_path` antes de ser procesadas o añadidas al stack, mitigando riesgos ante estructuras de directorios inesperadas o intentos de acceso a zonas protegidas que pudieran aparecer dinámicamente.
+- `2026-08-01T03:41:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-01T03:41:48` Corrida terminada. Total usado hoy: 84.

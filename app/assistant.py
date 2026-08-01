@@ -49,6 +49,7 @@ from pathlib import Path
 from typing import Any, Final, TypeAlias, Callable, Optional, Union
 
 import settings
+from safety import is_protected_path
 
 __all__ = [
     "SystemContext",
@@ -464,8 +465,12 @@ def _call_gemini(
         texto: str = "".join(p.get("text", "") for p in partes if isinstance(p, dict)).strip()
         
         # Validación de seguridad defensiva estricta sobre la salida del modelo
-        # Se rechaza si detectamos patrones de rutas, caracteres de control o exceso de longitud
-        if not texto or len(texto) > 1200 or _PATH_REGEX.search(texto) or _CONTROL_CHARS_REGEX.search(texto):
+        # Se rechaza si detectamos patrones de rutas, caracteres de control, exceso de longitud
+        # o referencias a archivos protegidos.
+        if (not texto or len(texto) > 1200 or 
+            _PATH_REGEX.search(texto) or 
+            _CONTROL_CHARS_REGEX.search(texto) or
+            is_protected_path(texto)):
             return None
             
         return texto
