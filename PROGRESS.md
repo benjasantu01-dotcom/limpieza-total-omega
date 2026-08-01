@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **244** (48.4% de aceptación)
+- Mejoras aceptadas: **242** (48.0% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 24
+- Rechazadas por guardia de seguridad: 23
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 202
+- Sin respuesta de la IA (error o límite): 205
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-31 | 142 | 8 | 14 | 10 | 98 |
-| 2026-08-01 | 102 | 9 | 10 | 7 | 104 |
+| 2026-07-31 | 139 | 8 | 13 | 10 | 98 |
+| 2026-08-01 | 103 | 9 | 10 | 7 | 107 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **61**
+- legibilidad y documentación: **58**
 - rendimiento: **51**
 - seguridad defensiva: **50**
+- manejo de errores y validación de entradas: **42**
 - robustez ante casos límite: **41**
-- manejo de errores y validación de entradas: **41**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **22**
 - `scanner.py`: **21**
+- `quarantine.py`: **21**
 - `settings.py`: **20**
 - `browser.py`: **19**
-- `organizer.py`: **18**
 - `assistant.py`: **18**
 - `diskreport.py`: **18**
 - `safety.py`: **17**
+- `organizer.py`: **17**
 - `main.py`: **17**
 - `healthscore.py`: **16**
-- `memory.py`: **15**
 - `startup.py`: **15**
+- `branding.py`: **15**
 - `duplicates.py`: **14**
-- `branding.py`: **14**
+- `memory.py`: **14**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-01T10:08:40` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` añadiendo una validación explícita para asegurar que la ruta de destino no sea un directorio existente, previniendo errores de `write_text` y garantizando un manejo de excepciones más granular al operar con el sistema de archivos.
 - `2026-08-01T08:37:20` **scanner.py** (seguridad defensiva): Se introdujo la verificación `is_protected_path` antes de procesar archivos individuales dentro de `check_recent_executable_in_downloads` y `check_system_lookalike` para asegurar que el escáner no inspeccione rutas críticas aunque lleguen a los chequeos de forma aislada, reforzando la seguridad defensiva.
 - `2026-08-01T08:29:04` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `purge_all` implementando una validación estricta que impide borrar cualquier archivo dentro de la carpeta de cuarentena que no esté explícitamente registrado en el manifiesto, evitando así la eliminación accidental de archivos ajenos o de sistema que pudieran haber sido movidos allí por error o manipulación externa.
 - `2026-08-01T08:28:47` **organizer.py** (seguridad defensiva): Se ha añadido una validación estricta para asegurar que el `target` de destino esté contenido dentro de la jerarquía de la carpeta de revisión (`review_dir`), previniendo ataques de "path traversal" o manipulación de rutas durante la generación del nombre único.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-01T07:47:03` **organizer.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `scan_for_junk` y `stage_for_review` para validar que los archivos no sean puntos de reparse o junctions mediante el atributo `is_junction` (o `is_symlink` + `exists` en el caso de enlaces), evitando así recursiones infinitas o errores al intentar procesar rutas virtuales del sistema.
 - `2026-08-01T07:46:31` **main.py** (robustez ante casos límite): Se implementó un método centralizado `_safe_run` para las tareas asíncronas, que asegura el manejo consistente de errores inesperados y estados de interfaz, previniendo cuelgues ante excepciones inesperadas (como fallos en el sistema de archivos o hilos interrumpidos) y mejorando la robustez frente a casos límite de concurrencia.
 - `2026-08-01T07:45:31` **healthscore.py** (robustez ante casos límite): Se ha robustecido el cálculo de `breakdown` en `compute_score` para manejar el caso límite donde los pesos configurados (`WEIGHTS`) podrían no sumar exactamente 100, evitando errores de precisión o truncamiento, y se añadió una validación adicional para asegurar que `metrics` tenga datos consistentes antes de procesarlos.
-- `2026-08-01T07:36:10` **diskreport.py** (robustez ante casos límite): Se mejoró la robustez de `walk_files` ante archivos bloqueados o inaccesibles durante el escaneo al implementar un manejo explícito de `OSError` al obtener el tamaño (`st_size`) de un archivo, evitando que una excepción en un solo archivo detenga el análisis completo de un directorio.

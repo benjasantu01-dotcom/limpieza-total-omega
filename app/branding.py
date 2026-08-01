@@ -287,8 +287,11 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         return None
     try:
         path = Path(destination).expanduser().resolve()
+        # Impedir sobrescribir un directorio existente
+        if path.is_dir():
+            return None
+            
         parent = path.parent
-        
         if not is_safe_to_modify(parent):
             return None
             
