@@ -64,8 +64,8 @@ class StartupEntry:
 
     def _is_valid_executable(self, path: Path) -> bool:
         """
-        Heurística de validación de ruta: verifica extensiones de control
-        o existencia física si la ruta es un archivo ejecutable genérico.
+        Verifica si la ruta apunta a un ejecutable conocido o existe en disco.
+        Maneja excepciones de sistema para evitar bloqueos durante el escaneo.
         """
         try:
             return path.suffix.lower() in ('.exe', '.bat', '.cmd', '.scr') or path.exists()
@@ -74,14 +74,14 @@ class StartupEntry:
 
     def _extract_quoted_path(self, raw_cmd: str) -> str:
         """
-        Parsea comandos que incluyen rutas con espacios entre comillas.
-        Retorna la ruta absoluta si es válida, de lo contrario cadena vacía.
+        Extrae la ruta absoluta cuando el comando está encerrado entre comillas.
+        Si la ruta no es válida o contiene caracteres prohibidos, retorna cadena vacía.
         """
         end_quote: int = raw_cmd.find('"', 1)
         if end_quote == -1:
             return ""
         path_str = raw_cmd[1:end_quote]
-        # Validar caracteres prohibidos en rutas de Windows antes de intentar operar
+        
         if not path_str or any(c in path_str for c in '<>|?*'):
             return ""
         
@@ -92,20 +92,19 @@ class StartupEntry:
             return ""
 
     def _resolve_and_cache_path(self, path_str: str) -> str:
-        """Intenta validar la existencia de una ruta y la almacena en el caché."""
+        """Resuelve una ruta relativa/simple a absoluta y la guarda en caché."""
         try:
             path = Path(path_str).expanduser()
-            # Si el archivo existe, resolvemos a ruta absoluta; si no, conservamos el original.
             self._exec_cache = str(path) if path.exists() else path_str
         except (OSError, ValueError, RuntimeError, TypeError):
             self._exec_cache = path_str
-        return self._exec_cache
+        return self._exec_cache or ""
         
     @property
     def executable(self) -> str:
         """
-        Normaliza la ruta del ejecutable analizando el comando de inicio.
-        Utiliza caché interno para evitar llamadas repetidas al sistema de archivos.
+        Normaliza y extrae la ruta del ejecutable principal desde el comando.
+        Resultado cacheados para optimizar iteraciones sobre el registro.
         """
         if self._checked_exists:
             return self._exec_cache or ""
@@ -114,7 +113,7 @@ class StartupEntry:
         if not self.command:
             return ""
 
-        # Limpieza de caracteres no imprimibles del comando crudo
+        # Elimina caracteres de control y espacios en blanco del comando crudo
         cmd: str = "".join(c for c in self.command.strip() if ord(c) >= 32)
         if not cmd:
             return ""
@@ -129,8 +128,8 @@ class StartupEntry:
 
 def startup_folders() -> List[Path]:
     """
-    Retorna la lista de rutas del sistema de archivos donde los accesos directos
-    triggers el inicio automático (Startup Folders).
+    Identifica las rutas de las carpetas 'Startup' (usuario y sistema)
+    según las variables de entorno de Windows.
     """
     if os.name != "nt":
         return []
@@ -148,7 +147,7 @@ def startup_folders() -> List[Path]:
 
 
 def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[StartupEntry]:
-    """Escanea las carpetas de inicio detectando ejecutables accesibles."""
+    """Escanea las carpetas de inicio buscando accesos directos o ejecutables."""
     if folders is None:
         folders = startup_folders()
     found_entries: List[StartupEntry] = []
@@ -168,7 +167,6 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
                 try:
                     if not item.name or item.name.lower() == "desktop.ini":
                         continue
-                    # No seguir enlaces simbólicos para prevenir escapes del directorio
                     if item.is_file() and not item.is_symlink():
                         if is_protected_path(item):
                             continue
@@ -185,7 +183,8 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
 
 def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry]:
     """
-    Transforma el CSV bruto de PowerShell en objetos StartupEntry mediante un split eficiente.
+    Convierte la salida CSV de PowerShell en una lista de objetos StartupEntry.
+    El parseo es manual para asegurar compatibilidad sin módulos externos.
     """
     if not isinstance(text, str) or not text.strip():
         return []
@@ -194,7 +193,6 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
     lines = text.splitlines()
     if len(lines) < 2: return []
     
-    # Procesar solo líneas con datos, saltando el header (índice 0)
     for line in lines[1:]:
         parts = line.split(",", 1)
         if len(parts) < 2: continue
@@ -206,7 +204,6 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
             continue
             
         entry = StartupEntry(name=name, command=cmd, source=source)
-        # Validación diferida (property .executable) para evitar latencia de disco inmediata
         parsed_entries.append(entry)
         
     return parsed_entries
@@ -214,8 +211,8 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
 
 def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[StartupEntry]:
     """
-    Ejecuta una consulta agregada de PowerShell sobre el Registro de Windows.
-    Extrae valores de las claves Run y los procesa vía parse_registry_csv.
+    Consulta el Registro mediante PowerShell para extraer programas de inicio.
+    Devuelve lista de objetos StartupEntry mediante parse_registry_csv.
     """
     if os.name != "nt":
         return []
@@ -236,7 +233,7 @@ def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[Start
 
 
 def list_startup_entries() -> List[StartupEntry]:
-    """Consolida las entradas provenientes de carpetas del sistema y del Registro."""
+    """Consolida las entradas provenientes de carpetas y Registro sin duplicar."""
     seen_names: set[str] = set()
     unique_entries: List[StartupEntry] = []
     
@@ -261,8 +258,7 @@ def estimate_impact(entries: Sequence[StartupEntry]) -> str:
 
 def summarize(entries: Optional[Sequence[StartupEntry]] = None) -> List[str]:
     """
-    Genera un informe detallado para la interfaz de usuario.
-    Incluye un desglose por origen y recomendaciones de seguridad.
+    Genera un informe formateado (lista de cadenas) para la UI de la aplicación.
     """
     entries_list: Sequence[StartupEntry] = entries if entries is not None else list_startup_entries()
     total_count: int = len(entries_list)

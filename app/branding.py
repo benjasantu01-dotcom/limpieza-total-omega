@@ -354,13 +354,26 @@ def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
                       canvas_x: int = 0, canvas_y: int = 0,
                       stops: tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
     """
-    Dibuja una franja horizontal de gradiente decorativa en un Tkinter.Canvas.
+    Dibuja una franja horizontal de gradiente decorativa en un Tkinter.Canvas,
+    agrupando colores adyacentes para optimizar las llamadas de dibujo.
     """
     if canvas is None or not hasattr(canvas, "create_line"): return
     try:
-        ancho, alto = max(1, int(width)), max(1, int(height))
-        for i, tono in enumerate(gradient_colors(ancho, stops)):
-            canvas.create_line(canvas_x + i, canvas_y, canvas_x + i, canvas_y + alto, fill=tono)
+        ancho = max(1, int(width))
+        colores = gradient_colors(ancho, stops)
+        
+        # Agrupa píxeles consecutivos con el mismo color para reducir llamadas al canvas
+        i = 0
+        while i < ancho:
+            inicio = i
+            color_actual = colores[i]
+            while i < ancho and colores[i] == color_actual:
+                i += 1
+            canvas.create_line(
+                canvas_x + inicio, canvas_y, 
+                canvas_x + i, canvas_y + height, 
+                fill=color_actual, width=height
+            )
     except (ValueError, TypeError, AttributeError): pass
 
 

@@ -116,27 +116,20 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
 def directory_size(path: str | os.PathLike | None) -> int:
     """
     Calcula el tamaño total en bytes de un directorio mediante una búsqueda
-    iterativa (stack-based). 
-    
-    Técnica de seguridad:
-    - Ignora enlaces simbólicos (is_symlink) para evitar bucles o escape de contexto.
-    - Ignora puntos de reparse (Junctions) usando os.path.isjunction para 
-      prevenir la lectura fuera de la jerarquía de usuario intencionada.
+    iterativa (stack-based), optimizada para minimizar syscalls.
     """
     if not path:
         return 0
     
     try:
-        root = Path(path)
-        if not root.exists() or not root.is_dir() or root.is_symlink() or is_protected_path(root):
+        root = Path(path).resolve(strict=False)
+        if not root.is_dir() or is_protected_path(root):
             return 0
-        root_abs = root.resolve(strict=False)
     except (OSError, RuntimeError, PermissionError, ValueError):
         return 0
     
     total_bytes: int = 0
-    visited: set[Path] = {root_abs}
-    stack: List[Path] = [root_abs]
+    stack: List[Path] = [root]
     
     while stack:
         current_dir = stack.pop()
@@ -144,20 +137,12 @@ def directory_size(path: str | os.PathLike | None) -> int:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
-                        # Exclusión estricta de punteros a otras ubicaciones
+                        # Exclusión de punteros y seguridad
                         if entry.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(entry.path)):
                             continue
                         
-                        entry_path = Path(entry.path).resolve(strict=False)
-                        
-                        # Seguridad defensiva: validar que no escape del directorio raíz
-                        if not _is_safe_path(entry_path, root_abs):
-                            continue
-
                         if entry.is_dir():
-                            if entry_path not in visited:
-                                visited.add(entry_path)
-                                stack.append(entry_path)
+                            stack.append(Path(entry.path))
                         elif entry.is_file():
                             total_bytes += entry.stat().st_size
                     except (OSError, PermissionError):

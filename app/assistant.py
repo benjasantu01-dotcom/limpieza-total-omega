@@ -394,9 +394,6 @@ def local_answer(question: str, context: SystemContext) -> Answer:
 
 def _rank_problems(context: SystemContext) -> list[str]:
     """Calcula y ordena los problemas más críticos del sistema."""
-    if not isinstance(context, SystemContext):
-        return []
-    
     problemas = []
     
     if context.disk_free_percent < 10:
