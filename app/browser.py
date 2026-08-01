@@ -130,7 +130,6 @@ def directory_size(path: str | os.PathLike | None) -> int:
         return 0
     
     total_bytes: int = 0
-    # Usamos paths reales (string) para comparar y evitar instanciar múltiples objetos Path
     root_abs = str(root.resolve())
     visited = {root_abs}
     stack: List[str] = [root_abs]
@@ -141,6 +140,7 @@ def directory_size(path: str | os.PathLike | None) -> int:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
+                        # Verificar si es enlace simbólico o junction antes de procesar
                         if entry.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(entry.path)):
                             continue
                         if entry.is_dir():
@@ -153,6 +153,7 @@ def directory_size(path: str | os.PathLike | None) -> int:
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):
+            # Ignorar carpetas inaccesibles o rutas demasiado largas (OSError en Windows)
             continue
             
     return total_bytes

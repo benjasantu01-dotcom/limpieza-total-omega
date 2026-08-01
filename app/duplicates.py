@@ -227,8 +227,13 @@ def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[
         return {}
     by_hash: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
-        if path and (digest := hash_func(path)):
-            by_hash[digest].append(path)
+        if path:
+            try:
+                digest = hash_func(path)
+                if digest:
+                    by_hash[digest].append(path)
+            except Exception:
+                continue
     return {h: p for h, p in by_hash.items() if len(p) > 1}
 
 

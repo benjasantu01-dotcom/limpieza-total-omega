@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **253** (50.2% de aceptación)
-- Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 25
+- Mejoras aceptadas: **255** (50.6% de aceptación)
+- Rechazadas por tests: 18
+- Rechazadas por guardia de seguridad: 24
 - Sin cambios (nada sustancial que mejorar): 14
 - Sin respuesta de la IA (error o límite): 193
 
@@ -16,29 +16,29 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-30 | 41 | 4 | 5 | 1 | 35 |
+| 2026-07-30 | 40 | 3 | 4 | 1 | 34 |
 | 2026-07-31 | 179 | 12 | 17 | 10 | 132 |
-| 2026-08-01 | 33 | 3 | 3 | 3 | 26 |
+| 2026-08-01 | 36 | 3 | 3 | 3 | 27 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **65**
 - manejo de errores y validación de entradas: **52**
 - rendimiento: **51**
-- seguridad defensiva: **48**
-- robustez ante casos límite: **37**
+- seguridad defensiva: **47**
+- robustez ante casos límite: **40**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **22**
 - `scanner.py`: **22**
+- `quarantine.py`: **21**
 - `settings.py`: **20**
 - `branding.py`: **20**
-- `browser.py`: **19**
+- `browser.py`: **20**
 - `diskreport.py`: **19**
+- `healthscore.py`: **19**
 - `assistant.py`: **18**
-- `healthscore.py`: **18**
-- `duplicates.py`: **17**
+- `duplicates.py`: **18**
 - `organizer.py`: **17**
 - `safety.py`: **16**
 - `main.py`: **16**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-01T03:11:05` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `compute_score` frente a divisiones por cero potenciales si los umbrales globales llegaran a ser alterados incorrectamente en `settings.py`, y aseguré que `_generate_recommendations` maneje casos donde las métricas podrían ser inconsistentes evitando accesos clave faltantes.
+- `2026-08-01T03:10:55` **duplicates.py** (robustez ante casos límite): Se reforzó la resiliencia del módulo ante errores de E/S y archivos inalcanzables introduciendo validaciones más estrictas en `_refine_by_hash` y `suggest_keeper`, asegurando que el pipeline de procesamiento no se detenga ante fallos parciales durante la lectura de metadatos o contenido.
+- `2026-08-01T03:10:08` **browser.py** (robustez ante casos límite): Se introdujo una verificación de integridad en `directory_size` para manejar rutas que exceden la longitud máxima permitida por el sistema operativo (`MAX_PATH` en Windows) o que presentan errores de acceso recursivo, evitando que el escáner se bloquee ante estructuras de directorios inusualmente profundas o corrompidas.
 - `2026-08-01T03:01:14` **branding.py** (robustez ante casos límite): Se ha mejorado la robustez de `save_logo_svg` y `_hex_to_rgb` frente a entradas malformadas o inesperadas, añadiendo validaciones proactivas para prevenir fallos silenciosos en tiempo de ejecución.
 - `2026-08-01T03:00:29` **startup.py** (rendimiento): Optimicé el rendimiento de `entries_from_registry` consolidando las múltiples llamadas al registro en un solo comando de PowerShell para reducir la sobrecarga de invocación de procesos externos, y sustituí la lógica de validación redundante en `parse_registry_csv` por una verificación más eficiente mediante `set` y `os.path.exists`.
 - `2026-08-01T03:00:05` **settings.py** (rendimiento): Se implementó un cache de validación de rutas en `settings_path` para evitar llamadas redundantes y costosas a `is_safe_to_modify` y `expanduser` cada vez que se accede a la configuración.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-01T02:29:36` **browser.py** (rendimiento): Optimicé `directory_size` reemplazando la creación repetitiva de objetos `Path` y el uso de `resolve()` dentro del bucle principal por el uso directo de las rutas proporcionadas por `os.scandir`, reduciendo drásticamente la carga de I/O y el uso de CPU.
 - `2026-08-01T02:19:45` **startup.py** (legibilidad y documentación): Mejoré la legibilidad del método `StartupEntry.executable` mediante la extracción del bloque de validación de rutas a una función privada más cohesiva, documentando explícitamente el uso del caché y la lógica de resolución para clarificar el flujo de datos.
 - `2026-08-01T02:19:21` **settings.py** (legibilidad y documentación): Documenté con un docstring detallado el contrato de validación de `_validate_str` para clarificar la lógica de saneamiento de rutas y tipos, mejorando la legibilidad técnica del proceso de persistencia.
-- `2026-08-01T02:18:56` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo añadiendo type hints faltantes en funciones clave y documentando con docstrings el propósito de los parámetros en los chequeos heurísticos, siguiendo las normas de estilo senior para facilitar auditorías futuras del código.
-- `2026-08-01T02:09:42` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del código añadiendo docstrings descriptivos con las razones técnicas para cada chequeo de seguridad, lo cual facilita el mantenimiento preventivo ante futuras modificaciones autónomas de la IA.
-- `2026-08-01T02:09:14` **quarantine.py** (legibilidad y documentación): Mejoré la documentación de las funciones críticas de `quarantine.py` mediante Google-style docstrings, explicitando las precondiciones, argumentos y excepciones, además de añadir tipos sugeridos y aclaraciones sobre los mecanismos de seguridad (ej. validaciones de integridad y restricciones de ruta) para facilitar el mantenimiento futuro.

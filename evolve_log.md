@@ -1292,3 +1292,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-01T03:01:14` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `save_logo_svg` y `_hex_to_rgb` frente a entradas malformadas o inesperadas, añadiendo validaciones proactivas para prevenir fallos silenciosos en tiempo de ejecución.
 - `2026-08-01T03:01:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-01T03:01:14` Corrida terminada. Total usado hoy: 68.
+- `2026-08-01T03:09:44` Arrancando corrida. Quedan hoy ~232 peticiones objetivo.
+- `2026-08-01T03:10:08` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se introdujo una verificación de integridad en `directory_size` para manejar rutas que exceden la longitud máxima permitida por el sistema operativo (`MAX_PATH` en Windows) o que presentan errores de acceso recursivo, evitando que el escáner se bloquee ante estructuras de directorios inusualmente profundas o corrompidas.
+- `2026-08-01T03:10:31` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: robustez ante casos límite).
+- `2026-08-01T03:10:55` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se reforzó la resiliencia del módulo ante errores de E/S y archivos inalcanzables introduciendo validaciones más estrictas en `_refine_by_hash` y `suggest_keeper`, asegurando que el pipeline de procesamiento no se detenga ante fallos parciales durante la lectura de metadatos o contenido.
+- `2026-08-01T03:11:05` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `compute_score` frente a divisiones por cero potenciales si los umbrales globales llegaran a ser alterados incorrectamente en `settings.py`, y aseguré que `_generate_recommendations` maneje casos donde las métricas podrían ser inconsistentes evitando accesos clave faltantes.
+- `2026-08-01T03:11:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-01T03:11:05` Corrida terminada. Total usado hoy: 72.

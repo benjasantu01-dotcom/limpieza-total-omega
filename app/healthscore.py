@@ -212,36 +212,29 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     if not metrics.is_finite():
         return HealthResult(0, "F", {}, ["Error: Métricas contienen datos no procesables."])
     
+    # Validar que los límites definidos globalmente no causen división por cero.
     if any(l <= 0 for l in [JUNK_LIMIT_MB, DUPLICATE_LIMIT_MB, STARTUP_LIMIT_COUNT, RAM_IDEAL_PERCENT, DISK_IDEAL_PERCENT]):
         return HealthResult(0, "F", {}, ["Error: Umbrales de configuración no válidos."])
 
-    r_seg = score_security(metrics.suspicious_count, metrics.suspicious_warnings)
-    r_dis = score_disk(metrics.disk_free_percent)
-    r_mem = score_memory(metrics.memory_available_percent)
-    r_bas = score_junk(metrics.junk_mb)
-    r_dup = score_duplicates(metrics.duplicate_mb)
-    r_arr = score_startup(metrics.startup_count)
-
     ratios = {
-        "seguridad": r_seg, "disco": r_dis, "memoria": r_mem,
-        "basura": r_bas, "duplicados": r_dup, "arranque": r_arr
+        "seguridad": score_security(metrics.suspicious_count, metrics.suspicious_warnings),
+        "disco": score_disk(metrics.disk_free_percent),
+        "memoria": score_memory(metrics.memory_available_percent),
+        "basura": score_junk(metrics.junk_mb),
+        "duplicados": score_duplicates(metrics.duplicate_mb),
+        "arranque": score_startup(metrics.startup_count)
     }
 
-    total_score: float = 0.0
     breakdown: Dict[str, int] = {}
+    for area, ratio in ratios.items():
+        weight = WEIGHTS.get(area, 0)
+        breakdown[area] = int(ratio * weight + 0.5)
     
-    breakdown["seguridad"] = int(r_seg * WEIGHTS["seguridad"] + 0.5)
-    breakdown["disco"] = int(r_dis * WEIGHTS["disco"] + 0.5)
-    breakdown["memoria"] = int(r_mem * WEIGHTS["memoria"] + 0.5)
-    breakdown["basura"] = int(r_bas * WEIGHTS["basura"] + 0.5)
-    breakdown["duplicados"] = int(r_dup * WEIGHTS["duplicados"] + 0.5)
-    breakdown["arranque"] = int(r_arr * WEIGHTS["arranque"] + 0.5)
-    
-    total_score = float(sum(breakdown.values()))
+    total_score = int(sum(breakdown.values()))
 
     return HealthResult(
-        score=int(total_score),
-        grade=grade_for_score(int(total_score)),
+        score=total_score,
+        grade=grade_for_score(total_score),
         breakdown=breakdown,
         recommendations=_generate_recommendations(metrics, ratios),
     )
