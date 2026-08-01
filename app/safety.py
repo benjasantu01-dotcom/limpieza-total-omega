@@ -151,9 +151,9 @@ def is_protected_path(path: PathLike) -> bool:
         if not p.is_absolute():
             return True
 
-        for part in p.parts:
-            if part.lower() in _ALL_PROTECTED_TOKENS:
-                return True
+        # Optimización: uso de intersección de sets para verificar tokens protegidos
+        if not _ALL_PROTECTED_TOKENS.isdisjoint(part.lower() for part in p.parts):
+            return True
             
         if p == Path(p.anchor):
             return True

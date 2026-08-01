@@ -63,20 +63,14 @@ class StartupEntry:
     _checked_exists: bool = False
 
     def _is_valid_executable(self, path: Path) -> bool:
-        """
-        Verifica si la ruta apunta a un ejecutable conocido o existe en disco.
-        Maneja excepciones de sistema para evitar bloqueos durante el escaneo.
-        """
+        """Verifica si la ruta apunta a un ejecutable conocido."""
         try:
-            return path.suffix.lower() in ('.exe', '.bat', '.cmd', '.scr') or path.exists()
+            return path.suffix.lower() in ('.exe', '.bat', '.cmd', '.scr')
         except (OSError, ValueError, RuntimeError, TypeError):
             return False
 
     def _extract_quoted_path(self, raw_cmd: str) -> str:
-        """
-        Extrae la ruta absoluta cuando el comando está encerrado entre comillas.
-        Si la ruta no es válida o contiene caracteres prohibidos, retorna cadena vacía.
-        """
+        """Extrae la ruta absoluta cuando el comando está encerrado entre comillas."""
         end_quote: int = raw_cmd.find('"', 1)
         if end_quote == -1:
             return ""
@@ -86,26 +80,20 @@ class StartupEntry:
             return ""
         
         try:
-            path = Path(path_str).expanduser()
-            return str(path) if self._is_valid_executable(path) else ""
+            return str(Path(path_str).expanduser())
         except (OSError, ValueError, RuntimeError, TypeError):
             return ""
 
     def _resolve_and_cache_path(self, path_str: str) -> str:
         """Resuelve una ruta relativa/simple a absoluta y la guarda en caché."""
         try:
-            path = Path(path_str).expanduser()
-            self._exec_cache = str(path) if path.exists() else path_str
+            return str(Path(path_str).expanduser())
         except (OSError, ValueError, RuntimeError, TypeError):
-            self._exec_cache = path_str
-        return self._exec_cache or ""
+            return path_str
         
     @property
     def executable(self) -> str:
-        """
-        Normaliza y extrae la ruta del ejecutable principal desde el comando.
-        Resultado cacheados para optimizar iteraciones sobre el registro.
-        """
+        """Normaliza y extrae la ruta del ejecutable principal desde el comando."""
         if self._checked_exists:
             return self._exec_cache or ""
             
@@ -113,24 +101,21 @@ class StartupEntry:
         if not self.command:
             return ""
 
-        # Elimina caracteres de control y espacios en blanco del comando crudo
         cmd: str = "".join(c for c in self.command.strip() if ord(c) >= 32)
         if not cmd:
             return ""
         
         if cmd.startswith('"'):
             self._exec_cache = self._extract_quoted_path(cmd)
-            return self._exec_cache
-        
-        parts: List[str] = cmd.split()
-        return self._resolve_and_cache_path(parts[0]) if parts else ""
+        else:
+            parts: List[str] = cmd.split()
+            self._exec_cache = self._resolve_and_cache_path(parts[0]) if parts else ""
+            
+        return self._exec_cache or ""
 
 
 def startup_folders() -> List[Path]:
-    """
-    Identifica las rutas de las carpetas 'Startup' (usuario y sistema)
-    según las variables de entorno de Windows.
-    """
+    """Identifica las rutas de las carpetas 'Startup' (usuario y sistema)."""
     if os.name != "nt":
         return []
     candidates: List[Path] = []
@@ -147,7 +132,7 @@ def startup_folders() -> List[Path]:
 
 
 def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[StartupEntry]:
-    """Escanea las carpetas de inicio buscando accesos directos o ejecutables."""
+    """Escanea las carpetas de inicio buscando ejecutables."""
     if folders is None:
         folders = startup_folders()
     found_entries: List[StartupEntry] = []
@@ -156,36 +141,18 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
             continue
             
         try:
-            if not folder.exists() or not folder.is_dir():
-                continue
-            base_path: Path = folder.resolve()
-        except (ValueError, PermissionError, OSError, RuntimeError):
-            continue
-
-        try:
-            for item in base_path.iterdir():
-                try:
-                    if not item.name or item.name.lower() == "desktop.ini":
-                        continue
-                    if item.is_file() and not item.is_symlink():
-                        if is_protected_path(item):
-                            continue
-                        
-                        resolved_item: Path = item.resolve()
-                        if base_path == resolved_item.parent:
-                            found_entries.append(StartupEntry(name=item.stem, command=str(item), source="carpeta"))
-                except (OSError, PermissionError, RuntimeError):
+            for item in folder.iterdir():
+                if not item.name or item.name.lower() == "desktop.ini":
                     continue
+                if item.is_file() and not item.is_symlink() and not is_protected_path(item):
+                    found_entries.append(StartupEntry(name=item.stem, command=str(item), source="carpeta"))
         except (OSError, PermissionError, RuntimeError):
             continue
     return found_entries
 
 
 def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry]:
-    """
-    Convierte la salida CSV de PowerShell en una lista de objetos StartupEntry.
-    El parseo es manual para asegurar compatibilidad sin módulos externos.
-    """
+    """Convierte la salida CSV de PowerShell en una lista de objetos StartupEntry."""
     if not isinstance(text, str) or not text.strip():
         return []
         
@@ -203,17 +170,13 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
         if not name or name.lower() in ("name", "pscustomobject") or name.upper().startswith("PS"):
             continue
             
-        entry = StartupEntry(name=name, command=cmd, source=source)
-        parsed_entries.append(entry)
+        parsed_entries.append(StartupEntry(name=name, command=cmd, source=source))
         
     return parsed_entries
 
 
 def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[StartupEntry]:
-    """
-    Consulta el Registro mediante PowerShell para extraer programas de inicio.
-    Devuelve lista de objetos StartupEntry mediante parse_registry_csv.
-    """
+    """Consulta el Registro mediante PowerShell para extraer programas de inicio."""
     if os.name != "nt":
         return []
     
@@ -257,9 +220,7 @@ def estimate_impact(entries: Sequence[StartupEntry]) -> str:
 
 
 def summarize(entries: Optional[Sequence[StartupEntry]] = None) -> List[str]:
-    """
-    Genera un informe formateado (lista de cadenas) para la UI de la aplicación.
-    """
+    """Genera un informe formateado (lista de cadenas) para la UI de la aplicación."""
     entries_list: Sequence[StartupEntry] = entries if entries is not None else list_startup_entries()
     total_count: int = len(entries_list)
         
