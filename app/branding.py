@@ -278,6 +278,9 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
             return None
             
         parent = path.parent
+        if not parent.exists():
+            parent.mkdir(parents=True, exist_ok=True)
+            
         if not is_safe_to_modify(parent):
             return None
             
@@ -285,9 +288,6 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
             ensure_safe_to_modify(path)
         else:
             ensure_safe_to_modify(parent)
-            
-        if not parent.exists():
-            parent.mkdir(parents=True, exist_ok=True)
             
         path.write_text(logo_svg(), encoding="utf-8")
         return path

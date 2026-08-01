@@ -184,16 +184,13 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     """
     ctx = SystemContext()
 
-    def is_safe_num(v: Any) -> bool:
-        # Verifica que sea numérico real, no booleano y finito
+    def is_valid_num(v: Any) -> bool:
         return isinstance(v, (int, float)) and not isinstance(v, bool) and math.isfinite(v)
 
     def extract(source: Any, attr: str, default: Any, transform: Callable = float) -> Any:
-        if source is None: return default
         try:
             val = getattr(source, attr, None)
-            if val is None or not is_safe_num(val): return default
-            return transform(val)
+            return transform(val) if is_valid_num(val) else default
         except (AttributeError, ValueError, TypeError):
             return default
 
@@ -216,7 +213,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         ctx.analyzed = True
 
     for k, v in extra.items():
-        if hasattr(ctx, k) and k not in ["analyzed", "grade"] and is_safe_num(v):
+        if hasattr(ctx, k) and k not in ["analyzed", "grade"] and is_valid_num(v):
             setattr(ctx, k, float(v))
 
     return ctx

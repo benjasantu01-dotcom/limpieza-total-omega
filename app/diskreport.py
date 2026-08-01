@@ -185,7 +185,9 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
                         else:
                             if skip_protected and is_protected_path(full_entry_path):
                                 continue
-                            yield full_entry_path, entry.stat().st_size
+                            # El archivo pudo ser movido/borrado por otro proceso desde el scandir
+                            size = entry.stat().st_size
+                            yield full_entry_path, size
                     except (OSError, PermissionError, FileNotFoundError):
                         continue
         except (OSError, PermissionError, FileNotFoundError):
