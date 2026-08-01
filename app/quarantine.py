@@ -161,7 +161,6 @@ def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload:
         if not isinstance(entry, dict) or not required_keys.issubset(entry.keys()):
             continue
         try:
-            # Validación estricta de tipos esperados tras verificar existencia de claves
             if not all(isinstance(entry[k], (str, int)) for k in required_keys):
                 continue
                 
@@ -266,7 +265,6 @@ def quarantine_file(
     except (OSError, PermissionError) as e:
         raise RuntimeError(f"Falla crítica al mover archivo: {e}")
 
-    # Doble verificación post-movimiento para asegurar integridad
     if not destination.exists() or destination.stat().st_size != file_size:
         raise RuntimeError("Integridad comprometida: el archivo no existe o cambió de tamaño tras el movimiento.")
 
@@ -281,7 +279,9 @@ def quarantine_file(
             quarantined_at=datetime.now().isoformat(timespec="seconds"),
             sha256=file_hash,
         )
-        items = load_manifest(base, force_reload=True)
+        # Actualizamos caché directamente para evitar I/O innecesario
+        base_str = str(dest_dir)
+        items = list(_manifest_cache.get(base_str, (0.0, []))[1])
         items.append(item)
         save_manifest(items, base)
         return item
@@ -384,22 +384,19 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     ensure_safe_to_modify(quarantine_root, allow_sensitive=False)
     
     items = load_manifest(base)
-    item_stored_names = {item.stored_name for item in items}
+    # Optimización: Mapear por nombre de archivo para evitar búsquedas repetidas O(N)
+    item_map = {item.stored_name: item for item in items}
     count = 0
     
-    # Solo borrar si el archivo existe, está en el manifiesto y es íntegro
     for entry in quarantine_root.iterdir():
-        if entry.is_file() and entry.name in item_stored_names:
-            item = next(i for i in items if i.stored_name == entry.name)
+        if entry.is_file() and entry.name in item_map:
+            item = item_map[entry.name]
             if item.verify_integrity(entry):
                 try:
                     entry.unlink()
                     count += 1
                 except (OSError, PermissionError):
                     continue
-        elif entry.is_file() and entry.name != MANIFEST_NAME:
-            # Seguridad: No borrar archivos huérfanos no registrados
-            continue
             
     save_manifest([], base)
     return count
@@ -416,10 +413,9 @@ def summarize(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[str]:
     if not items:
         return ["La cuarentena está vacía."]
     
-    total_bytes = sum(i.size_bytes for i in items)
-    total_mb = round(total_bytes / (1024 * 1024), 2)
+    total_mb = sum(i.size_mb for i in items)
     
-    lines = [f"{len(items)} archivo(s) en cuarentena — {total_mb} MB", ""]
+    lines = [f"{len(items)} archivo(s) en cuarentena — {round(total_mb, 2)} MB", ""]
     for item in items:
         lines.append(f"  [{item.item_id}] {Path(item.original_path).name} — {item.size_mb} MB")
         lines.append(f"      Motivo: {item.reason}")

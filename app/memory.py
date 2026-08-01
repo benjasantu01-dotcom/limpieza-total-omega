@@ -140,28 +140,27 @@ def parse_linux_meminfo(text: str) -> MemorySnapshot:
 
 def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]:
     """
-    Convierte CSV generado por PowerShell a objetos ProcessMemory mediante un iterador eficiente.
+    Convierte CSV generado por PowerShell a objetos ProcessMemory ordenados de forma eficiente.
     """
     if not text:
         return []
 
-    def _extract_rows() -> Iterator[ProcessMemory]:
-        for line in text.splitlines():
-            line = line.strip()
-            if not line or line.startswith("Name,") or line.startswith("NameId"):
+    processes: List[ProcessMemory] = []
+    for line in text.splitlines():
+        line = line.strip()
+        if not line or line.startswith("Name,") or line.startswith("NameId"):
+            continue
+        parts: List[str] = [p.strip().strip('"') for p in line.split(",")]
+        if len(parts) >= 3:
+            try:
+                pid, ws = int(parts[1]), int(parts[2])
+                if pid >= 0 and ws >= 0:
+                    processes.append(ProcessMemory(name=parts[0] or "Unknown", pid=pid, working_set=ws))
+            except (ValueError, IndexError):
                 continue
-            parts: List[str] = [p.strip().strip('"') for p in line.split(",")]
-            if len(parts) >= 3:
-                try:
-                    name, pid_str, ws_str = parts[0], parts[1], parts[2]
-                    pid, ws = int(pid_str), int(ws_str)
-                    if pid >= 0 and ws >= 0:
-                        yield ProcessMemory(name=name or "Unknown", pid=pid, working_set=ws)
-                except (ValueError, IndexError):
-                    continue
 
-    rows: List[ProcessMemory] = list(_extract_rows())
-    return sorted(rows, key=lambda p: p.working_set, reverse=True)[:max(1, int(limit))]
+    processes.sort(key=lambda p: p.working_set, reverse=True)
+    return processes[:max(1, int(limit))]
 
 
 def _read_windows_snapshot() -> MemorySnapshot:

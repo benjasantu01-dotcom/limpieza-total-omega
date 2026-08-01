@@ -1037,3 +1037,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-08-01T11:31:45` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Optimicé el método `_compile_metrics` reemplazando llamadas múltiples a `self._get_cached` con una lógica de consolidación asíncrona más eficiente, reduciendo el riesgo de redundancia en la recolección de datos durante el análisis de salud.
 - `2026-08-01T11:31:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-01T11:31:45` Corrida terminada. Total usado hoy: 268.
+- `2026-08-01T11:39:58` Arrancando corrida. Quedan hoy ~32 peticiones objetivo.
+- `2026-08-01T11:40:25` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé `parse_windows_process_csv` reemplazando la creación de una lista completa en memoria antes de ordenar por una operación de ordenamiento más eficiente y directa, reduciendo la carga de procesamiento al evitar iteraciones múltiples sobre estructuras voluminosas.
+- `2026-08-01T11:40:47` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimicé el escaneo `_walk_dir` pasando el bloque de `SYSTEM_FOLDER_BLOCKLIST` a un `set` de comparación directa y convirtiendo la recursión para usar `os.scandir` de forma más eficiente, evitando llamadas innecesarias a `is_symlink()` mediante el uso de los atributos de `os.DirEntry` ya obtenidos.
+- `2026-08-01T11:41:16` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el cálculo del peso total y la carga del manifiesto evitando iteraciones redundantes y el uso repetido de `load_manifest()` (que invoca E/S o caché) mediante la actualización manual del cache de memoria y el uso de un conjunto para búsquedas rápidas en `purge_all`.
+- `2026-08-01T11:41:20` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 100): unterminated string literal (detected at line 100)
+- `2026-08-01T11:41:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-01T11:41:20` Corrida terminada. Total usado hoy: 272.
