@@ -1348,3 +1348,9 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-01T14:55:53` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `is_within_directory` y `is_protected_path` al agregar validaciones explícitas contra entradas nulas o mal formadas, evitando que errores silenciosos en la normalización se interpreten incorrectamente como "seguro".
 - `2026-08-01T14:55:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-01T14:55:53` Corrida terminada. Total usado hoy: 348.
+- `2026-08-01T15:04:47` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-01T15:05:11` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `scanner.py` implementando validaciones defensivas en `check_system_lookalike` y `scan_file`, asegurando que el manejo de rutas nulas o errores de acceso sea consistente y explícito antes de procesar atributos.
+- `2026-08-01T15:05:35` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save()` añadiendo una verificación explícita de `OSError` al realizar el `replace` atómico y envolví la creación del archivo temporal en un bloque `try-except` más granular, asegurando que cualquier fallo en la escritura de disco (como falta de espacio o permisos cambiantes) se maneje de forma segura sin dejar estados inconsistentes.
+- `2026-08-01T15:05:35` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-08-01T15:05:35` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-01T15:05:35` Corrida terminada. Total usado hoy: 350.

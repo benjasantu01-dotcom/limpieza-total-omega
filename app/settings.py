@@ -212,7 +212,6 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     if not is_safe_to_modify(str(ruta.parent)):
         return None
     
-    # Prevenir ataques de symlink: si el archivo existe, no debe ser un enlace
     if ruta.exists() and ruta.is_symlink():
         return None
     

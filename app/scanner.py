@@ -77,7 +77,7 @@ class Scanner:
         """
         try:
             # Validar integridad del archivo/directorio antes de procesar
-            if not entry.exists():
+            if not entry.is_dir() and not entry.is_file():
                 return
             
             if entry.is_dir(follow_symlinks=False):
@@ -109,8 +109,6 @@ def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_TH
         return None
         
     try:
-        if not path.exists():
-            return None
         mtime = datetime.fromtimestamp(path.stat().st_mtime)
         if datetime.now() - mtime < timedelta(hours=hours):
             return Suspicion(path, f"Ejecutable reciente detectado (modificado hace menos de {hours}h)", "info")
@@ -121,15 +119,18 @@ def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_TH
 
 def check_system_lookalike(path: Path) -> Optional[Suspicion]:
     """Detecta ejecutables con nombres de procesos críticos de Windows fuera de System32."""
-    if path and path.name and path.name.lower() in SYSTEM_LOOKALIKES:
-        if is_protected_path(path):
-            return None
-        try:
-            parent = path.parent
-            if parent and SYSTEM32_LOWER not in str(parent).lower():
-                return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
-        except (AttributeError, ValueError, OSError):
-            pass
+    if not path or not path.name or path.name.lower() not in SYSTEM_LOOKALIKES:
+        return None
+        
+    if is_protected_path(path):
+        return None
+        
+    try:
+        parent = path.parent
+        if parent and SYSTEM32_LOWER not in str(parent).lower():
+            return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
+    except (OSError, AttributeError):
+        pass
     return None
 
 # Lista inmutable de funciones de análisis heurístico
@@ -141,7 +142,7 @@ CHECK_FUNCS: Final[List[SuspicionCheck]] = [
 
 def scan_file(path: Path) -> ScanResult:
     """Aplica todas las heurísticas registradas sobre un archivo único."""
-    if not path:
+    if not path or not path.exists():
         return []
         
     findings: ScanResult = []
@@ -150,7 +151,7 @@ def scan_file(path: Path) -> ScanResult:
             result = check_func(path)
             if result:
                 findings.append(result)
-        except (PermissionError, OSError, FileNotFoundError):
+        except (PermissionError, OSError):
             continue
     return findings
 
