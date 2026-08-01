@@ -88,7 +88,8 @@ class JunkFile:
 
 def _generate_unique_target(target: Path) -> Path:
     """
-    Genera una ruta única iterando un sufijo numérico si el archivo destino ya existe.
+    Genera una ruta única para el movimiento de archivos. Si el destino ya existe,
+    se anexa un contador numérico para evitar colisiones sin sobrescribir.
     """
     if not target.exists():
         return target
@@ -104,9 +105,9 @@ def _generate_unique_target(target: Path) -> Path:
 def _is_valid_junk(entry: os.DirEntry[str]) -> bool:
     """
     Valida mediante heurística si un archivo es basura y si es seguro tocarlo.
-    Se ignora cualquier archivo que sea un enlace simbólico o reparse point por seguridad.
+    Se ignora cualquier archivo que sea un enlace simbólico o reparse point para
+    evitar problemas de recursión infinita o manipulación fuera de límites.
     """
-    # is_symlink() devuelve True para junctions y reparse points
     if entry.is_symlink():
         return False
     if not entry.is_file():
@@ -119,7 +120,8 @@ def _is_valid_junk(entry: os.DirEntry[str]) -> bool:
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     """
     Realiza un escaneo recursivo buscando archivos temporales candidatos.
-    Omite directorios bloqueados y respeta las restricciones de seguridad.
+    Omite directorios bloqueados y utiliza 'is_safe_to_modify' para garantizar
+    que solo se consideren archivos cuya modificación no ponga en riesgo la integridad.
     """
     dirs = directories or DEFAULT_SCAN_DIRS
     found: List[JunkFile] = []
@@ -130,7 +132,7 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
             with os.scandir(base_path) as it:
                 for entry in it:
                     try:
-                        # Ignorar enlaces simbólicos y puntos de reparse (junctions)
+                        # Exclusión estricta de symlinks para prevenir fugas de directorio
                         if entry.is_symlink():
                             continue
                         if entry.is_dir():
@@ -176,11 +178,9 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Path:
     """
-    Mueve archivos candidatos a una carpeta de revisión.
-    
-    Raises:
-        ValueError: Si la ruta de revisión proporcionada está vacía.
-        PermissionError: Si la ruta es un enlace simbólico.
+    Mueve archivos candidatos a una carpeta de revisión segura.
+    Realiza verificaciones de exclusión de symlinks y comprueba mediante 
+    'ensure_safe_to_modify' que la operación no vulnere las reglas del sistema.
     """
     if not review_dir:
         raise ValueError("La ruta de revisión no puede estar vacía")
@@ -207,7 +207,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             if dest in full_source_path.parents or full_source_path.parent == dest:
                 continue
             
-            # Comprobación estricta de bloqueo (intento de apertura exclusiva)
+            # Comprobación de disponibilidad (evitar mover archivos en uso activo)
             try:
                 with open(full_source_path, 'rb+'):
                     pass
@@ -217,7 +217,6 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             target_base = dest / f"{jf.path.stem}_{int(jf.modified.timestamp())}{jf.path.suffix}"
             target = _generate_unique_target(target_base)
             
-            # Asegurar que el target generado sigue dentro de la carpeta de revisión
             if dest not in target.parents:
                 continue
             
@@ -232,7 +231,8 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
     """
     Elimina permanentemente archivos desde la carpeta de revisión.
-    Solo procesa archivos validados mediante is_safe_to_modify.
+    Utiliza 'is_safe_to_modify' para asegurar que el archivo no haya sido
+    reemplazado por un enlace simbólico o un archivo del sistema durante el proceso.
     
     Returns:
         int: Número de archivos eliminados con éxito.
@@ -251,7 +251,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     count = 0
     for f in dest.iterdir():
         try:
-            # Impedir borrado de enlaces y asegurar seguridad
+            # El borrado se limita a archivos simples y validados
             if f.is_file() and not f.is_symlink() and is_safe_to_modify(f):
                 f.unlink()
                 count += 1

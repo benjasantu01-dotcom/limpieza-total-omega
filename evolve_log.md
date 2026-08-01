@@ -994,3 +994,25 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-08-01T10:50:26` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Mejore la documentación interna mediante docstrings más precisos y descriptivos, aclarando la lógica de las funciones de normalización y el propósito de los umbrales críticos para facilitar el mantenimiento y la auditoría del código.
 - `2026-08-01T10:50:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-01T10:50:26` Corrida terminada. Total usado hoy: 252.
+- `2026-08-01T10:59:12` Arrancando corrida. Quedan hoy ~48 peticiones objetivo.
+- `2026-08-01T11:00:15` ✅ Mejora aceptada en main.py (enfoque: legibilidad y documentación). Mejoré la legibilidad del archivo `main.py` mediante la implementación de `type hints` adicionales en métodos críticos de construcción de UI y la adición de docstrings técnicos que explican la responsabilidad de las secciones, facilitando el mantenimiento a futuro sin alterar la funcionalidad.
+- `2026-08-01T11:00:39` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes en funciones críticas y normalizando la estructura de las constantes de configuración, facilitando el mantenimiento y la auditoría del módulo.
+- `2026-08-01T11:01:02` ✅ Mejora aceptada en organizer.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación de los métodos de escaneo y staging mediante docstrings detallados que explican el "porqué" de las restricciones de seguridad (como los enlaces simbólicos), y se han clarificado las firmas de tipo y la lógica de validación para evitar ambigüedades en la manipulación de rutas.
+- `2026-08-01T11:01:15` Tests FALLARON:
+```
+expected keyword argument 'base'
+FAILED evolve/tests/test_safety.py::test_quarantine_records_the_original_path_for_restoring - TypeError: quarantine_file() got an unexpected keyword argument 'base'
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - TypeError: quarantine_file() got an unexpected keyword argument 'base'
+FAILED evolve/tests/test_safety.py::test_quarantine_refuses_files_from_system_paths - TypeError: quarantine_file() got an unexpected keyword argument 'base'
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - TypeError: quarantine_file() got an unexpected keyword argument 'base'
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - TypeError: quarantine_file() got an unexpected keyword argument 'base'
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - TypeError: quarantine_file() got an unexpected keyword argument 'base'
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - TypeError: quarantine_file() got an unexpected keyword argument 'base'
+FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly - TypeError: quarantine_file() got an unexpected keyword argument 'base'
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - TypeError: quarantine_file() got an unexpected keyword argument 'base'
+10 failed, 289 passed in 1.19s
+
+```
+- `2026-08-01T11:01:15` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se introdujeron docstrings descriptivos y type hints faltantes en funciones internas clave (`_get_sha256`, `_manifest_path`), además de renombrar variables ambiguas como `base` por `base_dir` para mejorar la legibilidad y claridad del propósito de los parámetros.
+- `2026-08-01T11:01:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-01T11:01:15` Corrida terminada. Total usado hoy: 256.

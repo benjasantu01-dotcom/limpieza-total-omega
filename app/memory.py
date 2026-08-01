@@ -54,6 +54,7 @@ TRIM_WARNING: str = (
 )
 
 BYTE_UNITS: Tuple[str, ...] = ("B", "KB", "MB", "GB", "TB")
+
 # Constantes de acceso para Win32 API
 PROCESS_QUERY_INFO: int = 0x0400
 PROCESS_SET_QUOTA: int = 0x0100
@@ -110,8 +111,8 @@ def format_bytes(num: int | float | None) -> str:
     if not isinstance(num, (int, float)) or num <= 0:
         return "0 B"
     
-    val = float(num)
-    idx = 0
+    val: float = float(num)
+    idx: int = 0
     while val >= 1024 and idx < len(BYTE_UNITS) - 1:
         val /= 1024
         idx += 1
@@ -149,7 +150,7 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
             line = line.strip()
             if not line or line.startswith("Name,") or line.startswith("NameId"):
                 continue
-            parts = [p.strip().strip('"') for p in line.split(",")]
+            parts: List[str] = [p.strip().strip('"') for p in line.split(",")]
             if len(parts) >= 3:
                 try:
                     name, pid_str, ws_str = parts[0], parts[1], parts[2]
@@ -159,7 +160,7 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
                 except (ValueError, IndexError):
                     continue
 
-    rows = list(_extract_rows())
+    rows: List[ProcessMemory] = list(_extract_rows())
     return sorted(rows, key=lambda p: p.working_set, reverse=True)[:max(1, int(limit))]
 
 
@@ -199,10 +200,10 @@ def read_snapshot() -> MemorySnapshot:
         except (AttributeError, OSError, MemoryError):
             return MemorySnapshot(total=0, available=0)
             
-    meminfo = "/proc/meminfo"
-    if os.path.exists(meminfo):
+    meminfo_path: str = "/proc/meminfo"
+    if os.path.exists(meminfo_path):
         try:
-            with open(meminfo, encoding="utf-8", errors="replace") as f:
+            with open(meminfo_path, encoding="utf-8", errors="replace") as f:
                 content = f.read()
                 if content:
                     return parse_linux_meminfo(content)
@@ -218,7 +219,7 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     """
     if os.name != "nt":
         return []
-    command = (
+    command: str = (
         f"Get-Process | Select-Object -Property Name,Id,WorkingSet | "
         "Sort-Object -Property WorkingSet -Descending | "
         f"Select-Object -First {max(1, int(limit))} | "
@@ -240,7 +241,7 @@ def pressure_level(snapshot: MemorySnapshot) -> str:
     """
     if snapshot.total <= 0:
         return "info"
-    available = snapshot.available_percent
+    available: float = snapshot.available_percent
     if available >= 35: return "ok"
     if available >= 20: return "info"
     if available >= 10: return "warning"
@@ -252,14 +253,14 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
     if not isinstance(snapshot, MemorySnapshot) or snapshot.total <= 0:
         return ["No se pudo leer el estado de la memoria en este sistema."]
 
-    level = pressure_level(snapshot)
-    lines = [
+    level: str = pressure_level(snapshot)
+    lines: List[str] = [
         f"Memoria total: {format_bytes(snapshot.total)}",
         f"En uso: {format_bytes(snapshot.used)} ({snapshot.used_percent}%)",
         f"Disponible: {format_bytes(snapshot.available)} ({snapshot.available_percent}%)",
     ]
 
-    diagnosticos = {
+    diagnosticos: Dict[str, str] = {
         "ok": "Estado: holgado. La memoria ocupada por caché mejora la velocidad.",
         "info": "Estado: normal. Windows gestiona la memoria de forma eficiente.",
         "warning": "Estado: ajustado. Conviene cerrar aplicaciones innecesarias.",
@@ -284,7 +285,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "Solo disponible en Windows."
     
     try:
-        target_pid = int(pid)
+        target_pid: int = int(pid)
     except (ValueError, TypeError):
         return False, "El PID debe ser un número entero válido."
 
@@ -305,12 +306,12 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     # Solicitar acceso al proceso y ejecutar la purga de memoria
     handle = kernel32.OpenProcess(REQUIRED_ACCESS, False, target_pid)
     if not handle:
-        err = kernel32.GetLastError()
+        err: int = kernel32.GetLastError()
         return False, f"No se pudo acceder al proceso {target_pid} (WinError {err})."
     
     try:
         if not psapi.EmptyWorkingSet(handle):
-            err_code = kernel32.GetLastError()
+            err_code: int = kernel32.GetLastError()
             return False, f"Error al limpiar memoria (WinError {err_code})."
         return True, f"Working set liberado. {TRIM_WARNING}"
     except (ctypes.ArgumentError, Exception):
