@@ -217,7 +217,9 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     if not metrics.is_finite():
         return HealthResult(0, "F", {}, ["Error: Métricas contienen datos no procesables."])
     
-    total_weights = sum(WEIGHTS.values())
+    # Validamos pesos para evitar divisiones por cero o pesos corruptos
+    valid_weights = {k: max(0, int(v)) for k, v in WEIGHTS.items()}
+    total_weights = sum(valid_weights.values())
     if total_weights <= 0:
         return HealthResult(0, "F", {}, ["Error: Configuración de pesos inválida."])
 
@@ -230,13 +232,16 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         "arranque": score_startup(metrics.startup_count)
     }
 
-    # Calculamos puntos ponderados, normalizando por el total de pesos configurados
-    breakdown = {area: int((ratio * WEIGHTS[area] * 100 / total_weights) + 0.5) for area, ratio in ratios.items()}
-    total_score = sum(breakdown.values())
+    # Calculamos puntos ponderados, asegurando que cada ratio esté estrictamente en [0.0, 1.0]
+    breakdown = {
+        area: int((_clamp(ratios.get(area, 0.0)) * valid_weights.get(area, 0) * 100 / total_weights) + 0.5) 
+        for area in valid_weights
+    }
+    total_score = _clamp(sum(breakdown.values()), 0.0, 100.0)
 
     return HealthResult(
-        score=total_score,
-        grade=grade_for_score(total_score),
+        score=int(total_score),
+        grade=grade_for_score(int(total_score)),
         breakdown=breakdown,
         recommendations=_generate_recommendations(metrics, ratios),
     )

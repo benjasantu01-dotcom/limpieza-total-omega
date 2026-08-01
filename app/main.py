@@ -1155,11 +1155,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             item = quarantine.get_item(raw_id)
             ruta_orig = Path(item.original_path)
             
-            if safety.is_protected_path(ruta_orig):
-                self.log(f"Error: La ruta original '{ruta_orig}' es protegida. Restauración denegada.", "Cuarentena")
-                return
-
+            # Validación de seguridad centralizada
             safety.ensure_safe_to_modify(ruta_orig)
+            
             destino = quarantine.restore_item(raw_id)
             self.log(f"Restaurado en: {destino}", "Cuarentena")
 
@@ -1241,9 +1239,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             messagebox.showwarning("PID inválido", "El PID debe ser mayor a 0.")
             return
         
-        # Seguridad: Evitar manipulación de procesos protegidos o críticos.
-        # Creamos una pseudo-ruta para validar contra el guard de seguridad.
-        if not safety.is_safe_to_modify(Path(f"PROCESS_PID_{pid}")):
+        # Seguridad: Validación centralizada vía path ficticio para evitar procesos protegidos
+        try:
+            safety.ensure_safe_to_modify(Path(f"PROCESS_PID_{pid}"))
+        except safety.UnsafePathError:
             messagebox.showwarning("Acción denegada", "Ese proceso es crítico para el sistema.")
             return
 

@@ -1107,3 +1107,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-01T12:42:46` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_collect_candidates` y `group_by_size` mediante la normalización de rutas (`.resolve()`) antes de cualquier verificación de seguridad, asegurando que las comparaciones de `is_protected_path` se realicen siempre sobre rutas absolutas y canónicas, evitando así posibles bypasses por rutas relativas o aliases.
 - `2026-08-01T12:42:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-01T12:42:46` Corrida terminada. Total usado hoy: 296.
+- `2026-08-01T12:51:35` Arrancando corrida. Quedan hoy ~4 peticiones objetivo.
+- `2026-08-01T12:52:01` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `compute_score` frente a la inyección de configuraciones externas potencialmente maliciosas, asegurando que la suma de pesos de `WEIGHTS` y los valores individuales se validen estrictamente para evitar comportamientos inesperados o divisiones por cero.
+- `2026-08-01T12:52:58` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `main.py` al reemplazar la validación manual de rutas en `on_trim_process` y `on_restore_quarantine` con una llamada centralizada y robusta al método `safety.ensure_safe_to_modify`, garantizando que cualquier intento de interactuar con rutas críticas (como procesos de sistema o directorios protegidos) sea bloqueado antes de iniciar la operación.
+- `2026-08-01T12:53:21` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
+- `2026-08-01T12:53:27` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-08-01T12:53:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-01T12:53:27` Corrida terminada. Total usado hoy: 300.
