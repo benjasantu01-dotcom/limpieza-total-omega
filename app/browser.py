@@ -126,13 +126,13 @@ def directory_size(path: str | os.PathLike | None) -> int:
         root = Path(path)
         if not root.exists() or not root.is_dir() or root.is_symlink() or is_protected_path(root):
             return 0
-        root_abs = str(root.resolve())
+        root_abs = root.resolve(strict=False)
     except (OSError, RuntimeError, PermissionError, ValueError):
         return 0
     
     total_bytes: int = 0
-    visited: set[str] = {root_abs}
-    stack: List[str] = [root_abs]
+    visited: set[Path] = {root_abs}
+    stack: List[Path] = [root_abs]
     
     while stack:
         current_dir = stack.pop()
@@ -144,11 +144,16 @@ def directory_size(path: str | os.PathLike | None) -> int:
                         if entry.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(entry.path)):
                             continue
                         
+                        entry_path = Path(entry.path).resolve(strict=False)
+                        
+                        # Seguridad defensiva: validar que no escape del directorio raíz
+                        if not _is_safe_path(entry_path, root_abs):
+                            continue
+
                         if entry.is_dir():
-                            dir_abs = os.path.abspath(entry.path)
-                            if dir_abs not in visited:
-                                visited.add(dir_abs)
-                                stack.append(dir_abs)
+                            if entry_path not in visited:
+                                visited.add(entry_path)
+                                stack.append(entry_path)
                         elif entry.is_file():
                             total_bytes += entry.stat().st_size
                     except (OSError, PermissionError):

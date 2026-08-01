@@ -684,3 +684,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-01T08:07:43` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
 - `2026-08-01T08:07:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-01T08:07:43` Corrida terminada. Total usado hoy: 188.
+- `2026-08-01T08:15:41` Arrancando corrida. Quedan hoy ~112 peticiones objetivo.
+- `2026-08-01T08:16:05` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `directory_size` validando explícitamente que cada sub-directorio encontrado durante la iteración se mantenga dentro de los límites del `root` original mediante `_is_safe_path`, evitando escapes de ruta incluso en casos de estructuras de directorios inusuales.
+- `2026-08-01T08:16:30` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `walk_files` mediante la validación explícita de que las rutas resueltas residan físicamente dentro del directorio base, previniendo riesgos de traversal (path traversal) en caso de encontrar enlaces simbólicos inusuales o condiciones de carrera durante la iteración.
+- `2026-08-01T08:16:54` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_collect_candidates` y `_scan` integrando `is_protected_path` en las validaciones iniciales de cada iteración, asegurando que ninguna ruta pase a la cola de procesamiento sin un chequeo explícito de protección.
+- `2026-08-01T08:17:03` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: seguridad defensiva).
+- `2026-08-01T08:17:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-01T08:17:03` Corrida terminada. Total usado hoy: 192.

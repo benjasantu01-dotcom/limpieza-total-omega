@@ -169,7 +169,7 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
             with os.scandir(root_path) as iterator:
                 for entry in iterator:
                     try:
-                        # Evitar bucles infinitos por symlinks y puntos de reparse (Windows Junctions)
+                        # Verificación de seguridad defensiva: no seguir enlaces simbólicos/reparse points
                         if entry.is_symlink():
                             continue
                         if os.name == 'nt' and entry.stat(follow_symlinks=False).st_reparse_tag != 0:
@@ -177,6 +177,7 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
                         
                         full_entry_path = Path(entry.path).resolve()
                         
+                        # Validación de que la ruta resuelta está contenida estrictamente en base_path
                         if base_path not in full_entry_path.parents and full_entry_path != base_path:
                             continue
 
@@ -190,7 +191,6 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
                         else:
                             if skip_protected and is_protected_path(full_entry_path):
                                 continue
-                            # Captura de error al obtener el tamaño individual
                             try:
                                 yield full_entry_path, entry.stat().st_size
                             except OSError:
