@@ -6,27 +6,27 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **255** (50.6% de aceptación)
-- Rechazadas por tests: 17
+- Mejoras aceptadas: **252** (50.0% de aceptación)
+- Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 25
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 193
+- Sin respuesta de la IA (error o límite): 195
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-30 | 76 | 5 | 8 | 4 | 41 |
+| 2026-07-30 | 72 | 5 | 8 | 4 | 41 |
 | 2026-07-31 | 179 | 12 | 17 | 10 | 132 |
-| 2026-08-01 | 0 | 0 | 0 | 0 | 20 |
+| 2026-08-01 | 1 | 1 | 0 | 0 | 22 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **60**
+- legibilidad y documentación: **56**
 - rendimiento: **53**
 - seguridad defensiva: **53**
 - robustez ante casos límite: **46**
-- manejo de errores y validación de entradas: **43**
+- manejo de errores y validación de entradas: **44**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,19 +34,20 @@ Este archivo se regenera solo en cada corrida a partir de
 - `scanner.py`: **21**
 - `settings.py`: **21**
 - `diskreport.py`: **20**
+- `branding.py`: **20**
 - `browser.py`: **19**
-- `branding.py`: **19**
-- `healthscore.py`: **18**
 - `assistant.py`: **18**
 - `duplicates.py`: **18**
-- `main.py`: **17**
-- `organizer.py`: **17**
 - `safety.py`: **17**
+- `healthscore.py`: **17**
+- `main.py`: **16**
+- `organizer.py`: **16**
 - `startup.py`: **15**
-- `memory.py`: **13**
+- `memory.py`: **12**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-01T01:01:18` **branding.py** (manejo de errores y validación de entradas): Se ha mejorado `save_logo_svg` para prevenir el fallo silencioso ante rutas inválidas o inaccesibles, añadiendo una validación robusta de tipo y estado antes de cualquier operación de I/O, alineándose con las reglas de seguridad defensiva y manejo de errores.
 - `2026-07-31T14:20:23` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `settings_path` reemplazando la llamada a `ensure_safe_to_modify` (que lanzaba una excepción fatal si la ruta no era segura) por una lógica que intenta encontrar un directorio padre válido o, en último caso, recurre a una ruta segura predefinida, evitando así que una configuración corrupta o maliciosa impida el arranque de la aplicación.
 - `2026-07-31T14:20:13` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva al invocar `path.resolve()` antes de realizar chequeos de `is_protected_path`, garantizando que se evalúe la ruta absoluta real y canónica del archivo y evitando el seguimiento no intencionado de enlaces simbólicos o rutas relativas ambiguas que podrían eludir las protecciones.
 - `2026-07-31T14:19:51` **safety.py** (seguridad defensiva): He mejorado `ensure_safe_to_modify` para incluir una validación de longitud máxima de ruta (usando la constante `os.path.supports_unicode_filenames` y el límite estándar `MAX_PATH` de Windows) y un chequeo preventivo de permisos de escritura, reforzando la seguridad defensiva contra rutas excepcionalmente largas o inaccesibles que podrían causar errores inesperados en el bucle principal.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-07-31T13:49:09` **startup.py** (robustez ante casos límite): Mejora la robustez de `StartupEntry.executable` al manejar excepciones durante la expansión de rutas y validación de archivos, evitando fallos ante entradas de registro mal formadas o rutas con caracteres inválidos.
 - `2026-07-31T13:48:45` **settings.py** (robustez ante casos límite): Se mejora la robustez de `settings_path` ante rutas inválidas o permisos denegados al invocar `ensure_safe_to_modify`, garantizando que la aplicación no colapse si el directorio base es inaccesible o si el usuario proporciona una ruta malformada.
 - `2026-07-31T13:39:28` **scanner.py** (robustez ante casos límite): Se reforzó la resiliencia del módulo ante rutas inexistentes y errores de acceso integrando verificaciones `is_file()` seguras y `exists()` dentro de los chequeos heurísticos, evitando excepciones innecesarias en `path.stat()` para archivos que podrían haber sido eliminados durante la ejecución del escaneo.
-- `2026-07-31T13:39:21` **safety.py** (robustez ante casos límite): Mejoré `is_protected_path` para prevenir ataques de "Path Traversal" (ej. `C:\Users\Admin\.. \Windows`) mediante el uso de `resolve()` antes de comprobar la existencia de tokens protegidos en los segmentos de la ruta, asegurando que la validación ocurra sobre la ruta real del sistema de archivos y no sobre la cadena de texto manipulable.

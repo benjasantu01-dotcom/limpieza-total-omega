@@ -286,7 +286,7 @@ def save_logo_svg(destination: str | Path | None) -> Path | None:
     Aplica `ensure_safe_to_modify` antes de cualquier escritura para
     garantizar que el destino esté fuera de rutas bloqueadas.
     """
-    if destination is None:
+    if not destination:
         return None
     try:
         path = Path(destination).expanduser().resolve()
@@ -296,9 +296,12 @@ def save_logo_svg(destination: str | Path | None) -> Path | None:
         if not is_safe_to_modify(parent):
             return None
             
-        ensure_safe_to_modify(parent)
+        # Si existe el archivo, verificar permisos de modificación del destino
         if path.exists():
             ensure_safe_to_modify(path)
+        else:
+            # Si no existe, verificar permisos del contenedor
+            ensure_safe_to_modify(parent)
             
         if not parent.exists():
             parent.mkdir(parents=True, exist_ok=True)

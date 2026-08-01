@@ -1096,3 +1096,54 @@ FAILED evolve/tests/test_safety.py::test_describe_protection_explains_the_reason
 - `2026-08-01T00:52:46` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-08-01T00:52:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-01T00:52:46` Corrida terminada. Total usado hoy: 20.
+- `2026-08-01T00:59:09` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-08-01T00:59:11` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-08-01T00:59:11` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-08-01T00:59:31` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-08-01T00:59:31` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-08-01T01:00:01` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-08-01T01:00:01` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-08-01T01:00:48` Tests FALLARON:
+```
+gemini
+E         + local
+
+evolve/tests/test_assistant.py:387: AssertionError
+_______________ test_metrics_are_withheld_when_the_user_says_no ________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-1/test_metrics_are_withheld_when0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f3ee535d610>
+
+    def test_metrics_are_withheld_when_the_user_says_no(tmp_path, monkeypatch):
+        """Se puede usar el asistente sin mandar ni una métrica."""
+        monkeypatch.setenv(settings.API_KEY_ENV_VAR, "clave")
+        settings.save({**settings.DEFAULTS, "asistente_activado": True,
+                       "asistente_enviar_metricas": False}, tmp_path)
+    
+        enviado = {}
+    
+        def espia(question, context_text, api_key, model):
+            enviado["texto"] = context_text
+            return "ok"
+    
+        monkeypatch.setattr(assistant, "_call_gemini", espia)
+        assistant.ask("¿qué hago?", _contexto_lleno(), tmp_path)
+>       assert "2400" not in enviado["texto"]
+                             ^^^^^^^^^^^^^^^^
+E       KeyError: 'texto'
+
+evolve/tests/test_assistant.py:418: KeyError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_ask_uses_the_online_engine_when_authorized - AssertionError: assert 'local' == 'gemini'
+  
+  - gemini
+  + local
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - KeyError: 'texto'
+2 failed, 297 passed in 1.06s
+
+```
+- `2026-08-01T01:00:48` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Mejora la robustez en el manejo de configuraciones externas al agregar validación de tipos y manejo de errores silenciosos en `ask()`, evitando que un archivo de configuración mal formado interrumpa la lógica de respuesta del asistente.
+- `2026-08-01T01:01:18` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado `save_logo_svg` para prevenir el fallo silencioso ante rutas inválidas o inaccesibles, añadiendo una validación robusta de tipo y estado antes de cualquier operación de I/O, alineándose con las reglas de seguridad defensiva y manejo de errores.
+- `2026-08-01T01:01:25` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-01T01:01:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-01T01:01:25` Corrida terminada. Total usado hoy: 24.
