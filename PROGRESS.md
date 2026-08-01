@@ -7,8 +7,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **240** (47.6% de aceptación)
-- Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 23
+- Rechazadas por tests: 16
+- Rechazadas por guardia de seguridad: 24
 - Sin cambios (nada sustancial que mejorar): 18
 - Sin respuesta de la IA (error o límite): 206
 
@@ -16,29 +16,29 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-31 | 135 | 8 | 13 | 10 | 98 |
-| 2026-08-01 | 105 | 9 | 10 | 8 | 108 |
+| 2026-07-31 | 132 | 7 | 13 | 10 | 98 |
+| 2026-08-01 | 108 | 9 | 11 | 8 | 108 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **54**
-- rendimiento: **51**
 - seguridad defensiva: **50**
-- manejo de errores y validación de entradas: **44**
+- rendimiento: **48**
+- manejo de errores y validación de entradas: **47**
 - robustez ante casos límite: **41**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **21**
-- `scanner.py`: **20**
-- `browser.py`: **19**
+- `quarantine.py`: **22**
+- `scanner.py`: **21**
 - `settings.py`: **19**
-- `assistant.py`: **18**
-- `diskreport.py`: **18**
 - `organizer.py`: **18**
+- `browser.py`: **18**
+- `safety.py`: **17**
+- `assistant.py`: **17**
 - `main.py`: **17**
+- `diskreport.py`: **17**
 - `healthscore.py`: **17**
-- `safety.py`: **16**
 - `branding.py`: **15**
 - `duplicates.py`: **14**
 - `memory.py`: **14**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-01T10:29:52` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones heurísticas implementando validaciones de entrada (`path.exists()`, manejo de `None` y excepciones específicas) para evitar fallos durante el escaneo de directorios con permisos restringidos o rutas volátiles, asegurando que el proceso no se interrumpa ante estados inesperados del sistema de archivos.
+- `2026-08-01T10:29:44` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ensure_safe_to_modify` ante caracteres de control Unicode (RTL/bidireccionales) y rutas inválidas de Windows (nombres reservados como `CON`, `PRN`, `NUL`), centralizando estas validaciones de seguridad antes de cualquier operación de disco para evitar manipulaciones maliciosas.
+- `2026-08-01T10:29:01` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `load_manifest` añadiendo una validación estricta y explícita de tipos, evitando que errores de formato en el archivo JSON (como campos faltantes o tipos incorrectos) provoquen caídas silenciosas o inyecciones de datos corruptos en el estado de la aplicación.
 - `2026-08-01T10:20:15` **organizer.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `sort_junk` ante entradas inválidas o vacías y se mejoró la validación de parámetros en `delete_reviewed` para evitar errores en tiempo de ejecución, alineándose con las mejores prácticas de manejo de excepciones y validación de entradas.
 - `2026-08-01T10:18:47` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `score_memory` y `score_disk` para evitar divisiones por cero ante configuraciones erróneas y agregué validación de tipo/finitud más estricta en las funciones de score para prevenir errores inesperados si llegan datos inesperados.
 - `2026-08-01T10:08:40` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` añadiendo una validación explícita para asegurar que la ruta de destino no sea un directorio existente, previniendo errores de `write_text` y garantizando un manejo de excepciones más granular al operar con el sistema de archivos.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-01T08:16:05` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `directory_size` validando explícitamente que cada sub-directorio encontrado durante la iteración se mantenga dentro de los límites del `root` original mediante `_is_safe_path`, evitando escapes de ruta incluso en casos de estructuras de directorios inusuales.
 - `2026-08-01T08:07:31` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva de `assistant.py` mediante la implementación de `ensure_safe_text` (usando `is_protected_path`) para validar estrictamente la respuesta del asistente antes de devolverla, evitando que cualquier string que contenga posibles rutas o estructuras de archivos peligrosas llegue a la interfaz del usuario.
 - `2026-08-01T08:06:20` **startup.py** (robustez ante casos límite): Se ha robustecido el método `StartupEntry._extract_quoted_path` para prevenir fallos catastróficos ante rutas malformadas o entradas que contienen caracteres inválidos en el sistema de archivos, asegurando que el parser no interrumpa la ejecución ante datos inesperados del registro.
-- `2026-08-01T08:05:57` **settings.py** (robustez ante casos límite): Se mejoró la robustez de `settings.py` ante errores de entrada inesperados en `load` y `validate` al añadir un manejo defensivo de archivos mal formados o tipos de datos no JSON, asegurando que cualquier valor corrupto sea silenciado y reemplazado por el valor por defecto sin interrumpir la ejecución.
-- `2026-08-01T07:55:56` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` ante condiciones de carrera y archivos inconsistentes, añadiendo una verificación de tamaño previa y posterior al movimiento, y asegurando que la integridad se valide antes de persistir cualquier metadato.
-- `2026-08-01T07:47:03` **organizer.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `scan_for_junk` y `stage_for_review` para validar que los archivos no sean puntos de reparse o junctions mediante el atributo `is_junction` (o `is_symlink` + `exists` en el caso de enlaces), evitando así recursiones infinitas o errores al intentar procesar rutas virtuales del sistema.

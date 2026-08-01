@@ -114,7 +114,9 @@ def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_TH
         return None
         
     try:
-        mtime = datetime.fromtimestamp(path.stat(follow_symlinks=False).st_mtime)
+        if not path.exists():
+            return None
+        mtime = datetime.fromtimestamp(path.stat().st_mtime)
         if datetime.now() - mtime < timedelta(hours=hours):
             return Suspicion(path, f"Ejecutable reciente detectado (modificado hace menos de {hours}h)", "info")
     except (FileNotFoundError, PermissionError, OSError):
@@ -129,7 +131,9 @@ def check_system_lookalike(path: Path) -> Optional[Suspicion]:
     :param path: Ruta del archivo a inspeccionar.
     :return: Objeto Suspicion si el nombre coincide con procesos del sistema fuera de System32.
     """
-    if path and not is_protected_path(path) and path.name and path.name.lower() in SYSTEM_LOOKALIKES:
+    if path and path.name and path.name.lower() in SYSTEM_LOOKALIKES:
+        if is_protected_path(path):
+            return None
         try:
             parent = path.parent
             if parent and SYSTEM32_LOWER not in str(parent).lower():
@@ -152,6 +156,9 @@ def scan_file(path: Path) -> List[Suspicion]:
     :param path: Ruta absoluta del archivo a analizar.
     :return: Lista de objetos Suspicion encontrados.
     """
+    if not path:
+        return []
+        
     findings: List[Suspicion] = []
     for check_func in CHECK_FUNCS:
         try:
@@ -168,8 +175,11 @@ def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
     if not directory:
         return []
         
-    path_obj = Path(directory).resolve()
-    if not path_obj.exists() or not path_obj.is_dir() or is_protected_path(path_obj):
+    try:
+        path_obj = Path(directory).resolve()
+        if not path_obj.exists() or not path_obj.is_dir() or is_protected_path(path_obj):
+            return []
+    except (OSError, RuntimeError):
         return []
 
     scanner = Scanner()

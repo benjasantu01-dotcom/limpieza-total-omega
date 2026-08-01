@@ -17,6 +17,7 @@ Este módulo convierte el cuidado en una regla que se puede verificar:
 from __future__ import annotations
 import os
 import stat
+import re
 from pathlib import Path
 from typing import Union, Iterable, TypeAlias, Final
 from functools import lru_cache
@@ -74,13 +75,15 @@ _SYSTEM_ROOTS: Final[tuple[Path, ...]] = tuple(
 _SYSTEM_ROOTS_NAMES: Final[frozenset[str]] = frozenset({p.name.lower() for p in _SYSTEM_ROOTS})
 _ALL_PROTECTED_TOKENS: Final[frozenset[str]] = PROTECTED_DIR_NAMES | _SYSTEM_ROOTS_NAMES
 
+# Nombres de dispositivos reservados en Windows que pueden causar cuelgues o ataques
+_RESERVED_NAMES: Final[frozenset[str]] = frozenset({
+    "con", "prn", "aux", "nul", "com1", "com2", "com3", "com4", "com5", "com6", 
+    "com7", "com8", "com9", "lpt1", "lpt2", "lpt3", "lpt4", "lpt5", "lpt6", "lpt7", "lpt8", "lpt9"
+})
+
 
 def _is_reparse_point(path: Path) -> bool:
-    """
-    Verifica si la ruta es un punto de reparse (Junction/Symlink).
-    Evita seguir enlaces para prevenir bucles en escaneos o efectos no deseados.
-    Retorna True si no se puede acceder a la información del archivo.
-    """
+    """Verifica si la ruta es un punto de reparse (Junction/Symlink)."""
     try:
         stats = path.lstat()
         is_reparse = bool(getattr(stats, "st_file_attributes", 0) & 0x400)
@@ -90,10 +93,7 @@ def _is_reparse_point(path: Path) -> bool:
 
 
 def _is_file_in_use(path: Path) -> bool:
-    """
-    Intenta abrir el archivo en modo exclusivo para detectar bloqueos.
-    Si el archivo no existe o no se puede leer, se considera potencialmente peligroso.
-    """
+    """Intenta abrir el archivo en modo exclusivo para detectar bloqueos."""
     if not path.is_file():
         return False
     try:
@@ -114,10 +114,7 @@ def _is_readonly(path: Path) -> bool:
 
 @lru_cache(maxsize=2048)
 def normalize(path: PathLike) -> Path:
-    """
-    Convierte una ruta a un objeto Path absoluto, resuelto y expandido.
-    Lanza TypeError o ValueError si la entrada es inválida o vacía.
-    """
+    """Convierte una ruta a un objeto Path absoluto, resuelto y expandido."""
     if not isinstance(path, (str, os.PathLike)):
         raise TypeError(f"Entrada inválida: se esperaba str o PathLike, recibió {type(path)}")
     
@@ -142,10 +139,7 @@ def is_drive_root(path: PathLike) -> bool:
 
 @lru_cache(maxsize=1024)
 def is_protected_path(path: PathLike) -> bool:
-    """
-    Verifica si la ruta coincide con directorios críticos o raíces.
-    Usa la cache para optimizar lecturas frecuentes en bucles de escaneo.
-    """
+    """Verifica si la ruta coincide con directorios críticos o raíces."""
     if not path:
         return True
     
@@ -154,7 +148,6 @@ def is_protected_path(path: PathLike) -> bool:
         if not p.is_absolute():
             return True
 
-        # Optimización: evitar generadores, buscar directamente en el conjunto pre-cargado
         for part in p.parts:
             if part.lower() in _ALL_PROTECTED_TOKENS:
                 return True
@@ -171,10 +164,7 @@ def is_protected_path(path: PathLike) -> bool:
 
 
 def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = False) -> bool:
-    """
-    Valida si 'child' reside estrictamente dentro de 'parent'.
-    Resuelve rutas para evitar ataques de escalada de directorios (../).
-    """
+    """Valida si 'child' reside estrictamente dentro de 'parent'."""
     if child is None or parent is None:
         return False
     try:
@@ -196,20 +186,23 @@ def is_sensitive_file(path: PathLike) -> bool:
 
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> Path:
-    """
-    Validación rigurosa antes de modificar el sistema.
-    Lanza UnsafePathError si la ruta es riesgosa, está en uso o es inaccesible.
-    """
+    """Validación rigurosa antes de modificar el sistema."""
     if path is None:
         raise UnsafePathError("Ruta nula recibida.")
         
-    if isinstance(path, str) and ("\0" in path or any(c in path for c in ("\u202e", "\u202d", "\u202a", "\u202b"))):
-        raise UnsafePathError("Ruta maliciosa detectada.")
-
+    str_val = str(path)
+    # Detección de caracteres de control, RTL y nombres de dispositivo Windows
+    if re.search(r'[\u202a-\u202e\x00-\x1f]', str_val):
+        raise UnsafePathError("Ruta con caracteres de control maliciosos.")
+    
     try:
         p = normalize(path)
     except (TypeError, ValueError, OSError) as e:
         raise UnsafePathError(f"Error al normalizar: {e}")
+
+    # Validar nombres de dispositivos reservados
+    if p.stem.lower() in _RESERVED_NAMES:
+        raise UnsafePathError("Operación bloqueada: nombre de dispositivo reservado.")
 
     if len(str(p)) > 260:
         raise UnsafePathError("Operación bloqueada: ruta demasiado larga.")
