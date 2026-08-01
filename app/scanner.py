@@ -137,18 +137,17 @@ CHECK_FUNCS: Final[List[SuspicionCheck]] = [
 
 def scan_file(path: Path) -> List[Suspicion]:
     """Ejecuta los tests definidos en CHECK_FUNCS sobre un archivo individual."""
-    if not path:
+    if not path or not path.exists():
         return []
         
     try:
-        # El resolved_path ya viene de process_entry, evitamos doble chequeo
         findings: List[Suspicion] = []
         for check_func in CHECK_FUNCS:
             try:
                 res = check_func(path)
                 if res:
                     findings.append(res)
-            except (PermissionError, OSError):
+            except (PermissionError, OSError, FileNotFoundError):
                 continue
         return findings
     except (RuntimeError, OSError):

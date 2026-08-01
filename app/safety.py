@@ -200,6 +200,10 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
     if path is None:
         raise UnsafePathError("Ruta nula recibida.")
         
+    # Protección contra inyección de caracteres nulos (null bytes)
+    if isinstance(path, str) and "\0" in path:
+        raise UnsafePathError("Ruta maliciosa detectada: contiene caracteres nulos.")
+
     try:
         p = normalize(path)
     except (TypeError, ValueError, OSError) as e:
