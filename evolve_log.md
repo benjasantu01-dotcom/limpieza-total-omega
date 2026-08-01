@@ -1239,3 +1239,10 @@ FAILED evolve/tests/test_assistant.py::test_save_creates_the_folder - AssertionE
 - `2026-08-01T02:40:52` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimicé el rendimiento de `scan_for_junk` convirtiendo la `SYSTEM_FOLDER_BLOCKLIST` en un `set` (ya lo era, pero ahora se accede directamente) y evitando múltiples llamadas a `Path.expanduser()` dentro del bucle recursivo, además de cachear el acceso a `entry.name.lower()` para reducir operaciones redundantes de strings en el árbol de directorios.
 - `2026-08-01T02:40:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-01T02:40:52` Corrida terminada. Total usado hoy: 60.
+- `2026-08-01T02:49:17` Arrancando corrida. Quedan hoy ~240 peticiones objetivo.
+- `2026-08-01T02:49:46` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el rendimiento de `load_manifest` para evitar lecturas de disco innecesarias mediante una validación de `st_mtime` del archivo de manifiesto, eliminando el re-procesamiento de JSON cuando el archivo no ha sido modificado.
+- `2026-08-01T02:50:06` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 104): unterminated string literal (detected at line 104)
+- `2026-08-01T02:50:29` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
+- `2026-08-01T02:50:36` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizé el rendimiento de `scan_file` y `check_recent_executable_in_downloads` eliminando llamadas redundantes a `path.exists()` y `path.stat()`, las cuales generan operaciones de entrada/salida innecesarias que ralentizan significativamente el escaneo profundo.
+- `2026-08-01T02:50:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-01T02:50:36` Corrida terminada. Total usado hoy: 64.

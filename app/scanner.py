@@ -82,6 +82,7 @@ class Scanner:
                             self.seen.add(str(resolved_path))
                             stack.append(path_str)
             elif entry.is_file():
+                # Obtenemos stat aquí para evitar múltiples llamadas en los check_func
                 path_obj = Path(entry.path).resolve()
                 if not is_protected_path(path_obj):
                     self.results.extend(scan_file(path_obj))
@@ -107,9 +108,7 @@ def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_TH
         return None
         
     try:
-        # Verificamos estado actual antes de obtener atributos
-        if not path.exists():
-            return None
+        # Usamos stat() directamente; si falla, el archivo no es accesible o no existe
         mtime = datetime.fromtimestamp(path.stat(follow_symlinks=False).st_mtime)
         if datetime.now() - mtime < timedelta(hours=hours):
             return Suspicion(path, f"Ejecutable reciente detectado (modificado hace menos de {hours}h)", "info")
@@ -122,7 +121,6 @@ def check_system_lookalike(path: Path) -> Optional[Suspicion]:
     """Detecta ejecutables que suplantan nombres de procesos críticos fuera de System32."""
     if path.name and path.name.lower() in SYSTEM_LOOKALIKES:
         try:
-            # Validamos que el parent sea accesible
             parent = path.parent
             if parent and SYSTEM32_LOWER not in str(parent).lower():
                 return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
@@ -143,14 +141,11 @@ def scan_file(path: Path) -> List[Suspicion]:
         return []
         
     try:
-        resolved_path = path.resolve()
-        if is_protected_path(resolved_path) or not resolved_path.exists():
-            return []
-            
+        # El resolved_path ya viene de process_entry, evitamos doble chequeo
         findings: List[Suspicion] = []
         for check_func in CHECK_FUNCS:
             try:
-                res = check_func(resolved_path)
+                res = check_func(path)
                 if res:
                     findings.append(res)
             except (PermissionError, OSError):
