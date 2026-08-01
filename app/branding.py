@@ -319,7 +319,10 @@ def logo_ascii() -> str:
 
 
 def draw_logo(canvas: Any, size: int = 56, canvas_x: int = 0, canvas_y: int = 0) -> None:
-    """Renderiza el logo (escudo Omega) en un widget Tkinter.Canvas."""
+    """
+    Renderiza el logo (escudo Omega) en un widget Tkinter.Canvas.
+    Ignora llamadas con canvas inválidos o atributos faltantes.
+    """
     if canvas is None or not hasattr(canvas, "create_polygon"): return
     try:
         s = max(0.1, float(size) / 128)
@@ -357,7 +360,10 @@ def draw_logo(canvas: Any, size: int = 56, canvas_x: int = 0, canvas_y: int = 0)
 def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
                       canvas_x: int = 0, canvas_y: int = 0,
                       stops: tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
-    """Dibuja una franja horizontal de gradiente en un Tkinter.Canvas."""
+    """
+    Dibuja una franja horizontal de gradiente en un Tkinter.Canvas.
+    Silentamente retorna si recibe un canvas no válido o dimensiones negativas.
+    """
     if canvas is None or not hasattr(canvas, "create_line"): return
     try:
         ancho, alto = max(1, int(width)), max(1, int(height))
@@ -370,7 +376,15 @@ def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
               canvas_x: int = 0, canvas_y: int = 0, thickness: int = 14,
               track: Optional[HexColor] = None,
               fill: Optional[HexColor] = None) -> None:
-    """Dibuja un medidor circular de estado."""
+    """
+    Dibuja un medidor circular de estado.
+    
+    Args:
+        canvas: Widget de dibujo destino.
+        percent: Porcentaje (0-100) para calcular el arco activo.
+        size: Diámetro en píxeles del anillo.
+        thickness: Grosor de la línea del anillo.
+    """
     if canvas is None or not hasattr(canvas, "create_arc"): return
     try:
         valor = max(0.0, min(100.0, float(percent))) # type: ignore

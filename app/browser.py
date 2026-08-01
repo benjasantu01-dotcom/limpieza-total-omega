@@ -95,8 +95,8 @@ def base_directories() -> List[Path]:
 
 def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> bool:
     """
-    Verifica que la ruta candidata resida dentro de la base permitida.
-    Previene vulnerabilidades de traversal (ej. carpetas superiores al perfil).
+    Valida la integridad de la ruta candidata evitando Directory Traversal.
+    Utiliza resolve(strict=False) para comparar jerarquías reales.
     """
     if not isinstance(target_path, Path) or not isinstance(base_path, Path):
         return False
@@ -104,7 +104,7 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
         abs_base = base_path.resolve(strict=False)
         abs_target = target_path.resolve(strict=False)
         
-        # Validar contra safety.py antes de cualquier jerarquía
+        # El chequeo de seguridad debe preceder a la validación de jerarquía
         if is_protected_path(abs_target):
             return False
             
@@ -116,8 +116,8 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
 def directory_size(path: str | os.PathLike | None) -> int:
     """
     Calcula el tamaño total en bytes de un directorio mediante una búsqueda
-    iterativa basada en una pila. Optimizado para evitar llamadas innecesarias
-    a resolve() o conversiones de tipo en el bucle caliente.
+    iterativa (stack-based). Ignora enlaces simbólicos y puntos de reparse
+    (junctions) para evitar recursión infinita o lecturas fuera de alcance.
     """
     if not path:
         return 0
@@ -131,7 +131,7 @@ def directory_size(path: str | os.PathLike | None) -> int:
         return 0
     
     total_bytes: int = 0
-    visited = {root_abs}
+    visited: set[str] = {root_abs}
     stack: List[str] = [root_abs]
     
     while stack:
@@ -140,10 +140,12 @@ def directory_size(path: str | os.PathLike | None) -> int:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
-                        # Verificar seguridad antes de procesar cualquier entrada
-                        if is_protected_path(Path(entry.path)):
+                        # Filtrado preventivo de seguridad por cada entrada
+                        entry_path = Path(entry.path)
+                        if is_protected_path(entry_path):
                             continue
                             
+                        # Evitar seguir enlaces simbólicos o junctions de Windows
                         if entry.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(entry.path)):
                             continue
                         

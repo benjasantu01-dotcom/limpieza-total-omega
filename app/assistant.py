@@ -285,20 +285,22 @@ def handle_ram(ctx: SystemContext, text: str) -> Answer:
 def handle_disk(ctx: SystemContext, text: str) -> Answer:
     """Procesa consultas sobre almacenamiento y limpieza de disco."""
     recuperable = ctx.junk_mb + ctx.duplicate_mb + ctx.browser_cache_mb
-    partes = [
-        f"Tenés {ctx.disk_free_percent:.0f}% libre en disco.",
+    
+    mensaje = (
+        f"Tenés {ctx.disk_free_percent:.0f}% libre en disco. "
         f"Podés recuperar cerca de {recuperable:.0f} MB: "
         f"{ctx.junk_mb:.0f} MB de basura, "
         f"{ctx.duplicate_mb:.0f} MB de duplicados"
-        f"{f' y {ctx.browser_cache_mb:.0f} MB de caché' if ctx.browser_cache_mb else ''}.",
-    ]
+        f"{f' y {ctx.browser_cache_mb:.0f} MB de caché' if ctx.browser_cache_mb else ''}."
+    )
+    
+    advertencia = ""
     if ctx.disk_free_percent < 10:
-        partes.append("Estás por debajo del 10%, y ahí Windows empieza a andar "
-                        "mal, no solo a quedarse sin lugar. Es lo primero que "
-                        "atendería.")
-    partes.append("Empezá por Limpieza: mueve los candidatos a una carpeta de "
-                    "revisión, no los borra, así podés ver qué hay antes de decidir.")
-    return Answer(" ".join(partes), notice=OFFLINE_NOTICE)
+        advertencia = " Estás por debajo del 10%, y ahí Windows empieza a andar mal. Es lo primero que atendería."
+        
+    sugerencia = " Empezá por Limpieza: mueve los candidatos a una carpeta de revisión, no los borra, así podés ver qué hay antes de decidir."
+    
+    return Answer(mensaje + advertencia + sugerencia, notice=OFFLINE_NOTICE)
 
 def handle_security(ctx: SystemContext, text: str) -> Answer:
     """Procesa consultas sobre seguridad de archivos sospechosos."""
