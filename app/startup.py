@@ -88,7 +88,9 @@ class StartupEntry:
         """Resuelve una ruta relativa/simple a absoluta y la guarda en caché."""
         try:
             p = Path(path_str).expanduser()
-            # Validación de existencia para evitar rutas muertas o errores de acceso
+            # Validación de seguridad antes de verificar existencia
+            if is_protected_path(p):
+                return path_str
             if p.exists() and p.is_file():
                 return str(p)
             return path_str
@@ -132,7 +134,7 @@ def startup_folders() -> List[Path]:
             candidates.append(Path(programdata) / r"Microsoft\Windows\Start Menu\Programs\Startup")
     except (ValueError, TypeError):
         pass
-    return [c for c in candidates if c.is_dir()]
+    return [c for c in candidates if c.is_dir() and not is_protected_path(c)]
 
 
 def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[StartupEntry]:
