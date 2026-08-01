@@ -153,9 +153,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._tasks_running = 0
         self._executor = concurrent.futures.ThreadPoolExecutor(max_workers=5)
 
-    def _get_cached(self, key: str, provider: Callable, force: bool = False) -> Any:
+    def _get_cached(self, key: str, provider: Optional[Callable] = None, force: bool = False) -> Any:
         """
-        Recupera datos del caché si existen y no expiraron; si no, invoca al proveedor.
+        Recupera datos del caché si existen y no expiraron; si se provee un proveedor, se invoca.
         """
         now = time.time()
         if not force and key in self._cache:
@@ -163,12 +163,14 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             if now - timestamp < self._cache_ttl:
                 return data
         
-        try:
-            data = provider()
-            self._cache[key] = (data, now)
-            return data
-        except Exception:
-            return []
+        if provider:
+            try:
+                data = provider()
+                self._cache[key] = (data, now)
+                return data
+            except Exception:
+                pass
+        return None
 
     def _invalidate_cache(self, key_prefix: str) -> None:
         """Elimina entradas del caché que comiencen con el prefijo indicado para forzar refresco."""
@@ -830,15 +832,15 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _compile_metrics(self) -> Tuple[healthscore.SystemMetrics, memory_mod.Snapshot, diskreport.DriveInfo]:
         """Agrega los datos de todos los módulos para el análisis consolidado de salud."""
         descargas = os.path.expanduser("~/Downloads")
-        hallazgos = self._get_cached("suspicions", lambda: scan_directory(descargas) if os.path.isdir(descargas) else [])
+        hallazgos = self._get_cached("suspicions", lambda: scan_directory(descargas) if os.path.isdir(descargas) else []) or []
         snapshot = memory_mod.read_snapshot()
         home = os.path.expanduser("~")
         unidad = diskreport.drive_usage(home) if os.path.exists(home) else None
         
         # Recuperamos del caché sin forzar re-análisis
-        arranque = self._cache.get("startup", ([], 0))[0]
-        junk = self._cache.get("junk", ([], 0))[0]
-        dups = self._cache.get("dups", ([], 0))[0]
+        arranque = self._get_cached("startup") or []
+        junk = self._get_cached("junk") or []
+        dups = self._get_cached("dups") or []
 
         junk_mb = sum(j.size_bytes for j in junk) / (1024 * 1024)
         advertencias = sum(1 for h in hallazgos if h.severity == "warning")
@@ -971,7 +973,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def refresh_list(self):
         """Ordena y renderiza la lista de candidatos según selección del usuario."""
-        junk = self._cache.get("junk", ([], 0))[0]
+        junk = self._get_cached("junk") or []
         ordered = sort_junk(junk, by=self.sort_by.get())
         lines = [f"{jf.size_mb:>8} MB  |  {jf.modified:%Y-%m-%d}  |  {jf.path}" for jf in ordered]
         self.report_data["limpieza"] = lines
@@ -980,7 +982,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def on_stage(self):
         """Prepara archivos seguros para revisión eliminando basura en rutas bloqueadas."""
-        junk = self._cache.get("junk", ([], 0))[0]
+        junk = self._get_cached("junk") or []
         if not junk:
             messagebox.showinfo("Sin candidatos", "Primero usá 'Buscar basura'.")
             return
@@ -1078,7 +1080,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def on_quarantine_findings(self):
         """Aísla archivos sospechosos en el módulo de cuarentena."""
-        suspicions = self._cache.get("suspicions", ([], 0))[0]
+        suspicions = self._get_cached("suspicions") or []
         if not suspicions:
             messagebox.showinfo("Sin hallazgos", "Primero corré un escaneo heurístico.")
             return
@@ -1338,7 +1340,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def on_quarantine_duplicates(self):
         """Mueve archivos duplicados excedentes a la cuarentena."""
-        dups = self._cache.get("dups", ([], 0))[0]
+        dups = self._get_cached("dups") or []
         if not dups:
             messagebox.showinfo("Sin duplicados", "Primero usá 'Buscar duplicados'.")
             return
@@ -1389,7 +1391,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """Lista el inventario de programas en inicio."""
         def task():
             self.set_status("Leyendo programas de inicio...")
-            entries = self._get_cached("startup", startup_mod.list_startup_entries)
+            self._get_cached("startup", startup_mod.list_startup_entries)
             self.log_lines(startup_mod.summarize(), "Inicio")
 
         self.run_async(task)

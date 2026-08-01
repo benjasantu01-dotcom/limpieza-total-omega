@@ -170,47 +170,39 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
     candidates: List[Path] = []
     visited_inodes: set[Tuple[int, int]] = set()
     
-    for directory in directories:
-        if not directory:
-            continue
+    def _scan(root_path: Path):
         try:
-            path_obj = Path(directory)
-            if not path_obj.exists():
-                continue
-            base_dir = path_obj.expanduser().resolve()
-            if not base_dir.is_dir() or (skip_protected and is_protected_path(base_dir)):
-                continue
-            
-            for root, subdirs, files in os.walk(base_dir):
-                root_path = Path(root)
-                subdirs[:] = [
-                    d for d in subdirs 
-                    if not (root_path / d).is_symlink()
-                    and not (skip_protected and is_protected_path((root_path / d).resolve()))
-                ]
-                
-                for name in files:
-                    file_path = root_path / name
+            with os.scandir(root_path) as it:
+                for entry in it:
                     try:
-                        if file_path.is_symlink():
+                        if entry.is_symlink():
                             continue
-                        resolved_file = file_path.resolve()
-                        if not str(resolved_file).startswith(str(base_dir)):
-                            continue
-                        if skip_protected and is_protected_path(resolved_file):
-                            continue
-                        st = file_path.stat()
-                        inode_id = (st.st_dev, st.st_ino)
-                        if inode_id in visited_inodes:
-                            continue
-                        visited_inodes.add(inode_id)
-                        
-                        if st.st_size >= min_size:
-                            candidates.append(file_path)
-                    except (OSError, PermissionError, FileNotFoundError):
+                        if entry.is_dir():
+                            full_path = Path(entry.path)
+                            if skip_protected and is_protected_path(full_path.resolve()):
+                                continue
+                            _scan(full_path)
+                        elif entry.is_file():
+                            st = entry.stat()
+                            inode_id = (st.st_dev, st.st_ino)
+                            if inode_id in visited_inodes:
+                                continue
+                            if st.st_size >= min_size:
+                                resolved = Path(entry.path).resolve()
+                                if skip_protected and is_protected_path(resolved):
+                                    continue
+                                visited_inodes.add(inode_id)
+                                candidates.append(Path(entry.path))
+                    except (OSError, PermissionError):
                         continue
-        except (OSError, RuntimeError, ValueError):
-            continue
+        except (OSError, PermissionError):
+            pass
+
+    for directory in directories:
+        if directory:
+            path_obj = Path(directory)
+            if path_obj.is_dir():
+                _scan(path_obj.resolve())
     return candidates
 
 

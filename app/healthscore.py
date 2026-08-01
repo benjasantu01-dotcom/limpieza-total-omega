@@ -212,8 +212,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     if not metrics.is_finite():
         return HealthResult(0, "F", {}, ["Error: Métricas contienen datos no procesables."])
     
-    # Validar que los límites definidos globalmente no causen división por cero.
-    if any(l <= 0 for l in [JUNK_LIMIT_MB, DUPLICATE_LIMIT_MB, STARTUP_LIMIT_COUNT, RAM_IDEAL_PERCENT, DISK_IDEAL_PERCENT]):
+    if any(l <= 0 for l in (JUNK_LIMIT_MB, DUPLICATE_LIMIT_MB, STARTUP_LIMIT_COUNT, RAM_IDEAL_PERCENT, DISK_IDEAL_PERCENT)):
         return HealthResult(0, "F", {}, ["Error: Umbrales de configuración no válidos."])
 
     ratios = {
@@ -225,12 +224,8 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         "arranque": score_startup(metrics.startup_count)
     }
 
-    breakdown: Dict[str, int] = {}
-    for area, ratio in ratios.items():
-        weight = WEIGHTS.get(area, 0)
-        breakdown[area] = int(ratio * weight + 0.5)
-    
-    total_score = int(sum(breakdown.values()))
+    breakdown = {area: int(ratio * WEIGHTS[area] + 0.5) for area, ratio in ratios.items()}
+    total_score = sum(breakdown.values())
 
     return HealthResult(
         score=total_score,
@@ -250,9 +245,7 @@ def summarize(result: HealthResult) -> List[str]:
     """Genera una representación visual y textual detallada del resultado de salud."""
     lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     
-    orden: List[Tuple[str, int]] = sorted(result.breakdown.items(), key=_sort_by_performance_delta)
-    
-    for area, puntos in orden:
+    for area, puntos in sorted(result.breakdown.items(), key=_sort_by_performance_delta):
         maximo: int = WEIGHTS.get(area, 0)
         lines.append(f"  {area.capitalize():<12} {puntos:>2}/{maximo:<2} [{'#' * puntos}{'.' * (maximo - puntos)}]")
     
