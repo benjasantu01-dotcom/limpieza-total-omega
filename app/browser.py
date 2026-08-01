@@ -116,28 +116,24 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
 def directory_size(path: str | os.PathLike | None) -> int:
     """
     Calcula el tamaño total en bytes de un directorio mediante una búsqueda
-    iterativa basada en una pila.
-
-    Seguridad:
-    - Evita recursión infinita mediante un conjunto `visited` de rutas resueltas.
-    - Salta enlaces simbólicos y junctions de Windows para no salir del árbol.
-    - Filtra cada subdirectorio mediante `is_protected_path` para cumplir
-      estrictamente con las reglas de seguridad global.
-    - Maneja excepciones de acceso por permisos por archivo/directorio.
+    iterativa basada en una pila. Optimizado para evitar llamadas innecesarias
+    a resolve() o conversiones de tipo en el bucle caliente.
     """
     if not path:
         return 0
     
     try:
-        root = Path(path).resolve(strict=False)
+        root = Path(path)
         if not root.exists() or not root.is_dir() or root.is_symlink() or is_protected_path(root):
             return 0
     except (OSError, RuntimeError, PermissionError, ValueError):
         return 0
     
     total_bytes: int = 0
-    visited = {root}
-    stack: List[Path] = [root]
+    # Usamos paths reales (string) para comparar y evitar instanciar múltiples objetos Path
+    root_abs = str(root.resolve())
+    visited = {root_abs}
+    stack: List[str] = [root_abs]
     
     while stack:
         current_dir = stack.pop()
@@ -148,10 +144,10 @@ def directory_size(path: str | os.PathLike | None) -> int:
                         if entry.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(entry.path)):
                             continue
                         if entry.is_dir():
-                            dir_path = Path(entry.path).resolve(strict=False)
-                            if dir_path not in visited and not is_protected_path(dir_path):
-                                visited.add(dir_path)
-                                stack.append(dir_path)
+                            dir_abs = os.path.abspath(entry.path)
+                            if dir_abs not in visited and not is_protected_path(Path(dir_abs)):
+                                visited.add(dir_abs)
+                                stack.append(dir_abs)
                         elif entry.is_file():
                             total_bytes += entry.stat().st_size
                     except (OSError, PermissionError):
@@ -165,17 +161,10 @@ def directory_size(path: str | os.PathLike | None) -> int:
 def _is_valid_cache_path(candidate: Path | None, base_path: Path) -> bool:
     """
     Valida si un candidato es una ruta de caché apta para ser reportada.
-    
-    Criterios:
-    1. Existencia y tipo (debe ser directorio, no enlace).
-    2. Integridad de ruta: debe estar contenida en base_path (evita traversal).
-    3. Seguridad: la ruta no debe estar en la lista negra global (`is_protected_path`)
-       ni ser un elemento de configuración sensible (`NEVER_TOUCH`).
     """
     if not isinstance(candidate, Path):
         return False
     try:
-        # Pre-validar contra safety.py antes de tocar el sistema de archivos intensivamente
         if is_protected_path(candidate):
             return False
             

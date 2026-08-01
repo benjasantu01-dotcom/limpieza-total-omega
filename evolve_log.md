@@ -1225,3 +1225,10 @@ FAILED evolve/tests/test_assistant.py::test_save_creates_the_folder - AssertionE
 - `2026-08-01T02:19:59` ➖ Sin cambios en assistant.py (enfoque: rendimiento). Motivo: Optimizé `local_answer` para evitar el cálculo de la lista `_rank_problems` (que recorre varios condicionales) cuando la consulta del usuario ya coincide con un manejador específico, reduciendo el costo computacional en iteraciones exitosas.
 - `2026-08-01T02:19:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-01T02:19:59` Corrida terminada. Total usado hoy: 52.
+- `2026-08-01T02:28:44` Arrancando corrida. Quedan hoy ~248 peticiones objetivo.
+- `2026-08-01T02:29:14` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-08-01T02:29:36` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé `directory_size` reemplazando la creación repetitiva de objetos `Path` y el uso de `resolve()` dentro del bucle principal por el uso directo de las rutas proporcionadas por `os.scandir`, reduciendo drásticamente la carga de I/O y el uso de CPU.
+- `2026-08-01T02:29:59` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-08-01T02:30:07` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-08-01T02:30:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-01T02:30:07` Corrida terminada. Total usado hoy: 56.
