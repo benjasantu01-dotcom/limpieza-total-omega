@@ -80,7 +80,7 @@ def hash_file(path: Union[str, Path, None], chunk_size: int = 1024 * 1024) -> Op
 
     Args:
         path: Ruta del archivo a procesar.
-        chunk_size: Tamaño del búfer de lectura en bytes.
+        chunk_size: Tamaño del búfer de lectura en bytes (default 1MB).
 
     Returns:
         Hexdigest del hash completo o None si el archivo es inaccesible o protegido.
@@ -108,7 +108,7 @@ def partial_hash(path: Union[str, Path, None], read_bytes: int = PARTIAL_READ_BY
 
     Args:
         path: Ruta del archivo.
-        read_bytes: Cantidad de bytes a leer (def: PARTIAL_READ_BYTES).
+        read_bytes: Cantidad de bytes a leer (default 64KB).
 
     Returns:
         Hexdigest del hash parcial o None si el archivo es inaccesible.
@@ -133,7 +133,7 @@ def partial_hash(path: Union[str, Path, None], read_bytes: int = PARTIAL_READ_BY
 def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     """
     Organiza rutas de archivos en un diccionario indexado por su tamaño en bytes.
-    Filtra entradas basadas en la unicidad del Inode para manejar hardlinks.
+    Filtra entradas basadas en la unicidad del Inode para evitar procesar hardlinks.
     """
     if paths is None:
         return {}
@@ -163,7 +163,11 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
 def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, skip_protected: bool) -> List[Path]:
     """
     Explora directorios recursivamente para identificar candidatos a duplicados.
-    Descarta rutas protegidas y enlaces simbólicos para prevenir bucles de recursión.
+    
+    Args:
+        directories: Lista de rutas raíz a escanear.
+        min_size: Tamaño mínimo en bytes para considerar un archivo.
+        skip_protected: Si es True, ignora rutas marcadas por safety.py.
     """
     if directories is None:
         return []
@@ -200,7 +204,6 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
                         if skip_protected and is_protected_path(resolved_file):
                             continue
                         st = file_path.stat()
-                        # Evitar procesar el mismo archivo múltiples veces por enlaces duros
                         inode_id = (st.st_dev, st.st_ino)
                         if inode_id in visited_inodes:
                             continue
@@ -217,8 +220,8 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
 
 def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
     """
-    Aplica una función de hash para subdividir una lista de rutas en grupos coincidentes.
-    Filtra los grupos resultantes que tengan un solo elemento, descartando los no duplicados.
+    Aplica un hash (parcial o total) para subdividir una lista de rutas en grupos coincidentes.
+    Filtra los grupos resultantes que tengan un solo elemento.
     """
     if paths is None:
         return {}
@@ -279,7 +282,7 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     """
     Determina la mejor ruta para conservar basada en antigüedad (mtime) y longitud de ruta.
-    Prioriza el archivo más antiguo (menor mtime) y, en caso de empate, el de ruta más corta.
+    Prioriza el archivo más antiguo (menor mtime) y, en caso de empate, la ruta más corta.
     """
     if group is None or not group.paths:
         return None

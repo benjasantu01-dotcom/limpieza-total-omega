@@ -33,13 +33,16 @@ __all__ = [
 ]
 
 # Umbrales críticos para la normalización: definen el punto de saturación (ratio 0.0).
-# Un ratio de 1.0 significa desempeño ideal, mientras que 0.0 indica que se ha alcanzado
-# el límite crítico de degradación para esa métrica específica.
 JUNK_LIMIT_MB: Final[float] = 5000.0          
 DUPLICATE_LIMIT_MB: Final[float] = 2000.0     
 STARTUP_LIMIT_COUNT: Final[int] = 20          
 RAM_IDEAL_PERCENT: Final[float] = 35.0        
 DISK_IDEAL_PERCENT: Final[float] = 25.0       
+
+# Umbrales para disparar recomendaciones (ratios de 0.0 a 1.0)
+WARN_THRESHOLD_HIGH: Final[float] = 0.9
+WARN_THRESHOLD_MED: Final[float] = 0.8
+WARN_THRESHOLD_LOW: Final[float] = 0.6
 
 # Peso relativo de cada área en el puntaje total (sumatoria debe ser 100).
 WEIGHTS: Final[Dict[str, int]] = {
@@ -176,17 +179,17 @@ def _generate_recommendations(m: SystemMetrics, ratios: Dict[str, float]) -> Lis
     """Genera una lista de acciones correctivas basadas en ratios individuales por área."""
     recs: List[str] = []
     
-    if ratios.get("seguridad", 1.0) < 0.9:
+    if ratios.get("seguridad", 1.0) < WARN_THRESHOLD_HIGH:
         recs.append(f"Revisá los {m.suspicious_count} hallazgo(s) de seguridad; podés aislarlos en cuarentena sin borrarlos.")
-    if ratios.get("disco", 1.0) < 0.6:
+    if ratios.get("disco", 1.0) < WARN_THRESHOLD_LOW:
         recs.append(f"Queda {m.disk_free_percent:.1f}% de disco libre. Mirá el análisis de disco para ver qué ocupa más.")
-    if ratios.get("memoria", 1.0) < 0.6:
+    if ratios.get("memoria", 1.0) < WARN_THRESHOLD_LOW:
         recs.append("Memoria disponible baja: cerrá programas que no uses. Ojo, 'liberar RAM' no sirve, cerrar procesos sí.")
-    if ratios.get("basura", 1.0) < 0.8:
+    if ratios.get("basura", 1.0) < WARN_THRESHOLD_MED:
         recs.append(f"Hay unos {int(m.junk_mb)} MB de archivos temporales para revisar.")
-    if ratios.get("duplicados", 1.0) < 0.8:
+    if ratios.get("duplicados", 1.0) < WARN_THRESHOLD_MED:
         recs.append(f"Podrías recuperar ~{int(m.duplicate_mb)} MB eliminando copias duplicadas.")
-    if ratios.get("arranque", 1.0) < 0.6:
+    if ratios.get("arranque", 1.0) < WARN_THRESHOLD_LOW:
         recs.append(f"{m.startup_count} programas arrancan con Windows; desactivá los que no necesites desde el Administrador de tareas.")
     
     if m.quarantined_count > 0:

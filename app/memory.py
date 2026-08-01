@@ -173,7 +173,8 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
 
 def _read_windows_snapshot() -> MemorySnapshot:
     """
-    Accede a la API Win32 GlobalMemoryStatusEx vía ctypes.
+    Accede a la API Win32 GlobalMemoryStatusEx vía ctypes para obtener 
+    estadísticas detalladas de la memoria física y paginación.
     """
     import ctypes
 
@@ -285,8 +286,8 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
     Solicita al SO liberar el working set de un proceso específico.
-    Realiza validaciones previas de PID para evitar la manipulación de 
-    procesos críticos o del sistema.
+    Utiliza constantes de acceso: 
+    0x0400 (PROCESS_QUERY_INFORMATION), 0x0100 (PROCESS_SET_QUOTA), 0x0020 (PROCESS_VM_WRITE).
     """
     if os.name != "nt":
         return False, "Solo disponible en Windows."
@@ -310,7 +311,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if not hasattr(kernel32, "OpenProcess") or not hasattr(psapi, "EmptyWorkingSet"):
         return False, "APIs de sistema no disponibles."
 
-    # PROCESS_QUERY_INFORMATION (0x0400) | PROCESS_SET_QUOTA (0x0100) | PROCESS_VM_WRITE (0x0020)
+    # Obtener handle con permisos de acceso requeridos
     handle = kernel32.OpenProcess(0x0520, False, target_pid)
     if not handle:
         err = kernel32.GetLastError()
