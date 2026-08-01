@@ -142,6 +142,14 @@ _VALIDATION_SCHEMA: Final = {
     str: _validate_str
 }
 
+def _apply_validator(validador: Any, clave: str, valor: Any, tipo: type) -> Any:
+    """Despacha el valor crudo al validador correspondiente según su tipo."""
+    if tipo is int:
+        return validador(valor, clave)
+    if tipo is str:
+        return validador(clave, valor)
+    return validador(valor)
+
 def settings_path(path_or_base: PathLike | None = None) -> Path:
     """Determina la ubicación absoluta del archivo de configuración garantizando seguridad."""
     key = path_or_base or SETTINGS_DIR
@@ -175,12 +183,7 @@ def validate(values: Any) -> dict[str, Any]:
         validador = _VALIDATION_SCHEMA.get(tipo_defecto)
         
         if validador:
-            if tipo_defecto is int:
-                coerced = validador(val_raw, clave)
-            elif tipo_defecto is str:
-                coerced = validador(clave, val_raw)
-            else:
-                coerced = validador(val_raw)
+            coerced = _apply_validator(validador, clave, val_raw, tipo_defecto)
             limpio[clave] = coerced if coerced is not None else defecto
         else:
             limpio[clave] = val_raw

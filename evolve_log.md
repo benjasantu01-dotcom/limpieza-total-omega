@@ -1016,3 +1016,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-08-01T11:01:15` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se introdujeron docstrings descriptivos y type hints faltantes en funciones internas clave (`_get_sha256`, `_manifest_path`), además de renombrar variables ambiguas como `base` por `base_dir` para mejorar la legibilidad y claridad del propósito de los parámetros.
 - `2026-08-01T11:01:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-01T11:01:15` Corrida terminada. Total usado hoy: 256.
+- `2026-08-01T11:09:24` Arrancando corrida. Quedan hoy ~44 peticiones objetivo.
+- `2026-08-01T11:09:44` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 110): unterminated string literal (detected at line 110)
+- `2026-08-01T11:10:08` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se introdujeron type hints más precisos y docstrings enriquecidos con la cláusula "Raises" para clarificar el contrato de errores de la API pública, mejorando la legibilidad técnica sin alterar la lógica de seguridad.
+- `2026-08-01T11:10:30` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Mejoré la legibilidad del código introduciendo Type Aliases adicionales y refinando los docstrings para clarificar la responsabilidad de cada función de escaneo, asegurando además que los tipos de retorno sean consistentes según las reglas de seguridad.
+- `2026-08-01T11:10:39` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `validate` mediante la extracción de la lógica de despacho de validadores a una función privada, eliminando la ramificación anidada y permitiendo una extensión más limpia hacia nuevos tipos de datos.
+- `2026-08-01T11:10:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-01T11:10:39` Corrida terminada. Total usado hoy: 260.

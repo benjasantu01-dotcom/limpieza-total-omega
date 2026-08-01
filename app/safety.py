@@ -114,7 +114,10 @@ def _is_readonly(path: Path) -> bool:
 
 @lru_cache(maxsize=2048)
 def normalize(path: PathLike) -> Path:
-    """Convierte una ruta a un objeto Path absoluto, resuelto y expandido."""
+    """
+    Convierte una ruta a un objeto Path absoluto, resuelto y expandido.
+    Raises: ValueError si la ruta está vacía.
+    """
     if not isinstance(path, (str, os.PathLike)):
         raise TypeError(f"Entrada inválida: se esperaba str o PathLike, recibió {type(path)}")
     
@@ -186,7 +189,10 @@ def is_sensitive_file(path: PathLike) -> bool:
 
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> Path:
-    """Validación rigurosa antes de modificar el sistema."""
+    """
+    Validación rigurosa antes de modificar el sistema.
+    Raises: UnsafePathError si la ruta no cumple los estándares de seguridad.
+    """
     if path is None:
         raise UnsafePathError("Ruta nula recibida.")
         

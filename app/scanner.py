@@ -25,9 +25,9 @@ from safety import is_protected_path
 # Configuración de logger para el módulo
 logger = logging.getLogger(__name__)
 
-# Alias para facilitar la lectura de tipos de funciones de chequeo
-# Una función de chequeo debe recibir una ruta absoluta y retornar una sospecha o None
+# Alias de tipos para mejorar la legibilidad y mantenibilidad de la lógica de escaneo
 SuspicionCheck: TypeAlias = Callable[[Path], Optional["Suspicion"]]
+ScanResult: TypeAlias = List["Suspicion"]
 
 # Expresión regular para detectar extensiones dobles donde la final es ejecutable
 DOUBLE_EXTENSION_RE: Final[re.Pattern] = re.compile(r"\.(pdf|jpg|png|docx|xlsx|txt)\.(exe|scr|bat|cmd|js|vbs)$", re.IGNORECASE)
@@ -52,14 +52,17 @@ class Suspicion:
 
 
 class Scanner:
-    """Encapsula el estado y la lógica de recorrido del sistema de archivos."""
+    """
+    Encapsula el estado y la lógica de recorrido del sistema de archivos.
+    Mantiene un set de rutas visitadas para evitar ciclos en estructuras de archivos complejas.
+    """
     
     def __init__(self) -> None:
-        self.results: List[Suspicion] = []
+        self.results: ScanResult = []
         self.seen: set[str] = set()
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
-        """Verifica si la entrada es un enlace simbólico o junction para evitar bucles."""
+        """Verifica si la entrada es un enlace simbólico o junction mediante atributos de archivo."""
         try:
             return bool(entry.stat(follow_symlinks=False).st_file_attributes & 0x400)
         except (OSError, AttributeError):
@@ -67,10 +70,10 @@ class Scanner:
 
     def process_entry(self, entry: os.DirEntry, stack: List[str]) -> None:
         """
-        Analiza una entrada: si es directorio, lo apila; si es archivo, ejecuta los checks.
+        Analiza una entrada: si es directorio, lo apila para recorrido; si es archivo, ejecuta heurísticas.
         
         :param entry: Entrada del sistema de archivos proporcionada por os.scandir.
-        :param stack: Lista mutable que actúa como pila para el recorrido recursivo.
+        :param stack: Lista mutable que actúa como pila para el recorrido recursivo (DFS).
         """
         try:
             if entry.is_dir(follow_symlinks=False):
@@ -82,7 +85,6 @@ class Scanner:
                             self.seen.add(str(resolved_path))
                             stack.append(path_str)
             elif entry.is_file():
-                # Obtenemos stat aquí para evitar múltiples llamadas en los check_func
                 path_obj = Path(entry.path).resolve()
                 if not is_protected_path(path_obj):
                     self.results.extend(scan_file(path_obj))
@@ -91,25 +93,14 @@ class Scanner:
 
 
 def check_double_extension(path: Path) -> Optional[Suspicion]:
-    """
-    Evalúa si un archivo utiliza extensiones dobles engañosas.
-    
-    :param path: Objeto Path del archivo a verificar.
-    :return: Objeto Suspicion si se detecta riesgo, None en caso contrario.
-    """
+    """Evalúa si un archivo utiliza extensiones dobles (ej: .pdf.exe)."""
     if path and path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
     return None
 
 
 def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_THRESHOLD_HOURS) -> Optional[Suspicion]:
-    """
-    Detecta ejecutables creados recientemente como indicador de posible riesgo.
-    
-    :param path: Ruta del archivo a inspeccionar.
-    :param hours: Límite temporal en horas.
-    :return: Objeto Suspicion si el archivo es reciente y ejecutable.
-    """
+    """Detecta ejecutables creados recientemente como indicador de posible riesgo."""
     if not path or is_protected_path(path) or path.suffix.lower() not in SUSPICIOUS_EXECUTABLE_EXT:
         return None
         
@@ -125,12 +116,7 @@ def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_TH
 
 
 def check_system_lookalike(path: Path) -> Optional[Suspicion]:
-    """
-    Detecta ejecutables que intentan suplantar procesos críticos de Windows.
-    
-    :param path: Ruta del archivo a inspeccionar.
-    :return: Objeto Suspicion si el nombre coincide con procesos del sistema fuera de System32.
-    """
+    """Detecta ejecutables con nombres de procesos críticos de Windows fuera de System32."""
     if path and path.name and path.name.lower() in SYSTEM_LOOKALIKES:
         if is_protected_path(path):
             return None
@@ -149,17 +135,12 @@ CHECK_FUNCS: Final[List[SuspicionCheck]] = [
     check_system_lookalike
 ]
 
-def scan_file(path: Path) -> List[Suspicion]:
-    """
-    Ejecuta todas las heurísticas registradas sobre un archivo.
-    
-    :param path: Ruta absoluta del archivo a analizar.
-    :return: Lista de objetos Suspicion encontrados.
-    """
+def scan_file(path: Path) -> ScanResult:
+    """Aplica todas las heurísticas registradas sobre un archivo único."""
     if not path:
         return []
         
-    findings: List[Suspicion] = []
+    findings: ScanResult = []
     for check_func in CHECK_FUNCS:
         try:
             result = check_func(path)
@@ -170,8 +151,8 @@ def scan_file(path: Path) -> List[Suspicion]:
     return findings
 
 
-def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
-    """Realiza el escaneo recursivo iterativo utilizando la clase Scanner para mantener estado."""
+def scan_directory(directory: Union[str, Path]) -> ScanResult:
+    """Realiza el escaneo recursivo iterativo de un directorio completo."""
     if not directory:
         return []
         
