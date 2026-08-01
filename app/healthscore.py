@@ -129,8 +129,9 @@ def _to_int(value: Any, default: int = 0) -> int:
 
 def score_junk(junk_mb: float) -> float:
     """Normaliza archivos temporales: ratio decreciente respecto a JUNK_LIMIT_MB."""
-    if JUNK_LIMIT_MB <= 0 or not math.isfinite(float(junk_mb)): return 0.0
-    return _clamp(1.0 - (float(junk_mb) / JUNK_LIMIT_MB))
+    val = _to_float(junk_mb)
+    if JUNK_LIMIT_MB <= 0: return 0.0
+    return _clamp(1.0 - (val / JUNK_LIMIT_MB))
 
 
 def score_security(suspicious_count: int, warnings: int = 0) -> float:
@@ -143,20 +144,23 @@ def score_security(suspicious_count: int, warnings: int = 0) -> float:
 
 def score_memory(available_percent: float) -> float:
     """Normaliza RAM: ratio creciente respecto a RAM_IDEAL_PERCENT."""
-    if RAM_IDEAL_PERCENT <= 0 or not math.isfinite(float(available_percent)): return 0.0
-    return _clamp(float(available_percent) / RAM_IDEAL_PERCENT)
+    val = _to_float(available_percent)
+    if RAM_IDEAL_PERCENT <= 0: return 0.0
+    return _clamp(val / RAM_IDEAL_PERCENT)
 
 
 def score_disk(free_percent: float) -> float:
     """Normaliza espacio libre: ratio creciente respecto a DISK_IDEAL_PERCENT."""
-    if DISK_IDEAL_PERCENT <= 0 or not math.isfinite(float(free_percent)): return 0.0
-    return _clamp(float(free_percent) / DISK_IDEAL_PERCENT)
+    val = _to_float(free_percent)
+    if DISK_IDEAL_PERCENT <= 0: return 0.0
+    return _clamp(val / DISK_IDEAL_PERCENT)
 
 
 def score_duplicates(duplicate_mb: float) -> float:
     """Normaliza duplicados: ratio decreciente respecto a DUPLICATE_LIMIT_MB."""
-    if DUPLICATE_LIMIT_MB <= 0 or not math.isfinite(float(duplicate_mb)): return 0.0
-    return _clamp(1.0 - (float(duplicate_mb) / DUPLICATE_LIMIT_MB))
+    val = _to_float(duplicate_mb)
+    if DUPLICATE_LIMIT_MB <= 0: return 0.0
+    return _clamp(1.0 - (val / DUPLICATE_LIMIT_MB))
 
 
 def score_startup(startup_count: int) -> float:

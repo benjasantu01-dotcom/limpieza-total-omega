@@ -161,11 +161,15 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
     """
     Ordena una lista de objetos JunkFile según tamaño o fecha.
     """
-    if by not in ("size", "date"):
-        by = "size"
+    if not files:
+        return []
+        
+    by_normalized = by.lower() if by else "size"
+    if by_normalized not in ("size", "date"):
+        by_normalized = "size"
 
     key_func: Callable[[JunkFile], SortKey] = (
-        (lambda f: f.size_bytes) if by == "size" else (lambda f: f.modified)
+        (lambda f: f.size_bytes) if by_normalized == "size" else (lambda f: f.modified)
     )
     return sorted(files, key=key_func, reverse=not ascending)
 
@@ -236,7 +240,11 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     if not review_dir:
         return 0
 
-    dest = Path(review_dir).expanduser().resolve()
+    try:
+        dest = Path(review_dir).expanduser().resolve()
+    except (RuntimeError, OSError):
+        return 0
+        
     if not dest.exists() or not dest.is_dir() or dest.is_symlink():
         return 0
 

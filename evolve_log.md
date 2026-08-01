@@ -966,3 +966,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-08-01T10:09:31` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
 - `2026-08-01T10:09:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-01T10:09:31` Corrida terminada. Total usado hoy: 236.
+- `2026-08-01T10:18:20` Arrancando corrida. Quedan hoy ~64 peticiones objetivo.
+- `2026-08-01T10:18:47` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `score_memory` y `score_disk` para evitar divisiones por cero ante configuraciones erróneas y agregué validación de tipo/finitud más estricta en las funciones de score para prevenir errores inesperados si llegan datos inesperados.
+- `2026-08-01T10:19:44` ➖ Sin cambios en main.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `main.py` mediante una validación más estricta de las entradas de usuario en los diálogos, evitando que valores no numéricos o vacíos provoquen errores silenciosos o estados inconsistentes en `on_trim_process` y `on_restore_quarantine`, reforzando la integridad operativa de la app.
+- `2026-08-01T10:20:07` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-01T10:20:15` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `sort_junk` ante entradas inválidas o vacías y se mejoró la validación de parámetros en `delete_reviewed` para evitar errores en tiempo de ejecución, alineándose con las mejores prácticas de manejo de excepciones y validación de entradas.
+- `2026-08-01T10:20:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-01T10:20:15` Corrida terminada. Total usado hoy: 240.
