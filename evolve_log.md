@@ -597,3 +597,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-08-01T07:26:10` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se ha añadido un robusto manejo de excepciones y validación de tipos en la función `_rank_problems` para prevenir caídas de la interfaz si los datos procesados son inesperadamente nulos, infinitos o de tipos incorrectos, asegurando que el asistente siempre devuelva una lista válida incluso ante estados de sistema incoherentes.
 - `2026-08-01T07:26:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-01T07:26:10` Corrida terminada. Total usado hoy: 172.
+- `2026-08-01T07:34:56` Arrancando corrida. Quedan hoy ~128 peticiones objetivo.
+- `2026-08-01T07:35:25` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-08-01T07:35:46` ➖ Sin cambios en browser.py (enfoque: robustez ante casos límite). Motivo: Se mejoró la robustez de `directory_size` ante el acceso a directorios con permisos restringidos o sistemas de archivos inusuales, añadiendo un chequeo explícito de `is_file()` con manejo de errores más granular para evitar que una excepción en un archivo individual detenga el conteo de una rama completa.
+- `2026-08-01T07:36:10` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se mejoró la robustez de `walk_files` ante archivos bloqueados o inaccesibles durante el escaneo al implementar un manejo explícito de `OSError` al obtener el tamaño (`st_size`) de un archivo, evitando que una excepción en un solo archivo detenga el análisis completo de un directorio.
+- `2026-08-01T07:36:18` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-08-01T07:36:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-01T07:36:18` Corrida terminada. Total usado hoy: 176.

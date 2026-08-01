@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **253** (50.2% de aceptación)
+- Mejoras aceptadas: **251** (49.8% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 24
-- Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 199
+- Rechazadas por guardia de seguridad: 23
+- Sin cambios (nada sustancial que mejorar): 15
+- Sin respuesta de la IA (error o límite): 201
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-31 | 166 | 9 | 16 | 10 | 131 |
-| 2026-08-01 | 87 | 5 | 8 | 4 | 68 |
+| 2026-07-31 | 163 | 9 | 15 | 10 | 131 |
+| 2026-08-01 | 88 | 5 | 8 | 5 | 70 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **67**
 - manejo de errores y validación de entradas: **53**
 - rendimiento: **51**
-- seguridad defensiva: **48**
-- robustez ante casos límite: **34**
+- seguridad defensiva: **45**
+- robustez ante casos límite: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **22**
 - `scanner.py`: **22**
+- `quarantine.py`: **21**
 - `settings.py`: **20**
 - `browser.py`: **20**
 - `assistant.py`: **19**
-- `organizer.py`: **18**
 - `safety.py`: **18**
+- `diskreport.py`: **18**
 - `main.py`: **18**
-- `diskreport.py`: **17**
 - `healthscore.py`: **17**
-- `memory.py`: **16**
+- `organizer.py`: **17**
 - `branding.py`: **16**
 - `duplicates.py`: **15**
+- `memory.py`: **15**
 - `startup.py`: **15**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-01T07:36:10` **diskreport.py** (robustez ante casos límite): Se mejoró la robustez de `walk_files` ante archivos bloqueados o inaccesibles durante el escaneo al implementar un manejo explícito de `OSError` al obtener el tamaño (`st_size`) de un archivo, evitando que una excepción en un solo archivo detenga el análisis completo de un directorio.
 - `2026-08-01T07:26:10` **assistant.py** (robustez ante casos límite): Se ha añadido un robusto manejo de excepciones y validación de tipos en la función `_rank_problems` para prevenir caídas de la interfaz si los datos procesados son inesperadamente nulos, infinitos o de tipos incorrectos, asegurando que el asistente siempre devuelva una lista válida incluso ante estados de sistema incoherentes.
 - `2026-08-01T07:25:53` **startup.py** (rendimiento): Se optimizó `parse_registry_csv` reemplazando la lógica de parseo manual por una iteración eficiente sobre el CSV y se consolidó el filtrado de entradas para reducir llamadas innecesarias al sistema de archivos al procesar el registro.
 - `2026-08-01T07:25:29` **settings.py** (rendimiento): Se implementó un cache de validación mediante un diccionario hash para el esquema de validación (`_VALIDATION_SCHEMA`), sustituyendo la lógica condicional en `validate()` para reducir la complejidad algorítmica y evitar re-evaluaciones innecesarias del tipo de dato en cada ciclo de la iteración.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-01T06:55:28` **browser.py** (rendimiento): Optimizé `directory_size` reemplazando la construcción repetitiva de objetos `Path` y el uso de `os.path.abspath` (que invoca llamadas al sistema innecesarias) por operaciones nativas sobre los objetos `DirEntry` que ya provee `os.scandir`, reduciendo significativamente la carga de I/O en escaneos de disco.
 - `2026-08-01T06:54:38` **assistant.py** (rendimiento): Optimicé el rendimiento de `_rank_problems` convirtiéndola en una función que recorre las condiciones de forma eficiente y ajusté la lógica de `local_answer` para evitar el cálculo de la lista de problemas cuando una palabra clave genera una respuesta inmediata.
 - `2026-08-01T06:45:23` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica y la legibilidad interna de `startup.py` mediante la adición de docstrings detallados en funciones clave y la clarificación de tipos, asegurando que el propósito y los límites de cada proceso sean explícitos para cualquier futuro mantenimiento.
-- `2026-08-01T06:45:12` **settings.py** (legibilidad y documentación): Documenté el propósito y las restricciones de las funciones de validación y persistencia mediante docstrings detallados, clarificando la lógica de saneamiento de datos y el flujo de trabajo de seguridad para mejorar la mantenibilidad.
