@@ -77,23 +77,22 @@ _ALL_PROTECTED_TOKENS: Final[frozenset[str]] = PROTECTED_DIR_NAMES | _SYSTEM_ROO
 
 def _is_reparse_point(path: Path) -> bool:
     """
-    Verifica si una ruta es un punto de reparse (Junction/Symlink).
-    Evitamos seguirlos para prevenir bucles infinitos en escaneos o 
-    modificaciones accidentales fuera del árbol esperado.
+    Verifica si la ruta es un punto de reparse (Junction/Symlink).
+    Evita seguir enlaces para prevenir bucles en escaneos o efectos no deseados.
+    Retorna True si no se puede acceder a la información del archivo.
     """
     try:
         stats = path.lstat()
-        # 0x400 (FILE_ATTRIBUTE_REPARSE_POINT) detecta Junctions en Windows
         is_reparse = bool(getattr(stats, "st_file_attributes", 0) & 0x400)
         return is_reparse or path.is_symlink()
     except (OSError, PermissionError):
-        return True # Por seguridad, ante la duda, denegar el acceso.
+        return True 
 
 
 def _is_file_in_use(path: Path) -> bool:
     """
-    Verifica si el archivo está bloqueado por otro proceso.
-    Intenta obtener un descriptor de archivo con acceso exclusivo.
+    Intenta abrir el archivo en modo exclusivo para detectar bloqueos.
+    Si el archivo no existe o no se puede leer, se considera potencialmente peligroso.
     """
     if not path.is_file():
         return False
@@ -106,7 +105,7 @@ def _is_file_in_use(path: Path) -> bool:
 
 
 def _is_readonly(path: Path) -> bool:
-    """Valida el bit de solo lectura para evitar errores de escritura fallidos."""
+    """Verifica si el bit S_IWRITE está ausente en el modo del archivo."""
     try:
         return not bool(path.stat().st_mode & stat.S_IWRITE)
     except (OSError, PermissionError):
@@ -116,8 +115,8 @@ def _is_readonly(path: Path) -> bool:
 @lru_cache(maxsize=2048)
 def normalize(path: PathLike) -> Path:
     """
-    Normaliza rutas para comparaciones consistentes.
-    Resuelve symlinks y rutas relativas para evitar evasion por '..'
+    Convierte una ruta a un objeto Path absoluto, resuelto y expandido.
+    Lanza TypeError o ValueError si la entrada es inválida o vacía.
     """
     if not isinstance(path, (str, os.PathLike)):
         raise TypeError(f"Entrada inválida: se esperaba str o PathLike, recibió {type(path)}")
@@ -133,7 +132,7 @@ def normalize(path: PathLike) -> Path:
 
 
 def is_drive_root(path: PathLike) -> bool:
-    """Verifica si la ruta normalizada coincide con la raíz (anchor) de su unidad."""
+    """Determina si la ruta normalizada es un punto de montaje o raíz de unidad."""
     try:
         p = normalize(path)
         return p == Path(p.anchor)
@@ -144,8 +143,8 @@ def is_drive_root(path: PathLike) -> bool:
 @lru_cache(maxsize=1024)
 def is_protected_path(path: PathLike) -> bool:
     """
-    Determina si una ruta es peligrosa de modificar.
-    Comprueba jerarquías de sistema, raíces de unidad y enlaces simbólicos.
+    Verifica si la ruta coincide con directorios críticos o raíces.
+    Usa la cache para optimizar lecturas frecuentes en bucles de escaneo.
     """
     if not path:
         return True
@@ -155,7 +154,6 @@ def is_protected_path(path: PathLike) -> bool:
         if not p.is_absolute():
             return True
 
-        # Verifica si algún segmento de la ruta coincide con tokens protegidos
         if any(part.lower() in _ALL_PROTECTED_TOKENS for part in p.parts):
             return True
             
@@ -171,12 +169,14 @@ def is_protected_path(path: PathLike) -> bool:
 
 
 def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = False) -> bool:
-    """Verifica el confinamiento: impide que una operación escape del directorio base."""
+    """
+    Valida si 'child' reside estrictamente dentro de 'parent'.
+    Resuelve rutas para evitar ataques de escalada de directorios (../).
+    """
     if child is None or parent is None:
         return False
     try:
         c, p = normalize(child), normalize(parent)
-        # Comparamos componentes de la ruta para evitar problemas con symlinks o rutas inexistentes
         return p in c.parents or (allow_equal and c == p)
     except (ValueError, TypeError, OSError, RuntimeError):
         return False
@@ -184,7 +184,7 @@ def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = F
 
 @lru_cache(maxsize=512)
 def is_sensitive_file(path: PathLike) -> bool:
-    """Determina si el archivo tiene extensión de sistema o seguridad."""
+    """Evalúa si la extensión del archivo es crítica para la estabilidad del sistema."""
     if path is None:
         return True
     try:
@@ -195,61 +195,47 @@ def is_sensitive_file(path: PathLike) -> bool:
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> Path:
     """
-    Validador estricto para operaciones destructivas. 
-    Lanza UnsafePathError ante cualquier irregularidad en el archivo o ruta.
+    Validación rigurosa antes de modificar el sistema.
+    Lanza UnsafePathError si la ruta es riesgosa, está en uso o es inaccesible.
     """
     if path is None:
         raise UnsafePathError("Ruta nula recibida.")
         
-    # Protección contra inyección de caracteres nulos (null bytes)
-    if isinstance(path, str) and "\0" in path:
-        raise UnsafePathError("Ruta maliciosa detectada: contiene caracteres nulos.")
-    
-    # Protección contra caracteres de control bidireccionales (RTL/LTR)
-    if isinstance(path, str) and any(c in path for c in ("\u202e", "\u202d", "\u202a", "\u202b")):
-        raise UnsafePathError("Ruta maliciosa detectada: caracteres de control sospechosos.")
+    if isinstance(path, str) and ("\0" in path or any(c in path for c in ("\u202e", "\u202d", "\u202a", "\u202b"))):
+        raise UnsafePathError("Ruta maliciosa detectada.")
 
     try:
         p = normalize(path)
     except (TypeError, ValueError, OSError) as e:
-        raise UnsafePathError(f"Error al normalizar la ruta: {e}")
+        raise UnsafePathError(f"Error al normalizar: {e}")
 
-    # Evitar desbordamiento de buffer en sistemas legacy
     if len(str(p)) > 260:
         raise UnsafePathError("Operación bloqueada: ruta demasiado larga.")
 
     if not p.parts:
-        raise UnsafePathError("Ruta inválida: no contiene componentes detectables.")
+        raise UnsafePathError("Ruta sin componentes.")
 
     if str(p).startswith(("\\\\", "//")):
-        raise UnsafePathError("Operación bloqueada: rutas UNC o de red no permitidas.")
+        raise UnsafePathError("Operación bloqueada: rutas de red.")
     
     if p.exists():
         if not os.access(p, os.W_OK):
             raise UnsafePathError("Operación bloqueada: sin permisos de escritura.")
-        if _is_reparse_point(p):
-            raise UnsafePathError("Operación bloqueada: punto de reparse detectado.")
-        if _is_readonly(p):
-            raise UnsafePathError("Operación bloqueada: archivo de solo lectura.")
-        if _is_file_in_use(p):
-            raise UnsafePathError("Operación bloqueada: archivo en uso por otro proceso.")
-        # Previene riesgos asociados a enlaces físicos (hard links)
+        if _is_reparse_point(p) or _is_readonly(p) or _is_file_in_use(p):
+            raise UnsafePathError("Operación bloqueada: archivo inaccesible, protegido o en uso.")
         if p.is_file() and p.stat().st_nlink > 1:
-            raise UnsafePathError("Operación bloqueada: el archivo tiene múltiples enlaces físicos.")
+            raise UnsafePathError("Operación bloqueada: enlace físico detectado.")
 
     if is_drive_root(p) or is_protected_path(p):
-        raise UnsafePathError("Operación bloqueada: ruta de sistema protegida o raíz.")
+        raise UnsafePathError("Operación bloqueada: ruta de sistema protegida.")
     
     if not allow_sensitive and is_sensitive_file(p):
-        raise UnsafePathError(f"Operación bloqueada: extensión sensible detectada ({p.suffix}).")
+        raise UnsafePathError("Operación bloqueada: extensión sensible.")
     return p
 
 
 def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> bool:
-    """
-    Versión booleana de ensure_safe_to_modify.
-    Ideal para filtrado seguro en bucles de procesamiento masivo.
-    """
+    """Versión booleana de ensure_safe_to_modify para uso en iteradores."""
     try:
         ensure_safe_to_modify(path, allow_sensitive=allow_sensitive)
         return True
@@ -258,47 +244,34 @@ def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> bool:
 
 
 def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = False) -> list[Path]:
-    """Filtra una colección de rutas devolviendo solo las que superan los chequeos."""
+    """Filtra una colección y devuelve solo aquellas rutas seguras para manipular."""
     if not isinstance(paths, Iterable):
         return []
-        
-    safe_list = []
-    for p in paths:
-        try:
-            if is_safe_to_modify(p, allow_sensitive=allow_sensitive):
-                safe_list.append(normalize(p))
-        except (TypeError, ValueError, OSError):
-            continue
-    return safe_list
+    return [normalize(p) for p in paths if is_safe_to_modify(p, allow_sensitive=allow_sensitive)]
 
 
 def describe_protection(path: PathLike) -> str:
-    """Genera un mensaje de diagnóstico detallado sobre por qué una ruta fue rechazada."""
+    """Genera una explicación amigable sobre por qué se denegó el acceso a una ruta."""
     if not path:
         return "La ruta está vacía."
     try:
         p = normalize(path)
     except (TypeError, ValueError):
-        return "Ruta mal formada: no se puede analizar."
+        return "Ruta mal formada."
     if str(p).startswith(("\\\\", "//")):
         return f"'{p}' es una ruta de red."
     if is_drive_root(p):
         return f"'{p}' es la raíz de una unidad."
     if is_protected_path(p):
-        protegida = next(
-            (part for part in p.parts if part.lower() in _ALL_PROTECTED_TOKENS),
-            "ruta de sistema",
-        )
-        return f"'{p}' está protegida por contener '{protegida}'."
+        protegida = next((part for part in p.parts if part.lower() in _ALL_PROTECTED_TOKENS), "ruta de sistema")
+        return f"'{p}' protegida por '{protegida}'."
     if p.exists():
         if not os.access(p, os.W_OK):
-            return f"'{p}' no tiene permisos de escritura."
+            return f"'{p}' sin permisos de escritura."
         if _is_readonly(p):
             return f"'{p}' tiene atributos de solo lectura."
         if _is_file_in_use(p):
-            return f"'{p}' está en uso por otro programa."
-        if p.is_file() and p.stat().st_nlink > 1:
-            return f"'{p}' tiene múltiples enlaces físicos (potencial riesgo)."
+            return f"'{p}' está en uso."
     if is_sensitive_file(p):
-        return f"'{p.name}' tiene extensión sensible ({p.suffix})."
-    return f"'{p}' se puede modificar con confirmación."
+        return f"'{p.name}' extensión sensible ({p.suffix})."
+    return f"'{p}' es candidata a modificación."

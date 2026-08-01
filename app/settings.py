@@ -96,6 +96,7 @@ _NUMERIC_LIMITS: Final[dict[str, tuple[int, int]]] = {
 }
 
 def _coerce_bool(raw_value: Any) -> bool | None:
+    """Intenta convertir entradas variadas (str, int) a booleano canónico."""
     if isinstance(raw_value, bool):
         return raw_value
     if isinstance(raw_value, str):
@@ -103,6 +104,7 @@ def _coerce_bool(raw_value: Any) -> bool | None:
     return None
 
 def _coerce_int(raw_value: Any, setting_key: str) -> int | None:
+    """Convierte a entero y asegura que esté dentro de los rangos definidos."""
     if isinstance(raw_value, bool):
         return None
     try:
@@ -114,9 +116,8 @@ def _coerce_int(raw_value: Any, setting_key: str) -> int | None:
 
 def _validate_str(clave: str, valor: Any) -> str | None:
     """
-    Valida y normaliza valores de cadena.
-    Aplica chequeos de seguridad en 'ultima_carpeta' usando is_safe_to_modify.
-    Retorna el valor validado, o None si el valor es incompatible con el esquema.
+    Valida y normaliza cadenas. Para rutas, verifica seguridad mediante 
+    'is_safe_to_modify' antes de permitir la persistencia.
     """
     if not isinstance(valor, str):
         return None
@@ -145,13 +146,13 @@ _VALIDATION_SCHEMA: Final = {
 }
 
 def settings_path(path_or_base: PathLike | None = None) -> Path:
+    """Determina la ubicación absoluta del archivo de configuración garantizando seguridad."""
     key = path_or_base or SETTINGS_DIR
     if key in _path_cache:
         return _path_cache[key]
         
     try:
         base = Path(key).expanduser()
-        # Aseguramos que la base sea segura antes de intentar crear nada
         while not is_safe_to_modify(str(base)) and base != base.parent:
             base = base.parent
         res = base.resolve() / SETTINGS_FILE
@@ -162,6 +163,7 @@ def settings_path(path_or_base: PathLike | None = None) -> Path:
     return res
 
 def validate(values: Any) -> dict[str, Any]:
+    """Recorre el esquema definido en DEFAULTS y aplica coerciones seguras a cada valor."""
     if not isinstance(values, dict):
         return DEFAULTS.copy()
     
@@ -186,6 +188,7 @@ def validate(values: Any) -> dict[str, Any]:
     return limpio
 
 def load(path_or_base: PathLike | None = None) -> dict[str, Any]:
+    """Carga configuración desde disco con caché y validación de tamaño."""
     global _cached_settings, _last_path, _last_mtime
     
     ruta = settings_path(path_or_base)
@@ -208,6 +211,7 @@ def load(path_or_base: PathLike | None = None) -> dict[str, Any]:
         return DEFAULTS.copy()
 
 def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
+    """Guarda configuración mediante escritura atómica (tempfile + rename)."""
     global _cached_settings, _last_path, _last_mtime
     
     ruta = settings_path(path_or_base)
@@ -246,27 +250,33 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
         return None
 
 def update(changes: dict[str, Any], path_or_base: PathLike | None = None) -> dict[str, Any]:
+    """Aplica cambios parciales y guarda el resultado."""
     actual = load(path_or_base)
     actual.update(changes)
     save(actual, path_or_base)
     return actual
 
 def reset(path_or_base: PathLike | None = None) -> dict[str, Any]:
+    """Restaura todos los valores a los de fábrica."""
     save(DEFAULTS, path_or_base)
     return DEFAULTS.copy()
 
 def get(key: str, path_or_base: PathLike | None = None) -> Any:
+    """Accesor simple para obtener un valor específico."""
     return load(path_or_base).get(key, DEFAULTS.get(key))
 
 def assistant_api_key(path_or_base: PathLike | None = None) -> str:
+    """Prioriza variables de entorno sobre el JSON para proteger la API Key."""
     desde_entorno = os.environ.get(API_KEY_ENV_VAR, "").strip()
     return desde_entorno or load(path_or_base).get("asistente_clave_api", "").strip()
 
 def assistant_enabled(path_or_base: PathLike | None = None) -> bool:
+    """Valida si el asistente está activo y tiene una clave válida para operar."""
     config = load(path_or_base)
     return bool(config.get("asistente_activado")) and bool(assistant_api_key(path_or_base))
 
 def describe(path_or_base: PathLike | None = None) -> list[str]:
+    """Genera una representación textual para reportes del estado de configuración."""
     actual = load(path_or_base)
     clave = assistant_api_key(path_or_base)
     origen = f"variable de entorno {API_KEY_ENV_VAR}" if os.environ.get(API_KEY_ENV_VAR) else ("archivo de configuración" if clave else "no configurada")

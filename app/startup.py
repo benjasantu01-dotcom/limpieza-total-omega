@@ -63,7 +63,10 @@ class StartupEntry:
     _checked_exists: bool = False
 
     def _is_valid_executable(self, path: Path) -> bool:
-        """Verifica si la ruta apunta a un ejecutable reconocido o existe físicamente."""
+        """
+        Heurística de validación de ruta: verifica extensiones de control
+        o existencia física si la ruta es un archivo ejecutable genérico.
+        """
         try:
             return path.suffix.lower() in ('.exe', '.bat', '.cmd', '.scr') or path.exists()
         except (OSError, ValueError, RuntimeError, TypeError):
@@ -71,8 +74,8 @@ class StartupEntry:
 
     def _extract_quoted_path(self, raw_cmd: str) -> str:
         """
-        Extrae la ruta de un ejecutable envuelto en comillas dobles.
-        Retorna la ruta absoluta como string si es válida, o cadena vacía.
+        Parsea comandos que incluyen rutas con espacios entre comillas.
+        Retorna la ruta absoluta si es válida, de lo contrario cadena vacía.
         """
         end_quote: int = raw_cmd.find('"', 1)
         if end_quote == -1:
@@ -124,7 +127,10 @@ class StartupEntry:
 
 
 def startup_folders() -> List[Path]:
-    """Retorna las rutas a las carpetas 'Inicio' (usuario y sistema)."""
+    """
+    Retorna la lista de rutas del sistema de archivos donde los accesos directos
+    triggers el inicio automático (Startup Folders).
+    """
     if os.name != "nt":
         return []
     candidates: List[Path] = []
@@ -178,8 +184,8 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
 
 def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry]:
     """
-    Procesa el output crudo de PowerShell en formato CSV.
-    Aplica filtros de seguridad sobre la existencia y protección de las rutas.
+    Transforma el CSV bruto de PowerShell en objetos StartupEntry.
+    Valida la seguridad de cada ruta encontrada antes de incorporarla.
     """
     parsed_entries: List[StartupEntry] = []
     if not isinstance(text, str) or not text.strip():
@@ -217,8 +223,8 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
 
 def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[StartupEntry]:
     """
-    Ejecuta consultas de PowerShell para extraer entradas del Registro de Windows.
-    Utiliza un comando unificado para minimizar el número de procesos externos.
+    Ejecuta una consulta agregada de PowerShell sobre el Registro de Windows.
+    Extrae valores de las claves Run y los procesa vía parse_registry_csv.
     """
     if os.name != "nt":
         return []

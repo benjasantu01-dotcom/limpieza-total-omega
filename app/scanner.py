@@ -91,7 +91,12 @@ class Scanner:
 
 
 def check_double_extension(path: Path) -> Optional[Suspicion]:
-    """Detecta archivos con doble extensión que intentan engañar al usuario."""
+    """
+    Evalúa si un archivo utiliza extensiones dobles engañosas.
+    
+    :param path: Objeto Path del archivo a verificar.
+    :return: Objeto Suspicion si se detecta riesgo, None en caso contrario.
+    """
     if path and path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
     return None
@@ -99,10 +104,11 @@ def check_double_extension(path: Path) -> Optional[Suspicion]:
 
 def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_THRESHOLD_HOURS) -> Optional[Suspicion]:
     """
-    Detecta ejecutables nuevos; su presencia reciente suele ser un indicador de riesgo.
+    Detecta ejecutables creados recientemente como indicador de posible riesgo.
     
     :param path: Ruta del archivo a inspeccionar.
-    :param hours: Límite de tiempo en horas para considerar un archivo como reciente.
+    :param hours: Límite temporal en horas.
+    :return: Objeto Suspicion si el archivo es reciente y ejecutable.
     """
     if not path or path.suffix.lower() not in SUSPICIOUS_EXECUTABLE_EXT:
         return None
@@ -117,7 +123,12 @@ def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_TH
 
 
 def check_system_lookalike(path: Path) -> Optional[Suspicion]:
-    """Detecta ejecutables que suplantan nombres de procesos críticos fuera de System32."""
+    """
+    Detecta ejecutables que intentan suplantar procesos críticos de Windows.
+    
+    :param path: Ruta del archivo a inspeccionar.
+    :return: Objeto Suspicion si el nombre coincide con procesos del sistema fuera de System32.
+    """
     if path and path.name and path.name.lower() in SYSTEM_LOOKALIKES:
         try:
             parent = path.parent
@@ -135,22 +146,24 @@ CHECK_FUNCS: Final[List[SuspicionCheck]] = [
 ]
 
 def scan_file(path: Path) -> List[Suspicion]:
-    """Ejecuta los tests definidos en CHECK_FUNCS sobre un archivo individual."""
+    """
+    Ejecuta todas las heurísticas registradas sobre un archivo.
+    
+    :param path: Ruta absoluta del archivo a analizar.
+    :return: Lista de objetos Suspicion encontrados.
+    """
     if not path or not path.exists() or is_protected_path(path):
         return []
         
-    try:
-        findings: List[Suspicion] = []
-        for check_func in CHECK_FUNCS:
-            try:
-                res = check_func(path)
-                if res:
-                    findings.append(res)
-            except (PermissionError, OSError, FileNotFoundError):
-                continue
-        return findings
-    except (RuntimeError, OSError):
-        return []
+    findings: List[Suspicion] = []
+    for check_func in CHECK_FUNCS:
+        try:
+            result = check_func(path)
+            if result:
+                findings.append(result)
+        except (PermissionError, OSError, FileNotFoundError):
+            continue
+    return findings
 
 
 def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
