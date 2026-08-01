@@ -1327,3 +1327,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-01T14:28:02` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-08-01T14:28:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-01T14:28:02` Corrida terminada. Total usado hoy: 336.
+- `2026-08-01T14:34:08` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-01T14:34:40` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `build_context` agregando una validación explícita para evitar que una instancia de `SystemContext` procese tipos de datos inesperados, asegurando que `junk_mb` y otras métricas se mantengan dentro de rangos coherentes antes de ser usadas por el asistente.
+- `2026-08-01T14:35:08` ➖ Sin cambios en branding.py (enfoque: manejo de errores y validación de entradas). Motivo: Se reforzó la robustez de `save_logo_svg` y `draw_logo` mediante la validación proactiva de sus parámetros de entrada, evitando posibles errores de ejecución al procesar rutas, tipos de datos inesperados o valores numéricos inválidos que podrían desestabilizar el renderizado o la escritura en disco.
+- `2026-08-01T14:35:29` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-01T14:35:38` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `walk_files` y las funciones de análisis al validar explícitamente que la entrada de directorio sea procesable y capturar excepciones de tipo `TypeError` (además de las existentes) al interactuar con `Path` o `os.scandir`, evitando fallos silenciosos por entradas mal formadas.
+- `2026-08-01T14:35:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-01T14:35:38` Corrida terminada. Total usado hoy: 340.

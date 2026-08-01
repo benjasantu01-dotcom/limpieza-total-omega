@@ -154,7 +154,7 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
         base_path = Path(directory).expanduser().resolve(strict=True)
         if not base_path.is_dir() or (skip_protected and is_protected_path(base_path)):
             return
-    except (OSError, RuntimeError, PermissionError, ValueError):
+    except (OSError, RuntimeError, PermissionError, ValueError, TypeError):
         return
 
     visited = {base_path}
@@ -188,9 +188,9 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
                                 continue
                             size = entry.stat().st_size
                             yield full_entry_path, size
-                    except (OSError, PermissionError, FileNotFoundError):
+                    except (OSError, PermissionError, FileNotFoundError, TypeError):
                         continue
-        except (OSError, PermissionError, FileNotFoundError):
+        except (OSError, PermissionError, FileNotFoundError, TypeError):
             return
 
     yield from recursive_scan(base_path)
@@ -248,11 +248,11 @@ def largest_folders(directory: str | os.PathLike, limit: int = 10, skip_protecte
                 stats = folder_map[top_level]
                 stats.size_bytes += size
                 stats.file_count += 1
-            except (ValueError, IndexError, OSError, FileNotFoundError):
+            except (ValueError, IndexError, OSError, FileNotFoundError, TypeError):
                 continue
 
         return heapq.nlargest(max(0, limit), folder_map.values(), key=lambda f: f.size_bytes)
-    except (OSError, RuntimeError, PermissionError, ValueError):
+    except (OSError, RuntimeError, PermissionError, ValueError, TypeError):
         return []
 
 
@@ -282,7 +282,7 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
         path_obj = Path(directory).expanduser().resolve(strict=True)
         if not path_obj.is_dir():
             return [f"Error: La ruta '{directory}' no es un directorio válido."]
-    except (OSError, RuntimeError, PermissionError, ValueError):
+    except (OSError, RuntimeError, PermissionError, ValueError, TypeError):
         return ["Error: No se pudo acceder a la ruta especificada."]
         
     ext_map: Dict[str, ExtStat] = defaultdict(ExtStat)

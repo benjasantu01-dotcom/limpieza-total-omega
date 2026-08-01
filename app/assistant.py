@@ -194,7 +194,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         except (AttributeError, ValueError, TypeError):
             return default
 
-    if metrics:
+    if metrics is not None:
         ctx.junk_mb = max(0.0, extract(metrics, "junk_mb", 0.0))
         ctx.suspicious_count = max(0, extract(metrics, "suspicious_count", 0, int))
         ctx.suspicious_warnings = max(0, extract(metrics, "suspicious_warnings", 0, int))
@@ -205,7 +205,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         ctx.quarantined_count = max(0, extract(metrics, "quarantined_count", 0, int))
         ctx.analyzed = True
 
-    if health:
+    if health is not None:
         score_raw = extract(health, "score", 0, int)
         ctx.score = max(0, min(score_raw, 100))
         grade = getattr(health, "grade", "")
