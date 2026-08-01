@@ -161,7 +161,7 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
     if not files:
         return []
         
-    by_normalized = by.lower() if by else "size"
+    by_normalized = (by or "size").lower()
     if by_normalized not in ("size", "date"):
         by_normalized = "size"
 
@@ -178,7 +178,11 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
     if not review_dir:
         raise ValueError("La ruta de revisión no puede estar vacía")
 
-    dest = Path(review_dir).expanduser().resolve()
+    try:
+        dest = Path(review_dir).expanduser().resolve()
+    except (RuntimeError, OSError) as e:
+        raise ValueError(f"Ruta de revisión inválida: {e}")
+
     if dest.is_symlink():
         raise PermissionError("Ruta de destino inválida: symlink detectado.")
         
@@ -189,17 +193,14 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         if not isinstance(jf, JunkFile) or not jf.path:
             continue
         try:
-            # Validar existencia y accesibilidad antes de operar
             if not jf.path.exists() or jf.path.is_symlink():
                 continue
             
             full_source_path = jf.path.resolve()
             
-            # Chequeos de seguridad y jerarquía
             if not is_safe_to_modify(full_source_path) or dest in full_source_path.parents or full_source_path.parent == dest:
                 continue
             
-            # Verificación de bloqueo de archivo (en uso)
             try:
                 with open(full_source_path, 'rb+'): pass
             except (IOError, OSError):

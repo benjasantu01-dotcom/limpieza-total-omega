@@ -134,10 +134,11 @@ def normalize(path: PathLike) -> Path:
 def is_drive_root(path: PathLike) -> bool:
     """Determina si la ruta normalizada es un punto de montaje o raíz de unidad."""
     try:
+        if path is None: return True
         p = normalize(path)
         return p == Path(p.anchor)
     except (ValueError, TypeError, OSError):
-        return False
+        return True
 
 
 @lru_cache(maxsize=1024)

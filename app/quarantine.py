@@ -161,9 +161,7 @@ def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload:
         if not isinstance(entry, dict) or not required_keys.issubset(entry.keys()):
             continue
         try:
-            if not all(isinstance(entry[k], (str, int)) for k in required_keys):
-                continue
-                
+            # Validación estricta de tipos esperados
             item = QuarantineItem(
                 item_id=str(entry["item_id"]),
                 original_path=str(entry["original_path"]),
@@ -174,7 +172,8 @@ def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload:
                 sha256=str(entry.get("sha256", ""))
             )
             items.append(item)
-        except (ValueError, TypeError):
+        except (ValueError, TypeError, KeyError):
+            # Saltear registros con datos malformados o tipos incompatibles
             continue
     _manifest_cache[base_str] = (current_mtime, items)
     return items

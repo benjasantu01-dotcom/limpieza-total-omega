@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **241** (47.8% de aceptación)
+- Mejoras aceptadas: **240** (47.6% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 23
+- Rechazadas por guardia de seguridad: 24
 - Sin cambios (nada sustancial que mejorar): 17
 - Sin respuesta de la IA (error o límite): 209
 
@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-31 | 80 | 3 | 8 | 7 | 62 |
-| 2026-08-01 | 161 | 11 | 15 | 10 | 147 |
+| 2026-07-31 | 76 | 3 | 8 | 7 | 62 |
+| 2026-08-01 | 164 | 11 | 16 | 10 | 147 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **54**
-- rendimiento: **52**
+- legibilidad y documentación: **53**
+- rendimiento: **49**
 - seguridad defensiva: **49**
 - robustez ante casos límite: **45**
-- manejo de errores y validación de entradas: **41**
+- manejo de errores y validación de entradas: **44**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **21**
+- `quarantine.py`: **22**
 - `diskreport.py`: **19**
 - `main.py`: **19**
+- `organizer.py`: **19**
 - `settings.py`: **19**
 - `scanner.py`: **19**
-- `assistant.py`: **18**
 - `healthscore.py`: **18**
-- `organizer.py`: **18**
-- `browser.py`: **17**
-- `startup.py`: **16**
-- `branding.py`: **16**
-- `safety.py`: **15**
+- `assistant.py`: **17**
+- `safety.py`: **16**
+- `browser.py`: **16**
+- `branding.py`: **15**
+- `startup.py`: **15**
 - `duplicates.py`: **13**
 - `memory.py`: **13**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-01T14:55:53` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `is_within_directory` y `is_protected_path` al agregar validaciones explícitas contra entradas nulas o mal formadas, evitando que errores silenciosos en la normalización se interpreten incorrectamente como "seguro".
+- `2026-08-01T14:55:26` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de la carga del manifiesto mediante la validación estricta de la estructura del JSON y tipos de datos, asegurando que un archivo de manifiesto corrompido no detenga el funcionamiento de la app ni permita la inyección de objetos inválidos.
+- `2026-08-01T14:54:59` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` capturando explícitamente posibles valores `None` o errores de resolución de rutas en la entrada, y refiné la validación de `sort_junk` para asegurar que el manejo de parámetros sea predecible ante entradas malformadas o inesperadas.
 - `2026-08-01T14:46:13` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` añadiendo una validación explícita para asegurar que el `handle` se cierre correctamente incluso ante errores inesperados, y refiné el manejo de errores en las llamadas a APIs de `ctypes` capturando explícitamente posibles fallos en la liberación del handle.
 - `2026-08-01T14:46:04` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `main.py` mediante una validación de seguridad proactiva y centralizada en `_ask_folder`, evitando el uso de bloques `try-except` vacíos en la carga de archivos, y añadiendo chequeos de integridad en las entradas numéricas del usuario para prevenir excepciones de tipo `ValueError` antes de operar.
 - `2026-08-01T14:45:06` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_generate_recommendations` mediante la validación proactiva de datos de entrada (`m`), evitando errores de procesamiento cuando el estado de los componentes sea inconsistente o parcial.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-01T13:02:18` **quarantine.py** (seguridad defensiva): Se añadió una validación explícita en `quarantine_file` para asegurar que el archivo de origen no sea una ruta crítica del sistema o un directorio, evitando que la lógica de movimiento pueda ser abusada para extraer o reubicar componentes del SO incluso si no están en la lista de bloqueados, reforzando la defensa en profundidad.
 - `2026-08-01T12:52:58` **main.py** (seguridad defensiva): Mejoré la seguridad defensiva en `main.py` al reemplazar la validación manual de rutas en `on_trim_process` y `on_restore_quarantine` con una llamada centralizada y robusta al método `safety.ensure_safe_to_modify`, garantizando que cualquier intento de interactuar con rutas críticas (como procesos de sistema o directorios protegidos) sea bloqueado antes de iniciar la operación.
 - `2026-08-01T12:52:01` **healthscore.py** (seguridad defensiva): Se ha mejorado la robustez de `compute_score` frente a la inyección de configuraciones externas potencialmente maliciosas, asegurando que la suma de pesos de `WEIGHTS` y los valores individuales se validen estrictamente para evitar comportamientos inesperados o divisiones por cero.
-- `2026-08-01T12:42:46` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` y `group_by_size` mediante la normalización de rutas (`.resolve()`) antes de cualquier verificación de seguridad, asegurando que las comparaciones de `is_protected_path` se realicen siempre sobre rutas absolutas y canónicas, evitando así posibles bypasses por rutas relativas o aliases.
-- `2026-08-01T12:42:37` **diskreport.py** (seguridad defensiva): Se ha robustecido el escaneo de `walk_files` para evitar el seguimiento de punteros fuera del árbol de directorios original (ataques de path traversal mediante symlinks/junctions) mediante una validación estricta de padres tras la resolución de la ruta.
-- `2026-08-01T12:42:14` **browser.py** (seguridad defensiva): Se introdujo la validación de puntos de reparse (junctions) en `_is_safe_path` para prevenir el escape de la carpeta base y se aseguró que `directory_size` no siga enlaces simbólicos, reforzando la seguridad defensiva contra estructuras de archivos maliciosas o inesperadas.
