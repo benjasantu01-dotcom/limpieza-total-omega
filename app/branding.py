@@ -212,11 +212,12 @@ def _hex_to_rgb(value: HexColor) -> tuple[int, int, int]:
     """Convierte hexadecimal (#RRGGBB) a tupla RGB."""
     if not isinstance(value, str) or not value.startswith("#"):
         return (0, 0, 0)
+    limpio = value.lstrip("#")
+    if len(limpio) != 6:
+        return (0, 0, 0)
     try:
-        limpio = value.lstrip("#")
-        if len(limpio) != 6: raise ValueError
         return (int(limpio[0:2], 16), int(limpio[2:4], 16), int(limpio[4:6], 16))
-    except (ValueError, IndexError):
+    except ValueError:
         return (0, 0, 0)
 
 

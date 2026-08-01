@@ -68,6 +68,7 @@ VALID_ACCENTS: Final = ("menta", "violeta", "magenta", "cian", "ambar")
 _cached_settings: dict[str, Any] | None = None
 _last_path: Path | None = None
 _last_mtime: float = 0.0
+_path_cache: dict[PathLike, Path] = {}
 
 DEFAULTS: Final[dict[str, Any]] = {
     "tema": "oscuro",
@@ -144,14 +145,20 @@ _VALIDATION_SCHEMA: Final = {
 }
 
 def settings_path(path_or_base: PathLike | None = None) -> Path:
+    key = path_or_base or SETTINGS_DIR
+    if key in _path_cache:
+        return _path_cache[key]
+        
     try:
-        base = Path(path_or_base).expanduser() if path_or_base else SETTINGS_DIR
-        # Si la ruta no es segura, buscamos el padre más cercano que sí lo sea
+        base = Path(key).expanduser()
         while not is_safe_to_modify(str(base)) and base != base.parent:
             base = base.parent
-        return base.resolve() / SETTINGS_FILE
+        res = base.resolve() / SETTINGS_FILE
     except (OSError, RuntimeError, ValueError):
-        return SETTINGS_DIR.resolve() / SETTINGS_FILE
+        res = SETTINGS_DIR.resolve() / SETTINGS_FILE
+        
+    _path_cache[key] = res
+    return res
 
 def validate(values: Any) -> dict[str, Any]:
     if not isinstance(values, dict):

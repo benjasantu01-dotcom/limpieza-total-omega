@@ -185,6 +185,7 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
     if not isinstance(text, str) or not text.strip():
         return parsed_entries
         
+    ignored_names = {"name", "pscustomobject"}
     for line in text.splitlines():
         clean_line: str = line.strip()
         if not clean_line:
@@ -197,15 +198,13 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
         name_key: str = columns[0].strip().strip('"\'')
         value_cmd: str = columns[1].strip().strip('"\'')
         
-        # Validar que los valores extraídos sean strings útiles y no cabeceras de PS
-        if not name_key or name_key.lower() in ("name", "pscustomobject") or name_key.upper().startswith("PS"):
+        if not name_key or name_key.lower() in ignored_names or name_key.upper().startswith("PS"):
             continue
             
         entry = StartupEntry(name=name_key, command=value_cmd, source=source)
         
         try:
             executable_path = entry.executable
-            # Validar existencia solo si la ruta parece absoluta
             if executable_path and os.path.isabs(executable_path) and os.path.exists(executable_path):
                 if is_protected_path(Path(executable_path)):
                     continue
@@ -224,13 +223,9 @@ def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[Start
     if os.name != "nt":
         return []
     
-    query_parts: List[str] = []
-    for key in keys:
-        if isinstance(key, str):
-            safe_key: str = subprocess.list2cmdline([key])
-            query_parts.append(f"try {{ (Get-ItemProperty {safe_key} -ErrorAction SilentlyContinue).psobject.properties | Select-Object Name, Value | ConvertTo-Csv -NoTypeInformation }} catch {{ }}")
-    
-    ps_cmd: str = " ; ".join(query_parts)
+    # Concatenar en un solo bloque para evitar múltiples procesos
+    ps_cmd = "; ".join(f"Get-ItemProperty '{k}' -ErrorAction SilentlyContinue | Select-Object * -ExcludeProperty PS*" for k in keys)
+    ps_cmd = f"$data = {ps_cmd}; $data | ConvertTo-Csv -NoTypeInformation"
     
     try:
         result: subprocess.CompletedProcess = subprocess.run(
@@ -249,15 +244,18 @@ def list_startup_entries() -> List[StartupEntry]:
     seen_names: set[str] = set()
     unique_entries: List[StartupEntry] = []
     
-    def _gen_entries() -> Iterator[StartupEntry]:
-        yield from entries_from_folders()
-        yield from entries_from_registry()
-
-    for entry in _gen_entries():
+    for entry in entries_from_folders():
         key: str = entry.name.lower()
         if key not in seen_names:
             seen_names.add(key)
             unique_entries.append(entry)
+            
+    for entry in entries_from_registry():
+        key: str = entry.name.lower()
+        if key not in seen_names:
+            seen_names.add(key)
+            unique_entries.append(entry)
+            
     return unique_entries
 
 

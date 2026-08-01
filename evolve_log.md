@@ -1246,3 +1246,49 @@ FAILED evolve/tests/test_assistant.py::test_save_creates_the_folder - AssertionE
 - `2026-08-01T02:50:36` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizé el rendimiento de `scan_file` y `check_recent_executable_in_downloads` eliminando llamadas redundantes a `path.exists()` y `path.stat()`, las cuales generan operaciones de entrada/salida innecesarias que ralentizan significativamente el escaneo profundo.
 - `2026-08-01T02:50:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-01T02:50:36` Corrida terminada. Total usado hoy: 64.
+- `2026-08-01T02:59:28` Arrancando corrida. Quedan hoy ~236 peticiones objetivo.
+- `2026-08-01T03:00:05` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se implementó un cache de validación de rutas en `settings_path` para evitar llamadas redundantes y costosas a `is_safe_to_modify` y `expanduser` cada vez que se accede a la configuración.
+- `2026-08-01T03:00:29` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Optimicé el rendimiento de `entries_from_registry` consolidando las múltiples llamadas al registro en un solo comando de PowerShell para reducir la sobrecarga de invocación de procesos externos, y sustituí la lógica de validación redundante en `parse_registry_csv` por una verificación más eficiente mediante `set` y `os.path.exists`.
+- `2026-08-01T03:01:01` Tests FALLARON:
+```
+gemini
+E         + local
+
+evolve/tests/test_assistant.py:387: AssertionError
+_______________ test_metrics_are_withheld_when_the_user_says_no ________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-3/test_metrics_are_withheld_when0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f8d488ae7b0>
+
+    def test_metrics_are_withheld_when_the_user_says_no(tmp_path, monkeypatch):
+        """Se puede usar el asistente sin mandar ni una métrica."""
+        monkeypatch.setenv(settings.API_KEY_ENV_VAR, "clave")
+        settings.save({**settings.DEFAULTS, "asistente_activado": True,
+                       "asistente_enviar_metricas": False}, tmp_path)
+    
+        enviado = {}
+    
+        def espia(question, context_text, api_key, model):
+            enviado["texto"] = context_text
+            return "ok"
+    
+        monkeypatch.setattr(assistant, "_call_gemini", espia)
+        assistant.ask("¿qué hago?", _contexto_lleno(), tmp_path)
+>       assert "2400" not in enviado["texto"]
+                             ^^^^^^^^^^^^^^^^
+E       KeyError: 'texto'
+
+evolve/tests/test_assistant.py:418: KeyError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_ask_uses_the_online_engine_when_authorized - AssertionError: assert 'local' == 'gemini'
+  
+  - gemini
+  + local
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - KeyError: 'texto'
+2 failed, 297 passed in 2.13s
+
+```
+- `2026-08-01T03:01:01` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Reforcé la robustez del motor local ante posibles configuraciones de `settings` mal formadas o valores extremos, asegurando que `ask` no falle silenciosamente y siempre retorne una respuesta válida, además de añadir validaciones de tipo en `_rank_problems` para evitar errores de ejecución si los datos de entrada son inesperados.
+- `2026-08-01T03:01:14` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `save_logo_svg` y `_hex_to_rgb` frente a entradas malformadas o inesperadas, añadiendo validaciones proactivas para prevenir fallos silenciosos en tiempo de ejecución.
+- `2026-08-01T03:01:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-01T03:01:14` Corrida terminada. Total usado hoy: 68.

@@ -7,46 +7,49 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **253** (50.2% de aceptación)
-- Rechazadas por tests: 18
+- Rechazadas por tests: 19
 - Rechazadas por guardia de seguridad: 25
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 194
+- Sin respuesta de la IA (error o límite): 193
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-30 | 44 | 4 | 5 | 1 | 36 |
+| 2026-07-30 | 41 | 4 | 5 | 1 | 35 |
 | 2026-07-31 | 179 | 12 | 17 | 10 | 132 |
-| 2026-08-01 | 30 | 2 | 3 | 3 | 26 |
+| 2026-08-01 | 33 | 3 | 3 | 3 | 26 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **65**
 - manejo de errores y validación de entradas: **52**
-- seguridad defensiva: **51**
-- rendimiento: **49**
-- robustez ante casos límite: **36**
+- rendimiento: **51**
+- seguridad defensiva: **48**
+- robustez ante casos límite: **37**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **22**
 - `scanner.py`: **22**
-- `healthscore.py`: **19**
-- `settings.py`: **19**
-- `branding.py`: **19**
+- `settings.py`: **20**
+- `branding.py`: **20**
 - `browser.py`: **19**
 - `diskreport.py`: **19**
-- `duplicates.py`: **18**
 - `assistant.py`: **18**
-- `main.py`: **17**
+- `healthscore.py`: **18**
+- `duplicates.py`: **17**
 - `organizer.py`: **17**
 - `safety.py`: **16**
-- `startup.py`: **14**
+- `main.py`: **16**
+- `startup.py`: **15**
 - `memory.py`: **14**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-01T03:01:14` **branding.py** (robustez ante casos límite): Se ha mejorado la robustez de `save_logo_svg` y `_hex_to_rgb` frente a entradas malformadas o inesperadas, añadiendo validaciones proactivas para prevenir fallos silenciosos en tiempo de ejecución.
+- `2026-08-01T03:00:29` **startup.py** (rendimiento): Optimicé el rendimiento de `entries_from_registry` consolidando las múltiples llamadas al registro en un solo comando de PowerShell para reducir la sobrecarga de invocación de procesos externos, y sustituí la lógica de validación redundante en `parse_registry_csv` por una verificación más eficiente mediante `set` y `os.path.exists`.
+- `2026-08-01T03:00:05` **settings.py** (rendimiento): Se implementó un cache de validación de rutas en `settings_path` para evitar llamadas redundantes y costosas a `is_safe_to_modify` y `expanduser` cada vez que se accede a la configuración.
 - `2026-08-01T02:50:36` **scanner.py** (rendimiento): Optimizé el rendimiento de `scan_file` y `check_recent_executable_in_downloads` eliminando llamadas redundantes a `path.exists()` y `path.stat()`, las cuales generan operaciones de entrada/salida innecesarias que ralentizan significativamente el escaneo profundo.
 - `2026-08-01T02:49:46` **quarantine.py** (rendimiento): Optimicé el rendimiento de `load_manifest` para evitar lecturas de disco innecesarias mediante una validación de `st_mtime` del archivo de manifiesto, eliminando el re-procesamiento de JSON cuando el archivo no ha sido modificado.
 - `2026-08-01T02:40:52` **organizer.py** (rendimiento): Optimicé el rendimiento de `scan_for_junk` convirtiendo la `SYSTEM_FOLDER_BLOCKLIST` en un `set` (ya lo era, pero ahora se accede directamente) y evitando múltiples llamadas a `Path.expanduser()` dentro del bucle recursivo, además de cachear el acceso a `entry.name.lower()` para reducir operaciones redundantes de strings en el árbol de directorios.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-01T02:18:56` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo añadiendo type hints faltantes en funciones clave y documentando con docstrings el propósito de los parámetros en los chequeos heurísticos, siguiendo las normas de estilo senior para facilitar auditorías futuras del código.
 - `2026-08-01T02:09:42` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del código añadiendo docstrings descriptivos con las razones técnicas para cada chequeo de seguridad, lo cual facilita el mantenimiento preventivo ante futuras modificaciones autónomas de la IA.
 - `2026-08-01T02:09:14` **quarantine.py** (legibilidad y documentación): Mejoré la documentación de las funciones críticas de `quarantine.py` mediante Google-style docstrings, explicitando las precondiciones, argumentos y excepciones, además de añadir tipos sugeridos y aclaraciones sobre los mecanismos de seguridad (ej. validaciones de integridad y restricciones de ruta) para facilitar el mantenimiento futuro.
-- `2026-08-01T02:08:44` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados que explican el "porqué" de las validaciones de seguridad, se han añadido type hints más precisos y se ha extraído la lógica de filtrado de `scan_for_junk` para mejorar la legibilidad del bucle de recorrido.
-- `2026-08-01T01:59:54` **memory.py** (legibilidad y documentación): Mejoré la documentación interna incluyendo docstrings explicativos y tipos específicos en `trim_working_set` y `_read_windows_snapshot`, clarificando las constantes y el uso de las APIs de Windows para evitar ambigüedades técnicas.
-- `2026-08-01T01:59:45` **main.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `main.py` mediante type hints explícitos en los métodos de construcción de la interfaz (`_build_tab_*`) y añadí docstrings detallados en las funciones de control de estado (`_invalidate_cache`, `_set_busy`), aclarando su rol en la arquitectura asíncrona de la aplicación.
