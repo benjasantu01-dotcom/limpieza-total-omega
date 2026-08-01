@@ -316,4 +316,5 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except (ctypes.ArgumentError, Exception):
         return False, "Error inesperado al intentar limpiar la memoria."
     finally:
+        # Asegurar siempre el cierre del handle para evitar fugas de recursos
         kernel32.CloseHandle(handle)

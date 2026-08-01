@@ -210,7 +210,12 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             except (IOError, OSError):
                 continue
 
-            target = _generate_unique_target(dest / f"{jf.path.stem}_{int(jf.modified.timestamp())}{jf.path.suffix}")
+            target_base = dest / f"{jf.path.stem}_{int(jf.modified.timestamp())}{jf.path.suffix}"
+            target = _generate_unique_target(target_base)
+            
+            # Asegurar que el target generado sigue dentro de la carpeta de revisión
+            if dest not in target.parents:
+                continue
             
             ensure_safe_to_modify(full_source_path)
             ensure_safe_to_modify(target)

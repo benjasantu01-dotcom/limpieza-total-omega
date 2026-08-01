@@ -380,16 +380,23 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     ensure_safe_to_modify(quarantine_root, allow_sensitive=False)
     
     items = load_manifest(base)
+    item_stored_names = {item.stored_name for item in items}
     count = 0
     
-    for item in items:
-        stored_file = quarantine_root / item.stored_name
-        if stored_file.exists() and item.verify_integrity(stored_file):
-            try:
-                stored_file.unlink()
-                count += 1
-            except (OSError, PermissionError):
-                continue
+    # Solo borrar si el archivo existe, está en el manifiesto y es íntegro
+    for entry in quarantine_root.iterdir():
+        if entry.is_file() and entry.name in item_stored_names:
+            item = next(i for i in items if i.stored_name == entry.name)
+            if item.verify_integrity(entry):
+                try:
+                    entry.unlink()
+                    count += 1
+                except (OSError, PermissionError):
+                    continue
+        elif entry.is_file() and entry.name != MANIFEST_NAME:
+            # Seguridad: No borrar archivos huérfanos no registrados
+            continue
+            
     save_manifest([], base)
     return count
 
