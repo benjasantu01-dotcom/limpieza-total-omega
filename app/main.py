@@ -813,15 +813,15 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _ask_folder(self, title: str) -> Optional[str]:
         """Diálogo de selección de carpeta con filtrado de seguridad estricto."""
         folder = filedialog.askdirectory(title=title)
-        if not folder:
+        if not folder or not os.path.exists(folder):
             return None
         
         try:
             safety.ensure_safe_to_modify(Path(folder))
-        except safety.UnsafePathError:
+        except (safety.UnsafePathError, PermissionError):
             messagebox.showwarning(
-                "Carpeta protegida",
-                "Esa carpeta es vital para el sistema y no puede ser analizada.\n\n"
+                "Carpeta protegida o inaccesible",
+                "Esa carpeta es vital para el sistema o requiere permisos elevados.\n\n"
                 "Elegí una carpeta de usuario (Descargas, Documentos, etc.).",
             )
             return None
@@ -1286,11 +1286,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def on_disk_analysis(self) -> None:
         """Realiza un escaneo profundo de una carpeta específica."""
         folder = self._ask_folder("Elegí una carpeta para analizar")
-        if not folder or not os.path.exists(folder):
+        if not folder:
             return
         self.analysis_folder = folder
 
         def task():
+            # Volver a verificar existencia antes de procesar
             if not os.path.exists(folder):
                 self.log("Error: La carpeta seleccionada ya no existe.", "Disco")
                 return
@@ -1308,10 +1309,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def on_find_duplicates(self) -> None:
         """Busca archivos duplicados en la ubicación especificada."""
         folder = self._ask_folder("Elegí una carpeta donde buscar duplicados")
-        if not folder or not os.path.exists(folder):
+        if not folder:
             return
 
         def task():
+            # Verificación redundante de seguridad/existencia
             if not os.path.exists(folder):
                 self.log("Error: La carpeta seleccionada ya no existe.", "Duplicados")
                 return

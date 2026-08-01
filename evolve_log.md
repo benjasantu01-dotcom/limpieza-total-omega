@@ -1079,3 +1079,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-01T12:02:00` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha mejorado `walk_files` para manejar casos límite de concurrencia y permisos donde un archivo puede ser eliminado o bloqueado por otro proceso justo después de ser listado por `os.scandir`, añadiendo un bloque `try-except` específico al acceder al tamaño con `entry.stat()`.
 - `2026-08-01T12:02:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-01T12:02:00` Corrida terminada. Total usado hoy: 280.
+- `2026-08-01T12:10:38` Arrancando corrida. Quedan hoy ~20 peticiones objetivo.
+- `2026-08-01T12:11:02` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-08-01T12:11:26` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `score_security` y `score_memory` ante casos límite mediante una validación explícita de sus parámetros de entrada, evitando que valores inesperados (como negativos) alteren el cálculo del puntaje fuera de los límites esperados.
+- `2026-08-01T12:12:31` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Mejoré la robustez de los métodos de selección de archivos (`_ask_folder`, `on_disk_analysis`, `on_find_duplicates`) para evitar bloqueos y comportamientos inesperados ante rutas inexistentes, permisos denegados o cancelaciones del diálogo, garantizando una gestión de errores más limpia sin romper el bucle principal.
+- `2026-08-01T12:12:40` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se ha robustecido `trim_working_set` añadiendo una comprobación explícita para el handle de procesos, evitando que la ejecución de `CloseHandle` intente operar sobre un handle nulo o inválido en caso de error en la apertura, garantizando mayor estabilidad ante errores de permisos.
+- `2026-08-01T12:12:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-01T12:12:40` Corrida terminada. Total usado hoy: 284.

@@ -140,15 +140,15 @@ def score_junk(junk_mb: float) -> float:
 
 def score_security(suspicious_count: int, warnings: int = 0) -> float:
     """Calcula ratio [0, 1] penalizando hallazgos según un factor de riesgo."""
-    s = _to_float(suspicious_count)
-    w = _to_float(warnings)
+    s = max(0.0, _to_float(suspicious_count))
+    w = max(0.0, _to_float(warnings))
     penalty: float = s * 0.05 + w * 0.25
     return _clamp(1.0 - penalty, 0.0, 1.0)
 
 
 def score_memory(available_percent: float) -> float:
     """Calcula ratio [0, 1] basado en la proporción de RAM disponible."""
-    val = _to_float(available_percent)
+    val = _clamp(_to_float(available_percent), 0.0, 100.0)
     if RAM_IDEAL_PERCENT <= 0: return 0.0
     return _clamp(val / RAM_IDEAL_PERCENT)
 
