@@ -17,12 +17,15 @@ import logging
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional, Final, Callable, Union
+from typing import List, Optional, Final, Callable, Union, TypeAlias
 from safety import is_safe_to_modify, ensure_safe_to_modify
 
 # Configuración de log para seguimiento de errores no críticos
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# Definiciones de tipo para claridad en firmas complejas
+SortKey: TypeAlias = Union[int, datetime]
 
 # Extensiones típicas de archivos "basura" / temporales en Windows
 JUNK_EXTENSIONS: Final = {
@@ -50,7 +53,8 @@ def list_available_drives() -> List[str]:
     Detecta unidades montadas en sistemas Windows.
 
     Returns:
-        List[str]: Lista de rutas raíz (ej. ['C:\\', 'D:\\']). Retorna lista vacía si no es Windows.
+        List[str]: Lista de rutas raíz (ej. ['C:\\', 'D:\\']). 
+        Retorna lista vacía si el SO no es Windows o no se detectan unidades.
     """
     if os.name != "nt":
         return []
@@ -78,13 +82,13 @@ class JunkFile:
 
     @property
     def is_junk_extension(self) -> bool:
-        """Valida si la extensión está en la lista de permitidas."""
+        """Valida si la extensión del archivo coincide con las permitidas."""
         return self.path.suffix.lower() in _LOWER_JUNK_EXTS
 
 
 def _generate_unique_target(target: Path) -> Path:
     """
-    Genera una ruta única iterando un contador si el archivo destino ya existe.
+    Genera una ruta única iterando un sufijo numérico si el archivo destino ya existe.
     """
     if not target.exists():
         return target
@@ -100,6 +104,7 @@ def _generate_unique_target(target: Path) -> Path:
 def _is_valid_junk(entry: os.DirEntry[str]) -> bool:
     """
     Valida mediante heurística si un archivo es basura y si es seguro tocarlo.
+    Se ignora cualquier archivo que sea un enlace simbólico por seguridad.
     """
     if not entry.is_file(follow_symlinks=False):
         return False
@@ -154,7 +159,7 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
     if by not in ("size", "date"):
         by = "size"
 
-    key_func: Callable[[JunkFile], Union[int, datetime]] = (
+    key_func: Callable[[JunkFile], SortKey] = (
         (lambda f: f.size_bytes) if by == "size" else (lambda f: f.modified)
     )
     return sorted(files, key=key_func, reverse=not ascending)
@@ -163,8 +168,10 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Path:
     """
     Mueve archivos candidatos a una carpeta de revisión.
-    Utiliza ensure_safe_to_modify para garantizar que las operaciones 
-    críticas no violen la integridad del sistema.
+    
+    Raises:
+        ValueError: Si la ruta de revisión proporcionada está vacía.
+        PermissionError: Si la ruta es un enlace simbólico.
     """
     if not review_dir:
         raise ValueError("La ruta de revisión no puede estar vacía")
@@ -180,19 +187,17 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         if not isinstance(jf, JunkFile) or not jf.path:
             continue
         try:
-            # Validar existencia antes de cualquier operación
             if not jf.path.exists() or not jf.path.is_file():
                 continue
             
             full_source_path = jf.path.resolve()
             
-            # Verificaciones de seguridad post-resolución
             if full_source_path.is_symlink() or not is_safe_to_modify(full_source_path):
                 continue
             if dest in full_source_path.parents or full_source_path.parent == dest:
                 continue
             
-            # Comprobación estricta de bloqueo (intentar abrir para lectura/escritura)
+            # Comprobación estricta de bloqueo (intento de apertura exclusiva)
             try:
                 with open(full_source_path, 'rb+'):
                     pass
@@ -213,6 +218,9 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     """
     Elimina permanentemente archivos desde la carpeta de revisión.
     Solo procesa archivos validados mediante is_safe_to_modify.
+    
+    Returns:
+        int: Número de archivos eliminados con éxito.
     """
     if not review_dir:
         return 0

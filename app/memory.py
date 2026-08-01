@@ -54,6 +54,11 @@ TRIM_WARNING: str = (
 )
 
 BYTE_UNITS: Tuple[str, ...] = ("B", "KB", "MB", "GB", "TB")
+# Constantes de acceso para Win32 API
+PROCESS_QUERY_INFO: int = 0x0400
+PROCESS_SET_QUOTA: int = 0x0100
+PROCESS_VM_WRITE: int = 0x0020
+REQUIRED_ACCESS: int = PROCESS_QUERY_INFO | PROCESS_SET_QUOTA | PROCESS_VM_WRITE
 
 
 @dataclass
@@ -161,7 +166,7 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
 def _read_windows_snapshot() -> MemorySnapshot:
     """
     Accede a la API Win32 GlobalMemoryStatusEx vía ctypes para obtener 
-    estadísticas detalladas de la memoria física y paginación.
+    estadísticas detalladas de la memoria física.
     """
     import ctypes
 
@@ -243,7 +248,7 @@ def pressure_level(snapshot: MemorySnapshot) -> str:
 
 
 def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] = None) -> List[str]:
-    """Crea un informe textual legible para el usuario final."""
+    """Crea un informe textual legible sobre el estado actual de la RAM."""
     if not isinstance(snapshot, MemorySnapshot) or snapshot.total <= 0:
         return ["No se pudo leer el estado de la memoria en este sistema."]
 
@@ -272,9 +277,8 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
-    Solicita al SO liberar el working set de un proceso específico.
-    Utiliza constantes de acceso: 
-    0x0400 (PROCESS_QUERY_INFORMATION), 0x0100 (PROCESS_SET_QUOTA), 0x0020 (PROCESS_VM_WRITE).
+    Solicita al SO liberar el working set de un proceso específico si es seguro.
+    Utiliza el permiso REQUIRED_ACCESS definido para abrir el proceso.
     """
     if os.name != "nt":
         return False, "Solo disponible en Windows."
@@ -298,8 +302,8 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if not hasattr(kernel32, "OpenProcess") or not hasattr(psapi, "EmptyWorkingSet"):
         return False, "APIs de sistema no disponibles."
 
-    # Obtener handle con permisos de acceso requeridos
-    handle = kernel32.OpenProcess(0x0520, False, target_pid)
+    # Solicitar acceso al proceso y ejecutar la purga de memoria
+    handle = kernel32.OpenProcess(REQUIRED_ACCESS, False, target_pid)
     if not handle:
         err = kernel32.GetLastError()
         return False, f"No se pudo acceder al proceso {target_pid} (WinError {err})."
