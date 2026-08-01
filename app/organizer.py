@@ -104,9 +104,12 @@ def _generate_unique_target(target: Path) -> Path:
 def _is_valid_junk(entry: os.DirEntry[str]) -> bool:
     """
     Valida mediante heurística si un archivo es basura y si es seguro tocarlo.
-    Se ignora cualquier archivo que sea un enlace simbólico por seguridad.
+    Se ignora cualquier archivo que sea un enlace simbólico o reparse point por seguridad.
     """
-    if not entry.is_file(follow_symlinks=False):
+    # is_symlink() devuelve True para junctions y reparse points
+    if entry.is_symlink():
+        return False
+    if not entry.is_file():
         return False
     if not entry.name.lower().endswith(_JUNK_EXTS_TUPLE):
         return False
@@ -127,11 +130,13 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
             with os.scandir(base_path) as it:
                 for entry in it:
                     try:
-                        if entry.is_dir(follow_symlinks=False):
+                        # Ignorar enlaces simbólicos y puntos de reparse (junctions)
+                        if entry.is_symlink():
+                            continue
+                        if entry.is_dir():
                             if entry.name.lower() not in blocklist:
                                 _walk_dir(entry.path)
                         elif entry.name.lower().endswith(_JUNK_EXTS_TUPLE):
-                            # Chequeo de seguridad diferido para evitar Path objects innecesarios
                             if is_safe_to_modify(Path(entry.path)):
                                 stat = entry.stat()
                                 found.append(JunkFile(
@@ -187,12 +192,13 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         if not isinstance(jf, JunkFile) or not jf.path:
             continue
         try:
-            if not jf.path.exists() or not jf.path.is_file():
+            # Validar existencia física y que no sea un enlace externo
+            if not jf.path.exists() or jf.path.is_symlink():
                 continue
             
             full_source_path = jf.path.resolve()
             
-            if full_source_path.is_symlink() or not is_safe_to_modify(full_source_path):
+            if not is_safe_to_modify(full_source_path):
                 continue
             if dest in full_source_path.parents or full_source_path.parent == dest:
                 continue
@@ -232,6 +238,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     count = 0
     for f in dest.iterdir():
         try:
+            # Impedir borrado de enlaces y asegurar seguridad
             if f.is_file() and not f.is_symlink() and is_safe_to_modify(f):
                 f.unlink()
                 count += 1

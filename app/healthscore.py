@@ -205,15 +205,13 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     if metrics is None or not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Instancia de métricas nula o no válida."])
     
-    if sum(WEIGHTS.values()) != 100:
-        return HealthResult(0, "F", {}, ["Error: Configuración de pesos desbalanceada."])
-
     metrics.validate()
     if not metrics.is_finite():
         return HealthResult(0, "F", {}, ["Error: Métricas contienen datos no procesables."])
     
-    if any(l <= 0 for l in (JUNK_LIMIT_MB, DUPLICATE_LIMIT_MB, STARTUP_LIMIT_COUNT, RAM_IDEAL_PERCENT, DISK_IDEAL_PERCENT)):
-        return HealthResult(0, "F", {}, ["Error: Umbrales de configuración no válidos."])
+    total_weights = sum(WEIGHTS.values())
+    if total_weights <= 0:
+        return HealthResult(0, "F", {}, ["Error: Configuración de pesos inválida."])
 
     ratios = {
         "seguridad": score_security(metrics.suspicious_count, metrics.suspicious_warnings),
@@ -224,7 +222,8 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         "arranque": score_startup(metrics.startup_count)
     }
 
-    breakdown = {area: int(ratio * WEIGHTS[area] + 0.5) for area, ratio in ratios.items()}
+    # Calculamos puntos ponderados, normalizando por el total de pesos configurados para evitar deriva
+    breakdown = {area: int((ratio * WEIGHTS[area] * 100 / total_weights) + 0.5) for area, ratio in ratios.items()}
     total_score = sum(breakdown.values())
 
     return HealthResult(

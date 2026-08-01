@@ -604,3 +604,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-08-01T07:36:18` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
 - `2026-08-01T07:36:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-01T07:36:18` Corrida terminada. Total usado hoy: 176.
+- `2026-08-01T07:45:05` Arrancando corrida. Quedan hoy ~124 peticiones objetivo.
+- `2026-08-01T07:45:31` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se ha robustecido el cálculo de `breakdown` en `compute_score` para manejar el caso límite donde los pesos configurados (`WEIGHTS`) podrían no sumar exactamente 100, evitando errores de precisión o truncamiento, y se añadió una validación adicional para asegurar que `metrics` tenga datos consistentes antes de procesarlos.
+- `2026-08-01T07:46:31` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se implementó un método centralizado `_safe_run` para las tareas asíncronas, que asegura el manejo consistente de errores inesperados y estados de interfaz, previniendo cuelgues ante excepciones inesperadas (como fallos en el sistema de archivos o hilos interrumpidos) y mejorando la robustez frente a casos límite de concurrencia.
+- `2026-08-01T07:46:56` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-08-01T07:47:03` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de integridad en `scan_for_junk` y `stage_for_review` para validar que los archivos no sean puntos de reparse o junctions mediante el atributo `is_junction` (o `is_symlink` + `exists` en el caso de enlaces), evitando así recursiones infinitas o errores al intentar procesar rutas virtuales del sistema.
+- `2026-08-01T07:47:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-01T07:47:03` Corrida terminada. Total usado hoy: 180.

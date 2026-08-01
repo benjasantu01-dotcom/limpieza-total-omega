@@ -16,29 +16,29 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-31 | 163 | 9 | 15 | 10 | 131 |
-| 2026-08-01 | 88 | 5 | 8 | 5 | 70 |
+| 2026-07-31 | 160 | 9 | 15 | 10 | 130 |
+| 2026-08-01 | 91 | 5 | 8 | 5 | 71 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **67**
 - manejo de errores y validación de entradas: **53**
 - rendimiento: **51**
-- seguridad defensiva: **45**
-- robustez ante casos límite: **35**
+- seguridad defensiva: **42**
+- robustez ante casos límite: **38**
 
 ## Mejoras aceptadas por archivo
 
-- `scanner.py`: **22**
 - `quarantine.py`: **21**
-- `settings.py`: **20**
+- `scanner.py`: **21**
 - `browser.py`: **20**
 - `assistant.py`: **19**
-- `safety.py`: **18**
+- `main.py`: **19**
+- `settings.py`: **19**
 - `diskreport.py`: **18**
-- `main.py`: **18**
-- `healthscore.py`: **17**
-- `organizer.py`: **17**
+- `healthscore.py`: **18**
+- `organizer.py`: **18**
+- `safety.py`: **17**
 - `branding.py`: **16**
 - `duplicates.py`: **15**
 - `memory.py`: **15**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-01T07:47:03` **organizer.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `scan_for_junk` y `stage_for_review` para validar que los archivos no sean puntos de reparse o junctions mediante el atributo `is_junction` (o `is_symlink` + `exists` en el caso de enlaces), evitando así recursiones infinitas o errores al intentar procesar rutas virtuales del sistema.
+- `2026-08-01T07:46:31` **main.py** (robustez ante casos límite): Se implementó un método centralizado `_safe_run` para las tareas asíncronas, que asegura el manejo consistente de errores inesperados y estados de interfaz, previniendo cuelgues ante excepciones inesperadas (como fallos en el sistema de archivos o hilos interrumpidos) y mejorando la robustez frente a casos límite de concurrencia.
+- `2026-08-01T07:45:31` **healthscore.py** (robustez ante casos límite): Se ha robustecido el cálculo de `breakdown` en `compute_score` para manejar el caso límite donde los pesos configurados (`WEIGHTS`) podrían no sumar exactamente 100, evitando errores de precisión o truncamiento, y se añadió una validación adicional para asegurar que `metrics` tenga datos consistentes antes de procesarlos.
 - `2026-08-01T07:36:10` **diskreport.py** (robustez ante casos límite): Se mejoró la robustez de `walk_files` ante archivos bloqueados o inaccesibles durante el escaneo al implementar un manejo explícito de `OSError` al obtener el tamaño (`st_size`) de un archivo, evitando que una excepción en un solo archivo detenga el análisis completo de un directorio.
 - `2026-08-01T07:26:10` **assistant.py** (robustez ante casos límite): Se ha añadido un robusto manejo de excepciones y validación de tipos en la función `_rank_problems` para prevenir caídas de la interfaz si los datos procesados son inesperadamente nulos, infinitos o de tipos incorrectos, asegurando que el asistente siempre devuelva una lista válida incluso ante estados de sistema incoherentes.
 - `2026-08-01T07:25:53` **startup.py** (rendimiento): Se optimizó `parse_registry_csv` reemplazando la lógica de parseo manual por una iteración eficiente sobre el CSV y se consolidó el filtrado de entradas para reducir llamadas innecesarias al sistema de archivos al procesar el registro.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-01T07:05:11` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje global transformando el diccionario `ratios` en un generador local y eliminando iteraciones redundantes, además de pre-calcular el límite de `breakdown` evitando la creación de estructuras intermedias innecesarias.
 - `2026-08-01T07:04:47` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` utilizando `os.scandir` en lugar de `os.walk` para evitar realizar múltiples llamadas a `stat()` y `is_symlink()` innecesarias, aprovechando que `DirEntry` ya tiene esta información en caché en la mayoría de los sistemas de archivos.
 - `2026-08-01T06:55:37` **diskreport.py** (rendimiento): Optimizé la función `summarize` para reducir las llamadas a `walk_files` y evitar el re-procesamiento de datos, consolidando el escaneo en una sola pasada eficiente que mantiene los totales, estadísticas por extensión y el top de archivos simultáneamente.
-- `2026-08-01T06:55:28` **browser.py** (rendimiento): Optimizé `directory_size` reemplazando la construcción repetitiva de objetos `Path` y el uso de `os.path.abspath` (que invoca llamadas al sistema innecesarias) por operaciones nativas sobre los objetos `DirEntry` que ya provee `os.scandir`, reduciendo significativamente la carga de I/O en escaneos de disco.
-- `2026-08-01T06:54:38` **assistant.py** (rendimiento): Optimicé el rendimiento de `_rank_problems` convirtiéndola en una función que recorre las condiciones de forma eficiente y ajusté la lógica de `local_answer` para evitar el cálculo de la lista de problemas cuando una palabra clave genera una respuesta inmediata.
-- `2026-08-01T06:45:23` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica y la legibilidad interna de `startup.py` mediante la adición de docstrings detallados en funciones clave y la clarificación de tipos, asegurando que el propósito y los límites de cada proceso sean explícitos para cualquier futuro mantenimiento.

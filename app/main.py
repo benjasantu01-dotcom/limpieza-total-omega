@@ -777,14 +777,21 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             logging.exception("Error inesperado en tarea asíncrona: %s", e)
             self.log(f"Error inesperado: {type(e).__name__}", tab)
 
+    def _safe_run(self, fn: Callable, tab: str):
+        """Ejecuta una tarea de forma segura capturando cualquier excepción."""
+        try:
+            fn()
+        except Exception as e:
+            self._validate_and_log_error(e, tab)
+
     def run_async(self, fn: Callable):
         """Ejecuta un proceso en un hilo, delegando errores al handler central."""
         self._set_busy(True)
+        tab = self._current_tab()
+        
         def wrapper():
             try:
-                fn()
-            except Exception as e:
-                self._validate_and_log_error(e, self._current_tab())
+                self._safe_run(fn, tab)
             finally:
                 self._set_busy(False)
                 self.set_status("Listo.")
@@ -1040,12 +1047,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.clear("Seguridad")
             self.log(f"Escaneo heurístico en: {folder}", "Seguridad")
             
-            try:
-                results = scan_directory(folder)
-                self._cache["suspicions"] = (results, time.time())
-            except Exception as e:
-                self.log(f"Error durante el escaneo: {e}", "Seguridad")
-                return
+            results = scan_directory(folder)
+            self._cache["suspicions"] = (results, time.time())
 
             if not results:
                 self.log("Sin hallazgos sospechosos.", "Seguridad")
@@ -1146,23 +1149,20 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
              return
 
         def task():
-            try:
-                if not quarantine.item_exists(raw_id):
-                    self.log(f"Error: El ID '{raw_id}' no existe en la cuarentena.", "Cuarentena")
-                    return
-                
-                item = quarantine.get_item(raw_id)
-                ruta_orig = Path(item.original_path)
-                
-                if safety.is_protected_path(ruta_orig):
-                    self.log(f"Error: La ruta original '{ruta_orig}' es protegida. Restauración denegada.", "Cuarentena")
-                    return
+            if not quarantine.item_exists(raw_id):
+                self.log(f"Error: El ID '{raw_id}' no existe en la cuarentena.", "Cuarentena")
+                return
+            
+            item = quarantine.get_item(raw_id)
+            ruta_orig = Path(item.original_path)
+            
+            if safety.is_protected_path(ruta_orig):
+                self.log(f"Error: La ruta original '{ruta_orig}' es protegida. Restauración denegada.", "Cuarentena")
+                return
 
-                safety.ensure_safe_to_modify(ruta_orig)
-                destino = quarantine.restore_item(raw_id)
-                self.log(f"Restaurado en: {destino}", "Cuarentena")
-            except Exception as e:
-                self._validate_and_log_error(e, "Cuarentena")
+            safety.ensure_safe_to_modify(ruta_orig)
+            destino = quarantine.restore_item(raw_id)
+            self.log(f"Restaurado en: {destino}", "Cuarentena")
 
         self.run_async(task)
 
