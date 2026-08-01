@@ -209,6 +209,10 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     if not metrics.is_finite():
         return HealthResult(0, "F", {}, ["Error: Métricas contienen datos no procesables."])
     
+    # Pre-chequeo de límites críticos para evitar divisiones por cero en casos de configuración corrupta
+    if any(l <= 0 for l in [JUNK_LIMIT_MB, DUPLICATE_LIMIT_MB, STARTUP_LIMIT_COUNT, RAM_IDEAL_PERCENT, DISK_IDEAL_PERCENT]):
+        return HealthResult(0, "F", {}, ["Error: Umbrales de configuración no válidos."])
+
     ratios: Dict[str, float] = {
         "seguridad": score_security(metrics.suspicious_count, metrics.suspicious_warnings),
         "disco": score_disk(metrics.disk_free_percent),

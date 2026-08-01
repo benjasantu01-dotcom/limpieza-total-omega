@@ -1129,25 +1129,29 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             messagebox.showinfo("Falta el ID", "Pegá el ID del archivo que querés restaurar.")
             return
 
+        # Validación estricta del ID
         if not raw_id.isalnum():
              messagebox.showerror("Error", "El ID debe ser alfanumérico.")
              return
 
         def task():
-            if not quarantine.item_exists(raw_id):
-                self.log(f"Error: El ID '{raw_id}' no existe en la cuarentena.", "Cuarentena")
-                return
-            
-            item = quarantine.get_item(raw_id)
-            ruta_orig = Path(item.original_path)
-            
-            if safety.is_protected_path(ruta_orig):
-                self.log(f"Error: La ruta original '{ruta_orig}' es protegida. Restauración denegada.", "Cuarentena")
-                return
+            try:
+                if not quarantine.item_exists(raw_id):
+                    self.log(f"Error: El ID '{raw_id}' no existe en la cuarentena.", "Cuarentena")
+                    return
+                
+                item = quarantine.get_item(raw_id)
+                ruta_orig = Path(item.original_path)
+                
+                if safety.is_protected_path(ruta_orig):
+                    self.log(f"Error: La ruta original '{ruta_orig}' es protegida. Restauración denegada.", "Cuarentena")
+                    return
 
-            safety.ensure_safe_to_modify(ruta_orig)
-            destino = quarantine.restore_item(raw_id)
-            self.log(f"Restaurado en: {destino}", "Cuarentena")
+                safety.ensure_safe_to_modify(ruta_orig)
+                destino = quarantine.restore_item(raw_id)
+                self.log(f"Restaurado en: {destino}", "Cuarentena")
+            except Exception as e:
+                self._validate_and_log_error(e, "Cuarentena")
 
         self.run_async(task)
 

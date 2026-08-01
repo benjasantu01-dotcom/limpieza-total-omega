@@ -74,7 +74,7 @@ class DuplicateGroup:
         return (self.count - 1) * max(0, self.size_bytes)
 
 
-def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional[str]:
+def hash_file(path: Union[str, Path, None], chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
     Calcula el hash SHA256 completo del archivo mediante bloques.
 
@@ -85,7 +85,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
     Returns:
         Hexdigest del hash completo o None si el archivo es inaccesible o protegido.
     """
-    if not path:
+    if path is None:
         return None
     
     try:
@@ -102,7 +102,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
         return None
 
 
-def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
+def partial_hash(path: Union[str, Path, None], read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """
     Calcula el hash SHA256 de un prefijo del archivo para comparación rápida.
 
@@ -113,7 +113,7 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
     Returns:
         Hexdigest del hash parcial o None si el archivo es inaccesible.
     """
-    if not path:
+    if path is None:
         return None
 
     try:
@@ -276,7 +276,7 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
     return sum(g.wasted_bytes for g in groups) if groups else 0
 
 
-def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
+def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     """
     Determina la mejor ruta para conservar basada en antigüedad (mtime) y longitud de ruta.
     Prioriza el archivo más antiguo (menor mtime) y, en caso de empate, el de ruta más corta.
@@ -286,13 +286,12 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
 
     valid_paths: List[Tuple[float, int, Path]] = []
     for p in group.paths:
-        if not isinstance(p, Path):
-            p = Path(p)
-        if not p.exists() or not p.is_file():
-            continue
+        p_obj = Path(p) if not isinstance(p, Path) else p
         try:
-            stat = p.stat()
-            valid_paths.append((stat.st_mtime, len(str(p)), p))
+            if not p_obj.exists() or not p_obj.is_file():
+                continue
+            stat = p_obj.stat()
+            valid_paths.append((stat.st_mtime, len(str(p_obj)), p_obj))
         except (OSError, PermissionError):
             continue
             

@@ -173,7 +173,6 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
                         
                         full_entry_path = Path(entry.path).resolve()
                         
-                        # Seguridad: validar que la entrada resuelta siga bajo la base original
                         if base_path not in full_entry_path.parents and full_entry_path != base_path:
                             continue
 
@@ -238,7 +237,8 @@ def largest_folders(directory: str | os.PathLike, limit: int = 10, skip_protecte
         for path, size in walk_files(base, skip_protected):
             try:
                 rel = path.relative_to(base)
-                # Obtenemos la parte superior incluso si es el propio archivo
+                if not rel.parts:
+                    continue
                 top_level = base / rel.parts[0]
                 
                 if top_level not in folder_map:
