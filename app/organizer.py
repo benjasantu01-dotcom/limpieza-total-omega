@@ -189,6 +189,13 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
                 continue
             if dest in full_source_path.parents or full_source_path.parent == dest:
                 continue
+            
+            # Comprobación simple de bloqueo por otro proceso
+            try:
+                with open(full_source_path, "ab"):
+                    pass
+            except (IOError, OSError):
+                continue
 
             target = _generate_unique_target(dest / f"{jf.path.stem}_{int(jf.modified.timestamp())}{jf.path.suffix}")
             

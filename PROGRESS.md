@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **255** (50.6% de aceptación)
+- Mejoras aceptadas: **256** (50.8% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 24
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 193
+- Sin respuesta de la IA (error o límite): 192
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-30 | 40 | 3 | 4 | 1 | 34 |
+| 2026-07-30 | 38 | 3 | 4 | 1 | 32 |
 | 2026-07-31 | 179 | 12 | 17 | 10 | 132 |
-| 2026-08-01 | 36 | 3 | 3 | 3 | 27 |
+| 2026-08-01 | 39 | 3 | 3 | 3 | 28 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **65**
 - manejo de errores y validación de entradas: **52**
 - rendimiento: **51**
-- seguridad defensiva: **47**
-- robustez ante casos límite: **40**
+- seguridad defensiva: **45**
+- robustez ante casos límite: **43**
 
 ## Mejoras aceptadas por archivo
 
-- `scanner.py`: **22**
-- `quarantine.py`: **21**
-- `settings.py`: **20**
+- `quarantine.py`: **22**
+- `scanner.py`: **21**
 - `branding.py`: **20**
 - `browser.py`: **20**
 - `diskreport.py`: **19**
 - `healthscore.py`: **19**
+- `settings.py`: **19**
 - `assistant.py`: **18**
 - `duplicates.py`: **18**
-- `organizer.py`: **17**
+- `organizer.py`: **18**
+- `main.py`: **17**
 - `safety.py`: **16**
-- `main.py`: **16**
 - `startup.py`: **15**
 - `memory.py`: **14**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-01T03:21:54` **quarantine.py** (robustez ante casos límite): Se reforzó la robustez de `quarantine_file` añadiendo una validación explícita para evitar que se intente poner en cuarentena un directorio o un archivo especial (device, pipe, socket) que no sea un archivo regular, previniendo errores de sistema al intentar moverlos.
+- `2026-08-01T03:21:42` **organizer.py** (robustez ante casos límite): Se mejora la robustez de `stage_for_review` incorporando una comprobación explícita para evitar que `shutil.move` intente operar sobre archivos bloqueados por otros procesos (uso exclusivo), evitando así excepciones innecesarias en entornos dinámicos.
+- `2026-08-01T03:20:57` **main.py** (robustez ante casos límite): Se ha añadido un manejo robusto de errores en la carga de configuración y el constructor de la ventana (`_init_state`, `_build_tabs_container`), asegurando que la interfaz pueda iniciarse incluso si existen corrupciones parciales en los archivos de estado o si un constructor de pestaña individual falla inesperadamente.
 - `2026-08-01T03:11:05` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `compute_score` frente a divisiones por cero potenciales si los umbrales globales llegaran a ser alterados incorrectamente en `settings.py`, y aseguré que `_generate_recommendations` maneje casos donde las métricas podrían ser inconsistentes evitando accesos clave faltantes.
 - `2026-08-01T03:10:55` **duplicates.py** (robustez ante casos límite): Se reforzó la resiliencia del módulo ante errores de E/S y archivos inalcanzables introduciendo validaciones más estrictas en `_refine_by_hash` y `suggest_keeper`, asegurando que el pipeline de procesamiento no se detenga ante fallos parciales durante la lectura de metadatos o contenido.
 - `2026-08-01T03:10:08` **browser.py** (robustez ante casos límite): Se introdujo una verificación de integridad en `directory_size` para manejar rutas que exceden la longitud máxima permitida por el sistema operativo (`MAX_PATH` en Windows) o que presentan errores de acceso recursivo, evitando que el escáner se bloquee ante estructuras de directorios inusualmente profundas o corrompidas.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-01T02:40:45` **memory.py** (rendimiento): Optimizado `parse_windows_process_csv` reemplazando la lectura línea a línea con `splitlines()` seguida de procesamiento por iterador eficiente, eliminando la creación de listas intermedias innecesarias para mejorar el uso de CPU y memoria en el escaneo de procesos.
 - `2026-08-01T02:40:21` **main.py** (rendimiento): Se implementó un mecanismo de caché con tiempo de expiración (TTL) en la clase `LimpiezaTotalOmegaApp` para evitar la re-ejecución innecesaria de análisis costosos dentro de la misma sesión, mejorando significativamente la fluidez de la interfaz.
 - `2026-08-01T02:39:22` **healthscore.py** (rendimiento): Optimizé la función `compute_score` cacheando los cálculos de ratios en un diccionario local y reemplazando las llamadas repetitivas a `ratios.get()` por acceso directo a variables locales, reduciendo así la sobrecarga de búsquedas en diccionario y llamadas a funciones dentro del bucle principal.
-- `2026-08-01T02:29:36` **browser.py** (rendimiento): Optimicé `directory_size` reemplazando la creación repetitiva de objetos `Path` y el uso de `resolve()` dentro del bucle principal por el uso directo de las rutas proporcionadas por `os.scandir`, reduciendo drásticamente la carga de I/O y el uso de CPU.
-- `2026-08-01T02:19:45` **startup.py** (legibilidad y documentación): Mejoré la legibilidad del método `StartupEntry.executable` mediante la extracción del bloque de validación de rutas a una función privada más cohesiva, documentando explícitamente el uso del caché y la lógica de resolución para clarificar el flujo de datos.
-- `2026-08-01T02:19:21` **settings.py** (legibilidad y documentación): Documenté con un docstring detallado el contrato de validación de `_validate_str` para clarificar la lógica de saneamiento de rutas y tipos, mejorando la legibilidad técnica del proceso de persistencia.

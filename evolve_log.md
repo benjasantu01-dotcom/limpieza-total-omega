@@ -1299,3 +1299,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-01T03:11:05` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `compute_score` frente a divisiones por cero potenciales si los umbrales globales llegaran a ser alterados incorrectamente en `settings.py`, y aseguré que `_generate_recommendations` maneje casos donde las métricas podrían ser inconsistentes evitando accesos clave faltantes.
 - `2026-08-01T03:11:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-01T03:11:05` Corrida terminada. Total usado hoy: 72.
+- `2026-08-01T03:19:54` Arrancando corrida. Quedan hoy ~228 peticiones objetivo.
+- `2026-08-01T03:20:57` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se ha añadido un manejo robusto de errores en la carga de configuración y el constructor de la ventana (`_init_state`, `_build_tabs_container`), asegurando que la interfaz pueda iniciarse incluso si existen corrupciones parciales en los archivos de estado o si un constructor de pestaña individual falla inesperadamente.
+- `2026-08-01T03:21:20` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-08-01T03:21:42` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se mejora la robustez de `stage_for_review` incorporando una comprobación explícita para evitar que `shutil.move` intente operar sobre archivos bloqueados por otros procesos (uso exclusivo), evitando así excepciones innecesarias en entornos dinámicos.
+- `2026-08-01T03:21:54` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `quarantine_file` añadiendo una validación explícita para evitar que se intente poner en cuarentena un directorio o un archivo especial (device, pipe, socket) que no sea un archivo regular, previniendo errores de sistema al intentar moverlos.
+- `2026-08-01T03:21:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-01T03:21:54` Corrida terminada. Total usado hoy: 76.

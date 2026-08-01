@@ -140,6 +140,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         
         try:
             self.settings = settings_mod.load()
+            if not isinstance(self.settings, dict): raise ValueError("Formato inválido")
         except Exception as e:
             logging.error("Fallo al cargar ajustes, usando defaults: %s", e)
             self.settings = settings_mod.reset()
