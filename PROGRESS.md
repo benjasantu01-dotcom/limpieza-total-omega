@@ -6,33 +6,33 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **257** (51.0% de aceptación)
+- Mejoras aceptadas: **259** (51.4% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 24
+- Rechazadas por guardia de seguridad: 25
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 192
+- Sin respuesta de la IA (error o límite): 189
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-31 | 106 | 3 | 10 | 8 | 77 |
-| 2026-08-01 | 151 | 11 | 14 | 9 | 115 |
+| 2026-07-31 | 106 | 3 | 10 | 8 | 73 |
+| 2026-08-01 | 153 | 11 | 15 | 9 | 116 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **67**
 - rendimiento: **52**
 - manejo de errores y validación de entradas: **48**
+- seguridad defensiva: **47**
 - robustez ante casos límite: **45**
-- seguridad defensiva: **45**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **22**
+- `quarantine.py`: **23**
+- `scanner.py`: **21**
 - `diskreport.py`: **20**
 - `organizer.py`: **20**
-- `scanner.py`: **20**
 - `settings.py`: **20**
 - `assistant.py`: **19**
 - `browser.py`: **19**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-01T13:03:06` **scanner.py** (seguridad defensiva): He mejorado la seguridad defensiva de `process_entry` al validar que las rutas sigan siendo accesibles y no sean enlaces simbólicos malintencionados antes de procesarlas, evitando así posibles ataques de "path traversal" o seguimientos no deseados durante el escaneo.
+- `2026-08-01T13:02:18` **quarantine.py** (seguridad defensiva): Se añadió una validación explícita en `quarantine_file` para asegurar que el archivo de origen no sea una ruta crítica del sistema o un directorio, evitando que la lógica de movimiento pueda ser abusada para extraer o reubicar componentes del SO incluso si no están en la lista de bloqueados, reforzando la defensa en profundidad.
 - `2026-08-01T12:52:58` **main.py** (seguridad defensiva): Mejoré la seguridad defensiva en `main.py` al reemplazar la validación manual de rutas en `on_trim_process` y `on_restore_quarantine` con una llamada centralizada y robusta al método `safety.ensure_safe_to_modify`, garantizando que cualquier intento de interactuar con rutas críticas (como procesos de sistema o directorios protegidos) sea bloqueado antes de iniciar la operación.
 - `2026-08-01T12:52:01` **healthscore.py** (seguridad defensiva): Se ha mejorado la robustez de `compute_score` frente a la inyección de configuraciones externas potencialmente maliciosas, asegurando que la suma de pesos de `WEIGHTS` y los valores individuales se validen estrictamente para evitar comportamientos inesperados o divisiones por cero.
 - `2026-08-01T12:42:46` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` y `group_by_size` mediante la normalización de rutas (`.resolve()`) antes de cualquier verificación de seguridad, asegurando que las comparaciones de `is_protected_path` se realicen siempre sobre rutas absolutas y canónicas, evitando así posibles bypasses por rutas relativas o aliases.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-01T12:21:36` **quarantine.py** (robustez ante casos límite): Se mejora la robustez de `quarantine_file` ante fallos de escritura en el sistema de archivos al implementar un bloque `try...finally` que asegura la integridad del manifiesto incluso si la operación de escritura falla, además de añadir un chequeo de existencia previo para el archivo de origen tras normalizar la ruta.
 - `2026-08-01T12:21:09` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `stage_for_review` añadiendo una validación explícita para evitar que `shutil.move` intente procesar rutas de archivos inexistentes o bloqueadas por el sistema operativo, integrando un chequeo previo de integridad de ruta y acceso.
 - `2026-08-01T12:12:40` **memory.py** (robustez ante casos límite): Se ha robustecido `trim_working_set` añadiendo una comprobación explícita para el handle de procesos, evitando que la ejecución de `CloseHandle` intente operar sobre un handle nulo o inválido en caso de error en la apertura, garantizando mayor estabilidad ante errores de permisos.
-- `2026-08-01T12:12:31` **main.py** (robustez ante casos límite): Mejoré la robustez de los métodos de selección de archivos (`_ask_folder`, `on_disk_analysis`, `on_find_duplicates`) para evitar bloqueos y comportamientos inesperados ante rutas inexistentes, permisos denegados o cancelaciones del diálogo, garantizando una gestión de errores más limpia sin romper el bucle principal.
-- `2026-08-01T12:11:26` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `score_security` y `score_memory` ante casos límite mediante una validación explícita de sus parámetros de entrada, evitando que valores inesperados (como negativos) alteren el cálculo del puntaje fuera de los límites esperados.

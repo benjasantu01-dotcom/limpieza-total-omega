@@ -76,6 +76,10 @@ class Scanner:
         :param stack: Lista mutable que actúa como pila para el recorrido recursivo (DFS).
         """
         try:
+            # Validar integridad del archivo/directorio antes de procesar
+            if not entry.exists():
+                return
+            
             if entry.is_dir(follow_symlinks=False):
                 if not self._is_reparse_point(entry):
                     path_str = entry.path
@@ -84,7 +88,7 @@ class Scanner:
                     if path_key not in self.seen and not is_protected_path(resolved_path):
                         self.seen.add(path_key)
                         stack.append(path_str)
-            elif entry.is_file():
+            elif entry.is_file(follow_symlinks=False):
                 path_obj = Path(entry.path).resolve()
                 if not is_protected_path(path_obj):
                     self.results.extend(scan_file(path_obj))

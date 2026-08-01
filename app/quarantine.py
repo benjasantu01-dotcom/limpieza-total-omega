@@ -215,15 +215,16 @@ def quarantine_file(
     if not source_path.exists():
         raise FileNotFoundError(f"El archivo de origen no existe: {source_path}")
     
+    # Validación de seguridad defensiva adicional
+    if not source_path.is_file() or source_path.is_symlink():
+        raise UnsafePathError(f"Solo se permiten archivos regulares: {source_path}")
+        
     if is_protected_path(source_path):
         raise UnsafePathError(f"Operación prohibida en ruta del sistema: {source_path}")
         
     dest_dir = quarantine_dir(base)
     if is_protected_path(dest_dir):
         raise UnsafePathError(f"Directorio de cuarentena protegido o inválido: {dest_dir}")
-
-    if not source_path.is_file() or source_path.is_symlink():
-        raise UnsafePathError(f"El objeto origen no es un archivo regular o es un enlace: {source_path}")
     
     if dest_dir.is_symlink() or (hasattr(dest_dir, 'is_junction') and dest_dir.is_junction()):
         raise UnsafePathError("La ruta de cuarentena es un punto de reparse (prohibido).")
