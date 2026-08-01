@@ -33,13 +33,17 @@ __all__ = [
 ]
 
 # Umbrales críticos para la normalización: definen el punto de saturación (ratio 0.0).
+# Un valor igual o superior a estos límites en el caso de basura/duplicados
+# o igual a cero en porcentajes, penaliza el puntaje al mínimo posible.
 JUNK_LIMIT_MB: Final[float] = 5000.0          
 DUPLICATE_LIMIT_MB: Final[float] = 2000.0     
 STARTUP_LIMIT_COUNT: Final[int] = 20          
 RAM_IDEAL_PERCENT: Final[float] = 35.0        
 DISK_IDEAL_PERCENT: Final[float] = 25.0       
 
-# Umbrales para disparar recomendaciones (ratios de 0.0 a 1.0)
+# Umbrales para disparar recomendaciones (ratios de 0.0 a 1.0).
+# Se usan en _generate_recommendations para filtrar sugerencias relevantes 
+# basándose en qué tan lejos está el sistema de su estado óptimo.
 WARN_THRESHOLD_HIGH: Final[float] = 0.9
 WARN_THRESHOLD_MED: Final[float] = 0.8
 WARN_THRESHOLD_LOW: Final[float] = 0.6
@@ -68,7 +72,7 @@ class SystemMetrics:
     quarantined_count: int = 0
 
     def validate(self) -> None:
-        """Asegura que los valores numéricos estén dentro de rangos lógicos y tipos válidos."""
+        """Normaliza y asegura que los valores de entrada estén en rangos válidos."""
         self.junk_mb = max(0.0, _to_float(self.junk_mb))
         self.suspicious_count = max(0, _to_int(self.suspicious_count))
         self.suspicious_warnings = max(0, _to_int(self.suspicious_warnings))
@@ -79,7 +83,7 @@ class SystemMetrics:
         self.quarantined_count = max(0, _to_int(self.quarantined_count))
 
     def is_finite(self) -> bool:
-        """Verifica que todas las métricas críticas sean números finitos y no NaN."""
+        """Valida que los datos de entrada sean números procesables (no NaN o Inf)."""
         return (math.isfinite(self.junk_mb) and 
                 math.isfinite(self.memory_available_percent) and 
                 math.isfinite(self.disk_free_percent) and 
@@ -98,19 +102,19 @@ class HealthResult:
 
     @property
     def is_healthy(self) -> bool:
-        """Determina si el estado general es aceptable (>= 80/100)."""
+        """Retorna True si el estado del sistema es aceptable (>= 80/100)."""
         return self.score >= 80
 
 
 def _clamp(value: float, low: float = 0.0, high: float = 1.0) -> float:
-    """Acota un valor numérico al rango [low, high] asegurando que sea un float finito."""
+    """Acota un valor numérico al rango [low, high] y valida finitud."""
     if not isinstance(value, (int, float)) or not math.isfinite(value):
         return low
     return max(low, min(high, float(value)))
 
 
 def _to_float(value: Any, default: float = 0.0) -> float:
-    """Convierte entrada a float; retorna default si no es numérico o es infinito/NaN."""
+    """Convierte entrada a float; retorna default en caso de error o valores no finitos."""
     try:
         val = float(value) if value is not None else default
         return val if math.isfinite(val) else default
@@ -119,7 +123,7 @@ def _to_float(value: Any, default: float = 0.0) -> float:
 
 
 def _to_int(value: Any, default: int = 0) -> int:
-    """Convierte entrada a int; valida finitud mediante conversión intermedia a float."""
+    """Convierte entrada a int; valida finitud mediante conversión intermedia."""
     try:
         val = int(float(value)) if value is not None else default
         return val if math.isfinite(float(val)) else default
@@ -128,14 +132,14 @@ def _to_int(value: Any, default: int = 0) -> int:
 
 
 def score_junk(junk_mb: float) -> float:
-    """Normaliza archivos temporales: ratio decreciente respecto a JUNK_LIMIT_MB."""
+    """Calcula ratio [0, 1] donde 1 es 'cero basura' y 0 es 'mínimo aceptable'."""
     val = _to_float(junk_mb)
     if JUNK_LIMIT_MB <= 0: return 0.0
     return _clamp(1.0 - (val / JUNK_LIMIT_MB))
 
 
 def score_security(suspicious_count: int, warnings: int = 0) -> float:
-    """Normaliza seguridad: penalización acumulativa según hallazgos y advertencias."""
+    """Calcula ratio [0, 1] penalizando hallazgos según un factor de riesgo."""
     s = _to_float(suspicious_count)
     w = _to_float(warnings)
     penalty: float = s * 0.05 + w * 0.25
@@ -143,35 +147,35 @@ def score_security(suspicious_count: int, warnings: int = 0) -> float:
 
 
 def score_memory(available_percent: float) -> float:
-    """Normaliza RAM: ratio creciente respecto a RAM_IDEAL_PERCENT."""
+    """Calcula ratio [0, 1] basado en la proporción de RAM disponible."""
     val = _to_float(available_percent)
     if RAM_IDEAL_PERCENT <= 0: return 0.0
     return _clamp(val / RAM_IDEAL_PERCENT)
 
 
 def score_disk(free_percent: float) -> float:
-    """Normaliza espacio libre: ratio creciente respecto a DISK_IDEAL_PERCENT."""
+    """Calcula ratio [0, 1] basado en la proporción de disco libre disponible."""
     val = _to_float(free_percent)
     if DISK_IDEAL_PERCENT <= 0: return 0.0
     return _clamp(val / DISK_IDEAL_PERCENT)
 
 
 def score_duplicates(duplicate_mb: float) -> float:
-    """Normaliza duplicados: ratio decreciente respecto a DUPLICATE_LIMIT_MB."""
+    """Calcula ratio [0, 1] basado en el peso de archivos redundantes encontrados."""
     val = _to_float(duplicate_mb)
     if DUPLICATE_LIMIT_MB <= 0: return 0.0
     return _clamp(1.0 - (val / DUPLICATE_LIMIT_MB))
 
 
 def score_startup(startup_count: int) -> float:
-    """Normaliza programas de inicio: ratio decreciente respecto a STARTUP_LIMIT_COUNT."""
+    """Calcula ratio [0, 1] inversamente proporcional al número de programas en inicio."""
     count = _to_int(startup_count)
     if STARTUP_LIMIT_COUNT <= 0: return 0.0
     return _clamp(1.0 - (float(count) / STARTUP_LIMIT_COUNT))
 
 
 def grade_for_score(score: int) -> str:
-    """Mapea un puntaje entero [0-100] a una categoría cualitativa (A-F)."""
+    """Asigna una calificación escolar (A-F) basada en un puntaje [0-100]."""
     if score >= 90: return "A"
     if score >= 80: return "B"
     if score >= 65: return "C"
@@ -180,7 +184,7 @@ def grade_for_score(score: int) -> str:
 
 
 def _generate_recommendations(m: SystemMetrics, ratios: Dict[str, float]) -> List[str]:
-    """Genera una lista de acciones correctivas basadas en ratios individuales por área."""
+    """Genera acciones correctivas si los ratios individuales caen por debajo de los umbrales."""
     recs: List[str] = []
     
     if ratios.get("seguridad", 1.0) < WARN_THRESHOLD_HIGH:
@@ -205,7 +209,7 @@ def _generate_recommendations(m: SystemMetrics, ratios: Dict[str, float]) -> Lis
 
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
-    """Calcula el puntaje global de salud del sistema normalizando áreas según sus pesos."""
+    """Procesa métricas y devuelve un objeto HealthResult con el puntaje final calculado."""
     if metrics is None or not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Instancia de métricas nula o no válida."])
     
@@ -226,7 +230,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         "arranque": score_startup(metrics.startup_count)
     }
 
-    # Calculamos puntos ponderados, normalizando por el total de pesos configurados para evitar deriva
+    # Calculamos puntos ponderados, normalizando por el total de pesos configurados
     breakdown = {area: int((ratio * WEIGHTS[area] * 100 / total_weights) + 0.5) for area, ratio in ratios.items()}
     total_score = sum(breakdown.values())
 

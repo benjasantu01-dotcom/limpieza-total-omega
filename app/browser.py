@@ -116,8 +116,12 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
 def directory_size(path: str | os.PathLike | None) -> int:
     """
     Calcula el tamaño total en bytes de un directorio mediante una búsqueda
-    iterativa (stack-based). Ignora enlaces simbólicos y puntos de reparse
-    (junctions) para evitar recursión infinita o lecturas fuera de alcance.
+    iterativa (stack-based). 
+    
+    Técnica de seguridad:
+    - Ignora enlaces simbólicos (is_symlink) para evitar bucles o escape de contexto.
+    - Ignora puntos de reparse (Junctions) usando os.path.isjunction para 
+      prevenir la lectura fuera de la jerarquía de usuario intencionada.
     """
     if not path:
         return 0
@@ -140,7 +144,7 @@ def directory_size(path: str | os.PathLike | None) -> int:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
-                        # Evitar seguir enlaces simbólicos o junctions de Windows
+                        # Exclusión estricta de punteros a otras ubicaciones
                         if entry.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(entry.path)):
                             continue
                         

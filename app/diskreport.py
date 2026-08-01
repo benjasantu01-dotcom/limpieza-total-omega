@@ -148,10 +148,14 @@ def all_drives_usage(mounts: Iterable[str] | None = None) -> list[DriveUsage]:
 
 def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Generator[tuple[Path, int], None, None]:
     """
-    Recorre recursivamente un directorio.
-    
-    :param directory: Ruta raíz del análisis.
-    :param skip_protected: Si es True, usa `safety.is_protected_path` para omitir carpetas de sistema.
+    Recorre recursivamente un directorio devolviendo archivos y su tamaño.
+
+    La lógica implementa:
+    1. Resolución de ruta absoluta: Evita el uso de rutas relativas ambiguas.
+    2. Validación de sandbox: Asegura que el escaneo no escape del directorio base
+       (previniendo riesgos de traversal con enlaces simbólicos).
+    3. Seguridad de sistema: Omitimos nodos de reparse (Junctions en NTFS) y carpetas
+       protegidas vía `safety.is_protected_path` para evitar bloqueos del SO.
     """
     if not directory:
         return

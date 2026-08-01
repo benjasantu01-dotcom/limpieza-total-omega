@@ -77,6 +77,9 @@ class DuplicateGroup:
 def hash_file(path: Union[str, Path, None], chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
     Calcula el hash SHA256 completo del archivo mediante bloques.
+    
+    Ignora archivos que sean symlinks, inaccesibles o marcados como protegidos
+    por `safety.is_protected_path`.
 
     Args:
         path: Ruta del archivo a procesar.
@@ -90,7 +93,6 @@ def hash_file(path: Union[str, Path, None], chunk_size: int = 1024 * 1024) -> Op
     
     try:
         p = Path(path).resolve()
-        # Se omiten symlinks y rutas protegidas por política de seguridad estricta
         if not p.is_file() or p.is_symlink() or is_protected_path(p):
             return None
             
@@ -106,6 +108,9 @@ def hash_file(path: Union[str, Path, None], chunk_size: int = 1024 * 1024) -> Op
 def partial_hash(path: Union[str, Path, None], read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """
     Calcula el hash SHA256 de un prefijo del archivo para comparación rápida.
+    
+    Utiliza una lectura limitada para descartar diferencias sin leer el archivo completo.
+    Mantiene la misma política de exclusión de seguridad que `hash_file`.
 
     Args:
         path: Ruta del archivo.
@@ -134,7 +139,9 @@ def partial_hash(path: Union[str, Path, None], read_bytes: int = PARTIAL_READ_BY
 def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     """
     Organiza rutas de archivos en un diccionario indexado por su tamaño en bytes.
-    Filtra entradas basadas en la unicidad del Inode para evitar procesar hardlinks.
+    
+    Implementa deduplicación de Inodes para ignorar hardlinks que apuntan al mismo
+    contenido físico y evitar conteos redundantes de espacio.
     """
     if paths is None:
         return {}
@@ -164,6 +171,8 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
 def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, skip_protected: bool) -> List[Path]:
     """
     Explora directorios recursivamente para identificar candidatos a duplicados.
+    
+    Evita ciclos y reparse points verificando Inodes y symlinks durante la iteración.
     """
     if directories is None:
         return []
