@@ -225,12 +225,8 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     limpio = validate(values)
     try:
         json_data = json.dumps(limpio, indent=2, ensure_ascii=False)
-    except (TypeError, ValueError):
-        return None
-    
-    try:
         ruta.parent.mkdir(parents=True, exist_ok=True)
-    except OSError:
+    except (TypeError, ValueError, OSError):
         return None
     
     temp_path: Path | None = None
@@ -245,13 +241,14 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
         _cached_settings = limpio
         _last_path, _last_mtime = ruta, ruta.stat().st_mtime
         return ruta
-    except (OSError, RuntimeError, PermissionError):
+    except (OSError, PermissionError, RuntimeError):
+        return None
+    finally:
         if temp_path and temp_path.exists():
             try:
                 temp_path.unlink()
             except OSError:
                 pass
-        return None
 
 def update(changes: dict[str, Any], path_or_base: PathLike | None = None) -> dict[str, Any]:
     """Aplica cambios parciales y guarda el resultado."""

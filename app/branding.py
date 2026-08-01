@@ -32,9 +32,10 @@ APP_SHORT_NAME: Final = "Omega"
 APP_TAGLINE: Final = "Limpieza y seguridad, en un solo lugar"
 APP_VERSION: Final = "2.1.0"
 
-# Paleta centralizada. Los acentos son usados por `blend` para generar 
-# gradientes dinámicos, mientras que los estados (success, danger, etc.)
-# definen la semántica de color en componentes de diagnóstico.
+# Paleta de colores centralizada para mantener la coherencia visual.
+# - Superficies: Capas de profundidad (background -> surface -> card).
+# - Acentos: Colores primarios de marca (`accent`) y secundarios para contrastes.
+# - Estados: Semántica de color estándar para validación y alertas.
 PALETTE: Final = MappingProxyType({
     "background": "#0a0e17",
     "surface": "#141b2d",
@@ -84,8 +85,6 @@ GRADE_COLORS: Final[Mapping[str, HexColor]] = MappingProxyType({
     "F": "#ff4757",
 })
 
-# Mapeo de secciones a glifos Unicode para estandarizar la iconografía 
-# en menús, pestañas y reportes.
 ICONS: Final[Mapping[str, str]] = MappingProxyType({
     "Salud": "\u25c9",        
     "Limpieza": "\u2726",     
@@ -123,13 +122,7 @@ def font_size(name: str) -> int:
 
 def icon(section: Optional[str]) -> str:
     """
-    Retorna el glifo unicode asociado a una sección.
-    
-    Args:
-        section: Nombre de la sección a buscar.
-        
-    Returns:
-        Glifo correspondiente o viñeta neutra si no existe.
+    Retorna el glifo unicode asociado a una sección o viñeta neutra.
     """
     if isinstance(section, str) and (glifo := ICONS.get(section.strip())):
         return glifo
@@ -175,12 +168,6 @@ def grade_color(grade: Optional[str]) -> HexColor:
 def score_color(score: Union[float, int, None]) -> HexColor:
     """
     Calcula el color representativo de un puntaje de salud (0-100).
-    
-    Args:
-        score: Valor numérico del puntaje.
-        
-    Returns:
-        HexColor correspondiente según umbrales de riesgo.
     """
     try:
         valor = float(score)  # type: ignore
@@ -223,7 +210,7 @@ def _hex_to_rgb(value: HexColor) -> tuple[int, int, int]:
 
 @lru_cache(maxsize=64)
 def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
-    """Interpola linealmente (Lerp) entre dos colores."""
+    """Interpola linealmente (Lerp) entre dos colores (ratio 0.0 a 1.0)."""
     proporcion = max(0.0, min(1.0, float(ratio)))
     r1, g1, b1 = _hex_to_rgb(start)
     r2, g2, b2 = _hex_to_rgb(end)
@@ -287,7 +274,6 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         return None
     try:
         path = Path(destination).expanduser().resolve()
-        # Impedir sobrescribir un directorio existente
         if path.is_dir():
             return None
             
@@ -324,7 +310,11 @@ def logo_ascii() -> str:
 def draw_logo(canvas: Any, size: int = 56, canvas_x: int = 0, canvas_y: int = 0) -> None:
     """
     Renderiza el logo (escudo Omega) en un widget Tkinter.Canvas.
-    Ignora llamadas con canvas inválidos o atributos faltantes.
+    
+    Args:
+        canvas: Widget donde se dibujará.
+        size: Tamaño total del logo en píxeles.
+        canvas_x/y: Coordenadas de origen del dibujo.
     """
     if canvas is None or not hasattr(canvas, "create_polygon"): return
     try:
@@ -364,8 +354,7 @@ def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
                       canvas_x: int = 0, canvas_y: int = 0,
                       stops: tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
     """
-    Dibuja una franja horizontal de gradiente en un Tkinter.Canvas.
-    Silentamente retorna si recibe un canvas no válido o dimensiones negativas.
+    Dibuja una franja horizontal de gradiente decorativa en un Tkinter.Canvas.
     """
     if canvas is None or not hasattr(canvas, "create_line"): return
     try:
@@ -380,13 +369,15 @@ def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
               track: Optional[HexColor] = None,
               fill: Optional[HexColor] = None) -> None:
     """
-    Dibuja un medidor circular de estado.
+    Dibuja un medidor circular de estado activo.
     
     Args:
-        canvas: Widget de dibujo destino.
-        percent: Porcentaje (0-100) para calcular el arco activo.
-        size: Diámetro en píxeles del anillo.
+        canvas: Widget destino.
+        percent: Porcentaje (0-100) del arco a rellenar.
+        size: Diámetro en píxeles.
         thickness: Grosor de la línea del anillo.
+        track: Color de fondo del anillo.
+        fill: Color de progreso del anillo.
     """
     if canvas is None or not hasattr(canvas, "create_arc"): return
     try:

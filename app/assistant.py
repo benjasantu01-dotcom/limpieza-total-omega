@@ -396,28 +396,28 @@ def _rank_problems(context: SystemContext) -> list[str]:
     """Calcula y ordena los problemas más críticos del sistema."""
     if not isinstance(context, SystemContext):
         return []
-    try:
-        return [
-            f"queda solo {context.disk_free_percent:.0f}% de disco libre, atendelo primero (pestaña Disco y Limpieza)"
-            for _ in [0] if isinstance(context.disk_free_percent, (int, float)) and context.disk_free_percent < 10
-        ] + [
-            f"{context.suspicious_warnings} archivo(s) sospechosos con advertencia (pestaña Seguridad)"
-            for _ in [0] if isinstance(context.suspicious_warnings, int) and context.suspicious_warnings > 0
-        ] + [
-            f"queda {context.memory_available_percent:.0f}% de RAM disponible (pestaña Memoria)"
-            for _ in [0] if isinstance(context.memory_available_percent, (int, float)) and context.memory_available_percent < 15
-        ] + [
-            f"{context.junk_mb:.0f} MB de archivos basura (pestaña Limpieza)"
-            for _ in [0] if isinstance(context.junk_mb, (int, float)) and context.junk_mb > 1000
-        ] + [
-            f"{context.duplicate_mb:.0f} MB en duplicados (pestaña Duplicados)"
-            for _ in [0] if isinstance(context.duplicate_mb, (int, float)) and context.duplicate_mb > 500
-        ] + [
-            f"{context.startup_count} programas de inicio (pestaña Inicio)"
-            for _ in [0] if isinstance(context.startup_count, int) and context.startup_count > 15
-        ]
-    except (TypeError, ValueError):
-        return []
+    
+    problemas = []
+    
+    if context.disk_free_percent < 10:
+        problemas.append(f"queda solo {context.disk_free_percent:.0f}% de disco libre, atendelo primero (pestaña Disco y Limpieza)")
+    
+    if context.suspicious_warnings > 0:
+        problemas.append(f"{context.suspicious_warnings} archivo(s) sospechosos con advertencia (pestaña Seguridad)")
+        
+    if context.memory_available_percent < 15:
+        problemas.append(f"queda {context.memory_available_percent:.0f}% de RAM disponible (pestaña Memoria)")
+        
+    if context.junk_mb > 1000:
+        problemas.append(f"{context.junk_mb:.0f} MB de archivos basura (pestaña Limpieza)")
+        
+    if context.duplicate_mb > 500:
+        problemas.append(f"{context.duplicate_mb:.0f} MB en duplicados (pestaña Duplicados)")
+        
+    if context.startup_count > 15:
+        problemas.append(f"{context.startup_count} programas de inicio (pestaña Inicio)")
+        
+    return problemas
 
 
 def available(base: str | Path | None = None) -> bool:
