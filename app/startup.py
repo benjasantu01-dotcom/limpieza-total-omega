@@ -86,43 +86,41 @@ class StartupEntry:
             return str(path) if self._is_valid_executable(path) else ""
         except (OSError, ValueError, RuntimeError, TypeError):
             return ""
+
+    def _resolve_and_cache_path(self, path_str: str) -> str:
+        """Intenta validar la existencia de una ruta y la almacena en el caché."""
+        try:
+            path = Path(path_str).expanduser()
+            # Si el archivo existe, resolvemos a ruta absoluta; si no, conservamos el original.
+            self._exec_cache = str(path) if path.exists() else path_str
+        except (OSError, ValueError, RuntimeError, TypeError):
+            self._exec_cache = path_str
+        return self._exec_cache
         
     @property
     def executable(self) -> str:
         """
         Normaliza la ruta del ejecutable analizando el comando de inicio.
-        Utiliza cache interno para evitar llamadas repetidas al sistema de archivos.
+        Utiliza caché interno para evitar llamadas repetidas al sistema de archivos.
         """
         if self._checked_exists:
             return self._exec_cache or ""
             
+        self._checked_exists = True
         if not self.command:
-            self._checked_exists = True
             return ""
 
         # Limpieza de caracteres no imprimibles del comando crudo
         cmd: str = "".join(c for c in self.command.strip() if ord(c) >= 32)
         if not cmd:
-            self._checked_exists = True
             return ""
         
-        self._checked_exists = True
         if cmd.startswith('"'):
             self._exec_cache = self._extract_quoted_path(cmd)
             return self._exec_cache
         
         parts: List[str] = cmd.split()
-        if not parts:
-            return ""
-            
-        try:
-            path = Path(parts[0]).expanduser()
-            # Validar si existe antes de intentar resolver o convertir
-            self._exec_cache = str(path) if path.exists() else parts[0]
-            return self._exec_cache
-        except (OSError, ValueError, RuntimeError, TypeError):
-            self._exec_cache = parts[0]
-            return self._exec_cache
+        return self._resolve_and_cache_path(parts[0]) if parts else ""
 
 
 def startup_folders() -> List[Path]:

@@ -112,6 +112,11 @@ def _coerce_int(raw_value: Any, setting_key: str) -> int | None:
         return None
 
 def _validate_str(clave: str, valor: Any) -> str | None:
+    """
+    Valida y normaliza valores de cadena.
+    Aplica chequeos de seguridad en 'ultima_carpeta' usando is_safe_to_modify.
+    Retorna el valor validado, o None si el valor es incompatible con el esquema.
+    """
     if not isinstance(valor, str):
         return None
     texto = valor.strip()

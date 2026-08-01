@@ -68,6 +68,9 @@ class Scanner:
     def process_entry(self, entry: os.DirEntry, stack: List[str]) -> None:
         """
         Analiza una entrada: si es directorio, lo apila; si es archivo, ejecuta los checks.
+        
+        :param entry: Entrada del sistema de archivos proporcionada por os.scandir.
+        :param stack: Lista mutable que actúa como pila para el recorrido recursivo.
         """
         try:
             if entry.is_dir(follow_symlinks=False):
@@ -94,7 +97,12 @@ def check_double_extension(path: Path) -> Optional[Suspicion]:
 
 
 def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_THRESHOLD_HOURS) -> Optional[Suspicion]:
-    """Detecta ejecutables nuevos; su presencia reciente suele ser un indicador de riesgo."""
+    """
+    Detecta ejecutables nuevos; su presencia reciente suele ser un indicador de riesgo.
+    
+    :param path: Ruta del archivo a inspeccionar.
+    :param hours: Límite de tiempo en horas para considerar un archivo como reciente.
+    """
     if path.suffix.lower() not in SUSPICIOUS_EXECUTABLE_EXT:
         return None
         
