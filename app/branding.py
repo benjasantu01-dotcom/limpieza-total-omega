@@ -16,7 +16,7 @@ El motivo es un escudo (seguridad) cruzado por un trazo de limpieza.
 
 from __future__ import annotations
 from pathlib import Path
-from typing import Any, Final, TypeAlias, Literal, Mapping, Tuple, List
+from typing import Any, Final, TypeAlias, Literal, Mapping, Tuple, List, Optional, Union
 from types import MappingProxyType
 from functools import lru_cache
 from safety import is_safe_to_modify, ensure_safe_to_modify
@@ -121,10 +121,15 @@ def font_size(name: str) -> int:
     return FONT_SIZES.get(name, FONT_SIZES["body"])
 
 
-def icon(section: str | None) -> str:
+def icon(section: Optional[str]) -> str:
     """
     Retorna el glifo unicode asociado a una sección.
-    Si section es None o no existe, retorna una viñeta neutra.
+    
+    Args:
+        section: Nombre de la sección a buscar.
+        
+    Returns:
+        Glifo correspondiente o viñeta neutra si no existe.
     """
     if isinstance(section, str) and (glifo := ICONS.get(section.strip())):
         return glifo
@@ -136,14 +141,14 @@ def tab_label(section: str) -> str:
     return f"{icon(section)}  {section}"
 
 
-def severity_color(severity: str | None) -> HexColor:
+def severity_color(severity: Optional[str]) -> HexColor:
     """Mapea un nivel de severidad al color hexadecimal correspondiente."""
     if isinstance(severity, str) and (style := SEVERITY_STYLES.get(severity.lower())):
         return style[0]
     return PALETTE["text_muted"]
 
 
-def severity_label(severity: str | None) -> str:
+def severity_label(severity: Optional[str]) -> str:
     """Obtiene la etiqueta legible para un nivel de severidad determinado."""
     if isinstance(severity, str) and severity.strip():
         if style := SEVERITY_STYLES.get(severity.lower()):
@@ -152,7 +157,7 @@ def severity_label(severity: str | None) -> str:
     return "Desconocido"
 
 
-def severity_icon(severity: str | None) -> str:
+def severity_icon(severity: Optional[str]) -> str:
     """Retorna un glifo representativo para una severidad dada."""
     simbolos = {"ok": "\u2713", "info": "\u2139", "warning": "\u26a0", "danger": "\u2716"}
     if isinstance(severity, str):
@@ -160,17 +165,22 @@ def severity_icon(severity: str | None) -> str:
     return "\u2022"
 
 
-def grade_color(grade: str | None) -> HexColor:
+def grade_color(grade: Optional[str]) -> HexColor:
     """Retorna el color hexadecimal asignado a una calificación (A-F)."""
     if isinstance(grade, str) and grade.strip():
         return GRADE_COLORS.get(grade.upper()[0], PALETTE["text_muted"])
     return PALETTE["text_muted"]
 
 
-def score_color(score: float | int | None) -> HexColor:
+def score_color(score: Union[float, int, None]) -> HexColor:
     """
     Calcula el color representativo de un puntaje de salud (0-100).
-    Normaliza el valor y aplica umbrales definidos para alertas visuales.
+    
+    Args:
+        score: Valor numérico del puntaje.
+        
+    Returns:
+        HexColor correspondiente según umbrales de riesgo.
     """
     try:
         valor = float(score)  # type: ignore
@@ -183,11 +193,10 @@ def score_color(score: float | int | None) -> HexColor:
     return PALETTE["danger"]
 
 
-def bar(percent: float | int | None, width: int = 24,
+def bar(percent: Union[float, int, None], width: int = 24,
         filled: str = "\u2588", empty: str = "\u2591") -> str:
     """
     Genera una barra de progreso visual en texto plano para logs o CLI.
-    Calcula el ratio de caracteres 'filled' vs 'empty' según el porcentaje.
     """
     try:
         valor = max(0.0, min(100.0, float(percent))) # type: ignore
@@ -200,10 +209,7 @@ def bar(percent: float | int | None, width: int = 24,
 
 @lru_cache(maxsize=128)
 def _hex_to_rgb(value: HexColor) -> tuple[int, int, int]:
-    """
-    Convierte hexadecimal (#RRGGBB) a tupla RGB. Usado internamente para
-    cálculos de mezcla (blend) en gradientes dinámicos.
-    """
+    """Convierte hexadecimal (#RRGGBB) a tupla RGB."""
     if not isinstance(value, str) or not value.startswith("#"):
         return (0, 0, 0)
     try:
@@ -216,10 +222,7 @@ def _hex_to_rgb(value: HexColor) -> tuple[int, int, int]:
 
 @lru_cache(maxsize=64)
 def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
-    """
-    Interpola linealmente entre dos colores (Lerp). Es el motor matemático
-    detrás de los gradientes fluidos y las transiciones de color en el UI.
-    """
+    """Interpola linealmente (Lerp) entre dos colores."""
     proporcion = max(0.0, min(1.0, float(ratio)))
     r1, g1, b1 = _hex_to_rgb(start)
     r2, g2, b2 = _hex_to_rgb(end)
@@ -232,10 +235,7 @@ def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
 
 @lru_cache(maxsize=16)
 def gradient_colors(steps: int, stops: tuple[HexColor, ...] = GRADIENT_STOPS) -> List[HexColor]:
-    """
-    Genera una lista de colores interpolados basada en puntos de control (stops).
-    Divide 'steps' en segmentos y aplica `blend` entre los colores definidos.
-    """
+    """Genera una lista de colores interpolados basada en puntos de control."""
     try:
         cantidad = max(1, int(steps))
     except (TypeError, ValueError):
@@ -280,27 +280,20 @@ def logo_svg(size: int = 128) -> str:
 """
 
 
-def save_logo_svg(destination: str | Path | None) -> Path | None:
-    """
-    Persiste el archivo SVG del logo en disco.
-    Aplica `ensure_safe_to_modify` antes de cualquier escritura para
-    garantizar que el destino esté fuera de rutas bloqueadas.
-    """
+def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
+    """Persiste el archivo SVG del logo en disco tras validación de seguridad."""
     if not destination:
         return None
     try:
         path = Path(destination).expanduser().resolve()
         parent = path.parent
         
-        # Validar ruta de manera segura antes de intentar crear directorios
         if not is_safe_to_modify(parent):
             return None
             
-        # Si existe el archivo, verificar permisos de modificación del destino
         if path.exists():
             ensure_safe_to_modify(path)
         else:
-            # Si no existe, verificar permisos del contenedor
             ensure_safe_to_modify(parent)
             
         if not parent.exists():
@@ -325,9 +318,7 @@ def logo_ascii() -> str:
 
 
 def draw_logo(canvas: Any, size: int = 56, canvas_x: int = 0, canvas_y: int = 0) -> None:
-    """
-    Renderiza el logo (escudo Omega) en un widget Tkinter.Canvas.
-    """
+    """Renderiza el logo (escudo Omega) en un widget Tkinter.Canvas."""
     if canvas is None or not hasattr(canvas, "create_polygon"): return
     try:
         s = max(0.1, float(size) / 128)
@@ -365,9 +356,7 @@ def draw_logo(canvas: Any, size: int = 56, canvas_x: int = 0, canvas_y: int = 0)
 def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
                       canvas_x: int = 0, canvas_y: int = 0,
                       stops: tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
-    """
-    Dibuja una franja horizontal de gradiente en un Tkinter.Canvas.
-    """
+    """Dibuja una franja horizontal de gradiente en un Tkinter.Canvas."""
     if canvas is None or not hasattr(canvas, "create_line"): return
     try:
         ancho, alto = max(1, int(width)), max(1, int(height))
@@ -376,14 +365,11 @@ def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
     except (ValueError, TypeError, AttributeError): pass
 
 
-def draw_ring(canvas: Any, percent: float | int, size: int = 150,
+def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
               canvas_x: int = 0, canvas_y: int = 0, thickness: int = 14,
-              track: HexColor | None = None,
-              fill: HexColor | None = None) -> None:
-    """
-    Dibuja un medidor circular de estado. Utiliza arcos de Tkinter calculando 
-    la extensión del mismo en base al porcentaje de salud.
-    """
+              track: Optional[HexColor] = None,
+              fill: Optional[HexColor] = None) -> None:
+    """Dibuja un medidor circular de estado."""
     if canvas is None or not hasattr(canvas, "create_arc"): return
     try:
         valor = max(0.0, min(100.0, float(percent))) # type: ignore

@@ -148,7 +148,12 @@ def all_drives_usage(mounts: Iterable[str] | None = None) -> list[DriveUsage]:
 
 def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Generator[tuple[Path, int], None, None]:
     """
-    Recorre recursivamente un directorio usando os.scandir para rendimiento.
+    Recorre recursivamente un directorio.
+    
+    Excluye:
+    - Enlaces simbólicos para evitar bucles infinitos.
+    - Reparse points (Junctions de Windows) mediante `st_reparse_tag`.
+    - Rutas marcadas como protegidas por `safety.is_protected_path`.
     """
     if not directory:
         return
@@ -166,6 +171,7 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
             with os.scandir(root_path) as iterator:
                 for entry in iterator:
                     try:
+                        # Evitar seguir enlaces simbólicos y puntos de reparse (Junctions)
                         if entry.is_symlink():
                             continue
                         if os.name == 'nt' and entry.stat(follow_symlinks=False).st_reparse_tag != 0:

@@ -115,12 +115,15 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
 
 def directory_size(path: str | os.PathLike | None) -> int:
     """
-    Calcula el tamaño total en bytes de un directorio de forma iterativa.
-    
-    Ignora:
-    - Enlaces simbólicos y puntos de reparse (junctions) para evitar bucles.
-    - Archivos inaccesibles por permisos.
-    - Rutas marcadas como protegidas por safety.py.
+    Calcula el tamaño total en bytes de un directorio mediante una búsqueda
+    iterativa basada en una pila.
+
+    Seguridad:
+    - Evita recursión infinita mediante un conjunto `visited` de rutas resueltas.
+    - Salta enlaces simbólicos y junctions de Windows para no salir del árbol.
+    - Filtra cada subdirectorio mediante `is_protected_path` para cumplir
+      estrictamente con las reglas de seguridad global.
+    - Maneja excepciones de acceso por permisos por archivo/directorio.
     """
     if not path:
         return 0
@@ -161,9 +164,13 @@ def directory_size(path: str | os.PathLike | None) -> int:
 
 def _is_valid_cache_path(candidate: Path | None, base_path: Path) -> bool:
     """
-    Valida que una ruta cumpla con los requisitos de seguridad y caché.
-    Verifica existencia, que sea un directorio real (no link), que esté
-    dentro de la ruta base permitida y que no esté en la lista negra (NEVER_TOUCH).
+    Valida si un candidato es una ruta de caché apta para ser reportada.
+    
+    Criterios:
+    1. Existencia y tipo (debe ser directorio, no enlace).
+    2. Integridad de ruta: debe estar contenida en base_path (evita traversal).
+    3. Seguridad: la ruta no debe estar en la lista negra global (`is_protected_path`)
+       ni ser un elemento de configuración sensible (`NEVER_TOUCH`).
     """
     if not isinstance(candidate, Path):
         return False

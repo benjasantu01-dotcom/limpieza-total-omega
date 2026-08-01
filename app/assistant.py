@@ -260,7 +260,7 @@ def explain_area(area: str) -> str:
 
 
 def handle_ram(ctx: SystemContext, text: str) -> Answer:
-    """Handler local para consultas sobre rendimiento de memoria RAM."""
+    """Procesa consultas sobre el rendimiento de la memoria RAM."""
     partes = [
         f"Tenés {ctx.memory_available_percent:.0f}% de RAM disponible"
         f"{f' de {ctx.memory_total_gb:.0f} GB' if ctx.memory_total_gb else ''}.",
@@ -282,7 +282,7 @@ def handle_ram(ctx: SystemContext, text: str) -> Answer:
                     suggestions=["¿Conviene desactivar programas de inicio?"])
 
 def handle_disk(ctx: SystemContext, text: str) -> Answer:
-    """Handler local para consultas sobre almacenamiento y limpieza."""
+    """Procesa consultas sobre almacenamiento y limpieza de disco."""
     recuperable = ctx.junk_mb + ctx.duplicate_mb + ctx.browser_cache_mb
     partes = [
         f"Tenés {ctx.disk_free_percent:.0f}% libre en disco.",
@@ -300,7 +300,7 @@ def handle_disk(ctx: SystemContext, text: str) -> Answer:
     return Answer(" ".join(partes), notice=OFFLINE_NOTICE)
 
 def handle_security(ctx: SystemContext, text: str) -> Answer:
-    """Handler local para consultas sobre seguridad y sospechosos."""
+    """Procesa consultas sobre seguridad de archivos sospechosos."""
     if ctx.suspicious_count == 0:
         cuerpo = ("No hay archivos sospechosos en tus Descargas. Sobre borrar: la "
                     "app nunca borra sola. La limpieza mueve todo a una carpeta de "
@@ -315,7 +315,7 @@ def handle_security(ctx: SystemContext, text: str) -> Answer:
     return Answer(cuerpo, notice=OFFLINE_NOTICE)
 
 def handle_score(ctx: SystemContext, text: str) -> Answer:
-    """Handler local para explicar el estado general y el puntaje."""
+    """Procesa consultas sobre la explicación del puntaje de salud global."""
     detalle = (f"Tu puntaje es {ctx.score}/100"
                 f"{f' (nota {ctx.grade})' if ctx.grade else ''}. ")
     problemas = _rank_problems(ctx)
@@ -328,7 +328,7 @@ def handle_score(ctx: SystemContext, text: str) -> Answer:
     return Answer(detalle, notice=OFFLINE_NOTICE)
 
 def handle_startup(ctx: SystemContext, text: str) -> Answer:
-    """Handler local para programas de arranque."""
+    """Procesa consultas sobre programas que inician con el sistema."""
     cuerpo = f"Tenés {ctx.startup_count} programas que arrancan con Windows. "
     if ctx.startup_count > 15:
         cuerpo += ("Son bastantes, y cada uno suma tiempo de encendido. Vale la "
