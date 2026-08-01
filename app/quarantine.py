@@ -212,7 +212,6 @@ def quarantine_file(
     if is_protected_path(dest_dir):
         raise UnsafePathError(f"Directorio de cuarentena protegido o inválido: {dest_dir}")
 
-    # Verificación estricta: solo mover archivos regulares, no directorios, sockets o pipes
     if not source_path.is_file() or source_path.is_symlink():
         raise UnsafePathError(f"El objeto origen no es un archivo regular o es un enlace: {source_path}")
     
@@ -233,11 +232,15 @@ def quarantine_file(
     
     try:
         file_size = source_path.stat().st_size
+    except OSError as e:
+        raise OSError(f"Error al acceder a metadatos de archivo: {e}")
+        
+    try:
         usage = shutil.disk_usage(dest_dir)
         if usage.free < file_size:
             raise OSError(f"Espacio insuficiente en disco para mover: {dest_dir}")
     except OSError as e:
-        raise OSError(f"Error al verificar metadatos de archivo/disco: {e}")
+        raise OSError(f"Error al verificar espacio en disco: {e}")
 
     item_id = uuid.uuid4().hex[:12]
     safe_name = "".join(c for c in source_path.name if c.isalnum() or c in "._-")

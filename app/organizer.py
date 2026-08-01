@@ -180,21 +180,23 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         if not isinstance(jf, JunkFile) or not jf.path:
             continue
         try:
+            # Validar existencia antes de cualquier operación
+            if not jf.path.exists() or not jf.path.is_file():
+                continue
+            
             full_source_path = jf.path.resolve()
             
-            # Verificaciones pre-movimiento para evitar colisiones o rutas inseguras
-            if not full_source_path.exists() or not full_source_path.is_file() or full_source_path.is_symlink():
-                continue
-            if not is_safe_to_modify(full_source_path):
+            # Verificaciones de seguridad post-resolución
+            if full_source_path.is_symlink() or not is_safe_to_modify(full_source_path):
                 continue
             if dest in full_source_path.parents or full_source_path.parent == dest:
                 continue
             
-            # Comprobación estricta de bloqueo (intentar abrir para escritura exclusiva)
+            # Comprobación estricta de bloqueo (intentar abrir para lectura/escritura)
             try:
-                fd = os.open(full_source_path, os.O_RDWR | os.O_EXCL)
-                os.close(fd)
-            except OSError:
+                with open(full_source_path, 'rb+'):
+                    pass
+            except (IOError, OSError):
                 continue
 
             target = _generate_unique_target(dest / f"{jf.path.stem}_{int(jf.modified.timestamp())}{jf.path.suffix}")

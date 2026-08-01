@@ -1239,16 +1239,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             messagebox.showwarning("PID inválido", "El PID debe ser mayor a 0.")
             return
         
-        # Seguridad: Evitar manipulación de procesos protegidos o críticos
-        # Usamos un chequeo de seguridad preventivo
-        try:
-            # Si el proceso no existe o no se puede acceder, lanzará excepción
-            # y el handler central lo atrapará.
-            if not safety.is_safe_to_modify(Path(f"PROCESS_PID_{pid}")):
-                messagebox.showwarning("Acción denegada", "Ese proceso es crítico para el sistema.")
-                return
-        except Exception:
-            pass
+        # Seguridad: Evitar manipulación de procesos protegidos o críticos.
+        # Creamos una pseudo-ruta para validar contra el guard de seguridad.
+        if not safety.is_safe_to_modify(Path(f"PROCESS_PID_{pid}")):
+            messagebox.showwarning("Acción denegada", "Ese proceso es crítico para el sistema.")
+            return
 
         if not self._confirm("Liberar working set", memory_mod.TRIM_WARNING + "\n\n¿Seguimos?"):
             return

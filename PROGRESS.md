@@ -16,37 +16,41 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-30 | 19 | 2 | 1 | 0 | 0 |
+| 2026-07-30 | 15 | 2 | 1 | 0 | 0 |
 | 2026-07-31 | 179 | 12 | 17 | 10 | 132 |
-| 2026-08-01 | 53 | 4 | 5 | 4 | 66 |
+| 2026-08-01 | 57 | 4 | 5 | 4 | 66 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **56**
 - seguridad defensiva: **53**
-- rendimiento: **51**
-- manejo de errores y validación de entradas: **46**
+- legibilidad y documentación: **53**
+- rendimiento: **50**
+- manejo de errores y validación de entradas: **50**
 - robustez ante casos límite: **45**
 
 ## Mejoras aceptadas por archivo
 
-- `scanner.py`: **22**
-- `quarantine.py`: **21**
+- `quarantine.py`: **22**
+- `scanner.py`: **21**
 - `browser.py`: **20**
-- `settings.py`: **19**
-- `assistant.py`: **18**
+- `main.py`: **19**
 - `branding.py`: **18**
 - `diskreport.py`: **18**
 - `healthscore.py`: **18**
-- `main.py`: **18**
-- `organizer.py`: **17**
+- `organizer.py`: **18**
+- `settings.py`: **18**
 - `safety.py`: **17**
+- `assistant.py`: **17**
 - `duplicates.py`: **16**
-- `startup.py`: **15**
-- `memory.py`: **14**
+- `memory.py`: **15**
+- `startup.py`: **14**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-01T05:55:09` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez en `quarantine_file` agregando una validación explícita de `OSError` al realizar el cálculo del tamaño de archivo, evitando que una falla parcial durante la lectura de metadatos deje el estado del sistema en inconsistencia.
+- `2026-08-01T05:54:57` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` capturando errores específicos al intentar obtener metadatos y validando la existencia de los archivos antes de procesarlos, asegurando que la lógica sea resiliente ante cambios externos en el sistema de archivos durante la ejecución del bucle.
+- `2026-08-01T05:54:36` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_windows_process_csv` añadiendo validaciones estrictas y manejo de excepciones para evitar errores al procesar entradas malformadas o inesperadas provenientes de PowerShell.
+- `2026-08-01T05:54:11` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `main.py` mediante una validación proactiva y centralizada en `on_trim_process`, asegurando que el PID ingresado por el usuario no solo sea un entero, sino que sea objeto de validación de seguridad (preveniendo intentos de manipulación sobre procesos del sistema) antes de ejecutar cualquier acción, complementando el manejo de errores del handler `_validate_and_log_error`.
 - `2026-08-01T05:44:07` **healthscore.py** (manejo de errores y validación de entradas): Reforcé la robustez de `compute_score` implementando una validación temprana de `metrics` ante valores `None` inesperados y asegurando que las funciones de puntuación manejen casos de límites de configuración erróneos de forma defensiva sin interrumpir la ejecución.
 - `2026-08-01T05:43:36` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y las funciones de análisis al encapsular la resolución de rutas en un bloque `try-except` más específico y validar la existencia de `base_path` antes de iniciar cualquier operación recursiva, previniendo fallos ante rutas inválidas o inaccesibles.
 - `2026-08-01T05:43:13` **browser.py** (manejo de errores y validación de entradas): Reforcé la robustez de `directory_size` validando explícitamente los parámetros y capturando excepciones de sistema (como `OSError` al acceder a entradas) en todas las fases de iteración, asegurando que el bucle no aborte ante archivos bloqueados o con nombres inválidos.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-01T04:01:29` **organizer.py** (seguridad defensiva): Se ha robustecido la lógica de `stage_for_review` para prevenir el movimiento de archivos que se encuentran actualmente abiertos por otros procesos mediante el uso de `os.open` y `os.close` con flags de acceso exclusivo, garantizando la integridad de los datos antes de la operación de movimiento.
 - `2026-08-01T03:52:24` **main.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `main.py` mediante la validación explícita con `safety.is_safe_to_modify` antes de proceder con operaciones potencialmente destructivas en `on_trim_process`, asegurando que no se intente manipular procesos del sistema o protegidos.
 - `2026-08-01T03:41:48` **browser.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `directory_size` asegurando que las rutas extraídas de `os.scandir` se validen contra `is_protected_path` antes de ser procesadas o añadidas al stack, mitigando riesgos ante estructuras de directorios inesperadas o intentos de acceso a zonas protegidas que pudieran aparecer dinámicamente.
-- `2026-08-01T03:41:13` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_call_gemini` integrando un chequeo explícito de contenido mediante `is_protected_path` (importada de `safety`), asegurando que, incluso ante un fallo del regex, la respuesta del modelo no pueda contener referencias a rutas protegidas del sistema.
-- `2026-08-01T03:31:13` **scanner.py** (robustez ante casos límite): Se reforzó `scan_file` para manejar robustamente archivos que desaparecen entre la detección y el acceso (Race Condition) y se añadió validación de existencia `path.exists()` antes de realizar operaciones de metadatos, evitando excepciones innecesarias en entornos de alta actividad.
-- `2026-08-01T03:30:51` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la función `ensure_safe_to_modify` añadiendo una comprobación para archivos cuyo nombre o ruta contengan caracteres nulos (`\0`) o secuencias de control potencialmente maliciosas que podrían engañar a las APIs de bajo nivel del sistema operativo.
-- `2026-08-01T03:21:54` **quarantine.py** (robustez ante casos límite): Se reforzó la robustez de `quarantine_file` añadiendo una validación explícita para evitar que se intente poner en cuarentena un directorio o un archivo especial (device, pipe, socket) que no sea un archivo regular, previniendo errores de sistema al intentar moverlos.

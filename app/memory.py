@@ -142,18 +142,20 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
     def _extract_rows() -> Iterator[ProcessMemory]:
         for line in text.splitlines():
             line = line.strip()
-            if not line or line.startswith("Name,"):
+            if not line or line.startswith("Name,") or line.startswith("NameId"):
                 continue
             parts = [p.strip().strip('"') for p in line.split(",")]
             if len(parts) >= 3:
                 try:
-                    name, pid, ws = parts[0], int(parts[1]), int(parts[2])
+                    name, pid_str, ws_str = parts[0], parts[1], parts[2]
+                    pid, ws = int(pid_str), int(ws_str)
                     if pid >= 0 and ws >= 0:
                         yield ProcessMemory(name=name or "Unknown", pid=pid, working_set=ws)
                 except (ValueError, IndexError):
                     continue
 
-    return sorted(_extract_rows(), key=lambda p: p.working_set, reverse=True)[:max(1, int(limit))]
+    rows = list(_extract_rows())
+    return sorted(rows, key=lambda p: p.working_set, reverse=True)[:max(1, int(limit))]
 
 
 def _read_windows_snapshot() -> MemorySnapshot:
