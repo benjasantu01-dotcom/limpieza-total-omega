@@ -25,6 +25,7 @@ import os
 import shutil
 import uuid
 import hashlib
+import tempfile
 from dataclasses import dataclass, asdict
 from datetime import datetime
 from pathlib import Path
@@ -172,21 +173,25 @@ def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload:
 
 
 def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
-    """Persiste la lista de ítems al archivo de manifiesto y actualiza el caché."""
+    """Persiste la lista de ítems al archivo de manifiesto de forma atómica y actualiza el caché."""
     if not isinstance(items, list):
         raise ValueError("El manifiesto debe ser una lista de ítems.")
         
     base_path = quarantine_dir(base)
-    path = _manifest_path(base_path)
+    target_path = _manifest_path(base_path)
+    
+    # Escribir en un temporal y renombrar para garantizar atomicidad
+    fd, temp_path = tempfile.mkstemp(dir=base_path, text=True)
     try:
-        path.write_text(
-            json.dumps([item.to_dict() for item in items], indent=2, ensure_ascii=False),
-            encoding="utf-8",
-        )
-        _manifest_cache[str(base_path)] = (path.stat().st_mtime, items)
-    except OSError as e:
+        with os.fdopen(fd, 'w', encoding='utf-8') as f:
+            json.dump([item.to_dict() for item in items], f, indent=2, ensure_ascii=False)
+        os.replace(temp_path, target_path)
+        _manifest_cache[str(base_path)] = (target_path.stat().st_mtime, items)
+    except Exception as e:
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
         raise RuntimeError(f"Error fatal al persistir manifiesto: {e}")
-    return path
+    return target_path
 
 
 def quarantine_file(

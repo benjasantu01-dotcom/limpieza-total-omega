@@ -140,6 +140,8 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
     if not text:
         return []
 
+    safe_limit = max(1, int(limit))
+
     def _safe_create_proc(parts: List[str]) -> Optional[ProcessMemory]:
         try:
             name = parts[0].strip()
@@ -166,7 +168,7 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
                 if proc:
                     yield proc
 
-    return sorted(_extract_rows(), key=lambda p: p.working_set, reverse=True)[:max(0, limit)]
+    return sorted(_extract_rows(), key=lambda p: p.working_set, reverse=True)[:safe_limit]
 
 
 def _read_windows_snapshot() -> MemorySnapshot:
@@ -309,10 +311,10 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "APIs de sistema no disponibles."
 
     # PROCESS_QUERY_INFORMATION (0x0400) | PROCESS_SET_QUOTA (0x0100) | PROCESS_VM_WRITE (0x0020)
-    # Requerido para invocar EmptyWorkingSet sobre un proceso externo.
     handle = kernel32.OpenProcess(0x0520, False, target_pid)
     if not handle:
-        return False, f"No se pudo acceder al proceso {target_pid}."
+        err = kernel32.GetLastError()
+        return False, f"No se pudo acceder al proceso {target_pid} (WinError {err})."
     
     try:
         if not psapi.EmptyWorkingSet(handle):
