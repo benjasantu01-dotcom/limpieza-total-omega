@@ -1232,3 +1232,10 @@ FAILED evolve/tests/test_assistant.py::test_save_creates_the_folder - AssertionE
 - `2026-08-01T02:30:07` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
 - `2026-08-01T02:30:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-01T02:30:07` Corrida terminada. Total usado hoy: 56.
+- `2026-08-01T02:38:54` Arrancando corrida. Quedan hoy ~244 peticiones objetivo.
+- `2026-08-01T02:39:22` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimizé la función `compute_score` cacheando los cálculos de ratios en un diccionario local y reemplazando las llamadas repetitivas a `ratios.get()` por acceso directo a variables locales, reduciendo así la sobrecarga de búsquedas en diccionario y llamadas a funciones dentro del bucle principal.
+- `2026-08-01T02:40:21` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Se implementó un mecanismo de caché con tiempo de expiración (TTL) en la clase `LimpiezaTotalOmegaApp` para evitar la re-ejecución innecesaria de análisis costosos dentro de la misma sesión, mejorando significativamente la fluidez de la interfaz.
+- `2026-08-01T02:40:45` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimizado `parse_windows_process_csv` reemplazando la lectura línea a línea con `splitlines()` seguida de procesamiento por iterador eficiente, eliminando la creación de listas intermedias innecesarias para mejorar el uso de CPU y memoria en el escaneo de procesos.
+- `2026-08-01T02:40:52` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimicé el rendimiento de `scan_for_junk` convirtiendo la `SYSTEM_FOLDER_BLOCKLIST` en un `set` (ya lo era, pero ahora se accede directamente) y evitando múltiples llamadas a `Path.expanduser()` dentro del bucle recursivo, además de cachear el acceso a `entry.name.lower()` para reducir operaciones redundantes de strings en el árbol de directorios.
+- `2026-08-01T02:40:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-01T02:40:52` Corrida terminada. Total usado hoy: 60.

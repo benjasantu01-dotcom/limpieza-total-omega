@@ -31,6 +31,7 @@ Los análisis del panel de Salud se consolidan en una única ejecución asíncro
 para minimizar el overhead de hilos y garantizar la coherencia de los datos
 que consume el asistente. El estado de análisis pesados se cachea por sesión.
 Se emplea invalidación selectiva para evitar procesado redundante en disco.
+Se implementa TTL (Time-To-Live) para asegurar que los datos no queden obsoletos.
 
 Instalar dependencias:
     pip install customtkinter
@@ -43,6 +44,7 @@ import concurrent.futures
 import logging
 import os
 import threading
+import time
 import tkinter as tk
 from tkinter import filedialog, messagebox
 from pathlib import Path
@@ -128,7 +130,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _init_state(self) -> None:
         """Inicializa estructuras de datos volátiles y el pool de hilos para procesamiento."""
-        self._cache: Dict[str, Any] = {}
+        self._cache: Dict[str, Tuple[Any, float]] = {}
+        self._cache_ttl = 300  # 5 minutos de validez para datos de disco
         self._last_health_state: Optional[Tuple] = None
         self.scan_target: Optional[str] = None
         self.analysis_folder: Optional[str] = None
@@ -151,15 +154,20 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _get_cached(self, key: str, provider: Callable, force: bool = False) -> Any:
         """
-        Recupera datos del caché si existen; si no, invoca al proveedor.
-        Uso de setdefault para atomicidad y evitar accesos redundantes.
+        Recupera datos del caché si existen y no expiraron; si no, invoca al proveedor.
         """
-        if force or key not in self._cache:
-            try:
-                self._cache[key] = provider()
-            except Exception:
-                self._cache[key] = []
-        return self._cache[key]
+        now = time.time()
+        if not force and key in self._cache:
+            data, timestamp = self._cache[key]
+            if now - timestamp < self._cache_ttl:
+                return data
+        
+        try:
+            data = provider()
+            self._cache[key] = (data, now)
+            return data
+        except Exception:
+            return []
 
     def _invalidate_cache(self, key_prefix: str) -> None:
         """Elimina entradas del caché que comiencen con el prefijo indicado para forzar refresco."""
@@ -819,7 +827,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _compile_metrics(self) -> Tuple[healthscore.SystemMetrics, memory_mod.Snapshot, diskreport.DriveInfo]:
         """Agrega los datos de todos los módulos para el análisis consolidado de salud."""
-        # Se prioriza caché local para evitar E/S masivas constantes
         descargas = os.path.expanduser("~/Downloads")
         hallazgos = self._get_cached("suspicions", lambda: scan_directory(descargas) if os.path.isdir(descargas) else [])
         snapshot = memory_mod.read_snapshot()
@@ -827,9 +834,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         unidad = diskreport.drive_usage(home) if os.path.exists(home) else None
         
         # Recuperamos del caché sin forzar re-análisis
-        arranque = self._cache.get("startup", [])
-        junk = self._cache.get("junk", [])
-        dups = self._cache.get("dups", [])
+        arranque = self._cache.get("startup", ([], 0))[0]
+        junk = self._cache.get("junk", ([], 0))[0]
+        dups = self._cache.get("dups", ([], 0))[0]
 
         junk_mb = sum(j.size_bytes for j in junk) / (1024 * 1024)
         advertencias = sum(1 for h in hallazgos if h.severity == "warning")
@@ -953,7 +960,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.log(f"Buscando archivos basura en: {destino}...", "Limpieza")
             directories = [self.scan_target] if self.scan_target else None
             junk = scan_for_junk(directories)
-            self._cache["junk"] = junk
+            self._cache["junk"] = (junk, time.time())
             total_mb = round(sum(j.size_bytes for j in junk) / (1024 * 1024), 2)
             self.log(f"Encontrados {len(junk)} candidatos ({total_mb} MB).", "Limpieza")
             self.refresh_list()
@@ -962,7 +969,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def refresh_list(self):
         """Ordena y renderiza la lista de candidatos según selección del usuario."""
-        junk = self._cache.get("junk", [])
+        junk = self._cache.get("junk", ([], 0))[0]
         ordered = sort_junk(junk, by=self.sort_by.get())
         lines = [f"{jf.size_mb:>8} MB  |  {jf.modified:%Y-%m-%d}  |  {jf.path}" for jf in ordered]
         self.report_data["limpieza"] = lines
@@ -971,7 +978,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def on_stage(self):
         """Prepara archivos seguros para revisión eliminando basura en rutas bloqueadas."""
-        junk = self._cache.get("junk", [])
+        junk = self._cache.get("junk", ([], 0))[0]
         if not junk:
             messagebox.showinfo("Sin candidatos", "Primero usá 'Buscar basura'.")
             return
@@ -993,7 +1000,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.set_status("Moviendo a revisión...")
             dest = stage_for_review(aptos)
             self.log(f"Movidos {len(aptos)} archivos a: {dest}", "Limpieza")
-            self._cache["junk"] = [j for j in junk if j not in aptos]
+            self._cache["junk"] = ([j for j in junk if j not in aptos], time.time())
             self._invalidate_cache("junk")
 
         self.run_async(task)
@@ -1031,7 +1038,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             
             try:
                 results = scan_directory(folder)
-                self._cache["suspicions"] = results
+                self._cache["suspicions"] = (results, time.time())
             except Exception as e:
                 self.log(f"Error durante el escaneo: {e}", "Seguridad")
                 return
@@ -1069,7 +1076,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def on_quarantine_findings(self):
         """Aísla archivos sospechosos en el módulo de cuarentena."""
-        suspicions = self._cache.get("suspicions", [])
+        suspicions = self._cache.get("suspicions", ([], 0))[0]
         if not suspicions:
             messagebox.showinfo("Sin hallazgos", "Primero corré un escaneo heurístico.")
             return
@@ -1096,7 +1103,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 self.log(f"Aislado [{item.item_id}] {item_s.path}", "Seguridad")
                 aislados += 1
             self.log(f"Listo: {aislados} aislado(s).", "Seguridad")
-            self._cache["suspicions"] = [s for s in suspicions if s not in aptos]
+            self._cache["suspicions"] = ([s for s in suspicions if s not in aptos], time.time())
             self._invalidate_cache("suspicions")
 
         self.run_async(task)
@@ -1309,7 +1316,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.log(f"Buscando duplicados en {folder} (solo lectura, puede tardar)...",
                      "Duplicados")
             dups = duplicates_mod.find_duplicates([folder])
-            self._cache["dups"] = dups
+            self._cache["dups"] = (dups, time.time())
             if not dups:
                 self.log_lines(["No se encontraron duplicados."], "Duplicados")
                 return
@@ -1328,7 +1335,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def on_quarantine_duplicates(self):
         """Mueve archivos duplicados excedentes a la cuarentena."""
-        dups = self._cache.get("dups", [])
+        dups = self._cache.get("dups", ([], 0))[0]
         if not dups:
             messagebox.showinfo("Sin duplicados", "Primero usá 'Buscar duplicados'.")
             return
@@ -1358,7 +1365,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 quarantine.quarantine_file(ruta, reason="Copia duplicada")
                 movidos += 1
             self.log(f"Aisladas {movidos} copia(s). Revisá la pestaña Cuarentena.", "Duplicados")
-            self._cache["dups"] = []
+            self._cache["dups"] = ([], time.time())
             self._invalidate_cache("dups")
 
         self.run_async(task)

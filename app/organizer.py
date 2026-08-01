@@ -100,7 +100,6 @@ def _generate_unique_target(target: Path) -> Path:
 def _is_valid_junk(entry: os.DirEntry[str]) -> bool:
     """
     Valida mediante heurística si un archivo es basura y si es seguro tocarlo.
-    Se separa en función para encapsular la lógica de filtrado de seguridad.
     """
     if not entry.is_file(follow_symlinks=False):
         return False
