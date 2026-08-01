@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-31 | 177 | 12 | 17 | 10 | 132 |
-| 2026-08-01 | 74 | 4 | 7 | 4 | 67 |
+| 2026-07-31 | 174 | 12 | 17 | 10 | 131 |
+| 2026-08-01 | 77 | 4 | 7 | 4 | 68 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **67**
 - seguridad defensiva: **53**
 - manejo de errores y validación de entradas: **53**
-- robustez ante casos límite: **39**
-- rendimiento: **39**
+- rendimiento: **42**
+- robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **22**
 - `scanner.py`: **22**
-- `main.py`: **19**
+- `quarantine.py`: **21**
+- `browser.py`: **20**
 - `settings.py`: **19**
-- `browser.py`: **19**
-- `organizer.py`: **18**
 - `safety.py`: **18**
+- `diskreport.py`: **18**
+- `main.py`: **18**
+- `assistant.py`: **18**
 - `branding.py`: **17**
-- `diskreport.py`: **17**
 - `healthscore.py`: **17**
-- `assistant.py`: **17**
+- `organizer.py`: **17**
 - `memory.py`: **16**
 - `startup.py`: **15**
 - `duplicates.py`: **15**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-01T06:55:37` **diskreport.py** (rendimiento): Optimizé la función `summarize` para reducir las llamadas a `walk_files` y evitar el re-procesamiento de datos, consolidando el escaneo en una sola pasada eficiente que mantiene los totales, estadísticas por extensión y el top de archivos simultáneamente.
+- `2026-08-01T06:55:28` **browser.py** (rendimiento): Optimizé `directory_size` reemplazando la construcción repetitiva de objetos `Path` y el uso de `os.path.abspath` (que invoca llamadas al sistema innecesarias) por operaciones nativas sobre los objetos `DirEntry` que ya provee `os.scandir`, reduciendo significativamente la carga de I/O en escaneos de disco.
+- `2026-08-01T06:54:38` **assistant.py** (rendimiento): Optimicé el rendimiento de `_rank_problems` convirtiéndola en una función que recorre las condiciones de forma eficiente y ajusté la lógica de `local_answer` para evitar el cálculo de la lista de problemas cuando una palabra clave genera una respuesta inmediata.
 - `2026-08-01T06:45:23` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica y la legibilidad interna de `startup.py` mediante la adición de docstrings detallados en funciones clave y la clarificación de tipos, asegurando que el propósito y los límites de cada proceso sean explícitos para cualquier futuro mantenimiento.
 - `2026-08-01T06:45:12` **settings.py** (legibilidad y documentación): Documenté el propósito y las restricciones de las funciones de validación y persistencia mediante docstrings detallados, clarificando la lógica de saneamiento de datos y el flujo de trabajo de seguridad para mejorar la mantenibilidad.
 - `2026-08-01T06:44:47` **scanner.py** (legibilidad y documentación): Documenté el propósito y los parámetros de las funciones de chequeo mediante docstrings estructurados, clarifiqué el tipo de retorno de `scan_file` y mejoré la legibilidad de la lógica de escaneo para cumplir con el enfoque de mantenibilidad y documentación.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-01T06:24:21` **duplicates.py** (legibilidad y documentación): Se introdujeron type hints más precisos (usando `Iterable` y `List` consistentes), se añadieron docstrings explicativos sobre las políticas de seguridad (por qué se evitan symlinks) y se clarificaron los nombres de variables internas en los bucles de refinado para mejorar la legibilidad del pipeline de deduplicación.
 - `2026-08-01T06:23:56` **diskreport.py** (legibilidad y documentación): Mejore la claridad y mantenibilidad de `diskreport.py` añadiendo docstrings descriptivos a los parámetros de las funciones principales y documentando la lógica de los chequeos de seguridad (symlinks/reparse points) en `walk_files`.
 - `2026-08-01T06:14:53` **browser.py** (legibilidad y documentación): Mejoré la robustez de `directory_size` y `_is_safe_path` documentando explícitamente el manejo de puntos de reparse (junctions) y añadiendo type hints para clarificar el flujo de datos, asegurando que la lógica de escaneo sea autodescriptiva y segura ante errores de sistema.
-- `2026-08-01T06:14:46` **branding.py** (legibilidad y documentación): Se han mejorado las docstrings de las funciones de alto nivel (`draw_logo`, `draw_ring`, `draw_gradient_bar`) para documentar explícitamente sus parámetros y comportamientos ante entradas inválidas, clarificando las expectativas del sistema gráfico de la app.
-- `2026-08-01T06:14:17` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints en las funciones de manejo de respuestas y una reestructuración de la lógica de `handle_disk` para facilitar su auditoría.
-- `2026-08-01T06:04:23` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `settings.py` implementando una validación exhaustiva al momento de guardar (en `save`), asegurando que las rutas de los directorios de configuración no solo sean seguras, sino que existan y sean accesibles, evitando fallos silenciosos durante la persistencia de datos.

@@ -371,12 +371,10 @@ def local_answer(question: str, context: SystemContext) -> Answer:
         )
 
     clean_text = _sanitize_query(question)
-    # Buscamos coincidencias directas en los tokens del input
     for token in _TOKEN_REGEX.findall(clean_text):
         if token in _KEYWORD_MAP:
             return _HANDLERS[_KEYWORD_MAP[token]](context, clean_text)
 
-    # Solo calculamos la lista de problemas si no hubo un match directo
     problemas = _rank_problems(context)
     if problemas:
         cuerpo = (f"Con un puntaje de {context.score}/100, por orden de prioridad: "
@@ -388,21 +386,26 @@ def local_answer(question: str, context: SystemContext) -> Answer:
 
 
 def _rank_problems(context: SystemContext) -> list[str]:
-    """Calcula y ordena los problemas más críticos del sistema según prioridad."""
-    problemas = []
-    if context.disk_free_percent < 10:
-        problemas.append(f"queda solo {context.disk_free_percent:.0f}% de disco libre, atendelo primero (pestaña Disco y Limpieza)")
-    if context.suspicious_warnings > 0:
-        problemas.append(f"{context.suspicious_warnings} archivo(s) sospechosos con advertencia (pestaña Seguridad)")
-    if context.memory_available_percent < 15:
-        problemas.append(f"queda {context.memory_available_percent:.0f}% de RAM disponible (pestaña Memoria)")
-    if context.junk_mb > 1000:
-        problemas.append(f"{context.junk_mb:.0f} MB de archivos basura (pestaña Limpieza)")
-    if context.duplicate_mb > 500:
-        problemas.append(f"{context.duplicate_mb:.0f} MB en duplicados (pestaña Duplicados)")
-    if context.startup_count > 15:
-        problemas.append(f"{context.startup_count} programas de inicio (pestaña Inicio)")
-    return problemas
+    """Calcula y ordena los problemas más críticos del sistema."""
+    return [
+        f"queda solo {context.disk_free_percent:.0f}% de disco libre, atendelo primero (pestaña Disco y Limpieza)"
+        for _ in [0] if context.disk_free_percent < 10
+    ] + [
+        f"{context.suspicious_warnings} archivo(s) sospechosos con advertencia (pestaña Seguridad)"
+        for _ in [0] if context.suspicious_warnings > 0
+    ] + [
+        f"queda {context.memory_available_percent:.0f}% de RAM disponible (pestaña Memoria)"
+        for _ in [0] if context.memory_available_percent < 15
+    ] + [
+        f"{context.junk_mb:.0f} MB de archivos basura (pestaña Limpieza)"
+        for _ in [0] if context.junk_mb > 1000
+    ] + [
+        f"{context.duplicate_mb:.0f} MB en duplicados (pestaña Duplicados)"
+        for _ in [0] if context.duplicate_mb > 500
+    ] + [
+        f"{context.startup_count} programas de inicio (pestaña Inicio)"
+        for _ in [0] if context.startup_count > 15
+    ]
 
 
 def available(base: str | Path | None = None) -> bool:
@@ -428,7 +431,6 @@ def _call_gemini(
         return None
         
     try:
-        # Sanitización estricta antes de enviar
         sanitized_context = _CONTROL_CHARS_REGEX.sub("", context_text)
         
         cuerpo_json: bytes = json.dumps({
@@ -466,7 +468,6 @@ def _call_gemini(
             
         texto: str = "".join(p.get("text", "") for p in partes if isinstance(p, dict)).strip()
         
-        # Validación de seguridad defensiva estricta sobre la salida del modelo
         if (not texto or len(texto) > 1200 or 
             _PATH_REGEX.search(texto) or 
             _CONTROL_CHARS_REGEX.search(texto) or

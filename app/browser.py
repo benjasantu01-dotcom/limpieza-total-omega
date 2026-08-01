@@ -140,11 +140,6 @@ def directory_size(path: str | os.PathLike | None) -> int:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
-                        # Filtrado preventivo de seguridad por cada entrada
-                        entry_path = Path(entry.path)
-                        if is_protected_path(entry_path):
-                            continue
-                            
                         # Evitar seguir enlaces simbólicos o junctions de Windows
                         if entry.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(entry.path)):
                             continue
