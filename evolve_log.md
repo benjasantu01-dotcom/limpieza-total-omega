@@ -1086,3 +1086,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-01T12:12:40` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se ha robustecido `trim_working_set` añadiendo una comprobación explícita para el handle de procesos, evitando que la ejecución de `CloseHandle` intente operar sobre un handle nulo o inválido en caso de error en la apertura, garantizando mayor estabilidad ante errores de permisos.
 - `2026-08-01T12:12:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-01T12:12:40` Corrida terminada. Total usado hoy: 284.
+- `2026-08-01T12:20:46` Arrancando corrida. Quedan hoy ~16 peticiones objetivo.
+- `2026-08-01T12:21:09` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Mejoré la robustez de `stage_for_review` añadiendo una validación explícita para evitar que `shutil.move` intente procesar rutas de archivos inexistentes o bloqueadas por el sistema operativo, integrando un chequeo previo de integridad de ruta y acceso.
+- `2026-08-01T12:21:36` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se mejora la robustez de `quarantine_file` ante fallos de escritura en el sistema de archivos al implementar un bloque `try...finally` que asegura la integridad del manifiesto incluso si la operación de escritura falla, además de añadir un chequeo de existencia previo para el archivo de origen tras normalizar la ruta.
+- `2026-08-01T12:21:56` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-01T12:22:03` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
+- `2026-08-01T12:22:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-01T12:22:03` Corrida terminada. Total usado hoy: 288.

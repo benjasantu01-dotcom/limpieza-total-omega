@@ -189,14 +189,17 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         if not isinstance(jf, JunkFile) or not jf.path:
             continue
         try:
+            # Validar existencia y accesibilidad antes de operar
             if not jf.path.exists() or jf.path.is_symlink():
                 continue
             
             full_source_path = jf.path.resolve()
             
+            # Chequeos de seguridad y jerarquía
             if not is_safe_to_modify(full_source_path) or dest in full_source_path.parents or full_source_path.parent == dest:
                 continue
             
+            # Verificación de bloqueo de archivo (en uso)
             try:
                 with open(full_source_path, 'rb+'): pass
             except (IOError, OSError):

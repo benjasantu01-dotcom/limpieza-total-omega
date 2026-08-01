@@ -6,32 +6,32 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **245** (48.6% de aceptación)
-- Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 23
+- Mejoras aceptadas: **247** (49.0% de aceptación)
+- Rechazadas por tests: 14
+- Rechazadas por guardia de seguridad: 24
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 204
+- Sin respuesta de la IA (error o límite): 202
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-31 | 106 | 4 | 10 | 8 | 92 |
-| 2026-08-01 | 139 | 11 | 13 | 9 | 112 |
+| 2026-07-31 | 106 | 3 | 10 | 8 | 89 |
+| 2026-08-01 | 141 | 11 | 14 | 9 | 113 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **67**
 - rendimiento: **52**
 - manejo de errores y validación de entradas: **48**
-- robustez ante casos límite: **40**
+- robustez ante casos límite: **42**
 - seguridad defensiva: **38**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **21**
+- `quarantine.py`: **22**
+- `organizer.py`: **20**
 - `diskreport.py`: **19**
-- `organizer.py`: **19**
 - `scanner.py`: **19**
 - `settings.py`: **19**
 - `assistant.py`: **18**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-01T12:21:36` **quarantine.py** (robustez ante casos límite): Se mejora la robustez de `quarantine_file` ante fallos de escritura en el sistema de archivos al implementar un bloque `try...finally` que asegura la integridad del manifiesto incluso si la operación de escritura falla, además de añadir un chequeo de existencia previo para el archivo de origen tras normalizar la ruta.
+- `2026-08-01T12:21:09` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `stage_for_review` añadiendo una validación explícita para evitar que `shutil.move` intente procesar rutas de archivos inexistentes o bloqueadas por el sistema operativo, integrando un chequeo previo de integridad de ruta y acceso.
 - `2026-08-01T12:12:40` **memory.py** (robustez ante casos límite): Se ha robustecido `trim_working_set` añadiendo una comprobación explícita para el handle de procesos, evitando que la ejecución de `CloseHandle` intente operar sobre un handle nulo o inválido en caso de error en la apertura, garantizando mayor estabilidad ante errores de permisos.
 - `2026-08-01T12:12:31` **main.py** (robustez ante casos límite): Mejoré la robustez de los métodos de selección de archivos (`_ask_folder`, `on_disk_analysis`, `on_find_duplicates`) para evitar bloqueos y comportamientos inesperados ante rutas inexistentes, permisos denegados o cancelaciones del diálogo, garantizando una gestión de errores más limpia sin romper el bucle principal.
 - `2026-08-01T12:11:26` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `score_security` y `score_memory` ante casos límite mediante una validación explícita de sus parámetros de entrada, evitando que valores inesperados (como negativos) alteren el cálculo del puntaje fuera de los límites esperados.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-01T11:40:47` **organizer.py** (rendimiento): Optimicé el escaneo `_walk_dir` pasando el bloque de `SYSTEM_FOLDER_BLOCKLIST` a un `set` de comparación directa y convirtiendo la recursión para usar `os.scandir` de forma más eficiente, evitando llamadas innecesarias a `is_symlink()` mediante el uso de los atributos de `os.DirEntry` ya obtenidos.
 - `2026-08-01T11:40:25` **memory.py** (rendimiento): Optimicé `parse_windows_process_csv` reemplazando la creación de una lista completa en memoria antes de ordenar por una operación de ordenamiento más eficiente y directa, reduciendo la carga de procesamiento al evitar iteraciones múltiples sobre estructuras voluminosas.
 - `2026-08-01T11:31:45` **main.py** (rendimiento): Optimicé el método `_compile_metrics` reemplazando llamadas múltiples a `self._get_cached` con una lógica de consolidación asíncrona más eficiente, reduciendo el riesgo de redundancia en la recolección de datos durante el análisis de salud.
-- `2026-08-01T11:30:13` **diskreport.py** (rendimiento): Optimicé el método `summarize` para reducir las llamadas repetitivas a `path.suffix.lower()` y el acceso al diccionario, y mejoré `walk_files` usando `os.scandir` de forma más directa para evitar la sobrecarga de crear objetos `Path` innecesarios dentro del bucle interno, mejorando el rendimiento en directorios grandes.
-- `2026-08-01T11:21:10` **browser.py** (rendimiento): Optimizé la función `directory_size` para reducir llamadas costosas a `path.resolve()` y `is_protected_path()` moviendo el chequeo de seguridad fuera del loop interno y utilizando atributos de `os.DirEntry` para obtener el tamaño y el estado del archivo, evitando así llamadas repetitivas a `stat()` y `Path` objetos.

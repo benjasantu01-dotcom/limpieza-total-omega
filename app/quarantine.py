@@ -279,17 +279,17 @@ def quarantine_file(
             quarantined_at=datetime.now().isoformat(timespec="seconds"),
             sha256=file_hash,
         )
-        # Actualizamos caché directamente para evitar I/O innecesario
         base_str = str(dest_dir)
         items = list(_manifest_cache.get(base_str, (0.0, []))[1])
         items.append(item)
         save_manifest(items, base)
         return item
     except Exception as e:
-        try:
-            shutil.move(str(destination), str(source_path))
-        except OSError:
-            pass
+        if destination.exists():
+            try:
+                shutil.move(str(destination), str(source_path))
+            except OSError:
+                pass
         raise RuntimeError(f"Error irrecuperable procesando metadatos (archivo revertido): {e}")
 
 
@@ -384,7 +384,6 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     ensure_safe_to_modify(quarantine_root, allow_sensitive=False)
     
     items = load_manifest(base)
-    # Optimización: Mapear por nombre de archivo para evitar búsquedas repetidas O(N)
     item_map = {item.stored_name: item for item in items}
     count = 0
     
