@@ -1093,3 +1093,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-01T12:22:03` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
 - `2026-08-01T12:22:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-01T12:22:03` Corrida terminada. Total usado hoy: 288.
+- `2026-08-01T12:31:06` Arrancando corrida. Quedan hoy ~12 peticiones objetivo.
+- `2026-08-01T12:31:30` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se reforzó la robustez ante errores de I/O en `Scanner.process_entry` y `scan_directory` al manejar explícitamente posibles fallos en la resolución de rutas y el acceso a atributos de archivos bloqueados, asegurando que el escaneo no se interrumpa ante metadatos corruptos o permisos denegados en subdirectorios profundos.
+- `2026-08-01T12:31:53` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `save()` añadiendo una verificación de escritura en el directorio padre mediante `os.access` antes de realizar operaciones de archivo, previniendo errores de `PermissionError` ante sistemas de archivos de solo lectura o falta de privilegios.
+- `2026-08-01T12:32:16` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Mejoré la robustez de `StartupEntry.executable` manejando posibles excepciones al verificar la existencia de rutas mediante `exists()` y `is_file()`, asegurando que errores de sistema (como rutas con caracteres inválidos o bloqueos) no detengan el procesamiento de otros elementos.
+- `2026-08-01T12:32:32` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_call_gemini` añadiendo una validación explícita mediante `is_protected_path` sobre el texto de respuesta antes de entregarlo, cerrando una brecha teórica donde una respuesta del modelo remoto podría contener rutas maliciosas.
+- `2026-08-01T12:32:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-01T12:32:32` Corrida terminada. Total usado hoy: 292.

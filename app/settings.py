@@ -211,6 +211,9 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     ruta = settings_path(path_or_base)
     if not is_safe_to_modify(str(ruta.parent)):
         return None
+    
+    if ruta.parent.exists() and not os.access(ruta.parent, os.W_OK):
+        return None
 
     limpio = validate(values)
     try:

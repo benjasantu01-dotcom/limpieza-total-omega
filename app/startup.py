@@ -87,7 +87,11 @@ class StartupEntry:
     def _resolve_and_cache_path(self, path_str: str) -> str:
         """Resuelve una ruta relativa/simple a absoluta y la guarda en caché."""
         try:
-            return str(Path(path_str).expanduser())
+            p = Path(path_str).expanduser()
+            # Validación de existencia para evitar rutas muertas o errores de acceso
+            if p.exists() and p.is_file():
+                return str(p)
+            return path_str
         except (OSError, ValueError, RuntimeError, TypeError):
             return path_str
         

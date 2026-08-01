@@ -79,11 +79,11 @@ class Scanner:
             if entry.is_dir(follow_symlinks=False):
                 if not self._is_reparse_point(entry):
                     path_str = entry.path
-                    if path_str:
-                        resolved_path = Path(path_str).resolve()
-                        if str(resolved_path) not in self.seen and not is_protected_path(resolved_path):
-                            self.seen.add(str(resolved_path))
-                            stack.append(path_str)
+                    resolved_path = Path(path_str).resolve()
+                    path_key = str(resolved_path)
+                    if path_key not in self.seen and not is_protected_path(resolved_path):
+                        self.seen.add(path_key)
+                        stack.append(path_str)
             elif entry.is_file():
                 path_obj = Path(entry.path).resolve()
                 if not is_protected_path(path_obj):
