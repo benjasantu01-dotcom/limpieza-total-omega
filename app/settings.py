@@ -151,6 +151,7 @@ def settings_path(path_or_base: PathLike | None = None) -> Path:
         
     try:
         base = Path(key).expanduser()
+        # Aseguramos que la base sea segura antes de intentar crear nada
         while not is_safe_to_modify(str(base)) and base != base.parent:
             base = base.parent
         res = base.resolve() / SETTINGS_FILE
@@ -210,21 +211,23 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     global _cached_settings, _last_path, _last_mtime
     
     ruta = settings_path(path_or_base)
+    if not is_safe_to_modify(str(ruta.parent)):
+        return None
+
     limpio = validate(values)
     try:
         json_data = json.dumps(limpio, indent=2, ensure_ascii=False)
     except (TypeError, ValueError):
         return None
     
-    parent = ruta.parent
     try:
-        parent.mkdir(parents=True, exist_ok=True)
+        ruta.parent.mkdir(parents=True, exist_ok=True)
     except OSError:
         return None
     
     temp_path: Path | None = None
     try:
-        with tempfile.NamedTemporaryFile("w", dir=parent, delete=False, encoding="utf-8") as tf:
+        with tempfile.NamedTemporaryFile("w", dir=ruta.parent, delete=False, encoding="utf-8") as tf:
             temp_path = Path(tf.name)
             tf.write(json_data)
             tf.flush()

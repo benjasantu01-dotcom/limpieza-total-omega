@@ -176,8 +176,9 @@ def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = F
         return False
     try:
         c, p = normalize(child), normalize(parent)
+        # Comparamos componentes de la ruta para evitar problemas con symlinks o rutas inexistentes
         return p in c.parents or (allow_equal and c == p)
-    except (ValueError, TypeError, OSError):
+    except (ValueError, TypeError, OSError, RuntimeError):
         return False
 
 

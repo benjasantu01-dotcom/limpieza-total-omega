@@ -92,7 +92,7 @@ class Scanner:
 
 def check_double_extension(path: Path) -> Optional[Suspicion]:
     """Detecta archivos con doble extensión que intentan engañar al usuario."""
-    if path.name and DOUBLE_EXTENSION_RE.search(path.name):
+    if path and path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
     return None
 
@@ -104,11 +104,10 @@ def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_TH
     :param path: Ruta del archivo a inspeccionar.
     :param hours: Límite de tiempo en horas para considerar un archivo como reciente.
     """
-    if path.suffix.lower() not in SUSPICIOUS_EXECUTABLE_EXT:
+    if not path or path.suffix.lower() not in SUSPICIOUS_EXECUTABLE_EXT:
         return None
         
     try:
-        # Usamos stat() directamente; si falla, el archivo no es accesible o no existe
         mtime = datetime.fromtimestamp(path.stat(follow_symlinks=False).st_mtime)
         if datetime.now() - mtime < timedelta(hours=hours):
             return Suspicion(path, f"Ejecutable reciente detectado (modificado hace menos de {hours}h)", "info")
@@ -119,7 +118,7 @@ def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_TH
 
 def check_system_lookalike(path: Path) -> Optional[Suspicion]:
     """Detecta ejecutables que suplantan nombres de procesos críticos fuera de System32."""
-    if path.name and path.name.lower() in SYSTEM_LOOKALIKES:
+    if path and path.name and path.name.lower() in SYSTEM_LOOKALIKES:
         try:
             parent = path.parent
             if parent and SYSTEM32_LOWER not in str(parent).lower():
