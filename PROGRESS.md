@@ -6,40 +6,40 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **261** (51.8% de aceptación)
+- Mejoras aceptadas: **263** (52.2% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 25
+- Rechazadas por guardia de seguridad: 26
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 185
+- Sin respuesta de la IA (error o límite): 182
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-30 | 38 | 3 | 4 | 1 | 20 |
+| 2026-07-30 | 38 | 3 | 4 | 1 | 16 |
 | 2026-07-31 | 179 | 12 | 17 | 10 | 132 |
-| 2026-08-01 | 44 | 3 | 4 | 4 | 33 |
+| 2026-08-01 | 46 | 3 | 5 | 4 | 34 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **65**
 - manejo de errores y validación de entradas: **52**
 - rendimiento: **51**
-- seguridad defensiva: **48**
+- seguridad defensiva: **50**
 - robustez ante casos límite: **45**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **22**
+- `quarantine.py`: **23**
 - `scanner.py`: **22**
 - `browser.py`: **21**
 - `branding.py`: **20**
 - `assistant.py`: **19**
 - `diskreport.py`: **19**
 - `healthscore.py`: **19**
+- `organizer.py`: **19**
 - `settings.py`: **19**
 - `duplicates.py`: **18**
-- `organizer.py`: **18**
 - `main.py`: **18**
 - `safety.py`: **17**
 - `startup.py`: **15**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-01T04:01:57` **quarantine.py** (seguridad defensiva): Se añadió una validación de "archivo modificado post-quarentena" en `restore_item` mediante la comparación de tamaño en bytes antes de la restauración, complementando la verificación de hash para evitar restaurar archivos potencialmente infectados o alterados que hayan cambiado de peso.
+- `2026-08-01T04:01:29` **organizer.py** (seguridad defensiva): Se ha robustecido la lógica de `stage_for_review` para prevenir el movimiento de archivos que se encuentran actualmente abiertos por otros procesos mediante el uso de `os.open` y `os.close` con flags de acceso exclusivo, garantizando la integridad de los datos antes de la operación de movimiento.
 - `2026-08-01T03:52:24` **main.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `main.py` mediante la validación explícita con `safety.is_safe_to_modify` antes de proceder con operaciones potencialmente destructivas en `on_trim_process`, asegurando que no se intente manipular procesos del sistema o protegidos.
 - `2026-08-01T03:41:48` **browser.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `directory_size` asegurando que las rutas extraídas de `os.scandir` se validen contra `is_protected_path` antes de ser procesadas o añadidas al stack, mitigando riesgos ante estructuras de directorios inesperadas o intentos de acceso a zonas protegidas que pudieran aparecer dinámicamente.
 - `2026-08-01T03:41:13` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_call_gemini` integrando un chequeo explícito de contenido mediante `is_protected_path` (importada de `safety`), asegurando que, incluso ante un fallo del regex, la respuesta del modelo no pueda contener referencias a rutas protegidas del sistema.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-01T03:10:08` **browser.py** (robustez ante casos límite): Se introdujo una verificación de integridad en `directory_size` para manejar rutas que exceden la longitud máxima permitida por el sistema operativo (`MAX_PATH` en Windows) o que presentan errores de acceso recursivo, evitando que el escáner se bloquee ante estructuras de directorios inusualmente profundas o corrompidas.
 - `2026-08-01T03:01:14` **branding.py** (robustez ante casos límite): Se ha mejorado la robustez de `save_logo_svg` y `_hex_to_rgb` frente a entradas malformadas o inesperadas, añadiendo validaciones proactivas para prevenir fallos silenciosos en tiempo de ejecución.
 - `2026-08-01T03:00:29` **startup.py** (rendimiento): Optimicé el rendimiento de `entries_from_registry` consolidando las múltiples llamadas al registro en un solo comando de PowerShell para reducir la sobrecarga de invocación de procesos externos, y sustituí la lógica de validación redundante en `parse_registry_csv` por una verificación más eficiente mediante `set` y `os.path.exists`.
-- `2026-08-01T03:00:05` **settings.py** (rendimiento): Se implementó un cache de validación de rutas en `settings_path` para evitar llamadas redundantes y costosas a `is_safe_to_modify` y `expanduser` cada vez que se accede a la configuración.
-- `2026-08-01T02:50:36` **scanner.py** (rendimiento): Optimizé el rendimiento de `scan_file` y `check_recent_executable_in_downloads` eliminando llamadas redundantes a `path.exists()` y `path.stat()`, las cuales generan operaciones de entrada/salida innecesarias que ralentizan significativamente el escaneo profundo.

@@ -285,7 +285,7 @@ def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[Quaranti
 
 def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
     """
-    Restaura un archivo a su ruta original tras verificar su hash SHA-256.
+    Restaura un archivo a su ruta original tras verificar su hash SHA-256 y tamaño.
     """
     if not item_id or not isinstance(item_id, str):
         raise ValueError("El ID debe ser una cadena válida.")
@@ -302,8 +302,12 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
     if not stored_file.exists():
         raise FileNotFoundError(f"Archivo inexistente en el almacén: {stored_file}")
         
+    # Validar integridad: Hash y Tamaño
     if match.sha256 and _get_sha256(stored_file) != match.sha256:
         raise RuntimeError("Integridad comprometida: el archivo en cuarentena fue alterado.")
+    
+    if stored_file.stat().st_size != match.size_bytes:
+        raise RuntimeError("Integridad comprometida: el tamaño del archivo difiere del original.")
 
     destination = normalize(match.original_path)
     
