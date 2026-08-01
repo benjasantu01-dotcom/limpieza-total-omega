@@ -449,24 +449,22 @@ def _call_gemini(
         with urllib.request.urlopen(peticion, timeout=_TIMEOUT_SECONDS) as respuesta:
             if respuesta.status != 200:
                 return None
-            datos: dict[str, Any] = json.loads(respuesta.read().decode("utf-8"))
+            datos = json.loads(respuesta.read().decode("utf-8"))
         
         if not isinstance(datos, dict):
             return None
 
-        candidatos: list[Any] = datos.get("candidates", [])
+        candidatos = datos.get("candidates", [])
         if not isinstance(candidatos, list) or not candidatos or not isinstance(candidatos[0], dict):
             return None
             
-        partes: list[Any] = candidatos[0].get("content", {}).get("parts", [])
+        partes = candidatos[0].get("content", {}).get("parts", [])
         if not isinstance(partes, list):
             return None
             
         texto: str = "".join(p.get("text", "") for p in partes if isinstance(p, dict)).strip()
         
         # Validación de seguridad defensiva estricta sobre la salida del modelo
-        # Se rechaza si detectamos patrones de rutas, caracteres de control, exceso de longitud
-        # o referencias a archivos protegidos.
         if (not texto or len(texto) > 1200 or 
             _PATH_REGEX.search(texto) or 
             _CONTROL_CHARS_REGEX.search(texto) or
@@ -509,5 +507,5 @@ def ask(question: str, context: SystemContext | None = None,
             return respaldo
 
         return Answer(remoto, source="gemini", notice=PRIVACY_NOTICE)
-    except (TypeError, ValueError, AttributeError, Exception):
+    except Exception:
         return respaldo

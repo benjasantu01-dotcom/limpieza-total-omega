@@ -6,27 +6,27 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **252** (50.0% de aceptación)
+- Mejoras aceptadas: **251** (49.8% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 25
+- Rechazadas por guardia de seguridad: 24
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 195
+- Sin respuesta de la IA (error o límite): 197
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-30 | 24 | 2 | 3 | 0 | 1 |
+| 2026-07-30 | 22 | 2 | 2 | 0 | 0 |
 | 2026-07-31 | 179 | 12 | 17 | 10 | 132 |
-| 2026-08-01 | 49 | 4 | 5 | 4 | 62 |
+| 2026-08-01 | 50 | 4 | 5 | 4 | 65 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **61**
+- legibilidad y documentación: **59**
 - seguridad defensiva: **53**
 - rendimiento: **51**
 - robustez ante casos límite: **45**
-- manejo de errores y validación de entradas: **42**
+- manejo de errores y validación de entradas: **43**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,19 +34,20 @@ Este archivo se regenera solo en cada corrida a partir de
 - `scanner.py`: **22**
 - `settings.py`: **19**
 - `browser.py`: **19**
-- `healthscore.py`: **18**
 - `organizer.py`: **18**
 - `safety.py`: **18**
+- `assistant.py`: **18**
 - `branding.py`: **18**
 - `main.py`: **18**
-- `duplicates.py`: **17**
-- `assistant.py`: **17**
 - `diskreport.py`: **17**
+- `healthscore.py`: **17**
+- `duplicates.py`: **16**
 - `startup.py`: **15**
 - `memory.py`: **14**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-01T05:35:21` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ask` y `_call_gemini` ante configuraciones inválidas o datos de entrada malformados, asegurando que cualquier fallo al cargar ajustes o procesar la respuesta no interrumpa el flujo de la aplicación ni cause excepciones no capturadas.
 - `2026-08-01T04:12:03` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva al validar que la `ultima_carpeta` no sea una ruta absoluta fuera del alcance permitido, asegurando que `Path(texto).expanduser()` se convierta a una ruta absoluta antes de pasar por `is_safe_to_modify`, evitando así ambigüedades en la resolución de rutas relativas o maliciosas.
 - `2026-08-01T04:11:40` **scanner.py** (seguridad defensiva): Se ha añadido una validación explícita mediante `is_protected_path` antes de procesar archivos dentro de `scan_file`, garantizando que el motor heurístico nunca intente realizar operaciones de estado sobre rutas protegidas, reforzando la seguridad defensiva ante posibles inconsistencias en el recorrido.
 - `2026-08-01T04:11:18` **safety.py** (seguridad defensiva): Se ha añadido una validación de rutas con caracteres de control (Unicode RTL/LTR) para prevenir la ofuscación de nombres de archivos que intentan engañar al usuario o al sistema de escaneo.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-01T03:21:42` **organizer.py** (robustez ante casos límite): Se mejora la robustez de `stage_for_review` incorporando una comprobación explícita para evitar que `shutil.move` intente operar sobre archivos bloqueados por otros procesos (uso exclusivo), evitando así excepciones innecesarias en entornos dinámicos.
 - `2026-08-01T03:20:57` **main.py** (robustez ante casos límite): Se ha añadido un manejo robusto de errores en la carga de configuración y el constructor de la ventana (`_init_state`, `_build_tabs_container`), asegurando que la interfaz pueda iniciarse incluso si existen corrupciones parciales en los archivos de estado o si un constructor de pestaña individual falla inesperadamente.
 - `2026-08-01T03:11:05` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `compute_score` frente a divisiones por cero potenciales si los umbrales globales llegaran a ser alterados incorrectamente en `settings.py`, y aseguré que `_generate_recommendations` maneje casos donde las métricas podrían ser inconsistentes evitando accesos clave faltantes.
-- `2026-08-01T03:10:55` **duplicates.py** (robustez ante casos límite): Se reforzó la resiliencia del módulo ante errores de E/S y archivos inalcanzables introduciendo validaciones más estrictas en `_refine_by_hash` y `suggest_keeper`, asegurando que el pipeline de procesamiento no se detenga ante fallos parciales durante la lectura de metadatos o contenido.
