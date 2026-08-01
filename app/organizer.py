@@ -97,9 +97,10 @@ def _generate_unique_target(target: Path) -> Path:
     return candidate
 
 
-def _is_junk_file(entry: os.DirEntry[str]) -> bool:
+def _is_valid_junk(entry: os.DirEntry[str]) -> bool:
     """
-    Valida si un archivo es basura y si es seguro realizar operaciones sobre él.
+    Valida mediante heurística si un archivo es basura y si es seguro tocarlo.
+    Se separa en función para encapsular la lógica de filtrado de seguridad.
     """
     if not entry.is_file(follow_symlinks=False):
         return False
@@ -111,6 +112,7 @@ def _is_junk_file(entry: os.DirEntry[str]) -> bool:
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     """
     Realiza un escaneo recursivo buscando archivos temporales candidatos.
+    Omite directorios bloqueados y respeta las restricciones de seguridad.
     """
     dirs = directories or DEFAULT_SCAN_DIRS
     found: List[JunkFile] = []
@@ -126,14 +128,13 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
                         if entry.is_dir(follow_symlinks=False):
                             if entry.name.lower() not in blocklist:
                                 _walk_dir(entry.path)
-                        elif entry.name.lower().endswith(_JUNK_EXTS_TUPLE):
-                            if is_safe_to_modify(Path(entry.path)):
-                                stat = entry.stat()
-                                found.append(JunkFile(
-                                    path=Path(entry.path),
-                                    size_bytes=stat.st_size,
-                                    modified=datetime.fromtimestamp(stat.st_mtime)
-                                ))
+                        elif _is_valid_junk(entry):
+                            stat = entry.stat()
+                            found.append(JunkFile(
+                                path=Path(entry.path),
+                                size_bytes=stat.st_size,
+                                modified=datetime.fromtimestamp(stat.st_mtime)
+                            ))
                     except (PermissionError, OSError):
                         continue
         except (PermissionError, OSError):
@@ -162,13 +163,14 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Path:
     """
-    Mueve archivos candidatos a una carpeta de revisión segura.
+    Mueve archivos candidatos a una carpeta de revisión.
+    Utiliza ensure_safe_to_modify para garantizar que las operaciones 
+    críticas no violen la integridad del sistema.
     """
     if not review_dir:
         raise ValueError("La ruta de revisión no puede estar vacía")
 
     dest = Path(review_dir).expanduser().resolve()
-    # Asegurar que el destino final no sea un symlink o punto de reparse
     if dest.is_symlink():
         raise PermissionError("Ruta de destino inválida: symlink detectado.")
         
@@ -181,11 +183,11 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         try:
             full_source_path = jf.path.resolve()
             
+            # Verificaciones pre-movimiento para evitar colisiones o rutas inseguras
             if not full_source_path.exists() or not full_source_path.is_file() or full_source_path.is_symlink():
                 continue
             if not is_safe_to_modify(full_source_path):
                 continue
-            
             if dest in full_source_path.parents or full_source_path.parent == dest:
                 continue
 
@@ -201,7 +203,8 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
     """
-    Elimina permanentemente archivos desde la carpeta de revisión tras validación.
+    Elimina permanentemente archivos desde la carpeta de revisión.
+    Solo procesa archivos validados mediante is_safe_to_modify.
     """
     if not review_dir:
         return 0
