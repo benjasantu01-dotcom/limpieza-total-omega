@@ -152,9 +152,11 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
             continue
         try:
             p_res = p.resolve()
+            if not p_res.is_file() or p_res.is_symlink() or is_protected_path(p_res):
+                continue
+            
             st = p_res.stat()
-            # Filtramos protegidos y symlinks antes de cualquier operación costosa
-            if st.st_size <= 0 or p.is_symlink() or is_protected_path(p_res):
+            if st.st_size <= 0:
                 continue
             
             inode_id = (st.st_dev, st.st_ino)
@@ -162,7 +164,7 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
                 continue
                 
             seen_inodes.add(inode_id)
-            groups[st.st_size].append(p)
+            groups[st.st_size].append(p_res)
         except (OSError, PermissionError, FileNotFoundError, AttributeError):
             continue
     return groups
@@ -184,14 +186,13 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
             with os.scandir(root_path) as it:
                 for entry in it:
                     try:
-                        full_path = Path(entry.path)
-                        resolved_path = full_path.resolve()
+                        resolved_path = Path(entry.path).resolve()
                         if skip_protected and is_protected_path(resolved_path):
                             continue
                         if entry.is_symlink():
                             continue
                         if entry.is_dir():
-                            _scan(full_path)
+                            _scan(resolved_path)
                         elif entry.is_file():
                             st = entry.stat()
                             inode_id = (st.st_dev, st.st_ino)
@@ -199,7 +200,7 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
                                 continue
                             if st.st_size >= min_size:
                                 visited_inodes.add(inode_id)
-                                candidates.append(full_path)
+                                candidates.append(resolved_path)
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):

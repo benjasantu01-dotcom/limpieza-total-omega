@@ -164,14 +164,15 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
             with os.scandir(root_path) as iterator:
                 for entry in iterator:
                     try:
+                        # Seguridad: no seguir symlinks ni puntos de reparse
                         if entry.is_symlink():
                             continue
                         if os.name == 'nt' and entry.stat(follow_symlinks=False).st_reparse_tag != 0:
                             continue
                         
-                        entry_path = Path(entry.path)
-                        full_entry_path = entry_path.resolve()
+                        full_entry_path = Path(entry.path).resolve()
                         
+                        # Seguridad: asegurar que la ruta resuelta sigue estando bajo el base_path
                         if base_path not in full_entry_path.parents and full_entry_path != base_path:
                             continue
 
@@ -185,7 +186,6 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
                         else:
                             if skip_protected and is_protected_path(full_entry_path):
                                 continue
-                            # El archivo pudo ser movido/borrado por otro proceso desde el scandir
                             size = entry.stat().st_size
                             yield full_entry_path, size
                     except (OSError, PermissionError, FileNotFoundError):

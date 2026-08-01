@@ -95,8 +95,8 @@ def base_directories() -> List[Path]:
 
 def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> bool:
     """
-    Valida la integridad de la ruta candidata evitando Directory Traversal.
-    Utiliza resolve(strict=False) para comparar jerarquías reales.
+    Valida la integridad de la ruta candidata evitando Directory Traversal
+    y puntos de reparse (junctions).
     """
     if not isinstance(target_path, Path) or not isinstance(base_path, Path):
         return False
@@ -104,7 +104,10 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
         abs_base = base_path.resolve(strict=False)
         abs_target = target_path.resolve(strict=False)
         
-        # El chequeo de seguridad debe preceder a la validación de jerarquía
+        # Evitar seguimiento de reparse points fuera de la base
+        if abs_target.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(abs_target)):
+            return False
+
         if is_protected_path(abs_target):
             return False
             
