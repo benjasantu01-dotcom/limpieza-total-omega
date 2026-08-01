@@ -583,3 +583,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-08-01T07:06:21` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `parse_windows_process_csv` al eliminar la creación de listas intermedias innecesarias y reducir la sobrecarga del bucle mediante la compilación previa de una expresión regular, permitiendo un procesamiento más directo del flujo de datos.
 - `2026-08-01T07:06:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-01T07:06:21` Corrida terminada. Total usado hoy: 164.
+- `2026-08-01T07:14:30` Arrancando corrida. Quedan hoy ~136 peticiones objetivo.
+- `2026-08-01T07:14:54` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimizé el proceso de escaneo integrando el filtrado de la blocklist directamente en `os.scandir` y reduciendo las llamadas a `Path` dentro del loop recursivo, minimizando la creación de objetos innecesarios.
+- `2026-08-01T07:15:21` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Se optimizó el acceso a disco en `total_quarantined_bytes` y `summarize` para evitar recargas innecesarias del manifiesto utilizando la variable `_manifest_cache` en lugar de invocar `load_manifest()` repetidamente, reduciendo el I/O en operaciones de lectura.
+- `2026-08-01T07:15:39` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-01T07:15:48` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimicé el rendimiento de las verificaciones de seguridad en `is_protected_path` al reemplazar `any()` con una iteración manual que utiliza un conjunto de búsqueda optimizado, evitando el costo de generar un generador en cada llamada dentro de bucles de escaneo extensivos.
+- `2026-08-01T07:15:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-01T07:15:48` Corrida terminada. Total usado hoy: 168.

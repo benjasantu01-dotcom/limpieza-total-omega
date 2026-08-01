@@ -127,28 +127,28 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
             with os.scandir(base_path) as it:
                 for entry in it:
                     try:
-                        if entry.is_symlink():
-                            continue
                         if entry.is_dir(follow_symlinks=False):
                             if entry.name.lower() not in blocklist:
                                 _walk_dir(entry.path)
-                        elif _is_valid_junk(entry):
-                            stat = entry.stat()
-                            found.append(JunkFile(
-                                path=Path(entry.path),
-                                size_bytes=stat.st_size,
-                                modified=datetime.fromtimestamp(stat.st_mtime)
-                            ))
+                        elif entry.name.lower().endswith(_JUNK_EXTS_TUPLE):
+                            # Chequeo de seguridad diferido para evitar Path objects innecesarios
+                            if is_safe_to_modify(Path(entry.path)):
+                                stat = entry.stat()
+                                found.append(JunkFile(
+                                    path=Path(entry.path),
+                                    size_bytes=stat.st_size,
+                                    modified=datetime.fromtimestamp(stat.st_mtime)
+                                ))
                     except (PermissionError, OSError):
                         continue
         except (PermissionError, OSError):
             pass
 
     for d in dirs:
-        if not d: continue
-        p = Path(d).expanduser()
-        if p.exists() and p.is_dir():
-            _walk_dir(str(p))
+        if d:
+            p = Path(d).expanduser()
+            if p.exists() and p.is_dir():
+                _walk_dir(str(p))
     return found
 
 

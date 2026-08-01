@@ -154,8 +154,10 @@ def is_protected_path(path: PathLike) -> bool:
         if not p.is_absolute():
             return True
 
-        if any(part.lower() in _ALL_PROTECTED_TOKENS for part in p.parts):
-            return True
+        # Optimización: evitar generadores, buscar directamente en el conjunto pre-cargado
+        for part in p.parts:
+            if part.lower() in _ALL_PROTECTED_TOKENS:
+                return True
             
         if p == Path(p.anchor):
             return True
