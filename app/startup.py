@@ -117,6 +117,7 @@ class StartupEntry:
             
         try:
             path = Path(parts[0]).expanduser()
+            # Validar si existe antes de intentar resolver o convertir
             self._exec_cache = str(path) if path.exists() else parts[0]
             return self._exec_cache
         except (OSError, ValueError, RuntimeError, TypeError):
@@ -131,10 +132,13 @@ def startup_folders() -> List[Path]:
     candidates: List[Path] = []
     appdata: Optional[str] = os.environ.get("APPDATA")
     programdata: Optional[str] = os.environ.get("ProgramData")
-    if appdata:
-        candidates.append(Path(appdata) / r"Microsoft\Windows\Start Menu\Programs\Startup")
-    if programdata:
-        candidates.append(Path(programdata) / r"Microsoft\Windows\Start Menu\Programs\Startup")
+    try:
+        if appdata:
+            candidates.append(Path(appdata) / r"Microsoft\Windows\Start Menu\Programs\Startup")
+        if programdata:
+            candidates.append(Path(programdata) / r"Microsoft\Windows\Start Menu\Programs\Startup")
+    except (ValueError, TypeError):
+        pass
     return [c for c in candidates if c.is_dir()]
 
 
@@ -148,6 +152,8 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
             continue
             
         try:
+            if not folder.exists() or not folder.is_dir():
+                continue
             base_path: Path = folder.resolve()
         except (ValueError, PermissionError, OSError, RuntimeError):
             continue

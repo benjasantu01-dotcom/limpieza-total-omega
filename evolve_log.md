@@ -1161,3 +1161,39 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-01T01:27:58` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 104): unterminated string literal (detected at line 104)
 - `2026-08-01T01:27:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-01T01:27:58` Corrida terminada. Total usado hoy: 32.
+- `2026-08-01T01:36:55` Arrancando corrida. Quedan hoy ~268 peticiones objetivo.
+- `2026-08-01T01:37:20` Tests FALLARON:
+```
+........................... [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_________________________ test_save_creates_the_folder _________________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-1/test_save_creates_the_folder0')
+
+    def test_save_creates_the_folder(tmp_path):
+        destino = tmp_path / "sub" / "carpeta"
+        assert settings.save(settings.DEFAULTS, destino) is not None
+>       assert (destino / settings.SETTINGS_FILE).is_file()
+E       AssertionError: assert False
+E        +  where False = is_file()
+E        +    where is_file = (PosixPath('/tmp/pytest-of-runner/pytest-1/test_save_creates_the_folder0/sub/carpeta') / 'config.json').is_file
+E        +      where 'config.json' = settings.SETTINGS_FILE
+
+evolve/tests/test_assistant.py:61: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_save_creates_the_folder - AssertionError: assert False
+ +  where False = is_file()
+ +    where is_file = (PosixPath('/tmp/pytest-of-runner/pytest-1/test_save_creates_the_folder0/sub/carpeta') / 'config.json').is_file
+ +      where 'config.json' = settings.SETTINGS_FILE
+1 failed, 298 passed in 1.16s
+
+```
+- `2026-08-01T01:37:20` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Reforcé la validación de `ensure_safe_to_modify` para verificar que la ruta sea un archivo o directorio existente (o no exista) antes de realizar chequeos de sistema, evitando que `os.access` o `stat` lancen excepciones innecesarias ante rutas huérfanas o mal formadas.
+- `2026-08-01T01:37:42` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `scan_file` y las funciones de chequeo validando explícitamente la existencia del archivo antes de operar y capturando excepciones de forma más granular para evitar interrupciones innecesarias en el bucle de escaneo.
+- `2026-08-01T01:38:03` ➖ Sin cambios en settings.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `save()` capturando explícitamente posibles excepciones de `os.replace` (como `OSError` o `PermissionError`) para evitar estados inconsistentes y asegurar que siempre se intente limpiar el archivo temporal si ocurre un error durante el reemplazo atómico.
+- `2026-08-01T01:38:13` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `StartupEntry.executable` y `entries_from_folders` agregando chequeos preventivos contra rutas inválidas o mal formadas, evitando excepciones no capturadas al operar con objetos `Path`.
+- `2026-08-01T01:38:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-01T01:38:13` Corrida terminada. Total usado hoy: 36.

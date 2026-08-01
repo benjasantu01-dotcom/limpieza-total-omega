@@ -95,14 +95,18 @@ def check_double_extension(path: Path) -> Optional[Suspicion]:
 
 def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_THRESHOLD_HOURS) -> Optional[Suspicion]:
     """Detecta ejecutables nuevos; su presencia reciente suele ser un indicador de riesgo."""
-    # Pre-filtro por extensión y verificación de existencia física
-    if path.suffix.lower() in SUSPICIOUS_EXECUTABLE_EXT and path.is_file():
-        try:
-            mtime = datetime.fromtimestamp(path.stat(follow_symlinks=False).st_mtime)
-            if datetime.now() - mtime < timedelta(hours=hours):
-                return Suspicion(path, f"Ejecutable reciente detectado (modificado hace menos de {hours}h)", "info")
-        except (FileNotFoundError, PermissionError, OSError):
-            pass
+    if path.suffix.lower() not in SUSPICIOUS_EXECUTABLE_EXT:
+        return None
+        
+    try:
+        # Verificamos estado actual antes de obtener atributos
+        if not path.exists():
+            return None
+        mtime = datetime.fromtimestamp(path.stat(follow_symlinks=False).st_mtime)
+        if datetime.now() - mtime < timedelta(hours=hours):
+            return Suspicion(path, f"Ejecutable reciente detectado (modificado hace menos de {hours}h)", "info")
+    except (FileNotFoundError, PermissionError, OSError):
+        pass
     return None
 
 
@@ -110,6 +114,7 @@ def check_system_lookalike(path: Path) -> Optional[Suspicion]:
     """Detecta ejecutables que suplantan nombres de procesos críticos fuera de System32."""
     if path.name and path.name.lower() in SYSTEM_LOOKALIKES:
         try:
+            # Validamos que el parent sea accesible
             parent = path.parent
             if parent and SYSTEM32_LOWER not in str(parent).lower():
                 return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
@@ -126,23 +131,32 @@ CHECK_FUNCS: Final[List[SuspicionCheck]] = [
 
 def scan_file(path: Path) -> List[Suspicion]:
     """Ejecuta los tests definidos en CHECK_FUNCS sobre un archivo individual."""
-    resolved_path = path.resolve()
-    if is_protected_path(resolved_path) or not resolved_path.exists():
+    if not path:
         return []
         
-    findings: List[Suspicion] = []
-    for check_func in CHECK_FUNCS:
-        try:
-            res = check_func(resolved_path)
-            if res:
-                findings.append(res)
-        except (PermissionError, OSError, AttributeError):
-            continue
-    return findings
+    try:
+        resolved_path = path.resolve()
+        if is_protected_path(resolved_path) or not resolved_path.exists():
+            return []
+            
+        findings: List[Suspicion] = []
+        for check_func in CHECK_FUNCS:
+            try:
+                res = check_func(resolved_path)
+                if res:
+                    findings.append(res)
+            except (PermissionError, OSError):
+                continue
+        return findings
+    except (RuntimeError, OSError):
+        return []
 
 
 def scan_directory(directory: Union[str, Path]) -> List[Suspicion]:
     """Realiza el escaneo recursivo iterativo utilizando la clase Scanner para mantener estado."""
+    if not directory:
+        return []
+        
     path_obj = Path(directory).resolve()
     if not path_obj.exists() or not path_obj.is_dir() or is_protected_path(path_obj):
         return []
