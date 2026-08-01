@@ -169,6 +169,13 @@ class Answer:
     def is_online(self) -> bool:
         return self.source == "gemini"
 
+def _ensure_safe_text(text: str) -> bool:
+    """Validación defensiva de texto antes de mostrarlo al usuario."""
+    if _PATH_REGEX.search(text) or _CONTROL_CHARS_REGEX.search(text):
+        return False
+    if is_protected_path(text):
+        return False
+    return True
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
     """
@@ -473,10 +480,7 @@ def _call_gemini(
             
         texto: str = "".join(p.get("text", "") for p in partes if isinstance(p, dict)).strip()
         
-        if (not texto or len(texto) > 1200 or 
-            _PATH_REGEX.search(texto) or 
-            _CONTROL_CHARS_REGEX.search(texto) or
-            is_protected_path(texto)):
+        if not texto or len(texto) > 1200 or not _ensure_safe_text(texto):
             return None
             
         return texto

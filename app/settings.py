@@ -202,7 +202,12 @@ def load(path_or_base: PathLike | None = None) -> dict[str, Any]:
         if stat.st_size > MAX_SETTINGS_SIZE:
             return DEFAULTS.copy()
 
-        data = json.loads(ruta.read_text(encoding="utf-8"))
+        content = ruta.read_text(encoding="utf-8")
+        data = json.loads(content)
+        
+        if not isinstance(data, dict):
+            return DEFAULTS.copy()
+            
         _cached_settings = validate(data)
         _last_path, _last_mtime = ruta, stat.st_mtime
         return _cached_settings

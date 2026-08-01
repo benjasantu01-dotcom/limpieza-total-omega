@@ -81,6 +81,7 @@ class StartupEntry:
         if end_quote == -1:
             return ""
         path_str = raw_cmd[1:end_quote]
+        # Validar caracteres prohibidos en rutas de Windows antes de intentar operar
         if not path_str or any(c in path_str for c in '<>|?*'):
             return ""
         
