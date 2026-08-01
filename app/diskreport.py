@@ -149,11 +149,6 @@ def all_drives_usage(mounts: Iterable[str] | None = None) -> list[DriveUsage]:
 def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Generator[tuple[Path, int], None, None]:
     """
     Recorre recursivamente un directorio.
-    
-    Excluye:
-    - Enlaces simbólicos para evitar bucles infinitos.
-    - Reparse points (Junctions de Windows) mediante `st_reparse_tag`.
-    - Rutas marcadas como protegidas por `safety.is_protected_path`.
     """
     if not directory:
         return
@@ -161,7 +156,7 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
         base_path = Path(directory).expanduser().resolve(strict=True)
         if not base_path.is_dir() or (skip_protected and is_protected_path(base_path)):
             return
-    except (OSError, RuntimeError, PermissionError):
+    except (OSError, RuntimeError, PermissionError, ValueError):
         return
 
     visited = {base_path}
@@ -171,7 +166,6 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
             with os.scandir(root_path) as iterator:
                 for entry in iterator:
                     try:
-                        # Evitar seguir enlaces simbólicos y puntos de reparse (Junctions)
                         if entry.is_symlink():
                             continue
                         if os.name == 'nt' and entry.stat(follow_symlinks=False).st_reparse_tag != 0:
@@ -257,7 +251,7 @@ def largest_folders(directory: str | os.PathLike, limit: int = 10, skip_protecte
                 continue
 
         return heapq.nlargest(max(0, limit), folder_map.values(), key=lambda f: f.size_bytes)
-    except (OSError, RuntimeError, PermissionError):
+    except (OSError, RuntimeError, PermissionError, ValueError):
         return []
 
 
@@ -287,7 +281,7 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
         path_obj = Path(directory).expanduser().resolve(strict=True)
         if not path_obj.is_dir():
             return [f"Error: La ruta '{directory}' no es un directorio válido."]
-    except (OSError, RuntimeError, PermissionError):
+    except (OSError, RuntimeError, PermissionError, ValueError):
         return ["Error: No se pudo acceder a la ruta especificada."]
         
     ext_map: Dict[str, ExtStat] = defaultdict(ExtStat)

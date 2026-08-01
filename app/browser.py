@@ -126,11 +126,11 @@ def directory_size(path: str | os.PathLike | None) -> int:
         root = Path(path)
         if not root.exists() or not root.is_dir() or root.is_symlink() or is_protected_path(root):
             return 0
+        root_abs = str(root.resolve())
     except (OSError, RuntimeError, PermissionError, ValueError):
         return 0
     
     total_bytes: int = 0
-    root_abs = str(root.resolve())
     visited = {root_abs}
     stack: List[str] = [root_abs]
     
@@ -144,9 +144,9 @@ def directory_size(path: str | os.PathLike | None) -> int:
                         if is_protected_path(Path(entry.path)):
                             continue
                             
-                        # Verificar si es enlace simbólico o junction antes de procesar
                         if entry.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(entry.path)):
                             continue
+                        
                         if entry.is_dir():
                             dir_abs = os.path.abspath(entry.path)
                             if dir_abs not in visited:
@@ -157,7 +157,6 @@ def directory_size(path: str | os.PathLike | None) -> int:
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):
-            # Ignorar carpetas inaccesibles o rutas demasiado largas (OSError en Windows)
             continue
             
     return total_bytes

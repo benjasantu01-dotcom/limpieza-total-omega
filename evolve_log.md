@@ -473,3 +473,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-01T05:35:33` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
 - `2026-08-01T05:35:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-01T05:35:33` Corrida terminada. Total usado hoy: 128.
+- `2026-08-01T05:42:48` Arrancando corrida. Quedan hoy ~172 peticiones objetivo.
+- `2026-08-01T05:43:13` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Reforcé la robustez de `directory_size` validando explícitamente los parámetros y capturando excepciones de sistema (como `OSError` al acceder a entradas) en todas las fases de iteración, asegurando que el bucle no aborte ante archivos bloqueados o con nombres inválidos.
+- `2026-08-01T05:43:36` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y las funciones de análisis al encapsular la resolución de rutas en un bloque `try-except` más específico y validar la existencia de `base_path` antes de iniciar cualquier operación recursiva, previniendo fallos ante rutas inválidas o inaccesibles.
+- `2026-08-01T05:43:57` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-01T05:44:07` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Reforcé la robustez de `compute_score` implementando una validación temprana de `metrics` ante valores `None` inesperados y asegurando que las funciones de puntuación manejen casos de límites de configuración erróneos de forma defensiva sin interrumpir la ejecución.
+- `2026-08-01T05:44:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-01T05:44:07` Corrida terminada. Total usado hoy: 132.

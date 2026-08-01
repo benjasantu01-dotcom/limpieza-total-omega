@@ -202,8 +202,8 @@ def _generate_recommendations(m: SystemMetrics, ratios: Dict[str, float]) -> Lis
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
     """Calcula el puntaje global de salud del sistema normalizando áreas según sus pesos."""
-    if not isinstance(metrics, SystemMetrics):
-        return HealthResult(0, "F", {}, ["Error: Instancia de métricas no válida."])
+    if metrics is None or not isinstance(metrics, SystemMetrics):
+        return HealthResult(0, "F", {}, ["Error: Instancia de métricas nula o no válida."])
     
     if sum(WEIGHTS.values()) != 100:
         return HealthResult(0, "F", {}, ["Error: Configuración de pesos desbalanceada."])
