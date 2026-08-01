@@ -6,32 +6,32 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **261** (51.8% de aceptación)
-- Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 24
+- Mejoras aceptadas: **262** (52.0% de aceptación)
+- Rechazadas por tests: 17
+- Rechazadas por guardia de seguridad: 25
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 187
+- Sin respuesta de la IA (error o límite): 184
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-31 | 160 | 9 | 15 | 10 | 114 |
-| 2026-08-01 | 101 | 7 | 9 | 6 | 73 |
+| 2026-07-31 | 160 | 9 | 15 | 10 | 110 |
+| 2026-08-01 | 102 | 8 | 10 | 6 | 74 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **67**
 - manejo de errores y validación de entradas: **53**
 - rendimiento: **51**
-- seguridad defensiva: **49**
+- seguridad defensiva: **50**
 - robustez ante casos límite: **41**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **23**
+- `scanner.py`: **22**
 - `browser.py`: **21**
-- `scanner.py`: **21**
 - `assistant.py`: **20**
 - `settings.py`: **20**
 - `diskreport.py`: **19**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-01T08:37:20` **scanner.py** (seguridad defensiva): Se introdujo la verificación `is_protected_path` antes de procesar archivos individuales dentro de `check_recent_executable_in_downloads` y `check_system_lookalike` para asegurar que el escáner no inspeccione rutas críticas aunque lleguen a los chequeos de forma aislada, reforzando la seguridad defensiva.
 - `2026-08-01T08:29:04` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `purge_all` implementando una validación estricta que impide borrar cualquier archivo dentro de la carpeta de cuarentena que no esté explícitamente registrado en el manifiesto, evitando así la eliminación accidental de archivos ajenos o de sistema que pudieran haber sido movidos allí por error o manipulación externa.
 - `2026-08-01T08:28:47` **organizer.py** (seguridad defensiva): Se ha añadido una validación estricta para asegurar que el `target` de destino esté contenido dentro de la jerarquía de la carpeta de revisión (`review_dir`), previniendo ataques de "path traversal" o manipulación de rutas durante la generación del nombre único.
 - `2026-08-01T08:28:21` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `trim_working_set` validando el handle antes de su uso y envolviendo la lógica en un bloque `try-finally` robusto para asegurar que `CloseHandle` siempre se invoque, evitando fugas de recursos del sistema incluso ante excepciones inesperadas.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-01T07:46:31` **main.py** (robustez ante casos límite): Se implementó un método centralizado `_safe_run` para las tareas asíncronas, que asegura el manejo consistente de errores inesperados y estados de interfaz, previniendo cuelgues ante excepciones inesperadas (como fallos en el sistema de archivos o hilos interrumpidos) y mejorando la robustez frente a casos límite de concurrencia.
 - `2026-08-01T07:45:31` **healthscore.py** (robustez ante casos límite): Se ha robustecido el cálculo de `breakdown` en `compute_score` para manejar el caso límite donde los pesos configurados (`WEIGHTS`) podrían no sumar exactamente 100, evitando errores de precisión o truncamiento, y se añadió una validación adicional para asegurar que `metrics` tenga datos consistentes antes de procesarlos.
 - `2026-08-01T07:36:10` **diskreport.py** (robustez ante casos límite): Se mejoró la robustez de `walk_files` ante archivos bloqueados o inaccesibles durante el escaneo al implementar un manejo explícito de `OSError` al obtener el tamaño (`st_size`) de un archivo, evitando que una excepción en un solo archivo detenga el análisis completo de un directorio.
-- `2026-08-01T07:26:10` **assistant.py** (robustez ante casos límite): Se ha añadido un robusto manejo de excepciones y validación de tipos en la función `_rank_problems` para prevenir caídas de la interfaz si los datos procesados son inesperadamente nulos, infinitos o de tipos incorrectos, asegurando que el asistente siempre devuelva una lista válida incluso ante estados de sistema incoherentes.

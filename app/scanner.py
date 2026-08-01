@@ -110,7 +110,7 @@ def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_TH
     :param hours: Límite temporal en horas.
     :return: Objeto Suspicion si el archivo es reciente y ejecutable.
     """
-    if not path or path.suffix.lower() not in SUSPICIOUS_EXECUTABLE_EXT:
+    if not path or is_protected_path(path) or path.suffix.lower() not in SUSPICIOUS_EXECUTABLE_EXT:
         return None
         
     try:
@@ -129,7 +129,7 @@ def check_system_lookalike(path: Path) -> Optional[Suspicion]:
     :param path: Ruta del archivo a inspeccionar.
     :return: Objeto Suspicion si el nombre coincide con procesos del sistema fuera de System32.
     """
-    if path and path.name and path.name.lower() in SYSTEM_LOOKALIKES:
+    if path and not is_protected_path(path) and path.name and path.name.lower() in SYSTEM_LOOKALIKES:
         try:
             parent = path.parent
             if parent and SYSTEM32_LOWER not in str(parent).lower():

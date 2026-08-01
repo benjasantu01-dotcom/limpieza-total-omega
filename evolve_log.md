@@ -699,3 +699,32 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-01T08:29:04` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `purge_all` implementando una validación estricta que impide borrar cualquier archivo dentro de la carpeta de cuarentena que no esté explícitamente registrado en el manifiesto, evitando así la eliminación accidental de archivos ajenos o de sistema que pudieran haber sido movidos allí por error o manipulación externa.
 - `2026-08-01T08:29:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-01T08:29:04` Corrida terminada. Total usado hoy: 196.
+- `2026-08-01T08:36:14` Arrancando corrida. Quedan hoy ~104 peticiones objetivo.
+- `2026-08-01T08:36:34` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-01T08:36:57` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-08-01T08:37:20` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se introdujo la verificación `is_protected_path` antes de procesar archivos individuales dentro de `check_recent_executable_in_downloads` y `check_system_lookalike` para asegurar que el escáner no inspeccione rutas críticas aunque lleguen a los chequeos de forma aislada, reforzando la seguridad defensiva.
+- `2026-08-01T08:37:35` Tests FALLARON:
+```
+
+______________________ test_describe_never_prints_the_key ______________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-2/test_describe_never_prints_the0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fb94f5a2690>
+
+    def test_describe_never_prints_the_key(tmp_path, monkeypatch):
+        monkeypatch.delenv(settings.API_KEY_ENV_VAR, raising=False)
+        settings.save({**settings.DEFAULTS, "asistente_clave_api": "SECRETO-123"}, tmp_path)
+        texto = "\n".join(settings.describe(tmp_path))
+        assert "SECRETO-123" not in texto, "la clave nunca debe mostrarse en pantalla"
+>       assert "archivo de configuración" in texto
+E       AssertionError: assert 'archivo de configuración' in 'Configuración actual\n\n  Archivo: /tmp/pytest-of-runner/pytest-2/test_describe_never_prints_the0/config.json\n\n  Ap...nte IA\n    Activado: no\n    Clave: [PROTEGIDO] (origen: configurada en archivo)\n    Modelo: gemini-3.1-flash-lite\n'
+
+evolve/tests/test_assistant.py:178: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - AssertionError: assert 'archivo de configuración' in 'Configuración actual\n\n  Archivo: /tmp/pytest-of-runner/pytest-2/test_describe_never_prints_the0/config.json\n\n  Ap...nte IA\n    Activado: no\n    Clave: [PROTEGIDO] (origen: configurada en archivo)\n    Modelo: gemini-3.1-flash-lite\n'
+1 failed, 298 passed in 1.05s
+
+```
+- `2026-08-01T08:37:35` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Se ha restringido el acceso a `asistente_clave_api` en el reporte `describe` y se ha implementado una validación de seguridad adicional en `save` para prevenir manipulaciones indebidas de rutas mediante `Path.resolve()` antes de cualquier operación de escritura.
+- `2026-08-01T08:37:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-01T08:37:35` Corrida terminada. Total usado hoy: 200.
