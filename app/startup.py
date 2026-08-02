@@ -66,26 +66,32 @@ class StartupEntry:
     _checked_exists: bool = False
 
     def _is_valid_executable(self, path: Path) -> bool:
-        """Verifica si la ruta apunta a un ejecutable conocido y no es un punto de reparse."""
+        """
+        Verifica mediante metadatos si el archivo es un ejecutable válido.
+        Rechaza puntos de reparse (symlinks/junctions) para evitar recursión.
+        """
         try:
             return path.suffix.lower() in EXECUTABLE_EXTS and not path.is_symlink()
         except (OSError, ValueError, RuntimeError, TypeError):
             return False
 
     def _extract_quoted_path(self, raw_cmd: str) -> str:
-        """Extrae la ruta absoluta cuando el comando está encerrado entre comillas."""
+        """
+        Parsea comandos tipo '"C:\Program Files\App.exe" /arg' extrayendo solo
+        la ruta. Valida que no contenga caracteres inválidos o rutas protegidas.
+        """
         if len(raw_cmd) < 2:
             return ""
         end_quote: int = raw_cmd.find('"', 1)
         if end_quote == -1:
             return ""
-        path_str = raw_cmd[1:end_quote]
+        path_str: str = raw_cmd[1:end_quote]
         
         if not path_str or any(c in path_str for c in '<>|?*'):
             return ""
         
         try:
-            p = Path(path_str).expanduser()
+            p: Path = Path(path_str).expanduser()
             if is_protected_path(p):
                 return ""
             return str(p)
@@ -93,11 +99,14 @@ class StartupEntry:
             return ""
 
     def _resolve_and_cache_path(self, path_str: str) -> str:
-        """Resuelve una ruta relativa/simple a absoluta y la guarda en caché."""
+        """
+        Intenta expandir una ruta a formato absoluto y verifica su existencia.
+        Si la ruta parece segura, devuelve la ruta absoluta; si no, devuelve la original.
+        """
         if not path_str:
             return ""
         try:
-            p = Path(path_str).expanduser()
+            p: Path = Path(path_str).expanduser()
             # Validación de seguridad defensiva: ni protegida, ni puntos de reparse
             if is_protected_path(p) or p.is_symlink():
                 return path_str
@@ -109,7 +118,10 @@ class StartupEntry:
         
     @property
     def executable(self) -> str:
-        """Normaliza y extrae la ruta del ejecutable principal desde el comando."""
+        """
+        Lógica principal de resolución: limpia comandos ruidosos, extrae
+        ejecutables de rutas entrecomilladas o simples, y cachea el resultado.
+        """
         if self._checked_exists:
             return self._exec_cache or ""
             
@@ -117,6 +129,7 @@ class StartupEntry:
         if not self.command:
             return ""
 
+        # Sanitización básica: elimina caracteres de control no imprimibles
         cmd: str = "".join(c for c in self.command.strip() if ord(c) >= 32)
         if not cmd:
             return ""
@@ -169,23 +182,23 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
         return []
         
     parsed_entries: List[StartupEntry] = []
-    lines = text.splitlines()
+    lines: List[str] = text.splitlines()
     if len(lines) < 2: return []
     
     for line in lines[1:]:
         if not line: continue
-        parts = line.split(",", 1)
+        parts: List[str] = line.split(",", 1)
         if len(parts) < 2: continue
         
-        name = parts[0].strip().strip('"')
-        cmd = parts[1].strip().strip('"')
+        name: str = parts[0].strip().strip('"')
+        cmd: str = parts[1].strip().strip('"')
         
         if not name or name.lower() in ("name", "pscustomobject") or name.upper().startswith("PS"):
             continue
         
         try:
             # Defensivo: no procesar rutas de registro sospechosas o protegidas
-            p = Path(cmd)
+            p: Path = Path(cmd)
             if is_protected_path(p) or any(c in cmd for c in '<>|?*'):
                 continue
         except (OSError, ValueError, TypeError):
@@ -201,7 +214,7 @@ def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[Start
     if os.name != "nt":
         return []
     
-    ps_cmd = "; ".join(f"Get-ItemProperty '{k}' -ErrorAction SilentlyContinue | Select-Object * -ExcludeProperty PS*" for k in keys)
+    ps_cmd: str = "; ".join(f"Get-ItemProperty '{k}' -ErrorAction SilentlyContinue | Select-Object * -ExcludeProperty PS*" for k in keys)
     ps_cmd = f"$data = {ps_cmd}; $data | ConvertTo-Csv -NoTypeInformation"
     
     try:

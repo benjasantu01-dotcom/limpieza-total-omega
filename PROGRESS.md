@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-01 | 132 | 8 | 13 | 7 | 120 |
-| 2026-08-02 | 120 | 6 | 14 | 6 | 78 |
+| 2026-08-01 | 129 | 8 | 13 | 7 | 119 |
+| 2026-08-02 | 123 | 6 | 14 | 6 | 79 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **64**
+- legibilidad y documentación: **66**
 - seguridad defensiva: **50**
 - manejo de errores y validación de entradas: **49**
-- robustez ante casos límite: **48**
-- rendimiento: **41**
+- robustez ante casos límite: **45**
+- rendimiento: **42**
 
 ## Mejoras aceptadas por archivo
 
+- `settings.py`: **22**
 - `organizer.py`: **21**
 - `scanner.py`: **21**
-- `settings.py`: **21**
-- `main.py`: **20**
 - `quarantine.py`: **20**
-- `healthscore.py`: **18**
+- `assistant.py`: **19**
+- `main.py`: **19**
 - `safety.py`: **18**
-- `assistant.py`: **18**
 - `browser.py`: **18**
 - `diskreport.py`: **18**
-- `duplicates.py`: **17**
+- `healthscore.py`: **17**
+- `duplicates.py`: **16**
 - `branding.py`: **15**
 - `memory.py`: **14**
-- `startup.py`: **13**
+- `startup.py`: **14**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-02T09:40:05` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` convirtiendo el mapeo de palabras clave y el procesamiento de tokens en operaciones de búsqueda en un `set` precalculado, eliminando la creación repetitiva de listas y mejorando la eficiencia de la búsqueda inicial.
+- `2026-08-02T09:39:32` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `startup.py` mediante docstrings detallados en los métodos de la clase `StartupEntry` para aclarar la lógica de normalización de rutas y seguridad, y añadí `type hints` adicionales para aumentar la legibilidad.
+- `2026-08-02T09:39:07` **settings.py** (legibilidad y documentación): Se introdujo documentación técnica detallada en formato Docstring para las funciones core y una tipificación más estricta mediante `typing.Any` y comentarios descriptivos, mejorando la legibilidad sin alterar la lógica de validación ni la seguridad.
 - `2026-08-02T09:29:49` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings estructurados (usando el formato Google Style) en las funciones de heurística y en la clase principal, clarificando las precondiciones, los argumentos esperados y los valores de retorno para facilitar la auditabilidad del código.
 - `2026-08-02T09:29:42` **safety.py** (legibilidad y documentación): Se ha añadido un docstring detallado a `ensure_safe_to_modify` para explicar el razonamiento detrás de los checks de seguridad (la jerarquía de validación), mejorando la mantenibilidad técnica del módulo core de seguridad.
 - `2026-08-02T09:29:00` **quarantine.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `quarantine.py` mediante type hints adicionales en argumentos opcionales y docstrings detallados que explicitan las asunciones de seguridad y los casos de error para cada función crítica.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-02T09:08:57` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación técnica interna mediante la adición de docstrings estructurados (usando el formato Google Style) en las funciones principales, especificando parámetros, tipos de retorno y excepciones, lo cual aumenta la mantenibilidad y claridad para otros colaboradores sin alterar la lógica.
 - `2026-08-02T09:08:35` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings estructurados (estilo Google/NumPy) en las funciones de renderizado gráfico, especificando claramente los argumentos, efectos secundarios y manejos de errores para facilitar el mantenimiento por parte del equipo.
 - `2026-08-02T08:59:05` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` y `_extract_quoted_path` añadiendo validaciones específicas de longitud y tipo antes de procesar cadenas, previniendo errores de `IndexError` y mejorando el filtrado de comandos malformados.
-- `2026-08-02T08:58:41` **settings.py** (manejo de errores y validación de entradas): Reforcé la validación de `ultima_carpeta` en `_validate_str` para evitar errores de tipo si `is_safe_to_modify` recibe un tipo inesperado y agregué un manejo defensivo para asegurar que `_validate_int` no falle ante valores `None` o mal formados, garantizando la estabilidad de la configuración.
-- `2026-08-02T08:58:17` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `scan_file` y las funciones heurísticas mediante la validación explícita de `path` (evitando errores por parámetros `None` o rutas mal formadas) y la centralización de las capturas de excepciones para prevenir la interrupción del bucle ante archivos bloqueados o inaccesibles.
-- `2026-08-02T08:49:02` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ensure_safe_to_modify` ante entradas maliciosas o mal formadas, añadiendo una validación explícita de componentes de ruta vacíos tras la normalización y garantizando que las excepciones de tipo `OSError` al consultar el sistema de archivos no se ignoren silenciosamente sino que se traduzcan en un `UnsafePathError` claro.

@@ -131,7 +131,10 @@ _VALIDATOR_MAP: Final[dict[type, Callable[[str, Any], Any]]] = {
 }
 
 def settings_path(path_or_base: PathLike | None = None) -> Path:
-    """Calcula una ruta segura para el archivo de configuración."""
+    """
+    Determina la ubicación absoluta del archivo config.json.
+    Verifica seguridad de escritura mediante is_safe_to_modify en cada segmento de ruta.
+    """
     key = path_or_base or SETTINGS_DIR
     if key in _path_cache: return _path_cache[key]
     try:
@@ -145,7 +148,10 @@ def settings_path(path_or_base: PathLike | None = None) -> Path:
     return res
 
 def validate(values: Any) -> dict[str, Any]:
-    """Aplica validación de tipos y rangos sobre un diccionario externo."""
+    """
+    Toma un diccionario arbitrario 'values' y devuelve un nuevo dict
+    donde cada clave fue validada contra DEFAULTS.
+    """
     if not isinstance(values, dict): return DEFAULTS.copy()
     limpio = {}
     for clave, defecto in DEFAULTS.items():
@@ -159,7 +165,10 @@ def validate(values: Any) -> dict[str, Any]:
     return limpio
 
 def load(path_or_base: PathLike | None = None) -> dict[str, Any]:
-    """Carga configuración desde disco, con caché y validación de integridad."""
+    """
+    Carga y valida el JSON desde disco. Implementa caché en memoria comparando
+    st_mtime para evitar lecturas redundantes de I/O.
+    """
     global _cached_settings, _last_path, _last_mtime
     ruta = settings_path(path_or_base)
     
@@ -183,7 +192,10 @@ def load(path_or_base: PathLike | None = None) -> dict[str, Any]:
     return _cached_settings.copy()
 
 def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
-    """Guarda configuración en disco mediante un archivo temporal atómico."""
+    """
+    Guarda configuración mediante reemplazo atómico para evitar corrupción
+    ante cierres inesperados. Requiere validación previa de seguridad.
+    """
     global _cached_settings, _last_path, _last_mtime
     ruta = settings_path(path_or_base)
     
@@ -211,27 +223,33 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
             except OSError: pass
 
 def update(changes: dict[str, Any], path_or_base: PathLike | None = None) -> dict[str, Any]:
+    """Aplica cambios parciales sobre la configuración actual."""
     actual = load(path_or_base)
     actual.update(changes)
     save(actual, path_or_base)
     return actual
 
 def reset(path_or_base: PathLike | None = None) -> dict[str, Any]:
+    """Restaura la configuración a valores de fábrica."""
     save(DEFAULTS, path_or_base)
     return DEFAULTS.copy()
 
 def get(key: str, path_or_base: PathLike | None = None) -> Any:
+    """Obtiene un valor individual con fallback a DEFAULTS."""
     return load(path_or_base).get(key, DEFAULTS.get(key))
 
 def assistant_api_key(path_or_base: PathLike | None = None) -> str:
+    """Prioriza variables de entorno sobre el archivo de configuración."""
     desde_entorno = os.environ.get(API_KEY_ENV_VAR, "").strip()
     return desde_entorno or load(path_or_base).get("asistente_clave_api", "").strip()
 
 def assistant_enabled(path_or_base: PathLike | None = None) -> bool:
+    """Verifica si el asistente puede operar (configurado y con API Key presente)."""
     config = load(path_or_base)
     return bool(config.get("asistente_activado")) and bool(assistant_api_key(path_or_base))
 
 def describe(path_or_base: PathLike | None = None) -> list[str]:
+    """Genera una vista textual de la configuración actual para reportes."""
     actual = load(path_or_base)
     clave = assistant_api_key(path_or_base)
     origen = f"variable de entorno {API_KEY_ENV_VAR}" if os.environ.get(API_KEY_ENV_VAR) else ("archivo de configuración" if clave else "no configurada")
