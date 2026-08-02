@@ -183,7 +183,6 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
         raise UnsafePathError("Ruta nula recibida.")
         
     str_val = str(path)
-    # Bloquea caracteres de control, formato bidireccional y rutas de dispositivo extendidas (Win32)
     if re.search(r'[\u0000-\u001F\u007F-\u009F\u200E\u200F\u202A-\u202E]', str_val) or str_val.startswith(r"\\?"):
         raise UnsafePathError("Ruta contiene caracteres de control o formato potencialmente maliciosos.")
     
@@ -192,22 +191,26 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
     except (TypeError, ValueError, OSError) as e:
         raise UnsafePathError(f"Error al normalizar: {e}")
 
+    if not p.parts or len(p.parts) == 0:
+        raise UnsafePathError("Ruta sin componentes válidos tras normalización.")
+
     if p.stem.lower() in _RESERVED_NAMES:
         raise UnsafePathError("Operación bloqueada: nombre de dispositivo reservado.")
     if len(str(p)) > 260:
         raise UnsafePathError("Operación bloqueada: ruta demasiado larga.")
-    if not p.parts:
-        raise UnsafePathError("Ruta sin componentes.")
     if str(p).startswith(("\\\\", "//")):
         raise UnsafePathError("Operación bloqueada: rutas de red no permitidas.")
     
-    if p.exists():
-        if not os.access(p, os.W_OK):
-            raise UnsafePathError("Operación bloqueada: sin permisos de escritura.")
-        if _is_reparse_point(p) or _is_readonly(p) or _is_file_in_use(p):
-            raise UnsafePathError("Operación bloqueada: archivo inaccesible, protegido o en uso.")
-        if p.is_file() and p.stat().st_nlink > 1:
-            raise UnsafePathError("Operación bloqueada: enlace físico detectado.")
+    try:
+        if p.exists():
+            if not os.access(p, os.W_OK):
+                raise UnsafePathError("Operación bloqueada: sin permisos de escritura.")
+            if _is_reparse_point(p) or _is_readonly(p) or _is_file_in_use(p):
+                raise UnsafePathError("Operación bloqueada: archivo inaccesible, protegido o en uso.")
+            if p.is_file() and p.stat().st_nlink > 1:
+                raise UnsafePathError("Operación bloqueada: enlace físico detectado.")
+    except OSError as e:
+        raise UnsafePathError(f"Error al verificar estado del archivo: {e}")
 
     if is_drive_root(p) or is_protected_path(p):
         raise UnsafePathError("Operación bloqueada: ruta de sistema protegida.")

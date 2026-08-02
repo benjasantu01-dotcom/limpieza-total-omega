@@ -1062,3 +1062,31 @@ FAILED evolve/tests/test_modules.py::test_gradient_bar_ignores_invalid_sizes - V
 - `2026-08-02T08:39:34` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `parse_windows_process_csv` añadiendo una validación explícita para evitar errores de tipo si el CSV contiene filas vacías o malformadas, y centraliza el manejo de excepciones para garantizar que el bucle de procesamiento de procesos no se detenga ante una línea corrupta.
 - `2026-08-02T08:39:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-02T08:39:34` Corrida terminada. Total usado hoy: 204.
+- `2026-08-02T08:47:43` Arrancando corrida. Quedan hoy ~96 peticiones objetivo.
+- `2026-08-02T08:48:08` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Se introdujo una validación robusta de los directorios de entrada en `scan_for_junk` para prevenir fallos silenciosos al procesar rutas inexistentes o mal formadas, asegurando que solo se intente iterar sobre directorios validados y seguros mediante `is_safe_to_modify`.
+- `2026-08-02T08:48:34` Tests FALLARON:
+```
+de prueba" in texto
+>       assert "restaurar" in texto
+E       AssertionError: assert 'restaurar' in '1 archivo(s) en cuarentena — 0.00 MB\n\n  [c4f863518ea7] pesado.bin — 0.0 MB\n      Motivo: motivo de prueba\n      Origen: /tmp/pytest-of-runner/pytest-2/test_quarantine_summary_report0/pesado.bin\n      Aislado: 2026-08-02T08:48:34'
+
+evolve/tests/test_safety.py:311: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:119: SyntaxWarning: invalid escape sequence '\)'
+    """Verifica si la ruta apunta a la raíz de una unidad (ej. C:\)."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - AssertionError: assert 'restaurar' in '1 archivo(s) en cuarentena — 0.00 MB\n\n  [c4f863518ea7] pesado.bin — 0.0 MB\n      Motivo: motivo de prueba\n      Origen: /tmp/pytest-of-runner/pytest-2/test_quarantine_summary_report0/pesado.bin\n      Aislado: 2026-08-02T08:48:34'
+1 failed, 298 passed, 4 warnings in 1.06s
+
+```
+- `2026-08-02T08:48:34` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se introdujo una gestión de errores más robusta y específica en `quarantine_file` y `restore_item` mediante bloques `try-except` granulares, evitando el uso de capturas genéricas y asegurando que las excepciones de sistema (como falta de espacio o errores de I/O) se propaguen con mensajes claros sin interrumpir el flujo de control del bucle principal.
+- `2026-08-02T08:48:53` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
+- `2026-08-02T08:49:02` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `ensure_safe_to_modify` ante entradas maliciosas o mal formadas, añadiendo una validación explícita de componentes de ruta vacíos tras la normalización y garantizando que las excepciones de tipo `OSError` al consultar el sistema de archivos no se ignoren silenciosamente sino que se traduzcan en un `UnsafePathError` claro.
+- `2026-08-02T08:49:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-02T08:49:02` Corrida terminada. Total usado hoy: 208.
