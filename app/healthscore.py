@@ -64,7 +64,11 @@ _TOTAL_WEIGHTS: Final[int] = sum(WEIGHTS.values())
 
 @dataclass
 class SystemMetrics:
-    """Contenedor de datos crudos (métricas) provenientes de los diversos módulos."""
+    """
+    Contenedor de datos crudos (métricas) provenientes de los diversos módulos.
+    Los campos numéricos son normalizados durante el proceso de cálculo en
+    `compute_score` mediante la validación previa.
+    """
     junk_mb: float = 0.0
     suspicious_count: int = 0
     suspicious_warnings: int = 0
@@ -75,7 +79,10 @@ class SystemMetrics:
     quarantined_count: int = 0
 
     def validate(self) -> None:
-        """Asegura que todos los campos internos estén dentro de límites físicos lógicos."""
+        """
+        Asegura que todos los campos internos estén dentro de límites físicos lógicos.
+        Limpia valores erróneos aplicando floor en 0 y clamp en porcentajes.
+        """
         self.junk_mb = max(0.0, _to_float(self.junk_mb))
         self.suspicious_count = max(0, _to_int(self.suspicious_count))
         self.suspicious_warnings = max(0, _to_int(self.suspicious_warnings))
@@ -106,7 +113,7 @@ class HealthResult:
 
     @property
     def is_healthy(self) -> bool:
-        """Retorna True si el puntaje global alcanza el nivel de salud satisfactorio."""
+        """Retorna True si el puntaje global alcanza el nivel de salud satisfactorio (>= 80)."""
         return self.score >= 80
 
 
@@ -136,14 +143,21 @@ def _to_int(value: Any, default: int = 0) -> int:
 
 
 def score_junk(junk_mb: float) -> float:
-    """Calcula ratio [0, 1] donde 1 es 'cero basura' (en MB) y 0 es el límite crítico."""
+    """
+    Calcula ratio [0, 1].
+    1.0: Sin basura.
+    0.0: Basura >= JUNK_LIMIT_MB (punto de saturación).
+    """
     val = _to_float(junk_mb)
     if JUNK_LIMIT_MB <= 0: return 0.0
     return _clamp(1.0 - (val / JUNK_LIMIT_MB))
 
 
 def score_security(suspicious_count: int, warnings: int = 0) -> float:
-    """Calcula ratio [0, 1] penalizando hallazgos (conteo) y advertencias (factor riesgo)."""
+    """
+    Calcula ratio [0, 1] penalizando hallazgos (conteo) y advertencias.
+    Cada hallazgo reduce el score 5%, cada advertencia reduce 25%.
+    """
     s = float(max(0, _to_int(suspicious_count)))
     w = float(max(0, _to_int(warnings)))
     penalty: float = (s * 0.05) + (w * 0.25)
@@ -151,21 +165,27 @@ def score_security(suspicious_count: int, warnings: int = 0) -> float:
 
 
 def score_memory(available_percent: float) -> float:
-    """Calcula ratio [0, 1] basado en el porcentaje de RAM disponible (0-100)."""
+    """
+    Calcula ratio [0, 1].
+    Retorna 1.0 si la disponibilidad >= RAM_IDEAL_PERCENT.
+    """
     val = _clamp(_to_float(available_percent), 0.0, 100.0)
     if RAM_IDEAL_PERCENT <= 0: return 0.0
     return _clamp(val / RAM_IDEAL_PERCENT)
 
 
 def score_disk(free_percent: float) -> float:
-    """Calcula ratio [0, 1] basado en el porcentaje de disco libre disponible (0-100)."""
+    """
+    Calcula ratio [0, 1].
+    Retorna 1.0 si el espacio libre >= DISK_IDEAL_PERCENT.
+    """
     val = _to_float(free_percent)
     if DISK_IDEAL_PERCENT <= 0: return 0.0
     return _clamp(val / DISK_IDEAL_PERCENT)
 
 
 def score_duplicates(duplicate_mb: float) -> float:
-    """Calcula ratio [0, 1] basado en el peso (MB) de archivos redundantes encontrados."""
+    """Calcula ratio [0, 1] basado en el peso (MB) de archivos redundantes."""
     val = _to_float(duplicate_mb)
     if DUPLICATE_LIMIT_MB <= 0: return 0.0
     return _clamp(1.0 - (val / DUPLICATE_LIMIT_MB))
@@ -189,7 +209,7 @@ def grade_for_score(score: int) -> str:
 
 
 def _generate_recommendations(m: SystemMetrics, ratios: Dict[str, float]) -> List[str]:
-    """Genera acciones correctivas si los ratios individuales caen por debajo de los umbrales."""
+    """Genera acciones correctivas basadas en los ratios actuales vs umbrales."""
     if not isinstance(m, SystemMetrics):
         return ["Error interno: Métricas no disponibles para generar recomendaciones."]
     
@@ -217,7 +237,10 @@ def _generate_recommendations(m: SystemMetrics, ratios: Dict[str, float]) -> Lis
 
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
-    """Procesa métricas y devuelve un objeto HealthResult con el puntaje final calculado."""
+    """
+    Procesa métricas y devuelve un objeto HealthResult.
+    El cálculo sigue la fórmula: (Suma de (ratio * peso)) / TotalWeights.
+    """
     if metrics is None or not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Instancia de métricas nula o no válida."])
     
@@ -237,7 +260,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         "arranque": score_startup(metrics.startup_count)
     }
 
-    # Calculamos puntos ponderados usando el valor precalculado _TOTAL_WEIGHTS
+    # Calculamos puntos ponderados: (ratio * peso_relativo)
     breakdown = {
         area: int((_clamp(ratios.get(area, 0.0)) * weight * 100 / _TOTAL_WEIGHTS) + 0.5) 
         for area, weight in WEIGHTS.items()
@@ -262,7 +285,6 @@ def summarize(result: HealthResult) -> List[str]:
     """Genera una representación visual y textual detallada del resultado de salud."""
     lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     
-    # Validar que breakdown contenga las áreas esperadas para evitar key errors en el sorteo
     keys = list(result.breakdown.keys())
     if not keys:
         return lines + ["  Error: No hay datos de desglose disponibles."]

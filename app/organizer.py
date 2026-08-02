@@ -5,7 +5,7 @@ en carpetas ordenadas por tamaño o fecha, sin borrar nada automáticamente.
 
 Filosofía de seguridad: este módulo NUNCA borra archivos por sí solo.
 Solo mueve candidatos a una carpeta de revisión ("_Para_Revisar") para
-que el usuario dedida qué borrar. Borrar es una acción explícita y
+que el usuario decida qué borrar. Borrar es una acción explícita y
 separada (ver delete_reviewed()).
 """
 
@@ -50,11 +50,10 @@ SYSTEM_FOLDER_BLOCKLIST: Final = {
 
 def list_available_drives() -> List[str]:
     """
-    Detecta unidades montadas en sistemas Windows.
+    Detecta unidades montadas en sistemas Windows mediante comprobación de existencia de raíz.
 
     Returns:
         List[str]: Lista de rutas raíz (ej. ['C:\\', 'D:\\']). 
-        Retorna lista vacía si el SO no es Windows o no se detectan unidades.
     """
     if os.name != "nt":
         return []
@@ -119,31 +118,30 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     """
     Recorre recursivamente los directorios provistos buscando archivos basura.
     Ignora directorios en SYSTEM_FOLDER_BLOCKLIST y omite archivos protegidos.
-    
-    Returns:
-        List[JunkFile]: Lista de archivos identificados como basura.
     """
     dirs = directories or DEFAULT_SCAN_DIRS
     found: List[JunkFile] = []
     blocklist = SYSTEM_FOLDER_BLOCKLIST
 
     def _walk_dir(base_path: str) -> None:
-        """Función interna recursiva para exploración de directorios."""
         try:
             with os.scandir(base_path) as it:
                 for entry in it:
                     try:
+                        # Saltar enlaces simbólicos para evitar bucles o acceso fuera de raíz
                         if entry.is_symlink():
                             continue
+                        
                         if entry.is_dir():
                             if entry.name.lower() not in blocklist:
                                 _walk_dir(entry.path)
                         elif entry.name.lower().endswith(_JUNK_EXTS_TUPLE):
-                            p = Path(entry.path)
-                            if is_safe_to_modify(p):
+                            file_path = Path(entry.path)
+                            # Verificación de seguridad antes de procesar el archivo
+                            if is_safe_to_modify(file_path):
                                 stat = entry.stat()
                                 found.append(JunkFile(
-                                    path=p,
+                                    path=file_path,
                                     size_bytes=stat.st_size,
                                     modified=datetime.fromtimestamp(stat.st_mtime)
                                 ))
@@ -165,11 +163,12 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
 
 def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -> List[JunkFile]:
     """
-    Ordena la lista de JunkFile. 
+    Ordena la lista de JunkFile según el criterio especificado.
     
     Args:
-        by: 'size' para ordenar por bytes, 'date' para ordenar por fecha de modificación.
-        ascending: True para orden ascendente, False para descendente.
+        files: Lista de archivos a ordenar.
+        by: 'size' para ordenar por bytes, 'date' para ordenar por fecha.
+        ascending: Dirección del orden.
     """
     if not files:
         return []
@@ -186,15 +185,10 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Path:
     """
-    Prepara archivos para ser eliminados moviéndolos a un directorio de cuarentena/revisión.
+    Prepara archivos para ser eliminados moviéndolos a un directorio de cuarentena.
     
-    Precondiciones:
-        - Valida que la ruta no sea un enlace simbólico.
-        - Verifica acceso de escritura usando 'ensure_safe_to_modify'.
-        - Verifica que el archivo no esté bloqueado por otro proceso.
-        
-    Returns:
-        Path: El directorio donde se movieron los archivos.
+    Asegura que el movimiento no sea destructivo ni recursivo mediante validación
+    explícita con ensure_safe_to_modify.
     """
     if not review_dir:
         raise ValueError("La ruta de revisión no puede estar vacía")
@@ -207,6 +201,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
     if dest.is_symlink():
         raise PermissionError("Ruta de destino inválida: symlink detectado.")
         
+    # Verificar que el destino es seguro antes de crear la carpeta
     ensure_safe_to_modify(dest)
     dest.mkdir(parents=True, exist_ok=True)
 
@@ -219,12 +214,12 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             
             full_source_path = jf.path.resolve()
             
-            # Impedir el auto-movimiento (recursión) y validar seguridad
+            # Validar que no estemos moviendo el archivo dentro de su propio árbol
             is_nested = dest == full_source_path or dest in full_source_path.parents or full_source_path.parent == dest
             if not is_safe_to_modify(full_source_path) or is_nested:
                 continue
             
-            # Chequeo de uso: si está bloqueado por otro proceso, se omite
+            # Impedir movimiento si el archivo está en uso exclusivo por otro proceso
             try:
                 with open(full_source_path, 'rb+'): pass
             except (IOError, OSError):
@@ -233,7 +228,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             target_base = dest / f"{jf.path.stem}_{int(jf.modified.timestamp())}{jf.path.suffix}"
             target = _generate_unique_target(target_base)
             
-            # Garantía de seguridad en la ejecución del movimiento
+            # Garantía final de seguridad antes de la operación de E/S
             ensure_safe_to_modify(full_source_path)
             ensure_safe_to_modify(target)
             shutil.move(str(full_source_path), str(target))
@@ -244,14 +239,8 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
     """
-    Elimina permanentemente archivos desde la carpeta de revisión definida.
-    
-    Efecto:
-        - Realiza una limpieza física tras confirmación del usuario.
-        - Solo elimina archivos que pasan el filtro 'is_safe_to_modify'.
-        
-    Returns:
-        int: Cantidad de archivos eliminados exitosamente.
+    Elimina físicamente los archivos dentro del directorio de revisión.
+    Solo procesa archivos validados por el sistema de seguridad.
     """
     if not review_dir:
         return 0
