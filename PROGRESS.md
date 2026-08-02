@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **258** (51.2% de aceptación)
+- Mejoras aceptadas: **259** (51.4% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 26
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 188
+- Sin respuesta de la IA (error o límite): 187
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-31 | 49 | 0 | 5 | 7 | 33 |
+| 2026-07-31 | 49 | 0 | 5 | 7 | 29 |
 | 2026-08-01 | 166 | 11 | 16 | 10 | 147 |
-| 2026-08-02 | 43 | 2 | 5 | 2 | 8 |
+| 2026-08-02 | 44 | 2 | 5 | 2 | 11 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **66**
 - rendimiento: **52**
+- seguridad defensiva: **48**
 - manejo de errores y validación de entradas: **47**
-- seguridad defensiva: **47**
 - robustez ante casos límite: **46**
 
 ## Mejoras aceptadas por archivo
@@ -39,14 +39,15 @@ Este archivo se regenera solo en cada corrida a partir de
 - `main.py`: **19**
 - `assistant.py`: **18**
 - `browser.py`: **18**
+- `startup.py`: **17**
 - `safety.py`: **17**
 - `branding.py`: **16**
-- `startup.py`: **16**
 - `duplicates.py`: **15**
 - `memory.py`: **14**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-02T02:40:36` **startup.py** (seguridad defensiva): Se reforzó la seguridad defensiva al invocar `is_protected_path` sobre las rutas resultantes en `parse_registry_csv` y `_extract_quoted_path`, evitando que la aplicación procese o reporte rutas sensibles extraídas del registro.
 - `2026-08-02T02:31:09` **settings.py** (seguridad defensiva): Reforcé la seguridad defensiva en `save` verificando explícitamente que la ruta resuelta del archivo de configuración no sea un enlace simbólico y que resida dentro de una jerarquía segura, previniendo ataques de escalada o manipulación de archivos mediante enlaces malintencionados.
 - `2026-08-02T02:31:01` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `scanner.py` reemplazando el uso de `entry.exists()` (que puede fallar en archivos bloqueados o nodos especiales) por un manejo más seguro de los atributos de entrada, garantizando que el escáner no intente resolver rutas de archivos que no son accesibles o que podrían ser enlaces simbólicos peligrosos antes de validarlos con `is_protected_path`.
 - `2026-08-02T02:21:28` **organizer.py** (seguridad defensiva): Se reforzó `stage_for_review` para prevenir el movimiento de archivos hacia destinos dentro de la misma jerarquía del sistema, validando que el destino no sea un subdirectorio del origen y viceversa, además de verificar explícitamente que la ruta de destino resuelta no apunte a un directorio bloqueado.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-02T01:50:10` **safety.py** (robustez ante casos límite): Se ha añadido un chequeo de existencia de padre (`parent.exists()`) y se validó el caso de rutas no encontradas en `normalize` para prevenir excepciones críticas en sistemas donde las rutas pueden haber sido movidas o eliminadas por otros procesos durante la ejecución del bucle, aumentando la robustez ante condiciones de carrera.
 - `2026-08-02T01:49:28` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` ante fallos parciales durante la transferencia de archivos, añadiendo un manejo explícito de errores de disco lleno durante la escritura, previniendo estados inconsistentes entre el sistema de archivos y el manifiesto.
 - `2026-08-02T01:40:44` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `stage_for_review` al verificar que la ruta de origen y la de destino no sean la misma (evitando errores de bucle) y garantizando que el archivo sea un archivo regular antes de intentar abrirlo para verificar si está en uso.
-- `2026-08-02T01:40:13` **main.py** (robustez ante casos límite): Se mejora la robustez ante la interacción del usuario al centralizar la validación de directorios en un método helper `_is_valid_dir` y aplicar esta verificación antes de cualquier operación de escaneo, evitando errores en tiempo de ejecución si el usuario navega a carpetas que luego son eliminadas o modificadas externamente por otros procesos.

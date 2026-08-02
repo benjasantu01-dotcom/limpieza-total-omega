@@ -80,7 +80,10 @@ class StartupEntry:
             return ""
         
         try:
-            return str(Path(path_str).expanduser())
+            p = Path(path_str).expanduser()
+            if is_protected_path(p):
+                return ""
+            return str(p)
         except (OSError, ValueError, RuntimeError, TypeError):
             return ""
 
@@ -176,6 +179,13 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
         
         if not name or name.lower() in ("name", "pscustomobject") or name.upper().startswith("PS"):
             continue
+        
+        # Filtro de seguridad preventivo contra rutas protegidas inyectadas
+        try:
+            if is_protected_path(Path(cmd)):
+                continue
+        except (OSError, ValueError, TypeError):
+            pass
             
         parsed_entries.append(StartupEntry(name=name, command=cmd, source=source))
         
