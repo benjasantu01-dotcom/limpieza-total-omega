@@ -16,37 +16,41 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-31 | 22 | 0 | 2 | 2 | 16 |
+| 2026-07-31 | 18 | 0 | 2 | 2 | 16 |
 | 2026-08-01 | 166 | 11 | 16 | 10 | 147 |
-| 2026-08-02 | 58 | 3 | 7 | 3 | 41 |
+| 2026-08-02 | 62 | 3 | 7 | 3 | 41 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **60**
+- legibilidad y documentación: **64**
 - seguridad defensiva: **48**
 - manejo de errores y validación de entradas: **47**
-- robustez ante casos límite: **46**
-- rendimiento: **45**
+- robustez ante casos límite: **45**
+- rendimiento: **42**
 
 ## Mejoras aceptadas por archivo
 
-- `scanner.py`: **21**
-- `settings.py`: **21**
-- `quarantine.py`: **20**
+- `quarantine.py`: **21**
+- `main.py`: **20**
+- `scanner.py`: **20**
+- `settings.py`: **20**
+- `organizer.py`: **20**
 - `diskreport.py`: **19**
-- `main.py`: **19**
-- `organizer.py`: **19**
-- `assistant.py`: **18**
 - `healthscore.py`: **18**
+- `assistant.py`: **17**
 - `browser.py`: **17**
 - `safety.py`: **16**
-- `startup.py`: **15**
 - `branding.py`: **15**
 - `duplicates.py`: **15**
-- `memory.py`: **13**
+- `startup.py`: **14**
+- `memory.py`: **14**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-02T04:55:02` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `quarantine.py` añadiendo type hints faltantes y refactorizando la estructura del manifiesto en `load_manifest` para separar la validación de la carga, facilitando el mantenimiento y garantizando la robustez ante datos malformados.
+- `2026-08-02T04:54:50` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en funciones clave, aclarando las precondiciones de seguridad y el comportamiento ante errores, facilitando el mantenimiento y la comprensión del flujo de datos sin alterar la lógica.
+- `2026-08-02T04:54:27` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints faltantes en las funciones internas y refactorizando la lógica de `parse_windows_process_csv` para usar un enfoque más claro y robusto mediante la extracción de la lógica de validación de filas.
+- `2026-08-02T04:54:02` **main.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `main.py` mediante la refactorización de `_build_tabs_container` para desacoplar el registro de constructores de la lógica de iteración, facilitando la adición de nuevas pestañas, y añadí type hints y documentación en métodos clave que carecían de ellos, asegurando que la intención del código sea evidente.
 - `2026-08-02T04:44:13` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints en las funciones de puntuación y la documentación explícita de las unidades y propósitos de los parámetros en los docstrings.
 - `2026-08-02T04:44:03` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `duplicates.py` mediante docstrings detallados en las funciones críticas (`hash_file`, `partial_hash`, `_collect_candidates` y `find_duplicates`), clarificando los criterios de exclusión de seguridad y el flujo de los datos para facilitar su mantenimiento.
 - `2026-08-02T04:43:39` **diskreport.py** (legibilidad y documentación): Documenté el propósito técnico de los métodos de las `dataclasses` y el flujo recursivo de `walk_files`, aclarando la lógica de seguridad y el manejo de excepciones para futuros mantenimientos.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-02T04:23:30` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `is_protected_path` al asegurar que las comparaciones de rutas sean consistentes ante la presencia de componentes vacíos y mejoré la gestión de excepciones en `normalize` para evitar propagar errores inesperados al bucle principal.
 - `2026-08-02T04:13:57` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez de `parse_windows_process_csv` añadiendo validaciones explícitas de tipos y longitud para prevenir excepciones al procesar datos crudos, asegurando que solo se conviertan a entero registros que tengan el formato esperado.
 - `2026-08-02T04:13:33` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `on_trim_process` y `on_restore_quarantine` mediante una validación más estricta de las entradas del usuario (inputs) antes de procesarlas, evitando el uso de valores potencialmente corruptos o malintencionados en la lógica interna.
-- `2026-08-02T04:03:22` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `suggest_keeper` y el manejo de rutas en `find_duplicates` validando explícitamente valores `None` y errores de acceso antes de procesar, evitando posibles `AttributeError` o `IndexError` en situaciones de archivos bloqueados o inaccesibles.
-- `2026-08-02T04:02:50` **browser.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `directory_size` y `base_directories` mediante una validación de parámetros más estricta (`isinstance` y chequeos de nulidad) y el uso de bloques `try-except` más granulares para prevenir fallos silenciosos por rutas mal formadas.
-- `2026-08-02T04:02:26` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` añadiendo una validación explícita mediante `is_safe_to_modify` antes de proceder con las operaciones de archivo, cumpliendo estrictamente con el patrón de seguridad exigido de usar una comprobación booleana antes de ejecutar la escritura.
-- `2026-08-02T02:40:36` **startup.py** (seguridad defensiva): Se reforzó la seguridad defensiva al invocar `is_protected_path` sobre las rutas resultantes en `parse_registry_csv` y `_extract_quoted_path`, evitando que la aplicación procese o reporte rutas sensibles extraídas del registro.

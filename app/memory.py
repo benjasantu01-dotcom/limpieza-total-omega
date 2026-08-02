@@ -142,6 +142,11 @@ def parse_linux_meminfo(text: str) -> MemorySnapshot:
     )
 
 
+def _is_valid_process_row(parts: List[str]) -> bool:
+    """Valida que una línea CSV contenga datos numéricos válidos para un proceso."""
+    return len(parts) >= 3 and parts[1].isdigit() and parts[2].isdigit()
+
+
 def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]:
     """
     Transforma el CSV bruto de PowerShell 'Get-Process' en objetos ProcessMemory.
@@ -154,15 +159,13 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
     if not lines:
         return []
 
-    # El encabezado suele ser "Name,Id,WorkingSet" o similar
     if lines[0].lower().startswith("name"):
         lines = lines[1:]
 
     processes: List[ProcessMemory] = []
     for line in lines:
         parts: List[str] = [p.strip().strip('"') for p in line.split(",")]
-        # Esperamos al menos Nombre, PID, WorkingSet
-        if len(parts) >= 3 and parts[1].isdigit() and parts[2].isdigit():
+        if _is_valid_process_row(parts):
             try:
                 processes.append(ProcessMemory(
                     name=parts[0] or "Unknown", 

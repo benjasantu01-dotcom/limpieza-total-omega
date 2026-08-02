@@ -29,7 +29,7 @@ import tempfile
 from dataclasses import dataclass, asdict
 from datetime import datetime
 from pathlib import Path
-from typing import List, Union, Dict, Tuple, Optional
+from typing import List, Union, Dict, Tuple, Optional, Any
 
 from safety import (
     UnsafePathError,
@@ -77,7 +77,7 @@ class QuarantineItem:
         """Calcula el tamaño del archivo en MB con precisión de dos decimales."""
         return round(self.size_bytes / (1024 * 1024), 2)
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> Dict[str, Any]:
         """Serializa la instancia a un diccionario compatible con el esquema JSON."""
         return asdict(self)
 
@@ -135,6 +135,25 @@ def _manifest_path(base_dir: Path) -> Path:
     return base_dir / MANIFEST_NAME
 
 
+def _validate_and_convert_item(entry: Any) -> Optional[QuarantineItem]:
+    """Valida un diccionario de datos bruto y lo convierte en un objeto QuarantineItem."""
+    required = {"item_id", "original_path", "stored_name", "size_bytes", "reason", "quarantined_at"}
+    if not isinstance(entry, dict) or not required.issubset(entry.keys()):
+        return None
+    try:
+        return QuarantineItem(
+            item_id=str(entry["item_id"]),
+            original_path=str(entry["original_path"]),
+            stored_name=str(entry["stored_name"]),
+            size_bytes=int(entry["size_bytes"]),
+            reason=str(entry["reason"]),
+            quarantined_at=str(entry["quarantined_at"]),
+            sha256=str(entry.get("sha256", ""))
+        )
+    except (ValueError, TypeError):
+        return None
+
+
 def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload: bool = False) -> List[QuarantineItem]:
     """
     Carga el manifiesto desde disco, utilizando caché por mtime para optimizar I/O.
@@ -168,26 +187,7 @@ def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload:
     if not isinstance(raw_data, list):
         return []
 
-    items: List[QuarantineItem] = []
-    required_keys = {"item_id", "original_path", "stored_name", "size_bytes", "reason", "quarantined_at"}
-    
-    for entry in raw_data:
-        if not isinstance(entry, dict) or not required_keys.issubset(entry.keys()):
-            continue
-        try:
-            item = QuarantineItem(
-                item_id=str(entry["item_id"]),
-                original_path=str(entry["original_path"]),
-                stored_name=str(entry["stored_name"]),
-                size_bytes=int(entry["size_bytes"]),
-                reason=str(entry["reason"]),
-                quarantined_at=str(entry["quarantined_at"]),
-                sha256=str(entry.get("sha256", ""))
-            )
-            items.append(item)
-        except (ValueError, TypeError, KeyError):
-            continue
-            
+    items = [item for entry in raw_data if (item := _validate_and_convert_item(entry))]
     _manifest_cache[base_str] = (current_mtime, items)
     return items
 
@@ -284,8 +284,7 @@ def quarantine_file(
     try:
         shutil.move(str(source_path), str(destination))
     except OSError as e:
-        # Detectar posible error de disco lleno durante la operación de copia
-        if e.errno in (28, 39): # ENOSPC, ENAMETOOLONG
+        if e.errno in (28, 39): 
              raise OSError(f"Falla de escritura (disco lleno o error de sistema): {e}")
         raise RuntimeError(f"Falla crítica al mover archivo: {e}")
 
@@ -308,7 +307,6 @@ def quarantine_file(
         save_manifest(items, base)
         return item
     except Exception as e:
-        # Reversión de seguridad si el registro en manifiesto falla
         if destination.exists():
             try:
                 shutil.move(str(destination), str(source_path))

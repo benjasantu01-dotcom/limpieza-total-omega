@@ -217,8 +217,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         )
         self.tabview.pack(fill="both", expand=True, padx=18, pady=(4, 8))
 
-        # Mapa de constructores: vincula el nombre de la pestaña con su lógica de construcción
-        tab_constructors: Dict[str, Callable] = {
+        # Mapa de constructores: vincula el nombre interno de la pestaña con su método constructor
+        tab_constructors: Dict[str, Callable[[], None]] = {
             "Salud": self._build_tab_salud,
             "Limpieza": self._build_tab_limpieza,
             "Seguridad": self._build_tab_seguridad,
@@ -236,12 +236,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         for name in TABS:
             try:
                 self.tabs[name] = self.tabview.add(branding.tab_label(name))
-                if name in tab_constructors:
-                    tab_constructors[name]()
+                constructor = tab_constructors.get(name)
+                if constructor:
+                    constructor()
             except Exception as e:
                 logging.error("No se pudo construir la pestaña %s: %s", name, e)
-
-        self.output = self.outputs.get("Limpieza")
 
     def _build_header(self) -> None:
         """Genera el encabezado con el logo, branding y la barra decorativa."""
