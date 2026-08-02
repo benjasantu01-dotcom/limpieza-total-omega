@@ -168,6 +168,9 @@ def scan_file(path: Path) -> ScanResult:
     Ejecuta el conjunto de heurísticas sobre un archivo específico.
     Solo procesa archivos existentes y validados por seguridad.
     """
+    if is_protected_path(path):
+        return []
+
     findings: ScanResult = []
     for check_func in CHECK_FUNCS:
         try:

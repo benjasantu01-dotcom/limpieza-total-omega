@@ -171,7 +171,6 @@ def load(path_or_base: PathLike | None = None) -> dict[str, Any]:
     """
     global _cached_settings, _last_path, _last_mtime
     
-    # Prioridad: usar caché global si la ruta coincide y no ha cambiado en disco
     if _cached_settings is not None and (path_or_base is None or Path(path_or_base) == _last_path):
         try:
             if _last_path and _last_path.exists() and _last_path.stat().st_mtime == _last_mtime:

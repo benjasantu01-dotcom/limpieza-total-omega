@@ -190,16 +190,18 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
         parts: List[str] = line.split(",", 1)
         if len(parts) < 2: continue
         
-        name: str = parts[0].strip().strip('"')
-        cmd: str = parts[1].strip().strip('"')
+        name: str = "".join(c for c in parts[0].strip().strip('"') if ord(c) >= 32)
+        cmd: str = "".join(c for c in parts[1].strip().strip('"') if ord(c) >= 32)
         
         if not name or name.lower() in ("name", "pscustomobject") or name.upper().startswith("PS"):
             continue
         
         try:
-            # Defensivo: no procesar rutas de registro sospechosas o protegidas
+            # Defensivo: validar la estructura antes de instanciar
+            if not cmd or any(c in cmd for c in '<>|?*'):
+                continue
             p: Path = Path(cmd)
-            if is_protected_path(p) or any(c in cmd for c in '<>|?*'):
+            if is_protected_path(p):
                 continue
         except (OSError, ValueError, TypeError):
             continue

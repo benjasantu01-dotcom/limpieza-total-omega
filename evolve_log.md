@@ -1193,3 +1193,10 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-08-02T10:41:24` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
 - `2026-08-02T10:41:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-02T10:41:24` Corrida terminada. Total usado hoy: 252.
+- `2026-08-02T10:50:08` Arrancando corrida. Quedan hoy ~48 peticiones objetivo.
+- `2026-08-02T10:50:33` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
+- `2026-08-02T10:50:54` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `scan_file` añadiendo una validación explícita mediante `is_protected_path` antes de ejecutar las heurísticas, garantizando que el escáner no intente procesar rutas de sistema ni archivos protegidos incluso si son pasados directamente como argumento.
+- `2026-08-02T10:51:19` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se reforzó la robustez ante casos de archivo corrupto o inaccesible añadiendo una validación explícita de `json.JSONDecodeError` y `UnicodeDecodeError` en `load`, asegurando que el sistema siempre retorne `DEFAULTS` en lugar de propagar excepciones o errores silenciosos de lectura parcial ante archivos truncados.
+- `2026-08-02T10:51:28` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Mejora la robustez en `parse_registry_csv` añadiendo una limpieza de caracteres de control y una validación de rutas más exhaustiva contra `is_protected_path`, previniendo errores de parsing en registros con caracteres extraños o malformados que podrían causar excepciones al instanciar `Path`.
+- `2026-08-02T10:51:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-02T10:51:28` Corrida terminada. Total usado hoy: 256.
