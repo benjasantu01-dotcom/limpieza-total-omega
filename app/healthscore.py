@@ -262,9 +262,15 @@ def summarize(result: HealthResult) -> List[str]:
     """Genera una representación visual y textual detallada del resultado de salud."""
     lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     
+    # Validar que breakdown contenga las áreas esperadas para evitar key errors en el sorteo
+    keys = list(result.breakdown.keys())
+    if not keys:
+        return lines + ["  Error: No hay datos de desglose disponibles."]
+
     for area, puntos in sorted(result.breakdown.items(), key=_sort_by_performance_delta):
         maximo: int = WEIGHTS.get(area, 0)
-        lines.append(f"  {area.capitalize():<12} {puntos:>2}/{maximo:<2} [{'#' * puntos}{'.' * (maximo - puntos)}]")
+        puntos_acotados = _clamp(puntos, 0, maximo)
+        lines.append(f"  {area.capitalize():<12} {puntos_acotados:>2}/{maximo:<2} [{'#' * int(puntos_acotados)}{'.' * int(maximo - puntos_acotados)}]")
     
     lines.extend(["", "Recomendaciones:"])
     lines.extend([f"  - {rec}" for rec in result.recommendations])

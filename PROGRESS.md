@@ -8,45 +8,48 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **246** (48.8% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 27
+- Rechazadas por guardia de seguridad: 26
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 200
+- Sin respuesta de la IA (error o límite): 201
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-31 | 3 | 0 | 1 | 0 | 10 |
+| 2026-07-31 | 0 | 0 | 0 | 0 | 10 |
 | 2026-08-01 | 166 | 11 | 16 | 10 | 147 |
-| 2026-08-02 | 77 | 5 | 10 | 5 | 43 |
+| 2026-08-02 | 80 | 5 | 10 | 5 | 44 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **67**
 - rendimiento: **50**
 - manejo de errores y validación de entradas: **47**
-- robustez ante casos límite: **42**
-- seguridad defensiva: **40**
+- robustez ante casos límite: **45**
+- seguridad defensiva: **37**
 
 ## Mejoras aceptadas por archivo
 
-- `scanner.py`: **21**
-- `settings.py`: **21**
+- `main.py`: **20**
 - `quarantine.py`: **20**
+- `scanner.py`: **20**
 - `organizer.py`: **20**
-- `main.py`: **19**
+- `settings.py`: **20**
+- `healthscore.py`: **19**
 - `diskreport.py`: **18**
-- `healthscore.py`: **18**
 - `browser.py`: **18**
 - `assistant.py`: **17**
-- `safety.py`: **16**
+- `duplicates.py`: **16**
 - `branding.py`: **15**
-- `duplicates.py`: **15**
+- `safety.py`: **15**
 - `memory.py`: **14**
 - `startup.py`: **14**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-02T06:06:10` **main.py** (robustez ante casos límite): Mejoré la robustez de la inicialización de la app envolviendo la construcción de pestañas en un bloque `try-except` más granular y añadiendo validación de existencia para `branding.draw_logo`, previniendo que un error en un método de renderizado de UI detenga el inicio de la aplicación completa.
+- `2026-08-02T06:05:12` **healthscore.py** (robustez ante casos límite): Reforcé la robustez del módulo `healthscore.py` ante datos de entrada extremos o malformados mediante la implementación de validaciones defensivas adicionales en `_generate_recommendations` y `summarize`, asegurando que el sistema no falle si los diccionarios de métricas están incompletos o el total de pesos es inconsistente.
+- `2026-08-02T06:04:47` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez de las funciones de hash (`hash_file` y `partial_hash`) añadiendo el manejo explícito de archivos vacíos (size=0) o bloqueados durante la lectura, evitando que la excepción de lectura interrumpa el procesamiento de otros archivos en el grupo.
 - `2026-08-02T05:55:41` **diskreport.py** (robustez ante casos límite): Se ha añadido un chequeo de `is_protected_path` en `drive_usage` y una gestión robusta de permisos y estados de `Path` en las funciones de recorrido, garantizando que el reporte de disco no falle silenciosamente ni intente acceder a rutas bloqueadas ante accesos denegados o inconsistencias del sistema.
 - `2026-08-02T05:55:33` **browser.py** (robustez ante casos límite): Se ha mejorado la robustez de `directory_size` ante el acceso a directorios bloqueados o inconsistentes y se ha corregido un bug lógico donde `stack.count` (que cuenta ocurrencias en la lista) no limitaba correctamente la profundidad de recursión, reemplazándolo por un chequeo explícito de profundidad para evitar desbordamientos o bucles infinitos en estructuras de directorios profundas.
 - `2026-08-02T05:55:10` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante rutas malformadas o tipos de datos inesperados en el destino, asegurando que `Path` siempre sea tratado correctamente y evitando excepciones no capturadas al manipular el sistema de archivos.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-02T05:24:54` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje global en `compute_score` convirtiendo `breakdown` en una estructura de datos más eficiente para el acceso y evitando recalcular la suma de pesos y la normalización en cada iteración mediante el uso de una variable precalculada, mejorando así la eficiencia del bucle de visualización.
 - `2026-08-02T05:24:29` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` eliminando una llamada redundante a `Path.resolve()` (que es una operación de I/O costosa) dentro del bucle de escaneo, ya que `entry.path` ya proporciona una ruta válida para realizar las verificaciones de seguridad y estado de forma directa.
 - `2026-08-02T05:14:57` **browser.py** (rendimiento): Optimicé el cálculo de tamaño de directorio usando `scandir` de forma más eficiente y evitando la creación redundante de objetos `Path` dentro del bucle de recursión, reduciendo la presión sobre el recolector de basura y mejorando la velocidad de escaneo.
-- `2026-08-02T05:04:26` **settings.py** (legibilidad y documentación): Se introdujeron docstrings explicativos y se añadieron anotaciones de tipo mejoradas para clarificar la lógica de validación, facilitando el mantenimiento y la auditoría del flujo de datos en el archivo.
-- `2026-08-02T05:04:18` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en la clase `Scanner` y funciones clave, especificando precondiciones y el propósito de cada parámetro para clarificar el flujo de trabajo del motor heurístico.
-- `2026-08-02T05:03:56` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos a los métodos auxiliares privados y aclarando las restricciones de uso de `ensure_safe_to_modify` para prevenir errores de lógica en el futuro desarrollo.

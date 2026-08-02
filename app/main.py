@@ -253,7 +253,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             highlightthickness=0, bd=0,
         )
         canvas.grid(row=0, column=0, rowspan=2, padx=(0, 16))
-        branding.draw_logo(canvas, size=72)
+        try:
+            branding.draw_logo(canvas, size=72)
+        except Exception as e:
+            logging.error("Error al dibujar logo: %s", e)
 
         ctk.CTkLabel(
             header, text=branding.APP_NAME,
