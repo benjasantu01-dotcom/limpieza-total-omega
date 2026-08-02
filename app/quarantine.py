@@ -419,7 +419,8 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
                 except (OSError, PermissionError):
                     continue
             
-    save_manifest([], base)
+    if count > 0:
+        save_manifest([], base)
     return count
 
 

@@ -5,7 +5,7 @@ en carpetas ordenadas por tamaño o fecha, sin borrar nada automáticamente.
 
 Filosofía de seguridad: este módulo NUNCA borra archivos por sí solo.
 Solo mueve candidatos a una carpeta de revisión ("_Para_Revisar") para
-que el usuario decida qué borrar. Borrar es una acción explícita y
+que el usuario dedida qué borrar. Borrar es una acción explícita y
 separada (ver delete_reviewed()).
 """
 
