@@ -151,18 +151,25 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
         return []
 
     lines = [line.strip() for line in text.splitlines() if line.strip()]
-    header = lines[0] if lines else ""
-    if header.startswith("Name,") or header.startswith("NameId"):
+    if not lines:
+        return []
+
+    # El encabezado suele ser "Name,Id,WorkingSet" o similar
+    if lines[0].lower().startswith("name"):
         lines = lines[1:]
 
     processes: List[ProcessMemory] = []
     for line in lines:
         parts: List[str] = [p.strip().strip('"') for p in line.split(",")]
-        if len(parts) >= 3:
+        # Esperamos al menos Nombre, PID, WorkingSet
+        if len(parts) >= 3 and parts[1].isdigit() and parts[2].isdigit():
             try:
-                pid, ws = int(parts[1]), int(parts[2])
-                processes.append(ProcessMemory(name=parts[0] or "Unknown", pid=pid, working_set=ws))
-            except (ValueError, IndexError):
+                processes.append(ProcessMemory(
+                    name=parts[0] or "Unknown", 
+                    pid=int(parts[1]), 
+                    working_set=int(parts[2])
+                ))
+            except ValueError:
                 continue
 
     processes.sort(key=lambda p: p.working_set, reverse=True)
