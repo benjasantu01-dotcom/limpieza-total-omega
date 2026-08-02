@@ -157,6 +157,7 @@ def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload:
             return cached_data
         
     if not path.exists():
+        _manifest_cache[base_str] = (0.0, [])
         return []
     try:
         with open(path, "r", encoding="utf-8") as f:
@@ -299,8 +300,7 @@ def quarantine_file(
             quarantined_at=datetime.now().isoformat(timespec="seconds"),
             sha256=file_hash,
         )
-        base_str = str(dest_dir)
-        items = list(_manifest_cache.get(base_str, (0.0, []))[1])
+        items = load_manifest(base).copy()
         items.append(item)
         save_manifest(items, base)
         return item
@@ -324,7 +324,7 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
         raise ValueError("El ID debe ser una cadena válida.")
 
     items = load_manifest(base)
-    match: Optional[QuarantineItem] = next((i for i in items if i.item_id == item_id), None)
+    match = next((i for i in items if i.item_id == item_id), None)
     
     if match is None:
         raise KeyError(f"No se encontró ítem con ID: {item_id}")
@@ -360,8 +360,8 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
     except (OSError, PermissionError) as e:
         raise RuntimeError(f"Fallo durante la operación de restauración: {e}")
 
-    items.remove(match)
-    save_manifest(items, base)
+    remaining = [i for i in items if i.item_id != item_id]
+    save_manifest(remaining, base)
     return destination
 
 
@@ -371,7 +371,7 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
         return False
     
     items = load_manifest(base)
-    match: Optional[QuarantineItem] = next((i for i in items if i.item_id == item_id), None)
+    match = next((i for i in items if i.item_id == item_id), None)
     
     if match is None:
         return False
@@ -390,8 +390,8 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
     except (OSError, PermissionError):
         return False
     
-    items.remove(match)
-    save_manifest(items, base)
+    remaining = [i for i in items if i.item_id != item_id]
+    save_manifest(remaining, base)
     return True
 
 

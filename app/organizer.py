@@ -136,10 +136,12 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
                             if entry.name.lower() not in blocklist:
                                 _walk_dir(entry.path)
                         elif entry.name.lower().endswith(_JUNK_EXTS_TUPLE):
-                            if is_safe_to_modify(Path(entry.path)):
+                            # Mínima instanciación de Path, solo si la extensión es candidata
+                            p = Path(entry.path)
+                            if is_safe_to_modify(p):
                                 stat = entry.stat()
                                 found.append(JunkFile(
-                                    path=Path(entry.path),
+                                    path=p,
                                     size_bytes=stat.st_size,
                                     modified=datetime.fromtimestamp(stat.st_mtime)
                                 ))

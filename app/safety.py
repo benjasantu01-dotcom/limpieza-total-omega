@@ -52,12 +52,11 @@ SENSITIVE_EXTENSIONS: Final[frozenset[str]] = frozenset({
     ".reg", ".pol", ".key", ".pem", ".pfx", ".p12", ".crt", ".cer",
 })
 
-_SYSTEM_ROOTS: Final[tuple[Path, ...]] = tuple(
-    Path(os.environ[v]).resolve() 
+_SYSTEM_ROOTS_NAMES: Final[frozenset[str]] = frozenset({
+    os.path.basename(os.environ.get(v, "")).lower() 
     for v in ("SystemRoot", "windir", "ProgramFiles", "ProgramFiles(x86)", "ProgramData")
     if os.environ.get(v)
-)
-_SYSTEM_ROOTS_NAMES: Final[frozenset[str]] = frozenset({p.name.lower() for p in _SYSTEM_ROOTS})
+} - {""})
 _ALL_PROTECTED_TOKENS: Final[frozenset[str]] = PROTECTED_DIR_NAMES | _SYSTEM_ROOTS_NAMES
 
 _RESERVED_NAMES: Final[frozenset[str]] = frozenset({
@@ -135,11 +134,14 @@ def is_protected_path(path: PathLike) -> bool:
         return True
     
     try:
-        p = normalize(path)
-        if not p.is_absolute():
+        # Usamos abspath para evitar el costo de I/O de resolve() al verificar tokens
+        p_str = str(Path(path).expanduser().absolute())
+        parts = {p.lower() for p in Path(p_str).parts}
+        
+        if not _ALL_PROTECTED_TOKENS.isdisjoint(parts):
             return True
-        if not _ALL_PROTECTED_TOKENS.isdisjoint(part.lower() for part in p.parts):
-            return True
+            
+        p = Path(p_str)
         if p == Path(p.anchor):
             return True
         if p.exists() and _is_reparse_point(p):
@@ -169,7 +171,7 @@ def is_sensitive_file(path: PathLike) -> bool:
     if path is None:
         return True
     try:
-        return normalize(path).suffix.lower() in SENSITIVE_EXTENSIONS
+        return Path(path).suffix.lower() in SENSITIVE_EXTENSIONS
     except (TypeError, ValueError, OSError):
         return True 
 
