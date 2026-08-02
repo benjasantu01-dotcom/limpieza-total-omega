@@ -16,28 +16,28 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-01 | 76 | 6 | 8 | 5 | 77 |
-| 2026-08-02 | 175 | 10 | 19 | 8 | 120 |
+| 2026-08-01 | 74 | 6 | 7 | 5 | 76 |
+| 2026-08-02 | 177 | 10 | 20 | 8 | 121 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **66**
 - seguridad defensiva: **52**
 - manejo de errores y validación de entradas: **49**
-- robustez ante casos límite: **45**
-- rendimiento: **39**
+- robustez ante casos límite: **43**
+- rendimiento: **41**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **23**
 - `scanner.py`: **21**
-- `organizer.py`: **20**
-- `browser.py`: **19**
+- `browser.py`: **20**
+- `organizer.py`: **19**
+- `branding.py`: **19**
 - `main.py`: **19**
-- `quarantine.py`: **18**
 - `assistant.py`: **18**
-- `branding.py`: **18**
 - `diskreport.py`: **17**
+- `quarantine.py`: **17**
 - `duplicates.py`: **16**
 - `healthscore.py`: **16**
 - `safety.py`: **16**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-02T14:15:44` **browser.py** (rendimiento): Optimicé el cálculo del tamaño de directorios mediante `directory_size` reemplazando la lista (usada como stack) por una estructura más eficiente y eliminando la redundancia en las validaciones, mejorando el rendimiento en sistemas con muchos archivos pequeños.
+- `2026-08-02T14:15:22` **branding.py** (rendimiento): Optimicé el rendimiento de `gradient_colors` eliminando el bucle `for` redundante mediante el uso de una lista de comprensión y pre-cálculos de los segmentos, además de optimizar `draw_gradient_bar` para reducir drásticamente las llamadas al método `create_line` del canvas al agrupar segmentos de color idénticos de manera más eficiente.
 - `2026-08-02T14:05:49` **startup.py** (legibilidad y documentación): Mejora la legibilidad del método `StartupEntry.executable` extrayendo la lógica de saneamiento de la cadena de comando a un método privado dedicado (`_sanitize_command`), facilitando la comprensión del flujo de procesamiento de rutas y parámetros.
 - `2026-08-02T14:05:26` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings estructurados y type hints precisos, clarificando la lógica de validación y el manejo de rutas para facilitar el mantenimiento y la auditoría de seguridad.
 - `2026-08-02T14:05:02` **scanner.py** (legibilidad y documentación): Se introdujo un `TypeAlias` más robusto (`SuspicionCheck`) y se documentaron detalladamente los parámetros y retornos de `process_entry` y `scan_directory` para clarificar el flujo de control del escaneo recursivo.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-02T13:35:28` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `walk_files` extrayendo la lógica de validación de entrada y la lógica de escaneo en funciones internas nombradas, facilitando la comprensión del flujo de recursión.
 - `2026-08-02T13:35:19` **browser.py** (legibilidad y documentación): Mejora de la legibilidad y robustez de `directory_size` mediante la extracción de la lógica de filtrado a un predicado local llamado `is_valid_entry`, eliminando condicionales anidados complejos y clarificando la intención del escaneo.
 - `2026-08-02T13:34:57` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación de los tipos de datos complejos y se han añadido docstrings detallados en las funciones de manipulación de color y gradientes para esclarecer la lógica de interpolación lineal, facilitando el mantenimiento futuro.
-- `2026-08-02T13:34:26` **assistant.py** (legibilidad y documentación): Mejora de la legibilidad y mantenibilidad mediante la adición de Type Hints explícitos en los manejadores de consultas (`handle_*`) y la estandarización de docstrings, facilitando la comprensión del flujo de datos en el motor de reglas.
-- `2026-08-02T13:25:04` **startup.py** (manejo de errores y validación de entradas): Reforcé la robustez en `parse_registry_csv` y `_resolve_and_cache_path` mediante la validación explícita de `None` y tipos, garantizando que errores inesperados en el parseo del registro no propaguen valores inválidos al resto de la aplicación.

@@ -499,3 +499,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-02T14:06:04` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `_rank_problems` convirtiéndola en una función que se ejecuta bajo demanda sin repetir cálculos, y eliminé la recolección innecesaria de sugerencias mediante la pre-definición de listas constantes para evitar la creación de objetos `list` en cada llamada.
 - `2026-08-02T14:06:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-02T14:06:04` Corrida terminada. Total usado hoy: 332.
+- `2026-08-02T14:14:50` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-02T14:15:22` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimicé el rendimiento de `gradient_colors` eliminando el bucle `for` redundante mediante el uso de una lista de comprensión y pre-cálculos de los segmentos, además de optimizar `draw_gradient_bar` para reducir drásticamente las llamadas al método `create_line` del canvas al agrupar segmentos de color idénticos de manera más eficiente.
+- `2026-08-02T14:15:44` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el cálculo del tamaño de directorios mediante `directory_size` reemplazando la lista (usada como stack) por una estructura más eficiente y eliminando la redundancia en las validaciones, mejorando el rendimiento en sistemas con muchos archivos pequeños.
+- `2026-08-02T14:16:07` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-08-02T14:16:12` 🛑 Propuesta bloqueada por la guardia en duplicates.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: group_by_size
+- `2026-08-02T14:16:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-02T14:16:12` Corrida terminada. Total usado hoy: 336.

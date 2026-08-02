@@ -240,26 +240,18 @@ def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
 def gradient_colors(steps: int, stops: tuple[HexColor, ...] = GRADIENT_STOPS) -> List[HexColor]:
     """
     Genera una secuencia de colores interpolados distribuida en 'steps'.
-    
-    Utiliza un gradiente multilineal donde cada segmento entre dos stops 
-    se interpola independientemente para mantener la fluidez visual.
     """
-    try:
-        cantidad = max(1, int(steps))
-    except (TypeError, ValueError):
-        cantidad = 1
-        
+    cantidad = max(1, int(steps))
     if not stops: return [PALETTE["accent"]] * cantidad
     if len(stops) < 2: return [stops[0]] * cantidad
     
     tramos = len(stops) - 1
-    salida: List[HexColor] = []
-    for i in range(cantidad):
-        # Determina qué segmento del gradiente corresponde a este paso
+    def get_color(i: int) -> HexColor:
         posicion = i / max(1, cantidad - 1) * tramos
         indice = min(tramos - 1, int(posicion))
-        salida.append(blend(stops[indice], stops[indice + 1], posicion - indice))
-    return salida
+        return blend(stops[indice], stops[indice + 1], posicion - indice)
+        
+    return [get_color(i) for i in range(cantidad)]
 
 
 @lru_cache(maxsize=4)
@@ -329,12 +321,6 @@ def logo_ascii() -> str:
 def draw_logo(canvas: Any, size: int = 56, canvas_x: int = 0, canvas_y: int = 0) -> None:
     """
     Renderiza el escudo Omega vectorialmente en un widget Tkinter.Canvas.
-    
-    Args:
-        canvas: Widget Tkinter donde dibujar.
-        size: Tamaño base del icono en píxeles.
-        canvas_x: Desplazamiento horizontal.
-        canvas_y: Desplazamiento vertical.
     """
     if canvas is None or not hasattr(canvas, "create_polygon"): return
     try:
@@ -372,31 +358,20 @@ def draw_logo(canvas: Any, size: int = 56, canvas_x: int = 0, canvas_y: int = 0)
 def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
                       canvas_x: int = 0, canvas_y: int = 0,
                       stops: tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
-    """
-    Dibuja una franja horizontal decorativa con gradiente suavizado.
-    
-    Args:
-        canvas: Widget destino.
-        width: Ancho total de la franja.
-        height: Altura del trazo.
-        canvas_x, canvas_y: Coordenadas de posición.
-        stops: Puntos de control para el color del gradiente.
-    """
+    """Dibuja una franja horizontal decorativa con gradiente suavizado."""
     if canvas is None or not hasattr(canvas, "create_line"): return
     try:
         ancho = max(1, int(width))
         colores = gradient_colors(ancho, stops)
-        i = 0
-        while i < ancho:
-            inicio = i
-            color_actual = colores[i]
-            while i < ancho and colores[i] == color_actual:
-                i += 1
-            canvas.create_line(
-                canvas_x + inicio, canvas_y, 
-                canvas_x + i, canvas_y + height, 
-                fill=color_actual, width=height
-            )
+        start_idx = 0
+        for i in range(1, ancho + 1):
+            if i == ancho or colores[i] != colores[start_idx]:
+                canvas.create_line(
+                    canvas_x + start_idx, canvas_y, 
+                    canvas_x + i, canvas_y + height, 
+                    fill=colores[start_idx], width=height
+                )
+                start_idx = i
     except (ValueError, TypeError, AttributeError): pass
 
 
@@ -404,17 +379,7 @@ def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
               canvas_x: int = 0, canvas_y: int = 0, thickness: int = 14,
               track: Optional[HexColor] = None,
               fill: Optional[HexColor] = None) -> None:
-    """
-    Dibuja un medidor circular (HealthScore) centrado en una coordenada.
-    
-    Args:
-        canvas: Widget destino.
-        percent: Valor numérico (0-100) del progreso.
-        size: Diámetro exterior del anillo.
-        thickness: Grosor de la línea del anillo.
-        track: Color de fondo (pista) opcional.
-        fill: Color de relleno del progreso opcional.
-    """
+    """Dibuja un medidor circular (HealthScore) centrado en una coordenada."""
     if canvas is None or not hasattr(canvas, "create_arc"): return
     try:
         valor = max(0.0, min(100.0, float(percent))) # type: ignore

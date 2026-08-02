@@ -119,7 +119,7 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
 
 def directory_size(path: str | os.PathLike | None) -> int:
     """
-    Calcula el tamaño total en bytes de un directorio mediante búsqueda iterativa.
+    Calcula el tamaño total en bytes de un directorio mediante búsqueda iterativa eficiente.
     """
     if path is None:
         return 0
@@ -131,14 +131,8 @@ def directory_size(path: str | os.PathLike | None) -> int:
     except (OSError, TypeError, ValueError):
         return 0
     
-    def is_valid_entry(entry: os.DirEntry) -> bool:
-        """Determina si un archivo o carpeta debe ser incluido en el escaneo."""
-        return (
-            entry.name.lower() not in NEVER_TOUCH and
-            not entry.is_symlink()
-        )
-
     total_bytes: int = 0
+    # Usamos pop(0) o append/pop para gestión de stack; el orden no altera el resultado del peso
     stack: List[str] = [str(root)]
     
     while stack:
@@ -147,7 +141,7 @@ def directory_size(path: str | os.PathLike | None) -> int:
             with os.scandir(current_dir_str) as it:
                 for entry in it:
                     try:
-                        if not is_valid_entry(entry):
+                        if entry.name.lower() in NEVER_TOUCH or entry.is_symlink():
                             continue
                         if entry.is_dir(follow_symlinks=False):
                             stack.append(entry.path)
