@@ -76,7 +76,6 @@ class Scanner:
         :param stack: Lista mutable que actúa como pila para el recorrido recursivo (DFS).
         """
         try:
-            # Obtener path de forma segura antes de cualquier operación
             path_str = entry.path
             
             if entry.is_dir(follow_symlinks=False):
@@ -99,7 +98,10 @@ def check_double_extension(path: Path) -> Optional[Suspicion]:
     Analiza si el nombre del archivo contiene una extensión de documento seguida
     por una de ejecución, práctica común para engañar usuarios.
     """
-    if path and path.name and DOUBLE_EXTENSION_RE.search(path.name):
+    if path is None or path.name is None:
+        return None
+        
+    if DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
     return None
 
@@ -109,7 +111,7 @@ def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_TH
     Evalúa la fecha de modificación del archivo. Un ejecutable descargado 
     recientemente aumenta el perfil de riesgo según heurísticas estándar.
     """
-    if not path or is_protected_path(path) or path.suffix.lower() not in SUSPICIOUS_EXECUTABLE_EXT:
+    if path is None or is_protected_path(path) or path.suffix.lower() not in SUSPICIOUS_EXECUTABLE_EXT:
         return None
         
     try:
@@ -126,7 +128,7 @@ def check_system_lookalike(path: Path) -> Optional[Suspicion]:
     Identifica si un archivo utiliza nombres de procesos críticos del sistema
     (ej. svchost.exe) estando ubicado fuera del directorio System32 oficial.
     """
-    if not path or not path.name or path.name.lower() not in SYSTEM_LOOKALIKES:
+    if path is None or path.name is None or path.name.lower() not in SYSTEM_LOOKALIKES:
         return None
         
     if is_protected_path(path):
@@ -134,7 +136,7 @@ def check_system_lookalike(path: Path) -> Optional[Suspicion]:
         
     try:
         parent = path.parent
-        if parent and SYSTEM32_LOWER not in str(parent).lower():
+        if parent is not None and SYSTEM32_LOWER not in str(parent).lower():
             return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
     except (OSError, AttributeError):
         pass
@@ -149,7 +151,7 @@ CHECK_FUNCS: Final[List[SuspicionCheck]] = [
 
 def scan_file(path: Path) -> ScanResult:
     """Aplica todas las heurísticas registradas sobre un archivo único."""
-    if not path or not path.is_file():
+    if path is None or not path.is_file():
         return []
         
     findings: ScanResult = []

@@ -682,3 +682,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-02T04:14:03` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
 - `2026-08-02T04:14:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-02T04:14:03` Corrida terminada. Total usado hoy: 100.
+- `2026-08-02T04:22:19` Arrancando corrida. Quedan hoy ~200 peticiones objetivo.
+- `2026-08-02T04:22:47` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-02T04:23:06` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-08-02T04:23:30` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `is_protected_path` al asegurar que las comparaciones de rutas sean consistentes ante la presencia de componentes vacíos y mejoré la gestión de excepciones en `normalize` para evitar propagar errores inesperados al bucle principal.
+- `2026-08-02T04:23:37` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las funciones de validación heurística mediante la implementación de chequeos defensivos ante entradas `None` o rutas inválidas, garantizando que los métodos de `Path` no lancen excepciones inesperadas antes de ser procesadas por la lógica de escaneo.
+- `2026-08-02T04:23:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-02T04:23:37` Corrida terminada. Total usado hoy: 104.

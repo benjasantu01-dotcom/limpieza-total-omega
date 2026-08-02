@@ -100,7 +100,7 @@ def normalize(path: PathLike) -> Path:
     """
     Expande, resuelve y convierte una ruta a objeto Path absoluto.
     :raises TypeError: Si el tipo de entrada no es compatible.
-    :raises ValueError: Si la ruta normalizada resulta vacía.
+    :raises ValueError: Si la ruta normalizada resulta vacía o inválida.
     """
     if not isinstance(path, (str, os.PathLike)):
         raise TypeError(f"Entrada inválida: tipo {type(path)} no soportado.")
@@ -110,10 +110,8 @@ def normalize(path: PathLike) -> Path:
         raise ValueError("La ruta proporcionada está vacía.")
         
     try:
-        # Usamos expanduser y abspath para evitar fallos si el archivo ya no existe
-        res = Path(str_path).expanduser().resolve()
-        return res if res.exists() else Path(os.path.abspath(os.path.expanduser(str_path)))
-    except (OSError, RuntimeError, ValueError):
+        return Path(str_path).expanduser().resolve()
+    except (OSError, RuntimeError):
         return Path(os.path.abspath(os.path.expanduser(str_path)))
 
 
@@ -136,13 +134,12 @@ def is_protected_path(path: PathLike) -> bool:
         return True
     
     try:
-        p_str = str(Path(path).expanduser().absolute())
-        parts = {p.lower() for p in Path(p_str).parts}
+        p = normalize(path)
+        parts = {p_part.lower() for p_part in p.parts if p_part}
         
         if not _ALL_PROTECTED_TOKENS.isdisjoint(parts):
             return True
             
-        p = Path(p_str)
         if p == Path(p.anchor):
             return True
         if p.exists() and _is_reparse_point(p):
@@ -231,7 +228,14 @@ def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = Fals
     """Retorna una lista de rutas que han superado los filtros de seguridad."""
     if not isinstance(paths, Iterable):
         return []
-    return [normalize(p) for p in paths if is_safe_to_modify(p, allow_sensitive=allow_sensitive)]
+    valid = []
+    for p in paths:
+        try:
+            if is_safe_to_modify(p, allow_sensitive=allow_sensitive):
+                valid.append(normalize(p))
+        except (TypeError, ValueError):
+            continue
+    return valid
 
 
 def describe_protection(path: PathLike) -> str:
