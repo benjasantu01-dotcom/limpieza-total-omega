@@ -166,22 +166,20 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
                         if entry.is_symlink():
                             continue
                         
-                        resolved_path = Path(entry.path).resolve()
-                        if not resolved_path.exists():
-                            continue
-                        if skip_protected and is_protected_path(resolved_path):
-                            continue
-                        
                         if entry.is_dir():
-                            _scan(resolved_path)
+                            _scan(Path(entry.path))
                         elif entry.is_file():
+                            p = Path(entry.path)
+                            if skip_protected and is_protected_path(p):
+                                continue
+                            
                             st = entry.stat()
                             inode_id = (st.st_dev, st.st_ino)
                             if inode_id in visited_inodes:
                                 continue
                             if st.st_size >= min_size:
                                 visited_inodes.add(inode_id)
-                                candidates.append(resolved_path)
+                                candidates.append(p)
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):

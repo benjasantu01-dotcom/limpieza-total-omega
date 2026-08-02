@@ -58,6 +58,9 @@ WEIGHTS: Final[Dict[str, int]] = {
     "arranque": 8,
 }
 
+# Precalculo la suma de pesos para evitar iterar en el hot-path de compute_score
+_TOTAL_WEIGHTS: Final[int] = sum(WEIGHTS.values())
+
 
 @dataclass
 class SystemMetrics:
@@ -222,10 +225,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     if not metrics.is_finite():
         return HealthResult(0, "F", {}, ["Error: Métricas contienen datos no procesables."])
     
-    # Validamos pesos para evitar divisiones por cero o pesos corruptos
-    valid_weights = {k: max(0, int(v)) for k, v in WEIGHTS.items()}
-    total_weights = sum(valid_weights.values())
-    if total_weights <= 0:
+    if _TOTAL_WEIGHTS <= 0:
         return HealthResult(0, "F", {}, ["Error: Configuración de pesos inválida."])
 
     ratios = {
@@ -237,10 +237,10 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         "arranque": score_startup(metrics.startup_count)
     }
 
-    # Calculamos puntos ponderados, asegurando que cada ratio esté estrictamente en [0.0, 1.0]
+    # Calculamos puntos ponderados usando el valor precalculado _TOTAL_WEIGHTS
     breakdown = {
-        area: int((_clamp(ratios.get(area, 0.0)) * valid_weights.get(area, 0) * 100 / total_weights) + 0.5) 
-        for area in valid_weights
+        area: int((_clamp(ratios.get(area, 0.0)) * weight * 100 / _TOTAL_WEIGHTS) + 0.5) 
+        for area, weight in WEIGHTS.items()
     }
     total_score = _clamp(sum(breakdown.values()), 0.0, 100.0)
 
