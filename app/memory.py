@@ -28,8 +28,11 @@ import re
 import subprocess
 from functools import lru_cache
 from dataclasses import dataclass, field
-from typing import List, Tuple, Optional, Dict, Iterator
+from typing import List, Tuple, Optional, Dict, TYPE_CHECKING
 from safety import is_protected_path
+
+if TYPE_CHECKING:
+    import ctypes
 
 __all__ = [
     "MemorySnapshot",
@@ -123,8 +126,9 @@ def format_bytes(num: int | float | None) -> str:
 @lru_cache(maxsize=4)
 def parse_linux_meminfo(text: str) -> MemorySnapshot:
     """
-    Parsea /proc/meminfo. Convierte la escala original en kB a bytes.
-    Retorna un MemorySnapshot normalizado.
+    Interpreta el contenido de /proc/meminfo. 
+    Convierte los valores (expresados originalmente en kB) a bytes para
+    mantener la consistencia con las métricas de Windows.
     """
     values: Dict[str, int] = {}
     for line in text.splitlines():
@@ -140,7 +144,8 @@ def parse_linux_meminfo(text: str) -> MemorySnapshot:
 
 def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]:
     """
-    Convierte CSV generado por PowerShell a objetos ProcessMemory ordenados de forma eficiente.
+    Transforma el CSV bruto de PowerShell 'Get-Process' en objetos ProcessMemory.
+    Filtra entradas inválidas y ordena por consumo de WorkingSet (descendente).
     """
     if not text:
         return []
@@ -165,8 +170,9 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
 
 def _read_windows_snapshot() -> MemorySnapshot:
     """
-    Accede a la API Win32 GlobalMemoryStatusEx vía ctypes para obtener 
-    estadísticas detalladas de la memoria física.
+    Llama a la Win32 API 'GlobalMemoryStatusEx' mediante ctypes.
+    Esta función es necesaria para obtener el estado real de la memoria física
+    cuando el sistema es Windows, evitando dependencias externas.
     """
     import ctypes
 

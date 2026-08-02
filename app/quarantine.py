@@ -58,8 +58,7 @@ __all__ = [
 DEFAULT_QUARANTINE_DIR = "~/LimpiezaTotalOmega/_Cuarentena"
 MANIFEST_NAME = "manifest.json"
 
-# Almacena el estado del manifiesto en memoria para evitar I/O redundante:
-# { str(base_path): (mtime_del_archivo, lista_de_items) }
+# Cache de memoria para el manifiesto: { str(base_path): (mtime_del_archivo, lista_de_items) }
 _manifest_cache: Dict[str, Tuple[float, List[QuarantineItem]]] = {}
 
 @dataclass
@@ -85,7 +84,12 @@ class QuarantineItem:
     def verify_integrity(self, stored_path: Path) -> bool:
         """
         Valida que el archivo en cuarentena coincida con los metadatos registrados.
-        Retorna True si la integridad es correcta, False en caso contrario.
+        
+        Args:
+            stored_path: Ruta del archivo dentro de la carpeta de cuarentena.
+            
+        Returns:
+            True si el tamaño y hash coinciden con los guardados en el manifiesto.
         """
         if not stored_path.exists():
             return False
@@ -132,7 +136,16 @@ def _manifest_path(base_dir: Path) -> Path:
 
 
 def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload: bool = False) -> List[QuarantineItem]:
-    """Carga el manifiesto desde disco con caché basada en el tiempo de modificación."""
+    """
+    Carga el manifiesto desde disco, utilizando caché por mtime para optimizar I/O.
+    
+    Args:
+        base: Directorio donde buscar el manifiesto.
+        force_reload: Si es True, ignora la caché existente.
+        
+    Returns:
+        Lista de objetos QuarantineItem deserializados.
+    """
     base_path = quarantine_dir(base)
     path = _manifest_path(base_path)
     base_str = str(base_path)
@@ -161,7 +174,6 @@ def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload:
         if not isinstance(entry, dict) or not required_keys.issubset(entry.keys()):
             continue
         try:
-            # Validación estricta de tipos esperados
             item = QuarantineItem(
                 item_id=str(entry["item_id"]),
                 original_path=str(entry["original_path"]),
@@ -173,14 +185,23 @@ def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload:
             )
             items.append(item)
         except (ValueError, TypeError, KeyError):
-            # Saltear registros con datos malformados o tipos incompatibles
             continue
+            
     _manifest_cache[base_str] = (current_mtime, items)
     return items
 
 
 def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
-    """Persiste la lista de ítems de forma atómica usando un archivo temporal."""
+    """
+    Persiste la lista de ítems de forma atómica usando un archivo temporal.
+    
+    Args:
+        items: Lista de objetos QuarantineItem a persistir.
+        base: Directorio de trabajo.
+        
+    Raises:
+        RuntimeError: En caso de fallo de escritura o persistencia.
+    """
     if not isinstance(items, list):
         raise ValueError("El manifiesto debe ser una lista de ítems.")
         
@@ -214,7 +235,6 @@ def quarantine_file(
     if not source_path.exists():
         raise FileNotFoundError(f"El archivo de origen no existe: {source_path}")
     
-    # Validación de seguridad defensiva adicional
     if not source_path.is_file() or source_path.is_symlink():
         raise UnsafePathError(f"Solo se permiten archivos regulares: {source_path}")
         

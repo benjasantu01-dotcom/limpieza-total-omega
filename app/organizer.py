@@ -105,6 +105,7 @@ def _generate_unique_target(target: Path) -> Path:
 def _is_valid_junk(entry: os.DirEntry[str]) -> bool:
     """
     Valida mediante heurística si un archivo es basura y si es seguro tocarlo.
+    Utiliza 'is_safe_to_modify' para consulta booleana sin excepciones.
     """
     if entry.is_symlink() or not entry.is_file():
         return False
@@ -124,6 +125,7 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     blocklist = SYSTEM_FOLDER_BLOCKLIST
 
     def _walk_dir(base_path: str) -> None:
+        """Función auxiliar recursiva para recorrer directorios."""
         try:
             with os.scandir(base_path) as it:
                 for entry in it:
@@ -174,6 +176,7 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Path:
     """
     Mueve archivos candidatos a una carpeta de revisión segura.
+    Emplea 'ensure_safe_to_modify' antes de cualquier operación de I/O crítica.
     """
     if not review_dir:
         raise ValueError("La ruta de revisión no puede estar vacía")
@@ -198,9 +201,11 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             
             full_source_path = jf.path.resolve()
             
+            # Filtro lógico antes de la acción destructiva
             if not is_safe_to_modify(full_source_path) or dest in full_source_path.parents or full_source_path.parent == dest:
                 continue
             
+            # Chequeo de uso: si está bloqueado por otro proceso, se saltea
             try:
                 with open(full_source_path, 'rb+'): pass
             except (IOError, OSError):
@@ -209,6 +214,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             target_base = dest / f"{jf.path.stem}_{int(jf.modified.timestamp())}{jf.path.suffix}"
             target = _generate_unique_target(target_base)
             
+            # Garantía de seguridad en la ejecución del movimiento
             ensure_safe_to_modify(full_source_path)
             ensure_safe_to_modify(target)
             shutil.move(str(full_source_path), str(target))
@@ -220,6 +226,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
     """
     Elimina permanentemente archivos desde la carpeta de revisión.
+    Valida la seguridad mediante 'is_safe_to_modify' antes de cada unlink.
     """
     if not review_dir:
         return 0
