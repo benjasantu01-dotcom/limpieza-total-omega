@@ -74,6 +74,8 @@ class StartupEntry:
 
     def _extract_quoted_path(self, raw_cmd: str) -> str:
         """Extrae la ruta absoluta cuando el comando está encerrado entre comillas."""
+        if len(raw_cmd) < 2:
+            return ""
         end_quote: int = raw_cmd.find('"', 1)
         if end_quote == -1:
             return ""
@@ -92,6 +94,8 @@ class StartupEntry:
 
     def _resolve_and_cache_path(self, path_str: str) -> str:
         """Resuelve una ruta relativa/simple a absoluta y la guarda en caché."""
+        if not path_str:
+            return ""
         try:
             p = Path(path_str).expanduser()
             # Validación de seguridad defensiva: ni protegida, ni puntos de reparse
@@ -151,7 +155,7 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
     for folder in folders:
         try:
             for item in folder.iterdir():
-                if item.suffix.lower() in EXECUTABLE_EXTS and not item.is_symlink():
+                if item.is_file() and item.suffix.lower() in EXECUTABLE_EXTS and not item.is_symlink():
                     if not is_protected_path(item):
                         found_entries.append(StartupEntry(name=item.stem, command=str(item), source="carpeta"))
         except (OSError, PermissionError, RuntimeError):
@@ -169,6 +173,7 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
     if len(lines) < 2: return []
     
     for line in lines[1:]:
+        if not line: continue
         parts = line.split(",", 1)
         if len(parts) < 2: continue
         

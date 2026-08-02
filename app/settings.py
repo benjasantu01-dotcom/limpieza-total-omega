@@ -103,7 +103,7 @@ def _validate_bool(key: str, val: Any) -> bool | None:
 
 def _validate_int(key: str, val: Any) -> int | None:
     """Valida enteros dentro de límites definidos para evitar valores absurdos."""
-    if isinstance(val, bool): return None
+    if val is None or isinstance(val, bool): return None
     try:
         parsed = int(val)
         low, high = _NUMERIC_LIMITS.get(key, (0, 10**9))
@@ -121,7 +121,7 @@ def _validate_str(key: str, val: Any) -> str | None:
         try:
             path = Path(text).expanduser().resolve()
             return str(path) if is_safe_to_modify(str(path)) else None
-        except (OSError, RuntimeError, ValueError): return None
+        except (OSError, RuntimeError, ValueError, TypeError): return None
     return text.lower() if key in ("tema", "acento") else text
 
 _VALIDATOR_MAP: Final[dict[type, Callable[[str, Any], Any]]] = {

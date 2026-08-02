@@ -96,7 +96,7 @@ def check_double_extension(path: Path) -> Optional[Suspicion]:
     Detecta patrones de nombres de archivos que intentan ocultar extensiones ejecutable
     tras extensiones de documentos inofensivos.
     """
-    if path.name and DOUBLE_EXTENSION_RE.search(path.name):
+    if path and path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
     return None
 
@@ -105,7 +105,7 @@ def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_TH
     """
     Analiza la metadata de modificación de un ejecutable para identificar descargas recientes.
     """
-    if path.suffix.lower() not in SUSPICIOUS_EXECUTABLE_EXT:
+    if not path or path.suffix.lower() not in SUSPICIOUS_EXECUTABLE_EXT:
         return None
         
     try:
@@ -123,7 +123,7 @@ def check_system_lookalike(path: Path) -> Optional[Suspicion]:
     Detecta ejecutables que suplantan nombres de procesos críticos del sistema
     si residen fuera del directorio oficial System32.
     """
-    if path.name.lower() not in SYSTEM_LOOKALIKES:
+    if not path or path.name.lower() not in SYSTEM_LOOKALIKES:
         return None
         
     try:
@@ -145,11 +145,14 @@ def scan_file(path: Path) -> ScanResult:
     Ejecuta el conjunto de heurísticas sobre un archivo específico.
     Solo procesa archivos existentes y validados por seguridad.
     """
+    if not path:
+        return []
+
     try:
         # Validación defensiva: verificar existencia antes de procesar y re-validar seguridad
         if not path.is_file() or is_protected_path(path):
             return []
-    except (OSError):
+    except (OSError, PermissionError):
         return []
         
     findings: ScanResult = []
