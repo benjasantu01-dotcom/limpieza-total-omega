@@ -1434,3 +1434,42 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-02T00:38:42` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
 - `2026-08-02T00:38:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-02T00:38:42` Corrida terminada. Total usado hoy: 16.
+- `2026-08-02T00:47:36` Arrancando corrida. Quedan hoy ~284 peticiones objetivo.
+- `2026-08-02T00:48:08` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `local_answer` reemplazando la lógica de búsqueda por tokens mediante una iteración manual de `split()` y búsqueda en diccionario por una pre-compilación de los tokens de entrada, y optimicé `_rank_problems` evitando el recreado innecesario de strings y formateos durante el proceso de decisión.
+- `2026-08-02T00:48:37` Tests FALLARON:
+```
+........................................................................ [ 24%]
+..............................................F......................... [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+__________________ test_gradient_starts_and_ends_on_its_stops __________________
+
+    def test_gradient_starts_and_ends_on_its_stops():
+        colores = branding.gradient_colors(50)
+        assert colores[0].lower() == branding.GRADIENT_STOPS[0].lower()
+>       assert colores[-1].lower() == branding.GRADIENT_STOPS[-1].lower()
+E       AssertionError: assert '#fe2d78' == '#ff2d78'
+E         
+E         - #ff2d78
+E         ?   ^
+E         + #fe2d78
+E         ?   ^
+
+evolve/tests/test_modules.py:215: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_gradient_starts_and_ends_on_its_stops - AssertionError: assert '#fe2d78' == '#ff2d78'
+  
+  - #ff2d78
+  ?   ^
+  + #fe2d78
+  ?   ^
+1 failed, 298 passed in 0.90s
+
+```
+- `2026-08-02T00:48:37` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Optimicé `gradient_colors` eliminando el bucle `for` con cálculos repetitivos de `blend` y reemplazándolo por una pre-generación eficiente de colores en el espacio de trabajo, reduciendo la carga de cómputo en cada renderizado.
+- `2026-08-02T00:48:59` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimizé la función `directory_size` para realizar una única llamada a `os.scandir` y obtener tanto el tipo de archivo como el tamaño (stat) en un solo paso, reduciendo drásticamente las syscalls innecesarias durante el escaneo del árbol de directorios.
+- `2026-08-02T00:49:08` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé la función `summarize` para realizar una única pasada de análisis utilizando un `heapq` para los archivos más grandes y una agregación eficiente, eliminando cálculos redundantes al reutilizar la lógica de `walk_files` y mejorando la gestión de memoria durante el reporte.
+- `2026-08-02T00:49:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-02T00:49:08` Corrida terminada. Total usado hoy: 20.

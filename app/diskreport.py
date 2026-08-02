@@ -277,7 +277,7 @@ def total_size(directory: str | os.PathLike, skip_protected: bool = True) -> tup
 
 
 def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list[str]:
-    """Genera un informe textual resumen del uso de disco en una sola pasada."""
+    """Genera un informe textual resumen del uso de disco en una sola pasada eficiente."""
     @dataclass
     class ExtStat:
         size: int = 0
@@ -319,8 +319,7 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
         "Por tipo de archivo:",
     ]
     
-    sorted_exts = heapq.nlargest(8, ext_map.items(), key=lambda item: item[1].size)
-    for ext, stat in sorted_exts:
+    for ext, stat in heapq.nlargest(8, ext_map.items(), key=lambda item: item[1].size):
         lines.append(f"  {ext:<18} {format_size(stat.size):>10}  ({stat.count} archivos)")
         
     lines.append("")

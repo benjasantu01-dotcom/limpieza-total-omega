@@ -375,9 +375,10 @@ def local_answer(question: str, context: SystemContext) -> Answer:
         )
 
     clean_text = _sanitize_query(question)
-    for token in _TOKEN_REGEX.findall(clean_text):
-        if token in _KEYWORD_MAP:
-            return _HANDLERS[_KEYWORD_MAP[token]](context, clean_text)
+    tokens = _TOKEN_REGEX.findall(clean_text)
+    for token in tokens:
+        if handler_key := _KEYWORD_MAP.get(token):
+            return _HANDLERS[handler_key](context, clean_text)
 
     problemas = _rank_problems(context)
     if problemas:
@@ -391,27 +392,27 @@ def local_answer(question: str, context: SystemContext) -> Answer:
 
 def _rank_problems(context: SystemContext) -> list[str]:
     """Calcula y ordena los problemas más críticos del sistema."""
-    problemas = []
+    probs = []
     
     if context.disk_free_percent < 10:
-        problemas.append(f"queda solo {context.disk_free_percent:.0f}% de disco libre, atendelo primero (pestaña Disco y Limpieza)")
+        probs.append(f"queda solo {context.disk_free_percent:.0f}% de disco libre, atendelo primero (pestaña Disco y Limpieza)")
     
     if context.suspicious_warnings > 0:
-        problemas.append(f"{context.suspicious_warnings} archivo(s) sospechosos con advertencia (pestaña Seguridad)")
+        probs.append(f"{context.suspicious_warnings} archivo(s) sospechosos con advertencia (pestaña Seguridad)")
         
     if context.memory_available_percent < 15:
-        problemas.append(f"queda {context.memory_available_percent:.0f}% de RAM disponible (pestaña Memoria)")
+        probs.append(f"queda {context.memory_available_percent:.0f}% de RAM disponible (pestaña Memoria)")
         
     if context.junk_mb > 1000:
-        problemas.append(f"{context.junk_mb:.0f} MB de archivos basura (pestaña Limpieza)")
+        probs.append(f"{context.junk_mb:.0f} MB de archivos basura (pestaña Limpieza)")
         
     if context.duplicate_mb > 500:
-        problemas.append(f"{context.duplicate_mb:.0f} MB en duplicados (pestaña Duplicados)")
+        probs.append(f"{context.duplicate_mb:.0f} MB en duplicados (pestaña Duplicados)")
         
     if context.startup_count > 15:
-        problemas.append(f"{context.startup_count} programas de inicio (pestaña Inicio)")
+        probs.append(f"{context.startup_count} programas de inicio (pestaña Inicio)")
         
-    return problemas
+    return probs
 
 
 def available(base: str | Path | None = None) -> bool:
