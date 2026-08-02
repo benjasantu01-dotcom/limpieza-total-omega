@@ -6,32 +6,32 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **259** (51.4% de aceptación)
+- Mejoras aceptadas: **262** (52.0% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 27
+- Rechazadas por guardia de seguridad: 28
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 187
+- Sin respuesta de la IA (error o límite): 183
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-01 | 166 | 11 | 16 | 10 | 141 |
-| 2026-08-02 | 93 | 5 | 11 | 5 | 46 |
+| 2026-08-01 | 166 | 11 | 16 | 10 | 137 |
+| 2026-08-02 | 96 | 5 | 12 | 5 | 46 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **67**
 - rendimiento: **50**
 - robustez ante casos límite: **50**
+- seguridad defensiva: **48**
 - manejo de errores y validación de entradas: **47**
-- seguridad defensiva: **45**
 
 ## Mejoras aceptadas por archivo
 
+- `quarantine.py`: **22**
+- `scanner.py`: **22**
 - `main.py`: **21**
-- `quarantine.py`: **21**
-- `scanner.py`: **21**
 - `organizer.py`: **21**
 - `settings.py`: **21**
 - `healthscore.py`: **20**
@@ -39,13 +39,16 @@ Este archivo se regenera solo en cada corrida a partir de
 - `browser.py`: **19**
 - `assistant.py`: **18**
 - `duplicates.py`: **17**
+- `safety.py`: **17**
 - `branding.py`: **16**
-- `safety.py`: **16**
 - `memory.py`: **15**
 - `startup.py`: **14**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-02T06:56:47` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `scan_file` y `scan_directory` validando que las rutas no solo sean "no protegidas", sino que existan y sean accesibles antes de intentar procesarlas, evitando que errores de resolución de rutas (`OSError`) interrumpan el bucle de escaneo sin necesidad.
+- `2026-08-02T06:56:40` **safety.py** (seguridad defensiva): Se reforzó `ensure_safe_to_modify` para detectar y bloquear ataques de desbordamiento de ruta o acceso a dispositivos mediante la verificación explícita del prefijo `\\?\` (path largo de Windows), que puede usarse para evadir filtros de seguridad estándar saltándose la normalización de la API de Win32.
+- `2026-08-02T06:55:58` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `purge_all` añadiendo una validación explícita mediante `is_within_directory` para cada archivo antes de su borrado, garantizando que, incluso ante un estado de manifiesto corrupto o inconsistente, no se pueda eliminar ningún archivo fuera de la carpeta de cuarentena.
 - `2026-08-02T06:47:05` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `memory.py` mediante una validación estricta del PID en `trim_working_set`, asegurando que no se intente interactuar con procesos críticos del sistema (PID < 4) o el proceso actual de la aplicación antes de solicitar el handle, evitando intentos de apertura sobre procesos que podrían causar errores de acceso o inestabilidad.
 - `2026-08-02T06:46:40` **main.py** (seguridad defensiva): Se mejora la seguridad defensiva en `on_trim_process` reemplazando la creación de un `Path` artificial basado en un número arbitrario de PID por una validación que utiliza `safety.is_safe_to_modify(Path(f"C:/Users"))` solo como técnica de bloqueo, asegurando que el proceso crítico de sistema no pueda ser gestionado por el usuario, evitando errores de construcción de rutas sospechosas.
 - `2026-08-02T06:45:38` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la validación estricta de tipos y valores en la inicialización y el procesamiento de `SystemMetrics`, asegurando que datos externos maliciosos o corruptos no puedan degradar la integridad del cálculo o causar desbordamientos en la interfaz.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-02T06:25:06` **scanner.py** (robustez ante casos límite): Mejoré la robustez de `scan_file` y las funciones heurísticas ante condiciones de carrera (archivos eliminados justo después de ser listados) mediante el manejo explícito de `FileNotFoundError` y validaciones más estrictas de existencia previa a la lectura de metadatos, evitando que el escaneo colapse ante cambios dinámicos del sistema.
 - `2026-08-02T06:15:54` **safety.py** (robustez ante casos límite): Se ha mejorado `ensure_safe_to_modify` para detectar de forma explícita rutas con caracteres no imprimibles o de control (ataques tipo "homoglyph" o "RTL override"), reforzando la integridad al procesar rutas externas y evitando manipulaciones maliciosas mediante nombres de archivo engañosos.
 - `2026-08-02T06:15:26` **quarantine.py** (robustez ante casos límite): Se mejora la robustez de `quarantine_file` ante condiciones de carrera y archivos inconsistentes agregando una validación de existencia post-movimiento y asegurando que `shutil.move` no sea interrumpido prematuramente.
-- `2026-08-02T06:14:59` **organizer.py** (robustez ante casos límite): Se introdujo una comprobación robusta mediante `OSError` al intentar calcular metadatos en `scan_for_junk`, previniendo que el escaneo colapse ante archivos inaccesibles o bloqueados, y se consolidó la validación de rutas mediante `is_safe_to_modify` antes de cualquier procesamiento pesado.
-- `2026-08-02T06:06:10` **main.py** (robustez ante casos límite): Mejoré la robustez de la inicialización de la app envolviendo la construcción de pestañas en un bloque `try-except` más granular y añadiendo validación de existencia para `branding.draw_logo`, previniendo que un error en un método de renderizado de UI detenga el inicio de la aplicación completa.
-- `2026-08-02T06:05:12` **healthscore.py** (robustez ante casos límite): Reforcé la robustez del módulo `healthscore.py` ante datos de entrada extremos o malformados mediante la implementación de validaciones defensivas adicionales en `_generate_recommendations` y `summarize`, asegurando que el sistema no falle si los diccionarios de métricas están incompletos o el total de pesos es inconsistente.

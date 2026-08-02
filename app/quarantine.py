@@ -417,7 +417,8 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     for entry in quarantine_root.iterdir():
         if entry.is_file() and entry.name in item_map:
             item = item_map[entry.name]
-            if item.verify_integrity(entry):
+            # Validación de seguridad: el archivo DEBE estar dentro de la cuarentena
+            if is_within_directory(entry, quarantine_root) and item.verify_integrity(entry):
                 try:
                     entry.unlink()
                     count += 1

@@ -183,8 +183,8 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
         raise UnsafePathError("Ruta nula recibida.")
         
     str_val = str(path)
-    # Bloquea caracteres de control, formato bidireccional y caracteres no imprimibles
-    if re.search(r'[\u0000-\u001F\u007F-\u009F\u200E\u200F\u202A-\u202E]', str_val):
+    # Bloquea caracteres de control, formato bidireccional y rutas de dispositivo extendidas (Win32)
+    if re.search(r'[\u0000-\u001F\u007F-\u009F\u200E\u200F\u202A-\u202E]', str_val) or str_val.startswith(r"\\?"):
         raise UnsafePathError("Ruta contiene caracteres de control o formato potencialmente maliciosos.")
     
     try:

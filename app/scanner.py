@@ -146,9 +146,10 @@ def scan_file(path: Path) -> ScanResult:
     Solo procesa archivos existentes y validados por seguridad.
     """
     try:
+        # Validación defensiva: verificar existencia antes de procesar y re-validar seguridad
         if not path.is_file() or is_protected_path(path):
             return []
-    except (FileNotFoundError, OSError):
+    except (OSError):
         return []
         
     findings: ScanResult = []
@@ -170,10 +171,10 @@ def scan_directory(directory: Union[str, Path]) -> ScanResult:
         return []
         
     try:
-        root_path = Path(directory).resolve()
+        root_path = Path(directory).resolve(strict=True)
         if not root_path.is_dir() or is_protected_path(root_path):
             return []
-    except (PermissionError, OSError):
+    except (OSError, RuntimeError):
         return []
 
     scanner = Scanner()

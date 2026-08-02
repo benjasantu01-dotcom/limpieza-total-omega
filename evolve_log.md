@@ -835,3 +835,10 @@ FAILED evolve/tests/test_modules.py::test_gradient_bar_ignores_invalid_sizes - V
 - `2026-08-02T06:47:11` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
 - `2026-08-02T06:47:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-02T06:47:11` Corrida terminada. Total usado hoy: 160.
+- `2026-08-02T06:55:28` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-08-02T06:55:58` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `purge_all` añadiendo una validación explícita mediante `is_within_directory` para cada archivo antes de su borrado, garantizando que, incluso ante un estado de manifiesto corrupto o inconsistente, no se pueda eliminar ningún archivo fuera de la carpeta de cuarentena.
+- `2026-08-02T06:56:16` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-02T06:56:40` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se reforzó `ensure_safe_to_modify` para detectar y bloquear ataques de desbordamiento de ruta o acceso a dispositivos mediante la verificación explícita del prefijo `\\?\` (path largo de Windows), que puede usarse para evadir filtros de seguridad estándar saltándose la normalización de la API de Win32.
+- `2026-08-02T06:56:47` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `scan_file` y `scan_directory` validando que las rutas no solo sean "no protegidas", sino que existan y sean accesibles antes de intentar procesarlas, evitando que errores de resolución de rutas (`OSError`) interrumpan el bucle de escaneo sin necesidad.
+- `2026-08-02T06:56:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-02T06:56:47` Corrida terminada. Total usado hoy: 164.
