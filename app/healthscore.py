@@ -72,7 +72,7 @@ class SystemMetrics:
     quarantined_count: int = 0
 
     def validate(self) -> None:
-        """Normaliza y asegura que los valores de entrada estén en rangos válidos."""
+        """Asegura que todos los campos internos estén dentro de límites físicos lógicos."""
         self.junk_mb = max(0.0, _to_float(self.junk_mb))
         self.suspicious_count = max(0, _to_int(self.suspicious_count))
         self.suspicious_warnings = max(0, _to_int(self.suspicious_warnings))
@@ -83,7 +83,7 @@ class SystemMetrics:
         self.quarantined_count = max(0, _to_int(self.quarantined_count))
 
     def is_finite(self) -> bool:
-        """Valida que los datos de entrada sean números procesables (no NaN o Inf)."""
+        """Verifica que todos los valores numéricos sean finitos para evitar errores de cálculo."""
         return (math.isfinite(self.junk_mb) and 
                 math.isfinite(self.memory_available_percent) and 
                 math.isfinite(self.disk_free_percent) and 
@@ -102,7 +102,7 @@ class HealthResult:
 
     @property
     def is_healthy(self) -> bool:
-        """Retorna True si el estado del sistema es aceptable (>= 80/100)."""
+        """Retorna True si el puntaje global alcanza el nivel de salud satisfactorio."""
         return self.score >= 80
 
 

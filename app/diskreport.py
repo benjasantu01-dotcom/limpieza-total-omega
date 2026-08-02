@@ -147,7 +147,15 @@ def all_drives_usage(mounts: Iterable[str] | None = None) -> list[DriveUsage]:
 
 
 def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Generator[tuple[Path, int], None, None]:
-    """Recorre recursivamente un directorio devolviendo archivos y su tamaño."""
+    """
+    Recorre recursivamente un directorio devolviendo archivos y su tamaño.
+    
+    Aplica filtros de seguridad:
+    1. Salta rutas marcadas como protegidas por `safety.is_protected_path`.
+    2. Detecta y evita seguir symlinks y puntos de reparse (junctions) en Windows
+       para prevenir bucles infinitos o escalada fuera del directorio base.
+    3. Verifica que la resolución de cada archivo permanezca dentro del árbol base.
+    """
     if not directory:
         return
     try:
@@ -164,7 +172,7 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
             with os.scandir(root_path) as iterator:
                 for entry in iterator:
                     try:
-                        # Seguridad: no seguir symlinks ni puntos de reparse
+                        # Seguridad: no seguir enlaces simbólicos ni puntos de reparse
                         if entry.is_symlink():
                             continue
                         if os.name == 'nt' and entry.stat(follow_symlinks=False).st_reparse_tag != 0:
@@ -172,7 +180,7 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
                         
                         full_entry_path = Path(entry.path).resolve()
                         
-                        # Seguridad: asegurar que la ruta resuelta sigue estando bajo el base_path
+                        # Seguridad: validar que la ruta resuelta está bajo base_path
                         if base_path not in full_entry_path.parents and full_entry_path != base_path:
                             continue
 
