@@ -154,6 +154,14 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._tasks_running = 0
         self._executor = concurrent.futures.ThreadPoolExecutor(max_workers=5)
 
+    def _is_valid_dir(self, path: str) -> bool:
+        """Verifica si una ruta es un directorio existente y accesible."""
+        try:
+            p = Path(path)
+            return p.exists() and p.is_dir()
+        except Exception:
+            return False
+
     def _get_cached(self, key: str, provider: Optional[Callable] = None, force: bool = False) -> Any:
         """
         Recupera datos del caché si existen y no expiraron; si se provee un proveedor, se invoca.
@@ -957,7 +965,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.scan_target = None
             self.target_label.configure(text="")
         else:
-            if os.path.exists(choice):
+            if self._is_valid_dir(choice):
                 self.scan_target = choice
                 self.target_label.configure(text=f"Unidad completa: {choice}")
             else:
@@ -1043,7 +1051,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _run_heuristic_scan(self, folder: str) -> None:
         """Wrapper para ejecutar escaneos heurísticos con validaciones de existencia."""
         def task():
-            if not os.path.exists(folder):
+            if not self._is_valid_dir(folder):
                 self.log(f"Error: La carpeta {folder} no es accesible.", "Seguridad")
                 return
             
@@ -1296,7 +1304,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
         def task():
             # Volver a verificar existencia antes de procesar
-            if not os.path.exists(folder):
+            if not self._is_valid_dir(folder):
                 self.log("Error: La carpeta seleccionada ya no existe.", "Disco")
                 return
             self.set_status(f"Analizando {folder}...")
@@ -1318,7 +1326,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
         def task():
             # Verificación redundante de seguridad/existencia
-            if not os.path.exists(folder):
+            if not self._is_valid_dir(folder):
                 self.log("Error: La carpeta seleccionada ya no existe.", "Duplicados")
                 return
             self.set_status(f"Buscando duplicados en {folder}...")

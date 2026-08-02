@@ -198,13 +198,14 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         if not isinstance(jf, JunkFile) or not jf.path:
             continue
         try:
-            if not jf.path.exists() or jf.path.is_symlink():
+            # Validar existencia y tipo antes de procesar
+            if not jf.path.exists() or jf.path.is_symlink() or not jf.path.is_file():
                 continue
             
             full_source_path = jf.path.resolve()
             
-            # Filtro lógico antes de la acción destructiva
-            if not is_safe_to_modify(full_source_path) or dest in full_source_path.parents or full_source_path.parent == dest:
+            # Impedir el auto-movimiento y validar seguridad
+            if not is_safe_to_modify(full_source_path) or full_source_path == dest or dest in full_source_path.parents or full_source_path.parent == dest:
                 continue
             
             # Chequeo de uso: si está bloqueado por otro proceso, se saltea

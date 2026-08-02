@@ -140,9 +140,10 @@ def score_junk(junk_mb: float) -> float:
 
 def score_security(suspicious_count: int, warnings: int = 0) -> float:
     """Calcula ratio [0, 1] penalizando hallazgos según un factor de riesgo."""
-    s = max(0.0, _to_float(suspicious_count))
-    w = max(0.0, _to_float(warnings))
-    penalty: float = s * 0.05 + w * 0.25
+    s = max(0, _to_int(suspicious_count))
+    w = max(0, _to_int(warnings))
+    # Penalización gradual: 5% por hallazgo, 25% por advertencia crítica
+    penalty: float = (s * 0.05) + (w * 0.25)
     return _clamp(1.0 - penalty, 0.0, 1.0)
 
 
@@ -171,7 +172,8 @@ def score_startup(startup_count: int) -> float:
     """Calcula ratio [0, 1] inversamente proporcional al número de programas en inicio."""
     count = _to_int(startup_count)
     if STARTUP_LIMIT_COUNT <= 0: return 0.0
-    return _clamp(1.0 - (float(count) / STARTUP_LIMIT_COUNT))
+    ratio = 1.0 - (float(count) / STARTUP_LIMIT_COUNT)
+    return _clamp(ratio, 0.0, 1.0)
 
 
 def grade_for_score(score: int) -> str:
