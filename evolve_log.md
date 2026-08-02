@@ -560,3 +560,9 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-08-02T14:47:05` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `save_logo_svg` ante errores de entrada y estados inesperados del sistema de archivos mediante una validación más estricta del path, manejo explícito de excepciones y protección contra rutas malformadas o permisos denegados.
 - `2026-08-02T14:47:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-02T14:47:05` Corrida terminada. Total usado hoy: 348.
+- `2026-08-02T14:55:47` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-02T14:56:11` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Mejoré la robustez de `directory_size` ante el acceso a rutas que pueden ser inaccesibles o bloqueadas mediante la adición de un chequeo explícito de `is_protected_path` sobre los subdirectorios durante el recorrido recursivo, evitando excepciones innecesarias y mejorando la consistencia con las reglas de seguridad.
+- `2026-08-02T14:56:35` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha mejorado la resiliencia de `walk_files` y `drive_usage` ante la presencia de rutas con caracteres especiales o estados de sistema inusuales, añadiendo un chequeo explícito de `is_absolute()` y capturando errores específicos de `Path.resolve()` que podrían abortar el análisis en directorios con permisos restringidos o rutas de red incompletas.
+- `2026-08-02T14:56:35` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-08-02T14:56:35` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-02T14:56:35` Corrida terminada. Total usado hoy: 350.

@@ -5,47 +5,49 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **504**
-- Mejoras aceptadas: **252** (50.0% de aceptación)
+- Iteraciones totales: **502**
+- Mejoras aceptadas: **252** (50.2% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 29
+- Rechazadas por guardia de seguridad: 28
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 196
+- Sin respuesta de la IA (error o límite): 195
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-01 | 67 | 4 | 7 | 4 | 74 |
-| 2026-08-02 | 185 | 11 | 22 | 8 | 122 |
+| 2026-08-01 | 65 | 4 | 6 | 4 | 73 |
+| 2026-08-02 | 187 | 11 | 22 | 8 | 122 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **66**
 - manejo de errores y validación de entradas: **49**
-- seguridad defensiva: **47**
 - rendimiento: **47**
-- robustez ante casos límite: **43**
+- seguridad defensiva: **45**
+- robustez ante casos límite: **45**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **23**
 - `scanner.py`: **22**
 - `branding.py`: **20**
+- `browser.py`: **20**
 - `main.py`: **20**
-- `organizer.py`: **19**
-- `browser.py`: **19**
-- `quarantine.py`: **18**
+- `organizer.py`: **18**
 - `assistant.py`: **18**
 - `healthscore.py`: **17**
+- `quarantine.py`: **17**
 - `safety.py`: **17**
-- `diskreport.py`: **16**
+- `diskreport.py`: **17**
 - `duplicates.py`: **15**
 - `memory.py`: **14**
 - `startup.py`: **14**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-02T14:56:35` **diskreport.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `walk_files` y `drive_usage` ante la presencia de rutas con caracteres especiales o estados de sistema inusuales, añadiendo un chequeo explícito de `is_absolute()` y capturando errores específicos de `Path.resolve()` que podrían abortar el análisis en directorios con permisos restringidos o rutas de red incompletas.
+- `2026-08-02T14:56:11` **browser.py** (robustez ante casos límite): Mejoré la robustez de `directory_size` ante el acceso a rutas que pueden ser inaccesibles o bloqueadas mediante la adición de un chequeo explícito de `is_protected_path` sobre los subdirectorios durante el recorrido recursivo, evitando excepciones innecesarias y mejorando la consistencia con las reglas de seguridad.
 - `2026-08-02T14:47:05` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de entrada y estados inesperados del sistema de archivos mediante una validación más estricta del path, manejo explícito de excepciones y protección contra rutas malformadas o permisos denegados.
 - `2026-08-02T14:46:51` **assistant.py** (robustez ante casos límite): Se mejora la robustez de `build_context` ante valores `NaN` o `inf` provenientes de fuentes externas mediante una validación explícita con `math.isfinite`, previniendo errores de serialización o lógica en el motor del asistente.
 - `2026-08-02T14:45:56` **settings.py** (rendimiento): Optimizé la carga de configuración eliminando la regeneración innecesaria de objetos `Path` y reduciendo las llamadas a `stat()` mediante una gestión más estricta de la caché local.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-02T14:05:49` **startup.py** (legibilidad y documentación): Mejora la legibilidad del método `StartupEntry.executable` extrayendo la lógica de saneamiento de la cadena de comando a un método privado dedicado (`_sanitize_command`), facilitando la comprensión del flujo de procesamiento de rutas y parámetros.
 - `2026-08-02T14:05:26` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings estructurados y type hints precisos, clarificando la lógica de validación y el manejo de rutas para facilitar el mantenimiento y la auditoría de seguridad.
 - `2026-08-02T14:05:02` **scanner.py** (legibilidad y documentación): Se introdujo un `TypeAlias` más robusto (`SuspicionCheck`) y se documentaron detalladamente los parámetros y retornos de `process_entry` y `scan_directory` para clarificar el flujo de control del escaneo recursivo.
-- `2026-08-02T13:55:43` **safety.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings enriquecidos en funciones críticas para clarificar el contrato de los tipos de entrada (`PathLike`) y los estados de error, mejorando la legibilidad técnica para el mantenimiento del proyecto.
-- `2026-08-02T13:55:15` **quarantine.py** (legibilidad y documentación): Se mejoró la documentación técnica interna mediante la adición de Type Hints en la caché del manifiesto y docstrings detallados en las funciones de utilidad (`_get_sha256`, `_is_file_locked`, `_manifest_path`), facilitando el mantenimiento y la comprensión del flujo de datos.

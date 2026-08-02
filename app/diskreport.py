@@ -124,12 +124,15 @@ def drive_usage(mount: str | os.PathLike) -> DriveUsage | None:
         return None
     try:
         path_str = os.fspath(mount)
-        p = Path(path_str).resolve()
+        p = Path(path_str).expanduser()
+        if not p.is_absolute():
+            return None
+        p = p.resolve()
         if not p.exists() or is_protected_path(p):
             return None
         usage = shutil.disk_usage(path_str)
         return DriveUsage(mount=str(mount), total=usage.total, used=usage.used, free=usage.free)
-    except (OSError, ValueError, TypeError, PermissionError):
+    except (OSError, ValueError, TypeError, PermissionError, RuntimeError):
         return None
 
 
@@ -161,7 +164,10 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
 
     def get_valid_base() -> Path | None:
         try:
-            base = Path(directory).expanduser().resolve(strict=True)
+            path_obj = Path(directory).expanduser()
+            if not path_obj.is_absolute():
+                return None
+            base = path_obj.resolve(strict=True)
             if base.is_dir() and not (skip_protected and is_protected_path(base)):
                 return base
         except (OSError, RuntimeError, PermissionError, ValueError, TypeError):
@@ -173,7 +179,6 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
         return
 
     visited_directories = {base_path}
-    base_drive = base_path.drive
 
     def scan_level(current_path: Path) -> Generator[Tuple[Path, int], None, None]:
         try:
@@ -233,7 +238,10 @@ def largest_folders(directory: str | os.PathLike, limit: int = 10, skip_protecte
     if not directory:
         return []
     try:
-        base = Path(directory).expanduser().resolve(strict=True)
+        path_obj = Path(directory).expanduser()
+        if not path_obj.is_absolute():
+            return []
+        base = path_obj.resolve(strict=True)
         if not base.is_dir():
             return []
         
@@ -282,7 +290,10 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
         return ["Error: Ruta no especificada."]
         
     try:
-        path_obj = Path(directory).expanduser().resolve(strict=True)
+        path_obj = Path(directory).expanduser()
+        if not path_obj.is_absolute():
+            return [f"Error: La ruta '{directory}' no es absoluta."]
+        path_obj = path_obj.resolve(strict=True)
         if not path_obj.is_dir():
             return [f"Error: La ruta '{directory}' no es un directorio válido."]
     except (OSError, RuntimeError, PermissionError, ValueError, TypeError):

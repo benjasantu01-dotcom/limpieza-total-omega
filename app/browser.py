@@ -132,7 +132,6 @@ def directory_size(path: str | os.PathLike | None) -> int:
         return 0
     
     total_bytes: int = 0
-    # Usamos pop(0) o append/pop para gestión de stack; el orden no altera el resultado del peso
     stack: List[str] = [str(root)]
     
     while stack:
@@ -144,7 +143,8 @@ def directory_size(path: str | os.PathLike | None) -> int:
                         if entry.name.lower() in NEVER_TOUCH or entry.is_symlink():
                             continue
                         if entry.is_dir(follow_symlinks=False):
-                            stack.append(entry.path)
+                            if not is_protected_path(Path(entry.path)):
+                                stack.append(entry.path)
                         else:
                             total_bytes += entry.stat().st_size
                     except (OSError, PermissionError):
