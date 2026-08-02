@@ -120,42 +120,30 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
 def directory_size(path: str | os.PathLike | None) -> int:
     """
     Calcula el tamaño total en bytes de un directorio mediante búsqueda iterativa.
-
-    Args:
-        path: Ruta del directorio a analizar.
-
-    Returns:
-        int: Tamaño total en bytes, o 0 si la ruta es inaccesible o protegida.
     """
     if path is None:
         return 0
     
+    root = Path(path)
     try:
-        root = Path(path).resolve(strict=False)
         if not root.is_dir() or is_protected_path(root):
             return 0
     except (OSError, RuntimeError, PermissionError, ValueError, TypeError):
         return 0
     
     total_bytes: int = 0
-    stack: List[Tuple[str, int]] = [(str(root), 0)]
-    MAX_DEPTH = 32
+    stack: List[str] = [str(root)]
     
     while stack:
-        current_dir_str, depth = stack.pop()
-        
-        if depth > MAX_DEPTH:
-            continue
-            
+        current_dir_str = stack.pop()
         try:
             with os.scandir(current_dir_str) as it:
                 for entry in it:
                     try:
                         if entry.name.lower() in NEVER_TOUCH:
                             continue
-                        
                         if entry.is_dir(follow_symlinks=False):
-                            stack.append((entry.path, depth + 1))
+                            stack.append(entry.path)
                         else:
                             total_bytes += entry.stat().st_size
                     except (OSError, PermissionError):

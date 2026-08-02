@@ -1125,3 +1125,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-08-02T09:40:18` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
 - `2026-08-02T09:40:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-02T09:40:18` Corrida terminada. Total usado hoy: 228.
+- `2026-08-02T09:48:49` Arrancando corrida. Quedan hoy ~72 peticiones objetivo.
+- `2026-08-02T09:49:12` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimizé la función `directory_size` para reducir llamadas costosas a `Path.resolve()` y `is_protected_path` dentro del bucle, procesando las entradas mediante `os.DirEntry` y validando solo una vez por directorio en lugar de por archivo.
+- `2026-08-02T09:49:35` ➖ Sin cambios en diskreport.py (enfoque: rendimiento). Motivo: Optimizé la función `summarize` para realizar una sola pasada sobre el generador de archivos, eliminando el uso de `heapq.nlargest` innecesario al final y aplicando la lógica de recolección de estadísticas (agrupación y top 8) de manera incremental y eficiente para reducir el consumo de memoria.
+- `2026-08-02T09:49:57` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el proceso de recolección de candidatos eliminando la llamada redundante a `group_by_size` y `resolve()` en el flujo principal, integrando la lógica de filtrado de inodos directamente en el escaneo recursivo para reducir accesos a disco y el uso de memoria.
+- `2026-08-02T09:50:07` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
+- `2026-08-02T09:50:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-02T09:50:07` Corrida terminada. Total usado hoy: 232.
