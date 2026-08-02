@@ -1516,3 +1516,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-02T01:19:45` ➖ Sin cambios en assistant.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `build_context` ante entradas malformadas o tipos inesperados mediante una validación más estricta de las métricas recibidas, asegurando que el estado del sistema no sea inconsistente si los módulos fuente fallan al proveer datos.
 - `2026-08-02T01:19:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-02T01:19:46` Corrida terminada. Total usado hoy: 32.
+- `2026-08-02T01:28:35` Arrancando corrida. Quedan hoy ~268 peticiones objetivo.
+- `2026-08-02T01:29:07` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `save_logo_svg` ante errores de sistema de archivos o rutas inválidas mediante un bloque `try-except` más preciso y la validación de `path.parent` antes de intentar operaciones de escritura, evitando posibles excepciones `FileNotFoundError` en sistemas con restricciones de acceso.
+- `2026-08-02T01:29:28` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-08-02T01:29:52` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se reforzó `walk_files` y `summarize` añadiendo un manejo explícito para `PermissionError` y `OSError` al obtener el tamaño del archivo, evitando que una denegación de acceso en un archivo puntual aborte el recorrido completo o genere un informe incompleto.
+- `2026-08-02T01:30:01` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante casos límite en la recolección de archivos (`_collect_candidates`) y en las funciones de hash, añadiendo validaciones explícitas de existencia (`exists()`) y manejo de errores ante cambios de estado del sistema de archivos durante la iteración (TOCTOU).
+- `2026-08-02T01:30:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-02T01:30:01` Corrida terminada. Total usado hoy: 36.

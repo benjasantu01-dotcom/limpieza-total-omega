@@ -303,7 +303,7 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
             
         path.write_text(logo_svg(), encoding="utf-8")
         return path
-    except (OSError, PermissionError, TypeError, ValueError, AttributeError):
+    except (OSError, PermissionError, TypeError, ValueError, AttributeError, RuntimeError):
         return None
 
 

@@ -8,45 +8,48 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **245** (48.6% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 25
+- Rechazadas por guardia de seguridad: 24
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 202
+- Sin respuesta de la IA (error o límite): 203
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-31 | 55 | 1 | 6 | 7 | 53 |
+| 2026-07-31 | 52 | 1 | 5 | 7 | 53 |
 | 2026-08-01 | 166 | 11 | 16 | 10 | 147 |
-| 2026-08-02 | 24 | 2 | 3 | 1 | 2 |
+| 2026-08-02 | 27 | 2 | 3 | 1 | 3 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **66**
 - rendimiento: **52**
 - manejo de errores y validación de entradas: **47**
-- seguridad defensiva: **44**
-- robustez ante casos límite: **36**
+- seguridad defensiva: **41**
+- robustez ante casos límite: **39**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **23**
-- `organizer.py`: **20**
+- `quarantine.py`: **22**
 - `scanner.py`: **20**
 - `settings.py`: **20**
-- `diskreport.py`: **18**
+- `organizer.py`: **19**
+- `diskreport.py`: **19**
 - `main.py`: **18**
 - `startup.py`: **17**
 - `assistant.py`: **17**
 - `browser.py`: **17**
 - `healthscore.py`: **17**
 - `safety.py`: **16**
-- `memory.py`: **15**
-- `branding.py`: **14**
-- `duplicates.py`: **13**
+- `branding.py`: **15**
+- `memory.py`: **14**
+- `duplicates.py`: **14**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-02T01:30:01` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la recolección de archivos (`_collect_candidates`) y en las funciones de hash, añadiendo validaciones explícitas de existencia (`exists()`) y manejo de errores ante cambios de estado del sistema de archivos durante la iteración (TOCTOU).
+- `2026-08-02T01:29:52` **diskreport.py** (robustez ante casos límite): Se reforzó `walk_files` y `summarize` añadiendo un manejo explícito para `PermissionError` y `OSError` al obtener el tamaño del archivo, evitando que una denegación de acceso en un archivo puntual aborte el recorrido completo o genere un informe incompleto.
+- `2026-08-02T01:29:07` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de sistema de archivos o rutas inválidas mediante un bloque `try-except` más preciso y la validación de `path.parent` antes de intentar operaciones de escritura, evitando posibles excepciones `FileNotFoundError` en sistemas con restricciones de acceso.
 - `2026-08-02T01:19:30` **startup.py** (rendimiento): Optimicé el rendimiento de `list_startup_entries` y `StartupEntry` evitando el encadenamiento innecesario de listas grandes en memoria y reduciendo la cantidad de llamadas a `expanduser` y operaciones de I/O mediante un chequeo previo del estado de la caché.
 - `2026-08-02T01:19:07` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` y `save()` reemplazando lecturas recurrentes y validaciones pesadas por un mecanismo de caché más robusto, evitando el acceso a disco innecesario y el re-parseo de JSON cuando el archivo no ha cambiado.
 - `2026-08-02T01:09:25` **safety.py** (rendimiento): Se ha optimizado `is_protected_path` evitando la resolución completa de rutas (`resolve()`) dentro del bucle de verificación de tokens, lo cual reduce drásticamente las llamadas al sistema de archivos durante los escaneos masivos.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-02T00:48:08` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` reemplazando la lógica de búsqueda por tokens mediante una iteración manual de `split()` y búsqueda en diccionario por una pre-compilación de los tokens de entrada, y optimicé `_rank_problems` evitando el recreado innecesario de strings y formateos durante el proceso de decisión.
 - `2026-08-02T00:38:36` **settings.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del esquema de validación convirtiendo las funciones de coerción en métodos dedicados dentro de un diccionario `VALIDATOR_MAP`, lo cual elimina la necesidad de funciones auxiliares como `_apply_validator` y clarifica la relación entre tipos y lógica de validación.
 - `2026-08-02T00:38:12` **scanner.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo documentando las firmas de las funciones de chequeo mediante `Callable` y añadiendo docstrings descriptivos que explican el propósito de cada heurística, facilitando la comprensión del flujo lógico.
-- `2026-08-02T00:37:50` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante docstrings normalizados según estándares PEP 257, se eliminaron los comentarios redundantes que no aportaban valor y se corrigió la ambigüedad en `is_within_directory` mediante una advertencia explícita en su docstring sobre el comportamiento del `resolve()`, garantizando así una mejor mantenibilidad.
-- `2026-08-02T00:28:24` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos detallados y type hints específicos en las funciones del manifiesto, además de normalizar la estructura de las excepciones para cumplir estrictamente con el enfoque de legibilidad.
-- `2026-08-02T00:27:56` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del módulo `organizer.py` mediante la implementación de Type Hints explícitos en las funciones internas de recorrido de archivos y la adición de docstrings técnicos detallados que justifican el uso de `ensure_safe_to_modify` versus `is_safe_to_modify`.

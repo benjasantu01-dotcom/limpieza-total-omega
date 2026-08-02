@@ -149,12 +149,6 @@ def all_drives_usage(mounts: Iterable[str] | None = None) -> list[DriveUsage]:
 def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Generator[tuple[Path, int], None, None]:
     """
     Recorre recursivamente un directorio devolviendo archivos y su tamaño.
-    
-    Aplica filtros de seguridad:
-    1. Salta rutas marcadas como protegidas por `safety.is_protected_path`.
-    2. Detecta y evita seguir symlinks y puntos de reparse (junctions) en Windows
-       para prevenir bucles infinitos o escalada fuera del directorio base.
-    3. Verifica que la resolución de cada archivo permanezca dentro del árbol base.
     """
     if not directory:
         return
@@ -172,7 +166,6 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
             with os.scandir(root_path) as iterator:
                 for entry in iterator:
                     try:
-                        # Seguridad: no seguir enlaces simbólicos ni puntos de reparse
                         if entry.is_symlink():
                             continue
                         if os.name == 'nt' and entry.stat(follow_symlinks=False).st_reparse_tag != 0:
@@ -180,7 +173,6 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
                         
                         full_entry_path = Path(entry.path).resolve()
                         
-                        # Seguridad: validar que la ruta resuelta está bajo base_path
                         if base_path not in full_entry_path.parents and full_entry_path != base_path:
                             continue
 
@@ -194,6 +186,7 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
                         else:
                             if skip_protected and is_protected_path(full_entry_path):
                                 continue
+                            # Captura errores de acceso a archivos específicos
                             size = entry.stat().st_size
                             yield full_entry_path, size
                     except (OSError, PermissionError, FileNotFoundError, TypeError):
@@ -277,7 +270,7 @@ def total_size(directory: str | os.PathLike, skip_protected: bool = True) -> tup
 
 
 def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list[str]:
-    """Genera un informe textual resumen del uso de disco en una sola pasada eficiente."""
+    """Genera un informe textual resumen del uso de disco."""
     @dataclass
     class ExtStat:
         size: int = 0
