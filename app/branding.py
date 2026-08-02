@@ -290,12 +290,13 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         # Validaciones de seguridad requeridas
         if not is_safe_to_modify(target): 
             return None
-        ensure_safe_to_modify(target)
         
         parent = target.parent
-        if not parent.exists(): 
+        if not parent.exists():
+            ensure_safe_to_modify(parent)
             parent.mkdir(parents=True, exist_ok=True)
             
+        ensure_safe_to_modify(target)
         target.write_text(logo_svg(), encoding="utf-8")
         return target
     except (OSError, PermissionError, TypeError, ValueError, AttributeError, RuntimeError):

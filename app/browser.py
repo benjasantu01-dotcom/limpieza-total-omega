@@ -101,17 +101,18 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
     if not isinstance(target_path, Path) or not isinstance(base_path, Path):
         return False
     try:
-        abs_base = base_path.resolve(strict=False)
-        abs_target = target_path.resolve(strict=False)
+        # Resolvemos rutas para normalizar y detectar reparse points
+        real_base = os.path.realpath(str(base_path))
+        real_target = os.path.realpath(str(target_path))
         
-        # Evitar seguimiento de reparse points fuera de la base
-        if abs_target.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(abs_target)):
+        # Evitar seguimiento de enlaces simbólicos o junctions fuera de la base
+        if os.path.islink(real_target) or (hasattr(os.path, 'isjunction') and os.path.isjunction(real_target)):
             return False
 
-        if is_protected_path(abs_target):
+        if is_protected_path(target_path):
             return False
             
-        return abs_base in abs_target.parents or abs_base == abs_target
+        return real_target.startswith(real_base)
     except (OSError, RuntimeError, ValueError, PermissionError):
         return False
 
@@ -149,6 +150,7 @@ def directory_size(path: str | os.PathLike | None) -> int:
                         if entry.name.lower() in NEVER_TOUCH:
                             continue
                         
+                        # Impedir recursión en enlaces/junctions dentro del escaneo
                         if entry.is_dir(follow_symlinks=False):
                             stack.append((entry.path, depth + 1))
                         else:

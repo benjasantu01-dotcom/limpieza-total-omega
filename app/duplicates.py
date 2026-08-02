@@ -84,7 +84,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
     try:
         if path is None: return None
         p = Path(path).resolve()
-        if not p.exists() or not p.is_file() or p.is_symlink() or is_protected_path(p):
+        if not p.is_file() or p.is_symlink() or is_protected_path(p):
             return None
         if p.stat().st_size == 0: return None
             
@@ -107,7 +107,7 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
     try:
         if path is None: return None
         p = Path(path).resolve()
-        if not p.exists() or not p.is_file() or p.is_symlink() or is_protected_path(p):
+        if not p.is_file() or p.is_symlink() or is_protected_path(p):
             return None
         if p.stat().st_size == 0: return None
 
@@ -132,7 +132,7 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
         if p is None: continue
         try:
             p_res = Path(p).resolve()
-            if not p_res.exists() or not p_res.is_file() or p_res.is_symlink() or is_protected_path(p_res):
+            if not p_res.is_file() or p_res.is_symlink() or is_protected_path(p_res):
                 continue
             
             st = p_res.stat()
@@ -171,7 +171,7 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
                         if entry.is_dir():
                             _scan(Path(entry.path))
                         elif entry.is_file():
-                            p = Path(entry.path)
+                            p = Path(entry.path).resolve()
                             if skip_protected and is_protected_path(p):
                                 continue
                             
@@ -190,7 +190,7 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
     for directory in directories:
         if directory is None: continue
         path_obj = Path(directory).resolve()
-        if path_obj.exists() and path_obj.is_dir():
+        if path_obj.is_dir():
             if not is_protected_path(path_obj):
                 _scan(path_obj)
     return candidates

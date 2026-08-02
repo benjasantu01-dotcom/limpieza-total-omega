@@ -156,12 +156,6 @@ def all_drives_usage(mounts: Iterable[str] | None = None) -> list[DriveUsage]:
 def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Generator[tuple[Path, int], None, None]:
     """
     Recorre recursivamente un directorio devolviendo archivos y su tamaño.
-    
-    Implementa seguridad defensiva:
-    1. Resuelve rutas absolutas para evitar confusión con el sistema de archivos.
-    2. Saltea enlaces simbólicos y puntos de reparse (junctions).
-    3. Verifica `is_protected_path` para ignorar carpetas del sistema.
-    4. Usa un conjunto `visited` para evitar ciclos infinitos en sistemas de archivos complejos.
     """
     if not directory:
         return
@@ -173,6 +167,7 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
         return
 
     visited = {base_path}
+    base_drive = base_path.drive
 
     def recursive_scan(root_path: Path) -> Generator[tuple[Path, int], None, None]:
         try:
@@ -186,7 +181,8 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
                         
                         full_entry_path = Path(entry.path).resolve()
                         
-                        if base_path not in full_entry_path.parents and full_entry_path != base_path:
+                        # Seguridad: evitar salto de unidad o escape de directorio base
+                        if full_entry_path.drive != base_drive or base_path not in full_entry_path.parents:
                             continue
 
                         if entry.is_dir():
