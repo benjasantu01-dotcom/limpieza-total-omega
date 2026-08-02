@@ -591,3 +591,4 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-08-02T18:51:18` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-08-02T19:01:30` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-08-02T19:11:44` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-08-02T19:21:55` Presupuesto diario agotado (350 usados). Corte hasta mañana.
