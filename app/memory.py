@@ -150,17 +150,18 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
     if not text:
         return []
 
+    lines = [line.strip() for line in text.splitlines() if line.strip()]
+    header = lines[0] if lines else ""
+    if header.startswith("Name,") or header.startswith("NameId"):
+        lines = lines[1:]
+
     processes: List[ProcessMemory] = []
-    for line in text.splitlines():
-        line = line.strip()
-        if not line or line.startswith("Name,") or line.startswith("NameId"):
-            continue
+    for line in lines:
         parts: List[str] = [p.strip().strip('"') for p in line.split(",")]
         if len(parts) >= 3:
             try:
                 pid, ws = int(parts[1]), int(parts[2])
-                if pid >= 0 and ws >= 0:
-                    processes.append(ProcessMemory(name=parts[0] or "Unknown", pid=pid, working_set=ws))
+                processes.append(ProcessMemory(name=parts[0] or "Unknown", pid=pid, working_set=ws))
             except (ValueError, IndexError):
                 continue
 
@@ -171,8 +172,6 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
 def _read_windows_snapshot() -> MemorySnapshot:
     """
     Llama a la Win32 API 'GlobalMemoryStatusEx' mediante ctypes.
-    Esta función es necesaria para obtener el estado real de la memoria física
-    cuando el sistema es Windows, evitando dependencias externas.
     """
     import ctypes
 
@@ -225,9 +224,7 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     if os.name != "nt":
         return []
     command: str = (
-        f"Get-Process | Select-Object -Property Name,Id,WorkingSet | "
-        "Sort-Object -Property WorkingSet -Descending | "
-        f"Select-Object -First {max(1, int(limit))} | "
+        "Get-Process | Select-Object -Property Name,Id,WorkingSet | "
         "ConvertTo-Csv -NoTypeInformation"
     )
     try:
@@ -284,7 +281,6 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
     Solicita al SO liberar el working set de un proceso específico si es seguro.
-    Utiliza el permiso REQUIRED_ACCESS definido para abrir el proceso.
     """
     if os.name != "nt":
         return False, "Solo disponible en Windows."
@@ -304,22 +300,13 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if target_pid == os.getpid():
         return False, "Operación denegada: proceso de la app."
 
-    if not hasattr(kernel32, "OpenProcess") or not hasattr(psapi, "EmptyWorkingSet"):
-        return False, "APIs de sistema no disponibles."
-
     handle = kernel32.OpenProcess(REQUIRED_ACCESS, False, target_pid)
     if not handle:
-        err: int = kernel32.GetLastError()
-        return False, f"No se pudo acceder al proceso {target_pid} (WinError {err})."
+        return False, f"No se pudo acceder al proceso {target_pid}."
     
     try:
         if not psapi.EmptyWorkingSet(handle):
-            err_code: int = kernel32.GetLastError()
-            return False, f"Error al limpiar memoria (WinError {err_code})."
+            return False, "Error al limpiar memoria."
         return True, f"Working set liberado. {TRIM_WARNING}"
-    except (ctypes.ArgumentError, Exception):
-        return False, "Error inesperado al intentar limpiar la memoria."
     finally:
-        if handle and not kernel32.CloseHandle(handle):
-            # Fallo al cerrar handle, loguear si fuera posible
-            pass
+        kernel32.CloseHandle(handle)

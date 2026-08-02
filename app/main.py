@@ -844,7 +844,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _compile_metrics(self) -> Tuple[healthscore.SystemMetrics, memory_mod.Snapshot, diskreport.DriveInfo]:
         """Agrega los datos de todos los módulos para el análisis consolidado de salud."""
-        # Caché de recuperación inmediata
         hallazgos = self._get_cached("suspicions") or []
         snapshot = memory_mod.read_snapshot()
         home = os.path.expanduser("~")
