@@ -1,17 +1,9 @@
 """
-safety.py — la capa que impide que la app rompa el sistema.
+safety.py — capa de seguridad para la manipulación de archivos.
 
-POR QUÉ EXISTE (leer antes de tocar nada acá)
----------------------------------------------
-El código de `app/` lo reescribe una IA de forma autónoma, sin supervisión,
-durante días. Confiar en que "la IA va a tener cuidado" no es una defensa.
-Este módulo convierte el cuidado en una regla que se puede verificar:
-
-  - Ninguna operación destructiva puede tocar rutas de sistema.
-  - Ninguna operación destructiva puede tocar la raíz de una unidad.
-  - Mover o restaurar archivos no puede escapar de la carpeta destino
-    (protección contra rutas maliciosas tipo "../../Windows").
-  - Todo borrado es explícito del usuario; nunca automático.
+Este módulo provee funciones de validación para prevenir modificaciones
+accidentales o maliciosas en directorios del sistema o archivos críticos.
+Todo cambio destructivo debe pasar por `ensure_safe_to_modify`.
 """
 
 from __future__ import annotations
@@ -22,7 +14,6 @@ from pathlib import Path
 from typing import Union, Iterable, TypeAlias, Final
 from functools import lru_cache
 
-# Alias para facilitar la lectura de firmas de funciones que aceptan rutas
 PathLike: TypeAlias = Union[str, os.PathLike]
 
 __all__ = [
@@ -42,31 +33,25 @@ __all__ = [
 
 
 class UnsafePathError(Exception):
-    """Excepción lanzada cuando una operación intenta manipular rutas protegidas."""
+    """Lanzada cuando una operación intenta manipular rutas protegidas."""
 
 
-# Carpetas que nunca se recorren ni se modifican, en ningún sistema.
 PROTECTED_DIR_NAMES: Final[frozenset[str]] = frozenset({
-    # Windows
     "windows", "winnt", "system32", "syswow64", "system", "boot",
     "program files", "program files (x86)", "programdata",
     "$recycle.bin", "system volume information", "recovery",
     "perflogs", "msocache", "$windows.~bt", "$windows.~ws",
     "windowsapps", "assembly", "winsxs", "drivers", "drivestore",
-    # Datos de credenciales / claves del usuario
     ".ssh", ".gnupg", "microsoft\\crypto", "protect",
-    # Unix / macOS
     "bin", "sbin", "usr", "etc", "var", "lib", "lib64", "proc", "sys",
     "dev", "root", "library", "applications",
 })
 
-# Extensiones que no se tocan aunque estén en una carpeta permitida:
 SENSITIVE_EXTENSIONS: Final[frozenset[str]] = frozenset({
     ".sys", ".dll", ".exe", ".msi", ".drv", ".ocx", ".cpl", ".efi",
     ".reg", ".pol", ".key", ".pem", ".pfx", ".p12", ".crt", ".cer",
 })
 
-# Cache de rutas críticas para evitar llamadas repetidas al entorno
 _SYSTEM_ROOTS: Final[tuple[Path, ...]] = tuple(
     Path(os.environ[v]).resolve() 
     for v in ("SystemRoot", "windir", "ProgramFiles", "ProgramFiles(x86)", "ProgramData")
@@ -75,7 +60,6 @@ _SYSTEM_ROOTS: Final[tuple[Path, ...]] = tuple(
 _SYSTEM_ROOTS_NAMES: Final[frozenset[str]] = frozenset({p.name.lower() for p in _SYSTEM_ROOTS})
 _ALL_PROTECTED_TOKENS: Final[frozenset[str]] = PROTECTED_DIR_NAMES | _SYSTEM_ROOTS_NAMES
 
-# Nombres de dispositivos reservados en Windows que pueden causar cuelgues o ataques
 _RESERVED_NAMES: Final[frozenset[str]] = frozenset({
     "con", "prn", "aux", "nul", "com1", "com2", "com3", "com4", "com5", "com6", 
     "com7", "com8", "com9", "lpt1", "lpt2", "lpt3", "lpt4", "lpt5", "lpt6", "lpt7", "lpt8", "lpt9"
@@ -83,7 +67,7 @@ _RESERVED_NAMES: Final[frozenset[str]] = frozenset({
 
 
 def _is_reparse_point(path: Path) -> bool:
-    """Verifica si la ruta es un punto de reparse (Junction/Symlink)."""
+    """Retorna True si la ruta es un punto de reparse, enlace simbólico o unión."""
     try:
         stats = path.lstat()
         is_reparse = bool(getattr(stats, "st_file_attributes", 0) & 0x400)
@@ -93,7 +77,7 @@ def _is_reparse_point(path: Path) -> bool:
 
 
 def _is_file_in_use(path: Path) -> bool:
-    """Intenta abrir el archivo en modo exclusivo para detectar bloqueos."""
+    """Intenta abrir el archivo en modo exclusivo para detectar bloqueos de SO."""
     if not path.is_file():
         return False
     try:
@@ -105,7 +89,7 @@ def _is_file_in_use(path: Path) -> bool:
 
 
 def _is_readonly(path: Path) -> bool:
-    """Verifica si el bit S_IWRITE está ausente en el modo del archivo."""
+    """Verifica si el atributo de solo lectura (S_IWRITE) está ausente."""
     try:
         return not bool(path.stat().st_mode & stat.S_IWRITE)
     except (OSError, PermissionError):
@@ -115,11 +99,12 @@ def _is_readonly(path: Path) -> bool:
 @lru_cache(maxsize=2048)
 def normalize(path: PathLike) -> Path:
     """
-    Convierte una ruta a un objeto Path absoluto, resuelto y expandido.
-    Raises: ValueError si la ruta está vacía.
+    Expande, resuelve y convierte una ruta a objeto Path absoluto.
+    :raises TypeError: Si el tipo de entrada no es compatible.
+    :raises ValueError: Si la ruta normalizada resulta vacía.
     """
     if not isinstance(path, (str, os.PathLike)):
-        raise TypeError(f"Entrada inválida: se esperaba str o PathLike, recibió {type(path)}")
+        raise TypeError(f"Entrada inválida: tipo {type(path)} no soportado.")
     
     str_path = str(path).strip()
     if not str_path:
@@ -132,7 +117,7 @@ def normalize(path: PathLike) -> Path:
 
 
 def is_drive_root(path: PathLike) -> bool:
-    """Determina si la ruta normalizada es un punto de montaje o raíz de unidad."""
+    """Verifica si la ruta apunta a la raíz de un sistema de archivos."""
     try:
         if path is None: return True
         p = normalize(path)
@@ -143,7 +128,9 @@ def is_drive_root(path: PathLike) -> bool:
 
 @lru_cache(maxsize=1024)
 def is_protected_path(path: PathLike) -> bool:
-    """Verifica si la ruta coincide con directorios críticos o raíces."""
+    """
+    Valida si la ruta pertenece a directorios de sistema o dispositivos reservados.
+    """
     if not path:
         return True
     
@@ -151,24 +138,22 @@ def is_protected_path(path: PathLike) -> bool:
         p = normalize(path)
         if not p.is_absolute():
             return True
-
-        # Optimización: uso de intersección de sets para verificar tokens protegidos
         if not _ALL_PROTECTED_TOKENS.isdisjoint(part.lower() for part in p.parts):
             return True
-            
         if p == Path(p.anchor):
             return True
-        
         if p.exists() and _is_reparse_point(p):
             return True
-
         return False
     except (PermissionError, OSError, ValueError, TypeError):
         return True 
 
 
 def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = False) -> bool:
-    """Valida si 'child' reside estrictamente dentro de 'parent'."""
+    """
+    Verifica si 'child' es descendiente de 'parent'.
+    Nota: Utiliza rutas resueltas; los puntos de reparse pueden afectar el resultado.
+    """
     if child is None or parent is None:
         return False
     try:
@@ -180,7 +165,7 @@ def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = F
 
 @lru_cache(maxsize=512)
 def is_sensitive_file(path: PathLike) -> bool:
-    """Evalúa si la extensión del archivo es crítica para la estabilidad del sistema."""
+    """Evalúa si la extensión del archivo es crítica para la integridad del SO."""
     if path is None:
         return True
     try:
@@ -191,14 +176,13 @@ def is_sensitive_file(path: PathLike) -> bool:
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> Path:
     """
-    Validación rigurosa antes de modificar el sistema.
-    Raises: UnsafePathError si la ruta no cumple los estándares de seguridad.
+    Valida rigurosamente si una ruta es segura para ser modificada o borrada.
+    :raises UnsafePathError: Si la ruta incumple los estándares de seguridad.
     """
     if path is None:
         raise UnsafePathError("Ruta nula recibida.")
         
     str_val = str(path)
-    # Detección de caracteres de control, RTL y nombres de dispositivo Windows
     if re.search(r'[\u202a-\u202e\x00-\x1f]', str_val):
         raise UnsafePathError("Ruta con caracteres de control maliciosos.")
     
@@ -207,18 +191,14 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
     except (TypeError, ValueError, OSError) as e:
         raise UnsafePathError(f"Error al normalizar: {e}")
 
-    # Validar nombres de dispositivos reservados
     if p.stem.lower() in _RESERVED_NAMES:
         raise UnsafePathError("Operación bloqueada: nombre de dispositivo reservado.")
-
     if len(str(p)) > 260:
         raise UnsafePathError("Operación bloqueada: ruta demasiado larga.")
-
     if not p.parts:
         raise UnsafePathError("Ruta sin componentes.")
-
     if str(p).startswith(("\\\\", "//")):
-        raise UnsafePathError("Operación bloqueada: rutas de red.")
+        raise UnsafePathError("Operación bloqueada: rutas de red no permitidas.")
     
     if p.exists():
         if not os.access(p, os.W_OK):
@@ -237,7 +217,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
 
 
 def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> bool:
-    """Versión booleana de ensure_safe_to_modify para uso en iteradores."""
+    """Versión booleana de `ensure_safe_to_modify` para iteraciones seguras."""
     try:
         ensure_safe_to_modify(path, allow_sensitive=allow_sensitive)
         return True
@@ -246,14 +226,14 @@ def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> bool:
 
 
 def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = False) -> list[Path]:
-    """Filtra una colección y devuelve solo aquellas rutas seguras para manipular."""
+    """Retorna una lista de rutas que han superado los filtros de seguridad."""
     if not isinstance(paths, Iterable):
         return []
     return [normalize(p) for p in paths if is_safe_to_modify(p, allow_sensitive=allow_sensitive)]
 
 
 def describe_protection(path: PathLike) -> str:
-    """Genera una explicación amigable sobre por qué se denegó el acceso a una ruta."""
+    """Genera una explicación amigable sobre la denegación de acceso a una ruta."""
     if not path:
         return "La ruta está vacía."
     try:
@@ -265,15 +245,15 @@ def describe_protection(path: PathLike) -> str:
     if is_drive_root(p):
         return f"'{p}' es la raíz de una unidad."
     if is_protected_path(p):
-        protegida = next((part for part in p.parts if part.lower() in _ALL_PROTECTED_TOKENS), "ruta de sistema")
-        return f"'{p}' protegida por '{protegida}'."
+        protegida = next((part for part in p.parts if part.lower() in _ALL_PROTECTED_TOKENS), "sistema")
+        return f"'{p}' protegida por directorio '{protegida}'."
     if p.exists():
         if not os.access(p, os.W_OK):
             return f"'{p}' sin permisos de escritura."
         if _is_readonly(p):
-            return f"'{p}' tiene atributos de solo lectura."
+            return f"'{p}' atributos de solo lectura."
         if _is_file_in_use(p):
-            return f"'{p}' está en uso."
+            return f"'{p}' está en uso por otro proceso."
     if is_sensitive_file(p):
-        return f"'{p.name}' extensión sensible ({p.suffix})."
+        return f"'{p.name}' extensión sensible."
     return f"'{p}' es candidata a modificación."

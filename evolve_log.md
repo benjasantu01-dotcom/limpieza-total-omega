@@ -1427,3 +1427,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-02T00:28:28` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 110): unterminated string literal (detected at line 110)
 - `2026-08-02T00:28:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-02T00:28:28` Corrida terminada. Total usado hoy: 12.
+- `2026-08-02T00:37:24` Arrancando corrida. Quedan hoy ~288 peticiones objetivo.
+- `2026-08-02T00:37:50` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación técnica del módulo mediante docstrings normalizados según estándares PEP 257, se eliminaron los comentarios redundantes que no aportaban valor y se corrigió la ambigüedad en `is_within_directory` mediante una advertencia explícita en su docstring sobre el comportamiento del `resolve()`, garantizando así una mejor mantenibilidad.
+- `2026-08-02T00:38:12` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). He mejorado la legibilidad y mantenibilidad del archivo documentando las firmas de las funciones de chequeo mediante `Callable` y añadiendo docstrings descriptivos que explican el propósito de cada heurística, facilitando la comprensión del flujo lógico.
+- `2026-08-02T00:38:36` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenibilidad del esquema de validación convirtiendo las funciones de coerción en métodos dedicados dentro de un diccionario `VALIDATOR_MAP`, lo cual elimina la necesidad de funciones auxiliares como `_apply_validator` y clarifica la relación entre tipos y lógica de validación.
+- `2026-08-02T00:38:42` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-08-02T00:38:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-02T00:38:42` Corrida terminada. Total usado hoy: 16.

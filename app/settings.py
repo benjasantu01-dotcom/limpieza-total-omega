@@ -95,62 +95,41 @@ _NUMERIC_LIMITS: Final[dict[str, tuple[int, int]]] = {
     "top_procesos": (1, 500),
 }
 
-def _coerce_bool(raw_value: Any) -> bool | None:
-    if isinstance(raw_value, bool):
-        return raw_value
-    if isinstance(raw_value, str):
-        return raw_value.strip().lower() in ("1", "true", "si", "sí", "yes")
+def _validate_bool(key: str, val: Any) -> bool | None:
+    if isinstance(val, bool): return val
+    if isinstance(val, str) and val.strip().lower() in ("1", "true", "si", "sí", "yes"): return True
     return None
 
-def _coerce_int(raw_value: Any, setting_key: str) -> int | None:
-    if isinstance(raw_value, bool):
-        return None
+def _validate_int(key: str, val: Any) -> int | None:
+    if isinstance(val, bool): return None
     try:
-        parsed_val = int(raw_value)
-        min_limit, max_limit = _NUMERIC_LIMITS.get(setting_key, (0, 10**9))
-        return max(min_limit, min(max_limit, parsed_val))
-    except (TypeError, ValueError):
-        return None
+        parsed = int(val)
+        low, high = _NUMERIC_LIMITS.get(key, (0, 10**9))
+        return max(low, min(high, parsed))
+    except (TypeError, ValueError): return None
 
-def _validate_str(clave: str, valor: Any) -> str | None:
-    if not isinstance(valor, str):
-        return None
-    texto = valor.strip()
-    if not texto:
-        return "" if clave == "ultima_carpeta" else None
-        
-    if clave == "tema" and texto.lower() not in VALID_THEMES:
-        return None
-    if clave == "acento" and texto.lower() not in VALID_ACCENTS:
-        return None
-    if clave == "ultima_carpeta":
+def _validate_str(key: str, val: Any) -> str | None:
+    if not isinstance(val, str): return None
+    text = val.strip()
+    if not text: return "" if key == "ultima_carpeta" else None
+    if key == "tema" and text.lower() not in VALID_THEMES: return None
+    if key == "acento" and text.lower() not in VALID_ACCENTS: return None
+    if key == "ultima_carpeta":
         try:
-            ruta_candidata = Path(texto).expanduser().resolve()
-            if not is_safe_to_modify(str(ruta_candidata)):
-                return None
-            return str(ruta_candidata)
-        except (OSError, RuntimeError, ValueError):
-            return None
-    return texto.lower() if clave in ("tema", "acento") else texto
+            path = Path(text).expanduser().resolve()
+            return str(path) if is_safe_to_modify(str(path)) else None
+        except (OSError, RuntimeError, ValueError): return None
+    return text.lower() if key in ("tema", "acento") else text
 
-_VALIDATION_SCHEMA: Final = {
-    bool: _coerce_bool,
-    int: _coerce_int,
+_VALIDATOR_MAP: Final = {
+    bool: _validate_bool,
+    int: _validate_int,
     str: _validate_str
 }
 
-def _apply_validator(validador: Any, clave: str, valor: Any, tipo: type) -> Any:
-    if tipo is int:
-        return validador(valor, clave)
-    if tipo is str:
-        return validador(clave, valor)
-    return validador(valor)
-
 def settings_path(path_or_base: PathLike | None = None) -> Path:
     key = path_or_base or SETTINGS_DIR
-    if key in _path_cache:
-        return _path_cache[key]
-        
+    if key in _path_cache: return _path_cache[key]
     try:
         base = Path(key).expanduser()
         while not is_safe_to_modify(str(base)) and base != base.parent:
@@ -158,46 +137,31 @@ def settings_path(path_or_base: PathLike | None = None) -> Path:
         res = base.resolve() / SETTINGS_FILE
     except (OSError, RuntimeError, ValueError):
         res = SETTINGS_DIR.resolve() / SETTINGS_FILE
-        
     _path_cache[key] = res
     return res
 
 def validate(values: Any) -> dict[str, Any]:
-    if not isinstance(values, dict):
-        return DEFAULTS.copy()
-    
+    if not isinstance(values, dict): return DEFAULTS.copy()
     limpio = {}
     for clave, defecto in DEFAULTS.items():
-        val_raw = values.get(clave)
-        if val_raw is None:
+        val = values.get(clave)
+        if val is None:
             limpio[clave] = defecto
             continue
-            
-        tipo_defecto = type(defecto)
-        validador = _VALIDATION_SCHEMA.get(tipo_defecto)
-        
-        if validador:
-            coerced = _apply_validator(validador, clave, val_raw, tipo_defecto)
-            limpio[clave] = coerced if coerced is not None else defecto
-        else:
-            limpio[clave] = val_raw
+        validator = _VALIDATOR_MAP.get(type(defecto))
+        coerced = validator(clave, val) if validator else val
+        limpio[clave] = coerced if coerced is not None else defecto
     return limpio
 
 def load(path_or_base: PathLike | None = None) -> dict[str, Any]:
     global _cached_settings, _last_path, _last_mtime
-    
     ruta = settings_path(path_or_base)
-    if not ruta.exists():
-        return DEFAULTS.copy()
-    
+    if not ruta.exists(): return DEFAULTS.copy()
     try:
         stat = ruta.stat()
         if _cached_settings is not None and ruta == _last_path and stat.st_mtime == _last_mtime:
             return _cached_settings.copy()
-            
-        if stat.st_size > MAX_SETTINGS_SIZE:
-            return DEFAULTS.copy()
-
+        if stat.st_size > MAX_SETTINGS_SIZE: return DEFAULTS.copy()
         data = json.loads(ruta.read_text(encoding="utf-8"))
         _cached_settings = validate(data)
         _last_path, _last_mtime = ruta, stat.st_mtime
@@ -207,24 +171,14 @@ def load(path_or_base: PathLike | None = None) -> dict[str, Any]:
 
 def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     global _cached_settings, _last_path, _last_mtime
-    
     ruta = settings_path(path_or_base)
-    if not is_safe_to_modify(str(ruta.parent)):
-        return None
-    
-    if ruta.exists() and ruta.is_symlink():
-        return None
-    
-    if ruta.parent.exists() and not os.access(ruta.parent, os.W_OK):
-        return None
-
+    if not is_safe_to_modify(str(ruta.parent)) or (ruta.exists() and ruta.is_symlink()): return None
+    if ruta.parent.exists() and not os.access(ruta.parent, os.W_OK): return None
     limpio = validate(values)
     try:
         json_data = json.dumps(limpio, indent=2, ensure_ascii=False)
         ruta.parent.mkdir(parents=True, exist_ok=True)
-    except (TypeError, ValueError, OSError):
-        return None
-    
+    except (TypeError, ValueError, OSError): return None
     temp_path: Path | None = None
     try:
         with tempfile.NamedTemporaryFile("w", dir=ruta.parent, delete=False, encoding="utf-8") as tf:
@@ -232,19 +186,14 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
             tf.write(json_data)
             tf.flush()
             os.fsync(tf.fileno())
-        
         os.replace(temp_path, ruta)
-        _cached_settings = limpio
-        _last_path, _last_mtime = ruta, ruta.stat().st_mtime
+        _cached_settings, _last_path, _last_mtime = limpio, ruta, ruta.stat().st_mtime
         return ruta
-    except (OSError, PermissionError, RuntimeError):
-        return None
+    except (OSError, PermissionError, RuntimeError): return None
     finally:
         if temp_path and temp_path.exists():
-            try:
-                temp_path.unlink()
-            except OSError:
-                pass
+            try: temp_path.unlink()
+            except OSError: pass
 
 def update(changes: dict[str, Any], path_or_base: PathLike | None = None) -> dict[str, Any]:
     actual = load(path_or_base)
@@ -271,7 +220,6 @@ def describe(path_or_base: PathLike | None = None) -> list[str]:
     actual = load(path_or_base)
     clave = assistant_api_key(path_or_base)
     origen = f"variable de entorno {API_KEY_ENV_VAR}" if os.environ.get(API_KEY_ENV_VAR) else ("archivo de configuración" if clave else "no configurada")
-
     return [
         "Configuración actual", "", f"  Archivo: {settings_path(path_or_base)}", "",
         "  Apariencia", f"    Tema: {actual['tema']}", f"    Acento: {actual['acento']}",

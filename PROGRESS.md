@@ -8,45 +8,48 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **244** (48.4% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 24
+- Rechazadas por guardia de seguridad: 25
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 206
+- Sin respuesta de la IA (error o límite): 205
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-31 | 67 | 2 | 7 | 7 | 59 |
+| 2026-07-31 | 64 | 2 | 7 | 7 | 58 |
 | 2026-08-01 | 166 | 11 | 16 | 10 | 147 |
-| 2026-08-02 | 11 | 0 | 1 | 0 | 0 |
+| 2026-08-02 | 14 | 0 | 2 | 0 | 0 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **63**
+- legibilidad y documentación: **66**
 - seguridad defensiva: **49**
 - manejo de errores y validación de entradas: **47**
-- robustez ante casos límite: **43**
 - rendimiento: **42**
+- robustez ante casos límite: **40**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **22**
-- `scanner.py`: **20**
-- `diskreport.py`: **19**
+- `scanner.py`: **21**
+- `settings.py`: **20**
 - `main.py`: **19**
-- `settings.py`: **19**
 - `organizer.py`: **19**
-- `healthscore.py`: **18**
-- `browser.py`: **17**
+- `diskreport.py`: **18**
 - `assistant.py`: **17**
+- `healthscore.py`: **17**
+- `safety.py`: **16**
 - `startup.py`: **16**
-- `safety.py`: **15**
+- `browser.py`: **16**
 - `branding.py`: **15**
 - `duplicates.py`: **14**
 - `memory.py`: **14**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-02T00:38:36` **settings.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del esquema de validación convirtiendo las funciones de coerción en métodos dedicados dentro de un diccionario `VALIDATOR_MAP`, lo cual elimina la necesidad de funciones auxiliares como `_apply_validator` y clarifica la relación entre tipos y lógica de validación.
+- `2026-08-02T00:38:12` **scanner.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo documentando las firmas de las funciones de chequeo mediante `Callable` y añadiendo docstrings descriptivos que explican el propósito de cada heurística, facilitando la comprensión del flujo lógico.
+- `2026-08-02T00:37:50` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante docstrings normalizados según estándares PEP 257, se eliminaron los comentarios redundantes que no aportaban valor y se corrigió la ambigüedad en `is_within_directory` mediante una advertencia explícita en su docstring sobre el comportamiento del `resolve()`, garantizando así una mejor mantenibilidad.
 - `2026-08-02T00:28:24` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos detallados y type hints específicos en las funciones del manifiesto, además de normalizar la estructura de las excepciones para cumplir estrictamente con el enfoque de legibilidad.
 - `2026-08-02T00:27:56` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del módulo `organizer.py` mediante la implementación de Type Hints explícitos en las funciones internas de recorrido de archivos y la adición de docstrings técnicos detallados que justifican el uso de `ensure_safe_to_modify` versus `is_safe_to_modify`.
 - `2026-08-02T00:27:32` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de docstrings técnicos detallados en las funciones de bajo nivel (`_read_windows_snapshot`, `parse_linux_meminfo`) para aclarar el origen y tratamiento de los datos, y se ha introducido un `TYPE_CHECKING` para aislar los imports de `ctypes` fuera del flujo lógico principal.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-02T00:07:33` **assistant.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints detallados en `_call_gemini` y `ask`, y actualicé los docstrings para clarificar la lógica de las funciones de comunicación, facilitando su mantenimiento futuro.
 - `2026-08-02T00:07:02` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo validaciones para evitar errores ante líneas CSV mal formadas o contenido inesperado, asegurando que el proceso de lectura no falle silenciosamente ante datos corruptos.
 - `2026-08-01T15:05:35` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` añadiendo una verificación explícita de `OSError` al realizar el `replace` atómico y envolví la creación del archivo temporal en un bloque `try-except` más granular, asegurando que cualquier fallo en la escritura de disco (como falta de espacio o permisos cambiantes) se maneje de forma segura sin dejar estados inconsistentes.
-- `2026-08-01T15:05:11` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `scanner.py` implementando validaciones defensivas en `check_system_lookalike` y `scan_file`, asegurando que el manejo de rutas nulas o errores de acceso sea consistente y explícito antes de procesar atributos.
-- `2026-08-01T14:55:53` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `is_within_directory` y `is_protected_path` al agregar validaciones explícitas contra entradas nulas o mal formadas, evitando que errores silenciosos en la normalización se interpreten incorrectamente como "seguro".
-- `2026-08-01T14:55:26` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de la carga del manifiesto mediante la validación estricta de la estructura del JSON y tipos de datos, asegurando que un archivo de manifiesto corrompido no detenga el funcionamiento de la app ni permita la inyección de objetos inválidos.

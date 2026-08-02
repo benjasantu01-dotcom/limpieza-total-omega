@@ -97,14 +97,20 @@ class Scanner:
 
 
 def check_double_extension(path: Path) -> Optional[Suspicion]:
-    """Evalúa si un archivo utiliza extensiones dobles (ej: .pdf.exe)."""
+    """
+    Analiza si el nombre del archivo contiene una extensión de documento seguida
+    por una de ejecución, práctica común para engañar usuarios.
+    """
     if path and path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
     return None
 
 
 def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_THRESHOLD_HOURS) -> Optional[Suspicion]:
-    """Detecta ejecutables creados recientemente como indicador de posible riesgo."""
+    """
+    Evalúa la fecha de modificación del archivo. Un ejecutable descargado 
+    recientemente aumenta el perfil de riesgo según heurísticas estándar.
+    """
     if not path or is_protected_path(path) or path.suffix.lower() not in SUSPICIOUS_EXECUTABLE_EXT:
         return None
         
@@ -118,7 +124,10 @@ def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_TH
 
 
 def check_system_lookalike(path: Path) -> Optional[Suspicion]:
-    """Detecta ejecutables con nombres de procesos críticos de Windows fuera de System32."""
+    """
+    Identifica si un archivo utiliza nombres de procesos críticos del sistema
+    (ej. svchost.exe) estando ubicado fuera del directorio System32 oficial.
+    """
     if not path or not path.name or path.name.lower() not in SYSTEM_LOOKALIKES:
         return None
         
