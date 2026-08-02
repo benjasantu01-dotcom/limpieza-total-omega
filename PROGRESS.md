@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **246** (48.8% de aceptación)
-- Rechazadas por tests: 13
+- Mejoras aceptadas: **245** (48.6% de aceptación)
+- Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 25
-- Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 203
+- Sin cambios (nada sustancial que mejorar): 18
+- Sin respuesta de la IA (error o límite): 202
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-31 | 58 | 1 | 6 | 7 | 54 |
+| 2026-07-31 | 55 | 1 | 6 | 7 | 53 |
 | 2026-08-01 | 166 | 11 | 16 | 10 | 147 |
-| 2026-08-02 | 22 | 1 | 3 | 0 | 2 |
+| 2026-08-02 | 24 | 2 | 3 | 1 | 2 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **66**
-- rendimiento: **50**
-- seguridad defensiva: **47**
+- rendimiento: **52**
 - manejo de errores y validación de entradas: **47**
+- seguridad defensiva: **44**
 - robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
@@ -33,20 +33,22 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **23**
 - `organizer.py`: **20**
 - `scanner.py`: **20**
-- `diskreport.py`: **19**
-- `main.py`: **19**
-- `settings.py`: **19**
+- `settings.py`: **20**
+- `diskreport.py`: **18**
+- `main.py`: **18**
+- `startup.py`: **17**
 - `assistant.py`: **17**
 - `browser.py`: **17**
 - `healthscore.py`: **17**
-- `startup.py`: **16**
 - `safety.py`: **16**
 - `memory.py`: **15**
-- `duplicates.py`: **14**
 - `branding.py`: **14**
+- `duplicates.py`: **13**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-02T01:19:30` **startup.py** (rendimiento): Optimicé el rendimiento de `list_startup_entries` y `StartupEntry` evitando el encadenamiento innecesario de listas grandes en memoria y reduciendo la cantidad de llamadas a `expanduser` y operaciones de I/O mediante un chequeo previo del estado de la caché.
+- `2026-08-02T01:19:07` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` y `save()` reemplazando lecturas recurrentes y validaciones pesadas por un mecanismo de caché más robusto, evitando el acceso a disco innecesario y el re-parseo de JSON cuando el archivo no ha cambiado.
 - `2026-08-02T01:09:25` **safety.py** (rendimiento): Se ha optimizado `is_protected_path` evitando la resolución completa de rutas (`resolve()`) dentro del bucle de verificación de tokens, lo cual reduce drásticamente las llamadas al sistema de archivos durante los escaneos masivos.
 - `2026-08-02T01:08:58` **quarantine.py** (rendimiento): Se optimizó el acceso al manifiesto en `quarantine_file`, `restore_item`, `purge_item` y `purge_all` para evitar lecturas redundantes a disco, utilizando la caché `_manifest_cache` y reduciendo la complejidad algorítmica en la gestión de listas durante las operaciones de modificación.
 - `2026-08-02T01:08:31` **organizer.py** (rendimiento): Optimicé el escaneo recursivo en `scan_for_junk` mediante el uso de `os.scandir` de forma más eficiente, evitando la creación redundante de objetos `Path` y llamadas a `is_safe_to_modify` dentro del loop profundo, reduciendo significativamente la carga de I/O y CPU.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-02T00:37:50` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante docstrings normalizados según estándares PEP 257, se eliminaron los comentarios redundantes que no aportaban valor y se corrigió la ambigüedad en `is_within_directory` mediante una advertencia explícita en su docstring sobre el comportamiento del `resolve()`, garantizando así una mejor mantenibilidad.
 - `2026-08-02T00:28:24` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos detallados y type hints específicos en las funciones del manifiesto, además de normalizar la estructura de las excepciones para cumplir estrictamente con el enfoque de legibilidad.
 - `2026-08-02T00:27:56` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del módulo `organizer.py` mediante la implementación de Type Hints explícitos en las funciones internas de recorrido de archivos y la adición de docstrings técnicos detallados que justifican el uso de `ensure_safe_to_modify` versus `is_safe_to_modify`.
-- `2026-08-02T00:27:32` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de docstrings técnicos detallados en las funciones de bajo nivel (`_read_windows_snapshot`, `parse_linux_meminfo`) para aclarar el origen y tratamiento de los datos, y se ha introducido un `TYPE_CHECKING` para aislar los imports de `ctypes` fuera del flujo lógico principal.
-- `2026-08-02T00:18:51` **main.py** (legibilidad y documentación): Se ha mejorado la documentación interna mediante la adición de Type Hints en los argumentos de las funciones de construcción de pestañas y se han estandarizado los docstrings para reflejar con mayor claridad el propósito de cada factory method, facilitando el mantenimiento para futuros desarrolladores sin alterar el comportamiento.

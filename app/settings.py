@@ -156,18 +156,25 @@ def validate(values: Any) -> dict[str, Any]:
 def load(path_or_base: PathLike | None = None) -> dict[str, Any]:
     global _cached_settings, _last_path, _last_mtime
     ruta = settings_path(path_or_base)
-    if not ruta.exists(): return DEFAULTS.copy()
+    
     try:
-        stat = ruta.stat()
-        if _cached_settings is not None and ruta == _last_path and stat.st_mtime == _last_mtime:
+        if ruta.exists():
+            stat = ruta.stat()
+            if _cached_settings is not None and ruta == _last_path and stat.st_mtime == _last_mtime:
+                return _cached_settings.copy()
+            if stat.st_size > MAX_SETTINGS_SIZE:
+                return DEFAULTS.copy()
+            data = json.loads(ruta.read_text(encoding="utf-8"))
+            _cached_settings = validate(data)
+            _last_path, _last_mtime = ruta, stat.st_mtime
             return _cached_settings.copy()
-        if stat.st_size > MAX_SETTINGS_SIZE: return DEFAULTS.copy()
-        data = json.loads(ruta.read_text(encoding="utf-8"))
-        _cached_settings = validate(data)
-        _last_path, _last_mtime = ruta, stat.st_mtime
-        return _cached_settings.copy()
     except (OSError, json.JSONDecodeError, UnicodeDecodeError):
-        return DEFAULTS.copy()
+        pass
+    
+    _cached_settings = DEFAULTS.copy()
+    _last_path = ruta
+    _last_mtime = 0.0
+    return _cached_settings.copy()
 
 def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     global _cached_settings, _last_path, _last_mtime

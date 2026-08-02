@@ -207,10 +207,14 @@ def list_startup_entries() -> List[StartupEntry]:
     seen_names: set[str] = set()
     unique_entries: List[StartupEntry] = []
     
-    for entry in entries_from_folders() + entries_from_registry():
-        key: str = entry.name.lower()
-        if key not in seen_names:
-            seen_names.add(key)
+    for entry in entries_from_folders():
+        if entry.name.lower() not in seen_names:
+            seen_names.add(entry.name.lower())
+            unique_entries.append(entry)
+            
+    for entry in entries_from_registry():
+        if entry.name.lower() not in seen_names:
+            seen_names.add(entry.name.lower())
             unique_entries.append(entry)
             
     return unique_entries

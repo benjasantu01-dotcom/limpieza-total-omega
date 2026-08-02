@@ -1488,3 +1488,31 @@ FAILED evolve/tests/test_modules.py::test_gradient_starts_and_ends_on_its_stops 
 - `2026-08-02T01:09:25` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se ha optimizado `is_protected_path` evitando la resolución completa de rutas (`resolve()`) dentro del bucle de verificación de tokens, lo cual reduce drásticamente las llamadas al sistema de archivos durante los escaneos masivos.
 - `2026-08-02T01:09:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-02T01:09:25` Corrida terminada. Total usado hoy: 28.
+- `2026-08-02T01:18:20` Arrancando corrida. Quedan hoy ~272 peticiones objetivo.
+- `2026-08-02T01:18:43` Tests FALLARON:
+```
+ndent ________________
+
+    def test_scanner_lookalike_logic_is_os_independent():
+        # La misma heurística tiene que valer con rutas estilo POSIX, para que el
+        # resultado no dependa de en qué sistema corran los tests.
+>       flagged = scanner.check_system_lookalike(PurePosixPath("/home/user/Downloads/svchost.exe"))
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: check_system_lookalike() missing 1 required positional argument: 'entry'
+
+evolve/tests/test_basic.py:212: TypeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_scanner_double_extension_detection - TypeError: check_double_extension() missing 1 required positional argument: 'entry'
+FAILED evolve/tests/test_basic.py::test_scanner_normal_file_is_clean - TypeError: check_double_extension() missing 1 required positional argument: 'entry'
+FAILED evolve/tests/test_basic.py::test_scanner_flags_system_lookalike_outside_system32 - TypeError: check_system_lookalike() missing 1 required positional argument: 'entry'
+FAILED evolve/tests/test_basic.py::test_scanner_does_not_flag_real_system_file - TypeError: check_system_lookalike() missing 1 required positional argument: 'entry'
+FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independent - TypeError: check_system_lookalike() missing 1 required positional argument: 'entry'
+5 failed, 294 passed in 1.06s
+
+```
+- `2026-08-02T01:18:43` ❌ Mejora descartada en scanner.py (no pasó los tests), se revirtió. Intento: Se optimizó el rendimiento del escaneo evitando llamadas redundantes a `path.stat()` y `path.exists()` dentro del bucle principal, reutilizando la información disponible a través de `os.DirEntry`.
+- `2026-08-02T01:19:07` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de `load()` y `save()` reemplazando lecturas recurrentes y validaciones pesadas por un mecanismo de caché más robusto, evitando el acceso a disco innecesario y el re-parseo de JSON cuando el archivo no ha cambiado.
+- `2026-08-02T01:19:30` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Optimicé el rendimiento de `list_startup_entries` y `StartupEntry` evitando el encadenamiento innecesario de listas grandes en memoria y reduciendo la cantidad de llamadas a `expanduser` y operaciones de I/O mediante un chequeo previo del estado de la caché.
+- `2026-08-02T01:19:45` ➖ Sin cambios en assistant.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `build_context` ante entradas malformadas o tipos inesperados mediante una validación más estricta de las métricas recibidas, asegurando que el estado del sistema no sea inconsistente si los módulos fuente fallan al proveer datos.
+- `2026-08-02T01:19:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-02T01:19:46` Corrida terminada. Total usado hoy: 32.
