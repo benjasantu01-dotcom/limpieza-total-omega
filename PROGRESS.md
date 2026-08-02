@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **255** (50.6% de aceptación)
+- Mejoras aceptadas: **254** (50.4% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 26
+- Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 14
 - Sin respuesta de la IA (error o límite): 195
 
@@ -16,8 +16,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-01 | 118 | 8 | 11 | 6 | 113 |
-| 2026-08-02 | 137 | 6 | 15 | 8 | 82 |
+| 2026-08-01 | 117 | 7 | 11 | 6 | 111 |
+| 2026-08-02 | 137 | 7 | 16 | 8 | 84 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,11 +25,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - rendimiento: **51**
 - manejo de errores y validación de entradas: **49**
 - robustez ante casos límite: **46**
-- seguridad defensiva: **43**
+- seguridad defensiva: **42**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **23**
+- `settings.py`: **22**
 - `main.py`: **20**
 - `organizer.py`: **20**
 - `scanner.py`: **20**

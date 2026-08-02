@@ -1160,3 +1160,36 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-08-02T10:31:43` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Mejoré `_ask_folder` para manejar explícitamente el caso donde la ruta seleccionada es un punto de reparse (junction/symlink) o una ruta UNC, evitando seguir punteros de sistema que podrían causar bucles infinitos o modificaciones no deseadas fuera del alcance del usuario, delegando la validación técnica a `safety.py`.
 - `2026-08-02T10:31:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-02T10:31:43` Corrida terminada. Total usado hoy: 248.
+- `2026-08-02T10:39:57` Arrancando corrida. Quedan hoy ~52 peticiones objetivo.
+- `2026-08-02T10:40:23` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-08-02T10:40:30` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-02T10:40:55` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-08-02T10:41:21` Tests FALLARON:
+```
+/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:119: SyntaxWarning: invalid escape sequence '\)'
+    """Verifica si la ruta apunta a la raíz de una unidad (ej. C:\)."""
+
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:80: SyntaxWarning: invalid escape sequence '\P'
+    Parsea comandos tipo '"C:\Program Files\App.exe" /arg' extrayendo solo
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - Failed: DID NOT RAISE UnsafePathError
+1 failed, 298 passed, 11 warnings in 1.04s
+
+```
+- `2026-08-02T10:41:21` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez de `quarantine_file` y `restore_item` ante fallos de I/O y condiciones de carrera, garantizando que el manifiesto solo se actualice tras confirmar el estado real en disco y mejorando la consistencia en el manejo de rutas.
+- `2026-08-02T10:41:24` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-08-02T10:41:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-02T10:41:24` Corrida terminada. Total usado hoy: 252.
