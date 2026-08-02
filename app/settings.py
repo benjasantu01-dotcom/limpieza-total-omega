@@ -67,8 +67,8 @@ VALID_ACCENTS: Final = ("menta", "violeta", "magenta", "cian", "ambar")
 
 _cached_settings: dict[str, Any] | None = None
 _last_path: Path | None = None
-_last_mtime: float = 0.0
-_path_cache: dict[PathLike, Path] = {}
+_last_mtime: float = -1.0
+_path_cache: dict[str, Path] = {}
 
 DEFAULTS: Final[dict[str, Any]] = {
     "tema": "oscuro",
@@ -132,7 +132,7 @@ _VALIDATOR_MAP: Final[dict[type, Callable[[str, Any], Any]]] = {
 
 def settings_path(path_or_base: PathLike | None = None) -> Path:
     """Calcula la ruta absoluta del archivo, garantizando que el directorio padre sea seguro."""
-    key = path_or_base or SETTINGS_DIR
+    key = str(path_or_base or SETTINGS_DIR)
     if key in _path_cache: return _path_cache[key]
     try:
         base = Path(key).expanduser()
@@ -162,20 +162,15 @@ def load(path_or_base: PathLike | None = None) -> dict[str, Any]:
     """Carga configuración con caché basada en el tiempo de modificación del archivo (mtime)."""
     global _cached_settings, _last_path, _last_mtime
     
-    if _cached_settings is not None and (path_or_base is None or Path(path_or_base) == _last_path):
-        try:
-            if _last_path and _last_path.exists() and _last_path.stat().st_mtime == _last_mtime:
-                return _cached_settings.copy()
-        except OSError:
-            pass
-
     ruta = settings_path(path_or_base)
     try:
-        if not ruta.exists(): 
-            return DEFAULTS.copy()
         stat = ruta.stat()
+        if _cached_settings is not None and ruta == _last_path and stat.st_mtime == _last_mtime:
+            return _cached_settings.copy()
+        
         if stat.st_size > MAX_SETTINGS_SIZE:
-            return DEFAULTS.copy()
+            raise OSError("Config too large")
+            
         data = json.loads(ruta.read_text(encoding="utf-8"))
         _cached_settings = validate(data)
         _last_path, _last_mtime = ruta, stat.st_mtime

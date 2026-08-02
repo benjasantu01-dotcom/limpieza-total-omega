@@ -553,3 +553,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-08-02T14:36:36` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se optimizó el proceso de escaneo en `scan_file` al evitar múltiples llamadas a `is_protected_path` y `path.is_file()` (que implican llamadas al sistema redundantes), consolidando la validación inicial y utilizando el cacheo de `path.suffix` para reducir operaciones de IO.
 - `2026-08-02T14:36:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-02T14:36:36` Corrida terminada. Total usado hoy: 344.
+- `2026-08-02T14:45:31` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-02T14:45:56` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimizé la carga de configuración eliminando la regeneración innecesaria de objetos `Path` y reduciendo las llamadas a `stat()` mediante una gestión más estricta de la caché local.
+- `2026-08-02T14:46:19` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-08-02T14:46:51` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se mejora la robustez de `build_context` ante valores `NaN` o `inf` provenientes de fuentes externas mediante una validación explícita con `math.isfinite`, previniendo errores de serialización o lógica en el motor del asistente.
+- `2026-08-02T14:47:05` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `save_logo_svg` ante errores de entrada y estados inesperados del sistema de archivos mediante una validación más estricta del path, manejo explícito de excepciones y protección contra rutas malformadas o permisos denegados.
+- `2026-08-02T14:47:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-02T14:47:05` Corrida terminada. Total usado hoy: 348.
