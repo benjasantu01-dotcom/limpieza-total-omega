@@ -295,7 +295,7 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         target = path_obj.expanduser().resolve()
         
         # Validaciones de seguridad requeridas
-        if not is_safe_to_modify(target): 
+        if not is_safe_to_modify(target) or target.is_dir(): 
             return None
         
         parent = target.parent

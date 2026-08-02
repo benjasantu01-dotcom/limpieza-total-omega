@@ -126,7 +126,7 @@ def directory_size(path: str | os.PathLike | None) -> int:
     
     root = Path(path)
     try:
-        if not root.is_dir() or is_protected_path(root):
+        if not root.exists() or not root.is_dir() or is_protected_path(root):
             return 0
     except (OSError, RuntimeError, PermissionError, ValueError, TypeError):
         return 0
@@ -148,7 +148,7 @@ def directory_size(path: str | os.PathLike | None) -> int:
                             total_bytes += entry.stat().st_size
                     except (OSError, PermissionError):
                         continue
-        except (OSError, PermissionError):
+        except (OSError, PermissionError, FileNotFoundError):
             continue
             
     return total_bytes
