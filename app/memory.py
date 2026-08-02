@@ -300,15 +300,19 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except (ValueError, TypeError):
         return False, "El PID debe ser un número entero válido."
 
-    if target_pid <= 4 or is_protected_path(str(target_pid)):
-        return False, "Operación denegada: PID de sistema protegido."
+    # Validaciones de seguridad defensiva antes de interactuar con el sistema
+    if target_pid <= 4:
+        return False, "Operación denegada: PID de sistema crítico protegido."
+    
+    if target_pid == os.getpid():
+        return False, "Operación denegada: proceso de la app."
+    
+    if is_protected_path(str(target_pid)):
+        return False, "Operación denegada: PID protegido por política de seguridad."
     
     import ctypes
     kernel32 = ctypes.windll.kernel32
     psapi = ctypes.windll.psapi
-
-    if target_pid == os.getpid():
-        return False, "Operación denegada: proceso de la app."
 
     handle = kernel32.OpenProcess(REQUIRED_ACCESS, False, target_pid)
     if not handle:

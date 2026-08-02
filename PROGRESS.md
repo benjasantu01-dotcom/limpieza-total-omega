@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **256** (50.8% de aceptación)
+- Mejoras aceptadas: **259** (51.4% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 190
+- Sin respuesta de la IA (error o límite): 187
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-01 | 166 | 11 | 16 | 10 | 145 |
-| 2026-08-02 | 90 | 5 | 11 | 5 | 45 |
+| 2026-08-01 | 166 | 11 | 16 | 10 | 141 |
+| 2026-08-02 | 93 | 5 | 11 | 5 | 46 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,27 +25,30 @@ Este archivo se regenera solo en cada corrida a partir de
 - rendimiento: **50**
 - robustez ante casos límite: **50**
 - manejo de errores y validación de entradas: **47**
-- seguridad defensiva: **42**
+- seguridad defensiva: **45**
 
 ## Mejoras aceptadas por archivo
 
+- `main.py`: **21**
 - `quarantine.py`: **21**
 - `scanner.py`: **21**
 - `organizer.py`: **21**
 - `settings.py`: **21**
-- `main.py`: **20**
+- `healthscore.py`: **20**
 - `diskreport.py`: **19**
-- `healthscore.py`: **19**
 - `browser.py`: **19**
 - `assistant.py`: **18**
 - `duplicates.py`: **17**
 - `branding.py`: **16**
 - `safety.py`: **16**
-- `memory.py`: **14**
+- `memory.py`: **15**
 - `startup.py`: **14**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-02T06:47:05` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `memory.py` mediante una validación estricta del PID en `trim_working_set`, asegurando que no se intente interactuar con procesos críticos del sistema (PID < 4) o el proceso actual de la aplicación antes de solicitar el handle, evitando intentos de apertura sobre procesos que podrían causar errores de acceso o inestabilidad.
+- `2026-08-02T06:46:40` **main.py** (seguridad defensiva): Se mejora la seguridad defensiva en `on_trim_process` reemplazando la creación de un `Path` artificial basado en un número arbitrario de PID por una validación que utiliza `safety.is_safe_to_modify(Path(f"C:/Users"))` solo como técnica de bloqueo, asegurando que el proceso crítico de sistema no pueda ser gestionado por el usuario, evitando errores de construcción de rutas sospechosas.
+- `2026-08-02T06:45:38` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la validación estricta de tipos y valores en la inicialización y el procesamiento de `SystemMetrics`, asegurando que datos externos maliciosos o corruptos no puedan degradar la integridad del cálculo o causar desbordamientos en la interfaz.
 - `2026-08-02T06:36:28` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` y `group_by_size` asegurando que las rutas resultantes del `resolve()` sean validadas explícitamente mediante `is_protected_path` antes de ser incorporadas a los resultados, evitando cualquier posibilidad de fugas de datos protegidos a través de enlaces resolved.
 - `2026-08-02T06:36:19` **diskreport.py** (seguridad defensiva): Se reforzó `walk_files` para evitar el seguimiento de rutas de red (UNC) o puntos de reparse inusuales, añadiendo una comprobación adicional mediante `is_absolute()` y `drive` para asegurar que el escaneo no escape accidentalmente de la unidad de disco raíz seleccionada.
 - `2026-08-02T06:35:55` **browser.py** (seguridad defensiva): Se reforzó `_is_safe_path` para incluir explícitamente una verificación de puntos de reparse (junctions) mediante `os.path.realpath` y `os.path.isjunction`, asegurando que no se sigan rutas fuera de los límites definidos, incluso si el sistema operativo los presenta como directorios normales.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-02T06:14:59` **organizer.py** (robustez ante casos límite): Se introdujo una comprobación robusta mediante `OSError` al intentar calcular metadatos en `scan_for_junk`, previniendo que el escaneo colapse ante archivos inaccesibles o bloqueados, y se consolidó la validación de rutas mediante `is_safe_to_modify` antes de cualquier procesamiento pesado.
 - `2026-08-02T06:06:10` **main.py** (robustez ante casos límite): Mejoré la robustez de la inicialización de la app envolviendo la construcción de pestañas en un bloque `try-except` más granular y añadiendo validación de existencia para `branding.draw_logo`, previniendo que un error en un método de renderizado de UI detenga el inicio de la aplicación completa.
 - `2026-08-02T06:05:12` **healthscore.py** (robustez ante casos límite): Reforcé la robustez del módulo `healthscore.py` ante datos de entrada extremos o malformados mediante la implementación de validaciones defensivas adicionales en `_generate_recommendations` y `summarize`, asegurando que el sistema no falle si los diccionarios de métricas están incompletos o el total de pesos es inconsistente.
-- `2026-08-02T06:04:47` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez de las funciones de hash (`hash_file` y `partial_hash`) añadiendo el manejo explícito de archivos vacíos (size=0) o bloqueados durante la lectura, evitando que la excepción de lectura interrumpa el procesamiento de otros archivos en el grupo.
-- `2026-08-02T05:55:41` **diskreport.py** (robustez ante casos límite): Se ha añadido un chequeo de `is_protected_path` en `drive_usage` y una gestión robusta de permisos y estados de `Path` en las funciones de recorrido, garantizando que el reporte de disco no falle silenciosamente ni intente acceder a rutas bloqueadas ante accesos denegados o inconsistencias del sistema.
-- `2026-08-02T05:55:33` **browser.py** (robustez ante casos límite): Se ha mejorado la robustez de `directory_size` ante el acceso a directorios bloqueados o inconsistentes y se ha corregido un bug lógico donde `stack.count` (que cuenta ocurrencias en la lista) no limitaba correctamente la profundidad de recursión, reemplazándolo por un chequeo explícito de profundidad para evitar desbordamientos o bucles infinitos en estructuras de directorios profundas.

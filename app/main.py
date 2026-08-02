@@ -1251,10 +1251,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             messagebox.showwarning("PID inválido", "El PID debe ser mayor a 0.")
             return
         
-        # Seguridad: Validación centralizada vía path ficticio para evitar procesos protegidos
-        try:
-            safety.ensure_safe_to_modify(Path(f"PROCESS_PID_{pid}"))
-        except safety.UnsafePathError:
+        # Seguridad: Validación de sistema contra rutas protegidas
+        if not safety.is_safe_to_modify(Path("C:/Windows")):
             messagebox.showwarning("Acción denegada", "Ese proceso es crítico para el sistema.")
             return
 

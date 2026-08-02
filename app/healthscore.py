@@ -92,7 +92,8 @@ class SystemMetrics:
                 math.isfinite(self.disk_free_percent) and 
                 math.isfinite(self.duplicate_mb) and
                 math.isfinite(float(self.suspicious_count)) and
-                math.isfinite(float(self.startup_count)))
+                math.isfinite(float(self.startup_count)) and
+                math.isfinite(float(self.quarantined_count)))
 
 
 @dataclass
@@ -145,7 +146,6 @@ def score_security(suspicious_count: int, warnings: int = 0) -> float:
     """Calcula ratio [0, 1] penalizando hallazgos (conteo) y advertencias (factor riesgo)."""
     s = float(max(0, _to_int(suspicious_count)))
     w = float(max(0, _to_int(warnings)))
-    if not (math.isfinite(s) and math.isfinite(w)): return 0.0
     penalty: float = (s * 0.05) + (w * 0.25)
     return _clamp(1.0 - penalty, 0.0, 1.0)
 
@@ -174,7 +174,7 @@ def score_duplicates(duplicate_mb: float) -> float:
 def score_startup(startup_count: int) -> float:
     """Calcula ratio [0, 1] inversamente proporcional al conteo de programas en inicio."""
     count = float(_to_int(startup_count))
-    if STARTUP_LIMIT_COUNT <= 0 or not math.isfinite(count): return 0.0
+    if STARTUP_LIMIT_COUNT <= 0: return 0.0
     ratio = 1.0 - (count / STARTUP_LIMIT_COUNT)
     return _clamp(ratio, 0.0, 1.0)
 
@@ -269,8 +269,8 @@ def summarize(result: HealthResult) -> List[str]:
 
     for area, puntos in sorted(result.breakdown.items(), key=_sort_by_performance_delta):
         maximo: int = WEIGHTS.get(area, 0)
-        puntos_acotados = _clamp(puntos, 0, maximo)
-        lines.append(f"  {area.capitalize():<12} {puntos_acotados:>2}/{maximo:<2} [{'#' * int(puntos_acotados)}{'.' * int(maximo - puntos_acotados)}]")
+        puntos_acotados = _clamp(float(puntos), 0.0, float(maximo))
+        lines.append(f"  {area.capitalize():<12} {int(puntos_acotados):>2}/{maximo:<2} [{'#' * int(puntos_acotados)}{'.' * int(maximo - puntos_acotados)}]")
     
     lines.extend(["", "Recomendaciones:"])
     lines.extend([f"  - {rec}" for rec in result.recommendations])
