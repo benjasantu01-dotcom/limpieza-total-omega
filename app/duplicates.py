@@ -255,19 +255,19 @@ def find_duplicates(
 def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
     """Suma el total de espacio en bytes que se recuperaría al eliminar redundancias."""
     if not groups: return 0
-    return sum(g.wasted_bytes for g in groups)
+    return sum((g.wasted_bytes for g in groups if isinstance(g, DuplicateGroup)), 0)
 
 
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     """
     Determina la mejor ruta para conservar basada en antigüedad (mtime) y longitud de ruta.
     """
-    if group is None or not group.paths:
+    if not isinstance(group, DuplicateGroup) or not group.paths:
         return None
 
     valid_paths: List[Tuple[float, int, Path]] = []
     for p in group.paths:
-        if p is None: continue
+        if not isinstance(p, Path): continue
         try:
             stat = p.stat()
             valid_paths.append((stat.st_mtime, len(str(p)), p))
@@ -284,7 +284,7 @@ def format_group(group: DuplicateGroup) -> List[str]:
     """
     Genera un listado descriptivo de un grupo de duplicados.
     """
-    if group is None: return []
+    if group is None or not isinstance(group, DuplicateGroup): return []
     keeper = suggest_keeper(group)
     mb_total = round(group.size_bytes / (1024 * 1024), 2)
     mb_wasted = round(group.wasted_bytes / (1024 * 1024), 2)

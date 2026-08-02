@@ -1055,3 +1055,10 @@ FAILED evolve/tests/test_modules.py::test_gradient_bar_ignores_invalid_sizes - V
 - `2026-08-02T08:28:56` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: manejo de errores y validación de entradas).
 - `2026-08-02T08:28:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-02T08:28:56` Corrida terminada. Total usado hoy: 200.
+- `2026-08-02T08:37:29` Arrancando corrida. Quedan hoy ~100 peticiones objetivo.
+- `2026-08-02T08:37:54` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `suggest_keeper` y `reclaimable_bytes` validando la entrada y los objetos `DuplicateGroup` para evitar errores en tiempo de ejecución si se pasan datos inconsistentes, manteniendo la integridad del flujo de trabajo ante valores inesperados.
+- `2026-08-02T08:38:19` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-02T08:39:23` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `main.py` implementando una validación de entrada más estricta en el método `on_trim_process` para asegurar que el valor ingresado sea un PID numérico positivo antes de intentar cualquier operación, previniendo errores de conversión y accesos indebidos, y añadí una verificación de seguridad adicional para impedir que se intenten acciones sobre el directorio raíz de Windows.
+- `2026-08-02T08:39:34` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `parse_windows_process_csv` añadiendo una validación explícita para evitar errores de tipo si el CSV contiene filas vacías o malformadas, y centraliza el manejo de excepciones para garantizar que el bucle de procesamiento de procesos no se detenga ante una línea corrupta.
+- `2026-08-02T08:39:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-02T08:39:34` Corrida terminada. Total usado hoy: 204.

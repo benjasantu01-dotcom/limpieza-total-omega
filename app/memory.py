@@ -159,21 +159,23 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
     if not lines:
         return []
 
+    # Omitir cabecera si existe
     if lines[0].lower().startswith("name"):
         lines = lines[1:]
 
     processes: List[ProcessMemory] = []
     for line in lines:
-        parts: List[str] = [p.strip().strip('"') for p in line.split(",")]
-        if _is_valid_process_row(parts):
-            try:
+        try:
+            parts: List[str] = [p.strip().strip('"') for p in line.split(",")]
+            if _is_valid_process_row(parts):
                 processes.append(ProcessMemory(
                     name=parts[0] or "Unknown", 
                     pid=int(parts[1]), 
                     working_set=int(parts[2])
                 ))
-            except ValueError:
-                continue
+        except (ValueError, IndexError, TypeError):
+            # Saltear líneas malformadas de forma silenciosa para mantener la integridad
+            continue
 
     processes.sort(key=lambda p: p.working_set, reverse=True)
     return processes[:max(1, int(limit))]
