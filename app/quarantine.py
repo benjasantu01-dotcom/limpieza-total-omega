@@ -412,6 +412,7 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     count = 0
     
     for entry in quarantine_root.iterdir():
+        # Seguridad: Solo borrar si el archivo existe en el manifiesto y es un archivo regular
         if entry.is_file() and entry.name in item_map:
             item = item_map[entry.name]
             if is_within_directory(entry, quarantine_root) and item.verify_integrity(entry):
@@ -422,7 +423,9 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
                     continue
             
     if count > 0:
-        save_manifest([], base)
+        # Actualizamos el manifiesto eliminando solo los ítems purgados con éxito
+        remaining_items = [i for i in items if (quarantine_root / i.stored_name).exists()]
+        save_manifest(remaining_items, base)
     return count
 
 

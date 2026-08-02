@@ -83,7 +83,7 @@ class JunkFile:
     @property
     def is_junk_extension(self) -> bool:
         """Valida si la extensión del archivo coincide con las permitidas."""
-        return self.path.suffix.lower() in _LOWER_JUNK_EXTS
+        return self.path.suffix.lower() in _LOWER_JOWER_JUNK_EXTS
 
 
 def _generate_unique_target(target: Path) -> Path:
@@ -212,7 +212,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             
             full_source_path = jf.path.resolve()
             
-            # Validar que no estemos moviendo el archivo dentro de su propio árbol
+            # Validar que la ruta fuente esté dentro de un árbol permitido y no sea el destino
             is_nested = dest == full_source_path or dest in full_source_path.parents or full_source_path.parent == dest
             if not is_safe_to_modify(full_source_path) or is_nested:
                 continue
@@ -226,7 +226,10 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             target_base = dest / f"{jf.path.stem}_{int(jf.modified.timestamp())}{jf.path.suffix}"
             target = _generate_unique_target(target_base)
             
-            # Garantía final de seguridad antes de la operación de E/S
+            # Garantía final: verificar que el destino resultante esté efectivamente bajo el directorio base
+            if not str(target).startswith(str(dest)):
+                continue
+            
             ensure_safe_to_modify(full_source_path)
             ensure_safe_to_modify(target)
             shutil.move(str(full_source_path), str(target))
