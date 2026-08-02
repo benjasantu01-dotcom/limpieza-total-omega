@@ -79,6 +79,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
     Calcula el hash SHA256 completo del archivo mediante bloques.
     """
     try:
+        if path is None: return None
         p = Path(path).resolve()
         if not p.exists() or not p.is_file() or p.is_symlink() or is_protected_path(p):
             return None
@@ -97,6 +98,7 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
     Calcula el hash SHA256 de un prefijo del archivo para comparación rápida.
     """
     try:
+        if path is None: return None
         p = Path(path).resolve()
         if not p.exists() or not p.is_file() or p.is_symlink() or is_protected_path(p):
             return None
@@ -117,6 +119,7 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     groups: Dict[int, List[Path]] = defaultdict(list)
     seen_inodes: set[Tuple[int, int]] = set()
     for p in paths:
+        if p is None: continue
         try:
             p_res = Path(p).resolve()
             if not p_res.exists() or not p_res.is_file() or p_res.is_symlink() or is_protected_path(p_res):
@@ -174,6 +177,7 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
             pass
 
     for directory in directories:
+        if directory is None: continue
         path_obj = Path(directory).resolve()
         if path_obj.exists() and path_obj.is_dir():
             if not is_protected_path(path_obj):
@@ -220,6 +224,7 @@ def find_duplicates(
             full_map = _refine_by_hash(partial_candidates, hash_file)
             
             for digest, confirmed_paths in full_map.items():
+                if not confirmed_paths: continue
                 try:
                     size = confirmed_paths[0].stat().st_size
                     groups.append(DuplicateGroup(
@@ -227,7 +232,7 @@ def find_duplicates(
                         size_bytes=size, 
                         paths=sorted(confirmed_paths)
                     ))
-                except OSError:
+                except (OSError, FileNotFoundError, PermissionError):
                     continue
 
     groups.sort(key=lambda g: g.wasted_bytes, reverse=True)
@@ -236,6 +241,7 @@ def find_duplicates(
 
 def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
     """Suma el total de espacio en bytes que se recuperaría al eliminar redundancias."""
+    if not groups: return 0
     return sum(g.wasted_bytes for g in groups)
 
 
@@ -248,6 +254,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
 
     valid_paths: List[Tuple[float, int, Path]] = []
     for p in group.paths:
+        if p is None: continue
         try:
             stat = p.stat()
             valid_paths.append((stat.st_mtime, len(str(p)), p))
@@ -264,6 +271,7 @@ def format_group(group: DuplicateGroup) -> List[str]:
     """
     Genera un listado descriptivo de un grupo de duplicados.
     """
+    if group is None: return []
     keeper = suggest_keeper(group)
     mb_total = round(group.size_bytes / (1024 * 1024), 2)
     mb_wasted = round(group.wasted_bytes / (1024 * 1024), 2)

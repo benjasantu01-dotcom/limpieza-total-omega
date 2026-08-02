@@ -90,7 +90,7 @@ def base_directories() -> List[Path]:
     try:
         path_local = Path(local)
         return [path_local] if path_local.is_dir() else []
-    except (OSError, RuntimeError):
+    except (OSError, RuntimeError, ValueError):
         return []
 
 
@@ -130,11 +130,10 @@ def directory_size(path: str | os.PathLike | None) -> int:
         root = Path(path).resolve(strict=False)
         if not root.is_dir() or is_protected_path(root):
             return 0
-    except (OSError, RuntimeError, PermissionError, ValueError):
+    except (OSError, RuntimeError, PermissionError, ValueError, TypeError):
         return 0
     
     total_bytes: int = 0
-    # Guardamos tupla (path, profundidad) para limitar niveles y evitar bucles
     stack: List[tuple[Path, int]] = [(root, 0)]
     MAX_DEPTH = 32
     
@@ -147,15 +146,15 @@ def directory_size(path: str | os.PathLike | None) -> int:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
-                        # Doble verificación: es protegido y es seguro para recorrer
-                        if is_protected_path(Path(entry.path)):
+                        entry_path = Path(entry.path)
+                        if is_protected_path(entry_path):
                             continue
                             
                         if entry.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(entry.path)):
                             continue
                         
                         if entry.is_dir(follow_symlinks=False):
-                            stack.append((Path(entry.path), depth + 1))
+                            stack.append((entry_path, depth + 1))
                         else:
                             total_bytes += entry.stat().st_size
                     except (OSError, PermissionError):
@@ -170,10 +169,9 @@ def _is_valid_cache_path(candidate: Path | None, base_path: Path) -> bool:
     """
     Valida si un candidato es una ruta de caché apta para ser reportada.
     """
-    if not isinstance(candidate, Path):
+    if not isinstance(candidate, Path) or not isinstance(base_path, Path):
         return False
     try:
-        # Validación estricta contra sistema antes de verificar existencia
         if is_protected_path(candidate):
             return False
             
@@ -203,6 +201,7 @@ def detect_profiles(
         return found
         
     for base in bases:
+        if not isinstance(base, Path): continue
         for browser_name, relative_path_str in cache_paths.items():
             try:
                 candidate = base.joinpath(*relative_path_str.split("\\"))
