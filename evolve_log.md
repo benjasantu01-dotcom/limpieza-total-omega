@@ -807,3 +807,10 @@ FAILED evolve/tests/test_modules.py::test_gradient_bar_ignores_invalid_sizes - V
 - `2026-08-02T06:06:18` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
 - `2026-08-02T06:06:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-02T06:06:18` Corrida terminada. Total usado hoy: 144.
+- `2026-08-02T06:14:35` Arrancando corrida. Quedan hoy ~156 peticiones objetivo.
+- `2026-08-02T06:14:59` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se introdujo una comprobación robusta mediante `OSError` al intentar calcular metadatos en `scan_for_junk`, previniendo que el escaneo colapse ante archivos inaccesibles o bloqueados, y se consolidó la validación de rutas mediante `is_safe_to_modify` antes de cualquier procesamiento pesado.
+- `2026-08-02T06:15:26` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se mejora la robustez de `quarantine_file` ante condiciones de carrera y archivos inconsistentes agregando una validación de existencia post-movimiento y asegurando que `shutil.move` no sea interrumpido prematuramente.
+- `2026-08-02T06:15:45` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-08-02T06:15:54` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha mejorado `ensure_safe_to_modify` para detectar de forma explícita rutas con caracteres no imprimibles o de control (ataques tipo "homoglyph" o "RTL override"), reforzando la integridad al procesar rutas externas y evitando manipulaciones maliciosas mediante nombres de archivo engañosos.
+- `2026-08-02T06:15:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-02T06:15:54` Corrida terminada. Total usado hoy: 148.

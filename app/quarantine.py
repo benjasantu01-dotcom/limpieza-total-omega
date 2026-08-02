@@ -288,8 +288,13 @@ def quarantine_file(
              raise OSError(f"Falla de escritura (disco lleno o error de sistema): {e}")
         raise RuntimeError(f"Falla crítica al mover archivo: {e}")
 
-    if not destination.exists() or destination.stat().st_size != file_size:
-        raise RuntimeError("Integridad comprometida: el archivo no existe o cambió de tamaño tras el movimiento.")
+    # Verificación post-operación: asegurar consistencia en el sistema de archivos
+    if not destination.exists():
+        raise RuntimeError("Integridad comprometida: el archivo no apareció en el destino tras el movimiento.")
+    
+    # Validar que el archivo movido tenga el tamaño esperado
+    if destination.stat().st_size != file_size:
+        raise RuntimeError("Integridad comprometida: el archivo cambió de tamaño tras el movimiento.")
 
     try:
         file_hash = _get_sha256(destination)

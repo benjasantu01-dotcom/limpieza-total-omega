@@ -154,9 +154,12 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
 
     for d in dirs:
         if d:
-            p = Path(d).expanduser()
-            if p.exists() and p.is_dir():
-                _walk_dir(str(p))
+            try:
+                p = Path(d).expanduser()
+                if p.exists() and p.is_dir():
+                    _walk_dir(str(p))
+            except (RuntimeError, OSError):
+                continue
     return found
 
 
