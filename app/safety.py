@@ -175,7 +175,12 @@ def is_sensitive_file(path: PathLike) -> bool:
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> Path:
     """
-    Valida rigurosamente si una ruta es segura para ser modificada.
+    Valida rigurosamente si una ruta es segura para ser modificada mediante una jerarquía de checks:
+    1. Higiene básica (caracteres maliciosos, normalización, rutas de red).
+    2. Integridad de filesystem (nombres reservados, longitud, enlaces físicos).
+    3. Estado de acceso (permisos de escritura, uso por terceros, readonly).
+    4. Protección de sistema (bloqueo explícito de directorios críticos y raíz de unidades).
+    
     IMPORTANTE: Nunca usar esta función en una estructura 'if'. Si la ruta es 
     insegura, esta función DEBE lanzar un UnsafePathError para abortar la operación.
     """

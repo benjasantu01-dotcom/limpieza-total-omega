@@ -163,7 +163,7 @@ def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload:
         force_reload: Si es True, ignora la caché existente.
         
     Returns:
-        Lista de objetos QuarantineItem deserializados.
+        Lista de objetos QuarantineItem deserializados; retorna lista vacía en caso de corrupción.
     """
     base_path = quarantine_dir(base)
     path = _manifest_path(base_path)
@@ -201,7 +201,8 @@ def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_
         base: Directorio de trabajo.
         
     Raises:
-        RuntimeError: En caso de fallo de escritura o persistencia.
+        ValueError: Si items no es una lista.
+        RuntimeError: En caso de fallo de escritura atómica.
     """
     if not isinstance(items, list):
         raise ValueError("El manifiesto debe ser una lista de ítems.")
@@ -227,7 +228,14 @@ def quarantine_file(
     reason: str = "Marcado como sospechoso",
     base: Union[str, Path] = DEFAULT_QUARANTINE_DIR,
 ) -> QuarantineItem:
-    """Mueve un archivo a cuarentena tras validar que es seguro operarlo."""
+    """
+    Mueve un archivo a cuarentena tras validar que es seguro operarlo.
+    
+    Raises:
+        UnsafePathError: Si la ruta intenta violar restricciones de sistema.
+        IOError: Si el archivo está bloqueado o inaccesible.
+        RuntimeError: Si la operación falla en cualquier punto de la transición.
+    """
     if not source:
         raise ValueError("La ruta de origen no puede estar vacía.")
     
@@ -288,11 +296,9 @@ def quarantine_file(
              raise OSError(f"Falla de escritura (disco lleno o error de sistema): {e}")
         raise RuntimeError(f"Falla crítica al mover archivo: {e}")
 
-    # Verificación post-operación: asegurar consistencia en el sistema de archivos
     if not destination.exists():
         raise RuntimeError("Integridad comprometida: el archivo no apareció en el destino tras el movimiento.")
     
-    # Validar que el archivo movido tenga el tamaño esperado
     if destination.stat().st_size != file_size:
         raise RuntimeError("Integridad comprometida: el archivo cambió de tamaño tras el movimiento.")
 
@@ -321,12 +327,19 @@ def quarantine_file(
 
 
 def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
-    """Retorna los ítems en cuarentena, ordenados cronológicamente."""
+    """Retorna los ítems en cuarentena, ordenados cronológicamente (más nuevo primero)."""
     return sorted(load_manifest(base), key=lambda i: i.quarantined_at, reverse=True)
 
 
 def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
-    """Restaura un archivo a su ruta original tras verificar su integridad."""
+    """
+    Restaura un archivo a su ruta original tras verificar su integridad.
+    
+    Raises:
+        KeyError: Si el ID no existe en el manifiesto.
+        UnsafePathError: Si la ruta original es un enlace simbólico o está protegida.
+        RuntimeError: Si la integridad falla o el archivo no pudo ser movido.
+    """
     if not item_id or not isinstance(item_id, str):
         raise ValueError("El ID debe ser una cadena válida.")
 
@@ -373,7 +386,7 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
 
 
 def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> bool:
-    """Elimina físicamente un ítem tras validar su integridad."""
+    """Elimina físicamente un ítem tras validar su integridad. Retorna True si tuvo éxito."""
     if not item_id or not isinstance(item_id, str):
         return False
     
@@ -417,7 +430,6 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     for entry in quarantine_root.iterdir():
         if entry.is_file() and entry.name in item_map:
             item = item_map[entry.name]
-            # Validación de seguridad: el archivo DEBE estar dentro de la cuarentena
             if is_within_directory(entry, quarantine_root) and item.verify_integrity(entry):
                 try:
                     entry.unlink()

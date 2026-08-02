@@ -66,6 +66,12 @@ class Scanner:
         """
         Verifica si el sistema de archivos marca esta entrada como reparse point.
         No sigue enlaces para evitar escapes fuera del árbol de directorios permitido.
+        
+        Args:
+            entry: La entrada de directorio (`os.DirEntry`) a inspeccionar.
+            
+        Returns:
+            bool: True si la entrada es un punto de reparseo, False en caso contrario.
         """
         try:
             return bool(entry.stat(follow_symlinks=False).st_file_attributes & 0x400)
@@ -93,8 +99,13 @@ class Scanner:
 
 def check_double_extension(path: Path) -> Optional[Suspicion]:
     """
-    Detecta patrones de nombres de archivos que intentan ocultar extensiones ejecutable
-    tras extensiones de documentos inofensivos.
+    Detecta nombres de archivos con doble extensión que ocultan ejecutables.
+
+    Args:
+        path: Ruta completa del archivo a evaluar.
+
+    Returns:
+        Un objeto `Suspicion` si se detecta el patrón, `None` si es seguro.
     """
     if path and path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
@@ -103,7 +114,14 @@ def check_double_extension(path: Path) -> Optional[Suspicion]:
 
 def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_THRESHOLD_HOURS) -> Optional[Suspicion]:
     """
-    Analiza la metadata de modificación de un ejecutable para identificar descargas recientes.
+    Analiza la fecha de modificación de ejecutables para identificar descargas recientes.
+
+    Args:
+        path: Ruta del archivo.
+        hours: Límite de horas para considerar un archivo como "reciente".
+
+    Returns:
+        `Suspicion` si el archivo fue modificado dentro del umbral dado, `None` caso contrario.
     """
     if not path or path.suffix.lower() not in SUSPICIOUS_EXECUTABLE_EXT:
         return None
@@ -120,8 +138,13 @@ def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_TH
 
 def check_system_lookalike(path: Path) -> Optional[Suspicion]:
     """
-    Detecta ejecutables que suplantan nombres de procesos críticos del sistema
-    si residen fuera del directorio oficial System32.
+    Identifica ejecutables con nombres de procesos críticos fuera de System32.
+
+    Args:
+        path: Ruta del archivo a inspeccionar.
+
+    Returns:
+        `Suspicion` si el nombre imita a un proceso de sistema crítico, `None` caso contrario.
     """
     if not path or path.name.lower() not in SYSTEM_LOOKALIKES:
         return None
