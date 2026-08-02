@@ -438,14 +438,14 @@ def _call_gemini(
         return None
     
     # Seguridad: truncar y validar entradas antes del envío
-    safe_q = _sanitize_query(question)[:500]
-    safe_ctx = context_text[:1000]
+    safe_q: str = _sanitize_query(question)[:500]
+    safe_ctx: str = context_text[:1000]
     
     if not _ensure_safe_text(safe_q):
         return None
         
     try:
-        sanitized_context = _CONTROL_CHARS_REGEX.sub("", safe_ctx)
+        sanitized_context: str = _CONTROL_CHARS_REGEX.sub("", safe_ctx)
         
         cuerpo_json: bytes = json.dumps({
             "contents": [{
@@ -467,16 +467,16 @@ def _call_gemini(
         with urllib.request.urlopen(peticion, timeout=_TIMEOUT_SECONDS) as respuesta:
             if respuesta.status != 200:
                 return None
-            datos = json.loads(respuesta.read().decode("utf-8"))
+            datos: Any = json.loads(respuesta.read().decode("utf-8"))
         
         if not isinstance(datos, dict):
             return None
 
-        candidatos = datos.get("candidates", [])
+        candidatos: Any = datos.get("candidates", [])
         if not isinstance(candidatos, list) or not candidatos or not isinstance(candidatos[0], dict):
             return None
             
-        partes = candidatos[0].get("content", {}).get("parts", [])
+        partes: Any = candidatos[0].get("content", {}).get("parts", [])
         if not isinstance(partes, list):
             return None
             
@@ -499,23 +499,23 @@ def ask(question: str, context: SystemContext | None = None,
     en reglas estáticas y, si el asistente en línea está habilitado en
     settings, intenta obtener una respuesta contextual mediante _call_gemini.
     """
-    ctx = context if isinstance(context, SystemContext) else SystemContext()
-    respaldo = local_answer(question, ctx)
+    ctx: SystemContext = context if isinstance(context, SystemContext) else SystemContext()
+    respaldo: Answer = local_answer(question, ctx)
 
     if not available(base):
         return respaldo
 
     try:
-        configuracion = settings.load(base)
+        configuracion: Any = settings.load(base)
         if not isinstance(configuracion, dict):
             return respaldo
             
-        clave = str(configuracion.get("asistente_api_key", ""))
-        modelo = str(configuracion.get("asistente_modelo", "gemini-3.1-flash-lite"))
-        enviar = bool(configuracion.get("asistente_enviar_metricas", True))
+        clave: str = str(configuracion.get("asistente_api_key", ""))
+        modelo: str = str(configuracion.get("asistente_modelo", "gemini-3.1-flash-lite"))
+        enviar: bool = bool(configuracion.get("asistente_enviar_metricas", True))
         
-        texto_contexto = context_as_text(ctx) if enviar else "El usuario no autorizó enviar métricas."
-        remoto = _call_gemini(question, texto_contexto, clave, modelo)
+        texto_contexto: str = context_as_text(ctx) if enviar else "El usuario no autorizó enviar métricas."
+        remoto: Optional[str] = _call_gemini(question, texto_contexto, clave, modelo)
 
         if not remoto:
             respaldo.notice = ("No se pudo consultar al asistente en línea, así que "

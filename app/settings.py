@@ -180,7 +180,6 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     global _cached_settings, _last_path, _last_mtime
     ruta = settings_path(path_or_base)
     
-    # Verificación estricta: No escribir si es symlink o está en zona protegida
     if ruta.is_symlink() or not is_safe_to_modify(str(ruta.resolve().parent)):
         return None
     if ruta.parent.exists() and not os.access(ruta.parent, os.W_OK):
@@ -191,6 +190,7 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
         json_data = json.dumps(limpio, indent=2, ensure_ascii=False)
         ruta.parent.mkdir(parents=True, exist_ok=True)
     except (TypeError, ValueError, OSError): return None
+    
     temp_path: Path | None = None
     try:
         with tempfile.NamedTemporaryFile("w", dir=ruta.parent, delete=False, encoding="utf-8") as tf:

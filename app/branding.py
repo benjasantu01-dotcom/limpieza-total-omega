@@ -33,9 +33,6 @@ APP_TAGLINE: Final = "Limpieza y seguridad, en un solo lugar"
 APP_VERSION: Final = "2.1.0"
 
 # Paleta de colores centralizada para mantener la coherencia visual.
-# - Superficies: Capas de profundidad (background -> surface -> card).
-# - Acentos: Colores primarios de marca (`accent`) y secundarios para contrastes.
-# - Estados: Semántica de color estándar para validación y alertas.
 PALETTE: Final = MappingProxyType({
     "background": "#0a0e17",
     "surface": "#141b2d",
@@ -121,9 +118,7 @@ def font_size(name: str) -> int:
 
 
 def icon(section: Optional[str]) -> str:
-    """
-    Retorna el glifo unicode asociado a una sección o viñeta neutra.
-    """
+    """Retorna el glifo unicode asociado a una sección o viñeta neutra."""
     if isinstance(section, str) and (glifo := ICONS.get(section.strip())):
         return glifo
     return "\u2022"
@@ -166,9 +161,7 @@ def grade_color(grade: Optional[str]) -> HexColor:
 
 
 def score_color(score: Union[float, int, None]) -> HexColor:
-    """
-    Calcula el color representativo de un puntaje de salud (0-100).
-    """
+    """Calcula el color representativo de un puntaje de salud (0-100)."""
     try:
         valor = float(score)  # type: ignore
     except (TypeError, ValueError):
@@ -183,11 +176,13 @@ def score_color(score: Union[float, int, None]) -> HexColor:
 def bar(percent: Union[float, int, None], width: int = 24,
         filled: str = "\u2588", empty: str = "\u2591") -> str:
     """
-    Genera una barra de progreso visual en texto plano para logs o CLI.
+    Genera una barra de progreso visual en texto plano.
     
     Args:
-        percent: Valor 0-100 a representar.
-        width: Cantidad total de caracteres de la barra.
+        percent: Valor 0-100.
+        width: Caracteres totales de la barra.
+    Returns:
+        String con el gráfico de progreso.
     """
     try:
         valor = max(0.0, min(100.0, float(percent))) # type: ignore
@@ -215,10 +210,12 @@ def _hex_to_rgb(value: HexColor) -> tuple[int, int, int]:
 @lru_cache(maxsize=64)
 def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
     """
-    Interpola linealmente (Lerp) entre dos colores.
+    Interpola linealmente entre dos colores hex.
     
     Args:
-        ratio: Valor de 0.0 (inicio) a 1.0 (fin) que determina la mezcla.
+        ratio: 0.0 (inicio) a 1.0 (fin).
+    Returns:
+        Color mezclado en formato HexColor.
     """
     proporcion = max(0.0, min(1.0, float(ratio)))
     r1, g1, b1 = _hex_to_rgb(start)
@@ -234,7 +231,9 @@ def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
 def gradient_colors(steps: int, stops: tuple[HexColor, ...] = GRADIENT_STOPS) -> List[HexColor]:
     """
     Genera una lista de colores interpolados basada en múltiples puntos de control.
-    Distribuye los colores proporcionalmente según el número de pasos solicitados.
+    
+    Returns:
+        Lista de HexColors. Retorna lista con color de acento si hay error.
     """
     try:
         cantidad = max(1, int(steps))
@@ -281,22 +280,15 @@ def logo_svg(size: int = 128) -> str:
 
 
 def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
-    """Persiste el archivo SVG del logo en disco tras validación de seguridad."""
+    """Persiste el logo en disco. Retorna Path si es exitoso, None en caso contrario."""
     if not destination:
         return None
     try:
         target = Path(destination).expanduser().resolve()
-        
-        # Validar seguridad antes de intentar cualquier operación
-        if not is_safe_to_modify(target):
-            return None
-            
+        if not is_safe_to_modify(target): return None
         ensure_safe_to_modify(target)
-            
         parent = target.parent
-        if not parent.exists():
-            parent.mkdir(parents=True, exist_ok=True)
-            
+        if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
         target.write_text(logo_svg(), encoding="utf-8")
         return target
     except (OSError, PermissionError, TypeError, ValueError, AttributeError, RuntimeError):
@@ -320,9 +312,9 @@ def draw_logo(canvas: Any, size: int = 56, canvas_x: int = 0, canvas_y: int = 0)
     Renderiza el escudo Omega vectorialmente en un widget Tkinter.Canvas.
     
     Args:
-        canvas: Widget Tkinter destino.
+        canvas: Widget canvas destino.
         size: Tamaño base del icono.
-        canvas_x, canvas_y: Desplazamiento inicial del dibujo.
+        canvas_x, canvas_y: Offset de coordenadas.
     """
     if canvas is None or not hasattr(canvas, "create_polygon"): return
     try:
@@ -340,7 +332,6 @@ def draw_logo(canvas: Any, size: int = 56, canvas_x: int = 0, canvas_y: int = 0)
             )
 
         canvas.create_polygon(contorno, fill=GRADIENT_STOPS[1], outline="")
-        
         franjas = max(6, int(28 * s))
         alto = 92 * s / franjas
         for i, tono in enumerate(gradient_colors(franjas)):
@@ -363,13 +354,12 @@ def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
                       stops: tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
     """
     Dibuja una franja horizontal decorativa con gradiente suavizado.
-    Optimiza el rendimiento agrupando píxeles consecutivos del mismo color.
+    Optimiza el rendimiento agrupando píxeles consecutivos.
     """
     if canvas is None or not hasattr(canvas, "create_line"): return
     try:
         ancho = max(1, int(width))
         colores = gradient_colors(ancho, stops)
-        
         i = 0
         while i < ancho:
             inicio = i
@@ -392,11 +382,9 @@ def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
     Dibuja un medidor circular (HealthScore) centrado en una coordenada.
     
     Args:
-        percent: Valor porcentual (0-100) del arco.
-        size: Diámetro exterior total del anillo.
-        thickness: Grosor de la línea del anillo.
-        track: Color de la ruta de fondo (opcional).
-        fill: Color del arco activo (opcional).
+        percent: Porcentaje (0-100).
+        size: Diámetro exterior.
+        thickness: Grosor del trazo.
     """
     if canvas is None or not hasattr(canvas, "create_arc"): return
     try:
