@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **253** (50.2% de aceptación)
+- Mejoras aceptadas: **255** (50.6% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 26
+- Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 198
+- Sin respuesta de la IA (error o límite): 195
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-01 | 124 | 8 | 12 | 6 | 118 |
-| 2026-08-02 | 129 | 6 | 14 | 7 | 80 |
+| 2026-08-01 | 123 | 8 | 12 | 6 | 115 |
+| 2026-08-02 | 132 | 6 | 15 | 7 | 80 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **66**
-- seguridad defensiva: **49**
+- rendimiento: **51**
 - manejo de errores y validación de entradas: **49**
-- rendimiento: **48**
+- seguridad defensiva: **48**
 - robustez ante casos límite: **41**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **22**
+- `settings.py`: **23**
 - `organizer.py`: **21**
+- `scanner.py`: **21**
 - `main.py`: **20**
 - `quarantine.py`: **20**
-- `scanner.py`: **20**
-- `browser.py`: **19**
+- `safety.py`: **18**
 - `assistant.py`: **18**
+- `browser.py`: **18**
 - `diskreport.py`: **18**
-- `safety.py`: **17**
 - `healthscore.py`: **17**
 - `duplicates.py`: **17**
 - `memory.py`: **15**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-02T10:10:31` **settings.py** (rendimiento): Se optimizó `load()` para eliminar llamadas redundantes a `settings_path()` y `ruta.stat()` mediante el uso del caché ya existente, reduciendo operaciones de I/O innecesarias en cada consulta.
+- `2026-08-02T10:10:22` **scanner.py** (rendimiento): Optimizamos `scan_file` eliminando redundancias de E/S y chequeos de seguridad innecesarios, ya que `is_protected_path` es invocado preventivamente en el `process_entry` del bucle principal, evitando así llamadas repetidas al sistema de archivos por cada archivo escaneado.
+- `2026-08-02T10:10:00` **safety.py** (rendimiento): Se ha optimizado la función `is_protected_path` reemplazando la creación dinámica de un `set` de partes del path en cada llamada por un método de `isdisjoint` aplicado directamente sobre el generador de componentes del path, reduciendo drásticamente las asignaciones de memoria y el tiempo de CPU en bucles de escaneo extensos.
 - `2026-08-02T10:01:16` **quarantine.py** (rendimiento): Optimicé el manejo de la memoria y el rendimiento de las operaciones sobre el manifiesto sustituyendo la carga redundante de la lista completa de objetos (y su posterior filtrado por búsqueda lineal) por un `dict` indexado por `item_id`, lo cual reduce la complejidad de búsqueda de O(n) a O(1) en las funciones `restore_item` y `purge_item`.
 - `2026-08-02T10:01:03` **organizer.py** (rendimiento): Optimizé el rendimiento de `scan_for_junk` evitando la instanciación redundante de objetos `Path` y llamadas a `resolve()` dentro del bucle interno, usando directamente las propiedades de `os.DirEntry` y filtrando mediante sets pre-calculados.
 - `2026-08-02T10:00:41` **memory.py** (rendimiento): Se implementó un cacheo a nivel de módulo para la consulta de procesos (`top_memory_processes`) con un TTL (time-to-live) de 5 segundos, evitando llamadas redundantes e costosas al motor de PowerShell durante una misma ejecución de la interfaz.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-02T09:29:49` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings estructurados (usando el formato Google Style) en las funciones de heurística y en la clase principal, clarificando las precondiciones, los argumentos esperados y los valores de retorno para facilitar la auditabilidad del código.
 - `2026-08-02T09:29:42` **safety.py** (legibilidad y documentación): Se ha añadido un docstring detallado a `ensure_safe_to_modify` para explicar el razonamiento detrás de los checks de seguridad (la jerarquía de validación), mejorando la mantenibilidad técnica del módulo core de seguridad.
 - `2026-08-02T09:29:00` **quarantine.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `quarantine.py` mediante type hints adicionales en argumentos opcionales y docstrings detallados que explicitan las asunciones de seguridad y los casos de error para cada función crítica.
-- `2026-08-02T09:20:35` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación técnica interna de `organizer.py` mediante type hints explícitos, docstrings que clarifican el "porqué" de las guardas de seguridad y el uso de un bloque lógico más legible en la función de escaneo para facilitar el mantenimiento futuro.
-- `2026-08-02T09:20:27` **memory.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings específicos, incluí type hints faltantes en el acceso a APIs y extraje la lógica de conversión de bytes a una lógica más clara para asegurar que las unidades sean consistentes y legibles.
-- `2026-08-02T09:19:52` **main.py** (legibilidad y documentación): Se ha mejorado la documentación de los métodos de la clase `LimpiezaTotalOmegaApp` mediante la actualización de sus docstrings para reflejar con mayor precisión el propósito de cada componente, la naturaleza de la ejecución asíncrona y la seguridad del manejo de archivos, cumpliendo con el enfoque de legibilidad y documentación sin alterar la funcionalidad.

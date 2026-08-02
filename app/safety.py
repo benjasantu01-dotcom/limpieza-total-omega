@@ -136,9 +136,7 @@ def is_protected_path(path: PathLike) -> bool:
     
     try:
         p = normalize(path)
-        parts = {p_part.lower() for p_part in p.parts if p_part}
-        
-        if not _ALL_PROTECTED_TOKENS.isdisjoint(parts):
+        if not _ALL_PROTECTED_TOKENS.isdisjoint(part.lower() for part in p.parts if part):
             return True
             
         if p == Path(p.anchor):

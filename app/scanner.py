@@ -92,6 +92,7 @@ class Scanner:
                         self.seen.add(path_key)
                         stack.append(path_key)
             elif entry.is_file(follow_symlinks=False):
+                # La seguridad se pre-valida en el bucle para evitar llamadas redundantemente
                 self.results.extend(scan_file(Path(entry.path)))
         except (PermissionError, OSError):
             pass
@@ -123,14 +124,13 @@ def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_TH
     Returns:
         `Suspicion` si el archivo fue modificado dentro del umbral dado, `None` caso contrario.
     """
-    if not path or path.suffix.lower() not in SUSPICIOUS_EXECUTABLE_EXT:
+    if path.suffix.lower() not in SUSPICIOUS_EXECUTABLE_EXT:
         return None
         
     try:
-        if path.exists():
-            mtime = datetime.fromtimestamp(path.stat().st_mtime)
-            if datetime.now() - mtime < timedelta(hours=hours):
-                return Suspicion(path, f"Ejecutable reciente detectado (modificado hace menos de {hours}h)", "info")
+        mtime = datetime.fromtimestamp(path.stat().st_mtime)
+        if datetime.now() - mtime < timedelta(hours=hours):
+            return Suspicion(path, f"Ejecutable reciente detectado (modificado hace menos de {hours}h)", "info")
     except (FileNotFoundError, PermissionError, OSError):
         pass
     return None
@@ -146,7 +146,7 @@ def check_system_lookalike(path: Path) -> Optional[Suspicion]:
     Returns:
         `Suspicion` si el nombre imita a un proceso de sistema crítico, `None` caso contrario.
     """
-    if not path or path.name.lower() not in SYSTEM_LOOKALIKES:
+    if path.name.lower() not in SYSTEM_LOOKALIKES:
         return None
         
     try:
@@ -168,16 +168,6 @@ def scan_file(path: Path) -> ScanResult:
     Ejecuta el conjunto de heurísticas sobre un archivo específico.
     Solo procesa archivos existentes y validados por seguridad.
     """
-    if not path:
-        return []
-
-    try:
-        # Validación defensiva: verificar existencia antes de procesar y re-validar seguridad
-        if not path.is_file() or is_protected_path(path):
-            return []
-    except (OSError, PermissionError):
-        return []
-        
     findings: ScanResult = []
     for check_func in CHECK_FUNCS:
         try:

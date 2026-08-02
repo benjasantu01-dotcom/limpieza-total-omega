@@ -170,13 +170,20 @@ def load(path_or_base: PathLike | None = None) -> dict[str, Any]:
     st_mtime para evitar lecturas redundantes de I/O.
     """
     global _cached_settings, _last_path, _last_mtime
-    ruta = settings_path(path_or_base)
     
+    # Prioridad: usar caché global si la ruta coincide y no ha cambiado en disco
+    if _cached_settings is not None and (path_or_base is None or Path(path_or_base) == _last_path):
+        try:
+            if _last_path and _last_path.exists() and _last_path.stat().st_mtime == _last_mtime:
+                return _cached_settings.copy()
+        except OSError:
+            pass
+
+    ruta = settings_path(path_or_base)
     try:
-        if not ruta.exists(): return DEFAULTS.copy()
+        if not ruta.exists(): 
+            return DEFAULTS.copy()
         stat = ruta.stat()
-        if _cached_settings is not None and ruta == _last_path and stat.st_mtime == _last_mtime:
-            return _cached_settings.copy()
         if stat.st_size > MAX_SETTINGS_SIZE:
             return DEFAULTS.copy()
         data = json.loads(ruta.read_text(encoding="utf-8"))
@@ -187,8 +194,7 @@ def load(path_or_base: PathLike | None = None) -> dict[str, Any]:
         pass
     
     _cached_settings = DEFAULTS.copy()
-    _last_path = ruta
-    _last_mtime = 0.0
+    _last_path, _last_mtime = ruta, 0.0
     return _cached_settings.copy()
 
 def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
