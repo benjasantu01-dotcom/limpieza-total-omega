@@ -158,44 +158,46 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
     """
     if not directory:
         return
-    try:
-        base_path = Path(directory).expanduser().resolve(strict=True)
-        if not base_path.is_dir() or (skip_protected and is_protected_path(base_path)):
-            return
-    except (OSError, RuntimeError, PermissionError, ValueError, TypeError):
+
+    def get_valid_base() -> Path | None:
+        try:
+            base = Path(directory).expanduser().resolve(strict=True)
+            if base.is_dir() and not (skip_protected and is_protected_path(base)):
+                return base
+        except (OSError, RuntimeError, PermissionError, ValueError, TypeError):
+            pass
+        return None
+
+    base_path = get_valid_base()
+    if not base_path:
         return
 
     visited_directories = {base_path}
     base_drive = base_path.drive
 
-    def recursive_scan(root_path: Path) -> Generator[Tuple[Path, int], None, None]:
+    def scan_level(current_path: Path) -> Generator[Tuple[Path, int], None, None]:
         try:
-            with os.scandir(root_path) as iterator:
+            with os.scandir(current_path) as iterator:
                 for entry in iterator:
                     try:
-                        if entry.is_symlink():
-                            continue
-                        if os.name == 'nt' and entry.stat(follow_symlinks=False).st_reparse_tag != 0:
+                        if entry.is_symlink() or (os.name == 'nt' and entry.stat(follow_symlinks=False).st_reparse_tag != 0):
                             continue
                         
-                        full_entry_path = Path(entry.path).resolve()
-                        if full_entry_path.drive != base_drive or base_path not in full_entry_path.parents:
-                            continue
-
+                        full_path = Path(entry.path).resolve()
+                        
                         if entry.is_dir():
-                            if full_entry_path in visited_directories or (skip_protected and is_protected_path(full_entry_path)):
-                                continue
-                            visited_directories.add(full_entry_path)
-                            yield from recursive_scan(full_entry_path)
+                            if full_path not in visited_directories and not (skip_protected and is_protected_path(full_path)):
+                                visited_directories.add(full_path)
+                                yield from scan_level(full_path)
                         else:
-                            if not (skip_protected and is_protected_path(full_entry_path)):
-                                yield full_entry_path, entry.stat().st_size
+                            if not (skip_protected and is_protected_path(full_path)):
+                                yield full_path, entry.stat().st_size
                     except (OSError, PermissionError, FileNotFoundError, TypeError):
                         continue
         except (OSError, PermissionError, FileNotFoundError, TypeError):
-            return
+            pass
 
-    yield from recursive_scan(base_path)
+    yield from scan_level(base_path)
 
 
 def largest_files(directory: str | os.PathLike, limit: int = 20, skip_protected: bool = True) -> list[FileEntry]:

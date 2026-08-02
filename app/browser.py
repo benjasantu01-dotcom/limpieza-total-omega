@@ -131,6 +131,13 @@ def directory_size(path: str | os.PathLike | None) -> int:
     except (OSError, TypeError, ValueError):
         return 0
     
+    def is_valid_entry(entry: os.DirEntry) -> bool:
+        """Determina si un archivo o carpeta debe ser incluido en el escaneo."""
+        return (
+            entry.name.lower() not in NEVER_TOUCH and
+            not entry.is_symlink()
+        )
+
     total_bytes: int = 0
     stack: List[str] = [str(root)]
     
@@ -140,9 +147,7 @@ def directory_size(path: str | os.PathLike | None) -> int:
             with os.scandir(current_dir_str) as it:
                 for entry in it:
                     try:
-                        if entry.name.lower() in NEVER_TOUCH:
-                            continue
-                        if entry.is_symlink():
+                        if not is_valid_entry(entry):
                             continue
                         if entry.is_dir(follow_symlinks=False):
                             stack.append(entry.path)

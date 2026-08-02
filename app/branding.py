@@ -25,6 +25,7 @@ from safety import is_safe_to_modify, ensure_safe_to_modify
 HexColor: TypeAlias = str
 SeverityKey: TypeAlias = Literal["ok", "info", "warning", "danger"]
 GradeKey: TypeAlias = Literal["A", "B", "C", "D", "F"]
+# Tupla que contiene (Color, Etiqueta legible)
 SeverityStyle: TypeAlias = Tuple[HexColor, str]
 
 APP_NAME: Final = "Limpieza Total Omega"
@@ -197,7 +198,10 @@ def bar(percent: Union[float, int, None], width: int = 24,
 
 @lru_cache(maxsize=128)
 def _hex_to_rgb(value: HexColor) -> tuple[int, int, int]:
-    """Convierte hexadecimal (#RRGGBB) a tupla RGB (r, g, b)."""
+    """
+    Descompone un valor hexadecimal en sus componentes RGB enteros.
+    Validación de formato: acepta #RRGGBB. Retorna (0,0,0) ante errores.
+    """
     if not isinstance(value, str) or not value.startswith("#"):
         return (0, 0, 0)
     limpio = value.lstrip("#")
@@ -212,18 +216,19 @@ def _hex_to_rgb(value: HexColor) -> tuple[int, int, int]:
 @lru_cache(maxsize=64)
 def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
     """
-    Interpola linealmente entre dos colores hex.
+    Realiza una interpolación lineal (LERP) entre dos colores hex.
     
     Args:
-        start: Color de inicio.
-        end: Color de fin.
-        ratio: Factor de mezcla entre 0.0 (inicio) y 1.0 (fin).
+        start: Color inicial en formato #RRGGBB.
+        end: Color final en formato #RRGGBB.
+        ratio: Factor de peso entre 0.0 (totalmente start) y 1.0 (totalmente end).
     Returns:
         Color mezclado resultante como string HexColor.
     """
     proporcion = max(0.0, min(1.0, float(ratio)))
     r1, g1, b1 = _hex_to_rgb(start)
     r2, g2, b2 = _hex_to_rgb(end)
+    # Cálculo de cada canal: v_final = v1 + (v2 - v1) * ratio
     return "#{:02x}{:02x}{:02x}".format(
         int(r1 + (r2 - r1) * proporcion),
         int(g1 + (g2 - g1) * proporcion),
@@ -234,13 +239,10 @@ def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
 @lru_cache(maxsize=16)
 def gradient_colors(steps: int, stops: tuple[HexColor, ...] = GRADIENT_STOPS) -> List[HexColor]:
     """
-    Genera una lista de colores interpolados basada en múltiples puntos de control.
+    Genera una secuencia de colores interpolados distribuida en 'steps'.
     
-    Args:
-        steps: Cantidad total de colores a generar.
-        stops: Puntos de control (colores hex) para la transición.
-    Returns:
-        Lista de colores calculados o lista por defecto si hay error.
+    Utiliza un gradiente multilineal donde cada segmento entre dos stops 
+    se interpola independientemente para mantener la fluidez visual.
     """
     try:
         cantidad = max(1, int(steps))
@@ -253,6 +255,7 @@ def gradient_colors(steps: int, stops: tuple[HexColor, ...] = GRADIENT_STOPS) ->
     tramos = len(stops) - 1
     salida: List[HexColor] = []
     for i in range(cantidad):
+        # Determina qué segmento del gradiente corresponde a este paso
         posicion = i / max(1, cantidad - 1) * tramos
         indice = min(tramos - 1, int(posicion))
         salida.append(blend(stops[indice], stops[indice + 1], posicion - indice))
