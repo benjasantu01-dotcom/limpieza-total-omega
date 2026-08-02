@@ -717,3 +717,58 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-02T05:04:26` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se introdujeron docstrings explicativos y se añadieron anotaciones de tipo mejoradas para clarificar la lógica de validación, facilitando el mantenimiento y la auditoría del flujo de datos en el archivo.
 - `2026-08-02T05:04:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-02T05:04:26` Corrida terminada. Total usado hoy: 120.
+- `2026-08-02T05:13:24` Arrancando corrida. Quedan hoy ~180 peticiones objetivo.
+- `2026-08-02T05:13:48` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-08-02T05:14:21` Tests FALLARON:
+```
+e '\)'
+    """Verifica si la ruta apunta a la raíz de una unidad (ej. C:\)."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_answers_are_never_empty - TypeError: 'generator' object is not subscriptable
+FAILED evolve/tests/test_assistant.py::test_garbage_questions_still_get_an_answer - TypeError: 'generator' object is not subscriptable
+FAILED evolve/tests/test_assistant.py::test_low_disk_is_reported_as_the_top_priority - TypeError: 'generator' object is not subscriptable
+FAILED evolve/tests/test_assistant.py::test_a_healthy_system_gets_a_calm_answer - TypeError: 'generator' object is not subscriptable
+FAILED evolve/tests/test_assistant.py::test_local_answer_always_says_it_did_not_send_anything - TypeError: 'generator' object is not subscriptable
+FAILED evolve/tests/test_assistant.py::test_ask_stays_local_when_the_assistant_is_off - TypeError: 'generator' object is not subscriptable
+FAILED evolve/tests/test_assistant.py::test_ask_uses_the_online_engine_when_authorized - TypeError: 'generator' object is not subscriptable
+FAILED evolve/tests/test_assistant.py::test_online_failure_falls_back_to_local - TypeError: 'generator' object is not subscriptable
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - TypeError: 'generator' object is not subscriptable
+9 failed, 290 passed, 4 warnings in 1.22s
+
+```
+- `2026-08-02T05:14:21` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Optimicé `_rank_problems` convirtiéndolo en un generador de comparaciones directas y eliminando la necesidad de concatenar listas o crear estructuras intermedias innecesarias, mejorando el rendimiento en cada consulta del asistente.
+- `2026-08-02T05:14:50` Tests FALLARON:
+```
+ 3, canvas_x = 0, canvas_y = 0
+stops = ('#00f0c0', '#7c5cff', '#ff2d78')
+
+    def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
+                          canvas_x: int = 0, canvas_y: int = 0,
+                          stops: tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
+        """Dibuja una franja horizontal decorativa con gradiente suavizado."""
+        if canvas is None or not hasattr(canvas, "create_line"): return
+>       ancho = max(1, int(width))
+                       ^^^^^^^^^^
+E       ValueError: invalid literal for int() with base 10: 'ancho'
+
+app/branding.py:343: ValueError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:119: SyntaxWarning: invalid escape sequence '\)'
+    """Verifica si la ruta apunta a la raíz de una unidad (ej. C:\)."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_gradient_bar_ignores_invalid_sizes - ValueError: invalid literal for int() with base 10: 'ancho'
+1 failed, 298 passed, 4 warnings in 1.07s
+
+```
+- `2026-08-02T05:14:50` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `draw_gradient_bar` y `draw_ring` eliminando la creación de objetos innecesarios y consolidando las operaciones de dibujo en el canvas, además de refactorizar la lógica de `gradient_colors` para evitar recalcular tramos innecesariamente mediante una pre-validación de índices.
+- `2026-08-02T05:14:57` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el cálculo de tamaño de directorio usando `scandir` de forma más eficiente y evitando la creación redundante de objetos `Path` dentro del bucle de recursión, reduciendo la presión sobre el recolector de basura y mejorando la velocidad de escaneo.
+- `2026-08-02T05:14:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-02T05:14:57` Corrida terminada. Total usado hoy: 124.

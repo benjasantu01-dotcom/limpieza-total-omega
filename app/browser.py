@@ -133,29 +133,23 @@ def directory_size(path: str | os.PathLike | None) -> int:
         return 0
     
     total_bytes: int = 0
-    # Stack contiene tuplas de (directorio_a_analizar, profundidad_actual)
-    stack: List[Tuple[Path, int]] = [(root, 0)]
+    stack: List[str] = [str(root)]
     MAX_DEPTH = 32
     
     while stack:
-        current_dir, depth = stack.pop()
-        if depth > MAX_DEPTH:
-            continue
-            
+        current_dir_str = stack.pop()
+        
         try:
-            with os.scandir(current_dir) as it:
+            with os.scandir(current_dir_str) as it:
                 for entry in it:
                     try:
-                        entry_path = Path(entry.path)
-                        if is_protected_path(entry_path):
-                            continue
-                            
-                        # Saltamos enlaces para evitar recursión circular
-                        if entry.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(entry.path)):
+                        # Usar directamente el nombre para evitar convertir a Path innecesariamente
+                        if entry.name.lower() in NEVER_TOUCH:
                             continue
                         
                         if entry.is_dir(follow_symlinks=False):
-                            stack.append((entry_path, depth + 1))
+                            if stack.count(current_dir_str) < MAX_DEPTH:
+                                stack.append(entry.path)
                         else:
                             total_bytes += entry.stat().st_size
                     except (OSError, PermissionError):
