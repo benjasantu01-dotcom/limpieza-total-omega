@@ -416,3 +416,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-02T02:21:39` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: seguridad defensiva).
 - `2026-08-02T02:21:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-02T02:21:39` Corrida terminada. Total usado hoy: 56.
+- `2026-08-02T02:29:57` Arrancando corrida. Quedan hoy ~244 peticiones objetivo.
+- `2026-08-02T02:30:17` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-02T02:30:39` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-08-02T02:31:01` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva de `scanner.py` reemplazando el uso de `entry.exists()` (que puede fallar en archivos bloqueados o nodos especiales) por un manejo más seguro de los atributos de entrada, garantizando que el escáner no intente resolver rutas de archivos que no son accesibles o que podrían ser enlaces simbólicos peligrosos antes de validarlos con `is_protected_path`.
+- `2026-08-02T02:31:09` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Reforcé la seguridad defensiva en `save` verificando explícitamente que la ruta resuelta del archivo de configuración no sea un enlace simbólico y que resida dentro de una jerarquía segura, previniendo ataques de escalada o manipulación de archivos mediante enlaces malintencionados.
+- `2026-08-02T02:31:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-02T02:31:09` Corrida terminada. Total usado hoy: 60.

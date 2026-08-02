@@ -76,21 +76,19 @@ class Scanner:
         :param stack: Lista mutable que actúa como pila para el recorrido recursivo (DFS).
         """
         try:
-            # Validar existencia real para manejar casos de eliminación súbita
-            if not entry.exists():
-                return
+            # Obtener path de forma segura antes de cualquier operación
+            path_str = entry.path
             
             if entry.is_dir(follow_symlinks=False):
                 if not self._is_reparse_point(entry):
-                    path_str = entry.path
                     resolved_path = Path(path_str).resolve()
                     path_key = str(resolved_path)
                     if path_key not in self.seen and not is_protected_path(resolved_path):
                         self.seen.add(path_key)
                         stack.append(path_str)
             elif entry.is_file(follow_symlinks=False):
-                path_obj = Path(entry.path).resolve()
-                if not is_protected_path(path_obj) and path_obj.exists():
+                path_obj = Path(path_str).resolve()
+                if not is_protected_path(path_obj):
                     self.results.extend(scan_file(path_obj))
         except (PermissionError, OSError):
             pass
@@ -151,7 +149,7 @@ CHECK_FUNCS: Final[List[SuspicionCheck]] = [
 
 def scan_file(path: Path) -> ScanResult:
     """Aplica todas las heurísticas registradas sobre un archivo único."""
-    if not path or not path.exists():
+    if not path or not path.is_file():
         return []
         
     findings: ScanResult = []
@@ -172,7 +170,7 @@ def scan_directory(directory: Union[str, Path]) -> ScanResult:
         
     try:
         path_obj = Path(directory).resolve()
-        if not path_obj.exists() or not path_obj.is_dir() or is_protected_path(path_obj):
+        if not path_obj.is_dir() or is_protected_path(path_obj):
             return []
     except (OSError, RuntimeError):
         return []

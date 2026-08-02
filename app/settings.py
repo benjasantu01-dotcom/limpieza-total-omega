@@ -179,8 +179,13 @@ def load(path_or_base: PathLike | None = None) -> dict[str, Any]:
 def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     global _cached_settings, _last_path, _last_mtime
     ruta = settings_path(path_or_base)
-    if not is_safe_to_modify(str(ruta.parent)) or (ruta.exists() and ruta.is_symlink()): return None
-    if ruta.parent.exists() and not os.access(ruta.parent, os.W_OK): return None
+    
+    # Verificación estricta: No escribir si es symlink o está en zona protegida
+    if ruta.is_symlink() or not is_safe_to_modify(str(ruta.resolve().parent)):
+        return None
+    if ruta.parent.exists() and not os.access(ruta.parent, os.W_OK):
+        return None
+        
     limpio = validate(values)
     try:
         json_data = json.dumps(limpio, indent=2, ensure_ascii=False)
