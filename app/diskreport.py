@@ -125,9 +125,7 @@ def drive_usage(mount: str | os.PathLike) -> DriveUsage | None:
     try:
         path_str = os.fspath(mount)
         p = Path(path_str).resolve()
-        if is_protected_path(p):
-            return None
-        if not p.exists():
+        if not p.exists() or is_protected_path(p):
             return None
         usage = shutil.disk_usage(path_str)
         return DriveUsage(mount=str(mount), total=usage.total, used=usage.used, free=usage.free)
@@ -171,35 +169,27 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
     base_drive = base_path.drive
 
     def recursive_scan(root_path: Path) -> Generator[Tuple[Path, int], None, None]:
-        if not os.access(root_path, os.R_OK):
-            return
         try:
             with os.scandir(root_path) as iterator:
                 for entry in iterator:
                     try:
-                        # Exclusión de enlaces simbólicos y puntos de reparse (Junctions en NTFS)
                         if entry.is_symlink():
                             continue
                         if os.name == 'nt' and entry.stat(follow_symlinks=False).st_reparse_tag != 0:
                             continue
                         
                         full_entry_path = Path(entry.path).resolve()
-                        
-                        # Verificación de integridad: no salir del sistema de archivos o la carpeta raíz
                         if full_entry_path.drive != base_drive or base_path not in full_entry_path.parents:
                             continue
 
                         if entry.is_dir():
-                            if full_entry_path in visited_directories:
-                                continue
-                            if skip_protected and is_protected_path(full_entry_path):
+                            if full_entry_path in visited_directories or (skip_protected and is_protected_path(full_entry_path)):
                                 continue
                             visited_directories.add(full_entry_path)
                             yield from recursive_scan(full_entry_path)
                         else:
-                            if skip_protected and is_protected_path(full_entry_path):
-                                continue
-                            yield full_entry_path, entry.stat().st_size
+                            if not (skip_protected and is_protected_path(full_entry_path)):
+                                yield full_entry_path, entry.stat().st_size
                     except (OSError, PermissionError, FileNotFoundError, TypeError):
                         continue
         except (OSError, PermissionError, FileNotFoundError, TypeError):
@@ -246,7 +236,6 @@ def largest_folders(directory: str | os.PathLike, limit: int = 10, skip_protecte
             return []
         
         folder_map: dict[Path, FolderUsage] = {}
-        
         for path, size in walk_files(base, skip_protected):
             try:
                 rel = path.relative_to(base)

@@ -414,3 +414,10 @@ FAILED evolve/tests/test_modules.py::test_never_scans_system_folders - Attribute
 - `2026-08-02T12:55:21` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `directory_size` validando la entrada y capturando excepciones de forma específica, y se mejoró la resiliencia del bucle de escaneo en `detect_profiles` para manejar rutas malformadas o permisos denegados sin interrumpir el análisis.
 - `2026-08-02T12:55:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-02T12:55:21` Corrida terminada. Total usado hoy: 304.
+- `2026-08-02T13:03:17` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-02T13:03:43` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `drive_usage` y `walk_files` mediante la validación explícita de entradas nulas o rutas inválidas y la captura de errores al resolver rutas, asegurando que el bucle principal no se interrumpa ante fallos de acceso o condiciones de carrera en el sistema de archivos.
+- `2026-08-02T13:04:05` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-02T13:04:28` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-02T13:05:12` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `main.py` al añadir validaciones críticas de `None` y `tipos` en los métodos de carga de estado y selección de carpetas, evitando excepciones no controladas si los archivos de configuración o los diálogos del sistema devuelven valores inesperados.
+- `2026-08-02T13:05:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-02T13:05:12` Corrida terminada. Total usado hoy: 308.

@@ -143,9 +143,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.assistant_context = assistant.SystemContext()
         
         try:
-            self.settings = settings_mod.load()
-            if not isinstance(self.settings, dict): 
-                raise ValueError("Configuración no es un diccionario")
+            raw_settings = settings_mod.load()
+            if not isinstance(raw_settings, dict): 
+                raise ValueError("Configuración no es un diccionario válido")
+            self.settings = raw_settings
         except Exception as e:
             logging.error("Fallo al cargar ajustes, reseteando: %s", e)
             self.settings = settings_mod.reset()
@@ -158,8 +159,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._tasks_running = 0
         self._executor = concurrent.futures.ThreadPoolExecutor(max_workers=5)
 
-    def _is_valid_dir(self, path: str) -> bool:
+    def _is_valid_dir(self, path: Optional[str]) -> bool:
         """Valida la existencia de una ruta como directorio en el sistema de archivos."""
+        if not path:
+            return False
         try:
             p = Path(path)
             return p.exists() and p.is_dir()
@@ -180,9 +183,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         if provider:
             try:
                 data = provider()
-                if len(self._cache) >= self._cache_max_size:
-                    self._cache.popitem(last=False) # Expulsar el más viejo
-                self._cache[key] = (data, now)
+                if data is not None:
+                    if len(self._cache) >= self._cache_max_size:
+                        self._cache.popitem(last=False) # Expulsar el más viejo
+                    self._cache[key] = (data, now)
                 return data
             except Exception as e:
                 logging.error("Error al obtener datos para caché %s: %s", key, e)
@@ -855,7 +859,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         destino sea seguro de modificar antes de devolverlo.
         """
         folder = filedialog.askdirectory(title=title)
-        if not folder:
+        if not folder or not isinstance(folder, str):
             return None
         
         path_obj = Path(folder)
