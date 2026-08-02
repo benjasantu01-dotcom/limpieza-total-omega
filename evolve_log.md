@@ -568,3 +568,4 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-08-02T14:56:35` Corrida terminada. Total usado hoy: 350.
 - `2026-08-02T15:06:06` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-08-02T15:16:20` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-08-02T15:26:33` Presupuesto diario agotado (350 usados). Corte hasta mañana.
