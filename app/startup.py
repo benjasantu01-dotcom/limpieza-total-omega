@@ -167,6 +167,7 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
     if len(lines) < 2: return []
     
     for line in lines[1:]:
+        # Split conservador: limita a 2 partes, ignorando columnas extras de PS
         parts = line.split(",", 1)
         if len(parts) < 2: continue
         

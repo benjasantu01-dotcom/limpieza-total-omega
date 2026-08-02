@@ -429,9 +429,9 @@ def _call_gemini(
     model: str
 ) -> Optional[str]:
     """
-    Envía métricas agregadas a Gemini usando la librería estándar urllib.
-    Validaciones de seguridad garantizan que no salgan rutas del sistema y
-    que la respuesta no contenga caracteres sospechosos.
+    Envía métricas agregadas a Gemini mediante la librería estándar urllib.
+    Realiza una serialización JSON del contexto y la pregunta, validando la
+    integridad de la respuesta recibida contra caracteres no seguros.
     """
     if not api_key or not model or not _MODEL_NAME_REGEX.match(model):
         return None
@@ -487,8 +487,9 @@ def _call_gemini(
 def ask(question: str, context: SystemContext | None = None,
         base: str | Path | None = None) -> Answer:
     """
-    Coordina la resolución de la consulta: primero intenta el motor local,
-    y si está habilitado y es seguro, consulta al modelo remoto.
+    Coordina la resolución de la consulta: intenta una respuesta local basada
+    en reglas estáticas y, si el asistente en línea está habilitado en
+    settings, intenta obtener una respuesta contextual mediante _call_gemini.
     """
     ctx = context if isinstance(context, SystemContext) else SystemContext()
     respaldo = local_answer(question, ctx)

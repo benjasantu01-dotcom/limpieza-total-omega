@@ -10,6 +10,7 @@ de revisión de `organizer.py`, con confirmación del usuario.
 
 A propósito se listan solo carpetas de CACHÉ (datos regenerables) y nunca
 las de credenciales o marcadores, ni siquiera para reportar su tamaño.
+La exclusión se gestiona mediante la constante `NEVER_TOUCH`.
 
 Diseño testeable: `detect_profiles` recibe la carpeta base por parámetro,
 así en CI se puede simular una instalación con carpetas temporales.
@@ -96,7 +97,8 @@ def base_directories() -> List[Path]:
 def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> bool:
     """
     Valida la integridad de la ruta candidata evitando Directory Traversal
-    y puntos de reparse (junctions).
+    y puntos de reparse (junctions). Retorna False si la ruta está fuera
+    de la base o es un enlace simbólico potencialmente malicioso.
     """
     if not isinstance(target_path, Path) or not isinstance(base_path, Path):
         return False
@@ -120,6 +122,7 @@ def directory_size(path: str | os.PathLike | None) -> int:
     """
     Calcula el tamaño total en bytes de un directorio mediante una búsqueda
     iterativa (stack-based), optimizada para minimizar syscalls.
+    Ignora recursivamente rutas protegidas por `safety.py` o enlaces simbólicos.
     """
     if not path:
         return 0
@@ -140,7 +143,8 @@ def directory_size(path: str | os.PathLike | None) -> int:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
-                        # Exclusión de punteros y seguridad
+                        # Exclusión de punteros y seguridad: evitamos seguir enlaces
+                        # simbólicos para prevenir ciclos o escapes fuera de la raíz.
                         if entry.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(entry.path)):
                             continue
                         
@@ -159,6 +163,8 @@ def directory_size(path: str | os.PathLike | None) -> int:
 def _is_valid_cache_path(candidate: Path | None, base_path: Path) -> bool:
     """
     Valida si un candidato es una ruta de caché apta para ser reportada.
+    Verifica que la ruta exista, sea directorio, pase filtros de seguridad
+    y no contenga nombres restringidos en NEVER_TOUCH.
     """
     if not isinstance(candidate, Path):
         return False
@@ -183,6 +189,7 @@ def detect_profiles(
 ) -> List[BrowserCache]:
     """
     Explora los directorios base buscando las rutas de caché predefinidas.
+    Retorna una lista de objetos `BrowserCache` ordenados por tamaño descendente.
     """
     bases = bases if bases is not None else base_directories()
     cache_paths = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
@@ -219,6 +226,7 @@ def total_cache_bytes(caches: Iterable[BrowserCache] | None = None) -> int:
 def summarize(caches: Optional[List[BrowserCache]] = None) -> List[str]:
     """
     Genera un informe textual listo para la UI con el total de MB detectados.
+    Si no se provee `caches`, ejecuta `detect_profiles` automáticamente.
     """
     current_caches = caches if caches is not None else detect_profiles()
     

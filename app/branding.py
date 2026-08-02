@@ -184,6 +184,10 @@ def bar(percent: Union[float, int, None], width: int = 24,
         filled: str = "\u2588", empty: str = "\u2591") -> str:
     """
     Genera una barra de progreso visual en texto plano para logs o CLI.
+    
+    Args:
+        percent: Valor 0-100 a representar.
+        width: Cantidad total de caracteres de la barra.
     """
     try:
         valor = max(0.0, min(100.0, float(percent))) # type: ignore
@@ -196,7 +200,7 @@ def bar(percent: Union[float, int, None], width: int = 24,
 
 @lru_cache(maxsize=128)
 def _hex_to_rgb(value: HexColor) -> tuple[int, int, int]:
-    """Convierte hexadecimal (#RRGGBB) a tupla RGB."""
+    """Convierte hexadecimal (#RRGGBB) a tupla RGB (r, g, b)."""
     if not isinstance(value, str) or not value.startswith("#"):
         return (0, 0, 0)
     limpio = value.lstrip("#")
@@ -210,7 +214,12 @@ def _hex_to_rgb(value: HexColor) -> tuple[int, int, int]:
 
 @lru_cache(maxsize=64)
 def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
-    """Interpola linealmente (Lerp) entre dos colores (ratio 0.0 a 1.0)."""
+    """
+    Interpola linealmente (Lerp) entre dos colores.
+    
+    Args:
+        ratio: Valor de 0.0 (inicio) a 1.0 (fin) que determina la mezcla.
+    """
     proporcion = max(0.0, min(1.0, float(ratio)))
     r1, g1, b1 = _hex_to_rgb(start)
     r2, g2, b2 = _hex_to_rgb(end)
@@ -223,7 +232,10 @@ def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
 
 @lru_cache(maxsize=16)
 def gradient_colors(steps: int, stops: tuple[HexColor, ...] = GRADIENT_STOPS) -> List[HexColor]:
-    """Genera una lista de colores interpolados basada en puntos de control."""
+    """
+    Genera una lista de colores interpolados basada en múltiples puntos de control.
+    Distribuye los colores proporcionalmente según el número de pasos solicitados.
+    """
     try:
         cantidad = max(1, int(steps))
     except (TypeError, ValueError):
@@ -278,7 +290,6 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
             return None
             
         parent = path.parent
-        # Validar siempre la seguridad del directorio padre antes de realizar operaciones
         if not parent.exists():
             parent.mkdir(parents=True, exist_ok=True)
             
@@ -310,12 +321,12 @@ def logo_ascii() -> str:
 
 def draw_logo(canvas: Any, size: int = 56, canvas_x: int = 0, canvas_y: int = 0) -> None:
     """
-    Renderiza el logo (escudo Omega) en un widget Tkinter.Canvas.
+    Renderiza el escudo Omega vectorialmente en un widget Tkinter.Canvas.
     
     Args:
-        canvas: Widget donde se dibujará.
-        size: Tamaño total del logo en píxeles.
-        canvas_x/y: Coordenadas de origen del dibujo.
+        canvas: Widget Tkinter destino.
+        size: Tamaño base del icono.
+        canvas_x, canvas_y: Desplazamiento inicial del dibujo.
     """
     if canvas is None or not hasattr(canvas, "create_polygon"): return
     try:
@@ -355,15 +366,14 @@ def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
                       canvas_x: int = 0, canvas_y: int = 0,
                       stops: tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
     """
-    Dibuja una franja horizontal de gradiente decorativa en un Tkinter.Canvas,
-    agrupando colores adyacentes para optimizar las llamadas de dibujo.
+    Dibuja una franja horizontal decorativa con gradiente suavizado.
+    Optimiza el rendimiento agrupando píxeles consecutivos del mismo color.
     """
     if canvas is None or not hasattr(canvas, "create_line"): return
     try:
         ancho = max(1, int(width))
         colores = gradient_colors(ancho, stops)
         
-        # Agrupa píxeles consecutivos con el mismo color para reducir llamadas al canvas
         i = 0
         while i < ancho:
             inicio = i
@@ -383,15 +393,14 @@ def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
               track: Optional[HexColor] = None,
               fill: Optional[HexColor] = None) -> None:
     """
-    Dibuja un medidor circular de estado activo.
+    Dibuja un medidor circular (HealthScore) centrado en una coordenada.
     
     Args:
-        canvas: Widget destino.
-        percent: Porcentaje (0-100) del arco a rellenar.
-        size: Diámetro en píxeles.
+        percent: Valor porcentual (0-100) del arco.
+        size: Diámetro exterior total del anillo.
         thickness: Grosor de la línea del anillo.
-        track: Color de fondo del anillo.
-        fill: Color de progreso del anillo.
+        track: Color de la ruta de fondo (opcional).
+        fill: Color del arco activo (opcional).
     """
     if canvas is None or not hasattr(canvas, "create_arc"): return
     try:

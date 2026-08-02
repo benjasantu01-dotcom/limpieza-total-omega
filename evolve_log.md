@@ -1406,3 +1406,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-01T23:35:53` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-08-01T23:46:05` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-08-01T23:56:22` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-08-02T00:06:37` Arrancando corrida. Quedan hoy ~300 peticiones objetivo.
+- `2026-08-02T00:07:02` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `parse_registry_csv` añadiendo validaciones para evitar errores ante líneas CSV mal formadas o contenido inesperado, asegurando que el proceso de lectura no falle silenciosamente ante datos corruptos.
+- `2026-08-02T00:07:33` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante la adición de Type Hints detallados en `_call_gemini` y `ask`, y actualicé los docstrings para clarificar la lógica de las funciones de comunicación, facilitando su mantenimiento futuro.
+- `2026-08-02T00:08:05` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y el tipado de las funciones de `branding.py` mediante docstrings detallados que explican la lógica de renderizado y el propósito de los parámetros, facilitando la mantenibilidad técnica del motor gráfico.
+- `2026-08-02T00:08:12` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo `browser.py` añadiendo explicaciones sobre la estrategia de seguridad ("por qué se ignoran ciertos directorios") y especificando el contrato de las funciones de escaneo para clarificar las expectativas de seguridad en los `type hints` y docstrings.
+- `2026-08-02T00:08:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-02T00:08:12` Corrida terminada. Total usado hoy: 4.
