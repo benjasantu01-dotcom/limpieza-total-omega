@@ -75,6 +75,10 @@ class JunkFile:
     size_bytes: int
     modified: datetime
 
+    def __post_init__(self) -> None:
+        if not isinstance(self.path, Path):
+            self.path = Path(self.path)
+
     @property
     def size_mb(self) -> float:
         """Calcula el tamaño del archivo en Megabytes (redondeado a 2 decimales)."""
@@ -83,7 +87,7 @@ class JunkFile:
     @property
     def is_junk_extension(self) -> bool:
         """Valida si la extensión del archivo coincide con las permitidas."""
-        return self.path.suffix.lower() in _LOWER_JOWER_JUNK_EXTS
+        return self.path.suffix.lower() in _LOWER_JUNK_EXTS
 
 
 def _generate_unique_target(target: Path) -> Path:

@@ -421,3 +421,34 @@ FAILED evolve/tests/test_modules.py::test_never_scans_system_folders - Attribute
 - `2026-08-02T13:05:12` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `main.py` al añadir validaciones críticas de `None` y `tipos` en los métodos de carga de estado y selección de carpetas, evitando excepciones no controladas si los archivos de configuración o los diálogos del sistema devuelven valores inesperados.
 - `2026-08-02T13:05:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-02T13:05:12` Corrida terminada. Total usado hoy: 308.
+- `2026-08-02T13:13:29` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-02T13:13:56` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Se mejoró la robustez de `parse_windows_process_csv` y `read_snapshot` capturando condiciones de entrada inválidas y excepciones de lectura para evitar retornos silenciosos o errores inesperados durante el procesamiento de datos del sistema.
+- `2026-08-02T13:14:19` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Corregí una variable inexistente (`_LOWER_JOWER_JUNK_EXTS` -> `_LOWER_JUNK_EXTS`) en el property `is_junk_extension` que causaría un `NameError` en tiempo de ejecución, además de añadir validaciones de tipo y de existencia en el constructor y métodos de la clase `JunkFile` para evitar operar sobre rutas inválidas.
+- `2026-08-02T13:14:46` Tests FALLARON:
+```
+y_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:119: SyntaxWarning: invalid escape sequence '\)'
+    """Verifica si la ruta apunta a la raíz de una unidad (ej. C:\)."""
+
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:80: SyntaxWarning: invalid escape sequence '\P'
+    Parsea comandos tipo '"C:\Program Files\App.exe" /arg' extrayendo solo
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly - OSError: Error al verificar acceso al archivo origen: El archivo de origen no existe: /tmp/pytest-of-runner/pytest-3/test_quarantine_missing_file_r0/no-existe.txt
+1 failed, 298 passed, 11 warnings in 1.07s
+
+```
+- `2026-08-02T13:14:46` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Mejora el manejo de errores en `quarantine_file` añadiendo una validación explícita para asegurar que el archivo fuente existe y es accesible antes de intentar cualquier operación, evitando excepciones genéricas durante el proceso de movimiento.
+- `2026-08-02T13:14:49` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 104): unterminated string literal (detected at line 104)
+- `2026-08-02T13:14:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-02T13:14:49` Corrida terminada. Total usado hoy: 312.

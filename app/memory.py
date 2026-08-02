@@ -118,7 +118,6 @@ def format_bytes(num: int | float | None) -> str:
     
     val: float = float(num)
     idx: int = 0
-    # Escalamiento logarítmico basado en potencias de 1024
     while val >= 1024 and idx < len(BYTE_UNITS) - 1:
         val /= 1024
         idx += 1
@@ -130,9 +129,10 @@ def format_bytes(num: int | float | None) -> str:
 def parse_linux_meminfo(text: str) -> MemorySnapshot:
     """
     Interpreta el contenido de /proc/meminfo. 
-    Convierte los valores (expresados originalmente en kB) a bytes para
-    mantener la consistencia con las métricas de Windows.
+    Convierte los valores (expresados originalmente en kB) a bytes.
     """
+    if not text:
+        return MemorySnapshot(0, 0)
     values: Dict[str, int] = {}
     for line in text.splitlines():
         match = re.match(r"^(\w+):\s+(\d+)", line)
@@ -147,15 +147,15 @@ def parse_linux_meminfo(text: str) -> MemorySnapshot:
 
 def _is_valid_process_row(parts: List[str]) -> bool:
     """Valida que una lista de campos CSV represente datos de proceso válidos."""
-    return len(parts) >= 3 and parts[1].isdigit() and parts[2].isdigit()
+    return len(parts) >= 3 and parts[1].strip().isdigit() and parts[2].strip().isdigit()
 
 
 def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]:
     """
-    Transforma el CSV bruto de PowerShell 'Get-Process' en objetos ProcessMemory.
-    Filtra entradas inválidas y ordena por consumo de WorkingSet (descendente).
+    Transforma el CSV bruto de PowerShell en objetos ProcessMemory.
+    Filtra entradas inválidas y ordena por consumo de WorkingSet.
     """
-    if not text:
+    if not text or not isinstance(text, str):
         return []
 
     lines = [line.strip() for line in text.splitlines() if line.strip()]
@@ -175,7 +175,7 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
                     pid=int(parts[1]), 
                     working_set=int(parts[2])
                 ))
-        except (ValueError, IndexError, TypeError):
+        except (ValueError, IndexError):
             continue
 
     processes.sort(key=lambda p: p.working_set, reverse=True)
@@ -183,10 +183,7 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
 
 
 def _read_windows_snapshot() -> MemorySnapshot:
-    """
-    Usa ctypes para consultar la API GlobalMemoryStatusEx de Windows.
-    Retorna un snapshot de la memoria física del sistema.
-    """
+    """Usa ctypes para consultar la API GlobalMemoryStatusEx de Windows."""
     import ctypes
 
     class MEMORYSTATUSEX(ctypes.Structure):
@@ -217,7 +214,7 @@ def read_snapshot() -> MemorySnapshot:
     if os.name == "nt":
         try:
             return _read_windows_snapshot()
-        except (AttributeError, OSError, MemoryError):
+        except Exception:
             return MemorySnapshot(total=0, available=0)
             
     meminfo_path: str = "/proc/meminfo"
@@ -225,16 +222,15 @@ def read_snapshot() -> MemorySnapshot:
         try:
             with open(meminfo_path, encoding="utf-8", errors="replace") as f:
                 content = f.read()
-                if content:
-                    return parse_linux_meminfo(content)
-        except (OSError, ValueError):
+                return parse_linux_meminfo(content)
+        except (OSError, PermissionError):
             pass
             
     return MemorySnapshot(total=0, available=0)
 
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
-    """Obtiene una lista de los procesos que más RAM consumen en Windows con cache TTL."""
+    """Obtiene procesos que más RAM consumen en Windows con cache TTL."""
     global _PROCESS_CACHE
     if os.name != "nt":
         return []
@@ -253,18 +249,20 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     try:
         result = subprocess.run(
             ["powershell", "-NoProfile", "-Command", command],
-            capture_output=True, text=True, timeout=10,
+            capture_output=True, text=True, timeout=5,
         )
-        processes = parse_windows_process_csv(result.stdout or "", limit=limit)
-        _PROCESS_CACHE[cache_key] = (now, processes)
-        return processes
+        if result.returncode == 0 and result.stdout:
+            processes = parse_windows_process_csv(result.stdout, limit=limit)
+            _PROCESS_CACHE[cache_key] = (now, processes)
+            return processes
     except (OSError, subprocess.SubprocessError):
-        return []
+        pass
+    return []
 
 
 def pressure_level(snapshot: MemorySnapshot) -> str:
-    """Clasifica el estado de presión de la memoria según el porcentaje libre."""
-    if snapshot.total <= 0:
+    """Clasifica el estado de presión de la memoria."""
+    if not isinstance(snapshot, MemorySnapshot) or snapshot.total <= 0:
         return "info"
     available: float = snapshot.available_percent
     if available >= 35: return "ok"
@@ -302,10 +300,7 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
 
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """
-    Solicita al SO reducir el working set de un proceso mediante la API de Windows.
-    Realiza validaciones de seguridad previas para evitar afectar procesos críticos.
-    """
+    """Solicita al SO reducir el working set de un proceso."""
     if os.name != "nt":
         return False, "Solo disponible en Windows."
     
