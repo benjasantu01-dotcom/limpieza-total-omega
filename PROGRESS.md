@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **249** (49.4% de aceptación)
+- Mejoras aceptadas: **252** (50.0% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 197
+- Sin respuesta de la IA (error o límite): 194
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-31 | 0 | 0 | 0 | 0 | 6 |
+| 2026-07-31 | 0 | 0 | 0 | 0 | 2 |
 | 2026-08-01 | 166 | 11 | 16 | 10 | 147 |
-| 2026-08-02 | 83 | 5 | 11 | 5 | 44 |
+| 2026-08-02 | 86 | 5 | 11 | 5 | 45 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **67**
 - rendimiento: **50**
-- robustez ante casos límite: **48**
+- robustez ante casos límite: **50**
 - manejo de errores y validación de entradas: **47**
-- seguridad defensiva: **37**
+- seguridad defensiva: **38**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **21**
+- `scanner.py`: **21**
 - `organizer.py`: **21**
+- `settings.py`: **21**
 - `main.py`: **20**
-- `scanner.py`: **20**
-- `settings.py`: **20**
 - `healthscore.py`: **19**
 - `diskreport.py`: **18**
+- `assistant.py`: **18**
 - `browser.py`: **18**
-- `assistant.py`: **17**
 - `duplicates.py`: **16**
 - `safety.py`: **16**
 - `branding.py`: **15**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-02T06:26:09` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_call_gemini` al validar la respuesta de la API mediante `_ensure_safe_text` antes de devolverla, asegurando que el modelo no pueda inyectar rutas o caracteres peligrosos incluso si el origen es externo, manteniendo la integridad del asistente.
+- `2026-08-02T06:25:30` **settings.py** (robustez ante casos límite): Mejoré la robustez de `save()` ante condiciones de carrera y fallos de escritura mediante la verificación explícita de `os.access` sobre el archivo de destino antes de intentar el proceso de reemplazo atómico, además de añadir un manejo defensivo contra archivos de configuración inexistentes o inaccesibles en `load()`.
+- `2026-08-02T06:25:06` **scanner.py** (robustez ante casos límite): Mejoré la robustez de `scan_file` y las funciones heurísticas ante condiciones de carrera (archivos eliminados justo después de ser listados) mediante el manejo explícito de `FileNotFoundError` y validaciones más estrictas de existencia previa a la lectura de metadatos, evitando que el escaneo colapse ante cambios dinámicos del sistema.
 - `2026-08-02T06:15:54` **safety.py** (robustez ante casos límite): Se ha mejorado `ensure_safe_to_modify` para detectar de forma explícita rutas con caracteres no imprimibles o de control (ataques tipo "homoglyph" o "RTL override"), reforzando la integridad al procesar rutas externas y evitando manipulaciones maliciosas mediante nombres de archivo engañosos.
 - `2026-08-02T06:15:26` **quarantine.py** (robustez ante casos límite): Se mejora la robustez de `quarantine_file` ante condiciones de carrera y archivos inconsistentes agregando una validación de existencia post-movimiento y asegurando que `shutil.move` no sea interrumpido prematuramente.
 - `2026-08-02T06:14:59` **organizer.py** (robustez ante casos límite): Se introdujo una comprobación robusta mediante `OSError` al intentar calcular metadatos en `scan_for_junk`, previniendo que el escaneo colapse ante archivos inaccesibles o bloqueados, y se consolidó la validación de rutas mediante `is_safe_to_modify` antes de cualquier procesamiento pesado.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-02T05:54:42` **assistant.py** (robustez ante casos límite): Se reforzó la robustez de `build_context` ante valores `None` o corruptos en los parámetros recibidos mediante un chequeo de tipos explícito más riguroso, evitando que atributos inesperados o tipos inválidos inyectados en la configuración rompan el flujo de datos.
 - `2026-08-02T05:45:19` **startup.py** (rendimiento): Optimizé `entries_from_folders` reemplazando la iteración completa del directorio por una verificación de existencia basada en extensiones permitidas, evitando el acceso a metadatos de archivos irrelevantes y reduciendo drásticamente las llamadas al sistema operativo innecesarias.
 - `2026-08-02T05:45:11` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` evitando accesos innecesarios al sistema de archivos al pre-verificar la existencia y el estado del archivo mediante una única llamada a `stat()` cuando el path no ha cambiado, reduciendo la latencia de E/S.
-- `2026-08-02T05:44:47` **scanner.py** (rendimiento): Optimicé el rendimiento de `scan_directory` y `process_entry` al reducir las llamadas redundantes a `Path.resolve()` y `is_protected_path`, utilizando el valor ya normalizado de `entry.path` y verificando `is_protected_path` solo una vez al descubrir una carpeta.
-- `2026-08-02T05:35:03` **quarantine.py** (rendimiento): Optimicé el cálculo del tamaño total en `total_quarantined_bytes` evitando recargar o iterar innecesariamente sobre el manifiesto si ya se tiene la información, y mejoré `purge_all` para que sea más eficiente al reducir la carga de E/S sobre el manifiesto durante el proceso de borrado.
-- `2026-08-02T05:34:35` **organizer.py** (rendimiento): Optimicé el rendimiento de `scan_for_junk` convirtiendo la lista `SYSTEM_FOLDER_BLOCKLIST` en un `set` (aunque ya lo era, se usaba de forma ineficiente comparando nombres repetidamente) y, más importante, centralizando la validación de seguridad mediante un pre-filtrado de rutas que evita realizar llamadas redundantes a `Path(entry.path)` y `is_safe_to_modify` dentro del loop recursivo, minimizando el overhead de instanciación de objetos `Path` y syscalls innecesarias.

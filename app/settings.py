@@ -164,6 +164,7 @@ def load(path_or_base: PathLike | None = None) -> dict[str, Any]:
     ruta = settings_path(path_or_base)
     
     try:
+        if not ruta.exists(): return DEFAULTS.copy()
         stat = ruta.stat()
         if _cached_settings is not None and ruta == _last_path and stat.st_mtime == _last_mtime:
             return _cached_settings.copy()
@@ -186,10 +187,9 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     global _cached_settings, _last_path, _last_mtime
     ruta = settings_path(path_or_base)
     
-    if ruta.is_symlink() or not is_safe_to_modify(str(ruta.resolve().parent)):
-        return None
-    if ruta.parent.exists() and not os.access(ruta.parent, os.W_OK):
-        return None
+    if ruta.exists() and not os.access(ruta, os.W_OK): return None
+    if ruta.parent.exists() and not os.access(ruta.parent, os.W_OK): return None
+    if not is_safe_to_modify(str(ruta.resolve().parent)): return None
         
     limpio = validate(values)
     try:

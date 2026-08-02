@@ -109,9 +109,10 @@ def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_TH
         return None
         
     try:
-        mtime = datetime.fromtimestamp(path.stat().st_mtime)
-        if datetime.now() - mtime < timedelta(hours=hours):
-            return Suspicion(path, f"Ejecutable reciente detectado (modificado hace menos de {hours}h)", "info")
+        if path.exists():
+            mtime = datetime.fromtimestamp(path.stat().st_mtime)
+            if datetime.now() - mtime < timedelta(hours=hours):
+                return Suspicion(path, f"Ejecutable reciente detectado (modificado hace menos de {hours}h)", "info")
     except (FileNotFoundError, PermissionError, OSError):
         pass
     return None
@@ -144,7 +145,10 @@ def scan_file(path: Path) -> ScanResult:
     Ejecuta el conjunto de heurísticas sobre un archivo específico.
     Solo procesa archivos existentes y validados por seguridad.
     """
-    if not path.is_file() or is_protected_path(path):
+    try:
+        if not path.is_file() or is_protected_path(path):
+            return []
+    except (FileNotFoundError, OSError):
         return []
         
     findings: ScanResult = []
@@ -153,7 +157,7 @@ def scan_file(path: Path) -> ScanResult:
             result = check_func(path)
             if result:
                 findings.append(result)
-        except (PermissionError, OSError):
+        except (PermissionError, OSError, FileNotFoundError):
             continue
     return findings
 
@@ -165,8 +169,11 @@ def scan_directory(directory: Union[str, Path]) -> ScanResult:
     if not directory:
         return []
         
-    root_path = Path(directory).resolve()
-    if not root_path.is_dir() or is_protected_path(root_path):
+    try:
+        root_path = Path(directory).resolve()
+        if not root_path.is_dir() or is_protected_path(root_path):
+            return []
+    except (PermissionError, OSError):
         return []
 
     scanner = Scanner()

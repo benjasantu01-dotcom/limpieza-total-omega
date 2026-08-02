@@ -483,7 +483,7 @@ def _call_gemini(
             
         texto: str = "".join(p.get("text", "") for p in partes if isinstance(p, dict)).strip()
         
-        # Validar seguridad: ni caracteres de control, ni rutas, ni protección violada
+        # Validar seguridad final de la respuesta: evitar inyección y proteger paths
         if not texto or len(texto) > 1200 or not _ensure_safe_text(texto):
             return None
             
