@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **250** (49.6% de aceptación)
+- Mejoras aceptadas: **251** (49.8% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 26
-- Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 199
+- Rechazadas por guardia de seguridad: 27
+- Sin cambios (nada sustancial que mejorar): 13
+- Sin respuesta de la IA (error o límite): 198
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-01 | 81 | 6 | 8 | 6 | 79 |
-| 2026-08-02 | 169 | 9 | 18 | 8 | 120 |
+| 2026-08-01 | 79 | 6 | 8 | 5 | 78 |
+| 2026-08-02 | 172 | 9 | 19 | 8 | 120 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **60**
+- legibilidad y documentación: **63**
 - seguridad defensiva: **52**
-- robustez ante casos límite: **49**
 - manejo de errores y validación de entradas: **49**
-- rendimiento: **40**
+- robustez ante casos límite: **48**
+- rendimiento: **39**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **22**
 - `main.py`: **20**
+- `organizer.py`: **20**
 - `scanner.py`: **20**
-- `assistant.py`: **19**
-- `organizer.py`: **19**
 - `browser.py`: **19**
 - `diskreport.py`: **18**
+- `quarantine.py`: **18**
+- `assistant.py`: **18**
 - `branding.py`: **18**
 - `healthscore.py`: **17**
-- `quarantine.py`: **17**
 - `duplicates.py`: **16**
-- `startup.py`: **15**
+- `safety.py`: **16**
 - `memory.py`: **15**
-- `safety.py`: **15**
+- `startup.py`: **14**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-02T13:55:43` **safety.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings enriquecidos en funciones críticas para clarificar el contrato de los tipos de entrada (`PathLike`) y los estados de error, mejorando la legibilidad técnica para el mantenimiento del proyecto.
+- `2026-08-02T13:55:15` **quarantine.py** (legibilidad y documentación): Se mejoró la documentación técnica interna mediante la adición de Type Hints en la caché del manifiesto y docstrings detallados en las funciones de utilidad (`_get_sha256`, `_is_file_locked`, `_manifest_path`), facilitando el mantenimiento y la comprensión del flujo de datos.
+- `2026-08-02T13:54:49` **organizer.py** (legibilidad y documentación): Se introdujo un `NamedTuple` para normalizar los criterios de ordenamiento en `sort_junk` y se añadieron docstrings explicativos a las funciones internas `_generate_unique_target` y `_is_valid_junk`, clarificando la intención técnica de cada paso según el enfoque de legibilidad.
 - `2026-08-02T13:46:06` **memory.py** (legibilidad y documentación): Mejoré la documentación de la API interna de `trim_working_set` mediante un docstring detallado que clarifica los riesgos y requisitos de seguridad, y añadí `type hints` adicionales en `parse_windows_process_csv` para mejorar la legibilidad y robustez de la lógica de procesamiento de datos.
 - `2026-08-02T13:45:55` **main.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo `main.py` mediante la refactorización de `_collect_settings`, extrayendo la lógica de validación de entradas numéricas a una función privada más clara y añadiendo type hints faltantes, lo que hace que el flujo de persistencia de configuración sea robusto y fácil de auditar.
 - `2026-08-02T13:44:53` **healthscore.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `healthscore.py` mediante la adición de Type Hints detallados, docstrings descriptivos para las constantes y una refactorización de `summarize` para eliminar la dependencia de `_sort_by_performance_delta`, haciendo que el orden del desglose sea más predecible y claro para el usuario.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-02T13:24:55` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` capturando explícitamente `PermissionError` y `OSError` durante la creación del directorio y el volcado de datos, asegurando que un fallo de escritura no propague excepciones inesperadas hacia `main.py` y manteniendo la integridad de la configuración mediante un manejo de errores más específico.
 - `2026-08-02T13:24:30` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `scan_file` y `scan_directory` mediante la validación explícita de `path` antes de su uso y la mejora en el manejo de excepciones al verificar el estado de los archivos, asegurando que condiciones como archivos eliminados durante el recorrido no interrumpan el flujo.
 - `2026-08-02T13:24:08` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `is_protected_path` ante errores de acceso en subcomponentes de la ruta y refiné la lógica de `is_within_directory` para manejar correctamente rutas no existentes o relativas ambiguas, alineándome con el enfoque de validación defensiva y manejo de excepciones específicas.
-- `2026-08-02T13:14:19` **organizer.py** (manejo de errores y validación de entradas): Corregí una variable inexistente (`_LOWER_JOWER_JUNK_EXTS` -> `_LOWER_JUNK_EXTS`) en el property `is_junk_extension` que causaría un `NameError` en tiempo de ejecución, además de añadir validaciones de tipo y de existencia en el constructor y métodos de la clase `JunkFile` para evitar operar sobre rutas inválidas.
-- `2026-08-02T13:13:56` **memory.py** (manejo de errores y validación de entradas): Se mejoró la robustez de `parse_windows_process_csv` y `read_snapshot` capturando condiciones de entrada inválidas y excepciones de lectura para evitar retornos silenciosos o errores inesperados durante el procesamiento de datos del sistema.
-- `2026-08-02T13:05:12` **main.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `main.py` al añadir validaciones críticas de `None` y `tipos` en los métodos de carga de estado y selección de carpetas, evitando excepciones no controladas si los archivos de configuración o los diálogos del sistema devuelven valores inesperados.

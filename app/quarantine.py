@@ -58,7 +58,7 @@ __all__ = [
 DEFAULT_QUARANTINE_DIR = "~/LimpiezaTotalOmega/_Cuarentena"
 MANIFEST_NAME = "manifest.json"
 
-# Cache de memoria para el manifiesto: { str(base_path): (mtime_del_archivo, lista_de_items) }
+# Cache de memoria: { str(path_carpeta_base): (mtime_del_archivo_manifest, lista_de_items) }
 _manifest_cache: Dict[str, Tuple[float, List[QuarantineItem]]] = {}
 
 @dataclass
@@ -113,7 +113,7 @@ def _get_sha256(path: Path) -> str:
 
 
 def _is_file_locked(path: Path) -> bool:
-    """Verifica si un archivo está bloqueado por otro proceso intentando abrirlo en modo append."""
+    """Verifica si un archivo está bloqueado intentando abrirlo en modo append (escritura exclusiva)."""
     try:
         with open(path, "a+b") as f:
             return False
@@ -131,7 +131,7 @@ def quarantine_dir(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
 
 
 def _manifest_path(base_dir: Path) -> Path:
-    """Obtiene la ruta completa del archivo de manifiesto JSON."""
+    """Retorna la ubicación esperada del archivo manifest.json dentro del directorio base."""
     return base_dir / MANIFEST_NAME
 
 

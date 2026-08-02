@@ -98,9 +98,17 @@ def _is_readonly(path: Path) -> bool:
 @lru_cache(maxsize=2048)
 def normalize(path: PathLike) -> Path:
     """
-    Expande, resuelve y convierte una ruta a objeto Path absoluto.
-    :raises TypeError: Si el tipo de entrada no es compatible.
-    :raises ValueError: Si la ruta normalizada resulta vacía o inválida.
+    Expande variables de usuario, resuelve accesos relativos y convierte una ruta a Path absoluto.
+    
+    Args:
+        path: Cadena o objeto PathLike a normalizar.
+        
+    Returns:
+        Un objeto Path absoluto normalizado.
+        
+    Raises:
+        TypeError: Si la entrada no es un tipo soportado.
+        ValueError: Si la ruta está vacía tras limpieza.
     """
     if not isinstance(path, (str, os.PathLike)):
         raise TypeError(f"Entrada inválida: tipo {type(path)} no soportado.")
@@ -154,7 +162,6 @@ def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = F
         return False
     try:
         c, p = normalize(child), normalize(parent)
-        # Comparación absoluta segura tras normalización
         return p in c.parents or (allow_equal and c == p)
     except (ValueError, TypeError, OSError, RuntimeError):
         return False
@@ -175,6 +182,16 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
     """
     Valida rigurosamente si una ruta es segura para ser modificada mediante una jerarquía de checks.
     IMPORTANTE: Nunca usar esta función en una estructura 'if'. Debe lanzar UnsafePathError.
+    
+    Args:
+        path: La ruta a validar.
+        allow_sensitive: Si es True, permite archivos con extensiones críticas.
+        
+    Returns:
+        El objeto Path normalizado si la validación es exitosa.
+        
+    Raises:
+        UnsafePathError: Si cualquier chequeo de seguridad falla.
     """
     if path is None:
         raise UnsafePathError("Ruta nula recibida.")

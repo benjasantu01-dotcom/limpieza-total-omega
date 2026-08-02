@@ -17,7 +17,8 @@ import logging
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional, Final, Callable, Union, TypeAlias
+from typing import List, Optional, Final, Callable, Union, TypeAlias, NamedTuple
+
 from safety import is_safe_to_modify, ensure_safe_to_modify
 
 # Configuración de log para seguimiento de errores no críticos
@@ -26,6 +27,11 @@ logger = logging.getLogger(__name__)
 
 # Definiciones de tipo para claridad en firmas complejas
 SortKey: TypeAlias = Union[int, datetime]
+
+class SortConfig(NamedTuple):
+    """Define los criterios permitidos para el ordenamiento de archivos."""
+    field: str
+    key_func: Callable[[JunkFile], SortKey]
 
 # Extensiones típicas de archivos "basura" / temporales en Windows
 JUNK_EXTENSIONS: Final = {
@@ -92,8 +98,11 @@ class JunkFile:
 
 def _generate_unique_target(target: Path) -> Path:
     """
-    Genera una ruta única para evitar colisiones.
-    Si target existe, intenta appender _1, _2... hasta encontrar una ruta libre.
+    Resuelve colisiones de nombres añadiendo un sufijo numérico incremental.
+    
+    El método asegura que si un archivo ya existe en el destino, se genere
+    una ruta alternativa (archivo_1.ext, archivo_2.ext) para evitar sobreescritura
+    o pérdida de archivos durante la operación de movimiento.
     """
     if not target.exists():
         return target
@@ -108,8 +117,10 @@ def _generate_unique_target(target: Path) -> Path:
 
 def _is_valid_junk(entry: os.DirEntry[str]) -> bool:
     """
-    Valida mediante heurística si un archivo es basura y si es seguro tocarlo.
-    Se utiliza como filtro rápido durante el escaneo de directorios.
+    Filtro de seguridad previo al procesamiento de directorios.
+    
+    Verifica que el elemento sea un archivo regular, tenga una extensión
+    de basura conocida y no sea una ruta protegida según `safety.py`.
     """
     if entry.is_symlink() or not entry.is_file():
         return False
@@ -139,7 +150,6 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
                             if entry.name.lower() not in blocklist:
                                 _walk_dir(entry.path)
                         elif entry.name.lower().endswith(_JUNK_EXTS_TUPLE):
-                            # Evitamos Path() y resolve() hasta confirmar extensión
                             if is_safe_to_modify(Path(entry.path)):
                                 stat = entry.stat()
                                 found.append(JunkFile(
@@ -175,14 +185,13 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
     if not files:
         return []
         
-    by_normalized = (by or "size").lower()
-    if by_normalized not in ("size", "date"):
-        by_normalized = "size"
-
-    key_func: Callable[[JunkFile], SortKey] = (
-        (lambda f: f.size_bytes) if by_normalized == "size" else (lambda f: f.modified)
-    )
-    return sorted(files, key=key_func, reverse=not ascending)
+    configs = {
+        "size": SortConfig("size", lambda f: f.size_bytes),
+        "date": SortConfig("date", lambda f: f.modified)
+    }
+        
+    config = configs.get(by.lower(), configs["size"])
+    return sorted(files, key=config.key_func, reverse=not ascending)
 
 
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Path:
