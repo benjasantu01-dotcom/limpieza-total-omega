@@ -283,7 +283,10 @@ def quarantine_file(
 
     try:
         shutil.move(str(source_path), str(destination))
-    except (OSError, PermissionError) as e:
+    except OSError as e:
+        # Detectar posible error de disco lleno durante la operación de copia
+        if e.errno in (28, 39): # ENOSPC, ENAMETOOLONG
+             raise OSError(f"Falla de escritura (disco lleno o error de sistema): {e}")
         raise RuntimeError(f"Falla crítica al mover archivo: {e}")
 
     if not destination.exists() or destination.stat().st_size != file_size:
@@ -305,6 +308,7 @@ def quarantine_file(
         save_manifest(items, base)
         return item
     except Exception as e:
+        # Reversión de seguridad si el registro en manifiesto falla
         if destination.exists():
             try:
                 shutil.move(str(destination), str(source_path))

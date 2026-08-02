@@ -110,7 +110,9 @@ def normalize(path: PathLike) -> Path:
         raise ValueError("La ruta proporcionada está vacía.")
         
     try:
-        return Path(str_path).expanduser().resolve()
+        # Usamos expanduser y abspath para evitar fallos si el archivo ya no existe
+        res = Path(str_path).expanduser().resolve()
+        return res if res.exists() else Path(os.path.abspath(os.path.expanduser(str_path)))
     except (OSError, RuntimeError, ValueError):
         return Path(os.path.abspath(os.path.expanduser(str_path)))
 
@@ -134,7 +136,6 @@ def is_protected_path(path: PathLike) -> bool:
         return True
     
     try:
-        # Usamos abspath para evitar el costo de I/O de resolve() al verificar tokens
         p_str = str(Path(path).expanduser().absolute())
         parts = {p.lower() for p in Path(p_str).parts}
         
@@ -154,12 +155,12 @@ def is_protected_path(path: PathLike) -> bool:
 def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = False) -> bool:
     """
     Verifica si 'child' es descendiente de 'parent'.
-    Nota: Utiliza rutas resueltas; los puntos de reparse pueden afectar el resultado.
     """
     if child is None or parent is None:
         return False
     try:
         c, p = normalize(child), normalize(parent)
+        if not p.exists(): return False
         return p in c.parents or (allow_equal and c == p)
     except (ValueError, TypeError, OSError, RuntimeError):
         return False
@@ -179,7 +180,6 @@ def is_sensitive_file(path: PathLike) -> bool:
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> Path:
     """
     Valida rigurosamente si una ruta es segura para ser modificada o borrada.
-    :raises UnsafePathError: Si la ruta incumple los estándares de seguridad.
     """
     if path is None:
         raise UnsafePathError("Ruta nula recibida.")
