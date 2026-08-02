@@ -168,7 +168,7 @@ def scan_file(path: Path) -> ScanResult:
     Ejecuta el conjunto de heurísticas sobre un archivo específico.
     Solo procesa archivos existentes y validados por seguridad.
     """
-    if is_protected_path(path):
+    if is_protected_path(path) or not path.is_file() or path.is_symlink():
         return []
 
     findings: ScanResult = []
@@ -191,7 +191,8 @@ def scan_directory(directory: Union[str, Path]) -> ScanResult:
         
     try:
         root_path = Path(directory).resolve(strict=True)
-        if not root_path.is_dir() or is_protected_path(root_path):
+        # Validación defensiva extra: no procesar nada que no sea un directorio real
+        if not root_path.is_dir() or root_path.is_symlink() or is_protected_path(root_path):
             return []
     except (OSError, RuntimeError):
         return []
