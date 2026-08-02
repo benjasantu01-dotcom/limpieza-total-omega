@@ -43,6 +43,9 @@ REGISTRY_RUN_KEYS: Tuple[str, ...] = (
     r"HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Run",
 )
 
+# Extensiones que consideramos ejecutables para el escaneo de carpetas.
+EXECUTABLE_EXTS: Tuple[str, ...] = ('.exe', '.bat', '.cmd', '.scr', '.lnk')
+
 # Se le muestra al usuario en vez de ofrecer un botón que toque el registro.
 HOW_TO_DISABLE: str = (
     "Para deshabilitar un programa de inicio, usá el Administrador de tareas "
@@ -65,7 +68,7 @@ class StartupEntry:
     def _is_valid_executable(self, path: Path) -> bool:
         """Verifica si la ruta apunta a un ejecutable conocido."""
         try:
-            return path.suffix.lower() in ('.exe', '.bat', '.cmd', '.scr')
+            return path.suffix.lower() in EXECUTABLE_EXTS
         except (OSError, ValueError, RuntimeError, TypeError):
             return False
 
@@ -141,20 +144,16 @@ def startup_folders() -> List[Path]:
 
 
 def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[StartupEntry]:
-    """Escanea las carpetas de inicio buscando ejecutables."""
+    """Escanea las carpetas de inicio buscando ejecutables mediante filtrado temprano."""
     if folders is None:
         folders = startup_folders()
     found_entries: List[StartupEntry] = []
     for folder in folders:
-        if is_protected_path(folder):
-            continue
-            
         try:
             for item in folder.iterdir():
-                if not item.name or item.name.lower() == "desktop.ini":
-                    continue
-                if item.is_file() and not item.is_symlink() and not is_protected_path(item):
-                    found_entries.append(StartupEntry(name=item.stem, command=str(item), source="carpeta"))
+                if item.suffix.lower() in EXECUTABLE_EXTS and not item.is_symlink():
+                    if not is_protected_path(item):
+                        found_entries.append(StartupEntry(name=item.stem, command=str(item), source="carpeta"))
         except (OSError, PermissionError, RuntimeError):
             continue
     return found_entries
@@ -170,7 +169,6 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
     if len(lines) < 2: return []
     
     for line in lines[1:]:
-        # Split conservador: limita a 2 partes, ignorando columnas extras de PS
         parts = line.split(",", 1)
         if len(parts) < 2: continue
         
@@ -180,7 +178,6 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
         if not name or name.lower() in ("name", "pscustomobject") or name.upper().startswith("PS"):
             continue
         
-        # Filtro de seguridad preventivo contra rutas protegidas inyectadas
         try:
             if is_protected_path(Path(cmd)):
                 continue

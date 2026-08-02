@@ -164,16 +164,15 @@ def load(path_or_base: PathLike | None = None) -> dict[str, Any]:
     ruta = settings_path(path_or_base)
     
     try:
-        if ruta.exists() and ruta.is_file():
-            stat = ruta.stat()
-            if _cached_settings is not None and ruta == _last_path and stat.st_mtime == _last_mtime:
-                return _cached_settings.copy()
-            if stat.st_size > MAX_SETTINGS_SIZE:
-                return DEFAULTS.copy()
-            data = json.loads(ruta.read_text(encoding="utf-8"))
-            _cached_settings = validate(data)
-            _last_path, _last_mtime = ruta, stat.st_mtime
+        stat = ruta.stat()
+        if _cached_settings is not None and ruta == _last_path and stat.st_mtime == _last_mtime:
             return _cached_settings.copy()
+        if stat.st_size > MAX_SETTINGS_SIZE:
+            return DEFAULTS.copy()
+        data = json.loads(ruta.read_text(encoding="utf-8"))
+        _cached_settings = validate(data)
+        _last_path, _last_mtime = ruta, stat.st_mtime
+        return _cached_settings.copy()
     except (OSError, json.JSONDecodeError, UnicodeDecodeError):
         pass
     

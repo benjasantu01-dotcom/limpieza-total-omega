@@ -77,24 +77,16 @@ class Scanner:
         Clasifica una entrada de directorio. 
         Si es directorio: valida seguridad y añade a la pila si no es reparse point.
         Si es archivo: aplica las heurísticas registradas.
-        
-        :param entry: Objeto os.DirEntry derivado de os.scandir.
-        :param stack: Pila LIFO utilizada para el recorrido recursivo iterativo.
         """
         try:
-            path_str = entry.path
-            
             if entry.is_dir(follow_symlinks=False):
                 if not self._is_reparse_point(entry):
-                    resolved_path = Path(path_str).resolve()
-                    path_key = str(resolved_path)
-                    if path_key not in self.seen and not is_protected_path(resolved_path):
+                    path_key = os.path.normpath(entry.path)
+                    if path_key not in self.seen and not is_protected_path(Path(path_key)):
                         self.seen.add(path_key)
-                        stack.append(path_str)
+                        stack.append(path_key)
             elif entry.is_file(follow_symlinks=False):
-                path_obj = Path(path_str).resolve()
-                if not is_protected_path(path_obj):
-                    self.results.extend(scan_file(path_obj))
+                self.results.extend(scan_file(Path(entry.path)))
         except (PermissionError, OSError):
             pass
 
@@ -104,10 +96,7 @@ def check_double_extension(path: Path) -> Optional[Suspicion]:
     Detecta patrones de nombres de archivos que intentan ocultar extensiones ejecutable
     tras extensiones de documentos inofensivos.
     """
-    if path is None or path.name is None:
-        return None
-        
-    if DOUBLE_EXTENSION_RE.search(path.name):
+    if path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
     return None
 
@@ -115,11 +104,8 @@ def check_double_extension(path: Path) -> Optional[Suspicion]:
 def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_THRESHOLD_HOURS) -> Optional[Suspicion]:
     """
     Analiza la metadata de modificación de un ejecutable para identificar descargas recientes.
-    
-    :param path: Ruta al archivo a analizar.
-    :param hours: Límite de tiempo para considerar un archivo como 'reciente'.
     """
-    if path is None or is_protected_path(path) or path.suffix.lower() not in SUSPICIOUS_EXECUTABLE_EXT:
+    if path.suffix.lower() not in SUSPICIOUS_EXECUTABLE_EXT:
         return None
         
     try:
@@ -136,15 +122,11 @@ def check_system_lookalike(path: Path) -> Optional[Suspicion]:
     Detecta ejecutables que suplantan nombres de procesos críticos del sistema
     si residen fuera del directorio oficial System32.
     """
-    if path is None or path.name is None or path.name.lower() not in SYSTEM_LOOKALIKES:
-        return None
-        
-    if is_protected_path(path):
+    if path.name.lower() not in SYSTEM_LOOKALIKES:
         return None
         
     try:
-        parent = path.parent
-        if parent is not None and SYSTEM32_LOWER not in str(parent).lower():
+        if SYSTEM32_LOWER not in str(path.parent).lower():
             return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
     except (OSError, AttributeError):
         pass
@@ -162,7 +144,7 @@ def scan_file(path: Path) -> ScanResult:
     Ejecuta el conjunto de heurísticas sobre un archivo específico.
     Solo procesa archivos existentes y validados por seguridad.
     """
-    if path is None or not path.is_file():
+    if not path.is_file() or is_protected_path(path):
         return []
         
     findings: ScanResult = []
@@ -179,20 +161,16 @@ def scan_file(path: Path) -> ScanResult:
 def scan_directory(directory: Union[str, Path]) -> ScanResult:
     """
     Inicia un escaneo recursivo desde un punto de entrada dado.
-    Utiliza un enfoque iterativo para evitar errores de desbordamiento de pila (stack overflow).
     """
     if not directory:
         return []
         
-    try:
-        path_obj = Path(directory).resolve()
-        if not path_obj.is_dir() or is_protected_path(path_obj):
-            return []
-    except (OSError, RuntimeError):
+    root_path = Path(directory).resolve()
+    if not root_path.is_dir() or is_protected_path(root_path):
         return []
 
     scanner = Scanner()
-    root_str = str(path_obj)
+    root_str = str(root_path)
     stack: List[str] = [root_str]
     scanner.seen.add(root_str)
     

@@ -786,3 +786,10 @@ FAILED evolve/tests/test_modules.py::test_gradient_bar_ignores_invalid_sizes - V
 - `2026-08-02T05:35:07` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 103): unterminated string literal (detected at line 103)
 - `2026-08-02T05:35:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-02T05:35:07` Corrida terminada. Total usado hoy: 132.
+- `2026-08-02T05:43:59` Arrancando corrida. Quedan hoy ~168 peticiones objetivo.
+- `2026-08-02T05:44:24` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
+- `2026-08-02T05:44:47` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento de `scan_directory` y `process_entry` al reducir las llamadas redundantes a `Path.resolve()` y `is_protected_path`, utilizando el valor ya normalizado de `entry.path` y verificando `is_protected_path` solo una vez al descubrir una carpeta.
+- `2026-08-02T05:45:11` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de `load()` evitando accesos innecesarios al sistema de archivos al pre-verificar la existencia y el estado del archivo mediante una única llamada a `stat()` cuando el path no ha cambiado, reduciendo la latencia de E/S.
+- `2026-08-02T05:45:19` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Optimizé `entries_from_folders` reemplazando la iteración completa del directorio por una verificación de existencia basada en extensiones permitidas, evitando el acceso a metadatos de archivos irrelevantes y reduciendo drásticamente las llamadas al sistema operativo innecesarias.
+- `2026-08-02T05:45:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-02T05:45:19` Corrida terminada. Total usado hoy: 136.
