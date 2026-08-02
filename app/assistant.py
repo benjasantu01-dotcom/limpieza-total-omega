@@ -436,15 +436,22 @@ def _call_gemini(
     """
     if not api_key or not model or not _MODEL_NAME_REGEX.match(model):
         return None
+    
+    # Seguridad: truncar y validar entradas antes del envío
+    safe_q = _sanitize_query(question)[:500]
+    safe_ctx = context_text[:1000]
+    
+    if not _ensure_safe_text(safe_q):
+        return None
         
     try:
-        sanitized_context = _CONTROL_CHARS_REGEX.sub("", context_text)
+        sanitized_context = _CONTROL_CHARS_REGEX.sub("", safe_ctx)
         
         cuerpo_json: bytes = json.dumps({
             "contents": [{
                 "parts": [{
                     "text": f"{SYSTEM_PROMPT}\n\nMétricas del sistema:\n{sanitized_context}\n\n"
-                            f"Pregunta del usuario: {question}"
+                            f"Pregunta del usuario: {safe_q}"
                 }]
             }]
         }).encode("utf-8")
