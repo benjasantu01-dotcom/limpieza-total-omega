@@ -123,7 +123,7 @@ def directory_size(path: str | os.PathLike | None) -> int:
     iterativa (stack-based), optimizando el uso de recursos y limitando
     la profundidad de recursión para evitar bucles infinitos en enlaces.
     """
-    if not path:
+    if path is None:
         return 0
     
     try:

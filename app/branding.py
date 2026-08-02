@@ -293,10 +293,11 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         
         parent = target.parent
         if not parent.exists():
-            ensure_safe_to_modify(parent)
+            # Si el directorio padre no es seguro, abortar
+            if not is_safe_to_modify(parent):
+                return None
             parent.mkdir(parents=True, exist_ok=True)
             
-        ensure_safe_to_modify(target)
         target.write_text(logo_svg(), encoding="utf-8")
         return target
     except (OSError, PermissionError, TypeError, ValueError, AttributeError, RuntimeError):
@@ -341,7 +342,7 @@ def draw_logo(canvas: Any, size: int = 56, canvas_x: int = 0, canvas_y: int = 0)
 
         canvas.create_polygon(contorno, fill=GRADIENT_STOPS[1], outline="")
         franjas = max(6, int(28 * s))
-        alto = 92 * s / franjas
+        alto = max(0.1, 92 * s / franjas)
         for i, tono in enumerate(gradient_colors(franjas)):
             w = 36 * s * (1.0 if i / (franjas - 1) < 0.55 else 1.0 - (i / (franjas - 1) - 0.55) * 1.9)
             canvas.create_rectangle(

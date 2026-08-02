@@ -225,21 +225,25 @@ def context_as_text(context: SystemContext) -> str:
     if not isinstance(context, SystemContext) or not context.analyzed:
         return "No hay métricas disponibles todavía."
 
-    lineas = [
-        f"Puntaje de salud: {context.score if context.score is not None else 'sin calcular'}"
-        f"{f' (nota {context.grade})' if context.grade else ''}",
-        f"Archivos basura: {context.junk_mb:.0f} MB",
-        f"Archivos sospechosos: {context.suspicious_count} "
-        f"({context.suspicious_warnings} con advertencia)",
-        f"RAM disponible: {context.memory_available_percent:.0f}%",
-        f"Espacio libre en disco: {context.disk_free_percent:.0f}%",
-        f"Duplicados recuperables: {context.duplicate_mb:.0f} MB",
-        f"Programas de inicio: {context.startup_count}",
-        f"Archivos en cuarentena: {context.quarantined_count}",
-    ]
-    if context.browser_cache_mb:
-        lineas.append(f"Caché de navegadores: {context.browser_cache_mb:.0f} MB")
-    return "\n".join(lineas)
+    # Aseguramos consistencia de tipos antes de formatear
+    try:
+        lineas = [
+            f"Puntaje de salud: {context.score if context.score is not None else 'sin calcular'}"
+            f"{f' (nota {context.grade})' if context.grade else ''}",
+            f"Archivos basura: {float(context.junk_mb):.0f} MB",
+            f"Archivos sospechosos: {int(context.suspicious_count)} "
+            f"({int(context.suspicious_warnings)} con advertencia)",
+            f"RAM disponible: {float(context.memory_available_percent):.0f}%",
+            f"Espacio libre en disco: {float(context.disk_free_percent):.0f}%",
+            f"Duplicados recuperables: {float(context.duplicate_mb):.0f} MB",
+            f"Programas de inicio: {int(context.startup_count)}",
+            f"Archivos en cuarentena: {int(context.quarantined_count)}",
+        ]
+        if context.browser_cache_mb and float(context.browser_cache_mb) > 0:
+            lineas.append(f"Caché de navegadores: {float(context.browser_cache_mb):.0f} MB")
+        return "\n".join(lineas)
+    except (ValueError, TypeError):
+        return "Error al procesar los datos de salud del sistema."
 
 
 def explain_area(area: str) -> str:
