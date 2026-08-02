@@ -51,6 +51,7 @@ class FileEntry:
 
     @property
     def size_mb(self) -> float:
+        """Convierte bytes a MB para reportes de interfaz de usuario."""
         return round(self.size_bytes / (1024 * 1024), 2) if self.size_bytes > 0 else 0.0
 
 
@@ -63,6 +64,7 @@ class ExtensionUsage:
 
     @property
     def size_mb(self) -> float:
+        """Convierte bytes a MB para reportes de interfaz de usuario."""
         return round(self.size_bytes / (1024 * 1024), 2) if self.size_bytes > 0 else 0.0
 
 
@@ -75,6 +77,7 @@ class FolderUsage:
 
     @property
     def size_mb(self) -> float:
+        """Convierte bytes a MB para reportes de interfaz de usuario."""
         return round(self.size_bytes / (1024 * 1024), 2) if self.size_bytes > 0 else 0.0
 
 
@@ -88,6 +91,7 @@ class DriveUsage:
 
     @property
     def used_percent(self) -> float:
+        """Porcentaje de uso actual, evitando división por cero."""
         if self.total <= 0:
             return 0.0
         return round(self.used / self.total * 100, 1)
@@ -148,7 +152,13 @@ def all_drives_usage(mounts: Iterable[str] | None = None) -> list[DriveUsage]:
 
 def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Generator[tuple[Path, int], None, None]:
     """
-    Recorre recursivamente un directorio devolviendo archivos y su tamaño, validando contención.
+    Recorre recursivamente un directorio devolviendo archivos y su tamaño.
+    
+    Implementa seguridad defensiva:
+    1. Resuelve rutas absolutas para evitar confusión con el sistema de archivos.
+    2. Saltea enlaces simbólicos y puntos de reparse (junctions).
+    3. Verifica `is_protected_path` para ignorar carpetas del sistema.
+    4. Usa un conjunto `visited` para evitar ciclos infinitos en sistemas de archivos complejos.
     """
     if not directory:
         return
@@ -166,7 +176,6 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
             with os.scandir(root_path) as iterator:
                 for entry in iterator:
                     try:
-                        # Prevenir seguir enlaces y puntos de reparse
                         if entry.is_symlink():
                             continue
                         if os.name == 'nt' and entry.stat(follow_symlinks=False).st_reparse_tag != 0:
@@ -174,7 +183,6 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
                         
                         full_entry_path = Path(entry.path).resolve()
                         
-                        # Seguridad defensiva: validar que no escape del directorio base
                         if base_path not in full_entry_path.parents and full_entry_path != base_path:
                             continue
 
@@ -227,7 +235,7 @@ def usage_by_extension(directory: str | os.PathLike, limit: int = 15, skip_prote
 
 
 def largest_folders(directory: str | os.PathLike, limit: int = 10, skip_protected: bool = True) -> list[FolderUsage]:
-    """Calcula el peso total acumulado de las carpetas de primer nivel."""
+    """Calcula el peso total acumulado de las carpetas de primer nivel bajo el directorio base."""
     if not directory:
         return []
     try:
@@ -239,7 +247,6 @@ def largest_folders(directory: str | os.PathLike, limit: int = 10, skip_protecte
         
         for path, size in walk_files(base, skip_protected):
             try:
-                # Validar contención explícita antes de indexar
                 rel = path.relative_to(base)
                 if not rel.parts:
                     continue

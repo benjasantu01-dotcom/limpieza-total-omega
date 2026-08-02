@@ -132,14 +132,14 @@ def _to_int(value: Any, default: int = 0) -> int:
 
 
 def score_junk(junk_mb: float) -> float:
-    """Calcula ratio [0, 1] donde 1 es 'cero basura' y 0 es 'mínimo aceptable'."""
+    """Calcula ratio [0, 1] donde 1 es 'cero basura' (en MB) y 0 es el límite crítico."""
     val = _to_float(junk_mb)
     if JUNK_LIMIT_MB <= 0: return 0.0
     return _clamp(1.0 - (val / JUNK_LIMIT_MB))
 
 
 def score_security(suspicious_count: int, warnings: int = 0) -> float:
-    """Calcula ratio [0, 1] penalizando hallazgos según un factor de riesgo."""
+    """Calcula ratio [0, 1] penalizando hallazgos (conteo) y advertencias (factor riesgo)."""
     s = float(max(0, _to_int(suspicious_count)))
     w = float(max(0, _to_int(warnings)))
     if not (math.isfinite(s) and math.isfinite(w)): return 0.0
@@ -148,28 +148,28 @@ def score_security(suspicious_count: int, warnings: int = 0) -> float:
 
 
 def score_memory(available_percent: float) -> float:
-    """Calcula ratio [0, 1] basado en la proporción de RAM disponible."""
+    """Calcula ratio [0, 1] basado en el porcentaje de RAM disponible (0-100)."""
     val = _clamp(_to_float(available_percent), 0.0, 100.0)
     if RAM_IDEAL_PERCENT <= 0: return 0.0
     return _clamp(val / RAM_IDEAL_PERCENT)
 
 
 def score_disk(free_percent: float) -> float:
-    """Calcula ratio [0, 1] basado en la proporción de disco libre disponible."""
+    """Calcula ratio [0, 1] basado en el porcentaje de disco libre disponible (0-100)."""
     val = _to_float(free_percent)
     if DISK_IDEAL_PERCENT <= 0: return 0.0
     return _clamp(val / DISK_IDEAL_PERCENT)
 
 
 def score_duplicates(duplicate_mb: float) -> float:
-    """Calcula ratio [0, 1] basado en el peso de archivos redundantes encontrados."""
+    """Calcula ratio [0, 1] basado en el peso (MB) de archivos redundantes encontrados."""
     val = _to_float(duplicate_mb)
     if DUPLICATE_LIMIT_MB <= 0: return 0.0
     return _clamp(1.0 - (val / DUPLICATE_LIMIT_MB))
 
 
 def score_startup(startup_count: int) -> float:
-    """Calcula ratio [0, 1] inversamente proporcional al número de programas en inicio."""
+    """Calcula ratio [0, 1] inversamente proporcional al conteo de programas en inicio."""
     count = float(_to_int(startup_count))
     if STARTUP_LIMIT_COUNT <= 0 or not math.isfinite(count): return 0.0
     ratio = 1.0 - (count / STARTUP_LIMIT_COUNT)
