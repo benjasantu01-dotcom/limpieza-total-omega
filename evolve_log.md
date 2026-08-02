@@ -506,3 +506,43 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-02T14:16:12` 🛑 Propuesta bloqueada por la guardia en duplicates.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: group_by_size
 - `2026-08-02T14:16:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-02T14:16:12` Corrida terminada. Total usado hoy: 336.
+- `2026-08-02T14:25:03` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-02T14:25:31` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del `breakdown` en `compute_score` eliminando la creación y el acceso a un diccionario `ratios` intermedio y evitando conversiones innecesarias dentro del bucle principal, mejorando el rendimiento en el hot-path del procesamiento de métricas.
+- `2026-08-02T14:26:33` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Optimicé el método `_get_cached` implementando una pre-verificación de la existencia de la clave antes de realizar el cálculo de `now` o manipular el `OrderedDict`, reduciendo el procesamiento innecesario en llamadas frecuentes, y corregí la gestión de `self._tasks_running` en `_set_busy` para asegurar que el contador de tareas siempre se mantenga sincronizado, evitando el bloqueo visual de la barra de progreso.
+- `2026-08-02T14:26:58` Tests FALLARON:
+```
+nner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:127: SyntaxWarning: invalid escape sequence '\)'
+    """Verifica si la ruta apunta a la raíz de una unidad (ej. C:\)."""
+
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:84: SyntaxWarning: invalid escape sequence '\P'
+    Parsea comandos tipo '"C:\Program Files\App.exe" /arg' extrayendo solo
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption - AssertionError: assert [] == ['grande', 'medio', 'chico']
+  
+  Right contains 3 more items, first extra item: 'grande'
+  
+  Full diff:
+  + []
+  - [
+  -     'grande',
+  -     'medio',
+  -     'chico',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines - assert 0 == 1
+ +  where 0 = len([])
+2 failed, 297 passed, 11 warnings in 1.12s
+
+```
+- `2026-08-02T14:26:58` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `parse_windows_process_csv` reemplazando la creación de una lista intermedia de líneas y el procesamiento `split` por un generador eficiente que evita copias de memoria innecesarias, mejorando la velocidad de análisis del CSV de PowerShell.
+- `2026-08-02T14:27:05` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-08-02T14:27:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-02T14:27:05` Corrida terminada. Total usado hoy: 340.

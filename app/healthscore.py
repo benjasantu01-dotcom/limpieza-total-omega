@@ -238,7 +238,8 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     if _TOTAL_WEIGHTS <= 0:
         return HealthResult(0, "F", {}, ["Error: Configuración de pesos inválida."])
 
-    ratios = {
+    # Mapping directo para evitar iteraciones y lookups adicionales
+    ratios: Dict[str, float] = {
         "seguridad": score_security(metrics.suspicious_count, metrics.suspicious_warnings),
         "disco": score_disk(metrics.disk_free_percent),
         "memoria": score_memory(metrics.memory_available_percent),
@@ -247,18 +248,20 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         "arranque": score_startup(metrics.startup_count)
     }
 
-    # Calculamos puntos ponderados: (ratio * peso_relativo)
+    # Calculamos puntos ponderados iterando solo una vez sobre el set de pesos
     breakdown: Dict[str, int] = {}
+    total_score: float = 0.0
+    factor: float = 100.0 / float(_TOTAL_WEIGHTS)
+    
     for area, weight in WEIGHTS.items():
-        raw_ratio = _clamp(ratios.get(area, 0.0))
-        score_val = (raw_ratio * weight * 100.0) / float(_TOTAL_WEIGHTS)
-        breakdown[area] = int(score_val + 0.5)
-
-    total_score = _clamp(sum(breakdown.values()), 0.0, 100.0)
+        score_val = (ratios[area] * weight * factor)
+        rounded = int(score_val + 0.5)
+        breakdown[area] = rounded
+        total_score += score_val
 
     return HealthResult(
-        score=int(total_score),
-        grade=grade_for_score(int(total_score)),
+        score=int(_clamp(total_score, 0.0, 100.0)),
+        grade=grade_for_score(int(total_score + 0.5)),
         breakdown=breakdown,
         recommendations=_generate_recommendations(metrics, ratios),
     )

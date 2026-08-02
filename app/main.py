@@ -171,22 +171,20 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _get_cached(self, key: str, provider: Optional[Callable] = None, force: bool = False) -> Any:
         """Retorna datos cacheados si están vigentes; gestiona política LRU."""
-        now = time.time()
         if not force and key in self._cache:
             data, timestamp = self._cache[key]
-            if now - timestamp < self._cache_ttl:
-                self._cache.move_to_end(key) # Marcar como recientemente usado
+            if time.time() - timestamp < self._cache_ttl:
+                self._cache.move_to_end(key)
                 return data
-            else:
-                del self._cache[key]
+            del self._cache[key]
         
         if provider:
             try:
                 data = provider()
                 if data is not None:
                     if len(self._cache) >= self._cache_max_size:
-                        self._cache.popitem(last=False) # Expulsar el más viejo
-                    self._cache[key] = (data, now)
+                        self._cache.popitem(last=False)
+                    self._cache[key] = (data, time.time())
                 return data
             except Exception as e:
                 logging.error("Error al obtener datos para caché %s: %s", key, e)
@@ -791,7 +789,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         cantidad de tareas asíncronas en ejecución.
         """
         def actualizar():
-            self._tasks_running = max(0, self._tasks_running + (1 if busy else -1))
+            if busy:
+                self._tasks_running += 1
+            else:
+                self._tasks_running = max(0, self._tasks_running - 1)
+            
             if self._tasks_running > 0:
                 self.activity.pack(side="right")
                 self.activity.start()
