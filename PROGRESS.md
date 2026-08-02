@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **249** (49.4% de aceptación)
+- Mejoras aceptadas: **250** (49.6% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 27
+- Rechazadas por guardia de seguridad: 26
 - Sin cambios (nada sustancial que mejorar): 14
 - Sin respuesta de la IA (error o límite): 199
 
@@ -16,36 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-01 | 84 | 6 | 9 | 6 | 79 |
-| 2026-08-02 | 165 | 9 | 18 | 8 | 120 |
+| 2026-08-01 | 81 | 6 | 8 | 6 | 79 |
+| 2026-08-02 | 169 | 9 | 18 | 8 | 120 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **56**
+- legibilidad y documentación: **60**
 - seguridad defensiva: **52**
 - robustez ante casos límite: **49**
 - manejo de errores y validación de entradas: **49**
-- rendimiento: **43**
+- rendimiento: **40**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **23**
-- `scanner.py`: **21**
+- `settings.py`: **22**
+- `main.py`: **20**
+- `scanner.py`: **20**
 - `assistant.py`: **19**
-- `main.py`: **19**
 - `organizer.py`: **19**
 - `browser.py`: **19**
 - `diskreport.py`: **18**
 - `branding.py`: **18**
+- `healthscore.py`: **17**
 - `quarantine.py`: **17**
-- `safety.py`: **16**
-- `healthscore.py`: **16**
+- `duplicates.py`: **16**
 - `startup.py`: **15**
-- `duplicates.py`: **15**
-- `memory.py`: **14**
+- `memory.py`: **15**
+- `safety.py`: **15**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-02T13:46:06` **memory.py** (legibilidad y documentación): Mejoré la documentación de la API interna de `trim_working_set` mediante un docstring detallado que clarifica los riesgos y requisitos de seguridad, y añadí `type hints` adicionales en `parse_windows_process_csv` para mejorar la legibilidad y robustez de la lógica de procesamiento de datos.
+- `2026-08-02T13:45:55` **main.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo `main.py` mediante la refactorización de `_collect_settings`, extrayendo la lógica de validación de entradas numéricas a una función privada más clara y añadiendo type hints faltantes, lo que hace que el flujo de persistencia de configuración sea robusto y fácil de auditar.
+- `2026-08-02T13:44:53` **healthscore.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `healthscore.py` mediante la adición de Type Hints detallados, docstrings descriptivos para las constantes y una refactorización de `summarize` para eliminar la dependencia de `_sort_by_performance_delta`, haciendo que el orden del desglose sea más predecible y claro para el usuario.
+- `2026-08-02T13:44:29` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del pipeline de detección en `find_duplicates` y añadí type hints explícitos en funciones internas para alinear el módulo con los estándares de legibilidad y mantenibilidad del proyecto.
 - `2026-08-02T13:35:28` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `walk_files` extrayendo la lógica de validación de entrada y la lógica de escaneo en funciones internas nombradas, facilitando la comprensión del flujo de recursión.
 - `2026-08-02T13:35:19` **browser.py** (legibilidad y documentación): Mejora de la legibilidad y robustez de `directory_size` mediante la extracción de la lógica de filtrado a un predicado local llamado `is_valid_entry`, eliminando condicionales anidados complejos y clarificando la intención del escaneo.
 - `2026-08-02T13:34:57` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación de los tipos de datos complejos y se han añadido docstrings detallados en las funciones de manipulación de color y gradientes para esclarecer la lógica de interpolación lineal, facilitando el mantenimiento futuro.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-02T13:14:19` **organizer.py** (manejo de errores y validación de entradas): Corregí una variable inexistente (`_LOWER_JOWER_JUNK_EXTS` -> `_LOWER_JUNK_EXTS`) en el property `is_junk_extension` que causaría un `NameError` en tiempo de ejecución, además de añadir validaciones de tipo y de existencia en el constructor y métodos de la clase `JunkFile` para evitar operar sobre rutas inválidas.
 - `2026-08-02T13:13:56` **memory.py** (manejo de errores y validación de entradas): Se mejoró la robustez de `parse_windows_process_csv` y `read_snapshot` capturando condiciones de entrada inválidas y excepciones de lectura para evitar retornos silenciosos o errores inesperados durante el procesamiento de datos del sistema.
 - `2026-08-02T13:05:12` **main.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `main.py` al añadir validaciones críticas de `None` y `tipos` en los métodos de carga de estado y selección de carpetas, evitando excepciones no controladas si los archivos de configuración o los diálogos del sistema devuelven valores inesperados.
-- `2026-08-02T13:03:43` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `drive_usage` y `walk_files` mediante la validación explícita de entradas nulas o rutas inválidas y la captura de errores al resolver rutas, asegurando que el bucle principal no se interrumpa ante fallos de acceso o condiciones de carrera en el sistema de archivos.
-- `2026-08-02T12:55:21` **browser.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `directory_size` validando la entrada y capturando excepciones de forma específica, y se mejoró la resiliencia del bucle de escaneo en `detect_profiles` para manejar rutas malformadas o permisos denegados sin interrumpir el análisis.
-- `2026-08-02T12:55:13` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` añadiendo una validación explícita mediante `ensure_safe_to_modify` para el directorio padre antes de intentar crearlo, garantizando que no se operen rutas protegidas ni bloqueadas, y se centralizó el manejo de errores mediante excepciones específicas.
-- `2026-08-02T12:54:45` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `build_context` y los manejadores de consultas mediante la validación explícita de `None` y tipos, garantizando que el asistente siempre opere con datos consistentes y no falle ante configuraciones o estados inesperados.

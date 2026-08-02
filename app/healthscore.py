@@ -32,9 +32,9 @@ __all__ = [
     "summarize",
 ]
 
-# Umbrales críticos para la normalización: definen el punto de saturación (ratio 0.0).
-# Un valor igual o superior a estos límites en el caso de basura/duplicados
-# o igual a cero en porcentajes, penaliza el puntaje al mínimo posible.
+# Umbrales críticos para la normalización (puntos de saturación).
+# Un valor igual o superior a estos límites (en MB/cantidad) o igual a cero
+# (en porcentajes de disponibilidad) penaliza el puntaje al mínimo posible.
 JUNK_LIMIT_MB: Final[float] = 5000.0          
 DUPLICATE_LIMIT_MB: Final[float] = 2000.0     
 STARTUP_LIMIT_COUNT: Final[int] = 20          
@@ -42,8 +42,7 @@ RAM_IDEAL_PERCENT: Final[float] = 35.0
 DISK_IDEAL_PERCENT: Final[float] = 25.0       
 
 # Umbrales para disparar recomendaciones (ratios de 0.0 a 1.0).
-# Se usan en _generate_recommendations para filtrar sugerencias relevantes 
-# basándose en qué tan lejos está el sistema de su estado óptimo.
+# Determinan la severidad de la sugerencia presentada al usuario.
 WARN_THRESHOLD_HIGH: Final[float] = 0.9
 WARN_THRESHOLD_MED: Final[float] = 0.8
 WARN_THRESHOLD_LOW: Final[float] = 0.6
@@ -58,7 +57,7 @@ WEIGHTS: Final[Dict[str, int]] = {
     "arranque": 8,
 }
 
-# Precalculo la suma de pesos para evitar iterar en el hot-path de compute_score
+# Precalculo la suma de pesos para evitar iterar en el hot-path de compute_score.
 _TOTAL_WEIGHTS: Final[int] = sum(WEIGHTS.values())
 
 
@@ -143,21 +142,14 @@ def _to_int(value: Any, default: int = 0) -> int:
 
 
 def score_junk(junk_mb: float) -> float:
-    """
-    Calcula ratio [0, 1].
-    1.0: Sin basura.
-    0.0: Basura >= JUNK_LIMIT_MB (punto de saturación).
-    """
+    """Calcula ratio [0, 1] (1.0: Sin basura; 0.0: Basura >= JUNK_LIMIT_MB)."""
     val = _to_float(junk_mb)
     if JUNK_LIMIT_MB <= 0: return 0.0
     return _clamp(1.0 - (val / JUNK_LIMIT_MB))
 
 
 def score_security(suspicious_count: int, warnings: int = 0) -> float:
-    """
-    Calcula ratio [0, 1] penalizando hallazgos (conteo) y advertencias.
-    Cada hallazgo reduce el score 5%, cada advertencia reduce 25%.
-    """
+    """Calcula ratio [0, 1] penalizando hallazgos (5%) y advertencias (25%)."""
     s = float(max(0, _to_int(suspicious_count)))
     w = float(max(0, _to_int(warnings)))
     if not math.isfinite(s) or not math.isfinite(w): return 0.0
@@ -166,20 +158,14 @@ def score_security(suspicious_count: int, warnings: int = 0) -> float:
 
 
 def score_memory(available_percent: float) -> float:
-    """
-    Calcula ratio [0, 1].
-    Retorna 1.0 si la disponibilidad >= RAM_IDEAL_PERCENT.
-    """
+    """Calcula ratio [0, 1] basado en disponibilidad vs RAM_IDEAL_PERCENT."""
     val = _clamp(_to_float(available_percent), 0.0, 100.0)
     if RAM_IDEAL_PERCENT <= 0: return 0.0
     return _clamp(val / RAM_IDEAL_PERCENT)
 
 
 def score_disk(free_percent: float) -> float:
-    """
-    Calcula ratio [0, 1].
-    Retorna 1.0 si el espacio libre >= DISK_IDEAL_PERCENT.
-    """
+    """Calcula ratio [0, 1] basado en espacio libre vs DISK_IDEAL_PERCENT."""
     val = _to_float(free_percent)
     if DISK_IDEAL_PERCENT <= 0: return 0.0
     return _clamp(val / DISK_IDEAL_PERCENT)
@@ -262,10 +248,9 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     }
 
     # Calculamos puntos ponderados: (ratio * peso_relativo)
-    breakdown = {}
+    breakdown: Dict[str, int] = {}
     for area, weight in WEIGHTS.items():
         raw_ratio = _clamp(ratios.get(area, 0.0))
-        # Cálculo seguro y acotado para evitar desbordamientos
         score_val = (raw_ratio * weight * 100.0) / float(_TOTAL_WEIGHTS)
         breakdown[area] = int(score_val + 0.5)
 
@@ -279,24 +264,18 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     )
 
 
-def _sort_by_performance_delta(item: Tuple[str, int]) -> int:
-    """Calcula la desviación respecto al peso ideal para ordenar áreas prioritarias."""
-    area, puntos = item
-    return puntos - WEIGHTS.get(area, 0)
-
-
 def summarize(result: HealthResult) -> List[str]:
     """Genera una representación visual y textual detallada del resultado de salud."""
     lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     
-    keys = list(result.breakdown.keys())
-    if not keys:
+    if not result.breakdown:
         return lines + ["  Error: No hay datos de desglose disponibles."]
 
-    for area, puntos in sorted(result.breakdown.items(), key=_sort_by_performance_delta):
-        maximo: int = WEIGHTS.get(area, 0)
-        puntos_acotados = _clamp(float(puntos), 0.0, float(maximo))
-        lines.append(f"  {area.capitalize():<12} {int(puntos_acotados):>2}/{maximo:<2} [{'#' * int(puntos_acotados)}{'.' * int(maximo - puntos_acotados)}]")
+    # Presentamos el desglose respetando el orden definido en WEIGHTS original
+    for area, maximo in WEIGHTS.items():
+        puntos = result.breakdown.get(area, 0)
+        visual = f"[{'#' * puntos}{'.' * (maximo - puntos)}]"
+        lines.append(f"  {area.capitalize():<12} {puntos:>2}/{maximo:<2} {visual}")
     
     lines.extend(["", "Recomendaciones:"])
     lines.extend([f"  - {rec}" for rec in result.recommendations])

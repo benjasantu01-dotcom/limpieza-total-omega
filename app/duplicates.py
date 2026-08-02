@@ -135,12 +135,13 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
 
 def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """
-    Rastreo recursivo que agrupa por tamaño in-situ, evitando múltiples pasadas.
+    Realiza un recorrido recursivo por directorios, indexando archivos por tamaño.
+    Evita procesar el mismo inodo dos veces y aplica filtros de seguridad in-situ.
     """
     groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: set[Tuple[int, int]] = set()
     
-    def _scan(root_path: Path):
+    def _scan(root_path: Path) -> None:
         try:
             with os.scandir(root_path) as it:
                 for entry in it:
@@ -173,7 +174,8 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
 
 def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
     """
-    Aplica una función de hash a una colección y agrupa rutas con colisiones.
+    Aplica una función de hash a una lista de candidatos y agrupa por colisiones.
+    Solo retorna entradas donde existan al menos dos rutas con el mismo hash.
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
@@ -189,7 +191,10 @@ def find_duplicates(
     skip_protected: bool = True,
 ) -> List[DuplicateGroup]:
     """
-    Ejecuta el pipeline de detección: Recolectar (agrupando por tamaño) -> Hash parcial -> Hash completo.
+    Ejecuta el pipeline de detección de duplicados en tres etapas:
+    1. Indexación por tamaño (Filtro por volumen).
+    2. Filtrado por hash parcial (Filtro heurístico).
+    3. Validación por hash completo (Confirmación absoluta).
     """
     size_map = _collect_candidates(directories, min_size, skip_protected)
     potential_groups = [paths for paths in size_map.values() if len(paths) > 1]
@@ -228,7 +233,8 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     """
-    Determina la ruta óptima para conservar.
+    Determina la ruta óptima para conservar basada en la fecha de modificación (mtime)
+    más antigua y, como desempate, la ruta con menor longitud de string.
     """
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None

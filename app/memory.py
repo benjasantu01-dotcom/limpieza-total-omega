@@ -158,7 +158,7 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
     if not text or not isinstance(text, str):
         return []
 
-    lines = [line.strip() for line in text.splitlines() if line.strip()]
+    lines: List[str] = [line.strip() for line in text.splitlines() if line.strip()]
     if not lines:
         return []
 
@@ -235,8 +235,8 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     if os.name != "nt":
         return []
 
-    cache_key = f"limit_{limit}"
-    now = time.time()
+    cache_key: str = f"limit_{limit}"
+    now: float = time.time()
     if cache_key in _PROCESS_CACHE:
         ts, data = _PROCESS_CACHE[cache_key]
         if now - ts < 5.0:
@@ -300,7 +300,18 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
 
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """Solicita al SO reducir el working set de un proceso."""
+    """
+    Solicita al SO liberar memoria no esencial (Working Set) de un proceso.
+    
+    Requiere permisos de administrador para procesos de usuario distintos al actual.
+    Implementa chequeos de seguridad (is_protected_path) para prevenir 
+    manipulaciones sobre procesos del núcleo o críticos.
+    
+    Args:
+        pid: Identificador del proceso a optimizar.
+    Returns:
+        Tupla (éxito, mensaje descriptivo).
+    """
     if os.name != "nt":
         return False, "Solo disponible en Windows."
     

@@ -1519,6 +1519,14 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     # Lógica de Ajustes
     # ------------------------------------------------------------------
 
+    def _validate_numeric_setting(self, value: str, default: int) -> int:
+        """Valida y convierte entradas de texto a enteros positivos para ajustes."""
+        try:
+            val = int(value.strip())
+            return val if val > 0 else default
+        except ValueError:
+            return default
+
     def _collect_settings(self) -> Dict[str, Any]:
         """Sincroniza los valores de la UI con la configuración del sistema."""
         valores = dict(self.settings)
@@ -1528,16 +1536,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             except Exception:
                 continue
         
-        try:
-            val_dup = self.min_dup_entry.get().strip()
-            if val_dup.isdigit() and int(val_dup) > 0:
-                valores["duplicados_tamano_minimo_kb"] = int(val_dup)
-            
-            val_top = self.top_files_entry.get().strip()
-            if val_top.isdigit() and int(val_top) > 0:
-                valores["top_archivos"] = int(val_top)
-        except (ValueError, AttributeError):
-            logging.error("Error al validar campos de entrada en Ajustes")
+        valores["duplicados_tamano_minimo_kb"] = self._validate_numeric_setting(
+            self.min_dup_entry.get(), 64
+        )
+        valores["top_archivos"] = self._validate_numeric_setting(
+            self.top_files_entry.get(), 15
+        )
             
         clave_api = self.api_key_entry.get().strip()
         if clave_api:
