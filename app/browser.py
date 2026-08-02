@@ -142,6 +142,9 @@ def directory_size(path: str | os.PathLike | None) -> int:
                     try:
                         if entry.name.lower() in NEVER_TOUCH:
                             continue
+                        # Impedir recursión en enlaces simbólicos o junctions
+                        if entry.is_symlink():
+                            continue
                         if entry.is_dir(follow_symlinks=False):
                             stack.append(entry.path)
                         else:

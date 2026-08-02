@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **257** (51.0% de aceptación)
+- Mejoras aceptadas: **261** (51.8% de aceptación)
 - Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 192
+- Sin respuesta de la IA (error o límite): 188
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-01 | 117 | 7 | 11 | 6 | 107 |
-| 2026-08-02 | 140 | 7 | 16 | 8 | 85 |
+| 2026-08-01 | 117 | 7 | 11 | 6 | 103 |
+| 2026-08-02 | 144 | 7 | 16 | 8 | 85 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,27 +25,31 @@ Este archivo se regenera solo en cada corrida a partir de
 - rendimiento: **51**
 - manejo de errores y validación de entradas: **49**
 - robustez ante casos límite: **49**
-- seguridad defensiva: **42**
+- seguridad defensiva: **46**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **23**
 - `scanner.py`: **21**
+- `assistant.py`: **20**
+- `browser.py`: **20**
 - `main.py`: **20**
 - `organizer.py`: **20**
-- `assistant.py`: **19**
-- `browser.py`: **19**
+- `diskreport.py`: **19**
 - `quarantine.py`: **19**
-- `diskreport.py`: **18**
 - `healthscore.py`: **18**
 - `safety.py`: **17**
+- `branding.py`: **17**
 - `duplicates.py`: **17**
-- `branding.py`: **16**
 - `memory.py`: **15**
 - `startup.py`: **15**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-02T11:01:54` **diskreport.py** (seguridad defensiva): Se ha añadido una validación de acceso de lectura `os.access(..., os.R_OK)` antes de intentar escanear rutas dentro de `walk_files` para evitar excepciones innecesarias en directorios con restricciones de permisos y mejorar la robustez defensiva al iterar el sistema de archivos.
+- `2026-08-02T11:01:45` **browser.py** (seguridad defensiva): Se reforzó `directory_size` para evitar el seguimiento de puntos de reparse (junctions) y enlaces simbólicos durante la recursión, garantizando que el escaneo de caché se mantenga estrictamente dentro de la jerarquía de archivos prevista y no escape a otras unidades o rutas externas mediante atajos.
+- `2026-08-02T11:01:23` **branding.py** (seguridad defensiva): Se ha mejorado `save_logo_svg` para prevenir el uso de rutas con puntos de reparse (junctions) mediante el uso de `.resolve()` previo a la validación de `is_safe_to_modify`, asegurando que la ruta destino no se escape del entorno permitido.
+- `2026-08-02T11:00:53` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_call_gemini` integrando `is_protected_path` como barrera adicional sobre la respuesta recibida, garantizando que aunque el motor externo sea comprometido o devuelva contenido malintencionado, la app descarte cualquier respuesta que contenga rutas protegidas del sistema.
 - `2026-08-02T10:51:28` **startup.py** (robustez ante casos límite): Mejora la robustez en `parse_registry_csv` añadiendo una limpieza de caracteres de control y una validación de rutas más exhaustiva contra `is_protected_path`, previniendo errores de parsing en registros con caracteres extraños o malformados que podrían causar excepciones al instanciar `Path`.
 - `2026-08-02T10:51:19` **settings.py** (robustez ante casos límite): Se reforzó la robustez ante casos de archivo corrupto o inaccesible añadiendo una validación explícita de `json.JSONDecodeError` y `UnicodeDecodeError` en `load`, asegurando que el sistema siempre retorne `DEFAULTS` en lugar de propagar excepciones o errores silenciosos de lectura parcial ante archivos truncados.
 - `2026-08-02T10:50:54` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez de `scan_file` añadiendo una validación explícita mediante `is_protected_path` antes de ejecutar las heurísticas, garantizando que el escáner no intente procesar rutas de sistema ni archivos protegidos incluso si son pasados directamente como argumento.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-02T10:10:31` **settings.py** (rendimiento): Se optimizó `load()` para eliminar llamadas redundantes a `settings_path()` y `ruta.stat()` mediante el uso del caché ya existente, reduciendo operaciones de I/O innecesarias en cada consulta.
 - `2026-08-02T10:10:22` **scanner.py** (rendimiento): Optimizamos `scan_file` eliminando redundancias de E/S y chequeos de seguridad innecesarios, ya que `is_protected_path` es invocado preventivamente en el `process_entry` del bucle principal, evitando así llamadas repetidas al sistema de archivos por cada archivo escaneado.
 - `2026-08-02T10:10:00` **safety.py** (rendimiento): Se ha optimizado la función `is_protected_path` reemplazando la creación dinámica de un `set` de partes del path en cada llamada por un método de `isdisjoint` aplicado directamente sobre el generador de componentes del path, reduciendo drásticamente las asignaciones de memoria y el tiempo de CPU en bucles de escaneo extensos.
-- `2026-08-02T10:01:16` **quarantine.py** (rendimiento): Optimicé el manejo de la memoria y el rendimiento de las operaciones sobre el manifiesto sustituyendo la carga redundante de la lista completa de objetos (y su posterior filtrado por búsqueda lineal) por un `dict` indexado por `item_id`, lo cual reduce la complejidad de búsqueda de O(n) a O(1) en las funciones `restore_item` y `purge_item`.
-- `2026-08-02T10:01:03` **organizer.py** (rendimiento): Optimizé el rendimiento de `scan_for_junk` evitando la instanciación redundante de objetos `Path` y llamadas a `resolve()` dentro del bucle interno, usando directamente las propiedades de `os.DirEntry` y filtrando mediante sets pre-calculados.
-- `2026-08-02T10:00:41` **memory.py** (rendimiento): Se implementó un cacheo a nivel de módulo para la consulta de procesos (`top_memory_processes`) con un TTL (time-to-live) de 5 segundos, evitando llamadas redundantes e costosas al motor de PowerShell durante una misma ejecución de la interfaz.
-- `2026-08-02T10:00:16` **main.py** (rendimiento): Se optimizó el caché de la aplicación reemplazando el diccionario plano `self._cache` por uno basado en `collections.OrderedDict` para implementar una política de expulsión LRU (Least Recently Used) básica, evitando que el consumo de memoria crezca indefinidamente durante sesiones largas, y se añadió una validación para limitar su tamaño máximo.

@@ -171,6 +171,8 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
     base_drive = base_path.drive
 
     def recursive_scan(root_path: Path) -> Generator[Tuple[Path, int], None, None]:
+        if not os.access(root_path, os.R_OK):
+            return
         try:
             with os.scandir(root_path) as iterator:
                 for entry in iterator:

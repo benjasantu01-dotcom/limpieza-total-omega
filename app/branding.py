@@ -291,16 +291,16 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     if destination is None:
         return None
     try:
-        path_obj = Path(destination)
-        target = path_obj.expanduser().resolve()
+        # Resolvemos la ruta para normalizar puntos de reparse (junctions/symlinks)
+        target = Path(destination).expanduser().resolve()
         
-        # Validaciones de seguridad requeridas
+        # Validaciones de seguridad: el destino debe ser seguro y no un directorio
         if not is_safe_to_modify(target) or target.is_dir(): 
             return None
         
+        # El padre también debe ser seguro
         parent = target.parent
         if not parent.exists():
-            # Si el directorio padre no es seguro, abortar
             if not is_safe_to_modify(parent):
                 return None
             parent.mkdir(parents=True, exist_ok=True)
