@@ -160,6 +160,7 @@ def score_security(suspicious_count: int, warnings: int = 0) -> float:
     """
     s = float(max(0, _to_int(suspicious_count)))
     w = float(max(0, _to_int(warnings)))
+    if not math.isfinite(s) or not math.isfinite(w): return 0.0
     penalty: float = (s * 0.05) + (w * 0.25)
     return _clamp(1.0 - penalty, 0.0, 1.0)
 

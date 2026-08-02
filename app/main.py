@@ -859,10 +859,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return None
         
         path_obj = Path(folder)
-        if not path_obj.exists():
-            return None
-        
+        # Comprobar puntos de reparse (junctions) y rutas UNC (red)
         try:
+            if path_obj.is_symlink() or os.path.splitdrive(folder)[0].startswith('\\\\'):
+                messagebox.showwarning("Ruta no soportada", "No se permiten puntos de unión ni recursos de red.")
+                return None
+            
             safety.ensure_safe_to_modify(path_obj)
         except (safety.UnsafePathError, PermissionError):
             messagebox.showwarning(

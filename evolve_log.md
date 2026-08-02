@@ -1153,3 +1153,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-08-02T10:21:02` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Mejoré la robustez de `directory_size` ante situaciones de acceso concurrente o cambios en el sistema de archivos durante la iteración (como carpetas que desaparecen o permisos denegados repentinos) mediante un manejo de excepciones más granular y defensivo, asegurando que el recorrido no se interrumpa ni quede en un estado inconsistente.
 - `2026-08-02T10:21:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-02T10:21:02` Corrida terminada. Total usado hoy: 244.
+- `2026-08-02T10:29:46` Arrancando corrida. Quedan hoy ~56 peticiones objetivo.
+- `2026-08-02T10:30:11` ➖ Sin cambios en diskreport.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `walk_files` y `largest_folders` ante archivos que desaparecen durante la iteración (concurrencia) y errores de acceso al recuperar metadatos, evitando que el escaneo se aborte prematuramente.
+- `2026-08-02T10:30:37` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-08-02T10:31:03` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejora la robustez ante casos límite mediante la adición de una comprobación de infinitos en `score_security` y la garantía de manejo de divisiones por cero en los cálculos de ratio, evitando el posible retorno de `inf` o `nan` en las métricas de salud.
+- `2026-08-02T10:31:43` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Mejoré `_ask_folder` para manejar explícitamente el caso donde la ruta seleccionada es un punto de reparse (junction/symlink) o una ruta UNC, evitando seguir punteros de sistema que podrían causar bucles infinitos o modificaciones no deseadas fuera del alcance del usuario, delegando la validación técnica a `safety.py`.
+- `2026-08-02T10:31:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-02T10:31:43` Corrida terminada. Total usado hoy: 248.
