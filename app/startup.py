@@ -80,7 +80,7 @@ class StartupEntry:
         Parsea comandos tipo '"C:\Program Files\App.exe" /arg' extrayendo solo
         la ruta. Valida que no contenga caracteres inválidos o rutas protegidas.
         """
-        if len(raw_cmd) < 2:
+        if not isinstance(raw_cmd, str) or len(raw_cmd) < 2:
             return ""
         end_quote: int = raw_cmd.find('"', 1)
         if end_quote == -1:
@@ -103,7 +103,7 @@ class StartupEntry:
         Intenta expandir una ruta a formato absoluto y verifica su existencia.
         Si la ruta parece segura, devuelve la ruta absoluta; si no, devuelve la original.
         """
-        if not path_str:
+        if not isinstance(path_str, str) or not path_str:
             return ""
         try:
             p: Path = Path(path_str).expanduser()
@@ -190,8 +190,11 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
         parts: List[str] = line.split(",", 1)
         if len(parts) < 2: continue
         
-        name: str = "".join(c for c in parts[0].strip().strip('"') if ord(c) >= 32)
-        cmd: str = "".join(c for c in parts[1].strip().strip('"') if ord(c) >= 32)
+        name_raw = parts[0].strip().strip('"')
+        cmd_raw = parts[1].strip().strip('"')
+        
+        name: str = "".join(c for c in name_raw if ord(c) >= 32)
+        cmd: str = "".join(c for c in cmd_raw if ord(c) >= 32)
         
         if not name or name.lower() in ("name", "pscustomobject") or name.upper().startswith("PS"):
             continue

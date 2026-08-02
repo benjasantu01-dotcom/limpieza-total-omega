@@ -117,8 +117,8 @@ def normalize(path: PathLike) -> Path:
 
 def is_drive_root(path: PathLike) -> bool:
     """Verifica si la ruta apunta a la raíz de una unidad (ej. C:\)."""
+    if path is None: return True
     try:
-        if path is None: return True
         p = normalize(path)
         return p == Path(p.anchor)
     except (ValueError, TypeError, OSError):
@@ -136,7 +136,7 @@ def is_protected_path(path: PathLike) -> bool:
     
     try:
         p = normalize(path)
-        if not _ALL_PROTECTED_TOKENS.isdisjoint(part.lower() for part in p.parts if part):
+        if any(part.lower() in _ALL_PROTECTED_TOKENS for part in p.parts):
             return True
             
         if p == Path(p.anchor):
@@ -154,7 +154,7 @@ def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = F
         return False
     try:
         c, p = normalize(child), normalize(parent)
-        if not p.exists(): return False
+        # Comparación absoluta segura tras normalización
         return p in c.parents or (allow_equal and c == p)
     except (ValueError, TypeError, OSError, RuntimeError):
         return False
@@ -173,14 +173,8 @@ def is_sensitive_file(path: PathLike) -> bool:
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> Path:
     """
-    Valida rigurosamente si una ruta es segura para ser modificada mediante una jerarquía de checks:
-    1. Higiene básica (caracteres maliciosos, normalización, rutas de red).
-    2. Integridad de filesystem (nombres reservados, longitud, enlaces físicos).
-    3. Estado de acceso (permisos de escritura, uso por terceros, readonly).
-    4. Protección de sistema (bloqueo explícito de directorios críticos y raíz de unidades).
-    
-    IMPORTANTE: Nunca usar esta función en una estructura 'if'. Si la ruta es 
-    insegura, esta función DEBE lanzar un UnsafePathError para abortar la operación.
+    Valida rigurosamente si una ruta es segura para ser modificada mediante una jerarquía de checks.
+    IMPORTANTE: Nunca usar esta función en una estructura 'if'. Debe lanzar UnsafePathError.
     """
     if path is None:
         raise UnsafePathError("Ruta nula recibida.")
@@ -194,7 +188,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
     except (TypeError, ValueError, OSError) as e:
         raise UnsafePathError(f"Error al normalizar: {e}")
 
-    if not p.parts or len(p.parts) == 0:
+    if not p.parts:
         raise UnsafePathError("Ruta sin componentes válidos tras normalización.")
 
     if p.stem.lower() in _RESERVED_NAMES:

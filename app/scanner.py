@@ -124,7 +124,7 @@ def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_TH
     Returns:
         `Suspicion` si el archivo fue modificado dentro del umbral dado, `None` caso contrario.
     """
-    if path.suffix.lower() not in SUSPICIOUS_EXECUTABLE_EXT:
+    if not path or path.suffix.lower() not in SUSPICIOUS_EXECUTABLE_EXT:
         return None
         
     try:
@@ -146,7 +146,7 @@ def check_system_lookalike(path: Path) -> Optional[Suspicion]:
     Returns:
         `Suspicion` si el nombre imita a un proceso de sistema crítico, `None` caso contrario.
     """
-    if path.name.lower() not in SYSTEM_LOOKALIKES:
+    if not path or path.name.lower() not in SYSTEM_LOOKALIKES:
         return None
         
     try:
@@ -168,7 +168,13 @@ def scan_file(path: Path) -> ScanResult:
     Ejecuta el conjunto de heurísticas sobre un archivo específico.
     Solo procesa archivos existentes y validados por seguridad.
     """
-    if is_protected_path(path) or not path.is_file() or path.is_symlink():
+    if not path or is_protected_path(path):
+        return []
+
+    try:
+        if not path.is_file() or path.is_symlink():
+            return []
+    except OSError:
         return []
 
     findings: ScanResult = []
