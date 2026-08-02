@@ -171,6 +171,8 @@ class Answer:
 
 def _ensure_safe_text(text: str) -> bool:
     """Validación defensiva de texto antes de mostrarlo al usuario."""
+    if not text:
+        return False
     if _PATH_REGEX.search(text) or _CONTROL_CHARS_REGEX.search(text):
         return False
     if is_protected_path(text):
@@ -188,7 +190,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         return isinstance(v, (int, float)) and not isinstance(v, bool) and math.isfinite(v)
 
     def extract(source: Any, attr: str, default: Any, transform: Callable = float) -> Any:
-        if source is None or not hasattr(source, "__dict__"):
+        if source is None:
             return default
         try:
             val = getattr(source, attr, None)
@@ -205,11 +207,12 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         ctx.duplicate_mb = max(0.0, extract(metrics, "duplicate_mb", 0.0))
         ctx.startup_count = max(0, extract(metrics, "startup_count", 0, int))
         ctx.quarantined_count = max(0, extract(metrics, "quarantined_count", 0, int))
+        ctx.browser_cache_mb = max(0.0, extract(metrics, "browser_cache_mb", 0.0))
         ctx.analyzed = True
 
     if health is not None:
-        score_raw = extract(health, "score", 0, int)
-        ctx.score = max(0, min(score_raw, 100))
+        score_val = extract(health, "score", None, int)
+        ctx.score = max(0, min(score_val, 100)) if score_val is not None else None
         grade = getattr(health, "grade", "")
         ctx.grade = str(grade) if isinstance(grade, (str, int, float)) else ""
         ctx.analyzed = True
@@ -226,7 +229,6 @@ def context_as_text(context: SystemContext) -> str:
     if not isinstance(context, SystemContext) or not context.analyzed:
         return "No hay métricas disponibles todavía."
 
-    # Aseguramos consistencia de tipos antes de formatear
     try:
         lineas = [
             f"Puntaje de salud: {context.score if context.score is not None else 'sin calcular'}"
@@ -240,7 +242,7 @@ def context_as_text(context: SystemContext) -> str:
             f"Programas de inicio: {int(context.startup_count)}",
             f"Archivos en cuarentena: {int(context.quarantined_count)}",
         ]
-        if context.browser_cache_mb and float(context.browser_cache_mb) > 0:
+        if context.browser_cache_mb and context.browser_cache_mb > 0:
             lineas.append(f"Caché de navegadores: {float(context.browser_cache_mb):.0f} MB")
         return "\n".join(lineas)
     except (ValueError, TypeError):
@@ -329,7 +331,7 @@ def handle_security(ctx: SystemContext, text: str) -> Answer:
 
 def handle_score(ctx: SystemContext, text: str) -> Answer:
     """Procesa consultas sobre la explicación del puntaje de salud global."""
-    detalle = (f"Tu puntaje es {ctx.score}/100"
+    detalle = (f"Tu puntaje es {ctx.score if ctx.score is not None else 'N/A'}/100"
                 f"{f' (nota {ctx.grade})' if ctx.grade else ''}. ")
     problemas = _rank_problems(ctx)
     if problemas:
@@ -387,10 +389,10 @@ def local_answer(question: str, context: SystemContext) -> Answer:
 
     problemas = _rank_problems(context)
     if problemas:
-        cuerpo = (f"Con un puntaje de {context.score}/100, por orden de prioridad: "
+        cuerpo = (f"Con un puntaje de {context.score if context.score is not None else 'N/A'}/100, por orden de prioridad: "
                   + "; ".join(problemas[:3]) + ".")
     else:
-        cuerpo = (f"Tu sistema está en buen estado ({context.score}/100). No hay nada "
+        cuerpo = (f"Tu sistema está en buen estado ({context.score if context.score is not None else 'N/A'}/100). No hay nada "
                   "urgente. Un repaso de limpieza cada tanto es suficiente.")
     return Answer(cuerpo, notice=OFFLINE_NOTICE, suggestions=SUGGESTED_QUESTIONS_LIST[:3])
 
@@ -442,7 +444,6 @@ def _call_gemini(
     if not api_key or not model or not _MODEL_NAME_REGEX.match(model):
         return None
     
-    # Seguridad: truncar y validar entradas antes del envío
     safe_q: str = _sanitize_query(question)[:500]
     safe_ctx: str = context_text[:1000]
     
@@ -487,9 +488,7 @@ def _call_gemini(
             
         texto: str = "".join(p.get("text", "") for p in partes if isinstance(p, dict)).strip()
         
-        # Validar seguridad final de la respuesta: evitar inyección y proteger paths
-        # Se añade is_protected_path como filtro final contra cualquier ruta del sistema en el texto
-        if not texto or len(texto) > 1200 or not _ensure_safe_text(texto) or is_protected_path(texto):
+        if not _ensure_safe_text(texto) or len(texto) > 1200:
             return None
             
         return texto

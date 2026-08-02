@@ -124,11 +124,11 @@ def directory_size(path: str | os.PathLike | None) -> int:
     if path is None:
         return 0
     
-    root = Path(path)
     try:
+        root = Path(path)
         if not root.exists() or not root.is_dir() or is_protected_path(root):
             return 0
-    except (OSError, RuntimeError, PermissionError, ValueError, TypeError):
+    except (OSError, TypeError, ValueError):
         return 0
     
     total_bytes: int = 0
@@ -142,7 +142,6 @@ def directory_size(path: str | os.PathLike | None) -> int:
                     try:
                         if entry.name.lower() in NEVER_TOUCH:
                             continue
-                        # Impedir recursión en enlaces simbólicos o junctions
                         if entry.is_symlink():
                             continue
                         if entry.is_dir(follow_symlinks=False):
@@ -164,9 +163,6 @@ def _is_valid_cache_path(candidate: Path | None, base_path: Path) -> bool:
     if not isinstance(candidate, Path) or not isinstance(base_path, Path):
         return False
     try:
-        if is_protected_path(candidate):
-            return False
-            
         return (
             candidate.exists() and 
             candidate.is_dir() and 
@@ -203,7 +199,8 @@ def detect_profiles(
         if not isinstance(base, Path): continue
         for browser_name, relative_path_str in cache_paths.items():
             try:
-                candidate = base.joinpath(*relative_path_str.split("\\"))
+                parts = relative_path_str.split("\\")
+                candidate = base.joinpath(*parts)
                 
                 if _is_valid_cache_path(candidate, base):
                     size = directory_size(candidate)
@@ -213,7 +210,7 @@ def detect_profiles(
                             path=candidate,
                             size_bytes=size,
                         ))
-            except (OSError, ValueError, TypeError):
+            except (OSError, ValueError, TypeError, AttributeError):
                 continue
                 
     found.sort(key=lambda c: c.size_bytes, reverse=True)
