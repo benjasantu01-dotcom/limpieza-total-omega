@@ -75,6 +75,10 @@ class StartupEntry:
         except (OSError, ValueError, RuntimeError, TypeError):
             return False
 
+    def _sanitize_command(self, raw_cmd: str) -> str:
+        """Limpia caracteres de control y espacios de la cadena original del comando."""
+        return "".join(c for c in raw_cmd.strip() if ord(c) >= 32)
+
     def _extract_quoted_path(self, raw_cmd: str) -> str:
         """
         Parsea comandos tipo '"C:\Program Files\App.exe" /arg' extrayendo solo
@@ -129,8 +133,7 @@ class StartupEntry:
         if not self.command:
             return ""
 
-        # Sanitización básica: elimina caracteres de control no imprimibles
-        cmd: str = "".join(c for c in self.command.strip() if ord(c) >= 32)
+        cmd: str = self._sanitize_command(self.command)
         if not cmd:
             return ""
         

@@ -80,9 +80,13 @@ class Scanner:
 
     def process_entry(self, entry: os.DirEntry, stack: List[str]) -> None:
         """
-        Clasifica una entrada de directorio. 
-        Si es directorio: valida seguridad y añade a la pila si no es reparse point.
+        Clasifica una entrada de directorio o archivo. 
+        Si es directorio: valida seguridad y añade a la pila si no es un punto de reparseo.
         Si es archivo: aplica las heurísticas registradas.
+
+        Args:
+            entry: Entrada de sistema de archivos (`os.DirEntry`) a procesar.
+            stack: Lista de directorios pendientes de escaneo (mutada in-place).
         """
         try:
             if entry.is_dir(follow_symlinks=False):
@@ -92,7 +96,7 @@ class Scanner:
                         self.seen.add(path_key)
                         stack.append(path_key)
             elif entry.is_file(follow_symlinks=False):
-                # La seguridad se pre-valida en el bucle para evitar llamadas redundantemente
+                # La seguridad se pre-valida en el bucle para evitar llamadas redundantes
                 self.results.extend(scan_file(Path(entry.path)))
         except (PermissionError, OSError):
             pass
@@ -191,6 +195,12 @@ def scan_file(path: Path) -> ScanResult:
 def scan_directory(directory: Union[str, Path]) -> ScanResult:
     """
     Inicia un escaneo recursivo desde un punto de entrada dado.
+
+    Args:
+        directory: Ruta base (str o Path) para comenzar el análisis.
+
+    Returns:
+        Lista de objetos `Suspicion` acumulados en el escaneo.
     """
     if not directory:
         return []

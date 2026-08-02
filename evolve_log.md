@@ -480,3 +480,22 @@ FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly 
 - `2026-08-02T13:55:43` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se introdujeron type hints más precisos y docstrings enriquecidos en funciones críticas para clarificar el contrato de los tipos de entrada (`PathLike`) y los estados de error, mejorando la legibilidad técnica para el mantenimiento del proyecto.
 - `2026-08-02T13:55:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-02T13:55:43` Corrida terminada. Total usado hoy: 328.
+- `2026-08-02T14:04:36` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-02T14:05:02` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se introdujo un `TypeAlias` más robusto (`SuspicionCheck`) y se documentaron detalladamente los parámetros y retornos de `process_entry` y `scan_directory` para clarificar el flujo de control del escaneo recursivo.
+- `2026-08-02T14:05:26` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings estructurados y type hints precisos, clarificando la lógica de validación y el manejo de rutas para facilitar el mantenimiento y la auditoría de seguridad.
+- `2026-08-02T14:05:49` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Mejora la legibilidad del método `StartupEntry.executable` extrayendo la lógica de saneamiento de la cadena de comando a un método privado dedicado (`_sanitize_command`), facilitando la comprensión del flujo de procesamiento de rutas y parámetros.
+- `2026-08-02T14:06:04` Tests FALLARON:
+```
+iste ningún análisis. Andá a la pestaña Salud.'
+ +  where 'Todavía no corriste ningún análisis. Andá a la pestaña Salud.' = Answer(text='Todavía no corriste ningún análisis. Andá a la pestaña Salud.', source='local', notice='Respondido por el...lo más urgente que debería arreglar?', '¿Por qué mi PC está lenta?', '¿Es seguro borrar lo que encontró la limpieza?']).text
+FAILED evolve/tests/test_assistant.py::test_security_question_with_findings_explains_they_are_signals - assert 'señales' in "hay 3 archivo(s) marcados. si no reconocés alguno, usá 'aislar hallazgos' para mandarlo a cuarentena."
+ +  where "hay 3 archivo(s) marcados. si no reconocés alguno, usá 'aislar hallazgos' para mandarlo a cuarentena." = <built-in method lower of str object at 0x7f3fdbd9c030>()
+ +    where <built-in method lower of str object at 0x7f3fdbd9c030> = "Hay 3 archivo(s) marcados. Si no reconocés alguno, usá 'Aislar hallazgos' para mandarlo a cuarentena.".lower
+ +      where "Hay 3 archivo(s) marcados. Si no reconocés alguno, usá 'Aislar hallazgos' para mandarlo a cuarentena." = Answer(text="Hay 3 archivo(s) marcados. Si no reconocés alguno, usá 'Aislar hallazgos' para mandarlo a cuarentena.", s...conexión ni envío de datos. Para preguntas escritas con tus palabras, activá el asistente en Ajustes.', suggestions=[]).text
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - AssertionError: assert 'no autorizó' in 'Privado'
+3 failed, 296 passed, 11 warnings in 0.91s
+
+```
+- `2026-08-02T14:06:04` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `_rank_problems` convirtiéndola en una función que se ejecuta bajo demanda sin repetir cálculos, y eliminé la recolección innecesaria de sugerencias mediante la pre-definición de listas constantes para evitar la creación de objetos `list` en cada llamada.
+- `2026-08-02T14:06:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-02T14:06:04` Corrida terminada. Total usado hoy: 332.

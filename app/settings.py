@@ -96,13 +96,13 @@ _NUMERIC_LIMITS: Final[dict[str, tuple[int, int]]] = {
 }
 
 def _validate_bool(key: str, val: Any) -> bool | None:
-    """Intenta coercionar valores a booleano, aceptando strings comunes."""
+    """Coacciona valores a booleano, permitiendo strings de configuración."""
     if isinstance(val, bool): return val
     if isinstance(val, str) and val.strip().lower() in ("1", "true", "si", "sí", "yes"): return True
     return None
 
 def _validate_int(key: str, val: Any) -> int | None:
-    """Valida enteros dentro de límites definidos para evitar valores absurdos."""
+    """Valida que el valor sea un entero dentro de los rangos permitidos en _NUMERIC_LIMITS."""
     if val is None or isinstance(val, bool): return None
     try:
         parsed = int(val)
@@ -111,7 +111,7 @@ def _validate_int(key: str, val: Any) -> int | None:
     except (TypeError, ValueError): return None
 
 def _validate_str(key: str, val: Any) -> str | None:
-    """Valida strings según restricciones de dominio y seguridad de rutas."""
+    """Valida strings y rutas. Aplica seguridad estricta para 'ultima_carpeta'."""
     if not isinstance(val, str): return None
     text = val.strip()
     if not text: return "" if key == "ultima_carpeta" else None
@@ -131,10 +131,7 @@ _VALIDATOR_MAP: Final[dict[type, Callable[[str, Any], Any]]] = {
 }
 
 def settings_path(path_or_base: PathLike | None = None) -> Path:
-    """
-    Determina la ubicación absoluta del archivo config.json.
-    Verifica seguridad de escritura mediante is_safe_to_modify en cada segmento de ruta.
-    """
+    """Calcula la ruta absoluta del archivo, garantizando que el directorio padre sea seguro."""
     key = path_or_base or SETTINGS_DIR
     if key in _path_cache: return _path_cache[key]
     try:
@@ -148,10 +145,7 @@ def settings_path(path_or_base: PathLike | None = None) -> Path:
     return res
 
 def validate(values: Any) -> dict[str, Any]:
-    """
-    Toma un diccionario arbitrario 'values' y devuelve un nuevo dict
-    donde cada clave fue validada contra DEFAULTS.
-    """
+    """Valida un diccionario externo contra el esquema DEFAULTS. Sustituye inválidos."""
     if not isinstance(values, dict): return DEFAULTS.copy()
     limpio = {}
     for clave, defecto in DEFAULTS.items():
@@ -165,10 +159,7 @@ def validate(values: Any) -> dict[str, Any]:
     return limpio
 
 def load(path_or_base: PathLike | None = None) -> dict[str, Any]:
-    """
-    Carga y valida el JSON desde disco. Implementa caché en memoria comparando
-    st_mtime para evitar lecturas redundantes de I/O.
-    """
+    """Carga configuración con caché basada en el tiempo de modificación del archivo (mtime)."""
     global _cached_settings, _last_path, _last_mtime
     
     if _cached_settings is not None and (path_or_base is None or Path(path_or_base) == _last_path):
@@ -197,10 +188,7 @@ def load(path_or_base: PathLike | None = None) -> dict[str, Any]:
     return _cached_settings.copy()
 
 def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
-    """
-    Guarda configuración mediante reemplazo atómico para evitar corrupción
-    ante cierres inesperados. Requiere validación previa de seguridad.
-    """
+    """Guarda configuración de forma atómica. Utiliza un archivo temporal y fsync."""
     global _cached_settings, _last_path, _last_mtime
     ruta = settings_path(path_or_base)
     
@@ -231,33 +219,33 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
             except OSError: pass
 
 def update(changes: dict[str, Any], path_or_base: PathLike | None = None) -> dict[str, Any]:
-    """Aplica cambios parciales sobre la configuración actual."""
+    """Aplica actualizaciones parciales a la configuración vigente."""
     actual = load(path_or_base)
     actual.update(changes)
     save(actual, path_or_base)
     return actual
 
 def reset(path_or_base: PathLike | None = None) -> dict[str, Any]:
-    """Restaura la configuración a valores de fábrica."""
+    """Restaura la configuración a los valores por defecto."""
     save(DEFAULTS, path_or_base)
     return DEFAULTS.copy()
 
 def get(key: str, path_or_base: PathLike | None = None) -> Any:
-    """Obtiene un valor individual con fallback a DEFAULTS."""
+    """Accesor individual para valores de configuración."""
     return load(path_or_base).get(key, DEFAULTS.get(key))
 
 def assistant_api_key(path_or_base: PathLike | None = None) -> str:
-    """Prioriza variables de entorno sobre el archivo de configuración."""
+    """Obtiene la clave de API priorizando la variable de entorno sobre el archivo."""
     desde_entorno = os.environ.get(API_KEY_ENV_VAR, "").strip()
     return desde_entorno or load(path_or_base).get("asistente_clave_api", "").strip()
 
 def assistant_enabled(path_or_base: PathLike | None = None) -> bool:
-    """Verifica si el asistente puede operar (configurado y con API Key presente)."""
+    """Valida si el asistente puede activarse (presencia de clave y flag habilitado)."""
     config = load(path_or_base)
     return bool(config.get("asistente_activado")) and bool(assistant_api_key(path_or_base))
 
 def describe(path_or_base: PathLike | None = None) -> list[str]:
-    """Genera una vista textual de la configuración actual para reportes."""
+    """Genera un listado descriptivo de la configuración (para propósitos de reporte)."""
     actual = load(path_or_base)
     clave = assistant_api_key(path_or_base)
     origen = f"variable de entorno {API_KEY_ENV_VAR}" if os.environ.get(API_KEY_ENV_VAR) else ("archivo de configuración" if clave else "no configurada")
