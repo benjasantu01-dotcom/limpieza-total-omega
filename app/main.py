@@ -1208,6 +1208,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             item = quarantine.get_item(raw_id)
             ruta_orig = Path(item.original_path)
             
+            # ensure_safe_to_modify lanza excepción si es inseguro
             safety.ensure_safe_to_modify(ruta_orig)
             
             destino = quarantine.restore_item(raw_id)
@@ -1288,8 +1289,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             messagebox.showwarning("PID inválido", "El PID debe ser mayor a 0.")
             return
         
-        if not safety.is_safe_to_modify(Path("C:/Windows")):
-            messagebox.showwarning("Acción denegada", "Ese proceso es crítico para el sistema.")
+        # Validación de seguridad explícita (bloqueamos carpetas de sistema, aquí por ejemplo C:/Windows)
+        try:
+            safety.ensure_safe_to_modify(Path("C:/Windows"))
+        except safety.UnsafePathError:
+            messagebox.showwarning("Acción denegada", "Esa operación está restringida.")
             return
 
         if not self._confirm("Liberar working set", memory_mod.TRIM_WARNING + "\n\n¿Seguimos?"):

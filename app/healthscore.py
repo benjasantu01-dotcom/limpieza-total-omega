@@ -262,10 +262,13 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     }
 
     # Calculamos puntos ponderados: (ratio * peso_relativo)
-    breakdown = {
-        area: int((_clamp(ratios.get(area, 0.0)) * weight * 100 / _TOTAL_WEIGHTS) + 0.5) 
-        for area, weight in WEIGHTS.items()
-    }
+    breakdown = {}
+    for area, weight in WEIGHTS.items():
+        raw_ratio = _clamp(ratios.get(area, 0.0))
+        # Cálculo seguro y acotado para evitar desbordamientos
+        score_val = (raw_ratio * weight * 100.0) / float(_TOTAL_WEIGHTS)
+        breakdown[area] = int(score_val + 0.5)
+
     total_score = _clamp(sum(breakdown.values()), 0.0, 100.0)
 
     return HealthResult(

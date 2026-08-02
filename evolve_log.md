@@ -1207,3 +1207,30 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-08-02T11:01:54` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha añadido una validación de acceso de lectura `os.access(..., os.R_OK)` antes de intentar escanear rutas dentro de `walk_files` para evitar excepciones innecesarias en directorios con restricciones de permisos y mejorar la robustez defensiva al iterar el sistema de archivos.
 - `2026-08-02T11:01:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-02T11:01:54` Corrida terminada. Total usado hoy: 260.
+- `2026-08-02T11:10:37` Arrancando corrida. Quedan hoy ~40 peticiones objetivo.
+- `2026-08-02T11:11:02` Tests FALLARON:
+```
+y.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:80: SyntaxWarning: invalid escape sequence '\P'
+    Parsea comandos tipo '"C:\Program Files\App.exe" /arg' extrayendo solo
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_finds_identical_files - AttributeError: 'os.stat_result' object has no attribute 'st_file_attributes'
+FAILED evolve/tests/test_modules.py::test_ignores_files_with_different_content - AttributeError: 'os.stat_result' object has no attribute 'st_file_attributes'
+FAILED evolve/tests/test_modules.py::test_finds_duplicates_across_subfolders - AttributeError: 'os.stat_result' object has no attribute 'st_file_attributes'
+FAILED evolve/tests/test_modules.py::test_min_size_filters_out_tiny_files - AttributeError: 'os.stat_result' object has no attribute 'st_file_attributes'
+FAILED evolve/tests/test_modules.py::test_never_scans_system_folders - AttributeError: 'os.stat_result' object has no attribute 'st_file_attributes'
+5 failed, 294 passed, 11 warnings in 1.03s
+
+```
+- `2026-08-02T11:11:02` ❌ Mejora descartada en duplicates.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva en `_collect_candidates` para prevenir el seguimiento accidental de puntos de reparse (junctions/symlinks) mediante una verificación explícita de `is_reparse_point` usando `os.stat` (S_ISLNK no cubre todas las variantes en Windows), protegiendo al sistema de ciclos infinitos o lectura de rutas fuera del alcance deseado.
+- `2026-08-02T11:11:27` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se ha robustecido el cálculo de `breakdown` en `compute_score` para prevenir errores de redondeo o desbordamiento al manejar pesos, asegurando que los valores intermedios sean validados antes de convertirse a enteros, manteniendo la integridad del sistema ante configuraciones de pesos potencialmente inestables.
+- `2026-08-02T11:12:40` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `on_trim_process` y `on_restore_quarantine` eliminando chequeos `is_safe_to_modify` con `if` (que son ignorados al no lanzar excepciones) y reemplazándolos por una validación que lanza error, asegurando que la operación se detenga ante rutas protegidas.
+- `2026-08-02T11:12:49` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
+- `2026-08-02T11:12:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-02T11:12:49` Corrida terminada. Total usado hoy: 264.
