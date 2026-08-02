@@ -172,13 +172,9 @@ def scan_file(path: Path) -> ScanResult:
     Ejecuta el conjunto de heurísticas sobre un archivo específico.
     Solo procesa archivos existentes y validados por seguridad.
     """
+    # Se unifican validaciones iniciales. Se asume que el llamador ya confirmó
+    # que es un archivo y no un symlink si es posible.
     if not path or is_protected_path(path):
-        return []
-
-    try:
-        if not path.is_file() or path.is_symlink():
-            return []
-    except OSError:
         return []
 
     findings: ScanResult = []

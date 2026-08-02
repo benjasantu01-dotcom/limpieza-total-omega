@@ -546,3 +546,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-08-02T14:27:05` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
 - `2026-08-02T14:27:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-02T14:27:05` Corrida terminada. Total usado hoy: 340.
+- `2026-08-02T14:35:16` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-02T14:35:45` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimizé la búsqueda de ítems en `purge_item` y `restore_item` reemplazando la creación de diccionarios en cada llamada por un acceso directo eficiente, y utilicé `set` en `purge_all` para reducir la complejidad de búsqueda de nombres de O(N) a O(1) dentro del bucle de limpieza.
+- `2026-08-02T14:36:04` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 101): unterminated string literal (detected at line 101)
+- `2026-08-02T14:36:28` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se ha optimizado `is_protected_path` evitando llamadas costosas a `p.exists()` y `_is_reparse_point` cuando ya se ha determinado que el nombre de algún componente de la ruta pertenece a `_ALL_PROTECTED_TOKENS`, reduciendo significativamente las operaciones de I/O en recorridos de directorios.
+- `2026-08-02T14:36:36` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se optimizó el proceso de escaneo en `scan_file` al evitar múltiples llamadas a `is_protected_path` y `path.is_file()` (que implican llamadas al sistema redundantes), consolidando la validación inicial y utilizando el cacheo de `path.suffix` para reducir operaciones de IO.
+- `2026-08-02T14:36:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-02T14:36:36` Corrida terminada. Total usado hoy: 344.

@@ -329,8 +329,7 @@ def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[Quaranti
 def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
     """Restaura un archivo a su ruta original tras verificar su integridad."""
     items = load_manifest(base)
-    lookup = {i.item_id: i for i in items}
-    match = lookup.get(item_id)
+    match = next((i for i in items if i.item_id == item_id), None)
     
     if not match:
         raise KeyError(f"No se encontró ítem con ID: {item_id}")
@@ -374,8 +373,7 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
 def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> bool:
     """Elimina físicamente un ítem tras validar su integridad. Retorna True si tuvo éxito."""
     items = load_manifest(base)
-    lookup = {i.item_id: i for i in items}
-    match = lookup.get(item_id)
+    match = next((i for i in items if i.item_id == item_id), None)
     
     if not match:
         return False
@@ -409,11 +407,11 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     
     items = load_manifest(base)
     item_map = {item.stored_name: item for item in items}
+    stored_names = set(item_map.keys())
     count = 0
     
     for entry in quarantine_root.iterdir():
-        # Seguridad: Solo borrar si el archivo existe en el manifiesto y es un archivo regular
-        if entry.is_file() and entry.name in item_map:
+        if entry.is_file() and entry.name in stored_names:
             item = item_map[entry.name]
             if is_within_directory(entry, quarantine_root) and item.verify_integrity(entry):
                 try:
@@ -423,7 +421,6 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
                     continue
             
     if count > 0:
-        # Actualizamos el manifiesto eliminando solo los ítems purgados con éxito
         remaining_items = [i for i in items if (quarantine_root / i.stored_name).exists()]
         save_manifest(remaining_items, base)
     return count

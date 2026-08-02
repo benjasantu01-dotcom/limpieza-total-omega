@@ -146,12 +146,10 @@ def is_protected_path(path: PathLike) -> bool:
         p = normalize(path)
         if any(part.lower() in _ALL_PROTECTED_TOKENS for part in p.parts):
             return True
-            
         if p == Path(p.anchor):
             return True
-        if p.exists() and _is_reparse_point(p):
-            return True
-        return False
+        # Solo comprobar I/O si no se detectó por nombre o estructura base
+        return p.exists() and _is_reparse_point(p)
     except (PermissionError, OSError, ValueError, TypeError):
         return True 
 
