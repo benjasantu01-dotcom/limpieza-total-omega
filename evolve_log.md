@@ -409,3 +409,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-02T02:10:49` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva mediante una validación explícita de finitud en `score_security` y `score_startup`, asegurando que cálculos aritméticos con datos de entrada potencialmente malintencionados o corruptos no propaguen valores `NaN` o `Inf` hacia el puntaje final, siguiendo la robustez exigida para un motor de cálculo puro.
 - `2026-08-02T02:10:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-02T02:10:49` Corrida terminada. Total usado hoy: 52.
+- `2026-08-02T02:19:41` Arrancando corrida. Quedan hoy ~248 peticiones objetivo.
+- `2026-08-02T02:20:42` ➖ Sin cambios en main.py (enfoque: seguridad defensiva). Motivo: Se reforzó la seguridad defensiva en `main.py` encapsulando la validación de rutas en el método `_ask_folder` y añadiendo chequeos de existencia (`_is_valid_dir`) y seguridad (`safety.ensure_safe_to_modify`) antes de ejecutar cualquier operación destructiva o de análisis profundo, garantizando que el bucle de ejecución no acceda a rutas prohibidas incluso si el usuario intenta interactuar con ellas.
+- `2026-08-02T02:21:06` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
+- `2026-08-02T02:21:28` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se reforzó `stage_for_review` para prevenir el movimiento de archivos hacia destinos dentro de la misma jerarquía del sistema, validando que el destino no sea un subdirectorio del origen y viceversa, además de verificar explícitamente que la ruta de destino resuelta no apunte a un directorio bloqueado.
+- `2026-08-02T02:21:39` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: seguridad defensiva).
+- `2026-08-02T02:21:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-02T02:21:39` Corrida terminada. Total usado hoy: 56.

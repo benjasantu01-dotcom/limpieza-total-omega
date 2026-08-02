@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **255** (50.6% de aceptación)
+- Mejoras aceptadas: **256** (50.8% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 25
-- Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 193
+- Sin cambios (nada sustancial que mejorar): 19
+- Sin respuesta de la IA (error o límite): 191
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-31 | 49 | 0 | 5 | 7 | 41 |
+| 2026-07-31 | 49 | 0 | 5 | 7 | 37 |
 | 2026-08-01 | 166 | 11 | 16 | 10 | 147 |
-| 2026-08-02 | 40 | 2 | 4 | 1 | 5 |
+| 2026-08-02 | 41 | 2 | 4 | 2 | 7 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,12 +26,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - rendimiento: **52**
 - manejo de errores y validación de entradas: **47**
 - robustez ante casos límite: **46**
-- seguridad defensiva: **44**
+- seguridad defensiva: **45**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **23**
-- `organizer.py`: **20**
+- `organizer.py`: **21**
 - `diskreport.py`: **20**
 - `scanner.py`: **20**
 - `settings.py`: **20**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-02T02:21:28` **organizer.py** (seguridad defensiva): Se reforzó `stage_for_review` para prevenir el movimiento de archivos hacia destinos dentro de la misma jerarquía del sistema, validando que el destino no sea un subdirectorio del origen y viceversa, además de verificar explícitamente que la ruta de destino resuelta no apunte a un directorio bloqueado.
 - `2026-08-02T02:10:49` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante una validación explícita de finitud en `score_security` y `score_startup`, asegurando que cálculos aritméticos con datos de entrada potencialmente malintencionados o corruptos no propaguen valores `NaN` o `Inf` hacia el puntaje final, siguiendo la robustez exigida para un motor de cálculo puro.
 - `2026-08-02T02:10:39` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` y `_scan` implementando una validación explícita mediante `is_protected_path` antes de cualquier procesamiento de entrada, asegurando que incluso rutas maliciosas o enlaces simbólicos inusuales no sean seguidos o procesados erróneamente por el escáner.
 - `2026-08-02T02:10:16` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `walk_files` y `largest_folders` validando explícitamente que las rutas resueltas residan bajo el directorio base, previniendo el escape del contexto (directory traversal) ante enlaces simbólicos o puntos de reparse que podrían omitir las restricciones de seguridad originales.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-02T01:40:13` **main.py** (robustez ante casos límite): Se mejora la robustez ante la interacción del usuario al centralizar la validación de directorios en un método helper `_is_valid_dir` y aplicar esta verificación antes de cualquier operación de escaneo, evitando errores en tiempo de ejecución si el usuario navega a carpetas que luego son eliminadas o modificadas externamente por otros procesos.
 - `2026-08-02T01:39:12` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `score_startup` y `score_security` ante casos límite donde los divisores o factores podrían causar resultados inesperados, asegurando que el cálculo sea siempre determinista incluso con datos de entrada atípicos o escalas no uniformes.
 - `2026-08-02T01:30:01` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la recolección de archivos (`_collect_candidates`) y en las funciones de hash, añadiendo validaciones explícitas de existencia (`exists()`) y manejo de errores ante cambios de estado del sistema de archivos durante la iteración (TOCTOU).
-- `2026-08-02T01:29:52` **diskreport.py** (robustez ante casos límite): Se reforzó `walk_files` y `summarize` añadiendo un manejo explícito para `PermissionError` y `OSError` al obtener el tamaño del archivo, evitando que una denegación de acceso en un archivo puntual aborte el recorrido completo o genere un informe incompleto.

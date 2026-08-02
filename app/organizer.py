@@ -204,8 +204,9 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             
             full_source_path = jf.path.resolve()
             
-            # Impedir el auto-movimiento y validar seguridad
-            if not is_safe_to_modify(full_source_path) or full_source_path == dest or dest in full_source_path.parents or full_source_path.parent == dest:
+            # Impedir el auto-movimiento, recursión peligrosa y validar seguridad
+            is_nested = dest == full_source_path or dest in full_source_path.parents or full_source_path.parent == dest
+            if not is_safe_to_modify(full_source_path) or is_nested:
                 continue
             
             # Chequeo de uso: si está bloqueado por otro proceso, se saltea
