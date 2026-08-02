@@ -133,23 +133,24 @@ def directory_size(path: str | os.PathLike | None) -> int:
         return 0
     
     total_bytes: int = 0
-    stack: List[str] = [str(root)]
+    stack: List[Tuple[str, int]] = [(str(root), 0)]
     MAX_DEPTH = 32
     
     while stack:
-        current_dir_str = stack.pop()
+        current_dir_str, depth = stack.pop()
         
+        if depth > MAX_DEPTH:
+            continue
+            
         try:
             with os.scandir(current_dir_str) as it:
                 for entry in it:
                     try:
-                        # Usar directamente el nombre para evitar convertir a Path innecesariamente
                         if entry.name.lower() in NEVER_TOUCH:
                             continue
                         
                         if entry.is_dir(follow_symlinks=False):
-                            if stack.count(current_dir_str) < MAX_DEPTH:
-                                stack.append(entry.path)
+                            stack.append((entry.path, depth + 1))
                         else:
                             total_bytes += entry.stat().st_size
                     except (OSError, PermissionError):

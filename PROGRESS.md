@@ -6,47 +6,51 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **244** (48.4% de aceptación)
+- Mejoras aceptadas: **246** (48.8% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 27
-- Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 201
+- Sin cambios (nada sustancial que mejorar): 15
+- Sin respuesta de la IA (error o límite): 200
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-07-31 | 5 | 0 | 1 | 1 | 11 |
+| 2026-07-31 | 3 | 0 | 1 | 0 | 10 |
 | 2026-08-01 | 166 | 11 | 16 | 10 | 147 |
-| 2026-08-02 | 73 | 5 | 10 | 5 | 43 |
+| 2026-08-02 | 77 | 5 | 10 | 5 | 43 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **67**
 - rendimiento: **50**
 - manejo de errores y validación de entradas: **47**
-- seguridad defensiva: **42**
-- robustez ante casos límite: **38**
+- robustez ante casos límite: **42**
+- seguridad defensiva: **40**
 
 ## Mejoras aceptadas por archivo
 
-- `organizer.py`: **21**
-- `quarantine.py`: **21**
 - `scanner.py`: **21**
 - `settings.py`: **21**
+- `quarantine.py`: **20**
+- `organizer.py`: **20**
 - `main.py`: **19**
+- `diskreport.py`: **18**
 - `healthscore.py`: **18**
-- `diskreport.py`: **17**
-- `browser.py`: **17**
+- `browser.py`: **18**
+- `assistant.py`: **17**
 - `safety.py`: **16**
-- `assistant.py`: **16**
+- `branding.py`: **15**
 - `duplicates.py`: **15**
-- `branding.py`: **14**
 - `memory.py`: **14**
 - `startup.py`: **14**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-02T05:55:41` **diskreport.py** (robustez ante casos límite): Se ha añadido un chequeo de `is_protected_path` en `drive_usage` y una gestión robusta de permisos y estados de `Path` en las funciones de recorrido, garantizando que el reporte de disco no falle silenciosamente ni intente acceder a rutas bloqueadas ante accesos denegados o inconsistencias del sistema.
+- `2026-08-02T05:55:33` **browser.py** (robustez ante casos límite): Se ha mejorado la robustez de `directory_size` ante el acceso a directorios bloqueados o inconsistentes y se ha corregido un bug lógico donde `stack.count` (que cuenta ocurrencias en la lista) no limitaba correctamente la profundidad de recursión, reemplazándolo por un chequeo explícito de profundidad para evitar desbordamientos o bucles infinitos en estructuras de directorios profundas.
+- `2026-08-02T05:55:10` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante rutas malformadas o tipos de datos inesperados en el destino, asegurando que `Path` siempre sea tratado correctamente y evitando excepciones no capturadas al manipular el sistema de archivos.
+- `2026-08-02T05:54:42` **assistant.py** (robustez ante casos límite): Se reforzó la robustez de `build_context` ante valores `None` o corruptos en los parámetros recibidos mediante un chequeo de tipos explícito más riguroso, evitando que atributos inesperados o tipos inválidos inyectados en la configuración rompan el flujo de datos.
 - `2026-08-02T05:45:19` **startup.py** (rendimiento): Optimizé `entries_from_folders` reemplazando la iteración completa del directorio por una verificación de existencia basada en extensiones permitidas, evitando el acceso a metadatos de archivos irrelevantes y reduciendo drásticamente las llamadas al sistema operativo innecesarias.
 - `2026-08-02T05:45:11` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` evitando accesos innecesarios al sistema de archivos al pre-verificar la existencia y el estado del archivo mediante una única llamada a `stat()` cuando el path no ha cambiado, reduciendo la latencia de E/S.
 - `2026-08-02T05:44:47` **scanner.py** (rendimiento): Optimicé el rendimiento de `scan_directory` y `process_entry` al reducir las llamadas redundantes a `Path.resolve()` y `is_protected_path`, utilizando el valor ya normalizado de `entry.path` y verificando `is_protected_path` solo una vez al descubrir una carpeta.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-02T05:04:26` **settings.py** (legibilidad y documentación): Se introdujeron docstrings explicativos y se añadieron anotaciones de tipo mejoradas para clarificar la lógica de validación, facilitando el mantenimiento y la auditoría del flujo de datos en el archivo.
 - `2026-08-02T05:04:18` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en la clase `Scanner` y funciones clave, especificando precondiciones y el propósito de cada parámetro para clarificar el flujo de trabajo del motor heurístico.
 - `2026-08-02T05:03:56` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos a los métodos auxiliares privados y aclarando las restricciones de uso de `ensure_safe_to_modify` para prevenir errores de lógica en el futuro desarrollo.
-- `2026-08-02T04:55:02` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `quarantine.py` añadiendo type hints faltantes y refactorizando la estructura del manifiesto en `load_manifest` para separar la validación de la carga, facilitando el mantenimiento y garantizando la robustez ante datos malformados.
-- `2026-08-02T04:54:50` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en funciones clave, aclarando las precondiciones de seguridad y el comportamiento ante errores, facilitando el mantenimiento y la comprensión del flujo de datos sin alterar la lógica.
-- `2026-08-02T04:54:27` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints faltantes en las funciones internas y refactorizando la lógica de `parse_windows_process_csv` para usar un enfoque más claro y robusto mediante la extracción de la lógica de validación de filas.
-- `2026-08-02T04:54:02` **main.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `main.py` mediante la refactorización de `_build_tabs_container` para desacoplar el registro de constructores de la lógica de iteración, facilitando la adición de nuevas pestañas, y añadí type hints y documentación en métodos clave que carecían de ellos, asegurando que la intención del código sea evidente.

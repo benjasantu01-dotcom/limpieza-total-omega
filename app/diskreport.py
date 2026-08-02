@@ -124,11 +124,14 @@ def drive_usage(mount: str | os.PathLike) -> DriveUsage | None:
         return None
     try:
         path_str = os.fspath(mount)
-        if not os.path.exists(path_str):
+        p = Path(path_str).resolve()
+        if is_protected_path(p):
+            return None
+        if not p.exists():
             return None
         usage = shutil.disk_usage(path_str)
         return DriveUsage(mount=str(mount), total=usage.total, used=usage.used, free=usage.free)
-    except (OSError, ValueError, TypeError):
+    except (OSError, ValueError, TypeError, PermissionError):
         return None
 
 

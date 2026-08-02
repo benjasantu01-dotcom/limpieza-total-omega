@@ -281,14 +281,21 @@ def logo_svg(size: int = 128) -> str:
 
 def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     """Persiste el logo en disco. Retorna Path si es exitoso, None en caso contrario."""
-    if not destination:
+    if destination is None:
         return None
     try:
-        target = Path(destination).expanduser().resolve()
-        if not is_safe_to_modify(target): return None
+        path_obj = Path(destination)
+        target = path_obj.expanduser().resolve()
+        
+        # Validaciones de seguridad requeridas
+        if not is_safe_to_modify(target): 
+            return None
         ensure_safe_to_modify(target)
+        
         parent = target.parent
-        if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
+        if not parent.exists(): 
+            parent.mkdir(parents=True, exist_ok=True)
+            
         target.write_text(logo_svg(), encoding="utf-8")
         return target
     except (OSError, PermissionError, TypeError, ValueError, AttributeError, RuntimeError):
