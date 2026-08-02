@@ -53,8 +53,9 @@ class Suspicion:
 
 class Scanner:
     """
-    Encapsula el estado y la lógica de recorrido del sistema de archivos.
-    Mantiene un set de rutas visitadas para evitar ciclos en estructuras de archivos complejas.
+    Controlador del estado del escaneo. 
+    Mantiene el conjunto 'seen' para evitar el procesamiento redundante de rutas
+    y el seguimiento infinito en enlaces simbólicos cíclicos.
     """
     
     def __init__(self) -> None:
@@ -62,7 +63,10 @@ class Scanner:
         self.seen: set[str] = set()
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
-        """Verifica si la entrada es un enlace simbólico o junction mediante atributos de archivo."""
+        """
+        Verifica si el sistema de archivos marca esta entrada como reparse point.
+        No sigue enlaces para evitar escapes fuera del árbol de directorios permitido.
+        """
         try:
             return bool(entry.stat(follow_symlinks=False).st_file_attributes & 0x400)
         except (OSError, AttributeError):
@@ -70,10 +74,12 @@ class Scanner:
 
     def process_entry(self, entry: os.DirEntry, stack: List[str]) -> None:
         """
-        Analiza una entrada: si es directorio, lo apila para recorrido; si es archivo, ejecuta heurísticas.
+        Clasifica una entrada de directorio. 
+        Si es directorio: valida seguridad y añade a la pila si no es reparse point.
+        Si es archivo: aplica las heurísticas registradas.
         
-        :param entry: Entrada del sistema de archivos proporcionada por os.scandir.
-        :param stack: Lista mutable que actúa como pila para el recorrido recursivo (DFS).
+        :param entry: Objeto os.DirEntry derivado de os.scandir.
+        :param stack: Pila LIFO utilizada para el recorrido recursivo iterativo.
         """
         try:
             path_str = entry.path
@@ -95,8 +101,8 @@ class Scanner:
 
 def check_double_extension(path: Path) -> Optional[Suspicion]:
     """
-    Analiza si el nombre del archivo contiene una extensión de documento seguida
-    por una de ejecución, práctica común para engañar usuarios.
+    Detecta patrones de nombres de archivos que intentan ocultar extensiones ejecutable
+    tras extensiones de documentos inofensivos.
     """
     if path is None or path.name is None:
         return None
@@ -108,8 +114,10 @@ def check_double_extension(path: Path) -> Optional[Suspicion]:
 
 def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_THRESHOLD_HOURS) -> Optional[Suspicion]:
     """
-    Evalúa la fecha de modificación del archivo. Un ejecutable descargado 
-    recientemente aumenta el perfil de riesgo según heurísticas estándar.
+    Analiza la metadata de modificación de un ejecutable para identificar descargas recientes.
+    
+    :param path: Ruta al archivo a analizar.
+    :param hours: Límite de tiempo para considerar un archivo como 'reciente'.
     """
     if path is None or is_protected_path(path) or path.suffix.lower() not in SUSPICIOUS_EXECUTABLE_EXT:
         return None
@@ -125,8 +133,8 @@ def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_TH
 
 def check_system_lookalike(path: Path) -> Optional[Suspicion]:
     """
-    Identifica si un archivo utiliza nombres de procesos críticos del sistema
-    (ej. svchost.exe) estando ubicado fuera del directorio System32 oficial.
+    Detecta ejecutables que suplantan nombres de procesos críticos del sistema
+    si residen fuera del directorio oficial System32.
     """
     if path is None or path.name is None or path.name.lower() not in SYSTEM_LOOKALIKES:
         return None
@@ -150,7 +158,10 @@ CHECK_FUNCS: Final[List[SuspicionCheck]] = [
 ]
 
 def scan_file(path: Path) -> ScanResult:
-    """Aplica todas las heurísticas registradas sobre un archivo único."""
+    """
+    Ejecuta el conjunto de heurísticas sobre un archivo específico.
+    Solo procesa archivos existentes y validados por seguridad.
+    """
     if path is None or not path.is_file():
         return []
         
@@ -166,7 +177,10 @@ def scan_file(path: Path) -> ScanResult:
 
 
 def scan_directory(directory: Union[str, Path]) -> ScanResult:
-    """Realiza el escaneo recursivo iterativo de un directorio completo."""
+    """
+    Inicia un escaneo recursivo desde un punto de entrada dado.
+    Utiliza un enfoque iterativo para evitar errores de desbordamiento de pila (stack overflow).
+    """
     if not directory:
         return []
         

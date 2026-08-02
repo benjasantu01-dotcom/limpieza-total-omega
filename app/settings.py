@@ -31,7 +31,7 @@ import json
 import os
 import tempfile
 from pathlib import Path
-from typing import Any, Final, TypeAlias
+from typing import Any, Final, TypeAlias, Callable
 
 from safety import is_safe_to_modify
 
@@ -96,11 +96,13 @@ _NUMERIC_LIMITS: Final[dict[str, tuple[int, int]]] = {
 }
 
 def _validate_bool(key: str, val: Any) -> bool | None:
+    """Intenta coercionar valores a booleano, aceptando strings comunes."""
     if isinstance(val, bool): return val
     if isinstance(val, str) and val.strip().lower() in ("1", "true", "si", "sí", "yes"): return True
     return None
 
 def _validate_int(key: str, val: Any) -> int | None:
+    """Valida enteros dentro de límites definidos para evitar valores absurdos."""
     if isinstance(val, bool): return None
     try:
         parsed = int(val)
@@ -109,6 +111,7 @@ def _validate_int(key: str, val: Any) -> int | None:
     except (TypeError, ValueError): return None
 
 def _validate_str(key: str, val: Any) -> str | None:
+    """Valida strings según restricciones de dominio y seguridad de rutas."""
     if not isinstance(val, str): return None
     text = val.strip()
     if not text: return "" if key == "ultima_carpeta" else None
@@ -121,13 +124,14 @@ def _validate_str(key: str, val: Any) -> str | None:
         except (OSError, RuntimeError, ValueError): return None
     return text.lower() if key in ("tema", "acento") else text
 
-_VALIDATOR_MAP: Final = {
+_VALIDATOR_MAP: Final[dict[type, Callable[[str, Any], Any]]] = {
     bool: _validate_bool,
     int: _validate_int,
     str: _validate_str
 }
 
 def settings_path(path_or_base: PathLike | None = None) -> Path:
+    """Calcula una ruta segura para el archivo de configuración."""
     key = path_or_base or SETTINGS_DIR
     if key in _path_cache: return _path_cache[key]
     try:
@@ -141,6 +145,7 @@ def settings_path(path_or_base: PathLike | None = None) -> Path:
     return res
 
 def validate(values: Any) -> dict[str, Any]:
+    """Aplica validación de tipos y rangos sobre un diccionario externo."""
     if not isinstance(values, dict): return DEFAULTS.copy()
     limpio = {}
     for clave, defecto in DEFAULTS.items():
@@ -154,6 +159,7 @@ def validate(values: Any) -> dict[str, Any]:
     return limpio
 
 def load(path_or_base: PathLike | None = None) -> dict[str, Any]:
+    """Carga configuración desde disco, con caché y validación de integridad."""
     global _cached_settings, _last_path, _last_mtime
     ruta = settings_path(path_or_base)
     
@@ -177,6 +183,7 @@ def load(path_or_base: PathLike | None = None) -> dict[str, Any]:
     return _cached_settings.copy()
 
 def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
+    """Guarda configuración en disco mediante un archivo temporal atómico."""
     global _cached_settings, _last_path, _last_mtime
     ruta = settings_path(path_or_base)
     
