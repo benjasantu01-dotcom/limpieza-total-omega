@@ -153,9 +153,10 @@ def all_drives_usage(mounts: Iterable[str] | None = None) -> list[DriveUsage]:
     return results
 
 
-def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Generator[tuple[Path, int], None, None]:
+def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Recorre recursivamente un directorio devolviendo archivos y su tamaño.
+    Implementa prevención de bucles infinitos (symlinks) y saltos de unidad.
     """
     if not directory:
         return
@@ -166,14 +167,15 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
     except (OSError, RuntimeError, PermissionError, ValueError, TypeError):
         return
 
-    visited = {base_path}
+    visited_directories = {base_path}
     base_drive = base_path.drive
 
-    def recursive_scan(root_path: Path) -> Generator[tuple[Path, int], None, None]:
+    def recursive_scan(root_path: Path) -> Generator[Tuple[Path, int], None, None]:
         try:
             with os.scandir(root_path) as iterator:
                 for entry in iterator:
                     try:
+                        # Exclusión de enlaces simbólicos y puntos de reparse (Junctions en NTFS)
                         if entry.is_symlink():
                             continue
                         if os.name == 'nt' and entry.stat(follow_symlinks=False).st_reparse_tag != 0:
@@ -181,22 +183,21 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
                         
                         full_entry_path = Path(entry.path).resolve()
                         
-                        # Seguridad: evitar salto de unidad o escape de directorio base
+                        # Verificación de integridad: no salir del sistema de archivos o la carpeta raíz
                         if full_entry_path.drive != base_drive or base_path not in full_entry_path.parents:
                             continue
 
                         if entry.is_dir():
-                            if full_entry_path in visited:
+                            if full_entry_path in visited_directories:
                                 continue
                             if skip_protected and is_protected_path(full_entry_path):
                                 continue
-                            visited.add(full_entry_path)
+                            visited_directories.add(full_entry_path)
                             yield from recursive_scan(full_entry_path)
                         else:
                             if skip_protected and is_protected_path(full_entry_path):
                                 continue
-                            size = entry.stat().st_size
-                            yield full_entry_path, size
+                            yield full_entry_path, entry.stat().st_size
                     except (OSError, PermissionError, FileNotFoundError, TypeError):
                         continue
         except (OSError, PermissionError, FileNotFoundError, TypeError):

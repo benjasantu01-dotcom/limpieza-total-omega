@@ -77,8 +77,10 @@ class BrowserCache:
 
 def base_directories() -> List[Path]:
     """
-    Obtiene el directorio raíz LOCALAPPDATA para buscar perfiles de usuario.
-    Solo retorna el path si existe y el entorno permite acceso.
+    Obtiene los directorios raíz donde se alojan perfiles (LOCALAPPDATA).
+
+    Returns:
+        List[Path]: Lista con el directorio si es válido, o lista vacía.
     """
     if os.name != "nt":
         return []
@@ -95,17 +97,15 @@ def base_directories() -> List[Path]:
 
 def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> bool:
     """
-    Verifica integridad de la ruta para prevenir Directory Traversal y 
+    Valida la integridad de la ruta para prevenir Directory Traversal y 
     seguimiento accidental de puntos de reparse (junctions).
     """
     if not isinstance(target_path, Path) or not isinstance(base_path, Path):
         return False
     try:
-        # Resolvemos rutas para normalizar y detectar reparse points
         real_base = os.path.realpath(str(base_path))
         real_target = os.path.realpath(str(target_path))
         
-        # Evitar seguimiento de enlaces simbólicos o junctions fuera de la base
         if os.path.islink(real_target) or (hasattr(os.path, 'isjunction') and os.path.isjunction(real_target)):
             return False
 
@@ -119,9 +119,13 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
 
 def directory_size(path: str | os.PathLike | None) -> int:
     """
-    Calcula el tamaño total en bytes de un directorio mediante una búsqueda
-    iterativa (stack-based), optimizando el uso de recursos y limitando
-    la profundidad de recursión para evitar bucles infinitos en enlaces.
+    Calcula el tamaño total en bytes de un directorio mediante búsqueda iterativa.
+
+    Args:
+        path: Ruta del directorio a analizar.
+
+    Returns:
+        int: Tamaño total en bytes, o 0 si la ruta es inaccesible o protegida.
     """
     if path is None:
         return 0
@@ -150,7 +154,6 @@ def directory_size(path: str | os.PathLike | None) -> int:
                         if entry.name.lower() in NEVER_TOUCH:
                             continue
                         
-                        # Impedir recursión en enlaces/junctions dentro del escaneo
                         if entry.is_dir(follow_symlinks=False):
                             stack.append((entry.path, depth + 1))
                         else:
@@ -165,8 +168,7 @@ def directory_size(path: str | os.PathLike | None) -> int:
 
 def _is_valid_cache_path(candidate: Path | None, base_path: Path) -> bool:
     """
-    Valida si una ruta es un directorio de caché legítimo, ignorando carpetas 
-    protegidas, enlaces y elementos definidos en NEVER_TOUCH.
+    Verifica si una ruta es un directorio de caché candidato legítimo.
     """
     if not isinstance(candidate, Path) or not isinstance(base_path, Path):
         return False
@@ -190,8 +192,14 @@ def detect_profiles(
     cache_paths: Optional[Dict[str, str]] = None
 ) -> List[BrowserCache]:
     """
-    Explora directorios base buscando caché de navegadores. Retorna una lista 
-    ordenada de objetos BrowserCache detectados en el sistema.
+    Explora directorios base buscando caché de navegadores.
+
+    Args:
+        bases: Secuencia de rutas base a explorar.
+        cache_paths: Mapeo de nombres de navegador a rutas relativas.
+
+    Returns:
+        List[BrowserCache]: Lista de cachés detectadas ordenadas por tamaño.
     """
     bases = bases if bases is not None else base_directories()
     cache_paths = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
@@ -228,8 +236,13 @@ def total_cache_bytes(caches: Iterable[BrowserCache] | None = None) -> int:
 
 def summarize(caches: Optional[List[BrowserCache]] = None) -> List[str]:
     """
-    Genera un informe textual legible para la UI incluyendo un desglose por
-    navegador y el total de almacenamiento recuperable.
+    Genera un informe textual formateado para la UI.
+
+    Args:
+        caches: Lista opcional de objetos BrowserCache a resumir.
+
+    Returns:
+        List[str]: Líneas del informe para visualización.
     """
     current_caches = caches if caches is not None else detect_profiles()
     

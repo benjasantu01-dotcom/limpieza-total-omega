@@ -76,10 +76,12 @@ class DuplicateGroup:
 
 def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
-    Calcula el hash SHA256 completo del archivo mediante bloques.
+    Calcula el hash SHA256 completo del archivo mediante bloques de datos.
     
-    Realiza validaciones de seguridad: ignora enlaces simbólicos, rutas protegidas
-    y archivos inexistentes o inaccesibles.
+    Ignora archivos protegidos, enlaces simbólicos o rutas inaccesibles.
+    
+    Returns:
+        Hexdigest del hash SHA256 si es accesible, None en caso contrario.
     """
     try:
         if path is None: return None
@@ -99,10 +101,10 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
 
 def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """
-    Calcula el hash SHA256 de los primeros N bytes para comparación rápida.
+    Calcula un hash SHA256 sobre los primeros N bytes de un archivo.
     
-    Se utiliza como filtro heurístico previo al hash completo para optimizar
-    el rendimiento en grandes volúmenes de archivos.
+    Utilizado como filtro heurístico de bajo costo para descartar archivos
+    que difieren en sus cabeceras antes de realizar un hash completo.
     """
     try:
         if path is None: return None
@@ -122,9 +124,10 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
 
 def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     """
-    Organiza rutas de archivos en un diccionario indexado por tamaño (bytes).
-    Utiliza el número de inodo para evitar procesar el mismo archivo físico
-    varias veces si aparece bajo distintos enlaces duros.
+    Agrupa rutas de archivos basándose en su tamaño en bytes.
+    
+    Utiliza el par (dispositivo, inodo) para asegurar que cada archivo físico 
+    se procese una sola vez, independientemente de los enlaces duros.
     """
     groups: Dict[int, List[Path]] = defaultdict(list)
     seen_inodes: set[Tuple[int, int]] = set()
@@ -152,10 +155,10 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
 
 def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, skip_protected: bool) -> List[Path]:
     """
-    Explora directorios recursivamente usando os.scandir para eficiencia.
+    Realiza un rastreo recursivo del sistema de archivos para recolectar candidatos.
     
-    Implementa un mecanismo de tracking de inodos para evitar ciclos en sistemas
-    de archivos y duplicidad por enlaces duros durante el escaneo.
+    Utiliza os.scandir y tracking de inodos para evitar ciclos de enlaces simbólicos 
+    y redundancias de enlaces duros durante la exploración.
     """
     candidates: List[Path] = []
     visited_inodes: set[Tuple[int, int]] = set()
@@ -198,15 +201,18 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
 
 def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
     """
-    Aplica una función de hash a una lista de rutas y agrupa los resultados
-    solo cuando existe coincidencia (colisión de hash).
+    Aplica una función de hash a una colección y agrupa rutas con colisiones.
+    
+    Returns:
+        Un diccionario donde la clave es el hash (digest) y el valor es la lista 
+        de rutas que comparten ese contenido. Solo incluye grupos con >1 archivo.
     """
-    by_hash: Dict[str, List[Path]] = defaultdict(list)
+    groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
         digest = hash_func(path)
         if digest:
-            by_hash[digest].append(path)
-    return {digest: paths_list for digest, paths_list in by_hash.items() if len(paths_list) > 1}
+            groups_by_digest[digest].append(path)
+    return {d: p for d, p in groups_by_digest.items() if len(p) > 1}
 
 
 def find_duplicates(
@@ -215,8 +221,10 @@ def find_duplicates(
     skip_protected: bool = True,
 ) -> List[DuplicateGroup]:
     """
-    Pipeline principal: Recolectar -> Filtrar por tamaño -> Hash parcial -> Hash completo.
-    Devuelve grupos de archivos confirmados como duplicados.
+    Ejecuta el pipeline de detección: Recolectar -> Filtrar tamaño -> Hash parcial -> Hash completo.
+    
+    Returns:
+        Lista de objetos DuplicateGroup ordenados por espacio desperdiciado descendente.
     """
     candidates = _collect_candidates(directories, min_size, skip_protected)
     if not candidates:
@@ -254,13 +262,15 @@ def find_duplicates(
 
 def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
     """Suma el total de espacio en bytes que se recuperaría al eliminar redundancias."""
-    if not groups: return 0
-    return sum((g.wasted_bytes for g in groups if isinstance(g, DuplicateGroup)), 0)
+    return sum((g.wasted_bytes for g in groups), 0)
 
 
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     """
-    Determina la mejor ruta para conservar basada en antigüedad (mtime) y longitud de ruta.
+    Determina la ruta óptima para conservar.
+    
+    La lógica prioriza la antigüedad (mtime más antiguo) y, como desempate,
+    la brevedad de la ruta (path length).
     """
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None
@@ -282,7 +292,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
 
 def format_group(group: DuplicateGroup) -> List[str]:
     """
-    Genera un listado descriptivo de un grupo de duplicados.
+    Genera un informe textual legible de un grupo de duplicados para la interfaz.
     """
     if group is None or not isinstance(group, DuplicateGroup): return []
     keeper = suggest_keeper(group)

@@ -179,10 +179,12 @@ def bar(percent: Union[float, int, None], width: int = 24,
     Genera una barra de progreso visual en texto plano.
     
     Args:
-        percent: Valor 0-100.
-        width: Caracteres totales de la barra.
+        percent: Valor numérico entre 0 y 100.
+        width: Número de caracteres que ocupa la barra.
+        filled: Carácter para el segmento relleno.
+        empty: Carácter para el segmento vacío.
     Returns:
-        String con el gráfico de progreso.
+        Cadena con la representación visual de la barra.
     """
     try:
         valor = max(0.0, min(100.0, float(percent))) # type: ignore
@@ -213,9 +215,11 @@ def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
     Interpola linealmente entre dos colores hex.
     
     Args:
-        ratio: 0.0 (inicio) a 1.0 (fin).
+        start: Color de inicio.
+        end: Color de fin.
+        ratio: Factor de mezcla entre 0.0 (inicio) y 1.0 (fin).
     Returns:
-        Color mezclado en formato HexColor.
+        Color mezclado resultante como string HexColor.
     """
     proporcion = max(0.0, min(1.0, float(ratio)))
     r1, g1, b1 = _hex_to_rgb(start)
@@ -232,8 +236,11 @@ def gradient_colors(steps: int, stops: tuple[HexColor, ...] = GRADIENT_STOPS) ->
     """
     Genera una lista de colores interpolados basada en múltiples puntos de control.
     
+    Args:
+        steps: Cantidad total de colores a generar.
+        stops: Puntos de control (colores hex) para la transición.
     Returns:
-        Lista de HexColors. Retorna lista con color de acento si hay error.
+        Lista de colores calculados o lista por defecto si hay error.
     """
     try:
         cantidad = max(1, int(steps))
@@ -321,9 +328,10 @@ def draw_logo(canvas: Any, size: int = 56, canvas_x: int = 0, canvas_y: int = 0)
     Renderiza el escudo Omega vectorialmente en un widget Tkinter.Canvas.
     
     Args:
-        canvas: Widget canvas destino.
-        size: Tamaño base del icono.
-        canvas_x, canvas_y: Offset de coordenadas.
+        canvas: Widget Tkinter donde dibujar.
+        size: Tamaño base del icono en píxeles.
+        canvas_x: Desplazamiento horizontal.
+        canvas_y: Desplazamiento vertical.
     """
     if canvas is None or not hasattr(canvas, "create_polygon"): return
     try:
@@ -363,7 +371,13 @@ def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
                       stops: tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
     """
     Dibuja una franja horizontal decorativa con gradiente suavizado.
-    Optimiza el rendimiento agrupando píxeles consecutivos.
+    
+    Args:
+        canvas: Widget destino.
+        width: Ancho total de la franja.
+        height: Altura del trazo.
+        canvas_x, canvas_y: Coordenadas de posición.
+        stops: Puntos de control para el color del gradiente.
     """
     if canvas is None or not hasattr(canvas, "create_line"): return
     try:
@@ -391,9 +405,12 @@ def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
     Dibuja un medidor circular (HealthScore) centrado en una coordenada.
     
     Args:
-        percent: Porcentaje (0-100).
-        size: Diámetro exterior.
-        thickness: Grosor del trazo.
+        canvas: Widget destino.
+        percent: Valor numérico (0-100) del progreso.
+        size: Diámetro exterior del anillo.
+        thickness: Grosor de la línea del anillo.
+        track: Color de fondo (pista) opcional.
+        fill: Color de relleno del progreso opcional.
     """
     if canvas is None or not hasattr(canvas, "create_arc"): return
     try:
