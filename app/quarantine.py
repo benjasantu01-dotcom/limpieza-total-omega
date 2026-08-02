@@ -230,11 +230,6 @@ def quarantine_file(
 ) -> QuarantineItem:
     """
     Mueve un archivo a cuarentena tras validar que es seguro operarlo.
-    
-    Raises:
-        UnsafePathError: Si la ruta intenta violar restricciones de sistema.
-        IOError: Si el archivo está bloqueado o inaccesible.
-        RuntimeError: Si la operación falla en cualquier punto de la transición.
     """
     if not source:
         raise ValueError("La ruta de origen no puede estar vacía.")
@@ -332,21 +327,12 @@ def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[Quaranti
 
 
 def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
-    """
-    Restaura un archivo a su ruta original tras verificar su integridad.
-    
-    Raises:
-        KeyError: Si el ID no existe en el manifiesto.
-        UnsafePathError: Si la ruta original es un enlace simbólico o está protegida.
-        RuntimeError: Si la integridad falla o el archivo no pudo ser movido.
-    """
-    if not item_id or not isinstance(item_id, str):
-        raise ValueError("El ID debe ser una cadena válida.")
-
+    """Restaura un archivo a su ruta original tras verificar su integridad."""
     items = load_manifest(base)
-    match = next((i for i in items if i.item_id == item_id), None)
+    lookup = {i.item_id: i for i in items}
+    match = lookup.get(item_id)
     
-    if match is None:
+    if not match:
         raise KeyError(f"No se encontró ítem con ID: {item_id}")
 
     base_path = quarantine_dir(base)
@@ -380,20 +366,18 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
     except (OSError, PermissionError) as e:
         raise RuntimeError(f"Fallo durante la operación de restauración: {e}")
 
-    remaining = [i for i in items if i.item_id != item_id]
-    save_manifest(remaining, base)
+    items.remove(match)
+    save_manifest(items, base)
     return destination
 
 
 def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> bool:
     """Elimina físicamente un ítem tras validar su integridad. Retorna True si tuvo éxito."""
-    if not item_id or not isinstance(item_id, str):
-        return False
-    
     items = load_manifest(base)
-    match = next((i for i in items if i.item_id == item_id), None)
+    lookup = {i.item_id: i for i in items}
+    match = lookup.get(item_id)
     
-    if match is None:
+    if not match:
         return False
 
     quarantine_root = quarantine_dir(base)
@@ -410,8 +394,8 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
     except (OSError, PermissionError):
         return False
     
-    remaining = [i for i in items if i.item_id != item_id]
-    save_manifest(remaining, base)
+    items.remove(match)
+    save_manifest(items, base)
     return True
 
 

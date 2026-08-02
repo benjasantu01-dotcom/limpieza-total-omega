@@ -128,20 +128,18 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
             with os.scandir(base_path) as it:
                 for entry in it:
                     try:
-                        # Saltar enlaces simbólicos para evitar bucles o acceso fuera de raíz
                         if entry.is_symlink():
                             continue
                         
-                        if entry.is_dir():
+                        if entry.is_dir(follow_symlinks=False):
                             if entry.name.lower() not in blocklist:
                                 _walk_dir(entry.path)
                         elif entry.name.lower().endswith(_JUNK_EXTS_TUPLE):
-                            file_path = Path(entry.path)
-                            # Verificación de seguridad antes de procesar el archivo
-                            if is_safe_to_modify(file_path):
+                            # Evitamos Path() y resolve() hasta confirmar extensión
+                            if is_safe_to_modify(Path(entry.path)):
                                 stat = entry.stat()
                                 found.append(JunkFile(
-                                    path=file_path,
+                                    path=Path(entry.path),
                                     size_bytes=stat.st_size,
                                     modified=datetime.fromtimestamp(stat.st_mtime)
                                 ))

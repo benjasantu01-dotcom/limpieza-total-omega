@@ -1132,3 +1132,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-08-02T09:50:07` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
 - `2026-08-02T09:50:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-02T09:50:07` Corrida terminada. Total usado hoy: 232.
+- `2026-08-02T09:58:59` Arrancando corrida. Quedan hoy ~68 peticiones objetivo.
+- `2026-08-02T10:00:16` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Se optimizó el caché de la aplicación reemplazando el diccionario plano `self._cache` por uno basado en `collections.OrderedDict` para implementar una política de expulsión LRU (Least Recently Used) básica, evitando que el consumo de memoria crezca indefinidamente durante sesiones largas, y se añadió una validación para limitar su tamaño máximo.
+- `2026-08-02T10:00:41` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se implementó un cacheo a nivel de módulo para la consulta de procesos (`top_memory_processes`) con un TTL (time-to-live) de 5 segundos, evitando llamadas redundantes e costosas al motor de PowerShell durante una misma ejecución de la interfaz.
+- `2026-08-02T10:01:03` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimizé el rendimiento de `scan_for_junk` evitando la instanciación redundante de objetos `Path` y llamadas a `resolve()` dentro del bucle interno, usando directamente las propiedades de `os.DirEntry` y filtrando mediante sets pre-calculados.
+- `2026-08-02T10:01:16` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el manejo de la memoria y el rendimiento de las operaciones sobre el manifiesto sustituyendo la carga redundante de la lista completa de objetos (y su posterior filtrado por búsqueda lineal) por un `dict` indexado por `item_id`, lo cual reduce la complejidad de búsqueda de O(n) a O(1) en las funciones `restore_item` y `purge_item`.
+- `2026-08-02T10:01:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-02T10:01:16` Corrida terminada. Total usado hoy: 236.

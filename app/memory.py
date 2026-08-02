@@ -26,6 +26,7 @@ from __future__ import annotations
 import os
 import re
 import subprocess
+import time
 from functools import lru_cache
 from dataclasses import dataclass, field
 from typing import List, Tuple, Optional, Dict, TYPE_CHECKING
@@ -64,6 +65,7 @@ PROCESS_SET_QUOTA: int = 0x0100
 PROCESS_VM_WRITE: int = 0x0020
 REQUIRED_ACCESS: int = PROCESS_QUERY_INFO | PROCESS_SET_QUOTA | PROCESS_VM_WRITE
 
+_PROCESS_CACHE: Dict[str, Tuple[float, List[ProcessMemory]]] = {}
 
 @dataclass
 class MemorySnapshot:
@@ -232,9 +234,18 @@ def read_snapshot() -> MemorySnapshot:
 
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
-    """Obtiene una lista de los procesos que más RAM consumen en Windows."""
+    """Obtiene una lista de los procesos que más RAM consumen en Windows con cache TTL."""
+    global _PROCESS_CACHE
     if os.name != "nt":
         return []
+
+    cache_key = f"limit_{limit}"
+    now = time.time()
+    if cache_key in _PROCESS_CACHE:
+        ts, data = _PROCESS_CACHE[cache_key]
+        if now - ts < 5.0:
+            return data
+
     command: str = (
         "Get-Process | Select-Object -Property Name,Id,WorkingSet | "
         "ConvertTo-Csv -NoTypeInformation"
@@ -244,7 +255,9 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
             ["powershell", "-NoProfile", "-Command", command],
             capture_output=True, text=True, timeout=10,
         )
-        return parse_windows_process_csv(result.stdout or "", limit=limit)
+        processes = parse_windows_process_csv(result.stdout or "", limit=limit)
+        _PROCESS_CACHE[cache_key] = (now, processes)
+        return processes
     except (OSError, subprocess.SubprocessError):
         return []
 
