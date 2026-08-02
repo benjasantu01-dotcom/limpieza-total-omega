@@ -6,34 +6,34 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **262** (52.0% de aceptación)
+- Mejoras aceptadas: **264** (52.4% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 28
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 183
+- Sin respuesta de la IA (error o límite): 181
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-01 | 166 | 11 | 16 | 10 | 137 |
-| 2026-08-02 | 96 | 5 | 12 | 5 | 46 |
+| 2026-08-01 | 166 | 11 | 16 | 10 | 133 |
+| 2026-08-02 | 98 | 5 | 12 | 5 | 48 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **67**
 - rendimiento: **50**
 - robustez ante casos límite: **50**
-- seguridad defensiva: **48**
+- seguridad defensiva: **50**
 - manejo de errores y validación de entradas: **47**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **22**
 - `scanner.py`: **22**
+- `settings.py`: **22**
 - `main.py`: **21**
 - `organizer.py`: **21**
-- `settings.py`: **21**
 - `healthscore.py`: **20**
 - `diskreport.py`: **19**
 - `browser.py`: **19**
@@ -42,10 +42,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - `safety.py`: **17**
 - `branding.py`: **16**
 - `memory.py`: **15**
-- `startup.py`: **14**
+- `startup.py`: **15**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-02T07:06:27` **startup.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_resolve_and_cache_path` y `parse_registry_csv` añadiendo una validación explícita para evitar que rutas que contengan caracteres sospechosos o atraviesen puntos de reparse (junctions/symlinks) sean procesadas como ejecutables válidos, previniendo el escalamiento de privilegios o la ejecución accidental en rutas inseguras.
+- `2026-08-02T07:06:03` **settings.py** (seguridad defensiva): Reforcé la seguridad defensiva en `save` eliminando el chequeo redundante mediante `os.access` (que sufre de condiciones de carrera TOCTOU) y delegando la protección de la ruta exclusivamente en `ensure_safe_to_modify`, asegurando que cualquier intento de escritura en una ruta prohibida sea bloqueado explícitamente antes de abrir cualquier archivo.
 - `2026-08-02T06:56:47` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `scan_file` y `scan_directory` validando que las rutas no solo sean "no protegidas", sino que existan y sean accesibles antes de intentar procesarlas, evitando que errores de resolución de rutas (`OSError`) interrumpan el bucle de escaneo sin necesidad.
 - `2026-08-02T06:56:40` **safety.py** (seguridad defensiva): Se reforzó `ensure_safe_to_modify` para detectar y bloquear ataques de desbordamiento de ruta o acceso a dispositivos mediante la verificación explícita del prefijo `\\?\` (path largo de Windows), que puede usarse para evadir filtros de seguridad estándar saltándose la normalización de la API de Win32.
 - `2026-08-02T06:55:58` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `purge_all` añadiendo una validación explícita mediante `is_within_directory` para cada archivo antes de su borrado, garantizando que, incluso ante un estado de manifiesto corrupto o inconsistente, no se pueda eliminar ningún archivo fuera de la carpeta de cuarentena.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-02T06:26:09` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_call_gemini` al validar la respuesta de la API mediante `_ensure_safe_text` antes de devolverla, asegurando que el modelo no pueda inyectar rutas o caracteres peligrosos incluso si el origen es externo, manteniendo la integridad del asistente.
 - `2026-08-02T06:25:30` **settings.py** (robustez ante casos límite): Mejoré la robustez de `save()` ante condiciones de carrera y fallos de escritura mediante la verificación explícita de `os.access` sobre el archivo de destino antes de intentar el proceso de reemplazo atómico, además de añadir un manejo defensivo contra archivos de configuración inexistentes o inaccesibles en `load()`.
 - `2026-08-02T06:25:06` **scanner.py** (robustez ante casos límite): Mejoré la robustez de `scan_file` y las funciones heurísticas ante condiciones de carrera (archivos eliminados justo después de ser listados) mediante el manejo explícito de `FileNotFoundError` y validaciones más estrictas de existencia previa a la lectura de metadatos, evitando que el escaneo colapse ante cambios dinámicos del sistema.
-- `2026-08-02T06:15:54` **safety.py** (robustez ante casos límite): Se ha mejorado `ensure_safe_to_modify` para detectar de forma explícita rutas con caracteres no imprimibles o de control (ataques tipo "homoglyph" o "RTL override"), reforzando la integridad al procesar rutas externas y evitando manipulaciones maliciosas mediante nombres de archivo engañosos.
-- `2026-08-02T06:15:26` **quarantine.py** (robustez ante casos límite): Se mejora la robustez de `quarantine_file` ante condiciones de carrera y archivos inconsistentes agregando una validación de existencia post-movimiento y asegurando que `shutil.move` no sea interrumpido prematuramente.

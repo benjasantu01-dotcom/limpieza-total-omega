@@ -33,7 +33,7 @@ import tempfile
 from pathlib import Path
 from typing import Any, Final, TypeAlias, Callable
 
-from safety import is_safe_to_modify
+from safety import is_safe_to_modify, ensure_safe_to_modify
 
 PathLike: TypeAlias = str | Path
 
@@ -187,12 +187,9 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     global _cached_settings, _last_path, _last_mtime
     ruta = settings_path(path_or_base)
     
-    if ruta.exists() and not os.access(ruta, os.W_OK): return None
-    if ruta.parent.exists() and not os.access(ruta.parent, os.W_OK): return None
-    if not is_safe_to_modify(str(ruta.resolve().parent)): return None
-        
-    limpio = validate(values)
     try:
+        ensure_safe_to_modify(str(ruta))
+        limpio = validate(values)
         json_data = json.dumps(limpio, indent=2, ensure_ascii=False)
         ruta.parent.mkdir(parents=True, exist_ok=True)
     except (TypeError, ValueError, OSError): return None

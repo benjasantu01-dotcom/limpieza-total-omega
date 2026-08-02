@@ -66,9 +66,9 @@ class StartupEntry:
     _checked_exists: bool = False
 
     def _is_valid_executable(self, path: Path) -> bool:
-        """Verifica si la ruta apunta a un ejecutable conocido."""
+        """Verifica si la ruta apunta a un ejecutable conocido y no es un punto de reparse."""
         try:
-            return path.suffix.lower() in EXECUTABLE_EXTS
+            return path.suffix.lower() in EXECUTABLE_EXTS and not path.is_symlink()
         except (OSError, ValueError, RuntimeError, TypeError):
             return False
 
@@ -94,8 +94,8 @@ class StartupEntry:
         """Resuelve una ruta relativa/simple a absoluta y la guarda en caché."""
         try:
             p = Path(path_str).expanduser()
-            # Validación de seguridad antes de verificar existencia
-            if is_protected_path(p):
+            # Validación de seguridad defensiva: ni protegida, ni puntos de reparse
+            if is_protected_path(p) or p.is_symlink():
                 return path_str
             if p.exists() and p.is_file():
                 return str(p)
@@ -179,10 +179,12 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
             continue
         
         try:
-            if is_protected_path(Path(cmd)):
+            # Defensivo: no procesar rutas de registro sospechosas o protegidas
+            p = Path(cmd)
+            if is_protected_path(p) or any(c in cmd for c in '<>|?*'):
                 continue
         except (OSError, ValueError, TypeError):
-            pass
+            continue
             
         parsed_entries.append(StartupEntry(name=name, command=cmd, source=source))
         
