@@ -148,7 +148,7 @@ def all_drives_usage(mounts: Iterable[str] | None = None) -> list[DriveUsage]:
 
 def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Generator[tuple[Path, int], None, None]:
     """
-    Recorre recursivamente un directorio devolviendo archivos y su tamaño.
+    Recorre recursivamente un directorio devolviendo archivos y su tamaño, validando contención.
     """
     if not directory:
         return
@@ -166,6 +166,7 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
             with os.scandir(root_path) as iterator:
                 for entry in iterator:
                     try:
+                        # Prevenir seguir enlaces y puntos de reparse
                         if entry.is_symlink():
                             continue
                         if os.name == 'nt' and entry.stat(follow_symlinks=False).st_reparse_tag != 0:
@@ -173,6 +174,7 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
                         
                         full_entry_path = Path(entry.path).resolve()
                         
+                        # Seguridad defensiva: validar que no escape del directorio base
                         if base_path not in full_entry_path.parents and full_entry_path != base_path:
                             continue
 
@@ -186,7 +188,6 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
                         else:
                             if skip_protected and is_protected_path(full_entry_path):
                                 continue
-                            # Captura errores de acceso a archivos específicos
                             size = entry.stat().st_size
                             yield full_entry_path, size
                     except (OSError, PermissionError, FileNotFoundError, TypeError):
@@ -238,6 +239,7 @@ def largest_folders(directory: str | os.PathLike, limit: int = 10, skip_protecte
         
         for path, size in walk_files(base, skip_protected):
             try:
+                # Validar contención explícita antes de indexar
                 rel = path.relative_to(base)
                 if not rel.parts:
                     continue

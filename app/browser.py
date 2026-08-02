@@ -45,7 +45,7 @@ BROWSER_CACHE_PATHS: Dict[str, str] = {
     "Vivaldi": r"Vivaldi\User Data\Default\Cache",
     "Chrome (código)": r"Google\Chrome\User Data\Default\Code Cache",
     "Edge (código)": r"Microsoft\Edge\User Data\Default\Code Cache",
-    "Chrome (GPU)": r"Google\Chrome\User Data\Default\GPUCache",
+    "Chrome (GPU)": r"Microsoft\Edge\User Data\Default\GPUCache",
 }
 
 # Nombres que este módulo nunca reporta ni toca, aunque estén dentro del
@@ -134,20 +134,28 @@ def directory_size(path: str | os.PathLike | None) -> int:
         return 0
     
     total_bytes: int = 0
-    stack: List[Path] = [root]
+    # Guardamos tupla (path, profundidad) para limitar niveles y evitar bucles
+    stack: List[tuple[Path, int]] = [(root, 0)]
+    MAX_DEPTH = 32
     
     while stack:
-        current_dir = stack.pop()
+        current_dir, depth = stack.pop()
+        if depth > MAX_DEPTH:
+            continue
+            
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
-                        # Obtenemos stat en la misma iteración para evitar llamadas redundantes
+                        # Doble verificación: es protegido y es seguro para recorrer
+                        if is_protected_path(Path(entry.path)):
+                            continue
+                            
                         if entry.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(entry.path)):
                             continue
                         
                         if entry.is_dir(follow_symlinks=False):
-                            stack.append(Path(entry.path))
+                            stack.append((Path(entry.path), depth + 1))
                         else:
                             total_bytes += entry.stat().st_size
                     except (OSError, PermissionError):
@@ -165,6 +173,7 @@ def _is_valid_cache_path(candidate: Path | None, base_path: Path) -> bool:
     if not isinstance(candidate, Path):
         return False
     try:
+        # Validación estricta contra sistema antes de verificar existencia
         if is_protected_path(candidate):
             return False
             

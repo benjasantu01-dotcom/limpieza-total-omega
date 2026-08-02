@@ -174,9 +174,10 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
             pass
 
     for directory in directories:
-        path_obj = Path(directory)
+        path_obj = Path(directory).resolve()
         if path_obj.exists() and path_obj.is_dir():
-            _scan(path_obj.resolve())
+            if not is_protected_path(path_obj):
+                _scan(path_obj)
     return candidates
 
 
