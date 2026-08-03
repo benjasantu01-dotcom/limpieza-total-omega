@@ -738,3 +738,10 @@ FAILED evolve/tests/test_modules.py::test_gradient_bar_paints_one_line_per_pixel
 - `2026-08-03T13:30:20` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
 - `2026-08-03T13:30:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-03T13:30:20` Corrida terminada. Total usado hoy: 316.
+- `2026-08-03T13:38:53` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-03T13:39:20` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se introdujo una protección defensiva en `summarize` para manejar situaciones donde `breakdown` o `result.breakdown` contengan claves inesperadas o faltantes respecto a `WEIGHTS`, evitando que el renderizado de la UI falle silenciosamente ante datos inconsistentes, reforzando la robustez ante estados parciales.
+- `2026-08-03T13:40:24` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `main.py` implementando un chequeo de seguridad preventivo al restaurar o aislar archivos en cuarentena y al realizar análisis de disco, validando explícitamente que las rutas no contengan caracteres peligrosos ni sean puntos de reparse antes de procesarlas, evitando fallos en tiempo de ejecución o acceso a rutas inesperadas.
+- `2026-08-03T13:40:48` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-08-03T13:40:56` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Mejoré la robustez de `stage_for_review` ante casos límite mediante la validación estricta de la integridad del sistema de archivos, asegurando que `dest` no sea un ancestro de las rutas origen y verificando que el archivo realmente pueda ser bloqueado exclusivamente antes de moverlo.
+- `2026-08-03T13:40:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-03T13:40:56` Corrida terminada. Total usado hoy: 320.

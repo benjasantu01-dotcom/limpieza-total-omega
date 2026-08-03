@@ -280,6 +280,8 @@ def summarize(result: HealthResult) -> List[str]:
 
     for area, maximo in WEIGHTS.items():
         puntos = result.breakdown.get(area, 0)
+        # Protección defensiva: asegurar que el gráfico no rompa si los datos no coinciden
+        puntos = max(0, min(maximo, puntos))
         visual = f"[{'#' * puntos}{'.' * (maximo - puntos)}]"
         lines.append(f"  {area.capitalize():<12} {puntos:>2}/{maximo:<2} {visual}")
     

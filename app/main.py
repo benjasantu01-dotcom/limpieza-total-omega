@@ -172,6 +172,16 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._tasks_running = 0
         self._executor = concurrent.futures.ThreadPoolExecutor(max_workers=5)
 
+    def _is_safe_path(self, path: Union[str, Path]) -> bool:
+        """Chequeo robusto de seguridad para evitar seguir junctions o rutas inválidas."""
+        try:
+            p = Path(path).resolve()
+            if p.is_symlink() or not p.exists():
+                return False
+            return not safety.is_protected_path(p)
+        except (OSError, RuntimeError):
+            return False
+
     def _is_valid_dir(self, path: Optional[Union[str, Path]]) -> bool:
         """Valida la existencia y accesibilidad de lectura de un directorio."""
         if not path:
@@ -874,25 +884,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return None
         
         path_obj = Path(folder)
-        try:
-            if safety.is_protected_path(path_obj):
-                messagebox.showwarning("Ruta protegida", "No podés operar sobre esta carpeta de sistema.")
-                return None
-            if path_obj.is_symlink() or os.path.splitdrive(folder)[0].startswith('\\\\'):
-                messagebox.showwarning("Ruta no soportada", "No se permiten puntos de unión ni recursos de red.")
-                return None
-            
-            if not os.access(path_obj, os.R_OK):
-                messagebox.showerror("Error", "No tienes permisos de lectura sobre esta carpeta.")
-                return None
-                
-            safety.ensure_safe_to_modify(path_obj)
-        except (safety.UnsafePathError, PermissionError):
-            messagebox.showwarning(
-                "Carpeta protegida o inaccesible",
-                "Esa carpeta es vital para el sistema o requiere permisos elevados.\n\n"
-                "Elegí una carpeta de usuario (Descargas, Documentos, etc.).",
-            )
+        if not self._is_safe_path(path_obj):
+            messagebox.showwarning("Ruta no segura", "Esa ruta está protegida o es inválida.")
             return None
             
         return folder
@@ -1065,7 +1058,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             messagebox.showinfo("Sin candidatos", "Primero usá 'Buscar basura'.")
             return
         
-        aptos = [jf for jf in junk if safety.is_safe_to_modify(Path(jf.path))]
+        aptos = [jf for jf in junk if self._is_safe_path(jf.path)]
         
         if not aptos:
             messagebox.showwarning("Sin candidatos seguros", "Todos los archivos encontrados están en rutas protegidas.")
@@ -1161,7 +1154,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             messagebox.showinfo("Sin hallazgos", "Primero corré un escaneo heurístico.")
             return
         
-        aptos = [s for s in suspicions if safety.is_safe_to_modify(Path(s.path))]
+        aptos = [s for s in suspicions if self._is_safe_path(s.path)]
         
         if not aptos:
             messagebox.showwarning("Nada que aislar", "Los archivos sospechosos se encuentran en rutas protegidas.")
@@ -1229,12 +1222,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 self.log("Error: El manifiesto de este ID está corrupto.", "Cuarentena")
                 return
 
-            ruta_orig = Path(item.original_path)
-            
-            try:
-                safety.ensure_safe_to_modify(ruta_orig)
-            except safety.UnsafePathError:
-                self.log(f"Error: La ruta original {ruta_orig} está protegida.", "Cuarentena")
+            if not self._is_safe_path(item.original_path):
+                self.log(f"Error: La ruta original {item.original_path} está protegida o es inválida.", "Cuarentena")
                 return
             
             destino = quarantine.restore_item(raw_id)
@@ -1421,7 +1410,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             conservar = duplicates_mod.suggest_keeper(grupo)
             a_mover.extend([p for p in grupo.paths if p != conservar])
 
-        aptos = [r for r in a_mover if safety.is_safe_to_modify(Path(r))]
+        aptos = [r for r in a_mover if self._is_safe_path(r)]
         
         if not aptos:
             messagebox.showwarning("Nada que aislar", "Las copias extra están en rutas protegidas.")

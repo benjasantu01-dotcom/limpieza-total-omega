@@ -226,14 +226,21 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         if jf is None or not isinstance(jf, JunkFile):
             continue
         try:
+            # Validaciones de integridad y seguridad previas
             if not jf.path.exists() or jf.path.is_symlink() or not jf.path.is_file() or jf.size_bytes == 0:
                 continue
             if not is_safe_to_modify(jf.path):
                 continue
             
+            # Impedir movimiento si el origen es la misma carpeta que el destino
             if os.path.samefile(jf.path.parent, dest):
                 continue
+
+            # Impedir movimiento si el destino es subcarpeta del origen (o viceversa)
+            if jf.path in dest.parents or dest in jf.path.parents:
+                continue
             
+            # Verificar exclusividad de acceso antes de mover
             try:
                 with open(jf.path, 'rb+'): pass
             except (IOError, OSError):
@@ -241,9 +248,6 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 
             target_base = dest / f"{jf.path.stem}_{int(jf.modified.timestamp())}{jf.path.suffix}"
             target = _generate_unique_target(target_base)
-            
-            if dest not in target.resolve().parents:
-                continue
             
             ensure_safe_to_modify(jf.path)
             shutil.move(str(jf.path), str(target))
