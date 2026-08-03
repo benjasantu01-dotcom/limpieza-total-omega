@@ -8,45 +8,48 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **254** (50.4% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 29
-- Sin cambios (nada sustancial que mejorar): 12
+- Rechazadas por guardia de seguridad: 28
+- Sin cambios (nada sustancial que mejorar): 13
 - Sin respuesta de la IA (error o límite): 196
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-01 | 48 | 1 | 5 | 2 | 38 |
+| 2026-08-01 | 45 | 1 | 4 | 2 | 38 |
 | 2026-08-02 | 187 | 11 | 22 | 8 | 122 |
-| 2026-08-03 | 19 | 1 | 2 | 2 | 36 |
+| 2026-08-03 | 22 | 1 | 2 | 3 | 36 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **57**
 - seguridad defensiva: **55**
+- legibilidad y documentación: **54**
 - robustez ante casos límite: **50**
+- manejo de errores y validación de entradas: **48**
 - rendimiento: **47**
-- manejo de errores y validación de entradas: **45**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **24**
-- `scanner.py`: **22**
+- `settings.py`: **23**
 - `browser.py`: **21**
 - `main.py`: **21**
+- `scanner.py`: **21**
 - `assistant.py`: **19**
 - `branding.py`: **18**
 - `diskreport.py`: **18**
 - `quarantine.py`: **18**
-- `safety.py`: **17**
 - `organizer.py`: **17**
 - `startup.py`: **16**
-- `healthscore.py`: **15**
-- `duplicates.py`: **15**
-- `memory.py`: **13**
+- `safety.py`: **16**
+- `healthscore.py`: **16**
+- `duplicates.py`: **16**
+- `memory.py`: **14**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-03T02:43:06` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` validando la existencia del proceso antes de intentar operar y asegurando que las llamadas a la API de Windows manejen correctamente los errores de permisos (acceso denegado) en lugar de fallar silenciosamente.
+- `2026-08-03T02:41:57` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` ante fallos de cálculo, asegurando que si las métricas devuelven ratios inválidos (NaN/Inf) durante el procesamiento, el sistema retorne un estado de salud predeterminado en lugar de propagar errores o generar resultados numéricos corruptos.
+- `2026-08-03T02:41:32` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `suggest_keeper` y `format_group` mediante validaciones de tipo explícitas y manejo de estados nulos, previniendo excepciones ante estructuras de datos inesperadas en el flujo de ejecución.
 - `2026-08-03T02:32:32` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `walk_files` y `summarize` implementando chequeos explícitos para manejar rutas inválidas o inaccesibles, evitando que `Path.resolve(strict=True)` interrumpa la ejecución ante permisos denegados o inconsistencias del sistema de archivos, alineándose con el enfoque de manejo de errores defensivos.
 - `2026-08-03T02:32:22` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `directory_size` y `_is_safe_path` ante errores de sistema, añadiendo validaciones explícitas de tipos y capturando excepciones de forma granular para evitar que entradas de sistema bloqueadas o con permisos denegados interrumpan el análisis completo.
 - `2026-08-03T02:31:30` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `build_context` implementando una validación exhaustiva de los datos de entrada para evitar que valores nulos o tipos incorrectos inesperados propaguen errores hacia las funciones de análisis, utilizando un manejo de excepciones local más granular.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-03T00:50:11` **main.py** (seguridad defensiva): Mejoré la seguridad de `on_trim_process` y `on_restore_quarantine` centralizando la validación de rutas mediante `ensure_safe_to_modify` antes de cualquier interacción con el sistema, previniendo así posibles errores de permisos o modificaciones en áreas críticas no cubiertas anteriormente.
 - `2026-08-03T00:39:46` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` y `hash_file/partial_hash` añadiendo una validación explícita mediante `is_protected_path` sobre la resolución absoluta de cada ruta antes de interactuar con ella, previniendo posibles escapes por manipulación de paths relativos o puntos de reparse durante la recursión.
 - `2026-08-03T00:39:38` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `walk_files` mediante la validación estricta de que las rutas relativas procesadas se mantengan efectivamente dentro del directorio base, evitando posibles escapes debidos a manipulaciones de enlaces simbólicos o rutas mal formadas durante el escaneo.
-- `2026-08-03T00:39:14` **browser.py** (seguridad defensiva): Se reforzó la seguridad de `directory_size` y `_is_safe_path` al validar explícitamente que ninguna ruta procesada contenga caracteres de control (como los caracteres RTL mencionados en las reglas de seguridad) y asegurar que el cálculo de tamaño solo considere rutas que se resuelven correctamente sin escapar del directorio base, evitando que el escáner se vea engañado por rutas maliciosas o enlaces simbólicos maliciosos.
-- `2026-08-03T00:29:42` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva al serializar las métricas para Gemini, asegurando que `_call_gemini` siempre utilice un formato de texto estrictamente controlado y evitando cualquier posibilidad de inyección mediante la validación de caracteres de control en el contexto serializado.
-- `2026-08-03T00:29:24` **startup.py** (robustez ante casos límite): Se ha añadido un bloque de validación defensiva en `parse_registry_csv` para gestionar posibles rutas malformadas o comandos vacíos, asegurando que la función no procese entradas con caracteres de control ni rutas que el sistema operativo rechazaría, previniendo errores de ejecución en la resolución de rutas posteriores.

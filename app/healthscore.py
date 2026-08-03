@@ -254,7 +254,11 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     factor: float = 100.0 / float(_TOTAL_WEIGHTS)
     
     for area, weight in WEIGHTS.items():
-        score_val = (ratios[area] * weight * factor)
+        ratio_val = ratios.get(area, 0.0)
+        # Verificación de seguridad adicional ante resultados inesperados
+        if not math.isfinite(ratio_val): ratio_val = 0.0
+        
+        score_val = (ratio_val * weight * factor)
         rounded = int(score_val + 0.5)
         breakdown[area] = rounded
         total_score += score_val

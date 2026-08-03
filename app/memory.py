@@ -302,15 +302,6 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
     Solicita al SO liberar memoria no esencial (Working Set) de un proceso.
-    
-    Requiere permisos de administrador para procesos de usuario distintos al actual.
-    Implementa chequeos de seguridad (is_protected_path) para prevenir 
-    manipulaciones sobre procesos del núcleo o críticos.
-    
-    Args:
-        pid: Identificador del proceso a optimizar.
-    Returns:
-        Tupla (éxito, mensaje descriptivo).
     """
     if os.name != "nt":
         return False, "Solo disponible en Windows."
@@ -335,11 +326,14 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
 
     handle = kernel32.OpenProcess(REQUIRED_ACCESS, False, target_pid)
     if not handle:
-        return False, f"No se pudo acceder al proceso {target_pid}."
+        error_code = kernel32.GetLastError()
+        if error_code == 5: # ERROR_ACCESS_DENIED
+            return False, "Acceso denegado: se requieren privilegios de administrador."
+        return False, f"No se pudo acceder al proceso {target_pid} (Error {error_code})."
     
     try:
         if not psapi.EmptyWorkingSet(handle):
-            return False, "Error al limpiar memoria."
+            return False, "Error interno al intentar liberar memoria del proceso."
         return True, f"Working set liberado. {TRIM_WARNING}"
     finally:
         kernel32.CloseHandle(handle)

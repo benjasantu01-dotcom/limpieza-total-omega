@@ -84,6 +84,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
         Hexdigest del hash SHA256 si es accesible, None en caso contrario.
     """
     try:
+        if path is None: return None
         p = Path(path).resolve()
         if not p.is_file() or p.is_symlink() or is_protected_path(p):
             return None
@@ -106,6 +107,7 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
     que difieren en sus cabeceras antes de realizar un hash completo.
     """
     try:
+        if path is None: return None
         p = Path(path).resolve()
         if not p.is_file() or p.is_symlink() or is_protected_path(p):
             return None
@@ -125,7 +127,9 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     Agrupa rutas de archivos basándose en su tamaño en bytes.
     """
     groups: Dict[int, List[Path]] = defaultdict(list)
+    if paths is None: return groups
     for p in paths:
+        if not isinstance(p, Path): continue
         try:
             groups[p.stat().st_size].append(p)
         except (OSError, PermissionError, FileNotFoundError):
@@ -164,6 +168,7 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
                     except (OSError, PermissionError): continue
         except (OSError, PermissionError): pass
 
+    if directories is None: return groups
     for directory in directories:
         if directory is None: continue
         path_obj = Path(directory).resolve()
@@ -228,6 +233,7 @@ def find_duplicates(
 
 def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
     """Suma el total de espacio en bytes que se recuperaría al eliminar redundancias."""
+    if not groups: return 0
     return sum((g.wasted_bytes for g in groups), 0)
 
 
@@ -236,12 +242,12 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     Determina la ruta óptima para conservar basada en la fecha de modificación (mtime)
     más antigua y, como desempate, la ruta con menor longitud de string.
     """
-    if not isinstance(group, DuplicateGroup) or not group.paths:
+    if group is None or not isinstance(group, DuplicateGroup) or not group.paths:
         return None
 
     valid_paths: List[Tuple[float, int, Path]] = []
     for p in group.paths:
-        if not isinstance(p, Path): continue
+        if not isinstance(p, Path) or not p.exists(): continue
         try:
             stat = p.stat()
             valid_paths.append((stat.st_mtime, len(str(p)), p))
@@ -258,7 +264,7 @@ def format_group(group: DuplicateGroup) -> List[str]:
     """
     Genera un informe textual legible de un grupo de duplicados para la interfaz.
     """
-    if group is None or not isinstance(group, DuplicateGroup): return []
+    if not isinstance(group, DuplicateGroup): return []
     keeper = suggest_keeper(group)
     mb_total = round(group.size_bytes / (1024 * 1024), 2)
     mb_wasted = round(group.wasted_bytes / (1024 * 1024), 2)
