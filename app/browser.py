@@ -81,13 +81,17 @@ def base_directories() -> List[Path]:
     """
     if os.name != "nt":
         return []
+    
     local = os.environ.get("LOCALAPPDATA")
     if not local or not isinstance(local, str):
         return []
     
     try:
         path_local = Path(local)
-        return [path_local] if path_local.is_dir() else []
+        # Validación estricta de existencia y tipo antes de retornar
+        if path_local.is_absolute() and path_local.is_dir():
+            return [path_local]
+        return []
     except (OSError, RuntimeError, ValueError):
         return []
 
@@ -126,6 +130,7 @@ def directory_size(path: str | os.PathLike | None) -> int:
     
     try:
         root = Path(path).resolve()
+        # Validación de seguridad: no procesar nada que esté protegido
         if not root.exists() or not root.is_dir() or is_protected_path(root):
             return 0
     except (OSError, TypeError, ValueError):
@@ -140,8 +145,8 @@ def directory_size(path: str | os.PathLike | None) -> int:
             with os.scandir(current_dir_str) as it:
                 for entry in it:
                     try:
-                        entry_name_lower = entry.name.lower()
-                        if entry_name_lower in NEVER_TOUCH:
+                        # Saltar elementos protegidos o inválidos
+                        if entry.name.lower() in NEVER_TOUCH:
                             continue
                         if any(ord(c) < 32 for c in entry.name):
                             continue
@@ -150,7 +155,7 @@ def directory_size(path: str | os.PathLike | None) -> int:
                         if entry.is_dir(follow_symlinks=False):
                             stack.append(entry.path)
                         else:
-                            # Captura errores de lectura/acceso en archivos individuales
+                            # Captura de errores de sistema al acceder a archivos
                             try:
                                 total_bytes += entry.stat().st_size
                             except (OSError, PermissionError):

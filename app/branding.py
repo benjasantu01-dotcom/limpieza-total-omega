@@ -265,10 +265,8 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         return None
     try:
         target = Path(destination).expanduser().resolve()
-        # Verificamos que el archivo sea seguro y que no sea un directorio
         if target.is_dir() or not is_safe_to_modify(target):
             return None
-        # Aseguramos el directorio padre antes de intentar escribir
         ensure_safe_to_modify(target.parent)
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(logo_svg(), encoding="utf-8")
@@ -324,12 +322,13 @@ def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
     if canvas is None or not hasattr(canvas, "create_line"): return
     try:
         ancho = max(1, int(width))
+        alto = max(1, int(height))
         colores = gradient_colors(ancho, stops)
         start_idx = 0
         for i in range(1, ancho + 1):
             if i == ancho or colores[i] != colores[start_idx]:
-                canvas.create_line(canvas_x + start_idx, canvas_y, canvas_x + i, canvas_y + height, 
-                                   fill=colores[start_idx], width=height)
+                canvas.create_line(canvas_x + start_idx, canvas_y, canvas_x + i, canvas_y + alto, 
+                                   fill=colores[start_idx], width=alto)
                 start_idx = i
     except (ValueError, TypeError, AttributeError): pass
 
@@ -341,7 +340,7 @@ def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
     """Dibuja un medidor circular (HealthScore) centrado en una coordenada."""
     if canvas is None or not hasattr(canvas, "create_arc"): return
     try:
-        valor = max(0.0, min(100.0, float(percent))) # type: ignore
+        valor = max(0.0, min(100.0, float(percent)))
         diametro = max(20, int(size))
         grosor = max(2, min(int(thickness), diametro // 2 - 1))
     except (TypeError, ValueError): return

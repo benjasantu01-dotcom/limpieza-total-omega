@@ -192,6 +192,8 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
 
     def extract(source: Any, attr: str, default: Any, cast: Callable = float) -> Any:
         try:
+            if not hasattr(source, attr):
+                return default
             val = getattr(source, attr, None)
             if val is None or not is_valid_num(val):
                 return default
@@ -199,7 +201,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         except (AttributeError, ValueError, TypeError):
             return default
 
-    if metrics is not None:
+    if metrics is not None and isinstance(metrics, object):
         ctx.junk_mb = max(0.0, extract(metrics, "junk_mb", 0.0))
         ctx.suspicious_count = max(0, extract(metrics, "suspicious_count", 0, int))
         ctx.suspicious_warnings = max(0, extract(metrics, "suspicious_warnings", 0, int))
@@ -211,7 +213,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         ctx.browser_cache_mb = max(0.0, extract(metrics, "browser_cache_mb", 0.0))
         ctx.analyzed = True
 
-    if health is not None:
+    if health is not None and isinstance(health, object):
         score_val = extract(health, "score", None, int)
         ctx.score = max(0, min(score_val, 100)) if score_val is not None else None
         grade = getattr(health, "grade", "")

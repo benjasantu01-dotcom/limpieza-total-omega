@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **249** (49.4% de aceptación)
+- Mejoras aceptadas: **248** (49.2% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 29
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 197
+- Sin respuesta de la IA (error o límite): 198
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-02 | 181 | 11 | 22 | 8 | 122 |
-| 2026-08-03 | 68 | 4 | 7 | 6 | 75 |
+| 2026-08-02 | 177 | 11 | 22 | 8 | 122 |
+| 2026-08-03 | 71 | 4 | 7 | 6 | 76 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **59**
+- legibilidad y documentación: **55**
 - seguridad defensiva: **54**
 - robustez ante casos límite: **49**
 - rendimiento: **45**
-- manejo de errores y validación de entradas: **42**
+- manejo de errores y validación de entradas: **45**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **24**
 - `scanner.py`: **22**
-- `main.py`: **21**
-- `browser.py`: **20**
+- `browser.py`: **21**
+- `main.py`: **20**
 - `quarantine.py`: **18**
 - `safety.py`: **18**
-- `organizer.py`: **17**
-- `assistant.py`: **17**
+- `assistant.py`: **18**
+- `branding.py`: **17**
 - `duplicates.py`: **17**
 - `diskreport.py`: **16**
-- `branding.py`: **16**
-- `healthscore.py`: **15**
-- `memory.py`: **14**
+- `organizer.py`: **16**
 - `startup.py`: **14**
+- `healthscore.py`: **14**
+- `memory.py`: **13**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-03T06:59:13` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `base_directories` y `directory_size` añadiendo validaciones de tipo explícitas y manejando de forma más estricta los posibles `None` o estados inconsistentes, asegurando que la lógica de escaneo nunca procese rutas malformadas o tipos de datos inesperados.
+- `2026-08-03T06:59:05` **branding.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las funciones de visualización (`draw_logo`, `draw_gradient_bar`, `draw_ring`) añadiendo validaciones de tipo y rangos para evitar errores silenciosos o excepciones al recibir parámetros fuera de los límites esperados durante el renderizado.
+- `2026-08-03T06:58:37` **assistant.py** (manejo de errores y validación de entradas): Mejora la robustez de `build_context` validando explícitamente los tipos de datos en la entrada `metrics` mediante `isinstance` antes de realizar operaciones de acceso, evitando excepciones no controladas si se pasan objetos inesperados, y estandariza el manejo de errores en `settings.load` dentro de `ask`.
 - `2026-08-03T05:35:45` **settings.py** (seguridad defensiva): Se ha añadido una validación estricta en `save()` mediante `ensure_safe_to_modify(str(ruta))` antes de la operación de escritura para asegurar que el archivo de configuración no resida en una ubicación protegida, alineándolo con las reglas de seguridad defensiva.
 - `2026-08-03T05:25:41` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva en `quarantine_file` añadiendo una validación explícita mediante `is_within_directory` para prevenir que un usuario intente poner en cuarentena archivos que ya residen en la carpeta de cuarentena o en subdirectorios de la misma, evitando ciclos o manipulaciones redundantes.
 - `2026-08-03T05:25:13` **organizer.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `stage_for_review` y `delete_reviewed` al validar que las rutas de destino y los elementos a procesar residan efectivamente dentro de los límites esperados mediante `samefile` y comprobación de padres, previniendo ataques de tipo Path Traversal.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-03T05:04:54` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva al serializar las métricas agregadas antes de enviarlas al motor Gemini, reemplazando cualquier posible carácter no seguro o separador de ruta por un espacio, garantizando que el contexto enviado siempre cumpla estrictamente con la política de "solo números agregados".
 - `2026-08-03T04:55:22` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `settings.py` ante errores de entrada inesperados en `validate` y `load`, asegurando que el uso de `None` o tipos incorrectos en el JSON no provoque fallos de ejecución, y mejorando la resiliencia ante errores de permisos en la lectura de archivos.
 - `2026-08-03T04:54:58` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en `process_entry` y `scan_directory` añadiendo una comprobación explícita mediante `is_safe_to_modify` antes de procesar entradas, asegurando que las rutas malformadas, bloqueadas o que resulten en `PermissionError` durante el `stat` sean omitidas elegantemente sin romper el bucle.
-- `2026-08-03T04:54:36` **safety.py** (robustez ante casos límite): Se ha mejorado `ensure_safe_to_modify` para detectar de forma explícita archivos con atributos de sistema (Hidden, System, Archive) usando `ctypes`, protegiendo el sistema contra la manipulación inadvertida de archivos ocultos o críticos del SO que no siempre son capturados por el `stat` estándar.
-- `2026-08-03T04:45:04` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` ante fallos de E/S y condiciones de carrera al implementar una limpieza explícita de archivos huérfanos que puedan quedar en el directorio de destino ante errores imprevistos, y agregué una validación de `path.exists()` dentro del try/except de `shutil.move` para evitar excepciones de `FileNotFoundError` si el archivo es movido o eliminado por un proceso externo durante la ejecución.
-- `2026-08-03T04:44:13` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez de `parse_windows_process_csv` ante casos límite, añadiendo validaciones específicas para detectar filas malformadas (como líneas con datos incompletos o valores no numéricos en el WorkingSet) que podrían causar excepciones `ValueError` durante el procesamiento masivo, garantizando que el bucle de datos sea tolerante a errores de formato de PowerShell.
