@@ -1061,3 +1061,39 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-03T05:26:08` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
 - `2026-08-03T05:26:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-03T05:26:08` Corrida terminada. Total usado hoy: 128.
+- `2026-08-03T05:35:00` Arrancando corrida. Quedan hoy ~172 peticiones objetivo.
+- `2026-08-03T05:35:22` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-08-03T05:35:45` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se ha añadido una validación estricta en `save()` mediante `ensure_safe_to_modify(str(ruta))` antes de la operación de escritura para asegurar que el archivo de configuración no resida en una ubicación protegida, alineándolo con las reglas de seguridad defensiva.
+- `2026-08-03T05:36:09` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.08s
+
+```
+- `2026-08-03T05:36:09` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la seguridad defensiva en `startup.py` al implementar un filtrado estricto en la extracción de rutas del registro, verificando que cada comando no solo no contenga caracteres prohibidos sino que su ruta absoluta pase por `is_protected_path` antes de ser procesada, evitando así cualquier resolución maliciosa de rutas fuera del alcance permitido.
+- `2026-08-03T05:36:10` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-08-03T05:36:10` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-08-03T05:36:30` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-08-03T05:36:30` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-08-03T05:37:00` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-08-03T05:37:00` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-08-03T05:37:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-03T05:37:00` Corrida terminada. Total usado hoy: 132.

@@ -6,31 +6,31 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **265** (52.6% de aceptación)
-- Rechazadas por tests: 14
+- Mejoras aceptadas: **266** (52.8% de aceptación)
+- Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 30
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 180
+- Sin respuesta de la IA (error o límite): 178
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-01 | 11 | 0 | 1 | 1 | 13 |
+| 2026-08-01 | 11 | 0 | 1 | 1 | 9 |
 | 2026-08-02 | 187 | 11 | 22 | 8 | 122 |
-| 2026-08-03 | 67 | 3 | 7 | 6 | 45 |
+| 2026-08-03 | 68 | 4 | 7 | 6 | 47 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **64**
 - manejo de errores y validación de entradas: **54**
-- seguridad defensiva: **53**
+- seguridad defensiva: **54**
 - robustez ante casos límite: **49**
 - rendimiento: **45**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **24**
+- `settings.py`: **25**
 - `scanner.py`: **23**
 - `main.py`: **22**
 - `browser.py`: **21**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-03T05:35:45` **settings.py** (seguridad defensiva): Se ha añadido una validación estricta en `save()` mediante `ensure_safe_to_modify(str(ruta))` antes de la operación de escritura para asegurar que el archivo de configuración no resida en una ubicación protegida, alineándolo con las reglas de seguridad defensiva.
 - `2026-08-03T05:25:41` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva en `quarantine_file` añadiendo una validación explícita mediante `is_within_directory` para prevenir que un usuario intente poner en cuarentena archivos que ya residen en la carpeta de cuarentena o en subdirectorios de la misma, evitando ciclos o manipulaciones redundantes.
 - `2026-08-03T05:25:13` **organizer.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `stage_for_review` y `delete_reviewed` al validar que las rutas de destino y los elementos a procesar residan efectivamente dentro de los límites esperados mediante `samefile` y comprobación de padres, previniendo ataques de tipo Path Traversal.
 - `2026-08-03T05:17:43` **memory.py** (seguridad defensiva): Mejoré la seguridad en `trim_working_set` al validar explícitamente el PID antes de intentar abrir el proceso, asegurando que la operación se limite a procesos de usuario comunes y evitando intentos de manipulación sobre procesos con PID 0 (Idle) o procesos del sistema cuyo PID es desconocido o inestable.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-03T04:54:36` **safety.py** (robustez ante casos límite): Se ha mejorado `ensure_safe_to_modify` para detectar de forma explícita archivos con atributos de sistema (Hidden, System, Archive) usando `ctypes`, protegiendo el sistema contra la manipulación inadvertida de archivos ocultos o críticos del SO que no siempre son capturados por el `stat` estándar.
 - `2026-08-03T04:45:04` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` ante fallos de E/S y condiciones de carrera al implementar una limpieza explícita de archivos huérfanos que puedan quedar en el directorio de destino ante errores imprevistos, y agregué una validación de `path.exists()` dentro del try/except de `shutil.move` para evitar excepciones de `FileNotFoundError` si el archivo es movido o eliminado por un proceso externo durante la ejecución.
 - `2026-08-03T04:44:13` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez de `parse_windows_process_csv` ante casos límite, añadiendo validaciones específicas para detectar filas malformadas (como líneas con datos incompletos o valores no numéricos en el WorkingSet) que podrían causar excepciones `ValueError` durante el procesamiento masivo, garantizando que el bucle de datos sea tolerante a errores de formato de PowerShell.
-- `2026-08-03T04:35:22` **main.py** (robustez ante casos límite): Mejoré la robustez de la inicialización de la ventana capturando posibles errores de configuración de DPI o geometría que podrían causar que la app no arranque en entornos con monitores múltiples o configuraciones de escala inusuales.

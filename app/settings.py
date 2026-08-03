@@ -175,6 +175,7 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     ruta = settings_path(path_or_base)
     try:
         ensure_safe_to_modify(str(ruta.parent))
+        ensure_safe_to_modify(str(ruta))
         limpio = validate(values)
         json_data = json.dumps(limpio, indent=2, ensure_ascii=False)
         ruta.parent.mkdir(parents=True, exist_ok=True)
