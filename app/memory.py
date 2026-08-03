@@ -147,7 +147,11 @@ def parse_linux_meminfo(text: str) -> MemorySnapshot:
 
 def _is_valid_process_row(parts: List[str]) -> bool:
     """Valida que una lista de campos CSV represente datos de proceso válidos."""
-    return len(parts) >= 3 and parts[1].isdigit() and parts[2].isdigit()
+    # Verificación estricta: nombre presente, PID y WS son numéricos positivos
+    return (len(parts) >= 3 and 
+            parts[1].isdigit() and 
+            parts[2].isdigit() and 
+            int(parts[2]) >= 0)
 
 
 def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]:
@@ -163,17 +167,19 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
         return []
 
     processes: List[ProcessMemory] = []
-    # Procesar omitiendo el header (lines[0])
     for line in lines[1:]:
         line = line.strip()
         if not line: continue
         parts = [p.strip().strip('"') for p in line.split(",")]
         if _is_valid_process_row(parts):
-            processes.append(ProcessMemory(
-                name=parts[0] or "Unknown", 
-                pid=int(parts[1]), 
-                working_set=int(parts[2])
-            ))
+            try:
+                processes.append(ProcessMemory(
+                    name=parts[0] or "Unknown", 
+                    pid=int(parts[1]), 
+                    working_set=int(parts[2])
+                ))
+            except ValueError:
+                continue
 
     processes.sort(key=lambda p: p.working_set, reverse=True)
     return processes[:max(1, limit)]

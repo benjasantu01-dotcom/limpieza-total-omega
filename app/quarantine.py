@@ -299,8 +299,13 @@ def quarantine_file(
         raise FileExistsError(f"Colisión de nombre en destino: {destination}")
 
     try:
+        if not source_path.exists():
+            raise FileNotFoundError("El archivo origen desapareció antes del movimiento.")
         shutil.move(str(source_path), str(destination))
-    except OSError as e:
+    except (OSError, PermissionError) as e:
+        if destination.exists():
+            try: destination.unlink()
+            except OSError: pass
         if e.errno in (28, 39): 
              raise OSError(f"Falla de escritura (disco lleno o error de sistema): {e}")
         raise RuntimeError(f"Falla crítica al mover archivo: {e}")
@@ -309,6 +314,9 @@ def quarantine_file(
         raise RuntimeError("Integridad comprometida: el archivo no apareció en el destino tras el movimiento.")
     
     if destination.stat().st_size != file_size:
+        if destination.exists():
+            try: destination.unlink()
+            except OSError: pass
         raise RuntimeError("Integridad comprometida: el archivo cambió de tamaño tras el movimiento.")
 
     try:
