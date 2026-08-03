@@ -159,7 +159,7 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
     Transforma el CSV bruto de PowerShell en objetos ProcessMemory.
     Filtra entradas inválidas y ordena por consumo de WorkingSet.
     """
-    if not text or not isinstance(text, str):
+    if not isinstance(text, str) or not text.strip():
         return []
 
     lines = text.splitlines()
@@ -167,18 +167,21 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
         return []
 
     processes: List[ProcessMemory] = []
+    # Saltamos el encabezado y procesamos cada línea
     for line in lines[1:]:
         line = line.strip()
-        if not line: continue
+        if not line:
+            continue
         parts = [p.strip().strip('"') for p in line.split(",")]
+        
         if _is_valid_process_row(parts):
             try:
                 processes.append(ProcessMemory(
-                    name=parts[0] or "Unknown", 
+                    name=parts[0] if parts[0] else "Unknown", 
                     pid=int(parts[1]), 
                     working_set=int(parts[2])
                 ))
-            except ValueError:
+            except (ValueError, TypeError):
                 continue
 
     processes.sort(key=lambda p: p.working_set, reverse=True)

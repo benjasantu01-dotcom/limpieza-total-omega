@@ -176,11 +176,6 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
 def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -> List[JunkFile]:
     """
     Ordena la lista de JunkFile según el criterio especificado.
-    
-    Args:
-        files: Lista de archivos encontrados.
-        by: Campo de ordenamiento ("size" o "date").
-        ascending: Dirección del ordenamiento.
     """
     if not files:
         return []
@@ -190,6 +185,9 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
         "date": SortConfig("date", lambda f: f.modified)
     }
         
+    if not isinstance(by, str):
+        by = "size"
+
     config = configs.get(by.lower(), configs["size"])
     return sorted(files, key=config.key_func, reverse=not ascending)
 
@@ -198,12 +196,12 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
     """
     Prepara archivos para ser eliminados moviéndolos a un directorio de cuarentena.
     """
-    if not review_dir:
-        raise ValueError("La ruta de revisión no puede estar vacía")
+    if not review_dir or not isinstance(review_dir, str):
+        raise ValueError("La ruta de revisión debe ser un string válido")
 
     try:
         dest = Path(review_dir).expanduser().resolve()
-    except (RuntimeError, OSError) as e:
+    except (RuntimeError, OSError, ValueError) as e:
         raise ValueError(f"Ruta de revisión inválida: {e}")
 
     if dest.is_symlink():
@@ -213,6 +211,8 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
     dest.mkdir(parents=True, exist_ok=True)
     
     for jf in files:
+        if not isinstance(jf, JunkFile):
+            continue
         try:
             if not jf.path.exists() or jf.path.is_symlink() or not jf.path.is_file():
                 continue
@@ -238,7 +238,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             
             ensure_safe_to_modify(jf.path)
             shutil.move(str(jf.path), str(target))
-        except (PermissionError, OSError, shutil.Error):
+        except (PermissionError, OSError, shutil.Error, ValueError):
             continue
     return dest
 
@@ -247,12 +247,12 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     """
     Elimina físicamente los archivos dentro del directorio de revisión.
     """
-    if not review_dir:
+    if not review_dir or not isinstance(review_dir, str):
         return 0
 
     try:
         dest = Path(review_dir).expanduser().resolve()
-    except (RuntimeError, OSError):
+    except (RuntimeError, OSError, ValueError):
         return 0
         
     if not dest.exists() or not dest.is_dir() or dest.is_symlink():

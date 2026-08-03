@@ -361,6 +361,9 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
     stored_file = base_path / match.stored_name
     
     if not stored_file.exists():
+        # Limpieza de manifiesto si el archivo fue borrado externamente
+        items.remove(match)
+        save_manifest(items, base)
         raise FileNotFoundError(f"El archivo no existe en la carpeta de cuarentena: {stored_file}")
 
     if not match.verify_integrity(stored_file):
@@ -453,6 +456,7 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
                 pass
             
     if count > 0:
+        # Re-verificar estado real del disco para el manifiesto final
         remaining_items = [i for i in items if (quarantine_root / i.stored_name).is_file()]
         save_manifest(remaining_items, base)
     return count
