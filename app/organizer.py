@@ -197,9 +197,6 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Path:
     """
     Prepara archivos para ser eliminados moviéndolos a un directorio de cuarentena.
-    
-    Aplica chequeos de seguridad (ensure_safe_to_modify) antes de cada movimiento
-    y verifica que el archivo no esté en uso.
     """
     if not review_dir:
         raise ValueError("La ruta de revisión no puede estar vacía")
@@ -214,39 +211,32 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         
     ensure_safe_to_modify(dest)
     dest.mkdir(parents=True, exist_ok=True)
-    canonical_dest = dest.resolve()
-
+    
     for jf in files:
-        if not isinstance(jf, JunkFile) or not jf.path:
-            continue
-            
         try:
-            # Re-verificar integridad: si el archivo fue borrado o cambiado, se salta
             if not jf.path.exists() or jf.path.is_symlink() or not jf.path.is_file():
                 continue
-            
-            # Impedir movimiento si la fuente está fuera de zonas seguras
             if not is_safe_to_modify(jf.path):
                 continue
             
-            if canonical_dest == jf.path or canonical_dest in jf.path.parents:
+            # Impedir ciclos o movimiento hacia el propio origen
+            if os.path.samefile(jf.path.parent, dest):
                 continue
             
-            # Testeo rápido de acceso exclusivo (el archivo no debe estar siendo usado)
+            # Testeo rápido de acceso exclusivo
             try:
                 with open(jf.path, 'rb+'): pass
             except (IOError, OSError):
                 continue
 
-            target_base = canonical_dest / f"{jf.path.stem}_{int(jf.modified.timestamp())}{jf.path.suffix}"
+            target_base = dest / f"{jf.path.stem}_{int(jf.modified.timestamp())}{jf.path.suffix}"
             target = _generate_unique_target(target_base)
             
-            if canonical_dest not in target.resolve().parents:
+            # Verificación final de contención en carpeta de destino
+            if dest not in target.resolve().parents:
                 continue
             
-            # Chequeos de seguridad finales antes de invocar a shutil.move
             ensure_safe_to_modify(jf.path)
-            ensure_safe_to_modify(target)
             shutil.move(str(jf.path), str(target))
         except (PermissionError, OSError, shutil.Error):
             continue
@@ -256,12 +246,6 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
     """
     Elimina físicamente los archivos dentro del directorio de revisión.
-    
-    Solo actúa sobre el directorio designado y verifica la seguridad de cada ruta
-    usando is_safe_to_modify antes del unlink.
-    
-    Returns:
-        Cantidad de archivos efectivamente eliminados.
     """
     if not review_dir:
         return 0
@@ -277,10 +261,11 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     count = 0
     for f in dest.iterdir():
         try:
-            # Solo borramos archivos (no carpetas) y si la ruta supera el filtro de seguridad
+            # Asegurar que el archivo reside estrictamente dentro de la carpeta de revisión
             if f.is_file() and not f.is_symlink() and is_safe_to_modify(f):
-                f.unlink()
-                count += 1
+                if dest in f.resolve().parents:
+                    f.unlink()
+                    count += 1
         except (PermissionError, OSError):
             continue
     return count
