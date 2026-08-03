@@ -166,12 +166,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._executor = concurrent.futures.ThreadPoolExecutor(max_workers=5)
 
     def _is_valid_dir(self, path: Optional[Union[str, Path]]) -> bool:
-        """Valida la existencia de una ruta como directorio en el sistema de archivos."""
+        """Valida la existencia y accesibilidad de lectura de un directorio."""
         if not path:
             return False
         try:
             p = Path(path)
-            return p.exists() and p.is_dir()
+            return p.exists() and p.is_dir() and os.access(p, os.R_OK)
         except Exception:
             return False
 
@@ -875,6 +875,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 messagebox.showwarning("Ruta no soportada", "No se permiten puntos de unión ni recursos de red.")
                 return None
             
+            # Verificación de permisos de lectura antes de proceder
+            if not os.access(path_obj, os.R_OK):
+                messagebox.showerror("Error", "No tienes permisos de lectura sobre esta carpeta.")
+                return None
+                
             safety.ensure_safe_to_modify(path_obj)
         except (safety.UnsafePathError, PermissionError):
             messagebox.showwarning(

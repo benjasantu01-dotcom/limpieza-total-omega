@@ -1409,3 +1409,11 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-03T09:02:21` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `score_startup` y `score_security` ante casos límite donde los divisores (umbrales) podrían ser configurados erróneamente en cero o negativos, evitando divisiones por cero y retornos inconsistentes, además de asegurar que los ratios siempre tengan un piso lógico.
 - `2026-08-03T09:02:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-03T09:02:21` Corrida terminada. Total usado hoy: 212.
+- `2026-08-03T09:11:50` Arrancando corrida. Quedan hoy ~88 peticiones objetivo.
+- `2026-08-03T09:12:51` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-03T09:13:54` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_is_valid_dir` y `_ask_folder` añadiendo una comprobación explícita mediante `os.access(path, os.R_OK)` para prevenir excepciones de permisos denegados antes de intentar realizar operaciones en disco, reforzando la estabilidad ante entornos de usuario con restricciones variadas.
+- `2026-08-03T09:14:19` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Mejoré la robustez de `parse_windows_process_csv` añadiendo un manejo más estricto de las filas CSV malformadas (espacios en blanco, encabezados inesperados o falta de datos) para evitar errores en entornos con configuraciones regionales de PowerShell variables.
+- `2026-08-03T09:14:43` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `stage_for_review` al verificar explícitamente que los archivos no sean de tamaño cero antes de intentar procesarlos, evitando así el procesamiento de metadatos de archivos corruptos o mal reportados por el sistema de archivos.
+- `2026-08-03T09:14:54` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: robustez ante casos límite).
+- `2026-08-03T09:14:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-03T09:14:54` Corrida terminada. Total usado hoy: 216.

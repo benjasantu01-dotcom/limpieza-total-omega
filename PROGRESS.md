@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-02 | 146 | 9 | 17 | 6 | 114 |
-| 2026-08-03 | 103 | 5 | 10 | 8 | 86 |
+| 2026-08-02 | 143 | 9 | 17 | 6 | 113 |
+| 2026-08-03 | 106 | 5 | 10 | 8 | 87 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **64**
 - manejo de errores y validación de entradas: **51**
-- seguridad defensiva: **47**
+- robustez ante casos límite: **46**
 - rendimiento: **44**
-- robustez ante casos límite: **43**
+- seguridad defensiva: **44**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **24**
-- `scanner.py`: **22**
+- `settings.py`: **23**
 - `browser.py`: **21**
-- `main.py`: **20**
+- `main.py`: **21**
+- `scanner.py`: **21**
 - `assistant.py`: **19**
 - `duplicates.py`: **18**
+- `organizer.py`: **17**
 - `quarantine.py`: **17**
 - `branding.py`: **16**
+- `memory.py`: **16**
 - `safety.py`: **16**
 - `diskreport.py`: **16**
-- `organizer.py`: **16**
-- `memory.py`: **15**
 - `healthscore.py`: **15**
-- `startup.py`: **14**
+- `startup.py`: **13**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-03T09:14:43` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de `stage_for_review` al verificar explícitamente que los archivos no sean de tamaño cero antes de intentar procesarlos, evitando así el procesamiento de metadatos de archivos corruptos o mal reportados por el sistema de archivos.
+- `2026-08-03T09:14:19` **memory.py** (robustez ante casos límite): Mejoré la robustez de `parse_windows_process_csv` añadiendo un manejo más estricto de las filas CSV malformadas (espacios en blanco, encabezados inesperados o falta de datos) para evitar errores en entornos con configuraciones regionales de PowerShell variables.
+- `2026-08-03T09:13:54` **main.py** (robustez ante casos límite): Mejoré la robustez de `_is_valid_dir` y `_ask_folder` añadiendo una comprobación explícita mediante `os.access(path, os.R_OK)` para prevenir excepciones de permisos denegados antes de intentar realizar operaciones en disco, reforzando la estabilidad ante entornos de usuario con restricciones variadas.
 - `2026-08-03T09:02:21` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `score_startup` y `score_security` ante casos límite donde los divisores (umbrales) podrían ser configurados erróneamente en cero o negativos, evitando divisiones por cero y retornos inconsistentes, además de asegurar que los ratios siempre tengan un piso lógico.
 - `2026-08-03T09:02:10` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `hash_file` y `partial_hash` para gestionar archivos que cambian de estado, se bloquean por otros procesos durante la lectura o sufren errores de I/O repentinos, asegurando que el bucle de escaneo no se detenga ante excepciones de sistema de archivos.
 - `2026-08-03T09:01:42` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `largest_folders` ante archivos que desaparecen durante el recorrido (race conditions), envolviendo el acceso a `entry.stat().st_size` en bloques `try-except` específicos para evitar que excepciones de sistema (`FileNotFoundError`) interrumpan el análisis completo.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-03T08:30:11` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje eliminando la creación de diccionarios innecesarios y recalculando el factor de escala solo una vez por llamada, mejorando el rendimiento en el hot-path de `compute_score`.
 - `2026-08-03T08:20:49` **duplicates.py** (rendimiento): Optimizé el rendimiento de `_collect_candidates` utilizando `os.scandir` para obtener los objetos `DirEntry` que ya contienen la información de `stat` (st_dev, st_ino, st_size, st_mode), evitando así múltiples llamadas al sistema operativo adicionales (`is_file`, `is_dir`, `stat()`) por cada archivo.
 - `2026-08-03T08:20:17` **browser.py** (rendimiento): Se optimizó `directory_size` pre-compilando `NEVER_TOUCH` a un set de strings en minúsculas y utilizando `entry.is_file()` para evitar llamadas innecesarias a `stat()` en directorios, reduciendo significativamente las llamadas al sistema operativo durante el recorrido.
-- `2026-08-03T08:10:40` **assistant.py** (rendimiento): Optimicé el rendimiento de `context_as_text` y `_rank_problems` evitando la creación de listas intermedias y el uso repetido de `getattr` mediante una pre-conversión de métricas a un diccionario, reduciendo la carga de CPU en cada consulta al asistente.
-- `2026-08-03T08:10:22` **startup.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `startup.py` mediante la refactorización de `StartupEntry.executable` para reducir su complejidad ciclomática, utilizando un método `_resolve_path_from_command` para separar la extracción del ejecutable de la lógica de caché.
-- `2026-08-03T08:09:58` **settings.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos en las funciones principales y se reemplazó la validación manual de claves por un acceso más robusto a `_VALIDATOR_MAP` para mejorar la mantenibilidad y legibilidad técnica, garantizando que cualquier desarrollador pueda entender el flujo de validación y persistencia de un vistazo.

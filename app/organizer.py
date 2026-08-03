@@ -226,7 +226,8 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         if not isinstance(jf, JunkFile):
             continue
         try:
-            if not jf.path.exists() or jf.path.is_symlink() or not jf.path.is_file():
+            # Validación de integridad: archivo inexistente, symlink, fuera de rango o vacío
+            if not jf.path.exists() or jf.path.is_symlink() or not jf.path.is_file() or jf.size_bytes == 0:
                 continue
             if not is_safe_to_modify(jf.path):
                 continue

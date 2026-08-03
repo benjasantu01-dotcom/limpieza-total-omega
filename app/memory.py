@@ -160,15 +160,13 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
     if not isinstance(text, str) or not text.strip():
         return []
 
-    lines = text.splitlines()
+    lines = [l.strip() for l in text.splitlines() if l.strip()]
     if len(lines) < 2:
         return []
 
     processes: List[ProcessMemory] = []
+    # Saltamos el encabezado y procesamos cada fila asegurando robustez
     for line in lines[1:]:
-        line = line.strip()
-        if not line:
-            continue
         parts = [p.strip().strip('"') for p in line.split(",")]
         
         if _is_valid_process_row(parts):
