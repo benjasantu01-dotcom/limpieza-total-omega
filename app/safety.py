@@ -179,8 +179,8 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
     """
     Valida rigurosamente si una ruta es segura para ser modificada mediante una jerarquía de checks.
     """
-    if path is None:
-        raise UnsafePathError("Ruta nula recibida.")
+    if not isinstance(path, (str, os.PathLike)):
+        raise UnsafePathError(f"Ruta de tipo inválido recibida: {type(path)}")
         
     str_val = str(path)
     # Bloqueo de caracteres nulos, secuencias de dispositivos y caracteres de control

@@ -91,13 +91,16 @@ class QuarantineItem:
         Returns:
             True si el tamaño y hash coinciden con los guardados en el manifiesto.
         """
-        if not stored_path.exists():
+        if not stored_path or not stored_path.is_file():
             return False
-        if stored_path.stat().st_size != self.size_bytes:
+        try:
+            if stored_path.stat().st_size != self.size_bytes:
+                return False
+            if self.sha256 and _get_sha256(stored_path) != self.sha256:
+                return False
+            return True
+        except OSError:
             return False
-        if self.sha256 and _get_sha256(stored_path) != self.sha256:
-            return False
-        return True
 
 
 def _get_sha256(path: Path) -> str:
@@ -433,7 +436,7 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
                 pass
             
     if count > 0:
-        remaining_items = [i for i in items if (quarantine_root / i.stored_name).exists()]
+        remaining_items = [i for i in items if (quarantine_root / i.stored_name).is_file()]
         save_manifest(remaining_items, base)
     return count
 

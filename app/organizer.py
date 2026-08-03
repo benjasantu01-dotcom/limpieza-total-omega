@@ -84,6 +84,11 @@ class JunkFile:
     def __post_init__(self) -> None:
         if not isinstance(self.path, Path):
             self.path = Path(self.path)
+        # Aseguramos que la ruta esté resuelta para evitar inconsistencias durante el movimiento
+        try:
+            self.path = self.path.resolve()
+        except (OSError, RuntimeError):
+            pass
 
     @property
     def size_mb(self) -> float:
@@ -99,10 +104,6 @@ class JunkFile:
 def _generate_unique_target(target: Path) -> Path:
     """
     Resuelve colisiones de nombres añadiendo un sufijo numérico incremental.
-    
-    El método asegura que si un archivo ya existe en el destino, se genere
-    una ruta alternativa (archivo_1.ext, archivo_2.ext) para evitar sobreescritura
-    o pérdida de archivos durante la operación de movimiento.
     """
     if not target.exists():
         return target
@@ -118,9 +119,6 @@ def _generate_unique_target(target: Path) -> Path:
 def _is_valid_junk(entry: os.DirEntry[str]) -> bool:
     """
     Filtro de seguridad previo al procesamiento de directorios.
-    
-    Verifica que el elemento sea un archivo regular, tenga una extensión
-    de basura conocida y no sea una ruta protegida según `safety.py`.
     """
     if entry.is_symlink() or not entry.is_file():
         return False
@@ -132,7 +130,6 @@ def _is_valid_junk(entry: os.DirEntry[str]) -> bool:
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     """
     Recorre recursivamente los directorios provistos buscando archivos basura.
-    Ignora directorios en SYSTEM_FOLDER_BLOCKLIST y omite archivos protegidos.
     """
     dirs = directories or DEFAULT_SCAN_DIRS
     found: List[JunkFile] = []
@@ -176,11 +173,6 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
 def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -> List[JunkFile]:
     """
     Ordena la lista de JunkFile según el criterio especificado.
-    
-    Args:
-        files: Lista de archivos a ordenar.
-        by: 'size' para ordenar por bytes, 'date' para ordenar por fecha.
-        ascending: Dirección del orden.
     """
     if not files:
         return []
@@ -197,9 +189,6 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Path:
     """
     Prepara archivos para ser eliminados moviéndolos a un directorio de cuarentena.
-    
-    Asegura que el movimiento no sea destructivo ni recursivo mediante validación
-    explícita con ensure_safe_to_modify.
     """
     if not review_dir:
         raise ValueError("La ruta de revisión no puede estar vacía")
@@ -212,46 +201,42 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
     if dest.is_symlink():
         raise PermissionError("Ruta de destino inválida: symlink detectado.")
         
-    # Verificar que el destino es seguro antes de crear la carpeta
     ensure_safe_to_modify(dest)
     dest.mkdir(parents=True, exist_ok=True)
-    
-    # Cacheamos el destino resuelto para evitar resolución repetitiva en el loop
     canonical_dest = dest.resolve()
 
     for jf in files:
+        # Validación estricta de entrada antes de operar
         if not isinstance(jf, JunkFile) or not jf.path:
             continue
+            
         try:
+            # Re-verificar existencia y accesibilidad tras el tiempo transcurrido desde el escaneo
             if not jf.path.exists() or jf.path.is_symlink() or not jf.path.is_file():
                 continue
             
-            full_source_path = jf.path.resolve()
-            
-            # Validar que la ruta fuente esté dentro de un árbol permitido, 
-            # no sea el destino y no escape mediante '..'
-            if not is_safe_to_modify(full_source_path):
+            # Impedir movimiento si la fuente es el mismo destino o está fuera de zonas seguras
+            if not is_safe_to_modify(jf.path):
                 continue
             
-            if canonical_dest == full_source_path or canonical_dest in full_source_path.parents:
+            if canonical_dest == jf.path or canonical_dest in jf.path.parents:
                 continue
             
-            # Impedir movimiento si el archivo está en uso exclusivo por otro proceso
+            # Impedir movimiento si el archivo está bloqueado (en uso)
             try:
-                with open(full_source_path, 'rb+'): pass
+                with open(jf.path, 'rb+'): pass
             except (IOError, OSError):
                 continue
 
             target_base = canonical_dest / f"{jf.path.stem}_{int(jf.modified.timestamp())}{jf.path.suffix}"
             target = _generate_unique_target(target_base)
             
-            # Garantía final: verificar que el destino resultante esté efectivamente bajo el directorio base
             if canonical_dest not in target.resolve().parents:
                 continue
             
-            ensure_safe_to_modify(full_source_path)
+            ensure_safe_to_modify(jf.path)
             ensure_safe_to_modify(target)
-            shutil.move(str(full_source_path), str(target))
+            shutil.move(str(jf.path), str(target))
         except (PermissionError, OSError, shutil.Error):
             continue
     return dest
@@ -260,7 +245,6 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
     """
     Elimina físicamente los archivos dentro del directorio de revisión.
-    Solo procesa archivos validados por el sistema de seguridad.
     """
     if not review_dir:
         return 0
