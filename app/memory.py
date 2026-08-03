@@ -38,6 +38,8 @@ if TYPE_CHECKING:
 
 _T = TypeVar("_T", int, float)
 
+BYTES_IN_MB: int = 1024 * 1024
+
 __all__ = [
     "MemorySnapshot",
     "ProcessMemory",
@@ -79,7 +81,7 @@ class MemorySnapshot:
 
     @property
     def used(self) -> int:
-        """Calcula memoria ocupada. Se asegura de no retornar valores negativos."""
+        """Calcula memoria ocupada en bytes. Se asegura de no retornar valores negativos."""
         return max(0, self.total - self.available)
 
     @property
@@ -102,13 +104,13 @@ class ProcessMemory:
     """Estructura de datos para el consumo de memoria de un proceso (RSS/Working Set)."""
     name: str
     pid: int
-    working_set: int
+    working_set: int  # Memoria consumida en bytes
     extra: Dict[str, str] = field(default_factory=dict)
 
     @property
     def working_set_mb(self) -> float:
         """Convierte el valor de Working Set de bytes a MB para legibilidad en la UI."""
-        return round(self.working_set / 1048576, 1)
+        return round(self.working_set / BYTES_IN_MB, 1)
 
 
 def format_bytes(num: Optional[_T]) -> str:

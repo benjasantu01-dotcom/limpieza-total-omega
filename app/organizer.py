@@ -138,6 +138,12 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     """
     Recorre recursivamente los directorios provistos buscando archivos basura.
     Usa os.scandir para eficiencia y aplica filtros de seguridad en cada paso.
+
+    Args:
+        directories: Lista opcional de rutas a escanear. Si es None, usa DEFAULT_SCAN_DIRS.
+
+    Returns:
+        List[JunkFile]: Lista de objetos JunkFile encontrados y validados.
     """
     dirs = directories or DEFAULT_SCAN_DIRS
     found: List[JunkFile] = []
@@ -146,14 +152,12 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     def _walk_dir(base_path: str) -> None:
         """
         Escaneo interno recursivo que evita rutas bloqueadas y symlinks.
-        
-        Args:
-            base_path: Ruta del directorio a explorar en esta iteración.
         """
         try:
             with os.scandir(base_path) as it:
                 for entry in it:
                     try:
+                        # Aseguramos consistencia: los symlinks son saltados por seguridad
                         if entry.is_symlink():
                             continue
                         
@@ -188,6 +192,11 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
 def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -> List[JunkFile]:
     """
     Ordena la lista de JunkFile según el criterio especificado.
+
+    Args:
+        files: Lista de archivos a ordenar.
+        by: Criterio de ordenación ("size" o "date").
+        ascending: Booleano para orden ascendente o descendente.
     """
     if not files:
         return []
@@ -207,6 +216,14 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Path:
     """
     Prepara archivos para ser eliminados moviéndolos a un directorio de cuarentena.
+    
+    Args:
+        files: Lista de objetos JunkFile a mover.
+        review_dir: Ruta destino de cuarentena.
+
+    Raises:
+        ValueError: Si la lista de archivos está vacía o la ruta destino es inválida.
+        PermissionError: Si la ruta destino es un symlink.
     """
     if not files:
         raise ValueError("La lista de archivos a procesar no puede estar vacía.")
@@ -262,6 +279,12 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
     """
     Elimina físicamente los archivos dentro del directorio de revisión.
+    
+    Args:
+        review_dir: Directorio que contiene archivos listos para borrado definitivo.
+
+    Returns:
+        int: Cantidad de archivos eliminados exitosamente.
     """
     if not review_dir or not isinstance(review_dir, str):
         return 0

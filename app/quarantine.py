@@ -124,6 +124,15 @@ def _is_file_locked(path: Path) -> bool:
         return True
 
 
+def _safe_unlink(path: Path) -> bool:
+    """Intenta borrar un archivo de forma segura capturando errores de E/S."""
+    try:
+        path.unlink()
+        return True
+    except (OSError, PermissionError):
+        return False
+
+
 def quarantine_dir(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
     """Normaliza y asegura la existencia del directorio de cuarentena expandiendo el '~'."""
     if not base:
@@ -243,14 +252,6 @@ def quarantine_file(
 ) -> QuarantineItem:
     """
     Mueve un archivo a cuarentena tras validar que es seguro operarlo.
-    
-    Args:
-        source: Ruta del archivo a aislar.
-        reason: Texto descriptivo del hallazgo.
-        base: Carpeta base de cuarentena.
-        
-    Returns:
-        Instancia de QuarantineItem del archivo recién movido.
     """
     if not source:
         raise ValueError("La ruta de origen no puede estar vacía.")
@@ -273,7 +274,6 @@ def quarantine_file(
     if dest_dir.is_symlink() or (hasattr(dest_dir, 'is_junction') and dest_dir.is_junction()):
         raise UnsafePathError("La ruta de cuarentena es un punto de reparse (prohibido).")
 
-    # Nueva validación de seguridad: evitar autocontención
     if is_within_directory(source_path, dest_dir):
         raise UnsafePathError(f"El archivo ya reside en la carpeta de cuarentena o subdirectorios: {source_path}")
 
@@ -303,7 +303,6 @@ def quarantine_file(
     stored_name = f"{item_id}__{safe_name}"[:250] 
     destination = dest_dir / stored_name
 
-    # Validación adicional: evitar que el destino final sea un reparse o enlace sospechoso
     if destination.is_symlink() or (hasattr(destination, 'is_junction') and destination.is_junction()):
         raise UnsafePathError(f"Destino en cuarentena inválido (punto de reparse detectado): {destination}")
 
@@ -319,8 +318,7 @@ def quarantine_file(
         shutil.move(str(source_path), str(destination))
     except (OSError, PermissionError) as e:
         if destination.exists():
-            try: destination.unlink()
-            except OSError: pass
+            _safe_unlink(destination)
         if e.errno in (28, 39): 
              raise OSError(f"Falla de escritura (disco lleno o error de sistema): {e}")
         raise RuntimeError(f"Falla crítica al mover archivo: {e}")
@@ -330,8 +328,7 @@ def quarantine_file(
     
     if destination.stat().st_size != file_size:
         if destination.exists():
-            try: destination.unlink()
-            except OSError: pass
+            _safe_unlink(destination)
         raise RuntimeError("Integridad comprometida: el archivo cambió de tamaño tras el movimiento.")
 
     try:
@@ -375,7 +372,6 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
     stored_file = base_path / match.stored_name
     
     if not stored_file.exists():
-        # Limpieza de manifiesto si el archivo fue borrado externamente
         items.remove(match)
         save_manifest(items, base)
         raise FileNotFoundError(f"El archivo no existe en la carpeta de cuarentena: {stored_file}")
@@ -430,14 +426,11 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
     if not stored_file.exists() or not match.verify_integrity(stored_file):
         raise UnsafePathError(f"Integridad comprometida: no se borra un archivo sospechoso modificado.")
 
-    try:
-        stored_file.unlink()
-    except (OSError, PermissionError):
-        return False
-    
-    items.remove(match)
-    save_manifest(items, base)
-    return True
+    success = _safe_unlink(stored_file)
+    if success:
+        items.remove(match)
+        save_manifest(items, base)
+    return success
 
 
 def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
@@ -459,21 +452,15 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
             
         if entry.name in stored_names_set:
             item = item_map[entry.name]
+            # Solo borramos si el archivo en disco coincide con los metadatos protegidos
             if item.verify_integrity(entry):
-                try:
-                    entry.unlink()
+                if _safe_unlink(entry):
                     count += 1
-                except (OSError, PermissionError):
-                    pass
         else:
-            # Archivo basura sin entrada en manifiesto
-            try:
-                entry.unlink()
-            except (OSError, PermissionError):
-                pass
+            # Borrado preventivo de archivos basura (no listados en manifiesto) dentro de cuarentena
+            _safe_unlink(entry)
             
     if count > 0:
-        # Re-verificar estado real del disco para el manifiesto final
         remaining_items = [i for i in items if (quarantine_root / i.stored_name).is_file()]
         save_manifest(remaining_items, base)
     return count
