@@ -90,7 +90,6 @@ def _is_system_or_hidden(path: Path) -> bool:
 def _is_reparse_point(path: Path) -> bool:
     """
     Determina si la ruta es un punto de reanálisis (Junction/Symlink).
-    El acceso a estos puede causar recursión infinita o borrados fuera del árbol deseado.
     """
     if not path.exists():
         return False
@@ -105,7 +104,6 @@ def _is_reparse_point(path: Path) -> bool:
 def _is_file_in_use(path: Path) -> bool:
     """
     Valida la disponibilidad de escritura mediante un intento de apertura exclusiva.
-    Útil para prevenir conflictos con procesos de sistema o antivirus activos.
     """
     if not path.is_file():
         return False
@@ -119,8 +117,7 @@ def _is_file_in_use(path: Path) -> bool:
 
 def _is_readonly(path: Path) -> bool:
     """
-    Verifica el bit de modo S_IWRITE. Si no está presente, el archivo es tratado
-    como protegido contra escritura a nivel de sistema de archivos.
+    Verifica el bit de modo S_IWRITE.
     """
     if not path.exists():
         return False
@@ -134,7 +131,6 @@ def _is_readonly(path: Path) -> bool:
 def normalize(path: PathLike) -> Path:
     """
     Transforma una ruta en una instancia de Path absoluta y resuelta.
-    La cache evita llamadas costosas al sistema de archivos para rutas repetidas.
     """
     if not isinstance(path, (str, os.PathLike)):
         raise TypeError(f"Entrada inválida: tipo {type(path)} no soportado.")
@@ -144,7 +140,10 @@ def normalize(path: PathLike) -> Path:
         raise ValueError("La ruta proporcionada está vacía.")
         
     try:
-        return Path(str_path).expanduser().resolve()
+        res = Path(str_path).expanduser().resolve()
+        if not res.is_absolute():
+            raise ValueError("La ruta no puede ser resuelta a una ubicación absoluta.")
+        return res
     except (OSError, RuntimeError):
         return Path(os.path.abspath(os.path.expanduser(str_path)))
 
@@ -163,7 +162,6 @@ def is_drive_root(path: PathLike) -> bool:
 def is_protected_path(path: PathLike) -> bool:
     """
     Evalúa si la ruta reside en directorios críticos definidos en _ALL_PROTECTED_TOKENS.
-    No requiere existencia física del archivo para retornar True si el nombre coincide.
     """
     if not path:
         return True
@@ -207,7 +205,6 @@ def is_sensitive_file(path: PathLike) -> bool:
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> Path:
     """
     Validador estricto para operaciones de escritura/borrado.
-    Lanza UnsafePathError ante cualquier irregularidad en la ruta, permisos o criticidad.
     """
     if not isinstance(path, (str, os.PathLike)):
         raise UnsafePathError(f"Ruta de tipo inválido recibida: {type(path)}")
@@ -232,16 +229,17 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
     if str(p).startswith(("\\\\", "//")):
         raise UnsafePathError("Operación bloqueada: rutas de red no permitidas.")
     
-    try:
-        if p.exists():
+    # Verificación de existencia física antes de llamar a stat/access
+    if p.exists():
+        try:
             if not os.access(p, os.W_OK):
                 raise UnsafePathError("Operación bloqueada: sin permisos de escritura.")
             if _is_reparse_point(p) or _is_readonly(p) or _is_file_in_use(p) or _is_system_or_hidden(p):
                 raise UnsafePathError("Operación bloqueada: archivo inaccesible, protegido o sistema.")
             if p.is_file() and p.stat().st_nlink > 1:
                 raise UnsafePathError("Operación bloqueada: enlace físico detectado.")
-    except OSError as e:
-        raise UnsafePathError(f"Error al verificar estado del archivo: {e}")
+        except OSError as e:
+            raise UnsafePathError(f"Error al verificar estado del archivo: {e}")
 
     if is_drive_root(p) or is_protected_path(p):
         raise UnsafePathError("Operación bloqueada: ruta de sistema protegida.")
@@ -252,7 +250,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
 
 
 def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> bool:
-    """Wrapper booleano para operaciones condicionales que evitan el uso directo de excepciones."""
+    """Wrapper booleano para operaciones condicionales."""
     try:
         ensure_safe_to_modify(path, allow_sensitive=allow_sensitive)
         return True
@@ -265,7 +263,6 @@ def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = Fals
     if not isinstance(paths, Iterable):
         return []
     
-    # Usamos un set para deduplicar rutas normalizadas y evitar procesamiento innecesario
     seen = set()
     valid = []
     for p in paths:
@@ -281,7 +278,7 @@ def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = Fals
 
 
 def describe_protection(path: PathLike) -> str:
-    """Diagnóstico detallado del motivo de rechazo de una ruta por el motor de seguridad."""
+    """Diagnóstico detallado del motivo de rechazo de una ruta."""
     if not path:
         return "La ruta está vacía."
     try:

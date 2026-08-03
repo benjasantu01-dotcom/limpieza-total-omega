@@ -94,7 +94,8 @@ class QuarantineItem:
         if not stored_path or not stored_path.is_file():
             return False
         try:
-            if stored_path.stat().st_size != self.size_bytes:
+            stats = stored_path.stat()
+            if stats.st_size != self.size_bytes:
                 return False
             if self.sha256 and _get_sha256(stored_path) != self.sha256:
                 return False
@@ -287,7 +288,11 @@ def quarantine_file(
         raise IOError(f"El archivo está en uso por otro proceso: {source_path}")
     
     try:
-        file_size = source_path.stat().st_size
+        stats = source_path.stat()
+        file_size = stats.st_size
+        # st_nlink == 1 asegura que no hay otros enlaces físicos (Hard links) alterando el archivo
+        if stats.st_nlink != 1:
+             raise OSError("Archivo con enlaces físicos detectados (posible manipulación).")
     except OSError as e:
         raise OSError(f"Error al acceder a metadatos de archivo: {e}")
         
@@ -326,12 +331,13 @@ def quarantine_file(
     if not destination.exists():
         raise RuntimeError("Integridad comprometida: el archivo no apareció en el destino tras el movimiento.")
     
-    if destination.stat().st_size != file_size:
-        if destination.exists():
-            _safe_unlink(destination)
-        raise RuntimeError("Integridad comprometida: el archivo cambió de tamaño tras el movimiento.")
-
+    # Validación post-traslado rigurosa
     try:
+        dest_stats = destination.stat()
+        if dest_stats.st_size != file_size:
+            _safe_unlink(destination)
+            raise RuntimeError("Integridad comprometida: el archivo cambió de tamaño tras el movimiento.")
+            
         file_hash = _get_sha256(destination)
         item = QuarantineItem(
             item_id=item_id,

@@ -174,6 +174,10 @@ def scan_file(path: Path, prevalidated: bool = False) -> ScanResult:
     if not prevalidated:
         if not path or not path.exists() or not is_safe_to_modify(path) or is_protected_path(path):
             return []
+    
+    # Verificación extra: asegurar que sigue siendo un archivo (evitar race conditions)
+    if not path.is_file():
+        return []
         
     findings: ScanResult = []
     for check_func in CHECK_FUNCS:
