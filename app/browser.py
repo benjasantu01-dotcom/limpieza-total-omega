@@ -78,9 +78,6 @@ class BrowserCache:
 def base_directories() -> List[Path]:
     """
     Obtiene los directorios raíz donde se alojan perfiles (LOCALAPPDATA).
-
-    Returns:
-        List[Path]: Lista con el directorio si es válido, o lista vacía.
     """
     if os.name != "nt":
         return []
@@ -103,6 +100,10 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
     if not isinstance(target_path, Path) or not isinstance(base_path, Path):
         return False
     try:
+        # Prevenir nombres con caracteres de control ocultos (RTL, etc)
+        if any(ord(char) < 32 for char in target_path.name):
+            return False
+
         real_base = os.path.realpath(str(base_path))
         real_target = os.path.realpath(str(target_path))
         
@@ -125,7 +126,7 @@ def directory_size(path: str | os.PathLike | None) -> int:
         return 0
     
     try:
-        root = Path(path)
+        root = Path(path).resolve()
         if not root.exists() or not root.is_dir() or is_protected_path(root):
             return 0
     except (OSError, TypeError, ValueError):
@@ -140,6 +141,9 @@ def directory_size(path: str | os.PathLike | None) -> int:
             with os.scandir(current_dir_str) as it:
                 for entry in it:
                     try:
+                        # Verificar caracteres de control ocultos en nombres
+                        if any(ord(c) < 32 for c in entry.name):
+                            continue
                         if entry.name.lower() in NEVER_TOUCH or entry.is_symlink():
                             continue
                         if entry.is_dir(follow_symlinks=False):
@@ -179,13 +183,6 @@ def detect_profiles(
 ) -> List[BrowserCache]:
     """
     Explora directorios base buscando caché de navegadores.
-
-    Args:
-        bases: Secuencia de rutas base a explorar.
-        cache_paths: Mapeo de nombres de navegador a rutas relativas.
-
-    Returns:
-        List[BrowserCache]: Lista de cachés detectadas ordenadas por tamaño.
     """
     bases = bases if bases is not None else base_directories()
     cache_paths = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
@@ -224,12 +221,6 @@ def total_cache_bytes(caches: Iterable[BrowserCache] | None = None) -> int:
 def summarize(caches: Optional[List[BrowserCache]] = None) -> List[str]:
     """
     Genera un informe textual formateado para la UI.
-
-    Args:
-        caches: Lista opcional de objetos BrowserCache a resumir.
-
-    Returns:
-        List[str]: Líneas del informe para visualización.
     """
     current_caches = caches if caches is not None else detect_profiles()
     

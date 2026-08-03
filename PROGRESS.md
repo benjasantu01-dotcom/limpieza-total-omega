@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **257** (51.0% de aceptación)
+- Mejoras aceptadas: **260** (51.6% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 29
-- Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 192
+- Sin cambios (nada sustancial que mejorar): 14
+- Sin respuesta de la IA (error o límite): 188
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-01 | 64 | 2 | 6 | 4 | 66 |
+| 2026-08-01 | 64 | 2 | 6 | 4 | 62 |
 | 2026-08-02 | 187 | 11 | 22 | 8 | 122 |
-| 2026-08-03 | 6 | 0 | 1 | 1 | 4 |
+| 2026-08-03 | 9 | 0 | 1 | 2 | 4 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **66**
 - robustez ante casos límite: **50**
 - manejo de errores y validación de entradas: **49**
+- seguridad defensiva: **48**
 - rendimiento: **47**
-- seguridad defensiva: **45**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **24**
 - `scanner.py`: **22**
+- `browser.py`: **21**
 - `main.py`: **21**
 - `branding.py`: **20**
-- `browser.py`: **20**
 - `assistant.py`: **19**
 - `organizer.py`: **18**
 - `quarantine.py`: **18**
+- `diskreport.py`: **18**
 - `healthscore.py`: **17**
 - `safety.py`: **17**
-- `diskreport.py`: **17**
-- `duplicates.py`: **15**
+- `duplicates.py`: **16**
 - `startup.py`: **15**
 - `memory.py`: **14**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-03T00:39:46` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` y `hash_file/partial_hash` añadiendo una validación explícita mediante `is_protected_path` sobre la resolución absoluta de cada ruta antes de interactuar con ella, previniendo posibles escapes por manipulación de paths relativos o puntos de reparse durante la recursión.
+- `2026-08-03T00:39:38` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `walk_files` mediante la validación estricta de que las rutas relativas procesadas se mantengan efectivamente dentro del directorio base, evitando posibles escapes debidos a manipulaciones de enlaces simbólicos o rutas mal formadas durante el escaneo.
+- `2026-08-03T00:39:14` **browser.py** (seguridad defensiva): Se reforzó la seguridad de `directory_size` y `_is_safe_path` al validar explícitamente que ninguna ruta procesada contenga caracteres de control (como los caracteres RTL mencionados en las reglas de seguridad) y asegurar que el cálculo de tamaño solo considere rutas que se resuelven correctamente sin escapar del directorio base, evitando que el escáner se vea engañado por rutas maliciosas o enlaces simbólicos maliciosos.
 - `2026-08-03T00:29:42` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva al serializar las métricas para Gemini, asegurando que `_call_gemini` siempre utilice un formato de texto estrictamente controlado y evitando cualquier posibilidad de inyección mediante la validación de caracteres de control en el contexto serializado.
 - `2026-08-03T00:29:24` **startup.py** (robustez ante casos límite): Se ha añadido un bloque de validación defensiva en `parse_registry_csv` para gestionar posibles rutas malformadas o comandos vacíos, asegurando que la función no procese entradas con caracteres de control ni rutas que el sistema operativo rechazaría, previniendo errores de ejecución en la resolución de rutas posteriores.
 - `2026-08-03T00:28:59` **settings.py** (robustez ante casos límite): Se ha añadido un chequeo de existencia (`ruta.exists()`) y manejo de permisos al cargar la configuración para asegurar que el método `load` sea robusto ante escenarios donde el archivo aún no existe o el acceso al disco está restringido, evitando excepciones innecesarias.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-02T14:46:51` **assistant.py** (robustez ante casos límite): Se mejora la robustez de `build_context` ante valores `NaN` o `inf` provenientes de fuentes externas mediante una validación explícita con `math.isfinite`, previniendo errores de serialización o lógica en el motor del asistente.
 - `2026-08-02T14:45:56` **settings.py** (rendimiento): Optimizé la carga de configuración eliminando la regeneración innecesaria de objetos `Path` y reduciendo las llamadas a `stat()` mediante una gestión más estricta de la caché local.
 - `2026-08-02T14:36:36` **scanner.py** (rendimiento): Se optimizó el proceso de escaneo en `scan_file` al evitar múltiples llamadas a `is_protected_path` y `path.is_file()` (que implican llamadas al sistema redundantes), consolidando la validación inicial y utilizando el cacheo de `path.suffix` para reducir operaciones de IO.
-- `2026-08-02T14:36:28` **safety.py** (rendimiento): Se ha optimizado `is_protected_path` evitando llamadas costosas a `p.exists()` y `_is_reparse_point` cuando ya se ha determinado que el nombre de algún componente de la ruta pertenece a `_ALL_PROTECTED_TOKENS`, reduciendo significativamente las operaciones de I/O en recorridos de directorios.
-- `2026-08-02T14:35:45` **quarantine.py** (rendimiento): Optimizé la búsqueda de ítems en `purge_item` y `restore_item` reemplazando la creación de diccionarios en cada llamada por un acceso directo eficiente, y utilicé `set` en `purge_all` para reducir la complejidad de búsqueda de nombres de O(N) a O(1) dentro del bucle de limpieza.
-- `2026-08-02T14:26:33` **main.py** (rendimiento): Optimicé el método `_get_cached` implementando una pre-verificación de la existencia de la clave antes de realizar el cálculo de `now` o manipular el `OrderedDict`, reduciendo el procesamiento innecesario en llamadas frecuentes, y corregí la gestión de `self._tasks_running` en `_set_busy` para asegurar que el contador de tareas siempre se mantenga sincronizado, evitando el bloqueo visual de la barra de progreso.

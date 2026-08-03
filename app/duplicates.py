@@ -84,7 +84,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
         Hexdigest del hash SHA256 si es accesible, None en caso contrario.
     """
     try:
-        p = Path(path)
+        p = Path(path).resolve()
         if not p.is_file() or p.is_symlink() or is_protected_path(p):
             return None
         if p.stat().st_size == 0: return None
@@ -106,7 +106,7 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
     que difieren en sus cabeceras antes de realizar un hash completo.
     """
     try:
-        p = Path(path)
+        p = Path(path).resolve()
         if not p.is_file() or p.is_symlink() or is_protected_path(p):
             return None
         if p.stat().st_size == 0: return None
@@ -147,6 +147,9 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
                 for entry in it:
                     try:
                         if entry.is_symlink(): continue
+                        full_p = Path(entry.path).resolve()
+                        if skip_protected and is_protected_path(full_p): continue
+
                         if entry.is_dir():
                             _scan(Path(entry.path))
                         elif entry.is_file():
@@ -156,17 +159,14 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
                             inode_id = (st.st_dev, st.st_ino)
                             if inode_id in visited_inodes: continue
                             
-                            p = Path(entry.path)
-                            if skip_protected and is_protected_path(p): continue
-                            
                             visited_inodes.add(inode_id)
-                            groups[st.st_size].append(p)
+                            groups[st.st_size].append(full_p)
                     except (OSError, PermissionError): continue
         except (OSError, PermissionError): pass
 
     for directory in directories:
         if directory is None: continue
-        path_obj = Path(directory)
+        path_obj = Path(directory).resolve()
         if path_obj.is_dir() and not is_protected_path(path_obj):
             _scan(path_obj)
     return groups

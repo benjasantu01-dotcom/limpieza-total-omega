@@ -190,6 +190,10 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
                         
                         full_path = Path(entry.path).resolve()
                         
+                        # Defensa: asegurar que la ruta resuelta pertenezca efectivamente a la base
+                        if not str(full_path).startswith(str(base_path)):
+                            continue
+
                         if entry.is_dir():
                             if full_path not in visited_directories and not (skip_protected and is_protected_path(full_path)):
                                 visited_directories.add(full_path)
