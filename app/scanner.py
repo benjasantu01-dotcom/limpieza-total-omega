@@ -99,7 +99,9 @@ class Scanner:
                         self.seen.add(path_key)
                         stack.append(path_key)
             elif entry.is_file(follow_symlinks=False):
-                self.results.extend(scan_file(path_obj))
+                # Validar seguridad una sola vez aquí antes de delegar el escaneo
+                if not is_protected_path(path_obj):
+                    self.results.extend(scan_file(path_obj))
         except (PermissionError, OSError):
             pass
 
@@ -149,9 +151,6 @@ CHECK_FUNCS: Final[List[SuspicionCheck]] = [
 
 def scan_file(path: Path) -> ScanResult:
     """Ejecuta el conjunto de heurísticas sobre un archivo específico."""
-    if is_protected_path(path) or not is_safe_to_modify(path):
-        return []
-
     findings: ScanResult = []
     for check_func in CHECK_FUNCS:
         try:

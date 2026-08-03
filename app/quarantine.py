@@ -436,20 +436,23 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     
     items = load_manifest(base)
     item_map = {item.stored_name: item for item in items}
-    stored_names = set(item_map.keys())
+    stored_names_set = set(item_map.keys())
     count = 0
     
     for entry in quarantine_root.iterdir():
-        if entry.is_file() and entry.name in stored_names:
+        if entry.name == MANIFEST_NAME:
+            continue
+            
+        if entry.name in stored_names_set:
             item = item_map[entry.name]
-            if is_within_directory(entry, quarantine_root) and item.verify_integrity(entry):
+            if item.verify_integrity(entry):
                 try:
                     entry.unlink()
                     count += 1
                 except (OSError, PermissionError):
-                    continue
-        elif entry.is_file() and entry.name != MANIFEST_NAME:
-            # Caso de archivo basura en carpeta de cuarentena, no listado en manifiesto
+                    pass
+        else:
+            # Archivo basura sin entrada en manifiesto
             try:
                 entry.unlink()
             except (OSError, PermissionError):
