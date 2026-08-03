@@ -402,9 +402,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     # -- Métodos de Construcción de Pestañas Específicas ------------------
 
     def _build_tab_salud(self) -> None:
-        """Renderiza la vista principal de Salud, incluyendo resumen de métricas, 
-        gauge de puntaje y desglosado de áreas.
-        """
+        """Renderiza la vista Salud: gauge de puntaje, tarjetas métricas y desglose por áreas."""
         tab = self.tabs["Salud"]
         row = self._button_row(tab)
         self._action(row, "Analizar el sistema", self.on_full_analysis, column=0)
@@ -433,7 +431,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._make_output("Salud", tab)
 
     def _build_health_metrics_row(self, container: ctk.CTkFrame) -> None:
-        """Crea la fila de tarjetas numéricas superiores en la pestaña Salud."""
+        """Crea las tarjetas de métricas numéricas superiores (Basura, RAM, etc)."""
         metrics = (("basura", "Basura"), ("sospechosos", "Sospechosos"),
                    ("ram", "RAM libre"), ("disco", "Disco libre"))
         for i, (clave, titulo) in enumerate(metrics):
@@ -441,7 +439,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.cards[clave] = self._metric_card(container, titulo, i)
 
     def _build_health_area_bars(self, parent: ctk.CTk) -> None:
-        """Genera dinámicamente las barras de progreso para el desglosado de Salud."""
+        """Genera el desglose visual de barras para cada categoría de salud."""
         area_container = ctk.CTkFrame(parent, fg_color="transparent")
         area_container.grid(row=0, column=1, sticky="ew")
         area_container.grid_columnconfigure(1, weight=1)
@@ -449,7 +447,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self._build_single_health_bar(area_container, clave, etiqueta, fila)
 
     def _build_single_health_bar(self, container: ctk.CTkFrame, clave: str, etiqueta: str, fila: int) -> None:
-        """Renderiza una barra de progreso individual para una métrica de salud."""
+        """Dibuja una fila individual de barra de progreso y etiqueta de valor."""
         ctk.CTkLabel(
             container, text=etiqueta, anchor="w", width=150,
             text_color=branding.color("text_muted"),
@@ -473,7 +471,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.area_bars[clave] = (barra, valor_label)
 
     def _metric_card(self, parent: ctk.CTk, title: str, column: int) -> ctk.CTkLabel:
-        """Factoría de tarjetas visuales que muestran un dato numérico destacado."""
+        """Factoría de tarjetas visuales para indicadores numéricos clave."""
         tarjeta = ctk.CTkFrame(
             parent, fg_color=branding.color("card"), corner_radius=12,
             border_width=1, border_color=branding.color("border"),
@@ -494,9 +492,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         return valor_label
 
     def _draw_gauge(self, score: int, grade: str) -> None:
-        """Solicita el redibujado de la interfaz gráfica circular (gauge) mediante 
-        llamada al hilo principal.
-        """
+        """Redibuja el gauge circular de puntaje en el hilo de la GUI."""
         def update_canvas():
             if not self.gauge.winfo_exists(): return
             self.gauge.delete("all")
@@ -513,7 +509,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.after(0, update_canvas)
 
     def _build_tab_limpieza(self) -> None:
-        """Construye la vista de gestión de archivos basura."""
+        """Construye controles de limpieza: escaneo, revisión y vaciado."""
         tab = self.tabs["Limpieza"]
         row = self._button_row(tab)
         self._action(row, "Buscar basura", self.on_scan_junk, column=0)
@@ -543,7 +539,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._make_output("Limpieza", tab)
 
     def _build_tab_seguridad(self) -> None:
-        """Construye la interfaz para el escaneo y aislamiento de archivos sospechosos."""
+        """Construye controles para escaneos de seguridad y aislamiento."""
         tab = self.tabs["Seguridad"]
         row = self._button_row(tab)
         self._action(row, "Escaneo heurístico", self.on_heuristic_scan, column=0)
@@ -556,7 +552,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._make_output("Seguridad", tab)
 
     def _build_tab_cuarentena(self) -> None:
-        """Construye la interfaz para gestionar archivos aislados y restauraciones."""
+        """Construye la interfaz de gestión para archivos en cuarentena."""
         tab = self.tabs["Cuarentena"]
         row = self._button_row(tab)
         self._action(row, "Ver cuarentena", self.on_list_quarantine, column=0)
@@ -574,7 +570,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._make_output("Cuarentena", tab)
 
     def _build_tab_memoria(self) -> None:
-        """Construye la interfaz de diagnóstico de memoria y gestión de procesos."""
+        """Construye la interfaz para diagnóstico de RAM y procesos."""
         tab = self.tabs["Memoria"]
         row = self._button_row(tab)
         self._action(row, "Diagnóstico de RAM", self.on_memory_report, column=0)
@@ -592,7 +588,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._make_output("Memoria", tab)
 
     def _build_tab_disco(self) -> None:
-        """Construye la interfaz para reportes de uso de disco y análisis de carpetas."""
+        """Construye la interfaz para reportes de espacio en disco."""
         tab = self.tabs["Disco"]
         row = self._button_row(tab)
         self._action(row, "Espacio por unidad", self.on_drives_report, column=0)
@@ -601,7 +597,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._make_output("Disco", tab)
 
     def _build_tab_duplicados(self) -> None:
-        """Construye la interfaz de detección y limpieza de archivos duplicados."""
+        """Construye la interfaz para detección de archivos duplicados."""
         tab = self.tabs["Duplicados"]
         row = self._button_row(tab)
         self._action(row, "Buscar duplicados", self.on_find_duplicates, column=0)
@@ -610,21 +606,21 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._make_output("Duplicados", tab)
 
     def _build_tab_navegadores(self) -> None:
-        """Construye la interfaz de informe sobre caché de navegadores web."""
+        """Construye la interfaz para informe de caché de navegadores."""
         tab = self.tabs["Navegadores"]
         row = self._button_row(tab)
         self._action(row, "Detectar caché", self.on_browser_report, column=0)
         self._make_output("Navegadores", tab)
 
     def _build_tab_inicio(self) -> None:
-        """Construye la interfaz de inventario de programas configurados en el inicio."""
+        """Construye la interfaz para inventario de programas de inicio."""
         tab = self.tabs["Inicio"]
         row = self._button_row(tab)
         self._action(row, "Ver programas de inicio", self.on_startup_report, column=0)
         self._make_output("Inicio", tab)
 
     def _build_tab_informe(self) -> None:
-        """Construye la interfaz para generar y exportar reportes finales."""
+        """Construye la interfaz para exportación de reportes de sesión."""
         tab = self.tabs["Informe"]
         row = self._button_row(tab)
         self._action(row, "Armar informe", self.on_build_report, column=0)
@@ -635,7 +631,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._make_output("Informe", tab)
 
     def _build_tab_asistente(self) -> None:
-        """Construye la interfaz para interactuar con el motor del asistente (IA)."""
+        """Construye la interfaz para interacción con la IA local/en línea."""
         tab = self.tabs["Asistente"]
         row = self._button_row(tab)
         self._action(row, "Preguntar", self.on_ask_assistant, column=0)
@@ -666,7 +662,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._make_output("Asistente", tab)
 
     def _build_tab_ajustes(self) -> None:
-        """Construye la interfaz de configuración del usuario."""
+        """Construye la interfaz para configuración general y de usuario."""
         tab = self.tabs["Ajustes"]
         row = self._button_row(tab)
         self._action(row, "Guardar ajustes", self.on_save_settings, column=0)

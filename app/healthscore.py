@@ -14,7 +14,7 @@ vive en los otros módulos; acá solo se puntúa.
 
 from __future__ import annotations
 from dataclasses import dataclass, field
-from typing import Dict, List, Any, Final, Tuple
+from typing import Dict, List, Any, Final
 import math
 
 __all__ = [
@@ -150,22 +150,21 @@ def score_junk(junk_mb: float) -> float:
 
 def score_security(suspicious_count: int, warnings: int = 0) -> float:
     """Calcula ratio [0, 1] penalizando hallazgos (5%) y advertencias (25%)."""
-    s = float(max(0, _to_int(suspicious_count)))
-    w = float(max(0, _to_int(warnings)))
-    if not math.isfinite(s) or not math.isfinite(w): return 0.0
+    s = float(_to_int(suspicious_count))
+    w = float(_to_int(warnings))
     penalty: float = (s * 0.05) + (w * 0.25)
     return _clamp(1.0 - penalty, 0.0, 1.0)
 
 
 def score_memory(available_percent: float) -> float:
-    """Calcula ratio [0, 1] basado en disponibilidad vs RAM_IDEAL_PERCENT."""
-    val = _clamp(_to_float(available_percent), 0.0, 100.0)
+    """Calcula ratio [0, 1] normalizando disponibilidad respecto a RAM_IDEAL_PERCENT."""
+    val = _to_float(available_percent)
     if RAM_IDEAL_PERCENT <= 0: return 0.0
     return _clamp(val / RAM_IDEAL_PERCENT)
 
 
 def score_disk(free_percent: float) -> float:
-    """Calcula ratio [0, 1] basado en espacio libre vs DISK_IDEAL_PERCENT."""
+    """Calcula ratio [0, 1] normalizando espacio respecto a DISK_IDEAL_PERCENT."""
     val = _to_float(free_percent)
     if DISK_IDEAL_PERCENT <= 0: return 0.0
     return _clamp(val / DISK_IDEAL_PERCENT)
@@ -197,9 +196,6 @@ def grade_for_score(score: int) -> str:
 
 def _generate_recommendations(m: SystemMetrics, ratios: Dict[str, float]) -> List[str]:
     """Genera acciones correctivas basadas en los ratios actuales vs umbrales."""
-    if not isinstance(m, SystemMetrics):
-        return ["Error interno: Métricas no disponibles para generar recomendaciones."]
-    
     recs: List[str] = []
     
     if ratios.get("seguridad", 1.0) < WARN_THRESHOLD_HIGH:
@@ -225,20 +221,19 @@ def _generate_recommendations(m: SystemMetrics, ratios: Dict[str, float]) -> Lis
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
     """
-    Procesa métricas y devuelve un objeto HealthResult.
-    El cálculo sigue la fórmula: (Suma de (ratio * peso)) / TotalWeights.
+    Procesa métricas, normaliza datos y devuelve un puntaje ponderado.
+    
+    El algoritmo utiliza los pesos globales definidos en WEIGHTS para calcular
+    un promedio ponderado, asegurando que el resultado final se mantenga en el
+    rango [0, 100] sin importar los valores de entrada.
     """
-    if metrics is None or not isinstance(metrics, SystemMetrics):
-        return HealthResult(0, "F", {}, ["Error: Instancia de métricas nula o no válida."])
+    if not isinstance(metrics, SystemMetrics):
+        return HealthResult(0, "F", {}, ["Error: Instancia de métricas no válida."])
     
     metrics.validate()
-    if not metrics.is_finite():
-        return HealthResult(0, "F", {}, ["Error: Métricas contienen datos no procesables."])
-    
-    if _TOTAL_WEIGHTS <= 0:
-        return HealthResult(0, "F", {}, ["Error: Configuración de pesos inválida."])
+    if not metrics.is_finite() or _TOTAL_WEIGHTS <= 0:
+        return HealthResult(0, "F", {}, ["Error: Datos de entrada no procesables."])
 
-    # Mapping directo para evitar iteraciones y lookups adicionales
     ratios: Dict[str, float] = {
         "seguridad": score_security(metrics.suspicious_count, metrics.suspicious_warnings),
         "disco": score_disk(metrics.disk_free_percent),
@@ -248,24 +243,21 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         "arranque": score_startup(metrics.startup_count)
     }
 
-    # Calculamos puntos ponderados iterando solo una vez sobre el set de pesos
     breakdown: Dict[str, int] = {}
     total_score: float = 0.0
     factor: float = 100.0 / float(_TOTAL_WEIGHTS)
     
     for area, weight in WEIGHTS.items():
         ratio_val = ratios.get(area, 0.0)
-        # Verificación de seguridad adicional ante resultados inesperados
-        if not math.isfinite(ratio_val): ratio_val = 0.0
-        
+        # score_val escala el ratio [0,1] al rango del peso específico
         score_val = (ratio_val * weight * factor)
-        rounded = int(score_val + 0.5)
-        breakdown[area] = rounded
+        breakdown[area] = int(score_val + 0.5)
         total_score += score_val
 
+    final_score = int(_clamp(total_score, 0.0, 100.0))
     return HealthResult(
-        score=int(_clamp(total_score, 0.0, 100.0)),
-        grade=grade_for_score(int(total_score + 0.5)),
+        score=final_score,
+        grade=grade_for_score(final_score),
         breakdown=breakdown,
         recommendations=_generate_recommendations(metrics, ratios),
     )
@@ -278,7 +270,6 @@ def summarize(result: HealthResult) -> List[str]:
     if not result.breakdown:
         return lines + ["  Error: No hay datos de desglose disponibles."]
 
-    # Presentamos el desglose respetando el orden definido en WEIGHTS original
     for area, maximo in WEIGHTS.items():
         puntos = result.breakdown.get(area, 0)
         visual = f"[{'#' * puntos}{'.' * (maximo - puntos)}]"
