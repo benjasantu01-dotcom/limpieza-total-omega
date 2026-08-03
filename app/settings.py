@@ -164,6 +164,7 @@ def load(path_or_base: PathLike | None = None) -> dict[str, Any]:
     global _cached_settings, _last_path, _last_mtime
     ruta = settings_path(path_or_base)
     try:
+        ensure_safe_to_modify(str(ruta))
         if not ruta.exists(): raise FileNotFoundError
         stat = ruta.stat()
         if _cached_settings is not None and ruta == _last_path and stat.st_mtime == _last_mtime:
@@ -185,7 +186,10 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     global _cached_settings, _last_path, _last_mtime
     ruta = settings_path(path_or_base)
     
-    if not is_safe_to_modify(str(ruta)) or not is_safe_to_modify(str(ruta.parent)):
+    try:
+        ensure_safe_to_modify(str(ruta))
+        ensure_safe_to_modify(str(ruta.parent))
+    except (OSError, RuntimeError):
         return None
     
     limpio = validate(values)

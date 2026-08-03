@@ -776,3 +776,12 @@ FAILED evolve/tests/test_modules.py::test_gradient_bar_paints_one_line_per_pixel
 - `2026-08-03T14:23:16` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `quarantine_file` añadiendo una comprobación explícita para evitar condiciones de carrera o inconsistencias si el archivo origen cambia de permisos o es reemplazado por otro proceso justo antes de la operación de movimiento (`shutil.move`), mediante la verificación de que el `st_ino` (inodo) o `st_ctime` se mantengan constantes, reforzando la seguridad defensiva.
 - `2026-08-03T14:23:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-03T14:23:16` Corrida terminada. Total usado hoy: 336.
+- `2026-08-03T14:30:25` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-03T14:30:28` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-03T14:30:31` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-08-03T14:31:14` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-03T14:31:39` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-08-03T14:32:03` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `scan_directory` y `process_entry` al agregar una validación de `is_protected_path` sobre los directorios antes de procesarlos, asegurando que el escáner no ingrese a subcarpetas prohibidas incluso si no son puntos de reparseo explícitos.
+- `2026-08-03T14:32:14` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `load` y `save` añadiendo una validación explícita mediante `ensure_safe_to_modify` antes de cualquier operación de I/O, garantizando que, incluso si la lógica de `settings_path` fallara, el sistema nunca interactúe con rutas bloqueadas.
+- `2026-08-03T14:32:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-03T14:32:14` Corrida terminada. Total usado hoy: 340.

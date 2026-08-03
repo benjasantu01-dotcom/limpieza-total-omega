@@ -197,8 +197,8 @@ def scan_directory(directory: Union[str, Path]) -> ScanResult:
         
     try:
         root_path = Path(directory).resolve(strict=True)
-        # Validación inicial: debe existir y ser seguro modificar (acceso base)
-        if not root_path.exists() or not root_path.is_dir() or root_path.is_symlink() or not is_safe_to_modify(root_path):
+        # Validación inicial: debe existir, no ser protegida y ser segura modificar
+        if not root_path.exists() or not root_path.is_dir() or root_path.is_symlink() or is_protected_path(root_path) or not is_safe_to_modify(root_path):
             return []
     except (OSError, RuntimeError):
         return []
