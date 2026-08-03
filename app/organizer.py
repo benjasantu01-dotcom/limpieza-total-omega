@@ -104,7 +104,12 @@ class JunkFile:
 def _generate_unique_target(target: Path) -> Path:
     """
     Resuelve colisiones de nombres añadiendo un sufijo numérico incremental.
-    Evita sobrescritura accidental en el directorio de revisión.
+    
+    Args:
+        target: La ruta destino deseada que podría estar ocupada.
+
+    Returns:
+        Path: Una ruta garantizada como inexistente para evitar sobrescrituras.
     """
     if not target.exists():
         return target
@@ -139,6 +144,12 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     blocklist = SYSTEM_FOLDER_BLOCKLIST
 
     def _walk_dir(base_path: str) -> None:
+        """
+        Escaneo interno recursivo que evita rutas bloqueadas y symlinks.
+        
+        Args:
+            base_path: Ruta del directorio a explorar en esta iteración.
+        """
         try:
             with os.scandir(base_path) as it:
                 for entry in it:
