@@ -168,7 +168,10 @@ def is_protected_path(path: PathLike) -> bool:
             return True
         if p == Path(p.anchor):
             return True
-        return p.exists() and _is_reparse_point(p)
+        try:
+            return p.exists() and _is_reparse_point(p)
+        except (OSError, PermissionError):
+            return False
     except (PermissionError, OSError, ValueError, TypeError):
         return True 
 

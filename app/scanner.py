@@ -117,7 +117,7 @@ def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_TH
     Analiza la fecha de modificación de ejecutables para identificar descargas recientes.
     Requiere acceso de solo lectura mediante `lstat`.
     """
-    if path.suffix.lower() not in SUSPICIOUS_EXECUTABLE_EXT:
+    if not path.suffix or path.suffix.lower() not in SUSPICIOUS_EXECUTABLE_EXT:
         return None
         
     try:
@@ -131,11 +131,12 @@ def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_TH
 
 def check_system_lookalike(path: Path) -> Optional[Suspicion]:
     """Identifica ejecutables con nombres de procesos críticos fuera de System32."""
-    if path.name.lower() not in SYSTEM_LOOKALIKES:
+    if not path.name or path.name.lower() not in SYSTEM_LOOKALIKES:
         return None
         
     try:
-        if SYSTEM32_LOWER not in str(path.parent).lower():
+        parent = path.parent
+        if parent and SYSTEM32_LOWER not in str(parent).lower():
             return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
     except (OSError, AttributeError):
         pass
@@ -150,8 +151,7 @@ CHECK_FUNCS: Final[List[SuspicionCheck]] = [
 
 def scan_file(path: Path) -> ScanResult:
     """Ejecuta el conjunto de heurísticas sobre un archivo específico previa validación."""
-    # Validación doble: existencia física y permisos de lectura definidos por política
-    if not path.exists() or not is_safe_to_modify(path) or is_protected_path(path):
+    if not path or not path.exists() or not is_safe_to_modify(path) or is_protected_path(path):
         return []
         
     findings: ScanResult = []
