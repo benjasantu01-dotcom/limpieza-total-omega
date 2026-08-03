@@ -227,9 +227,9 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     """
     Procesa métricas, normaliza datos y devuelve un puntaje ponderado.
     
-    El algoritmo utiliza los pesos globales definidos en WEIGHTS para calcular
-    un promedio ponderado, asegurando que el resultado final se mantenga en el
-    rango [0, 100] sin importar los valores de entrada.
+    Aplica validaciones estrictas sobre el objeto de métricas y los pesos
+    globales para evitar errores de punto flotante o desbordamientos durante
+    el cálculo del desglose.
     """
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Instancia de métricas no válida."])
@@ -249,10 +249,12 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
 
     breakdown: Dict[str, int] = {}
     total_score: float = 0.0
-    factor: float = 100.0 / float(_TOTAL_WEIGHTS)
+    total_w = float(_TOTAL_WEIGHTS)
     
     for area, weight in WEIGHTS.items():
-        score_val = ratios[area] * weight * factor
+        # Verificación defensiva contra acceso a claves y valores nulos
+        ratio = ratios.get(area, 0.0)
+        score_val = ratio * float(weight) * (100.0 / total_w)
         breakdown[area] = int(score_val + 0.5)
         total_score += score_val
 

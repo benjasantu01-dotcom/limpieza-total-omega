@@ -871,6 +871,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         path_obj = Path(folder)
         # Comprobar puntos de reparse (junctions) y rutas UNC (red)
         try:
+            if safety.is_protected_path(path_obj):
+                messagebox.showwarning("Ruta protegida", "No podés operar sobre esta carpeta de sistema.")
+                return None
             if path_obj.is_symlink() or os.path.splitdrive(folder)[0].startswith('\\\\'):
                 messagebox.showwarning("Ruta no soportada", "No se permiten puntos de unión ni recursos de red.")
                 return None

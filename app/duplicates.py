@@ -133,6 +133,8 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     for p in paths:
         if not isinstance(p, Path): continue
         try:
+            # Validación de seguridad antes de procesar
+            if is_protected_path(p): continue
             groups[p.stat().st_size].append(p)
         except (OSError, PermissionError, FileNotFoundError):
             continue
@@ -170,7 +172,7 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
                             if inode_id in visited_inodes: continue
                             
                             full_p = Path(entry.path).resolve()
-                            if skip_protected and is_protected_path(full_p): continue
+                            if is_protected_path(full_p): continue
                             
                             visited_inodes.add(inode_id)
                             groups[st.st_size].append(full_p)
@@ -253,7 +255,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
 
     valid_paths: List[Tuple[float, int, Path]] = []
     for p in group.paths:
-        if not isinstance(p, Path) or not p.exists(): continue
+        if not isinstance(p, Path) or not p.exists() or is_protected_path(p): continue
         try:
             stat = p.stat()
             valid_paths.append((stat.st_mtime, len(str(p)), p))
