@@ -245,7 +245,9 @@ def context_as_text(context: SystemContext) -> str:
         ]
         if context.browser_cache_mb and context.browser_cache_mb > 0:
             lineas.append(f"Caché de navegadores: {float(context.browser_cache_mb):.0f} MB")
-        return "\n".join(lineas)
+        
+        # Sanitización final: asegurar que no queden caracteres de control ni separadores prohibidos
+        return _CONTROL_CHARS_REGEX.sub("", "\n".join(lineas))
     except (ValueError, TypeError):
         return "Error al procesar los datos de salud del sistema."
 
@@ -448,16 +450,14 @@ def _call_gemini(
     safe_q: str = _sanitize_query(question)[:500]
     safe_ctx: str = context_text[:1000]
     
-    if not _ensure_safe_text(safe_q):
+    if not _ensure_safe_text(safe_q) or not _ensure_safe_text(safe_ctx):
         return None
         
     try:
-        sanitized_context: str = _CONTROL_CHARS_REGEX.sub("", safe_ctx)
-        
         cuerpo_json: bytes = json.dumps({
             "contents": [{
                 "parts": [{
-                    "text": f"{SYSTEM_PROMPT}\n\nMétricas del sistema:\n{sanitized_context}\n\n"
+                    "text": f"{SYSTEM_PROMPT}\n\nMétricas del sistema:\n{safe_ctx}\n\n"
                             f"Pregunta del usuario: {safe_q}"
                 }]
             }]

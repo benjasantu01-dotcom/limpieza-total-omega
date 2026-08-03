@@ -202,11 +202,13 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
         if not name or name.lower() in ("name", "pscustomobject") or name.upper().startswith("PS"):
             continue
         
+        # Validación defensiva ante comandos inválidos o rutas bloqueadas
+        if not cmd or any(c in cmd for c in '<>|?*'):
+            continue
+            
         try:
-            # Defensivo: validar la estructura antes de instanciar
-            if not cmd or any(c in cmd for c in '<>|?*'):
-                continue
             p: Path = Path(cmd)
+            # Evitar rutas que contengan caracteres nulos o inválidos para el sistema
             if is_protected_path(p):
                 continue
         except (OSError, ValueError, TypeError):

@@ -132,7 +132,8 @@ def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_TH
         return None
         
     try:
-        mtime = datetime.fromtimestamp(path.stat().st_mtime)
+        # Usamos lstat para no resolver enlaces y evitar errores adicionales en archivos bloqueados
+        mtime = datetime.fromtimestamp(path.lstat().st_mtime)
         if datetime.now() - mtime < timedelta(hours=hours):
             return Suspicion(path, f"Ejecutable reciente detectado (modificado hace menos de {hours}h)", "info")
     except (FileNotFoundError, PermissionError, OSError):
@@ -172,9 +173,11 @@ def scan_file(path: Path) -> ScanResult:
     Ejecuta el conjunto de heurísticas sobre un archivo específico.
     Solo procesa archivos existentes y validados por seguridad.
     """
-    # Se unifican validaciones iniciales. Se asume que el llamador ya confirmó
-    # que es un archivo y no un symlink si es posible.
     if not path or is_protected_path(path):
+        return []
+
+    # Validar existencia antes de procesar para evitar ruido en logs o excepciones en checks
+    if not path.exists():
         return []
 
     findings: ScanResult = []

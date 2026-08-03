@@ -164,6 +164,8 @@ def load(path_or_base: PathLike | None = None) -> dict[str, Any]:
     
     ruta = settings_path(path_or_base)
     try:
+        if not ruta.exists():
+            raise FileNotFoundError
         stat = ruta.stat()
         if _cached_settings is not None and ruta == _last_path and stat.st_mtime == _last_mtime:
             return _cached_settings.copy()
@@ -175,7 +177,7 @@ def load(path_or_base: PathLike | None = None) -> dict[str, Any]:
         _cached_settings = validate(data)
         _last_path, _last_mtime = ruta, stat.st_mtime
         return _cached_settings.copy()
-    except (OSError, json.JSONDecodeError, UnicodeDecodeError):
+    except (OSError, json.JSONDecodeError, UnicodeDecodeError, FileNotFoundError, PermissionError):
         pass
     
     _cached_settings = DEFAULTS.copy()
