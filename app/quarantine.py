@@ -166,13 +166,21 @@ def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload:
         force_reload: Si es True, ignora la caché existente.
         
     Returns:
-        Lista de objetos QuarantineItem deserializados; retorna lista vacía en caso de corrupción.
+        Lista de objetos QuarantineItem deserializados; retorna lista vacía en caso de error.
     """
-    base_path = quarantine_dir(base)
-    path = _manifest_path(base_path)
+    try:
+        base_path = quarantine_dir(base)
+        path = _manifest_path(base_path)
+    except (OSError, ValueError):
+        return []
+
     base_str = str(base_path)
     
-    current_mtime = path.stat().st_mtime if path.exists() else 0.0
+    try:
+        current_mtime = path.stat().st_mtime if path.exists() else 0.0
+    except OSError:
+        current_mtime = 0.0
+
     if not force_reload and base_str in _manifest_cache:
         cached_mtime, cached_data = _manifest_cache[base_str]
         if cached_mtime == current_mtime:
@@ -181,10 +189,11 @@ def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload:
     if not path.exists():
         _manifest_cache[base_str] = (0.0, [])
         return []
+
     try:
         with open(path, "r", encoding="utf-8") as f:
             raw_data = json.load(f)
-    except (json.JSONDecodeError, OSError):
+    except (json.JSONDecodeError, OSError, PermissionError):
         return []
     
     if not isinstance(raw_data, list):
@@ -221,7 +230,8 @@ def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_
         _manifest_cache[str(base_path)] = (target_path.stat().st_mtime, items)
     except Exception as e:
         if os.path.exists(temp_path):
-            os.remove(temp_path)
+            try: os.remove(temp_path)
+            except OSError: pass
         raise RuntimeError(f"Error fatal al persistir manifiesto: {e}")
     return target_path
 

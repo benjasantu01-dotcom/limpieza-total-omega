@@ -208,6 +208,9 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
     """
     Prepara archivos para ser eliminados moviéndolos a un directorio de cuarentena.
     """
+    if not files:
+        raise ValueError("La lista de archivos a procesar no puede estar vacía.")
+
     if not review_dir or not isinstance(review_dir, str):
         raise ValueError("La ruta de revisión debe ser un string válido")
 
@@ -223,7 +226,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
     dest.mkdir(parents=True, exist_ok=True)
     
     for jf in files:
-        if not isinstance(jf, JunkFile):
+        if jf is None or not isinstance(jf, JunkFile):
             continue
         try:
             # Validación de integridad: archivo inexistente, symlink, fuera de rango o vacío

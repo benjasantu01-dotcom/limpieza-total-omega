@@ -165,7 +165,6 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
         return []
 
     processes: List[ProcessMemory] = []
-    # Saltamos el encabezado y procesamos cada fila asegurando robustez
     for line in lines[1:]:
         parts = [p.strip().strip('"') for p in line.split(",")]
         
@@ -213,7 +212,7 @@ def _read_windows_snapshot() -> MemorySnapshot:
 def read_snapshot() -> MemorySnapshot:
     """
     Detecta el sistema operativo y delega la captura de métricas de RAM al 
-    método correspondiente según la plataforma (Win32 o /proc/meminfo).
+    método correspondiente según la plataforma.
     """
     if os.name == "nt":
         try:
@@ -227,7 +226,7 @@ def read_snapshot() -> MemorySnapshot:
             with open(meminfo_path, encoding="utf-8", errors="replace") as f:
                 content = f.read()
                 return parse_linux_meminfo(content)
-        except (OSError, PermissionError):
+        except (OSError, PermissionError, IOError):
             pass
             
     return MemorySnapshot(total=0, available=0)
@@ -235,8 +234,7 @@ def read_snapshot() -> MemorySnapshot:
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     """
-    Consulta procesos de alto consumo en Windows. Implementa caché TTL de 5 segundos
-    para reducir la carga de llamadas a subprocesos del sistema.
+    Consulta procesos de alto consumo en Windows. Implementa caché TTL de 5 segundos.
     """
     global _PROCESS_CACHE
     if os.name != "nt":
@@ -261,7 +259,7 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
             processes = parse_windows_process_csv(result.stdout, limit=limit)
             _PROCESS_CACHE["data"] = (now, processes)
             return processes
-    except (OSError, subprocess.SubprocessError):
+    except (OSError, subprocess.SubprocessError, Exception):
         pass
     return []
 
@@ -269,7 +267,6 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
 def pressure_level(snapshot: MemorySnapshot) -> str:
     """
     Evalúa el estado de salud de la RAM basado en el porcentaje disponible.
-    Retorna un identificador de criticidad: 'ok', 'info', 'warning', 'danger'.
     """
     if not isinstance(snapshot, MemorySnapshot) or snapshot.total <= 0:
         return "info"
@@ -282,8 +279,7 @@ def pressure_level(snapshot: MemorySnapshot) -> str:
 
 def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] = None) -> List[str]:
     """
-    Genera un informe unificado sobre el estado de la RAM, incluyendo métricas
-    totales y una lista de los procesos que mayor presión generan.
+    Genera un informe unificado sobre el estado de la RAM.
     """
     if not isinstance(snapshot, MemorySnapshot) or snapshot.total <= 0:
         return ["No se pudo leer el estado de la memoria en este sistema."]
@@ -312,16 +308,13 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
 
 
 def _is_system_process(pid: int) -> bool:
-    """Verifica si un proceso es de sistema (PID < 100) o requiere privilegios elevados."""
+    """Verifica si un proceso es de sistema (PID < 100)."""
     return pid <= 100
 
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
     Solicita al SO (Windows) liberar el espacio de trabajo de un proceso específico.
-    
-    Aplica verificaciones de seguridad previas para evitar la manipulación de 
-    procesos del sistema operativo (PIDs <= 100) o procesos de la propia aplicación.
     """
     if os.name != "nt":
         return False, "Solo disponible en Windows."
@@ -331,7 +324,9 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except (ValueError, TypeError):
         return False, "El PID debe ser un número entero válido."
 
-    # Seguridad: Bloquear PIDs de sistema y procesos críticos
+    if target_pid <= 0:
+        return False, "PID inválido: debe ser mayor a cero."
+
     if _is_system_process(target_pid):
         return False, "Operación denegada: PID de sistema crítico protegido."
     
@@ -348,7 +343,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     handle = kernel32.OpenProcess(REQUIRED_ACCESS, False, target_pid)
     if not handle:
         error_code = kernel32.GetLastError()
-        if error_code == 5: # ERROR_ACCESS_DENIED
+        if error_code == 5: 
             return False, "Acceso denegado: se requieren privilegios de administrador."
         return False, f"No se pudo acceder al proceso {target_pid} (Error {error_code})."
     
