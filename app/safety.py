@@ -148,7 +148,6 @@ def is_protected_path(path: PathLike) -> bool:
             return True
         if p == Path(p.anchor):
             return True
-        # Solo comprobar I/O si no se detectó por nombre o estructura base
         return p.exists() and _is_reparse_point(p)
     except (PermissionError, OSError, ValueError, TypeError):
         return True 
@@ -179,24 +178,18 @@ def is_sensitive_file(path: PathLike) -> bool:
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> Path:
     """
     Valida rigurosamente si una ruta es segura para ser modificada mediante una jerarquía de checks.
-    IMPORTANTE: Nunca usar esta función en una estructura 'if'. Debe lanzar UnsafePathError.
-    
-    Args:
-        path: La ruta a validar.
-        allow_sensitive: Si es True, permite archivos con extensiones críticas.
-        
-    Returns:
-        El objeto Path normalizado si la validación es exitosa.
-        
-    Raises:
-        UnsafePathError: Si cualquier chequeo de seguridad falla.
     """
     if path is None:
         raise UnsafePathError("Ruta nula recibida.")
         
     str_val = str(path)
-    if re.search(r'[\u0000-\u001F\u007F-\u009F\u200E\u200F\u202A-\u202E]', str_val) or str_val.startswith(r"\\?"):
+    # Bloqueo de caracteres nulos, secuencias de dispositivos y caracteres de control
+    if "\0" in str_val or re.search(r'[\u0000-\u001F\u007F-\u009F\u200E\u200F\u202A-\u202E]', str_val) or \
+       str_val.startswith(r"\\?") or str_val.startswith(r"\\."):
         raise UnsafePathError("Ruta contiene caracteres de control o formato potencialmente maliciosos.")
+    
+    if len(str_val) > 260:
+        raise UnsafePathError("Operación bloqueada: ruta demasiado larga.")
     
     try:
         p = normalize(path)
@@ -208,8 +201,6 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
 
     if p.stem.lower() in _RESERVED_NAMES:
         raise UnsafePathError("Operación bloqueada: nombre de dispositivo reservado.")
-    if len(str(p)) > 260:
-        raise UnsafePathError("Operación bloqueada: ruta demasiado larga.")
     if str(p).startswith(("\\\\", "//")):
         raise UnsafePathError("Operación bloqueada: rutas de red no permitidas.")
     

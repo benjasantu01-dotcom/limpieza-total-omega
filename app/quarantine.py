@@ -281,6 +281,9 @@ def quarantine_file(
     stored_name = f"{item_id}__{safe_name}"[:250] 
     destination = dest_dir / stored_name
 
+    if is_protected_path(destination):
+        raise UnsafePathError(f"Ruta de destino en cuarentena considerada insegura: {destination}")
+
     if destination.exists():
         raise FileExistsError(f"Colisión de nombre en destino: {destination}")
 

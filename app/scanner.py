@@ -91,12 +91,12 @@ class Scanner:
         try:
             if entry.is_dir(follow_symlinks=False):
                 if not self._is_reparse_point(entry):
-                    path_key = os.path.normpath(entry.path)
+                    # Normalizamos la ruta para asegurar consistencia en el set de vistos
+                    path_key = str(Path(entry.path).resolve())
                     if path_key not in self.seen and not is_protected_path(Path(path_key)):
                         self.seen.add(path_key)
                         stack.append(path_key)
             elif entry.is_file(follow_symlinks=False):
-                # La seguridad se pre-valida en el bucle para evitar llamadas redundantes
                 self.results.extend(scan_file(Path(entry.path)))
         except (PermissionError, OSError):
             pass
@@ -173,17 +173,18 @@ def scan_file(path: Path) -> ScanResult:
     Ejecuta el conjunto de heurísticas sobre un archivo específico.
     Solo procesa archivos existentes y validados por seguridad.
     """
-    if not path or is_protected_path(path):
+    try:
+        resolved_path = path.resolve(strict=True)
+    except (OSError, RuntimeError):
         return []
 
-    # Validar existencia antes de procesar para evitar ruido en logs o excepciones en checks
-    if not path.exists():
+    if is_protected_path(resolved_path):
         return []
 
     findings: ScanResult = []
     for check_func in CHECK_FUNCS:
         try:
-            result = check_func(path)
+            result = check_func(resolved_path)
             if result:
                 findings.append(result)
         except (PermissionError, OSError, FileNotFoundError):
@@ -206,7 +207,7 @@ def scan_directory(directory: Union[str, Path]) -> ScanResult:
         
     try:
         root_path = Path(directory).resolve(strict=True)
-        # Validación defensiva extra: no procesar nada que no sea un directorio real
+        # Validación defensiva: verificar que la ruta absoluta resuelta sea segura
         if not root_path.is_dir() or root_path.is_symlink() or is_protected_path(root_path):
             return []
     except (OSError, RuntimeError):
