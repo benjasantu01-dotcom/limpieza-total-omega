@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **252** (50.0% de aceptación)
-- Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 28
+- Mejoras aceptadas: **253** (50.2% de aceptación)
+- Rechazadas por tests: 13
+- Rechazadas por guardia de seguridad: 29
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 197
+- Sin respuesta de la IA (error o límite): 196
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-01 | 64 | 3 | 6 | 4 | 73 |
+| 2026-08-01 | 64 | 2 | 6 | 4 | 70 |
 | 2026-08-02 | 187 | 11 | 22 | 8 | 122 |
-| 2026-08-03 | 1 | 0 | 0 | 1 | 2 |
+| 2026-08-03 | 2 | 0 | 1 | 1 | 4 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **66**
 - manejo de errores y validación de entradas: **49**
 - rendimiento: **47**
-- robustez ante casos límite: **46**
+- robustez ante casos límite: **47**
 - seguridad defensiva: **44**
 
 ## Mejoras aceptadas por archivo
@@ -36,9 +36,9 @@ Este archivo se regenera solo en cada corrida a partir de
 - `branding.py`: **20**
 - `browser.py`: **20**
 - `organizer.py`: **18**
+- `quarantine.py`: **18**
 - `assistant.py`: **18**
 - `healthscore.py`: **17**
-- `quarantine.py`: **17**
 - `safety.py`: **17**
 - `diskreport.py`: **17**
 - `duplicates.py`: **15**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-03T00:18:53` **quarantine.py** (robustez ante casos límite): Se ha mejorado `purge_all` para que sea robusto ante excepciones durante la iteración del sistema de archivos y se ha añadido una validación de existencia previa en `restore_item` antes de intentar realizar operaciones de E/S, evitando errores innecesarios cuando el archivo en cuarentena ha sido manipulado externamente.
 - `2026-08-03T00:09:36` **main.py** (robustez ante casos límite): Mejoré la robustez de `main.py` ante errores inesperados en el hilo de la interfaz al inicializar `_cache` y los componentes de UI, asegurando que un fallo en un componente no impida la carga de los demás, cumpliendo así con el enfoque de robustez ante casos límite.
 - `2026-08-02T14:56:35` **diskreport.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `walk_files` y `drive_usage` ante la presencia de rutas con caracteres especiales o estados de sistema inusuales, añadiendo un chequeo explícito de `is_absolute()` y capturando errores específicos de `Path.resolve()` que podrían abortar el análisis en directorios con permisos restringidos o rutas de red incompletas.
 - `2026-08-02T14:56:11` **browser.py** (robustez ante casos límite): Mejoré la robustez de `directory_size` ante el acceso a rutas que pueden ser inaccesibles o bloqueadas mediante la adición de un chequeo explícito de `is_protected_path` sobre los subdirectorios durante el recorrido recursivo, evitando excepciones innecesarias y mejorando la consistencia con las reglas de seguridad.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-02T14:15:44` **browser.py** (rendimiento): Optimicé el cálculo del tamaño de directorios mediante `directory_size` reemplazando la lista (usada como stack) por una estructura más eficiente y eliminando la redundancia en las validaciones, mejorando el rendimiento en sistemas con muchos archivos pequeños.
 - `2026-08-02T14:15:22` **branding.py** (rendimiento): Optimicé el rendimiento de `gradient_colors` eliminando el bucle `for` redundante mediante el uso de una lista de comprensión y pre-cálculos de los segmentos, además de optimizar `draw_gradient_bar` para reducir drásticamente las llamadas al método `create_line` del canvas al agrupar segmentos de color idénticos de manera más eficiente.
 - `2026-08-02T14:05:49` **startup.py** (legibilidad y documentación): Mejora la legibilidad del método `StartupEntry.executable` extrayendo la lógica de saneamiento de la cadena de comando a un método privado dedicado (`_sanitize_command`), facilitando la comprensión del flujo de procesamiento de rutas y parámetros.
-- `2026-08-02T14:05:26` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings estructurados y type hints precisos, clarificando la lógica de validación y el manejo de rutas para facilitar el mantenimiento y la auditoría de seguridad.

@@ -337,6 +337,9 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
     base_path = quarantine_dir(base)
     stored_file = base_path / match.stored_name
     
+    if not stored_file.exists():
+        raise FileNotFoundError(f"El archivo no existe en la carpeta de cuarentena: {stored_file}")
+
     if not match.verify_integrity(stored_file):
         raise RuntimeError("Integridad comprometida: el archivo en cuarentena fue alterado.")
 
@@ -384,7 +387,7 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
     if is_protected_path(stored_file) or not is_within_directory(stored_file, quarantine_root):
         raise UnsafePathError(f"Intento de borrado fuera de cuarentena: {stored_file}")
 
-    if not match.verify_integrity(stored_file):
+    if not stored_file.exists() or not match.verify_integrity(stored_file):
         raise UnsafePathError(f"Integridad comprometida: no se borra un archivo sospechoso modificado.")
 
     try:
@@ -419,6 +422,12 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
                     count += 1
                 except (OSError, PermissionError):
                     continue
+        elif entry.is_file() and entry.name != MANIFEST_NAME:
+            # Caso de archivo basura en carpeta de cuarentena, no listado en manifiesto
+            try:
+                entry.unlink()
+            except (OSError, PermissionError):
+                pass
             
     if count > 0:
         remaining_items = [i for i in items if (quarantine_root / i.stored_name).exists()]
