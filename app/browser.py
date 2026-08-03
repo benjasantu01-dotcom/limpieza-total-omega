@@ -154,7 +154,8 @@ def directory_size(path: str | os.PathLike | None) -> int:
                             continue
                         if any(ord(c) < 32 for c in entry.name):
                             continue
-                        if entry.is_symlink():
+                        # Verificar puntos de reparse (junctions/symlinks) antes de profundizar
+                        if entry.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(entry.path)):
                             continue
                         if entry.is_dir(follow_symlinks=False):
                             stack.append(entry.path)

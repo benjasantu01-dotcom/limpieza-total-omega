@@ -125,7 +125,7 @@ SYSTEM_PROMPT: Final[str] = (
 
 _ENDPOINT: Final[str] = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
 _TIMEOUT_SECONDS: Final[int] = 30
-_PATH_REGEX: Final[re.Pattern] = re.compile(r"([a-zA-Z]:\\|/|\\|\.\.|\0)")
+_PATH_REGEX: Final[re.Pattern] = re.compile(r"([a-zA-Z]:\\|/|\\|\.\.|\0|[\u202e\u202d])")
 _CONTROL_CHARS_REGEX: Final[re.Pattern] = re.compile(r"[\x00-\x1f\x7f]")
 _TOKEN_REGEX: Final[re.Pattern] = re.compile(r"\w+")
 _MODEL_NAME_REGEX: Final[re.Pattern] = re.compile(r"^[a-zA-Z0-9\.\-_]+$")
@@ -171,7 +171,7 @@ class Answer:
         return self.source == "gemini"
 
 def _ensure_safe_text(text: str) -> bool:
-    """Validación defensiva: verifica que el texto no contenga rutas o caracteres de control."""
+    """Validación defensiva: verifica que el texto no contenga rutas, caracteres de control o inyecciones."""
     if not text:
         return False
     if _PATH_REGEX.search(text) or _CONTROL_CHARS_REGEX.search(text):
@@ -489,6 +489,7 @@ def _call_gemini(
             
         texto: str = "".join(p.get("text", "") for p in partes if isinstance(p, dict)).strip()
         
+        # Validar el texto recibido: sin rutas, sin caracteres de control, longitud acotada
         if not _ensure_safe_text(texto) or len(texto) > 1200:
             return None
             

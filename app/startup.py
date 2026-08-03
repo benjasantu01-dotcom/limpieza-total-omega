@@ -101,7 +101,7 @@ class StartupEntry:
 
     def _resolve_and_cache_path(self, path_str: str) -> str:
         """Expande y valida la ruta de un ejecutable, devolviendo su forma absoluta si es seguro."""
-        if not isinstance(path_str, str) or not path_str:
+        if not isinstance(path_str, str) or not path_str or any(c in path_str for c in '<>|?*'):
             return ""
         try:
             p: Path = Path(path_str).expanduser()
@@ -110,7 +110,7 @@ class StartupEntry:
             
             p_str = str(p)
             if p_str not in _EXISTS_CACHE:
-                _EXISTS_CACHE[p_str] = p.exists() and p.is_file()
+                _EXISTS_CACHE[p_str] = p.is_file()
             
             return p_str if _EXISTS_CACHE[p_str] else path_str
         except (OSError, ValueError, RuntimeError, TypeError):
