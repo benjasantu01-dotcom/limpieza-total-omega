@@ -219,19 +219,21 @@ def find_duplicates(
     3. Validación por hash completo (Confirmación absoluta).
     """
     if directories is None: return []
-    size_map = _collect_candidates(directories, min_size, skip_protected)
-    potential_groups = [(size, paths) for size, paths in size_map.items() if len(paths) > 1]
+    size_map: Dict[int, List[Path]] = _collect_candidates(directories, min_size, skip_protected)
+    potential_groups: List[Tuple[int, List[Path]]] = [(size, paths) for size, paths in size_map.items() if len(paths) > 1]
     
     if not potential_groups:
         return []
 
     groups: List[DuplicateGroup] = []
     
+    # Etapa 2: Refinamiento por cabeceras (Partial Hash)
     for size, same_size_paths in potential_groups:
-        partial_map = _refine_by_hash(same_size_paths, partial_hash)
+        partial_map: Dict[str, List[Path]] = _refine_by_hash(same_size_paths, partial_hash)
         
+        # Etapa 3: Confirmación por contenido completo (Full Hash)
         for partial_candidates in partial_map.values():
-            full_map = _refine_by_hash(partial_candidates, hash_file)
+            full_map: Dict[str, List[Path]] = _refine_by_hash(partial_candidates, hash_file)
             
             for digest, confirmed_paths in full_map.items():
                 groups.append(DuplicateGroup(

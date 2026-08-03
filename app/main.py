@@ -139,15 +139,19 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """Configura los contenedores de datos, el caché de sesión, la carga de 
         ajustes y el pool de hilos para procesos asíncronos.
         """
+        # Caché LRU de resultados de análisis
         self._cache: OrderedDict[str, Tuple[Any, float]] = OrderedDict()
         self._cache_ttl = 300  # 5 minutos
-        self._cache_max_size = 20 # Límite de ítems para evitar fugas de memoria
+        self._cache_max_size = 20
+        
+        # Estado de sesión y contexto
         self._last_health_state: Optional[Tuple] = None
         self.scan_target: Optional[str] = None
         self.analysis_folder: Optional[str] = None
         self.report_data: Dict[str, List[str]] = {}
         self.assistant_context = assistant.SystemContext()
         
+        # Carga de configuración
         try:
             raw_settings = settings_mod.load()
             if not isinstance(raw_settings, dict): 
@@ -157,11 +161,14 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             logging.error("Fallo al cargar ajustes, reseteando: %s", e)
             self.settings = settings_mod.reset()
             
+        # UI Components Mapping
         self.setting_vars: Dict[str, Any] = {}
         self.outputs: Dict[str, ctk.CTkTextbox] = {}
         self.tabs: Dict[str, ctk.CTkFrame] = {}
         self.cards: Dict[str, ctk.CTkLabel] = {}
         self.area_bars: Dict[str, Tuple[ctk.CTkProgressBar, ctk.CTkLabel]] = {}
+        
+        # Gestión de tareas y concurrencia
         self._tasks_running = 0
         self._executor = concurrent.futures.ThreadPoolExecutor(max_workers=5)
 
@@ -349,9 +356,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _action(self, parent: ctk.CTk, text: str, command: Callable, 
                 danger: bool = False, column: int = 0, secondary: bool = False) -> ctk.CTkButton:
-        """Factoría de botones que asigna colores semánticos a partir de branding 
-        basándose en si la acción es destructiva (danger) o secundaria.
-        """
+        """Factoría de botones que asigna colores semánticos a partir de branding."""
         if danger:
             fondo, hover, texto = ("danger", "danger_hover", "text")
         elif secondary:
@@ -406,7 +411,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     # -- Métodos de Construcción de Pestañas Específicas ------------------
 
     def _build_tab_salud(self) -> None:
-        """Renderiza la vista Salud: gauge de puntaje, tarjetas métricas y desglose por áreas."""
+        """Construye la vista Salud: gauge de puntaje, tarjetas métricas y desglose por áreas."""
         tab = self.tabs["Salud"]
         row = self._button_row(tab)
         self._action(row, "Analizar el sistema", self.on_full_analysis, column=0)
@@ -435,7 +440,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._make_output("Salud", tab)
 
     def _build_health_metrics_row(self, container: ctk.CTkFrame) -> None:
-        """Crea las tarjetas de métricas numéricas superiores (Basura, RAM, etc)."""
+        """Crea las tarjetas de métricas numéricas superiores."""
         metrics = (("basura", "Basura"), ("sospechosos", "Sospechosos"),
                    ("ram", "RAM libre"), ("disco", "Disco libre"))
         for i, (clave, titulo) in enumerate(metrics):
@@ -869,7 +874,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return None
         
         path_obj = Path(folder)
-        # Comprobar puntos de reparse (junctions) y rutas UNC (red)
         try:
             if safety.is_protected_path(path_obj):
                 messagebox.showwarning("Ruta protegida", "No podés operar sobre esta carpeta de sistema.")
@@ -878,7 +882,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 messagebox.showwarning("Ruta no soportada", "No se permiten puntos de unión ni recursos de red.")
                 return None
             
-            # Verificación de permisos de lectura antes de proceder
             if not os.access(path_obj, os.R_OK):
                 messagebox.showerror("Error", "No tienes permisos de lectura sobre esta carpeta.")
                 return None
@@ -971,13 +974,13 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         def actualizar():
             self._draw_gauge(resultado.score, resultado.grade)
 
-            valores = {
+            valores: Dict[str, str] = {
                 "basura": f"{junk_mb:.0f} MB",
                 "sospechosos": str(sospechosos),
                 "ram": f"{ram_libre:.0f}%",
                 "disco": f"{disco_libre:.0f}%",
             }
-            colores = {
+            colores: Dict[str, str] = {
                 "basura": branding.color("accent") if junk_mb < 1000 else branding.color("warning"),
                 "sospechosos": branding.color("accent") if sospechosos == 0 else branding.color("warning"),
                 "ram": branding.score_color(ram_libre * 3),
@@ -1036,7 +1039,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             directories = [self.scan_target] if self.scan_target else None
             junk = scan_for_junk(directories)
             
-            # Cacheamos el resultado
             if len(self._cache) >= self._cache_max_size:
                 self._cache.popitem(last=False)
             self._cache["junk"] = (junk, time.time())
@@ -1080,7 +1082,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.set_status("Moviendo a revisión...")
             dest = stage_for_review(aptos)
             self.log(f"Movidos {len(aptos)} archivos a: {dest}", "Limpieza")
-            # Invalida para forzar recalculo
             self._invalidate_cache("junk")
 
         self.run_async(task)
@@ -1214,7 +1215,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             messagebox.showinfo("Falta el ID", "Pegá el ID del archivo que querés restaurar.")
             return
 
-        # Validación estricta de ID
         if not raw_id.isalnum():
              messagebox.showerror("Error", "El ID debe ser alfanumérico.")
              return
@@ -1231,7 +1231,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
             ruta_orig = Path(item.original_path)
             
-            # Validación de seguridad: no restaurar en rutas de sistema
             try:
                 safety.ensure_safe_to_modify(ruta_orig)
             except safety.UnsafePathError:
@@ -1307,7 +1306,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def on_trim_process(self) -> None:
         """Intenta liberar el conjunto de trabajo de un proceso dado por su PID."""
         raw = self.pid_entry.get().strip()
-        # Validación de entrada tipo y rango
         if not raw.isdigit():
             messagebox.showwarning("Entrada inválida", "Ingresá un PID numérico válido.")
             return

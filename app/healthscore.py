@@ -147,14 +147,14 @@ def _to_int(value: Any, default: int = 0) -> int:
 
 
 def score_junk(junk_mb: float) -> float:
-    """Calcula un ratio de salud [0, 1] respecto a la basura acumulada (MB)."""
+    """Calcula el ratio de limpieza [0, 1]. 1.0 es sistema sin basura."""
     val = _to_float(junk_mb)
     if JUNK_LIMIT_MB <= 0: return 0.0
     return _clamp(1.0 - (val / JUNK_LIMIT_MB))
 
 
 def score_security(suspicious_count: int, warnings: int = 0) -> float:
-    """Calcula un ratio de salud [0, 1] penalizando hallazgos de seguridad y advertencias."""
+    """Calcula el ratio de seguridad [0, 1]. Penaliza exponencialmente más las advertencias que los hallazgos."""
     s = float(_to_int(suspicious_count))
     w = float(_to_int(warnings))
     penalty: float = (s * 0.05) + (w * 0.25)
@@ -162,28 +162,28 @@ def score_security(suspicious_count: int, warnings: int = 0) -> float:
 
 
 def score_memory(available_percent: float) -> float:
-    """Calcula un ratio de salud [0, 1] basado en el porcentaje de RAM disponible."""
+    """Calcula el ratio de salud de memoria [0, 1] respecto al umbral ideal de disponibilidad."""
     val = _to_float(available_percent)
     if RAM_IDEAL_PERCENT <= 0: return 0.0
     return _clamp(val / RAM_IDEAL_PERCENT)
 
 
 def score_disk(free_percent: float) -> float:
-    """Calcula un ratio de salud [0, 1] basado en el porcentaje de espacio libre en disco."""
+    """Calcula el ratio de espacio en disco [0, 1] respecto al umbral de seguridad."""
     val = _to_float(free_percent)
     if DISK_IDEAL_PERCENT <= 0: return 0.0
     return _clamp(val / DISK_IDEAL_PERCENT)
 
 
 def score_duplicates(duplicate_mb: float) -> float:
-    """Calcula un ratio de salud [0, 1] basado en el espacio desperdiciado por duplicados (MB)."""
+    """Calcula el ratio de eficiencia de almacenamiento [0, 1] basado en duplicados detectados."""
     val = _to_float(duplicate_mb)
     if DUPLICATE_LIMIT_MB <= 0: return 0.0
     return _clamp(1.0 - (val / DUPLICATE_LIMIT_MB))
 
 
 def score_startup(startup_count: int) -> float:
-    """Calcula un ratio de salud [0, 1] basado en la cantidad de programas en el inicio."""
+    """Calcula el ratio de optimización de arranque [0, 1] según la carga de procesos."""
     count = float(_to_int(startup_count))
     if STARTUP_LIMIT_COUNT <= 0: return 0.0
     return _clamp(1.0 - (count / STARTUP_LIMIT_COUNT))
