@@ -149,8 +149,8 @@ def directory_size(path: str | os.PathLike | None) -> int:
             with os.scandir(current_dir_str) as it:
                 for entry in it:
                     try:
-                        # Saltar archivos de usuario sensibles definidos por política
-                        if entry.name.lower() in NEVER_TOUCH:
+                        name_lower = entry.name.lower()
+                        if name_lower in NEVER_TOUCH:
                             continue
                         if any(ord(c) < 32 for c in entry.name):
                             continue
@@ -158,12 +158,8 @@ def directory_size(path: str | os.PathLike | None) -> int:
                             continue
                         if entry.is_dir(follow_symlinks=False):
                             stack.append(entry.path)
-                        else:
-                            # Sumar tamaño de archivos individuales
-                            try:
-                                total_bytes += entry.stat().st_size
-                            except (OSError, PermissionError):
-                                continue
+                        elif entry.is_file():
+                            total_bytes += entry.stat().st_size
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError, FileNotFoundError):

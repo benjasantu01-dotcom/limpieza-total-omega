@@ -1374,3 +1374,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-03T08:10:40` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `context_as_text` y `_rank_problems` evitando la creación de listas intermedias y el uso repetido de `getattr` mediante una pre-conversión de métricas a un diccionario, reduciendo la carga de CPU en cada consulta al asistente.
 - `2026-08-03T08:10:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-03T08:10:40` Corrida terminada. Total usado hoy: 192.
+- `2026-08-03T08:19:24` Arrancando corrida. Quedan hoy ~108 peticiones objetivo.
+- `2026-08-03T08:19:54` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-08-03T08:20:17` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Se optimizó `directory_size` pre-compilando `NEVER_TOUCH` a un set de strings en minúsculas y utilizando `entry.is_file()` para evitar llamadas innecesarias a `stat()` en directorios, reduciendo significativamente las llamadas al sistema operativo durante el recorrido.
+- `2026-08-03T08:20:40` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-08-03T08:20:49` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé el rendimiento de `_collect_candidates` utilizando `os.scandir` para obtener los objetos `DirEntry` que ya contienen la información de `stat` (st_dev, st_ino, st_size, st_mode), evitando así múltiples llamadas al sistema operativo adicionales (`is_file`, `is_dir`, `stat()`) por cada archivo.
+- `2026-08-03T08:20:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-03T08:20:49` Corrida terminada. Total usado hoy: 196.

@@ -146,34 +146,29 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
     groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: set[Tuple[int, int]] = set()
     
-    def _is_junction(p: Path) -> bool:
-        """Determina si una ruta es un punto de reparse (junction/symlink de Windows)."""
-        try:
-            return bool(p.lstat().st_reparse_tag)
-        except (AttributeError, OSError):
-            return False
-    
+    def _is_junction(entry: os.DirEntry) -> bool:
+        """Determina si una ruta es un punto de reparse usando flags de DirEntry."""
+        return entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction())
+
     def _scan(root_path: Path) -> None:
-        """Explora recursivamente un directorio, filtrando rutas protegidas."""
+        """Explora recursivamente un directorio usando DirEntry para evitar llamadas extra a stat."""
         try:
             with os.scandir(root_path) as it:
                 for entry in it:
                     try:
-                        p_entry = Path(entry.path)
-                        # Saltear enlaces simbólicos y junctions para evitar bucles o escaneos redundantes
-                        if entry.is_symlink() or _is_junction(p_entry): continue
+                        if _is_junction(entry): continue
                         
-                        full_p = p_entry.resolve()
-                        if skip_protected and is_protected_path(full_p): continue
-
                         if entry.is_dir():
-                            _scan(p_entry)
+                            _scan(Path(entry.path))
                         elif entry.is_file():
                             st = entry.stat()
                             if st.st_size < min_size: continue
                             
                             inode_id = (st.st_dev, st.st_ino)
                             if inode_id in visited_inodes: continue
+                            
+                            full_p = Path(entry.path).resolve()
+                            if skip_protected and is_protected_path(full_p): continue
                             
                             visited_inodes.add(inode_id)
                             groups[st.st_size].append(full_p)
