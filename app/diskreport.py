@@ -186,7 +186,6 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
                         
                         if entry.is_dir():
                             full_path = Path(entry.path).resolve()
-                            # Validar confinamiento: el subdirectorio debe seguir bajo base_path
                             try:
                                 full_path.relative_to(base_path)
                             except (ValueError, TypeError):
@@ -198,7 +197,12 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
                                 visited_directories.add(full_path)
                                 yield from scan_level(full_path)
                         else:
-                            yield Path(entry.path), entry.stat().st_size
+                            # Capturar excepciones al leer metadatos de archivos que pueden desaparecer
+                            try:
+                                size = entry.stat().st_size
+                                yield Path(entry.path), size
+                            except (OSError, PermissionError, FileNotFoundError):
+                                continue
                     except (OSError, PermissionError, FileNotFoundError, TypeError, AttributeError):
                         continue
         except (OSError, PermissionError, FileNotFoundError, TypeError):

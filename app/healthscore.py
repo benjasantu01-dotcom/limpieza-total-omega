@@ -186,8 +186,7 @@ def score_startup(startup_count: int) -> float:
     """Calcula un ratio de salud [0, 1] basado en la cantidad de programas en el inicio."""
     count = float(_to_int(startup_count))
     if STARTUP_LIMIT_COUNT <= 0: return 0.0
-    ratio = 1.0 - (count / STARTUP_LIMIT_COUNT)
-    return _clamp(ratio, 0.0, 1.0)
+    return _clamp(1.0 - (count / STARTUP_LIMIT_COUNT))
 
 
 def grade_for_score(score: int) -> str:

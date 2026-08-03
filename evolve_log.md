@@ -1402,3 +1402,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-03T08:52:06` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
 - `2026-08-03T08:52:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-03T08:52:06` Corrida terminada. Total usado hoy: 208.
+- `2026-08-03T09:00:54` Arrancando corrida. Quedan hoy ~92 peticiones objetivo.
+- `2026-08-03T09:01:18` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-08-03T09:01:42` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la robustez de `walk_files` y `largest_folders` ante archivos que desaparecen durante el recorrido (race conditions), envolviendo el acceso a `entry.stat().st_size` en bloques `try-except` específicos para evitar que excepciones de sistema (`FileNotFoundError`) interrumpan el análisis completo.
+- `2026-08-03T09:02:10` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Mejoré la robustez de `hash_file` y `partial_hash` para gestionar archivos que cambian de estado, se bloquean por otros procesos durante la lectura o sufren errores de I/O repentinos, asegurando que el bucle de escaneo no se detenga ante excepciones de sistema de archivos.
+- `2026-08-03T09:02:21` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `score_startup` y `score_security` ante casos límite donde los divisores (umbrales) podrían ser configurados erróneamente en cero o negativos, evitando divisiones por cero y retornos inconsistentes, además de asegurar que los ratios siempre tengan un piso lógico.
+- `2026-08-03T09:02:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-03T09:02:21` Corrida terminada. Total usado hoy: 212.

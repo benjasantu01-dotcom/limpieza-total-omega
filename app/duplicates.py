@@ -84,11 +84,13 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
         Hexdigest del hash SHA256 si es accesible, None en caso contrario.
     """
     try:
-        if path is None: return None
         p = Path(path).resolve()
-        if not p.exists() or not p.is_file() or p.is_symlink() or is_protected_path(p):
+        if not p.is_file() or p.is_symlink() or is_protected_path(p):
             return None
-        if p.stat().st_size == 0: return None
+        
+        # Obtener stat antes de abrir para verificar tamaño y existencia real
+        st = p.stat()
+        if st.st_size == 0: return None
             
         digest = hashlib.sha256()
         with open(p, "rb", buffering=chunk_size) as f:
@@ -107,10 +109,10 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
     que difieren en sus cabeceras antes de realizar un hash completo.
     """
     try:
-        if path is None: return None
         p = Path(path).resolve()
-        if not p.exists() or not p.is_file() or p.is_symlink() or is_protected_path(p):
+        if not p.is_file() or p.is_symlink() or is_protected_path(p):
             return None
+            
         if p.stat().st_size == 0: return None
 
         with open(p, "rb", buffering=read_bytes) as f:
