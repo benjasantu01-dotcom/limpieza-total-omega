@@ -188,9 +188,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
 
     def extract(source: Any, attr: str, default: Any, cast: Callable = float) -> Any:
         try:
-            if not hasattr(source, attr):
-                return default
-            val = getattr(source, attr, None)
+            val = getattr(source, attr, default)
             if val is None or not is_valid_num(val):
                 return default
             return cast(val)

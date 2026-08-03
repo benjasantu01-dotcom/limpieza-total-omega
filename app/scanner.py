@@ -100,7 +100,8 @@ class Scanner:
                         self.seen.add(path_key)
                         stack.append(path_key)
             elif entry.is_file(follow_symlinks=False):
-                self.results.extend(scan_file(path_obj))
+                # Pasamos el objeto Path ya validado
+                self.results.extend(scan_file(path_obj, prevalidated=True))
         except (PermissionError, OSError):
             pass
 
@@ -168,10 +169,11 @@ CHECK_FUNCS: Final[List[SuspicionCheck]] = [
     check_system_lookalike
 ]
 
-def scan_file(path: Path) -> ScanResult:
+def scan_file(path: Path, prevalidated: bool = False) -> ScanResult:
     """Ejecuta el conjunto de heurísticas sobre un archivo específico previa validación."""
-    if not path or not path.exists() or not is_safe_to_modify(path) or is_protected_path(path):
-        return []
+    if not prevalidated:
+        if not path or not path.exists() or not is_safe_to_modify(path) or is_protected_path(path):
+            return []
         
     findings: ScanResult = []
     for check_func in CHECK_FUNCS:

@@ -153,12 +153,8 @@ def validate(values: Any) -> dict[str, Any]:
     configuracion_final: dict[str, Any] = {}
     for clave, valor_defecto in DEFAULTS.items():
         valor_usuario = values.get(clave)
-        
-        # Aplicar validador si existe, caso contrario usar el valor tal cual
         validador = _VALIDATOR_MAP.get(clave)
         resultado = validador(clave, valor_usuario) if validador and valor_usuario is not None else valor_usuario
-        
-        # Asignar el resultado validado si es válido, de lo contrario fallback al defecto
         configuracion_final[clave] = resultado if resultado is not None else valor_defecto
         
     return configuracion_final
@@ -188,7 +184,6 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     """Persiste las configuraciones en un archivo temporal y realiza un reemplazo atómico."""
     global _cached_settings, _last_path, _last_mtime
     ruta = settings_path(path_or_base)
-    
     if not is_safe_to_modify(str(ruta)): return None
     
     limpio = validate(values)
@@ -208,7 +203,6 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
             tf.write(json_data)
             tf.flush()
             os.fsync(tf.fileno())
-        
         if is_safe_to_modify(str(ruta)):
             os.replace(temp_path, ruta)
             _cached_settings, _last_path, _last_mtime = limpio, ruta, ruta.stat().st_mtime
@@ -222,7 +216,7 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
 
 def update(changes: dict[str, Any], path_or_base: PathLike | None = None) -> dict[str, Any]:
     """Aplica cambios incrementales a la configuración actual y los guarda en disco."""
-    actual = _cached_settings.copy() if _cached_settings is not None else load(path_or_base)
+    actual = (_cached_settings or load(path_or_base)).copy()
     actual.update(changes)
     save(actual, path_or_base)
     return actual
@@ -234,12 +228,14 @@ def reset(path_or_base: PathLike | None = None) -> dict[str, Any]:
 
 def get(key: str, path_or_base: PathLike | None = None) -> Any:
     """Recupera un valor específico de la configuración actual."""
-    return (_cached_settings or load(path_or_base)).get(key, DEFAULTS.get(key))
+    config = _cached_settings or load(path_or_base)
+    return config.get(key, DEFAULTS.get(key))
 
 def assistant_api_key(path_or_base: PathLike | None = None) -> str:
     """Obtiene la clave de API priorizando la variable de entorno sobre el archivo de configuración."""
     desde_entorno = os.environ.get(API_KEY_ENV_VAR, "").strip()
-    return desde_entorno or (_cached_settings or load(path_or_base)).get("asistente_clave_api", "").strip()
+    if desde_entorno: return desde_entorno
+    return (_cached_settings or load(path_or_base)).get("asistente_clave_api", "").strip()
 
 def assistant_enabled(path_or_base: PathLike | None = None) -> bool:
     """Determina si el asistente IA está configurado y habilitado para su uso."""
