@@ -147,7 +147,7 @@ def parse_linux_meminfo(text: str) -> MemorySnapshot:
 
 def _is_valid_process_row(parts: List[str]) -> bool:
     """Valida que una lista de campos CSV represente datos de proceso válidos."""
-    return len(parts) >= 3 and parts[1].strip().isdigit() and parts[2].strip().isdigit()
+    return len(parts) >= 3 and parts[1].isdigit() and parts[2].isdigit()
 
 
 def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]:
@@ -158,28 +158,25 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
     if not text or not isinstance(text, str):
         return []
 
-    lines: List[str] = [line.strip() for line in text.splitlines() if line.strip()]
-    if not lines:
+    lines = text.splitlines()
+    if len(lines) < 2:
         return []
 
-    if lines[0].lower().startswith("name"):
-        lines = lines[1:]
-
     processes: List[ProcessMemory] = []
-    for line in lines:
-        try:
-            parts: List[str] = [p.strip().strip('"') for p in line.split(",")]
-            if _is_valid_process_row(parts):
-                processes.append(ProcessMemory(
-                    name=parts[0] or "Unknown", 
-                    pid=int(parts[1]), 
-                    working_set=int(parts[2])
-                ))
-        except (ValueError, IndexError):
-            continue
+    # Procesar omitiendo el header (lines[0])
+    for line in lines[1:]:
+        line = line.strip()
+        if not line: continue
+        parts = [p.strip().strip('"') for p in line.split(",")]
+        if _is_valid_process_row(parts):
+            processes.append(ProcessMemory(
+                name=parts[0] or "Unknown", 
+                pid=int(parts[1]), 
+                working_set=int(parts[2])
+            ))
 
     processes.sort(key=lambda p: p.working_set, reverse=True)
-    return processes[:max(1, int(limit))]
+    return processes[:max(1, limit)]
 
 
 def _read_windows_snapshot() -> MemorySnapshot:
@@ -235,12 +232,11 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     if os.name != "nt":
         return []
 
-    cache_key: str = f"limit_{limit}"
-    now: float = time.time()
-    if cache_key in _PROCESS_CACHE:
-        ts, data = _PROCESS_CACHE[cache_key]
+    now = time.time()
+    if "data" in _PROCESS_CACHE:
+        ts, data = _PROCESS_CACHE["data"]
         if now - ts < 5.0:
-            return data
+            return data[:limit]
 
     command: str = (
         "Get-Process | Select-Object -Property Name,Id,WorkingSet | "
@@ -253,7 +249,7 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
         )
         if result.returncode == 0 and result.stdout:
             processes = parse_windows_process_csv(result.stdout, limit=limit)
-            _PROCESS_CACHE[cache_key] = (now, processes)
+            _PROCESS_CACHE["data"] = (now, processes)
             return processes
     except (OSError, subprocess.SubprocessError):
         pass

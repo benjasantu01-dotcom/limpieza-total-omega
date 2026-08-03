@@ -171,15 +171,13 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _get_cached(self, key: str, provider: Optional[Callable] = None, force: bool = False) -> Any:
         """Retorna datos cacheados si están vigentes; gestiona política LRU."""
+        now = time.time()
         if not force and key in self._cache:
-            try:
-                data, timestamp = self._cache[key]
-                if time.time() - timestamp < self._cache_ttl:
-                    self._cache.move_to_end(key)
-                    return data
-                del self._cache[key]
-            except KeyError:
-                pass
+            data, timestamp = self._cache[key]
+            if now - timestamp < self._cache_ttl:
+                self._cache.move_to_end(key)
+                return data
+            del self._cache[key]
         
         if provider:
             try:
@@ -187,7 +185,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 if data is not None:
                     if len(self._cache) >= self._cache_max_size:
                         self._cache.popitem(last=False)
-                    self._cache[key] = (data, time.time())
+                    self._cache[key] = (data, now)
                 return data
             except Exception as e:
                 logging.error("Error al obtener datos para caché %s: %s", key, e)
