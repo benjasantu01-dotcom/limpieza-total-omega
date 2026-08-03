@@ -9,43 +9,45 @@ Este archivo se regenera solo en cada corrida a partir de
 - Mejoras aceptadas: **247** (49.0% de aceptación)
 - Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 28
-- Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 200
+- Sin cambios (nada sustancial que mejorar): 14
+- Sin respuesta de la IA (error o límite): 201
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-02 | 149 | 9 | 18 | 7 | 117 |
-| 2026-08-03 | 98 | 5 | 10 | 8 | 83 |
+| 2026-08-02 | 147 | 9 | 18 | 6 | 116 |
+| 2026-08-03 | 100 | 5 | 10 | 8 | 85 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **64**
 - manejo de errores y validación de entradas: **51**
-- seguridad defensiva: **50**
-- rendimiento: **43**
-- robustez ante casos límite: **39**
+- seguridad defensiva: **48**
+- rendimiento: **44**
+- robustez ante casos límite: **40**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **23**
+- `settings.py`: **24**
 - `scanner.py`: **22**
 - `browser.py`: **21**
 - `main.py`: **20**
-- `duplicates.py`: **18**
-- `assistant.py`: **18**
+- `assistant.py`: **19**
 - `organizer.py`: **17**
+- `duplicates.py`: **17**
 - `quarantine.py`: **17**
 - `branding.py`: **16**
 - `safety.py`: **16**
-- `healthscore.py`: **15**
 - `memory.py`: **15**
 - `diskreport.py`: **15**
 - `startup.py`: **14**
+- `healthscore.py`: **14**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-03T08:51:54` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` ante la posible inyección de valores inesperados o maliciosos en `extra` mediante `**kwargs`, aplicando una validación de tipo más estricta y limitando el acceso a atributos internos que no deberían ser modificables por el usuario.
+- `2026-08-03T08:50:58` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` y `save()` reemplazando llamadas redundantes a `load()` (que re-acceden al disco) por acceso directo al caché interno `_cached_settings` cuando es posible, evitando redundancia en el flujo de ejecución.
 - `2026-08-03T08:41:18` **scanner.py** (rendimiento): Optimizé `scan_file` para evitar múltiples llamadas redundantes a `is_safe_to_modify` y `is_protected_path` al procesar cada archivo, centralizando la validación de seguridad y mejorando la eficiencia en el bucle de escaneo.
 - `2026-08-03T08:40:29` **quarantine.py** (rendimiento): Optimicé el método `purge_all` para evitar la sobrecarga de consultas al disco y accesos innecesarios al sistema de archivos, utilizando un conjunto (set) para filtrar solo los archivos válidos y reduciendo las llamadas a `is_within_directory` y `verify_integrity` a lo estrictamente necesario.
 - `2026-08-03T08:31:45` **organizer.py** (rendimiento): Optimicé el proceso `_walk_dir` en `scan_for_junk` convirtiendo la `SYSTEM_FOLDER_BLOCKLIST` en un conjunto de comparación directa en minúsculas y reduciendo el número de llamadas a `is_safe_to_modify` para evitar chequeos redundantes de rutas que ya fueron validadas en el nivel superior, mejorando la velocidad de escaneo.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-03T08:09:32` **scanner.py** (legibilidad y documentación): Mejora la mantenibilidad y legibilidad del código mediante la formalización de la estructura de las funciones de chequeo (`SuspicionCheck`) y la adición de docstrings técnicos explicativos sobre las expectativas de las heurísticas.
 - `2026-08-03T08:00:13` **safety.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos detallados en las funciones internas y el uso de `Mapping` y `Sequence` en las anotaciones de tipo para mejorar la precisión contractual, siguiendo el enfoque de documentación exigido.
 - `2026-08-03T07:59:16` **organizer.py** (legibilidad y documentación): Documenté con docstrings claros y tipado los argumentos de `_walk_dir` y `_generate_unique_target`, eliminando ambigüedades sobre el propósito de las variables internas para mejorar la mantenibilidad.
-- `2026-08-03T07:50:43` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de docstrings detallados en las funciones de diagnóstico y gestión de memoria, utilizando type hints y TypeVars para mayor claridad en las firmas de los métodos, además de clarificar la intención de las constantes de acceso a la API de Windows.
-- `2026-08-03T07:50:33` **main.py** (legibilidad y documentación): Se han añadido type hints más precisos en los métodos del `LimpiezaTotalOmegaApp` y se han extraído bloques de lógica compleja en `_update_health_visuals` y `_build_single_health_bar` hacia funciones con nombres descriptivos para mejorar la legibilidad y mantenibilidad del flujo de construcción de la interfaz.

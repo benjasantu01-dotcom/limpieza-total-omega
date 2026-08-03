@@ -206,7 +206,8 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
 
 def update(changes: dict[str, Any], path_or_base: PathLike | None = None) -> dict[str, Any]:
     """Aplica cambios incrementales a la configuración actual y los guarda en disco."""
-    actual = load(path_or_base)
+    # Usamos el caché actual si está disponible para evitar una lectura innecesaria del disco
+    actual = _cached_settings.copy() if _cached_settings is not None else load(path_or_base)
     actual.update(changes)
     save(actual, path_or_base)
     return actual
@@ -218,21 +219,22 @@ def reset(path_or_base: PathLike | None = None) -> dict[str, Any]:
 
 def get(key: str, path_or_base: PathLike | None = None) -> Any:
     """Recupera un valor específico de la configuración actual."""
-    return load(path_or_base).get(key, DEFAULTS.get(key))
+    # Acceso directo al caché para evitar re-validar todo si ya fue cargado
+    return (_cached_settings or load(path_or_base)).get(key, DEFAULTS.get(key))
 
 def assistant_api_key(path_or_base: PathLike | None = None) -> str:
     """Obtiene la clave de API priorizando la variable de entorno sobre el archivo de configuración."""
     desde_entorno = os.environ.get(API_KEY_ENV_VAR, "").strip()
-    return desde_entorno or load(path_or_base).get("asistente_clave_api", "").strip()
+    return desde_entorno or (_cached_settings or load(path_or_base)).get("asistente_clave_api", "").strip()
 
 def assistant_enabled(path_or_base: PathLike | None = None) -> bool:
     """Determina si el asistente IA está configurado y habilitado para su uso."""
-    config = load(path_or_base)
+    config = _cached_settings or load(path_or_base)
     return bool(config.get("asistente_activado")) and bool(assistant_api_key(path_or_base))
 
 def describe(path_or_base: PathLike | None = None) -> list[str]:
     """Genera una representación textual formateada de la configuración actual para informes."""
-    actual = load(path_or_base)
+    actual = _cached_settings or load(path_or_base)
     clave = assistant_api_key(path_or_base)
     origen = f"variable de entorno {API_KEY_ENV_VAR}" if os.environ.get(API_KEY_ENV_VAR) else ("archivo de configuración" if clave else "no configurada")
     return [

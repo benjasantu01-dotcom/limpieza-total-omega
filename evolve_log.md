@@ -1395,3 +1395,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-03T08:41:18` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizé `scan_file` para evitar múltiples llamadas redundantes a `is_safe_to_modify` y `is_protected_path` al procesar cada archivo, centralizando la validación de seguridad y mejorando la eficiencia en el bucle de escaneo.
 - `2026-08-03T08:41:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-03T08:41:18` Corrida terminada. Total usado hoy: 204.
+- `2026-08-03T08:50:31` Arrancando corrida. Quedan hoy ~96 peticiones objetivo.
+- `2026-08-03T08:50:58` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de `load()` y `save()` reemplazando llamadas redundantes a `load()` (que re-acceden al disco) por acceso directo al caché interno `_cached_settings` cuando es posible, evitando redundancia en el flujo de ejecución.
+- `2026-08-03T08:51:21` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-08-03T08:51:54` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `build_context` ante la posible inyección de valores inesperados o maliciosos en `extra` mediante `**kwargs`, aplicando una validación de tipo más estricta y limitando el acceso a atributos internos que no deberían ser modificables por el usuario.
+- `2026-08-03T08:52:06` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-08-03T08:52:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-03T08:52:06` Corrida terminada. Total usado hoy: 208.

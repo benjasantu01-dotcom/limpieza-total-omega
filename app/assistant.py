@@ -183,10 +183,6 @@ def _ensure_safe_text(text: str) -> bool:
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
     """
     Transforma fuentes de datos crudos en un objeto SystemContext validado.
-    
-    Implementa un filtro estricto de tipos y rangos para garantizar que ninguna
-    información sensible o corrompida entre en la lógica de contexto. Se
-    asegura de que solo valores numéricos finitos sean procesados.
     """
     ctx = SystemContext()
 
@@ -223,8 +219,10 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         ctx.grade = str(grade) if isinstance(grade, (str, int, float)) else ""
         ctx.analyzed = True
 
+    # Bloqueo: Permitir solo sobrescritura de campos numéricos permitidos explícitamente
+    allowed_keys = {k for k, v in ctx.__dict__.items() if isinstance(v, (int, float))}
     for k, v in extra.items():
-        if hasattr(ctx, k) and k not in ["analyzed", "grade"] and is_valid_num(v):
+        if k in allowed_keys and is_valid_num(v):
             setattr(ctx, k, float(v))
 
     return ctx
