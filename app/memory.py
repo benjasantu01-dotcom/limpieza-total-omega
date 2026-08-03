@@ -313,7 +313,8 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except (ValueError, TypeError):
         return False, "El PID debe ser un número entero válido."
 
-    if target_pid <= 4:
+    # Seguridad: Bloquear PIDs de sistema y procesos críticos (bajo 100 es común en Windows)
+    if target_pid <= 100:
         return False, "Operación denegada: PID de sistema crítico protegido."
     
     if target_pid == os.getpid():

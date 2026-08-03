@@ -144,20 +144,27 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
     dispositivo e inodo (st_dev, st_ino).
     """
     groups: Dict[int, List[Path]] = defaultdict(list)
-    # Almacena tuplas (dev, ino) para identificar archivos idénticos en disco (hardlinks).
     visited_inodes: set[Tuple[int, int]] = set()
+    
+    def _is_junction(p: Path) -> bool:
+        try:
+            return bool(p.lstat().st_reparse_tag)
+        except (AttributeError, OSError):
+            return False
     
     def _scan(root_path: Path) -> None:
         try:
             with os.scandir(root_path) as it:
                 for entry in it:
                     try:
-                        if entry.is_symlink(): continue
-                        full_p = Path(entry.path).resolve()
+                        p_entry = Path(entry.path)
+                        if entry.is_symlink() or _is_junction(p_entry): continue
+                        
+                        full_p = p_entry.resolve()
                         if skip_protected and is_protected_path(full_p): continue
 
                         if entry.is_dir():
-                            _scan(Path(entry.path))
+                            _scan(p_entry)
                         elif entry.is_file():
                             st = entry.stat()
                             if st.st_size < min_size: continue

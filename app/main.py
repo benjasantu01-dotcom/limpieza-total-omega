@@ -1220,7 +1220,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             ruta_orig = Path(item.original_path)
             
             # Validación de seguridad: no restaurar en rutas de sistema
-            safety.ensure_safe_to_modify(ruta_orig)
+            try:
+                safety.ensure_safe_to_modify(ruta_orig)
+            except safety.UnsafePathError:
+                self.log(f"Error: La ruta original {ruta_orig} está protegida.", "Cuarentena")
+                return
             
             destino = quarantine.restore_item(raw_id)
             self.log(f"Restaurado en: {destino}", "Cuarentena")

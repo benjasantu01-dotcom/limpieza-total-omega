@@ -61,6 +61,11 @@ WEIGHTS: Final[Dict[str, int]] = {
 _TOTAL_WEIGHTS: Final[int] = sum(WEIGHTS.values())
 
 
+def _validate_weights() -> bool:
+    """Valida la integridad de la configuración de pesos antes del cálculo."""
+    return _TOTAL_WEIGHTS > 0 and all(isinstance(w, int) and w >= 0 for w in WEIGHTS.values())
+
+
 @dataclass
 class SystemMetrics:
     """
@@ -231,8 +236,8 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         return HealthResult(0, "F", {}, ["Error: Instancia de métricas no válida."])
     
     metrics.validate()
-    if not metrics.is_finite() or _TOTAL_WEIGHTS <= 0:
-        return HealthResult(0, "F", {}, ["Error: Datos de entrada no procesables."])
+    if not metrics.is_finite() or not _validate_weights():
+        return HealthResult(0, "F", {}, ["Error: Datos de entrada o configuración no procesables."])
 
     ratios: Dict[str, float] = {
         "seguridad": score_security(metrics.suspicious_count, metrics.suspicious_warnings),
