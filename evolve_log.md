@@ -409,3 +409,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-03T09:54:46` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-08-03T09:54:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-03T09:54:46` Corrida terminada. Total usado hoy: 232.
+- `2026-08-03T10:03:35` Arrancando corrida. Quedan hoy ~68 peticiones objetivo.
+- `2026-08-03T10:04:00` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-08-03T10:04:23` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se reforzó la robustez de `scan_file` y `scan_directory` introduciendo validaciones de seguridad adicionales antes de invocar los chequeos heurísticos, garantizando que ninguna ruta sea procesada si no supera los filtros de `safety.py`, previniendo errores de acceso en directorios restringidos durante el escaneo.
+- `2026-08-03T10:04:48` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad en `save()` y `settings_path()` para evitar ataques de tipo TOCTOU (Time-of-Check to Time-of-Use) y asegurar que cualquier ruta manipulada sea validada contra las restricciones del sistema antes de realizar operaciones de E/S.
+- `2026-08-03T10:04:57` ✅ Mejora aceptada en startup.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `StartupEntry._resolve_and_cache_path` evitando la resolución de rutas mediante `expanduser()` antes de la validación contra `is_protected_path`, asegurando que rutas con caracteres de escape o malformadas no eludan el filtro de seguridad de forma accidental.
+- `2026-08-03T10:04:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-03T10:04:57` Corrida terminada. Total usado hoy: 236.

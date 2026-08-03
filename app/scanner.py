@@ -89,19 +89,18 @@ class Scanner:
         """
         try:
             path_obj = Path(entry.path)
-            if not is_safe_to_modify(path_obj):
+            # Solo procesar si la ruta es segura y no está en la lista de protegidos
+            if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
                 return
 
             if entry.is_dir(follow_symlinks=False):
                 if not self._is_reparse_point(entry):
                     path_key = str(path_obj.resolve())
-                    if path_key not in self.seen and not is_protected_path(path_obj):
+                    if path_key not in self.seen:
                         self.seen.add(path_key)
                         stack.append(path_key)
             elif entry.is_file(follow_symlinks=False):
-                # Validar seguridad una sola vez aquí antes de delegar el escaneo
-                if not is_protected_path(path_obj):
-                    self.results.extend(scan_file(path_obj))
+                self.results.extend(scan_file(path_obj))
         except (PermissionError, OSError):
             pass
 
@@ -150,8 +149,9 @@ CHECK_FUNCS: Final[List[SuspicionCheck]] = [
 ]
 
 def scan_file(path: Path) -> ScanResult:
-    """Ejecuta el conjunto de heurísticas sobre un archivo específico."""
-    if not path.exists():
+    """Ejecuta el conjunto de heurísticas sobre un archivo específico previa validación."""
+    # Validación doble: existencia física y permisos de lectura definidos por política
+    if not path.exists() or not is_safe_to_modify(path) or is_protected_path(path):
         return []
         
     findings: ScanResult = []
@@ -172,6 +172,7 @@ def scan_directory(directory: Union[str, Path]) -> ScanResult:
         
     try:
         root_path = Path(directory).resolve(strict=True)
+        # Validación inicial: debe existir y ser seguro modificar (acceso base)
         if not root_path.exists() or not root_path.is_dir() or root_path.is_symlink() or not is_safe_to_modify(root_path):
             return []
     except (OSError, RuntimeError):

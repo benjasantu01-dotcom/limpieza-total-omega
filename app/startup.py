@@ -92,7 +92,7 @@ class StartupEntry:
             return ""
         
         try:
-            p: Path = Path(path_str).expanduser()
+            p: Path = Path(path_str)
             if is_protected_path(p):
                 return ""
             return str(p)
@@ -104,13 +104,15 @@ class StartupEntry:
         if not isinstance(path_str, str) or not path_str or any(c in path_str for c in '<>|?*'):
             return ""
         try:
-            p: Path = Path(path_str).expanduser()
+            p: Path = Path(path_str)
+            # Primero validamos la seguridad sin expandir para evitar escapes fuera de sandbox
             if is_protected_path(p) or p.is_symlink():
                 return path_str
             
-            p_str = str(p)
+            p_abs = p.expanduser().resolve()
+            p_str = str(p_abs)
             if p_str not in _EXISTS_CACHE:
-                _EXISTS_CACHE[p_str] = p.is_file()
+                _EXISTS_CACHE[p_str] = p_abs.is_file()
             
             return p_str if _EXISTS_CACHE[p_str] else path_str
         except (OSError, ValueError, RuntimeError, TypeError):

@@ -137,6 +137,7 @@ def settings_path(path_or_base: PathLike | None = None) -> Path:
     if key in _path_cache: return _path_cache[key]
     try:
         base = Path(key).expanduser()
+        # Escalar hasta encontrar una base segura o el root
         while not is_safe_to_modify(str(base)) and base != base.parent:
             base = base.parent
         res = base.resolve() / SETTINGS_FILE
@@ -181,23 +182,33 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     """Persiste las configuraciones en un archivo temporal y realiza un reemplazo atómico."""
     global _cached_settings, _last_path, _last_mtime
     ruta = settings_path(path_or_base)
+    
+    # Validar ruta destino antes de cualquier operación
     if not is_safe_to_modify(str(ruta)): return None
+    
     try:
+        # Asegurar que el directorio padre sea seguro antes de crear nada
         ensure_safe_to_modify(str(ruta.parent))
         limpio = validate(values)
         json_data = json.dumps(limpio, indent=2, ensure_ascii=False)
         ruta.parent.mkdir(parents=True, exist_ok=True)
     except (TypeError, ValueError, OSError, PermissionError): return None
+    
     temp_path: Path | None = None
     try:
+        # Usar dir destino para que el archivo temp herede restricciones y esté en el mismo volumen
         with tempfile.NamedTemporaryFile("w", dir=ruta.parent, delete=False, encoding="utf-8") as tf:
             temp_path = Path(tf.name)
             tf.write(json_data)
             tf.flush()
             os.fsync(tf.fileno())
-        os.replace(temp_path, ruta)
-        _cached_settings, _last_path, _last_mtime = limpio, ruta, ruta.stat().st_mtime
-        return ruta
+        
+        # Última comprobación de seguridad antes de mover
+        if is_safe_to_modify(str(ruta)):
+            os.replace(temp_path, ruta)
+            _cached_settings, _last_path, _last_mtime = limpio, ruta, ruta.stat().st_mtime
+            return ruta
+        return None
     except (OSError, PermissionError, RuntimeError): return None
     finally:
         if temp_path and temp_path.exists():
