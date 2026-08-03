@@ -184,14 +184,15 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     """Persiste las configuraciones en un archivo temporal y realiza un reemplazo atómico."""
     global _cached_settings, _last_path, _last_mtime
     ruta = settings_path(path_or_base)
-    if not is_safe_to_modify(str(ruta)): return None
+    
+    if not is_safe_to_modify(str(ruta)) or not is_safe_to_modify(str(ruta.parent)):
+        return None
     
     limpio = validate(values)
     if limpio.get("asistente_activado") and not (limpio.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)):
         limpio["asistente_activado"] = False
     
     try:
-        ensure_safe_to_modify(str(ruta.parent))
         json_data = json.dumps(limpio, indent=2, ensure_ascii=False)
         ruta.parent.mkdir(parents=True, exist_ok=True)
     except (TypeError, ValueError, OSError, PermissionError): return None
@@ -203,11 +204,9 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
             tf.write(json_data)
             tf.flush()
             os.fsync(tf.fileno())
-        if is_safe_to_modify(str(ruta)):
-            os.replace(temp_path, ruta)
-            _cached_settings, _last_path, _last_mtime = limpio, ruta, ruta.stat().st_mtime
-            return ruta
-        return None
+        os.replace(temp_path, ruta)
+        _cached_settings, _last_path, _last_mtime = limpio, ruta, ruta.stat().st_mtime
+        return ruta
     except (OSError, PermissionError, RuntimeError): return None
     finally:
         if temp_path and temp_path.exists():

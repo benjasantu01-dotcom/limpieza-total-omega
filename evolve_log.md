@@ -752,3 +752,12 @@ FAILED evolve/tests/test_modules.py::test_gradient_bar_paints_one_line_per_pixel
 - `2026-08-03T13:50:29` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Mejora la robustez del escaneo frente a archivos que desaparecen entre la detección y el procesamiento (Race Conditions) o que presentan nombres inválidos/inaccesibles, añadiendo una validación explícita de `is_file()` en `scan_file` para evitar intentos de `lstat()` fallidos en descriptores de archivos que cambiaron de estado o son dispositivos especiales.
 - `2026-08-03T13:50:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-03T13:50:29` Corrida terminada. Total usado hoy: 324.
+- `2026-08-03T13:59:18` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-03T13:59:45` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `save()` ante fallos de escritura y permisos añadiendo un chequeo preventivo de escritura en la carpeta padre mediante `is_safe_to_modify` antes de intentar crear el archivo temporal, evitando excepciones innecesarias y confirmando que la ruta es válida antes de cualquier operación de I/O.
+- `2026-08-03T14:00:09` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-08-03T14:00:42` Gemini no devolvió un bloque de archivo válido para assistant.py (enfoque: seguridad defensiva).
+- `2026-08-03T14:00:53` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-03T14:01:07` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-08-03T14:01:28` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `save_logo_svg` al validar explícitamente que la ruta resuelta no solo sea segura para modificar, sino que también resida en un directorio que no sea la raíz del sistema o rutas bloqueadas, utilizando `ensure_safe_to_modify` sobre el `parent` antes de cualquier operación de I/O.
+- `2026-08-03T14:01:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-03T14:01:28` Corrida terminada. Total usado hoy: 328.

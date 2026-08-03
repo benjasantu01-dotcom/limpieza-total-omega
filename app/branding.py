@@ -288,15 +288,15 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         return None
     try:
         target = Path(destination).expanduser().resolve()
+        # Verificamos seguridad antes de cualquier operación
         if not is_safe_to_modify(target):
             return None
-        # Solo procedemos si el directorio es seguro y escribible
+        # Validamos que el directorio padre sea seguro y accesible
         ensure_safe_to_modify(target.parent)
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(logo_svg(), encoding="utf-8")
         return target
     except (OSError, PermissionError, TypeError, ValueError, RuntimeError):
-        # Fallo silencioso ante denegación de permisos o rutas inválidas en disco
         return None
 
 
@@ -315,11 +315,6 @@ def logo_ascii() -> str:
 def draw_logo(canvas: Any, size: int = 56, canvas_x: int = 0, canvas_y: int = 0) -> None:
     """
     Renderiza el escudo Omega vectorialmente en un widget Tkinter.Canvas.
-    
-    Argumentos:
-        canvas: Widget canvas de tkinter.
-        size: Tamaño base en píxeles del logo.
-        canvas_x, canvas_y: Coordenadas de origen superior izquierdo.
     """
     if canvas is None or not hasattr(canvas, "create_polygon"): return
     try:
@@ -352,7 +347,6 @@ def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
                       stops: tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
     """
     Dibuja una franja horizontal decorativa mediante líneas adyacentes interpoladas.
-    La complejidad O(width) es manejable dado que se usa en UI de baja frecuencia.
     """
     if canvas is None or not hasattr(canvas, "create_line"): return
     try:
@@ -374,7 +368,6 @@ def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
               fill: Optional[HexColor] = None) -> None:
     """
     Renderiza un medidor radial circular para HealthScore.
-    Calcula el arco basado en el valor 0-100 mapeado a grados (0-360).
     """
     if canvas is None or not hasattr(canvas, "create_arc"): return
     try:
