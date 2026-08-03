@@ -189,13 +189,12 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     def is_valid_num(v: Any) -> bool:
         return isinstance(v, (int, float)) and not isinstance(v, bool) and math.isfinite(v)
 
-    def extract(source: Any, attr: str, default: Any, transform: Callable = float) -> Any:
-        if source is None:
-            return default
+    def extract(source: Any, attr: str, default: Any, cast: Callable = float) -> Any:
         try:
             val = getattr(source, attr, None)
-            res = transform(val) if is_valid_num(val) else default
-            return res if is_valid_num(res) else default
+            if val is None or not is_valid_num(val):
+                return default
+            return cast(val)
         except (AttributeError, ValueError, TypeError):
             return default
 

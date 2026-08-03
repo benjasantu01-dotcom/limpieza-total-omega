@@ -127,6 +127,7 @@ def drive_usage(mount: str | os.PathLike) -> DriveUsage | None:
         p = Path(path_str).expanduser()
         if not p.is_absolute():
             return None
+        # Usamos resolve sin strict=True para evitar excepciones en rutas inexistentes temporales
         p = p.resolve()
         if not p.exists() or is_protected_path(p):
             return None
@@ -167,7 +168,8 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
             path_obj = Path(directory).expanduser()
             if not path_obj.is_absolute():
                 return None
-            base = path_obj.resolve(strict=True)
+            # resolve() sin strict=True para evitar crashes por permisos en partes del path
+            base = path_obj.resolve()
             if base.is_dir() and not (skip_protected and is_protected_path(base)):
                 return base
         except (OSError, RuntimeError, PermissionError, ValueError, TypeError):
@@ -245,7 +247,7 @@ def largest_folders(directory: str | os.PathLike, limit: int = 10, skip_protecte
         path_obj = Path(directory).expanduser()
         if not path_obj.is_absolute():
             return []
-        base = path_obj.resolve(strict=True)
+        base = path_obj.resolve()
         if not base.is_dir():
             return []
         
@@ -297,9 +299,9 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
         path_obj = Path(directory).expanduser()
         if not path_obj.is_absolute():
             return [f"Error: La ruta '{directory}' no es absoluta."]
-        path_obj = path_obj.resolve(strict=True)
-        if not path_obj.is_dir():
-            return [f"Error: La ruta '{directory}' no es un directorio válido."]
+        path_obj = path_obj.resolve()
+        if not path_obj.exists() or not path_obj.is_dir():
+            return [f"Error: La ruta '{directory}' no es un directorio válido o es inaccesible."]
     except (OSError, RuntimeError, PermissionError, ValueError, TypeError):
         return ["Error: No se pudo acceder a la ruta especificada."]
         

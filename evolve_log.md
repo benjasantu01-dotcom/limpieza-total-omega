@@ -867,3 +867,38 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-08-03T02:24:53` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-08-03T02:24:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-03T02:24:53` Corrida terminada. Total usado hoy: 56.
+- `2026-08-03T02:30:56` Arrancando corrida. Quedan hoy ~244 peticiones objetivo.
+- `2026-08-03T02:31:30` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `build_context` implementando una validación exhaustiva de los datos de entrada para evitar que valores nulos o tipos incorrectos inesperados propaguen errores hacia las funciones de análisis, utilizando un manejo de excepciones local más granular.
+- `2026-08-03T02:31:59` Tests FALLARON:
+```
+y::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:127: SyntaxWarning: invalid escape sequence '\)'
+    """Verifica si la ruta apunta a la raíz de una unidad (ej. C:\)."""
+
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:84: SyntaxWarning: invalid escape sequence '\P'
+    Parsea comandos tipo '"C:\Program Files\App.exe" /arg' extrayendo solo
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_score_color_survives_garbage - AssertionError: assert '#ff4757' == '#94a3b8'
+  
+  - #94a3b8
+  + #ff4757
+1 failed, 298 passed, 11 warnings in 1.05s
+
+```
+- `2026-08-03T02:31:59` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `save_logo_svg` y `draw_ring` validando explícitamente valores de entrada potencialmente nulos o malformados, asegurando que cualquier error en la conversión de tipos sea capturado sin afectar el flujo de la aplicación.
+- `2026-08-03T02:32:22` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `directory_size` y `_is_safe_path` ante errores de sistema, añadiendo validaciones explícitas de tipos y capturando excepciones de forma granular para evitar que entradas de sistema bloqueadas o con permisos denegados interrumpan el análisis completo.
+- `2026-08-03T02:32:32` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `walk_files` y `summarize` implementando chequeos explícitos para manejar rutas inválidas o inaccesibles, evitando que `Path.resolve(strict=True)` interrumpa la ejecución ante permisos denegados o inconsistencias del sistema de archivos, alineándose con el enfoque de manejo de errores defensivos.
+- `2026-08-03T02:32:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-03T02:32:32` Corrida terminada. Total usado hoy: 60.

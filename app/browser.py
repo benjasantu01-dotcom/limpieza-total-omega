@@ -20,7 +20,7 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, Sequence, Dict, List, Optional, Tuple
+from typing import Iterable, Sequence, Dict, List, Optional
 from safety import is_protected_path
 
 __all__ = [
@@ -100,20 +100,21 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
     if not isinstance(target_path, Path) or not isinstance(base_path, Path):
         return False
     try:
-        # Prevenir nombres con caracteres de control ocultos (RTL, etc)
+        # Prevenir nombres con caracteres de control ocultos
         if any(ord(char) < 32 for char in target_path.name):
             return False
 
-        real_base = os.path.realpath(str(base_path))
-        real_target = os.path.realpath(str(target_path))
+        real_base = Path(os.path.realpath(str(base_path)))
+        real_target = Path(os.path.realpath(str(target_path)))
         
-        if os.path.islink(real_target) or (hasattr(os.path, 'isjunction') and os.path.isjunction(real_target)):
+        # Verificar que la ruta no sea un vínculo simbólico o junction
+        if real_target.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(str(real_target))):
             return False
 
         if is_protected_path(target_path):
             return False
             
-        return real_target.startswith(real_base)
+        return str(real_target).startswith(str(real_base))
     except (OSError, RuntimeError, ValueError, PermissionError):
         return False
 
@@ -141,7 +142,6 @@ def directory_size(path: str | os.PathLike | None) -> int:
             with os.scandir(current_dir_str) as it:
                 for entry in it:
                     try:
-                        # Verificar caracteres de control ocultos en nombres
                         if any(ord(c) < 32 for c in entry.name):
                             continue
                         if entry.name.lower() in NEVER_TOUCH or entry.is_symlink():
