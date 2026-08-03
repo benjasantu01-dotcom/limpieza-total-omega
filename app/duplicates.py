@@ -85,11 +85,10 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
     """
     if path is None: return None
     try:
-        p = Path(path).resolve()
+        p = Path(path)
         if not p.is_file() or p.is_symlink() or is_protected_path(p):
             return None
         
-        # Obtener stat antes de abrir para verificar tamaño y existencia real
         st = p.stat()
         if st.st_size == 0: return None
             
@@ -111,7 +110,7 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
     """
     if path is None: return None
     try:
-        p = Path(path).resolve()
+        p = Path(path)
         if not p.is_file() or p.is_symlink() or is_protected_path(p):
             return None
             
@@ -135,7 +134,6 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     for p in paths:
         if not isinstance(p, Path): continue
         try:
-            # Validación de seguridad antes de procesar
             if is_protected_path(p): continue
             groups[p.stat().st_size].append(p)
         except (OSError, PermissionError, FileNotFoundError):
@@ -152,18 +150,12 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
     groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: set[Tuple[int, int]] = set()
     
-    def _is_junction(entry: os.DirEntry) -> bool:
-        """Determina si una ruta es un punto de reparse usando flags de DirEntry."""
-        return entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction())
-
     def _scan(root_path: Path) -> None:
-        """Explora recursivamente un directorio usando DirEntry para evitar llamadas extra a stat."""
         try:
             with os.scandir(root_path) as it:
                 for entry in it:
                     try:
-                        if _is_junction(entry): continue
-                        
+                        if entry.is_symlink(): continue
                         if entry.is_dir():
                             _scan(Path(entry.path))
                         elif entry.is_file():
@@ -173,18 +165,18 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
                             inode_id = (st.st_dev, st.st_ino)
                             if inode_id in visited_inodes: continue
                             
-                            full_p = Path(entry.path).resolve()
-                            if is_protected_path(full_p): continue
+                            p = Path(entry.path)
+                            if is_protected_path(p): continue
                             
                             visited_inodes.add(inode_id)
-                            groups[st.st_size].append(full_p)
+                            groups[st.st_size].append(p)
                     except (OSError, PermissionError): continue
         except (OSError, PermissionError): pass
 
     if directories is None: return groups
     for directory in directories:
         if directory is None: continue
-        path_obj = Path(directory).resolve()
+        path_obj = Path(directory)
         if path_obj.is_dir() and not is_protected_path(path_obj):
             _scan(path_obj)
     return groups
@@ -193,9 +185,6 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
 def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
     """
     Reduce un grupo de candidatos procesando su contenido mediante la función de hash provista.
-    
-    Returns:
-        Diccionario {hash: [lista_de_rutas]} conteniendo solo grupos de colisiones con longitud >= 2.
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     if paths is None: return {}
@@ -227,11 +216,9 @@ def find_duplicates(
 
     groups: List[DuplicateGroup] = []
     
-    # Etapa 2: Refinamiento por cabeceras (Partial Hash)
     for size, same_size_paths in potential_groups:
         partial_map: Dict[str, List[Path]] = _refine_by_hash(same_size_paths, partial_hash)
         
-        # Etapa 3: Confirmación por contenido completo (Full Hash)
         for partial_candidates in partial_map.values():
             full_map: Dict[str, List[Path]] = _refine_by_hash(partial_candidates, hash_file)
             

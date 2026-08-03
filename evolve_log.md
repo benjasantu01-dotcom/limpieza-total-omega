@@ -706,3 +706,13 @@ FAILED evolve/tests/test_modules.py::test_gradient_bar_paints_one_line_per_pixel
 - `2026-08-03T12:49:45` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
 - `2026-08-03T12:49:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-03T12:49:45` Corrida terminada. Total usado hoy: 300.
+- `2026-08-03T12:57:59` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-03T12:58:12` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-03T12:58:45` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé el pipeline de detección reduciendo las llamadas redundantes a `Path.resolve()` y `is_protected_path()` en el bucle principal de `_collect_candidates`, moviendo la resolución de rutas solo a los archivos que ya pasaron el filtro de inodos y tamaño, minimizando el costo de E/S.
+- `2026-08-03T12:59:10` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del puntaje pre-calculando el factor de normalización (100 / sumatoria de pesos) fuera del bucle principal, eliminando operaciones redundantes de división y multiplicación en cada iteración del desglose.
+- `2026-08-03T12:59:59` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-03T13:00:08` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-08-03T13:01:20` ➖ Sin cambios en main.py (enfoque: rendimiento). Motivo: Se implementó un mecanismo de ejecución diferida (`after`) para las actualizaciones de la GUI dentro de `_update_health_visuals` y se eliminó la lógica redundante de re-análisis en el bucle principal, delegando la invalidación al caché existente para optimizar el rendimiento al alternar pestañas.
+- `2026-08-03T13:01:31` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el manejo de la caché de procesos mediante el uso de una constante de diccionario dedicada y una estructura de control más robusta, evitando accesos directos al diccionario global que podrían ser ineficientes o inseguros bajo concurrencia, y consolidando la lógica de invalidación.
+- `2026-08-03T13:01:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-03T13:01:31` Corrida terminada. Total usado hoy: 304.

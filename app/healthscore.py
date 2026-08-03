@@ -59,6 +59,7 @@ WEIGHTS: Final[Dict[str, int]] = {
 
 # Precalculo la suma de pesos para evitar iterar en el hot-path de compute_score.
 _TOTAL_WEIGHTS: Final[int] = sum(WEIGHTS.values())
+_NORM_FACTOR: Final[float] = 100.0 / _TOTAL_WEIGHTS
 
 
 def _validate_weights() -> bool:
@@ -252,11 +253,9 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
 
     breakdown: Dict[str, int] = {}
     total_score: float = 0.0
-    total_w = float(_TOTAL_WEIGHTS)
     
     for area, weight in WEIGHTS.items():
-        ratio = ratios.get(area, 0.0)
-        score_val = ratio * float(weight) * (100.0 / total_w)
+        score_val = ratios.get(area, 0.0) * float(weight) * _NORM_FACTOR
         breakdown[area] = int(score_val + 0.5)
         total_score += score_val
 

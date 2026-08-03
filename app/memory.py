@@ -70,7 +70,7 @@ PROCESS_SET_QUOTA: int = 0x0100
 PROCESS_VM_WRITE: int = 0x0020
 REQUIRED_ACCESS: int = PROCESS_QUERY_INFO | PROCESS_SET_QUOTA | PROCESS_VM_WRITE
 
-_PROCESS_CACHE: Dict[str, Tuple[float, List[ProcessMemory]]] = {}
+_PROCESS_CACHE: Dict[str, Tuple[float, List[ProcessMemory]]] = {"data": (0.0, [])}
 
 @dataclass
 class MemorySnapshot:
@@ -238,15 +238,13 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     """
     Consulta procesos de alto consumo en Windows. Implementa caché TTL de 5 segundos.
     """
-    global _PROCESS_CACHE
     if os.name != "nt":
         return []
 
     now = time.time()
-    if "data" in _PROCESS_CACHE:
-        ts, data = _PROCESS_CACHE["data"]
-        if now - ts < 5.0:
-            return data[:limit]
+    ts, data = _PROCESS_CACHE["data"]
+    if now - ts < 5.0:
+        return data[:limit]
 
     command: str = (
         "Get-Process | Select-Object -Property Name,Id,WorkingSet | "
