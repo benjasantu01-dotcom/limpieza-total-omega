@@ -29,11 +29,13 @@ import subprocess
 import time
 from functools import lru_cache
 from dataclasses import dataclass, field
-from typing import List, Tuple, Optional, Dict, TYPE_CHECKING
+from typing import List, Tuple, Optional, Dict, TYPE_CHECKING, TypeVar
 from safety import is_protected_path
 
 if TYPE_CHECKING:
     import ctypes
+
+_T = TypeVar("_T", int, float)
 
 __all__ = [
     "MemorySnapshot",
@@ -59,7 +61,7 @@ TRIM_WARNING: str = (
 
 BYTE_UNITS: Tuple[str, ...] = ("B", "KB", "MB", "GB", "TB")
 
-# Constantes de acceso para Win32 API
+# Constantes de acceso para Win32 API (Flags de permisos para OpenProcess)
 PROCESS_QUERY_INFO: int = 0x0400
 PROCESS_SET_QUOTA: int = 0x0100
 PROCESS_VM_WRITE: int = 0x0020
@@ -96,7 +98,7 @@ class MemorySnapshot:
 
 @dataclass
 class ProcessMemory:
-    """Consumo de memoria de un proceso (RSS/Working Set)."""
+    """Estructura de datos para el consumo de memoria de un proceso (RSS/Working Set)."""
     name: str
     pid: int
     working_set: int
@@ -104,14 +106,16 @@ class ProcessMemory:
 
     @property
     def working_set_mb(self) -> float:
-        """Convierte bytes a MB para legibilidad en la UI."""
+        """Convierte el valor de Working Set de bytes a MB para legibilidad en la UI."""
         return round(self.working_set / 1048576, 1)
 
 
-def format_bytes(num: int | float | None) -> str:
+def format_bytes(num: Optional[_T]) -> str:
     """
-    Convierte un valor numérico en bytes a formato de cadena legible.
-    Utiliza divisores de 1024 para escalar según la unidad (B, KB, MB, etc.).
+    Convierte un valor numérico en bytes a una cadena legible.
+    
+    Aplica divisiones sucesivas por 1024 para escalar a la unidad más adecuada 
+    (B, KB, MB, etc.).
     """
     if not isinstance(num, (int, float)) or num <= 0:
         return "0 B"
@@ -128,8 +132,8 @@ def format_bytes(num: int | float | None) -> str:
 @lru_cache(maxsize=4)
 def parse_linux_meminfo(text: str) -> MemorySnapshot:
     """
-    Interpreta el contenido de /proc/meminfo. 
-    Convierte los valores (expresados originalmente en kB) a bytes.
+    Interpreta el contenido de /proc/meminfo (texto crudo). 
+    Convierte valores expresados originalmente en kB a bytes para consistencia.
     """
     if not text:
         return MemorySnapshot(0, 0)
@@ -146,8 +150,7 @@ def parse_linux_meminfo(text: str) -> MemorySnapshot:
 
 
 def _is_valid_process_row(parts: List[str]) -> bool:
-    """Valida que una lista de campos CSV represente datos de proceso válidos."""
-    # Verificación estricta: nombre presente, PID y WS son numéricos positivos
+    """Valida que una lista de campos extraídos de un CSV sea un proceso procesable."""
     return (len(parts) >= 3 and 
             parts[1].isdigit() and 
             parts[2].isdigit() and 
@@ -156,8 +159,8 @@ def _is_valid_process_row(parts: List[str]) -> bool:
 
 def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]:
     """
-    Transforma el CSV bruto de PowerShell en objetos ProcessMemory.
-    Filtra entradas inválidas y ordena por consumo de WorkingSet.
+    Transforma la salida CSV de PowerShell en una lista de objetos ProcessMemory.
+    Filtra entradas corruptas y ordena los resultados por uso de memoria descendente.
     """
     if not isinstance(text, str) or not text.strip():
         return []
@@ -167,7 +170,6 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
         return []
 
     processes: List[ProcessMemory] = []
-    # Saltamos el encabezado y procesamos cada línea
     for line in lines[1:]:
         line = line.strip()
         if not line:
@@ -189,7 +191,7 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
 
 
 def _read_windows_snapshot() -> MemorySnapshot:
-    """Usa ctypes para consultar la API GlobalMemoryStatusEx de Windows."""
+    """Implementa la consulta a la API de Windows GlobalMemoryStatusEx mediante ctypes."""
     import ctypes
 
     class MEMORYSTATUSEX(ctypes.Structure):
@@ -216,7 +218,10 @@ def _read_windows_snapshot() -> MemorySnapshot:
 
 
 def read_snapshot() -> MemorySnapshot:
-    """Captura métricas de memoria del sistema, detectando el SO actual."""
+    """
+    Detecta el sistema operativo y delega la captura de métricas de RAM al 
+    método correspondiente según la plataforma (Win32 o /proc/meminfo).
+    """
     if os.name == "nt":
         try:
             return _read_windows_snapshot()
@@ -236,7 +241,10 @@ def read_snapshot() -> MemorySnapshot:
 
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
-    """Obtiene procesos que más RAM consumen en Windows con cache TTL."""
+    """
+    Consulta procesos de alto consumo en Windows. Implementa caché TTL de 5 segundos
+    para reducir la carga de llamadas a subprocesos del sistema.
+    """
     global _PROCESS_CACHE
     if os.name != "nt":
         return []
@@ -266,7 +274,10 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
 
 
 def pressure_level(snapshot: MemorySnapshot) -> str:
-    """Clasifica el estado de presión de la memoria."""
+    """
+    Evalúa el estado de salud de la RAM basado en el porcentaje disponible.
+    Retorna un identificador de criticidad: 'ok', 'info', 'warning', 'danger'.
+    """
     if not isinstance(snapshot, MemorySnapshot) or snapshot.total <= 0:
         return "info"
     available: float = snapshot.available_percent
@@ -277,7 +288,10 @@ def pressure_level(snapshot: MemorySnapshot) -> str:
 
 
 def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] = None) -> List[str]:
-    """Genera un reporte textual descriptivo sobre el estado de la RAM."""
+    """
+    Genera un informe unificado sobre el estado de la RAM, incluyendo métricas
+    totales y una lista de los procesos que mayor presión generan.
+    """
     if not isinstance(snapshot, MemorySnapshot) or snapshot.total <= 0:
         return ["No se pudo leer el estado de la memoria en este sistema."]
 
@@ -306,7 +320,10 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
-    Solicita al SO liberar memoria no esencial (Working Set) de un proceso.
+    Solicita al SO (Windows) liberar el espacio de trabajo de un proceso específico.
+    
+    Aplica verificaciones de seguridad previas para evitar la manipulación de 
+    procesos del sistema operativo (PIDs <= 100) o procesos de la propia aplicación.
     """
     if os.name != "nt":
         return False, "Solo disponible en Windows."

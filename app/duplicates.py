@@ -139,7 +139,7 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
 
 def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """
-    Realiza un recorrido recursivo por directorios, indexando archivos por tamaño.
+    Recorrido recursivo por directorios, indexando archivos por tamaño.
     Evita procesar el mismo archivo físico varias veces mediante la huella de 
     dispositivo e inodo (st_dev, st_ino).
     """
@@ -147,17 +147,20 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
     visited_inodes: set[Tuple[int, int]] = set()
     
     def _is_junction(p: Path) -> bool:
+        """Determina si una ruta es un punto de reparse (junction/symlink de Windows)."""
         try:
             return bool(p.lstat().st_reparse_tag)
         except (AttributeError, OSError):
             return False
     
     def _scan(root_path: Path) -> None:
+        """Explora recursivamente un directorio, filtrando rutas protegidas."""
         try:
             with os.scandir(root_path) as it:
                 for entry in it:
                     try:
                         p_entry = Path(entry.path)
+                        # Saltear enlaces simbólicos y junctions para evitar bucles o escaneos redundantes
                         if entry.is_symlink() or _is_junction(p_entry): continue
                         
                         full_p = p_entry.resolve()
@@ -188,10 +191,10 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
 
 def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
     """
-    Reduce un grupo de archivos procesando su contenido vía hash_func.
+    Reduce un grupo de candidatos procesando su contenido mediante la función de hash provista.
     
-    Retorna un diccionario de colisiones: {hash: [lista_de_rutas_con_ese_hash]}.
-    Solo se incluyen grupos con longitud >= 2 (duplicados confirmados por el hash).
+    Returns:
+        Diccionario {hash: [lista_de_rutas]} conteniendo solo grupos de colisiones con longitud >= 2.
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:

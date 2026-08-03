@@ -43,13 +43,12 @@ Ejecutar:
 import concurrent.futures
 import logging
 import os
-import threading
 import time
 import tkinter as tk
 from collections import OrderedDict
 from tkinter import filedialog, messagebox
 from pathlib import Path
-from typing import Optional, List, Dict, Tuple, Any, Callable
+from typing import Optional, List, Dict, Tuple, Any, Callable, Union
 
 import customtkinter as ctk
 
@@ -166,7 +165,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._tasks_running = 0
         self._executor = concurrent.futures.ThreadPoolExecutor(max_workers=5)
 
-    def _is_valid_dir(self, path: Optional[str]) -> bool:
+    def _is_valid_dir(self, path: Optional[Union[str, Path]]) -> bool:
         """Valida la existencia de una ruta como directorio en el sistema de archivos."""
         if not path:
             return False
