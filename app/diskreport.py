@@ -127,6 +127,7 @@ def drive_usage(mount: str | os.PathLike) -> DriveUsage | None:
         p = Path(path_str).expanduser()
         if not p.is_absolute():
             return None
+        # Usamos resolve() con cautela por posibles errores de acceso
         p = p.resolve()
         if not p.exists() or is_protected_path(p):
             return None
@@ -171,7 +172,6 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
     except (OSError, RuntimeError, PermissionError, ValueError, TypeError):
         return
 
-    base_str = str(base_path)
     visited_directories = {base_path}
 
     def scan_level(current_path: Path) -> Generator[Tuple[Path, int], None, None]:
@@ -182,17 +182,15 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
                         if entry.is_symlink() or (os.name == 'nt' and entry.stat(follow_symlinks=False).st_reparse_tag != 0):
                             continue
                         
-                        # Usamos la ruta del entry para evitar resolve() constante
-                        full_path = Path(entry.path)
-                        
                         if entry.is_dir():
+                            full_path = Path(entry.path)
                             if full_path not in visited_directories:
                                 if skip_protected and is_protected_path(full_path):
                                     continue
                                 visited_directories.add(full_path)
                                 yield from scan_level(full_path)
                         else:
-                            yield full_path, entry.stat().st_size
+                            yield Path(entry.path), entry.stat().st_size
                     except (OSError, PermissionError, FileNotFoundError, TypeError):
                         continue
         except (OSError, PermissionError, FileNotFoundError, TypeError):

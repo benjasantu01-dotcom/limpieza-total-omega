@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **252** (50.0% de aceptación)
+- Mejoras aceptadas: **253** (50.2% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 29
-- Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 195
+- Rechazadas por guardia de seguridad: 28
+- Sin cambios (nada sustancial que mejorar): 15
+- Sin respuesta de la IA (error o límite): 194
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-01 | 15 | 0 | 2 | 1 | 32 |
+| 2026-08-01 | 13 | 0 | 1 | 1 | 31 |
 | 2026-08-02 | 187 | 11 | 22 | 8 | 122 |
-| 2026-08-03 | 50 | 3 | 5 | 5 | 41 |
+| 2026-08-03 | 53 | 3 | 5 | 6 | 41 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **64**
 - manejo de errores y validación de entradas: **54**
-- seguridad defensiva: **48**
+- seguridad defensiva: **46**
 - rendimiento: **45**
-- robustez ante casos límite: **41**
+- robustez ante casos límite: **44**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **24**
-- `scanner.py`: **23**
+- `scanner.py`: **22**
+- `main.py`: **21**
 - `browser.py`: **21**
-- `main.py`: **20**
-- `quarantine.py`: **18**
 - `assistant.py`: **18**
+- `duplicates.py`: **18**
 - `safety.py`: **18**
-- `duplicates.py`: **17**
+- `diskreport.py`: **17**
 - `organizer.py`: **17**
+- `quarantine.py`: **17**
 - `startup.py`: **16**
-- `diskreport.py`: **16**
 - `branding.py`: **16**
 - `healthscore.py`: **15**
 - `memory.py`: **13**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-03T04:35:22` **main.py** (robustez ante casos límite): Mejoré la robustez de la inicialización de la ventana capturando posibles errores de configuración de DPI o geometría que podrían causar que la app no arranque en entornos con monitores múltiples o configuraciones de escala inusuales.
+- `2026-08-03T04:34:13` **duplicates.py** (robustez ante casos límite): Se ha añadido un chequeo de existencia previo mediante `p.exists()` en `hash_file` y `partial_hash` para evitar excepciones innecesarias en entornos donde los archivos pueden desaparecer durante el escaneo (condiciones de carrera), además de validar el tipo de entrada para robustez ante rutas corruptas.
+- `2026-08-03T04:33:50` **diskreport.py** (robustez ante casos límite): Se reforzó la robustez de `walk_files` y `drive_usage` ante condiciones de carrera (archivos eliminados durante el escaneo) y rutas inaccesibles, asegurando que `os.scandir` y `stat()` manejen errores de forma segura sin abortar el proceso.
 - `2026-08-03T04:24:46` **browser.py** (robustez ante casos límite): Mejoré la robustez de `directory_size` ante el bloqueo de archivos (muy común en cachés de navegadores) y problemas de concurrencia al añadir un manejo de excepciones explícito en `entry.stat()`, evitando que un error de lectura puntual detenga el cálculo del tamaño de toda la carpeta.
 - `2026-08-03T04:24:11` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` implementando una validación exhaustiva de los datos de entrada para evitar que valores `NaN`, `infinito` o tipos inesperados propaguen errores silenciosos al sistema de métricas o al asistente.
 - `2026-08-03T04:23:38` **startup.py** (rendimiento): Se optimizó el proceso de descubrimiento de ejecutables en `StartupEntry` introduciendo una verificación previa de existencia mediante un `set` de rutas ya escaneadas, evitando llamadas al sistema redundantes (`p.exists()`) cuando múltiples entradas comparten el mismo binario.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-03T03:53:28` **diskreport.py** (rendimiento): Optimizé `walk_files` y `summarize` reemplazando llamadas redundantes a `Path.resolve()` y `Path.is_protected_path` (operaciones de I/O pesadas) por un pre-procesamiento del `base_path` y el cacheo de los estados de protección durante la recursión.
 - `2026-08-03T03:53:03` **browser.py** (rendimiento): Optimicé `directory_size` reemplazando la lógica de validación de `NEVER_TOUCH` (que realizaba búsquedas en un `frozenset` por cada archivo y subcarpeta) por una pre-filtración más eficiente, y evité llamadas redundantes a `is_protected_path` centralizando la validación de entrada antes del bucle principal.
 - `2026-08-03T03:43:18` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna mediante docstrings detallados que explican el propósito de los métodos de la clase `StartupEntry`, además de añadir type hints explícitos para mejorar la legibilidad y el mantenimiento del código bajo estándares senior.
-- `2026-08-03T03:42:55` **settings.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados que explican los parámetros y el comportamiento de las funciones de validación, facilitando el mantenimiento y la comprensión de las reglas de negocio sobre los datos de configuración.
-- `2026-08-03T03:33:33` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos a las constantes de configuración y estructurando mejor el propósito de la clase `Scanner` para clarificar su rol como gestor de estado durante la recursión.
-- `2026-08-03T03:33:26` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `safety.py` mediante docstrings detallados en las funciones de bajo nivel, la adición de Type Hints faltantes y la organización lógica de las validaciones, facilitando la comprensión del flujo de seguridad para futuros auditores del código.

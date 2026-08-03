@@ -118,15 +118,22 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def __init__(self):
         super().__init__()
-        self._init_window_properties()
-        self._init_state()
-        self._build_layout()
+        try:
+            self._init_window_properties()
+            self._init_state()
+            self._build_layout()
+        except Exception as e:
+            logging.critical("Error fatal al inicializar la aplicación: %s", e)
+            raise
 
     def _init_window_properties(self) -> None:
         """Establece la geometría inicial, título y colores globales desde el branding."""
         self.title(branding.app_title())
-        self.geometry("1120x780")
-        self.minsize(980, 680)
+        try:
+            self.geometry("1120x780")
+            self.minsize(980, 680)
+        except Exception as e:
+            logging.warning("No se pudo configurar la geometría inicial: %s", e)
         self.configure(fg_color=branding.color("background"))
 
     def _init_state(self) -> None:
