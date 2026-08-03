@@ -150,7 +150,11 @@ def directory_size(path: str | os.PathLike | None) -> int:
                         if entry.is_dir(follow_symlinks=False):
                             stack.append(entry.path)
                         else:
-                            total_bytes += entry.stat().st_size
+                            # Captura errores de lectura/acceso en archivos individuales
+                            try:
+                                total_bytes += entry.stat().st_size
+                            except (OSError, PermissionError):
+                                continue
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError, FileNotFoundError):

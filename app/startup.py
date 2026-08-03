@@ -46,6 +46,9 @@ REGISTRY_RUN_KEYS: Tuple[str, ...] = (
 # Extensiones que consideramos ejecutables para el escaneo de carpetas.
 EXECUTABLE_EXTS: Tuple[str, ...] = ('.exe', '.bat', '.cmd', '.scr', '.lnk')
 
+# Caché global de archivos validados para evitar I/O repetitivo.
+_EXISTS_CACHE: Dict[str, bool] = {}
+
 # Se le muestra al usuario en vez de ofrecer un botón que toque el registro.
 HOW_TO_DISABLE: str = (
     "Para deshabilitar un programa de inicio, usá el Administrador de tareas "
@@ -104,9 +107,12 @@ class StartupEntry:
             p: Path = Path(path_str).expanduser()
             if is_protected_path(p) or p.is_symlink():
                 return path_str
-            if p.exists() and p.is_file():
-                return str(p)
-            return path_str
+            
+            p_str = str(p)
+            if p_str not in _EXISTS_CACHE:
+                _EXISTS_CACHE[p_str] = p.exists() and p.is_file()
+            
+            return p_str if _EXISTS_CACHE[p_str] else path_str
         except (OSError, ValueError, RuntimeError, TypeError):
             return path_str
         

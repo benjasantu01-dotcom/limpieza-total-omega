@@ -246,7 +246,6 @@ def context_as_text(context: SystemContext) -> str:
         if context.browser_cache_mb and context.browser_cache_mb > 0:
             lineas.append(f"Caché de navegadores: {float(context.browser_cache_mb):.0f} MB")
         
-        # Sanitización final: asegurar que no queden caracteres de control ni separadores prohibidos
         return _CONTROL_CHARS_REGEX.sub("", "\n".join(lineas))
     except (ValueError, TypeError):
         return "Error al procesar los datos de salud del sistema."
