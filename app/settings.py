@@ -168,14 +168,14 @@ def load(path_or_base: PathLike | None = None) -> dict[str, Any]:
         if stat.st_size > MAX_SETTINGS_SIZE: raise OSError("Config too large")
         raw_content = ruta.read_text(encoding="utf-8")
         data = json.loads(raw_content) if raw_content.strip() else {}
+        if not isinstance(data, dict): raise ValueError("Invalid structure")
         _cached_settings = validate(data)
         _last_path, _last_mtime = ruta, stat.st_mtime
         return _cached_settings.copy()
-    except (OSError, json.JSONDecodeError, UnicodeDecodeError, FileNotFoundError, PermissionError):
-        pass
-    _cached_settings = DEFAULTS.copy()
-    _last_path, _last_mtime = ruta, 0.0
-    return _cached_settings.copy()
+    except (OSError, json.JSONDecodeError, UnicodeDecodeError, FileNotFoundError, PermissionError, ValueError):
+        _cached_settings = DEFAULTS.copy()
+        _last_path, _last_mtime = ruta, 0.0
+        return _cached_settings.copy()
 
 def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     """Persiste las configuraciones en un archivo temporal y realiza un reemplazo atómico."""
@@ -206,7 +206,6 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
 
 def update(changes: dict[str, Any], path_or_base: PathLike | None = None) -> dict[str, Any]:
     """Aplica cambios incrementales a la configuración actual y los guarda en disco."""
-    # Usamos el caché actual si está disponible para evitar una lectura innecesaria del disco
     actual = _cached_settings.copy() if _cached_settings is not None else load(path_or_base)
     actual.update(changes)
     save(actual, path_or_base)
@@ -219,7 +218,6 @@ def reset(path_or_base: PathLike | None = None) -> dict[str, Any]:
 
 def get(key: str, path_or_base: PathLike | None = None) -> Any:
     """Recupera un valor específico de la configuración actual."""
-    # Acceso directo al caché para evitar re-validar todo si ya fue cargado
     return (_cached_settings or load(path_or_base)).get(key, DEFAULTS.get(key))
 
 def assistant_api_key(path_or_base: PathLike | None = None) -> str:

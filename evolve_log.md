@@ -1417,3 +1417,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-03T09:14:54` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: robustez ante casos límite).
 - `2026-08-03T09:14:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-03T09:14:54` Corrida terminada. Total usado hoy: 216.
+- `2026-08-03T09:22:46` Arrancando corrida. Quedan hoy ~84 peticiones objetivo.
+- `2026-08-03T09:23:07` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 102): unterminated string literal (detected at line 102)
+- `2026-08-03T09:23:31` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Mejoré la robustez de `ensure_safe_to_modify` ante condiciones de carrera y estados inconsistentes del sistema de archivos, añadiendo una verificación explícita de existencia antes de realizar operaciones de acceso que podrían lanzar excepciones impredecibles en entornos con alta actividad de disco.
+- `2026-08-03T09:23:53` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Mejora la robustez ante errores de acceso a archivos al añadir `OSError` al manejo de excepciones en `check_recent_executable_in_downloads` y `check_system_lookalike`, y añade una verificación de existencia `exists()` en `scan_file` para evitar procesar archivos que fueron eliminados durante la ejecución.
+- `2026-08-03T09:24:03` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se mejoró la resiliencia ante archivos de configuración corruptos o bloqueados añadiendo un control de integridad en la función `load` que evita el crecimiento indefinido del caché y garantiza una lectura limpia ante condiciones de carrera o archivos con formato inesperado.
+- `2026-08-03T09:24:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-03T09:24:03` Corrida terminada. Total usado hoy: 220.

@@ -71,7 +71,7 @@ def _is_system_or_hidden(path: Path) -> bool:
     Verifica mediante la API Win32 si un archivo posee atributos de sistema o oculto.
     Retorna False en entornos no Windows o ante errores de lectura de atributos.
     """
-    if os.name != 'nt':
+    if os.name != 'nt' or not path.exists():
         return False
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
@@ -86,6 +86,8 @@ def _is_reparse_point(path: Path) -> bool:
     Determina si la ruta es un punto de reanálisis (Junction/Symlink).
     El acceso a estos puede causar recursión infinita o borrados fuera del árbol deseado.
     """
+    if not path.exists():
+        return False
     try:
         stats = path.lstat()
         is_reparse = bool(getattr(stats, "st_file_attributes", 0) & 0x400)
@@ -114,6 +116,8 @@ def _is_readonly(path: Path) -> bool:
     Verifica el bit de modo S_IWRITE. Si no está presente, el archivo es tratado
     como protegido contra escritura a nivel de sistema de archivos.
     """
+    if not path.exists():
+        return False
     try:
         return not bool(path.stat().st_mode & stat.S_IWRITE)
     except (OSError, PermissionError):

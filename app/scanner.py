@@ -151,6 +151,9 @@ CHECK_FUNCS: Final[List[SuspicionCheck]] = [
 
 def scan_file(path: Path) -> ScanResult:
     """Ejecuta el conjunto de heurísticas sobre un archivo específico."""
+    if not path.exists():
+        return []
+        
     findings: ScanResult = []
     for check_func in CHECK_FUNCS:
         try:
