@@ -91,7 +91,6 @@ class Scanner:
         try:
             if entry.is_dir(follow_symlinks=False):
                 if not self._is_reparse_point(entry):
-                    # Normalizamos la ruta para asegurar consistencia en el set de vistos
                     path_key = str(Path(entry.path).resolve())
                     if path_key not in self.seen and not is_protected_path(Path(path_key)):
                         self.seen.add(path_key)
@@ -103,36 +102,18 @@ class Scanner:
 
 
 def check_double_extension(path: Path) -> Optional[Suspicion]:
-    """
-    Detecta nombres de archivos con doble extensión que ocultan ejecutables.
-
-    Args:
-        path: Ruta completa del archivo a evaluar.
-
-    Returns:
-        Un objeto `Suspicion` si se detecta el patrón, `None` si es seguro.
-    """
+    """Detecta nombres de archivos con doble extensión que ocultan ejecutables."""
     if path and path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
     return None
 
 
 def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_THRESHOLD_HOURS) -> Optional[Suspicion]:
-    """
-    Analiza la fecha de modificación de ejecutables para identificar descargas recientes.
-
-    Args:
-        path: Ruta del archivo.
-        hours: Límite de horas para considerar un archivo como "reciente".
-
-    Returns:
-        `Suspicion` si el archivo fue modificado dentro del umbral dado, `None` caso contrario.
-    """
-    if not path or path.suffix.lower() not in SUSPICIOUS_EXECUTABLE_EXT:
+    """Analiza la fecha de modificación de ejecutables para identificar descargas recientes."""
+    if not path or not path.exists() or path.suffix.lower() not in SUSPICIOUS_EXECUTABLE_EXT:
         return None
         
     try:
-        # Usamos lstat para no resolver enlaces y evitar errores adicionales en archivos bloqueados
         mtime = datetime.fromtimestamp(path.lstat().st_mtime)
         if datetime.now() - mtime < timedelta(hours=hours):
             return Suspicion(path, f"Ejecutable reciente detectado (modificado hace menos de {hours}h)", "info")
@@ -142,15 +123,7 @@ def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_TH
 
 
 def check_system_lookalike(path: Path) -> Optional[Suspicion]:
-    """
-    Identifica ejecutables con nombres de procesos críticos fuera de System32.
-
-    Args:
-        path: Ruta del archivo a inspeccionar.
-
-    Returns:
-        `Suspicion` si el nombre imita a un proceso de sistema crítico, `None` caso contrario.
-    """
+    """Identifica ejecutables con nombres de procesos críticos fuera de System32."""
     if not path or path.name.lower() not in SYSTEM_LOOKALIKES:
         return None
         
@@ -169,10 +142,10 @@ CHECK_FUNCS: Final[List[SuspicionCheck]] = [
 ]
 
 def scan_file(path: Path) -> ScanResult:
-    """
-    Ejecuta el conjunto de heurísticas sobre un archivo específico.
-    Solo procesa archivos existentes y validados por seguridad.
-    """
+    """Ejecuta el conjunto de heurísticas sobre un archivo específico."""
+    if not path or not path.exists() or not path.is_file():
+        return []
+
     try:
         resolved_path = path.resolve(strict=True)
     except (OSError, RuntimeError):
@@ -193,22 +166,13 @@ def scan_file(path: Path) -> ScanResult:
 
 
 def scan_directory(directory: Union[str, Path]) -> ScanResult:
-    """
-    Inicia un escaneo recursivo desde un punto de entrada dado.
-
-    Args:
-        directory: Ruta base (str o Path) para comenzar el análisis.
-
-    Returns:
-        Lista de objetos `Suspicion` acumulados en el escaneo.
-    """
+    """Inicia un escaneo recursivo desde un punto de entrada dado."""
     if not directory:
         return []
         
     try:
         root_path = Path(directory).resolve(strict=True)
-        # Validación defensiva: verificar que la ruta absoluta resuelta sea segura
-        if not root_path.is_dir() or root_path.is_symlink() or is_protected_path(root_path):
+        if not root_path.exists() or not root_path.is_dir() or root_path.is_symlink() or is_protected_path(root_path):
             return []
     except (OSError, RuntimeError):
         return []

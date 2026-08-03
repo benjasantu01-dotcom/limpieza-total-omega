@@ -121,7 +121,7 @@ def _validate_str(key: str, val: Any) -> str | None:
         try:
             path = Path(text).expanduser().resolve()
             return str(path) if is_safe_to_modify(str(path)) else None
-        except (OSError, RuntimeError, ValueError, TypeError): return None
+        except (OSError, RuntimeError, ValueError, TypeError, PermissionError): return None
     return text.lower() if key in ("tema", "acento") else text
 
 _VALIDATOR_MAP: Final[dict[type, Callable[[str, Any], Any]]] = {

@@ -46,7 +46,7 @@ import re
 import math
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Final, TypeAlias, Callable, Optional, Union
+from typing import Any, Final, TypeAlias, Callable, Optional
 
 import settings
 from safety import is_protected_path
@@ -167,10 +167,11 @@ class Answer:
 
     @property
     def is_online(self) -> bool:
+        """Indica si la respuesta fue generada por el motor Gemini."""
         return self.source == "gemini"
 
 def _ensure_safe_text(text: str) -> bool:
-    """Validación defensiva de texto antes de mostrarlo al usuario."""
+    """Validación defensiva: verifica que el texto no contenga rutas o caracteres de control."""
     if not text:
         return False
     if _PATH_REGEX.search(text) or _CONTROL_CHARS_REGEX.search(text):
