@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **248** (49.2% de aceptación)
+- Mejoras aceptadas: **247** (49.0% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 29
-- Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 198
+- Rechazadas por guardia de seguridad: 28
+- Sin cambios (nada sustancial que mejorar): 15
+- Sin respuesta de la IA (error o límite): 199
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-02 | 177 | 11 | 22 | 8 | 122 |
-| 2026-08-03 | 71 | 4 | 7 | 6 | 76 |
+| 2026-08-02 | 174 | 11 | 21 | 8 | 122 |
+| 2026-08-03 | 73 | 4 | 7 | 7 | 77 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **55**
 - seguridad defensiva: **54**
+- legibilidad y documentación: **52**
 - robustez ante casos límite: **49**
+- manejo de errores y validación de entradas: **47**
 - rendimiento: **45**
-- manejo de errores y validación de entradas: **45**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **24**
-- `scanner.py`: **22**
 - `browser.py`: **21**
-- `main.py`: **20**
-- `quarantine.py`: **18**
-- `safety.py`: **18**
+- `main.py`: **21**
+- `scanner.py`: **21**
 - `assistant.py`: **18**
+- `diskreport.py`: **17**
+- `quarantine.py`: **17**
+- `safety.py`: **17**
 - `branding.py`: **17**
 - `duplicates.py`: **17**
-- `diskreport.py`: **16**
 - `organizer.py`: **16**
 - `startup.py`: **14**
 - `healthscore.py`: **14**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-03T07:09:10` **main.py** (manejo de errores y validación de entradas): Se mejora el manejo de errores en `on_trim_process` y `on_restore_quarantine` mediante validaciones de tipo y rangos más estrictas, y se añade un bloque de seguridad defensiva en `on_full_analysis` para evitar fallos de ejecución cuando los módulos de reporte devuelven estados nulos o inesperados, cumpliendo con el enfoque de validación de entradas.
+- `2026-08-03T07:07:35` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `walk_files` y `largest_folders` añadiendo chequeos de `None` y validaciones de tipo más estrictas en las operaciones con rutas, asegurando que el código no falle ante entradas inesperadas o condiciones de carrera en el sistema de archivos.
 - `2026-08-03T06:59:13` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `base_directories` y `directory_size` añadiendo validaciones de tipo explícitas y manejando de forma más estricta los posibles `None` o estados inconsistentes, asegurando que la lógica de escaneo nunca procese rutas malformadas o tipos de datos inesperados.
 - `2026-08-03T06:59:05` **branding.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las funciones de visualización (`draw_logo`, `draw_gradient_bar`, `draw_ring`) añadiendo validaciones de tipo y rangos para evitar errores silenciosos o excepciones al recibir parámetros fuera de los límites esperados durante el renderizado.
 - `2026-08-03T06:58:37` **assistant.py** (manejo de errores y validación de entradas): Mejora la robustez de `build_context` validando explícitamente los tipos de datos en la entrada `metrics` mediante `isinstance` antes de realizar operaciones de acceso, evitando excepciones no controladas si se pasan objetos inesperados, y estandariza el manejo de errores en `settings.load` dentro de `ask`.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-03T05:05:53` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `walk_files` y `largest_folders` validando que las rutas de las subcarpetas se mantengan dentro del `base_path` original mediante `is_relative_to`, previniendo así posibles ataques de "path traversal" o escapes de directorio mediante enlaces simbólicos complejos no detectados por `os.scandir`.
 - `2026-08-03T05:05:23` **branding.py** (seguridad defensiva): Se ha mejorado la robustez de `save_logo_svg` utilizando `ensure_safe_to_modify` para el directorio padre (garantizando consistencia con las reglas de seguridad) y simplificando la lógica de validación para evitar redundancias, asegurando que la operación de escritura sea atómica respecto a la verificación de seguridad.
 - `2026-08-03T05:04:54` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva al serializar las métricas agregadas antes de enviarlas al motor Gemini, reemplazando cualquier posible carácter no seguro o separador de ruta por un espacio, garantizando que el contexto enviado siempre cumpla estrictamente con la política de "solo números agregados".
-- `2026-08-03T04:55:22` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `settings.py` ante errores de entrada inesperados en `validate` y `load`, asegurando que el uso de `None` o tipos incorrectos en el JSON no provoque fallos de ejecución, y mejorando la resiliencia ante errores de permisos en la lectura de archivos.
-- `2026-08-03T04:54:58` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en `process_entry` y `scan_directory` añadiendo una comprobación explícita mediante `is_safe_to_modify` antes de procesar entradas, asegurando que las rutas malformadas, bloqueadas o que resulten en `PermissionError` durante el `stat` sean omitidas elegantemente sin romper el bucle.

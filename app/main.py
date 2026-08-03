@@ -908,7 +908,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
         junk_mb = sum(j.size_bytes for j in junk) / (1024 * 1024)
         advertencias = sum(1 for h in hallazgos if h.severity == "warning")
-        libre_pct = (unidad.free / unidad.total * 100) if unidad and unidad.total else 100.0
+        libre_pct = (unidad.free / unidad.total * 100) if (unidad and unidad.total and unidad.total > 0) else 100.0
         en_cuarentena = quarantine.list_items()
         duplicado_mb = duplicates_mod.reclaimable_bytes(dups) / (1024 * 1024)
 
@@ -916,13 +916,13 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             junk_mb=junk_mb,
             suspicious_count=len(hallazgos),
             suspicious_warnings=advertencias,
-            memory_available_percent=snapshot.available_percent,
+            memory_available_percent=snapshot.available_percent if snapshot else 100.0,
             disk_free_percent=libre_pct,
             duplicate_mb=duplicado_mb,
             startup_count=len(arranque),
             quarantined_count=len(en_cuarentena),
         )
-        return metrics, snapshot, unidad or diskreport.DriveInfo(0, 0, 0, "")
+        return metrics, snapshot or memory_mod.Snapshot(0, 0, 0), unidad or diskreport.DriveInfo(0, 0, 0, "")
 
     def on_full_analysis(self) -> None:
         """Inicia un análisis completo de todas las áreas y actualiza los indicadores visuales."""
@@ -936,12 +936,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
             self.assistant_context = assistant.build_context(
                 metrics=metrics, health=resultado,
-                memory_total_gb=snapshot.total / (1024 ** 3) if snapshot.total else 0.0,
+                memory_total_gb=snapshot.total / (1024 ** 3) if (snapshot and snapshot.total) else 0.0,
             )
 
             self._update_health_visuals(
                 resultado, metrics.junk_mb, metrics.suspicious_count,
-                snapshot.available_percent, metrics.disk_free_percent
+                metrics.memory_available_percent, metrics.disk_free_percent
             )
 
             lineas = healthscore.summarize(resultado)
@@ -1207,6 +1207,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             messagebox.showinfo("Falta el ID", "Pegá el ID del archivo que querés restaurar.")
             return
 
+        # Validación estricta de ID
         if not raw_id.isalnum():
              messagebox.showerror("Error", "El ID debe ser alfanumérico.")
              return
@@ -1217,6 +1218,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 return
             
             item = quarantine.get_item(raw_id)
+            if not item or not hasattr(item, 'original_path'):
+                self.log("Error: El manifiesto de este ID está corrupto.", "Cuarentena")
+                return
+
             ruta_orig = Path(item.original_path)
             
             # Validación de seguridad: no restaurar en rutas de sistema
@@ -1260,7 +1265,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             snapshot = memory_mod.read_snapshot()
             procesos = memory_mod.top_memory_processes(limit=5)
             lineas = memory_mod.diagnose(snapshot, procesos)
-            if snapshot.total:
+            if snapshot and snapshot.total:
                 lineas = [
                     f"Uso de memoria  {branding.bar(snapshot.used_percent, 30)}  "
                     f"{snapshot.used_percent:.0f}%",
@@ -1295,13 +1300,14 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def on_trim_process(self) -> None:
         """Intenta liberar el conjunto de trabajo de un proceso dado por su PID."""
         raw = self.pid_entry.get().strip()
+        # Validación de entrada tipo y rango
         if not raw.isdigit():
             messagebox.showwarning("Entrada inválida", "Ingresá un PID numérico válido.")
             return
         
         pid = int(raw)
-        if pid <= 0:
-            messagebox.showwarning("PID inválido", "El PID debe ser mayor a 0.")
+        if pid < 0:
+            messagebox.showwarning("PID inválido", "El PID debe ser positivo.")
             return
         
         if not self._confirm("Liberar working set", memory_mod.TRIM_WARNING + "\n\n¿Seguimos?"):

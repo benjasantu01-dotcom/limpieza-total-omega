@@ -147,11 +147,12 @@ def all_drives_usage(mounts: Iterable[str] | None = None) -> list[DriveUsage]:
         else:
             mounts = ["/"]
     results = []
-    for mount in mounts:
-        if mount:
-            usage = drive_usage(mount)
-            if usage is not None:
-                results.append(usage)
+    if mounts:
+        for mount in mounts:
+            if mount:
+                usage = drive_usage(mount)
+                if usage is not None:
+                    results.append(usage)
     return results
 
 
@@ -187,7 +188,7 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
                             # Seguridad defensiva: verificar que sigue contenido en la raíz
                             try:
                                 full_path.relative_to(base_path)
-                            except ValueError:
+                            except (ValueError, TypeError):
                                 continue
                                 
                             if full_path not in visited_directories:
@@ -197,7 +198,7 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
                                 yield from scan_level(full_path)
                         else:
                             yield Path(entry.path), entry.stat().st_size
-                    except (OSError, PermissionError, FileNotFoundError, TypeError):
+                    except (OSError, PermissionError, FileNotFoundError, TypeError, AttributeError):
                         continue
         except (OSError, PermissionError, FileNotFoundError, TypeError):
             pass
@@ -255,7 +256,7 @@ def largest_folders(directory: str | os.PathLike, limit: int = 10, skip_protecte
                 stats = folder_map[top_level]
                 stats.size_bytes += size
                 stats.file_count += 1
-            except (ValueError, IndexError, OSError, FileNotFoundError, TypeError):
+            except (ValueError, IndexError, OSError, FileNotFoundError, TypeError, AttributeError):
                 continue
 
         return heapq.nlargest(max(0, limit), folder_map.values(), key=lambda f: f.size_bytes)
