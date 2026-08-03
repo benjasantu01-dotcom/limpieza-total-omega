@@ -146,7 +146,7 @@ def validate(values: Any) -> dict[str, Any]:
     for clave, defecto in DEFAULTS.items():
         val = values.get(clave, defecto)
         validator = _VALIDATOR_MAP.get(clave)
-        coerced = validator(clave, val) if validator else val
+        coerced = validator(clave, val) if validator and val is not None else val
         limpio[clave] = coerced if coerced is not None else defecto
     return limpio
 
@@ -159,7 +159,8 @@ def load(path_or_base: PathLike | None = None) -> dict[str, Any]:
         if _cached_settings is not None and ruta == _last_path and stat.st_mtime == _last_mtime:
             return _cached_settings.copy()
         if stat.st_size > MAX_SETTINGS_SIZE: raise OSError("Config too large")
-        data = json.loads(ruta.read_text(encoding="utf-8"))
+        raw_content = ruta.read_text(encoding="utf-8")
+        data = json.loads(raw_content) if raw_content.strip() else {}
         _cached_settings = validate(data)
         _last_path, _last_mtime = ruta, stat.st_mtime
         return _cached_settings.copy()

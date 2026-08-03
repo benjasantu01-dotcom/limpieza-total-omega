@@ -10,6 +10,7 @@ from __future__ import annotations
 import os
 import stat
 import re
+import ctypes
 from pathlib import Path
 from typing import Union, Iterable, TypeAlias, Final
 from functools import lru_cache
@@ -63,6 +64,18 @@ _RESERVED_NAMES: Final[frozenset[str]] = frozenset({
     "con", "prn", "aux", "nul", "com1", "com2", "com3", "com4", "com5", "com6", 
     "com7", "com8", "com9", "lpt1", "lpt2", "lpt3", "lpt4", "lpt5", "lpt6", "lpt7", "lpt8", "lpt9"
 })
+
+
+def _is_system_or_hidden(path: Path) -> bool:
+    """Verifica atributos de archivo (Hidden/System) usando API de Windows."""
+    if os.name != 'nt':
+        return False
+    try:
+        attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
+        if attrs == -1: return False
+        return bool(attrs & 0x02) or bool(attrs & 0x04)
+    except Exception:
+        return False
 
 
 def _is_reparse_point(path: Path) -> bool:
@@ -141,12 +154,10 @@ def is_protected_path(path: PathLike) -> bool:
     
     try:
         p = normalize(path)
-        # Check tokens primero (CPU bound, sin I/O)
         if any(part.lower() in _ALL_PROTECTED_TOKENS for part in p.parts):
             return True
         if p == Path(p.anchor):
             return True
-        # Solo chequea reparse points si la ruta existe, evitando I/O innecesario en rutas futuras
         return p.exists() and _is_reparse_point(p)
     except (PermissionError, OSError, ValueError, TypeError):
         return True 
@@ -207,8 +218,8 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
         if p.exists():
             if not os.access(p, os.W_OK):
                 raise UnsafePathError("Operación bloqueada: sin permisos de escritura.")
-            if _is_reparse_point(p) or _is_readonly(p) or _is_file_in_use(p):
-                raise UnsafePathError("Operación bloqueada: archivo inaccesible, protegido o en uso.")
+            if _is_reparse_point(p) or _is_readonly(p) or _is_file_in_use(p) or _is_system_or_hidden(p):
+                raise UnsafePathError("Operación bloqueada: archivo inaccesible, protegido o sistema.")
             if p.is_file() and p.stat().st_nlink > 1:
                 raise UnsafePathError("Operación bloqueada: enlace físico detectado.")
     except OSError as e:
@@ -267,6 +278,8 @@ def describe_protection(path: PathLike) -> str:
             return f"'{p}' atributos de solo lectura."
         if _is_file_in_use(p):
             return f"'{p}' está en uso por otro proceso."
+        if _is_system_or_hidden(p):
+            return f"'{p}' archivo de sistema o oculto."
     if is_sensitive_file(p):
         return f"'{p.name}' extensión sensible."
     return f"'{p}' es candidata a modificación."

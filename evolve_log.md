@@ -1032,3 +1032,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-03T04:45:08` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
 - `2026-08-03T04:45:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-03T04:45:08` Corrida terminada. Total usado hoy: 112.
+- `2026-08-03T04:54:09` Arrancando corrida. Quedan hoy ~188 peticiones objetivo.
+- `2026-08-03T04:54:36` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha mejorado `ensure_safe_to_modify` para detectar de forma explícita archivos con atributos de sistema (Hidden, System, Archive) usando `ctypes`, protegiendo el sistema contra la manipulación inadvertida de archivos ocultos o críticos del SO que no siempre son capturados por el `stat` estándar.
+- `2026-08-03T04:54:58` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante casos límite en `process_entry` y `scan_directory` añadiendo una comprobación explícita mediante `is_safe_to_modify` antes de procesar entradas, asegurando que las rutas malformadas, bloqueadas o que resulten en `PermissionError` durante el `stat` sean omitidas elegantemente sin romper el bucle.
+- `2026-08-03T04:55:22` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `settings.py` ante errores de entrada inesperados en `validate` y `load`, asegurando que el uso de `None` o tipos incorrectos en el JSON no provoque fallos de ejecución, y mejorando la resiliencia ante errores de permisos en la lectura de archivos.
+- `2026-08-03T04:55:30` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-08-03T04:55:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-03T04:55:30` Corrida terminada. Total usado hoy: 116.

@@ -20,7 +20,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from datetime import datetime, timedelta
 from typing import List, Optional, Union, Final, Callable, TypeAlias
-from safety import is_protected_path
+from safety import is_protected_path, is_safe_to_modify
 
 # Configuración de logger para el módulo
 logger = logging.getLogger(__name__)
@@ -86,21 +86,20 @@ class Scanner:
         Clasifica una entrada de directorio o archivo. 
         Si es directorio: valida seguridad y añade a la pila si no es un punto de reparseo.
         Si es archivo: aplica las heurísticas registradas.
-
-        Args:
-            entry: Entrada de sistema de archivos (`os.DirEntry`) a procesar.
-            stack: Lista de directorios pendientes de escaneo (mutada in-place).
         """
         try:
+            path_obj = Path(entry.path)
+            if not is_safe_to_modify(path_obj):
+                return
+
             if entry.is_dir(follow_symlinks=False):
                 if not self._is_reparse_point(entry):
-                    path_key = str(Path(entry.path).resolve())
-                    if path_key not in self.seen and not is_protected_path(Path(path_key)):
+                    path_key = str(path_obj.resolve())
+                    if path_key not in self.seen and not is_protected_path(path_obj):
                         self.seen.add(path_key)
                         stack.append(path_key)
             elif entry.is_file(follow_symlinks=False):
-                # Se pasa la ruta absoluta sin re-validar existencia para evitar syscalls redundantes
-                self.results.extend(scan_file(Path(entry.path)))
+                self.results.extend(scan_file(path_obj))
         except (PermissionError, OSError):
             pass
 
@@ -147,8 +146,7 @@ CHECK_FUNCS: Final[List[SuspicionCheck]] = [
 
 def scan_file(path: Path) -> ScanResult:
     """Ejecuta el conjunto de heurísticas sobre un archivo específico."""
-    # Validación mínima de seguridad; las llamadas innecesarias a exists/is_file se removieron
-    if is_protected_path(path):
+    if is_protected_path(path) or not is_safe_to_modify(path):
         return []
 
     findings: ScanResult = []
@@ -169,7 +167,7 @@ def scan_directory(directory: Union[str, Path]) -> ScanResult:
         
     try:
         root_path = Path(directory).resolve(strict=True)
-        if not root_path.exists() or not root_path.is_dir() or root_path.is_symlink() or is_protected_path(root_path):
+        if not root_path.exists() or not root_path.is_dir() or root_path.is_symlink() or not is_safe_to_modify(root_path):
             return []
     except (OSError, RuntimeError):
         return []
