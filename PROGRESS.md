@@ -8,24 +8,24 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **248** (49.2% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 27
+- Rechazadas por guardia de seguridad: 26
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 203
+- Sin respuesta de la IA (error o límite): 204
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-02 | 127 | 8 | 15 | 5 | 81 |
-| 2026-08-03 | 121 | 5 | 12 | 8 | 122 |
+| 2026-08-02 | 124 | 8 | 14 | 5 | 81 |
+| 2026-08-03 | 124 | 5 | 12 | 8 | 123 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **56**
 - seguridad defensiva: **55**
+- legibilidad y documentación: **53**
 - robustez ante casos límite: **50**
+- manejo de errores y validación de entradas: **46**
 - rendimiento: **44**
-- manejo de errores y validación de entradas: **43**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,18 +34,21 @@ Este archivo se regenera solo en cada corrida a partir de
 - `browser.py`: **20**
 - `main.py`: **20**
 - `assistant.py`: **19**
-- `quarantine.py`: **18**
-- `organizer.py`: **17**
-- `duplicates.py`: **17**
-- `safety.py`: **16**
-- `healthscore.py`: **15**
+- `duplicates.py`: **18**
+- `quarantine.py`: **17**
+- `healthscore.py`: **16**
+- `organizer.py`: **16**
+- `diskreport.py`: **16**
 - `startup.py`: **15**
 - `branding.py`: **15**
-- `diskreport.py`: **15**
+- `safety.py`: **15**
 - `memory.py`: **15**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-03T11:37:24` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `summarize` y `_generate_recommendations` añadiendo validaciones preventivas de estado (checks de tipo y contenido) para evitar excepciones al procesar objetos `HealthResult` potencialmente mal formados, garantizando que la UI nunca reciba valores `None` o estructuras vacías inesperadas.
+- `2026-08-03T11:37:14` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `find_duplicates` y las funciones auxiliares de hash validando explícitamente que las entradas sean `Path` válidos y no `None` antes de procesar, evitando posibles errores de tipo (TypeError) o excepciones no capturadas al manipular colecciones de archivos.
+- `2026-08-03T11:36:50` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `drive_usage` validando explícitamente que los parámetros de entrada sean de tipo adecuado y no estén vacíos, además de añadir un control de seguridad adicional contra `None` en la lógica de iteración de archivos para evitar fallos silenciosos en entornos donde las rutas pueden resolverse como `None` o rutas relativas inválidas.
 - `2026-08-03T10:04:57` **startup.py** (seguridad defensiva): Mejoré la seguridad defensiva en `StartupEntry._resolve_and_cache_path` evitando la resolución de rutas mediante `expanduser()` antes de la validación contra `is_protected_path`, asegurando que rutas con caracteres de escape o malformadas no eludan el filtro de seguridad de forma accidental.
 - `2026-08-03T10:04:48` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad en `save()` y `settings_path()` para evitar ataques de tipo TOCTOU (Time-of-Check to Time-of-Use) y asegurar que cualquier ruta manipulada sea validada contra las restricciones del sistema antes de realizar operaciones de E/S.
 - `2026-08-03T10:04:23` **scanner.py** (seguridad defensiva): Se reforzó la robustez de `scan_file` y `scan_directory` introduciendo validaciones de seguridad adicionales antes de invocar los chequeos heurísticos, garantizando que ninguna ruta sea procesada si no supera los filtros de `safety.py`, previniendo errores de acceso en directorios restringidos durante el escaneo.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-03T09:34:27` **branding.py** (seguridad defensiva): Se ha mejorado la robustez de `save_logo_svg` reemplazando la validación manual de existencia de directorio por una lógica más estricta que utiliza `ensure_safe_to_modify` para el padre, cumpliendo con las directrices de seguridad defensiva y evitando la escritura en rutas no permitidas.
 - `2026-08-03T09:33:58` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva de `assistant.py` mediante la aplicación de un principio de menor privilegio en `_call_gemini` y `_ensure_safe_text`: ahora los caracteres de control están prohibidos de forma estricta y se añadió una capa extra de validación contra inyecciones de metacaracteres (como `..` o prefijos de unidad) en la respuesta del motor remoto, asegurando que el asistente no pueda filtrar rutas del sistema ni siquiera accidentalmente.
 - `2026-08-03T09:33:24` **startup.py** (robustez ante casos límite): Se ha mejorado la robustez de `StartupEntry._resolve_and_cache_path` añadiendo un manejo explícito de rutas que contienen caracteres no válidos o que resultan en errores de resolución del sistema de archivos, evitando excepciones no controladas durante la inspección de entradas de registro mal formadas.
-- `2026-08-03T09:24:03` **settings.py** (robustez ante casos límite): Se mejoró la resiliencia ante archivos de configuración corruptos o bloqueados añadiendo un control de integridad en la función `load` que evita el crecimiento indefinido del caché y garantiza una lectura limpia ante condiciones de carrera o archivos con formato inesperado.
-- `2026-08-03T09:23:53` **scanner.py** (robustez ante casos límite): Mejora la robustez ante errores de acceso a archivos al añadir `OSError` al manejo de excepciones en `check_recent_executable_in_downloads` y `check_system_lookalike`, y añade una verificación de existencia `exists()` en `scan_file` para evitar procesar archivos que fueron eliminados durante la ejecución.
-- `2026-08-03T09:23:31` **safety.py** (robustez ante casos límite): Mejoré la robustez de `ensure_safe_to_modify` ante condiciones de carrera y estados inconsistentes del sistema de archivos, añadiendo una verificación explícita de existencia antes de realizar operaciones de acceso que podrían lanzar excepciones impredecibles en entornos con alta actividad de disco.

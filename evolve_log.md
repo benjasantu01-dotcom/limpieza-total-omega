@@ -622,3 +622,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-03T11:29:00` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
 - `2026-08-03T11:29:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-03T11:29:00` Corrida terminada. Total usado hoy: 268.
+- `2026-08-03T11:36:02` Arrancando corrida. Quedan hoy ~32 peticiones objetivo.
+- `2026-08-03T11:36:25` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-03T11:36:50` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `drive_usage` validando explícitamente que los parámetros de entrada sean de tipo adecuado y no estén vacíos, además de añadir un control de seguridad adicional contra `None` en la lógica de iteración de archivos para evitar fallos silenciosos en entornos donde las rutas pueden resolverse como `None` o rutas relativas inválidas.
+- `2026-08-03T11:37:14` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `find_duplicates` y las funciones auxiliares de hash validando explícitamente que las entradas sean `Path` válidos y no `None` antes de procesar, evitando posibles errores de tipo (TypeError) o excepciones no capturadas al manipular colecciones de archivos.
+- `2026-08-03T11:37:24` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `summarize` y `_generate_recommendations` añadiendo validaciones preventivas de estado (checks de tipo y contenido) para evitar excepciones al procesar objetos `HealthResult` potencialmente mal formados, garantizando que la UI nunca reciba valores `None` o estructuras vacías inesperadas.
+- `2026-08-03T11:37:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-03T11:37:24` Corrida terminada. Total usado hoy: 272.

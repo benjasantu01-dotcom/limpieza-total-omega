@@ -83,6 +83,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
     Returns:
         Hexdigest del hash SHA256 si es accesible, None en caso contrario.
     """
+    if path is None: return None
     try:
         p = Path(path).resolve()
         if not p.is_file() or p.is_symlink() or is_protected_path(p):
@@ -108,6 +109,7 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
     Utilizado como filtro heurístico de bajo costo para descartar archivos
     que difieren en sus cabeceras antes de realizar un hash completo.
     """
+    if path is None: return None
     try:
         p = Path(path).resolve()
         if not p.is_file() or p.is_symlink() or is_protected_path(p):
@@ -196,7 +198,9 @@ def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[
         Diccionario {hash: [lista_de_rutas]} conteniendo solo grupos de colisiones con longitud >= 2.
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
+    if paths is None: return {}
     for path in paths:
+        if path is None: continue
         digest = hash_func(path)
         if digest:
             groups_by_digest[digest].append(path)
@@ -214,6 +218,7 @@ def find_duplicates(
     2. Filtrado por hash parcial (Filtro heurístico).
     3. Validación por hash completo (Confirmación absoluta).
     """
+    if directories is None: return []
     size_map = _collect_candidates(directories, min_size, skip_protected)
     potential_groups = [(size, paths) for size, paths in size_map.items() if len(paths) > 1]
     

@@ -120,7 +120,7 @@ def format_size(num: int | float) -> str:
 
 def drive_usage(mount: str | os.PathLike) -> Optional[DriveUsage]:
     """Consulta el estado del disco para una ruta dada. Retorna None si es inaccesible."""
-    if not mount:
+    if not mount or not isinstance(mount, (str, os.PathLike)):
         return None
     try:
         path_str = os.fspath(mount)
@@ -158,10 +158,8 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Generador que recorre recursivamente el sistema de archivos.
-    Utiliza un conjunto 'visited_directories' para evitar ciclos por symlinks y
-    verifica constantemente la integridad mediante 'is_protected_path'.
     """
-    if not directory:
+    if not directory or not isinstance(directory, (str, os.PathLike)):
         return
 
     try:
@@ -176,11 +174,12 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
     visited_directories = {base_path}
 
     def scan_level(current_path: Path) -> Generator[Tuple[Path, int], None, None]:
+        if current_path is None:
+            return
         try:
             with os.scandir(current_path) as iterator:
                 for entry in iterator:
                     try:
-                        # Saltar enlaces simbólicos o puntos de reanálisis para evitar bucles
                         if entry.is_symlink() or (os.name == 'nt' and entry.stat(follow_symlinks=False).st_reparse_tag != 0):
                             continue
                         
@@ -197,7 +196,6 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
                                 visited_directories.add(full_path)
                                 yield from scan_level(full_path)
                         else:
-                            # Capturar excepciones al leer metadatos de archivos que pueden desaparecer
                             try:
                                 size = entry.stat().st_size
                                 yield Path(entry.path), size

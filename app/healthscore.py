@@ -200,6 +200,9 @@ def grade_for_score(score: int) -> str:
 
 def _generate_recommendations(m: SystemMetrics, ratios: Dict[str, float]) -> List[str]:
     """Genera acciones correctivas basadas en los ratios actuales vs umbrales."""
+    if not isinstance(m, SystemMetrics):
+        return ["Error: Métricas inválidas al generar recomendaciones."]
+    
     recs: List[str] = []
     
     if ratios.get("seguridad", 1.0) < WARN_THRESHOLD_HIGH:
@@ -252,7 +255,6 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     total_w = float(_TOTAL_WEIGHTS)
     
     for area, weight in WEIGHTS.items():
-        # Verificación defensiva contra acceso a claves y valores nulos
         ratio = ratios.get(area, 0.0)
         score_val = ratio * float(weight) * (100.0 / total_w)
         breakdown[area] = int(score_val + 0.5)
@@ -269,6 +271,9 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
 
 def summarize(result: HealthResult) -> List[str]:
     """Genera una representación visual y textual detallada del resultado de salud."""
+    if not isinstance(result, HealthResult):
+        return ["Error: Resultado de salud no válido."]
+
     lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     
     if not result.breakdown:
@@ -280,5 +285,5 @@ def summarize(result: HealthResult) -> List[str]:
         lines.append(f"  {area.capitalize():<12} {puntos:>2}/{maximo:<2} {visual}")
     
     lines.extend(["", "Recomendaciones:"])
-    lines.extend([f"  - {rec}" for rec in result.recommendations])
+    lines.extend([f"  - {rec}" for rec in (result.recommendations or ["Ninguna recomendación disponible."])])
     return lines
