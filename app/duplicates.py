@@ -206,30 +206,25 @@ def find_duplicates(
     3. Validación por hash completo (Confirmación absoluta).
     """
     size_map = _collect_candidates(directories, min_size, skip_protected)
-    potential_groups = [paths for paths in size_map.values() if len(paths) > 1]
+    potential_groups = [(size, paths) for size, paths in size_map.items() if len(paths) > 1]
     
     if not potential_groups:
         return []
 
     groups: List[DuplicateGroup] = []
     
-    for same_size_paths in potential_groups:
+    for size, same_size_paths in potential_groups:
         partial_map = _refine_by_hash(same_size_paths, partial_hash)
         
         for partial_candidates in partial_map.values():
             full_map = _refine_by_hash(partial_candidates, hash_file)
             
             for digest, confirmed_paths in full_map.items():
-                if not confirmed_paths: continue
-                try:
-                    size = confirmed_paths[0].stat().st_size
-                    groups.append(DuplicateGroup(
-                        digest=digest, 
-                        size_bytes=size, 
-                        paths=sorted(confirmed_paths)
-                    ))
-                except (OSError, FileNotFoundError, PermissionError):
-                    continue
+                groups.append(DuplicateGroup(
+                    digest=digest, 
+                    size_bytes=size, 
+                    paths=sorted(confirmed_paths)
+                ))
 
     groups.sort(key=lambda g: g.wasted_bytes, reverse=True)
     return groups

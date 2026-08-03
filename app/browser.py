@@ -100,14 +100,12 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
     if not isinstance(target_path, Path) or not isinstance(base_path, Path):
         return False
     try:
-        # Prevenir nombres con caracteres de control ocultos
         if any(ord(char) < 32 for char in target_path.name):
             return False
 
         real_base = Path(os.path.realpath(str(base_path)))
         real_target = Path(os.path.realpath(str(target_path)))
         
-        # Verificar que la ruta no sea un vínculo simbólico o junction
         if real_target.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(str(real_target))):
             return False
 
@@ -142,13 +140,15 @@ def directory_size(path: str | os.PathLike | None) -> int:
             with os.scandir(current_dir_str) as it:
                 for entry in it:
                     try:
+                        entry_name_lower = entry.name.lower()
+                        if entry_name_lower in NEVER_TOUCH:
+                            continue
                         if any(ord(c) < 32 for c in entry.name):
                             continue
-                        if entry.name.lower() in NEVER_TOUCH or entry.is_symlink():
+                        if entry.is_symlink():
                             continue
                         if entry.is_dir(follow_symlinks=False):
-                            if not is_protected_path(Path(entry.path)):
-                                stack.append(entry.path)
+                            stack.append(entry.path)
                         else:
                             total_bytes += entry.stat().st_size
                     except (OSError, PermissionError):

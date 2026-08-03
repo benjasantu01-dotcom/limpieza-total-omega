@@ -127,7 +127,6 @@ def drive_usage(mount: str | os.PathLike) -> DriveUsage | None:
         p = Path(path_str).expanduser()
         if not p.is_absolute():
             return None
-        # Usamos resolve sin strict=True para evitar excepciones en rutas inexistentes temporales
         p = p.resolve()
         if not p.exists() or is_protected_path(p):
             return None
@@ -163,23 +162,16 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
     if not directory:
         return
 
-    def get_valid_base() -> Path | None:
-        try:
-            path_obj = Path(directory).expanduser()
-            if not path_obj.is_absolute():
-                return None
-            # resolve() sin strict=True para evitar crashes por permisos en partes del path
-            base = path_obj.resolve()
-            if base.is_dir() and not (skip_protected and is_protected_path(base)):
-                return base
-        except (OSError, RuntimeError, PermissionError, ValueError, TypeError):
-            pass
-        return None
-
-    base_path = get_valid_base()
-    if not base_path:
+    try:
+        base_path = Path(directory).expanduser().resolve()
+        if not base_path.is_absolute() or not base_path.is_dir():
+            return
+        if skip_protected and is_protected_path(base_path):
+            return
+    except (OSError, RuntimeError, PermissionError, ValueError, TypeError):
         return
 
+    base_str = str(base_path)
     visited_directories = {base_path}
 
     def scan_level(current_path: Path) -> Generator[Tuple[Path, int], None, None]:
@@ -190,19 +182,17 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
                         if entry.is_symlink() or (os.name == 'nt' and entry.stat(follow_symlinks=False).st_reparse_tag != 0):
                             continue
                         
-                        full_path = Path(entry.path).resolve()
+                        # Usamos la ruta del entry para evitar resolve() constante
+                        full_path = Path(entry.path)
                         
-                        # Defensa: asegurar que la ruta resuelta pertenezca efectivamente a la base
-                        if not str(full_path).startswith(str(base_path)):
-                            continue
-
                         if entry.is_dir():
-                            if full_path not in visited_directories and not (skip_protected and is_protected_path(full_path)):
+                            if full_path not in visited_directories:
+                                if skip_protected and is_protected_path(full_path):
+                                    continue
                                 visited_directories.add(full_path)
                                 yield from scan_level(full_path)
                         else:
-                            if not (skip_protected and is_protected_path(full_path)):
-                                yield full_path, entry.stat().st_size
+                            yield full_path, entry.stat().st_size
                     except (OSError, PermissionError, FileNotFoundError, TypeError):
                         continue
         except (OSError, PermissionError, FileNotFoundError, TypeError):
@@ -244,10 +234,7 @@ def largest_folders(directory: str | os.PathLike, limit: int = 10, skip_protecte
     if not directory:
         return []
     try:
-        path_obj = Path(directory).expanduser()
-        if not path_obj.is_absolute():
-            return []
-        base = path_obj.resolve()
+        base = Path(directory).expanduser().resolve()
         if not base.is_dir():
             return []
         
@@ -255,13 +242,9 @@ def largest_folders(directory: str | os.PathLike, limit: int = 10, skip_protecte
         for path, size in walk_files(base, skip_protected):
             try:
                 rel = path.relative_to(base)
-                if not rel.parts:
-                    continue
                 top_level = base / rel.parts[0]
-                
                 if top_level not in folder_map:
                     folder_map[top_level] = FolderUsage(path=top_level, size_bytes=0, file_count=0)
-                
                 stats = folder_map[top_level]
                 stats.size_bytes += size
                 stats.file_count += 1
@@ -296,10 +279,7 @@ def summarize(directory: str | os.PathLike, skip_protected: bool = True) -> list
         return ["Error: Ruta no especificada."]
         
     try:
-        path_obj = Path(directory).expanduser()
-        if not path_obj.is_absolute():
-            return [f"Error: La ruta '{directory}' no es absoluta."]
-        path_obj = path_obj.resolve()
+        path_obj = Path(directory).expanduser().resolve()
         if not path_obj.exists() or not path_obj.is_dir():
             return [f"Error: La ruta '{directory}' no es un directorio válido o es inaccesible."]
     except (OSError, RuntimeError, PermissionError, ValueError, TypeError):

@@ -989,3 +989,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-03T03:43:59` ➖ Sin cambios en branding.py (enfoque: rendimiento). Motivo: Optimizé la generación de gradientes en `draw_gradient_bar` para evitar la creación innecesaria de objetos línea mediante el agrupamiento de segmentos contiguos del mismo color, reduciendo la carga sobre el canvas de Tkinter.
 - `2026-08-03T03:43:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-03T03:43:59` Corrida terminada. Total usado hoy: 88.
+- `2026-08-03T03:52:39` Arrancando corrida. Quedan hoy ~212 peticiones objetivo.
+- `2026-08-03T03:53:03` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé `directory_size` reemplazando la lógica de validación de `NEVER_TOUCH` (que realizaba búsquedas en un `frozenset` por cada archivo y subcarpeta) por una pre-filtración más eficiente, y evité llamadas redundantes a `is_protected_path` centralizando la validación de entrada antes del bucle principal.
+- `2026-08-03T03:53:28` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé `walk_files` y `summarize` reemplazando llamadas redundantes a `Path.resolve()` y `Path.is_protected_path` (operaciones de I/O pesadas) por un pre-procesamiento del `base_path` y el cacheo de los estados de protección durante la recursión.
+- `2026-08-03T03:53:51` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé la etapa de filtrado en `find_duplicates` evitando recalcular el `st_size` dentro del bucle de resultados finales, reutilizando el tamaño ya conocido de la clave del diccionario de candidatos.
+- `2026-08-03T03:53:59` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
+- `2026-08-03T03:53:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-03T03:53:59` Corrida terminada. Total usado hoy: 92.
