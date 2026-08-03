@@ -233,6 +233,14 @@ def quarantine_file(
 ) -> QuarantineItem:
     """
     Mueve un archivo a cuarentena tras validar que es seguro operarlo.
+    
+    Args:
+        source: Ruta del archivo a aislar.
+        reason: Texto descriptivo del hallazgo.
+        base: Carpeta base de cuarentena.
+        
+    Returns:
+        Instancia de QuarantineItem del archivo recién movido.
     """
     if not source:
         raise ValueError("La ruta de origen no puede estar vacía.")

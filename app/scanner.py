@@ -29,17 +29,18 @@ logger = logging.getLogger(__name__)
 SuspicionCheck: TypeAlias = Callable[[Path], Optional["Suspicion"]]
 ScanResult: TypeAlias = List["Suspicion"]
 
-# Expresión regular para detectar extensiones dobles donde la final es ejecutable
+# REGEX para detectar extensiones dobles donde la última es ejecutable,
+# evitando falsos positivos de archivos comunes.
 DOUBLE_EXTENSION_RE: Final[re.Pattern] = re.compile(r"\.(pdf|jpg|png|docx|xlsx|txt)\.(exe|scr|bat|cmd|js|vbs)$", re.IGNORECASE)
 
-# Lista blanca de extensiones potencialmente riesgosas para inspección heurística
+# Lista de extensiones que, al encontrarse en carpetas no protegidas, ameritan una revisión heurística.
 SUSPICIOUS_EXECUTABLE_EXT: Final[frozenset[str]] = frozenset({".exe", ".scr", ".bat", ".cmd", ".js", ".vbs", ".ps1"})
 
-# Procesos críticos de Windows usados para detectar suplantación de identidad
+# Nombres de archivos binarios críticos que, si aparecen fuera de System32, son indicadores de suplantación.
 SYSTEM_LOOKALIKES: Final[frozenset[str]] = frozenset({"svchost.exe", "explorer.exe", "csrss.exe", "winlogon.exe", "lsass.exe"})
 SYSTEM32_LOWER: Final[str] = "system32"
 
-# Tiempo umbral para definir un archivo como "reciente" (en horas)
+# Margen de tiempo para considerar un ejecutable como "reciente" (posible descarga o amenaza activa).
 RECENT_FILE_THRESHOLD_HOURS: Final[int] = 24
 
 
@@ -53,9 +54,11 @@ class Suspicion:
 
 class Scanner:
     """
-    Controlador del estado del escaneo. 
-    Mantiene el conjunto 'seen' para evitar el procesamiento redundante de rutas
-    y el seguimiento infinito en enlaces simbólicos cíclicos.
+    Controlador de estado para el escaneo recursivo.
+    
+    Esta clase mantiene el contexto necesario para atravesar el árbol de archivos
+    evitando ciclos causados por enlaces simbólicos y garantizando que no se
+    procesen rutas fuera de los límites de seguridad definidos en `safety.py`.
     """
     
     def __init__(self) -> None:
