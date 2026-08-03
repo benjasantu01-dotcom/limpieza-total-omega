@@ -119,6 +119,7 @@ def _validate_str(key: str, val: Any) -> str | None:
             path = Path(text).expanduser().resolve()
             return str(path) if is_safe_to_modify(str(path)) else None
         except (OSError, RuntimeError, ValueError, TypeError, PermissionError): return None
+    if len(text) > 256: return None
     return text.lower() if key in ("tema", "acento") else text
 
 _VALIDATOR_MAP: Final[dict[str, Callable[[str, Any], Any]]] = {
@@ -173,9 +174,9 @@ def load(path_or_base: PathLike | None = None) -> dict[str, Any]:
 def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     global _cached_settings, _last_path, _last_mtime
     ruta = settings_path(path_or_base)
+    if not is_safe_to_modify(str(ruta)): return None
     try:
         ensure_safe_to_modify(str(ruta.parent))
-        ensure_safe_to_modify(str(ruta))
         limpio = validate(values)
         json_data = json.dumps(limpio, indent=2, ensure_ascii=False)
         ruta.parent.mkdir(parents=True, exist_ok=True)

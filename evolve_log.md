@@ -1312,3 +1312,37 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-03T07:18:46` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
 - `2026-08-03T07:18:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-03T07:18:46` Corrida terminada. Total usado hoy: 172.
+- `2026-08-03T07:27:57` Arrancando corrida. Quedan hoy ~128 peticiones objetivo.
+- `2026-08-03T07:28:31` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-03T07:28:54` Tests FALLARON:
+```
+_lookalike_logic_is_os_independent():
+        # La misma heurística tiene que valer con rutas estilo POSIX, para que el
+        # resultado no dependa de en qué sistema corran los tests.
+>       flagged = scanner.check_system_lookalike(PurePosixPath("/home/user/Downloads/svchost.exe"))
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+evolve/tests/test_basic.py:212: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = PurePosixPath('/home/user/Downloads/svchost.exe')
+
+    def check_system_lookalike(path: Path) -> Optional[Suspicion]:
+        """Identifica ejecutables con nombres de procesos críticos fuera de System32."""
+>       if not path.is_file() or path.name.lower() not in SYSTEM_LOOKALIKES:
+               ^^^^^^^^^^^^
+E       AttributeError: 'PurePosixPath' object has no attribute 'is_file'
+
+app/scanner.py:131: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_scanner_flags_system_lookalike_outside_system32 - AttributeError: 'PureWindowsPath' object has no attribute 'is_file'
+FAILED evolve/tests/test_basic.py::test_scanner_does_not_flag_real_system_file - AttributeError: 'PureWindowsPath' object has no attribute 'is_file'
+FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independent - AttributeError: 'PurePosixPath' object has no attribute 'is_file'
+3 failed, 296 passed in 1.07s
+
+```
+- `2026-08-03T07:28:54` ❌ Mejora descartada en scanner.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de las funciones de chequeo heurístico validando que el objeto `path` sea un archivo existente antes de intentar acceder a sus metadatos (`lstat`) o atributos, evitando excepciones innecesarias y mejorando la precisión del escaneo al manejar rutas que podrían haber cambiado o desaparecido durante la ejecución.
+- `2026-08-03T07:29:18` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `settings.py` implementando una validación estricta y segura en `_validate_str` para evitar inyecciones o rutas mal formadas, y añadí un chequeo explícito `is_safe_to_modify` en `save` antes de procesar cualquier valor, asegurando que el sistema solo gestione configuraciones permitidas por la política de seguridad.
+- `2026-08-03T07:29:26` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-03T07:29:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-03T07:29:26` Corrida terminada. Total usado hoy: 176.

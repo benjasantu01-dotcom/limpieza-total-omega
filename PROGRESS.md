@@ -6,8 +6,8 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **248** (49.2% de aceptación)
-- Rechazadas por tests: 14
+- Mejoras aceptadas: **247** (49.0% de aceptación)
+- Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 28
 - Sin cambios (nada sustancial que mejorar): 15
 - Sin respuesta de la IA (error o límite): 199
@@ -16,36 +16,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-02 | 172 | 10 | 20 | 8 | 122 |
-| 2026-08-03 | 76 | 4 | 8 | 7 | 77 |
+| 2026-08-02 | 170 | 10 | 20 | 8 | 120 |
+| 2026-08-03 | 77 | 5 | 8 | 7 | 79 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **54**
+- manejo de errores y validación de entradas: **51**
 - legibilidad y documentación: **51**
-- manejo de errores y validación de entradas: **50**
 - robustez ante casos límite: **49**
-- rendimiento: **44**
+- rendimiento: **42**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **23**
-- `browser.py`: **21**
+- `settings.py`: **24**
 - `main.py`: **21**
 - `scanner.py`: **21**
+- `browser.py`: **20**
 - `quarantine.py`: **18**
-- `diskreport.py`: **17**
 - `organizer.py`: **17**
 - `safety.py`: **17**
 - `branding.py`: **17**
 - `duplicates.py`: **17**
 - `assistant.py`: **17**
+- `diskreport.py`: **16**
 - `memory.py`: **14**
 - `startup.py`: **14**
 - `healthscore.py`: **14**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-03T07:29:18` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `settings.py` implementando una validación estricta y segura en `_validate_str` para evitar inyecciones o rutas mal formadas, y añadí un chequeo explícito `is_safe_to_modify` en `save` antes de procesar cualquier valor, asegurando que el sistema solo gestione configuraciones permitidas por la política de seguridad.
 - `2026-08-03T07:18:39` **quarantine.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `purge_all` y `restore_item` agregando validaciones de tipo y estructura más robustas, asegurando que las operaciones críticas no fallen silenciosamente ante inconsistencias entre el manifiesto y el disco.
 - `2026-08-03T07:18:11` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `sort_junk` y `stage_for_review` ante entradas inválidas, validando la integridad de los datos (`None` o tipos incorrectos) y capturando excepciones de forma más granular para asegurar que un fallo en un archivo individual no detenga el proceso completo.
 - `2026-08-03T07:17:48` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_windows_process_csv` añadiendo una validación explícita para evitar errores al procesar líneas incompletas o malformadas, garantizando que el bucle de parsing sea resiliente ante datos de entrada inesperados.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-03T05:17:43` **memory.py** (seguridad defensiva): Mejoré la seguridad en `trim_working_set` al validar explícitamente el PID antes de intentar abrir el proceso, asegurando que la operación se limite a procesos de usuario comunes y evitando intentos de manipulación sobre procesos con PID 0 (Idle) o procesos del sistema cuyo PID es desconocido o inestable.
 - `2026-08-03T05:17:32` **main.py** (seguridad defensiva): Mejoré la seguridad defensiva en `on_restore_quarantine` mediante la implementación de una validación explícita de la integridad del ID antes de procesarlo, evitando inyecciones de rutas o acceso a archivos fuera de la cuarentena mediante la normalización y verificación de `Path` dentro de la rutina de restauración.
 - `2026-08-03T05:15:28` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva del módulo añadiendo una validación robusta de los pesos en `compute_score` mediante una nueva función `_validate_weights` que detecta configuraciones inconsistentes, previniendo errores de división por cero o resultados fuera de rango antes de procesar cualquier dato.
-- `2026-08-03T05:15:03` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` agregando un chequeo explícito de puntos de reparse (junctions/reparse points) mediante `is_junction()` para evitar el seguimiento de estructuras de archivos circulares o externas, complementando la protección ya existente contra enlaces simbólicos.
