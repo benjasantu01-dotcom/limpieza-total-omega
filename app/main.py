@@ -172,11 +172,14 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _get_cached(self, key: str, provider: Optional[Callable] = None, force: bool = False) -> Any:
         """Retorna datos cacheados si están vigentes; gestiona política LRU."""
         if not force and key in self._cache:
-            data, timestamp = self._cache[key]
-            if time.time() - timestamp < self._cache_ttl:
-                self._cache.move_to_end(key)
-                return data
-            del self._cache[key]
+            try:
+                data, timestamp = self._cache[key]
+                if time.time() - timestamp < self._cache_ttl:
+                    self._cache.move_to_end(key)
+                    return data
+                del self._cache[key]
+            except KeyError:
+                pass
         
         if provider:
             try:
@@ -238,7 +241,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
         for name in TABS:
             try:
-                self.tabs[name] = self.tabview.add(branding.tab_label(name))
+                frame = self.tabview.add(branding.tab_label(name))
+                self.tabs[name] = frame
                 constructor = tab_constructors.get(name)
                 if constructor:
                     constructor()

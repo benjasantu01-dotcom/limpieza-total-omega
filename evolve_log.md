@@ -619,3 +619,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-08-02T23:37:13` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-08-02T23:47:24` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-08-02T23:57:34` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-08-03T00:07:47` Arrancando corrida. Quedan hoy ~300 peticiones objetivo.
+- `2026-08-03T00:08:10` ➖ Sin cambios en duplicates.py (enfoque: robustez ante casos límite). Motivo: Se ha mejorado la robustez de `hash_file` y `partial_hash` al manejar explícitamente el caso de archivos inaccesibles o bloqueados (ej. en uso exclusivo por el sistema) mediante el manejo de `OSError` durante la apertura, evitando que el bucle de escaneo falle silenciosamente ante bloqueos de E/S.
+- `2026-08-03T00:08:35` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: robustez ante casos límite).
+- `2026-08-03T00:09:36` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Mejoré la robustez de `main.py` ante errores inesperados en el hilo de la interfaz al inicializar `_cache` y los componentes de UI, asegurando que un fallo en un componente no impida la carga de los demás, cumpliendo así con el enfoque de robustez ante casos límite.
+- `2026-08-03T00:09:45` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-08-03T00:09:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-03T00:09:45` Corrida terminada. Total usado hoy: 4.
