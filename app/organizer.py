@@ -215,6 +215,9 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
     # Verificar que el destino es seguro antes de crear la carpeta
     ensure_safe_to_modify(dest)
     dest.mkdir(parents=True, exist_ok=True)
+    
+    # Cacheamos el destino resuelto para evitar resolución repetitiva en el loop
+    canonical_dest = dest.resolve()
 
     for jf in files:
         if not isinstance(jf, JunkFile) or not jf.path:
@@ -225,9 +228,12 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             
             full_source_path = jf.path.resolve()
             
-            # Validar que la ruta fuente esté dentro de un árbol permitido y no sea el destino
-            is_nested = dest == full_source_path or dest in full_source_path.parents or full_source_path.parent == dest
-            if not is_safe_to_modify(full_source_path) or is_nested:
+            # Validar que la ruta fuente esté dentro de un árbol permitido, 
+            # no sea el destino y no escape mediante '..'
+            if not is_safe_to_modify(full_source_path):
+                continue
+            
+            if canonical_dest == full_source_path or canonical_dest in full_source_path.parents:
                 continue
             
             # Impedir movimiento si el archivo está en uso exclusivo por otro proceso
@@ -236,11 +242,11 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             except (IOError, OSError):
                 continue
 
-            target_base = dest / f"{jf.path.stem}_{int(jf.modified.timestamp())}{jf.path.suffix}"
+            target_base = canonical_dest / f"{jf.path.stem}_{int(jf.modified.timestamp())}{jf.path.suffix}"
             target = _generate_unique_target(target_base)
             
             # Garantía final: verificar que el destino resultante esté efectivamente bajo el directorio base
-            if not str(target).startswith(str(dest)):
+            if canonical_dest not in target.resolve().parents:
                 continue
             
             ensure_safe_to_modify(full_source_path)

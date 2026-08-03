@@ -647,3 +647,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-08-03T00:39:46` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_collect_candidates` y `hash_file/partial_hash` añadiendo una validación explícita mediante `is_protected_path` sobre la resolución absoluta de cada ruta antes de interactuar con ella, previniendo posibles escapes por manipulación de paths relativos o puntos de reparse durante la recursión.
 - `2026-08-03T00:39:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-03T00:39:46` Corrida terminada. Total usado hoy: 16.
+- `2026-08-03T00:48:42` Arrancando corrida. Quedan hoy ~284 peticiones objetivo.
+- `2026-08-03T00:49:08` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: seguridad defensiva).
+- `2026-08-03T00:50:11` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Mejoré la seguridad de `on_trim_process` y `on_restore_quarantine` centralizando la validación de rutas mediante `ensure_safe_to_modify` antes de cualquier interacción con el sistema, previniendo así posibles errores de permisos o modificaciones en áreas críticas no cubiertas anteriormente.
+- `2026-08-03T00:50:34` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
+- `2026-08-03T00:50:43` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se reforzó la seguridad en `stage_for_review` implementando una validación estricta de "canonicalización" para evitar ataques de salto de directorio mediante enlaces simbólicos o rutas relativas maliciosas, asegurando que tanto el origen como el destino residan donde deben antes de cualquier operación de movimiento.
+- `2026-08-03T00:50:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-03T00:50:43` Corrida terminada. Total usado hoy: 20.
