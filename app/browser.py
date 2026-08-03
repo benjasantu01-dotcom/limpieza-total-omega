@@ -105,6 +105,9 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
         return False
         
     try:
+        if not target_path.exists():
+            return False
+            
         # Detectar caracteres de control ocultos (evitar intentos de ofuscación)
         if any(ord(char) < 32 for char in target_path.name):
             return False
@@ -113,8 +116,8 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
         if is_protected_path(target_path):
             return False
 
-        real_base: Path = Path(os.path.realpath(str(base_path)))
-        real_target: Path = Path(os.path.realpath(str(target_path)))
+        real_base = Path(os.path.realpath(str(base_path)))
+        real_target = Path(os.path.realpath(str(target_path)))
         
         # Prohibir cruzar enlaces simbólicos o junctions de Windows
         if real_target.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(str(real_target))):
@@ -154,7 +157,6 @@ def directory_size(path: str | os.PathLike | None) -> int:
                     try:
                         if entry.name.lower() in NEVER_TOUCH or any(ord(c) < 32 for c in entry.name):
                             continue
-                        # Usar métodos de DirEntry que no requieren llamadas extra a stat() si es posible
                         if entry.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(entry.path)):
                             continue
                         if entry.is_dir(follow_symlinks=False):

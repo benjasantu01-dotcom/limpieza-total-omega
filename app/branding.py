@@ -290,11 +290,13 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         target = Path(destination).expanduser().resolve()
         if not is_safe_to_modify(target):
             return None
+        # Solo procedemos si el directorio es seguro y escribible
         ensure_safe_to_modify(target.parent)
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(logo_svg(), encoding="utf-8")
         return target
     except (OSError, PermissionError, TypeError, ValueError, RuntimeError):
+        # Fallo silencioso ante denegación de permisos o rutas inválidas en disco
         return None
 
 

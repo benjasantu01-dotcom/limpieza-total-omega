@@ -730,3 +730,11 @@ FAILED evolve/tests/test_modules.py::test_gradient_bar_paints_one_line_per_pixel
 - `2026-08-03T13:19:58` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Reforcé la robustez del motor local ante posibles configuraciones de `settings.py` corruptas o valores inesperados mediante el uso de `getattr` con valores por defecto seguros y una validación explícita del tipo de datos en `build_context`, evitando excepciones durante la creación del contexto de análisis.
 - `2026-08-03T13:19:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-03T13:19:58` Corrida terminada. Total usado hoy: 312.
+- `2026-08-03T13:28:38` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-03T13:29:10` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se ha mejorado `save_logo_svg` para manejar casos límite de E/S, como la existencia de carpetas bloqueadas o rutas no válidas, mediante un control de errores más robusto y validaciones tempranas que evitan excepciones no capturadas.
+- `2026-08-03T13:29:32` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Mejoré la robustez de `directory_size` ante errores de lectura de metadatos (`OSError`) al llamar a `entry.stat()`, asegurando que el proceso no se interrumpa ante archivos bloqueados o con permisos denegados, y encapsulé la lógica de resolución de `realpath` en `_is_safe_path` para evitar accesos a rutas inexistentes.
+- `2026-08-03T13:30:01` ➖ Sin cambios en diskreport.py (enfoque: robustez ante casos límite). Motivo: Se ha robustecido el generador `walk_files` para manejar de forma segura archivos bloqueados o inaccesibles debido a cambios de permisos durante la iteración, envolviendo la obtención del tamaño del archivo en un bloque `try-except` específico para evitar que una excepción `PermissionError` o `OSError` interrumpa el escaneo completo.
+- `2026-08-03T13:30:09` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-03T13:30:20` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-08-03T13:30:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-03T13:30:20` Corrida terminada. Total usado hoy: 316.
