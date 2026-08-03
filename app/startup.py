@@ -115,6 +115,10 @@ class StartupEntry:
                 return path_str
             
             p_abs = p.expanduser().resolve()
+            # Validación defensiva extra: verificar que la ruta resuelta no haya cambiado a una protegida
+            if is_protected_path(p_abs):
+                return ""
+                
             p_str = str(p_abs)
             if p_str not in _EXISTS_CACHE:
                 _EXISTS_CACHE[p_str] = p_abs.is_file()

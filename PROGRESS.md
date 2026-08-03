@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **261** (51.8% de aceptación)
+- Mejoras aceptadas: **262** (52.0% de aceptación)
 - Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 189
+- Sin respuesta de la IA (error o límite): 188
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-02 | 89 | 6 | 10 | 3 | 56 |
-| 2026-08-03 | 172 | 6 | 17 | 12 | 133 |
+| 2026-08-02 | 89 | 6 | 10 | 3 | 52 |
+| 2026-08-03 | 173 | 6 | 17 | 12 | 136 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **65**
 - manejo de errores y validación de entradas: **53**
-- seguridad defensiva: **49**
+- seguridad defensiva: **50**
 - robustez ante casos límite: **48**
 - rendimiento: **46**
 
@@ -40,12 +40,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **17**
 - `safety.py`: **17**
 - `branding.py`: **16**
+- `startup.py`: **16**
 - `healthscore.py`: **16**
-- `startup.py`: **15**
 - `diskreport.py`: **15**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-03T14:41:03` **startup.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_resolve_and_cache_path` añadiendo una validación explícita para asegurar que la ruta a resolver, una vez expandida, no escape del directorio base o sea una ruta de sistema, aplicando `ensure_safe_to_modify` (a través de `is_protected_path`) con mayor rigor antes de procesar el archivo.
 - `2026-08-03T14:32:14` **settings.py** (seguridad defensiva): Se reforzó la seguridad de `load` y `save` añadiendo una validación explícita mediante `ensure_safe_to_modify` antes de cualquier operación de I/O, garantizando que, incluso si la lógica de `settings_path` fallara, el sistema nunca interactúe con rutas bloqueadas.
 - `2026-08-03T14:32:03` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `scan_directory` y `process_entry` al agregar una validación de `is_protected_path` sobre los directorios antes de procesarlos, asegurando que el escáner no ingrese a subcarpetas prohibidas incluso si no son puntos de reparseo explícitos.
 - `2026-08-03T14:23:16` **quarantine.py** (seguridad defensiva): Se ha mejorado la robustez de `quarantine_file` añadiendo una comprobación explícita para evitar condiciones de carrera o inconsistencias si el archivo origen cambia de permisos o es reemplazado por otro proceso justo antes de la operación de movimiento (`shutil.move`), mediante la verificación de que el `st_ino` (inodo) o `st_ctime` se mantengan constantes, reforzando la seguridad defensiva.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-03T13:40:56` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `stage_for_review` ante casos límite mediante la validación estricta de la integridad del sistema de archivos, asegurando que `dest` no sea un ancestro de las rutas origen y verificando que el archivo realmente pueda ser bloqueado exclusivamente antes de moverlo.
 - `2026-08-03T13:40:24` **main.py** (robustez ante casos límite): Se ha mejorado la robustez de `main.py` implementando un chequeo de seguridad preventivo al restaurar o aislar archivos en cuarentena y al realizar análisis de disco, validando explícitamente que las rutas no contengan caracteres peligrosos ni sean puntos de reparse antes de procesarlas, evitando fallos en tiempo de ejecución o acceso a rutas inesperadas.
 - `2026-08-03T13:39:20` **healthscore.py** (robustez ante casos límite): Se introdujo una protección defensiva en `summarize` para manejar situaciones donde `breakdown` o `result.breakdown` contengan claves inesperadas o faltantes respecto a `WEIGHTS`, evitando que el renderizado de la UI falle silenciosamente ante datos inconsistentes, reforzando la robustez ante estados parciales.
-- `2026-08-03T13:29:32` **browser.py** (robustez ante casos límite): Mejoré la robustez de `directory_size` ante errores de lectura de metadatos (`OSError`) al llamar a `entry.stat()`, asegurando que el proceso no se interrumpa ante archivos bloqueados o con permisos denegados, y encapsulé la lógica de resolución de `realpath` en `_is_safe_path` para evitar accesos a rutas inexistentes.
