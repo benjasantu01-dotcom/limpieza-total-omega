@@ -25,9 +25,17 @@ from safety import is_protected_path, is_safe_to_modify
 # Configuración de logger para el módulo
 logger = logging.getLogger(__name__)
 
+@dataclass
+class Suspicion:
+    """Representa un hallazgo sospechoso detectado durante el escaneo."""
+    path: Path
+    reason: str
+    severity: str  # "info" | "warning"
+
 # Alias de tipos para mejorar la legibilidad y mantenibilidad de la lógica de escaneo
-SuspicionCheck: TypeAlias = Callable[[Path], Optional["Suspicion"]]
-ScanResult: TypeAlias = List["Suspicion"]
+# Cada función debe retornar un objeto Suspicion si hay hallazgo, o None si el archivo es seguro.
+SuspicionCheck: TypeAlias = Callable[[Path], Optional[Suspicion]]
+ScanResult: TypeAlias = List[Suspicion]
 
 # REGEX para detectar extensiones dobles donde la última es ejecutable,
 # evitando falsos positivos de archivos comunes.
@@ -42,14 +50,6 @@ SYSTEM32_LOWER: Final[str] = "system32"
 
 # Margen de tiempo para considerar un ejecutable como "reciente" (posible descarga o amenaza activa).
 RECENT_FILE_THRESHOLD_HOURS: Final[int] = 24
-
-
-@dataclass
-class Suspicion:
-    """Representa un hallazgo sospechoso detectado durante el escaneo."""
-    path: Path
-    reason: str
-    severity: str  # "info" | "warning"
 
 
 class Scanner:
@@ -112,7 +112,10 @@ def check_double_extension(path: Path) -> Optional[Suspicion]:
 
 
 def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_THRESHOLD_HOURS) -> Optional[Suspicion]:
-    """Analiza la fecha de modificación de ejecutables para identificar descargas recientes."""
+    """
+    Analiza la fecha de modificación de ejecutables para identificar descargas recientes.
+    Requiere acceso de solo lectura mediante `lstat`.
+    """
     if path.suffix.lower() not in SUSPICIOUS_EXECUTABLE_EXT:
         return None
         

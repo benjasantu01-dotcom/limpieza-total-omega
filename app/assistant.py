@@ -44,7 +44,7 @@ import urllib.error
 import urllib.request
 import re
 import math
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, asdict
 from pathlib import Path
 from typing import Any, Final, TypeAlias, Callable, Optional
 
@@ -235,24 +235,19 @@ def context_as_text(context: SystemContext) -> str:
     if not isinstance(context, SystemContext) or not context.analyzed:
         return "No hay métricas disponibles todavía."
 
-    try:
-        lineas = [
-            f"Puntaje de salud: {context.score if context.score is not None else 'N/A'}"
-            f"{f' nota {context.grade}' if context.grade else ''}",
-            f"Basura: {float(context.junk_mb):.0f} MB",
-            f"Sospechosos: {int(context.suspicious_count)}",
-            f"RAM disponible: {float(context.memory_available_percent):.0f} percent",
-            f"Disco libre: {float(context.disk_free_percent):.0f} percent",
-            f"Duplicados: {float(context.duplicate_mb):.0f} MB",
-            f"Inicio: {int(context.startup_count)} items",
-        ]
-        
-        # Sanitización agresiva: reemplaza cualquier separador de ruta o carácter inseguro por espacio
-        raw_text = "\n".join(lineas)
-        sanitized = _PATH_REGEX.sub(" ", raw_text)
-        return _CONTROL_CHARS_REGEX.sub(" ", sanitized)
-    except (ValueError, TypeError):
-        return "Error al procesar los datos de salud del sistema."
+    c = asdict(context)
+    lineas = [
+        f"Puntaje de salud: {c['score'] if c['score'] is not None else 'N/A'}"
+        f"{f' nota {c['grade']}' if c['grade'] else ''}",
+        f"Basura: {float(c['junk_mb']):.0f} MB",
+        f"Sospechosos: {int(c['suspicious_count'])}",
+        f"RAM disponible: {float(c['memory_available_percent']):.0f} percent",
+        f"Disco libre: {float(c['disk_free_percent']):.0f} percent",
+        f"Duplicados: {float(c['duplicate_mb']):.0f} MB",
+        f"Inicio: {int(c['startup_count'])} items",
+    ]
+    
+    return _CONTROL_CHARS_REGEX.sub(" ", _PATH_REGEX.sub(" ", "\n".join(lineas)))
 
 
 def explain_area(area: str) -> str:
@@ -405,25 +400,26 @@ def local_answer(question: str, context: SystemContext) -> Answer:
 
 def _rank_problems(context: SystemContext) -> list[str]:
     """Calcula y ordena los problemas más críticos del sistema."""
+    c = asdict(context)
     probs = []
     
-    if context.disk_free_percent < 10:
-        probs.append(f"queda solo {context.disk_free_percent:.0f}% de disco libre, atendelo primero (pestaña Disco y Limpieza)")
+    if c['disk_free_percent'] < 10:
+        probs.append(f"queda solo {c['disk_free_percent']:.0f}% de disco libre, atendelo primero (pestaña Disco y Limpieza)")
     
-    if context.suspicious_warnings > 0:
-        probs.append(f"{context.suspicious_warnings} archivo(s) sospechosos con advertencia (pestaña Seguridad)")
+    if c['suspicious_warnings'] > 0:
+        probs.append(f"{c['suspicious_warnings']} archivo(s) sospechosos con advertencia (pestaña Seguridad)")
         
-    if context.memory_available_percent < 15:
-        probs.append(f"queda {context.memory_available_percent:.0f}% de RAM disponible (pestaña Memoria)")
+    if c['memory_available_percent'] < 15:
+        probs.append(f"queda {c['memory_available_percent']:.0f}% de RAM disponible (pestaña Memoria)")
         
-    if context.junk_mb > 1000:
-        probs.append(f"{context.junk_mb:.0f} MB de archivos basura (pestaña Limpieza)")
+    if c['junk_mb'] > 1000:
+        probs.append(f"{c['junk_mb']:.0f} MB de archivos basura (pestaña Limpieza)")
         
-    if context.duplicate_mb > 500:
-        probs.append(f"{context.duplicate_mb:.0f} MB en duplicados (pestaña Duplicados)")
+    if c['duplicate_mb'] > 500:
+        probs.append(f"{c['duplicate_mb']:.0f} MB en duplicados (pestaña Duplicados)")
         
-    if context.startup_count > 15:
-        probs.append(f"{context.startup_count} programas de inicio (pestaña Inicio)")
+    if c['startup_count'] > 15:
+        probs.append(f"{c['startup_count']} programas de inicio (pestaña Inicio)")
         
     return probs
 

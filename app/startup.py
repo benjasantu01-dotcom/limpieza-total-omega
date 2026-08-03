@@ -115,6 +115,13 @@ class StartupEntry:
             return p_str if _EXISTS_CACHE[p_str] else path_str
         except (OSError, ValueError, RuntimeError, TypeError):
             return path_str
+
+    def _resolve_path_from_command(self, cmd: str) -> str:
+        """Lógica interna para extraer la ruta ejecutable a partir de la cadena de comando cruda."""
+        if cmd.startswith('"'):
+            return self._extract_quoted_path(cmd)
+        parts: List[str] = cmd.split()
+        return self._resolve_and_cache_path(parts[0]) if parts else ""
         
     @property
     def executable(self) -> str:
@@ -127,14 +134,7 @@ class StartupEntry:
             return ""
 
         cmd: str = self._sanitize_command(self.command)
-        if not cmd:
-            return ""
-        
-        if cmd.startswith('"'):
-            self._exec_cache = self._extract_quoted_path(cmd)
-        else:
-            parts: List[str] = cmd.split()
-            self._exec_cache = self._resolve_and_cache_path(parts[0]) if parts else ""
+        self._exec_cache = self._resolve_path_from_command(cmd) if cmd else ""
             
         return self._exec_cache or ""
 
