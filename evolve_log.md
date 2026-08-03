@@ -923,3 +923,36 @@ FAILED evolve/tests/test_modules.py::test_score_color_survives_garbage - Asserti
 - `2026-08-03T03:03:06` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante la adición de Type Hints en retornos implícitos y la clarificación de docstrings en funciones críticas, facilitando la comprensión del flujo de datos en el asistente.
 - `2026-08-03T03:03:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-03T03:03:06` Corrida terminada. Total usado hoy: 72.
+- `2026-08-03T03:11:48` Arrancando corrida. Quedan hoy ~228 peticiones objetivo.
+- `2026-08-03T03:12:17` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo `branding.py` incluyendo descripciones detalladas en los tipos personalizados y funciones de renderizado, y refactoricé `draw_logo` para extraer la lógica de cálculo de coordenadas a una función privada, facilitando el mantenimiento y la comprensión de su estructura geométrica.
+- `2026-08-03T03:12:40` Tests FALLARON:
+```
+ests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:127: SyntaxWarning: invalid escape sequence '\)'
+    """Verifica si la ruta apunta a la raíz de una unidad (ej. C:\)."""
+
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:84: SyntaxWarning: invalid escape sequence '\P'
+    Parsea comandos tipo '"C:\Program Files\App.exe" /arg' extrayendo solo
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_folders - assert 0 == 1
+ +  where 0 = len([])
+1 failed, 298 passed, 11 warnings in 0.79s
+
+```
+- `2026-08-03T03:12:40` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Mejora la legibilidad y mantenibilidad de `browser.py` mediante una transición a `os.path` más robusta, la adición de Type Hints en retornos de funciones críticas y la clarificación de la lógica de `_is_safe_path` mediante una documentación más explícita sobre los riesgos de seguridad.
+- `2026-08-03T03:13:03` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: legibilidad y documentación).
+- `2026-08-03T03:13:11` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica y la precisión de los tipos en `_collect_candidates` y `_refine_by_hash`, clarificando los mecanismos de exclusión de inodos y el flujo de filtrado para facilitar el mantenimiento futuro.
+- `2026-08-03T03:13:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-03T03:13:11` Corrida terminada. Total usado hoy: 76.

@@ -25,7 +25,7 @@ from safety import is_safe_to_modify, ensure_safe_to_modify
 HexColor: TypeAlias = str
 SeverityKey: TypeAlias = Literal["ok", "info", "warning", "danger"]
 GradeKey: TypeAlias = Literal["A", "B", "C", "D", "F"]
-# Tupla que contiene (Color, Etiqueta legible)
+# Tupla de (color_hex, etiqueta_humana) para estados de severidad
 SeverityStyle: TypeAlias = Tuple[HexColor, str]
 
 APP_NAME: Final = "Limpieza Total Omega"
@@ -176,17 +176,7 @@ def score_color(score: Union[float, int, None]) -> HexColor:
 
 def bar(percent: Union[float, int, None], width: int = 24,
         filled: str = "\u2588", empty: str = "\u2591") -> str:
-    """
-    Genera una barra de progreso visual en texto plano.
-    
-    Args:
-        percent: Valor numérico entre 0 y 100.
-        width: Número de caracteres que ocupa la barra.
-        filled: Carácter para el segmento relleno.
-        empty: Carácter para el segmento vacío.
-    Returns:
-        Cadena con la representación visual de la barra.
-    """
+    """Genera una representación textual tipo barra de progreso (0-100)."""
     try:
         valor = max(0.0, min(100.0, float(percent))) # type: ignore
     except (TypeError, ValueError):
@@ -198,37 +188,21 @@ def bar(percent: Union[float, int, None], width: int = 24,
 
 @lru_cache(maxsize=128)
 def _hex_to_rgb(value: HexColor) -> tuple[int, int, int]:
-    """
-    Descompone un valor hexadecimal en sus componentes RGB enteros.
-    Validación de formato: acepta #RRGGBB. Retorna (0,0,0) ante errores.
-    """
-    if not isinstance(value, str) or not value.startswith("#"):
-        return (0, 0, 0)
-    limpio = value.lstrip("#")
-    if len(limpio) != 6:
+    """Descompone un color #RRGGBB en sus componentes RGB enteros."""
+    if not isinstance(value, str) or not value.startswith("#") or len(value) != 7:
         return (0, 0, 0)
     try:
-        return (int(limpio[0:2], 16), int(limpio[2:4], 16), int(limpio[4:6], 16))
+        return (int(value[1:3], 16), int(value[3:5], 16), int(value[5:7], 16))
     except ValueError:
         return (0, 0, 0)
 
 
 @lru_cache(maxsize=64)
 def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
-    """
-    Realiza una interpolación lineal (LERP) entre dos colores hex.
-    
-    Args:
-        start: Color inicial en formato #RRGGBB.
-        end: Color final en formato #RRGGBB.
-        ratio: Factor de peso entre 0.0 (totalmente start) y 1.0 (totalmente end).
-    Returns:
-        Color mezclado resultante como string HexColor.
-    """
+    """Interpola linealmente (LERP) entre dos colores Hex."""
     proporcion = max(0.0, min(1.0, float(ratio)))
     r1, g1, b1 = _hex_to_rgb(start)
     r2, g2, b2 = _hex_to_rgb(end)
-    # Cálculo de cada canal: v_final = v1 + (v2 - v1) * ratio
     return "#{:02x}{:02x}{:02x}".format(
         int(r1 + (r2 - r1) * proporcion),
         int(g1 + (g2 - g1) * proporcion),
@@ -238,9 +212,7 @@ def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
 
 @lru_cache(maxsize=16)
 def gradient_colors(steps: int, stops: tuple[HexColor, ...] = GRADIENT_STOPS) -> List[HexColor]:
-    """
-    Genera una secuencia de colores interpolados distribuida en 'steps'.
-    """
+    """Genera una secuencia suavizada de colores interpolados."""
     cantidad = max(1, int(steps))
     if not stops: return [PALETTE["accent"]] * cantidad
     if len(stops) < 2: return [stops[0]] * cantidad
@@ -252,6 +224,12 @@ def gradient_colors(steps: int, stops: tuple[HexColor, ...] = GRADIENT_STOPS) ->
         return blend(stops[indice], stops[indice + 1], posicion - indice)
         
     return [get_color(i) for i in range(cantidad)]
+
+
+def _get_shield_coords(sx: float, sy: float, s: float) -> List[float]:
+    """Calcula las coordenadas relativas al origen para el polígono del escudo."""
+    base = [64, 18, 100, 31, 100, 67, 90, 90, 64, 110, 38, 90, 28, 67, 28, 31]
+    return [sx + v * s if i % 2 == 0 else sy + v * s for i, v in enumerate(base)]
 
 
 @lru_cache(maxsize=4)
@@ -282,24 +260,19 @@ def logo_svg(size: int = 128) -> str:
 
 
 def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
-    """Persiste el logo en disco. Retorna Path si es exitoso, None en caso contrario."""
+    """Persiste el logo en disco tras validar la seguridad de la ruta."""
     if not destination:
         return None
     try:
         target = Path(destination).expanduser().resolve()
-        
-        # Validar destino final: no debe ser un directorio ni una ruta prohibida
         if target.is_dir() or not is_safe_to_modify(target):
             return None
-        
-        # Validar directorio padre
         parent = target.parent
         if not parent.exists():
             ensure_safe_to_modify(parent)
             parent.mkdir(parents=True, exist_ok=True)
         elif not is_safe_to_modify(parent):
             return None
-            
         target.write_text(logo_svg(), encoding="utf-8")
         return target
     except (OSError, PermissionError, TypeError, ValueError, RuntimeError):
@@ -308,7 +281,7 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
 
 @lru_cache(maxsize=1)
 def logo_ascii() -> str:
-    """Retorna una representación en arte ASCII para registros de consola."""
+    """Retorna la representación en arte ASCII del logo para logs."""
     return r"""
    ___  __  __ ___ ___   _
   / _ \|  \/  | __/ __| /_\
@@ -319,38 +292,29 @@ def logo_ascii() -> str:
 
 
 def draw_logo(canvas: Any, size: int = 56, canvas_x: int = 0, canvas_y: int = 0) -> None:
-    """
-    Renderiza el escudo Omega vectorialmente en un widget Tkinter.Canvas.
-    """
+    """Renderiza el escudo Omega vectorialmente en un widget Tkinter.Canvas."""
     if canvas is None or not hasattr(canvas, "create_polygon"): return
     try:
         s = max(0.1, float(size) / 128)
-        x_val, y_val = float(canvas_x), float(canvas_y)
-        c = [64, 18, 100, 31, 100, 67, 90, 90, 64, 110, 38, 90, 28, 67, 28, 31]
-        contorno = [x_val + v * s if i % 2 == 0 else y_val + v * s for i, v in enumerate(c)]
+        x, y = float(canvas_x), float(canvas_y)
+        contorno = _get_shield_coords(x, y, s)
         
         for paso in range(4, 0, -1):
-            radio = 56 * s * (0.6 + paso * 0.12)
-            canvas.create_oval(
-                x_val + 64 * s - radio, y_val + 58 * s - radio, 
-                x_val + 64 * s + radio, y_val + 58 * s + radio, 
-                fill=blend(PALETTE["surface"], PALETTE["glow"], 0.04 * paso), outline=""
-            )
+            r = 56 * s * (0.6 + paso * 0.12)
+            canvas.create_oval(x + 64*s - r, y + 58*s - r, x + 64*s + r, y + 58*s + r, 
+                               fill=blend(PALETTE["surface"], PALETTE["glow"], 0.04 * paso), outline="")
 
         canvas.create_polygon(contorno, fill=GRADIENT_STOPS[1], outline="")
         franjas = max(6, int(28 * s))
         alto = max(0.1, 92 * s / franjas)
         for i, tono in enumerate(gradient_colors(franjas)):
             w = 36 * s * (1.0 if i / (franjas - 1) < 0.55 else 1.0 - (i / (franjas - 1) - 0.55) * 1.9)
-            canvas.create_rectangle(
-                x_val + 64 * s - w, y_val + 18 * s + i * alto, 
-                x_val + 64 * s + w, y_val + 18 * s + (i + 1) * alto + 1, 
-                fill=tono, outline=""
-            )
+            canvas.create_rectangle(x + 64*s - w, y + 18*s + i*alto, x + 64*s + w, y + 18*s + (i+1)*alto + 1, 
+                                    fill=tono, outline="")
 
-        canvas.create_line(x_val + 41 * s, y_val + 75 * s, x_val + 75 * s, y_val + 41 * s, fill=PALETTE["background"], width=max(2, int(8 * s)), capstyle="round")
-        canvas.create_polygon(x_val + 75 * s, y_val + 41 * s, x_val + 89 * s, y_val + 38 * s, x_val + 92 * s, y_val + 52 * s, fill=PALETTE["background"], outline="")
-        canvas.create_text(x_val + 64 * s, y_val + 96 * s, text="\u03a9", fill=PALETTE["background"], font=("Segoe UI", max(8, int(23 * s)), "bold"))
+        canvas.create_line(x + 41*s, y + 75*s, x + 75*s, y + 41*s, fill=PALETTE["background"], width=max(2, int(8*s)), capstyle="round")
+        canvas.create_polygon(x + 75*s, y + 41*s, x + 89*s, y + 38*s, x + 92*s, y + 52*s, fill=PALETTE["background"], outline="")
+        canvas.create_text(x + 64*s, y + 96*s, text="\u03a9", fill=PALETTE["background"], font=("Segoe UI", max(8, int(23*s)), "bold"))
     except (ValueError, TypeError, AttributeError, ZeroDivisionError):
         pass
 
@@ -366,11 +330,8 @@ def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
         start_idx = 0
         for i in range(1, ancho + 1):
             if i == ancho or colores[i] != colores[start_idx]:
-                canvas.create_line(
-                    canvas_x + start_idx, canvas_y, 
-                    canvas_x + i, canvas_y + height, 
-                    fill=colores[start_idx], width=height
-                )
+                canvas.create_line(canvas_x + start_idx, canvas_y, canvas_x + i, canvas_y + height, 
+                                   fill=colores[start_idx], width=height)
                 start_idx = i
     except (ValueError, TypeError, AttributeError): pass
 

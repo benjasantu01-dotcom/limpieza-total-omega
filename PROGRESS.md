@@ -6,27 +6,27 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **255** (50.6% de aceptación)
-- Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 29
+- Mejoras aceptadas: **254** (50.4% de aceptación)
+- Rechazadas por tests: 14
+- Rechazadas por guardia de seguridad: 28
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 194
+- Sin respuesta de la IA (error o límite): 195
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-01 | 39 | 1 | 4 | 2 | 36 |
+| 2026-08-01 | 36 | 1 | 3 | 2 | 36 |
 | 2026-08-02 | 187 | 11 | 22 | 8 | 122 |
-| 2026-08-03 | 29 | 1 | 3 | 3 | 36 |
+| 2026-08-03 | 31 | 2 | 3 | 3 | 37 |
 
 ## Mejoras aceptadas por enfoque
 
+- legibilidad y documentación: **56**
 - seguridad defensiva: **55**
 - manejo de errores y validación de entradas: **54**
-- legibilidad y documentación: **54**
 - robustez ante casos límite: **50**
-- rendimiento: **42**
+- rendimiento: **39**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,19 +34,21 @@ Este archivo se regenera solo en cada corrida a partir de
 - `scanner.py`: **22**
 - `main.py`: **20**
 - `browser.py`: **20**
-- `quarantine.py`: **19**
 - `assistant.py`: **19**
-- `organizer.py`: **18**
+- `branding.py`: **18**
+- `quarantine.py`: **18**
 - `safety.py`: **17**
-- `branding.py`: **17**
 - `diskreport.py`: **17**
+- `organizer.py`: **17**
+- `duplicates.py`: **17**
 - `startup.py`: **16**
 - `healthscore.py`: **16**
-- `duplicates.py`: **16**
-- `memory.py`: **14**
+- `memory.py`: **13**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-03T03:13:11` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica y la precisión de los tipos en `_collect_candidates` y `_refine_by_hash`, clarificando los mecanismos de exclusión de inodos y el flujo de filtrado para facilitar el mantenimiento futuro.
+- `2026-08-03T03:12:17` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `branding.py` incluyendo descripciones detalladas en los tipos personalizados y funciones de renderizado, y refactoricé `draw_logo` para extraer la lógica de cálculo de coordenadas a una función privada, facilitando el mantenimiento y la comprensión de su estructura geométrica.
 - `2026-08-03T03:03:06` **assistant.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints en retornos implícitos y la clarificación de docstrings en funciones críticas, facilitando la comprensión del flujo de datos en el asistente.
 - `2026-08-03T03:02:49` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo validación de tipo y manejo de excepciones ante inputs malformados, asegurando que la función retorne una lista vacía de forma segura en lugar de fallar ante datos inesperados.
 - `2026-08-03T03:02:25` **settings.py** (manejo de errores y validación de entradas): Reforcé la robustez del validador de rutas en `_validate_str` capturando explícitamente `PermissionError` y `OSError` adicionales durante la resolución de rutas, evitando que el validador falle silenciosamente ante bloqueos del sistema de archivos al intentar validar la existencia de carpetas.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-03T02:32:32` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `walk_files` y `summarize` implementando chequeos explícitos para manejar rutas inválidas o inaccesibles, evitando que `Path.resolve(strict=True)` interrumpa la ejecución ante permisos denegados o inconsistencias del sistema de archivos, alineándose con el enfoque de manejo de errores defensivos.
 - `2026-08-03T02:32:22` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `directory_size` y `_is_safe_path` ante errores de sistema, añadiendo validaciones explícitas de tipos y capturando excepciones de forma granular para evitar que entradas de sistema bloqueadas o con permisos denegados interrumpan el análisis completo.
 - `2026-08-03T02:31:30` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `build_context` implementando una validación exhaustiva de los datos de entrada para evitar que valores nulos o tipos incorrectos inesperados propaguen errores hacia las funciones de análisis, utilizando un manejo de excepciones local más granular.
-- `2026-08-03T01:10:10` **startup.py** (seguridad defensiva): He mejorado `_extract_quoted_path` y `parse_registry_csv` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta extraída antes de realizar cualquier operación, asegurando que incluso rutas malformadas o potencialmente engañosas que pasen los filtros de caracteres sean bloqueadas antes de ser procesadas por el sistema de archivos.
-- `2026-08-03T01:09:45` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `settings.py` implementando una validación estricta al persistir la configuración en `save()`, verificando que la ruta del directorio de configuración no sea una ruta de sistema (o zona protegida) mediante `ensure_safe_to_modify` antes de cualquier operación de escritura, previniendo así posibles ataques de inyección de rutas externas.

@@ -140,9 +140,11 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
 def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """
     Realiza un recorrido recursivo por directorios, indexando archivos por tamaño.
-    Evita procesar el mismo inodo dos veces y aplica filtros de seguridad in-situ.
+    Evita procesar el mismo archivo físico varias veces mediante la huella de 
+    dispositivo e inodo (st_dev, st_ino).
     """
     groups: Dict[int, List[Path]] = defaultdict(list)
+    # Almacena tuplas (dev, ino) para identificar archivos idénticos en disco (hardlinks).
     visited_inodes: set[Tuple[int, int]] = set()
     
     def _scan(root_path: Path) -> None:
@@ -179,8 +181,10 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
 
 def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
     """
-    Aplica una función de hash a una lista de candidatos y agrupa por colisiones.
-    Solo retorna entradas donde existan al menos dos rutas con el mismo hash.
+    Reduce un grupo de archivos procesando su contenido vía hash_func.
+    
+    Retorna un diccionario de colisiones: {hash: [lista_de_rutas_con_ese_hash]}.
+    Solo se incluyen grupos con longitud >= 2 (duplicados confirmados por el hash).
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
