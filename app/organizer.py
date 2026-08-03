@@ -240,10 +240,12 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             if jf.path in dest.parents or dest in jf.path.parents:
                 continue
             
-            # Verificar exclusividad de acceso antes de mover
+            # Verificar exclusividad de acceso: no podemos mover un archivo en uso por el SO
             try:
-                with open(jf.path, 'rb+'): pass
-            except (IOError, OSError):
+                # Intento de apertura en modo exclusivo
+                with open(jf.path, 'r+b'):
+                    pass
+            except (OSError, PermissionError):
                 continue
 
             target_base = dest / f"{jf.path.stem}_{int(jf.modified.timestamp())}{jf.path.suffix}"

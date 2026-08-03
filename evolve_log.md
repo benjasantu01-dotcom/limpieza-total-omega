@@ -768,3 +768,11 @@ FAILED evolve/tests/test_modules.py::test_gradient_bar_paints_one_line_per_pixel
 - `2026-08-03T14:11:23` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: seguridad defensiva).
 - `2026-08-03T14:11:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-03T14:11:23` Corrida terminada. Total usado hoy: 332.
+- `2026-08-03T14:20:08` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-03T14:20:58` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-03T14:22:00` ➖ Sin cambios en main.py (enfoque: seguridad defensiva). Motivo: Mejoré la seguridad defensiva en `on_trim_process` y `on_restore_quarantine` mediante una validación más estricta de las entradas del usuario (verificando positividad del PID y formato del ID) antes de cualquier procesamiento, y asegurando que las operaciones que interactúan con el sistema de archivos validen explícitamente el origen y destino mediante `_is_safe_path` para evitar cualquier escalada de privilegios o manipulación de rutas externas a la cuarentena.
+- `2026-08-03T14:22:24` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
+- `2026-08-03T14:22:48` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `stage_for_review` implementando una validación explícita para evitar que `shutil.move` se ejecute sobre archivos que ya están siendo utilizados por otros procesos, evitando posibles corrupciones o errores de acceso durante la operación de staging.
+- `2026-08-03T14:23:16` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `quarantine_file` añadiendo una comprobación explícita para evitar condiciones de carrera o inconsistencias si el archivo origen cambia de permisos o es reemplazado por otro proceso justo antes de la operación de movimiento (`shutil.move`), mediante la verificación de que el `st_ino` (inodo) o `st_ctime` se mantengan constantes, reforzando la seguridad defensiva.
+- `2026-08-03T14:23:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-03T14:23:16` Corrida terminada. Total usado hoy: 336.

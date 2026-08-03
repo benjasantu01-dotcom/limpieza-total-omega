@@ -288,10 +288,12 @@ def quarantine_file(
         raise IOError(f"El archivo está en uso por otro proceso: {source_path}")
     
     try:
-        stats = source_path.stat()
-        file_size = stats.st_size
-        # st_nlink == 1 asegura que no hay otros enlaces físicos (Hard links) alterando el archivo
-        if stats.st_nlink != 1:
+        # Capturamos metadatos iniciales para verificar consistencia tras el movimiento
+        pre_stats = source_path.stat()
+        file_size = pre_stats.st_size
+        file_ctime = pre_stats.st_ctime
+        
+        if pre_stats.st_nlink != 1:
              raise OSError("Archivo con enlaces físicos detectados (posible manipulación).")
     except OSError as e:
         raise OSError(f"Error al acceder a metadatos de archivo: {e}")
@@ -318,8 +320,8 @@ def quarantine_file(
         raise FileExistsError(f"Colisión de nombre en destino: {destination}")
 
     try:
-        if not source_path.exists():
-            raise FileNotFoundError("El archivo origen desapareció antes del movimiento.")
+        if not source_path.exists() or source_path.stat().st_ctime != file_ctime:
+            raise RuntimeError("El archivo origen ha cambiado de estado antes del movimiento.")
         shutil.move(str(source_path), str(destination))
     except (OSError, PermissionError) as e:
         if destination.exists():
