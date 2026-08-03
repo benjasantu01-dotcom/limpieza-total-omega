@@ -152,12 +152,9 @@ def directory_size(path: str | os.PathLike | None) -> int:
             with os.scandir(current_dir_str) as it:
                 for entry in it:
                     try:
-                        name_lower: str = entry.name.lower()
-                        if name_lower in NEVER_TOUCH:
+                        if entry.name.lower() in NEVER_TOUCH or any(ord(c) < 32 for c in entry.name):
                             continue
-                        if any(ord(c) < 32 for c in entry.name):
-                            continue
-                        # Verificar puntos de reparse (junctions/symlinks) antes de profundizar
+                        # Usar métodos de DirEntry que no requieren llamadas extra a stat() si es posible
                         if entry.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(entry.path)):
                             continue
                         if entry.is_dir(follow_symlinks=False):

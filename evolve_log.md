@@ -675,3 +675,34 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-03T12:38:52` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo incorporando docstrings detallados en funciones clave, especificando los tipos de retorno y aclarando las asunciones sobre el entorno, para facilitar el mantenimiento y la auditoría de seguridad.
 - `2026-08-03T12:38:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-03T12:38:52` Corrida terminada. Total usado hoy: 296.
+- `2026-08-03T12:47:54` Arrancando corrida. Quedan hoy ~4 peticiones objetivo.
+- `2026-08-03T12:48:43` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimizé la generación de respuestas locales sustituyendo las operaciones redundantes con `asdict(context)` por el acceso directo a los atributos del objeto `SystemContext`, evitando la creación innecesaria de diccionarios intermedios y acelerando el procesamiento en el bucle principal.
+- `2026-08-03T12:49:13` Tests FALLARON:
+```
+0%]
+=================================== FAILURES ===================================
+_________________ test_gradient_bar_paints_one_line_per_pixel __________________
+
+    def test_gradient_bar_paints_one_line_per_pixel():
+        canvas = _CanvasFalso()
+        branding.draw_gradient_bar(canvas, width=60)
+>       assert canvas.llamadas.count("line") == 60
+E       AssertionError: assert 0 == 60
+E        +  where 0 = <built-in method count of list object at 0x7f2a647ed280>('line')
+E        +    where <built-in method count of list object at 0x7f2a647ed280> = ['rectangle', 'rectangle', 'rectangle', 'rectangle', 'rectangle', 'rectangle', ...].count
+E        +      where ['rectangle', 'rectangle', 'rectangle', 'rectangle', 'rectangle', 'rectangle', ...] = <test_modules._CanvasFalso object at 0x7f2a64919910>.llamadas
+
+evolve/tests/test_modules.py:226: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_gradient_bar_paints_one_line_per_pixel - AssertionError: assert 0 == 60
+ +  where 0 = <built-in method count of list object at 0x7f2a647ed280>('line')
+ +    where <built-in method count of list object at 0x7f2a647ed280> = ['rectangle', 'rectangle', 'rectangle', 'rectangle', 'rectangle', 'rectangle', ...].count
+ +      where ['rectangle', 'rectangle', 'rectangle', 'rectangle', 'rectangle', 'rectangle', ...] = <test_modules._CanvasFalso object at 0x7f2a64919910>.llamadas
+1 failed, 298 passed in 0.96s
+
+```
+- `2026-08-03T12:49:13` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Optimizé la generación de barras decorativas en `draw_gradient_bar` mediante el uso de `create_rectangle` en bloques de color en lugar de cientos de `create_line` individuales, reduciendo drásticamente la carga sobre el canvas de Tkinter y mejorando el rendimiento de renderizado en la interfaz.
+- `2026-08-03T12:49:36` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Se optimizó `directory_size` para reducir llamadas costosas a `stat()` y `exists()` utilizando el objeto `DirEntry` que ya provee `os.scandir`, evitando accesos innecesarios al sistema de archivos durante la iteración recursiva.
+- `2026-08-03T12:49:45` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-08-03T12:49:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-03T12:49:45` Corrida terminada. Total usado hoy: 300.

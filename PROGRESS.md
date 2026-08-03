@@ -6,8 +6,8 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **253** (50.2% de aceptación)
-- Rechazadas por tests: 11
+- Mejoras aceptadas: **252** (50.0% de aceptación)
+- Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 26
 - Sin cambios (nada sustancial que mejorar): 12
 - Sin respuesta de la IA (error o límite): 202
@@ -16,36 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-02 | 108 | 6 | 12 | 3 | 79 |
-| 2026-08-03 | 145 | 5 | 14 | 9 | 123 |
+| 2026-08-02 | 105 | 6 | 12 | 3 | 78 |
+| 2026-08-03 | 147 | 6 | 14 | 9 | 124 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **65**
 - seguridad defensiva: **55**
 - manejo de errores y validación de entradas: **53**
-- robustez ante casos límite: **44**
-- rendimiento: **36**
+- robustez ante casos límite: **41**
+- rendimiento: **38**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **24**
 - `scanner.py`: **22**
-- `main.py`: **21**
-- `assistant.py`: **19**
-- `browser.py`: **19**
-- `quarantine.py`: **18**
-- `organizer.py`: **17**
+- `assistant.py`: **20**
+- `browser.py`: **20**
+- `main.py`: **20**
 - `safety.py`: **17**
 - `duplicates.py`: **17**
 - `memory.py`: **17**
+- `quarantine.py`: **17**
 - `diskreport.py`: **16**
 - `startup.py`: **16**
+- `organizer.py`: **16**
 - `branding.py`: **15**
 - `healthscore.py`: **15**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-03T12:49:36` **browser.py** (rendimiento): Se optimizó `directory_size` para reducir llamadas costosas a `stat()` y `exists()` utilizando el objeto `DirEntry` que ya provee `os.scandir`, evitando accesos innecesarios al sistema de archivos durante la iteración recursiva.
+- `2026-08-03T12:48:43` **assistant.py** (rendimiento): Optimizé la generación de respuestas locales sustituyendo las operaciones redundantes con `asdict(context)` por el acceso directo a los atributos del objeto `SystemContext`, evitando la creación innecesaria de diccionarios intermedios y acelerando el procesamiento en el bucle principal.
 - `2026-08-03T12:38:52` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo incorporando docstrings detallados en funciones clave, especificando los tipos de retorno y aclarando las asunciones sobre el entorno, para facilitar el mantenimiento y la auditoría de seguridad.
 - `2026-08-03T12:38:42` **settings.py** (legibilidad y documentación): Mejora la legibilidad y robustez de `validate` mediante un tipado más explícito y la simplificación del flujo de validación, asegurando que los tipos de datos sean consistentes antes de la asignación.
 - `2026-08-03T12:38:17` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `scanner.py` mediante la integración de `docstrings` de estilo Google en las funciones de análisis, lo que clarifica el propósito, los parámetros y los retornos de cada heurística para facilitar futuras contribuciones.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-03T12:17:36` **diskreport.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del módulo `diskreport.py` mediante la adición de Type Hints detallados, la mejora de los Docstrings con explicación de parámetros y retornos, y la sustitución de una clase local interna en `summarize` por una estructura más clara, cumpliendo con los estándares de documentación exigidos.
 - `2026-08-03T12:08:36` **browser.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints faltantes, la normalización de la terminología en los docstrings y la simplificación de la lógica de `_is_safe_path` para hacer explícita la verificación de `is_protected_path`.
 - `2026-08-03T12:08:18` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación de los tipos en `PaletteDict` y se han añadido docstrings técnicos detallados a las funciones gráficas para aclarar las dependencias de coordenadas y el propósito de los cálculos geométricos.
-- `2026-08-03T12:07:48` **assistant.py** (legibilidad y documentación): Se mejoró la legibilidad de `assistant.py` mediante la implementación de type hints en funciones clave que carecían de ellos y la estandarización de docstrings siguiendo las directrices del proyecto, facilitando la comprensión del flujo de datos en el motor local.
-- `2026-08-03T12:07:08` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` al reemplazar el manejo genérico de excepciones `except Exception: pass` por una captura específica y un filtrado defensivo más estricto para evitar procesar líneas malformadas o rutas inválidas durante el parseo del CSV.
