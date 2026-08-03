@@ -77,15 +77,11 @@ class DuplicateGroup:
 def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
     Calcula el hash SHA256 completo del archivo mediante bloques de datos.
-    
-    Ignora archivos protegidos, enlaces simbólicos o rutas inaccesibles.
-    
-    Returns:
-        Hexdigest del hash SHA256 si es accesible, None en caso contrario.
     """
     if path is None: return None
     try:
-        p = Path(path)
+        p = Path(path).resolve()
+        # Seguridad: no seguir symlinks, detectar reparse points y evitar rutas protegidas
         if not p.is_file() or p.is_symlink() or is_protected_path(p):
             return None
         
@@ -104,13 +100,10 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
 def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """
     Calcula un hash SHA256 sobre los primeros N bytes de un archivo.
-    
-    Utilizado como filtro heurístico de bajo costo para descartar archivos
-    que difieren en sus cabeceras antes de realizar un hash completo.
     """
     if path is None: return None
     try:
-        p = Path(path)
+        p = Path(path).resolve()
         if not p.is_file() or p.is_symlink() or is_protected_path(p):
             return None
             
@@ -134,8 +127,9 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     for p in paths:
         if not isinstance(p, Path): continue
         try:
-            if is_protected_path(p): continue
-            groups[p.stat().st_size].append(p)
+            resolved = p.resolve()
+            if is_protected_path(resolved) or resolved.is_symlink(): continue
+            groups[resolved.stat().st_size].append(resolved)
         except (OSError, PermissionError, FileNotFoundError):
             continue
     return groups
@@ -144,8 +138,7 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
 def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """
     Recorrido recursivo por directorios, indexando archivos por tamaño.
-    Evita procesar el mismo archivo físico varias veces mediante la huella de 
-    dispositivo e inodo (st_dev, st_ino).
+    Evita procesar archivos inseguros, symlinks o fuera de rutas permitidas.
     """
     groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: set[Tuple[int, int]] = set()
@@ -155,9 +148,14 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
             with os.scandir(root_path) as it:
                 for entry in it:
                     try:
+                        # Seguridad: no seguir symlinks ni junction points
                         if entry.is_symlink(): continue
+                        
+                        full_path = Path(entry.path)
+                        if is_protected_path(full_path): continue
+                        
                         if entry.is_dir():
-                            _scan(Path(entry.path))
+                            _scan(full_path)
                         elif entry.is_file():
                             st = entry.stat()
                             if st.st_size < min_size: continue
@@ -165,18 +163,15 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
                             inode_id = (st.st_dev, st.st_ino)
                             if inode_id in visited_inodes: continue
                             
-                            p = Path(entry.path)
-                            if is_protected_path(p): continue
-                            
                             visited_inodes.add(inode_id)
-                            groups[st.st_size].append(p)
+                            groups[st.st_size].append(full_path)
                     except (OSError, PermissionError): continue
         except (OSError, PermissionError): pass
 
     if directories is None: return groups
     for directory in directories:
         if directory is None: continue
-        path_obj = Path(directory)
+        path_obj = Path(directory).resolve()
         if path_obj.is_dir() and not is_protected_path(path_obj):
             _scan(path_obj)
     return groups
@@ -202,10 +197,7 @@ def find_duplicates(
     skip_protected: bool = True,
 ) -> List[DuplicateGroup]:
     """
-    Ejecuta el pipeline de detección de duplicados en tres etapas:
-    1. Indexación por tamaño (Filtro por volumen).
-    2. Filtrado por hash parcial (Filtro heurístico).
-    3. Validación por hash completo (Confirmación absoluta).
+    Ejecuta el pipeline de detección de duplicados en tres etapas.
     """
     if directories is None: return []
     size_map: Dict[int, List[Path]] = _collect_candidates(directories, min_size, skip_protected)
@@ -241,8 +233,7 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     """
-    Determina la ruta óptima para conservar basada en la fecha de modificación (mtime)
-    más antigua y, como desempate, la ruta con menor longitud de string.
+    Determina la ruta óptima para conservar.
     """
     if group is None or not isinstance(group, DuplicateGroup) or not group.paths:
         return None

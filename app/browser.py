@@ -112,13 +112,14 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
         if any(ord(char) < 32 for char in target_path.name):
             return False
 
-        # Verificar si la ruta está marcada como protegida globalmente
-        if is_protected_path(target_path):
+        # Obtener rutas canónicas para evitar trucos de simbolización
+        real_base = base_path.resolve()
+        real_target = target_path.resolve()
+        
+        # Verificar si la ruta resuelta está marcada como protegida globalmente
+        if is_protected_path(real_target):
             return False
 
-        real_base = Path(os.path.realpath(str(base_path)))
-        real_target = Path(os.path.realpath(str(target_path)))
-        
         # Prohibir cruzar enlaces simbólicos o junctions de Windows
         if real_target.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(str(real_target))):
             return False
