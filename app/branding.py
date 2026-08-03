@@ -16,7 +16,7 @@ El motivo es un escudo (seguridad) cruzado por un trazo de limpieza.
 
 from __future__ import annotations
 from pathlib import Path
-from typing import Any, Final, TypeAlias, Literal, Mapping, Tuple, List, Optional, Union
+from typing import Any, Final, TypeAlias, Literal, Mapping, Tuple, List, Optional, Union, TypedDict
 from types import MappingProxyType
 from functools import lru_cache
 from safety import is_safe_to_modify, ensure_safe_to_modify
@@ -25,8 +25,30 @@ from safety import is_safe_to_modify, ensure_safe_to_modify
 HexColor: TypeAlias = str
 SeverityKey: TypeAlias = Literal["ok", "info", "warning", "danger"]
 GradeKey: TypeAlias = Literal["A", "B", "C", "D", "F"]
-# Tupla de (color_hex, etiqueta_humana) para estados de severidad
 SeverityStyle: TypeAlias = Tuple[HexColor, str]
+
+class PaletteDict(TypedDict):
+    background: HexColor
+    surface: HexColor
+    surface_alt: HexColor
+    surface_hover: HexColor
+    card: HexColor
+    accent: HexColor
+    accent_hover: HexColor
+    accent_dim: HexColor
+    accent2: HexColor
+    accent2_hover: HexColor
+    accent3: HexColor
+    success: HexColor
+    info: HexColor
+    warning: HexColor
+    danger: HexColor
+    danger_hover: HexColor
+    text: HexColor
+    text_muted: HexColor
+    text_dim: HexColor
+    border: HexColor
+    glow: HexColor
 
 APP_NAME: Final = "Limpieza Total Omega"
 APP_SHORT_NAME: Final = "Omega"
@@ -34,7 +56,7 @@ APP_TAGLINE: Final = "Limpieza y seguridad, en un solo lugar"
 APP_VERSION: Final = "2.1.0"
 
 # Paleta de colores centralizada para mantener la coherencia visual.
-PALETTE: Final = MappingProxyType({
+PALETTE: Final[PaletteDict] = MappingProxyType({  # type: ignore
     "background": "#0a0e17",
     "surface": "#141b2d",
     "surface_alt": "#1e2740",

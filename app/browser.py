@@ -104,12 +104,14 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
     if not isinstance(target_path, Path) or not isinstance(base_path, Path):
         return False
     try:
+        # Detectar caracteres de control ocultos en nombres de archivos
         if any(ord(char) < 32 for char in target_path.name):
             return False
 
         real_base = Path(os.path.realpath(str(base_path)))
         real_target = Path(os.path.realpath(str(target_path)))
         
+        # Prohibir cruzar enlaces simbólicos o junctions de Windows
         if real_target.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(str(real_target))):
             return False
 
@@ -123,14 +125,16 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
 
 def directory_size(path: str | os.PathLike | None) -> int:
     """
-    Calcula el tamaño total en bytes de un directorio mediante búsqueda iterativa eficiente.
+    Calcula el tamaño total en bytes de un directorio mediante búsqueda iterativa.
+    
+    Utiliza una pila (stack) para evitar recursión profunda y optimizar memoria.
+    Saltea automáticamente rutas protegidas y elementos enumerados en NEVER_TOUCH.
     """
     if path is None:
         return 0
     
     try:
         root = Path(path).resolve()
-        # Validación de seguridad: no procesar nada que esté protegido
         if not root.exists() or not root.is_dir() or is_protected_path(root):
             return 0
     except (OSError, TypeError, ValueError):
@@ -145,7 +149,7 @@ def directory_size(path: str | os.PathLike | None) -> int:
             with os.scandir(current_dir_str) as it:
                 for entry in it:
                     try:
-                        # Saltar elementos protegidos o inválidos
+                        # Saltar archivos de usuario sensibles definidos por política
                         if entry.name.lower() in NEVER_TOUCH:
                             continue
                         if any(ord(c) < 32 for c in entry.name):
@@ -155,7 +159,7 @@ def directory_size(path: str | os.PathLike | None) -> int:
                         if entry.is_dir(follow_symlinks=False):
                             stack.append(entry.path)
                         else:
-                            # Captura de errores de sistema al acceder a archivos
+                            # Sumar tamaño de archivos individuales
                             try:
                                 total_bytes += entry.stat().st_size
                             except (OSError, PermissionError):
@@ -170,7 +174,7 @@ def directory_size(path: str | os.PathLike | None) -> int:
 
 def _is_valid_cache_path(candidate: Path | None, base_path: Path) -> bool:
     """
-    Verifica si una ruta es un directorio de caché candidato legítimo.
+    Verifica si una ruta es un directorio de caché candidato legítimo antes de analizar.
     """
     if not isinstance(candidate, Path) or not isinstance(base_path, Path):
         return False
@@ -192,6 +196,7 @@ def detect_profiles(
 ) -> List[BrowserCache]:
     """
     Explora directorios base buscando caché de navegadores.
+    Retorna una lista ordenada de objetos BrowserCache.
     """
     bases = bases if bases is not None else base_directories()
     cache_paths = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS

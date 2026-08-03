@@ -183,7 +183,10 @@ def _ensure_safe_text(text: str) -> bool:
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
     """
     Transforma fuentes de datos crudos en un objeto SystemContext validado.
-    Filtra entradas no numéricas, no finitas o fuera de rango por seguridad.
+    
+    Implementa un filtro estricto de tipos y rangos para garantizar que ninguna
+    información sensible o corrompida entre en la lógica de contexto. Se
+    asegura de que solo valores numéricos finitos sean procesados.
     """
     ctx = SystemContext()
 
@@ -441,8 +444,11 @@ def _call_gemini(
 ) -> Optional[str]:
     """
     Envía métricas agregadas a Gemini mediante la librería estándar urllib.
-    Realiza una serialización JSON del contexto y la pregunta, validando la
-    integridad de la respuesta recibida contra caracteres no seguros.
+    
+    Realiza una serialización JSON segura y protege la integridad de la respuesta 
+    recibida. Implementa validaciones dobles de seguridad: antes de enviar para 
+    evitar inyecciones en el prompt, y tras recibir para asegurar que el modelo 
+    no retorne rutas o contenido peligroso.
     """
     if not api_key or not model or not _MODEL_NAME_REGEX.match(model):
         return None
@@ -501,9 +507,12 @@ def _call_gemini(
 def ask(question: str, context: SystemContext | None = None,
         base: str | Path | None = None) -> Answer:
     """
-    Coordina la resolución de la consulta: intenta una respuesta local basada
-    en reglas estáticas y, si el asistente en línea está habilitado en
-    settings, intenta obtener una respuesta contextual mediante _call_gemini.
+    Coordina la resolución de la consulta buscando la mejor respuesta disponible.
+    
+    Intenta primero una respuesta local estática. Si el asistente en línea está 
+    habilitado y configurado en settings, intenta enriquecer la consulta mediante 
+    la API externa, priorizando siempre la seguridad y privacidad del usuario 
+    según la configuración local.
     """
     ctx: SystemContext = context if isinstance(context, SystemContext) else SystemContext()
     respaldo: Answer = local_answer(question, ctx)
