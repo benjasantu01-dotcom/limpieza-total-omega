@@ -161,6 +161,7 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
                             if entry.name.lower() not in blocklist:
                                 _walk_dir(entry.path)
                         elif entry.name.lower().endswith(_JUNK_EXTS_TUPLE):
+                            # Filtro de seguridad centralizado para el archivo encontrado
                             if is_safe_to_modify(Path(entry.path)):
                                 stat = entry.stat()
                                 found.append(JunkFile(

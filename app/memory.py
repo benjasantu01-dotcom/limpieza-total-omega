@@ -27,6 +27,7 @@ import os
 import re
 import subprocess
 import time
+import math
 from functools import lru_cache
 from dataclasses import dataclass, field
 from typing import List, Tuple, Optional, Dict, TYPE_CHECKING, TypeVar
@@ -113,19 +114,13 @@ class ProcessMemory:
 def format_bytes(num: Optional[_T]) -> str:
     """
     Convierte un valor numérico en bytes a una cadena legible.
-    
-    Aplica divisiones sucesivas por 1024 para escalar a la unidad más adecuada 
-    (B, KB, MB, etc.).
+    Utiliza logaritmo para determinar la unidad directamente.
     """
     if not isinstance(num, (int, float)) or num <= 0:
         return "0 B"
     
-    val: float = float(num)
-    idx: int = 0
-    while val >= 1024 and idx < len(BYTE_UNITS) - 1:
-        val /= 1024
-        idx += 1
-        
+    idx = min(int(math.log(num, 1024)), len(BYTE_UNITS) - 1)
+    val = num / (1024 ** idx)
     return f"{val:.{0 if idx == 0 else 1}f} {BYTE_UNITS[idx]}"
 
 

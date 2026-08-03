@@ -239,7 +239,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     if not metrics.is_finite() or not _validate_weights():
         return HealthResult(0, "F", {}, ["Error: Datos de entrada o configuración no procesables."])
 
-    ratios: Dict[str, float] = {
+    ratios = {
         "seguridad": score_security(metrics.suspicious_count, metrics.suspicious_warnings),
         "disco": score_disk(metrics.disk_free_percent),
         "memoria": score_memory(metrics.memory_available_percent),
@@ -253,9 +253,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     factor: float = 100.0 / float(_TOTAL_WEIGHTS)
     
     for area, weight in WEIGHTS.items():
-        ratio_val = ratios.get(area, 0.0)
-        # score_val escala el ratio [0,1] al rango del peso específico
-        score_val = (ratio_val * weight * factor)
+        score_val = ratios[area] * weight * factor
         breakdown[area] = int(score_val + 0.5)
         total_score += score_val
 
