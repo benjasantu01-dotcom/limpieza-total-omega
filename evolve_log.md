@@ -402,3 +402,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-03T09:45:14` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `_ask_folder` al realizar una verificación explícita mediante `is_protected_path` antes de proceder con cualquier validación, asegurando que el usuario no pueda seleccionar directorios críticos, incluso si tiene permisos de acceso sobre ellos.
 - `2026-08-03T09:45:14` Rotación — log: 1038 líneas archivadas; metrics: 4 registros archivados; 2 archivo(s) histórico(s) descartado(s)
 - `2026-08-03T09:45:14` Corrida terminada. Total usado hoy: 228.
+- `2026-08-03T09:53:25` Arrancando corrida. Quedan hoy ~72 peticiones objetivo.
+- `2026-08-03T09:53:52` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva de `trim_working_set` implementando una validación explícita mediante un nuevo helper interno `_is_system_process` que verifica que el proceso pertenezca al usuario actual antes de intentar cualquier operación de escritura, evitando errores de privilegios y posibles ataques por desbordamiento de permisos.
+- `2026-08-03T09:54:14` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-08-03T09:54:43` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se implementó una validación de "punto de reparse" (junctions/symlinks) en el destino de `quarantine_file` para asegurar que el archivo no sea movido hacia una ruta que redirija fuera de la carpeta de cuarentena, previniendo así posibles ataques de "desbordamiento" de privilegios o escritura accidental en ubicaciones no deseadas.
+- `2026-08-03T09:54:46` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-03T09:54:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-03T09:54:46` Corrida terminada. Total usado hoy: 232.

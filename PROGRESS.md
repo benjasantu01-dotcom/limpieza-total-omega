@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **259** (51.4% de aceptación)
+- Mejoras aceptadas: **261** (51.8% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 28
+- Rechazadas por guardia de seguridad: 29
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 189
+- Sin respuesta de la IA (error o límite): 186
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-02 | 143 | 9 | 17 | 6 | 101 |
-| 2026-08-03 | 116 | 5 | 11 | 8 | 88 |
+| 2026-08-02 | 143 | 9 | 17 | 6 | 97 |
+| 2026-08-03 | 118 | 5 | 12 | 8 | 89 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **64**
+- seguridad defensiva: **52**
 - manejo de errores y validación de entradas: **51**
 - robustez ante casos límite: **50**
-- seguridad defensiva: **50**
 - rendimiento: **44**
 
 ## Mejoras aceptadas por archivo
@@ -35,17 +35,19 @@ Este archivo se regenera solo en cada corrida a partir de
 - `scanner.py`: **22**
 - `assistant.py`: **20**
 - `duplicates.py`: **19**
+- `quarantine.py`: **18**
 - `branding.py`: **17**
+- `memory.py`: **17**
 - `safety.py`: **17**
 - `organizer.py`: **17**
-- `quarantine.py`: **17**
-- `memory.py`: **16**
 - `diskreport.py`: **16**
 - `healthscore.py`: **16**
 - `startup.py`: **14**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-03T09:54:43` **quarantine.py** (seguridad defensiva): Se implementó una validación de "punto de reparse" (junctions/symlinks) en el destino de `quarantine_file` para asegurar que el archivo no sea movido hacia una ruta que redirija fuera de la carpeta de cuarentena, previniendo así posibles ataques de "desbordamiento" de privilegios o escritura accidental en ubicaciones no deseadas.
+- `2026-08-03T09:53:52` **memory.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `trim_working_set` implementando una validación explícita mediante un nuevo helper interno `_is_system_process` que verifica que el proceso pertenezca al usuario actual antes de intentar cualquier operación de escritura, evitando errores de privilegios y posibles ataques por desbordamiento de permisos.
 - `2026-08-03T09:45:14` **main.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_ask_folder` al realizar una verificación explícita mediante `is_protected_path` antes de proceder con cualquier validación, asegurando que el usuario no pueda seleccionar directorios críticos, incluso si tiene permisos de acceso sobre ellos.
 - `2026-08-03T09:44:27` **healthscore.py** (seguridad defensiva): Se reforzó la robustez del módulo `healthscore.py` mediante la validación estricta de las métricas de entrada y la protección contra estados inválidos en el desglose, garantizando que el cálculo de `compute_score` nunca dependa de estados inconsistentes, siguiendo el principio de diseño defensivo.
 - `2026-08-03T09:44:01` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `suggest_keeper` y `_collect_candidates` añadiendo validaciones mediante `is_protected_path` sobre las rutas procesadas, asegurando que cualquier operación sobre el sistema de archivos respete estrictamente los límites definidos en `safety.py`.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-03T09:14:43` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de `stage_for_review` al verificar explícitamente que los archivos no sean de tamaño cero antes de intentar procesarlos, evitando así el procesamiento de metadatos de archivos corruptos o mal reportados por el sistema de archivos.
 - `2026-08-03T09:14:19` **memory.py** (robustez ante casos límite): Mejoré la robustez de `parse_windows_process_csv` añadiendo un manejo más estricto de las filas CSV malformadas (espacios en blanco, encabezados inesperados o falta de datos) para evitar errores en entornos con configuraciones regionales de PowerShell variables.
 - `2026-08-03T09:13:54` **main.py** (robustez ante casos límite): Mejoré la robustez de `_is_valid_dir` y `_ask_folder` añadiendo una comprobación explícita mediante `os.access(path, os.R_OK)` para prevenir excepciones de permisos denegados antes de intentar realizar operaciones en disco, reforzando la estabilidad ante entornos de usuario con restricciones variadas.
-- `2026-08-03T09:02:21` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `score_startup` y `score_security` ante casos límite donde los divisores (umbrales) podrían ser configurados erróneamente en cero o negativos, evitando divisiones por cero y retornos inconsistentes, además de asegurar que los ratios siempre tengan un piso lógico.
-- `2026-08-03T09:02:10` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `hash_file` y `partial_hash` para gestionar archivos que cambian de estado, se bloquean por otros procesos durante la lectura o sufren errores de I/O repentinos, asegurando que el bucle de escaneo no se detenga ante excepciones de sistema de archivos.

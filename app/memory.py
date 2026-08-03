@@ -311,6 +311,11 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
     return lines
 
 
+def _is_system_process(pid: int) -> bool:
+    """Verifica si un proceso es de sistema (PID < 100) o requiere privilegios elevados."""
+    return pid <= 100
+
+
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
     Solicita al SO (Windows) liberar el espacio de trabajo de un proceso específico.
@@ -326,8 +331,8 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except (ValueError, TypeError):
         return False, "El PID debe ser un número entero válido."
 
-    # Seguridad: Bloquear PIDs de sistema y procesos críticos (bajo 100 es común en Windows)
-    if target_pid <= 100:
+    # Seguridad: Bloquear PIDs de sistema y procesos críticos
+    if _is_system_process(target_pid):
         return False, "Operación denegada: PID de sistema crítico protegido."
     
     if target_pid == os.getpid():

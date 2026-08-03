@@ -293,6 +293,10 @@ def quarantine_file(
     stored_name = f"{item_id}__{safe_name}"[:250] 
     destination = dest_dir / stored_name
 
+    # Validación adicional: evitar que el destino final sea un reparse o enlace sospechoso
+    if destination.is_symlink() or (hasattr(destination, 'is_junction') and destination.is_junction()):
+        raise UnsafePathError(f"Destino en cuarentena inválido (punto de reparse detectado): {destination}")
+
     if is_protected_path(destination):
         raise UnsafePathError(f"Ruta de destino en cuarentena considerada insegura: {destination}")
 
