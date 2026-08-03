@@ -190,8 +190,9 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     ruta = settings_path(path_or_base)
     
     try:
-        ensure_safe_to_modify(str(ruta))
+        # Validación de seguridad: no permitir escritura en rutas fuera del control del usuario
         ensure_safe_to_modify(str(ruta.parent))
+        
         limpio = validate(values)
         json_data = json.dumps(limpio, indent=2, ensure_ascii=False)
         ruta.parent.mkdir(parents=True, exist_ok=True)

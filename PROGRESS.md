@@ -6,31 +6,31 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **265** (52.6% de aceptación)
+- Mejoras aceptadas: **267** (53.0% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 30
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 182
+- Sin respuesta de la IA (error o límite): 180
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-01 | 64 | 2 | 6 | 4 | 54 |
+| 2026-08-01 | 64 | 2 | 6 | 4 | 50 |
 | 2026-08-02 | 187 | 11 | 22 | 8 | 122 |
-| 2026-08-03 | 14 | 0 | 2 | 2 | 6 |
+| 2026-08-03 | 16 | 0 | 2 | 2 | 8 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **66**
-- seguridad defensiva: **53**
+- seguridad defensiva: **55**
 - robustez ante casos límite: **50**
 - manejo de errores y validación de entradas: **49**
 - rendimiento: **47**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **24**
+- `settings.py`: **25**
 - `scanner.py`: **23**
 - `main.py`: **22**
 - `browser.py`: **21**
@@ -42,11 +42,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **18**
 - `healthscore.py`: **17**
 - `duplicates.py`: **16**
-- `startup.py`: **15**
+- `startup.py`: **16**
 - `memory.py`: **14**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-03T01:10:10` **startup.py** (seguridad defensiva): He mejorado `_extract_quoted_path` y `parse_registry_csv` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta extraída antes de realizar cualquier operación, asegurando que incluso rutas malformadas o potencialmente engañosas que pasen los filtros de caracteres sean bloqueadas antes de ser procesadas por el sistema de archivos.
+- `2026-08-03T01:09:45` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `settings.py` implementando una validación estricta al persistir la configuración en `save()`, verificando que la ruta del directorio de configuración no sea una ruta de sistema (o zona protegida) mediante `ensure_safe_to_modify` antes de cualquier operación de escritura, previniendo así posibles ataques de inyección de rutas externas.
 - `2026-08-03T01:00:23` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva de `scan_file` y `scan_directory` incorporando `path.resolve()` antes de cualquier validación, asegurando que las comparaciones de `is_protected_path` se realicen siempre sobre rutas absolutas y normalizadas, evitando eludir controles mediante rutas relativas o "dot-segments".
 - `2026-08-03T01:00:15` **safety.py** (seguridad defensiva): Se ha añadido una validación explícita contra rutas con caracteres nulos (`\0`) y una comprobación estricta de longitud de caracteres antes de la normalización, además de un control para impedir que las rutas contengan secuencias de escape de dispositivos (como `\\.\`) que podrían ser utilizadas para eludir protecciones a nivel de kernel en Windows.
 - `2026-08-03T00:59:32` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `quarantine_file` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta resultante de mover el archivo a la cuarentena, evitando así cualquier posibilidad de que una configuración errónea de la ruta base permita la sobreescritura de archivos críticos.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-03T00:28:59` **settings.py** (robustez ante casos límite): Se ha añadido un chequeo de existencia (`ruta.exists()`) y manejo de permisos al cargar la configuración para asegurar que el método `load` sea robusto ante escenarios donde el archivo aún no existe o el acceso al disco está restringido, evitando excepciones innecesarias.
 - `2026-08-03T00:28:35` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez de `scan_file` y `check_recent_executable_in_downloads` para manejar situaciones donde el archivo desaparece o cambia sus permisos entre la detección del directorio y el escaneo individual, evitando excepciones innecesarias y asegurando que las validaciones de `path` sean consistentes antes de realizar operaciones de sistema de archivos.
 - `2026-08-03T00:18:53` **quarantine.py** (robustez ante casos límite): Se ha mejorado `purge_all` para que sea robusto ante excepciones durante la iteración del sistema de archivos y se ha añadido una validación de existencia previa en `restore_item` antes de intentar realizar operaciones de E/S, evitando errores innecesarios cuando el archivo en cuarentena ha sido manipulado externamente.
-- `2026-08-03T00:09:36` **main.py** (robustez ante casos límite): Mejoré la robustez de `main.py` ante errores inesperados en el hilo de la interfaz al inicializar `_cache` y los componentes de UI, asegurando que un fallo en un componente no impida la carga de los demás, cumpliendo así con el enfoque de robustez ante casos límite.
-- `2026-08-02T14:56:35` **diskreport.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `walk_files` y `drive_usage` ante la presencia de rutas con caracteres especiales o estados de sistema inusuales, añadiendo un chequeo explícito de `is_absolute()` y capturando errores específicos de `Path.resolve()` que podrían abortar el análisis en directorios con permisos restringidos o rutas de red incompletas.

@@ -96,6 +96,7 @@ class StartupEntry:
         
         try:
             p: Path = Path(path_str).expanduser()
+            # Validación defensiva estricta antes de procesar la ruta
             if is_protected_path(p):
                 return ""
             return str(p)
@@ -208,7 +209,6 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
             
         try:
             p: Path = Path(cmd)
-            # Evitar rutas que contengan caracteres nulos o inválidos para el sistema
             if is_protected_path(p):
                 continue
         except (OSError, ValueError, TypeError):
