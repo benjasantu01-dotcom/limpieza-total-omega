@@ -80,7 +80,10 @@ class StartupEntry:
         return "".join(c for c in raw_cmd.strip() if ord(c) >= 32)
 
     def _extract_quoted_path(self, raw_cmd: str) -> str:
-        """Extrae la ruta de un comando entrecomillado, validando que no sea una ruta protegida."""
+        """
+        Extrae la ruta de un comando entrecomillado.
+        Retorna la cadena de la ruta si es segura, o una cadena vacía en caso contrario.
+        """
         if not isinstance(raw_cmd, str) or len(raw_cmd) < 2:
             return ""
         end_quote: int = raw_cmd.find('"', 1)
@@ -100,12 +103,14 @@ class StartupEntry:
             return ""
 
     def _resolve_and_cache_path(self, path_str: str) -> str:
-        """Expande y valida la ruta de un ejecutable, devolviendo su forma absoluta si es seguro."""
+        """
+        Expande y valida la ruta de un ejecutable contra el sistema de archivos.
+        Usa _EXISTS_CACHE para minimizar llamadas a disco (I/O).
+        """
         if not isinstance(path_str, str) or not path_str or any(c in path_str for c in '<>|?*'):
             return ""
         try:
             p: Path = Path(path_str)
-            # Primero validamos la seguridad sin expandir para evitar escapes fuera de sandbox
             if is_protected_path(p) or p.is_symlink():
                 return path_str
             
@@ -119,7 +124,7 @@ class StartupEntry:
             return path_str
 
     def _resolve_path_from_command(self, cmd: str) -> str:
-        """Lógica interna para extraer la ruta ejecutable a partir de la cadena de comando cruda."""
+        """Selecciona la estrategia de extracción según el formato del comando (comillas o directo)."""
         if cmd.startswith('"'):
             return self._extract_quoted_path(cmd)
         parts: List[str] = cmd.split()
@@ -127,7 +132,10 @@ class StartupEntry:
         
     @property
     def executable(self) -> str:
-        """Resuelve el ejecutable principal a partir del comando, aplicando lógica de caché."""
+        """
+        Resuelve el ejecutable principal mediante caché. 
+        Retorna la ruta absoluta si existe, o el comando original si no pudo resolverse.
+        """
         if self._checked_exists:
             return self._exec_cache or ""
             
@@ -142,7 +150,7 @@ class StartupEntry:
 
 
 def startup_folders() -> List[Path]:
-    """Identifica las rutas de las carpetas 'Startup' (usuario y sistema)."""
+    """Identifica las rutas de las carpetas 'Startup' (usuario y sistema) verificando existencia y seguridad."""
     if os.name != "nt":
         return []
     candidates: List[Path] = []
@@ -159,7 +167,7 @@ def startup_folders() -> List[Path]:
 
 
 def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[StartupEntry]:
-    """Escanea las carpetas de inicio buscando ejecutables mediante filtrado temprano."""
+    """Escanea las carpetas de inicio filtrando archivos ejecutables y evitando rutas protegidas."""
     if folders is None:
         folders = startup_folders()
     found_entries: List[StartupEntry] = []
@@ -175,7 +183,10 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
 
 
 def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry]:
-    """Convierte la salida CSV de PowerShell en una lista de objetos StartupEntry."""
+    """
+    Parsea la salida cruda de PowerShell (CSV) en objetos StartupEntry.
+    Ignora claves del sistema o campos de metadatos de PowerShell ('PS*').
+    """
     if not isinstance(text, str) or not text.strip():
         return []
         
@@ -215,7 +226,10 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
 
 
 def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[StartupEntry]:
-    """Consulta el Registro mediante PowerShell para extraer programas de inicio."""
+    """
+    Consulta al registro de Windows mediante PowerShell (solo lectura).
+    El timeout de 30s evita bloqueos en caso de que PowerShell no responda.
+    """
     if os.name != "nt":
         return []
     
@@ -235,7 +249,7 @@ def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[Start
 
 
 def list_startup_entries() -> List[StartupEntry]:
-    """Consolida las entradas provenientes de carpetas y Registro sin duplicar."""
+    """Consolida las entradas de carpetas y registro, eliminando duplicados por nombre."""
     seen_names: set[str] = set()
     unique_entries: List[StartupEntry] = []
     
@@ -253,7 +267,7 @@ def list_startup_entries() -> List[StartupEntry]:
 
 
 def estimate_impact(entries: Sequence[StartupEntry]) -> str:
-    """Clasifica el impacto en el rendimiento: 'ok', 'info', 'warning' o 'danger'."""
+    """Clasifica el impacto en el rendimiento basado en la cantidad de elementos detectados."""
     count: int = len(entries)
     thresholds: List[Tuple[int, str]] = [(5, "ok"), (10, "info"), (18, "warning")]
     for limit, label in thresholds:
@@ -263,7 +277,7 @@ def estimate_impact(entries: Sequence[StartupEntry]) -> str:
 
 
 def summarize(entries: Optional[Sequence[StartupEntry]] = None) -> List[str]:
-    """Genera un informe formateado (lista de cadenas) para la UI de la aplicación."""
+    """Genera un informe descriptivo y legible para el usuario final sobre el estado del inicio."""
     entries_list: Sequence[StartupEntry] = entries if entries is not None else list_startup_entries()
     total_count: int = len(entries_list)
         

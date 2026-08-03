@@ -147,14 +147,21 @@ def settings_path(path_or_base: PathLike | None = None) -> Path:
 
 def validate(values: Any) -> dict[str, Any]:
     """Valida un diccionario de configuración contra los valores por defecto y límites permitidos."""
-    if not isinstance(values, dict): return DEFAULTS.copy()
-    limpio = {}
-    for clave, defecto in DEFAULTS.items():
-        val = values.get(clave, defecto)
-        validator = _VALIDATOR_MAP.get(clave)
-        coerced = validator(clave, val) if validator and val is not None else val
-        limpio[clave] = coerced if coerced is not None else defecto
-    return limpio
+    if not isinstance(values, dict):
+        return DEFAULTS.copy()
+    
+    configuracion_final: dict[str, Any] = {}
+    for clave, valor_defecto in DEFAULTS.items():
+        valor_usuario = values.get(clave)
+        
+        # Aplicar validador si existe, caso contrario usar el valor tal cual
+        validador = _VALIDATOR_MAP.get(clave)
+        resultado = validador(clave, valor_usuario) if validador and valor_usuario is not None else valor_usuario
+        
+        # Asignar el resultado validado si es válido, de lo contrario fallback al defecto
+        configuracion_final[clave] = resultado if resultado is not None else valor_defecto
+        
+    return configuracion_final
 
 def load(path_or_base: PathLike | None = None) -> dict[str, Any]:
     """Carga y valida el archivo de configuración desde el disco, usando caché para evitar I/O redundante."""

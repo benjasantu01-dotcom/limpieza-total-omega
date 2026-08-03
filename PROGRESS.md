@@ -16,36 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-02 | 112 | 6 | 12 | 3 | 79 |
-| 2026-08-03 | 141 | 5 | 14 | 9 | 123 |
+| 2026-08-02 | 108 | 6 | 12 | 3 | 79 |
+| 2026-08-03 | 145 | 5 | 14 | 9 | 123 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **61**
+- legibilidad y documentación: **65**
 - seguridad defensiva: **55**
 - manejo de errores y validación de entradas: **53**
-- robustez ante casos límite: **48**
+- robustez ante casos límite: **44**
 - rendimiento: **36**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **23**
+- `settings.py`: **24**
+- `scanner.py`: **22**
 - `main.py`: **21**
-- `scanner.py`: **21**
-- `browser.py`: **20**
 - `assistant.py`: **19**
-- `duplicates.py`: **18**
+- `browser.py`: **19**
 - `quarantine.py`: **18**
-- `diskreport.py`: **17**
 - `organizer.py`: **17**
+- `safety.py`: **17**
+- `duplicates.py`: **17**
 - `memory.py`: **17**
-- `healthscore.py`: **16**
-- `safety.py`: **16**
+- `diskreport.py`: **16**
+- `startup.py`: **16**
 - `branding.py`: **15**
-- `startup.py`: **15**
+- `healthscore.py`: **15**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-03T12:38:52` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo incorporando docstrings detallados en funciones clave, especificando los tipos de retorno y aclarando las asunciones sobre el entorno, para facilitar el mantenimiento y la auditoría de seguridad.
+- `2026-08-03T12:38:42` **settings.py** (legibilidad y documentación): Mejora la legibilidad y robustez de `validate` mediante un tipado más explícito y la simplificación del flujo de validación, asegurando que los tipos de datos sean consistentes antes de la asignación.
+- `2026-08-03T12:38:17` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `scanner.py` mediante la integración de `docstrings` de estilo Google en las funciones de análisis, lo que clarifica el propósito, los parámetros y los retornos de cada heurística para facilitar futuras contribuciones.
+- `2026-08-03T12:37:54` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación técnica interna mediante docstrings más precisos y se ha extraído la lógica de validación de caracteres prohibidos a una función privada `_has_invalid_chars` para mejorar la legibilidad y mantenibilidad de `ensure_safe_to_modify`.
 - `2026-08-03T12:28:37` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del código mediante la aplicación de *type hints* faltantes en funciones internas, la extracción de una lógica de validación repetitiva en `purge_all` a una función privada, y la adición de *docstrings* que explican las decisiones de seguridad en las operaciones críticas de borrado.
 - `2026-08-03T12:28:07` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación de las funciones críticas mediante docstrings que detallan los parámetros y el comportamiento ante casos límite, y se ha introducido un chequeo de integridad (`assert`) en `scan_for_junk` para asegurar que el uso de `os.scandir` mantenga la consistencia entre tipos, reforzando la seguridad y legibilidad según el enfoque.
 - `2026-08-03T12:27:42` **memory.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos con especificación de unidades para los campos de `MemorySnapshot` y `ProcessMemory`, y se reemplazó el uso de constantes mágicas (1048576) por una constante documentada `BYTES_IN_MB` para mejorar la mantenibilidad y legibilidad del código.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-03T12:08:18` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación de los tipos en `PaletteDict` y se han añadido docstrings técnicos detallados a las funciones gráficas para aclarar las dependencias de coordenadas y el propósito de los cálculos geométricos.
 - `2026-08-03T12:07:48` **assistant.py** (legibilidad y documentación): Se mejoró la legibilidad de `assistant.py` mediante la implementación de type hints en funciones clave que carecían de ellos y la estandarización de docstrings siguiendo las directrices del proyecto, facilitando la comprensión del flujo de datos en el motor local.
 - `2026-08-03T12:07:08` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` al reemplazar el manejo genérico de excepciones `except Exception: pass` por una captura específica y un filtrado defensivo más estricto para evitar procesar líneas malformadas o rutas inválidas durante el parseo del CSV.
-- `2026-08-03T11:57:49` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` implementando una validación explícita para la clave de API y el modelo del asistente antes de escribir el archivo, previniendo la persistencia de configuraciones incompletas o inyectadas.
-- `2026-08-03T11:57:39` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez del escaneo añadiendo validaciones de entrada (`path.name` no vacío) y protecciones contra errores inesperados en los accesos a `path.parent` y `lstat`, asegurando que `scan_file` sea más resiliente ante archivos bloqueados o con rutas malformadas durante el proceso de análisis.
-- `2026-08-03T11:57:14` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `is_protected_path` ante errores de resolución del sistema de archivos al encapsular la verificación `p.exists()` en un bloque try-except específico, evitando que un error de IO/permiso en rutas volátiles resulte en un `True` (protegido) erróneo.
-- `2026-08-03T11:48:24` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `load_manifest` mediante el manejo de excepciones específicas y validación de tipos, evitando que errores de I/O o datos corruptos silencien el sistema o retornen estados inconsistentes, siguiendo el enfoque de validación de entradas.

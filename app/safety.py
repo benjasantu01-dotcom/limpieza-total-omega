@@ -66,6 +66,12 @@ _RESERVED_NAMES: Final[frozenset[str]] = frozenset({
 })
 
 
+def _has_invalid_chars(path_str: str) -> bool:
+    """Verifica si la cadena de la ruta contiene caracteres de control o secuencias de escape no seguras."""
+    return bool("\0" in path_str or re.search(r'[\u0000-\u001F\u007F-\u009F\u200E\u200F\u202A-\u202E]', path_str) or
+                path_str.startswith(r"\\?") or path_str.startswith(r"\\."))
+
+
 def _is_system_or_hidden(path: Path) -> bool:
     """
     Verifica mediante la API Win32 si un archivo posee atributos de sistema o oculto.
@@ -207,8 +213,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
         raise UnsafePathError(f"Ruta de tipo inválido recibida: {type(path)}")
         
     str_val = str(path)
-    if "\0" in str_val or re.search(r'[\u0000-\u001F\u007F-\u009F\u200E\u200F\u202A-\u202E]', str_val) or \
-       str_val.startswith(r"\\?") or str_val.startswith(r"\\."):
+    if _has_invalid_chars(str_val):
         raise UnsafePathError("Ruta contiene caracteres de control o formato potencialmente maliciosos.")
     
     if len(str_val) > 260:

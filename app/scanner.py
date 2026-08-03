@@ -106,7 +106,14 @@ class Scanner:
 
 
 def check_double_extension(path: Path) -> Optional[Suspicion]:
-    """Detecta nombres de archivos con doble extensión que ocultan ejecutables."""
+    """
+    Detecta nombres de archivos con doble extensión que ocultan ejecutables.
+
+    Args:
+        path: Ruta del archivo a analizar.
+    Returns:
+        Un objeto Suspicion si se detecta doble extensión, None en caso contrario.
+    """
     if path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
     return None
@@ -115,7 +122,12 @@ def check_double_extension(path: Path) -> Optional[Suspicion]:
 def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_THRESHOLD_HOURS) -> Optional[Suspicion]:
     """
     Analiza la fecha de modificación de ejecutables para identificar descargas recientes.
-    Requiere acceso de solo lectura mediante `lstat`.
+
+    Args:
+        path: Ruta del ejecutable a inspeccionar.
+        hours: Margen de tiempo en horas para considerar un archivo como "reciente".
+    Returns:
+        Objeto Suspicion con aviso si es reciente, None si es antiguo o no es ejecutable.
     """
     if not path.suffix or path.suffix.lower() not in SUSPICIOUS_EXECUTABLE_EXT:
         return None
@@ -130,7 +142,14 @@ def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_TH
 
 
 def check_system_lookalike(path: Path) -> Optional[Suspicion]:
-    """Identifica ejecutables con nombres de procesos críticos fuera de System32."""
+    """
+    Identifica ejecutables con nombres de procesos críticos fuera de System32.
+
+    Args:
+        path: Ruta del archivo a analizar.
+    Returns:
+        Objeto Suspicion si el nombre imita uno crítico en carpeta no autorizada.
+    """
     if not path.name or path.name.lower() not in SYSTEM_LOOKALIKES:
         return None
         
