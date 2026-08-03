@@ -183,7 +183,13 @@ def walk_files(directory: str | os.PathLike, skip_protected: bool = True) -> Gen
                             continue
                         
                         if entry.is_dir():
-                            full_path = Path(entry.path)
+                            full_path = Path(entry.path).resolve()
+                            # Seguridad defensiva: verificar que sigue contenido en la raíz
+                            try:
+                                full_path.relative_to(base_path)
+                            except ValueError:
+                                continue
+                                
                             if full_path not in visited_directories:
                                 if skip_protected and is_protected_path(full_path):
                                     continue
@@ -239,8 +245,11 @@ def largest_folders(directory: str | os.PathLike, limit: int = 10, skip_protecte
         folder_map: dict[Path, FolderUsage] = {}
         for path, size in walk_files(base, skip_protected):
             try:
+                # Validar seguridad de la ruta antes de procesar niveles
                 rel = path.relative_to(base)
+                if not rel.parts: continue
                 top_level = base / rel.parts[0]
+                
                 if top_level not in folder_map:
                     folder_map[top_level] = FolderUsage(path=top_level, size_bytes=0, file_count=0)
                 stats = folder_map[top_level]

@@ -226,27 +226,26 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
 
 
 def context_as_text(context: SystemContext) -> str:
-    """Serializa el estado del sistema en un formato de texto compacto para prompts."""
+    """Serializa el estado del sistema en un formato de texto compacto y neutral para prompts."""
     if not isinstance(context, SystemContext) or not context.analyzed:
         return "No hay métricas disponibles todavía."
 
     try:
         lineas = [
-            f"Puntaje de salud: {context.score if context.score is not None else 'sin calcular'}"
-            f"{f' (nota {context.grade})' if context.grade else ''}",
-            f"Archivos basura: {float(context.junk_mb):.0f} MB",
-            f"Archivos sospechosos: {int(context.suspicious_count)} "
-            f"({int(context.suspicious_warnings)} con advertencia)",
-            f"RAM disponible: {float(context.memory_available_percent):.0f}%",
-            f"Espacio libre en disco: {float(context.disk_free_percent):.0f}%",
-            f"Duplicados recuperables: {float(context.duplicate_mb):.0f} MB",
-            f"Programas de inicio: {int(context.startup_count)}",
-            f"Archivos en cuarentena: {int(context.quarantined_count)}",
+            f"Puntaje de salud: {context.score if context.score is not None else 'N/A'}"
+            f"{f' nota {context.grade}' if context.grade else ''}",
+            f"Basura: {float(context.junk_mb):.0f} MB",
+            f"Sospechosos: {int(context.suspicious_count)}",
+            f"RAM disponible: {float(context.memory_available_percent):.0f} percent",
+            f"Disco libre: {float(context.disk_free_percent):.0f} percent",
+            f"Duplicados: {float(context.duplicate_mb):.0f} MB",
+            f"Inicio: {int(context.startup_count)} items",
         ]
-        if context.browser_cache_mb and context.browser_cache_mb > 0:
-            lineas.append(f"Caché de navegadores: {float(context.browser_cache_mb):.0f} MB")
         
-        return _CONTROL_CHARS_REGEX.sub("", "\n".join(lineas))
+        # Sanitización agresiva: reemplaza cualquier separador de ruta o carácter inseguro por espacio
+        raw_text = "\n".join(lineas)
+        sanitized = _PATH_REGEX.sub(" ", raw_text)
+        return _CONTROL_CHARS_REGEX.sub(" ", sanitized)
     except (ValueError, TypeError):
         return "Error al procesar los datos de salud del sistema."
 
