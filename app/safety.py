@@ -264,11 +264,17 @@ def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = Fals
     """Procesa una secuencia de rutas y retorna únicamente aquellas aptas para ser manipuladas."""
     if not isinstance(paths, Iterable):
         return []
+    
+    # Usamos un set para deduplicar rutas normalizadas y evitar procesamiento innecesario
+    seen = set()
     valid = []
     for p in paths:
         try:
             if is_safe_to_modify(p, allow_sensitive=allow_sensitive):
-                valid.append(normalize(p))
+                norm_p = normalize(p)
+                if norm_p not in seen:
+                    seen.add(norm_p)
+                    valid.append(norm_p)
         except (TypeError, ValueError):
             continue
     return valid

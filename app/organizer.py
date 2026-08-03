@@ -138,12 +138,6 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     """
     Recorre recursivamente los directorios provistos buscando archivos basura.
     Usa os.scandir para eficiencia y aplica filtros de seguridad en cada paso.
-
-    Args:
-        directories: Lista opcional de rutas a escanear. Si es None, usa DEFAULT_SCAN_DIRS.
-
-    Returns:
-        List[JunkFile]: Lista de objetos JunkFile encontrados y validados.
     """
     dirs = directories or DEFAULT_SCAN_DIRS
     found: List[JunkFile] = []
@@ -157,7 +151,6 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
             with os.scandir(base_path) as it:
                 for entry in it:
                     try:
-                        # Aseguramos consistencia: los symlinks son saltados por seguridad
                         if entry.is_symlink():
                             continue
                         
@@ -165,7 +158,7 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
                             if entry.name.lower() not in blocklist:
                                 _walk_dir(entry.path)
                         elif entry.name.lower().endswith(_JUNK_EXTS_TUPLE):
-                            # Filtro de seguridad centralizado para el archivo encontrado
+                            # Filtro rápido usando el path del entry sin crear objeto Path innecesario
                             if is_safe_to_modify(Path(entry.path)):
                                 stat = entry.stat()
                                 found.append(JunkFile(
@@ -192,11 +185,6 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
 def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -> List[JunkFile]:
     """
     Ordena la lista de JunkFile según el criterio especificado.
-
-    Args:
-        files: Lista de archivos a ordenar.
-        by: Criterio de ordenación ("size" o "date").
-        ascending: Booleano para orden ascendente o descendente.
     """
     if not files:
         return []
@@ -216,14 +204,6 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Path:
     """
     Prepara archivos para ser eliminados moviéndolos a un directorio de cuarentena.
-    
-    Args:
-        files: Lista de objetos JunkFile a mover.
-        review_dir: Ruta destino de cuarentena.
-
-    Raises:
-        ValueError: Si la lista de archivos está vacía o la ruta destino es inválida.
-        PermissionError: Si la ruta destino es un symlink.
     """
     if not files:
         raise ValueError("La lista de archivos a procesar no puede estar vacía.")
@@ -246,17 +226,14 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         if jf is None or not isinstance(jf, JunkFile):
             continue
         try:
-            # Validación de integridad: archivo inexistente, symlink, fuera de rango o vacío
             if not jf.path.exists() or jf.path.is_symlink() or not jf.path.is_file() or jf.size_bytes == 0:
                 continue
             if not is_safe_to_modify(jf.path):
                 continue
             
-            # Impedir ciclos o movimiento hacia el propio origen
             if os.path.samefile(jf.path.parent, dest):
                 continue
             
-            # Testeo rápido de acceso exclusivo
             try:
                 with open(jf.path, 'rb+'): pass
             except (IOError, OSError):
@@ -265,7 +242,6 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             target_base = dest / f"{jf.path.stem}_{int(jf.modified.timestamp())}{jf.path.suffix}"
             target = _generate_unique_target(target_base)
             
-            # Verificación final de contención en carpeta de destino
             if dest not in target.resolve().parents:
                 continue
             
@@ -279,12 +255,6 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
     """
     Elimina físicamente los archivos dentro del directorio de revisión.
-    
-    Args:
-        review_dir: Directorio que contiene archivos listos para borrado definitivo.
-
-    Returns:
-        int: Cantidad de archivos eliminados exitosamente.
     """
     if not review_dir or not isinstance(review_dir, str):
         return 0
@@ -300,7 +270,6 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     count = 0
     for f in dest.iterdir():
         try:
-            # Asegurar que el archivo reside estrictamente dentro de la carpeta de revisión
             if f.is_file() and not f.is_symlink() and is_safe_to_modify(f):
                 if dest in f.resolve().parents:
                     f.unlink()

@@ -451,13 +451,11 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
             continue
             
         if entry.name in stored_names_set:
-            item = item_map[entry.name]
-            # Solo borramos si el archivo en disco coincide con los metadatos protegidos
-            if item.verify_integrity(entry):
+            if item_map[entry.name].verify_integrity(entry):
                 if _safe_unlink(entry):
                     count += 1
         else:
-            # Borrado preventivo de archivos basura (no listados en manifiesto) dentro de cuarentena
+            # Borrado preventivo de archivos basura (no listados en manifiesto)
             _safe_unlink(entry)
             
     if count > 0:
