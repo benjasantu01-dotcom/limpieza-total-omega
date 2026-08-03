@@ -66,24 +66,18 @@ class StartupEntry:
     _checked_exists: bool = False
 
     def _is_valid_executable(self, path: Path) -> bool:
-        """
-        Verifica mediante metadatos si el archivo es un ejecutable válido.
-        Rechaza puntos de reparse (symlinks/junctions) para evitar recursión.
-        """
+        """Determina si un objeto Path apunta a un ejecutable válido y seguro."""
         try:
             return path.suffix.lower() in EXECUTABLE_EXTS and not path.is_symlink()
         except (OSError, ValueError, RuntimeError, TypeError):
             return False
 
     def _sanitize_command(self, raw_cmd: str) -> str:
-        """Limpia caracteres de control y espacios de la cadena original del comando."""
+        """Filtra caracteres no imprimibles del comando para evitar inyecciones o errores de display."""
         return "".join(c for c in raw_cmd.strip() if ord(c) >= 32)
 
     def _extract_quoted_path(self, raw_cmd: str) -> str:
-        """
-        Parsea comandos tipo '"C:\Program Files\App.exe" /arg' extrayendo solo
-        la ruta. Valida que no contenga caracteres inválidos o rutas protegidas.
-        """
+        """Extrae la ruta de un comando entrecomillado, validando que no sea una ruta protegida."""
         if not isinstance(raw_cmd, str) or len(raw_cmd) < 2:
             return ""
         end_quote: int = raw_cmd.find('"', 1)
@@ -96,7 +90,6 @@ class StartupEntry:
         
         try:
             p: Path = Path(path_str).expanduser()
-            # Validación defensiva estricta antes de procesar la ruta
             if is_protected_path(p):
                 return ""
             return str(p)
@@ -104,15 +97,11 @@ class StartupEntry:
             return ""
 
     def _resolve_and_cache_path(self, path_str: str) -> str:
-        """
-        Intenta expandir una ruta a formato absoluto y verifica su existencia.
-        Si la ruta parece segura, devuelve la ruta absoluta; si no, devuelve la original.
-        """
+        """Expande y valida la ruta de un ejecutable, devolviendo su forma absoluta si es seguro."""
         if not isinstance(path_str, str) or not path_str:
             return ""
         try:
             p: Path = Path(path_str).expanduser()
-            # Validación de seguridad defensiva: ni protegida, ni puntos de reparse
             if is_protected_path(p) or p.is_symlink():
                 return path_str
             if p.exists() and p.is_file():
@@ -123,10 +112,7 @@ class StartupEntry:
         
     @property
     def executable(self) -> str:
-        """
-        Lógica principal de resolución: limpia comandos ruidosos, extrae
-        ejecutables de rutas entrecomilladas o simples, y cachea el resultado.
-        """
+        """Resuelve el ejecutable principal a partir del comando, aplicando lógica de caché."""
         if self._checked_exists:
             return self._exec_cache or ""
             
@@ -204,7 +190,6 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
             if not name or name.lower() in ("name", "pscustomobject") or name.upper().startswith("PS"):
                 continue
             
-            # Validación defensiva ante comandos inválidos o rutas bloqueadas
             if not cmd or any(c in cmd for c in '<>|?*'):
                 continue
                 
@@ -217,7 +202,6 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
                 
             parsed_entries.append(StartupEntry(name=name, command=cmd, source=source))
     except Exception:
-        # En caso de error de parseo inesperado, devolvemos lo que logramos extraer
         pass
             
     return parsed_entries

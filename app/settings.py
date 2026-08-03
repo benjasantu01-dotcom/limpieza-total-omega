@@ -96,13 +96,27 @@ _NUMERIC_LIMITS: Final[dict[str, tuple[int, int]]] = {
 }
 
 def _validate_bool(key: str, val: Any) -> bool | None:
-    """Coacciona valores a booleano, permitiendo strings de configuración."""
+    """
+    Coacciona valores a booleano.
+    
+    Args:
+        key: Nombre de la configuración.
+        val: Valor bruto a validar.
+    Returns: bool si es válido o convertible, None en caso contrario.
+    """
     if isinstance(val, bool): return val
     if isinstance(val, str) and val.strip().lower() in ("1", "true", "si", "sí", "yes"): return True
     return None
 
 def _validate_int(key: str, val: Any) -> int | None:
-    """Valida que el valor sea un entero dentro de los rangos permitidos en _NUMERIC_LIMITS."""
+    """
+    Valida que el valor sea un entero dentro de los rangos definidos en _NUMERIC_LIMITS.
+    
+    Args:
+        key: Clave del ajuste para buscar sus límites.
+        val: Valor numérico a validar.
+    Returns: Entero normalizado al rango permitido, o None si la entrada no es numérica.
+    """
     if val is None or isinstance(val, bool): return None
     try:
         parsed = int(val)
@@ -111,7 +125,14 @@ def _validate_int(key: str, val: Any) -> int | None:
     except (TypeError, ValueError): return None
 
 def _validate_str(key: str, val: Any) -> str | None:
-    """Valida strings y rutas. Aplica seguridad estricta para 'ultima_carpeta'."""
+    """
+    Valida strings de configuración y rutas. Aplica seguridad estricta para 'ultima_carpeta'.
+    
+    Args:
+        key: Clave de configuración (tema, acento, ultima_carpeta).
+        val: Valor string a validar.
+    Returns: String validado, o None si el valor viola restricciones de seguridad o enum.
+    """
     if not isinstance(val, str): return None
     text = val.strip()
     if not text: return "" if key == "ultima_carpeta" else None

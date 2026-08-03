@@ -970,3 +970,22 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_f
 - `2026-08-03T03:33:33` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos a las constantes de configuración y estructurando mejor el propósito de la clase `Scanner` para clarificar su rol como gestor de estado durante la recursión.
 - `2026-08-03T03:33:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-03T03:33:33` Corrida terminada. Total usado hoy: 84.
+- `2026-08-03T03:42:29` Arrancando corrida. Quedan hoy ~216 peticiones objetivo.
+- `2026-08-03T03:42:55` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados que explican los parámetros y el comportamiento de las funciones de validación, facilitando el mantenimiento y la comprensión de las reglas de negocio sobre los datos de configuración.
+- `2026-08-03T03:43:18` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna mediante docstrings detallados que explican el propósito de los métodos de la clase `StartupEntry`, además de añadir type hints explícitos para mejorar la legibilidad y el mantenimiento del código bajo estándares senior.
+- `2026-08-03T03:43:48` Tests FALLARON:
+```
+ ram disponible. eso es poco: windows está usando el disco como memoria. cerrá aplicaciones pesadas. no uses 'liberadores de ram': empeoran el rendimiento al descartar caché útil.")
+FAILED evolve/tests/test_assistant.py::test_security_question_with_findings_explains_they_are_signals - assert 'señales' in "hay 3 archivos marcados (1 con advertencia). si no los reconocés, usá 'aislar hallazgos' para moverlos a cuarentena."
+ +  where "hay 3 archivos marcados (1 con advertencia). si no los reconocés, usá 'aislar hallazgos' para moverlos a cuarentena." = <built-in method lower of str object at 0x7fce14982ce0>()
+ +    where <built-in method lower of str object at 0x7fce14982ce0> = "Hay 3 archivos marcados (1 con advertencia). Si no los reconocés, usá 'Aislar hallazgos' para moverlos a cuarentena.".lower
+ +      where "Hay 3 archivos marcados (1 con advertencia). Si no los reconocés, usá 'Aislar hallazgos' para moverlos a cuarentena." = Answer(text="Hay 3 archivos marcados (1 con advertencia). Si no los reconocés, usá 'Aislar hallazgos' para moverlos a ...conexión ni envío de datos. Para preguntas escritas con tus palabras, activá el asistente en Ajustes.', suggestions=[]).text
+FAILED evolve/tests/test_assistant.py::test_explain_area_on_unknown_input - AttributeError: 'NoneType' object has no attribute 'strip'
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - AssertionError: assert 'no autorizó' in 'Sin métricas.'
+5 failed, 294 passed in 1.11s
+
+```
+- `2026-08-03T03:43:48` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de la clasificación de problemas convirtiendo la lista `probs` en un generador o lista pre-procesada y moviendo la construcción del contexto de texto fuera del flujo crítico de respuesta para evitar recálculos redundantes, además de cachear el mapeo de palabras clave usando un `frozenset` implícito mediante la estructura de datos existente.
+- `2026-08-03T03:43:59` ➖ Sin cambios en branding.py (enfoque: rendimiento). Motivo: Optimizé la generación de gradientes en `draw_gradient_bar` para evitar la creación innecesaria de objetos línea mediante el agrupamiento de segmentos contiguos del mismo color, reduciendo la carga sobre el canvas de Tkinter.
+- `2026-08-03T03:43:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-03T03:43:59` Corrida terminada. Total usado hoy: 88.
