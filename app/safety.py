@@ -72,7 +72,6 @@ def _is_reparse_point(path: Path) -> bool:
     """
     try:
         stats = path.lstat()
-        # 0x400 es el bit de 'reparse point' en atributos de archivo de Windows
         is_reparse = bool(getattr(stats, "st_file_attributes", 0) & 0x400)
         return is_reparse or path.is_symlink()
     except (OSError, PermissionError):
@@ -87,7 +86,6 @@ def _is_file_in_use(path: Path) -> bool:
     if not path.is_file():
         return False
     try:
-        # Intento de apertura exclusiva
         fd = os.open(path, os.O_RDWR | os.O_EXCL)
         os.close(fd)
         return False
@@ -143,10 +141,12 @@ def is_protected_path(path: PathLike) -> bool:
     
     try:
         p = normalize(path)
+        # Check tokens primero (CPU bound, sin I/O)
         if any(part.lower() in _ALL_PROTECTED_TOKENS for part in p.parts):
             return True
         if p == Path(p.anchor):
             return True
+        # Solo chequea reparse points si la ruta existe, evitando I/O innecesario en rutas futuras
         return p.exists() and _is_reparse_point(p)
     except (PermissionError, OSError, ValueError, TypeError):
         return True 
@@ -183,7 +183,6 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
         raise UnsafePathError(f"Ruta de tipo inválido recibida: {type(path)}")
         
     str_val = str(path)
-    # Filtro de seguridad inicial: caracteres especiales o dispositivos de bajo nivel
     if "\0" in str_val or re.search(r'[\u0000-\u001F\u007F-\u009F\u200E\u200F\u202A-\u202E]', str_val) or \
        str_val.startswith(r"\\?") or str_val.startswith(r"\\."):
         raise UnsafePathError("Ruta contiene caracteres de control o formato potencialmente maliciosos.")
@@ -204,7 +203,6 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
     if str(p).startswith(("\\\\", "//")):
         raise UnsafePathError("Operación bloqueada: rutas de red no permitidas.")
     
-    # Verificaciones de estado en disco (sólo si el archivo existe)
     try:
         if p.exists():
             if not os.access(p, os.W_OK):

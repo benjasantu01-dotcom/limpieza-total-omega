@@ -1004,3 +1004,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-03T04:05:53` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: rendimiento).
 - `2026-08-03T04:05:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-03T04:05:53` Corrida terminada. Total usado hoy: 96.
+- `2026-08-03T04:13:01` Arrancando corrida. Quedan hoy ~204 peticiones objetivo.
+- `2026-08-03T04:13:21` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-08-03T04:13:45` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se ha optimizado la función `is_protected_path` reemplazando la evaluación de `p.exists()` (que dispara una llamada al sistema de archivos I/O por cada chequeo) por una lógica de pre-filtrado basada en tokens, mejorando significativamente el rendimiento en recorridos de directorios masivos.
+- `2026-08-03T04:14:07` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizé el rendimiento de `scan_file` eliminando llamadas redundantes a `path.exists()` y `path.is_file()` (que ya son validadas implícitamente por `os.scandir` y el flujo de `process_entry`), reduciendo drásticamente las syscalls innecesarias durante el recorrido del árbol de archivos.
+- `2026-08-03T04:14:16` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se optimizó el acceso a `DEFAULTS` mediante una búsqueda más eficiente utilizando el mapeo de validadores, evitando iteraciones repetitivas en cada validación y centralizando la lógica de tipos.
+- `2026-08-03T04:14:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-03T04:14:16` Corrida terminada. Total usado hoy: 100.

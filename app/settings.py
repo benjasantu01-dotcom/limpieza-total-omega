@@ -96,27 +96,11 @@ _NUMERIC_LIMITS: Final[dict[str, tuple[int, int]]] = {
 }
 
 def _validate_bool(key: str, val: Any) -> bool | None:
-    """
-    Coacciona valores a booleano.
-    
-    Args:
-        key: Nombre de la configuración.
-        val: Valor bruto a validar.
-    Returns: bool si es válido o convertible, None en caso contrario.
-    """
     if isinstance(val, bool): return val
     if isinstance(val, str) and val.strip().lower() in ("1", "true", "si", "sí", "yes"): return True
     return None
 
 def _validate_int(key: str, val: Any) -> int | None:
-    """
-    Valida que el valor sea un entero dentro de los rangos definidos en _NUMERIC_LIMITS.
-    
-    Args:
-        key: Clave del ajuste para buscar sus límites.
-        val: Valor numérico a validar.
-    Returns: Entero normalizado al rango permitido, o None si la entrada no es numérica.
-    """
     if val is None or isinstance(val, bool): return None
     try:
         parsed = int(val)
@@ -125,14 +109,6 @@ def _validate_int(key: str, val: Any) -> int | None:
     except (TypeError, ValueError): return None
 
 def _validate_str(key: str, val: Any) -> str | None:
-    """
-    Valida strings de configuración y rutas. Aplica seguridad estricta para 'ultima_carpeta'.
-    
-    Args:
-        key: Clave de configuración (tema, acento, ultima_carpeta).
-        val: Valor string a validar.
-    Returns: String validado, o None si el valor viola restricciones de seguridad o enum.
-    """
     if not isinstance(val, str): return None
     text = val.strip()
     if not text: return "" if key == "ultima_carpeta" else None
@@ -145,14 +121,13 @@ def _validate_str(key: str, val: Any) -> str | None:
         except (OSError, RuntimeError, ValueError, TypeError, PermissionError): return None
     return text.lower() if key in ("tema", "acento") else text
 
-_VALIDATOR_MAP: Final[dict[type, Callable[[str, Any], Any]]] = {
-    bool: _validate_bool,
-    int: _validate_int,
-    str: _validate_str
+_VALIDATOR_MAP: Final[dict[str, Callable[[str, Any], Any]]] = {
+    "tema": _validate_str, "acento": _validate_str, "ultima_carpeta": _validate_str, "asistente_clave_api": _validate_str, "asistente_modelo": _validate_str, "abrir_en": _validate_str,
+    "mostrar_barras": _validate_bool, "animaciones": _validate_bool, "confirmar_siempre": _validate_bool, "recordar_ultima_carpeta": _validate_bool, "analisis_en_paralelo": _validate_bool, "asistente_activado": _validate_bool, "asistente_enviar_metricas": _validate_bool,
+    "duplicados_tamano_minimo_kb": _validate_int, "top_archivos": _validate_int, "top_procesos": _validate_int
 }
 
 def settings_path(path_or_base: PathLike | None = None) -> Path:
-    """Calcula la ruta absoluta del archivo, garantizando que el directorio padre sea seguro."""
     key = str(path_or_base or SETTINGS_DIR)
     if key in _path_cache: return _path_cache[key]
     try:
@@ -166,60 +141,43 @@ def settings_path(path_or_base: PathLike | None = None) -> Path:
     return res
 
 def validate(values: Any) -> dict[str, Any]:
-    """Valida un diccionario externo contra el esquema DEFAULTS. Sustituye inválidos."""
     if not isinstance(values, dict): return DEFAULTS.copy()
     limpio = {}
     for clave, defecto in DEFAULTS.items():
-        val = values.get(clave)
-        if val is None:
-            limpio[clave] = defecto
-            continue
-        validator = _VALIDATOR_MAP.get(type(defecto))
+        val = values.get(clave, defecto)
+        validator = _VALIDATOR_MAP.get(clave)
         coerced = validator(clave, val) if validator else val
         limpio[clave] = coerced if coerced is not None else defecto
     return limpio
 
 def load(path_or_base: PathLike | None = None) -> dict[str, Any]:
-    """Carga configuración con caché basada en el tiempo de modificación del archivo (mtime)."""
     global _cached_settings, _last_path, _last_mtime
-    
     ruta = settings_path(path_or_base)
     try:
-        if not ruta.exists():
-            raise FileNotFoundError
+        if not ruta.exists(): raise FileNotFoundError
         stat = ruta.stat()
         if _cached_settings is not None and ruta == _last_path and stat.st_mtime == _last_mtime:
             return _cached_settings.copy()
-        
-        if stat.st_size > MAX_SETTINGS_SIZE:
-            raise OSError("Config too large")
-            
+        if stat.st_size > MAX_SETTINGS_SIZE: raise OSError("Config too large")
         data = json.loads(ruta.read_text(encoding="utf-8"))
         _cached_settings = validate(data)
         _last_path, _last_mtime = ruta, stat.st_mtime
         return _cached_settings.copy()
     except (OSError, json.JSONDecodeError, UnicodeDecodeError, FileNotFoundError, PermissionError):
         pass
-    
     _cached_settings = DEFAULTS.copy()
     _last_path, _last_mtime = ruta, 0.0
     return _cached_settings.copy()
 
 def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
-    """Guarda configuración de forma atómica. Utiliza un archivo temporal y fsync."""
     global _cached_settings, _last_path, _last_mtime
     ruta = settings_path(path_or_base)
-    
     try:
-        # Validación de seguridad: no permitir escritura en rutas fuera del control del usuario
         ensure_safe_to_modify(str(ruta.parent))
-        
         limpio = validate(values)
         json_data = json.dumps(limpio, indent=2, ensure_ascii=False)
         ruta.parent.mkdir(parents=True, exist_ok=True)
-    except (TypeError, ValueError, OSError, PermissionError): 
-        return None
-    
+    except (TypeError, ValueError, OSError, PermissionError): return None
     temp_path: Path | None = None
     try:
         with tempfile.NamedTemporaryFile("w", dir=ruta.parent, delete=False, encoding="utf-8") as tf:
@@ -230,41 +188,34 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
         os.replace(temp_path, ruta)
         _cached_settings, _last_path, _last_mtime = limpio, ruta, ruta.stat().st_mtime
         return ruta
-    except (OSError, PermissionError, RuntimeError): 
-        return None
+    except (OSError, PermissionError, RuntimeError): return None
     finally:
         if temp_path and temp_path.exists():
             try: temp_path.unlink()
             except OSError: pass
 
 def update(changes: dict[str, Any], path_or_base: PathLike | None = None) -> dict[str, Any]:
-    """Aplica actualizaciones parciales a la configuración vigente."""
     actual = load(path_or_base)
     actual.update(changes)
     save(actual, path_or_base)
     return actual
 
 def reset(path_or_base: PathLike | None = None) -> dict[str, Any]:
-    """Restaura la configuración a los valores por defecto."""
     save(DEFAULTS, path_or_base)
     return DEFAULTS.copy()
 
 def get(key: str, path_or_base: PathLike | None = None) -> Any:
-    """Accesor individual para valores de configuración."""
     return load(path_or_base).get(key, DEFAULTS.get(key))
 
 def assistant_api_key(path_or_base: PathLike | None = None) -> str:
-    """Obtiene la clave de API priorizando la variable de entorno sobre el archivo."""
     desde_entorno = os.environ.get(API_KEY_ENV_VAR, "").strip()
     return desde_entorno or load(path_or_base).get("asistente_clave_api", "").strip()
 
 def assistant_enabled(path_or_base: PathLike | None = None) -> bool:
-    """Valida si el asistente puede activarse (presencia de clave y flag habilitado)."""
     config = load(path_or_base)
     return bool(config.get("asistente_activado")) and bool(assistant_api_key(path_or_base))
 
 def describe(path_or_base: PathLike | None = None) -> list[str]:
-    """Genera un listado descriptivo de la configuración (para propósitos de reporte)."""
     actual = load(path_or_base)
     clave = assistant_api_key(path_or_base)
     origen = f"variable de entorno {API_KEY_ENV_VAR}" if os.environ.get(API_KEY_ENV_VAR) else ("archivo de configuración" if clave else "no configurada")

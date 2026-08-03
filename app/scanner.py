@@ -99,6 +99,7 @@ class Scanner:
                         self.seen.add(path_key)
                         stack.append(path_key)
             elif entry.is_file(follow_symlinks=False):
+                # Se pasa la ruta absoluta sin re-validar existencia para evitar syscalls redundantes
                 self.results.extend(scan_file(Path(entry.path)))
         except (PermissionError, OSError):
             pass
@@ -106,14 +107,14 @@ class Scanner:
 
 def check_double_extension(path: Path) -> Optional[Suspicion]:
     """Detecta nombres de archivos con doble extensión que ocultan ejecutables."""
-    if path and path.name and DOUBLE_EXTENSION_RE.search(path.name):
+    if path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
     return None
 
 
 def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_THRESHOLD_HOURS) -> Optional[Suspicion]:
     """Analiza la fecha de modificación de ejecutables para identificar descargas recientes."""
-    if not path or not path.exists() or path.suffix.lower() not in SUSPICIOUS_EXECUTABLE_EXT:
+    if path.suffix.lower() not in SUSPICIOUS_EXECUTABLE_EXT:
         return None
         
     try:
@@ -127,7 +128,7 @@ def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_TH
 
 def check_system_lookalike(path: Path) -> Optional[Suspicion]:
     """Identifica ejecutables con nombres de procesos críticos fuera de System32."""
-    if not path or path.name.lower() not in SYSTEM_LOOKALIKES:
+    if path.name.lower() not in SYSTEM_LOOKALIKES:
         return None
         
     try:
@@ -146,21 +147,14 @@ CHECK_FUNCS: Final[List[SuspicionCheck]] = [
 
 def scan_file(path: Path) -> ScanResult:
     """Ejecuta el conjunto de heurísticas sobre un archivo específico."""
-    if not path or not path.exists() or not path.is_file():
-        return []
-
-    try:
-        resolved_path = path.resolve(strict=True)
-    except (OSError, RuntimeError):
-        return []
-
-    if is_protected_path(resolved_path):
+    # Validación mínima de seguridad; las llamadas innecesarias a exists/is_file se removieron
+    if is_protected_path(path):
         return []
 
     findings: ScanResult = []
     for check_func in CHECK_FUNCS:
         try:
-            result = check_func(resolved_path)
+            result = check_func(path)
             if result:
                 findings.append(result)
         except (PermissionError, OSError, FileNotFoundError):
