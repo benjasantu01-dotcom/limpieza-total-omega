@@ -180,37 +180,36 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
         return []
         
     parsed_entries: List[StartupEntry] = []
-    try:
-        lines: List[str] = text.splitlines()
-        if len(lines) < 2: return []
+    lines: List[str] = text.splitlines()
+    if len(lines) < 2:
+        return []
         
-        for line in lines[1:]:
-            if not line: continue
-            parts: List[str] = line.split(",", 1)
-            if len(parts) < 2: continue
+    for line in lines[1:]:
+        if not line or not line.strip():
+            continue
+        parts: List[str] = line.split(",", 1)
+        if len(parts) < 2:
+            continue
             
-            name_raw = parts[0].strip().strip('"')
-            cmd_raw = parts[1].strip().strip('"')
+        name_raw = parts[0].strip().strip('"')
+        cmd_raw = parts[1].strip().strip('"')
+        
+        name: str = "".join(c for c in name_raw if ord(c) >= 32)
+        cmd: str = "".join(c for c in cmd_raw if ord(c) >= 32)
+        
+        if not name or name.lower() in ("name", "pscustomobject") or name.upper().startswith("PS"):
+            continue
+        
+        if not cmd or any(c in cmd for c in '<>|?*'):
+            continue
             
-            name: str = "".join(c for c in name_raw if ord(c) >= 32)
-            cmd: str = "".join(c for c in cmd_raw if ord(c) >= 32)
-            
-            if not name or name.lower() in ("name", "pscustomobject") or name.upper().startswith("PS"):
+        try:
+            p: Path = Path(cmd)
+            if is_protected_path(p):
                 continue
-            
-            if not cmd or any(c in cmd for c in '<>|?*'):
-                continue
-                
-            try:
-                p: Path = Path(cmd)
-                if is_protected_path(p):
-                    continue
-            except (OSError, ValueError, TypeError):
-                continue
-                
             parsed_entries.append(StartupEntry(name=name, command=cmd, source=source))
-    except Exception:
-        pass
+        except (OSError, ValueError, TypeError):
+            continue
             
     return parsed_entries
 

@@ -28,6 +28,7 @@ GradeKey: TypeAlias = Literal["A", "B", "C", "D", "F"]
 SeverityStyle: TypeAlias = Tuple[HexColor, str]
 
 class PaletteDict(TypedDict):
+    """Define la estructura obligatoria de colores de la aplicación."""
     background: HexColor
     surface: HexColor
     surface_alt: HexColor
@@ -249,7 +250,7 @@ def gradient_colors(steps: int, stops: tuple[HexColor, ...] = GRADIENT_STOPS) ->
 
 
 def _get_shield_coords(sx: float, sy: float, s: float) -> List[float]:
-    """Calcula las coordenadas relativas al origen para el polígono del escudo."""
+    """Calcula coordenadas normalizadas escaladas y desplazadas para el polígono."""
     base = [64, 18, 100, 31, 100, 67, 90, 90, 64, 110, 38, 90, 28, 67, 28, 31]
     return [sx + v * s if i % 2 == 0 else sy + v * s for i, v in enumerate(base)]
 
@@ -287,10 +288,8 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         return None
     try:
         target = Path(destination).expanduser().resolve()
-        # Verificamos seguridad antes de realizar cualquier operación de IO
         if not is_safe_to_modify(target):
             return None
-        # Aseguramos la existencia y seguridad de la ruta padre
         ensure_safe_to_modify(target.parent)
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(logo_svg(), encoding="utf-8")
@@ -312,7 +311,14 @@ def logo_ascii() -> str:
 
 
 def draw_logo(canvas: Any, size: int = 56, canvas_x: int = 0, canvas_y: int = 0) -> None:
-    """Renderiza el escudo Omega vectorialmente en un widget Tkinter.Canvas."""
+    """
+    Renderiza el escudo Omega vectorialmente en un widget Tkinter.Canvas.
+    
+    Argumentos:
+        canvas: Widget canvas de tkinter.
+        size: Tamaño base en píxeles del logo.
+        canvas_x, canvas_y: Coordenadas de origen superior izquierdo.
+    """
     if canvas is None or not hasattr(canvas, "create_polygon"): return
     try:
         s = max(0.1, float(size) / 128)
@@ -342,7 +348,10 @@ def draw_logo(canvas: Any, size: int = 56, canvas_x: int = 0, canvas_y: int = 0)
 def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
                       canvas_x: int = 0, canvas_y: int = 0,
                       stops: tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
-    """Dibuja una franja horizontal decorativa con gradiente suavizado."""
+    """
+    Dibuja una franja horizontal decorativa mediante líneas adyacentes interpoladas.
+    La complejidad O(width) es manejable dado que se usa en UI de baja frecuencia.
+    """
     if canvas is None or not hasattr(canvas, "create_line"): return
     try:
         ancho = max(1, int(width))
@@ -361,7 +370,10 @@ def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
               canvas_x: int = 0, canvas_y: int = 0, thickness: int = 14,
               track: Optional[HexColor] = None,
               fill: Optional[HexColor] = None) -> None:
-    """Dibuja un medidor circular (HealthScore) centrado en una coordenada."""
+    """
+    Renderiza un medidor radial circular para HealthScore.
+    Calcula el arco basado en el valor 0-100 mapeado a grados (0-360).
+    """
     if canvas is None or not hasattr(canvas, "create_arc"): return
     try:
         valor = max(0.0, min(100.0, float(percent)))

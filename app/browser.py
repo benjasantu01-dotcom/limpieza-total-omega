@@ -98,26 +98,29 @@ def base_directories() -> List[Path]:
 
 def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> bool:
     """
-    Valida la integridad de la ruta para prevenir Directory Traversal y 
-    seguimiento accidental de puntos de reparse (junctions).
+    Valida la integridad de la ruta para prevenir Directory Traversal, 
+    seguimiento de puntos de reparse (junctions) y rutas protegidas.
     """
     if not isinstance(target_path, Path) or not isinstance(base_path, Path):
         return False
+        
     try:
-        # Detectar caracteres de control ocultos en nombres de archivos
+        # Detectar caracteres de control ocultos (evitar intentos de ofuscación)
         if any(ord(char) < 32 for char in target_path.name):
             return False
 
-        real_base = Path(os.path.realpath(str(base_path)))
-        real_target = Path(os.path.realpath(str(target_path)))
+        # Verificar si la ruta está marcada como protegida globalmente
+        if is_protected_path(target_path):
+            return False
+
+        real_base: Path = Path(os.path.realpath(str(base_path)))
+        real_target: Path = Path(os.path.realpath(str(target_path)))
         
         # Prohibir cruzar enlaces simbólicos o junctions de Windows
         if real_target.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(str(real_target))):
             return False
 
-        if is_protected_path(target_path):
-            return False
-            
+        # Validar que el target sea efectivamente un subdirectorio del base
         return str(real_target).startswith(str(real_base))
     except (OSError, RuntimeError, ValueError, PermissionError):
         return False
@@ -134,7 +137,7 @@ def directory_size(path: str | os.PathLike | None) -> int:
         return 0
     
     try:
-        root = Path(path).resolve()
+        root: Path = Path(path).resolve()
         if not root.exists() or not root.is_dir() or is_protected_path(root):
             return 0
     except (OSError, TypeError, ValueError):
@@ -144,12 +147,12 @@ def directory_size(path: str | os.PathLike | None) -> int:
     stack: List[str] = [str(root)]
     
     while stack:
-        current_dir_str = stack.pop()
+        current_dir_str: str = stack.pop()
         try:
             with os.scandir(current_dir_str) as it:
                 for entry in it:
                     try:
-                        name_lower = entry.name.lower()
+                        name_lower: str = entry.name.lower()
                         if name_lower in NEVER_TOUCH:
                             continue
                         if any(ord(c) < 32 for c in entry.name):
@@ -206,11 +209,11 @@ def detect_profiles(
         if not isinstance(base, Path): continue
         for browser_name, relative_path_str in cache_paths.items():
             try:
-                parts = relative_path_str.split("\\")
-                candidate = base.joinpath(*parts)
+                parts: List[str] = relative_path_str.split("\\")
+                candidate: Path = base.joinpath(*parts)
                 
                 if _is_valid_cache_path(candidate, base):
-                    size = directory_size(candidate)
+                    size: int = directory_size(candidate)
                     if size > 0:
                         found.append(BrowserCache(
                             browser=browser_name,
@@ -233,13 +236,13 @@ def summarize(caches: Optional[List[BrowserCache]] = None) -> List[str]:
     """
     Genera un informe textual formateado para la UI.
     """
-    current_caches = caches if caches is not None else detect_profiles()
+    current_caches: List[BrowserCache] = caches if caches is not None else detect_profiles()
     
     if not current_caches:
         return ["No se detectaron cachés de navegador en este sistema."]
         
-    total_mb = round(total_cache_bytes(current_caches) / (1024 * 1024), 2)
-    lines = [f"Caché de navegadores: {total_mb} MB en {len(current_caches)} carpeta(s)", ""]
+    total_mb: float = round(total_cache_bytes(current_caches) / (1024 * 1024), 2)
+    lines: List[str] = [f"Caché de navegadores: {total_mb} MB en {len(current_caches)} carpeta(s)", ""]
     for cache in current_caches:
         lines.append(f"  {cache.browser:<20} {cache.size_mb:>9} MB")
         lines.append(f"      {cache.path}")

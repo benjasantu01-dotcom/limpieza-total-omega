@@ -46,7 +46,7 @@ import re
 import math
 from dataclasses import dataclass, field, asdict
 from pathlib import Path
-from typing import Any, Final, TypeAlias, Callable, Optional
+from typing import Any, Final, TypeAlias, Callable, Optional, Union
 
 import settings
 from safety import is_protected_path
@@ -130,7 +130,6 @@ _CONTROL_CHARS_REGEX: Final[re.Pattern] = re.compile(r"[\x00-\x1f\x7f]")
 _TOKEN_REGEX: Final[re.Pattern] = re.compile(r"\w+")
 _MODEL_NAME_REGEX: Final[re.Pattern] = re.compile(r"^[a-zA-Z0-9\.\-_]+$")
 
-# Mapeo optimizado mediante conjuntos de palabras clave
 _KEYWORD_MAP: Final[dict[str, str]] = {
     "ram": "ram", "memoria": "ram", "lenta": "ram", "lento": "ram", "acelerar": "ram",
     "espacio": "disco", "disco": "disco", "lleno": "disco", "recuperar": "disco", "liberar": "disco",
@@ -181,9 +180,7 @@ def _ensure_safe_text(text: str) -> bool:
     return True
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
-    """
-    Transforma fuentes de datos crudos en un objeto SystemContext validado.
-    """
+    """Transforma fuentes de datos crudos en un objeto SystemContext validado."""
     ctx = SystemContext()
 
     def is_valid_num(v: Any) -> bool:
@@ -219,7 +216,6 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         ctx.grade = str(grade) if isinstance(grade, (str, int, float)) else ""
         ctx.analyzed = True
 
-    # Bloqueo: Permitir solo sobrescritura de campos numéricos permitidos explícitamente
     allowed_keys = {k for k, v in ctx.__dict__.items() if isinstance(v, (int, float))}
     for k, v in extra.items():
         if k in allowed_keys and is_valid_num(v):
@@ -249,8 +245,8 @@ def context_as_text(context: SystemContext) -> str:
 
 
 def explain_area(area: str) -> str:
-    """Proporciona una breve explicación pedagógica de un área específica."""
-    explicaciones = {
+    """Proporciona una breve explicación pedagógica de un área específica del sistema."""
+    explicaciones: Final[dict[str, str]] = {
         "basura": "Archivos temporales y restos de instaladores. Ocupan espacio "
                   "sin dar nada a cambio, y son lo más seguro de limpiar.",
         "seguridad": "Señales sospechosas en tus Descargas: doble extensión, "
@@ -369,9 +365,7 @@ def _sanitize_query(question: str) -> str:
     return re.sub(r'[\x00-\x1f\x7f]', '', (question or "").strip())[:200].lower()
 
 def local_answer(question: str, context: SystemContext) -> Answer:
-    """
-    Procesa la pregunta del usuario utilizando reglas de negocio estáticas.
-    """
+    """Procesa la pregunta del usuario utilizando reglas de negocio estáticas."""
     if not isinstance(context, SystemContext) or not context.analyzed:
         return Answer(
             text="Todavía no corriste ningún análisis, así que no tengo datos de "
@@ -422,7 +416,7 @@ def _rank_problems(context: SystemContext) -> list[str]:
     return probs
 
 
-def available(base: str | Path | None = None) -> bool:
+def available(base: Union[str, Path, None] = None) -> bool:
     """Verifica si el asistente en línea está configurado y habilitado."""
     try:
         return settings.assistant_enabled(base)
@@ -489,7 +483,6 @@ def _call_gemini(
             
         texto: str = "".join(p.get("text", "") for p in partes if isinstance(p, dict)).strip()
         
-        # Validar el texto recibido: sin rutas, sin caracteres de control, longitud acotada
         if not _ensure_safe_text(texto) or len(texto) > 1200:
             return None
             
@@ -499,8 +492,8 @@ def _call_gemini(
         return None
 
 
-def ask(question: str, context: SystemContext | None = None,
-        base: str | Path | None = None) -> Answer:
+def ask(question: str, context: Optional[SystemContext] = None,
+        base: Union[str, Path, None] = None) -> Answer:
     """
     Coordina la resolución de la consulta buscando la mejor respuesta disponible.
     
