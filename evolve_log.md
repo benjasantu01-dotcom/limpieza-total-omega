@@ -1325,3 +1325,4 @@ FAILED evolve/tests/test_modules.py::test_summarize_mentions_the_folder_and_tota
 - `2026-08-04T14:56:29` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-04T14:56:29` Corrida terminada. Total usado hoy: 350.
 - `2026-08-04T15:05:47` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-08-04T15:15:59` Presupuesto diario agotado (350 usados). Corte hasta mañana.
