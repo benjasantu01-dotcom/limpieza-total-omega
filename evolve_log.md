@@ -608,3 +608,12 @@ FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - Asse
 - `2026-08-04T07:56:43` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
 - `2026-08-04T07:56:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-04T07:56:43` Corrida terminada. Total usado hoy: 188.
+- `2026-08-04T08:05:05` Arrancando corrida. Quedan hoy ~112 peticiones objetivo.
+- `2026-08-04T08:05:35` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se ha mejorado `_is_valid_cache_path` para incluir un chequeo preventivo contra rutas UNC mediante `path.drive` en Windows, previniendo el acceso accidental a recursos de red lentos o inseguros, y se ha fortalecido la integridad del proceso de resolución de rutas.
+- `2026-08-04T08:06:02` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-04T08:06:36` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `walk_files` implementando una validación estricta de rutas mediante `is_protected_path` antes de procesar el contenido de directorios, asegurando que no se pueda escapar del ámbito de escaneo permitido incluso si el sistema operativo reporta rutas que parezcan fuera de la jerarquía esperada.
+- `2026-08-04T08:07:03` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `_collect_candidates` y las funciones de hash al asegurar que cualquier resolución de ruta (`resolve(strict=True)`) sea estrictamente validada con `is_protected_path` inmediatamente después de obtener la ruta absoluta y antes de acceder a cualquier atributo del archivo, evitando la manipulación de accesos fuera del alcance permitido.
+- `2026-08-04T08:07:13` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-04T08:07:28` ➖ Sin cambios en healthscore.py (enfoque: seguridad defensiva). Motivo: Mejoré la seguridad defensiva en `_generate_recommendations` validando la existencia de claves en el diccionario `ratios` mediante el método `.get()` con un valor predeterminado seguro, evitando posibles errores de clave (`KeyError`) ante una configuración de `WEIGHTS` incompleta o mal formada.
+- `2026-08-04T08:07:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-04T08:07:28` Corrida terminada. Total usado hoy: 192.

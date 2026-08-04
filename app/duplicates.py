@@ -82,7 +82,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
     if not path: return None
     try:
         p = Path(path).resolve(strict=True)
-        if not p.is_file() or p.is_symlink() or is_protected_path(p):
+        if is_protected_path(p) or not p.is_file() or p.is_symlink():
             return None
         
         if p.stat().st_size == 0: return None
@@ -103,7 +103,7 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
     if not path: return None
     try:
         p = Path(path).resolve(strict=True)
-        if not p.is_file() or p.is_symlink() or is_protected_path(p):
+        if is_protected_path(p) or not p.is_file() or p.is_symlink():
             return None
             
         if p.stat().st_size == 0: return None
@@ -146,17 +146,17 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
             with os.scandir(root_path) as it:
                 for entry in it:
                     try:
+                        full_path = Path(entry.path).resolve(strict=True)
+                        if is_protected_path(full_path): continue
                         if entry.is_symlink(): continue
+                        
                         if entry.is_dir():
-                            _scan(Path(entry.path))
+                            _scan(full_path)
                         elif entry.is_file():
                             st = entry.stat()
                             if st.st_size < min_size: continue
                             inode_id = (st.st_dev, st.st_ino)
                             if inode_id in visited_inodes: continue
-                            
-                            full_path = Path(entry.path)
-                            if skip_protected and is_protected_path(full_path): continue
                             
                             visited_inodes.add(inode_id)
                             groups[st.st_size].append(full_path)

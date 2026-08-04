@@ -100,13 +100,6 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
     """
     Valida la integridad de la ruta para prevenir Directory Traversal, 
     seguimiento de puntos de reparse (junctions) y rutas protegidas.
-    
-    Args:
-        target_path: La ruta candidata a ser escaneada.
-        base_path: La raíz autorizada (ej. LOCALAPPDATA).
-        
-    Returns:
-        bool: True si la ruta es segura, existe y está dentro del base_path.
     """
     if not isinstance(target_path, Path) or not isinstance(base_path, Path):
         return False
@@ -126,7 +119,7 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
         if is_protected_path(real_target):
             return False
 
-        # Prohibir cruzar enlaces simbólicos o junctions de Windows para evitar recursión infinita
+        # Prohibir cruzar enlaces simbólicos o junctions de Windows
         if real_target.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(str(real_target))):
             return False
 
@@ -140,9 +133,6 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
 def directory_size(path: str | os.PathLike | None) -> int:
     """
     Calcula el tamaño total en bytes de un directorio mediante búsqueda iterativa.
-    
-    Implementa un stack propio para evitar desbordamiento de pila en directorios
-    muy profundos y respeta estrictamente los filtros definidos en NEVER_TOUCH.
     """
     if path is None:
         return 0
@@ -174,7 +164,6 @@ def directory_size(path: str | os.PathLike | None) -> int:
                         if entry.is_dir(follow_symlinks=False):
                             stack.append(entry.path)
                         else:
-                            # entry.stat() es más eficiente que Path().stat() al reutilizar el objeto DirEntry
                             total_bytes += entry.stat(follow_symlinks=False).st_size
                     except (OSError, PermissionError):
                         continue
@@ -186,11 +175,15 @@ def directory_size(path: str | os.PathLike | None) -> int:
 
 def _is_valid_cache_path(candidate: Path | None, base_path: Path) -> bool:
     """
-    Verifica si una ruta es un directorio de caché candidato legítimo antes de analizar.
+    Verifica si una ruta es un directorio de caché candidato legítimo.
     """
     if not isinstance(candidate, Path) or not isinstance(base_path, Path):
         return False
     try:
+        # Prevenir rutas UNC (Network Share) explícitamente por seguridad
+        if candidate.drive.startswith(r"\\"):
+            return False
+            
         return (
             candidate.exists() and 
             candidate.is_dir() and 

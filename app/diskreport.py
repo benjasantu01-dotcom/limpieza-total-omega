@@ -203,15 +203,18 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                         if entry.is_symlink() or (os.name == 'nt' and entry.stat(follow_symlinks=False).st_reparse_tag != 0):
                             continue
                         
+                        full_path = Path(entry.path).resolve()
+                        
+                        # Validación defensiva estricta antes de procesar
+                        if skip_protected and is_protected_path(full_path):
+                            continue
+                        
                         if entry.is_dir():
-                            full_path = Path(entry.path).resolve()
-                            if is_protected_path(full_path):
-                                continue
                             if full_path not in visited_directories:
                                 visited_directories.add(full_path)
                                 yield from scan_level(full_path)
                         else:
-                            yield Path(entry.path), entry.stat().st_size
+                            yield full_path, entry.stat().st_size
                     except (OSError, PermissionError, FileNotFoundError, TypeError, AttributeError):
                         continue
         except (OSError, PermissionError, FileNotFoundError, TypeError):
