@@ -1063,3 +1063,45 @@ FAILED evolve/tests/test_modules.py::test_gradient_bar_paints_one_line_per_pixel
 - `2026-08-04T01:16:57` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
 - `2026-08-04T01:16:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-04T01:16:57` Corrida terminada. Total usado hoy: 32.
+- `2026-08-04T01:25:47` Arrancando corrida. Quedan hoy ~268 peticiones objetivo.
+- `2026-08-04T01:26:14` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-04T01:26:37` Tests FALLARON:
+```
+^
+
+evolve/tests/test_basic.py:212: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = PurePosixPath('/home/user/Downloads/svchost.exe')
+
+    def check_system_lookalike(path: Path) -> Optional[Suspicion]:
+        """
+        Identifica ejecutables con nombres de procesos críticos fuera de System32.
+    
+        Args:
+            path: Ruta del archivo a analizar.
+        Returns:
+            Objeto Suspicion si el nombre imita uno crítico en carpeta no autorizada.
+        """
+        if not path or not path.name or path.name.lower() not in SYSTEM_LOOKALIKES:
+            return None
+    
+        try:
+            # Resolvemos el padre para evitar errores si el objeto no tiene nombre base directo
+>           parent = path.resolve().parent
+                     ^^^^^^^^^^^^
+E           AttributeError: 'PurePosixPath' object has no attribute 'resolve'
+
+app/scanner.py:159: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_scanner_flags_system_lookalike_outside_system32 - AttributeError: 'PureWindowsPath' object has no attribute 'resolve'
+FAILED evolve/tests/test_basic.py::test_scanner_does_not_flag_real_system_file - AttributeError: 'PureWindowsPath' object has no attribute 'resolve'
+FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independent - AttributeError: 'PurePosixPath' object has no attribute 'resolve'
+3 failed, 296 passed in 1.11s
+
+```
+- `2026-08-04T01:26:37` ❌ Mejora descartada en scanner.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de las funciones heurísticas mediante validaciones explícitas de atributos de archivo y manejo de excepciones ante fallos de acceso en rutas dinámicas, siguiendo el enfoque de prevenir comportamientos inesperados ante errores de sistema.
+- `2026-08-04T01:27:03` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Reforcé la robustez de `validate` añadiendo un chequeo explícito de tipos para evitar errores en cadena si el JSON de entrada contiene estructuras inesperadas (como listas en campos que esperan booleanos), garantizando que siempre se devuelva un diccionario íntegro.
+- `2026-08-04T01:27:12` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-04T01:27:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-04T01:27:12` Corrida terminada. Total usado hoy: 36.
