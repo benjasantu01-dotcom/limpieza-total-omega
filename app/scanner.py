@@ -119,7 +119,7 @@ def check_double_extension(path: Path) -> Optional[Suspicion]:
 
 def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_THRESHOLD_HOURS) -> Optional[Suspicion]:
     """Identifica ejecutables modificados recientemente dentro del umbral configurado."""
-    if not path.suffix or path.suffix.lower() not in SUSPICIOUS_EXECUTABLE_EXT:
+    if path.suffix.lower() not in SUSPICIOUS_EXECUTABLE_EXT:
         return None
         
     try:
@@ -133,7 +133,7 @@ def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_TH
 
 def check_system_lookalike(path: Path) -> Optional[Suspicion]:
     """Verifica si un ejecutable intenta suplantar procesos críticos mediante nombres de sistema."""
-    if not path.name or path.name.lower() not in SYSTEM_LOOKALIKES:
+    if path.name.lower() not in SYSTEM_LOOKALIKES:
         return None
         
     try:
@@ -168,8 +168,18 @@ def scan_file(path: Path, prevalidated: bool = False) -> ScanResult:
         return []
         
     findings: ScanResult = []
+    # Pre-cálculo para evitar llamadas constantes a propiedades en el loop
+    path_suffix_lower = path.suffix.lower()
+    path_name_lower = path.name.lower()
+
     for check_func in CHECK_FUNCS:
         try:
+            # Optimizaciones de entrada: Saltar funciones si el archivo no encaja en el tipo de riesgo
+            if check_func == check_recent_executable_in_downloads and path_suffix_lower not in SUSPICIOUS_EXECUTABLE_EXT:
+                continue
+            if check_func == check_system_lookalike and path_name_lower not in SYSTEM_LOOKALIKES:
+                continue
+                
             result = check_func(path)
             if result:
                 findings.append(result)

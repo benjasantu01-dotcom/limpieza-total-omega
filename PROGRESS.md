@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **244** (48.4% de aceptación)
-- Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 27
+- Mejoras aceptadas: **242** (48.0% de aceptación)
+- Rechazadas por tests: 13
+- Rechazadas por guardia de seguridad: 28
 - Sin cambios (nada sustancial que mejorar): 13
 - Sin respuesta de la IA (error o límite): 208
 
@@ -16,37 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-02 | 47 | 4 | 6 | 0 | 37 |
+| 2026-08-02 | 43 | 4 | 6 | 0 | 37 |
 | 2026-08-03 | 173 | 6 | 17 | 12 | 142 |
-| 2026-08-04 | 24 | 2 | 4 | 1 | 29 |
+| 2026-08-04 | 26 | 3 | 5 | 1 | 29 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **63**
-- seguridad defensiva: **50**
 - manejo de errores y validación de entradas: **50**
-- rendimiento: **41**
+- seguridad defensiva: **46**
+- rendimiento: **43**
 - robustez ante casos límite: **40**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **23**
-- `scanner.py`: **20**
-- `assistant.py`: **19**
-- `browser.py`: **19**
+- `scanner.py`: **21**
+- `quarantine.py`: **20**
 - `organizer.py`: **19**
-- `quarantine.py`: **19**
 - `main.py`: **18**
+- `assistant.py`: **18**
+- `browser.py`: **18**
 - `duplicates.py`: **17**
-- `diskreport.py`: **16**
 - `healthscore.py`: **16**
 - `memory.py`: **16**
+- `diskreport.py`: **15**
 - `safety.py`: **15**
-- `branding.py`: **14**
+- `branding.py`: **13**
 - `startup.py`: **13**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-04T02:38:46` **scanner.py** (rendimiento): Optimizé el rendimiento de `scan_file` y los chequeos de `check_recent_executable_in_downloads` y `check_system_lookalike` pre-filtrando extensiones y nombres mediante `frozenset` antes de invocar operaciones de I/O (como `lstat`), evitando llamadas innecesarias al sistema de archivos para archivos que no son ejecutables.
+- `2026-08-04T02:37:55` **quarantine.py** (rendimiento): Optimicé el cálculo del peso total en cuarentena evitando la deserialización innecesaria de objetos `QuarantineItem` en `total_quarantined_bytes` mediante el uso directo de la caché de memoria, reduciendo el overhead de I/O y procesamiento en llamadas repetidas.
 - `2026-08-04T02:29:22` **organizer.py** (rendimiento): Se optimizó el rendimiento de `scan_for_junk` convirtiendo `SYSTEM_FOLDER_BLOCKLIST` en un conjunto de comparación directa y pre-calculando el chequeo de extensión para reducir la carga de trabajo dentro del bucle de `os.scandir`, evitando llamadas innecesarias a `is_safe_to_modify` en archivos que ya sabemos que no son basura.
 - `2026-08-04T02:29:14` **memory.py** (rendimiento): Optimizé `parse_windows_process_csv` reemplazando la creación y filtrado de listas intermedias por un generador de líneas más eficiente y removiendo la lógica de filtrado redundante para reducir la presión sobre el recolector de basura durante escaneos frecuentes.
 - `2026-08-04T02:28:46` **main.py** (rendimiento): Se implementó un filtrado de eventos de redibujo (`configure`) mediante el uso de un temporizador de "debounce" en `_build_header`, evitando que el redibujado de la franja decorativa se dispare múltiples veces innecesarias durante el redimensionamiento de la ventana, mejorando la fluidez de la interfaz.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-04T01:48:53` **memory.py** (legibilidad y documentación): Mejoré la documentación interna del módulo `memory.py` mediante docstrings detallados en las funciones de manipulación de bajo nivel y utilidades, clarificando el propósito, las precondiciones y el manejo de excepciones para facilitar el mantenimiento y la auditoría del código.
 - `2026-08-04T01:46:46` **duplicates.py** (legibilidad y documentación): Mejora de la legibilidad y mantenimiento mediante la adición de Type Hints detallados, documentación explícita en los argumentos y retornos, y la sustitución de `type` por `isinstance` para asegurar la robustez contra tipos inesperados.
 - `2026-08-04T01:37:48` **diskreport.py** (legibilidad y documentación): Mejora la robustez y legibilidad mediante la adición de docstrings técnicos detallados, type hints explícitos en retornos de funciones complejas y el refinamiento de la nomenclatura de parámetros internos para clarificar el manejo de errores en el escaneo de directorios.
-- `2026-08-04T01:37:37` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación interna y claridad de las funciones de navegación mediante type hinting y docstrings enriquecidos, y se consolidó el manejo de errores en `directory_size` usando un enfoque de filtrado temprano para mejorar la legibilidad y mantenimiento del bucle de escaneo.
-- `2026-08-04T01:37:14` **branding.py** (legibilidad y documentación): Documenté con docstrings claros y tipado los argumentos de `draw_logo` y `draw_ring` para eliminar ambigüedades en sus parámetros posicionales y de diseño, facilitando el mantenimiento de la interfaz.

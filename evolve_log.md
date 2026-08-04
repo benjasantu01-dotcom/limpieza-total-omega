@@ -1183,3 +1183,38 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-04T02:29:22` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Se optimizó el rendimiento de `scan_for_junk` convirtiendo `SYSTEM_FOLDER_BLOCKLIST` en un conjunto de comparación directa y pre-calculando el chequeo de extensión para reducir la carga de trabajo dentro del bucle de `os.scandir`, evitando llamadas innecesarias a `is_safe_to_modify` en archivos que ya sabemos que no son basura.
 - `2026-08-04T02:29:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-04T02:29:22` Corrida terminada. Total usado hoy: 60.
+- `2026-08-04T02:37:25` Arrancando corrida. Quedan hoy ~240 peticiones objetivo.
+- `2026-08-04T02:37:55` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el cálculo del peso total en cuarentena evitando la deserialización innecesaria de objetos `QuarantineItem` en `total_quarantined_bytes` mediante el uso directo de la caché de memoria, reduciendo el overhead de I/O y procesamiento en llamadas repetidas.
+- `2026-08-04T02:38:14` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-08-04T02:38:38` Tests FALLARON:
+```
+.......                                                              [100%]
+=================================== FAILURES ===================================
+__________________ test_is_safe_returns_bool_and_never_raises __________________
+
+safety = <module 'safety' from '/home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py'>
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-2/test_is_safe_returns_bool_and_0')
+
+    def test_is_safe_returns_bool_and_never_raises(safety, tmp_path):
+        """`is_safe_to_modify` es la variante para usar en un `if`."""
+        assert safety.is_safe_to_modify(tmp_path / "ok.tmp") is True
+        assert safety.is_safe_to_modify(tmp_path / "Windows" / "x.txt") is False
+        assert safety.is_safe_to_modify(tmp_path.anchor) is False
+        assert safety.is_safe_to_modify(tmp_path / "prog.exe") is False
+        assert safety.is_safe_to_modify(tmp_path / "prog.exe", allow_sensitive=True) is True
+        # Basura de entrada: devuelve False, no explota.
+        for basura in (None, "", 12345, [], {}):
+>           assert safety.is_safe_to_modify(basura) is False
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           TypeError: unhashable type: 'list'
+
+evolve/tests/test_integrity.py:217: TypeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_integrity.py::test_is_safe_returns_bool_and_never_raises - TypeError: unhashable type: 'list'
+1 failed, 298 passed in 1.08s
+
+```
+- `2026-08-04T02:38:38` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se optimizó el rendimiento del filtrado y validación de rutas mediante la implementación de `lru_cache` en `is_safe_to_modify` y la reestructuración de `filter_safe_paths` para reducir el overhead de normalizaciones repetidas, además de corregir una redundancia en la verificación de atributos.
+- `2026-08-04T02:38:46` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizé el rendimiento de `scan_file` y los chequeos de `check_recent_executable_in_downloads` y `check_system_lookalike` pre-filtrando extensiones y nombres mediante `frozenset` antes de invocar operaciones de I/O (como `lstat`), evitando llamadas innecesarias al sistema de archivos para archivos que no son ejecutables.
+- `2026-08-04T02:38:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-04T02:38:46` Corrida terminada. Total usado hoy: 64.
