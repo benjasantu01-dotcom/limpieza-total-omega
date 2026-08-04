@@ -434,7 +434,7 @@ def _call_gemini(
     evitar inyecciones en el prompt, y tras recibir para asegurar que el modelo 
     no retorne rutas o contenido peligroso.
     """
-    if not api_key or not model or not _MODEL_NAME_REGEX.match(model):
+    if not api_key or not isinstance(api_key, str) or not model or not isinstance(model, str) or not _MODEL_NAME_REGEX.match(model):
         return None
     
     safe_q: str = _sanitize_query(question)[:500]
@@ -509,7 +509,8 @@ def ask(question: str, context: Optional[SystemContext] = None,
         if not isinstance(configuracion, dict):
             return respaldo
             
-        clave: str = str(configuracion.get("asistente_api_key", ""))
+        clave_raw = configuracion.get("asistente_api_key")
+        clave: str = str(clave_raw) if clave_raw else ""
         modelo: str = str(configuracion.get("asistente_modelo", "gemini-3.1-flash-lite"))
         enviar: bool = bool(configuracion.get("asistente_enviar_metricas", True))
         
