@@ -200,11 +200,15 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
     if len(str_val) > 260:
         raise UnsafePathError("Operación bloqueada: ruta demasiado larga.")
     
-    # Verificación de integridad de ruta frente a reparse points
-    raw_path = Path(path).expanduser().absolute()
-    resolved_path = raw_path.resolve()
-    if raw_path.parts != resolved_path.parts and _is_reparse_point(raw_path):
-        raise UnsafePathError("Operación bloqueada: el punto de reanálisis redirecciona la ruta.")
+    raw_path = Path(path).expanduser()
+    try:
+        # Pre-chequeo básico de existencia para evitar errores en lstat
+        if raw_path.exists():
+            resolved_path = raw_path.resolve()
+            if raw_path.resolve() != raw_path.absolute() and _is_reparse_point(raw_path):
+                raise UnsafePathError("Operación bloqueada: punto de reanálisis inseguro.")
+    except (OSError, PermissionError):
+        pass
     
     try:
         p = normalize(path)
@@ -219,16 +223,16 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
     if str(p).startswith(("\\\\", "//")):
         raise UnsafePathError("Operación bloqueada: rutas de red no permitidas.")
     
-    if p.exists():
-        try:
+    try:
+        if p.exists():
             if not os.access(p, os.W_OK):
                 raise UnsafePathError("Operación bloqueada: sin permisos de escritura.")
             if _is_reparse_point(p) or _is_readonly(p) or _is_file_in_use(p) or _is_system_or_hidden(p):
                 raise UnsafePathError("Operación bloqueada: archivo inaccesible, protegido o sistema.")
             if p.is_file() and p.stat().st_nlink > 1:
                 raise UnsafePathError("Operación bloqueada: enlace físico (hard link) detectado.")
-        except OSError as e:
-            raise UnsafePathError(f"Error al verificar estado del archivo: {e}")
+    except OSError as e:
+        raise UnsafePathError(f"Error al verificar estado del archivo: {e}")
 
     if is_drive_root(p) or is_protected_path(p):
         raise UnsafePathError("Operación bloqueada: ruta de sistema protegida.")

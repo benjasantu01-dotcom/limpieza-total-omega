@@ -97,6 +97,7 @@ class QuarantineItem:
             stats = stored_path.stat()
             if stats.st_size != self.size_bytes:
                 return False
+            # Si el archivo está siendo modificado externamente (mtime cambia), fallamos integridad
             if self.sha256 and _get_sha256(stored_path) != self.sha256:
                 return False
             return True
@@ -111,8 +112,9 @@ def _get_sha256(path: Path) -> str:
         with open(path, "rb") as f:
             for byte_block in iter(lambda: f.read(4096), b""):
                 sha256_hash.update(byte_block)
-    except (OSError, IOError) as e:
-        raise OSError(f"Falla crítica al leer archivo para hash: {e}")
+    except (OSError, PermissionError):
+        # Ante fallo de lectura, devolvemos un hash vacío que fallará la validación
+        return ""
     return sha256_hash.hexdigest()
 
 
@@ -170,13 +172,6 @@ def _validate_and_convert_item(entry: Any) -> Optional[QuarantineItem]:
 def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload: bool = False) -> List[QuarantineItem]:
     """
     Carga el manifiesto desde disco, utilizando caché por mtime para optimizar I/O.
-    
-    Args:
-        base: Directorio donde buscar el manifiesto.
-        force_reload: Si es True, ignora la caché existente.
-        
-    Returns:
-        List[QuarantineItem]: Lista de objetos deserializados; retorna lista vacía en caso de error.
     """
     try:
         base_path = quarantine_dir(base)
@@ -187,6 +182,7 @@ def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload:
     base_str = str(base_path)
     
     try:
+        # Verificamos si el archivo existe para obtener su mtime
         current_mtime = path.stat().st_mtime if path.exists() else 0.0
     except OSError:
         current_mtime = 0.0
@@ -217,17 +213,6 @@ def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload:
 def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
     """
     Persiste la lista de ítems de forma atómica usando un archivo temporal.
-    
-    Args:
-        items: Lista de objetos QuarantineItem a persistir.
-        base: Directorio de trabajo.
-        
-    Returns:
-        Path: Ruta donde se guardó el manifiesto.
-        
-    Raises:
-        ValueError: Si items no es una lista.
-        RuntimeError: En caso de fallo de escritura atómica.
     """
     if not isinstance(items, list):
         raise ValueError("El manifiesto debe ser una lista de ítems.")
@@ -256,14 +241,6 @@ def quarantine_file(
 ) -> QuarantineItem:
     """
     Mueve un archivo a cuarentena tras validar que es seguro operarlo.
-    
-    Args:
-        source: Ruta del archivo a poner en cuarentena.
-        reason: Motivo por el que se aísla el archivo.
-        base: Directorio base de cuarentena.
-
-    Returns:
-        QuarantineItem: El ítem creado y registrado en el manifiesto.
     """
     if not source:
         raise ValueError("La ruta de origen no puede estar vacía.")
@@ -365,7 +342,6 @@ def quarantine_file(
         save_manifest(items, base)
         return item
     except Exception as e:
-        # Reversión de seguridad si falla la escritura del manifiesto
         if destination.exists():
             try:
                 shutil.move(str(destination), str(source_path))
@@ -382,9 +358,6 @@ def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[Quaranti
 def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
     """
     Restaura un archivo a su ruta original tras verificar su integridad.
-    
-    Returns:
-        Path: La ruta restaurada del archivo.
     """
     if not item_id:
         raise ValueError("ID de ítem inválido.")

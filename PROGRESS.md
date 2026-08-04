@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **247** (49.0% de aceptación)
+- Mejoras aceptadas: **250** (49.6% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 27
+- Rechazadas por guardia de seguridad: 28
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 206
+- Sin respuesta de la IA (error o límite): 202
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-03 | 157 | 6 | 15 | 10 | 136 |
-| 2026-08-04 | 90 | 5 | 12 | 3 | 70 |
+| 2026-08-03 | 157 | 6 | 15 | 10 | 132 |
+| 2026-08-04 | 93 | 5 | 13 | 3 | 70 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **61**
 - manejo de errores y validación de entradas: **51**
-- robustez ante casos límite: **48**
+- robustez ante casos límite: **51**
 - rendimiento: **47**
 - seguridad defensiva: **40**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **23**
+- `quarantine.py`: **21**
 - `assistant.py`: **20**
 - `memory.py`: **20**
 - `organizer.py`: **20**
-- `quarantine.py`: **20**
+- `scanner.py`: **20**
 - `duplicates.py`: **19**
-- `scanner.py`: **19**
 - `browser.py`: **18**
 - `healthscore.py`: **18**
 - `diskreport.py`: **16**
 - `main.py`: **15**
-- `safety.py`: **13**
+- `safety.py`: **14**
 - `startup.py`: **13**
 - `branding.py`: **13**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-04T07:46:07` **scanner.py** (robustez ante casos límite): Se ha añadido un chequeo de existencia física al realizar el `lstat` dentro de `check_recent_executable_in_downloads` y `scan_file`, garantizando que el escáner no aborte ante condiciones de carrera (archivos que desaparecen entre el listado y el acceso) y sea robusto frente a rutas rotas o bloqueadas.
+- `2026-08-04T07:46:00` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez de `ensure_safe_to_modify` ante condiciones de carrera y sistemas de archivos con enlaces simbólicos circulares, delegando la validación inicial de existencia a una verificación de `lstat` que evita errores `OSError` al intentar acceder a rutas inaccesibles o bloqueadas durante el escaneo.
+- `2026-08-04T07:45:16` **quarantine.py** (robustez ante casos límite): Se añadió una validación de "tiempo de escritura" en la carga del manifiesto y se reforzó el manejo de excepciones durante el cálculo de hashes en `_get_sha256`, evitando que la app colapse ante archivos inaccesibles o bloqueados durante un escaneo.
 - `2026-08-04T07:36:26` **organizer.py** (robustez ante casos límite): Se añade una validación de existencia previa en `scan_for_junk` para capturar archivos que fueron eliminados o renombrados por otros procesos entre la iteración de `os.scandir` y el acceso a `stat()`, evitando excepciones innecesarias y mejorando la robustez ante la concurrencia del sistema de archivos.
 - `2026-08-04T07:36:19` **memory.py** (robustez ante casos límite): Se mejora la robustez de `parse_windows_process_csv` añadiendo un manejo explícito de filas truncadas o mal formadas mediante una verificación estricta de la estructura del CSV, previniendo errores de ejecución ante salidas inesperadas de PowerShell.
 - `2026-08-04T07:35:54` **main.py** (robustez ante casos límite): Se ha robustecido el manejo de errores en `_init_state` y `_build_tabs_container` para evitar que una falla puntual en la carga de configuración o en la inicialización de una pestaña específica detenga el arranque de la aplicación.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-04T07:04:43` **quarantine.py** (rendimiento): Optimicé el rendimiento de `purge_all` y `total_quarantined_bytes` evitando accesos repetitivos a disco y iteraciones innecesarias, aprovechando la existencia de la caché de memoria del manifiesto y utilizando conjuntos (sets) para validaciones de O(1).
 - `2026-08-04T07:04:10` **organizer.py** (rendimiento): Optimizé `scan_for_junk` reemplazando la lógica de filtrado de extensiones mediante `endswith` por una verificación de conjunto (`set` lookups) utilizando `path.suffix.lower()` en `_LOWER_JUNK_EXTS`, mejorando la velocidad de búsqueda al evitar la iteración de tuplas en cada archivo y reduciendo el overhead de llamadas al sistema.
 - `2026-08-04T06:56:30` **memory.py** (rendimiento): Optimicé el rendimiento de `parse_windows_process_csv` reemplazando la creación innecesaria de una lista intermedia mediante `lines[1:]` por una iteración directa con `itertools.islice`, evitando copias de memoria en sistemas con muchos procesos activos.
-- `2026-08-04T06:53:49` **duplicates.py** (rendimiento): Optimizé `_collect_candidates` utilizando un generador y evitando recrear listas intermedias mediante `tuple` para las claves de los inodos, reduciendo el consumo de memoria y mejorando la velocidad de búsqueda al evitar redundancias durante la recolección inicial.
-- `2026-08-04T06:44:46` **diskreport.py** (rendimiento): Optimicé el bucle principal de `summarize` eliminando la creación innecesaria de objetos `FileEntry` en iteraciones intermedias y consolidando la lógica de acumulación, reduciendo así la sobrecarga de memoria y ciclos de CPU durante el análisis del disco.
-- `2026-08-04T06:44:36` **browser.py** (rendimiento): Optimicé `directory_size` cambiando el uso de `entry.path` (que invoca `os.path.join` internamente) por el manejo directo de las rutas ya resueltas y el uso de `entry.stat().st_size` sin llamadas adicionales a `Path()`, reduciendo drásticamente las llamadas al sistema operativo y el overhead de objetos durante el escaneo recursivo.

@@ -103,6 +103,8 @@ def check_double_extension(path: Path) -> Optional[Suspicion]:
 def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_THRESHOLD_HOURS) -> Optional[Suspicion]:
     """Evalúa si un archivo ejecutable fue modificado recientemente según el umbral dado."""
     try:
+        if not path.exists():
+            return None
         mtime = datetime.fromtimestamp(path.lstat().st_mtime)
         if datetime.now() - mtime < timedelta(hours=hours):
             return Suspicion(path, f"Ejecutable reciente detectado (modificado hace menos de {hours}h)", "info")
@@ -125,7 +127,7 @@ def scan_file(path: Path, prevalidated: bool = False) -> ScanResult:
             return []
     
     try:
-        if not path.is_file():
+        if not path.exists() or not path.is_file():
             return []
     except OSError:
         return []
