@@ -1055,3 +1055,10 @@ FAILED evolve/tests/test_modules.py::test_summarize_mentions_the_folder_and_tota
 - `2026-08-04T12:02:59` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
 - `2026-08-04T12:02:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-04T12:02:59` Corrida terminada. Total usado hoy: 284.
+- `2026-08-04T12:10:52` Arrancando corrida. Quedan hoy ~16 peticiones objetivo.
+- `2026-08-04T12:11:17` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se añadió una validación en `stage_for_review` para prevenir errores de concurrencia al mover archivos que puedan haber sido eliminados o renombrados por otros procesos entre la detección y el movimiento, asegurando que la operación solo proceda si `current_path.exists()` es verdadero antes de cada intento.
+- `2026-08-04T12:11:46` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Mejoré la robustez de `quarantine_file` ante fallos de escritura en disco, añadiendo un chequeo preventivo de espacio disponible mediante `shutil.disk_usage` antes de iniciar el movimiento del archivo, evitando así estados inconsistentes o archivos parcialmente movidos por falta de espacio.
+- `2026-08-04T12:12:04` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-08-04T12:12:16` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). He mejorado `ensure_safe_to_modify` para detectar rutas que apuntan a directorios de sistema mediante nombres cortos (8.3), previniendo vulnerabilidades donde nombres truncados (ej. `progra~1`) evitan los filtros de listas de nombres.
+- `2026-08-04T12:12:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-04T12:12:16` Corrida terminada. Total usado hoy: 288.

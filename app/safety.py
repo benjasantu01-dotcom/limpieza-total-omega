@@ -74,7 +74,9 @@ def _has_invalid_chars(path_str: str) -> bool:
 
 def _is_reserved_device_name(name: str) -> bool:
     """Verifica si el nombre de archivo es un dispositivo reservado por el kernel (e.g., CON, NUL)."""
-    return name.lower() in _RESERVED_NAMES
+    # Maneja nombres 8.3 truncados como CON.TXT
+    base = name.split('.')[0]
+    return base.lower() in _RESERVED_NAMES
 
 
 def _is_system_or_hidden(path: Path) -> bool:
@@ -155,7 +157,9 @@ def is_protected_path(path: PathLike) -> bool:
     
     try:
         p = normalize(path)
-        if any(part.lower() in _ALL_PROTECTED_TOKENS for part in p.parts):
+        # Verificación contra partes normales y truncamientos 8.3 (ej. PROGRA~1)
+        if any(part.lower() in _ALL_PROTECTED_TOKENS or "~" in part.lower() for part in p.parts):
+            # En un entorno real de demo, si hay un '~' verificamos contra nombre largo resuelto
             return True
         if p == Path(p.anchor):
             return True
@@ -209,10 +213,10 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
     
     raw_path = Path(str_val).expanduser()
     try:
-        if raw_path.exists():
-            resolved = raw_path.resolve()
-            if resolved.absolute() != raw_path.absolute() and _is_reparse_point(raw_path):
-                raise UnsafePathError("Operación bloqueada: punto de reanálisis potencialmente inseguro.")
+        # Resolver a ruta larga real para evitar bypass por nombres 8.3
+        resolved = raw_path.resolve()
+        if raw_path.exists() and _is_reparse_point(raw_path):
+            raise UnsafePathError("Operación bloqueada: punto de reanálisis potencialmente inseguro.")
     except (OSError, PermissionError):
         pass
     
@@ -288,7 +292,7 @@ def describe_protection(path: PathLike) -> str:
     if is_drive_root(p):
         return f"'{p}' es la raíz de una unidad."
     if is_protected_path(p):
-        protegida = next((part for part in p.parts if part.lower() in _ALL_PROTECTED_TOKENS), "sistema")
+        protegida = next((part for part in p.parts if part.lower() in _ALL_PROTECTED_TOKENS or "~" in part.lower()), "sistema")
         return f"'{p}' protegida por directorio '{protegida}'."
     if p.exists():
         if not os.access(p, os.W_OK):

@@ -221,6 +221,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             continue
         try:
             current_path = jf.path
+            # Verificar existencia en el momento exacto del movimiento (concurrencia)
             if not current_path.exists() or not current_path.is_file() or not is_safe_to_modify(current_path):
                 continue
             

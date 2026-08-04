@@ -269,6 +269,11 @@ def quarantine_file(
         file_size = pre_stats.st_size
     except OSError as e:
         raise OSError(f"Error al acceder a metadatos de archivo: {e}")
+
+    # Verificar espacio antes de mover
+    usage = shutil.disk_usage(dest_dir)
+    if usage.free < file_size:
+        raise RuntimeError("Espacio insuficiente en disco para mover a cuarentena.")
         
     item_id = uuid.uuid4().hex[:12]
     safe_name = "".join(c for c in source_path.name if c.isalnum() or c in "._-")
