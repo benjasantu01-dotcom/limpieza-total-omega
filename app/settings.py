@@ -96,13 +96,21 @@ _NUMERIC_LIMITS: Final[dict[str, tuple[int, int]]] = {
 }
 
 def _validate_bool(key: str, val: Any) -> bool | None:
-    """Normaliza valores booleanos aceptando representaciones textuales comunes."""
+    """
+    Normaliza representaciones de entrada (string/bool) a tipo booleano puro.
+    Retorna None si el valor no representa un booleano inequívoco, permitiendo
+    al proceso de carga caer en el valor de fábrica (fallback).
+    """
     if isinstance(val, bool): return val
     if isinstance(val, str) and val.strip().lower() in ("1", "true", "si", "sí", "yes"): return True
     return None
 
 def _validate_int(key: str, val: Any) -> int | None:
-    """Valida y recorta enteros según los límites definidos en _NUMERIC_LIMITS."""
+    """
+    Valida que la entrada sea un entero y la restringe a los límites definidos 
+    en _NUMERIC_LIMITS. Implementa un clamping para evitar overflow o valores 
+    lógicos absurdos.
+    """
     if val is None or isinstance(val, bool): return None
     try:
         parsed = int(val)
@@ -111,7 +119,11 @@ def _validate_int(key: str, val: Any) -> int | None:
     except (TypeError, ValueError): return None
 
 def _validate_str(key: str, val: Any) -> str | None:
-    """Valida cadenas, aplicando sanitización de seguridad para rutas y listas blancas para enum."""
+    """
+    Valida y sanitiza strings de configuración. Para rutas (`ultima_carpeta`),
+    aplica validación de seguridad contra rutas protegidas. Para enums (temas/acentos),
+    aplica un filtro estricto basado en listas blancas.
+    """
     if not isinstance(val, str): return None
     text = val.strip()
     if not text: return "" if key in ("ultima_carpeta", "asistente_clave_api") else None

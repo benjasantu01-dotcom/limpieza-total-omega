@@ -68,12 +68,14 @@ class Scanner:
         self.seen: set[str] = set()
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
+        """Determina si una entrada del sistema de archivos es un punto de reanálisis (Junction/Symlink)."""
         try:
             return bool(entry.stat(follow_symlinks=False).st_file_attributes & 0x400)
         except (OSError, AttributeError):
             return False
 
     def process_entry(self, entry: os.DirEntry, stack: List[str]) -> None:
+        """Procesa una entrada del directorio, filtrando rutas protegidas y analizando archivos."""
         try:
             path_obj = Path(entry.path)
             if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
@@ -92,12 +94,14 @@ class Scanner:
 
 
 def check_double_extension(path: Path) -> Optional[Suspicion]:
+    """Valida si el archivo posee extensiones dobles engañosas (ej: .pdf.exe)."""
     if path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
     return None
 
 
 def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_THRESHOLD_HOURS) -> Optional[Suspicion]:
+    """Evalúa si un archivo ejecutable fue modificado recientemente según el umbral dado."""
     try:
         mtime = datetime.fromtimestamp(path.lstat().st_mtime)
         if datetime.now() - mtime < timedelta(hours=hours):
@@ -108,6 +112,7 @@ def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_TH
 
 
 def check_system_lookalike(path: Path) -> Optional[Suspicion]:
+    """Detecta archivos con nombres de procesos críticos del sistema fuera del directorio System32."""
     parent = path.parent
     if parent and SYSTEM32_LOWER not in str(parent).lower():
         return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
@@ -120,6 +125,7 @@ CHECK_FUNCS: Final[List[SuspicionCheck]] = [
 ]
 
 def scan_file(path: Path, prevalidated: bool = False) -> ScanResult:
+    """Ejecuta todos los chequeos heurísticos registrados contra un archivo específico."""
     if not prevalidated:
         if not path or not is_safe_to_modify(path) or is_protected_path(path):
             return []
@@ -149,6 +155,7 @@ def scan_file(path: Path, prevalidated: bool = False) -> ScanResult:
 
 
 def scan_directory(directory: Union[str, Path]) -> ScanResult:
+    """Realiza un escaneo recursivo de un directorio, recolectando hallazgos sospechosos."""
     if not directory:
         return []
         
@@ -177,6 +184,7 @@ def scan_directory(directory: Union[str, Path]) -> ScanResult:
 
 
 def run_windows_defender_quick_scan() -> str:
+    """Invoca la herramienta de escaneo rápido de Windows Defender mediante PowerShell."""
     try:
         result = subprocess.run(
             ["powershell", "-Command", "Start-MpScan -ScanType QuickScan"],

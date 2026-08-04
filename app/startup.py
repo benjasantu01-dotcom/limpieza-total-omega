@@ -111,8 +111,9 @@ class StartupEntry:
         """
         if not isinstance(path_str, str) or not path_str or any(c in path_str for c in '<>|?*'):
             return ""
+        
         try:
-            p: Path = Path(path_str)
+            p = Path(path_str)
             if is_protected_path(p) or p.is_symlink():
                 return path_str
             
