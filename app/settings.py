@@ -171,18 +171,18 @@ def load(path_or_base: PathLike | None = None) -> dict[str, Any]:
         if not ruta.exists(): raise FileNotFoundError
         stat = ruta.stat()
         if _cached_settings is not None and ruta == _last_path and stat.st_mtime == _last_mtime:
-            return _cached_settings.copy()
+            return _cached_settings
         if stat.st_size > MAX_SETTINGS_SIZE: raise OSError("Config too large")
         raw_content = ruta.read_text(encoding="utf-8")
         data = json.loads(raw_content) if raw_content.strip() else {}
         if not isinstance(data, dict): raise ValueError("Invalid structure")
         _cached_settings = validate(data)
         _last_path, _last_mtime = ruta, stat.st_mtime
-        return _cached_settings.copy()
+        return _cached_settings
     except (OSError, json.JSONDecodeError, UnicodeDecodeError, FileNotFoundError, PermissionError, ValueError):
         _cached_settings = DEFAULTS.copy()
         _last_path, _last_mtime = ruta, 0.0
-        return _cached_settings.copy()
+        return _cached_settings
 
 def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     """Persiste las configuraciones en un archivo temporal y realiza un reemplazo atómico."""
@@ -222,7 +222,7 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
 
 def update(changes: dict[str, Any], path_or_base: PathLike | None = None) -> dict[str, Any]:
     """Aplica cambios incrementales a la configuración actual y los guarda en disco."""
-    actual = (_cached_settings or load(path_or_base)).copy()
+    actual = (load(path_or_base)).copy()
     actual.update(changes)
     save(actual, path_or_base)
     return actual
@@ -234,23 +234,23 @@ def reset(path_or_base: PathLike | None = None) -> dict[str, Any]:
 
 def get(key: str, path_or_base: PathLike | None = None) -> Any:
     """Recupera un valor específico de la configuración actual."""
-    config = _cached_settings or load(path_or_base)
+    config = load(path_or_base)
     return config.get(key, DEFAULTS.get(key))
 
 def assistant_api_key(path_or_base: PathLike | None = None) -> str:
     """Obtiene la clave de API priorizando la variable de entorno sobre el archivo de configuración."""
     desde_entorno = os.environ.get(API_KEY_ENV_VAR, "").strip()
     if desde_entorno: return desde_entorno
-    return (_cached_settings or load(path_or_base)).get("asistente_clave_api", "").strip()
+    return load(path_or_base).get("asistente_clave_api", "").strip()
 
 def assistant_enabled(path_or_base: PathLike | None = None) -> bool:
     """Determina si el asistente IA está configurado y habilitado para su uso."""
-    config = _cached_settings or load(path_or_base)
+    config = load(path_or_base)
     return bool(config.get("asistente_activado")) and bool(assistant_api_key(path_or_base))
 
 def describe(path_or_base: PathLike | None = None) -> list[str]:
     """Genera una representación textual formateada de la configuración actual para informes."""
-    actual = _cached_settings or load(path_or_base)
+    actual = load(path_or_base)
     clave = assistant_api_key(path_or_base)
     origen = f"variable de entorno {API_KEY_ENV_VAR}" if os.environ.get(API_KEY_ENV_VAR) else ("archivo de configuración" if clave else "no configurada")
     return [

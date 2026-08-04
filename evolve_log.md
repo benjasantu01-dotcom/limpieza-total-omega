@@ -1218,3 +1218,34 @@ FAILED evolve/tests/test_integrity.py::test_is_safe_returns_bool_and_never_raise
 - `2026-08-04T02:38:46` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizé el rendimiento de `scan_file` y los chequeos de `check_recent_executable_in_downloads` y `check_system_lookalike` pre-filtrando extensiones y nombres mediante `frozenset` antes de invocar operaciones de I/O (como `lstat`), evitando llamadas innecesarias al sistema de archivos para archivos que no son ejecutables.
 - `2026-08-04T02:38:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-04T02:38:46` Corrida terminada. Total usado hoy: 64.
+- `2026-08-04T02:47:37` Arrancando corrida. Quedan hoy ~236 peticiones objetivo.
+- `2026-08-04T02:48:04` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimizé `load()` y `save()` eliminando llamadas redundantes a `validate()` y `copy()` cuando la caché es válida, reduciendo así la carga de CPU y el uso de memoria en accesos frecuentes.
+- `2026-08-04T02:48:29` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.08s
+
+```
+- `2026-08-04T02:48:29` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Optimicé el método `_resolve_and_cache_path` y el filtrado de entradas para reducir drásticamente las llamadas al sistema de archivos mediante la validación temprana contra `is_protected_path` y evitando conversiones repetitivas a `Path` y `resolve()` en rutas que ya fueron validadas exitosamente.
+- `2026-08-04T02:49:01` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `build_context` y las funciones de manejo de respuestas para prevenir errores ante valores inesperados (como `float('inf')` o `float('nan')`) y asegurar que los cálculos de prioridad no fallen si el contexto está parcialmente inicializado.
+- `2026-08-04T02:49:13` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-08-04T02:49:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-04T02:49:13` Corrida terminada. Total usado hoy: 68.

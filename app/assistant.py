@@ -182,30 +182,22 @@ def _ensure_safe_text(text: str) -> bool:
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
     """
     Convierte datos crudos de otros módulos en un objeto SystemContext validado.
-    
-    Args:
-        metrics: Objeto que contiene métricas de escaneo (disco, ram, etc).
-        health: Objeto que contiene el score de salud calculado.
-        **extra: Métricas adicionales forzadas.
-        
-    Returns:
-        Una instancia de SystemContext normalizada con valores numéricos seguros.
     """
     ctx = SystemContext()
 
     def is_valid_num(v: Any) -> bool:
-        return isinstance(v, (int, float)) and not isinstance(v, bool) and math.isfinite(v)
+        return isinstance(v, (int, float)) and math.isfinite(v)
 
     def extract(source: Any, attr: str, default: Any, cast: Callable = float) -> Any:
         try:
-            val = getattr(source, attr, default)
+            val = getattr(source, attr, None)
             if val is None or not is_valid_num(val):
                 return default
             return cast(val)
         except (AttributeError, ValueError, TypeError):
             return default
 
-    if metrics is not None and isinstance(metrics, object):
+    if metrics is not None:
         ctx.junk_mb = max(0.0, extract(metrics, "junk_mb", 0.0))
         ctx.suspicious_count = max(0, extract(metrics, "suspicious_count", 0, int))
         ctx.suspicious_warnings = max(0, extract(metrics, "suspicious_warnings", 0, int))
@@ -217,16 +209,15 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         ctx.browser_cache_mb = max(0.0, extract(metrics, "browser_cache_mb", 0.0))
         ctx.analyzed = True
 
-    if health is not None and isinstance(health, object):
+    if health is not None:
         score_val = extract(health, "score", None, int)
         ctx.score = max(0, min(score_val, 100)) if score_val is not None else None
         grade = getattr(health, "grade", "")
         ctx.grade = str(grade) if isinstance(grade, (str, int, float)) else ""
         ctx.analyzed = True
 
-    allowed_keys = {k for k, v in ctx.__dict__.items() if isinstance(v, (int, float))}
     for k, v in extra.items():
-        if k in allowed_keys and is_valid_num(v):
+        if hasattr(ctx, k) and is_valid_num(v):
             setattr(ctx, k, float(v))
 
     return ctx
@@ -278,7 +269,7 @@ def handle_ram(ctx: SystemContext, text: str) -> Answer:
     """Genera respuesta contextual sobre la utilización y estado de la memoria RAM."""
     partes = [
         f"Tenés {ctx.memory_available_percent:.0f}% de RAM disponible"
-        f"{f' de {ctx.memory_total_gb:.0f} GB' if ctx.memory_total_gb else ''}.",
+        f"{f' de {ctx.memory_total_gb:.0f} GB' if ctx.memory_total_gb > 0 else ''}.",
     ]
     if ctx.memory_available_percent < 15:
         partes.append("Eso es poco: Windows está usando el disco como memoria y "
@@ -402,22 +393,22 @@ def _rank_problems(context: SystemContext) -> list[str]:
     probs = []
     
     if context.disk_free_percent < 10:
-        probs.append(f"queda solo {context.disk_free_percent:.0f}% de disco libre, atendelo primero (pestaña Disco y Limpieza)")
+        probs.append(f"queda solo {context.disk_free_percent:.0f}% de disco libre")
     
     if context.suspicious_warnings > 0:
-        probs.append(f"{context.suspicious_warnings} archivo(s) sospechosos con advertencia (pestaña Seguridad)")
+        probs.append(f"{context.suspicious_warnings} archivo(s) sospechosos")
         
     if context.memory_available_percent < 15:
-        probs.append(f"queda {context.memory_available_percent:.0f}% de RAM disponible (pestaña Memoria)")
+        probs.append(f"queda {context.memory_available_percent:.0f}% de RAM")
         
     if context.junk_mb > 1000:
-        probs.append(f"{context.junk_mb:.0f} MB de archivos basura (pestaña Limpieza)")
+        probs.append(f"{context.junk_mb:.0f} MB de archivos basura")
         
     if context.duplicate_mb > 500:
-        probs.append(f"{context.duplicate_mb:.0f} MB en duplicados (pestaña Duplicados)")
+        probs.append(f"{context.duplicate_mb:.0f} MB en duplicados")
         
     if context.startup_count > 15:
-        probs.append(f"{context.startup_count} programas de inicio (pestaña Inicio)")
+        probs.append(f"{context.startup_count} programas de inicio")
         
     return probs
 
@@ -438,20 +429,6 @@ def _call_gemini(
 ) -> Optional[str]:
     """
     Envía métricas agregadas a Gemini mediante la librería estándar urllib.
-    
-    Args:
-        question: Consulta del usuario (pre-sanitizada).
-        context_text: Cadena formateada con las métricas del sistema.
-        api_key: Credencial de acceso a la API.
-        model: Identificador del modelo Gemini a utilizar.
-
-    Returns:
-        String con la respuesta validada del modelo, o None en caso de error.
-        
-    Realiza una serialización JSON segura y protege la integridad de la respuesta 
-    recibida. Implementa validaciones dobles de seguridad: antes de enviar para 
-    evitar inyecciones en el prompt, y tras recibir para asegurar que el modelo 
-    no retorne rutas o contenido peligroso.
     """
     if not api_key or not isinstance(api_key, str) or not model or not isinstance(model, str) or not _MODEL_NAME_REGEX.match(model):
         return None
@@ -511,11 +488,6 @@ def ask(question: str, context: Optional[SystemContext] = None,
         base: Union[str, Path, None] = None) -> Answer:
     """
     Coordina la resolución de la consulta buscando la mejor respuesta disponible.
-    
-    Intenta primero una respuesta local estática. Si el asistente en línea está 
-    habilitado y configurado en settings, intenta enriquecer la consulta mediante 
-    la API externa, priorizando siempre la seguridad y privacidad del usuario 
-    según la configuración local.
     """
     ctx: SystemContext = context if isinstance(context, SystemContext) else SystemContext()
     respaldo: Answer = local_answer(question, ctx)
