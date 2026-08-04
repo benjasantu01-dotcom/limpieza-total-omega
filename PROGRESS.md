@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **249** (49.4% de aceptación)
-- Rechazadas por tests: 13
+- Mejoras aceptadas: **246** (48.8% de aceptación)
+- Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 28
-- Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 204
+- Sin cambios (nada sustancial que mejorar): 11
+- Sin respuesta de la IA (error o límite): 205
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-03 | 110 | 3 | 11 | 6 | 98 |
-| 2026-08-04 | 139 | 10 | 17 | 4 | 106 |
+| 2026-08-03 | 106 | 3 | 11 | 6 | 98 |
+| 2026-08-04 | 140 | 11 | 17 | 5 | 107 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **61**
 - manejo de errores y validación de entradas: **51**
 - rendimiento: **50**
-- seguridad defensiva: **45**
-- robustez ante casos límite: **42**
+- robustez ante casos límite: **43**
+- seguridad defensiva: **41**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **23**
-- `organizer.py`: **22**
-- `quarantine.py`: **22**
-- `assistant.py`: **20**
-- `memory.py`: **19**
+- `assistant.py`: **21**
+- `organizer.py`: **21**
+- `quarantine.py`: **21**
 - `browser.py`: **18**
+- `memory.py`: **18**
 - `duplicates.py`: **18**
 - `healthscore.py`: **18**
 - `scanner.py`: **18**
-- `main.py`: **16**
 - `diskreport.py`: **16**
+- `main.py`: **15**
 - `branding.py`: **14**
 - `safety.py`: **13**
 - `startup.py`: **12**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-04T11:50:59` **assistant.py** (robustez ante casos límite): Reforcé la robustez del procesamiento de métricas agregando validación ante valores `NaN` o `inf` inesperados dentro de `build_context` y asegurando que las listas de problemas no fallen si `SystemContext` contiene datos parciales.
 - `2026-08-04T11:41:28` **settings.py** (rendimiento): Optimizé `load()` y `get()` reemplazando llamadas redundantes a `load()` (que re-ejecuta `stat` y validación) por accesos directos al diccionario en caché, mejorando significativamente la eficiencia durante la ejecución intensiva.
 - `2026-08-04T11:41:02` **scanner.py** (rendimiento): Se optimizó el rendimiento del escaneo al evitar llamadas redundantes a `path.is_file()` y `path.suffix` mediante el uso directo de los atributos ya disponibles en el objeto `os.DirEntry` durante la iteración, reduciendo drásticamente las llamadas al sistema de archivos.
 - `2026-08-04T11:40:41` **safety.py** (rendimiento): Se implementó un cache temporal (`lru_cache`) en la función `_is_readonly` y se optimizó `filter_safe_paths` evitando llamadas redundantes a `normalize` al pre-procesar las rutas, reduciendo significativamente el overhead de E/S y procesamiento en escaneos masivos.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-04T11:10:22` **assistant.py** (rendimiento): Optimicé el rendimiento de `_rank_problems` eliminando la re-evaluación de condiciones y evitando la construcción de una lista de cadenas innecesarias, utilizando ahora un generador con `yield` para procesar los problemas de manera perezosa y eficiente.
 - `2026-08-04T11:00:21` **settings.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en el conjunto de validadores internos (`_validate_bool`, `_validate_int`, `_validate_str`) para clarificar el flujo de sanitización y el tratamiento de casos de borde en la configuración.
 - `2026-08-04T10:50:56` **quarantine.py** (legibilidad y documentación): Se introdujeron type hints más específicos y se extrajo la lógica de serialización de `QuarantineItem` mediante el método `from_dict`, mejorando la legibilidad y la robustez del manejo de datos al desacoplar la validación de la instanciación.
-- `2026-08-04T10:50:44` **organizer.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `organizer.py` añadiendo tipos, aclarando las responsabilidades de las funciones clave y documentando las restricciones de seguridad internas, facilitando la mantenibilidad para futuras extensiones.

@@ -206,6 +206,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         ctx.startup_count = max(0, extract(metrics, "startup_count", 0, int))
         ctx.quarantined_count = max(0, extract(metrics, "quarantined_count", 0, int))
         ctx.browser_cache_mb = max(0.0, extract(metrics, "browser_cache_mb", 0.0))
+        ctx.memory_total_gb = max(0.0, extract(metrics, "memory_total_gb", 0.0))
         ctx.analyzed = True
 
     if health is not None:

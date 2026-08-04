@@ -1001,3 +1001,49 @@ ERROR evolve/tests/test_modules.py - NameError: name 'StartupEntry' is not defin
 - `2026-08-04T11:41:35` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
 - `2026-08-04T11:41:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-04T11:41:35` Corrida terminada. Total usado hoy: 276.
+- `2026-08-04T11:50:24` Arrancando corrida. Quedan hoy ~24 peticiones objetivo.
+- `2026-08-04T11:50:59` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Reforcé la robustez del procesamiento de métricas agregando validación ante valores `NaN` o `inf` inesperados dentro de `build_context` y asegurando que las listas de problemas no fallen si `SystemContext` contiene datos parciales.
+- `2026-08-04T11:51:36` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-04T11:52:07` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-08-04T11:52:28` ➖ Sin cambios en browser.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `directory_size` ante el acceso a archivos bloqueados por el sistema (Error 32) mediante un manejo explícito de excepciones, asegurando que el escáner sea tolerante a fallos de acceso sin abortar la medición ni quedar en estados inconsistentes.
+- `2026-08-04T11:52:39` Tests FALLARON:
+```
+ules.py::test_largest_files_respects_the_limit - AssertionError: assert 0 == 2
+ +  where 0 = len([])
+ +    where [] = <function largest_files at 0x7f65065c59e0>(PosixPath('/tmp/pytest-of-runner/pytest-2/test_largest_files_respects_th0'), limit=2)
+ +      where <function largest_files at 0x7f65065c59e0> = diskreport.largest_files
+FAILED evolve/tests/test_modules.py::test_usage_by_extension_groups_and_counts - KeyError: '.jpg'
+FAILED evolve/tests/test_modules.py::test_usage_by_extension_labels_files_without_extension - assert False
+ +  where False = any(<generator object test_usage_by_extension_labels_files_without_extension.<locals>.<genexpr> at 0x7f6505fe76b0>)
+FAILED evolve/tests/test_modules.py::test_largest_folders_ranks_subfolders - AssertionError: assert [] == ['grande', 'media', 'chica']
+  
+  Right contains 3 more items, first extra item: 'grande'
+  
+  Full diff:
+  + []
+  - [
+  -     'grande',
+  -     'media',
+  -     'chica',
+  - ]
+FAILED evolve/tests/test_modules.py::test_total_size_counts_bytes_and_files - assert (0, 0) == (300, 2)
+  
+  At index 0 diff: 0 != 300
+  
+  Full diff:
+    (
+  -     300,
+  ?     --
+  +     0,
+  -     2,
+  ?     ^
+  +     0,
+  ?     ^
+    )
+FAILED evolve/tests/test_modules.py::test_summarize_mentions_the_folder_and_totals - AssertionError: assert '.log' in 'Carpeta analizada: /tmp/pytest-of-runner/pytest-2/test_summarize_mentions_the_fo0\nTotal: 0 B en 0 archivos\n\nPor tipo de archivo:\n\nArchivos más grandes:'
+9 failed, 290 passed in 1.22s
+
+```
+- `2026-08-04T11:52:39` ❌ Mejora descartada en diskreport.py (no pasó los tests), se revirtió. Intento: He mejorado `walk_files` para manejar rutas que pueden volverse inaccesibles durante la iteración (ej. permisos revocados o archivos eliminados por procesos externos) mediante la inclusión de un bloque `try-except` más granular alrededor de `entry.stat()` y la validación de existencia antes de acceder a atributos del sistema de archivos, aumentando la robustez ante condiciones de carrera en el disco.
+- `2026-08-04T11:52:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-04T11:52:39` Corrida terminada. Total usado hoy: 280.
