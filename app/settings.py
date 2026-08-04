@@ -97,19 +97,18 @@ _NUMERIC_LIMITS: Final[dict[str, tuple[int, int]]] = {
 
 def _validate_bool(key: str, val: Any) -> bool | None:
     """
-    Normaliza representaciones de entrada (string/bool) a tipo booleano puro.
-    Retorna None si el valor no representa un booleano inequívoco, permitiendo
-    al proceso de carga caer en el valor de fábrica (fallback).
+    Normaliza entradas (bool, string o número) a un booleano puro.
+    Retorna None si la entrada no es interpretable como booleano (disparando el valor por defecto).
     """
     if isinstance(val, bool): return val
     if isinstance(val, str) and val.strip().lower() in ("1", "true", "si", "sí", "yes"): return True
+    if isinstance(val, str) and val.strip().lower() in ("0", "false", "no", "none"): return False
     return None
 
 def _validate_int(key: str, val: Any) -> int | None:
     """
-    Valida que la entrada sea un entero y la restringe a los límites definidos 
-    en _NUMERIC_LIMITS. Implementa un clamping para evitar overflow o valores 
-    lógicos absurdos.
+    Intenta convertir a int y aplica clamping según `_NUMERIC_LIMITS` para la clave dada.
+    Retorna None si la conversión falla o el tipo es incorrecto (ej. booleano pasado como int).
     """
     if val is None or isinstance(val, bool): return None
     try:
@@ -120,9 +119,8 @@ def _validate_int(key: str, val: Any) -> int | None:
 
 def _validate_str(key: str, val: Any) -> str | None:
     """
-    Valida y sanitiza strings de configuración. Para rutas (`ultima_carpeta`),
-    aplica validación de seguridad contra rutas protegidas. Para enums (temas/acentos),
-    aplica un filtro estricto basado en listas blancas.
+    Valida strings: para enums compara contra listas blancas, para rutas verifica seguridad 
+    vía `is_safe_to_modify`, y para otros campos aplica un límite de longitud básico.
     """
     if not isinstance(val, str): return None
     text = val.strip()

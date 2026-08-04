@@ -932,3 +932,25 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-04T10:50:56` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Se introdujeron type hints más específicos y se extrajo la lógica de serialización de `QuarantineItem` mediante el método `from_dict`, mejorando la legibilidad y la robustez del manejo de datos al desacoplar la validación de la instanciación.
 - `2026-08-04T10:50:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-04T10:50:56` Corrida terminada. Total usado hoy: 256.
+- `2026-08-04T10:59:05` Arrancando corrida. Quedan hoy ~44 peticiones objetivo.
+- `2026-08-04T10:59:25` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-04T10:59:48` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: legibilidad y documentación).
+- `2026-08-04T11:00:10` Tests FALLARON:
+```
+de sistema fuera de System32', severity=<Severity.WARNING: 'warning'>).severity
+
+evolve/tests/test_basic.py:213: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_scanner_double_extension_detection - AssertionError: assert <Severity.WARNING: 'warning'> == 'warning'
+ +  where <Severity.WARNING: 'warning'> = Suspicion(path=PosixPath('factura.pdf.exe'), reason='Doble extensión disfrazando el tipo real de archivo', severity=<Severity.WARNING: 'warning'>).severity
+FAILED evolve/tests/test_basic.py::test_scanner_flags_system_lookalike_outside_system32 - AssertionError: assert <Severity.WARNING: 'warning'> == 'warning'
+ +  where <Severity.WARNING: 'warning'> = Suspicion(path=PureWindowsPath('C:/Users/test/Downloads/svchost.exe'), reason='Nombre de proceso de sistema fuera de System32', severity=<Severity.WARNING: 'warning'>).severity
+FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independent - AssertionError: assert (Suspicion(path=PurePosixPath('/home/user/Downloads/svchost.exe'), reason='Nombre de proceso de sistema fuera de System32', severity=<Severity.WARNING: 'warning'>) is not None and <Severity.WARNING: 'warning'> == 'warning')
+ +  where <Severity.WARNING: 'warning'> = Suspicion(path=PurePosixPath('/home/user/Downloads/svchost.exe'), reason='Nombre de proceso de sistema fuera de System32', severity=<Severity.WARNING: 'warning'>).severity
+3 failed, 296 passed in 0.93s
+
+```
+- `2026-08-04T11:00:10` ❌ Mejora descartada en scanner.py (no pasó los tests), se revirtió. Intento: Se introdujo un `Enum` explícito para los niveles de severidad de `Suspicion` y se mejoró la documentación con *type hints* detallados en las funciones de escaneo para clarificar las responsabilidades de cada chequeo heurístico.
+- `2026-08-04T11:00:21` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se introdujeron docstrings descriptivos y type hints faltantes en el conjunto de validadores internos (`_validate_bool`, `_validate_int`, `_validate_str`) para clarificar el flujo de sanitización y el tratamiento de casos de borde en la configuración.
+- `2026-08-04T11:00:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-04T11:00:21` Corrida terminada. Total usado hoy: 260.
