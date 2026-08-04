@@ -139,7 +139,7 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     Recorre recursivamente los directorios provistos buscando archivos basura.
     Usa os.scandir para eficiencia y aplica filtros de seguridad en cada paso.
     """
-    dirs = directories or DEFAULT_SCAN_DIRS
+    dirs = directories if directories is not None else DEFAULT_SCAN_DIRS
     found: List[JunkFile] = []
     blocklist = SYSTEM_FOLDER_BLOCKLIST
 
@@ -159,10 +159,11 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
                                 _walk_dir(entry.path)
                         elif entry.name.lower().endswith(_JUNK_EXTS_TUPLE):
                             # Filtro rápido usando el path del entry sin crear objeto Path innecesario
-                            if is_safe_to_modify(Path(entry.path)):
+                            entry_path = Path(entry.path)
+                            if is_safe_to_modify(entry_path):
                                 stat = entry.stat()
                                 found.append(JunkFile(
-                                    path=Path(entry.path),
+                                    path=entry_path,
                                     size_bytes=stat.st_size,
                                     modified=datetime.fromtimestamp(stat.st_mtime)
                                 ))
@@ -172,12 +173,12 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
             pass
 
     for d in dirs:
-        if d:
+        if d and isinstance(d, str):
             try:
                 p = Path(d).expanduser().resolve()
                 if p.exists() and p.is_dir() and is_safe_to_modify(p):
                     _walk_dir(str(p))
-            except (RuntimeError, OSError):
+            except (RuntimeError, OSError, ValueError):
                 continue
     return found
 

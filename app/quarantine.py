@@ -288,7 +288,6 @@ def quarantine_file(
         raise IOError(f"El archivo está en uso por otro proceso: {source_path}")
     
     try:
-        # Capturamos metadatos iniciales para verificar consistencia tras el movimiento
         pre_stats = source_path.stat()
         file_size = pre_stats.st_size
         file_ctime = pre_stats.st_ctime
@@ -322,18 +321,22 @@ def quarantine_file(
     try:
         if not source_path.exists() or source_path.stat().st_ctime != file_ctime:
             raise RuntimeError("El archivo origen ha cambiado de estado antes del movimiento.")
+        
+        # Validar nuevamente directorio destino antes de mover
+        if not dest_dir.exists():
+            dest_dir.mkdir(parents=True, exist_ok=True)
+            
         shutil.move(str(source_path), str(destination))
-    except (OSError, PermissionError) as e:
+    except (OSError, PermissionError, FileNotFoundError) as e:
         if destination.exists():
             _safe_unlink(destination)
-        if e.errno in (28, 39): 
+        if hasattr(e, 'errno') and e.errno in (28, 39): 
              raise OSError(f"Falla de escritura (disco lleno o error de sistema): {e}")
         raise RuntimeError(f"Falla crítica al mover archivo: {e}")
 
     if not destination.exists():
         raise RuntimeError("Integridad comprometida: el archivo no apareció en el destino tras el movimiento.")
     
-    # Validación post-traslado rigurosa
     try:
         dest_stats = destination.stat()
         if dest_stats.st_size != file_size:
