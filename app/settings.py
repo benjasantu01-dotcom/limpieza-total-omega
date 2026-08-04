@@ -128,8 +128,9 @@ def _validate_str(key: str, val: Any) -> str | None:
     text = val.strip()
     if not text: return "" if key in ("ultima_carpeta", "asistente_clave_api") else None
     
-    if key == "tema": return text.lower() if text.lower() in VALID_THEMES else None
-    if key == "acento": return text.lower() if text.lower() in VALID_ACCENTS else None
+    text_lower = text.lower()
+    if key == "tema": return text_lower if text_lower in VALID_THEMES else None
+    if key == "acento": return text_lower if text_lower in VALID_ACCENTS else None
     
     if key == "ultima_carpeta":
         try:

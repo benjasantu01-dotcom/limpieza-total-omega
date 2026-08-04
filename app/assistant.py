@@ -175,7 +175,6 @@ def _ensure_safe_text(text: str) -> bool:
         return False
     if _PATH_REGEX.search(text) or _CONTROL_CHARS_REGEX.search(text):
         return False
-    # La validación de path se aplica solo si el texto parece contener rutas
     if any(c in text for c in (":\\", "/", "\\")):
         if is_protected_path(text):
             return False
@@ -269,8 +268,8 @@ def _format_critical_warning(condition: bool, text: str) -> str:
     """Auxiliar para formatear alertas críticas de disco."""
     return text if condition else ""
 
-def handle_ram(ctx: SystemContext, text: str) -> Answer:
-    """Genera respuesta contextual sobre la utilización de memoria RAM."""
+def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
+    """Genera respuesta contextual sobre el estado de la memoria RAM."""
     partes = [
         f"Tenés {ctx.memory_available_percent:.0f}% de RAM disponible"
         f"{f' de {ctx.memory_total_gb:.0f} GB' if ctx.memory_total_gb > 0 else ''}.",
@@ -290,7 +289,7 @@ def handle_ram(ctx: SystemContext, text: str) -> Answer:
     return Answer(" ".join(partes), notice=OFFLINE_NOTICE,
                     suggestions=["¿Conviene desactivar programas de inicio?"])
 
-def handle_disk(ctx: SystemContext, text: str) -> Answer:
+def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
     """Genera respuesta contextual sobre el almacenamiento y espacio recuperable."""
     recuperable = ctx.junk_mb + ctx.duplicate_mb + ctx.browser_cache_mb
     
@@ -311,7 +310,7 @@ def handle_disk(ctx: SystemContext, text: str) -> Answer:
     
     return Answer(mensaje + warning + sugerencia, notice=OFFLINE_NOTICE)
 
-def handle_security(ctx: SystemContext, text: str) -> Answer:
+def handle_security(ctx: SystemContext, user_query: str) -> Answer:
     """Genera respuesta contextual sobre archivos identificados como sospechosos."""
     if ctx.suspicious_count == 0:
         cuerpo = ("No hay archivos sospechosos en tus Descargas. Sobre borrar: la "
@@ -325,7 +324,7 @@ def handle_security(ctx: SystemContext, text: str) -> Answer:
                     "alguno, usá 'Aislar hallazgos' para mandarlo a cuarentena.")
     return Answer(cuerpo, notice=OFFLINE_NOTICE)
 
-def handle_score(ctx: SystemContext, text: str) -> Answer:
+def handle_score(ctx: SystemContext, user_query: str) -> Answer:
     """Genera explicación del puntaje de salud global según problemas detectados."""
     detalle = (f"Tu puntaje es {ctx.score if ctx.score is not None else 'N/A'}/100"
                 f"{f' (nota {ctx.grade})' if ctx.grade else ''}. ")
@@ -338,7 +337,7 @@ def handle_score(ctx: SystemContext, text: str) -> Answer:
                 "y programas de inicio, con la seguridad pesando más.")
     return Answer(detalle, notice=OFFLINE_NOTICE)
 
-def handle_startup(ctx: SystemContext, text: str) -> Answer:
+def handle_startup(ctx: SystemContext, user_query: str) -> Answer:
     """Genera respuesta sobre el impacto de programas configurados al inicio."""
     cuerpo = f"Tenés {ctx.startup_count} programas que arrancan con Windows. "
     if ctx.startup_count > 15:

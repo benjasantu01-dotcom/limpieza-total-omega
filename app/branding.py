@@ -56,8 +56,8 @@ APP_SHORT_NAME: Final = "Omega"
 APP_TAGLINE: Final = "Limpieza y seguridad, en un solo lugar"
 APP_VERSION: Final = "2.1.0"
 
-# Paleta de colores centralizada para mantener la coherencia visual.
-PALETTE: Final[PaletteDict] = MappingProxyType({  # type: ignore
+# Paleta de colores centralizada usando MappingProxyType para inmutabilidad forzada.
+PALETTE: Final[Mapping[str, HexColor]] = MappingProxyType({
     "background": "#0a0e17",
     "surface": "#141b2d",
     "surface_alt": "#1e2740",
@@ -81,7 +81,7 @@ PALETTE: Final[PaletteDict] = MappingProxyType({  # type: ignore
     "glow": "#00f0c0",
 })
 
-FONT_SIZES: Final = MappingProxyType({
+FONT_SIZES: Final[Mapping[str, int]] = MappingProxyType({
     "display": 46,
     "title": 26,
     "subtitle": 13,
@@ -121,7 +121,7 @@ ICONS: Final[Mapping[str, str]] = MappingProxyType({
     "Ajustes": "\u2699",      
 })
 
-GRADIENT_STOPS: Final = ("#00f0c0", "#7c5cff", "#ff2d78")
+GRADIENT_STOPS: Final[Tuple[HexColor, ...]] = ("#00f0c0", "#7c5cff", "#ff2d78")
 
 
 def app_title() -> str:
@@ -341,7 +341,7 @@ def draw_logo(canvas: Any, size: int = 56, canvas_x: int = 0, canvas_y: int = 0)
 
 def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
                       canvas_x: int = 0, canvas_y: int = 0,
-                      stops: tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
+                      stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
     """Dibuja una franja horizontal decorativa mediante líneas adyacentes interpoladas."""
     if canvas is None or not hasattr(canvas, "create_line"): return
     try:
