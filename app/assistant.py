@@ -46,7 +46,7 @@ import re
 import math
 from dataclasses import dataclass, field, asdict
 from pathlib import Path
-from typing import Any, Final, TypeAlias, Callable, Optional, Union
+from typing import Any, Final, TypeAlias, Callable, Optional, Union, Generator
 
 import settings
 from safety import is_protected_path
@@ -328,7 +328,7 @@ def handle_score(ctx: SystemContext, user_query: str) -> Answer:
     """Genera explicación del puntaje de salud global según problemas detectados."""
     detalle = (f"Tu puntaje es {ctx.score if ctx.score is not None else 'N/A'}/100"
                 f"{f' (nota {ctx.grade})' if ctx.grade else ''}. ")
-    problemas = _rank_problems(ctx)
+    problemas = list(_gen_problems(ctx))
     if problemas:
         detalle += "Lo que más te está restando: " + ", ".join(problemas[:3]) + "."
     else:
@@ -378,7 +378,7 @@ def local_answer(question: str, context: SystemContext) -> Answer:
         if handler_key := _KEYWORD_MAP.get(token):
             return _HANDLERS[handler_key](context, clean_text)
 
-    problemas = _rank_problems(context)
+    problemas = list(_gen_problems(context))
     if problemas:
         cuerpo = (f"Con un puntaje de {context.score if context.score is not None else 'N/A'}/100, por orden de prioridad: "
                   + "; ".join(problemas[:3]) + ".")
@@ -387,29 +387,20 @@ def local_answer(question: str, context: SystemContext) -> Answer:
     return Answer(cuerpo, notice=OFFLINE_NOTICE, suggestions=SUGGESTED_QUESTIONS_LIST[:3])
 
 
-def _rank_problems(context: SystemContext) -> list[str]:
-    """Calcula y ordena los problemas más críticos del sistema."""
-    probs = []
-    
-    if context.disk_free_percent < 10:
-        probs.append(f"queda solo {context.disk_free_percent:.0f}% de disco libre")
-    
-    if context.suspicious_warnings > 0:
-        probs.append(f"{context.suspicious_warnings} archivo(s) sospechosos")
-        
-    if context.memory_available_percent < 15:
-        probs.append(f"queda {context.memory_available_percent:.0f}% de RAM")
-        
-    if context.junk_mb > 1000:
-        probs.append(f"{context.junk_mb:.0f} MB de archivos basura")
-        
-    if context.duplicate_mb > 500:
-        probs.append(f"{context.duplicate_mb:.0f} MB en duplicados")
-        
-    if context.startup_count > 15:
-        probs.append(f"{context.startup_count} programas de inicio")
-        
-    return probs
+def _gen_problems(ctx: SystemContext) -> Generator[str, None, None]:
+    """Genera descripciones de problemas detectados de forma eficiente."""
+    if ctx.disk_free_percent < 10:
+        yield f"queda solo {ctx.disk_free_percent:.0f}% de disco libre"
+    if ctx.suspicious_warnings > 0:
+        yield f"{ctx.suspicious_warnings} archivo(s) sospechosos"
+    if ctx.memory_available_percent < 15:
+        yield f"queda {ctx.memory_available_percent:.0f}% de RAM"
+    if ctx.junk_mb > 1000:
+        yield f"{ctx.junk_mb:.0f} MB de archivos basura"
+    if ctx.duplicate_mb > 500:
+        yield f"{ctx.duplicate_mb:.0f} MB en duplicados"
+    if ctx.startup_count > 15:
+        yield f"{ctx.startup_count} programas de inicio"
 
 
 def available(base: Union[str, Path, None] = None) -> bool:

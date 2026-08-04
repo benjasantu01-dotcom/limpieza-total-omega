@@ -954,3 +954,28 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-04T11:00:21` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se introdujeron docstrings descriptivos y type hints faltantes en el conjunto de validadores internos (`_validate_bool`, `_validate_int`, `_validate_str`) para clarificar el flujo de sanitización y el tratamiento de casos de borde en la configuración.
 - `2026-08-04T11:00:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-04T11:00:21` Corrida terminada. Total usado hoy: 260.
+- `2026-08-04T11:09:25` Arrancando corrida. Quedan hoy ~40 peticiones objetivo.
+- `2026-08-04T11:09:50` Tests FALLARON:
+```
+
+==================================== ERRORS ====================================
+________________ ERROR collecting evolve/tests/test_modules.py _________________
+evolve/tests/test_modules.py:29: in <module>
+    import startup  # noqa: E402
+    ^^^^^^^^^^^^^^
+app/startup.py:28: in <module>
+    EntryList: TypeAlias = List[StartupEntry]
+                                ^^^^^^^^^^^^
+E   NameError: name 'StartupEntry' is not defined
+=========================== short test summary info ============================
+ERROR evolve/tests/test_modules.py - NameError: name 'StartupEntry' is not defined
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.29s
+
+```
+- `2026-08-04T11:09:50` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejora la legibilidad y mantenibilidad de `startup.py` mediante la implementación de `type aliases` claros y la adición de docstrings estructurados que explican las responsabilidades de resolución de rutas en `StartupEntry`, facilitando la auditoría de seguridad del código.
+- `2026-08-04T11:10:22` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `_rank_problems` eliminando la re-evaluación de condiciones y evitando la construcción de una lista de cadenas innecesarias, utilizando ahora un generador con `yield` para procesar los problemas de manera perezosa y eficiente.
+- `2026-08-04T11:11:00` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se optimizó el rendimiento en `draw_gradient_bar` reemplazando el dibujado línea a línea (O(N)) por una operación de dibujo por segmentos coloreados, reduciendo drásticamente las llamadas al método `canvas.create_line` en cada frame de refresco de la UI.
+- `2026-08-04T11:11:13` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé `directory_size` cambiando la lógica de validación de `NEVER_TOUCH` de una búsqueda en `frozenset` por cada archivo a una comparación de conjuntos más eficiente, y reorganizando el orden de las comprobaciones de seguridad para descartar carpetas inválidas antes de entrar al bucle.
+- `2026-08-04T11:11:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-04T11:11:13` Corrida terminada. Total usado hoy: 264.

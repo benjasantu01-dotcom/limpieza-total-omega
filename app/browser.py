@@ -146,7 +146,6 @@ def directory_size(path: str | os.PathLike | None) -> int:
     
     total_bytes: int = 0
     stack: List[str] = [str(root)]
-    skip_names = NEVER_TOUCH
     
     while stack:
         current_dir_str: str = stack.pop()
@@ -154,9 +153,11 @@ def directory_size(path: str | os.PathLike | None) -> int:
             with os.scandir(current_dir_str) as it:
                 for entry in it:
                     try:
-                        if entry.name.lower() in skip_names or any(ord(c) < 32 for c in entry.name):
+                        # Validación temprana antes de costosas llamadas a stat
+                        if entry.name.lower() in NEVER_TOUCH or any(ord(c) < 32 for c in entry.name):
                             continue
                         
+                        # Evitar seguir symlinks o junctions para seguridad y performance
                         if entry.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(entry.path)):
                             continue
                         
