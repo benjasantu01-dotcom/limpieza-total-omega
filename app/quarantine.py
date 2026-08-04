@@ -479,8 +479,6 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     for entry in quarantine_root.iterdir():
         if entry.name == MANIFEST_NAME:
             continue
-            
-        # Refuerzo: solo borrar si estamos seguros que reside en la raíz de cuarentena
         if not is_within_directory(entry, quarantine_root):
             continue
 
@@ -489,22 +487,20 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
                 if _safe_unlink(entry):
                     count += 1
         else:
-            # Borrado preventivo de archivos basura (no listados en manifiesto)
             _safe_unlink(entry)
             
     if count > 0:
-        remaining_items = [i for i in items if (quarantine_root / i.stored_name).is_file()]
-        save_manifest(remaining_items, base)
+        new_items = [i for i in items if (quarantine_root / i.stored_name).is_file()]
+        if len(new_items) != len(items):
+            save_manifest(new_items, base)
     return count
 
 
 def total_quarantined_bytes(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     """Calcula el peso total en bytes de los archivos bajo cuarentena usando la caché."""
     base_path = quarantine_dir(base)
-    cache = _manifest_cache.get(str(base_path))
-    if cache:
-        return sum(item.size_bytes for item in cache[1])
-    return sum(item.size_bytes for item in load_manifest(base))
+    items = _manifest_cache.get(str(base_path), (0.0, load_manifest(base)))[1]
+    return sum(item.size_bytes for item in items)
 
 
 def summarize(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[str]:

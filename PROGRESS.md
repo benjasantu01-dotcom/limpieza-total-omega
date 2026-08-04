@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **248** (49.2% de aceptación)
+- Mejoras aceptadas: **247** (49.0% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 27
-- Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 204
+- Rechazadas por guardia de seguridad: 28
+- Sin cambios (nada sustancial que mejorar): 13
+- Sin respuesta de la IA (error o límite): 205
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-03 | 169 | 6 | 16 | 11 | 138 |
-| 2026-08-04 | 79 | 5 | 11 | 3 | 66 |
+| 2026-08-03 | 166 | 6 | 16 | 10 | 138 |
+| 2026-08-04 | 81 | 5 | 12 | 3 | 67 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **61**
-- seguridad defensiva: **51**
 - manejo de errores y validación de entradas: **51**
-- robustez ante casos límite: **43**
-- rendimiento: **42**
+- seguridad defensiva: **49**
+- rendimiento: **44**
+- robustez ante casos límite: **42**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **23**
-- `assistant.py`: **20**
-- `quarantine.py`: **20**
-- `browser.py`: **19**
+- `quarantine.py`: **21**
+- `organizer.py`: **20**
 - `duplicates.py`: **19**
-- `organizer.py`: **19**
 - `scanner.py`: **19**
+- `assistant.py`: **19**
 - `memory.py`: **19**
+- `browser.py`: **18**
 - `diskreport.py`: **17**
 - `healthscore.py`: **17**
 - `main.py`: **15**
-- `startup.py`: **14**
 - `safety.py`: **14**
+- `startup.py`: **13**
 - `branding.py`: **13**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-04T07:04:43` **quarantine.py** (rendimiento): Optimicé el rendimiento de `purge_all` y `total_quarantined_bytes` evitando accesos repetitivos a disco y iteraciones innecesarias, aprovechando la existencia de la caché de memoria del manifiesto y utilizando conjuntos (sets) para validaciones de O(1).
+- `2026-08-04T07:04:10` **organizer.py** (rendimiento): Optimizé `scan_for_junk` reemplazando la lógica de filtrado de extensiones mediante `endswith` por una verificación de conjunto (`set` lookups) utilizando `path.suffix.lower()` en `_LOWER_JUNK_EXTS`, mejorando la velocidad de búsqueda al evitar la iteración de tuplas en cada archivo y reduciendo el overhead de llamadas al sistema.
 - `2026-08-04T06:56:30` **memory.py** (rendimiento): Optimicé el rendimiento de `parse_windows_process_csv` reemplazando la creación innecesaria de una lista intermedia mediante `lines[1:]` por una iteración directa con `itertools.islice`, evitando copias de memoria en sistemas con muchos procesos activos.
 - `2026-08-04T06:53:49` **duplicates.py** (rendimiento): Optimizé `_collect_candidates` utilizando un generador y evitando recrear listas intermedias mediante `tuple` para las claves de los inodos, reduciendo el consumo de memoria y mejorando la velocidad de búsqueda al evitar redundancias durante la recolección inicial.
 - `2026-08-04T06:44:46` **diskreport.py** (rendimiento): Optimicé el bucle principal de `summarize` eliminando la creación innecesaria de objetos `FileEntry` en iteraciones intermedias y consolidando la lógica de acumulación, reduciendo así la sobrecarga de memoria y ciclos de CPU durante el análisis del disco.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-04T06:23:33` **organizer.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings descriptivos en las funciones de búsqueda y ordenamiento, y se extrajo la lógica de filtrado de directorios en `scan_for_junk` para mejorar la legibilidad del flujo de escaneo.
 - `2026-08-04T06:23:10` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la inclusión de type hints en funciones faltantes, la estandarización de docstrings (explicando parámetros y retornos) y la extracción de la lógica de creación de la estructura MEMORYSTATUSEX a una función de fábrica para reducir la complejidad de `_read_windows_snapshot`.
 - `2026-08-04T06:13:52` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica mediante docstrings precisos que explican el contrato de los tipos de datos, los límites esperados y la lógica de normalización, facilitando la mantenibilidad a largo plazo.
-- `2026-08-04T06:13:25` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `duplicates.py` mediante la inclusión de type hints precisos, la estandarización de docstrings siguiendo convenciones de estilo profesional y la clarificación de la lógica interna en el pipeline de escaneo para facilitar el mantenimiento y la auditoría del código.
-- `2026-08-04T06:13:02` **diskreport.py** (legibilidad y documentación): Mejoré la documentación de los métodos de escaneo de archivos y directorios para clarificar las asunciones técnicas sobre el manejo de errores y la estructura de datos, asegurando que el código sea autodocumentado para futuros colaboradores.

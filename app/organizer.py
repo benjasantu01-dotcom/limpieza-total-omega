@@ -39,7 +39,6 @@ JUNK_EXTENSIONS: Final = {
 }
 # Pre-calculado para eficiencia en loops
 _LOWER_JUNK_EXTS: Final = {ext.lower() for ext in JUNK_EXTENSIONS}
-_JUNK_EXTS_TUPLE: Final = tuple(_LOWER_JUNK_EXTS)
 
 # Carpetas típicas donde se acumula basura
 DEFAULT_SCAN_DIRS: Final = [
@@ -142,7 +141,6 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     """
     dirs = directories if directories is not None else DEFAULT_SCAN_DIRS
     found: List[JunkFile] = []
-    exts = _JUNK_EXTS_TUPLE
 
     def _walk_dir(base_path: str) -> None:
         """Escaneo interno recursivo que evita rutas bloqueadas y symlinks."""
@@ -156,7 +154,7 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
                         if entry.is_dir(follow_symlinks=False):
                             if _is_allowed_directory(entry.name):
                                 _walk_dir(entry.path)
-                        elif entry.name.lower().endswith(exts):
+                        elif Path(entry.name).suffix.lower() in _LOWER_JUNK_EXTS:
                             entry_path = Path(entry.path)
                             if is_safe_to_modify(entry_path):
                                 stat = entry.stat()
