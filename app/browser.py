@@ -165,19 +165,17 @@ def directory_size(path: str | os.PathLike | None) -> int:
             with os.scandir(current_dir_str) as it:
                 for entry in it:
                     try:
-                        name_lower = entry.name.lower()
-                        # Saltear nombres protegidos o archivos con caracteres inválidos
-                        if name_lower in skip_names or any(ord(c) < 32 for c in entry.name):
+                        if entry.name.lower() in skip_names or any(ord(c) < 32 for c in entry.name):
                             continue
                         
-                        # Impedir salida de la ruta raíz mediante symlinks/junctions
                         if entry.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(entry.path)):
                             continue
                         
                         if entry.is_dir(follow_symlinks=False):
                             stack.append(entry.path)
                         else:
-                            total_bytes += entry.stat().st_size
+                            # entry.stat() es más eficiente que Path().stat() al reutilizar el objeto DirEntry
+                            total_bytes += entry.stat(follow_symlinks=False).st_size
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):

@@ -311,7 +311,8 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
     except (OSError, RuntimeError, PermissionError, ValueError, TypeError):
         return ["Error: No se pudo acceder a la ruta especificada."]
         
-    ext_map: Dict[str, List[int]] = defaultdict(lambda: [0, 0])
+    ext_sizes: Dict[str, int] = defaultdict(int)
+    ext_counts: Dict[str, int] = defaultdict(int)
     top_heap: List[Tuple[int, Path]] = []
     total_bytes = 0
     total_files = 0
@@ -321,11 +322,9 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
         total_files += 1
         
         ext_name = path.suffix.lower() or "(sin extensión)"
-        stat = ext_map[ext_name]
-        stat[0] += size
-        stat[1] += 1
+        ext_sizes[ext_name] += size
+        ext_counts[ext_name] += 1
         
-        # Mantiene un top 8 de archivos usando el heap
         if len(top_heap) < 8:
             heapq.heappush(top_heap, (size, path))
         elif size > top_heap[0][0]:
@@ -338,8 +337,8 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
         "Por tipo de archivo:",
     ]
     
-    for ext, (size, count) in heapq.nlargest(8, ext_map.items(), key=lambda item: item[1][0]):
-        lines.append(f"  {ext:<18} {format_size(size):>10}  ({count} archivos)")
+    for ext, size in heapq.nlargest(8, ext_sizes.items(), key=lambda item: item[1]):
+        lines.append(f"  {ext:<18} {format_size(size):>10}  ({ext_counts[ext]} archivos)")
         
     lines.append("")
     lines.append("Archivos más grandes:")

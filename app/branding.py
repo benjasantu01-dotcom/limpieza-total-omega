@@ -241,12 +241,12 @@ def gradient_colors(steps: int, stops: tuple[HexColor, ...] = GRADIENT_STOPS) ->
     if len(stops) < 2: return [stops[0]] * cantidad
     
     tramos = len(stops) - 1
-    def get_color(i: int) -> HexColor:
+    res = []
+    for i in range(cantidad):
         posicion = i / max(1, cantidad - 1) * tramos
-        indice = min(tramos - 1, int(posicion))
-        return blend(stops[indice], stops[indice + 1], posicion - indice)
-        
-    return [get_color(i) for i in range(cantidad)]
+        idx = min(tramos - 1, int(posicion))
+        res.append(blend(stops[idx], stops[idx + 1], posicion - idx))
+    return res
 
 
 def _get_shield_coords(sx: float, sy: float, s: float) -> List[float]:

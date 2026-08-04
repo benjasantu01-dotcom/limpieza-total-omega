@@ -372,7 +372,8 @@ def local_answer(question: str, context: SystemContext) -> Answer:
         )
 
     clean_text = _sanitize_query(question)
-    for token in _TOKEN_REGEX.findall(clean_text):
+    tokens = _TOKEN_REGEX.findall(clean_text)
+    for token in tokens:
         if handler_key := _KEYWORD_MAP.get(token):
             return _HANDLERS[handler_key](context, clean_text)
 
