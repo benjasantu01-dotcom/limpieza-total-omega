@@ -105,7 +105,6 @@ def check_double_extension(path: Path) -> Optional[Suspicion]:
 def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_THRESHOLD_HOURS) -> Optional[Suspicion]:
     """Evalúa si un archivo ejecutable fue modificado recientemente según el umbral dado."""
     try:
-        # Validación extra: el archivo debe existir al momento de consultar sus metadatos
         if not path.exists():
             return None
         mtime = datetime.fromtimestamp(path.lstat().st_mtime)
@@ -125,15 +124,16 @@ def check_system_lookalike(path: Path) -> Optional[Suspicion]:
 
 def scan_file(path: Path, prevalidated: bool = False) -> ScanResult:
     """Ejecuta todos los chequeos heurísticos registrados contra un archivo específico."""
-    # Resolvemos antes de validar para asegurar que trabajamos con la ruta canónica
+    if not isinstance(path, Path):
+        return []
+
     try:
         abs_path = path.resolve()
+        if not abs_path.exists():
+            return []
     except (OSError, RuntimeError):
         return []
 
-    if not abs_path.exists():
-        return []
-        
     if not prevalidated:
         if not is_safe_to_modify(abs_path) or is_protected_path(abs_path):
             return []
@@ -142,7 +142,6 @@ def scan_file(path: Path, prevalidated: bool = False) -> ScanResult:
     path_name_lower = abs_path.name.lower()
     path_suffix_lower = abs_path.suffix.lower()
 
-    # Pre-evaluación heurística: solo ejecutar checks si el nombre/extensión es candidato
     if path_name_lower in SYSTEM_LOOKALIKES:
         res = check_system_lookalike(abs_path)
         if res: findings.append(res)

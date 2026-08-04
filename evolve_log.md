@@ -1318,3 +1318,9 @@ FAILED evolve/tests/test_modules.py::test_summarize_mentions_the_folder_and_tota
 - `2026-08-04T14:46:49` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `ensure_safe_to_modify` ante condiciones de carrera y errores de acceso, asegurando que cualquier fallo inesperado al consultar los atributos del archivo (vía `lstat` o `stat`) sea capturado y tratado como un `UnsafePathError` en lugar de propagar una excepción de sistema que podría romper el bucle.
 - `2026-08-04T14:46:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-04T14:46:49` Corrida terminada. Total usado hoy: 348.
+- `2026-08-04T14:55:36` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-04T14:56:04` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `scan_file` y `scan_directory` validando explícitamente los parámetros de entrada (`None` o rutas vacías) y mejorando el manejo de excepciones al resolver rutas, asegurando que el flujo no se detenga inesperadamente ante errores del sistema de archivos.
+- `2026-08-04T14:56:29` ➖ Sin cambios en settings.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `validate()` asegurando que cualquier clave extraña introducida manualmente en el archivo JSON sea descartada en lugar de preservarse, evitando así la persistencia de datos basura o potencialmente maliciosos.
+- `2026-08-04T14:56:29` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-08-04T14:56:29` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-04T14:56:29` Corrida terminada. Total usado hoy: 350.

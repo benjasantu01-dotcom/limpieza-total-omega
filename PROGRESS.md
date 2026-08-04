@@ -5,37 +5,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **504**
-- Mejoras aceptadas: **246** (48.8% de aceptación)
+- Iteraciones totales: **502**
+- Mejoras aceptadas: **245** (48.8% de aceptación)
 - Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 28
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 206
+- Sin respuesta de la IA (error o límite): 205
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-03 | 81 | 1 | 8 | 5 | 61 |
-| 2026-08-04 | 165 | 11 | 20 | 7 | 145 |
+| 2026-08-03 | 79 | 1 | 8 | 4 | 60 |
+| 2026-08-04 | 166 | 11 | 20 | 8 | 145 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **51**
+- manejo de errores y validación de entradas: **52**
 - seguridad defensiva: **50**
 - robustez ante casos límite: **49**
-- rendimiento: **48**
 - legibilidad y documentación: **48**
+- rendimiento: **46**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **22**
 - `organizer.py`: **21**
 - `settings.py`: **21**
-- `duplicates.py`: **20**
-- `healthscore.py`: **20**
+- `scanner.py`: **20**
 - `assistant.py`: **20**
-- `scanner.py`: **19**
+- `duplicates.py`: **19**
+- `healthscore.py`: **19**
 - `browser.py`: **17**
 - `memory.py`: **16**
 - `diskreport.py`: **16**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-04T14:56:04` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `scan_file` y `scan_directory` validando explícitamente los parámetros de entrada (`None` o rutas vacías) y mejorando el manejo de excepciones al resolver rutas, asegurando que el flujo no se detenga inesperadamente ante errores del sistema de archivos.
 - `2026-08-04T14:46:49` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ensure_safe_to_modify` ante condiciones de carrera y errores de acceso, asegurando que cualquier fallo inesperado al consultar los atributos del archivo (vía `lstat` o `stat`) sea capturado y tratado como un `UnsafePathError` en lugar de propagar una excepción de sistema que podría romper el bucle.
 - `2026-08-04T14:45:45` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` capturando explícitamente posibles errores de `Path.resolve()` y validando la integridad de los datos de entrada, evitando que una entrada corrupta en la lista de archivos detenga el proceso de limpieza.
 - `2026-08-04T14:37:04` **main.py** (manejo de errores y validación de entradas): Se mejora la robustez de `on_trim_process` y `on_restore_quarantine` mediante la validación temprana de entradas y el manejo explícito de errores de tipo, evitando que excepciones en la UI detengan el hilo principal o provoquen estados inconsistentes.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-04T12:52:38` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad de `quarantine_file` añadiendo una comprobación explícita para evitar movimientos entre dispositivos (cross-device move) que podrían causar fugas de metadatos o fallos de permisos al usar `shutil.move` (que internamente hace copy+unlink si detecta dispositivos distintos), asegurando que el archivo siempre resida bajo el mismo sistema de archivos antes de operar.
 - `2026-08-04T12:43:16` **main.py** (seguridad defensiva): Se ha implementado una validación de seguridad preventiva en `on_trim_process` para asegurar que el PID sea un proceso existente y no una ruta inválida o maliciosa, reforzando la integridad del bucle de seguridad antes de cualquier intento de manipulación de memoria.
 - `2026-08-04T12:42:13` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la validación estricta de tipos y rangos en las funciones de cómputo, asegurando que los valores procesados nunca provoquen comportamientos inesperados (NaN/Inf) que pudieran corromper el cálculo del puntaje global.
-- `2026-08-04T12:32:55` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez de las funciones de hash (`hash_file` y `partial_hash`) implementando una doble validación de seguridad: al re-verificar `is_protected_path` después de resolver la ruta (`resolve(strict=True)`), se garantiza que no se procesen archivos que hayan mutado a una ubicación protegida mediante enlaces simbólicos o puntos de reparse durante la ejecución del proceso.
