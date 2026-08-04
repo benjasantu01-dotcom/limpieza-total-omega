@@ -211,10 +211,11 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     if limpio.get("asistente_activado") and not (limpio.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)):
         limpio["asistente_activado"] = False
     
-    if not (is_safe_to_modify(str(ruta.parent)) and is_safe_to_modify(str(ruta))):
-        return None
-
     try:
+        # Validación defensiva antes de tocar el disco
+        ensure_safe_to_modify(ruta.parent)
+        ensure_safe_to_modify(ruta)
+        
         json_data = json.dumps(limpio, indent=2, ensure_ascii=False)
         ruta.parent.mkdir(parents=True, exist_ok=True)
     except (OSError, PermissionError): return None
