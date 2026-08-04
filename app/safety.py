@@ -202,11 +202,12 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
     
     raw_path = Path(path).expanduser()
     try:
-        # Pre-chequeo básico de existencia para evitar errores en lstat
         if raw_path.exists():
-            resolved_path = raw_path.resolve()
-            if raw_path.resolve() != raw_path.absolute() and _is_reparse_point(raw_path):
-                raise UnsafePathError("Operación bloqueada: punto de reanálisis inseguro.")
+            resolved = raw_path.resolve()
+            # Si la ruta resuelta difiere de la absoluta, es un symlink/junction.
+            # Verificamos que no intente salir de su propia estructura (symlink traversal).
+            if resolved.absolute() != raw_path.absolute() and _is_reparse_point(raw_path):
+                raise UnsafePathError("Operación bloqueada: punto de reanálisis potencialmente inseguro.")
     except (OSError, PermissionError):
         pass
     

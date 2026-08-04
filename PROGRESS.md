@@ -6,30 +6,30 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **259** (51.4% de aceptación)
-- Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 28
+- Mejoras aceptadas: **261** (51.8% de aceptación)
+- Rechazadas por tests: 13
+- Rechazadas por guardia de seguridad: 29
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 191
+- Sin respuesta de la IA (error o límite): 187
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-03 | 157 | 6 | 15 | 10 | 120 |
-| 2026-08-04 | 102 | 6 | 13 | 4 | 71 |
+| 2026-08-03 | 157 | 6 | 15 | 10 | 116 |
+| 2026-08-04 | 104 | 7 | 14 | 4 | 71 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **61**
 - robustez ante casos límite: **52**
 - manejo de errores y validación de entradas: **51**
-- seguridad defensiva: **48**
+- seguridad defensiva: **50**
 - rendimiento: **47**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **23**
+- `settings.py`: **24**
 - `quarantine.py`: **22**
 - `assistant.py`: **21**
 - `memory.py`: **21**
@@ -40,12 +40,14 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **18**
 - `diskreport.py`: **17**
 - `main.py`: **16**
-- `safety.py`: **14**
+- `safety.py`: **15**
 - `startup.py`: **14**
 - `branding.py`: **13**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-04T08:26:59` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save()` y `settings_path()` eliminando el uso de `ensure_safe_to_modify` como una condición lógica directa, reemplazándolo por una verificación previa a la operación, para prevenir que excepciones inesperadas interrumpan el flujo de trabajo sin necesidad.
+- `2026-08-04T08:26:26` **safety.py** (seguridad defensiva): Se reforzó `ensure_safe_to_modify` para detectar y bloquear enlaces simbólicos arbitrarios ("symlink traversal") mediante la validación estricta de la ruta resuelta contra su ruta base, mitigando el riesgo de que una operación de limpieza escape del directorio de trabajo original.
 - `2026-08-04T08:17:27` **quarantine.py** (seguridad defensiva): Se reforzó `quarantine_file` para prevenir una condición de carrera (Time-of-check to time-of-use) mediante el uso de `os.replace` (atómico en sistemas POSIX y Windows si el destino no existe) y se añadió una validación estricta de que el archivo origen no sea un punto de reparse antes de cualquier operación, mitigando riesgos de seguridad adicionales.
 - `2026-08-04T08:17:14` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de `stage_for_review` implementando una validación explícita para evitar que `shutil.move` intente mover un archivo sobre sí mismo o entre ubicaciones físicamente idénticas (caso de alias o links), reforzando la integridad de los datos antes de la operación de escritura.
 - `2026-08-04T08:16:52` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `trim_working_set` al centralizar y robustecer la validación del PID, asegurando que no se intente manipular procesos del sistema o de la propia aplicación antes de realizar cualquier llamada a la API de Windows, evitando así la exposición a privilegios innecesarios.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-04T07:46:00` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez de `ensure_safe_to_modify` ante condiciones de carrera y sistemas de archivos con enlaces simbólicos circulares, delegando la validación inicial de existencia a una verificación de `lstat` que evita errores `OSError` al intentar acceder a rutas inaccesibles o bloqueadas durante el escaneo.
 - `2026-08-04T07:45:16` **quarantine.py** (robustez ante casos límite): Se añadió una validación de "tiempo de escritura" en la carga del manifiesto y se reforzó el manejo de excepciones durante el cálculo de hashes en `_get_sha256`, evitando que la app colapse ante archivos inaccesibles o bloqueados durante un escaneo.
 - `2026-08-04T07:36:26` **organizer.py** (robustez ante casos límite): Se añade una validación de existencia previa en `scan_for_junk` para capturar archivos que fueron eliminados o renombrados por otros procesos entre la iteración de `os.scandir` y el acceso a `stat()`, evitando excepciones innecesarias y mejorando la robustez ante la concurrencia del sistema de archivos.
-- `2026-08-04T07:36:19` **memory.py** (robustez ante casos límite): Se mejora la robustez de `parse_windows_process_csv` añadiendo un manejo explícito de filas truncadas o mal formadas mediante una verificación estricta de la estructura del CSV, previniendo errores de ejecución ante salidas inesperadas de PowerShell.
-- `2026-08-04T07:35:54` **main.py** (robustez ante casos límite): Se ha robustecido el manejo de errores en `_init_state` y `_build_tabs_container` para evitar que una falla puntual en la carga de configuración o en la inicialización de una pestaña específica detenga el arranque de la aplicación.

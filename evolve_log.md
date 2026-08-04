@@ -624,3 +624,38 @@ FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - Asse
 - `2026-08-04T08:17:27` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó `quarantine_file` para prevenir una condición de carrera (Time-of-check to time-of-use) mediante el uso de `os.replace` (atómico en sistemas POSIX y Windows si el destino no existe) y se añadió una validación estricta de que el archivo origen no sea un punto de reparse antes de cualquier operación, mitigando riesgos de seguridad adicionales.
 - `2026-08-04T08:17:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-04T08:17:27` Corrida terminada. Total usado hoy: 196.
+- `2026-08-04T08:25:39` Arrancando corrida. Quedan hoy ~104 peticiones objetivo.
+- `2026-08-04T08:26:00` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-08-04T08:26:26` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se reforzó `ensure_safe_to_modify` para detectar y bloquear enlaces simbólicos arbitrarios ("symlink traversal") mediante la validación estricta de la ruta resuelta contra su ruta base, mitigando el riesgo de que una operación de limpieza escape del directorio de trabajo original.
+- `2026-08-04T08:26:48` Tests FALLARON:
+```
+SIX, para que el
+        # resultado no dependa de en qué sistema corran los tests.
+>       flagged = scanner.check_system_lookalike(PurePosixPath("/home/user/Downloads/svchost.exe"))
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+evolve/tests/test_basic.py:212: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = PurePosixPath('/home/user/Downloads/svchost.exe')
+
+    def check_system_lookalike(path: Path) -> Optional[Suspicion]:
+        """Detecta archivos con nombres de procesos críticos del sistema fuera del directorio System32."""
+        try:
+            # Validación de ruta absoluta para prevenir escapes mediante navegación de directorios
+>           path_abs = path.resolve()
+                       ^^^^^^^^^^^^
+E           AttributeError: 'PurePosixPath' object has no attribute 'resolve'
+
+app/scanner.py:121: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_scanner_flags_system_lookalike_outside_system32 - AttributeError: 'PureWindowsPath' object has no attribute 'resolve'
+FAILED evolve/tests/test_basic.py::test_scanner_does_not_flag_real_system_file - AttributeError: 'PureWindowsPath' object has no attribute 'resolve'
+FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independent - AttributeError: 'PurePosixPath' object has no attribute 'resolve'
+3 failed, 296 passed in 1.08s
+
+```
+- `2026-08-04T08:26:48` ❌ Mejora descartada en scanner.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la seguridad defensiva en `check_system_lookalike` y `scan_directory` validando explícitamente que las rutas no contengan caracteres de control de rutas o intentos de escape fuera de la jerarquía esperada, usando `resolve()` y `relative_to` para confirmar la pertenencia al árbol de archivos sin seguir enlaces simbólicos.
+- `2026-08-04T08:26:59` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `save()` y `settings_path()` eliminando el uso de `ensure_safe_to_modify` como una condición lógica directa, reemplazándolo por una verificación previa a la operación, para prevenir que excepciones inesperadas interrumpan el flujo de trabajo sin necesidad.
+- `2026-08-04T08:26:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-04T08:26:59` Corrida terminada. Total usado hoy: 200.

@@ -154,9 +154,11 @@ def settings_path(path_or_base: PathLike | None = None) -> Path:
     if key in _path_cache: return _path_cache[key]
     try:
         base = Path(key).expanduser()
-        while not is_safe_to_modify(str(base)) and base != base.parent:
-            base = base.parent
-        res = (base / SETTINGS_FILE).resolve()
+        # Buscamos un padre seguro para el archivo de configuración
+        current = base
+        while not is_safe_to_modify(str(current)) and current != current.parent:
+            current = current.parent
+        res = (current / SETTINGS_FILE).resolve()
     except (OSError, RuntimeError, ValueError, PermissionError):
         res = SETTINGS_DIR.resolve() / SETTINGS_FILE
     _path_cache[key] = res
@@ -186,7 +188,7 @@ def load(path_or_base: PathLike | None = None) -> dict[str, Any]:
         if _cached_settings is not None and ruta == _last_path and stat.st_mtime == _last_mtime:
             return _cached_settings
         
-        ensure_safe_to_modify(str(ruta))
+        if not is_safe_to_modify(str(ruta)): raise PermissionError("Unsafe path")
         if stat.st_size > MAX_SETTINGS_SIZE: raise OSError("Config too large")
         
         data = json.loads(ruta.read_text(encoding="utf-8")) if stat.st_size > 0 else {}
@@ -211,13 +213,14 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     if limpio.get("asistente_activado") and not (limpio.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)):
         limpio["asistente_activado"] = False
     
+    # Verificar seguridad antes de preparar la escritura
+    if not (is_safe_to_modify(str(ruta.parent)) and is_safe_to_modify(str(ruta))):
+        return None
+
     try:
         json_data = json.dumps(limpio, indent=2, ensure_ascii=False)
-        parent = ruta.parent
-        ensure_safe_to_modify(str(parent))
-        parent.mkdir(parents=True, exist_ok=True)
-        ensure_safe_to_modify(str(ruta))
-    except (TypeError, ValueError, OSError, PermissionError, RuntimeError): return None
+        ruta.parent.mkdir(parents=True, exist_ok=True)
+    except (OSError, PermissionError): return None
     
     temp_path: Path | None = None
     try:
