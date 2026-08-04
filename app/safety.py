@@ -109,6 +109,7 @@ def _is_file_in_use(path: Path) -> bool:
         return True
 
 
+@lru_cache(maxsize=1024)
 def _is_readonly(path: Path) -> bool:
     """Determina si un archivo carece del bit de permiso de escritura (S_IWRITE)."""
     try:
@@ -265,12 +266,11 @@ def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = Fals
     valid = []
     for p in paths:
         try:
-            if is_safe_to_modify(p, allow_sensitive=allow_sensitive):
-                norm_p = normalize(p)
-                if norm_p not in seen:
-                    seen.add(norm_p)
-                    valid.append(norm_p)
-        except (TypeError, ValueError):
+            norm_p = normalize(p)
+            if norm_p not in seen and is_safe_to_modify(norm_p, allow_sensitive=allow_sensitive):
+                seen.add(norm_p)
+                valid.append(norm_p)
+        except (TypeError, ValueError, OSError):
             continue
     return valid
 

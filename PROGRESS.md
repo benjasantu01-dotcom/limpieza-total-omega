@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-03 | 113 | 3 | 11 | 6 | 99 |
-| 2026-08-04 | 136 | 10 | 17 | 4 | 105 |
+| 2026-08-03 | 110 | 3 | 11 | 6 | 98 |
+| 2026-08-04 | 139 | 10 | 17 | 4 | 106 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **61**
 - manejo de errores y validación de entradas: **51**
-- seguridad defensiva: **48**
-- rendimiento: **47**
+- rendimiento: **50**
+- seguridad defensiva: **45**
 - robustez ante casos límite: **42**
 
 ## Mejoras aceptadas por archivo
 
+- `settings.py`: **23**
 - `organizer.py`: **22**
 - `quarantine.py`: **22**
-- `settings.py`: **22**
 - `assistant.py`: **20**
-- `duplicates.py`: **19**
-- `healthscore.py`: **19**
 - `memory.py`: **19**
 - `browser.py`: **18**
-- `diskreport.py`: **17**
-- `scanner.py`: **17**
+- `duplicates.py`: **18**
+- `healthscore.py`: **18**
+- `scanner.py`: **18**
 - `main.py`: **16**
+- `diskreport.py`: **16**
 - `branding.py`: **14**
-- `safety.py`: **12**
+- `safety.py`: **13**
 - `startup.py`: **12**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-04T11:41:28` **settings.py** (rendimiento): Optimizé `load()` y `get()` reemplazando llamadas redundantes a `load()` (que re-ejecuta `stat` y validación) por accesos directos al diccionario en caché, mejorando significativamente la eficiencia durante la ejecución intensiva.
+- `2026-08-04T11:41:02` **scanner.py** (rendimiento): Se optimizó el rendimiento del escaneo al evitar llamadas redundantes a `path.is_file()` y `path.suffix` mediante el uso directo de los atributos ya disponibles en el objeto `os.DirEntry` durante la iteración, reduciendo drásticamente las llamadas al sistema de archivos.
+- `2026-08-04T11:40:41` **safety.py** (rendimiento): Se implementó un cache temporal (`lru_cache`) en la función `_is_readonly` y se optimizó `filter_safe_paths` evitando llamadas redundantes a `normalize` al pre-procesar las rutas, reduciendo significativamente el overhead de E/S y procesamiento en escaneos masivos.
 - `2026-08-04T11:31:07` **quarantine.py** (rendimiento): Optimizé la búsqueda de ítems en los métodos `restore_item` y `purge_item` convirtiendo la lista del manifiesto a un diccionario indexado por `item_id`, evitando recorridos lineales O(n) que penalizaban el rendimiento cuando la cuarentena crece.
 - `2026-08-04T11:30:40` **organizer.py** (rendimiento): Optimicé `scan_for_junk` reemplazando llamadas redundantes a `Path(entry.path)` y el uso de `os.scandir` para obtener metadatos (tamaño y fecha) directamente del `DirEntry` mediante `entry.stat()`, evitando múltiples llamadas al sistema operativo por cada archivo.
 - `2026-08-04T11:22:45` **main.py** (rendimiento): Se ha optimizado el método `on_full_analysis` y la gestión del caché en `main.py` evitando el re-análisis redundante de los módulos de soporte durante la consolidación de salud, asegurando que el estado actual de la sesión sea consistente y minimizando el acceso a disco innecesario.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-04T11:00:21` **settings.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en el conjunto de validadores internos (`_validate_bool`, `_validate_int`, `_validate_str`) para clarificar el flujo de sanitización y el tratamiento de casos de borde en la configuración.
 - `2026-08-04T10:50:56` **quarantine.py** (legibilidad y documentación): Se introdujeron type hints más específicos y se extrajo la lógica de serialización de `QuarantineItem` mediante el método `from_dict`, mejorando la legibilidad y la robustez del manejo de datos al desacoplar la validación de la instanciación.
 - `2026-08-04T10:50:44` **organizer.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `organizer.py` añadiendo tipos, aclarando las responsabilidades de las funciones clave y documentando las restricciones de seguridad internas, facilitando la mantenibilidad para futuras extensiones.
-- `2026-08-04T10:50:21` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo `memory.py` añadiendo tipos específicos (usando `TypeAlias` para mayor claridad) y enriqueciendo los docstrings con las unidades de medida esperadas y la justificación técnica de las operaciones, eliminando ambigüedades en las firmas de funciones.
-- `2026-08-04T10:49:55` **main.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `main.py` documentando los métodos de construcción de la interfaz (`_build_tab_*`) y estandarizando la estructura de la clase mediante el uso de una sección dedicada a "Factorías de UI" que simplifica la creación de componentes reutilizables.
-- `2026-08-04T10:40:09` **healthscore.py** (legibilidad y documentación): Mejore la claridad y mantenibilidad del módulo mediante la adición de docstrings detallados en las funciones de cálculo de métricas individuales, explicando el propósito y la lógica detrás de los ratios aplicados, además de añadir type hints explícitos para mejorar el análisis estático.

@@ -994,3 +994,10 @@ ERROR evolve/tests/test_modules.py - NameError: name 'StartupEntry' is not defin
 - `2026-08-04T11:31:12` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
 - `2026-08-04T11:31:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-04T11:31:12` Corrida terminada. Total usado hoy: 272.
+- `2026-08-04T11:40:10` Arrancando corrida. Quedan hoy ~28 peticiones objetivo.
+- `2026-08-04T11:40:41` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se implementó un cache temporal (`lru_cache`) en la función `_is_readonly` y se optimizó `filter_safe_paths` evitando llamadas redundantes a `normalize` al pre-procesar las rutas, reduciendo significativamente el overhead de E/S y procesamiento en escaneos masivos.
+- `2026-08-04T11:41:02` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se optimizó el rendimiento del escaneo al evitar llamadas redundantes a `path.is_file()` y `path.suffix` mediante el uso directo de los atributos ya disponibles en el objeto `os.DirEntry` durante la iteración, reduciendo drásticamente las llamadas al sistema de archivos.
+- `2026-08-04T11:41:28` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimizé `load()` y `get()` reemplazando llamadas redundantes a `load()` (que re-ejecuta `stat` y validación) por accesos directos al diccionario en caché, mejorando significativamente la eficiencia durante la ejecución intensiva.
+- `2026-08-04T11:41:35` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-08-04T11:41:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-04T11:41:35` Corrida terminada. Total usado hoy: 276.

@@ -77,18 +77,19 @@ class Scanner:
     def process_entry(self, entry: os.DirEntry, stack: List[str]) -> None:
         """Procesa una entrada del directorio, filtrando rutas protegidas y analizando archivos."""
         try:
-            path_obj = Path(entry.path)
-            if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
-                return
-
             if entry.is_dir(follow_symlinks=False):
                 if not self._is_reparse_point(entry):
+                    path_obj = Path(entry.path)
+                    if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
+                        return
                     path_key = str(path_obj.resolve())
                     if path_key not in self.seen:
                         self.seen.add(path_key)
                         stack.append(path_key)
             elif entry.is_file(follow_symlinks=False):
-                self.results.extend(scan_file(path_obj, prevalidated=True))
+                path_obj = Path(entry.path)
+                if is_safe_to_modify(path_obj) and not is_protected_path(path_obj):
+                    self.results.extend(scan_file(path_obj, prevalidated=True))
         except (PermissionError, OSError):
             pass
 
@@ -103,8 +104,6 @@ def check_double_extension(path: Path) -> Optional[Suspicion]:
 def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_THRESHOLD_HOURS) -> Optional[Suspicion]:
     """Evalúa si un archivo ejecutable fue modificado recientemente según el umbral dado."""
     try:
-        if not path.exists():
-            return None
         mtime = datetime.fromtimestamp(path.lstat().st_mtime)
         if datetime.now() - mtime < timedelta(hours=hours):
             return Suspicion(path, f"Ejecutable reciente detectado (modificado hace menos de {hours}h)", "info")
@@ -129,16 +128,9 @@ def scan_file(path: Path, prevalidated: bool = False) -> ScanResult:
         if not is_safe_to_modify(path) or is_protected_path(path):
             return []
     
-    try:
-        # Validación de estado previo a cualquier operación de lectura
-        if not path.is_file():
-            return []
-    except (OSError, PermissionError):
-        return []
-        
     findings: ScanResult = []
-    path_suffix_lower = path.suffix.lower()
     path_name_lower = path.name.lower()
+    path_suffix_lower = path.suffix.lower()
 
     # Pre-evaluación heurística: solo ejecutar checks si el nombre/extensión es candidato
     if path_name_lower in SYSTEM_LOOKALIKES:

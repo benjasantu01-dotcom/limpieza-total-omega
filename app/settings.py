@@ -153,7 +153,6 @@ def settings_path(path_or_base: PathLike | None = None) -> Path:
     if key in _path_cache: return _path_cache[key]
     try:
         base = Path(key).expanduser()
-        # Buscamos un padre seguro para el archivo de configuración
         current = base
         while not is_safe_to_modify(str(current)) and current != current.parent:
             current = current.parent
@@ -212,7 +211,6 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     if limpio.get("asistente_activado") and not (limpio.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)):
         limpio["asistente_activado"] = False
     
-    # Verificar seguridad antes de preparar la escritura
     if not (is_safe_to_modify(str(ruta.parent)) and is_safe_to_modify(str(ruta))):
         return None
 
@@ -250,19 +248,21 @@ def reset(path_or_base: PathLike | None = None) -> dict[str, Any]:
     return DEFAULTS.copy()
 
 def get(key: str, path_or_base: PathLike | None = None) -> Any:
-    """Recupera un valor específico de la configuración actual."""
-    config = load(path_or_base)
-    return config.get(key, DEFAULTS.get(key))
+    """Recupera un valor específico de la configuración actual, consultando primero el caché."""
+    if _cached_settings is not None:
+        return _cached_settings.get(key, DEFAULTS.get(key))
+    return load(path_or_base).get(key, DEFAULTS.get(key))
 
 def assistant_api_key(path_or_base: PathLike | None = None) -> str:
     """Obtiene la clave de API priorizando la variable de entorno sobre el archivo de configuración."""
     desde_entorno = os.environ.get(API_KEY_ENV_VAR, "").strip()
     if desde_entorno: return desde_entorno
-    return load(path_or_base).get("asistente_clave_api", "").strip()
+    config = _cached_settings if _cached_settings is not None else load(path_or_base)
+    return config.get("asistente_clave_api", "").strip()
 
 def assistant_enabled(path_or_base: PathLike | None = None) -> bool:
     """Determina si el asistente IA está configurado y habilitado para su uso."""
-    config = load(path_or_base)
+    config = _cached_settings if _cached_settings is not None else load(path_or_base)
     return bool(config.get("asistente_activado")) and bool(assistant_api_key(path_or_base))
 
 def describe(path_or_base: PathLike | None = None) -> list[str]:
