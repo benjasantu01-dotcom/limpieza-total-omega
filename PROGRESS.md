@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **245** (48.6% de aceptación)
+- Mejoras aceptadas: **246** (48.8% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 28
+- Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 13
 - Sin respuesta de la IA (error o límite): 206
 
@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-03 | 140 | 4 | 14 | 9 | 105 |
-| 2026-08-04 | 105 | 8 | 14 | 4 | 101 |
+| 2026-08-03 | 138 | 4 | 13 | 9 | 104 |
+| 2026-08-04 | 108 | 8 | 14 | 4 | 102 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **56**
+- legibilidad y documentación: **54**
 - robustez ante casos límite: **52**
 - seguridad defensiva: **50**
 - rendimiento: **47**
-- manejo de errores y validación de entradas: **40**
+- manejo de errores y validación de entradas: **43**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **23**
-- `quarantine.py`: **21**
-- `organizer.py`: **20**
 - `memory.py`: **20**
 - `assistant.py`: **20**
+- `quarantine.py`: **20**
 - `scanner.py`: **19**
+- `duplicates.py`: **19**
+- `organizer.py`: **19**
 - `browser.py`: **18**
-- `duplicates.py`: **18**
-- `diskreport.py`: **16**
+- `diskreport.py`: **17**
 - `healthscore.py`: **16**
 - `main.py`: **15**
 - `safety.py`: **14**
 - `startup.py`: **13**
-- `branding.py`: **12**
+- `branding.py`: **13**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-04T09:59:04` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `hash_file` y `partial_hash` asegurando que el cierre de archivos ante excepciones sea impecable y validando explícitamente los parámetros de entrada antes de realizar operaciones de E/S.
+- `2026-08-04T09:58:56` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `largest_folders` añadiendo chequeos de `None` y validaciones de tipo explícitas en las iteraciones sobre subdirectorios, evitando que excepciones inesperadas durante la navegación de sistemas de archivos profundamente anidados o con permisos restringidos propaguen errores o aborten el proceso silenciosamente.
+- `2026-08-04T09:58:10` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de renderizado gráfico (`draw_logo`, `draw_gradient_bar`, `draw_ring`) ante entradas inválidas o inesperadas, centralizando la validación de parámetros críticos para prevenir errores de ejecución silenciosos o inesperados en el hilo de interfaz gráfica.
 - `2026-08-04T09:51:01` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_call_gemini` y `_ensure_safe_text` mediante validaciones de tipos y saneamiento de entradas más estricto, asegurando que cualquier respuesta externa o configuración maliciosa sea interceptada antes de procesarse, aplicando el enfoque de manejo de errores defensivo.
 - `2026-08-04T08:26:59` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save()` y `settings_path()` eliminando el uso de `ensure_safe_to_modify` como una condición lógica directa, reemplazándolo por una verificación previa a la operación, para prevenir que excepciones inesperadas interrumpan el flujo de trabajo sin necesidad.
 - `2026-08-04T08:26:26` **safety.py** (seguridad defensiva): Se reforzó `ensure_safe_to_modify` para detectar y bloquear enlaces simbólicos arbitrarios ("symlink traversal") mediante la validación estricta de la ruta resuelta contra su ruta base, mitigando el riesgo de que una operación de limpieza escape del directorio de trabajo original.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-04T08:05:35` **browser.py** (seguridad defensiva): Se ha mejorado `_is_valid_cache_path` para incluir un chequeo preventivo contra rutas UNC mediante `path.drive` en Windows, previniendo el acceso accidental a recursos de red lentos o inseguros, y se ha fortalecido la integridad del proceso de resolución de rutas.
 - `2026-08-04T07:56:30` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva de `assistant.py` reforzando la validación de los datos que se envían al motor Gemini, asegurando que `_ensure_safe_text` se aplique estrictamente antes de construir el JSON, evitando así cualquier posibilidad de inyección a través de metadatos o entradas inesperadas.
 - `2026-08-04T07:55:57` **startup.py** (robustez ante casos límite): Se mejora la robustez de `StartupEntry._resolve_and_cache_path` al gestionar explícitamente `OSError` (como `PermissionError` o `FileNotFoundError`) durante `resolve()` y `is_file()` para evitar que la app se cuelgue al intentar inspeccionar rutas inexistentes, rotas o de acceso restringido en el sistema.
-- `2026-08-04T07:46:07` **scanner.py** (robustez ante casos límite): Se ha añadido un chequeo de existencia física al realizar el `lstat` dentro de `check_recent_executable_in_downloads` y `scan_file`, garantizando que el escáner no aborte ante condiciones de carrera (archivos que desaparecen entre el listado y el acceso) y sea robusto frente a rutas rotas o bloqueadas.
-- `2026-08-04T07:46:00` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez de `ensure_safe_to_modify` ante condiciones de carrera y sistemas de archivos con enlaces simbólicos circulares, delegando la validación inicial de existencia a una verificación de `lstat` que evita errores `OSError` al intentar acceder a rutas inaccesibles o bloqueadas durante el escaneo.
-- `2026-08-04T07:45:16` **quarantine.py** (robustez ante casos límite): Se añadió una validación de "tiempo de escritura" en la carga del manifiesto y se reforzó el manejo de excepciones durante el cálculo de hashes en `_get_sha256`, evitando que la app colapse ante archivos inaccesibles o bloqueados durante un escaneo.

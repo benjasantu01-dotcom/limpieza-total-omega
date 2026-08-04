@@ -195,6 +195,8 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     visited_directories = {base_path}
 
     def scan_level(current_path: Path) -> Generator[Tuple[Path, int], None, None]:
+        if not current_path or not current_path.is_dir():
+            return
         try:
             with os.scandir(current_path) as iterator:
                 for entry in iterator:
@@ -270,6 +272,8 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
         for path, size in walk_files(base, skip_protected):
             try:
                 rel = path.relative_to(base)
+                if not rel.parts:
+                    continue
                 top_level = base / rel.parts[0]
                 
                 if top_level not in folder_map:

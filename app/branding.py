@@ -319,7 +319,6 @@ def draw_logo(canvas: Any, size: int = 56, canvas_x: int = 0, canvas_y: int = 0)
         x, y = float(canvas_x), float(canvas_y)
         contorno = _get_shield_coords(x, y, s)
         
-        # Efecto de halo radial mediante capas de óvalos
         for paso in range(4, 0, -1):
             r = 56 * s * (0.6 + paso * 0.12)
             canvas.create_oval(x + 64*s - r, y + 58*s - r, x + 64*s + r, y + 58*s + r, 
@@ -372,7 +371,6 @@ def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
     
     color_fondo, color_avance = track or PALETTE["surface_alt"], fill or score_color(valor)
     borde = grosor / 2
-    # Bounding box para el arco, centrada en el origen especificado
     caja = (canvas_x + borde, canvas_y + borde, canvas_x + diametro - borde, canvas_y + diametro - borde)
     
     canvas.create_arc(*caja, start=0, extent=359.9, style="arc", outline=color_fondo, width=grosor)

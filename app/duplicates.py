@@ -79,7 +79,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
     Calcula el hash SHA256 completo del archivo mediante bloques de datos.
     Retorna None si el archivo es inaccesible, protegido o inválido.
     """
-    if not path: return None
+    if not path or chunk_size <= 0: return None
     try:
         p = Path(path).resolve(strict=True)
         if is_protected_path(p) or not p.is_file() or p.is_symlink():
@@ -89,7 +89,9 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
             
         digest = hashlib.sha256()
         with open(p, "rb", buffering=chunk_size) as f:
-            while chunk := f.read(chunk_size):
+            while True:
+                chunk = f.read(chunk_size)
+                if not chunk: break
                 digest.update(chunk)
         return digest.hexdigest()
     except (OSError, PermissionError, ValueError, TypeError, FileNotFoundError, IsADirectoryError, RuntimeError):
@@ -100,7 +102,7 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
     """
     Calcula un hash SHA256 sobre los primeros N bytes de un archivo para comparación rápida.
     """
-    if not path: return None
+    if not path or read_bytes <= 0: return None
     try:
         p = Path(path).resolve(strict=True)
         if is_protected_path(p) or not p.is_file() or p.is_symlink():
