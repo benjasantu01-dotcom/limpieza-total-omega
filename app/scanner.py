@@ -27,10 +27,17 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class Suspicion:
-    """Representa un hallazgo sospechoso detectado durante el escaneo."""
+    """
+    Representa un hallazgo sospechoso detectado durante el escaneo.
+    
+    Attributes:
+        path: Ruta absoluta del archivo analizado.
+        reason: Descripción legible de por qué se considera sospechoso.
+        severity: Nivel de criticidad ("info" para métricas, "warning" para alertas).
+    """
     path: Path
     reason: str
-    severity: str  # "info" | "warning"
+    severity: str
 
 # Alias de tipos para mejorar la legibilidad y mantenibilidad de la lógica de escaneo
 # Cada función debe retornar un objeto Suspicion si hay hallazgo, o None si el archivo es seguro.
@@ -67,14 +74,10 @@ class Scanner:
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         """
-        Verifica si el sistema de archivos marca esta entrada como reparse point.
-        No sigue enlaces para evitar escapes fuera del árbol de directorios permitido.
+        Determina si la entrada es un punto de reparseo (ej. Junctions o symlinks).
         
-        Args:
-            entry: La entrada de directorio (`os.DirEntry`) a inspeccionar.
-            
-        Returns:
-            bool: True si la entrada es un punto de reparseo, False en caso contrario.
+        No sigue enlaces para prevenir escapes de directorio y evitar el procesamiento 
+        redundante de rutas recursivas.
         """
         try:
             return bool(entry.stat(follow_symlinks=False).st_file_attributes & 0x400)
@@ -83,9 +86,10 @@ class Scanner:
 
     def process_entry(self, entry: os.DirEntry, stack: List[str]) -> None:
         """
-        Clasifica una entrada de directorio o archivo. 
-        Si es directorio: valida seguridad y añade a la pila si no es un punto de reparseo.
-        Si es archivo: aplica las heurísticas registradas.
+        Clasifica una entrada de sistema de archivos.
+        
+        Si es directorio, valida su seguridad y lo añade a la pila de exploración.
+        Si es archivo, lo deriva al motor de escaneo heurístico `scan_file`.
         """
         try:
             path_obj = Path(entry.path)
@@ -100,36 +104,21 @@ class Scanner:
                         self.seen.add(path_key)
                         stack.append(path_key)
             elif entry.is_file(follow_symlinks=False):
-                # Pasamos el objeto Path ya validado
+                # Pasamos el objeto Path ya validado como prevalidated=True
                 self.results.extend(scan_file(path_obj, prevalidated=True))
         except (PermissionError, OSError):
             pass
 
 
 def check_double_extension(path: Path) -> Optional[Suspicion]:
-    """
-    Detecta nombres de archivos con doble extensión que ocultan ejecutables.
-
-    Args:
-        path: Ruta del archivo a analizar.
-    Returns:
-        Un objeto Suspicion si se detecta doble extensión, None en caso contrario.
-    """
+    """Analiza si el nombre del archivo contiene una extensión engañosa seguida de un ejecutable."""
     if path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
     return None
 
 
 def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_THRESHOLD_HOURS) -> Optional[Suspicion]:
-    """
-    Analiza la fecha de modificación de ejecutables para identificar descargas recientes.
-
-    Args:
-        path: Ruta del ejecutable a inspeccionar.
-        hours: Margen de tiempo en horas para considerar un archivo como "reciente".
-    Returns:
-        Objeto Suspicion con aviso si es reciente, None si es antiguo o no es ejecutable.
-    """
+    """Identifica ejecutables modificados recientemente dentro del umbral configurado."""
     if not path.suffix or path.suffix.lower() not in SUSPICIOUS_EXECUTABLE_EXT:
         return None
         
@@ -143,14 +132,7 @@ def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_TH
 
 
 def check_system_lookalike(path: Path) -> Optional[Suspicion]:
-    """
-    Identifica ejecutables con nombres de procesos críticos fuera de System32.
-
-    Args:
-        path: Ruta del archivo a analizar.
-    Returns:
-        Objeto Suspicion si el nombre imita uno crítico en carpeta no autorizada.
-    """
+    """Verifica si un ejecutable intenta suplantar procesos críticos mediante nombres de sistema."""
     if not path.name or path.name.lower() not in SYSTEM_LOOKALIKES:
         return None
         
@@ -162,7 +144,7 @@ def check_system_lookalike(path: Path) -> Optional[Suspicion]:
         pass
     return None
 
-# Lista inmutable de funciones de análisis heurístico
+# Lista inmutable de funciones de análisis heurístico registradas para el escáner
 CHECK_FUNCS: Final[List[SuspicionCheck]] = [
     check_double_extension, 
     check_recent_executable_in_downloads, 
@@ -170,7 +152,13 @@ CHECK_FUNCS: Final[List[SuspicionCheck]] = [
 ]
 
 def scan_file(path: Path, prevalidated: bool = False) -> ScanResult:
-    """Ejecuta el conjunto de heurísticas sobre un archivo específico previa validación."""
+    """
+    Aplica el conjunto de heurísticas registradas sobre un archivo.
+    
+    Args:
+        path: Objeto Path del archivo a analizar.
+        prevalidated: Si es True, omite los chequeos de `safety.py` (optimización interna).
+    """
     if not prevalidated:
         if not path or not path.exists() or not is_safe_to_modify(path) or is_protected_path(path):
             return []
@@ -191,7 +179,11 @@ def scan_file(path: Path, prevalidated: bool = False) -> ScanResult:
 
 
 def scan_directory(directory: Union[str, Path]) -> ScanResult:
-    """Inicia un escaneo recursivo desde un punto de entrada dado."""
+    """
+    Inicia un escaneo recursivo desde la ruta indicada.
+    
+    Realiza validaciones previas de seguridad antes de inicializar la pila de trabajo.
+    """
     if not directory:
         return []
         
@@ -221,7 +213,7 @@ def scan_directory(directory: Union[str, Path]) -> ScanResult:
 
 
 def run_windows_defender_quick_scan() -> str:
-    """Invoca `Start-MpScan` mediante PowerShell para disparar un escaneo de Defender."""
+    """Invoca la API de Windows Defender para ejecutar un examen rápido."""
     try:
         result = subprocess.run(
             ["powershell", "-Command", "Start-MpScan -ScanType QuickScan"],

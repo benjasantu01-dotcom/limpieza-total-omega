@@ -96,11 +96,13 @@ _NUMERIC_LIMITS: Final[dict[str, tuple[int, int]]] = {
 }
 
 def _validate_bool(key: str, val: Any) -> bool | None:
+    """Normaliza valores booleanos aceptando representaciones textuales comunes."""
     if isinstance(val, bool): return val
     if isinstance(val, str) and val.strip().lower() in ("1", "true", "si", "sí", "yes"): return True
     return None
 
 def _validate_int(key: str, val: Any) -> int | None:
+    """Valida y recorta enteros según los límites definidos en _NUMERIC_LIMITS."""
     if val is None or isinstance(val, bool): return None
     try:
         parsed = int(val)
@@ -109,6 +111,7 @@ def _validate_int(key: str, val: Any) -> int | None:
     except (TypeError, ValueError): return None
 
 def _validate_str(key: str, val: Any) -> str | None:
+    """Valida cadenas, aplicando sanitización de seguridad para rutas y listas blancas para enum."""
     if not isinstance(val, str): return None
     text = val.strip()
     if not text: return "" if key in ("ultima_carpeta", "asistente_clave_api") else None
@@ -154,7 +157,6 @@ def validate(values: Any) -> dict[str, Any]:
     for clave, valor_defecto in DEFAULTS.items():
         valor_usuario = values.get(clave)
         validador = _VALIDATOR_MAP.get(clave)
-        # Si el valor existe, validamos; si el validador falla o devuelve None, usamos el defecto.
         resultado = validador(clave, valor_usuario) if (validador and valor_usuario is not None) else None
         configuracion_final[clave] = resultado if resultado is not None else valor_defecto
         

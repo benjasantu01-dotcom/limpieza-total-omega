@@ -1129,3 +1129,43 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-04T01:58:10` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se introdujo documentación técnica detallada mediante docstrings estructurados y type hints aclaratorios, además de extraer la lógica de validación de nombres de dispositivo reservado y caracteres inválidos a funciones privadas con nombre semántico, facilitando su auditabilidad sin alterar el flujo de ejecución.
 - `2026-08-04T01:58:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-04T01:58:10` Corrida terminada. Total usado hoy: 48.
+- `2026-08-04T02:06:44` Arrancando corrida. Quedan hoy ~252 peticiones objetivo.
+- `2026-08-04T02:07:09` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica mediante la adición de docstrings estructurados y type hints precisos, clarificando el propósito y las precondiciones de las funciones clave en `scanner.py` para cumplir con el estándar de calidad exigido.
+- `2026-08-04T02:07:34` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y la claridad del código mediante la adición de docstrings técnicos detallados en los validadores y la normalización de la estructura de las funciones, facilitando el mantenimiento y la comprensión de las reglas de seguridad sin alterar el comportamiento.
+- `2026-08-04T02:07:57` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: legibilidad y documentación).
+- `2026-08-04T02:08:12` Tests FALLARON:
+```
+t.py:255: AttributeError
+_______________ test_metrics_are_withheld_when_the_user_says_no ________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-3/test_metrics_are_withheld_when0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fdbeb04e120>
+
+    def test_metrics_are_withheld_when_the_user_says_no(tmp_path, monkeypatch):
+        """Se puede usar el asistente sin mandar ni una métrica."""
+        monkeypatch.setenv(settings.API_KEY_ENV_VAR, "clave")
+        settings.save({**settings.DEFAULTS, "asistente_activado": True,
+                       "asistente_enviar_metricas": False}, tmp_path)
+    
+        enviado = {}
+    
+        def espia(question, context_text, api_key, model):
+            enviado["texto"] = context_text
+            return "ok"
+    
+        monkeypatch.setattr(assistant, "_call_gemini", espia)
+        assistant.ask("¿qué hago?", _contexto_lleno(), tmp_path)
+        assert "2400" not in enviado["texto"]
+>       assert "no autorizó" in enviado["texto"]
+E       AssertionError: assert 'no autorizó' in 'Privado'
+
+evolve/tests/test_assistant.py:419: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_explain_area_on_unknown_input - AttributeError: 'NoneType' object has no attribute 'strip'
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - AssertionError: assert 'no autorizó' in 'Privado'
+2 failed, 297 passed in 1.08s
+
+```
+- `2026-08-04T02:08:12` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `_rank_problems` evitando la regeneración constante de cadenas de texto y simplificando la lógica de comparación, además de consolidar la validación de `SystemContext` en una sola instancia.
+- `2026-08-04T02:08:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-04T02:08:12` Corrida terminada. Total usado hoy: 52.
