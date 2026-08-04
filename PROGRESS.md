@@ -6,47 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **244** (48.4% de aceptación)
+- Mejoras aceptadas: **242** (48.0% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 28
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 205
+- Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-02 | 22 | 2 | 4 | 0 | 2 |
+| 2026-08-02 | 18 | 2 | 4 | 0 | 2 |
 | 2026-08-03 | 173 | 6 | 17 | 12 | 142 |
-| 2026-08-04 | 49 | 5 | 7 | 2 | 61 |
+| 2026-08-04 | 51 | 5 | 7 | 2 | 63 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **59**
+- legibilidad y documentación: **55**
 - robustez ante casos límite: **51**
 - seguridad defensiva: **51**
 - rendimiento: **44**
-- manejo de errores y validación de entradas: **39**
+- manejo de errores y validación de entradas: **41**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **24**
 - `quarantine.py`: **21**
 - `scanner.py`: **20**
-- `main.py`: **18**
+- `assistant.py`: **19**
 - `organizer.py`: **18**
 - `browser.py`: **18**
-- `assistant.py`: **18**
-- `duplicates.py`: **17**
-- `healthscore.py`: **17**
-- `memory.py`: **17**
+- `main.py`: **17**
 - `safety.py`: **16**
+- `healthscore.py`: **16**
+- `duplicates.py`: **16**
+- `memory.py`: **16**
 - `diskreport.py`: **15**
 - `startup.py`: **13**
-- `branding.py`: **12**
+- `branding.py`: **13**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-04T05:24:07` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones gráficas `draw_logo` y `draw_ring` mediante la validación proactiva de argumentos numéricos para prevenir `ZeroDivisionError` y `ValueError` antes de entrar en los bloques de renderizado.
+- `2026-08-04T05:23:54` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `explain_area` agregando validación de tipo y manejo de casos donde el argumento pueda ser `None` o un objeto inesperado, asegurando que el sistema siempre devuelva una respuesta válida y segura ante entradas malformadas.
 - `2026-08-04T04:00:26` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `settings.py` implementando una validación estricta al persistir la configuración, asegurando que la ruta del archivo de configuración esté protegida mediante `ensure_safe_to_modify` antes de cualquier operación de escritura, y reforzando la integridad del sistema al verificar que el directorio padre no solo sea seguro, sino que exista como directorio antes de intentar la operación atómica de `os.replace`.
 - `2026-08-04T03:59:40` **safety.py** (seguridad defensiva): Se ha añadido una verificación de "reparse points" (junctions y symlinks) en `ensure_safe_to_modify` utilizando `path.resolve()` y comparando la ruta original con la resuelta, previniendo así el seguimiento accidental fuera del directorio de trabajo esperado ("directory traversal" defensivo).
 - `2026-08-04T03:50:20` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva al añadir una validación crítica en `purge_all` para evitar la eliminación accidental de archivos fuera de la carpeta de cuarentena, usando `is_within_directory` antes de realizar `_safe_unlink`.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-04T03:29:33` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva al limitar estrictamente el tamaño de la entrada del usuario en `_sanitize_query` y validar que el resultado del modelo (`remoto`) no contenga caracteres que podrían indicar una inyección de contenido, asegurando que la respuesta del asistente no pueda ser utilizada como vector de ataque.
 - `2026-08-04T03:29:01` **startup.py** (robustez ante casos límite): Mejoré la robustez de `StartupEntry._resolve_and_cache_path` añadiendo un manejo explícito para `OSError` (típico de permisos denegados al intentar expandir o resolver rutas en sistemas Windows) y asegurando que las rutas malformadas no interrumpan el flujo de escaneo.
 - `2026-08-04T03:19:37` **settings.py** (robustez ante casos límite): Se ha robustecido el manejo de errores en `settings.path` para evitar que una resolución de ruta falle silenciosamente ante caracteres inválidos o permisos denegados en el sistema de archivos, asegurando que siempre se devuelva una ruta válida basada en el directorio de usuario (fallback de seguridad).
-- `2026-08-04T03:19:28` **scanner.py** (robustez ante casos límite): Se ha añadido un chequeo de `is_file()` antes de realizar `lstat()` en `check_recent_executable_in_downloads` para prevenir excepciones ante enlaces simbólicos rotos o archivos que desaparecieron durante la ejecución (condiciones de carrera), mejorando la robustez ante entornos volátiles.
-- `2026-08-04T03:19:03` **safety.py** (robustez ante casos límite): Se reforzó la robustez frente a casos límite en `safety.py` mediante la validación estricta de rutas con enlaces físicos (hard links) y se corrigió una posible vulnerabilidad de desbordamiento en la validación de estados de archivo al centralizar el manejo de excepciones, asegurando que `ensure_safe_to_modify` siempre valide la existencia antes de consultar atributos de sistema.

@@ -242,7 +242,7 @@ def context_as_text(context: SystemContext) -> str:
     return _CONTROL_CHARS_REGEX.sub(" ", _PATH_REGEX.sub(" ", "\n".join(lineas)))
 
 
-def explain_area(area: str) -> str:
+def explain_area(area: Any) -> str:
     """Proporciona una breve explicación pedagógica de un área específica del sistema."""
     explicaciones: Final[dict[str, str]] = {
         "basura": "Archivos temporales y restos de instaladores. Ocupan espacio "
