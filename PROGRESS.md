@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **245** (48.6% de aceptación)
-- Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 27
-- Sin cambios (nada sustancial que mejorar): 13
+- Mejoras aceptadas: **246** (48.8% de aceptación)
+- Rechazadas por tests: 11
+- Rechazadas por guardia de seguridad: 28
+- Sin cambios (nada sustancial que mejorar): 12
 - Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-03 | 134 | 4 | 13 | 9 | 104 |
-| 2026-08-04 | 111 | 8 | 14 | 4 | 103 |
+| 2026-08-03 | 132 | 3 | 13 | 8 | 104 |
+| 2026-08-04 | 114 | 8 | 15 | 4 | 103 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **52**
 - seguridad defensiva: **50**
 - legibilidad y documentación: **50**
-- rendimiento: **47**
-- manejo de errores y validación de entradas: **46**
+- manejo de errores y validación de entradas: **49**
+- rendimiento: **45**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **22**
+- `quarantine.py`: **21**
 - `memory.py`: **20**
 - `assistant.py`: **20**
-- `quarantine.py`: **20**
 - `organizer.py`: **20**
 - `duplicates.py`: **19**
-- `browser.py`: **18**
-- `scanner.py`: **18**
-- `diskreport.py`: **17**
+- `scanner.py`: **19**
+- `browser.py`: **17**
 - `healthscore.py`: **17**
 - `main.py`: **16**
-- `safety.py`: **13**
+- `diskreport.py`: **16**
+- `safety.py`: **14**
 - `branding.py`: **13**
 - `startup.py`: **12**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-04T10:19:38` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `scan_file` validando explícitamente la integridad de los objetos `Path` y capturando posibles excepciones de acceso (`OSError`) al consultar metadatos, evitando que el escaneo colapse ante archivos con bloqueos o permisos restrictivos.
+- `2026-08-04T10:19:31` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `ensure_safe_to_modify` implementando validaciones de tipo explícitas y manejo de errores proactivo ante entradas nulas o malformadas, evitando que excepciones inesperadas rompan el flujo de control del bucle principal.
+- `2026-08-04T10:18:48` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de las operaciones de archivo añadiendo validaciones de estado previas y capturando excepciones de sistema de archivos específicas para evitar cierres inesperados de la aplicación.
 - `2026-08-04T10:10:01` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` validando que los elementos en la lista de entrada sean instancias válidas de `JunkFile` con rutas accesibles antes de intentar cualquier operación de disco, protegiendo al bucle de fallos ante entradas mal formadas.
 - `2026-08-04T10:09:29` **main.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_collect_settings` y `_validate_numeric_setting` para manejar entradas de usuario nulas o malformadas sin interrumpir el flujo de la aplicación, aplicando validaciones preventivas antes de procesar los datos de configuración.
 - `2026-08-04T10:08:28` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `summarize` y `_generate_recommendations` añadiendo validaciones de tipo explícitas para prevenir fallos en tiempo de ejecución ante estructuras de datos malformadas o inesperadas, alineándome con el enfoque de manejo de errores y validación de entradas.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-04T08:17:27` **quarantine.py** (seguridad defensiva): Se reforzó `quarantine_file` para prevenir una condición de carrera (Time-of-check to time-of-use) mediante el uso de `os.replace` (atómico en sistemas POSIX y Windows si el destino no existe) y se añadió una validación estricta de que el archivo origen no sea un punto de reparse antes de cualquier operación, mitigando riesgos de seguridad adicionales.
 - `2026-08-04T08:17:14` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de `stage_for_review` implementando una validación explícita para evitar que `shutil.move` intente mover un archivo sobre sí mismo o entre ubicaciones físicamente idénticas (caso de alias o links), reforzando la integridad de los datos antes de la operación de escritura.
 - `2026-08-04T08:16:52` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `trim_working_set` al centralizar y robustecer la validación del PID, asegurando que no se intente manipular procesos del sistema o de la propia aplicación antes de realizar cualquier llamada a la API de Windows, evitando así la exposición a privilegios innecesarios.
-- `2026-08-04T08:16:27` **main.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `on_restore_quarantine` eliminando el uso de `isalnum()` (que fallaba ante IDs válidos con guiones u otros caracteres) y reemplazándolo por una validación estricta contra el manifiesto de cuarentena, asegurando además que el archivo resultante de la restauración sea validado contra `is_safe_path` antes de cualquier operación física.
-- `2026-08-04T08:07:03` **duplicates.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_collect_candidates` y las funciones de hash al asegurar que cualquier resolución de ruta (`resolve(strict=True)`) sea estrictamente validada con `is_protected_path` inmediatamente después de obtener la ruta absoluta y antes de acceder a cualquier atributo del archivo, evitando la manipulación de accesos fuera del alcance permitido.
-- `2026-08-04T08:06:36` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `walk_files` implementando una validación estricta de rutas mediante `is_protected_path` antes de procesar el contenido de directorios, asegurando que no se pueda escapar del ámbito de escaneo permitido incluso si el sistema operativo reporta rutas que parezcan fuera de la jerarquía esperada.

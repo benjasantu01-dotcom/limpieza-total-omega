@@ -122,14 +122,18 @@ def check_system_lookalike(path: Path) -> Optional[Suspicion]:
 
 def scan_file(path: Path, prevalidated: bool = False) -> ScanResult:
     """Ejecuta todos los chequeos heurísticos registrados contra un archivo específico."""
+    if not isinstance(path, Path):
+        return []
+        
     if not prevalidated:
-        if not path or not is_safe_to_modify(path) or is_protected_path(path):
+        if not is_safe_to_modify(path) or is_protected_path(path):
             return []
     
     try:
-        if not path.exists() or not path.is_file():
+        # Validación de estado previo a cualquier operación de lectura
+        if not path.is_file():
             return []
-    except OSError:
+    except (OSError, PermissionError):
         return []
         
     findings: ScanResult = []

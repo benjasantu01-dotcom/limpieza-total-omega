@@ -101,7 +101,7 @@ class QuarantineItem:
             if self.sha256 and _get_sha256(stored_path) != self.sha256:
                 return False
             return True
-        except OSError:
+        except (OSError, PermissionError):
             return False
 
 
@@ -110,10 +110,12 @@ def _get_sha256(path: Path) -> str:
     sha256_hash = hashlib.sha256()
     try:
         with open(path, "rb") as f:
-            for byte_block in iter(lambda: f.read(4096), b""):
-                sha256_hash.update(byte_block)
+            while True:
+                data = f.read(4096)
+                if not data:
+                    break
+                sha256_hash.update(data)
     except (OSError, PermissionError):
-        # Ante fallo de lectura, devolvemos un hash vacío que fallará la validación
         return ""
     return sha256_hash.hexdigest()
 
@@ -121,7 +123,8 @@ def _get_sha256(path: Path) -> str:
 def _is_file_locked(path: Path) -> bool:
     """Verifica si un archivo está bloqueado intentando abrirlo en modo append (escritura exclusiva)."""
     try:
-        with open(path, "a+b") as f:
+        # Intentar abrir en modo lectura exclusiva bloquea el acceso si otro proceso lo tiene abierto
+        with open(path, "rb") as f:
             return False
     except (OSError, PermissionError):
         return True
@@ -140,9 +143,12 @@ def quarantine_dir(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
     """Normaliza y asegura la existencia del directorio de cuarentena expandiendo el '~'."""
     if not base:
         raise ValueError("El directorio base no puede estar vacío.")
-    path = Path(base).expanduser()
-    path.mkdir(parents=True, exist_ok=True)
-    return path
+    try:
+        path = Path(base).expanduser()
+        path.mkdir(parents=True, exist_ok=True)
+        return path
+    except (OSError, RuntimeError) as e:
+        raise OSError(f"No se pudo preparar el directorio de cuarentena: {e}")
 
 
 def _manifest_path(base_dir: Path) -> Path:
@@ -182,7 +188,6 @@ def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload:
     base_str = str(base_path)
     
     try:
-        # Verificamos si el archivo existe para obtener su mtime
         current_mtime = path.stat().st_mtime if path.exists() else 0.0
     except OSError:
         current_mtime = 0.0
@@ -226,7 +231,7 @@ def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_
             json.dump([item.to_dict() for item in items], f, indent=2, ensure_ascii=False)
         os.replace(temp_path, target_path)
         _manifest_cache[str(base_path)] = (target_path.stat().st_mtime, items)
-    except Exception as e:
+    except (OSError, PermissionError) as e:
         if os.path.exists(temp_path):
             try: os.remove(temp_path)
             except OSError: pass
@@ -287,14 +292,12 @@ def quarantine_file(
         raise FileExistsError(f"Colisión de nombre en destino: {destination}")
 
     try:
-        # Usamos shutil.move pero encapsulado; os.replace es más atómico si es posible
         shutil.move(str(source_path), str(destination))
-    except (OSError, PermissionError, FileNotFoundError) as e:
+    except (OSError, PermissionError) as e:
         if destination.exists():
             _safe_unlink(destination)
         raise RuntimeError(f"Falla crítica al mover archivo: {e}")
 
-    # Verificación post-movimiento
     if not destination.exists() or destination.stat().st_size != file_size:
         if destination.exists(): _safe_unlink(destination)
         raise RuntimeError("Integridad comprometida: el archivo no se movió correctamente.")
@@ -318,7 +321,7 @@ def quarantine_file(
         if destination.exists():
             try:
                 shutil.move(str(destination), str(source_path))
-            except OSError:
+            except (OSError, PermissionError):
                 pass
         raise RuntimeError(f"Error irrecuperable procesando metadatos: {e}")
 
@@ -422,18 +425,19 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     stored_names_set = set(item_map.keys())
     count = 0
     
-    for entry in quarantine_root.iterdir():
-        if entry.name == MANIFEST_NAME:
-            continue
-        if not is_within_directory(entry, quarantine_root):
-            continue
+    try:
+        for entry in quarantine_root.iterdir():
+            if entry.name == MANIFEST_NAME or not is_within_directory(entry, quarantine_root):
+                continue
 
-        if entry.name in stored_names_set:
-            if item_map[entry.name].verify_integrity(entry):
-                if _safe_unlink(entry):
-                    count += 1
-        else:
-            _safe_unlink(entry)
+            if entry.name in stored_names_set:
+                if item_map[entry.name].verify_integrity(entry):
+                    if _safe_unlink(entry):
+                        count += 1
+            else:
+                _safe_unlink(entry)
+    except OSError:
+        pass
             
     if count > 0:
         new_items = [i for i in items if (quarantine_root / i.stored_name).is_file()]

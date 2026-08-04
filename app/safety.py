@@ -190,29 +190,33 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
     Realiza una validación exhaustiva de seguridad antes de permitir cualquier modificación física.
     Lanza UnsafePathError ante cualquier irregularidad o riesgo de seguridad.
     """
+    if path is None:
+        raise UnsafePathError("La ruta proporcionada es None.")
+        
     if not isinstance(path, (str, os.PathLike)):
         raise UnsafePathError(f"Ruta de tipo inválido recibida: {type(path)}")
         
-    str_val = str(path)
+    str_val = str(path).strip()
+    if not str_val:
+        raise UnsafePathError("La ruta proporcionada está vacía.")
+
     if _has_invalid_chars(str_val):
         raise UnsafePathError("Ruta contiene caracteres de control o formato potencialmente maliciosos.")
     
     if len(str_val) > 260:
         raise UnsafePathError("Operación bloqueada: ruta demasiado larga.")
     
-    raw_path = Path(path).expanduser()
+    raw_path = Path(str_val).expanduser()
     try:
         if raw_path.exists():
             resolved = raw_path.resolve()
-            # Si la ruta resuelta difiere de la absoluta, es un symlink/junction.
-            # Verificamos que no intente salir de su propia estructura (symlink traversal).
             if resolved.absolute() != raw_path.absolute() and _is_reparse_point(raw_path):
                 raise UnsafePathError("Operación bloqueada: punto de reanálisis potencialmente inseguro.")
     except (OSError, PermissionError):
         pass
     
     try:
-        p = normalize(path)
+        p = normalize(str_val)
     except (TypeError, ValueError, OSError) as e:
         raise UnsafePathError(f"Error al normalizar: {e}")
 
