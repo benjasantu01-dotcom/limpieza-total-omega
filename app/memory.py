@@ -115,8 +115,9 @@ class ProcessMemory:
 
 def format_bytes(num: Optional[_T]) -> str:
     """
-    Convierte un valor numérico en bytes a una cadena legible.
-    Utiliza logaritmo para determinar la unidad directamente.
+    Convierte bytes a una cadena legible (ej: 10.5 MB).
+    Utiliza escala logarítmica base 1024 para seleccionar la unidad adecuada.
+    Si el valor es inválido o <= 0, retorna '0 B'.
     """
     if not isinstance(num, (int, float)) or num <= 0:
         return "0 B"
@@ -129,8 +130,9 @@ def format_bytes(num: Optional[_T]) -> str:
 @lru_cache(maxsize=4)
 def parse_linux_meminfo(text: str) -> MemorySnapshot:
     """
-    Interpreta el contenido de /proc/meminfo (texto crudo). 
-    Convierte valores expresados originalmente en kB a bytes para consistencia.
+    Parsea la salida de /proc/meminfo. 
+    Convierte valores expresados en kB (de archivos del kernel) a bytes.
+    Retorna un snapshot con 0s si el formato no es reconocible.
     """
     if not text:
         return MemorySnapshot(0, 0)
@@ -147,7 +149,7 @@ def parse_linux_meminfo(text: str) -> MemorySnapshot:
 
 
 def _is_valid_process_row(parts: List[str]) -> bool:
-    """Valida que una lista de campos extraídos de un CSV sea un proceso procesable."""
+    """Verifica si una fila CSV de procesos contiene datos numéricos válidos."""
     return (len(parts) >= 3 and 
             parts[1].isdigit() and 
             parts[2].isdigit() and 
@@ -156,8 +158,8 @@ def _is_valid_process_row(parts: List[str]) -> bool:
 
 def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]:
     """
-    Transforma la salida CSV de PowerShell en una lista de objetos ProcessMemory.
-    Filtra entradas corruptas y ordena los resultados por uso de memoria descendente.
+    Convierte texto CSV de PowerShell (Get-Process) a objetos ProcessMemory.
+    Filtra filas mal formadas y ordena por WorkingSet de forma descendente.
     """
     if not isinstance(text, str) or not text.strip():
         return []
@@ -185,7 +187,10 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
 
 
 def _read_windows_snapshot() -> MemorySnapshot:
-    """Implementa la consulta a la API de Windows GlobalMemoryStatusEx mediante ctypes."""
+    """
+    Consulta la API GlobalMemoryStatusEx de Windows mediante ctypes.
+    Requiere estructura MEMORYSTATUSEX inicializada con su tamaño.
+    """
     import ctypes
 
     class MEMORYSTATUSEX(ctypes.Structure):
@@ -213,8 +218,8 @@ def _read_windows_snapshot() -> MemorySnapshot:
 
 def read_snapshot() -> MemorySnapshot:
     """
-    Detecta el sistema operativo y delega la captura de métricas de RAM al 
-    método correspondiente según la plataforma.
+    Detecta plataforma (NT o Linux) y obtiene el uso de memoria.
+    En caso de error de lectura, retorna un snapshot vacío como fallback.
     """
     if os.name == "nt":
         try:
@@ -236,7 +241,8 @@ def read_snapshot() -> MemorySnapshot:
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     """
-    Consulta procesos de alto consumo en Windows. Implementa caché TTL de 5 segundos.
+    Obtiene procesos que más consumen en Windows vía PowerShell.
+    Implementa caché para evitar saturar el subproceso (TTL: 5 seg).
     """
     if os.name != "nt":
         return []
@@ -266,7 +272,8 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
 
 def pressure_level(snapshot: MemorySnapshot) -> str:
     """
-    Evalúa el estado de salud de la RAM basado en el porcentaje disponible.
+    Clasifica el nivel de salud según el porcentaje de RAM disponible.
+    Precondición: snapshot debe tener un valor 'total' positivo.
     """
     if not isinstance(snapshot, MemorySnapshot) or snapshot.total <= 0:
         return "info"
@@ -279,7 +286,8 @@ def pressure_level(snapshot: MemorySnapshot) -> str:
 
 def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] = None) -> List[str]:
     """
-    Genera un informe unificado sobre el estado de la RAM.
+    Genera un informe descriptivo sobre el estado de la RAM para la UI.
+    Incluye un resumen técnico y, opcionalmente, top procesos.
     """
     if not isinstance(snapshot, MemorySnapshot) or snapshot.total <= 0:
         return ["No se pudo leer el estado de la memoria en este sistema."]
@@ -308,13 +316,15 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
 
 
 def _is_system_process(pid: int) -> bool:
-    """Verifica si un proceso es de sistema (PID < 100)."""
+    """Determina si un PID corresponde a un proceso de sistema crítico (pid <= 100)."""
     return pid <= 100
 
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
-    Solicita al SO (Windows) liberar el espacio de trabajo de un proceso específico.
+    Llama a PSAPI EmptyWorkingSet para liberar memoria de un proceso.
+    Incluye validaciones de seguridad: PID de sistema, proceso actual, rutas protegidas.
+    Requiere privilegios administrativos en Windows.
     """
     if os.name != "nt":
         return False, "Solo disponible en Windows."
