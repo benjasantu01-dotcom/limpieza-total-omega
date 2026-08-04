@@ -115,15 +115,17 @@ def _validate_str(key: str, val: Any) -> str | None:
     if not isinstance(val, str): return None
     text = val.strip()
     if not text: return "" if key in ("ultima_carpeta", "asistente_clave_api") else None
-    if key == "tema" and text.lower() not in VALID_THEMES: return None
-    if key == "acento" and text.lower() not in VALID_ACCENTS: return None
+    
+    if key == "tema": return text.lower() if text.lower() in VALID_THEMES else None
+    if key == "acento": return text.lower() if text.lower() in VALID_ACCENTS else None
+    
     if key == "ultima_carpeta":
         try:
             path = Path(text).expanduser().resolve()
             return str(path) if is_safe_to_modify(str(path)) else None
         except (OSError, RuntimeError, ValueError, TypeError, PermissionError): return None
-    if len(text) > 256: return None
-    return text.lower() if key in ("tema", "acento") else text
+        
+    return text if len(text) <= 256 else None
 
 _VALIDATOR_MAP: Final[dict[str, Callable[[str, Any], Any]]] = {
     "tema": _validate_str, "acento": _validate_str, "ultima_carpeta": _validate_str, 
@@ -187,9 +189,11 @@ def load(path_or_base: PathLike | None = None) -> dict[str, Any]:
 def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     """Persiste las configuraciones en un archivo temporal y realiza un reemplazo atómico."""
     global _cached_settings, _last_path, _last_mtime
-    ruta = settings_path(path_or_base)
+    if not isinstance(values, dict): return None
     
+    ruta = settings_path(path_or_base)
     limpio = validate(values)
+    
     if limpio.get("asistente_activado") and not (limpio.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)):
         limpio["asistente_activado"] = False
     

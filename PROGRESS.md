@@ -16,25 +16,25 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-02 | 12 | 1 | 3 | 0 | 2 |
+| 2026-08-02 | 10 | 1 | 2 | 0 | 1 |
 | 2026-08-03 | 173 | 6 | 17 | 12 | 142 |
-| 2026-08-04 | 58 | 5 | 7 | 3 | 63 |
+| 2026-08-04 | 60 | 5 | 8 | 3 | 64 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **51**
 - seguridad defensiva: **51**
+- manejo de errores y validación de entradas: **50**
 - legibilidad y documentación: **49**
-- manejo de errores y validación de entradas: **48**
-- rendimiento: **44**
+- rendimiento: **42**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **23**
+- `settings.py`: **24**
 - `quarantine.py`: **21**
-- `browser.py`: **19**
-- `scanner.py`: **19**
+- `scanner.py`: **20**
 - `assistant.py`: **19**
+- `browser.py`: **18**
 - `organizer.py`: **18**
 - `healthscore.py`: **17**
 - `main.py`: **17**
@@ -42,11 +42,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **17**
 - `diskreport.py`: **16**
 - `safety.py`: **15**
-- `branding.py`: **13**
+- `branding.py`: **12**
 - `startup.py`: **12**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-04T05:53:10` **settings.py** (manejo de errores y validación de entradas): Reforcé la robustez del validador `_validate_str` y del método `save` mediante el chequeo explícito de tipos y estados, asegurando que configuraciones vacías o malformadas no degraden la integridad del estado persistido ni la seguridad del acceso a archivos.
+- `2026-08-04T05:52:59` **scanner.py** (manejo de errores y validación de entradas): Mejora la robustez de las heurísticas centralizando la validación de archivos en `scan_file`, garantizando que todas las funciones de `CHECK_FUNCS` reciban rutas válidas y eliminando el manejo redundante/incompleto de excepciones en cada sub-función.
 - `2026-08-04T05:43:49` **quarantine.py** (manejo de errores y validación de entradas): Se introdujo una validación explícita de `item_id` en `purge_item` y `restore_item` para prevenir errores de tipo o valores nulos antes de acceder al sistema de archivos, siguiendo el enfoque de validar parámetros antes de operar.
 - `2026-08-04T05:43:35` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones preventivas contra rutas inexistentes, tipos de datos inesperados y desbordamiento de excepciones al tratar con directorios críticos, asegurando que `ensure_safe_to_modify` se utilice correctamente sobre rutas validadas.
 - `2026-08-04T05:43:12` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_windows_process_csv` reemplazando el `next` inseguro y el manejo de excepciones vago por una validación explícita de las cabeceras CSV y un manejo de errores más preciso en los tipos de datos.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-04T03:59:40` **safety.py** (seguridad defensiva): Se ha añadido una verificación de "reparse points" (junctions y symlinks) en `ensure_safe_to_modify` utilizando `path.resolve()` y comparando la ruta original con la resuelta, previniendo así el seguimiento accidental fuera del directorio de trabajo esperado ("directory traversal" defensivo).
 - `2026-08-04T03:50:20` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva al añadir una validación crítica en `purge_all` para evitar la eliminación accidental de archivos fuera de la carpeta de cuarentena, usando `is_within_directory` antes de realizar `_safe_unlink`.
 - `2026-08-04T03:49:52` **organizer.py** (seguridad defensiva): Se reforzó `stage_for_review` para prevenir que el proceso intente mover archivos hacia sí mismos o hacia subdirectorios propios mediante una validación estricta de la jerarquía de rutas utilizando `path.resolve()` antes de realizar cualquier operación.
-- `2026-08-04T03:49:29` **memory.py** (seguridad defensiva): Se añadió una validación explícita para evitar que `trim_working_set` intente interactuar con procesos cuyo nombre sea sospechoso o crítico (mediante `is_protected_path` sobre el nombre del proceso si se obtuviera, aunque aquí se utiliza como guardia de seguridad contra la manipulación de handles de procesos), reforzando la integridad al impedir cualquier acción sobre procesos cuyo PID no pueda ser verificado o que pertenezcan a las capas de sistema detectadas por las reglas de seguridad.
-- `2026-08-04T03:40:40` **main.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_ask_folder` y `_is_safe_path` al forzar el uso de `pathlib.Path.resolve()` antes de realizar cualquier validación, evitando así que los usuarios puedan "escapar" de carpetas protegidas mediante enlaces simbólicos o rutas relativas manipuladas (`..`).

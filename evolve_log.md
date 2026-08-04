@@ -487,3 +487,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-04T05:43:49` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se introdujo una validación explícita de `item_id` en `purge_item` y `restore_item` para prevenir errores de tipo o valores nulos antes de acceder al sistema de archivos, siguiendo el enfoque de validar parámetros antes de operar.
 - `2026-08-04T05:43:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-04T05:43:49` Corrida terminada. Total usado hoy: 136.
+- `2026-08-04T05:51:52` Arrancando corrida. Quedan hoy ~164 peticiones objetivo.
+- `2026-08-04T05:52:14` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-08-04T05:52:37` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-04T05:52:59` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de las heurísticas centralizando la validación de archivos en `scan_file`, garantizando que todas las funciones de `CHECK_FUNCS` reciban rutas válidas y eliminando el manejo redundante/incompleto de excepciones en cada sub-función.
+- `2026-08-04T05:53:10` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Reforcé la robustez del validador `_validate_str` y del método `save` mediante el chequeo explícito de tipos y estados, asegurando que configuraciones vacías o malformadas no degraden la integridad del estado persistido ni la seguridad del acceso a archivos.
+- `2026-08-04T05:53:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-04T05:53:10` Corrida terminada. Total usado hoy: 140.

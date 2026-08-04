@@ -40,7 +40,6 @@ class Suspicion:
     severity: str
 
 # Alias de tipos para mejorar la legibilidad y mantenibilidad de la lógica de escaneo
-# Cada función debe retornar un objeto Suspicion si hay hallazgo, o None si el archivo es seguro.
 SuspicionCheck: TypeAlias = Callable[[Path], Optional[Suspicion]]
 ScanResult: TypeAlias = List[Suspicion]
 
@@ -62,10 +61,6 @@ RECENT_FILE_THRESHOLD_HOURS: Final[int] = 24
 class Scanner:
     """
     Controlador de estado para el escaneo recursivo.
-    
-    Esta clase mantiene el contexto necesario para atravesar el árbol de archivos
-    evitando ciclos causados por enlaces simbólicos y garantizando que no se
-    procesen rutas fuera de los límites de seguridad definidos en `safety.py`.
     """
     
     def __init__(self) -> None:
@@ -73,27 +68,14 @@ class Scanner:
         self.seen: set[str] = set()
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
-        """
-        Determina si la entrada es un punto de reparseo (ej. Junctions o symlinks).
-        
-        No sigue enlaces para prevenir escapes de directorio y evitar el procesamiento 
-        redundante de rutas recursivas.
-        """
         try:
             return bool(entry.stat(follow_symlinks=False).st_file_attributes & 0x400)
         except (OSError, AttributeError):
             return False
 
     def process_entry(self, entry: os.DirEntry, stack: List[str]) -> None:
-        """
-        Clasifica una entrada de sistema de archivos.
-        
-        Si es directorio, valida su seguridad y lo añade a la pila de exploración.
-        Si es archivo, lo deriva al motor de escaneo heurístico `scan_file`.
-        """
         try:
             path_obj = Path(entry.path)
-            # Solo procesar si la ruta es segura y no está en la lista de protegidos
             if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
                 return
 
@@ -104,50 +86,33 @@ class Scanner:
                         self.seen.add(path_key)
                         stack.append(path_key)
             elif entry.is_file(follow_symlinks=False):
-                # Pasamos el objeto Path ya validado como prevalidated=True
                 self.results.extend(scan_file(path_obj, prevalidated=True))
         except (PermissionError, OSError):
             pass
 
 
 def check_double_extension(path: Path) -> Optional[Suspicion]:
-    """Analiza si el nombre del archivo contiene una extensión engañosa seguida de un ejecutable."""
     if path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
     return None
 
 
 def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_THRESHOLD_HOURS) -> Optional[Suspicion]:
-    """Identifica ejecutables modificados recientemente dentro del umbral configurado."""
-    if path.suffix.lower() not in SUSPICIOUS_EXECUTABLE_EXT:
-        return None
-        
     try:
-        # Validar existencia antes de lstat para evitar errores en archivos que desaparecieron
-        if not path.is_file():
-            return None
         mtime = datetime.fromtimestamp(path.lstat().st_mtime)
         if datetime.now() - mtime < timedelta(hours=hours):
             return Suspicion(path, f"Ejecutable reciente detectado (modificado hace menos de {hours}h)", "info")
-    except (FileNotFoundError, PermissionError, OSError):
+    except (OSError, AttributeError):
         pass
     return None
 
 
 def check_system_lookalike(path: Path) -> Optional[Suspicion]:
-    """Verifica si un ejecutable intenta suplantar procesos críticos mediante nombres de sistema."""
-    if path.name.lower() not in SYSTEM_LOOKALIKES:
-        return None
-        
-    try:
-        parent = path.parent
-        if parent and SYSTEM32_LOWER not in str(parent).lower():
-            return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
-    except (OSError, AttributeError):
-        pass
+    parent = path.parent
+    if parent and SYSTEM32_LOWER not in str(parent).lower():
+        return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
     return None
 
-# Lista inmutable de funciones de análisis heurístico registradas para el escáner
 CHECK_FUNCS: Final[List[SuspicionCheck]] = [
     check_double_extension, 
     check_recent_executable_in_downloads, 
@@ -155,55 +120,41 @@ CHECK_FUNCS: Final[List[SuspicionCheck]] = [
 ]
 
 def scan_file(path: Path, prevalidated: bool = False) -> ScanResult:
-    """
-    Aplica el conjunto de heurísticas registradas sobre un archivo.
-    
-    Args:
-        path: Objeto Path del archivo a analizar.
-        prevalidated: Si es True, omite los chequeos de `safety.py` (optimización interna).
-    """
     if not prevalidated:
-        if not path or not path.exists() or not is_safe_to_modify(path) or is_protected_path(path):
+        if not path or not is_safe_to_modify(path) or is_protected_path(path):
             return []
     
-    # Verificación extra: asegurar que sigue siendo un archivo (evitar race conditions)
-    if not path.is_file():
+    try:
+        if not path.is_file():
+            return []
+    except OSError:
         return []
         
     findings: ScanResult = []
-    # Pre-cálculo para evitar llamadas constantes a propiedades en el loop
     path_suffix_lower = path.suffix.lower()
     path_name_lower = path.name.lower()
 
     for check_func in CHECK_FUNCS:
-        try:
-            # Optimizaciones de entrada: Saltar funciones si el archivo no encaja en el tipo de riesgo
-            if check_func == check_recent_executable_in_downloads and path_suffix_lower not in SUSPICIOUS_EXECUTABLE_EXT:
-                continue
-            if check_func == check_system_lookalike and path_name_lower not in SYSTEM_LOOKALIKES:
-                continue
-                
-            result = check_func(path)
-            if result:
-                findings.append(result)
-        except (PermissionError, OSError, FileNotFoundError):
+        # Filtros de pre-chequeo para evitar lógica innecesaria en funciones
+        if check_func == check_recent_executable_in_downloads and path_suffix_lower not in SUSPICIOUS_EXECUTABLE_EXT:
             continue
+        if check_func == check_system_lookalike and path_name_lower not in SYSTEM_LOOKALIKES:
+            continue
+            
+        result = check_func(path)
+        if result:
+            findings.append(result)
+            
     return findings
 
 
 def scan_directory(directory: Union[str, Path]) -> ScanResult:
-    """
-    Inicia un escaneo recursivo desde la ruta indicada.
-    
-    Realiza validaciones previas de seguridad antes de inicializar la pila de trabajo.
-    """
     if not directory:
         return []
         
     try:
         root_path = Path(directory).resolve(strict=True)
-        # Validación inicial: debe existir, no ser protegida y ser segura modificar
-        if not root_path.exists() or not root_path.is_dir() or root_path.is_symlink() or is_protected_path(root_path) or not is_safe_to_modify(root_path):
+        if not root_path.is_dir() or root_path.is_symlink() or is_protected_path(root_path) or not is_safe_to_modify(root_path):
             return []
     except (OSError, RuntimeError):
         return []
@@ -226,7 +177,6 @@ def scan_directory(directory: Union[str, Path]) -> ScanResult:
 
 
 def run_windows_defender_quick_scan() -> str:
-    """Invoca la API de Windows Defender para ejecutar un examen rápido."""
     try:
         result = subprocess.run(
             ["powershell", "-Command", "Start-MpScan -ScanType QuickScan"],
