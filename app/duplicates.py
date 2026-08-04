@@ -81,7 +81,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
     """
     if not path: return None
     try:
-        p = Path(path).resolve()
+        p = Path(path).resolve(strict=True)
         if not p.is_file() or p.is_symlink() or is_protected_path(p):
             return None
         
@@ -92,7 +92,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
             while chunk := f.read(chunk_size):
                 digest.update(chunk)
         return digest.hexdigest()
-    except (OSError, PermissionError, ValueError, TypeError, FileNotFoundError, IsADirectoryError):
+    except (OSError, PermissionError, ValueError, TypeError, FileNotFoundError, IsADirectoryError, RuntimeError):
         return None
 
 
@@ -102,7 +102,7 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
     """
     if not path: return None
     try:
-        p = Path(path).resolve()
+        p = Path(path).resolve(strict=True)
         if not p.is_file() or p.is_symlink() or is_protected_path(p):
             return None
             
@@ -113,7 +113,7 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
             if not content:
                 return None
             return hashlib.sha256(content).hexdigest()
-    except (OSError, PermissionError, ValueError, TypeError, FileNotFoundError, IsADirectoryError):
+    except (OSError, PermissionError, ValueError, TypeError, FileNotFoundError, IsADirectoryError, RuntimeError):
         return None
 
 
@@ -126,10 +126,10 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     for p in paths:
         if not isinstance(p, Path): continue
         try:
-            resolved = p.resolve()
+            resolved = p.resolve(strict=True)
             if is_protected_path(resolved) or resolved.is_symlink() or not resolved.is_file(): continue
             groups[resolved.stat().st_size].append(resolved)
-        except (OSError, PermissionError, FileNotFoundError):
+        except (OSError, PermissionError, FileNotFoundError, RuntimeError):
             continue
     return groups
 
@@ -167,7 +167,7 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
         for directory in directories:
             if directory is None: continue
             try:
-                path_obj = Path(directory).resolve()
+                path_obj = Path(directory).resolve(strict=True)
                 if path_obj.is_dir() and not is_protected_path(path_obj):
                     _scan(path_obj)
             except (OSError, PermissionError, RuntimeError): continue

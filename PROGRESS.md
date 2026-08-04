@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **248** (49.2% de aceptación)
+- Mejoras aceptadas: **247** (49.0% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 28
+- Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 204
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-03 | 163 | 6 | 16 | 10 | 137 |
-| 2026-08-04 | 85 | 5 | 12 | 3 | 67 |
+| 2026-08-03 | 161 | 6 | 15 | 10 | 136 |
+| 2026-08-04 | 86 | 5 | 12 | 3 | 70 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **61**
 - manejo de errores y validación de entradas: **51**
 - rendimiento: **47**
-- seguridad defensiva: **46**
-- robustez ante casos límite: **43**
+- seguridad defensiva: **44**
+- robustez ante casos límite: **44**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **24**
-- `quarantine.py`: **21**
-- `organizer.py`: **20**
 - `scanner.py`: **20**
 - `assistant.py`: **20**
+- `quarantine.py`: **20**
+- `duplicates.py`: **19**
 - `memory.py`: **19**
+- `organizer.py`: **19**
 - `browser.py`: **18**
-- `duplicates.py`: **18**
 - `healthscore.py`: **17**
 - `diskreport.py`: **16**
 - `safety.py`: **14**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-04T07:25:44` **duplicates.py** (robustez ante casos límite): Se ha añadido un manejo robusto ante la posibilidad de rutas extremadamente largas o inválidas durante la resolución de directorios y estadísticas de archivos, asegurando que `_collect_candidates` y las funciones de escaneo no fallen silenciosamente ante excepciones de sistema de archivos más allá de las básicas.
 - `2026-08-04T07:15:34` **assistant.py** (robustez ante casos límite): Se reforzó la robustez de `build_context` ante valores `None` inesperados y tipos de datos inválidos en los módulos de entrada, previniendo excepciones durante el análisis inicial que podrían bloquear el flujo del asistente.
 - `2026-08-04T07:15:17` **startup.py** (rendimiento): Optimicé el rendimiento de `_resolve_and_cache_path` mediante una verificación previa de existencia en `_EXISTS_CACHE` antes de realizar operaciones costosas de resolución de rutas (`resolve` o `expanduser`), reduciendo el impacto de I/O en llamadas repetidas.
 - `2026-08-04T07:14:52` **settings.py** (rendimiento): Optimicé el rendimiento del módulo implementando un mecanismo de caché más robusto en `load()` y `settings_path()` para reducir las llamadas repetitivas a `stat()` y `expanduser()`/`resolve()`, mitigando el impacto de I/O en lecturas frecuentes.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-04T06:43:43` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` convirtiendo `_KEYWORD_MAP` en un set de claves pre-filtradas y eliminando la redundancia en `_rank_problems` al procesar solo una vez las métricas, mejorando la eficiencia del bucle de decisión.
 - `2026-08-04T06:34:24` **startup.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `startup.py` mediante la refactorización de `_resolve_and_cache_path` para reducir la complejidad ciclomática y mejorar la claridad de la lógica de resolución de rutas.
 - `2026-08-04T06:34:15` **settings.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos detallados en las funciones de validación, clarificando la lógica de saneamiento de datos.
-- `2026-08-04T06:33:50` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la incorporación de docstrings descriptivos en las funciones de chequeo heurístico y se han clarificado los tipos de retorno y parámetros, facilitando la comprensión del flujo de análisis sin alterar la funcionalidad.

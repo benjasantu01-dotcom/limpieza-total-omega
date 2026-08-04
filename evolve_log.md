@@ -553,3 +553,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-04T07:15:34` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `build_context` ante valores `None` inesperados y tipos de datos inválidos en los módulos de entrada, previniendo excepciones durante el análisis inicial que podrían bloquear el flujo del asistente.
 - `2026-08-04T07:15:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-04T07:15:34` Corrida terminada. Total usado hoy: 172.
+- `2026-08-04T07:24:17` Arrancando corrida. Quedan hoy ~128 peticiones objetivo.
+- `2026-08-04T07:24:50` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-08-04T07:25:11` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-08-04T07:25:35` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: robustez ante casos límite).
+- `2026-08-04T07:25:44` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se ha añadido un manejo robusto ante la posibilidad de rutas extremadamente largas o inválidas durante la resolución de directorios y estadísticas de archivos, asegurando que `_collect_candidates` y las funciones de escaneo no fallen silenciosamente ante excepciones de sistema de archivos más allá de las básicas.
+- `2026-08-04T07:25:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-04T07:25:44` Corrida terminada. Total usado hoy: 176.
