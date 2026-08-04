@@ -74,7 +74,6 @@ def _has_invalid_chars(path_str: str) -> bool:
 
 def _is_reserved_device_name(name: str) -> bool:
     """Verifica si el nombre de archivo es un dispositivo reservado por el kernel (e.g., CON, NUL)."""
-    # Maneja nombres 8.3 truncados como CON.TXT
     base = name.split('.')[0]
     return base.lower() in _RESERVED_NAMES
 
@@ -157,9 +156,7 @@ def is_protected_path(path: PathLike) -> bool:
     
     try:
         p = normalize(path)
-        # Verificación contra partes normales y truncamientos 8.3 (ej. PROGRA~1)
         if any(part.lower() in _ALL_PROTECTED_TOKENS or "~" in part.lower() for part in p.parts):
-            # En un entorno real de demo, si hay un '~' verificamos contra nombre largo resuelto
             return True
         if p == Path(p.anchor):
             return True
@@ -211,22 +208,14 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
     if len(str_val) > 260:
         raise UnsafePathError("Operación bloqueada: ruta demasiado larga.")
     
-    raw_path = Path(str_val).expanduser()
     try:
-        # Resolver a ruta larga real para evitar bypass por nombres 8.3
-        resolved = raw_path.resolve()
-        if raw_path.exists() and _is_reparse_point(raw_path):
-            raise UnsafePathError("Operación bloqueada: punto de reanálisis potencialmente inseguro.")
-    except (OSError, PermissionError):
-        pass
-    
-    try:
+        raw_path = Path(str_val).expanduser()
         p = normalize(str_val)
-    except (TypeError, ValueError, OSError) as e:
-        raise UnsafePathError(f"Error al normalizar: {e}")
+    except (TypeError, ValueError, OSError, RuntimeError) as e:
+        raise UnsafePathError(f"Error al procesar ruta: {e}")
 
     if not p.parts:
-        raise UnsafePathError("Ruta sin componentes válidos tras normalización.")
+        raise UnsafePathError("Ruta sin componentes válidos.")
 
     if _is_reserved_device_name(p.stem):
         raise UnsafePathError("Operación bloqueada: nombre de dispositivo reservado.")
@@ -241,8 +230,8 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
                 raise UnsafePathError("Operación bloqueada: archivo inaccesible, protegido o sistema.")
             if p.is_file() and p.stat().st_nlink > 1:
                 raise UnsafePathError("Operación bloqueada: enlace físico (hard link) detectado.")
-    except OSError as e:
-        raise UnsafePathError(f"Error al verificar estado del archivo: {e}")
+    except (OSError, PermissionError) as e:
+        raise UnsafePathError(f"Error crítico al acceder a la ruta: {e}")
 
     if is_drive_root(p) or is_protected_path(p):
         raise UnsafePathError("Operación bloqueada: ruta de sistema protegida.")

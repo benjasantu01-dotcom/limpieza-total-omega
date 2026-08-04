@@ -217,15 +217,16 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         raise ValueError(f"No se pudo preparar el directorio de revisión: {e}")
 
     for jf in files:
-        if not isinstance(jf, JunkFile) or not jf.path:
+        if not isinstance(jf, JunkFile) or not getattr(jf, 'path', None):
             continue
         try:
-            current_path = jf.path
-            # Verificar existencia en el momento exacto del movimiento (concurrencia)
-            if not current_path.exists() or not current_path.is_file() or not is_safe_to_modify(current_path):
+            # Validar resolución de ruta antes de operar
+            current_abs = jf.path.resolve()
+            
+            # Verificar existencia y seguridad
+            if not current_abs.exists() or not current_abs.is_file() or not is_safe_to_modify(current_abs):
                 continue
             
-            current_abs = current_path.resolve()
             # Evita anidamiento: no mover si el destino es padre o hijo del origen
             if current_abs.parent == dest or dest in current_abs.parents or current_abs in dest.parents:
                 continue
@@ -236,13 +237,13 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             
             # Verificación de exclusividad: intentar abrir en modo lectura
             try:
-                with open(current_path, 'rb'): pass
+                with open(current_abs, 'rb'): pass
             except (OSError, PermissionError):
                 continue
 
-            target = _generate_unique_target(dest / f"{current_path.stem}_{int(jf.modified.timestamp())}{current_path.suffix}")
+            target = _generate_unique_target(dest / f"{current_abs.stem}_{int(jf.modified.timestamp())}{current_abs.suffix}")
             shutil.move(str(current_abs), str(target))
-        except (PermissionError, OSError, shutil.Error):
+        except (PermissionError, OSError, shutil.Error, RuntimeError):
             continue
     return dest
 
