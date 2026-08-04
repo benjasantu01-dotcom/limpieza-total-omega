@@ -256,7 +256,8 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     for area, weight in _WEIGHT_ITEMS:
         ratio_val = ratios.get(area, 0.0)
         score_val = ratio_val * float(weight) * _NORM_FACTOR
-        breakdown[area] = int(score_val + 0.5)
+        val_rounded = int(score_val + 0.5)
+        breakdown[area] = val_rounded
         total_score += score_val
 
     final_score = int(_clamp(total_score, 0.0, 100.0))

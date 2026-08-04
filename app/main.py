@@ -158,9 +158,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         # Carga de configuración con validación estricta
         try:
             raw_settings = settings_mod.load()
-            if not isinstance(raw_settings, dict): 
-                raise ValueError("Configuración no es un objeto mapeable")
-            self.settings = raw_settings
+            self.settings = raw_settings if isinstance(raw_settings, dict) else settings_mod.reset()
         except Exception as e:
             logging.error("Fallo al cargar ajustes, reseteando a valores por defecto: %s", e)
             self.settings = settings_mod.reset()
