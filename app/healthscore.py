@@ -208,17 +208,18 @@ def _generate_recommendations(m: SystemMetrics, ratios: Dict[str, float]) -> Lis
     
     recs: List[str] = []
     
-    if ratios["seguridad"] < WARN_THRESHOLD_HIGH:
+    # Verificación de claves para evitar KeyError si el dict de ratios llega incompleto
+    if ratios.get("seguridad", 1.0) < WARN_THRESHOLD_HIGH:
         recs.append(f"Revisá los {m.suspicious_count} hallazgo(s) de seguridad; podés aislarlos en cuarentena sin borrarlos.")
-    if ratios["disco"] < WARN_THRESHOLD_LOW:
+    if ratios.get("disco", 1.0) < WARN_THRESHOLD_LOW:
         recs.append(f"Queda {m.disk_free_percent:.1f}% de disco libre. Mirá el análisis de disco para ver qué ocupa más.")
-    if ratios["memoria"] < WARN_THRESHOLD_LOW:
+    if ratios.get("memoria", 1.0) < WARN_THRESHOLD_LOW:
         recs.append("Memoria disponible baja: cerrá programas que no uses. Ojo, 'liberar RAM' no sirve, cerrar procesos sí.")
-    if ratios["basura"] < WARN_THRESHOLD_MED:
+    if ratios.get("basura", 1.0) < WARN_THRESHOLD_MED:
         recs.append(f"Hay unos {int(m.junk_mb)} MB de archivos temporales para revisar.")
-    if ratios["duplicados"] < WARN_THRESHOLD_MED:
+    if ratios.get("duplicados", 1.0) < WARN_THRESHOLD_MED:
         recs.append(f"Podrías recuperar ~{int(m.duplicate_mb)} MB eliminando copias duplicadas.")
-    if ratios["arranque"] < WARN_THRESHOLD_LOW:
+    if ratios.get("arranque", 1.0) < WARN_THRESHOLD_LOW:
         recs.append(f"{m.startup_count} programas arrancan con Windows; desactivá los que no necesites desde el Administrador de tareas.")
     
     if m.quarantined_count > 0:
@@ -257,7 +258,9 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     total_score: float = 0.0
     
     for area, weight in _WEIGHT_ITEMS:
-        score_val = ratios[area] * float(weight) * _NORM_FACTOR
+        # Se asegura que la clave exista antes de acceder
+        ratio_val = ratios.get(area, 0.0)
+        score_val = ratio_val * float(weight) * _NORM_FACTOR
         breakdown[area] = int(score_val + 0.5)
         total_score += score_val
 

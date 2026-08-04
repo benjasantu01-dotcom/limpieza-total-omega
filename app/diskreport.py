@@ -174,13 +174,6 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Generador que recorre recursivamente el sistema de archivos, omitiendo rutas protegidas.
-    
-    Args:
-        directory: Directorio raíz para iniciar la recursión.
-        skip_protected: Si es True, no atraviesa rutas marcadas como protegidas.
-        
-    Yields:
-        Tuplas conteniendo la ruta (Path) y el tamaño en bytes (int).
     """
     if not directory or not isinstance(directory, (str, os.PathLike)):
         return
@@ -197,34 +190,22 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     visited_directories = {base_path}
 
     def scan_level(current_path: Path) -> Generator[Tuple[Path, int], None, None]:
-        if current_path is None:
-            return
         try:
             with os.scandir(current_path) as iterator:
                 for entry in iterator:
                     try:
-                        # Saltar enlaces simbólicos y puntos de reparse (Junctions) para evitar ciclos
                         if entry.is_symlink() or (os.name == 'nt' and entry.stat(follow_symlinks=False).st_reparse_tag != 0):
                             continue
                         
                         if entry.is_dir():
                             full_path = Path(entry.path).resolve()
-                            try:
-                                full_path.relative_to(base_path)
-                            except (ValueError, TypeError):
-                                continue
-                                
                             if full_path not in visited_directories:
                                 if skip_protected and is_protected_path(full_path):
                                     continue
                                 visited_directories.add(full_path)
                                 yield from scan_level(full_path)
                         else:
-                            try:
-                                size = entry.stat().st_size
-                                yield Path(entry.path), size
-                            except (OSError, PermissionError, FileNotFoundError):
-                                continue
+                            yield Path(entry.path), entry.stat().st_size
                     except (OSError, PermissionError, FileNotFoundError, TypeError, AttributeError):
                         continue
         except (OSError, PermissionError, FileNotFoundError, TypeError):
@@ -274,7 +255,6 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
         for path, size in walk_files(base, skip_protected):
             try:
                 rel = path.relative_to(base)
-                if not rel.parts: continue
                 top_level = base / rel.parts[0]
                 
                 if top_level not in folder_map:
@@ -305,9 +285,6 @@ def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -> List[str]:
     """
     Genera un reporte textual formateado del uso de espacio en la ruta analizada.
-    
-    Returns:
-        Lista de líneas que componen el informe detallado.
     """
     if not directory:
         return ["Error: Ruta no especificada."]
@@ -315,11 +292,11 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
     try:
         path_obj = Path(directory).expanduser().resolve()
         if not path_obj.exists() or not path_obj.is_dir():
-            return [f"Error: La ruta '{directory}' no es un directorio válido o es inaccesible."]
+            return [f"Error: La ruta '{directory}' no es un directorio válido."]
     except (OSError, RuntimeError, PermissionError, ValueError, TypeError):
         return ["Error: No se pudo acceder a la ruta especificada."]
         
-    ext_map: Dict[str, List[int]] = defaultdict(lambda: [0, 0]) # [size, count]
+    ext_map: Dict[str, List[int]] = defaultdict(lambda: [0, 0])
     top_heap: List[Tuple[int, Path]] = []
     total_bytes = 0
     total_files = 0

@@ -149,7 +149,6 @@ def directory_size(path: str | os.PathLike | None) -> int:
     
     total_bytes: int = 0
     stack: List[str] = [str(root)]
-    # Pre-cálculo para evitar lookups costosos en cada iteración
     skip_names = NEVER_TOUCH
     
     while stack:
@@ -168,7 +167,7 @@ def directory_size(path: str | os.PathLike | None) -> int:
                     else:
                         try:
                             total_bytes += entry.stat().st_size
-                        except OSError:
+                        except (OSError, PermissionError, FileNotFoundError):
                             continue
         except (OSError, PermissionError, FileNotFoundError):
             continue
