@@ -245,14 +245,14 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None
 
-    # Tuplas de (mtime, len_path, path) para ordenamiento lexicográfico en min()
     valid_paths: List[Tuple[float, int, Path]] = []
     for p in group.paths:
         if not isinstance(p, Path): continue
         try:
-            if not p.is_file() or is_protected_path(p): continue
-            stat = p.stat()
-            valid_paths.append((stat.st_mtime, len(str(p)), p))
+            # Verificación redundante ante cambios en el sistema de archivos durante la iteración
+            if p.exists() and p.is_file() and not is_protected_path(p):
+                stat = p.stat()
+                valid_paths.append((stat.st_mtime, len(str(p)), p))
         except (OSError, PermissionError, FileNotFoundError):
             continue
             

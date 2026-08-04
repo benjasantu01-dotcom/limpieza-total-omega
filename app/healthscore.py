@@ -160,8 +160,8 @@ def score_security(suspicious_count: int, warnings: int = 0) -> float:
     Calcula el ratio de seguridad [0.0, 1.0].
     Penaliza hallazgos (5%) y advertencias (25%) para reflejar mayor criticidad en las advertencias.
     """
-    s: float = float(_to_int(suspicious_count))
-    w: float = float(_to_int(warnings))
+    s: float = float(max(0, _to_int(suspicious_count)))
+    w: float = float(max(0, _to_int(warnings)))
     penalty: float = (s * 0.05) + (w * 0.25)
     return _clamp(1.0 - penalty, 0.0, 1.0)
 

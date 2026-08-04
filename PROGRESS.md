@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **246** (48.8% de aceptación)
+- Mejoras aceptadas: **247** (49.0% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 28
-- Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 205
+- Rechazadas por guardia de seguridad: 27
+- Sin cambios (nada sustancial que mejorar): 12
+- Sin respuesta de la IA (error o límite): 204
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-03 | 106 | 3 | 11 | 6 | 98 |
-| 2026-08-04 | 140 | 11 | 17 | 5 | 107 |
+| 2026-08-03 | 105 | 3 | 10 | 6 | 96 |
+| 2026-08-04 | 142 | 11 | 17 | 6 | 108 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **61**
 - manejo de errores y validación de entradas: **51**
 - rendimiento: **50**
-- robustez ante casos límite: **43**
-- seguridad defensiva: **41**
+- robustez ante casos límite: **45**
+- seguridad defensiva: **40**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **23**
+- `settings.py`: **22**
 - `assistant.py`: **21**
 - `organizer.py`: **21**
 - `quarantine.py`: **21**
+- `duplicates.py`: **19**
+- `healthscore.py`: **19**
 - `browser.py`: **18**
 - `memory.py`: **18**
-- `duplicates.py`: **18**
-- `healthscore.py`: **18**
 - `scanner.py`: **18**
 - `diskreport.py`: **16**
 - `main.py`: **15**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-04T12:01:36` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez de `score_security` ante entradas negativas o erróneas mediante el uso de `max` y `_to_int`, evitando que una métrica mal formada pueda generar una penalización negativa (que elevaría el puntaje artificialmente) o desbordar el cálculo.
+- `2026-08-04T12:01:10` **duplicates.py** (robustez ante casos límite): Se ha mejorado la resiliencia de la función `suggest_keeper` ante fallos en el acceso a metadatos de archivos (como errores de permiso o archivos que desaparecen durante la ejecución) mediante la inclusión de un bloque `try-except` robusto y la validación estricta de las rutas, asegurando que la app no aborte ante condiciones de carrera en el sistema de archivos.
 - `2026-08-04T11:50:59` **assistant.py** (robustez ante casos límite): Reforcé la robustez del procesamiento de métricas agregando validación ante valores `NaN` o `inf` inesperados dentro de `build_context` y asegurando que las listas de problemas no fallen si `SystemContext` contiene datos parciales.
 - `2026-08-04T11:41:28` **settings.py** (rendimiento): Optimizé `load()` y `get()` reemplazando llamadas redundantes a `load()` (que re-ejecuta `stat` y validación) por accesos directos al diccionario en caché, mejorando significativamente la eficiencia durante la ejecución intensiva.
 - `2026-08-04T11:41:02` **scanner.py** (rendimiento): Se optimizó el rendimiento del escaneo al evitar llamadas redundantes a `path.is_file()` y `path.suffix` mediante el uso directo de los atributos ya disponibles en el objeto `os.DirEntry` durante la iteración, reduciendo drásticamente las llamadas al sistema de archivos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-04T11:11:13` **browser.py** (rendimiento): Optimicé `directory_size` cambiando la lógica de validación de `NEVER_TOUCH` de una búsqueda en `frozenset` por cada archivo a una comparación de conjuntos más eficiente, y reorganizando el orden de las comprobaciones de seguridad para descartar carpetas inválidas antes de entrar al bucle.
 - `2026-08-04T11:11:00` **branding.py** (rendimiento): Se optimizó el rendimiento en `draw_gradient_bar` reemplazando el dibujado línea a línea (O(N)) por una operación de dibujo por segmentos coloreados, reduciendo drásticamente las llamadas al método `canvas.create_line` en cada frame de refresco de la UI.
 - `2026-08-04T11:10:22` **assistant.py** (rendimiento): Optimicé el rendimiento de `_rank_problems` eliminando la re-evaluación de condiciones y evitando la construcción de una lista de cadenas innecesarias, utilizando ahora un generador con `yield` para procesar los problemas de manera perezosa y eficiente.
-- `2026-08-04T11:00:21` **settings.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en el conjunto de validadores internos (`_validate_bool`, `_validate_int`, `_validate_str`) para clarificar el flujo de sanitización y el tratamiento de casos de borde en la configuración.
-- `2026-08-04T10:50:56` **quarantine.py** (legibilidad y documentación): Se introdujeron type hints más específicos y se extrajo la lógica de serialización de `QuarantineItem` mediante el método `from_dict`, mejorando la legibilidad y la robustez del manejo de datos al desacoplar la validación de la instanciación.
