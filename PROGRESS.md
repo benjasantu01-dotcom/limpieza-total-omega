@@ -6,47 +6,51 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **243** (48.2% de aceptación)
+- Mejoras aceptadas: **244** (48.4% de aceptación)
 - Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-02 | 50 | 4 | 6 | 0 | 38 |
+| 2026-08-02 | 47 | 4 | 6 | 0 | 37 |
 | 2026-08-03 | 173 | 6 | 17 | 12 | 142 |
-| 2026-08-04 | 20 | 2 | 4 | 1 | 29 |
+| 2026-08-04 | 24 | 2 | 4 | 1 | 29 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **63**
 - seguridad defensiva: **50**
 - manejo de errores y validación de entradas: **50**
-- robustez ante casos límite: **43**
-- rendimiento: **37**
+- rendimiento: **41**
+- robustez ante casos límite: **40**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **24**
-- `scanner.py`: **21**
+- `settings.py`: **23**
+- `scanner.py`: **20**
 - `assistant.py`: **19**
 - `browser.py`: **19**
+- `organizer.py`: **19**
 - `quarantine.py`: **19**
-- `organizer.py`: **18**
-- `main.py`: **17**
+- `main.py`: **18**
 - `duplicates.py`: **17**
 - `diskreport.py`: **16**
-- `healthscore.py`: **15**
-- `memory.py`: **15**
+- `healthscore.py`: **16**
+- `memory.py`: **16**
 - `safety.py`: **15**
-- `startup.py`: **14**
 - `branding.py`: **14**
+- `startup.py`: **13**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-04T02:29:22` **organizer.py** (rendimiento): Se optimizó el rendimiento de `scan_for_junk` convirtiendo `SYSTEM_FOLDER_BLOCKLIST` en un conjunto de comparación directa y pre-calculando el chequeo de extensión para reducir la carga de trabajo dentro del bucle de `os.scandir`, evitando llamadas innecesarias a `is_safe_to_modify` en archivos que ya sabemos que no son basura.
+- `2026-08-04T02:29:14` **memory.py** (rendimiento): Optimizé `parse_windows_process_csv` reemplazando la creación y filtrado de listas intermedias por un generador de líneas más eficiente y removiendo la lógica de filtrado redundante para reducir la presión sobre el recolector de basura durante escaneos frecuentes.
+- `2026-08-04T02:28:46` **main.py** (rendimiento): Se implementó un filtrado de eventos de redibujo (`configure`) mediante el uso de un temporizador de "debounce" en `_build_header`, evitando que el redibujado de la franja decorativa se dispare múltiples veces innecesarias durante el redimensionamiento de la ventana, mejorando la fluidez de la interfaz.
+- `2026-08-04T02:27:41` **healthscore.py** (rendimiento): Optimicé el bucle de cálculo en `compute_score` y el renderizado en `summarize` reemplazando iteraciones sobre diccionarios y accesos repetitivos a `ratios` por una lógica de pre-cálculo y acceso directo, mejorando la eficiencia en el hot-path del puntaje.
 - `2026-08-04T02:17:52` **browser.py** (rendimiento): Optimicé `directory_size` pre-compilando la comparación de exclusión a un set y utilizando `scandir` de forma más eficiente para evitar redundancia de llamadas, reduciendo el overhead de procesamiento en directorios con miles de archivos pequeños de caché.
 - `2026-08-04T02:07:34` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad del código mediante la adición de docstrings técnicos detallados en los validadores y la normalización de la estructura de las funciones, facilitando el mantenimiento y la comprensión de las reglas de seguridad sin alterar el comportamiento.
 - `2026-08-04T02:07:09` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la adición de docstrings estructurados y type hints precisos, clarificando el propósito y las precondiciones de las funciones clave en `scanner.py` para cumplir con el estándar de calidad exigido.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-04T01:37:48` **diskreport.py** (legibilidad y documentación): Mejora la robustez y legibilidad mediante la adición de docstrings técnicos detallados, type hints explícitos en retornos de funciones complejas y el refinamiento de la nomenclatura de parámetros internos para clarificar el manejo de errores en el escaneo de directorios.
 - `2026-08-04T01:37:37` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación interna y claridad de las funciones de navegación mediante type hinting y docstrings enriquecidos, y se consolidó el manejo de errores en `directory_size` usando un enfoque de filtrado temprano para mejorar la legibilidad y mantenimiento del bucle de escaneo.
 - `2026-08-04T01:37:14` **branding.py** (legibilidad y documentación): Documenté con docstrings claros y tipado los argumentos de `draw_logo` y `draw_ring` para eliminar ambigüedades en sus parámetros posicionales y de diseño, facilitando el mantenimiento de la interfaz.
-- `2026-08-04T01:36:40` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` documentando los contratos de las funciones `build_context` y `_call_gemini` mediante docstrings detallados, aclarando qué parámetros espera y qué tipo de datos retorna para evitar ambigüedades.
-- `2026-08-04T01:27:03` **settings.py** (manejo de errores y validación de entradas): Reforcé la robustez de `validate` añadiendo un chequeo explícito de tipos para evitar errores en cadena si el JSON de entrada contiene estructuras inesperadas (como listas en campos que esperan booleanos), garantizando que siempre se devuelva un diccionario íntegro.
-- `2026-08-04T01:16:53` **quarantine.py** (manejo de errores y validación de entradas): Se mejora la robustez de `quarantine_file` envolviendo la llamada a `shutil.move` en un bloque `try-except` más específico y añadiendo una verificación previa de existencia del directorio destino para evitar excepciones de `FileNotFoundError` no controladas durante la operación de escritura atómica.
-- `2026-08-04T01:16:24` **organizer.py** (manejo de errores y validación de entradas): Se reforzó el manejo de errores en `scan_for_junk` y `stage_for_review` añadiendo validaciones de tipo y estructura defensiva para prevenir `AttributeError` o comportamientos inesperados ante datos malformados, garantizando la integridad del proceso.

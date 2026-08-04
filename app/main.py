@@ -32,6 +32,7 @@ para minimizar el overhead de hilos y garantizar la coherencia de los datos
 que consume el asistente. El estado de análisis pesados se cachea por sesión.
 Se emplea invalidación selectiva para evitar procesado redundante en disco.
 Se implementa TTL (Time-To-Live) y política LRU para gestión eficiente de memoria.
+Se optimizan eventos de redibujo UI para evitar cálculos innecesarios.
 
 Instalar dependencias:
     pip install customtkinter
@@ -174,6 +175,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         # Gestión de tareas y concurrencia
         self._tasks_running = 0
         self._executor = concurrent.futures.ThreadPoolExecutor(max_workers=5)
+        self._debounce_id: Optional[str] = None
 
     def _is_safe_path(self, path: Union[str, Path]) -> bool:
         """Chequeo robusto de seguridad para evitar seguir junctions o rutas inválidas."""
@@ -314,10 +316,13 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         franja = tk.Canvas(self, height=3, bg=branding.color("background"),
                            highlightthickness=0, bd=0)
         franja.pack(fill="x", padx=18, pady=(12, 6))
-        franja.bind(
-            "<Configure>",
-            lambda e, c=franja: (c.delete("all"), branding.draw_gradient_bar(c, e.width, 3)),
-        )
+
+        def on_resize(event):
+            if self._debounce_id:
+                self.after_cancel(self._debounce_id)
+            self._debounce_id = self.after(100, lambda: (franja.delete("all"), branding.draw_gradient_bar(franja, event.width, 3)))
+
+        franja.bind("<Configure>", on_resize)
 
     def _build_footer(self) -> None:
         """Crea el pie de página con etiquetas de estado y una barra de progreso 

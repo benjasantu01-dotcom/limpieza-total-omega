@@ -161,21 +161,20 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
     Convierte texto CSV de PowerShell (Get-Process) a objetos ProcessMemory.
     Filtra filas mal formadas y ordena por WorkingSet de forma descendente.
     """
-    if not isinstance(text, str) or not text.strip():
+    if not text:
         return []
 
-    lines = [l.strip() for l in text.splitlines() if l.strip()]
-    if len(lines) < 2:
-        return []
+    lines = (line.strip() for line in text.splitlines() if line.strip())
+    next(lines, None)  # Saltear header
 
     processes: List[ProcessMemory] = []
-    for line in lines[1:]:
+    for line in lines:
         parts = [p.strip().strip('"') for p in line.split(",")]
         
         if _is_valid_process_row(parts):
             try:
                 processes.append(ProcessMemory(
-                    name=parts[0] if parts[0] else "Unknown", 
+                    name=parts[0] or "Unknown", 
                     pid=int(parts[1]), 
                     working_set=int(parts[2])
                 ))

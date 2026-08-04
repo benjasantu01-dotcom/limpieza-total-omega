@@ -1176,3 +1176,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-04T02:18:26` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
 - `2026-08-04T02:18:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-04T02:18:26` Corrida terminada. Total usado hoy: 56.
+- `2026-08-04T02:27:13` Arrancando corrida. Quedan hoy ~244 peticiones objetivo.
+- `2026-08-04T02:27:41` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el bucle de cálculo en `compute_score` y el renderizado en `summarize` reemplazando iteraciones sobre diccionarios y accesos repetitivos a `ratios` por una lógica de pre-cálculo y acceso directo, mejorando la eficiencia en el hot-path del puntaje.
+- `2026-08-04T02:28:46` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Se implementó un filtrado de eventos de redibujo (`configure`) mediante el uso de un temporizador de "debounce" en `_build_header`, evitando que el redibujado de la franja decorativa se dispare múltiples veces innecesarias durante el redimensionamiento de la ventana, mejorando la fluidez de la interfaz.
+- `2026-08-04T02:29:14` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimizé `parse_windows_process_csv` reemplazando la creación y filtrado de listas intermedias por un generador de líneas más eficiente y removiendo la lógica de filtrado redundante para reducir la presión sobre el recolector de basura durante escaneos frecuentes.
+- `2026-08-04T02:29:22` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Se optimizó el rendimiento de `scan_for_junk` convirtiendo `SYSTEM_FOLDER_BLOCKLIST` en un conjunto de comparación directa y pre-calculando el chequeo de extensión para reducir la carga de trabajo dentro del bucle de `os.scandir`, evitando llamadas innecesarias a `is_safe_to_modify` en archivos que ya sabemos que no son basura.
+- `2026-08-04T02:29:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-04T02:29:22` Corrida terminada. Total usado hoy: 60.

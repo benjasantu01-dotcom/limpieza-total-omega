@@ -140,20 +140,11 @@ def _is_valid_junk(entry: os.DirEntry[str]) -> bool:
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     """
     Recorre recursivamente los directorios provistos buscando archivos basura.
-    
-    Utiliza un enfoque de recursión controlada con `os.scandir` para minimizar el 
-    uso de memoria. Filtra rutas según `SYSTEM_FOLDER_BLOCKLIST` y valida la 
-    seguridad de cada elemento mediante `is_safe_to_modify`.
-
-    Args:
-        directories: Lista opcional de rutas a escanear. Si es None, usa DEFAULT_SCAN_DIRS.
-
-    Returns:
-        List[JunkFile]: Lista de objetos JunkFile encontrados.
     """
     dirs = directories if directories is not None else DEFAULT_SCAN_DIRS
     found: List[JunkFile] = []
     blocklist = SYSTEM_FOLDER_BLOCKLIST
+    exts = _JUNK_EXTS_TUPLE
 
     def _walk_dir(base_path: str) -> None:
         """Escaneo interno recursivo que evita rutas bloqueadas y symlinks."""
@@ -167,7 +158,7 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
                         if entry.is_dir(follow_symlinks=False):
                             if entry.name.lower() not in blocklist:
                                 _walk_dir(entry.path)
-                        elif entry.name.lower().endswith(_JUNK_EXTS_TUPLE):
+                        elif entry.name.lower().endswith(exts):
                             entry_path = Path(entry.path)
                             if is_safe_to_modify(entry_path):
                                 stat = entry.stat()
