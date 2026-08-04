@@ -224,9 +224,7 @@ def _generate_recommendations(m: SystemMetrics, ratios: Dict[str, float]) -> Lis
     if m.quarantined_count > 0:
         recs.append(f"Tenés {m.quarantined_count} archivo(s) en cuarentena esperando tu decisión.")
     
-    if not recs:
-        recs.append("No hay nada urgente para hacer. El sistema está en buen estado.")
-    return recs
+    return recs if recs else ["No hay nada urgente para hacer. El sistema está en buen estado."]
 
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
@@ -276,18 +274,18 @@ def summarize(result: HealthResult) -> List[str]:
 
     lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     
-    if not isinstance(result.breakdown, dict) or not result.breakdown:
-        return lines + ["  Error: No hay datos de desglose disponibles."]
+    if not isinstance(result.breakdown, dict):
+        return lines + ["  Error: Desglose no procesable."]
 
     for area, maximo in _WEIGHT_ITEMS:
         puntos = result.breakdown.get(area, 0)
-        puntos = max(0, min(maximo, int(puntos)))
+        if not isinstance(puntos, int): puntos = 0
+        puntos = max(0, min(maximo, puntos))
         visual = f"[{'#' * puntos}{'.' * (maximo - puntos)}]"
         lines.append(f"  {area.capitalize():<12} {puntos:>2}/{maximo:<2} {visual}")
     
     lines.extend(["", "Recomendaciones:"])
     recs = result.recommendations if isinstance(result.recommendations, list) else []
-    for rec in (recs if recs else ["Ninguna recomendación disponible."]):
-        if isinstance(rec, str):
-            lines.append(f"  - {rec}")
+    for rec in recs:
+        lines.append(f"  - {str(rec)}")
     return lines

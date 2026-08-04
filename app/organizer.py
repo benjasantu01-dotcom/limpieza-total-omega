@@ -216,7 +216,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         raise ValueError(f"No se pudo preparar el directorio de revisión: {e}")
 
     for jf in files:
-        if not isinstance(jf, JunkFile) or jf.path is None:
+        if not isinstance(jf, JunkFile) or not jf.path:
             continue
         try:
             current_path = jf.path

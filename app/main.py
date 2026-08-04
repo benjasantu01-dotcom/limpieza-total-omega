@@ -1526,12 +1526,14 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     # Lógica de Ajustes
     # ------------------------------------------------------------------
 
-    def _validate_numeric_setting(self, value: str, default: int) -> int:
+    def _validate_numeric_setting(self, value: Optional[str], default: int) -> int:
         """Valida y convierte entradas de texto a enteros positivos para ajustes."""
+        if value is None:
+            return default
         try:
             val = int(value.strip())
             return val if val > 0 else default
-        except ValueError:
+        except (ValueError, TypeError):
             return default
 
     def _collect_settings(self) -> Dict[str, Any]:
@@ -1543,14 +1545,18 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             except Exception:
                 continue
         
-        valores["duplicados_tamano_minimo_kb"] = self._validate_numeric_setting(
-            self.min_dup_entry.get(), 64
-        )
-        valores["top_archivos"] = self._validate_numeric_setting(
-            self.top_files_entry.get(), 15
-        )
+        # Validar entradas de texto de la interfaz con manejo de posibles errores en los widgets
+        try:
+            valores["duplicados_tamano_minimo_kb"] = self._validate_numeric_setting(
+                self.min_dup_entry.get() if hasattr(self, 'min_dup_entry') else None, 64
+            )
+            valores["top_archivos"] = self._validate_numeric_setting(
+                self.top_files_entry.get() if hasattr(self, 'top_files_entry') else None, 15
+            )
+        except Exception:
+            pass
             
-        clave_api = self.api_key_entry.get().strip()
+        clave_api = self.api_key_entry.get().strip() if hasattr(self, 'api_key_entry') else ""
         if clave_api:
             valores["asistente_clave_api"] = clave_api
         return valores
