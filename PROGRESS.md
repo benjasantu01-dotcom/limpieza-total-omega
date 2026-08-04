@@ -6,31 +6,31 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **257** (51.0% de aceptación)
-- Rechazadas por tests: 13
+- Mejoras aceptadas: **259** (51.4% de aceptación)
+- Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 29
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 191
+- Sin respuesta de la IA (error o límite): 188
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-02 | 37 | 3 | 5 | 0 | 17 |
+| 2026-08-02 | 37 | 3 | 5 | 0 | 13 |
 | 2026-08-03 | 173 | 6 | 17 | 12 | 142 |
-| 2026-08-04 | 47 | 4 | 7 | 2 | 32 |
+| 2026-08-04 | 49 | 5 | 7 | 2 | 33 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **63**
 - robustez ante casos límite: **51**
+- seguridad defensiva: **51**
 - manejo de errores y validación de entradas: **50**
-- seguridad defensiva: **49**
 - rendimiento: **44**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **24**
+- `settings.py`: **25**
 - `scanner.py`: **21**
 - `quarantine.py`: **21**
 - `assistant.py`: **20**
@@ -39,14 +39,16 @@ Este archivo se regenera solo en cada corrida a partir de
 - `organizer.py`: **19**
 - `memory.py`: **18**
 - `diskreport.py`: **17**
+- `safety.py`: **17**
 - `duplicates.py`: **17**
 - `healthscore.py`: **17**
-- `safety.py`: **16**
 - `branding.py`: **14**
 - `startup.py`: **14**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-04T04:00:26` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `settings.py` implementando una validación estricta al persistir la configuración, asegurando que la ruta del archivo de configuración esté protegida mediante `ensure_safe_to_modify` antes de cualquier operación de escritura, y reforzando la integridad del sistema al verificar que el directorio padre no solo sea seguro, sino que exista como directorio antes de intentar la operación atómica de `os.replace`.
+- `2026-08-04T03:59:40` **safety.py** (seguridad defensiva): Se ha añadido una verificación de "reparse points" (junctions y symlinks) en `ensure_safe_to_modify` utilizando `path.resolve()` y comparando la ruta original con la resuelta, previniendo así el seguimiento accidental fuera del directorio de trabajo esperado ("directory traversal" defensivo).
 - `2026-08-04T03:50:20` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva al añadir una validación crítica en `purge_all` para evitar la eliminación accidental de archivos fuera de la carpeta de cuarentena, usando `is_within_directory` antes de realizar `_safe_unlink`.
 - `2026-08-04T03:49:52` **organizer.py** (seguridad defensiva): Se reforzó `stage_for_review` para prevenir que el proceso intente mover archivos hacia sí mismos o hacia subdirectorios propios mediante una validación estricta de la jerarquía de rutas utilizando `path.resolve()` antes de realizar cualquier operación.
 - `2026-08-04T03:49:29` **memory.py** (seguridad defensiva): Se añadió una validación explícita para evitar que `trim_working_set` intente interactuar con procesos cuyo nombre sea sospechoso o crítico (mediante `is_protected_path` sobre el nombre del proceso si se obtuviera, aunque aquí se utiliza como guardia de seguridad contra la manipulación de handles de procesos), reforzando la integridad al impedir cualquier acción sobre procesos cuyo PID no pueda ser verificado o que pertenezcan a las capas de sistema detectadas por las reglas de seguridad.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-04T03:19:37` **settings.py** (robustez ante casos límite): Se ha robustecido el manejo de errores en `settings.path` para evitar que una resolución de ruta falle silenciosamente ante caracteres inválidos o permisos denegados en el sistema de archivos, asegurando que siempre se devuelva una ruta válida basada en el directorio de usuario (fallback de seguridad).
 - `2026-08-04T03:19:28` **scanner.py** (robustez ante casos límite): Se ha añadido un chequeo de `is_file()` antes de realizar `lstat()` en `check_recent_executable_in_downloads` para prevenir excepciones ante enlaces simbólicos rotos o archivos que desaparecieron durante la ejecución (condiciones de carrera), mejorando la robustez ante entornos volátiles.
 - `2026-08-04T03:19:03` **safety.py** (robustez ante casos límite): Se reforzó la robustez frente a casos límite en `safety.py` mediante la validación estricta de rutas con enlaces físicos (hard links) y se corrigió una posible vulnerabilidad de desbordamiento en la validación de estados de archivo al centralizar el manejo de excepciones, asegurando que `ensure_safe_to_modify` siempre valide la existencia antes de consultar atributos de sistema.
-- `2026-08-04T03:10:17` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` ante condiciones de carrera y archivos corruptos al implementar una validación post-movimiento más estricta que asegura la existencia física y la integridad del archivo antes de actualizar el manifiesto, evitando estados inconsistentes si el sistema operativo bloquea o retrasa la operación de `shutil.move`.
-- `2026-08-04T03:09:40` **memory.py** (robustez ante casos límite): Mejora la robustez en `parse_windows_process_csv` implementando un manejo defensivo ante errores de formato inesperado en la salida del CSV de PowerShell, evitando que el proceso se interrumpa ante filas malformadas o campos vacíos.

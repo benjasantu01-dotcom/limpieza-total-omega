@@ -200,6 +200,12 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
     if len(str_val) > 260:
         raise UnsafePathError("Operación bloqueada: ruta demasiado larga.")
     
+    # Verificación de integridad de ruta frente a reparse points
+    raw_path = Path(path).expanduser().absolute()
+    resolved_path = raw_path.resolve()
+    if raw_path.parts != resolved_path.parts and _is_reparse_point(raw_path):
+        raise UnsafePathError("Operación bloqueada: el punto de reanálisis redirecciona la ruta.")
+    
     try:
         p = normalize(path)
     except (TypeError, ValueError, OSError) as e:

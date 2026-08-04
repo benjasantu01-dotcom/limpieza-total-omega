@@ -167,8 +167,8 @@ def load(path_or_base: PathLike | None = None) -> dict[str, Any]:
     global _cached_settings, _last_path, _last_mtime
     ruta = settings_path(path_or_base)
     try:
-        ensure_safe_to_modify(str(ruta))
         if not ruta.exists(): raise FileNotFoundError
+        ensure_safe_to_modify(str(ruta))
         stat = ruta.stat()
         if _cached_settings is not None and ruta == _last_path and stat.st_mtime == _last_mtime:
             return _cached_settings
@@ -189,20 +189,17 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     global _cached_settings, _last_path, _last_mtime
     ruta = settings_path(path_or_base)
     
-    try:
-        ensure_safe_to_modify(str(ruta))
-        ensure_safe_to_modify(str(ruta.parent))
-    except (OSError, RuntimeError):
-        return None
-    
     limpio = validate(values)
     if limpio.get("asistente_activado") and not (limpio.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)):
         limpio["asistente_activado"] = False
     
     try:
         json_data = json.dumps(limpio, indent=2, ensure_ascii=False)
-        ruta.parent.mkdir(parents=True, exist_ok=True)
-    except (TypeError, ValueError, OSError, PermissionError): return None
+        parent = ruta.parent
+        ensure_safe_to_modify(str(parent))
+        parent.mkdir(parents=True, exist_ok=True)
+        ensure_safe_to_modify(str(ruta))
+    except (TypeError, ValueError, OSError, PermissionError, RuntimeError): return None
     
     temp_path: Path | None = None
     try:
