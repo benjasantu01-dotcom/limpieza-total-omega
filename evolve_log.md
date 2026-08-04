@@ -1083,3 +1083,10 @@ FAILED evolve/tests/test_modules.py::test_summarize_mentions_the_folder_and_tota
 - `2026-08-04T12:43:48` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
 - `2026-08-04T12:43:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-04T12:43:48` Corrida terminada. Total usado hoy: 300.
+- `2026-08-04T12:52:03` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-04T12:52:38` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `quarantine_file` añadiendo una comprobación explícita para evitar movimientos entre dispositivos (cross-device move) que podrían causar fugas de metadatos o fallos de permisos al usar `shutil.move` (que internamente hace copy+unlink si detecta dispositivos distintos), asegurando que el archivo siempre resida bajo el mismo sistema de archivos antes de operar.
+- `2026-08-04T12:52:57` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-04T12:53:21` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-08-04T12:53:29` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad del módulo `scanner.py` implementando una validación estricta de rutas mediante `path.resolve()` antes de realizar cualquier operación de escaneo, evitando así vulnerabilidades de "path traversal" o seguimientos no deseados de enlaces simbólicos fuera de las rutas autorizadas.
+- `2026-08-04T12:53:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-04T12:53:29` Corrida terminada. Total usado hoy: 304.

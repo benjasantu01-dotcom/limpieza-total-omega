@@ -77,17 +77,18 @@ class Scanner:
     def process_entry(self, entry: os.DirEntry, stack: List[str]) -> None:
         """Procesa una entrada del directorio, filtrando rutas protegidas y analizando archivos."""
         try:
+            # Resolución absoluta para evitar discrepancias de rutas relativas
+            path_obj = Path(entry.path).resolve()
+            
             if entry.is_dir(follow_symlinks=False):
                 if not self._is_reparse_point(entry):
-                    path_obj = Path(entry.path)
                     if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
                         return
-                    path_key = str(path_obj.resolve())
+                    path_key = str(path_obj)
                     if path_key not in self.seen:
                         self.seen.add(path_key)
                         stack.append(path_key)
             elif entry.is_file(follow_symlinks=False):
-                path_obj = Path(entry.path)
                 if is_safe_to_modify(path_obj) and not is_protected_path(path_obj):
                     self.results.extend(scan_file(path_obj, prevalidated=True))
         except (PermissionError, OSError):
@@ -124,28 +125,34 @@ def check_system_lookalike(path: Path) -> Optional[Suspicion]:
 
 def scan_file(path: Path, prevalidated: bool = False) -> ScanResult:
     """Ejecuta todos los chequeos heurísticos registrados contra un archivo específico."""
-    if not isinstance(path, Path) or not path.exists():
+    # Resolvemos antes de validar para asegurar que trabajamos con la ruta canónica
+    try:
+        abs_path = path.resolve()
+    except (OSError, RuntimeError):
+        return []
+
+    if not abs_path.exists():
         return []
         
     if not prevalidated:
-        if not is_safe_to_modify(path) or is_protected_path(path):
+        if not is_safe_to_modify(abs_path) or is_protected_path(abs_path):
             return []
     
     findings: ScanResult = []
-    path_name_lower = path.name.lower()
-    path_suffix_lower = path.suffix.lower()
+    path_name_lower = abs_path.name.lower()
+    path_suffix_lower = abs_path.suffix.lower()
 
     # Pre-evaluación heurística: solo ejecutar checks si el nombre/extensión es candidato
     if path_name_lower in SYSTEM_LOOKALIKES:
-        res = check_system_lookalike(path)
+        res = check_system_lookalike(abs_path)
         if res: findings.append(res)
     
     if path_suffix_lower in SUSPICIOUS_EXECUTABLE_EXT:
-        res = check_recent_executable_in_downloads(path)
+        res = check_recent_executable_in_downloads(abs_path)
         if res: findings.append(res)
         
-    if DOUBLE_EXTENSION_RE.search(path.name):
-        res = check_double_extension(path)
+    if DOUBLE_EXTENSION_RE.search(abs_path.name):
+        res = check_double_extension(abs_path)
         if res: findings.append(res)
             
     return findings

@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **258** (51.2% de aceptación)
+- Mejoras aceptadas: **260** (51.6% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 28
+- Rechazadas por guardia de seguridad: 29
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 192
+- Sin respuesta de la IA (error o límite): 189
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-03 | 105 | 2 | 10 | 6 | 81 |
-| 2026-08-04 | 153 | 11 | 18 | 7 | 111 |
+| 2026-08-03 | 105 | 2 | 10 | 6 | 77 |
+| 2026-08-04 | 155 | 11 | 19 | 7 | 112 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,18 +25,18 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **51**
 - rendimiento: **50**
 - robustez ante casos límite: **49**
-- seguridad defensiva: **47**
+- seguridad defensiva: **49**
 
 ## Mejoras aceptadas por archivo
 
+- `quarantine.py`: **23**
 - `assistant.py`: **22**
 - `organizer.py`: **22**
-- `quarantine.py`: **22**
 - `settings.py`: **22**
 - `duplicates.py`: **20**
 - `healthscore.py`: **20**
+- `scanner.py`: **20**
 - `browser.py`: **19**
-- `scanner.py`: **19**
 - `memory.py`: **18**
 - `diskreport.py`: **17**
 - `main.py`: **16**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-04T12:53:29` **scanner.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `scanner.py` implementando una validación estricta de rutas mediante `path.resolve()` antes de realizar cualquier operación de escaneo, evitando así vulnerabilidades de "path traversal" o seguimientos no deseados de enlaces simbólicos fuera de las rutas autorizadas.
+- `2026-08-04T12:52:38` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad de `quarantine_file` añadiendo una comprobación explícita para evitar movimientos entre dispositivos (cross-device move) que podrían causar fugas de metadatos o fallos de permisos al usar `shutil.move` (que internamente hace copy+unlink si detecta dispositivos distintos), asegurando que el archivo siempre resida bajo el mismo sistema de archivos antes de operar.
 - `2026-08-04T12:43:16` **main.py** (seguridad defensiva): Se ha implementado una validación de seguridad preventiva en `on_trim_process` para asegurar que el PID sea un proceso existente y no una ruta inválida o maliciosa, reforzando la integridad del bucle de seguridad antes de cualquier intento de manipulación de memoria.
 - `2026-08-04T12:42:13` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la validación estricta de tipos y rangos en las funciones de cómputo, asegurando que los valores procesados nunca provoquen comportamientos inesperados (NaN/Inf) que pudieran corromper el cálculo del puntaje global.
 - `2026-08-04T12:32:55` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez de las funciones de hash (`hash_file` y `partial_hash`) implementando una doble validación de seguridad: al re-verificar `is_protected_path` después de resolver la ruta (`resolve(strict=True)`), se garantiza que no se procesen archivos que hayan mutado a una ubicación protegida mediante enlaces simbólicos o puntos de reparse durante la ejecución del proceso.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-04T12:11:17` **organizer.py** (robustez ante casos límite): Se añadió una validación en `stage_for_review` para prevenir errores de concurrencia al mover archivos que puedan haber sido eliminados o renombrados por otros procesos entre la detección y el movimiento, asegurando que la operación solo proceda si `current_path.exists()` es verdadero antes de cada intento.
 - `2026-08-04T12:01:36` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez de `score_security` ante entradas negativas o erróneas mediante el uso de `max` y `_to_int`, evitando que una métrica mal formada pueda generar una penalización negativa (que elevaría el puntaje artificialmente) o desbordar el cálculo.
 - `2026-08-04T12:01:10` **duplicates.py** (robustez ante casos límite): Se ha mejorado la resiliencia de la función `suggest_keeper` ante fallos en el acceso a metadatos de archivos (como errores de permiso o archivos que desaparecen durante la ejecución) mediante la inclusión de un bloque `try-except` robusto y la validación estricta de las rutas, asegurando que la app no aborte ante condiciones de carrera en el sistema de archivos.
-- `2026-08-04T11:50:59` **assistant.py** (robustez ante casos límite): Reforcé la robustez del procesamiento de métricas agregando validación ante valores `NaN` o `inf` inesperados dentro de `build_context` y asegurando que las listas de problemas no fallen si `SystemContext` contiene datos parciales.
-- `2026-08-04T11:41:28` **settings.py** (rendimiento): Optimizé `load()` y `get()` reemplazando llamadas redundantes a `load()` (que re-ejecuta `stat` y validación) por accesos directos al diccionario en caché, mejorando significativamente la eficiencia durante la ejecución intensiva.
