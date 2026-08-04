@@ -171,12 +171,14 @@ class Answer:
 
 def _ensure_safe_text(text: str) -> bool:
     """Valida que el texto no contenga rutas, caracteres de control o inyecciones."""
-    if not text or len(text) > 2000:
+    if not isinstance(text, str) or not text or len(text) > 2000:
         return False
     if _PATH_REGEX.search(text) or _CONTROL_CHARS_REGEX.search(text):
         return False
-    if is_protected_path(text):
-        return False
+    # La validación de path se aplica solo si el texto parece contener rutas
+    if any(c in text for c in (":\\", "/", "\\")):
+        if is_protected_path(text):
+            return False
     return True
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
@@ -426,7 +428,7 @@ def _call_gemini(
     model: str
 ) -> Optional[str]:
     """Envía métricas agregadas a Gemini mediante la librería estándar urllib."""
-    if not api_key or not isinstance(api_key, str) or not model or not isinstance(model, str) or not _MODEL_NAME_REGEX.match(model):
+    if not isinstance(api_key, str) or not api_key or not isinstance(model, str) or not _MODEL_NAME_REGEX.match(model):
         return None
     
     safe_q: str = _sanitize_query(question)
