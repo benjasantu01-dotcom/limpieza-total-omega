@@ -123,6 +123,9 @@ def check_recent_executable_in_downloads(path: Path, hours: int = RECENT_FILE_TH
         return None
         
     try:
+        # Validar existencia antes de lstat para evitar errores en archivos que desaparecieron
+        if not path.is_file():
+            return None
         mtime = datetime.fromtimestamp(path.lstat().st_mtime)
         if datetime.now() - mtime < timedelta(hours=hours):
             return Suspicion(path, f"Ejecutable reciente detectado (modificado hace menos de {hours}h)", "info")

@@ -143,7 +143,7 @@ def settings_path(path_or_base: PathLike | None = None) -> Path:
         while not is_safe_to_modify(str(base)) and base != base.parent:
             base = base.parent
         res = base.resolve() / SETTINGS_FILE
-    except (OSError, RuntimeError, ValueError):
+    except (OSError, RuntimeError, ValueError, PermissionError):
         res = SETTINGS_DIR.resolve() / SETTINGS_FILE
     _path_cache[key] = res
     return res

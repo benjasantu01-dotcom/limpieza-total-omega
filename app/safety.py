@@ -79,24 +79,20 @@ def _is_reserved_device_name(name: str) -> bool:
 
 def _is_system_or_hidden(path: Path) -> bool:
     """Verifica mediante la API Win32 si el archivo tiene atributos de sistema o oculto (0x02, 0x04)."""
-    if os.name != 'nt' or not path.exists():
+    if os.name != 'nt':
         return False
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
-        if attrs == -1: return False
-        return bool(attrs & 0x02) or bool(attrs & 0x04)
+        return attrs != -1 and bool(attrs & (0x02 | 0x04))
     except Exception:
         return False
 
 
 def _is_reparse_point(path: Path) -> bool:
     """Determina si la ruta es un punto de reanálisis (Junction/Symlink) mediante atributos de archivo."""
-    if not path.exists():
-        return False
     try:
         stats = path.lstat()
-        is_reparse = bool(getattr(stats, "st_file_attributes", 0) & 0x400)
-        return is_reparse or path.is_symlink()
+        return bool(getattr(stats, "st_file_attributes", 0) & 0x400) or path.is_symlink()
     except (OSError, PermissionError):
         return True 
 
@@ -115,8 +111,6 @@ def _is_file_in_use(path: Path) -> bool:
 
 def _is_readonly(path: Path) -> bool:
     """Determina si un archivo carece del bit de permiso de escritura (S_IWRITE)."""
-    if not path.exists():
-        return False
     try:
         return not bool(path.stat().st_mode & stat.S_IWRITE)
     except (OSError, PermissionError):
@@ -164,10 +158,7 @@ def is_protected_path(path: PathLike) -> bool:
             return True
         if p == Path(p.anchor):
             return True
-        try:
-            return p.exists() and _is_reparse_point(p)
-        except (OSError, PermissionError):
-            return False
+        return p.exists() and _is_reparse_point(p)
     except (PermissionError, OSError, ValueError, TypeError):
         return True 
 
@@ -229,7 +220,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
             if _is_reparse_point(p) or _is_readonly(p) or _is_file_in_use(p) or _is_system_or_hidden(p):
                 raise UnsafePathError("Operación bloqueada: archivo inaccesible, protegido o sistema.")
             if p.is_file() and p.stat().st_nlink > 1:
-                raise UnsafePathError("Operación bloqueada: enlace físico detectado.")
+                raise UnsafePathError("Operación bloqueada: enlace físico (hard link) detectado.")
         except OSError as e:
             raise UnsafePathError(f"Error al verificar estado del archivo: {e}")
 
