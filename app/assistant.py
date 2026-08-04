@@ -184,7 +184,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     ctx = SystemContext()
 
     def is_valid_num(v: Any) -> bool:
-        return isinstance(v, (int, float)) and math.isfinite(v)
+        return isinstance(v, (int, float)) and not isinstance(v, bool) and math.isfinite(v)
 
     def extract(source: Any, attr: str, default: Any, cast: Callable = float) -> Any:
         try:

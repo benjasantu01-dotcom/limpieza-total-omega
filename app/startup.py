@@ -112,20 +112,22 @@ class StartupEntry:
         if not isinstance(path_str, str) or not path_str or any(c in path_str for c in '<>|?*'):
             return ""
         
+        # Verificar caché antes de realizar cualquier operación de resolución
+        if path_str in _EXISTS_CACHE:
+            return path_str if _EXISTS_CACHE[path_str] else path_str
+        
         try:
             p = Path(path_str)
             if is_protected_path(p) or p.is_symlink():
                 return path_str
             
-            # Resolve puede fallar con permisos denegados en directorios padre
             p_abs = p.expanduser().resolve(strict=False)
             
             if is_protected_path(p_abs):
                 return ""
                 
             p_str = str(p_abs)
-            if p_str not in _EXISTS_CACHE:
-                _EXISTS_CACHE[p_str] = p_abs.is_file()
+            _EXISTS_CACHE[p_str] = p_abs.is_file()
             
             return p_str if _EXISTS_CACHE[p_str] else path_str
         except (OSError, ValueError, RuntimeError, TypeError):

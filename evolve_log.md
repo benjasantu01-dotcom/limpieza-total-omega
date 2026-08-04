@@ -546,3 +546,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-04T07:05:10` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
 - `2026-08-04T07:05:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-04T07:05:10` Corrida terminada. Total usado hoy: 168.
+- `2026-08-04T07:14:03` Arrancando corrida. Quedan hoy ~132 peticiones objetivo.
+- `2026-08-04T07:14:27` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el bucle de escaneo de archivos utilizando pre-validación de extensiones y nombres de archivo mediante conjuntos (sets) para evitar llamadas innecesarias a funciones de inspección, reduciendo significativamente la sobrecarga de CPU en directorios grandes.
+- `2026-08-04T07:14:52` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento del módulo implementando un mecanismo de caché más robusto en `load()` y `settings_path()` para reducir las llamadas repetitivas a `stat()` y `expanduser()`/`resolve()`, mitigando el impacto de I/O en lecturas frecuentes.
+- `2026-08-04T07:15:17` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Optimicé el rendimiento de `_resolve_and_cache_path` mediante una verificación previa de existencia en `_EXISTS_CACHE` antes de realizar operaciones costosas de resolución de rutas (`resolve` o `expanduser`), reduciendo el impacto de I/O en llamadas repetidas.
+- `2026-08-04T07:15:34` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `build_context` ante valores `None` inesperados y tipos de datos inválidos en los módulos de entrada, previniendo excepciones durante el análisis inicial que podrían bloquear el flujo del asistente.
+- `2026-08-04T07:15:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-04T07:15:34` Corrida terminada. Total usado hoy: 172.

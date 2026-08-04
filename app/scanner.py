@@ -118,12 +118,6 @@ def check_system_lookalike(path: Path) -> Optional[Suspicion]:
         return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
     return None
 
-CHECK_FUNCS: Final[List[SuspicionCheck]] = [
-    check_double_extension, 
-    check_recent_executable_in_downloads, 
-    check_system_lookalike
-]
-
 def scan_file(path: Path, prevalidated: bool = False) -> ScanResult:
     """Ejecuta todos los chequeos heurísticos registrados contra un archivo específico."""
     if not prevalidated:
@@ -140,16 +134,18 @@ def scan_file(path: Path, prevalidated: bool = False) -> ScanResult:
     path_suffix_lower = path.suffix.lower()
     path_name_lower = path.name.lower()
 
-    for check_func in CHECK_FUNCS:
-        # Filtros de pre-chequeo para evitar lógica innecesaria en funciones
-        if check_func == check_recent_executable_in_downloads and path_suffix_lower not in SUSPICIOUS_EXECUTABLE_EXT:
-            continue
-        if check_func == check_system_lookalike and path_name_lower not in SYSTEM_LOOKALIKES:
-            continue
-            
-        result = check_func(path)
-        if result:
-            findings.append(result)
+    # Pre-evaluación heurística: solo ejecutar checks si el nombre/extensión es candidato
+    if path_name_lower in SYSTEM_LOOKALIKES:
+        res = check_system_lookalike(path)
+        if res: findings.append(res)
+    
+    if path_suffix_lower in SUSPICIOUS_EXECUTABLE_EXT:
+        res = check_recent_executable_in_downloads(path)
+        if res: findings.append(res)
+        
+    if DOUBLE_EXTENSION_RE.search(path.name):
+        res = check_double_extension(path)
+        if res: findings.append(res)
             
     return findings
 

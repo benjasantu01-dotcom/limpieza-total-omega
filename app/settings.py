@@ -156,7 +156,7 @@ def settings_path(path_or_base: PathLike | None = None) -> Path:
         base = Path(key).expanduser()
         while not is_safe_to_modify(str(base)) and base != base.parent:
             base = base.parent
-        res = base.resolve() / SETTINGS_FILE
+        res = (base / SETTINGS_FILE).resolve()
     except (OSError, RuntimeError, ValueError, PermissionError):
         res = SETTINGS_DIR.resolve() / SETTINGS_FILE
     _path_cache[key] = res
@@ -180,16 +180,18 @@ def load(path_or_base: PathLike | None = None) -> dict[str, Any]:
     """Carga y valida el archivo de configuración desde el disco, usando caché para evitar I/O redundante."""
     global _cached_settings, _last_path, _last_mtime
     ruta = settings_path(path_or_base)
+    
     try:
-        if not ruta.exists(): raise FileNotFoundError
-        ensure_safe_to_modify(str(ruta))
         stat = ruta.stat()
         if _cached_settings is not None and ruta == _last_path and stat.st_mtime == _last_mtime:
             return _cached_settings
+        
+        ensure_safe_to_modify(str(ruta))
         if stat.st_size > MAX_SETTINGS_SIZE: raise OSError("Config too large")
-        raw_content = ruta.read_text(encoding="utf-8")
-        data = json.loads(raw_content) if raw_content.strip() else {}
+        
+        data = json.loads(ruta.read_text(encoding="utf-8")) if stat.st_size > 0 else {}
         if not isinstance(data, dict): raise ValueError("Invalid structure")
+        
         _cached_settings = validate(data)
         _last_path, _last_mtime = ruta, stat.st_mtime
         return _cached_settings
