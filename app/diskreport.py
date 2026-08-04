@@ -132,7 +132,7 @@ def drive_usage(mount: Union[str, os.PathLike]) -> Optional[DriveUsage]:
     Args:
         mount: Ruta de la unidad a consultar.
     Returns:
-        Instancia de DriveUsage o None si no es accesible.
+        Instancia de DriveUsage o None si no es accesible o es una ruta protegida.
     """
     if not mount or not isinstance(mount, (str, os.PathLike)):
         return None
@@ -153,6 +153,7 @@ def drive_usage(mount: Union[str, os.PathLike]) -> Optional[DriveUsage]:
 def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]:
     """
     Obtiene el reporte de uso de todas las unidades montadas en el sistema.
+    En Windows, escanea las letras de unidad disponibles; en Unix, usa la raíz.
     """
     if mounts is None:
         if os.name == "nt":
@@ -173,7 +174,11 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Generador que recorre recursivamente el sistema de archivos, omitiendo rutas protegidas.
+    Recorre recursivamente el sistema de archivos omitiendo enlaces simbólicos,
+    junctions y rutas protegidas por `safety.is_protected_path`.
+
+    Yields:
+        Tupla (Path al archivo, tamaño en bytes).
     """
     if not isinstance(directory, (str, os.PathLike)):
         return
@@ -194,6 +199,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
             with os.scandir(current_path) as iterator:
                 for entry in iterator:
                     try:
+                        # Evitar seguir enlaces simbólicos y puntos de reparse (Windows junctions)
                         if entry.is_symlink() or (os.name == 'nt' and entry.stat(follow_symlinks=False).st_reparse_tag != 0):
                             continue
                         
@@ -215,7 +221,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 
 
 def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_protected: bool = True) -> List[FileEntry]:
-    """Encuentra los N archivos más pesados usando un montículo (heap) para eficiencia O(n log k)."""
+    """Encuentra los N archivos más pesados usando un min-heap para mantener una complejidad O(n log k)."""
     if not directory:
         return []
     return heapq.nlargest(
@@ -226,7 +232,10 @@ def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_prot
 
 
 def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip_protected: bool = True) -> List[ExtensionUsage]:
-    """Agrupa el uso de espacio por extensión de archivo."""
+    """
+    Agrupa el uso de espacio por extensión de archivo. 
+    Si un archivo carece de extensión, se categoriza como '(sin extensión)'.
+    """
     if not directory:
         return []
     sizes: Dict[str, int] = defaultdict(int)
@@ -243,7 +252,10 @@ def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip
 
 
 def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
-    """Calcula qué subdirectorios de primer nivel ocupan más espacio total."""
+    """
+    Calcula qué subdirectorios directos de 'directory' ocupan más espacio total.
+    Agrega recursivamente el tamaño de todos los archivos encontrados bajo el nivel principal.
+    """
     if not directory:
         return []
     try:
@@ -285,6 +297,9 @@ def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -> List[str]:
     """
     Genera un reporte textual formateado del uso de espacio en la ruta analizada.
+    
+    El reporte incluye estadísticas agregadas por tipo de archivo y una lista
+    de los archivos más pesados encontrados.
     """
     if not directory or not isinstance(directory, (str, os.PathLike)):
         return ["Error: Ruta no válida o no especificada."]
@@ -310,6 +325,7 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
         stat[0] += size
         stat[1] += 1
         
+        # Mantiene un top 8 de archivos usando el heap
         if len(top_heap) < 8:
             heapq.heappush(top_heap, (size, path))
         elif size > top_heap[0][0]:
