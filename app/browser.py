@@ -155,17 +155,19 @@ def directory_size(path: str | os.PathLike | None) -> int:
         try:
             with os.scandir(current_dir_str) as it:
                 for entry in it:
-                    try:
-                        if entry.name.lower() in NEVER_TOUCH or any(ord(c) < 32 for c in entry.name):
-                            continue
-                        if entry.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(entry.path)):
-                            continue
-                        if entry.is_dir(follow_symlinks=False):
-                            stack.append(entry.path)
-                        elif entry.is_file():
-                            total_bytes += entry.stat().st_size
-                    except (OSError, PermissionError):
+                    # Reglas de exclusión: nunca seguir junctions o rutas protegidas
+                    if entry.name.lower() in NEVER_TOUCH or any(ord(c) < 32 for c in entry.name):
                         continue
+                    if entry.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(entry.path)):
+                        continue
+                    
+                    if entry.is_dir(follow_symlinks=False):
+                        stack.append(entry.path)
+                    elif entry.is_file():
+                        try:
+                            total_bytes += entry.stat().st_size
+                        except OSError:
+                            continue
         except (OSError, PermissionError, FileNotFoundError):
             continue
             

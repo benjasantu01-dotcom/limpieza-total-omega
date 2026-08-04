@@ -16,37 +16,41 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-02 | 62 | 5 | 8 | 1 | 42 |
+| 2026-08-02 | 58 | 5 | 8 | 1 | 42 |
 | 2026-08-03 | 173 | 6 | 17 | 12 | 142 |
-| 2026-08-04 | 8 | 1 | 1 | 1 | 25 |
+| 2026-08-04 | 12 | 1 | 1 | 1 | 25 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **52**
+- legibilidad y documentación: **56**
 - seguridad defensiva: **50**
 - manejo de errores y validación de entradas: **50**
 - robustez ante casos límite: **48**
-- rendimiento: **43**
+- rendimiento: **39**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **24**
 - `scanner.py`: **21**
-- `main.py`: **19**
-- `quarantine.py`: **19**
-- `assistant.py`: **19**
-- `organizer.py`: **18**
-- `browser.py`: **18**
+- `assistant.py`: **20**
+- `browser.py`: **19**
+- `main.py`: **18**
+- `quarantine.py`: **18**
+- `organizer.py`: **17**
 - `healthscore.py`: **16**
+- `diskreport.py`: **16**
 - `duplicates.py`: **16**
-- `memory.py`: **15**
 - `safety.py`: **15**
-- `diskreport.py`: **15**
-- `branding.py`: **14**
+- `branding.py`: **15**
 - `startup.py`: **14**
+- `memory.py`: **14**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-04T01:37:48` **diskreport.py** (legibilidad y documentación): Mejora la robustez y legibilidad mediante la adición de docstrings técnicos detallados, type hints explícitos en retornos de funciones complejas y el refinamiento de la nomenclatura de parámetros internos para clarificar el manejo de errores en el escaneo de directorios.
+- `2026-08-04T01:37:37` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación interna y claridad de las funciones de navegación mediante type hinting y docstrings enriquecidos, y se consolidó el manejo de errores en `directory_size` usando un enfoque de filtrado temprano para mejorar la legibilidad y mantenimiento del bucle de escaneo.
+- `2026-08-04T01:37:14` **branding.py** (legibilidad y documentación): Documenté con docstrings claros y tipado los argumentos de `draw_logo` y `draw_ring` para eliminar ambigüedades en sus parámetros posicionales y de diseño, facilitando el mantenimiento de la interfaz.
+- `2026-08-04T01:36:40` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` documentando los contratos de las funciones `build_context` y `_call_gemini` mediante docstrings detallados, aclarando qué parámetros espera y qué tipo de datos retorna para evitar ambigüedades.
 - `2026-08-04T01:27:03` **settings.py** (manejo de errores y validación de entradas): Reforcé la robustez de `validate` añadiendo un chequeo explícito de tipos para evitar errores en cadena si el JSON de entrada contiene estructuras inesperadas (como listas en campos que esperan booleanos), garantizando que siempre se devuelva un diccionario íntegro.
 - `2026-08-04T01:16:53` **quarantine.py** (manejo de errores y validación de entradas): Se mejora la robustez de `quarantine_file` envolviendo la llamada a `shutil.move` en un bloque `try-except` más específico y añadiendo una verificación previa de existencia del directorio destino para evitar excepciones de `FileNotFoundError` no controladas durante la operación de escritura atómica.
 - `2026-08-04T01:16:24` **organizer.py** (manejo de errores y validación de entradas): Se reforzó el manejo de errores en `scan_for_junk` y `stage_for_review` añadiendo validaciones de tipo y estructura defensiva para prevenir `AttributeError` o comportamientos inesperados ante datos malformados, garantizando la integridad del proceso.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-03T14:41:03` **startup.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_resolve_and_cache_path` añadiendo una validación explícita para asegurar que la ruta a resolver, una vez expandida, no escape del directorio base o sea una ruta de sistema, aplicando `ensure_safe_to_modify` (a través de `is_protected_path`) con mayor rigor antes de procesar el archivo.
 - `2026-08-03T14:32:14` **settings.py** (seguridad defensiva): Se reforzó la seguridad de `load` y `save` añadiendo una validación explícita mediante `ensure_safe_to_modify` antes de cualquier operación de I/O, garantizando que, incluso si la lógica de `settings_path` fallara, el sistema nunca interactúe con rutas bloqueadas.
 - `2026-08-03T14:32:03` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `scan_directory` y `process_entry` al agregar una validación de `is_protected_path` sobre los directorios antes de procesarlos, asegurando que el escáner no ingrese a subcarpetas prohibidas incluso si no son puntos de reparseo explícitos.
-- `2026-08-03T14:23:16` **quarantine.py** (seguridad defensiva): Se ha mejorado la robustez de `quarantine_file` añadiendo una comprobación explícita para evitar condiciones de carrera o inconsistencias si el archivo origen cambia de permisos o es reemplazado por otro proceso justo antes de la operación de movimiento (`shutil.move`), mediante la verificación de que el `st_ino` (inodo) o `st_ctime` se mantengan constantes, reforzando la seguridad defensiva.
-- `2026-08-03T14:22:48` **organizer.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `stage_for_review` implementando una validación explícita para evitar que `shutil.move` se ejecute sobre archivos que ya están siendo utilizados por otros procesos, evitando posibles corrupciones o errores de acceso durante la operación de staging.
-- `2026-08-03T14:11:06` **duplicates.py** (seguridad defensiva): Se ha robustecido la seguridad defensiva en `_collect_candidates` y `hash_file`/`partial_hash` añadiendo validaciones explícitas contra enlaces simbólicos, puntos de reparse (junctions) y rutas protegidas antes de realizar cualquier operación de I/O, asegurando que la herramienta no siga recursiones fuera del control del usuario.
-- `2026-08-03T14:10:18` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_path` integrando explícitamente `is_protected_path` sobre la ruta resuelta (`real_target`) y estandarizando la comparación mediante `resolve()` en lugar de `realpath()` para asegurar la consistencia multiplataforma de las rutas canónicas.

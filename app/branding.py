@@ -315,6 +315,12 @@ def logo_ascii() -> str:
 def draw_logo(canvas: Any, size: int = 56, canvas_x: int = 0, canvas_y: int = 0) -> None:
     """
     Renderiza el escudo Omega vectorialmente en un widget Tkinter.Canvas.
+    
+    Args:
+        canvas: Widget Tkinter donde dibujar.
+        size: Tamaño total del logo en píxeles.
+        canvas_x: Coordenada X de origen.
+        canvas_y: Coordenada Y de origen.
     """
     if canvas is None or not hasattr(canvas, "create_polygon"): return
     try:
@@ -368,6 +374,16 @@ def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
               fill: Optional[HexColor] = None) -> None:
     """
     Renderiza un medidor radial circular para HealthScore.
+    
+    Args:
+        canvas: Widget Tkinter donde dibujar.
+        percent: Valor 0-100 a representar.
+        size: Diámetro total del anillo.
+        canvas_x: Coordenada X superior izquierda.
+        canvas_y: Coordenada Y superior izquierda.
+        thickness: Grosor de la línea del anillo.
+        track: Color del fondo del anillo (opcional).
+        fill: Color del segmento de progreso (opcional).
     """
     if canvas is None or not hasattr(canvas, "create_arc"): return
     try:

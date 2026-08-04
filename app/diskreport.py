@@ -175,6 +175,10 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     """
     Generador que recorre recursivamente el sistema de archivos, omitiendo rutas protegidas.
     
+    Args:
+        directory: Directorio raíz para iniciar la recursión.
+        skip_protected: Si es True, no atraviesa rutas marcadas como protegidas.
+        
     Yields:
         Tuplas conteniendo la ruta (Path) y el tamaño en bytes (int).
     """
@@ -199,6 +203,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
             with os.scandir(current_path) as iterator:
                 for entry in iterator:
                     try:
+                        # Saltar enlaces simbólicos y puntos de reparse (Junctions) para evitar ciclos
                         if entry.is_symlink() or (os.name == 'nt' and entry.stat(follow_symlinks=False).st_reparse_tag != 0):
                             continue
                         
@@ -300,6 +305,9 @@ def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -> List[str]:
     """
     Genera un reporte textual formateado del uso de espacio en la ruta analizada.
+    
+    Returns:
+        Lista de líneas que componen el informe detallado.
     """
     if not directory:
         return ["Error: Ruta no especificada."]
@@ -311,7 +319,7 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
     except (OSError, RuntimeError, PermissionError, ValueError, TypeError):
         return ["Error: No se pudo acceder a la ruta especificada."]
         
-    ext_map: Dict[str, Tuple[int, int]] = defaultdict(lambda: [0, 0]) # [size, count]
+    ext_map: Dict[str, List[int]] = defaultdict(lambda: [0, 0]) # [size, count]
     top_heap: List[Tuple[int, Path]] = []
     total_bytes = 0
     total_files = 0

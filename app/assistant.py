@@ -180,7 +180,17 @@ def _ensure_safe_text(text: str) -> bool:
     return True
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
-    """Transforma fuentes de datos crudos en un objeto SystemContext validado."""
+    """
+    Convierte datos crudos de otros módulos en un objeto SystemContext validado.
+    
+    Args:
+        metrics: Objeto que contiene métricas de escaneo (disco, ram, etc).
+        health: Objeto que contiene el score de salud calculado.
+        **extra: Métricas adicionales forzadas.
+        
+    Returns:
+        Una instancia de SystemContext normalizada con valores numéricos seguros.
+    """
     ctx = SystemContext()
 
     def is_valid_num(v: Any) -> bool:
@@ -429,6 +439,15 @@ def _call_gemini(
     """
     Envía métricas agregadas a Gemini mediante la librería estándar urllib.
     
+    Args:
+        question: Consulta del usuario (pre-sanitizada).
+        context_text: Cadena formateada con las métricas del sistema.
+        api_key: Credencial de acceso a la API.
+        model: Identificador del modelo Gemini a utilizar.
+
+    Returns:
+        String con la respuesta validada del modelo, o None en caso de error.
+        
     Realiza una serialización JSON segura y protege la integridad de la respuesta 
     recibida. Implementa validaciones dobles de seguridad: antes de enviar para 
     evitar inyecciones en el prompt, y tras recibir para asegurar que el modelo 
