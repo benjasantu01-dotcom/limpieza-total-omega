@@ -79,10 +79,9 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
     Calcula el hash SHA256 completo del archivo mediante bloques de datos.
     Retorna None si el archivo es inaccesible, protegido o inválido.
     """
-    if not path or chunk_size <= 0: return None
+    if path is None or chunk_size <= 0: return None
     try:
         p = Path(path).resolve(strict=True)
-        # Verificación doble tras resolución: garantiza que no sea ruta de sistema
         if is_protected_path(p) or not p.is_file() or p.is_symlink():
             return None
         
@@ -103,10 +102,9 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
     """
     Calcula un hash SHA256 sobre los primeros N bytes de un archivo para comparación rápida.
     """
-    if not path or read_bytes <= 0: return None
+    if path is None or read_bytes <= 0: return None
     try:
         p = Path(path).resolve(strict=True)
-        # Verificación doble tras resolución: garantiza que no sea ruta de sistema
         if is_protected_path(p) or not p.is_file() or p.is_symlink():
             return None
             
@@ -251,7 +249,6 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     for p in group.paths:
         if not isinstance(p, Path): continue
         try:
-            # Verificación redundante ante cambios en el sistema de archivos durante la iteración
             if p.exists() and p.is_file() and not is_protected_path(p):
                 stat = p.stat()
                 valid_paths.append((stat.st_mtime, len(str(p)), p))

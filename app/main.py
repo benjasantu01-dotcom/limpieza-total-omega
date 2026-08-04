@@ -118,6 +118,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def __init__(self):
         super().__init__()
+        self.tabs: Dict[str, ctk.CTkFrame] = {}
         try:
             self._init_window_properties()
             self._init_state()
@@ -1201,7 +1202,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 self.log(f"Error: El ID '{raw_id}' no existe en la cuarentena.", "Cuarentena")
                 return
             
-            item = quarantine.get_item(raw_id)
+            try:
+                item = quarantine.get_item(raw_id)
+            except Exception:
+                self.log("Error: No se pudo acceder al manifiesto de este ID.", "Cuarentena")
+                return
+
             if not item or not hasattr(item, 'original_path'):
                 self.log("Error: El manifiesto de este ID está corrupto.", "Cuarentena")
                 return
@@ -1279,11 +1285,16 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def on_trim_process(self) -> None:
         """Libera working set de proceso (Trim) con validación de seguridad."""
         raw = self.pid_entry.get().strip()
-        if not raw.isdigit():
-            messagebox.showwarning("Entrada inválida", "Ingresá un PID numérico válido.")
+        if not raw:
+            messagebox.showwarning("Entrada vacía", "Ingresá un PID.")
             return
         
-        pid = int(raw)
+        try:
+            pid = int(raw)
+        except ValueError:
+            messagebox.showwarning("Entrada inválida", "El PID debe ser un número entero.")
+            return
+            
         if pid < 0:
             messagebox.showwarning("PID inválido", "El PID debe ser positivo.")
             return

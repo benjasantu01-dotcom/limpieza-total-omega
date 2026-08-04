@@ -283,9 +283,11 @@ def summarize(result: HealthResult) -> List[str]:
 
     for area, maximo in _WEIGHT_ITEMS:
         puntos = result.breakdown.get(area, 0)
-        puntos = max(0, min(maximo, puntos if isinstance(puntos, int) else 0))
-        visual = f"[{'#' * puntos}{'.' * (maximo - puntos)}]"
-        lines.append(f"  {area.capitalize():<12} {puntos:>2}/{maximo:<2} {visual}")
+        # Validación de tipo y rango para la visualización del gráfico de barras
+        puntos_val = puntos if isinstance(puntos, int) else 0
+        puntos_val = max(0, min(maximo, puntos_val))
+        visual = f"[{'#' * puntos_val}{'.' * (maximo - puntos_val)}]"
+        lines.append(f"  {area.capitalize():<12} {puntos_val:>2}/{maximo:<2} {visual}")
     
     lines.extend(["", "Recomendaciones:"])
     recs = result.recommendations if isinstance(result.recommendations, list) else []
