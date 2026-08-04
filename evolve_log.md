@@ -531,3 +531,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-04T06:44:46` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el bucle principal de `summarize` eliminando la creación innecesaria de objetos `FileEntry` en iteraciones intermedias y consolidando la lógica de acumulación, reduciendo así la sobrecarga de memoria y ciclos de CPU durante el análisis del disco.
 - `2026-08-04T06:44:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-04T06:44:46` Corrida terminada. Total usado hoy: 160.
+- `2026-08-04T06:53:23` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-08-04T06:53:49` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé `_collect_candidates` utilizando un generador y evitando recrear listas intermedias mediante `tuple` para las claves de los inodos, reduciendo el consumo de memoria y mejorando la velocidad de búsqueda al evitar redundancias durante la recolección inicial.
+- `2026-08-04T06:54:13` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
+- `2026-08-04T06:55:13` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-04T06:56:19` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): el archivo se encogió al 10% del original (posible pérdida de código)
+- `2026-08-04T06:56:30` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento de `parse_windows_process_csv` reemplazando la creación innecesaria de una lista intermedia mediante `lines[1:]` por una iteración directa con `itertools.islice`, evitando copias de memoria en sistemas con muchos procesos activos.
+- `2026-08-04T06:56:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-04T06:56:30` Corrida terminada. Total usado hoy: 164.

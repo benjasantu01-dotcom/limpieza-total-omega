@@ -28,6 +28,7 @@ import re
 import subprocess
 import time
 import math
+import itertools
 from functools import lru_cache
 from dataclasses import dataclass, field
 from typing import List, Tuple, Optional, Dict, TYPE_CHECKING, TypeVar
@@ -162,12 +163,14 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
     if not text:
         return []
 
-    lines = [line.strip() for line in text.splitlines() if line.strip()]
-    if len(lines) < 2:
+    lines = (line.strip() for line in text.splitlines() if line.strip())
+    try:
+        next(lines)  # Saltar encabezado
+    except StopIteration:
         return []
 
     processes: List[ProcessMemory] = []
-    for line in lines[1:]:
+    for line in lines:
         parts = [p.strip().strip('"') for p in line.split(",")]
         
         if _is_valid_process_row(parts):

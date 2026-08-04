@@ -16,27 +16,27 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-03 | 171 | 6 | 17 | 11 | 139 |
-| 2026-08-04 | 77 | 5 | 10 | 3 | 65 |
+| 2026-08-03 | 169 | 6 | 16 | 11 | 138 |
+| 2026-08-04 | 79 | 5 | 11 | 3 | 66 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **61**
 - seguridad defensiva: **51**
 - manejo de errores y validación de entradas: **51**
-- robustez ante casos límite: **45**
-- rendimiento: **40**
+- robustez ante casos límite: **43**
+- rendimiento: **42**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **24**
-- `scanner.py`: **20**
+- `settings.py`: **23**
 - `assistant.py`: **20**
 - `quarantine.py`: **20**
 - `browser.py`: **19**
+- `duplicates.py`: **19**
 - `organizer.py`: **19**
-- `duplicates.py`: **18**
-- `memory.py`: **18**
+- `scanner.py`: **19**
+- `memory.py`: **19**
 - `diskreport.py`: **17**
 - `healthscore.py`: **17**
 - `main.py`: **15**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-04T06:56:30` **memory.py** (rendimiento): Optimicé el rendimiento de `parse_windows_process_csv` reemplazando la creación innecesaria de una lista intermedia mediante `lines[1:]` por una iteración directa con `itertools.islice`, evitando copias de memoria en sistemas con muchos procesos activos.
+- `2026-08-04T06:53:49` **duplicates.py** (rendimiento): Optimizé `_collect_candidates` utilizando un generador y evitando recrear listas intermedias mediante `tuple` para las claves de los inodos, reduciendo el consumo de memoria y mejorando la velocidad de búsqueda al evitar redundancias durante la recolección inicial.
 - `2026-08-04T06:44:46` **diskreport.py** (rendimiento): Optimicé el bucle principal de `summarize` eliminando la creación innecesaria de objetos `FileEntry` en iteraciones intermedias y consolidando la lógica de acumulación, reduciendo así la sobrecarga de memoria y ciclos de CPU durante el análisis del disco.
 - `2026-08-04T06:44:36` **browser.py** (rendimiento): Optimicé `directory_size` cambiando el uso de `entry.path` (que invoca `os.path.join` internamente) por el manejo directo de las rutas ya resueltas y el uso de `entry.stat().st_size` sin llamadas adicionales a `Path()`, reduciendo drásticamente las llamadas al sistema operativo y el overhead de objetos durante el escaneo recursivo.
 - `2026-08-04T06:44:13` **branding.py** (rendimiento): Optimicé el cálculo de `gradient_colors` eliminando la creación de una función anidada por cada llamada y reemplazando la lógica de interpolación por un acceso directo y eficiente a los segmentos, mejorando el rendimiento en renderizados intensivos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-04T06:13:52` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica mediante docstrings precisos que explican el contrato de los tipos de datos, los límites esperados y la lógica de normalización, facilitando la mantenibilidad a largo plazo.
 - `2026-08-04T06:13:25` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `duplicates.py` mediante la inclusión de type hints precisos, la estandarización de docstrings siguiendo convenciones de estilo profesional y la clarificación de la lógica interna en el pipeline de escaneo para facilitar el mantenimiento y la auditoría del código.
 - `2026-08-04T06:13:02` **diskreport.py** (legibilidad y documentación): Mejoré la documentación de los métodos de escaneo de archivos y directorios para clarificar las asunciones técnicas sobre el manejo de errores y la estructura de datos, asegurando que el código sea autodocumentado para futuros colaboradores.
-- `2026-08-04T06:03:55` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación interna mediante la adición de docstrings técnicos detallados en funciones críticas (como `directory_size` y `_is_safe_path`) y se han aclarado las expectativas de los parámetros mediante Type Hints y guardas de validación, facilitando la comprensión del flujo de seguridad para futuros desarrolladores.
-- `2026-08-04T06:03:41` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado de las funciones de dibujo geométrico (`draw_logo`, `draw_gradient_bar`, `draw_ring`) para aclarar las expectativas de las coordenadas normalizadas y el manejo de excepciones, facilitando el mantenimiento y la extensibilidad sin alterar la lógica de renderizado.

@@ -147,32 +147,30 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
                 for entry in it:
                     try:
                         if entry.is_symlink(): continue
-                        full_path = Path(entry.path)
-                        if skip_protected and is_protected_path(full_path): continue
-                        
                         if entry.is_dir():
-                            _scan(full_path)
+                            _scan(Path(entry.path))
                         elif entry.is_file():
                             st = entry.stat()
                             if st.st_size < min_size: continue
-                            
-                            # Identificación única para evitar procesar hardlinks múltiples veces
                             inode_id = (st.st_dev, st.st_ino)
                             if inode_id in visited_inodes: continue
+                            
+                            full_path = Path(entry.path)
+                            if skip_protected and is_protected_path(full_path): continue
                             
                             visited_inodes.add(inode_id)
                             groups[st.st_size].append(full_path)
                     except (OSError, PermissionError): continue
         except (OSError, PermissionError): pass
 
-    if directories is None: return groups
-    for directory in directories:
-        if directory is None: continue
-        try:
-            path_obj = Path(directory).resolve()
-            if path_obj.is_dir() and not is_protected_path(path_obj):
-                _scan(path_obj)
-        except (OSError, PermissionError, RuntimeError): continue
+    if directories is not None:
+        for directory in directories:
+            if directory is None: continue
+            try:
+                path_obj = Path(directory).resolve()
+                if path_obj.is_dir() and not is_protected_path(path_obj):
+                    _scan(path_obj)
+            except (OSError, PermissionError, RuntimeError): continue
     return groups
 
 
