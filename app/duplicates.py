@@ -82,6 +82,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
     if not path or chunk_size <= 0: return None
     try:
         p = Path(path).resolve(strict=True)
+        # Verificación doble tras resolución: garantiza que no sea ruta de sistema
         if is_protected_path(p) or not p.is_file() or p.is_symlink():
             return None
         
@@ -105,6 +106,7 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
     if not path or read_bytes <= 0: return None
     try:
         p = Path(path).resolve(strict=True)
+        # Verificación doble tras resolución: garantiza que no sea ruta de sistema
         if is_protected_path(p) or not p.is_file() or p.is_symlink():
             return None
             

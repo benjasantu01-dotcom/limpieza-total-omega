@@ -112,8 +112,8 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
         if any(ord(char) < 32 for char in target_path.name):
             return False
 
-        real_base = base_path.resolve()
-        real_target = target_path.resolve()
+        real_base = base_path.resolve(strict=True)
+        real_target = target_path.resolve(strict=True)
         
         if is_protected_path(real_target):
             return False
@@ -121,9 +121,10 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
         if real_target.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(str(real_target))):
             return False
 
+        # Verifica que la ruta resuelta esté bajo la base (evita escapes con ..)
         real_target.relative_to(real_base)
         return True
-    except (OSError, ValueError, RuntimeError, PermissionError):
+    except (OSError, ValueError, RuntimeError, PermissionError, ValueError):
         return False
 
 
@@ -145,28 +146,28 @@ def directory_size(path: str | os.PathLike | None) -> int:
         return 0
     
     total_bytes: int = 0
-    stack: List[str] = [str(root)]
+    stack: List[Path] = [root]
     
     while stack:
-        current_dir_str: str = stack.pop()
+        current_dir = stack.pop()
         try:
-            with os.scandir(current_dir_str) as it:
+            with os.scandir(current_dir) as it:
                 for entry in it:
-                    try:
-                        # Validación temprana antes de costosas llamadas a stat
-                        if entry.name.lower() in NEVER_TOUCH or any(ord(c) < 32 for c in entry.name):
-                            continue
-                        
-                        # Evitar seguir symlinks o junctions para seguridad y performance
-                        if entry.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(entry.path)):
-                            continue
-                        
-                        if entry.is_dir(follow_symlinks=False):
-                            stack.append(entry.path)
-                        else:
-                            total_bytes += entry.stat(follow_symlinks=False).st_size
-                    except (OSError, PermissionError):
+                    if entry.name.lower() in NEVER_TOUCH or any(ord(c) < 32 for c in entry.name):
                         continue
+                    
+                    # Verificación de seguridad en cada subnodo visitado
+                    entry_path = Path(entry.path)
+                    if is_protected_path(entry_path):
+                        continue
+
+                    if entry.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(entry.path)):
+                        continue
+                    
+                    if entry.is_dir(follow_symlinks=False):
+                        stack.append(entry_path)
+                    else:
+                        total_bytes += entry.stat(follow_symlinks=False).st_size
         except (OSError, PermissionError):
             continue
             

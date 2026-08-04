@@ -201,8 +201,6 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     visited_directories = {base_path}
 
     def scan_level(current_path: Path) -> Generator[Tuple[Path, int], None, None]:
-        if not current_path or not current_path.is_dir():
-            return
         try:
             with os.scandir(current_path) as iterator:
                 for entry in iterator:
@@ -225,7 +223,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                     except (OSError, PermissionError, FileNotFoundError, TypeError, AttributeError):
                         continue
         except (OSError, PermissionError, FileNotFoundError, TypeError):
-            pass
+            return
 
     yield from scan_level(base_path)
 
