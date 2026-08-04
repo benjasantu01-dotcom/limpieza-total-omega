@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **256** (50.8% de aceptación)
+- Mejoras aceptadas: **258** (51.2% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 28
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 194
+- Sin respuesta de la IA (error o límite): 192
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-03 | 105 | 2 | 10 | 6 | 85 |
-| 2026-08-04 | 151 | 11 | 18 | 7 | 109 |
+| 2026-08-03 | 105 | 2 | 10 | 6 | 81 |
+| 2026-08-04 | 153 | 11 | 18 | 7 | 111 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,7 +25,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **51**
 - rendimiento: **50**
 - robustez ante casos límite: **49**
-- seguridad defensiva: **45**
+- seguridad defensiva: **47**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,18 +34,20 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **22**
 - `settings.py`: **22**
 - `duplicates.py`: **20**
+- `healthscore.py`: **20**
 - `browser.py`: **19**
-- `healthscore.py`: **19**
 - `scanner.py`: **19**
 - `memory.py`: **18**
 - `diskreport.py`: **17**
+- `main.py`: **16**
 - `branding.py`: **15**
-- `main.py`: **15**
 - `safety.py`: **14**
 - `startup.py`: **12**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-04T12:43:16` **main.py** (seguridad defensiva): Se ha implementado una validación de seguridad preventiva en `on_trim_process` para asegurar que el PID sea un proceso existente y no una ruta inválida o maliciosa, reforzando la integridad del bucle de seguridad antes de cualquier intento de manipulación de memoria.
+- `2026-08-04T12:42:13` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la validación estricta de tipos y rangos en las funciones de cómputo, asegurando que los valores procesados nunca provoquen comportamientos inesperados (NaN/Inf) que pudieran corromper el cálculo del puntaje global.
 - `2026-08-04T12:32:55` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez de las funciones de hash (`hash_file` y `partial_hash`) implementando una doble validación de seguridad: al re-verificar `is_protected_path` después de resolver la ruta (`resolve(strict=True)`), se garantiza que no se procesen archivos que hayan mutado a una ubicación protegida mediante enlaces simbólicos o puntos de reparse durante la ejecución del proceso.
 - `2026-08-04T12:32:46` **diskreport.py** (seguridad defensiva): Se ha robustecido la función `walk_files` para manejar de forma segura los errores de acceso durante la iteración (`OSError`, `PermissionError`), evitando que un error de lectura puntual en un archivo bloquee la exploración completa del directorio, manteniendo así la integridad del reporte.
 - `2026-08-04T12:32:19` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva en `directory_size` y `_is_safe_path` para garantizar que las comprobaciones de integridad no dependan únicamente de excepciones, incluyendo una verificación explícita de `is_protected_path` al procesar cada subdirectorio y evitando el acceso a archivos de sistema ocultos mediante una normalización estricta de rutas.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-04T12:01:10` **duplicates.py** (robustez ante casos límite): Se ha mejorado la resiliencia de la función `suggest_keeper` ante fallos en el acceso a metadatos de archivos (como errores de permiso o archivos que desaparecen durante la ejecución) mediante la inclusión de un bloque `try-except` robusto y la validación estricta de las rutas, asegurando que la app no aborte ante condiciones de carrera en el sistema de archivos.
 - `2026-08-04T11:50:59` **assistant.py** (robustez ante casos límite): Reforcé la robustez del procesamiento de métricas agregando validación ante valores `NaN` o `inf` inesperados dentro de `build_context` y asegurando que las listas de problemas no fallen si `SystemContext` contiene datos parciales.
 - `2026-08-04T11:41:28` **settings.py** (rendimiento): Optimizé `load()` y `get()` reemplazando llamadas redundantes a `load()` (que re-ejecuta `stat` y validación) por accesos directos al diccionario en caché, mejorando significativamente la eficiencia durante la ejecución intensiva.
-- `2026-08-04T11:41:02` **scanner.py** (rendimiento): Se optimizó el rendimiento del escaneo al evitar llamadas redundantes a `path.is_file()` y `path.suffix` mediante el uso directo de los atributos ya disponibles en el objeto `os.DirEntry` durante la iteración, reduciendo drásticamente las llamadas al sistema de archivos.
-- `2026-08-04T11:40:41` **safety.py** (rendimiento): Se implementó un cache temporal (`lru_cache`) en la función `_is_readonly` y se optimizó `filter_safe_paths` evitando llamadas redundantes a `normalize` al pre-procesar las rutas, reduciendo significativamente el overhead de E/S y procesamiento en escaneos masivos.

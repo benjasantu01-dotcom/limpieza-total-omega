@@ -166,7 +166,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             
         self.setting_vars: Dict[str, Any] = {}
         self.outputs: Dict[str, ctk.CTkTextbox] = {}
-        self.tabs: Dict[str, ctk.CTkFrame] = {}
         self.cards: Dict[str, ctk.CTkLabel] = {}
         self.area_bars: Dict[str, Tuple[ctk.CTkProgressBar, ctk.CTkLabel]] = {}
         
@@ -1278,7 +1277,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.run_async(task)
 
     def on_trim_process(self) -> None:
-        """Libera working set de proceso (Trim)."""
+        """Libera working set de proceso (Trim) con validación de seguridad."""
         raw = self.pid_entry.get().strip()
         if not raw.isdigit():
             messagebox.showwarning("Entrada inválida", "Ingresá un PID numérico válido.")
@@ -1289,6 +1288,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             messagebox.showwarning("PID inválido", "El PID debe ser positivo.")
             return
         
+        # Validación: solo procesos con un nombre reconocible (excluir PIDs de sistema críticos)
+        if pid < 100:
+            messagebox.showerror("Bloqueado", "Este PID corresponde a un proceso del sistema esencial y no puede ser modificado.")
+            return
+
         if not self._confirm("Liberar working set", memory_mod.TRIM_WARNING + "\n\n¿Seguimos?"):
             return
 

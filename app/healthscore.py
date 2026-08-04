@@ -196,10 +196,11 @@ def score_startup(startup_count: int) -> float:
 
 def grade_for_score(score: int) -> str:
     """Asigna una calificación cualitativa (A-F) basada en el rango del puntaje [0, 100]."""
-    if score >= 90: return "A"
-    if score >= 80: return "B"
-    if score >= 65: return "C"
-    if score >= 50: return "D"
+    s = _to_int(score)
+    if s >= 90: return "A"
+    if s >= 80: return "B"
+    if s >= 65: return "C"
+    if s >= 50: return "D"
     return "F"
 
 

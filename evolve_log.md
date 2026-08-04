@@ -1076,3 +1076,10 @@ FAILED evolve/tests/test_modules.py::test_summarize_mentions_the_folder_and_tota
 - `2026-08-04T12:32:55` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de las funciones de hash (`hash_file` y `partial_hash`) implementando una doble validación de seguridad: al re-verificar `is_protected_path` después de resolver la ruta (`resolve(strict=True)`), se garantiza que no se procesen archivos que hayan mutado a una ubicación protegida mediante enlaces simbólicos o puntos de reparse durante la ejecución del proceso.
 - `2026-08-04T12:32:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-04T12:32:55` Corrida terminada. Total usado hoy: 296.
+- `2026-08-04T12:41:45` Arrancando corrida. Quedan hoy ~4 peticiones objetivo.
+- `2026-08-04T12:42:13` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva mediante la validación estricta de tipos y rangos en las funciones de cómputo, asegurando que los valores procesados nunca provoquen comportamientos inesperados (NaN/Inf) que pudieran corromper el cálculo del puntaje global.
+- `2026-08-04T12:43:16` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Se ha implementado una validación de seguridad preventiva en `on_trim_process` para asegurar que el PID sea un proceso existente y no una ruta inválida o maliciosa, reforzando la integridad del bucle de seguridad antes de cualquier intento de manipulación de memoria.
+- `2026-08-04T12:43:41` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
+- `2026-08-04T12:43:48` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-08-04T12:43:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-04T12:43:48` Corrida terminada. Total usado hoy: 300.
