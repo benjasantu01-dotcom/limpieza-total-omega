@@ -81,9 +81,9 @@ class JunkFile:
     modified: datetime
 
     def __post_init__(self) -> None:
+        """Normaliza la ruta a absoluta tras la inicialización."""
         if not isinstance(self.path, Path):
             self.path = Path(self.path)
-        # Aseguramos que la ruta esté resuelta para evitar inconsistencias durante el movimiento
         try:
             self.path = self.path.resolve()
         except (OSError, RuntimeError):
@@ -104,14 +104,11 @@ def _generate_unique_target(target: Path) -> Path:
     """
     Resuelve colisiones de nombres añadiendo un sufijo numérico incremental.
     
-    Aplica una estrategia de 'retry' para encontrar una ruta libre en el destino
-    evitando sobrescribir archivos existentes durante el proceso de organización.
-
     Args:
-        target: La ruta destino deseada que podría estar ocupada.
+        target: La ruta destino deseada.
 
     Returns:
-        Path: Una ruta garantizada como inexistente para evitar sobrescrituras.
+        Path: Ruta garantizada como inexistente para evitar sobrescrituras.
     """
     if not target.exists():
         return target
@@ -131,13 +128,15 @@ def _is_allowed_directory(name: str) -> bool:
 
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     """
-    Recorre recursivamente los directorios provistos buscando archivos basura.
+    Escaneo recursivo de directorios buscando candidatos a limpieza.
+    
+    Nota: Utiliza `is_safe_to_modify` para cada archivo antes de incluirlo.
     
     Args:
-        directories: Lista opcional de rutas a escanear. Si es None, usa DEFAULT_SCAN_DIRS.
+        directories: Lista de rutas a escanear. Si es None, usa DEFAULT_SCAN_DIRS.
     
     Returns:
-        List[JunkFile]: Lista de objetos JunkFile encontrados y validados.
+        List[JunkFile]: Colección de archivos detectados.
     """
     dirs = directories if directories is not None else DEFAULT_SCAN_DIRS
     found: List[JunkFile] = []
@@ -185,8 +184,8 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 
     Args:
         files: Lista de objetos JunkFile a ordenar.
-        by: Campo por el cual ordenar ('size' o 'date').
-        ascending: Orden ascendente si es True, descendente si es False.
+        by: 'size' (bytes) o 'date' (última modificación).
+        ascending: Dirección del ordenamiento.
     """
     if not files:
         return []
@@ -202,14 +201,16 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Path:
     """
-    Prepara archivos para ser eliminados moviéndolos a un directorio de cuarentena.
+    Mueve archivos candidatos a un directorio de cuarentena para revisión humana.
+    
+    Utiliza `ensure_safe_to_modify` para proteger el directorio de destino y
+    evita mover archivos que están actualmente en uso o son inseguros.
     """
     if not files:
         raise ValueError("La lista de archivos a procesar no puede estar vacía.")
 
     try:
         dest = Path(review_dir).expanduser().resolve()
-        # Validación de seguridad: no permitir mover a rutas protegidas
         ensure_safe_to_modify(dest)
         dest.mkdir(parents=True, exist_ok=True)
     except (OSError, RuntimeError, PermissionError) as e:
@@ -223,16 +224,16 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             if not current_path.exists() or not current_path.is_file() or not is_safe_to_modify(current_path):
                 continue
             
-            # Prevenir movimiento a la misma carpeta o anidamiento
             current_abs = current_path.resolve()
+            # Evita anidamiento: no mover si el destino es padre o hijo del origen
             if current_abs.parent == dest or dest in current_abs.parents or current_abs in dest.parents:
                 continue
             
-            # Evitar mover el archivo si es el mismo origen y destino (físicamente)
+            # Evitar colisión de ruta absoluta
             if os.path.samefile(current_abs, dest):
                 continue
             
-            # Verificación de bloqueo de archivo
+            # Verificación de exclusividad: intentar abrir en modo lectura
             try:
                 with open(current_path, 'rb'): pass
             except (OSError, PermissionError):
@@ -247,7 +248,12 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
     """
-    Elimina físicamente los archivos dentro del directorio de revisión.
+    Elimina físicamente los archivos del directorio de revisión tras confirmación.
+    
+    Verifica `is_safe_to_modify` antes de cada operación de borrado.
+    
+    Returns:
+        int: Cantidad de archivos eliminados con éxito.
     """
     if not isinstance(review_dir, str):
         return 0

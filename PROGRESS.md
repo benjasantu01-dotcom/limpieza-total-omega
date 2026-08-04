@@ -16,36 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-03 | 128 | 3 | 12 | 8 | 101 |
-| 2026-08-04 | 122 | 8 | 15 | 4 | 103 |
+| 2026-08-03 | 124 | 3 | 12 | 8 | 101 |
+| 2026-08-04 | 126 | 8 | 15 | 4 | 103 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **56**
-- robustez ante casos límite: **52**
+- legibilidad y documentación: **60**
+- robustez ante casos límite: **51**
 - manejo de errores y validación de entradas: **51**
 - seguridad defensiva: **50**
-- rendimiento: **41**
+- rendimiento: **38**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **23**
-- `assistant.py`: **21**
-- `quarantine.py`: **21**
-- `organizer.py`: **20**
-- `scanner.py`: **19**
+- `quarantine.py`: **22**
+- `settings.py`: **22**
+- `organizer.py`: **21**
+- `memory.py`: **20**
+- `assistant.py`: **20**
 - `duplicates.py`: **19**
-- `memory.py`: **19**
 - `browser.py`: **18**
+- `scanner.py`: **18**
 - `healthscore.py`: **18**
 - `diskreport.py`: **17**
-- `main.py`: **15**
+- `main.py`: **16**
 - `branding.py`: **14**
-- `startup.py`: **13**
 - `safety.py`: **13**
+- `startup.py`: **12**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-04T10:50:56` **quarantine.py** (legibilidad y documentación): Se introdujeron type hints más específicos y se extrajo la lógica de serialización de `QuarantineItem` mediante el método `from_dict`, mejorando la legibilidad y la robustez del manejo de datos al desacoplar la validación de la instanciación.
+- `2026-08-04T10:50:44` **organizer.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `organizer.py` añadiendo tipos, aclarando las responsabilidades de las funciones clave y documentando las restricciones de seguridad internas, facilitando la mantenibilidad para futuras extensiones.
+- `2026-08-04T10:50:21` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo `memory.py` añadiendo tipos específicos (usando `TypeAlias` para mayor claridad) y enriqueciendo los docstrings con las unidades de medida esperadas y la justificación técnica de las operaciones, eliminando ambigüedades en las firmas de funciones.
+- `2026-08-04T10:49:55` **main.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `main.py` documentando los métodos de construcción de la interfaz (`_build_tab_*`) y estandarizando la estructura de la clase mediante el uso de una sección dedicada a "Factorías de UI" que simplifica la creación de componentes reutilizables.
 - `2026-08-04T10:40:09` **healthscore.py** (legibilidad y documentación): Mejore la claridad y mantenibilidad del módulo mediante la adición de docstrings detallados en las funciones de cálculo de métricas individuales, explicando el propósito y la lógica detrás de los ratios aplicados, además de añadir type hints explícitos para mejorar el análisis estático.
 - `2026-08-04T10:39:58` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica mediante docstrings más precisos en funciones clave, utilicé type hints para clarificar estructuras de retorno complejas y renombré variables internas en los recorridos de archivos para mejorar la legibilidad del flujo lógico sin alterar la funcionalidad.
 - `2026-08-04T10:39:34` **diskreport.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints consistentes en los métodos de las clases `dataclass` y funciones principales para clarificar las unidades de medida y el propósito de cada método, facilitando la legibilidad técnica del módulo.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-04T10:19:38` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `scan_file` validando explícitamente la integridad de los objetos `Path` y capturando posibles excepciones de acceso (`OSError`) al consultar metadatos, evitando que el escaneo colapse ante archivos con bloqueos o permisos restrictivos.
 - `2026-08-04T10:19:31` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `ensure_safe_to_modify` implementando validaciones de tipo explícitas y manejo de errores proactivo ante entradas nulas o malformadas, evitando que excepciones inesperadas rompan el flujo de control del bucle principal.
 - `2026-08-04T10:18:48` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de las operaciones de archivo añadiendo validaciones de estado previas y capturando excepciones de sistema de archivos específicas para evitar cierres inesperados de la aplicación.
-- `2026-08-04T10:10:01` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` validando que los elementos en la lista de entrada sean instancias válidas de `JunkFile` con rutas accesibles antes de intentar cualquier operación de disco, protegiendo al bucle de fallos ante entradas mal formadas.
-- `2026-08-04T10:09:29` **main.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_collect_settings` y `_validate_numeric_setting` para manejar entradas de usuario nulas o malformadas sin interrumpir el flujo de la aplicación, aplicando validaciones preventivas antes de procesar los datos de configuración.
-- `2026-08-04T10:08:28` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `summarize` y `_generate_recommendations` añadiendo validaciones de tipo explícitas para prevenir fallos en tiempo de ejecución ante estructuras de datos malformadas o inesperadas, alineándome con el enfoque de manejo de errores y validación de entradas.
-- `2026-08-04T09:59:04` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `hash_file` y `partial_hash` asegurando que el cierre de archivos ante excepciones sea impecable y validando explícitamente los parámetros de entrada antes de realizar operaciones de E/S.
