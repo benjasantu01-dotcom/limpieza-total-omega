@@ -180,8 +180,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _is_safe_path(self, path: Union[str, Path]) -> bool:
         """Chequeo robusto de seguridad para evitar seguir junctions o rutas inválidas."""
         try:
-            p = Path(path).resolve()
-            if p.is_symlink() or not p.exists():
+            # Resolvemos el path completo para evitar ataques de path traversal
+            p = Path(path).resolve(strict=True)
+            if p.is_symlink():
                 return False
             return not safety.is_protected_path(p)
         except (OSError, RuntimeError, PermissionError):
@@ -192,8 +193,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         if not path:
             return False
         try:
-            p = Path(path)
-            return p.exists() and p.is_dir() and os.access(p, os.R_OK)
+            p = Path(path).resolve(strict=True)
+            return p.is_dir() and os.access(p, os.R_OK)
         except (OSError, PermissionError):
             return False
 
@@ -891,8 +892,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         if not folder or not isinstance(folder, str):
             return None
         
-        path_obj = Path(folder)
-        if not self._is_safe_path(path_obj):
+        # Validar seguridad antes de propagar la ruta
+        if not self._is_safe_path(folder):
             messagebox.showwarning("Ruta no segura", "Esa ruta está protegida o es inválida.")
             return None
             

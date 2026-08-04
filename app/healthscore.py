@@ -208,7 +208,6 @@ def _generate_recommendations(m: SystemMetrics, ratios: Dict[str, float]) -> Lis
     
     recs: List[str] = []
     
-    # Verificación de claves para evitar KeyError si el dict de ratios llega incompleto
     if ratios.get("seguridad", 1.0) < WARN_THRESHOLD_HIGH:
         recs.append(f"Revisá los {m.suspicious_count} hallazgo(s) de seguridad; podés aislarlos en cuarentena sin borrarlos.")
     if ratios.get("disco", 1.0) < WARN_THRESHOLD_LOW:
@@ -258,7 +257,6 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     total_score: float = 0.0
     
     for area, weight in _WEIGHT_ITEMS:
-        # Se asegura que la clave exista antes de acceder
         ratio_val = ratios.get(area, 0.0)
         score_val = ratio_val * float(weight) * _NORM_FACTOR
         breakdown[area] = int(score_val + 0.5)
@@ -290,5 +288,7 @@ def summarize(result: HealthResult) -> List[str]:
         lines.append(f"  {area.capitalize():<12} {puntos:>2}/{maximo:<2} {visual}")
     
     lines.extend(["", "Recomendaciones:"])
-    lines.extend([f"  - {rec}" for rec in (result.recommendations or ["Ninguna recomendación disponible."])])
+    for rec in (result.recommendations if result.recommendations else ["Ninguna recomendación disponible."]):
+        if isinstance(rec, str):
+            lines.append(f"  - {rec}")
     return lines
