@@ -210,11 +210,16 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         ctx.analyzed = True
 
     if health is not None:
-        score_val = extract(health, "score", None, int)
-        ctx.score = max(0, min(score_val, 100)) if score_val is not None else None
-        grade = getattr(health, "grade", "")
-        ctx.grade = str(grade) if isinstance(grade, (str, int, float)) else ""
-        ctx.analyzed = True
+        try:
+            score_val = getattr(health, "score", None)
+            ctx.score = int(score_val) if is_valid_num(score_val) else None
+            if ctx.score is not None:
+                ctx.score = max(0, min(ctx.score, 100))
+            grade = getattr(health, "grade", "")
+            ctx.grade = str(grade) if isinstance(grade, (str, int, float)) else ""
+            ctx.analyzed = True
+        except (ValueError, TypeError):
+            pass
 
     for k, v in extra.items():
         if hasattr(ctx, k) and is_valid_num(v):

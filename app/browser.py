@@ -124,7 +124,7 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
         # Verifica que la ruta resuelta esté bajo la base (evita escapes con ..)
         real_target.relative_to(real_base)
         return True
-    except (OSError, ValueError, RuntimeError, PermissionError, ValueError):
+    except (OSError, ValueError, RuntimeError, PermissionError):
         return False
 
 
@@ -141,8 +141,8 @@ def directory_size(path: str | os.PathLike | None) -> int:
         root_path = Path(path)
         if not root_path.exists() or not root_path.is_dir() or is_protected_path(root_path):
             return 0
-        root = root_path.resolve()
-    except (OSError, TypeError, ValueError):
+        root = root_path.resolve(strict=True)
+    except (OSError, TypeError, ValueError, PermissionError):
         return 0
     
     total_bytes: int = 0
@@ -167,7 +167,10 @@ def directory_size(path: str | os.PathLike | None) -> int:
                     if entry.is_dir(follow_symlinks=False):
                         stack.append(entry_path)
                     else:
-                        total_bytes += entry.stat(follow_symlinks=False).st_size
+                        try:
+                            total_bytes += entry.stat(follow_symlinks=False).st_size
+                        except (OSError, PermissionError):
+                            continue
         except (OSError, PermissionError):
             continue
             
@@ -182,7 +185,7 @@ def _is_valid_cache_path(candidate: Path | None, base_path: Path) -> bool:
     if not isinstance(candidate, Path) or not isinstance(base_path, Path):
         return False
     try:
-        if candidate.drive.startswith(r"\\"):
+        if str(candidate.drive).startswith(r"\\"):
             return False
             
         return (

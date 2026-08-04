@@ -179,12 +179,6 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Recorre recursivamente un directorio, omitiendo enlaces simbólicos y rutas protegidas.
-
-    Args:
-        directory: Ruta base de inicio.
-        skip_protected: Si es True, no analiza rutas marcadas como protegidas.
-    Yields:
-        Tuplas (Path del archivo, tamaño en bytes).
     """
     if not isinstance(directory, (str, os.PathLike)):
         return
@@ -205,7 +199,6 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
             with os.scandir(current_path) as iterator:
                 for entry in iterator:
                     try:
-                        # Evitar seguir enlaces simbólicos y puntos de reparse (Windows junctions)
                         if entry.is_symlink() or (os.name == 'nt' and entry.stat(follow_symlinks=False).st_reparse_tag != 0):
                             continue
                         
@@ -262,7 +255,7 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
     """
     Calcula qué subdirectorios de primer nivel ocupan más espacio total.
     """
-    if not directory:
+    if not directory or not isinstance(directory, (str, os.PathLike)):
         return []
     try:
         base = Path(directory).expanduser().resolve()
@@ -305,9 +298,6 @@ def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -> List[str]:
     """
     Genera un reporte de texto con el resumen de uso de disco analizado.
-    
-    Returns:
-        Lista de líneas de texto preparadas para visualización o exportación.
     """
     if not directory or not isinstance(directory, (str, os.PathLike)):
         return ["Error: Ruta no válida o no especificada."]
@@ -321,7 +311,6 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
         
     ext_sizes: Dict[str, int] = defaultdict(int)
     ext_counts: Dict[str, int] = defaultdict(int)
-    # Min-heap para mantener los 8 más grandes (almacena (size, path_str))
     top_heap: List[Tuple[int, str]] = []
     total_bytes = 0
     total_files = 0
