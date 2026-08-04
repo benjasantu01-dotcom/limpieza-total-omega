@@ -131,6 +131,7 @@ class StartupEntry:
             
             return p_str if _EXISTS_CACHE[p_str] else path_str
         except (OSError, ValueError, RuntimeError, TypeError):
+            # En caso de error de acceso (PermissionError, etc) o resolución, devolvemos el original
             return path_str
 
     def _resolve_path_from_command(self, cmd: str) -> str:

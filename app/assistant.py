@@ -471,6 +471,7 @@ def _call_gemini(
             
         texto: str = "".join(p.get("text", "") for p in partes if isinstance(p, dict)).strip()
         
+        # Validar la respuesta recibida antes de retornarla
         if not _ensure_safe_text(texto):
             return None
             

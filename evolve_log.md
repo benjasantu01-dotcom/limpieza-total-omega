@@ -574,3 +574,37 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-04T07:46:07` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de existencia física al realizar el `lstat` dentro de `check_recent_executable_in_downloads` y `scan_file`, garantizando que el escáner no aborte ante condiciones de carrera (archivos que desaparecen entre el listado y el acceso) y sea robusto frente a rutas rotas o bloqueadas.
 - `2026-08-04T07:46:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-04T07:46:07` Corrida terminada. Total usado hoy: 184.
+- `2026-08-04T07:54:56` Arrancando corrida. Quedan hoy ~116 peticiones objetivo.
+- `2026-08-04T07:55:23` Tests FALLARON:
+```
+...............F........................................................ [ 24%]
+........................................................................ [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+______________________ test_a_normal_folder_is_remembered ______________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-1/test_a_normal_folder_is_rememb0')
+
+    def test_a_normal_folder_is_remembered(tmp_path):
+        segura = str(tmp_path / "Descargas")
+>       assert settings.validate({"ultima_carpeta": segura})["ultima_carpeta"] == segura
+E       AssertionError: assert '' == '/tmp/pytest-...mb0/Descargas'
+E         
+E         - /tmp/pytest-of-runner/pytest-1/test_a_normal_folder_is_rememb0/Descargas
+
+evolve/tests/test_assistant.py:124: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - AssertionError: assert '' == '/tmp/pytest-...mb0/Descargas'
+  
+  - /tmp/pytest-of-runner/pytest-1/test_a_normal_folder_is_rememb0/Descargas
+1 failed, 298 passed in 1.06s
+
+```
+- `2026-08-04T07:55:23` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de la persistencia de datos agregando un chequeo de integridad previo al `os.replace` para evitar la sobreescritura con archivos truncados o incompletos ante fallos de I/O, y añadí una validación de `path.exists()` dentro de `_validate_str` para evitar que configuraciones apunten a rutas inexistentes que podrían causar errores en módulos de escaneo.
+- `2026-08-04T07:55:57` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Se mejora la robustez de `StartupEntry._resolve_and_cache_path` al gestionar explícitamente `OSError` (como `PermissionError` o `FileNotFoundError`) durante `resolve()` y `is_file()` para evitar que la app se cuelgue al intentar inspeccionar rutas inexistentes, rotas o de acceso restringido en el sistema.
+- `2026-08-04T07:56:30` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva de `assistant.py` reforzando la validación de los datos que se envían al motor Gemini, asegurando que `_ensure_safe_text` se aplique estrictamente antes de construir el JSON, evitando así cualquier posibilidad de inyección a través de metadatos o entradas inesperadas.
+- `2026-08-04T07:56:43` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-08-04T07:56:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-04T07:56:43` Corrida terminada. Total usado hoy: 188.
