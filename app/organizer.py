@@ -125,25 +125,23 @@ def _generate_unique_target(target: Path) -> Path:
     return candidate
 
 
-def _is_valid_junk(entry: os.DirEntry[str]) -> bool:
-    """
-    Filtro de seguridad previo al procesamiento de directorios.
-    Verifica si el archivo es un candidato legítimo, no un symlink y es seguro modificar.
-    """
-    if entry.is_symlink() or not entry.is_file():
-        return False
-    if not entry.name.lower().endswith(_JUNK_EXTS_TUPLE):
-        return False
-    return is_safe_to_modify(Path(entry.path))
+def _is_allowed_directory(name: str) -> bool:
+    """Verifica si el nombre de una carpeta no está en la blocklist de sistema."""
+    return name.lower() not in SYSTEM_FOLDER_BLOCKLIST
 
 
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     """
     Recorre recursivamente los directorios provistos buscando archivos basura.
+    
+    Args:
+        directories: Lista opcional de rutas a escanear. Si es None, usa DEFAULT_SCAN_DIRS.
+    
+    Returns:
+        List[JunkFile]: Lista de objetos JunkFile encontrados y validados.
     """
     dirs = directories if directories is not None else DEFAULT_SCAN_DIRS
     found: List[JunkFile] = []
-    blocklist = SYSTEM_FOLDER_BLOCKLIST
     exts = _JUNK_EXTS_TUPLE
 
     def _walk_dir(base_path: str) -> None:
@@ -156,7 +154,7 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
                             continue
                         
                         if entry.is_dir(follow_symlinks=False):
-                            if entry.name.lower() not in blocklist:
+                            if _is_allowed_directory(entry.name):
                                 _walk_dir(entry.path)
                         elif entry.name.lower().endswith(exts):
                             entry_path = Path(entry.path)
@@ -185,19 +183,21 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
 
 def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -> List[JunkFile]:
     """
-    Ordena la lista de JunkFile según el criterio especificado.
+    Ordena una lista de archivos basura según el criterio especificado.
+
+    Args:
+        files: Lista de objetos JunkFile a ordenar.
+        by: Campo por el cual ordenar ('size' o 'date').
+        ascending: Orden ascendente si es True, descendente si es False.
     """
     if not files:
         return []
         
-    configs = {
+    configs: dict[str, SortConfig] = {
         "size": SortConfig("size", lambda f: f.size_bytes),
         "date": SortConfig("date", lambda f: f.modified)
     }
         
-    if not isinstance(by, str):
-        by = "size"
-
     config = configs.get(by.lower(), configs["size"])
     return sorted(files, key=config.key_func, reverse=not ascending)
 

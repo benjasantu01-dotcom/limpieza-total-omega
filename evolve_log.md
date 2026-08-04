@@ -510,3 +510,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-04T06:16:16` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): el archivo se encogió al 29% del original (posible pérdida de código)
 - `2026-08-04T06:16:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-04T06:16:16` Corrida terminada. Total usado hoy: 148.
+- `2026-08-04T06:22:43` Arrancando corrida. Quedan hoy ~152 peticiones objetivo.
+- `2026-08-04T06:23:10` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante la inclusión de type hints en funciones faltantes, la estandarización de docstrings (explicando parámetros y retornos) y la extracción de la lógica de creación de la estructura MEMORYSTATUSEX a una función de fábrica para reducir la complejidad de `_read_windows_snapshot`.
+- `2026-08-04T06:23:33` ✅ Mejora aceptada en organizer.py (enfoque: legibilidad y documentación). Se introdujeron type hints más precisos y docstrings descriptivos en las funciones de búsqueda y ordenamiento, y se extrajo la lógica de filtrado de directorios en `scan_for_junk` para mejorar la legibilidad del flujo de escaneo.
+- `2026-08-04T06:24:02` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y legibilidad de `quarantine.py` mediante la adición de Type Hints detallados en los retornos de las funciones, la estandarización de docstrings para seguir una estructura clara (Args, Returns, Raises) y la clarificación de las responsabilidades de los métodos privados, facilitando así el mantenimiento preventivo y la auditoría del código.
+- `2026-08-04T06:24:06` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 124): unterminated string literal (detected at line 124)
+- `2026-08-04T06:24:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-04T06:24:06` Corrida terminada. Total usado hoy: 152.

@@ -117,7 +117,6 @@ def format_bytes(num: Optional[_T]) -> str:
     """
     Convierte bytes a una cadena legible (ej: 10.5 MB).
     Utiliza escala logarítmica base 1024 para seleccionar la unidad adecuada.
-    Si el valor es inválido o <= 0, retorna '0 B'.
     """
     if not isinstance(num, (int, float)) or num <= 0:
         return "0 B"
@@ -132,7 +131,6 @@ def parse_linux_meminfo(text: str) -> MemorySnapshot:
     """
     Parsea la salida de /proc/meminfo. 
     Convierte valores expresados en kB (de archivos del kernel) a bytes.
-    Retorna un snapshot con 0s si el formato no es reconocible.
     """
     if not text:
         return MemorySnapshot(0, 0)
@@ -169,7 +167,6 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
         return []
 
     processes: List[ProcessMemory] = []
-    # Iterar sobre las filas de datos ignorando el encabezado
     for line in lines[1:]:
         parts = [p.strip().strip('"') for p in line.split(",")]
         
@@ -181,35 +178,36 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
                     working_set=int(parts[2])
                 ))
             except ValueError:
-                # Omitir filas con valores numéricos mal formados
                 continue
 
     processes.sort(key=lambda p: p.working_set, reverse=True)
     return processes[:max(1, limit)]
 
 
+def _create_memstat_struct(ctypes_ref: "ctypes") -> "ctypes.Structure":
+    """Crea la estructura MEMORYSTATUSEX para llamadas a la API de Windows."""
+    class MEMORYSTATUSEX(ctypes_ref.Structure):
+        _fields_ = [
+            ("dwLength", ctypes_ref.c_ulong),
+            ("dwMemoryLoad", ctypes_ref.c_ulong),
+            ("ullTotalPhys", ctypes_ref.c_ulonglong),
+            ("ullAvailPhys", ctypes_ref.c_ulonglong),
+            ("ullTotalPageFile", ctypes_ref.c_ulonglong),
+            ("ullAvailPageFile", ctypes_ref.c_ulonglong),
+            ("ullTotalVirtual", ctypes_ref.c_ulonglong),
+            ("ullAvailVirtual", ctypes_ref.c_ulonglong),
+            ("ullAvailExtendedVirtual", ctypes_ref.c_ulonglong),
+        ]
+    stat = MEMORYSTATUSEX()
+    stat.dwLength = ctypes_ref.sizeof(MEMORYSTATUSEX)
+    return stat
+
+
 def _read_windows_snapshot() -> MemorySnapshot:
-    """
-    Consulta la API GlobalMemoryStatusEx de Windows mediante ctypes.
-    Requiere estructura MEMORYSTATUSEX inicializada con su tamaño.
-    """
+    """Consulta la API GlobalMemoryStatusEx de Windows mediante ctypes."""
     import ctypes
 
-    class MEMORYSTATUSEX(ctypes.Structure):
-        _fields_ = [
-            ("dwLength", ctypes.c_ulong),
-            ("dwMemoryLoad", ctypes.c_ulong),
-            ("ullTotalPhys", ctypes.c_ulonglong),
-            ("ullAvailPhys", ctypes.c_ulonglong),
-            ("ullTotalPageFile", ctypes.c_ulonglong),
-            ("ullAvailPageFile", ctypes.c_ulonglong),
-            ("ullTotalVirtual", ctypes.c_ulonglong),
-            ("ullAvailVirtual", ctypes.c_ulonglong),
-            ("ullAvailExtendedVirtual", ctypes.c_ulonglong),
-        ]
-
-    stat = MEMORYSTATUSEX()
-    stat.dwLength = ctypes.sizeof(MEMORYSTATUSEX)
+    stat = _create_memstat_struct(ctypes)
     kernel32 = ctypes.windll.kernel32
     
     if not hasattr(kernel32, "GlobalMemoryStatusEx") or not kernel32.GlobalMemoryStatusEx(ctypes.byref(stat)):
@@ -219,10 +217,7 @@ def _read_windows_snapshot() -> MemorySnapshot:
 
 
 def read_snapshot() -> MemorySnapshot:
-    """
-    Detecta plataforma (NT o Linux) y obtiene el uso de memoria.
-    En caso de error de lectura, retorna un snapshot vacío como fallback.
-    """
+    """Detecta plataforma y retorna un snapshot de memoria actualizado."""
     if os.name == "nt":
         try:
             return _read_windows_snapshot()
@@ -242,10 +237,7 @@ def read_snapshot() -> MemorySnapshot:
 
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
-    """
-    Obtiene procesos que más consumen en Windows vía PowerShell.
-    Implementa caché para evitar saturar el subproceso (TTL: 5 seg).
-    """
+    """Obtiene procesos que más consumen en Windows con caché de 5 segundos."""
     if os.name != "nt":
         return []
 
@@ -273,10 +265,7 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
 
 
 def pressure_level(snapshot: MemorySnapshot) -> str:
-    """
-    Clasifica el nivel de salud según el porcentaje de RAM disponible.
-    Precondición: snapshot debe tener un valor 'total' positivo.
-    """
+    """Clasifica el nivel de salud según el porcentaje de RAM disponible."""
     if not isinstance(snapshot, MemorySnapshot) or snapshot.total <= 0:
         return "info"
     available: float = snapshot.available_percent
@@ -287,10 +276,7 @@ def pressure_level(snapshot: MemorySnapshot) -> str:
 
 
 def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] = None) -> List[str]:
-    """
-    Genera un informe descriptivo sobre el estado de la RAM para la UI.
-    Incluye un resumen técnico y, opcionalmente, top procesos.
-    """
+    """Genera un informe descriptivo para la UI."""
     if not isinstance(snapshot, MemorySnapshot) or snapshot.total <= 0:
         return ["No se pudo leer el estado de la memoria en este sistema."]
 
@@ -318,16 +304,12 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
 
 
 def _is_system_process(pid: int) -> bool:
-    """Determina si un PID corresponde a un proceso de sistema crítico (pid <= 100)."""
+    """Verifica si un PID pertenece a procesos del sistema."""
     return pid <= 100
 
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """
-    Llama a PSAPI EmptyWorkingSet para liberar memoria de un proceso.
-    Incluye validaciones de seguridad: PID de sistema, proceso actual, rutas protegidas.
-    Requiere privilegios administrativos en Windows.
-    """
+    """Libera el working set de un proceso (Windows). Requiere privilegios administrativos."""
     if os.name != "nt":
         return False, "Solo disponible en Windows."
     
@@ -345,7 +327,6 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if target_pid == os.getpid():
         return False, "Operación denegada: proceso de la app."
     
-    # Guardia de seguridad defensiva: no permitir manipulación de IDs protegidos
     if is_protected_path(str(target_pid)):
         return False, "Operación denegada: PID protegido por política de seguridad."
     

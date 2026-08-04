@@ -89,7 +89,7 @@ class QuarantineItem:
             stored_path: Ruta del archivo dentro de la carpeta de cuarentena.
             
         Returns:
-            True si el tamaño y hash coinciden con los guardados en el manifiesto.
+            bool: True si el tamaño y hash coinciden con los guardados en el manifiesto.
         """
         if not stored_path or not stored_path.is_file():
             return False
@@ -176,7 +176,7 @@ def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload:
         force_reload: Si es True, ignora la caché existente.
         
     Returns:
-        Lista de objetos QuarantineItem deserializados; retorna lista vacía en caso de error.
+        List[QuarantineItem]: Lista de objetos deserializados; retorna lista vacía en caso de error.
     """
     try:
         base_path = quarantine_dir(base)
@@ -222,6 +222,9 @@ def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_
         items: Lista de objetos QuarantineItem a persistir.
         base: Directorio de trabajo.
         
+    Returns:
+        Path: Ruta donde se guardó el manifiesto.
+        
     Raises:
         ValueError: Si items no es una lista.
         RuntimeError: En caso de fallo de escritura atómica.
@@ -253,6 +256,14 @@ def quarantine_file(
 ) -> QuarantineItem:
     """
     Mueve un archivo a cuarentena tras validar que es seguro operarlo.
+    
+    Args:
+        source: Ruta del archivo a poner en cuarentena.
+        reason: Motivo por el que se aísla el archivo.
+        base: Directorio base de cuarentena.
+
+    Returns:
+        QuarantineItem: El ítem creado y registrado en el manifiesto.
     """
     if not source:
         raise ValueError("La ruta de origen no puede estar vacía.")
@@ -369,7 +380,12 @@ def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[Quaranti
 
 
 def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
-    """Restaura un archivo a su ruta original tras verificar su integridad."""
+    """
+    Restaura un archivo a su ruta original tras verificar su integridad.
+    
+    Returns:
+        Path: La ruta restaurada del archivo.
+    """
     if not item_id:
         raise ValueError("ID de ítem inválido.")
     
