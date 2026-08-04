@@ -155,7 +155,7 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
                                 _walk_dir(entry.path)
                         elif Path(entry.name).suffix.lower() in _LOWER_JUNK_EXTS:
                             entry_path = Path(entry.path)
-                            if entry_path.exists() and is_safe_to_modify(entry_path):
+                            if is_safe_to_modify(entry_path):
                                 stat = entry.stat()
                                 found.append(JunkFile(
                                     path=entry_path,

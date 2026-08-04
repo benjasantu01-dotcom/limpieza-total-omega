@@ -987,3 +987,10 @@ ERROR evolve/tests/test_modules.py - NameError: name 'StartupEntry' is not defin
 - `2026-08-04T11:22:45` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Se ha optimizado el método `on_full_analysis` y la gestión del caché en `main.py` evitando el re-análisis redundante de los módulos de soporte durante la consolidación de salud, asegurando que el estado actual de la sesión sea consistente y minimizando el acceso a disco innecesario.
 - `2026-08-04T11:22:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-04T11:22:45` Corrida terminada. Total usado hoy: 268.
+- `2026-08-04T11:29:52` Arrancando corrida. Quedan hoy ~32 peticiones objetivo.
+- `2026-08-04T11:30:17` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: rendimiento).
+- `2026-08-04T11:30:40` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimicé `scan_for_junk` reemplazando llamadas redundantes a `Path(entry.path)` y el uso de `os.scandir` para obtener metadatos (tamaño y fecha) directamente del `DirEntry` mediante `entry.stat()`, evitando múltiples llamadas al sistema operativo por cada archivo.
+- `2026-08-04T11:31:07` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimizé la búsqueda de ítems en los métodos `restore_item` y `purge_item` convirtiendo la lista del manifiesto a un diccionario indexado por `item_id`, evitando recorridos lineales O(n) que penalizaban el rendimiento cuando la cuarentena crece.
+- `2026-08-04T11:31:12` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-08-04T11:31:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-04T11:31:12` Corrida terminada. Total usado hoy: 272.

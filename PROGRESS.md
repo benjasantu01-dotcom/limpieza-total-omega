@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **250** (49.6% de aceptación)
+- Mejoras aceptadas: **249** (49.4% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 27
+- Rechazadas por guardia de seguridad: 28
 - Sin cambios (nada sustancial que mejorar): 10
 - Sin respuesta de la IA (error o límite): 204
 
@@ -16,23 +16,23 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-03 | 116 | 3 | 11 | 6 | 100 |
-| 2026-08-04 | 134 | 10 | 16 | 4 | 104 |
+| 2026-08-03 | 113 | 3 | 11 | 6 | 99 |
+| 2026-08-04 | 136 | 10 | 17 | 4 | 105 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **61**
 - manejo de errores y validación de entradas: **51**
-- seguridad defensiva: **50**
-- rendimiento: **45**
-- robustez ante casos límite: **43**
+- seguridad defensiva: **48**
+- rendimiento: **47**
+- robustez ante casos límite: **42**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **23**
-- `assistant.py`: **21**
-- `organizer.py`: **21**
-- `quarantine.py`: **21**
+- `organizer.py`: **22**
+- `quarantine.py`: **22**
+- `settings.py`: **22**
+- `assistant.py`: **20**
 - `duplicates.py`: **19**
 - `healthscore.py`: **19**
 - `memory.py`: **19**
@@ -40,12 +40,14 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **17**
 - `scanner.py`: **17**
 - `main.py`: **16**
-- `branding.py`: **15**
+- `branding.py`: **14**
 - `safety.py`: **12**
 - `startup.py`: **12**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-04T11:31:07` **quarantine.py** (rendimiento): Optimizé la búsqueda de ítems en los métodos `restore_item` y `purge_item` convirtiendo la lista del manifiesto a un diccionario indexado por `item_id`, evitando recorridos lineales O(n) que penalizaban el rendimiento cuando la cuarentena crece.
+- `2026-08-04T11:30:40` **organizer.py** (rendimiento): Optimicé `scan_for_junk` reemplazando llamadas redundantes a `Path(entry.path)` y el uso de `os.scandir` para obtener metadatos (tamaño y fecha) directamente del `DirEntry` mediante `entry.stat()`, evitando múltiples llamadas al sistema operativo por cada archivo.
 - `2026-08-04T11:22:45` **main.py** (rendimiento): Se ha optimizado el método `on_full_analysis` y la gestión del caché en `main.py` evitando el re-análisis redundante de los módulos de soporte durante la consolidación de salud, asegurando que el estado actual de la sesión sea consistente y minimizando el acceso a disco innecesario.
 - `2026-08-04T11:20:55` **healthscore.py** (rendimiento): Optimicé el bucle principal de `compute_score` eliminando la creación de diccionarios intermedios y el lookup dinámico por nombre, utilizando acceso directo a atributos mediante una tupla de tuplas pre-mapeada, lo cual reduce la sobrecarga de resolución de nombres en cada iteración del hot-path.
 - `2026-08-04T11:20:29` **duplicates.py** (rendimiento): Optimizé `_collect_candidates` para evitar llamadas redundantes a `resolve(strict=True)` dentro del bucle de escaneo, utilizando `path.resolve()` solo una vez al inicio del proceso por directorio, lo que reduce drásticamente las operaciones de E/S y el tiempo de respuesta en directorios con miles de archivos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-04T10:50:21` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo `memory.py` añadiendo tipos específicos (usando `TypeAlias` para mayor claridad) y enriqueciendo los docstrings con las unidades de medida esperadas y la justificación técnica de las operaciones, eliminando ambigüedades en las firmas de funciones.
 - `2026-08-04T10:49:55` **main.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `main.py` documentando los métodos de construcción de la interfaz (`_build_tab_*`) y estandarizando la estructura de la clase mediante el uso de una sección dedicada a "Factorías de UI" que simplifica la creación de componentes reutilizables.
 - `2026-08-04T10:40:09` **healthscore.py** (legibilidad y documentación): Mejore la claridad y mantenibilidad del módulo mediante la adición de docstrings detallados en las funciones de cálculo de métricas individuales, explicando el propósito y la lógica detrás de los ratios aplicados, además de añadir type hints explícitos para mejorar el análisis estático.
-- `2026-08-04T10:39:58` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica mediante docstrings más precisos en funciones clave, utilicé type hints para clarificar estructuras de retorno complejas y renombré variables internas en los recorridos de archivos para mejorar la legibilidad del flujo lógico sin alterar la funcionalidad.
-- `2026-08-04T10:39:34` **diskreport.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints consistentes en los métodos de las clases `dataclass` y funciones principales para clarificar las unidades de medida y el propósito de cada método, facilitando la legibilidad técnica del módulo.
