@@ -139,8 +139,12 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
 def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """
     Recorrido recursivo por directorios, indexando archivos por tamaño e identificando por inodo.
+    
+    Returns:
+        Diccionario donde la clave es el tamaño en bytes y el valor una lista de rutas únicas.
     """
     groups: Dict[int, List[Path]] = defaultdict(list)
+    # Identificación única de archivo para evitar procesar el mismo archivo vía links duros
     visited_inodes: set[Tuple[int, int]] = set()
     
     def _scan(root_path: Path) -> None:
@@ -157,10 +161,10 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
                         elif entry.is_file():
                             st = entry.stat()
                             if st.st_size < min_size: continue
-                            inode_id = (st.st_dev, st.st_ino)
-                            if inode_id in visited_inodes: continue
+                            inode_key = (st.st_dev, st.st_ino)
+                            if inode_key in visited_inodes: continue
                             
-                            visited_inodes.add(inode_id)
+                            visited_inodes.add(inode_key)
                             groups[st.st_size].append(full_path)
                     except (OSError, PermissionError): continue
         except (OSError, PermissionError): pass
@@ -179,6 +183,10 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
 def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
     """
     Filtra una lista de archivos, manteniendo solo aquellos grupos que comparten el mismo hash.
+    
+    Args:
+        paths: Lista de archivos a evaluar.
+        hash_func: Función para calcular el hash (parcial o completo).
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     if paths is None: return {}
@@ -187,7 +195,7 @@ def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[
         digest = hash_func(path)
         if digest:
             groups_by_digest[digest].append(path)
-    return {d: p for d, p in groups_by_digest.items() if len(p) > 1}
+    return {digest: paths for digest, paths in groups_by_digest.items() if len(paths) > 1}
 
 
 def find_duplicates(
@@ -240,6 +248,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None
 
+    # Tuplas de (mtime, len_path, path) para ordenamiento lexicográfico en min()
     valid_paths: List[Tuple[float, int, Path]] = []
     for p in group.paths:
         if not isinstance(p, Path): continue
@@ -253,6 +262,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     if not valid_paths:
         return None
 
+    # Conservar el más antiguo (menor mtime), luego el de ruta más corta
     return min(valid_paths, key=lambda x: (x[0], x[1]))[2]
 
 

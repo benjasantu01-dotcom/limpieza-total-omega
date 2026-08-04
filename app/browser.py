@@ -78,6 +78,7 @@ class BrowserCache:
 def base_directories() -> List[Path]:
     """
     Obtiene los directorios raíz donde se alojan perfiles (LOCALAPPDATA).
+    Retorna una lista vacía si el SO no es Windows o la variable es inexistente.
     """
     if os.name != "nt":
         return []
@@ -88,7 +89,6 @@ def base_directories() -> List[Path]:
     
     try:
         path_local = Path(local)
-        # Validación estricta de existencia y tipo antes de retornar
         if path_local.is_absolute() and path_local.is_dir():
             return [path_local]
         return []
@@ -98,8 +98,9 @@ def base_directories() -> List[Path]:
 
 def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> bool:
     """
-    Valida la integridad de la ruta para prevenir Directory Traversal, 
-    seguimiento de puntos de reparse (junctions) y rutas protegidas.
+    Valida si una ruta es segura para ser escaneada.
+    Impide Directory Traversal, cruce de puntos de reparse (junctions)
+    y acceso a rutas protegidas por `safety.py`.
     """
     if not isinstance(target_path, Path) or not isinstance(base_path, Path):
         return False
@@ -108,22 +109,18 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
         if not target_path.exists():
             return False
             
-        # Detectar caracteres de control ocultos comunes en ataques de spoofing
         if any(ord(char) < 32 for char in target_path.name):
             return False
 
         real_base = base_path.resolve()
         real_target = target_path.resolve()
         
-        # Verificar si la ruta resuelta está marcada como protegida globalmente
         if is_protected_path(real_target):
             return False
 
-        # Prohibir cruzar enlaces simbólicos o junctions de Windows
         if real_target.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(str(real_target))):
             return False
 
-        # Validación lógica: asegurar que el destino sea un subdirectorio del base
         real_target.relative_to(real_base)
         return True
     except (OSError, ValueError, RuntimeError, PermissionError):
@@ -132,7 +129,9 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
 
 def directory_size(path: str | os.PathLike | None) -> int:
     """
-    Calcula el tamaño total en bytes de un directorio mediante búsqueda iterativa.
+    Calcula el tamaño total en bytes de un directorio mediante una pila (stack)
+    iterativa para evitar recursión profunda y permitir validaciones de seguridad
+    en cada nodo visitado.
     """
     if path is None:
         return 0
@@ -175,12 +174,12 @@ def directory_size(path: str | os.PathLike | None) -> int:
 
 def _is_valid_cache_path(candidate: Path | None, base_path: Path) -> bool:
     """
-    Verifica si una ruta es un directorio de caché candidato legítimo.
+    Filtro de seguridad para determinar si un directorio candidato
+    es un objetivo legítimo de caché basándose en rutas UNC, existencia y exclusiones.
     """
     if not isinstance(candidate, Path) or not isinstance(base_path, Path):
         return False
     try:
-        # Prevenir rutas UNC (Network Share) explícitamente por seguridad
         if candidate.drive.startswith(r"\\"):
             return False
             
@@ -200,7 +199,8 @@ def detect_profiles(
     cache_paths: Optional[Dict[str, str]] = None
 ) -> List[BrowserCache]:
     """
-    Explora directorios base buscando caché de navegadores.
+    Orquestador principal que mapea rutas de caché conocidas sobre directorios base,
+    retornando una lista de objetos BrowserCache con sus metadatos.
     """
     bases = bases if bases is not None else base_directories()
     cache_paths = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
@@ -232,13 +232,14 @@ def detect_profiles(
 
 
 def total_cache_bytes(caches: Iterable[BrowserCache] | None = None) -> int:
-    """Suma total de bytes de una colección de objetos BrowserCache."""
+    """Calcula el sumatorio de bytes de una lista de objetos de caché."""
     return sum(cache.size_bytes for cache in (caches or []))
 
 
 def summarize(caches: Optional[List[BrowserCache]] = None) -> List[str]:
     """
-    Genera un informe textual formateado para la UI.
+    Formateador de datos para la interfaz de usuario.
+    Convierte la colección de BrowserCache en líneas de texto legible.
     """
     current_caches: List[BrowserCache] = caches if caches is not None else detect_profiles()
     

@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **247** (49.0% de aceptación)
+- Mejoras aceptadas: **250** (49.6% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 28
+- Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 206
+- Sin respuesta de la IA (error o límite): 204
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-03 | 129 | 3 | 13 | 8 | 103 |
-| 2026-08-04 | 118 | 8 | 15 | 4 | 103 |
+| 2026-08-03 | 128 | 3 | 12 | 8 | 101 |
+| 2026-08-04 | 122 | 8 | 15 | 4 | 103 |
 
 ## Mejoras aceptadas por enfoque
 
+- legibilidad y documentación: **56**
 - robustez ante casos límite: **52**
-- legibilidad y documentación: **52**
 - manejo de errores y validación de entradas: **51**
 - seguridad defensiva: **50**
-- rendimiento: **42**
+- rendimiento: **41**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,18 +34,22 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **21**
 - `organizer.py`: **20**
 - `scanner.py`: **19**
+- `duplicates.py`: **19**
 - `memory.py`: **19**
-- `duplicates.py`: **18**
-- `browser.py`: **17**
-- `healthscore.py`: **17**
-- `diskreport.py`: **16**
+- `browser.py`: **18**
+- `healthscore.py`: **18**
+- `diskreport.py`: **17**
 - `main.py`: **15**
-- `safety.py`: **14**
 - `branding.py`: **14**
 - `startup.py`: **13**
+- `safety.py`: **13**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-04T10:40:09` **healthscore.py** (legibilidad y documentación): Mejore la claridad y mantenibilidad del módulo mediante la adición de docstrings detallados en las funciones de cálculo de métricas individuales, explicando el propósito y la lógica detrás de los ratios aplicados, además de añadir type hints explícitos para mejorar el análisis estático.
+- `2026-08-04T10:39:58` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica mediante docstrings más precisos en funciones clave, utilicé type hints para clarificar estructuras de retorno complejas y renombré variables internas en los recorridos de archivos para mejorar la legibilidad del flujo lógico sin alterar la funcionalidad.
+- `2026-08-04T10:39:34` **diskreport.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints consistentes en los métodos de las clases `dataclass` y funciones principales para clarificar las unidades de medida y el propósito de cada método, facilitando la legibilidad técnica del módulo.
+- `2026-08-04T10:39:09` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados que explican el propósito y las restricciones de seguridad de las funciones internas, y añadí type hints explícitos en los retornos de funciones para mejorar la legibilidad del flujo de datos.
 - `2026-08-04T10:30:53` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings más precisos, añadí type hints explícitos para los argumentos de `draw_ring` y `draw_gradient_bar`, y convertí las constantes críticas de `PALETTE` y `FONT_SIZES` en tipos `Mapping` de solo lectura más estrictos para prevenir modificaciones accidentales en tiempo de ejecución.
 - `2026-08-04T10:30:10` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` documentando los argumentos de las funciones de manejo (`handle_*`) mediante Type Hints más precisos y docstrings claros, además de estandarizar la nomenclatura interna de las métricas para eliminar ambigüedades.
 - `2026-08-04T10:29:33` **startup.py** (manejo de errores y validación de entradas): Mejora la robustez de `parse_registry_csv` añadiendo una validación explícita para asegurar que cada entrada del registro contenga al menos una columna de nombre y otra de comando antes de intentar procesarlas, evitando así `IndexError` ante salidas inesperadas de PowerShell.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-04T10:09:29` **main.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_collect_settings` y `_validate_numeric_setting` para manejar entradas de usuario nulas o malformadas sin interrumpir el flujo de la aplicación, aplicando validaciones preventivas antes de procesar los datos de configuración.
 - `2026-08-04T10:08:28` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `summarize` y `_generate_recommendations` añadiendo validaciones de tipo explícitas para prevenir fallos en tiempo de ejecución ante estructuras de datos malformadas o inesperadas, alineándome con el enfoque de manejo de errores y validación de entradas.
 - `2026-08-04T09:59:04` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `hash_file` y `partial_hash` asegurando que el cierre de archivos ante excepciones sea impecable y validando explícitamente los parámetros de entrada antes de realizar operaciones de E/S.
-- `2026-08-04T09:58:56` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `largest_folders` añadiendo chequeos de `None` y validaciones de tipo explícitas en las iteraciones sobre subdirectorios, evitando que excepciones inesperadas durante la navegación de sistemas de archivos profundamente anidados o con permisos restringidos propaguen errores o aborten el proceso silenciosamente.
-- `2026-08-04T09:58:10` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de renderizado gráfico (`draw_logo`, `draw_gradient_bar`, `draw_ring`) ante entradas inválidas o inesperadas, centralizando la validación de parámetros críticos para prevenir errores de ejecución silenciosos o inesperados en el hilo de interfaz gráfica.
-- `2026-08-04T09:51:01` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_call_gemini` y `_ensure_safe_text` mediante validaciones de tipos y saneamiento de entradas más estricto, asegurando que cualquier respuesta externa o configuración maliciosa sea interceptada antes de procesarse, aplicando el enfoque de manejo de errores defensivo.
-- `2026-08-04T08:26:59` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save()` y `settings_path()` eliminando el uso de `ensure_safe_to_modify` como una condición lógica directa, reemplazándolo por una verificación previa a la operación, para prevenir que excepciones inesperadas interrumpan el flujo de trabajo sin necesidad.
