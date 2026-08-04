@@ -6,47 +6,51 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **243** (48.2% de aceptación)
-- Rechazadas por tests: 12
+- Mejoras aceptadas: **245** (48.6% de aceptación)
+- Rechazadas por tests: 11
 - Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 207
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-02 | 10 | 1 | 2 | 0 | 1 |
+| 2026-08-02 | 8 | 0 | 2 | 0 | 0 |
 | 2026-08-03 | 173 | 6 | 17 | 12 | 142 |
-| 2026-08-04 | 60 | 5 | 8 | 3 | 64 |
+| 2026-08-04 | 64 | 5 | 8 | 3 | 64 |
 
 ## Mejoras aceptadas por enfoque
 
+- legibilidad y documentación: **52**
 - robustez ante casos límite: **51**
 - seguridad defensiva: **51**
-- manejo de errores y validación de entradas: **50**
-- legibilidad y documentación: **49**
-- rendimiento: **42**
+- manejo de errores y validación de entradas: **51**
+- rendimiento: **40**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **24**
 - `quarantine.py`: **21**
 - `scanner.py`: **20**
-- `assistant.py`: **19**
-- `browser.py`: **18**
+- `assistant.py`: **20**
+- `browser.py`: **19**
 - `organizer.py`: **18**
-- `healthscore.py`: **17**
-- `main.py`: **17**
 - `duplicates.py`: **17**
 - `memory.py`: **17**
 - `diskreport.py`: **16**
+- `main.py`: **16**
+- `healthscore.py`: **16**
 - `safety.py`: **15**
-- `branding.py`: **12**
-- `startup.py`: **12**
+- `branding.py`: **13**
+- `startup.py`: **13**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-04T06:03:55` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación interna mediante la adición de docstrings técnicos detallados en funciones críticas (como `directory_size` y `_is_safe_path`) y se han aclarado las expectativas de los parámetros mediante Type Hints y guardas de validación, facilitando la comprensión del flujo de seguridad para futuros desarrolladores.
+- `2026-08-04T06:03:41` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado de las funciones de dibujo geométrico (`draw_logo`, `draw_gradient_bar`, `draw_ring`) para aclarar las expectativas de las coordenadas normalizadas y el manejo de excepciones, facilitando el mantenimiento y la extensibilidad sin alterar la lógica de renderizado.
+- `2026-08-04T06:03:10` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la aplicación de type hints faltantes en funciones internas, la estandarización de docstrings para seguir una estructura clara y la extracción de una lógica de formato de advertencias que estaba acoplada dentro de los handlers.
+- `2026-08-04T06:02:38` **startup.py** (manejo de errores y validación de entradas): Mejora la robustez del parseo de registros mediante la validación explícita de tipos y la captura de errores en el manejo de rutas, evitando que comandos malformados o entradas corruptas del registro provoquen fallos silenciosos o inesperados en el flujo de datos.
 - `2026-08-04T05:53:10` **settings.py** (manejo de errores y validación de entradas): Reforcé la robustez del validador `_validate_str` y del método `save` mediante el chequeo explícito de tipos y estados, asegurando que configuraciones vacías o malformadas no degraden la integridad del estado persistido ni la seguridad del acceso a archivos.
 - `2026-08-04T05:52:59` **scanner.py** (manejo de errores y validación de entradas): Mejora la robustez de las heurísticas centralizando la validación de archivos en `scan_file`, garantizando que todas las funciones de `CHECK_FUNCS` reciban rutas válidas y eliminando el manejo redundante/incompleto de excepciones en cada sub-función.
 - `2026-08-04T05:43:49` **quarantine.py** (manejo de errores y validación de entradas): Se introdujo una validación explícita de `item_id` en `purge_item` y `restore_item` para prevenir errores de tipo o valores nulos antes de acceder al sistema de archivos, siguiendo el enfoque de validar parámetros antes de operar.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-04T05:31:44` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `directory_size` y `_is_safe_path` ante errores de sistema, añadiendo chequeos de tipo más estrictos y manejando excepciones de `Path` que podrían ocurrir en entornos con permisos restringidos, asegurando que un fallo en el acceso a un archivo no detenga el análisis completo.
 - `2026-08-04T05:24:07` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones gráficas `draw_logo` y `draw_ring` mediante la validación proactiva de argumentos numéricos para prevenir `ZeroDivisionError` y `ValueError` antes de entrar en los bloques de renderizado.
 - `2026-08-04T05:23:54` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `explain_area` agregando validación de tipo y manejo de casos donde el argumento pueda ser `None` o un objeto inesperado, asegurando que el sistema siempre devuelva una respuesta válida y segura ante entradas malformadas.
-- `2026-08-04T04:00:26` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `settings.py` implementando una validación estricta al persistir la configuración, asegurando que la ruta del archivo de configuración esté protegida mediante `ensure_safe_to_modify` antes de cualquier operación de escritura, y reforzando la integridad del sistema al verificar que el directorio padre no solo sea seguro, sino que exista como directorio antes de intentar la operación atómica de `os.replace`.
-- `2026-08-04T03:59:40` **safety.py** (seguridad defensiva): Se ha añadido una verificación de "reparse points" (junctions y symlinks) en `ensure_safe_to_modify` utilizando `path.resolve()` y comparando la ruta original con la resuelta, previniendo así el seguimiento accidental fuera del directorio de trabajo esperado ("directory traversal" defensivo).
-- `2026-08-04T03:50:20` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva al añadir una validación crítica en `purge_all` para evitar la eliminación accidental de archivos fuera de la carpeta de cuarentena, usando `is_within_directory` antes de realizar `_safe_unlink`.
-- `2026-08-04T03:49:52` **organizer.py** (seguridad defensiva): Se reforzó `stage_for_review` para prevenir que el proceso intente mover archivos hacia sí mismos o hacia subdirectorios propios mediante una validación estricta de la jerarquía de rutas utilizando `path.resolve()` antes de realizar cualquier operación.

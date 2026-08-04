@@ -312,15 +312,14 @@ def logo_ascii() -> str:
 
 
 def draw_logo(canvas: Any, size: int = 56, canvas_x: int = 0, canvas_y: int = 0) -> None:
-    """
-    Renderiza el escudo Omega vectorialmente en un widget Tkinter.Canvas.
-    """
+    """Renderiza el escudo Omega vectorialmente en un widget Tkinter.Canvas."""
     if canvas is None or not hasattr(canvas, "create_polygon"): return
     try:
         s = max(0.1, float(size) / 128)
         x, y = float(canvas_x), float(canvas_y)
         contorno = _get_shield_coords(x, y, s)
         
+        # Efecto de halo radial mediante capas de óvalos
         for paso in range(4, 0, -1):
             r = 56 * s * (0.6 + paso * 0.12)
             canvas.create_oval(x + 64*s - r, y + 58*s - r, x + 64*s + r, y + 58*s + r, 
@@ -344,9 +343,7 @@ def draw_logo(canvas: Any, size: int = 56, canvas_x: int = 0, canvas_y: int = 0)
 def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
                       canvas_x: int = 0, canvas_y: int = 0,
                       stops: tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
-    """
-    Dibuja una franja horizontal decorativa mediante líneas adyacentes interpoladas.
-    """
+    """Dibuja una franja horizontal decorativa mediante líneas adyacentes interpoladas."""
     if canvas is None or not hasattr(canvas, "create_line"): return
     try:
         ancho = max(1, int(width))
@@ -365,9 +362,7 @@ def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
               canvas_x: int = 0, canvas_y: int = 0, thickness: int = 14,
               track: Optional[HexColor] = None,
               fill: Optional[HexColor] = None) -> None:
-    """
-    Renderiza un medidor radial circular para HealthScore.
-    """
+    """Renderiza un medidor radial circular para HealthScore (0-100%)."""
     if canvas is None or not hasattr(canvas, "create_arc"): return
     try:
         valor = max(0.0, min(100.0, float(percent)))
@@ -377,6 +372,7 @@ def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
     
     color_fondo, color_avance = track or PALETTE["surface_alt"], fill or score_color(valor)
     borde = grosor / 2
+    # Bounding box para el arco, centrada en el origen especificado
     caja = (canvas_x + borde, canvas_y + borde, canvas_x + diametro - borde, canvas_y + diametro - borde)
     
     canvas.create_arc(*caja, start=0, extent=359.9, style="arc", outline=color_fondo, width=grosor)

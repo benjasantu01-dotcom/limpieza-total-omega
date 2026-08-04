@@ -77,6 +77,8 @@ class StartupEntry:
 
     def _sanitize_command(self, raw_cmd: str) -> str:
         """Filtra caracteres no imprimibles del comando para evitar inyecciones o errores de display."""
+        if not isinstance(raw_cmd, str):
+            return ""
         return "".join(c for c in raw_cmd.strip() if ord(c) >= 32)
 
     def _extract_quoted_path(self, raw_cmd: str) -> str:
@@ -221,6 +223,9 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
             
         try:
             p: Path = Path(cmd)
+            # Validación adicional: asegurar que la ruta no sea un directorio raíz mal interpretado
+            if not p.parts:
+                continue
             if is_protected_path(p):
                 continue
             parsed_entries.append(StartupEntry(name=name, command=cmd, source=source))

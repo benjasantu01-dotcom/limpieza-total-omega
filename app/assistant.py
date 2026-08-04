@@ -170,7 +170,7 @@ class Answer:
         return self.source == "gemini"
 
 def _ensure_safe_text(text: str) -> bool:
-    """Validación defensiva: verifica que el texto no contenga rutas, caracteres de control o inyecciones."""
+    """Valida que el texto no contenga rutas, caracteres de control o inyecciones."""
     if not text or len(text) > 2000:
         return False
     if _PATH_REGEX.search(text) or _CONTROL_CHARS_REGEX.search(text):
@@ -180,9 +180,7 @@ def _ensure_safe_text(text: str) -> bool:
     return True
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
-    """
-    Convierte datos crudos de otros módulos en un objeto SystemContext validado.
-    """
+    """Convierte datos crudos de otros módulos en un objeto SystemContext validado."""
     ctx = SystemContext()
 
     def is_valid_num(v: Any) -> bool:
@@ -224,7 +222,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
 
 
 def context_as_text(context: SystemContext) -> str:
-    """Serializa el estado del sistema en un formato de texto compacto y neutral para prompts."""
+    """Serializa el estado del sistema en un formato de texto compacto y neutral."""
     if not isinstance(context, SystemContext) or not context.analyzed:
         return "No hay métricas disponibles todavía."
 
@@ -243,7 +241,7 @@ def context_as_text(context: SystemContext) -> str:
 
 
 def explain_area(area: Any) -> str:
-    """Proporciona una breve explicación pedagógica de un área específica del sistema."""
+    """Devuelve una explicación pedagógica de un área específica del sistema."""
     explicaciones: Final[dict[str, str]] = {
         "basura": "Archivos temporales y restos de instaladores. Ocupan espacio "
                   "sin dar nada a cambio, y son lo más seguro de limpiar.",
@@ -265,8 +263,12 @@ def explain_area(area: Any) -> str:
     return "No tengo una explicación para esa área."
 
 
+def _format_critical_warning(condition: bool, text: str) -> str:
+    """Auxiliar para formatear alertas críticas de disco."""
+    return text if condition else ""
+
 def handle_ram(ctx: SystemContext, text: str) -> Answer:
-    """Genera respuesta contextual sobre la utilización y estado de la memoria RAM."""
+    """Genera respuesta contextual sobre la utilización de memoria RAM."""
     partes = [
         f"Tenés {ctx.memory_available_percent:.0f}% de RAM disponible"
         f"{f' de {ctx.memory_total_gb:.0f} GB' if ctx.memory_total_gb > 0 else ''}.",
@@ -279,8 +281,7 @@ def handle_ram(ctx: SystemContext, text: str) -> Answer:
         partes.append("Eso está bien. Si la PC va lenta, el problema seguramente "
                         "no es la RAM.")
     partes.append("No busques un 'liberador de RAM': suben el número de memoria "
-                    "libre pero la PC queda más lenta, porque Windows tiene que "
-                    "releer del disco lo que acaba de descartar.")
+                    "libre pero la PC queda más lenta.")
     if ctx.startup_count > 12:
         partes.append(f"Sí te conviene mirar los {ctx.startup_count} programas "
                         "de inicio: cada uno arranca con Windows.")
@@ -299,13 +300,14 @@ def handle_disk(ctx: SystemContext, text: str) -> Answer:
         f"{f' y {ctx.browser_cache_mb:.0f} MB de caché' if ctx.browser_cache_mb else ''}."
     )
     
-    advertencia = ""
-    if ctx.disk_free_percent < 10:
-        advertencia = " Estás por debajo del 10%, y ahí Windows empieza a andar mal. Es lo primero que atendería."
-        
-    sugerencia = " Empezá por Limpieza: mueve los candidatos a una carpeta de revisión, no los borra, así podés ver qué hay antes de decidir."
+    warning = _format_critical_warning(
+        ctx.disk_free_percent < 10, 
+        " Estás por debajo del 10%, y ahí Windows empieza a andar mal. Es lo primero que atendería."
+    )
     
-    return Answer(mensaje + advertencia + sugerencia, notice=OFFLINE_NOTICE)
+    sugerencia = " Empezá por Limpieza: mueve los candidatos a una carpeta de revisión, no los borra."
+    
+    return Answer(mensaje + warning + sugerencia, notice=OFFLINE_NOTICE)
 
 def handle_security(ctx: SystemContext, text: str) -> Answer:
     """Genera respuesta contextual sobre archivos identificados como sospechosos."""
@@ -313,17 +315,16 @@ def handle_security(ctx: SystemContext, text: str) -> Answer:
         cuerpo = ("No hay archivos sospechosos en tus Descargas. Sobre borrar: la "
                     "app nunca borra sola. La limpieza mueve todo a una carpeta de "
                     "revisión, y el borrado real es un botón aparte que pide "
-                    "confirmación. Las carpetas de sistema están bloqueadas.")
+                    "confirmación.")
     else:
         cuerpo = (f"Hay {ctx.suspicious_count} archivo(s) marcados, "
                     f"{ctx.suspicious_warnings} con advertencia. Son señales, no "
                     "una condena: puede ser un instalador legítimo. Si no reconocés "
-                    "alguno, usá 'Aislar hallazgos' para mandarlo a cuarentena, que "
-                    "es reversible, y corré Windows Defender para el veredicto real.")
+                    "alguno, usá 'Aislar hallazgos' para mandarlo a cuarentena.")
     return Answer(cuerpo, notice=OFFLINE_NOTICE)
 
 def handle_score(ctx: SystemContext, text: str) -> Answer:
-    """Genera explicación del puntaje de salud global según los problemas detectados."""
+    """Genera explicación del puntaje de salud global según problemas detectados."""
     detalle = (f"Tu puntaje es {ctx.score if ctx.score is not None else 'N/A'}/100"
                 f"{f' (nota {ctx.grade})' if ctx.grade else ''}. ")
     problemas = _rank_problems(ctx)
@@ -332,22 +333,20 @@ def handle_score(ctx: SystemContext, text: str) -> Answer:
     else:
         detalle += "No hay nada urgente para arreglar."
     detalle += (" El puntaje combina basura, seguridad, memoria, disco, duplicados "
-                "y programas de inicio, con la seguridad pesando más que el resto.")
+                "y programas de inicio, con la seguridad pesando más.")
     return Answer(detalle, notice=OFFLINE_NOTICE)
 
 def handle_startup(ctx: SystemContext, text: str) -> Answer:
     """Genera respuesta sobre el impacto de programas configurados al inicio."""
     cuerpo = f"Tenés {ctx.startup_count} programas que arrancan con Windows. "
     if ctx.startup_count > 15:
-        cuerpo += ("Son bastantes, y cada uno suma tiempo de encendido. Vale la "
-                    "pena revisarlos. ")
+        cuerpo += "Son bastantes, y cada uno suma tiempo de encendido. Vale la pena revisarlos. "
     elif ctx.startup_count > 8:
         cuerpo += "Es una cantidad normal, aunque se puede recortar. "
     else:
         cuerpo += "Está bien así. "
     cuerpo += ("La app te los lista pero no los desactiva a propósito: hacelo desde "
-                "el Administrador de tareas de Windows, que guarda respaldo del "
-                "cambio y te deja revertirlo.")
+                "el Administrador de tareas de Windows.")
     return Answer(cuerpo, notice=OFFLINE_NOTICE)
 
 _HANDLERS: Final[dict[str, Callable[[SystemContext, str], Answer]]] = {
@@ -366,9 +365,8 @@ def local_answer(question: str, context: SystemContext) -> Answer:
     """Procesa la pregunta del usuario utilizando reglas de negocio estáticas."""
     if not isinstance(context, SystemContext) or not context.analyzed:
         return Answer(
-            text="Todavía no corriste ningún análisis, así que no tengo datos de "
-                 "tu sistema. Andá a la pestaña Salud y apretá 'Analizar el "
-                 "sistema': es de solo lectura, no modifica nada.",
+            text="Todavía no corriste ningún análisis. Andá a la pestaña Salud "
+                 "y apretá 'Analizar el sistema': es de solo lectura.",
             notice=OFFLINE_NOTICE,
             suggestions=SUGGESTED_QUESTIONS_LIST[:3],
         )
@@ -383,8 +381,7 @@ def local_answer(question: str, context: SystemContext) -> Answer:
         cuerpo = (f"Con un puntaje de {context.score if context.score is not None else 'N/A'}/100, por orden de prioridad: "
                   + "; ".join(problemas[:3]) + ".")
     else:
-        cuerpo = (f"Tu sistema está en buen estado ({context.score if context.score is not None else 'N/A'}/100). No hay nada "
-                  "urgente. Un repaso de limpieza cada tanto es suficiente.")
+        cuerpo = (f"Tu sistema está en buen estado ({context.score if context.score is not None else 'N/A'}/100). No hay nada urgente.")
     return Answer(cuerpo, notice=OFFLINE_NOTICE, suggestions=SUGGESTED_QUESTIONS_LIST[:3])
 
 
@@ -427,9 +424,7 @@ def _call_gemini(
     api_key: str, 
     model: str
 ) -> Optional[str]:
-    """
-    Envía métricas agregadas a Gemini mediante la librería estándar urllib.
-    """
+    """Envía métricas agregadas a Gemini mediante la librería estándar urllib."""
     if not api_key or not isinstance(api_key, str) or not model or not isinstance(model, str) or not _MODEL_NAME_REGEX.match(model):
         return None
     
@@ -475,7 +470,6 @@ def _call_gemini(
             
         texto: str = "".join(p.get("text", "") for p in partes if isinstance(p, dict)).strip()
         
-        # Validamos la respuesta remota antes de considerarla segura para la UI
         if not _ensure_safe_text(texto):
             return None
             
@@ -487,9 +481,7 @@ def _call_gemini(
 
 def ask(question: str, context: Optional[SystemContext] = None,
         base: Union[str, Path, None] = None) -> Answer:
-    """
-    Coordina la resolución de la consulta buscando la mejor respuesta disponible.
-    """
+    """Coordina la resolución de la consulta buscando la mejor respuesta disponible."""
     ctx: SystemContext = context if isinstance(context, SystemContext) else SystemContext()
     respaldo: Answer = local_answer(question, ctx)
 
@@ -510,8 +502,7 @@ def ask(question: str, context: Optional[SystemContext] = None,
         remoto: Optional[str] = _call_gemini(question, texto_contexto, clave, modelo)
 
         if not remoto:
-            respaldo.notice = ("No se pudo consultar al asistente en línea, así que "
-                               "respondí con el motor local.")
+            respaldo.notice = "No se pudo consultar al asistente en línea, respondí con el motor local."
             return respaldo
 
         return Answer(remoto, source="gemini", notice=PRIVACY_NOTICE)

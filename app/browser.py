@@ -100,6 +100,13 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
     """
     Valida la integridad de la ruta para prevenir Directory Traversal, 
     seguimiento de puntos de reparse (junctions) y rutas protegidas.
+    
+    Args:
+        target_path: La ruta candidata a ser escaneada.
+        base_path: La raíz autorizada (ej. LOCALAPPDATA).
+        
+    Returns:
+        bool: True si la ruta es segura, existe y está dentro del base_path.
     """
     if not isinstance(target_path, Path) or not isinstance(base_path, Path):
         return False
@@ -108,7 +115,7 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
         if not target_path.exists():
             return False
             
-        # Detectar caracteres de control ocultos
+        # Detectar caracteres de control ocultos comunes en ataques de spoofing
         if any(ord(char) < 32 for char in target_path.name):
             return False
 
@@ -119,11 +126,11 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
         if is_protected_path(real_target):
             return False
 
-        # Prohibir cruzar enlaces simbólicos o junctions de Windows
+        # Prohibir cruzar enlaces simbólicos o junctions de Windows para evitar recursión infinita
         if real_target.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(str(real_target))):
             return False
 
-        # Validación estricta: asegurar que target sea hijo de base
+        # Validación lógica: asegurar que el destino sea un subdirectorio del base
         real_target.relative_to(real_base)
         return True
     except (OSError, ValueError, RuntimeError, PermissionError):
@@ -133,6 +140,9 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
 def directory_size(path: str | os.PathLike | None) -> int:
     """
     Calcula el tamaño total en bytes de un directorio mediante búsqueda iterativa.
+    
+    Implementa un stack propio para evitar desbordamiento de pila en directorios
+    muy profundos y respeta estrictamente los filtros definidos en NEVER_TOUCH.
     """
     if path is None:
         return 0
@@ -156,8 +166,11 @@ def directory_size(path: str | os.PathLike | None) -> int:
                 for entry in it:
                     try:
                         name_lower = entry.name.lower()
+                        # Saltear nombres protegidos o archivos con caracteres inválidos
                         if name_lower in skip_names or any(ord(c) < 32 for c in entry.name):
                             continue
+                        
+                        # Impedir salida de la ruta raíz mediante symlinks/junctions
                         if entry.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(entry.path)):
                             continue
                         
