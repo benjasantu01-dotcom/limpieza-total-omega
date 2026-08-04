@@ -370,6 +370,9 @@ def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[Quaranti
 
 def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
     """Restaura un archivo a su ruta original tras verificar su integridad."""
+    if not item_id:
+        raise ValueError("ID de ítem inválido.")
+    
     items = load_manifest(base)
     match = next((i for i in items if i.item_id == item_id), None)
     
@@ -419,6 +422,9 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
 
 def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> bool:
     """Elimina físicamente un ítem tras validar su integridad. Retorna True si tuvo éxito."""
+    if not item_id:
+        return False
+        
     items = load_manifest(base)
     match = next((i for i in items if i.item_id == item_id), None)
     

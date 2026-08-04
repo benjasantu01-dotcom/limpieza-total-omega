@@ -205,59 +205,40 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Path:
     """
     Prepara archivos para ser eliminados moviéndolos a un directorio de cuarentena.
-    
-    Realiza validaciones exhaustivas antes de cada movimiento:
-    1. Verifica que el archivo no esté en uso.
-    2. Evita movimientos circulares o dentro de la misma carpeta.
-    3. Confirma la seguridad de la ruta destino.
     """
     if not files:
         raise ValueError("La lista de archivos a procesar no puede estar vacía.")
 
-    if not review_dir or not isinstance(review_dir, str):
-        raise ValueError("La ruta de revisión debe ser un string válido")
-
     try:
         dest = Path(review_dir).expanduser().resolve()
-    except (RuntimeError, OSError, ValueError) as e:
-        raise ValueError(f"Ruta de revisión inválida: {e}")
+        # Validación de seguridad: no permitir mover a rutas protegidas
+        ensure_safe_to_modify(dest)
+        dest.mkdir(parents=True, exist_ok=True)
+    except (OSError, RuntimeError, PermissionError) as e:
+        raise ValueError(f"No se pudo preparar el directorio de revisión: {e}")
 
-    if dest.is_symlink():
-        raise PermissionError("Ruta de destino inválida: symlink detectado.")
-        
-    ensure_safe_to_modify(dest)
-    dest.mkdir(parents=True, exist_ok=True)
-    
     for jf in files:
-        if jf is None or not isinstance(jf, JunkFile):
+        if not isinstance(jf, JunkFile) or jf.path is None:
             continue
         try:
-            # Validaciones de existencia y seguridad de origen
-            if not jf.path.exists() or jf.path.is_symlink() or not jf.path.is_file() or jf.size_bytes == 0:
-                continue
-            if not is_safe_to_modify(jf.path):
+            current_path = jf.path
+            if not current_path.exists() or not current_path.is_file() or not is_safe_to_modify(current_path):
                 continue
             
             # Prevenir movimiento a la misma carpeta o anidamiento
-            current_path = jf.path.resolve()
-            if current_path.parent == dest:
-                continue
-            if dest in current_path.parents or current_path in dest.parents:
+            current_abs = current_path.resolve()
+            if current_abs.parent == dest or dest in current_abs.parents or current_abs in dest.parents:
                 continue
             
             # Verificación de bloqueo de archivo
             try:
-                with open(jf.path, 'r+b'):
-                    pass
+                with open(current_path, 'rb'): pass
             except (OSError, PermissionError):
                 continue
 
-            target_base = dest / f"{jf.path.stem}_{int(jf.modified.timestamp())}{jf.path.suffix}"
-            target = _generate_unique_target(target_base)
-            
-            ensure_safe_to_modify(jf.path)
-            shutil.move(str(current_path), str(target))
-        except (PermissionError, OSError, shutil.Error, ValueError):
+            target = _generate_unique_target(dest / f"{current_path.stem}_{int(jf.modified.timestamp())}{current_path.suffix}")
+            shutil.move(str(current_abs), str(target))
+        except (PermissionError, OSError, shutil.Error):
             continue
     return dest
 
@@ -265,31 +246,23 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
     """
     Elimina físicamente los archivos dentro del directorio de revisión.
-    
-    Verifica nuevamente que los archivos a borrar residan realmente en la carpeta 
-    de revisión y cumplan con los criterios de seguridad antes de ejecutar `unlink`.
-
-    Returns:
-        int: Cantidad de archivos eliminados exitosamente.
     """
-    if not review_dir or not isinstance(review_dir, str):
+    if not isinstance(review_dir, str):
         return 0
 
     try:
         dest = Path(review_dir).expanduser().resolve()
-    except (RuntimeError, OSError, ValueError):
-        return 0
-        
-    if not dest.exists() or not dest.is_dir() or dest.is_symlink():
+        if not dest.exists() or not dest.is_dir() or not is_safe_to_modify(dest):
+            return 0
+    except (RuntimeError, OSError):
         return 0
 
     count = 0
     for f in dest.iterdir():
         try:
             if f.is_file() and not f.is_symlink() and is_safe_to_modify(f):
-                if dest in f.resolve().parents:
-                    f.unlink()
-                    count += 1
+                f.unlink()
+                count += 1
         except (PermissionError, OSError):
             continue
     return count
