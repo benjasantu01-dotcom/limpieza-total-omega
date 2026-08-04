@@ -1169,3 +1169,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-04T02:08:12` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `_rank_problems` evitando la regeneración constante de cadenas de texto y simplificando la lógica de comparación, además de consolidar la validación de `SystemContext` en una sola instancia.
 - `2026-08-04T02:08:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-04T02:08:12` Corrida terminada. Total usado hoy: 52.
+- `2026-08-04T02:16:54` Arrancando corrida. Quedan hoy ~248 peticiones objetivo.
+- `2026-08-04T02:17:28` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-08-04T02:17:52` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé `directory_size` pre-compilando la comparación de exclusión a un set y utilizando `scandir` de forma más eficiente para evitar redundancia de llamadas, reduciendo el overhead de procesamiento en directorios con miles de archivos pequeños de caché.
+- `2026-08-04T02:18:19` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-08-04T02:18:26` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-08-04T02:18:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-04T02:18:26` Corrida terminada. Total usado hoy: 56.

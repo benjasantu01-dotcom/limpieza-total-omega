@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **242** (48.0% de aceptación)
-- Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 28
+- Mejoras aceptadas: **243** (48.2% de aceptación)
+- Rechazadas por tests: 12
+- Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 208
+- Sin respuesta de la IA (error o límite): 209
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-02 | 50 | 5 | 7 | 0 | 40 |
+| 2026-08-02 | 50 | 4 | 6 | 0 | 38 |
 | 2026-08-03 | 173 | 6 | 17 | 12 | 142 |
-| 2026-08-04 | 19 | 2 | 4 | 1 | 26 |
+| 2026-08-04 | 20 | 2 | 4 | 1 | 29 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,15 +26,15 @@ Este archivo se regenera solo en cada corrida a partir de
 - seguridad defensiva: **50**
 - manejo de errores y validación de entradas: **50**
 - robustez ante casos límite: **43**
-- rendimiento: **36**
+- rendimiento: **37**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **24**
 - `scanner.py`: **21**
 - `assistant.py`: **19**
+- `browser.py`: **19**
 - `quarantine.py`: **19**
-- `browser.py`: **18**
 - `organizer.py`: **18**
 - `main.py`: **17**
 - `duplicates.py`: **17**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-04T02:17:52` **browser.py** (rendimiento): Optimicé `directory_size` pre-compilando la comparación de exclusión a un set y utilizando `scandir` de forma más eficiente para evitar redundancia de llamadas, reduciendo el overhead de procesamiento en directorios con miles de archivos pequeños de caché.
 - `2026-08-04T02:07:34` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad del código mediante la adición de docstrings técnicos detallados en los validadores y la normalización de la estructura de las funciones, facilitando el mantenimiento y la comprensión de las reglas de seguridad sin alterar el comportamiento.
 - `2026-08-04T02:07:09` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la adición de docstrings estructurados y type hints precisos, clarificando el propósito y las precondiciones de las funciones clave en `scanner.py` para cumplir con el estándar de calidad exigido.
 - `2026-08-04T01:58:10` **safety.py** (legibilidad y documentación): Se introdujo documentación técnica detallada mediante docstrings estructurados y type hints aclaratorios, además de extraer la lógica de validación de nombres de dispositivo reservado y caracteres inválidos a funciones privadas con nombre semántico, facilitando su auditabilidad sin alterar el flujo de ejecución.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-04T01:27:03` **settings.py** (manejo de errores y validación de entradas): Reforcé la robustez de `validate` añadiendo un chequeo explícito de tipos para evitar errores en cadena si el JSON de entrada contiene estructuras inesperadas (como listas en campos que esperan booleanos), garantizando que siempre se devuelva un diccionario íntegro.
 - `2026-08-04T01:16:53` **quarantine.py** (manejo de errores y validación de entradas): Se mejora la robustez de `quarantine_file` envolviendo la llamada a `shutil.move` en un bloque `try-except` más específico y añadiendo una verificación previa de existencia del directorio destino para evitar excepciones de `FileNotFoundError` no controladas durante la operación de escritura atómica.
 - `2026-08-04T01:16:24` **organizer.py** (manejo de errores y validación de entradas): Se reforzó el manejo de errores en `scan_for_junk` y `stage_for_review` añadiendo validaciones de tipo y estructura defensiva para prevenir `AttributeError` o comportamientos inesperados ante datos malformados, garantizando la integridad del proceso.
-- `2026-08-04T01:07:27` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_init_state` y `_init_window_properties` mediante el uso de bloques `try-except` más granulares y validaciones adicionales, asegurando que un fallo inesperado al cargar la configuración no deje variables en estado inconsistente o provoque un cierre abrupto de la aplicación.
