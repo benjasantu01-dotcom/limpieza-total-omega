@@ -322,7 +322,6 @@ def quarantine_file(
         if not source_path.exists() or source_path.stat().st_ctime != file_ctime:
             raise RuntimeError("El archivo origen ha cambiado de estado antes del movimiento.")
         
-        # Validar nuevamente directorio destino antes de mover
         if not dest_dir.exists():
             dest_dir.mkdir(parents=True, exist_ok=True)
             
@@ -334,15 +333,12 @@ def quarantine_file(
              raise OSError(f"Falla de escritura (disco lleno o error de sistema): {e}")
         raise RuntimeError(f"Falla crítica al mover archivo: {e}")
 
-    if not destination.exists():
-        raise RuntimeError("Integridad comprometida: el archivo no apareció en el destino tras el movimiento.")
+    # Verificación post-movimiento necesaria por posibles latencias de sistema
+    if not destination.exists() or destination.stat().st_size != file_size:
+        if destination.exists(): _safe_unlink(destination)
+        raise RuntimeError("Integridad comprometida: el archivo no se movió correctamente.")
     
     try:
-        dest_stats = destination.stat()
-        if dest_stats.st_size != file_size:
-            _safe_unlink(destination)
-            raise RuntimeError("Integridad comprometida: el archivo cambió de tamaño tras el movimiento.")
-            
         file_hash = _get_sha256(destination)
         item = QuarantineItem(
             item_id=item_id,
@@ -358,6 +354,7 @@ def quarantine_file(
         save_manifest(items, base)
         return item
     except Exception as e:
+        # Reversión de seguridad si falla la escritura del manifiesto
         if destination.exists():
             try:
                 shutil.move(str(destination), str(source_path))

@@ -184,7 +184,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             if p.is_symlink() or not p.exists():
                 return False
             return not safety.is_protected_path(p)
-        except (OSError, RuntimeError):
+        except (OSError, RuntimeError, PermissionError):
             return False
 
     def _is_valid_dir(self, path: Optional[Union[str, Path]]) -> bool:
@@ -194,7 +194,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         try:
             p = Path(path)
             return p.exists() and p.is_dir() and os.access(p, os.R_OK)
-        except Exception:
+        except (OSError, PermissionError):
             return False
 
     def _get_cached(self, key: str, provider: Optional[Callable] = None, force: bool = False) -> Any:

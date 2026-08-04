@@ -178,7 +178,7 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
                     pid=int(parts[1]), 
                     working_set=int(parts[2])
                 ))
-            except (ValueError, TypeError):
+            except (ValueError, TypeError, IndexError):
                 continue
 
     processes.sort(key=lambda p: p.working_set, reverse=True)
