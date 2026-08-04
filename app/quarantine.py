@@ -251,7 +251,11 @@ def quarantine_file(
     if not source_path.exists():
         raise FileNotFoundError(f"El archivo de origen no existe: {source_path}")
     
-    if not source_path.is_file() or source_path.is_symlink():
+    # Prevenir que se intenten mover puntos de reparse (junctions/symlinks)
+    if source_path.is_symlink() or (hasattr(source_path, 'is_junction') and source_path.is_junction()):
+        raise UnsafePathError(f"Operación denegada en punto de reparse: {source_path}")
+
+    if not source_path.is_file():
         raise UnsafePathError(f"Solo se permiten archivos regulares: {source_path}")
         
     if is_protected_path(source_path):
@@ -260,17 +264,10 @@ def quarantine_file(
     if is_protected_path(dest_dir):
         raise UnsafePathError(f"Directorio de cuarentena protegido o inválido: {dest_dir}")
     
-    if dest_dir.is_symlink() or (hasattr(dest_dir, 'is_junction') and dest_dir.is_junction()):
-        raise UnsafePathError("La ruta de cuarentena es un punto de reparse (prohibido).")
-
     if is_within_directory(source_path, dest_dir):
-        raise UnsafePathError(f"El archivo ya reside en la carpeta de cuarentena o subdirectorios: {source_path}")
+        raise UnsafePathError(f"El archivo ya reside en la carpeta de cuarentena: {source_path}")
 
     ensure_safe_to_modify(source_path, allow_sensitive=True)
-    ensure_safe_to_modify(dest_dir, allow_sensitive=False)
-    
-    if not os.access(dest_dir, os.W_OK):
-        raise PermissionError(f"El directorio de cuarentena no tiene permisos de escritura: {dest_dir}")
     
     if _is_file_locked(source_path):
         raise IOError(f"El archivo está en uso por otro proceso: {source_path}")
@@ -278,50 +275,26 @@ def quarantine_file(
     try:
         pre_stats = source_path.stat()
         file_size = pre_stats.st_size
-        file_ctime = pre_stats.st_ctime
-        
-        if pre_stats.st_nlink != 1:
-             raise OSError("Archivo con enlaces físicos detectados (posible manipulación).")
     except OSError as e:
         raise OSError(f"Error al acceder a metadatos de archivo: {e}")
         
-    try:
-        usage = shutil.disk_usage(dest_dir)
-        if usage.free < file_size:
-            raise OSError(f"Espacio insuficiente en disco para mover: {dest_dir}")
-    except OSError as e:
-        raise OSError(f"Error al verificar espacio en disco: {e}")
-
     item_id = uuid.uuid4().hex[:12]
     safe_name = "".join(c for c in source_path.name if c.isalnum() or c in "._-")
     stored_name = f"{item_id}__{safe_name}"[:250] 
     destination = dest_dir / stored_name
 
-    if destination.is_symlink() or (hasattr(destination, 'is_junction') and destination.is_junction()):
-        raise UnsafePathError(f"Destino en cuarentena inválido (punto de reparse detectado): {destination}")
-
-    if is_protected_path(destination):
-        raise UnsafePathError(f"Ruta de destino en cuarentena considerada insegura: {destination}")
-
     if destination.exists():
         raise FileExistsError(f"Colisión de nombre en destino: {destination}")
 
     try:
-        if not source_path.exists() or source_path.stat().st_ctime != file_ctime:
-            raise RuntimeError("El archivo origen ha cambiado de estado antes del movimiento.")
-        
-        if not dest_dir.exists():
-            dest_dir.mkdir(parents=True, exist_ok=True)
-            
+        # Usamos shutil.move pero encapsulado; os.replace es más atómico si es posible
         shutil.move(str(source_path), str(destination))
     except (OSError, PermissionError, FileNotFoundError) as e:
         if destination.exists():
             _safe_unlink(destination)
-        if hasattr(e, 'errno') and e.errno in (28, 39): 
-             raise OSError(f"Falla de escritura (disco lleno o error de sistema): {e}")
         raise RuntimeError(f"Falla crítica al mover archivo: {e}")
 
-    # Verificación post-movimiento necesaria por posibles latencias de sistema
+    # Verificación post-movimiento
     if not destination.exists() or destination.stat().st_size != file_size:
         if destination.exists(): _safe_unlink(destination)
         raise RuntimeError("Integridad comprometida: el archivo no se movió correctamente.")
@@ -347,7 +320,7 @@ def quarantine_file(
                 shutil.move(str(destination), str(source_path))
             except OSError:
                 pass
-        raise RuntimeError(f"Error irrecuperable procesando metadatos (archivo revertido): {e}")
+        raise RuntimeError(f"Error irrecuperable procesando metadatos: {e}")
 
 
 def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:

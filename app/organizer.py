@@ -228,6 +228,10 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             if current_abs.parent == dest or dest in current_abs.parents or current_abs in dest.parents:
                 continue
             
+            # Evitar mover el archivo si es el mismo origen y destino (físicamente)
+            if os.path.samefile(current_abs, dest):
+                continue
+            
             # Verificación de bloqueo de archivo
             try:
                 with open(current_path, 'rb'): pass

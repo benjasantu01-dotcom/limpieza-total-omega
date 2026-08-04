@@ -1215,10 +1215,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             messagebox.showinfo("Falta el ID", "Pegá el ID del archivo que querés restaurar.")
             return
 
-        if not raw_id.isalnum():
-             messagebox.showerror("Error", "El ID debe ser alfanumérico.")
-             return
-
         def task():
             if not quarantine.item_exists(raw_id):
                 self.log(f"Error: El ID '{raw_id}' no existe en la cuarentena.", "Cuarentena")

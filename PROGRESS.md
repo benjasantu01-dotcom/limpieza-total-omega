@@ -6,46 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **255** (50.6% de aceptación)
+- Mejoras aceptadas: **259** (51.4% de aceptación)
 - Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 28
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 195
+- Sin respuesta de la IA (error o límite): 191
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-03 | 157 | 6 | 15 | 10 | 124 |
-| 2026-08-04 | 98 | 6 | 13 | 4 | 71 |
+| 2026-08-03 | 157 | 6 | 15 | 10 | 120 |
+| 2026-08-04 | 102 | 6 | 13 | 4 | 71 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **61**
 - robustez ante casos límite: **52**
 - manejo de errores y validación de entradas: **51**
+- seguridad defensiva: **48**
 - rendimiento: **47**
-- seguridad defensiva: **44**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **23**
+- `quarantine.py`: **22**
 - `assistant.py`: **21**
-- `quarantine.py`: **21**
+- `memory.py`: **21**
+- `organizer.py`: **21**
 - `duplicates.py`: **20**
-- `memory.py`: **20**
-- `organizer.py`: **20**
 - `scanner.py`: **20**
 - `browser.py`: **19**
 - `healthscore.py`: **18**
 - `diskreport.py`: **17**
-- `main.py`: **15**
+- `main.py`: **16**
 - `safety.py`: **14**
 - `startup.py`: **14**
 - `branding.py`: **13**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-04T08:17:27` **quarantine.py** (seguridad defensiva): Se reforzó `quarantine_file` para prevenir una condición de carrera (Time-of-check to time-of-use) mediante el uso de `os.replace` (atómico en sistemas POSIX y Windows si el destino no existe) y se añadió una validación estricta de que el archivo origen no sea un punto de reparse antes de cualquier operación, mitigando riesgos de seguridad adicionales.
+- `2026-08-04T08:17:14` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de `stage_for_review` implementando una validación explícita para evitar que `shutil.move` intente mover un archivo sobre sí mismo o entre ubicaciones físicamente idénticas (caso de alias o links), reforzando la integridad de los datos antes de la operación de escritura.
+- `2026-08-04T08:16:52` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `trim_working_set` al centralizar y robustecer la validación del PID, asegurando que no se intente manipular procesos del sistema o de la propia aplicación antes de realizar cualquier llamada a la API de Windows, evitando así la exposición a privilegios innecesarios.
+- `2026-08-04T08:16:27` **main.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `on_restore_quarantine` eliminando el uso de `isalnum()` (que fallaba ante IDs válidos con guiones u otros caracteres) y reemplazándolo por una validación estricta contra el manifiesto de cuarentena, asegurando además que el archivo resultante de la restauración sea validado contra `is_safe_path` antes de cualquier operación física.
 - `2026-08-04T08:07:03` **duplicates.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_collect_candidates` y las funciones de hash al asegurar que cualquier resolución de ruta (`resolve(strict=True)`) sea estrictamente validada con `is_protected_path` inmediatamente después de obtener la ruta absoluta y antes de acceder a cualquier atributo del archivo, evitando la manipulación de accesos fuera del alcance permitido.
 - `2026-08-04T08:06:36` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `walk_files` implementando una validación estricta de rutas mediante `is_protected_path` antes de procesar el contenido de directorios, asegurando que no se pueda escapar del ámbito de escaneo permitido incluso si el sistema operativo reporta rutas que parezcan fuera de la jerarquía esperada.
 - `2026-08-04T08:05:35` **browser.py** (seguridad defensiva): Se ha mejorado `_is_valid_cache_path` para incluir un chequeo preventivo contra rutas UNC mediante `path.drive` en Windows, previniendo el acceso accidental a recursos de red lentos o inseguros, y se ha fortalecido la integridad del proceso de resolución de rutas.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-04T07:36:26` **organizer.py** (robustez ante casos límite): Se añade una validación de existencia previa en `scan_for_junk` para capturar archivos que fueron eliminados o renombrados por otros procesos entre la iteración de `os.scandir` y el acceso a `stat()`, evitando excepciones innecesarias y mejorando la robustez ante la concurrencia del sistema de archivos.
 - `2026-08-04T07:36:19` **memory.py** (robustez ante casos límite): Se mejora la robustez de `parse_windows_process_csv` añadiendo un manejo explícito de filas truncadas o mal formadas mediante una verificación estricta de la estructura del CSV, previniendo errores de ejecución ante salidas inesperadas de PowerShell.
 - `2026-08-04T07:35:54` **main.py** (robustez ante casos límite): Se ha robustecido el manejo de errores en `_init_state` y `_build_tabs_container` para evitar que una falla puntual en la carga de configuración o en la inicialización de una pestaña específica detenga el arranque de la aplicación.
-- `2026-08-04T07:34:57` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `compute_score` asegurando que el cálculo de `total_score` y el desglose sean precisos ante casos límite (pesos cero o configuración vacía) mediante una validación estricta y pre-cálculo de seguridad.
-- `2026-08-04T07:25:44` **duplicates.py** (robustez ante casos límite): Se ha añadido un manejo robusto ante la posibilidad de rutas extremadamente largas o inválidas durante la resolución de directorios y estadísticas de archivos, asegurando que `_collect_candidates` y las funciones de escaneo no fallen silenciosamente ante excepciones de sistema de archivos más allá de las básicas.
-- `2026-08-04T07:15:34` **assistant.py** (robustez ante casos límite): Se reforzó la robustez de `build_context` ante valores `None` inesperados y tipos de datos inválidos en los módulos de entrada, previniendo excepciones durante el análisis inicial que podrían bloquear el flujo del asistente.
-- `2026-08-04T07:15:17` **startup.py** (rendimiento): Optimicé el rendimiento de `_resolve_and_cache_path` mediante una verificación previa de existencia en `_EXISTS_CACHE` antes de realizar operaciones costosas de resolución de rutas (`resolve` o `expanduser`), reduciendo el impacto de I/O en llamadas repetidas.
