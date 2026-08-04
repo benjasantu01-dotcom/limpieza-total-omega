@@ -1062,3 +1062,10 @@ FAILED evolve/tests/test_modules.py::test_summarize_mentions_the_folder_and_tota
 - `2026-08-04T12:12:16` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). He mejorado `ensure_safe_to_modify` para detectar rutas que apuntan a directorios de sistema mediante nombres cortos (8.3), previniendo vulnerabilidades donde nombres truncados (ej. `progra~1`) evitan los filtros de listas de nombres.
 - `2026-08-04T12:12:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-04T12:12:16` Corrida terminada. Total usado hoy: 288.
+- `2026-08-04T12:21:12` Arrancando corrida. Quedan hoy ~12 peticiones objetivo.
+- `2026-08-04T12:21:36` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `check_recent_executable_in_downloads` y `scan_file` para evitar fallos catastróficos ante archivos eliminados concurrentemente o errores de acceso al sistema de archivos, utilizando `path.exists()` como guarda previa y manejando la excepción `FileNotFoundError` durante la obtención de metadatos.
+- `2026-08-04T12:22:06` ➖ Sin cambios en settings.py (enfoque: robustez ante casos límite). Motivo: He mejorado la robustez de `settings.py` ante casos límite en la escritura de archivos al implementar un manejo explícito de `OSError` en la validación de directorios, evitando que permisos denegados o bloqueos de sistema durante la creación de la carpeta de configuración detengan la ejecución de la aplicación.
+- `2026-08-04T12:22:30` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-08-04T12:22:47` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la seguridad defensiva en `_call_gemini` integrando `is_protected_path` como una verificación adicional antes de procesar el texto del contexto, asegurando que ninguna ruta accidentalmente serializada en las métricas pueda ser interpretada o procesada por el asistente.
+- `2026-08-04T12:22:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-04T12:22:47` Corrida terminada. Total usado hoy: 292.
