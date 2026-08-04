@@ -14,7 +14,7 @@ vive en los otros módulos; acá solo se puntúa.
 
 from __future__ import annotations
 from dataclasses import dataclass, field
-from typing import Dict, List, Any, Final
+from typing import Dict, List, Any, Final, Tuple
 import math
 
 __all__ = [
@@ -57,10 +57,9 @@ WEIGHTS: Final[Dict[str, int]] = {
     "arranque": 8,
 }
 
-# Precalculo la suma de pesos para evitar iterar en el hot-path de compute_score.
+# Precalculos para optimizar el hot-path de compute_score.
 _TOTAL_WEIGHTS: Final[int] = sum(WEIGHTS.values())
 _NORM_FACTOR: Final[float] = 100.0 / _TOTAL_WEIGHTS if _TOTAL_WEIGHTS > 0 else 0.0
-# Cacheo items de pesos como lista para evitar .items() y llamadas de lookup en bucles
 _WEIGHT_ITEMS: Final[List[tuple[str, int]]] = list(WEIGHTS.items())
 
 
@@ -242,7 +241,8 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     if not metrics.is_finite() or not _validate_weights():
         return HealthResult(0, "F", {}, ["Error: Datos de entrada o configuración no procesables."])
 
-    ratios = {
+    # Mapeo directo para evitar búsquedas repetitivas en diccionario
+    scores = {
         "seguridad": score_security(metrics.suspicious_count, metrics.suspicious_warnings),
         "disco": score_disk(metrics.disk_free_percent),
         "memoria": score_memory(metrics.memory_available_percent),
@@ -254,11 +254,11 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     breakdown: Dict[str, int] = {}
     total_score: float = 0.0
     
+    # Iteración optimizada sobre lista de tuplas precalculada
     for area, weight in _WEIGHT_ITEMS:
-        ratio_val = ratios.get(area, 0.0)
+        ratio_val = scores.get(area, 0.0)
         score_val = ratio_val * float(weight) * _NORM_FACTOR
-        val_rounded = int(score_val + 0.5)
-        breakdown[area] = val_rounded
+        breakdown[area] = int(score_val + 0.5)
         total_score += score_val
 
     final_score = int(_clamp(total_score, 0.0, 100.0))
@@ -266,7 +266,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         score=final_score,
         grade=grade_for_score(final_score),
         breakdown=breakdown,
-        recommendations=_generate_recommendations(metrics, ratios),
+        recommendations=_generate_recommendations(metrics, scores),
     )
 
 
@@ -282,8 +282,7 @@ def summarize(result: HealthResult) -> List[str]:
 
     for area, maximo in _WEIGHT_ITEMS:
         puntos = result.breakdown.get(area, 0)
-        if not isinstance(puntos, int): puntos = 0
-        puntos = max(0, min(maximo, puntos))
+        puntos = max(0, min(maximo, puntos if isinstance(puntos, int) else 0))
         visual = f"[{'#' * puntos}{'.' * (maximo - puntos)}]"
         lines.append(f"  {area.capitalize():<12} {puntos:>2}/{maximo:<2} {visual}")
     

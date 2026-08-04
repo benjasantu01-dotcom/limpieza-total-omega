@@ -323,7 +323,8 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
         
     ext_sizes: Dict[str, int] = defaultdict(int)
     ext_counts: Dict[str, int] = defaultdict(int)
-    top_heap: List[Tuple[int, Path]] = []
+    # Min-heap para mantener los 8 más grandes (almacena (size, path_str))
+    top_heap: List[Tuple[int, str]] = []
     total_bytes = 0
     total_files = 0
 
@@ -336,9 +337,9 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
         ext_counts[ext_name] += 1
         
         if len(top_heap) < 8:
-            heapq.heappush(top_heap, (size, path))
+            heapq.heappush(top_heap, (size, str(path)))
         elif size > top_heap[0][0]:
-            heapq.heapreplace(top_heap, (size, path))
+            heapq.heapreplace(top_heap, (size, str(path)))
 
     lines: List[str] = [
         f"Carpeta analizada: {path_obj}",

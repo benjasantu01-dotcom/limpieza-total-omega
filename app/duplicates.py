@@ -139,12 +139,8 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
 def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """
     Recorrido recursivo por directorios, indexando archivos por tamaño e identificando por inodo.
-    
-    Returns:
-        Diccionario donde la clave es el tamaño en bytes y el valor una lista de rutas únicas.
     """
     groups: Dict[int, List[Path]] = defaultdict(list)
-    # Identificación única de archivo para evitar procesar el mismo archivo vía links duros
     visited_inodes: set[Tuple[int, int]] = set()
     
     def _scan(root_path: Path) -> None:
@@ -152,17 +148,18 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
             with os.scandir(root_path) as it:
                 for entry in it:
                     try:
-                        full_path = Path(entry.path).resolve(strict=True)
-                        if is_protected_path(full_path): continue
                         if entry.is_symlink(): continue
                         
                         if entry.is_dir():
-                            _scan(full_path)
+                            _scan(Path(entry.path))
                         elif entry.is_file():
                             st = entry.stat()
                             if st.st_size < min_size: continue
                             inode_key = (st.st_dev, st.st_ino)
                             if inode_key in visited_inodes: continue
+                            
+                            full_path = Path(entry.path).resolve()
+                            if is_protected_path(full_path): continue
                             
                             visited_inodes.add(inode_key)
                             groups[st.st_size].append(full_path)
