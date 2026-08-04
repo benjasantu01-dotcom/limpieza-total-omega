@@ -453,7 +453,7 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     ensure_safe_to_modify(quarantine_root, allow_sensitive=False)
     
     items = load_manifest(base)
-    item_map = {item.stored_name: item for item in items}
+    item_map: Dict[str, QuarantineItem] = {item.stored_name: item for item in items}
     stored_names_set = set(item_map.keys())
     count = 0
     

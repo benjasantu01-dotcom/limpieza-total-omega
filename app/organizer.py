@@ -105,6 +105,9 @@ def _generate_unique_target(target: Path) -> Path:
     """
     Resuelve colisiones de nombres añadiendo un sufijo numérico incremental.
     
+    Aplica una estrategia de 'retry' para encontrar una ruta libre en el destino
+    evitando sobrescribir archivos existentes durante el proceso de organización.
+
     Args:
         target: La ruta destino deseada que podría estar ocupada.
 
@@ -137,16 +140,23 @@ def _is_valid_junk(entry: os.DirEntry[str]) -> bool:
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     """
     Recorre recursivamente los directorios provistos buscando archivos basura.
-    Usa os.scandir para eficiencia y aplica filtros de seguridad en cada paso.
+    
+    Utiliza un enfoque de recursión controlada con `os.scandir` para minimizar el 
+    uso de memoria. Filtra rutas según `SYSTEM_FOLDER_BLOCKLIST` y valida la 
+    seguridad de cada elemento mediante `is_safe_to_modify`.
+
+    Args:
+        directories: Lista opcional de rutas a escanear. Si es None, usa DEFAULT_SCAN_DIRS.
+
+    Returns:
+        List[JunkFile]: Lista de objetos JunkFile encontrados.
     """
     dirs = directories if directories is not None else DEFAULT_SCAN_DIRS
     found: List[JunkFile] = []
     blocklist = SYSTEM_FOLDER_BLOCKLIST
 
     def _walk_dir(base_path: str) -> None:
-        """
-        Escaneo interno recursivo que evita rutas bloqueadas y symlinks.
-        """
+        """Escaneo interno recursivo que evita rutas bloqueadas y symlinks."""
         try:
             with os.scandir(base_path) as it:
                 for entry in it:
@@ -158,7 +168,6 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
                             if entry.name.lower() not in blocklist:
                                 _walk_dir(entry.path)
                         elif entry.name.lower().endswith(_JUNK_EXTS_TUPLE):
-                            # Filtro rápido usando el path del entry sin crear objeto Path innecesario
                             entry_path = Path(entry.path)
                             if is_safe_to_modify(entry_path):
                                 stat = entry.stat()
@@ -205,6 +214,19 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Path:
     """
     Prepara archivos para ser eliminados moviéndolos a un directorio de cuarentena.
+    
+    Realiza validaciones exhaustivas antes de cada movimiento:
+    1. Verifica que el archivo no esté en uso.
+    2. Evita movimientos circulares o dentro de la misma carpeta.
+    3. Confirma la seguridad de la ruta destino.
+
+    Args:
+        files: Lista de objetos JunkFile a procesar.
+        review_dir: Ruta destino para la revisión.
+
+    Raises:
+        ValueError: Si la ruta de revisión es inválida o la lista está vacía.
+        PermissionError: Si el destino es un symlink.
     """
     if not files:
         raise ValueError("La lista de archivos a procesar no puede estar vacía.")
@@ -227,23 +249,18 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         if jf is None or not isinstance(jf, JunkFile):
             continue
         try:
-            # Validaciones de integridad y seguridad previas
             if not jf.path.exists() or jf.path.is_symlink() or not jf.path.is_file() or jf.size_bytes == 0:
                 continue
             if not is_safe_to_modify(jf.path):
                 continue
             
-            # Impedir movimiento si el origen es la misma carpeta que el destino
             if os.path.samefile(jf.path.parent, dest):
                 continue
 
-            # Impedir movimiento si el destino es subcarpeta del origen (o viceversa)
             if jf.path in dest.parents or dest in jf.path.parents:
                 continue
             
-            # Verificar exclusividad de acceso: no podemos mover un archivo en uso por el SO
             try:
-                # Intento de apertura en modo exclusivo
                 with open(jf.path, 'r+b'):
                     pass
             except (OSError, PermissionError):
@@ -262,6 +279,12 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
     """
     Elimina físicamente los archivos dentro del directorio de revisión.
+    
+    Verifica nuevamente que los archivos a borrar residan realmente en la carpeta 
+    de revisión y cumplan con los criterios de seguridad antes de ejecutar `unlink`.
+
+    Returns:
+        int: Cantidad de archivos eliminados exitosamente.
     """
     if not review_dir or not isinstance(review_dir, str):
         return 0
