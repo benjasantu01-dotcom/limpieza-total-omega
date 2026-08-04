@@ -109,6 +109,8 @@ def format_size(num: Union[int, float]) -> str:
     Args:
         num: Tamaño en bytes (int o float).
     """
+    if num is None:
+        return "0 B"
     try:
         value = float(num)
     except (TypeError, ValueError):

@@ -133,7 +133,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.minsize(980, 680)
         except Exception as e:
             logging.warning("No se pudo configurar la geometría inicial: %s", e)
-        self.configure(fg_color=branding.color("background"))
+        try:
+            self.configure(fg_color=branding.color("background"))
+        except Exception as e:
+            logging.error("Fallo al aplicar colores de branding: %s", e)
 
     def _init_state(self) -> None:
         """Configura los contenedores de datos, el caché de sesión, la carga de 
@@ -151,14 +154,14 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.report_data: Dict[str, List[str]] = {}
         self.assistant_context = assistant.SystemContext()
         
-        # Carga de configuración
+        # Carga de configuración con validación estricta
         try:
             raw_settings = settings_mod.load()
             if not isinstance(raw_settings, dict): 
-                raise ValueError("Configuración no es un diccionario válido")
+                raise ValueError("Configuración no es un objeto mapeable")
             self.settings = raw_settings
         except Exception as e:
-            logging.error("Fallo al cargar ajustes, reseteando: %s", e)
+            logging.error("Fallo al cargar ajustes, reseteando a valores por defecto: %s", e)
             self.settings = settings_mod.reset()
             
         # UI Components Mapping

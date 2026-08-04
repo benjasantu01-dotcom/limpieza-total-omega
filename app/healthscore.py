@@ -59,7 +59,7 @@ WEIGHTS: Final[Dict[str, int]] = {
 
 # Precalculo la suma de pesos para evitar iterar en el hot-path de compute_score.
 _TOTAL_WEIGHTS: Final[int] = sum(WEIGHTS.values())
-_NORM_FACTOR: Final[float] = 100.0 / _TOTAL_WEIGHTS
+_NORM_FACTOR: Final[float] = 100.0 / _TOTAL_WEIGHTS if _TOTAL_WEIGHTS > 0 else 0.0
 
 
 def _validate_weights() -> bool:

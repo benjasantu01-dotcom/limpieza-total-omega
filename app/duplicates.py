@@ -128,7 +128,7 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
         if not isinstance(p, Path): continue
         try:
             resolved = p.resolve()
-            if is_protected_path(resolved) or resolved.is_symlink(): continue
+            if is_protected_path(resolved) or resolved.is_symlink() or not resolved.is_file(): continue
             groups[resolved.stat().st_size].append(resolved)
         except (OSError, PermissionError, FileNotFoundError):
             continue
@@ -148,9 +148,7 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
             with os.scandir(root_path) as it:
                 for entry in it:
                     try:
-                        # Seguridad: no seguir symlinks ni junction points
                         if entry.is_symlink(): continue
-                        
                         full_path = Path(entry.path)
                         if is_protected_path(full_path): continue
                         
@@ -171,9 +169,11 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
     if directories is None: return groups
     for directory in directories:
         if directory is None: continue
-        path_obj = Path(directory).resolve()
-        if path_obj.is_dir() and not is_protected_path(path_obj):
-            _scan(path_obj)
+        try:
+            path_obj = Path(directory).resolve()
+            if path_obj.is_dir() and not is_protected_path(path_obj):
+                _scan(path_obj)
+        except (OSError, PermissionError, RuntimeError): continue
     return groups
 
 
@@ -240,15 +240,16 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
 
     valid_paths: List[Tuple[float, int, Path]] = []
     for p in group.paths:
-        if not isinstance(p, Path) or not p.exists() or is_protected_path(p): continue
+        if not isinstance(p, Path): continue
         try:
+            if not p.is_file() or is_protected_path(p): continue
             stat = p.stat()
             valid_paths.append((stat.st_mtime, len(str(p)), p))
-        except (OSError, PermissionError):
+        except (OSError, PermissionError, FileNotFoundError):
             continue
             
     if not valid_paths:
-        return group.paths[0] if group.paths else None
+        return None
 
     return min(valid_paths, key=lambda x: (x[0], x[1]))[2]
 
