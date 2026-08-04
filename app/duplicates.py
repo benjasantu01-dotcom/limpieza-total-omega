@@ -77,20 +77,14 @@ class DuplicateGroup:
 def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
     Calcula el hash SHA256 completo del archivo mediante bloques de datos.
-    
-    Args:
-        path: Ruta del archivo a procesar.
-        chunk_size: Tamaño del bloque de lectura en bytes.
     """
-    if path is None: return None
+    if not path: return None
     try:
         p = Path(path).resolve()
-        # Seguridad: no seguir symlinks, detectar reparse points y evitar rutas protegidas
         if not p.is_file() or p.is_symlink() or is_protected_path(p):
             return None
         
-        st = p.stat()
-        if st.st_size == 0: return None
+        if p.stat().st_size == 0: return None
             
         digest = hashlib.sha256()
         with open(p, "rb", buffering=chunk_size) as f:
@@ -104,12 +98,8 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
 def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """
     Calcula un hash SHA256 sobre los primeros N bytes de un archivo.
-    
-    Args:
-        path: Ruta del archivo a procesar.
-        read_bytes: Cantidad de bytes a leer desde el inicio.
     """
-    if path is None: return None
+    if not path: return None
     try:
         p = Path(path).resolve()
         if not p.is_file() or p.is_symlink() or is_protected_path(p):
@@ -146,7 +136,6 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
 def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """
     Recorrido recursivo por directorios, indexando archivos por tamaño.
-    Evita procesar archivos inseguros, symlinks o fuera de rutas permitidas.
     """
     groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: set[Tuple[int, int]] = set()
@@ -242,9 +231,6 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     """
     Determina la ruta óptima para conservar basada en fecha de modificación y longitud de ruta.
-    
-    Returns:
-        La ruta preferida para conservar o None si no hay candidatos válidos.
     """
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None
@@ -255,7 +241,6 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
         try:
             if not p.is_file() or is_protected_path(p): continue
             stat = p.stat()
-            # Criterio: Más antiguo (st_mtime) y ruta más corta.
             valid_paths.append((stat.st_mtime, len(str(p)), p))
         except (OSError, PermissionError, FileNotFoundError):
             continue
@@ -269,12 +254,6 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
 def format_group(group: DuplicateGroup) -> List[str]:
     """
     Genera un informe textual legible de un grupo de duplicados para la interfaz.
-    
-    Args:
-        group: El grupo de duplicados a formatear.
-        
-    Returns:
-        Lista de strings listos para mostrarse en UI.
     """
     if not isinstance(group, DuplicateGroup): return []
     keeper = suggest_keeper(group)

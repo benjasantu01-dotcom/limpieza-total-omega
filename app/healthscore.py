@@ -203,8 +203,8 @@ def grade_for_score(score: int) -> str:
 
 def _generate_recommendations(m: SystemMetrics, ratios: Dict[str, float]) -> List[str]:
     """Genera acciones correctivas basadas en los ratios actuales vs umbrales."""
-    if not isinstance(m, SystemMetrics):
-        return ["Error: Métricas inválidas al generar recomendaciones."]
+    if not isinstance(m, SystemMetrics) or not isinstance(ratios, dict):
+        return ["Error: Datos de entrada inválidos para recomendaciones."]
     
     recs: List[str] = []
     
@@ -278,17 +278,18 @@ def summarize(result: HealthResult) -> List[str]:
 
     lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     
-    if not result.breakdown:
+    if not isinstance(result.breakdown, dict) or not result.breakdown:
         return lines + ["  Error: No hay datos de desglose disponibles."]
 
     for area, maximo in _WEIGHT_ITEMS:
         puntos = result.breakdown.get(area, 0)
-        puntos = max(0, min(maximo, puntos))
+        puntos = max(0, min(maximo, int(puntos)))
         visual = f"[{'#' * puntos}{'.' * (maximo - puntos)}]"
         lines.append(f"  {area.capitalize():<12} {puntos:>2}/{maximo:<2} {visual}")
     
     lines.extend(["", "Recomendaciones:"])
-    for rec in (result.recommendations if result.recommendations else ["Ninguna recomendación disponible."]):
+    recs = result.recommendations if isinstance(result.recommendations, list) else []
+    for rec in (recs if recs else ["Ninguna recomendación disponible."]):
         if isinstance(rec, str):
             lines.append(f"  - {rec}")
     return lines

@@ -133,18 +133,15 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
 def directory_size(path: str | os.PathLike | None) -> int:
     """
     Calcula el tamaño total en bytes de un directorio mediante búsqueda iterativa.
-    
-    Utiliza una pila (stack) para evitar recursión profunda y optimizar memoria.
-    Saltea automáticamente rutas protegidas y elementos enumerados en NEVER_TOUCH.
     """
     if path is None:
         return 0
     
     try:
-        root: Path = Path(path).resolve()
-        # Validación final de seguridad contra el sistema
-        if not root.exists() or not root.is_dir() or is_protected_path(root):
+        root_path = Path(path)
+        if not root_path.exists() or not root_path.is_dir() or is_protected_path(root_path):
             return 0
+        root = root_path.resolve()
     except (OSError, TypeError, ValueError):
         return 0
     
@@ -157,20 +154,20 @@ def directory_size(path: str | os.PathLike | None) -> int:
         try:
             with os.scandir(current_dir_str) as it:
                 for entry in it:
-                    name_lower = entry.name.lower()
-                    if name_lower in skip_names or any(ord(c) < 32 for c in entry.name):
-                        continue
-                    if entry.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(entry.path)):
-                        continue
-                    
-                    if entry.is_dir(follow_symlinks=False):
-                        stack.append(entry.path)
-                    else:
-                        try:
-                            total_bytes += entry.stat().st_size
-                        except (OSError, PermissionError, FileNotFoundError):
+                    try:
+                        name_lower = entry.name.lower()
+                        if name_lower in skip_names or any(ord(c) < 32 for c in entry.name):
                             continue
-        except (OSError, PermissionError, FileNotFoundError):
+                        if entry.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(entry.path)):
+                            continue
+                        
+                        if entry.is_dir(follow_symlinks=False):
+                            stack.append(entry.path)
+                        else:
+                            total_bytes += entry.stat().st_size
+                    except (OSError, PermissionError):
+                        continue
+        except (OSError, PermissionError):
             continue
             
     return total_bytes
@@ -200,7 +197,6 @@ def detect_profiles(
 ) -> List[BrowserCache]:
     """
     Explora directorios base buscando caché de navegadores.
-    Retorna una lista ordenada de objetos BrowserCache.
     """
     bases = bases if bases is not None else base_directories()
     cache_paths = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS

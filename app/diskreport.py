@@ -175,12 +175,12 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     """
     Generador que recorre recursivamente el sistema de archivos, omitiendo rutas protegidas.
     """
-    if not directory or not isinstance(directory, (str, os.PathLike)):
+    if not isinstance(directory, (str, os.PathLike)):
         return
 
     try:
         base_path = Path(directory).expanduser().resolve()
-        if not base_path.is_absolute() or not base_path.is_dir():
+        if not base_path.is_dir():
             return
         if skip_protected and is_protected_path(base_path):
             return
@@ -286,8 +286,8 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
     """
     Genera un reporte textual formateado del uso de espacio en la ruta analizada.
     """
-    if not directory:
-        return ["Error: Ruta no especificada."]
+    if not directory or not isinstance(directory, (str, os.PathLike)):
+        return ["Error: Ruta no válida o no especificada."]
         
     try:
         path_obj = Path(directory).expanduser().resolve()
