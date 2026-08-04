@@ -342,6 +342,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if target_pid == os.getpid():
         return False, "Operación denegada: proceso de la app."
     
+    # Guardia de seguridad defensiva: no permitir manipulación de IDs protegidos
     if is_protected_path(str(target_pid)):
         return False, "Operación denegada: PID protegido por política de seguridad."
     

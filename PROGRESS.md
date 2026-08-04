@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **254** (50.4% de aceptación)
+- Mejoras aceptadas: **257** (51.0% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 28
+- Rechazadas por guardia de seguridad: 29
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 195
+- Sin respuesta de la IA (error o límite): 191
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-02 | 37 | 3 | 5 | 0 | 21 |
+| 2026-08-02 | 37 | 3 | 5 | 0 | 17 |
 | 2026-08-03 | 173 | 6 | 17 | 12 | 142 |
-| 2026-08-04 | 44 | 4 | 6 | 2 | 32 |
+| 2026-08-04 | 47 | 4 | 7 | 2 | 32 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **63**
 - robustez ante casos límite: **51**
 - manejo de errores y validación de entradas: **50**
-- seguridad defensiva: **46**
+- seguridad defensiva: **49**
 - rendimiento: **44**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **24**
 - `scanner.py`: **21**
+- `quarantine.py`: **21**
 - `assistant.py`: **20**
 - `browser.py`: **20**
-- `quarantine.py`: **20**
 - `main.py`: **19**
-- `organizer.py`: **18**
+- `organizer.py`: **19**
+- `memory.py`: **18**
 - `diskreport.py`: **17**
-- `memory.py`: **17**
 - `duplicates.py`: **17**
 - `healthscore.py`: **17**
 - `safety.py`: **16**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-04T03:50:20` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva al añadir una validación crítica en `purge_all` para evitar la eliminación accidental de archivos fuera de la carpeta de cuarentena, usando `is_within_directory` antes de realizar `_safe_unlink`.
+- `2026-08-04T03:49:52` **organizer.py** (seguridad defensiva): Se reforzó `stage_for_review` para prevenir que el proceso intente mover archivos hacia sí mismos o hacia subdirectorios propios mediante una validación estricta de la jerarquía de rutas utilizando `path.resolve()` antes de realizar cualquier operación.
+- `2026-08-04T03:49:29` **memory.py** (seguridad defensiva): Se añadió una validación explícita para evitar que `trim_working_set` intente interactuar con procesos cuyo nombre sea sospechoso o crítico (mediante `is_protected_path` sobre el nombre del proceso si se obtuviera, aunque aquí se utiliza como guardia de seguridad contra la manipulación de handles de procesos), reforzando la integridad al impedir cualquier acción sobre procesos cuyo PID no pueda ser verificado o que pertenezcan a las capas de sistema detectadas por las reglas de seguridad.
 - `2026-08-04T03:40:40` **main.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_ask_folder` y `_is_safe_path` al forzar el uso de `pathlib.Path.resolve()` antes de realizar cualquier validación, evitando así que los usuarios puedan "escapar" de carpetas protegidas mediante enlaces simbólicos o rutas relativas manipuladas (`..`).
 - `2026-08-04T03:39:58` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_generate_recommendations` y `summarize` reemplazando el uso de `list.extend` con iteraciones seguras y validaciones de tipos adicionales, asegurando que ante una entrada maliciosa o corrupta no se produzcan excepciones de desbordamiento o de tipo que puedan detener el bucle principal de la aplicación.
 - `2026-08-04T03:39:11` **diskreport.py** (seguridad defensiva): Reforcé la seguridad defensiva en `walk_files` y `largest_folders` añadiendo una validación explícita mediante `is_protected_path` sobre el resultado de `Path.resolve()`, asegurando que no se sigan enlaces simbólicos o puntos de reparse que escapen de las restricciones de seguridad incluso después de la resolución de la ruta.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-04T03:19:03` **safety.py** (robustez ante casos límite): Se reforzó la robustez frente a casos límite en `safety.py` mediante la validación estricta de rutas con enlaces físicos (hard links) y se corrigió una posible vulnerabilidad de desbordamiento en la validación de estados de archivo al centralizar el manejo de excepciones, asegurando que `ensure_safe_to_modify` siempre valide la existencia antes de consultar atributos de sistema.
 - `2026-08-04T03:10:17` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` ante condiciones de carrera y archivos corruptos al implementar una validación post-movimiento más estricta que asegura la existencia física y la integridad del archivo antes de actualizar el manifiesto, evitando estados inconsistentes si el sistema operativo bloquea o retrasa la operación de `shutil.move`.
 - `2026-08-04T03:09:40` **memory.py** (robustez ante casos límite): Mejora la robustez en `parse_windows_process_csv` implementando un manejo defensivo ante errores de formato inesperado en la salida del CSV de PowerShell, evitando que el proceso se interrumpa ante filas malformadas o campos vacíos.
-- `2026-08-04T03:09:14` **main.py** (robustez ante casos límite): Mejoré la robustez de `_is_safe_path` y `_is_valid_dir` añadiendo capturas de excepciones específicas para manejar situaciones de "permiso denegado" (EACCES) o rutas bloqueadas por el sistema operativo, evitando que la aplicación reporte errores genéricos o se congele al intentar acceder a directorios restringidos durante el escaneo.
-- `2026-08-04T02:59:14` **healthscore.py** (robustez ante casos límite): Reforcé la robustez de `score_security` y `_generate_recommendations` añadiendo chequeos de división por cero y validación de tipos ante entradas inesperadas, garantizando que el cálculo de salud no colapse si las métricas reciben valores fuera de rango o datos inconsistentes.
-- `2026-08-04T02:58:41` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `largest_folders` ante posibles errores de acceso durante la iteración y el cálculo de rutas relativas, asegurando que la función no aborte ante archivos bloqueados o denegados, manteniendo la integridad del proceso de recolección de métricas.

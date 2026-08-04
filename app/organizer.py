@@ -210,14 +210,6 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
     1. Verifica que el archivo no esté en uso.
     2. Evita movimientos circulares o dentro de la misma carpeta.
     3. Confirma la seguridad de la ruta destino.
-
-    Args:
-        files: Lista de objetos JunkFile a procesar.
-        review_dir: Ruta destino para la revisión.
-
-    Raises:
-        ValueError: Si la ruta de revisión es inválida o la lista está vacía.
-        PermissionError: Si el destino es un symlink.
     """
     if not files:
         raise ValueError("La lista de archivos a procesar no puede estar vacía.")
@@ -240,17 +232,20 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         if jf is None or not isinstance(jf, JunkFile):
             continue
         try:
+            # Validaciones de existencia y seguridad de origen
             if not jf.path.exists() or jf.path.is_symlink() or not jf.path.is_file() or jf.size_bytes == 0:
                 continue
             if not is_safe_to_modify(jf.path):
                 continue
             
-            if os.path.samefile(jf.path.parent, dest):
+            # Prevenir movimiento a la misma carpeta o anidamiento
+            current_path = jf.path.resolve()
+            if current_path.parent == dest:
                 continue
-
-            if jf.path in dest.parents or dest in jf.path.parents:
+            if dest in current_path.parents or current_path in dest.parents:
                 continue
             
+            # Verificación de bloqueo de archivo
             try:
                 with open(jf.path, 'r+b'):
                     pass
@@ -261,7 +256,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             target = _generate_unique_target(target_base)
             
             ensure_safe_to_modify(jf.path)
-            shutil.move(str(jf.path), str(target))
+            shutil.move(str(current_path), str(target))
         except (PermissionError, OSError, shutil.Error, ValueError):
             continue
     return dest

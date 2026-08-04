@@ -458,6 +458,10 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
         if entry.name == MANIFEST_NAME:
             continue
             
+        # Refuerzo: solo borrar si estamos seguros que reside en la raíz de cuarentena
+        if not is_within_directory(entry, quarantine_root):
+            continue
+
         if entry.name in stored_names_set:
             if item_map[entry.name].verify_integrity(entry):
                 if _safe_unlink(entry):
