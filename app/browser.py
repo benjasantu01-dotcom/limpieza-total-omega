@@ -108,11 +108,10 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
         if not target_path.exists():
             return False
             
-        # Detectar caracteres de control ocultos (evitar intentos de ofuscación)
+        # Detectar caracteres de control ocultos
         if any(ord(char) < 32 for char in target_path.name):
             return False
 
-        # Obtener rutas canónicas para evitar trucos de simbolización
         real_base = base_path.resolve()
         real_target = target_path.resolve()
         
@@ -124,9 +123,10 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
         if real_target.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(str(real_target))):
             return False
 
-        # Validar que el target sea efectivamente un subdirectorio del base
-        return str(real_target).startswith(str(real_base))
-    except (OSError, RuntimeError, ValueError, PermissionError):
+        # Validación estricta: asegurar que target sea hijo de base
+        real_target.relative_to(real_base)
+        return True
+    except (OSError, ValueError, RuntimeError, PermissionError):
         return False
 
 
@@ -142,6 +142,7 @@ def directory_size(path: str | os.PathLike | None) -> int:
     
     try:
         root: Path = Path(path).resolve()
+        # Validación final de seguridad contra el sistema
         if not root.exists() or not root.is_dir() or is_protected_path(root):
             return 0
     except (OSError, TypeError, ValueError):

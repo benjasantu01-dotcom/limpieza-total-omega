@@ -171,7 +171,7 @@ class Answer:
 
 def _ensure_safe_text(text: str) -> bool:
     """Validación defensiva: verifica que el texto no contenga rutas, caracteres de control o inyecciones."""
-    if not text:
+    if not text or len(text) > 2000:
         return False
     if _PATH_REGEX.search(text) or _CONTROL_CHARS_REGEX.search(text):
         return False
@@ -360,7 +360,7 @@ _HANDLERS: Final[dict[str, Callable[[SystemContext, str], Answer]]] = {
 
 def _sanitize_query(question: str) -> str:
     """Limpia la entrada del usuario para procesamiento de texto seguro."""
-    return re.sub(r'[\x00-\x1f\x7f]', '', (question or "").strip())[:200].lower()
+    return re.sub(r'[\x00-\x1f\x7f]', '', (question or "").strip())[:100].lower()
 
 def local_answer(question: str, context: SystemContext) -> Answer:
     """Procesa la pregunta del usuario utilizando reglas de negocio estáticas."""
@@ -433,7 +433,7 @@ def _call_gemini(
     if not api_key or not isinstance(api_key, str) or not model or not isinstance(model, str) or not _MODEL_NAME_REGEX.match(model):
         return None
     
-    safe_q: str = _sanitize_query(question)[:500]
+    safe_q: str = _sanitize_query(question)
     safe_ctx: str = context_text[:1000]
     
     if not _ensure_safe_text(safe_q) or not _ensure_safe_text(safe_ctx):
@@ -475,7 +475,8 @@ def _call_gemini(
             
         texto: str = "".join(p.get("text", "") for p in partes if isinstance(p, dict)).strip()
         
-        if not _ensure_safe_text(texto) or len(texto) > 1200:
+        # Validamos la respuesta remota antes de considerarla segura para la UI
+        if not _ensure_safe_text(texto):
             return None
             
         return texto

@@ -114,8 +114,9 @@ class StartupEntry:
             if is_protected_path(p) or p.is_symlink():
                 return path_str
             
-            p_abs = p.expanduser().resolve()
-            # Validación defensiva extra: verificar que la ruta resuelta no haya cambiado a una protegida
+            # Resolve puede fallar con permisos denegados en directorios padre
+            p_abs = p.expanduser().resolve(strict=False)
+            
             if is_protected_path(p_abs):
                 return ""
                 
