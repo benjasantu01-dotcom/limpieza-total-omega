@@ -234,6 +234,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
     if str_val.startswith(("\\\\", "//")):
         raise UnsafePathError("Operación bloqueada: rutas de red no permitidas.")
     
+    # Validaciones que requieren acceso a disco
     if p.exists():
         if not os.access(p, os.W_OK):
             raise UnsafePathError("Operación bloqueada: sin permisos de escritura.")

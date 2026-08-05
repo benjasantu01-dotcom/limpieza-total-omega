@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-04 | 91 | 6 | 10 | 5 | 80 |
-| 2026-08-05 | 155 | 9 | 17 | 7 | 124 |
+| 2026-08-04 | 88 | 6 | 10 | 5 | 79 |
+| 2026-08-05 | 158 | 9 | 17 | 7 | 125 |
 
 ## Mejoras aceptadas por enfoque
 
-- rendimiento: **52**
+- manejo de errores y validación de entradas: **54**
 - seguridad defensiva: **52**
-- manejo de errores y validación de entradas: **51**
+- rendimiento: **49**
 - legibilidad y documentación: **48**
 - robustez ante casos límite: **43**
 
 ## Mejoras aceptadas por archivo
 
-- `duplicates.py`: **22**
 - `quarantine.py`: **21**
-- `browser.py`: **20**
+- `duplicates.py`: **21**
+- `scanner.py`: **20**
+- `settings.py`: **20**
 - `assistant.py`: **20**
 - `branding.py`: **20**
-- `diskreport.py`: **19**
-- `scanner.py`: **19**
-- `settings.py`: **19**
+- `browser.py`: **19**
 - `main.py`: **18**
+- `diskreport.py`: **18**
 - `organizer.py`: **17**
 - `healthscore.py`: **17**
-- `safety.py`: **13**
+- `safety.py`: **14**
 - `memory.py`: **12**
 - `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-05T13:47:14` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` y `load()` implementando una validación estricta de la integridad del JSON y del estado de escritura mediante `try-except` granulares, asegurando que las operaciones de E/S no dejen el sistema en un estado inconsistente ante archivos corrompidos o bloqueados.
+- `2026-08-05T13:46:48` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `scan_file` y `scan_directory` añadiendo validaciones de tipo y estado para los parámetros de entrada, asegurando que cualquier valor inesperado (`None` o rutas inválidas) sea manejado antes de intentar operaciones de sistema, cumpliendo con el enfoque de validación defensiva.
+- `2026-08-05T13:46:25` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ensure_safe_to_modify` ante entradas no existentes pero potencialmente peligrosas (como rutas que exceden MAX_PATH o contienen caracteres prohibidos) al mover las validaciones de formato antes de cualquier intento de interacción con el sistema de archivos (`exists()`).
 - `2026-08-05T13:37:09` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `load_manifest` mediante un bloque `try-except` más específico y la validación de la integridad del JSON cargado para evitar fallos catastróficos ante archivos corruptos, aplicando una técnica de defensa ante entradas externas inesperadas.
 - `2026-08-05T13:27:31` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `on_trim_process` integrando una validación previa de existencia del proceso mediante `memory_mod.process_exists` para evitar intentos de manipulación sobre PIDs huérfanos, y añadí bloques de captura específicos para evitar que errores en el acceso a atributos de la UI bloqueen la ejecución del bucle.
 - `2026-08-05T13:26:45` **healthscore.py** (manejo de errores y validación de entradas): Reforcé la robustez del sistema de puntaje agregando validación de tipos y rangos en las funciones `score_*`, evitando que valores inesperados (como un porcentaje de disco > 100%) corrompan el cálculo ponderado final.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-05T11:53:52` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `scanner.py` implementando un chequeo de normalización de rutas mediante `resolve()` para prevenir ataques de *path traversal* o ambigüedades mediante nombres de dispositivos (ej. `\\.\`), asegurando que las rutas procesadas siempre estén bajo el `base_root` esperado.
 - `2026-08-05T11:44:12` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `quarantine_file` añadiendo una comprobación explícita para evitar movimientos entre volúmenes (cross-device moves), lo cual previene errores de I/O impredecibles y garantiza que `shutil.move` se comporte como un movimiento atómico en el mismo sistema de archivos.
 - `2026-08-05T11:43:43` **organizer.py** (seguridad defensiva): Mejoré la seguridad defensiva en `stage_for_review` añadiendo una validación explícita para evitar que `shutil.move` intente realizar operaciones entre archivos con el mismo descriptor de dispositivo si el origen o destino cambian durante la ejecución, y asegurando que las rutas de origen sean validadas de nuevo justo antes de la operación de movimiento para cerrar una pequeña ventana de race condition.
-- `2026-08-05T11:35:04` **memory.py** (seguridad defensiva): Se introdujo una validación defensiva en `trim_working_set` para asegurar que el proceso objetivo existe realmente y es alcanzable antes de intentar interactuar con su memoria, protegiendo contra posibles errores de acceso en PIDs que finalizaron o fueron reciclados durante la ejecución.
-- `2026-08-05T11:34:53` **main.py** (seguridad defensiva): He mejorado `_ask_folder` para verificar que la ruta seleccionada no contenga caracteres de control o secuencias sospechosas (como ataques RTL o inyección de rutas) y para asegurar explícitamente que la ruta resuelta pase por `is_safe_path` antes de permitir su uso en la aplicación, reforzando la seguridad defensiva al seleccionar destinos de disco.
-- `2026-08-05T11:33:51` **healthscore.py** (seguridad defensiva): Se introdujo una validación defensiva en la generación de recomendaciones para evitar que valores inesperados en el conteo de elementos (como negativos o `NaN`) se filtren al usuario, asegurando que `_to_int` sea siempre invocado antes de interpolar datos en los strings de recomendación.

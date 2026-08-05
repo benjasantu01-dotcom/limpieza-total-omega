@@ -193,15 +193,14 @@ def load(path_or_base: PathLike | None = None) -> AppSettings:
             raise FileNotFoundError
         
         stat = ruta.stat()
-        if not stat.st_mode & 0o100000: raise OSError("Not a regular file")
+        if stat.st_size > MAX_SETTINGS_SIZE or stat.st_size == 0:
+            raise ValueError("Invalid file size")
         
-        if _cached_settings is not None and ruta == _last_path and stat.st_mtime == _last_mtime:
-            return _cached_settings
+        content = ruta.read_text(encoding="utf-8")
+        data = json.loads(content)
         
-        if stat.st_size > MAX_SETTINGS_SIZE: raise OSError("Config too large")
-        
-        data = json.loads(ruta.read_text(encoding="utf-8")) if stat.st_size > 0 else {}
-        if not isinstance(data, dict): raise ValueError("Invalid structure")
+        if not isinstance(data, dict):
+            raise ValueError("Invalid structure")
         
         _cached_settings = validate(data)
         _last_path, _last_mtime = ruta, stat.st_mtime
@@ -224,32 +223,24 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     
     try:
         if not is_safe_to_modify(str(ruta)): raise PermissionError("Unsafe path")
-        if ruta.is_symlink(): raise PermissionError("Symlink detected in config path")
-        
         json_data = json.dumps(limpio, indent=2, ensure_ascii=False)
         ruta.parent.mkdir(parents=True, exist_ok=True)
-    except (OSError, PermissionError): return None
-    
-    temp_path: Path | None = None
-    try:
+        
         with tempfile.NamedTemporaryFile("w", dir=ruta.parent, delete=False, encoding="utf-8") as tf:
             temp_path = Path(tf.name)
             tf.write(json_data)
             tf.flush()
             os.fsync(tf.fileno())
         
-        # Verificar nuevamente la seguridad antes de aplicar cambios
-        if not is_safe_to_modify(str(ruta)): raise PermissionError("Path safety check failed pre-replace")
+        if not is_safe_to_modify(str(ruta)):
+            if temp_path.exists(): temp_path.unlink()
+            return None
+
         os.replace(temp_path, ruta)
-        
         _cached_settings, _last_path, _last_mtime = limpio, ruta, ruta.stat().st_mtime
         return ruta
     except (OSError, PermissionError, RuntimeError):
         return None
-    finally:
-        if temp_path and temp_path.exists():
-            try: temp_path.unlink()
-            except OSError: pass
 
 def update(changes: dict[str, Any], path_or_base: PathLike | None = None) -> AppSettings:
     """Actualiza una parte de la configuración y guarda el archivo."""

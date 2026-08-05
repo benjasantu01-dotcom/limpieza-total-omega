@@ -144,7 +144,13 @@ CHECK_REGISTRY: Final[List[Tuple[ConditionCheck, SuspicionCheck]]] = [
 
 def scan_file(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, prevalidated: bool = False) -> ScanResult:
     """Ejecuta los chequeos registrados utilizando metadatos precalculados para eficiencia."""
-    if not isinstance(path, Path) or not path.exists():
+    if not isinstance(path, Path):
+        return []
+        
+    try:
+        if not path.exists():
+            return []
+    except (OSError, PermissionError):
         return []
     
     if not prevalidated:
@@ -170,7 +176,7 @@ def scan_file(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[st
 
 def scan_directory(directory: Union[str, Path]) -> ScanResult:
     """Realiza un escaneo recursivo de un directorio, recolectando hallazgos sospechosos."""
-    if not directory:
+    if directory is None:
         return []
         
     try:

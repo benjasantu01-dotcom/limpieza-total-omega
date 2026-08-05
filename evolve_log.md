@@ -455,3 +455,10 @@ FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - Asse
 - `2026-08-05T13:37:25` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
 - `2026-08-05T13:37:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-05T13:37:25` Corrida terminada. Total usado hoy: 312.
+- `2026-08-05T13:45:58` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-05T13:46:25` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `ensure_safe_to_modify` ante entradas no existentes pero potencialmente peligrosas (como rutas que exceden MAX_PATH o contienen caracteres prohibidos) al mover las validaciones de formato antes de cualquier intento de interacción con el sistema de archivos (`exists()`).
+- `2026-08-05T13:46:48` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `scan_file` y `scan_directory` añadiendo validaciones de tipo y estado para los parámetros de entrada, asegurando que cualquier valor inesperado (`None` o rutas inválidas) sea manejado antes de intentar operaciones de sistema, cumpliendo con el enfoque de validación defensiva.
+- `2026-08-05T13:47:14` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save()` y `load()` implementando una validación estricta de la integridad del JSON y del estado de escritura mediante `try-except` granulares, asegurando que las operaciones de E/S no dejen el sistema en un estado inconsistente ante archivos corrompidos o bloqueados.
+- `2026-08-05T13:47:22` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-05T13:47:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-05T13:47:22` Corrida terminada. Total usado hoy: 316.
