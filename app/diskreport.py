@@ -186,6 +186,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 
     try:
         base_path = Path(directory).expanduser().resolve()
+        # Verificación estricta de seguridad ante reparse points
         if base_path.is_symlink() or (os.name == 'nt' and base_path.stat().st_reparse_tag != 0):
             return
         if not base_path.is_dir():
@@ -202,6 +203,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
             with os.scandir(current_path) as iterator:
                 for entry in iterator:
                     try:
+                        # Evitar seguir reparse points detectados mediante el iterator
                         if entry.is_symlink() or (os.name == 'nt' and entry.stat(follow_symlinks=False).st_reparse_tag != 0):
                             continue
                         
@@ -215,7 +217,6 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                                 visited_directories.add(full_path)
                                 yield from scan_level(full_path)
                         else:
-                            # Captura de error específica si el archivo fue borrado mientras se recorre
                             try:
                                 yield full_path, entry.stat().st_size
                             except (OSError, FileNotFoundError):
@@ -272,6 +273,7 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
         return []
     try:
         base = Path(directory).expanduser().resolve()
+        # Validación defensiva ante reparse points antes de comenzar el escaneo
         if base.is_symlink() or (os.name == 'nt' and base.stat().st_reparse_tag != 0):
             return []
         if not base.is_dir() or (skip_protected and is_protected_path(base)):

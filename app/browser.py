@@ -88,7 +88,7 @@ def base_directories() -> List[Path]:
         return []
     
     try:
-        path_local = Path(local)
+        path_local = Path(local).resolve()
         if path_local.is_absolute() and path_local.is_dir():
             return [path_local]
         return []
@@ -105,23 +105,27 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
         return False
         
     try:
+        # Prevenir rutas UNC (servidores externos)
+        if str(target_path).startswith(r"\\"):
+            return False
+
         if not target_path.exists():
             return False
             
         if any(ord(char) < 32 for char in target_path.name):
             return False
 
-        # Usamos resolve() sin strict=True para permitir validación lógica 
-        # sin abortar si partes de la ruta intermedia tienen permisos restringidos.
         real_base = base_path.resolve()
         real_target = target_path.resolve()
         
         if is_protected_path(real_target):
             return False
 
+        # Verifica si el target es symlink o junction
         if real_target.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(str(real_target))):
             return False
 
+        # Verifica que real_target sea hijo de real_base
         real_target.relative_to(real_base)
         return True
     except (OSError, ValueError, RuntimeError, PermissionError):
@@ -137,7 +141,7 @@ def directory_size(path: str | os.PathLike | None) -> int:
         return 0
     
     try:
-        root = Path(path).resolve(strict=True)
+        root = Path(path).resolve()
         if not root.is_dir() or is_protected_path(root):
             return 0
     except (OSError, TypeError, ValueError, PermissionError):
@@ -152,8 +156,9 @@ def directory_size(path: str | os.PathLike | None) -> int:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
-                        # entry.is_symlink/junction y entry.stat ya están cacheados en entry por scandir
-                        if entry.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(entry.path)):
+                        # entry.is_symlink y is_junction validados explícitamente
+                        is_junction = hasattr(os.path, 'isjunction') and os.path.isjunction(entry.path)
+                        if entry.is_symlink() or is_junction:
                             continue
 
                         if entry.is_dir(follow_symlinks=False):
@@ -178,13 +183,9 @@ def _is_valid_cache_path(candidate: Path | None, base_path: Path) -> bool:
     if not isinstance(candidate, Path) or not isinstance(base_path, Path):
         return False
     try:
-        if str(candidate.drive).startswith(r"\\"):
-            return False
-            
         return (
             candidate.exists() and 
             candidate.is_dir() and 
-            not candidate.is_symlink() and
             _is_safe_path(candidate, base_path) and
             candidate.name.lower() not in NEVER_TOUCH
         )

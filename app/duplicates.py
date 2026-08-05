@@ -18,6 +18,7 @@ vacío:
 from __future__ import annotations
 import hashlib
 import os
+import stat
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
@@ -82,11 +83,12 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
     if path is None or chunk_size <= 0: return None
     try:
         file_path = Path(path).resolve(strict=True)
-        if is_protected_path(file_path) or not file_path.is_file() or file_path.is_symlink():
+        # Seguridad: solo procesar archivos regulares, no links ni dispositivos
+        st = file_path.stat()
+        if not stat.S_ISREG(st.st_mode) or is_protected_path(file_path):
             return None
         
-        stat_info = file_path.stat()
-        if stat_info.st_size <= 0: return None
+        if st.st_size <= 0: return None
             
         digest = hashlib.sha256()
         with open(file_path, "rb", buffering=chunk_size) as f:
@@ -106,11 +108,12 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
     if path is None or read_bytes <= 0: return None
     try:
         file_path = Path(path).resolve(strict=True)
-        if is_protected_path(file_path) or not file_path.is_file() or file_path.is_symlink():
+        # Seguridad: solo procesar archivos regulares
+        st = file_path.stat()
+        if not stat.S_ISREG(st.st_mode) or is_protected_path(file_path):
             return None
             
-        stat_info = file_path.stat()
-        if stat_info.st_size <= 0: return None
+        if st.st_size <= 0: return None
 
         with open(file_path, "rb", buffering=read_bytes) as f:
             content = f.read(read_bytes)
@@ -131,8 +134,9 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
         if not isinstance(p, Path): continue
         try:
             resolved = p.resolve(strict=True)
-            if is_protected_path(resolved) or resolved.is_symlink() or not resolved.is_file(): continue
-            groups[resolved.stat().st_size].append(resolved)
+            st = resolved.stat()
+            if not stat.S_ISREG(st.st_mode) or is_protected_path(resolved): continue
+            groups[st.st_size].append(resolved)
         except (OSError, PermissionError, FileNotFoundError, RuntimeError):
             continue
     return groups
@@ -150,22 +154,24 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
             with os.scandir(root_path) as dir_iterator:
                 for entry in dir_iterator:
                     try:
-                        if entry.is_symlink(): continue
+                        # Seguridad: no seguir symlinks y evitar dispositivos especiales
+                        lstat = entry.stat(follow_symlinks=False)
+                        inode_key = (lstat.st_dev, lstat.st_ino)
                         
-                        st = entry.stat(follow_symlinks=False)
-                        inode_key = (st.st_dev, st.st_ino)
-                        
-                        if entry.is_dir():
+                        if entry.is_dir(follow_symlinks=False):
                             if inode_key not in visited_inodes:
                                 visited_inodes.add(inode_key)
                                 _scan(Path(entry.path))
-                        elif entry.is_file():
-                            if st.st_size < min_size or inode_key in visited_inodes: continue
-                            visited_inodes.add(inode_key)
-                            
+                        elif entry.is_file(follow_symlinks=False):
+                            # Verificar S_ISREG para asegurar archivo regular
+                            if not stat.S_ISREG(lstat.st_mode) or lstat.st_size < min_size or inode_key in visited_inodes:
+                                continue
+                                
                             file_path = Path(entry.path)
                             if skip_protected and is_protected_path(file_path): continue
-                            groups[st.st_size].append(file_path)
+                            
+                            visited_inodes.add(inode_key)
+                            groups[lstat.st_size].append(file_path)
                     except (OSError, PermissionError): continue
         except (OSError, PermissionError): pass
 
@@ -247,8 +253,8 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
         if not isinstance(p, Path): continue
         try:
             if p.exists() and p.is_file() and not is_protected_path(p):
-                stat = p.stat()
-                valid_paths.append((stat.st_mtime, len(str(p)), p))
+                stat_info = p.stat()
+                valid_paths.append((stat_info.st_mtime, len(str(p)), p))
         except (OSError, PermissionError):
             continue
             
