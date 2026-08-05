@@ -1292,3 +1292,10 @@ FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - Asse
 - `2026-08-05T10:43:38` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Mejoré la robustez de `directory_size` ante el caso límite de archivos bloqueados por el SO (sharing violation) y directorios con permisos denegados, asegurando que `entry.stat()` sea invocado con manejo explícito de errores para evitar que el escaneo se aborte silenciosamente ante archivos en uso o protegidos, además de validar la existencia de `candidate` dentro de `directory_size` antes de iniciar el ciclo.
 - `2026-08-05T10:43:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-05T10:43:38` Corrida terminada. Total usado hoy: 244.
+- `2026-08-05T10:52:19` Arrancando corrida. Quedan hoy ~56 peticiones objetivo.
+- `2026-08-05T10:52:45` ➖ Sin cambios en diskreport.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `walk_files` y `largest_folders` frente a condiciones de carrera (archivos eliminados entre el listado y la consulta) y errores de acceso en directorios, envolviendo las llamadas de `stat()` y `scandir()` en bloques de manejo de errores más granulares para evitar abortos inesperados del escaneo.
+- `2026-08-05T10:53:07` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-08-05T10:53:37` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: robustez ante casos límite).
+- `2026-08-05T10:54:21` ➖ Sin cambios en main.py (enfoque: robustez ante casos límite). Motivo: Se reforzó la robustez ante casos límite en la selección de carpetas y navegación de ajustes, previniendo errores de ejecución por rutas inexistentes, entradas de texto malformadas o tipos de datos inesperados.
+- `2026-08-05T10:54:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-05T10:54:21` Corrida terminada. Total usado hoy: 248.
