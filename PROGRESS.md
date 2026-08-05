@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **262** (52.0% de aceptación)
+- Mejoras aceptadas: **264** (52.4% de aceptación)
 - Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 29
-- Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 189
+- Sin cambios (nada sustancial que mejorar): 13
+- Sin respuesta de la IA (error o límite): 186
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-03 | 52 | 1 | 5 | 4 | 40 |
+| 2026-08-03 | 52 | 1 | 5 | 4 | 36 |
 | 2026-08-04 | 166 | 11 | 20 | 8 | 145 |
-| 2026-08-05 | 44 | 0 | 4 | 0 | 4 |
+| 2026-08-05 | 46 | 0 | 4 | 1 | 5 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,11 +26,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **53**
 - rendimiento: **53**
 - robustez ante casos límite: **49**
-- seguridad defensiva: **45**
+- seguridad defensiva: **47**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **23**
+- `quarantine.py`: **24**
 - `organizer.py`: **22**
 - `assistant.py`: **22**
 - `duplicates.py`: **21**
@@ -41,12 +41,14 @@ Este archivo se regenera solo en cada corrida a partir de
 - `browser.py`: **19**
 - `branding.py`: **17**
 - `main.py`: **16**
+- `memory.py`: **15**
 - `safety.py`: **15**
-- `memory.py`: **14**
 - `startup.py`: **12**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-05T02:23:20` **quarantine.py** (seguridad defensiva): Se añadió una validación explícita en `quarantine_file` para detectar y rechazar archivos que contengan nombres o rutas que intenten evadir el sistema de archivos (ej. caracteres nulos o nombres de dispositivos reservados en Windows), mejorando la defensa contra posibles inyecciones de rutas.
+- `2026-08-05T02:22:45` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva de `trim_working_set` implementando una validación estricta del PID mediante una lista de bloqueo de procesos críticos conocidos y verificando que el proceso objetivo no sea el propio proceso de la aplicación (auto-protección), evitando así posibles ataques de denegación de servicio sobre la estabilidad de la herramienta.
 - `2026-08-05T02:12:40` **healthscore.py** (seguridad defensiva): Reforcé la seguridad defensiva encapsulando la lógica de ponderación dentro de `compute_score` y añadiendo validaciones estrictas para evitar que valores fuera de rango o malformados alteren la integridad del cálculo de salud.
 - `2026-08-05T02:12:30` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez del escaneo recursivo en `_collect_candidates` para prevenir bucles infinitos causados por enlaces simbólicos a directorios, los cuales no deben ser seguidos en operaciones de análisis de espacio o duplicados, manteniendo la consistencia con `is_protected_path`.
 - `2026-08-05T02:12:06` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `walk_files` y `largest_folders` al validar estrictamente que la ruta base del análisis no sea un punto de reparse (junction/symlink) antes de iniciar, evitando así el procesamiento accidental de rutas fuera del árbol esperado en sistemas Windows.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-05T01:42:31` **organizer.py** (robustez ante casos límite): Se añadió una verificación de estado de archivo en `scan_for_junk` mediante la apertura en modo lectura exclusiva para evitar errores de `PermissionError` o `OSError` al intentar procesar archivos bloqueados por el sistema, mejorando la robustez ante casos límite de concurrencia.
 - `2026-08-05T01:41:59` **main.py** (robustez ante casos límite): Mejoré la robustez de la inicialización de `LimpiezaTotalOmegaApp` añadiendo una limpieza de estado previa al bucle principal, asegurando que si la app intenta reiniciarse o se encuentra en un estado inconsistente, no herede residuos de caché o de hilos que puedan fallar ante rutas inexistentes o permisos denegados.
 - `2026-08-05T01:40:56` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez de `compute_score` ante valores nulos o atípicos en `SystemMetrics` mediante la adición de un chequeo de integridad en `summarize` y una validación explícita de las claves de `scores` para prevenir errores de tipo `KeyError` ante configuraciones de `WEIGHTS` incompatibles.
-- `2026-08-05T01:31:43` **duplicates.py** (robustez ante casos límite): Se ha robustecido la función `_collect_candidates` para manejar correctamente rutas que desaparecen durante el escaneo (Race Condition) y se evitó la recursión infinita en casos de puntos de montaje circulares o junctions mediante el uso de `stat` para identificar dispositivos únicos.
-- `2026-08-05T01:31:34` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `walk_files` ante archivos que desaparecen durante el escaneo (condición de carrera común en escaneos de disco) envolviendo la lectura de metadatos en un bloque `try-except` más específico y asegurando que `entry.stat()` no falle ante archivos bloqueados o en proceso de borrado.

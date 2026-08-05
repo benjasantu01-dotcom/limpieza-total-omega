@@ -247,6 +247,10 @@ def quarantine_file(
     if not source_path.exists():
         raise FileNotFoundError(f"El archivo de origen no existe: {source_path}")
     
+    # Defensa contra evasión de rutas y caracteres inválidos
+    if "\0" in str(source_path) or any(c in str(source_path.name) for c in "<>:\"|?*"):
+        raise UnsafePathError(f"Ruta con caracteres maliciosos o inválidos: {source_path.name}")
+    
     if source_path.is_symlink() or (hasattr(source_path, 'is_junction') and source_path.is_junction()):
         raise UnsafePathError(f"Operación denegada en punto de reparse: {source_path}")
 

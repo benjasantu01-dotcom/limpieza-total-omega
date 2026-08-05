@@ -1471,3 +1471,10 @@ FAILED evolve/tests/test_modules.py::test_summarize_mentions_the_folder_and_tota
 - `2026-08-05T02:12:40` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Reforcé la seguridad defensiva encapsulando la lógica de ponderación dentro de `compute_score` y añadiendo validaciones estrictas para evitar que valores fuera de rango o malformados alteren la integridad del cálculo de salud.
 - `2026-08-05T02:12:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-05T02:12:40` Corrida terminada. Total usado hoy: 52.
+- `2026-08-05T02:21:20` Arrancando corrida. Quedan hoy ~248 peticiones objetivo.
+- `2026-08-05T02:22:19` ➖ Sin cambios en main.py (enfoque: seguridad defensiva). Motivo: Se implementó un bloqueo preventivo en `on_trim_process` y `on_restore_quarantine` utilizando `_is_safe_path` y validaciones de PID para evitar manipulaciones de procesos o rutas críticas del sistema, reforzando la seguridad defensiva según el enfoque actual.
+- `2026-08-05T02:22:45` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva de `trim_working_set` implementando una validación estricta del PID mediante una lista de bloqueo de procesos críticos conocidos y verificando que el proceso objetivo no sea el propio proceso de la aplicación (auto-protección), evitando así posibles ataques de denegación de servicio sobre la estabilidad de la herramienta.
+- `2026-08-05T02:23:06` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-08-05T02:23:20` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se añadió una validación explícita en `quarantine_file` para detectar y rechazar archivos que contengan nombres o rutas que intenten evadir el sistema de archivos (ej. caracteres nulos o nombres de dispositivos reservados en Windows), mejorando la defensa contra posibles inyecciones de rutas.
+- `2026-08-05T02:23:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-05T02:23:20` Corrida terminada. Total usado hoy: 56.

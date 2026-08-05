@@ -73,6 +73,9 @@ PROCESS_SET_QUOTA: int = 0x0100
 PROCESS_VM_WRITE: int = 0x0020
 REQUIRED_ACCESS: int = PROCESS_QUERY_INFO | PROCESS_SET_QUOTA | PROCESS_VM_WRITE
 
+# Lista de PIDs críticos de Windows que nunca deben ser intervenidos
+SYSTEM_CRITICAL_PIDS: Tuple[int, ...] = (0, 4)
+
 _PROCESS_CACHE: Dict[str, Tuple[float, List[ProcessMemory]]] = {"data": (0.0, [])}
 
 @dataclass
@@ -307,7 +310,7 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
 
 def _is_system_process(pid: int) -> bool:
     """Verifica si un PID corresponde a un proceso crítico del sistema."""
-    return pid <= 100
+    return pid in SYSTEM_CRITICAL_PIDS or pid <= 100
 
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
@@ -329,7 +332,10 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except (ValueError, TypeError):
         return False, "El PID debe ser un número entero válido."
 
-    if target_pid <= 0 or _is_system_process(target_pid) or target_pid == os.getpid() or is_protected_path(str(target_pid)):
+    # Validación de seguridad: no permitir intervención sobre el propio proceso o procesos críticos
+    if target_pid == os.getpid():
+        return False, "Operación denegada: no se permite modificar el propio proceso."
+    if _is_system_process(target_pid) or is_protected_path(str(target_pid)):
         return False, "Operación denegada: PID de sistema o de app protegido."
     
     import ctypes
