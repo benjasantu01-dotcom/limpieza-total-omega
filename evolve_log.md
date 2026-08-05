@@ -1450,3 +1450,10 @@ FAILED evolve/tests/test_modules.py::test_summarize_mentions_the_folder_and_tota
 - `2026-08-05T01:42:31` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se añadió una verificación de estado de archivo en `scan_for_junk` mediante la apertura en modo lectura exclusiva para evitar errores de `PermissionError` o `OSError` al intentar procesar archivos bloqueados por el sistema, mejorando la robustez ante casos límite de concurrencia.
 - `2026-08-05T01:42:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-05T01:42:31` Corrida terminada. Total usado hoy: 40.
+- `2026-08-05T01:50:43` Arrancando corrida. Quedan hoy ~260 peticiones objetivo.
+- `2026-08-05T01:51:13` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se reforzó la robustez ante errores de E/S en `purge_all` y se mejoró la resiliencia en la gestión del manifiesto ante archivos huérfanos o parcialmente escritos durante fallos catastróficos, evitando que estados inconsistentes del sistema de archivos bloqueen la app.
+- `2026-08-05T01:51:31` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-08-05T01:51:55` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
+- `2026-08-05T01:52:02` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Mejoré la robustez de `process_entry` y `scan_directory` añadiendo validaciones específicas para rutas inexistentes, enlaces simbólicos rotos y errores de acceso, asegurando que el bucle de escaneo no se interrumpa ante inconsistencias del sistema de archivos mediante el uso de `path.exists()` y un manejo de excepciones más granular.
+- `2026-08-05T01:52:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-05T01:52:02` Corrida terminada. Total usado hoy: 44.

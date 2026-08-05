@@ -88,7 +88,7 @@ class Scanner:
                         stack.append(entry.path)
             elif entry.is_file(follow_symlinks=False):
                 path_obj = Path(entry.path)
-                if is_safe_to_modify(path_obj) and not is_protected_path(path_obj):
+                if path_obj.exists() and is_safe_to_modify(path_obj) and not is_protected_path(path_obj):
                     self.results.extend(scan_file(path_obj, entry=entry, prevalidated=True))
         except (PermissionError, OSError):
             pass
@@ -127,7 +127,10 @@ def scan_file(path: Path, entry: Optional[os.DirEntry] = None, prevalidated: boo
     if not isinstance(path, Path):
         return []
 
-    abs_path = path.resolve()
+    try:
+        abs_path = path.resolve(strict=True)
+    except (OSError, RuntimeError):
+        return []
     
     if not prevalidated:
         if not abs_path.exists() or not is_safe_to_modify(abs_path) or is_protected_path(abs_path):
@@ -156,7 +159,10 @@ def scan_directory(directory: Union[str, Path]) -> ScanResult:
         return []
         
     try:
-        root_path = Path(directory).resolve(strict=True)
+        path_input = Path(directory)
+        if not path_input.exists():
+            return []
+        root_path = path_input.resolve(strict=True)
         if not root_path.is_dir() or root_path.is_symlink() or is_protected_path(root_path) or not is_safe_to_modify(root_path):
             return []
     except (OSError, RuntimeError):

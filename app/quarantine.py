@@ -182,7 +182,10 @@ def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload:
         return []
 
     base_str = str(base_path)
-    current_mtime = path.stat().st_mtime if path.exists() else 0.0
+    try:
+        current_mtime = path.stat().st_mtime if path.exists() else 0.0
+    except OSError:
+        current_mtime = 0.0
 
     if not force_reload and base_str in _manifest_cache:
         cached_mtime, cached_data = _manifest_cache[base_str]
@@ -424,13 +427,16 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
         for entry in quarantine_root.iterdir():
             if entry.name == MANIFEST_NAME or not is_within_directory(entry, quarantine_root):
                 continue
-
-            if entry.name in stored_names_set:
-                if item_map[entry.name].verify_integrity(entry):
-                    if _safe_unlink(entry):
-                        count += 1
-            else:
-                _safe_unlink(entry)
+            
+            try:
+                if entry.name in stored_names_set:
+                    if item_map[entry.name].verify_integrity(entry):
+                        if _safe_unlink(entry):
+                            count += 1
+                else:
+                    _safe_unlink(entry)
+            except OSError:
+                continue
     except OSError:
         pass
             
