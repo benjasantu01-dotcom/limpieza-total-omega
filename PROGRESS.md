@@ -8,44 +8,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **256** (50.8% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 28
+- Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 195
+- Sin respuesta de la IA (error o límite): 196
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-04 | 133 | 7 | 15 | 6 | 115 |
-| 2026-08-05 | 123 | 8 | 13 | 4 | 80 |
+| 2026-08-04 | 131 | 7 | 14 | 6 | 114 |
+| 2026-08-05 | 125 | 8 | 13 | 4 | 82 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **60**
 - manejo de errores y validación de entradas: **55**
 - seguridad defensiva: **51**
-- rendimiento: **47**
-- robustez ante casos límite: **43**
+- rendimiento: **49**
+- robustez ante casos límite: **41**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **22**
+- `duplicates.py`: **22**
 - `settings.py`: **21**
 - `assistant.py`: **21**
 - `branding.py`: **21**
-- `duplicates.py`: **21**
+- `quarantine.py`: **21**
 - `scanner.py`: **20**
+- `browser.py`: **20**
 - `diskreport.py`: **20**
-- `browser.py`: **19**
 - `healthscore.py`: **18**
 - `organizer.py`: **18**
 - `main.py`: **16**
-- `safety.py`: **15**
 - `memory.py`: **14**
+- `safety.py`: **14**
 - `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-05T10:12:37` **duplicates.py** (rendimiento): Optimizamos `_collect_candidates` utilizando un conjunto de "tamaños candidatos" para evitar realizar hashing completo o parcial en archivos únicos, asegurando que solo se procesen grupos donde el tamaño ya garantiza la existencia de al menos un duplicado.
+- `2026-08-05T10:11:50` **browser.py** (rendimiento): Optimicé `directory_size` reemplazando la creación repetitiva de objetos `Path` y llamadas a `resolve()` dentro del bucle de escaneo por operaciones directas sobre el string `entry.path` provisto por `os.scandir`, reduciendo significativamente la carga de I/O y el uso de CPU.
 - `2026-08-05T10:02:42` **branding.py** (rendimiento): Optimicé el cálculo del degradado en `draw_gradient_bar` mediante la precálculo de puntos de corte y la simplificación de la lógica de renderizado, eliminando el loop que generaba innecesariamente muchos objetos en el canvas al pintar línea por línea.
 - `2026-08-05T10:01:56` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `startup.py` mediante la normalización de docstrings (siguiendo estándares PEP 257), la inclusión de type hints explícitos en los atributos de `StartupEntry`, y la refactorización de la lógica de caché para hacerla más transparente y autodocumentada sin alterar la funcionalidad.
 - `2026-08-05T10:01:31` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos claros a las funciones principales, especificando los tipos de entrada/salida y documentando el propósito de las validaciones, lo cual ayuda a futuros colaboradores a entender cómo el módulo maneja los estados de error sin comprometer la seguridad.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-05T09:31:41` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del código añadiendo *type hints* faltantes en funciones clave y reemplazando bloques de código redundantes por llamadas a funciones existentes, lo que facilita el mantenimiento y reduce la complejidad de la lógica de escaneo.
 - `2026-08-05T09:31:16` **browser.py** (legibilidad y documentación): Mejoré la documentación de `directory_size` y `_is_safe_path` para explicitar el uso de `os.scandir` y la validación de enlaces simbólicos, garantizando que futuras modificaciones mantengan la seguridad exigida.
 - `2026-08-05T09:30:53` **branding.py** (legibilidad y documentación): Documenté con precisión técnica la firma y el propósito de las funciones de renderizado gráfico (`draw_logo`, `draw_gradient_bar`, `draw_ring`) para facilitar su uso como API interna, clarificando las unidades de coordenadas y las expectativas de los parámetros `canvas`.
-- `2026-08-05T09:21:37` **assistant.py** (legibilidad y documentación): Mejoré la documentación de `_ensure_safe_text` y `build_context` usando Type Hints detallados y docstrings que especifican las precondiciones de seguridad, además de clarificar la intención de los filtros mediante comentarios explicativos.
-- `2026-08-05T09:20:57` **settings.py** (manejo de errores y validación de entradas): Reforcé la robustez del manejo de archivos en `load` y `save` mediante el uso de `is_safe_to_modify` antes de cualquier operación I/O, evitando excepciones innecesarias y asegurando que las validaciones de seguridad se apliquen consistentemente siguiendo las reglas del proyecto.

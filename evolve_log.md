@@ -1241,3 +1241,10 @@ FAILED evolve/tests/test_assistant.py::test_a_healthy_system_gets_a_calm_answer 
 - `2026-08-05T10:02:42` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimicé el cálculo del degradado en `draw_gradient_bar` mediante la precálculo de puntos de corte y la simplificación de la lógica de renderizado, eliminando el loop que generaba innecesariamente muchos objetos en el canvas al pintar línea por línea.
 - `2026-08-05T10:02:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-05T10:02:42` Corrida terminada. Total usado hoy: 228.
+- `2026-08-05T10:11:26` Arrancando corrida. Quedan hoy ~72 peticiones objetivo.
+- `2026-08-05T10:11:50` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé `directory_size` reemplazando la creación repetitiva de objetos `Path` y llamadas a `resolve()` dentro del bucle de escaneo por operaciones directas sobre el string `entry.path` provisto por `os.scandir`, reduciendo significativamente la carga de I/O y el uso de CPU.
+- `2026-08-05T10:12:15` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-08-05T10:12:37` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizamos `_collect_candidates` utilizando un conjunto de "tamaños candidatos" para evitar realizar hashing completo o parcial en archivos únicos, asegurando que solo se procesen grupos donde el tamaño ya garantiza la existencia de al menos un duplicado.
+- `2026-08-05T10:12:49` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
+- `2026-08-05T10:12:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-05T10:12:49` Corrida terminada. Total usado hoy: 232.

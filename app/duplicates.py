@@ -146,7 +146,7 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
     """
     Escaneo recursivo para indexar archivos candidatos por tamaño.
     """
-    groups: Dict[int, List[Path]] = defaultdict(list)
+    temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: set[Tuple[int, int]] = set()
     
     def _scan(root_path: Path) -> None:
@@ -165,8 +165,7 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
                             if stat.S_ISREG(lstat.st_mode) and lstat.st_size >= min_size:
                                 file_path = Path(entry.path)
                                 if not (skip_protected and is_protected_path(file_path)):
-                                    visited_inodes.add(inode_key)
-                                    groups[lstat.st_size].append(file_path)
+                                    temp_groups[lstat.st_size].append(file_path)
                     except (OSError, PermissionError): continue
         except (OSError, PermissionError): pass
 
@@ -178,7 +177,8 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
                     if not (skip_protected and is_protected_path(path_obj)):
                         _scan(path_obj)
             except (OSError, PermissionError, RuntimeError): continue
-    return groups
+            
+    return {size: paths for size, paths in temp_groups.items() if len(paths) > 1}
 
 
 def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
@@ -204,7 +204,7 @@ def find_duplicates(
     size_map = _collect_candidates(directories, min_size, skip_protected)
     
     groups: List[DuplicateGroup] = []
-    for size, same_size_paths in ((s, p) for s, p in size_map.items() if len(p) > 1):
+    for size, same_size_paths in size_map.items():
         for partial_candidates in _refine_by_hash(same_size_paths, partial_hash).values():
             for digest, confirmed_paths in _refine_by_hash(partial_candidates, hash_file).items():
                 groups.append(DuplicateGroup(digest, size, sorted(confirmed_paths)))

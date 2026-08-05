@@ -134,8 +134,7 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
 def directory_size(path: str | os.PathLike | None) -> int:
     """
     Calcula el peso total en bytes mediante recorrido iterativo con os.scandir.
-    La eficiencia reside en evitar instanciar objetos Path innecesarios y 
-    realizar validaciones de seguridad en cada nodo del árbol antes de procesarlo.
+    Optimizado: evita objetos Path en el loop interno y usa atributos crudos de scandir.
     """
     if path is None:
         return 0
@@ -149,6 +148,7 @@ def directory_size(path: str | os.PathLike | None) -> int:
     
     total_bytes: int = 0
     stack: List[str] = [str(root)]
+    is_junction_func = getattr(os.path, 'isjunction', lambda _: False)
     
     while stack:
         current_dir = stack.pop()
@@ -156,9 +156,7 @@ def directory_size(path: str | os.PathLike | None) -> int:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
-                        # Saltar enlaces simbólicos/junctions por seguridad (evitar recursión infinita o accesos externos)
-                        is_junction = hasattr(os.path, 'isjunction') and os.path.isjunction(entry.path)
-                        if entry.is_symlink() or is_junction:
+                        if entry.is_symlink() or is_junction_func(entry.path):
                             continue
 
                         if entry.is_dir(follow_symlinks=False):
