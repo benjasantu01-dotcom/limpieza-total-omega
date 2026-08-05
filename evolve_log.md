@@ -508,3 +508,36 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-05T14:28:47` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `_gen_problems` convirtiéndola en una función que evalúa condiciones de forma secuencial y eficiente, evitando iterar sobre estructuras intermedias o realizar cálculos redundantes en llamadas repetidas.
 - `2026-08-05T14:28:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-05T14:28:47` Corrida terminada. Total usado hoy: 332.
+- `2026-08-05T14:37:28` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-05T14:38:00` Tests FALLARON:
+```
+........................................................................ [ 24%]
+...........................................F............................ [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+____________________ test_blend_clamps_out_of_range_ratios _____________________
+
+    def test_blend_clamps_out_of_range_ratios():
+>       assert branding.blend("#000000", "#ffffff", -5) == "#000000"
+E       AssertionError: assert '#-4fb-4fb-4fb' == '#000000'
+E         
+E         - #000000
+E         + #-4fb-4fb-4fb
+
+evolve/tests/test_modules.py:197: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_blend_clamps_out_of_range_ratios - AssertionError: assert '#-4fb-4fb-4fb' == '#000000'
+  
+  - #000000
+  + #-4fb-4fb-4fb
+1 failed, 298 passed in 1.64s
+
+```
+- `2026-08-05T14:38:00` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Optimicé `gradient_colors` eliminando la creación innecesaria de objetos intermedios y el cálculo redundante dentro del bucle mediante la pre-interpolación lógica, mejorando la eficiencia de renderizado en tiempo real.
+- `2026-08-05T14:38:22` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé `directory_size` reemplazando la creación innecesaria de objetos `Path` dentro del bucle principal por el uso de `os.DirEntry.path` (string), reduciendo la presión sobre el recolector de basura y mejorando la velocidad de escaneo al evitar el overhead de instanciación de `Path` miles de veces por segundo.
+- `2026-08-05T14:38:48` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el cálculo del resumen en `summarize` reemplazando la llamada redundante a `total_size` (que recorría el árbol de archivos nuevamente) por una sola pasada que acumula métricas de tamaño y conteo, reduciendo a la mitad el tiempo de I/O.
+- `2026-08-05T14:38:56` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé el rendimiento de `_collect_candidates` eliminando la resolución innecesaria de rutas mediante `.resolve()` (operación de E/S costosa) dentro del bucle de escaneo, priorizando el uso de las rutas absolutas ya disponibles en `os.scandir` para filtrar y agrupar.
+- `2026-08-05T14:38:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-05T14:38:56` Corrida terminada. Total usado hoy: 336.

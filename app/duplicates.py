@@ -162,9 +162,9 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
                                 _scan(Path(entry.path))
                         elif entry.is_file(follow_symlinks=False):
                             if stat.S_ISREG(lstat.st_mode) and lstat.st_size >= min_size:
-                                file_path = Path(entry.path).resolve()
-                                if not (skip_protected and is_protected_path(file_path)):
-                                    temp_groups[lstat.st_size].append(file_path)
+                                path_obj = Path(entry.path)
+                                if not (skip_protected and is_protected_path(path_obj)):
+                                    temp_groups[lstat.st_size].append(path_obj)
                     except (OSError, PermissionError): continue
         except (OSError, PermissionError): pass
 

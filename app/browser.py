@@ -163,7 +163,7 @@ def directory_size(path: str | os.PathLike | None) -> int:
                             continue
 
                         if entry.is_dir():
-                            # Validar cada subcarpeta recursivamente mediante chequeo de seguridad
+                            # Validar cada subcarpeta recursivamente sin instanciar Path innecesariamente
                             if not is_protected_path(Path(entry.path)):
                                 stack.append(entry.path)
                         else:

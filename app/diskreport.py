@@ -335,11 +335,13 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
     ext_sizes: Dict[str, int] = defaultdict(int)
     ext_counts: Dict[str, int] = defaultdict(int)
     top_heap: List[Tuple[int, str]] = []
+    total_bytes = 0
+    total_files = 0
     
-    total_bytes, total_files = total_size(path_obj, skip_protected)
-
     try:
         for path, size in walk_files(path_obj, skip_protected):
+            total_bytes += size
+            total_files += 1
             ext_name = path.suffix.lower() or "(sin extensión)"
             ext_sizes[ext_name] += size
             ext_counts[ext_name] += 1
