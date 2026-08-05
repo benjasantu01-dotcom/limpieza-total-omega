@@ -1255,3 +1255,33 @@ FAILED evolve/tests/test_assistant.py::test_a_healthy_system_gets_a_calm_answer 
 - `2026-08-05T10:23:41` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Se optimizó el acceso al manifiesto en `purge_all` y `total_quarantined_bytes` evitando llamadas innecesarias a `load_manifest` (que puede disparar I/O pesado) al reutilizar instancias existentes, y se implementó un `set` para la validación de nombres en `purge_all` para reducir la complejidad de O(N) a O(1) por cada archivo analizado.
 - `2026-08-05T10:23:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-05T10:23:41` Corrida terminada. Total usado hoy: 236.
+- `2026-08-05T10:31:51` Arrancando corrida. Quedan hoy ~64 peticiones objetivo.
+- `2026-08-05T10:32:11` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 104): unterminated string literal (detected at line 104)
+- `2026-08-05T10:32:34` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
+- `2026-08-05T10:32:47` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-05T10:33:14` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizé la lógica de escaneo en `scan_file` y `CHECK_REGISTRY` para reducir la creación de objetos `Path` y llamadas redundantes a métodos de string, aprovechando que el nombre y sufijo ya están disponibles en el objeto `entry` cuando se procesa durante el escaneo recursivo.
+- `2026-08-05T10:33:22` Tests FALLARON:
+```
+
+______________________ test_describe_never_prints_the_key ______________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-2/test_describe_never_prints_the0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f4f23946600>
+
+    def test_describe_never_prints_the_key(tmp_path, monkeypatch):
+        monkeypatch.delenv(settings.API_KEY_ENV_VAR, raising=False)
+        settings.save({**settings.DEFAULTS, "asistente_clave_api": "SECRETO-123"}, tmp_path)
+        texto = "\n".join(settings.describe(tmp_path))
+        assert "SECRETO-123" not in texto, "la clave nunca debe mostrarse en pantalla"
+>       assert "archivo de configuración" in texto
+E       AssertionError: assert 'archivo de configuración' in 'Configuración actual\n\n  Archivo: /tmp/pytest-of-runner/pytest-2/test_describe_never_prints_the0/config.json\n\n  Ap... Análisis en paralelo: sí\n\n  Asistente IA\n    Activado: no\n    Clave: archivo\n    Modelo: gemini-3.1-flash-lite\n'
+
+evolve/tests/test_assistant.py:178: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - AssertionError: assert 'archivo de configuración' in 'Configuración actual\n\n  Archivo: /tmp/pytest-of-runner/pytest-2/test_describe_never_prints_the0/config.json\n\n  Ap... Análisis en paralelo: sí\n\n  Asistente IA\n    Activado: no\n    Clave: archivo\n    Modelo: gemini-3.1-flash-lite\n'
+1 failed, 298 passed in 1.06s
+
+```
+- `2026-08-05T10:33:22` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento del módulo implementando `lru_cache` en funciones de lectura y validación, y reemplacé la construcción manual de diccionarios en `validate` por un acceso directo más eficiente, evitando copias innecesarias de `DEFAULTS` en cada consulta.
+- `2026-08-05T10:33:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-05T10:33:22` Corrida terminada. Total usado hoy: 240.

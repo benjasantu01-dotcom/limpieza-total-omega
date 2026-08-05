@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **255** (50.6% de aceptación)
-- Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 27
+- Mejoras aceptadas: **253** (50.2% de aceptación)
+- Rechazadas por tests: 16
+- Rechazadas por guardia de seguridad: 28
 - Sin cambios (nada sustancial que mejorar): 10
 - Sin respuesta de la IA (error o límite): 197
 
@@ -16,28 +16,28 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-04 | 127 | 7 | 14 | 6 | 114 |
-| 2026-08-05 | 128 | 8 | 13 | 4 | 83 |
+| 2026-08-04 | 124 | 7 | 14 | 6 | 113 |
+| 2026-08-05 | 129 | 9 | 14 | 4 | 84 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **60**
 - manejo de errores y validación de entradas: **55**
-- rendimiento: **52**
-- seguridad defensiva: **50**
+- rendimiento: **53**
+- seguridad defensiva: **47**
 - robustez ante casos límite: **38**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **22**
 - `duplicates.py`: **22**
-- `branding.py`: **21**
-- `browser.py`: **20**
-- `diskreport.py`: **20**
 - `settings.py`: **20**
 - `assistant.py`: **20**
+- `branding.py`: **20**
+- `scanner.py`: **20**
 - `organizer.py`: **19**
-- `scanner.py`: **19**
+- `browser.py`: **19**
+- `diskreport.py`: **19**
 - `healthscore.py`: **18**
 - `main.py`: **17**
 - `memory.py`: **14**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-05T10:33:14` **scanner.py** (rendimiento): Optimizé la lógica de escaneo en `scan_file` y `CHECK_REGISTRY` para reducir la creación de objetos `Path` y llamadas redundantes a métodos de string, aprovechando que el nombre y sufijo ya están disponibles en el objeto `entry` cuando se procesa durante el escaneo recursivo.
 - `2026-08-05T10:23:41` **quarantine.py** (rendimiento): Se optimizó el acceso al manifiesto en `purge_all` y `total_quarantined_bytes` evitando llamadas innecesarias a `load_manifest` (que puede disparar I/O pesado) al reutilizar instancias existentes, y se implementó un `set` para la validación de nombres en `purge_all` para reducir la complejidad de O(N) a O(1) por cada archivo analizado.
 - `2026-08-05T10:23:29` **organizer.py** (rendimiento): Se optimizó el proceso de escaneo sustituyendo la llamada redundante y costosa a `entry.stat()` dentro del loop por un acceso directo a `entry.stat()` ya disponible en el objeto `os.DirEntry` tras las validaciones iniciales, reduciendo llamadas al sistema.
 - `2026-08-05T10:22:42` **main.py** (rendimiento): Se implementó un método `_get_cached_or_run` que unifica la lógica de consulta de caché con la ejecución diferida de tareas, evitando disparar múltiples hilos para una misma solicitud si el caché ya es válido, optimizando así los recursos del sistema.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-05T09:42:42` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos a las funciones internas `_create_memstat_struct` y `_is_valid_process_row`, documentando explícitamente sus dependencias y contratos de datos para futuros desarrolladores.
 - `2026-08-05T09:42:11` **main.py** (legibilidad y documentación): Se ha mejorado la documentación interna mediante la implementación de `docstrings` en todos los métodos de construcción de la interfaz y la adición de anotaciones de tipo faltantes, permitiendo que el bucle autónomo y futuros colaboradores identifiquen rápidamente la responsabilidad de cada componente de la GUI sin necesidad de interpretar la lógica interna.
 - `2026-08-05T09:41:08` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `healthscore.py` mediante la adición de docstrings técnicos detallados en las funciones de puntuación individuales y la tipificación explícita de retornos, facilitando la comprensión del cálculo de ratios sin alterar el comportamiento.
-- `2026-08-05T09:31:50` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación técnica interna mediante la adición de Type Hints más precisos, la simplificación de las validaciones de entrada para mejorar la legibilidad y la clarificación de las responsabilidades de las funciones mediante docstrings más descriptivos.

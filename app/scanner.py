@@ -40,8 +40,9 @@ class Suspicion:
     severity: str
 
 # Alias de tipos para mejorar la legibilidad y mantenibilidad de la lógica de escaneo
-SuspicionCheck: TypeAlias = Callable[[Path, Optional[os.DirEntry]], Optional[Suspicion]]
-ConditionCheck: TypeAlias = Callable[[Path], bool]
+# Se actualiza SuspicionCheck para recibir name/suffix opcionales para evitar recreación de Path
+SuspicionCheck: TypeAlias = Callable[[Path, Optional[os.DirEntry], Optional[str], Optional[str]], Optional[Suspicion]]
+ConditionCheck: TypeAlias = Callable[[Path, str, str], bool]
 ScanResult: TypeAlias = List[Suspicion]
 
 # REGEX para detectar extensiones dobles donde la última es ejecutable,
@@ -82,7 +83,6 @@ class Scanner:
             if not entry or not entry.path:
                 return
             path_obj = Path(entry.path)
-            # Verificación de seguridad básica antes de operar sobre la ruta
             if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
                 return
 
@@ -93,19 +93,23 @@ class Scanner:
                         self.seen.add(path_key)
                         stack.append(entry.path)
             elif entry.is_file(follow_symlinks=False):
-                self.results.extend(scan_file(path_obj, entry=entry, prevalidated=True))
+                # Pasamos metadatos al escáner para evitar cálculos repetitivos en sub-funciones
+                name = entry.name
+                suffix = os.path.splitext(name)[1].lower()
+                self.results.extend(scan_file(path_obj, entry=entry, name=name, suffix=suffix, prevalidated=True))
         except (PermissionError, OSError):
             pass
 
 
-def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None) -> Optional[Suspicion]:
+def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None) -> Optional[Suspicion]:
     """Valida si el archivo posee extensiones dobles engañosas (ej: .pdf.exe)."""
-    if path.name and DOUBLE_EXTENSION_RE.search(path.name):
+    target = name or path.name
+    if target and DOUBLE_EXTENSION_RE.search(target):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
     return None
 
 
-def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, hours: int = RECENT_FILE_THRESHOLD_HOURS) -> Optional[Suspicion]:
+def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, hours: int = RECENT_FILE_THRESHOLD_HOURS) -> Optional[Suspicion]:
     """Evalúa si un archivo ejecutable fue modificado recientemente usando metadatos del DirEntry."""
     try:
         st = entry.stat() if entry else path.lstat()
@@ -117,28 +121,24 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     return None
 
 
-def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None) -> Optional[Suspicion]:
+def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None) -> Optional[Suspicion]:
     """Detecta archivos con nombres de procesos críticos del sistema fuera del directorio System32."""
     try:
-        parent = path.parent
-        if parent and SYSTEM32_LOWER not in str(parent).lower():
+        if SYSTEM32_LOWER not in str(path.parent).lower():
             return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
     except (OSError, RuntimeError):
         pass
     return None
 
-# Registro de heurísticas: Tuplas conteniendo (función que valida si aplicar el chequeo, función que ejecuta el chequeo).
+# Registro de heurísticas: Tuplas conteniendo (función que valida si aplicar, función que ejecuta).
 CHECK_REGISTRY: Final[List[Tuple[ConditionCheck, SuspicionCheck]]] = [
-    (lambda p: p.name.lower() in SYSTEM_LOOKALIKES, check_system_lookalike),
-    (lambda p: p.suffix.lower() in SUSPICIOUS_EXECUTABLE_EXT, check_recent_executable_in_downloads),
-    (lambda p: bool(DOUBLE_EXTENSION_RE.search(p.name)), check_double_extension)
+    (lambda p, n, s: n.lower() in SYSTEM_LOOKALIKES, check_system_lookalike),
+    (lambda p, n, s: s in SUSPICIOUS_EXECUTABLE_EXT, check_recent_executable_in_downloads),
+    (lambda p, n, s: bool(DOUBLE_EXTENSION_RE.search(n)), check_double_extension)
 ]
 
-def scan_file(path: Path, entry: Optional[os.DirEntry] = None, prevalidated: bool = False) -> ScanResult:
-    """
-    Ejecuta los chequeos registrados si se cumplen las condiciones pre-requisito.
-    Utiliza el registro global CHECK_REGISTRY para aplicar heurísticas desacopladas.
-    """
+def scan_file(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, prevalidated: bool = False) -> ScanResult:
+    """Ejecuta los chequeos registrados utilizando metadatos precalculados para eficiencia."""
     if not isinstance(path, Path) or not path.exists():
         return []
     
@@ -146,12 +146,15 @@ def scan_file(path: Path, entry: Optional[os.DirEntry] = None, prevalidated: boo
         if not is_safe_to_modify(path) or is_protected_path(path):
             return []
     
-    findings: ScanResult = []
+    # Derivación diferida solo si no se proveyeron los metadatos
+    n = name or path.name
+    s = suffix or path.suffix.lower()
     
+    findings: ScanResult = []
     for condition_met, check_func in CHECK_REGISTRY:
         try:
-            if condition_met(path):
-                result = check_func(path, entry)
+            if condition_met(path, n, s):
+                result = check_func(path, entry, n, s)
                 if result:
                     findings.append(result)
         except Exception:
