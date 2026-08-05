@@ -206,6 +206,10 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
         name_raw = parts[0].strip().strip('"')
         cmd_raw = parts[1].strip().strip('"')
         
+        # Limpieza robusta de datos de entrada
+        if not isinstance(name_raw, str) or not isinstance(cmd_raw, str):
+            continue
+
         name: str = "".join(c for c in name_raw if ord(c) >= 32)
         cmd: str = "".join(c for c in cmd_raw if ord(c) >= 32)
         

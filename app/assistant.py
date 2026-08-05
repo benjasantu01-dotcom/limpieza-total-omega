@@ -170,7 +170,10 @@ class Answer:
         return self.source == "gemini"
 
 def _ensure_safe_text(text: str) -> bool:
-    """Valida que el texto no contenga rutas, caracteres de control o inyecciones."""
+    """
+    Valida que el texto no contenga rutas, caracteres de control o inyecciones.
+    Asegura que el asistente no procese rutas del sistema o caracteres sospechosos.
+    """
     if not isinstance(text, str) or not text or len(text) > 2000:
         return False
     if _PATH_REGEX.search(text) or _CONTROL_CHARS_REGEX.search(text):
@@ -181,7 +184,10 @@ def _ensure_safe_text(text: str) -> bool:
     return True
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
-    """Convierte datos crudos de otros módulos en un objeto SystemContext validado."""
+    """
+    Transforma datos crudos de otros módulos en un objeto SystemContext, 
+    asegurando que todos los valores sean numéricos válidos y finitos.
+    """
     ctx = SystemContext()
 
     def is_valid_num(v: Any) -> bool:
@@ -229,7 +235,10 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
 
 
 def context_as_text(context: SystemContext) -> str:
-    """Serializa el estado del sistema en un formato de texto compacto y neutral."""
+    """
+    Serializa el estado del sistema en un formato de texto compacto y neutral.
+    Es el formato que se envía al motor remoto; se limpia preventivamente.
+    """
     if not isinstance(context, SystemContext) or not context.analyzed:
         return "No hay métricas disponibles todavía."
 
@@ -248,7 +257,7 @@ def context_as_text(context: SystemContext) -> str:
 
 
 def explain_area(area: Any) -> str:
-    """Devuelve una explicación pedagógica de un área específica del sistema."""
+    """Devuelve una explicación pedagógica sobre qué mide una categoría específica del sistema."""
     explicaciones: Final[dict[str, str]] = {
         "basura": "Archivos temporales y restos de instaladores. Ocupan espacio "
                   "sin dar nada a cambio, y son lo más seguro de limpiar.",
@@ -282,7 +291,7 @@ def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
     ]
     if ctx.memory_available_percent < 15:
         partes.append("Eso es poco: Windows está usando el disco como memoria y "
-                        "ahí se siente la lentitud. Cerrá lo que no uses; en la "
+                        "ahí se siente la lentitud. Cerrá lo que no usos; en la "
                         "pestaña Memoria tenés qué consume más.")
     else:
         partes.append("Eso está bien. Si la PC va lenta, el problema seguramente "

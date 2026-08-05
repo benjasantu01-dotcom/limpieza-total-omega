@@ -98,9 +98,10 @@ def base_directories() -> List[Path]:
 
 def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> bool:
     """
-    Valida si una ruta es segura para ser escaneada.
-    Impide Directory Traversal, cruce de puntos de reparse (junctions)
-    y acceso a rutas protegidas por `safety.py`.
+    Valida la integridad de la ruta y previene escapes de directorio.
+    
+    Verifica que la ruta sea absoluta, no apunte a un sistema protegido,
+    y que resida efectivamente bajo el directorio base proporcionado.
     """
     if not isinstance(target_path, Path) or not isinstance(base_path, Path):
         return False
@@ -130,9 +131,11 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
 
 def directory_size(path: str | os.PathLike | None) -> int:
     """
-    Calcula el tamaño total en bytes de un directorio mediante una pila (stack)
-    iterativa para evitar recursión profunda y permitir validaciones de seguridad
-    en cada nodo visitado.
+    Calcula el peso total de un directorio mediante un recorrido iterativo.
+    
+    Utiliza una pila para evitar desbordamiento por recursión y realiza
+    validaciones de seguridad en cada nodo para no seguir enlaces ni
+    rutas protegidas.
     """
     if path is None:
         return 0
@@ -179,8 +182,10 @@ def directory_size(path: str | os.PathLike | None) -> int:
 
 def _is_valid_cache_path(candidate: Path | None, base_path: Path) -> bool:
     """
-    Filtro de seguridad para determinar si un directorio candidato
-    es un objetivo legítimo de caché basándose en rutas UNC, existencia y exclusiones.
+    Valida si una ruta candidata es un objetivo legítimo de limpieza.
+    
+    Descarta rutas UNC y verifica las restricciones de seguridad contra
+    listas de bloqueo y rutas protegidas del sistema.
     """
     if not isinstance(candidate, Path) or not isinstance(base_path, Path):
         return False
@@ -204,8 +209,8 @@ def detect_profiles(
     cache_paths: Optional[Dict[str, str]] = None
 ) -> List[BrowserCache]:
     """
-    Orquestador principal que mapea rutas de caché conocidas sobre directorios base,
-    retornando una lista de objetos BrowserCache con sus metadatos.
+    Mapea rutas de caché sobre directorios base y retorna una lista de
+    instancias BrowserCache con información de tamaño.
     """
     bases = bases if bases is not None else base_directories()
     cache_paths = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
@@ -237,14 +242,13 @@ def detect_profiles(
 
 
 def total_cache_bytes(caches: Iterable[BrowserCache] | None = None) -> int:
-    """Calcula el sumatorio de bytes de una lista de objetos de caché."""
+    """Calcula el peso total en bytes acumulado de una colección de caché."""
     return sum(cache.size_bytes for cache in (caches or []))
 
 
 def summarize(caches: Optional[List[BrowserCache]] = None) -> List[str]:
     """
-    Formateador de datos para la interfaz de usuario.
-    Convierte la colección de BrowserCache en líneas de texto legible.
+    Genera un informe textual legible con el estado de los cachés detectados.
     """
     current_caches: List[BrowserCache] = caches if caches is not None else detect_profiles()
     
