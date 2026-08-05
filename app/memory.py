@@ -155,7 +155,6 @@ def _is_valid_process_row(parts: List[str]) -> bool:
     """
     Valida la integridad de una línea procesada desde Get-Process.
     Requiere al menos 3 columnas: [Name, PID, WorkingSet].
-    PID y WorkingSet deben ser enteros no negativos.
     """
     return (len(parts) >= 3 and 
             parts[1].strip().isdigit() and 
@@ -165,8 +164,8 @@ def _is_valid_process_row(parts: List[str]) -> bool:
 
 def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]:
     """
-    Transforma texto CSV proveniente de PowerShell (Get-Process) a objetos ProcessMemory.
-    Los resultados son ordenados por WorkingSet (de mayor a menor) y truncados según limit.
+    Transforma texto CSV proveniente de PowerShell a objetos ProcessMemory.
+    Ordena por WorkingSet descendente y trunca según el límite proporcionado.
     """
     if not text:
         return []
@@ -192,7 +191,6 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
 def _create_memstat_struct(ctypes_lib: "ctypes") -> "ctypes.Structure":
     """
     Define y retorna una estructura C compatible con la API Win32 MEMORYSTATUSEX.
-    Requiere una instancia de ctypes inyectada para realizar el mapeo de tipos.
     """
     class MEMORYSTATUSEX(ctypes_lib.Structure):
         _fields_ = [
@@ -246,7 +244,7 @@ def read_snapshot() -> MemorySnapshot:
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     """
     Obtiene los procesos que más memoria consumen en Windows. 
-    Implementa una caché de 5 segundos para evitar sobrecarga por invocación frecuente.
+    Implementa una caché de 5 segundos para optimizar el rendimiento.
     """
     if os.name != "nt":
         return []
@@ -288,7 +286,7 @@ def pressure_level(snapshot: MemorySnapshot) -> str:
 def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] = None) -> List[str]:
     """
     Genera un informe textual descriptivo para la interfaz de usuario.
-    Recibe el estado actual (snapshot) y, opcionalmente, la lista de procesos intensivos.
+    Recibe el estado actual y, opcionalmente, la lista de procesos intensivos.
     """
     if not isinstance(snapshot, MemorySnapshot) or snapshot.total <= 0:
         return ["No se pudo leer el estado de la memoria en este sistema."]
@@ -325,8 +323,8 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
     Intenta reducir el Working Set de un proceso mediante la API de Windows `EmptyWorkingSet`.
     
-    Esta función es de alto riesgo: realiza una validación estricta de seguridad contra PIDs
-    protegidos y requiere permisos administrativos para interactuar con procesos externos.
+    Esta operación es de alto riesgo: realiza una validación estricta contra PIDs protegidos
+    y requiere permisos administrativos para interactuar con procesos externos.
     """
     if os.name != "nt":
         return False, "Solo disponible en Windows."
@@ -343,14 +341,12 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     kernel32 = ctypes.windll.kernel32
     psapi = ctypes.windll.psapi
     
-    # Validar que el proceso existe antes de operar
     handle = kernel32.OpenProcess(REQUIRED_ACCESS, False, target_pid)
     if not handle:
         error_code = kernel32.GetLastError()
         return False, f"Acceso denegado (Error {error_code}). Requiere permisos de administrador."
     
     try:
-        # Verificación adicional de existencia del proceso vía exit code
         exit_code = ctypes.c_ulong()
         if not kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)) or exit_code.value != 259:
             return False, "El proceso seleccionado ya no está activo."

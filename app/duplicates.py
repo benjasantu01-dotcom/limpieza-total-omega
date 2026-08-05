@@ -87,7 +87,6 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
         file_path = Path(path).resolve(strict=True)
         st = file_path.stat()
         
-        # Validación de seguridad: solo procesar archivos regulares y no protegidos
         if not stat.S_ISREG(st.st_mode) or is_protected_path(file_path) or st.st_size <= 0:
             return None
             
@@ -199,17 +198,26 @@ def find_duplicates(
     skip_protected: bool = True,
 ) -> List[DuplicateGroup]:
     """
-    Ejecuta el pipeline de detección en tres etapas: Tamaño -> Hash Parcial -> Hash Completo.
+    Ejecuta el pipeline de detección en tres etapas para maximizar rendimiento:
+    1. Agrupación por tamaño (Filtro base).
+    2. Refinamiento por hash parcial (Filtro rápido).
+    3. Validación por hash completo (Confirmación final).
     """
     if not directories: return []
+    
+    # 1. Candidatos iniciales por tamaño (lectura de metadatos)
     size_map = _collect_candidates(directories, min_size, skip_protected)
     
     groups: List[DuplicateGroup] = []
-    for size, same_size_paths in size_map.items():
-        # Validar nuevamente antes de refinar para asegurar que la resolución sea actual
-        valid_paths = [p for p in same_size_paths if not is_protected_path(p)]
-        for partial_candidates in _refine_by_hash(valid_paths, partial_hash).values():
-            for digest, confirmed_paths in _refine_by_hash(partial_candidates, hash_file).items():
+    for size, paths_in_size_group in size_map.items():
+        
+        # 2. Refinamiento por Hash Parcial (primeros 64KB)
+        partial_groups = _refine_by_hash(paths_in_size_group, partial_hash)
+        
+        # 3. Confirmación final por Hash Completo (integridad total)
+        for partial_candidates in partial_groups.values():
+            full_hash_groups = _refine_by_hash(partial_candidates, hash_file)
+            for digest, confirmed_paths in full_hash_groups.items():
                 groups.append(DuplicateGroup(digest, size, sorted(confirmed_paths)))
 
     groups.sort(key=lambda g: g.wasted_bytes, reverse=True)
@@ -231,7 +239,6 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     keepers: List[Tuple[float, int, Path]] = []
     for p in group.paths:
         try:
-            # Validamos existencia y seguridad antes de consultar metadatos
             if p.exists() and not is_protected_path(p):
                 stat_info = p.stat()
                 keepers.append((stat_info.st_mtime, len(str(p)), p))

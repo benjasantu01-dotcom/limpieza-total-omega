@@ -149,14 +149,20 @@ def _to_int(value: Any, default: int = 0) -> int:
 
 
 def score_junk(junk_mb: float) -> float:
-    """Calcula el ratio [0.0, 1.0] de limpieza de basura; el ratio decae linealmente conforme el volumen de basura se acerca a JUNK_LIMIT_MB."""
+    """
+    Normaliza el volumen de basura (MB) a un ratio [0.0, 1.0].
+    Un valor de 0 MB resulta en 1.0, mientras que alcanzar JUNK_LIMIT_MB resulta en 0.0.
+    """
     val = _to_float(junk_mb)
     if JUNK_LIMIT_MB <= 0: return 0.0
     return _clamp(1.0 - (val / JUNK_LIMIT_MB))
 
 
 def score_security(suspicious_count: int, warnings: int = 0) -> float:
-    """Calcula el ratio [0.0, 1.0] de seguridad; aplica una penalización acumulativa fija: 5% por hallazgo y 25% por advertencia crítica."""
+    """
+    Calcula el ratio de seguridad [0.0, 1.0] basado en penalizaciones discretas.
+    Aplica una reducción de 0.05 por cada hallazgo y 0.25 por cada advertencia crítica.
+    """
     s_count = _to_int(suspicious_count)
     w_count = _to_int(warnings)
     penalty: float = (float(s_count) * 0.05) + (float(w_count) * 0.25)
@@ -164,28 +170,40 @@ def score_security(suspicious_count: int, warnings: int = 0) -> float:
 
 
 def score_memory(available_percent: float) -> float:
-    """Calcula el ratio [0.0, 1.0] de salud de memoria; compara la disponibilidad actual contra el umbral RAM_IDEAL_PERCENT."""
+    """
+    Normaliza la disponibilidad de memoria RAM a un ratio [0.0, 1.0].
+    El ratio es 1.0 cuando la disponibilidad alcanza o supera RAM_IDEAL_PERCENT.
+    """
     val = _to_float(available_percent)
     if RAM_IDEAL_PERCENT <= 0: return 0.0
     return _clamp(val / RAM_IDEAL_PERCENT)
 
 
 def score_disk(free_percent: float) -> float:
-    """Calcula el ratio [0.0, 1.0] de salud de disco; mide el porcentaje de espacio libre respecto al objetivo DISK_IDEAL_PERCENT."""
+    """
+    Normaliza el espacio en disco libre a un ratio [0.0, 1.0].
+    El ratio es 1.0 cuando el espacio libre alcanza o supera DISK_IDEAL_PERCENT.
+    """
     val = _to_float(free_percent)
     if DISK_IDEAL_PERCENT <= 0: return 0.0
     return _clamp(val / DISK_IDEAL_PERCENT)
 
 
 def score_duplicates(duplicate_mb: float) -> float:
-    """Calcula el ratio [0.0, 1.0] de optimización por duplicados; penaliza el espacio desperdiciado en función de DUPLICATE_LIMIT_MB."""
+    """
+    Calcula el ratio [0.0, 1.0] basado en el espacio ocupado por duplicados.
+    Penaliza linealmente el espacio en función de DUPLICATE_LIMIT_MB.
+    """
     val = _to_float(duplicate_mb)
     if DUPLICATE_LIMIT_MB <= 0: return 0.0
     return _clamp(1.0 - (val / DUPLICATE_LIMIT_MB))
 
 
 def score_startup(startup_count: int) -> float:
-    """Calcula el ratio [0.0, 1.0] de eficiencia de arranque; penaliza la cantidad de procesos que inician automáticamente al superar STARTUP_LIMIT_COUNT."""
+    """
+    Calcula el ratio [0.0, 1.0] de eficiencia de arranque.
+    Penaliza la cantidad de procesos detectados, reduciendo el ratio a 0.0 al llegar a STARTUP_LIMIT_COUNT.
+    """
     val = _to_int(startup_count)
     if STARTUP_LIMIT_COUNT <= 0: return 0.0
     return _clamp(1.0 - (float(val) / STARTUP_LIMIT_COUNT))

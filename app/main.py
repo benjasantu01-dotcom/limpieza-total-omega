@@ -183,6 +183,23 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     # Factorías de Componentes UI
     # ------------------------------------------------------------------
 
+    def _create_styled_label(self, parent: Any, text: str, style: str, **kwargs) -> ctk.CTkLabel:
+        """Crea una etiqueta con tipografía y color extraídos de la marca."""
+        font_config = {"size": branding.font_size(style)}
+        if style == "title": font_config["weight"] = "bold"
+        if style == "caption": font_config["weight"] = "bold"
+        
+        color_map = {
+            "title": "text", "body": "text_muted", "caption": "text_dim", "accent": "accent"
+        }
+        
+        return ctk.CTkLabel(
+            parent, text=text,
+            text_color=branding.color(color_map.get(style, "text")),
+            font=ctk.CTkFont(**font_config),
+            **kwargs
+        )
+
     def _make_output(self, tab_name: str, parent: ctk.CTk) -> ctk.CTkTextbox:
         """Genera un área de texto para logs en la pestaña indicada."""
         box = ctk.CTkTextbox(
@@ -227,10 +244,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _hint(self, parent: ctk.CTk, text: str) -> None:
         """Crea una etiqueta descriptiva de menor importancia."""
-        ctk.CTkLabel(
-            parent, text=text, text_color=branding.color("text_muted"),
-            font=ctk.CTkFont(size=branding.font_size("caption")),
-            wraplength=1010, justify="left",
+        self._create_styled_label(
+            parent, text, "caption",
+            wraplength=1010, justify="left"
         ).pack(fill="x", padx=14, pady=(10, 0))
 
     def _menu(self, parent: ctk.CTk, values: List[str], variable: tk.StringVar, 
@@ -333,23 +349,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         except Exception as e:
             logging.error("Error al dibujar logo: %s", e)
 
-        ctk.CTkLabel(
-            header, text=branding.APP_NAME,
-            font=ctk.CTkFont(size=branding.font_size("title"), weight="bold"),
-            text_color=branding.color("text"),
-        ).grid(row=0, column=1, sticky="sw")
+        self._create_styled_label(header, branding.APP_NAME, "title").grid(row=0, column=1, sticky="sw")
+        self._create_styled_label(header, branding.APP_TAGLINE, "body").grid(row=1, column=1, sticky="nw")
 
-        ctk.CTkLabel(
-            header, text=branding.APP_TAGLINE,
-            font=ctk.CTkFont(size=branding.font_size("subtitle")),
-            text_color=branding.color("text_muted"),
-        ).grid(row=1, column=1, sticky="nw")
-
-        ctk.CTkLabel(
-            header, text=f"  v{branding.APP_VERSION}  ",
-            font=ctk.CTkFont(size=branding.font_size("caption"), weight="bold"),
-            text_color=branding.color("background"),
-            fg_color=branding.color("accent"), corner_radius=9,
+        self._create_styled_label(
+            header, f"  v{branding.APP_VERSION}  ", "caption",
+            fg_color=branding.color("accent"), corner_radius=9
         ).grid(row=0, column=2, sticky="e", padx=(16, 0))
         header.grid_columnconfigure(2, weight=1)
 
@@ -369,12 +374,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         pie = ctk.CTkFrame(self, fg_color="transparent")
         pie.pack(fill="x", padx=18, pady=(0, 12))
 
-        self.status = ctk.CTkLabel(
-            pie, text="Listo. Nada se borra sin tu confirmación.",
-            text_color=branding.color("text_muted"),
-            font=ctk.CTkFont(size=branding.font_size("caption")),
-            anchor="w",
-        )
+        self.status = self._create_styled_label(pie, "Listo. Nada se borra sin tu confirmación.", "caption")
         self.status.pack(side="left")
 
         self.activity = ctk.CTkProgressBar(
@@ -436,11 +436,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _build_single_health_bar(self, container: ctk.CTkFrame, clave: str, etiqueta: str, fila: int) -> None:
         """Construye una fila individual de barra de progreso y su valor."""
-        ctk.CTkLabel(
-            container, text=etiqueta, anchor="w", width=150,
-            text_color=branding.color("text_muted"),
-            font=ctk.CTkFont(size=branding.font_size("body")),
-        ).grid(row=fila, column=0, sticky="w", pady=4)
+        self._create_styled_label(container, etiqueta, "body", anchor="w", width=150).grid(row=fila, column=0, sticky="w", pady=4)
         
         barra = ctk.CTkProgressBar(
             container, height=9, corner_radius=5,
@@ -450,11 +446,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         barra.grid(row=fila, column=1, sticky="ew", padx=10, pady=4)
         barra.set(0)
         
-        valor_label = ctk.CTkLabel(
-            container, text="-", width=64, anchor="e",
-            text_color=branding.color("text"),
-            font=ctk.CTkFont(size=branding.font_size("caption"), weight="bold"),
-        )
+        valor_label = self._create_styled_label(container, "-", "caption", width=64, anchor="e")
         valor_label.grid(row=fila, column=2, sticky="e", pady=4)
         self.area_bars[clave] = (barra, valor_label)
 
@@ -466,17 +458,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         )
         tarjeta.grid(row=0, column=column, padx=6, sticky="ew")
 
-        valor_label = ctk.CTkLabel(
-            tarjeta, text="-",
-            font=ctk.CTkFont(size=branding.font_size("title"), weight="bold"),
-            text_color=branding.color("accent"),
-        )
+        valor_label = self._create_styled_label(tarjeta, "-", "accent")
         valor_label.pack(pady=(14, 0))
-        ctk.CTkLabel(
-            tarjeta, text=title.upper(),
-            font=ctk.CTkFont(size=branding.font_size("caption")),
-            text_color=branding.color("text_dim"),
-        ).pack(pady=(0, 14))
+        self._create_styled_label(tarjeta, title.upper(), "caption").pack(pady=(0, 14))
         return valor_label
 
     def _draw_gauge(self, score: int, grade: str) -> None:
@@ -507,19 +491,16 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         options_container = ctk.CTkFrame(tab, fg_color="transparent")
         options_container.pack(fill="x", padx=12, pady=(12, 0))
 
-        ctk.CTkLabel(options_container, text="Buscar en:", text_color=branding.color("text_muted")).grid(
-            row=0, column=0, padx=(0, 8))
+        self._create_styled_label(options_container, "Buscar en:", "body").grid(row=0, column=0, padx=(0, 8))
         drive_options = ["Por defecto (Temp + Descargas)"] + list_available_drives() + ["Elegir carpeta..."]
         self.target_choice = ctk.StringVar(value=drive_options[0])
         self._menu(options_container, drive_options, self.target_choice,
                    self.on_target_choice_changed, width=240).grid(row=0, column=1, padx=4)
 
-        self.target_label = ctk.CTkLabel(options_container, text="",
-                                         text_color=branding.color("accent"))
+        self.target_label = self._create_styled_label(options_container, "", "accent")
         self.target_label.grid(row=0, column=2, padx=10)
 
-        ctk.CTkLabel(options_container, text="Ordenar por:",
-                     text_color=branding.color("text_muted")).grid(row=0, column=3, padx=(20, 8))
+        self._create_styled_label(options_container, "Ordenar por:", "body").grid(row=0, column=3, padx=(20, 8))
         self.sort_by = ctk.StringVar(value="size")
         self._menu(options_container, ["size", "date"], self.sort_by,
                    lambda _: self.refresh_list(), width=110).grid(row=0, column=4, padx=4)
@@ -551,8 +532,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
         id_container = ctk.CTkFrame(tab, fg_color="transparent")
         id_container.pack(fill="x", padx=12, pady=(12, 0))
-        ctk.CTkLabel(id_container, text="ID a restaurar:",
-                     text_color=branding.color("text_muted")).grid(row=0, column=0, padx=(0, 8))
+        self._create_styled_label(id_container, "ID a restaurar:", "body").grid(row=0, column=0, padx=(0, 8))
         self.quarantine_id = self._entry(id_container, "pegá el ID que ves en la lista", 240)
         self.quarantine_id.grid(row=0, column=1, padx=4)
         self._make_output("Cuarentena", tab)
@@ -569,8 +549,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
         pid_container = ctk.CTkFrame(tab, fg_color="transparent")
         pid_container.pack(fill="x", padx=12, pady=(12, 0))
-        ctk.CTkLabel(pid_container, text="PID:",
-                     text_color=branding.color("text_muted")).grid(row=0, column=0, padx=(0, 8))
+        self._create_styled_label(pid_container, "PID:", "body").grid(row=0, column=0, padx=(0, 8))
         self.pid_entry = self._entry(pid_container, "ej. 4812", 140)
         self.pid_entry.grid(row=0, column=1, padx=4)
         self._make_output("Memoria", tab)
@@ -663,10 +642,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         grilla.pack(fill="x", padx=12, pady=(14, 0))
 
         def etiqueta(texto: str, fila: int, columna: int = 0):
-            ctk.CTkLabel(grilla, text=texto, anchor="w",
-                         text_color=branding.color("text_muted"),
-                         font=ctk.CTkFont(size=branding.font_size("body"))
-                         ).grid(row=fila, column=columna, sticky="w", padx=(0, 10), pady=6)
+            self._create_styled_label(grilla, texto, "body", anchor="w").grid(row=fila, column=columna, sticky="w", padx=(0, 10), pady=6)
 
         def interruptor(clave: str, texto: str, fila: int, columna: int):
             variable = ctk.BooleanVar(value=bool(self.settings.get(clave)))
@@ -703,10 +679,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.top_files_entry.insert(0, str(self.settings.get("top_archivos", 15)))
         self.top_files_entry.grid(row=2, column=3, sticky="w")
 
-        ctk.CTkLabel(
-            tab, text=f"{branding.icon('Asistente')}  Asistente en línea (opcional)",
-            anchor="w", text_color=branding.color("accent2"),
-            font=ctk.CTkFont(size=branding.font_size("heading"), weight="bold"),
+        self._create_styled_label(
+            tab, f"{branding.icon('Asistente')}  Asistente en línea (opcional)", "title",
+            anchor="w", text_color=branding.color("accent2")
         ).pack(fill="x", padx=14, pady=(18, 0))
 
         ia_container = ctk.CTkFrame(tab, fg_color="transparent")
@@ -722,8 +697,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             text_color=branding.color("text"),
         ).grid(row=0, column=0, sticky="w", padx=(0, 20), pady=6)
 
-        ctk.CTkLabel(ia_container, text="Clave de API:",
-                     text_color=branding.color("text_muted")).grid(row=0, column=1, padx=(0, 8))
+        self._create_styled_label(ia_container, "Clave de API:", "body").grid(row=0, column=1, padx=(0, 8))
         self.api_key_entry = self._entry(ia_container, f"vacío = usar {settings_mod.API_KEY_ENV_VAR}", 260)
         self.api_key_entry.configure(show="*")
         self.api_key_entry.grid(row=0, column=2, sticky="w")
