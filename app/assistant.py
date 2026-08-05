@@ -396,12 +396,11 @@ def local_answer(question: str, context: SystemContext) -> Answer:
             return _HANDLERS[handler_key](context, clean_text)
 
     # Evaluación perezosa (lazy) de los problemas actuales
-    problemas_it = _gen_problems(context)
-    try:
-        primero = next(problemas_it)
+    problemas = list(_gen_problems(context))
+    if problemas:
         cuerpo = (f"Con un puntaje de {context.score if context.score is not None else 'N/A'}/100, por orden de prioridad: "
-                  f"{primero}{', ' + next(problemas_it) if (segundo := next(problemas_it, None)) else ''}.")
-    except StopIteration:
+                  f"{', '.join(problemas[:3])}.")
+    else:
         cuerpo = (f"Tu sistema está en buen estado ({context.score if context.score is not None else 'N/A'}/100). No hay nada urgente.")
     return Answer(cuerpo, notice=OFFLINE_NOTICE, suggestions=SUGGESTED_QUESTIONS_LIST[:3])
 

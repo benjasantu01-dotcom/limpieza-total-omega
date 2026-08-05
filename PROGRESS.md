@@ -6,47 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **254** (50.4% de aceptación)
+- Mejoras aceptadas: **251** (49.8% de aceptación)
 - Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 29
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 197
+- Sin respuesta de la IA (error o límite): 200
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-03 | 39 | 1 | 4 | 3 | 19 |
+| 2026-08-03 | 35 | 1 | 4 | 3 | 19 |
 | 2026-08-04 | 166 | 11 | 20 | 8 | 145 |
-| 2026-08-05 | 49 | 0 | 5 | 1 | 33 |
+| 2026-08-05 | 50 | 0 | 5 | 1 | 36 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **59**
+- legibilidad y documentación: **55**
 - rendimiento: **53**
 - seguridad defensiva: **50**
 - robustez ante casos límite: **49**
-- manejo de errores y validación de entradas: **43**
+- manejo de errores y validación de entradas: **44**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **23**
+- `assistant.py`: **22**
 - `organizer.py`: **21**
 - `settings.py`: **21**
-- `assistant.py`: **21**
-- `duplicates.py`: **20**
-- `healthscore.py`: **20**
 - `scanner.py`: **20**
-- `diskreport.py`: **18**
+- `duplicates.py`: **19**
+- `healthscore.py`: **19**
 - `browser.py`: **18**
-- `main.py`: **16**
+- `diskreport.py`: **17**
 - `branding.py`: **16**
 - `safety.py`: **15**
+- `main.py`: **15**
 - `memory.py`: **14**
 - `startup.py`: **11**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-05T03:56:39` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_gen_problems` y `local_answer` implementando un manejo de iteradores más seguro y un chequeo explícito de estados vacíos para evitar `StopIteration` inesperados o errores de lógica en la generación de sugerencias.
 - `2026-08-05T02:32:58` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `settings_path` reemplazando el bucle `while` manual por una validación estricta que utiliza `ensure_safe_to_modify`, previniendo así cualquier escalada fuera de los directorios permitidos antes de intentar resolver la ruta.
 - `2026-08-05T02:32:48` **scanner.py** (seguridad defensiva): Mejoré la seguridad defensiva en `scan_file` y `scan_directory` para validar que los archivos/directorios procesados no se encuentren fuera de la raíz original escaneada (previniendo *path traversal* o navegación indebida ante enlaces simbólicos maliciosos), utilizando `commonpath` para asegurar el confinamiento de la operación.
 - `2026-08-05T02:32:25` **safety.py** (seguridad defensiva): Se ha mejorado `ensure_safe_to_modify` para detectar de forma preventiva si una ruta apunta a un directorio de sistema mediante el uso de `os.path.commonpath`, lo cual es mucho más robusto que iterar sobre los tokens de `parts`, evitando errores por coincidencias parciales de nombres en rutas profundas.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-05T02:02:03` **startup.py** (robustez ante casos límite): Mejora la robustez en la resolución de rutas en `StartupEntry` al manejar explícitamente rutas relativas y casos de archivos inexistentes que podrían lanzar `OSError` o `ValueError` al interactuar con `Path.resolve()`.
 - `2026-08-05T02:01:22` **settings.py** (robustez ante casos límite): Mejoré la robustez de `load` añadiendo una verificación explícita de `ruta.exists()` para prevenir excepciones innecesarias ante estados de carrera o archivos inexistentes, y aseguré que `settings_path` sea resiliente ante errores de resolución de rutas en sistemas con permisos restrictivos.
 - `2026-08-05T01:52:02` **scanner.py** (robustez ante casos límite): Mejoré la robustez de `process_entry` y `scan_directory` añadiendo validaciones específicas para rutas inexistentes, enlaces simbólicos rotos y errores de acceso, asegurando que el bucle de escaneo no se interrumpa ante inconsistencias del sistema de archivos mediante el uso de `path.exists()` y un manejo de excepciones más granular.
-- `2026-08-05T01:51:13` **quarantine.py** (robustez ante casos límite): Se reforzó la robustez ante errores de E/S en `purge_all` y se mejoró la resiliencia en la gestión del manifiesto ante archivos huérfanos o parcialmente escritos durante fallos catastróficos, evitando que estados inconsistentes del sistema de archivos bloqueen la app.
