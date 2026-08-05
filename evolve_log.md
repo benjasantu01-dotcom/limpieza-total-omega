@@ -740,3 +740,10 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_ignores_desktop_i
 - `2026-08-05T05:47:24` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Se implementó un mecanismo de **invalidación selectiva de caché mediante prefijos** en `_invalidate_cache` y se optimizó `_compile_metrics` para usar de forma consistente el caché de sesión, evitando lecturas redundantes de disco durante el análisis de salud.
 - `2026-08-05T05:47:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-05T05:47:24` Corrida terminada. Total usado hoy: 128.
+- `2026-08-05T05:55:48` Arrancando corrida. Quedan hoy ~172 peticiones objetivo.
+- `2026-08-05T05:56:17` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimizé la carga de procesos en `top_memory_processes` reemplazando la creación de objetos `ProcessMemory` mediante el parseo completo del CSV por una filtración temprana, evitando la creación de instancias innecesarias para procesos fuera del límite solicitado y reduciendo el consumo de ciclos de CPU y memoria en cada iteración.
+- `2026-08-05T05:56:39` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimizé el rendimiento de `scan_for_junk` sustituyendo `os.path.splitext` y las llamadas repetidas a `Path()` por el uso directo de las propiedades de `os.DirEntry` y una caché local de extensiones, reduciendo drásticamente las syscalls innecesarias durante la recursión.
+- `2026-08-05T05:57:07` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el acceso a metadatos en `purge_all` y `total_quarantined_bytes` evitando recorridos innecesarios y redundantes, aprovechando directamente la estructura del manifiesto ya cargado en memoria.
+- `2026-08-05T05:57:11` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-08-05T05:57:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-05T05:57:11` Corrida terminada. Total usado hoy: 132.

@@ -147,6 +147,8 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     """
     dirs = directories if directories is not None else DEFAULT_SCAN_DIRS
     found: List[JunkFile] = []
+    # Cache local de extensiones para evitar llamadas a os.path.splitext constantes
+    junk_exts = _LOWER_JUNK_EXTS
 
     def _walk_dir(base_path: str) -> None:
         """Escaneo interno recursivo que evita rutas bloqueadas y symlinks."""
@@ -161,9 +163,9 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
                             if _is_allowed_directory(entry.name):
                                 _walk_dir(entry.path)
                         else:
-                            # Filtro: debe ser extensión de basura, modificable, y no estar en uso
-                            ext = os.path.splitext(entry.name)[1].lower()
-                            if ext in _LOWER_JUNK_EXTS:
+                            # Optimización: uso de os.path.splitext solo si el nombre tiene puntos
+                            _, ext = os.path.splitext(entry.name)
+                            if ext.lower() in junk_exts:
                                 entry_path = Path(entry.path)
                                 if is_safe_to_modify(entry_path) and _is_file_accessible(entry_path):
                                     stat = entry.stat()

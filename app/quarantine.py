@@ -426,7 +426,6 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     
     items = load_manifest(base)
     item_map: Dict[str, QuarantineItem] = {item.stored_name: item for item in items}
-    stored_names_set = set(item_map.keys())
     count = 0
     
     try:
@@ -434,15 +433,14 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
             if entry.name == MANIFEST_NAME or not is_within_directory(entry, quarantine_root):
                 continue
             
-            try:
-                if entry.name in stored_names_set:
-                    if item_map[entry.name].verify_integrity(entry):
-                        if _safe_unlink(entry):
-                            count += 1
-                else:
-                    _safe_unlink(entry)
-            except OSError:
-                continue
+            # Solo verificamos integridad si el archivo está registrado
+            if entry.name in item_map:
+                if item_map[entry.name].verify_integrity(entry):
+                    if _safe_unlink(entry):
+                        count += 1
+            else:
+                # Archivos huérfanos que no están en el manifiesto
+                _safe_unlink(entry)
     except OSError:
         pass
             
@@ -454,11 +452,8 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
 
 
 def total_quarantined_bytes(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
-    """Calcula el peso total en bytes de los archivos bajo cuarentena."""
-    base_path = quarantine_dir(base)
-    cached = _manifest_cache.get(str(base_path))
-    items = cached[1] if cached else load_manifest(base)
-    return sum(item.size_bytes for item in items)
+    """Calcula el peso total en bytes de los archivos bajo cuarentena usando el manifiesto."""
+    return sum(item.size_bytes for item in load_manifest(base))
 
 
 def summarize(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[str]:
