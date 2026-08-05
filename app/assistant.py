@@ -395,13 +395,16 @@ def local_answer(question: str, context: SystemContext) -> Answer:
         if handler_key := _KEYWORD_MAP.get(token):
             return _HANDLERS[handler_key](context, clean_text)
 
-    # Evaluación perezosa (lazy) de los problemas actuales
+    # Evaluación perezosa de los problemas usando un listado eficiente
     problemas = list(_gen_problems(context))
+    puntaje_str = str(context.score) if context.score is not None else "N/A"
+    
     if problemas:
-        cuerpo = (f"Con un puntaje de {context.score if context.score is not None else 'N/A'}/100, por orden de prioridad: "
+        cuerpo = (f"Con un puntaje de {puntaje_str}/100, por orden de prioridad: "
                   f"{', '.join(problemas[:3])}.")
     else:
-        cuerpo = (f"Tu sistema está en buen estado ({context.score if context.score is not None else 'N/A'}/100). No hay nada urgente.")
+        cuerpo = f"Tu sistema está en buen estado ({puntaje_str}/100). No hay nada urgente."
+        
     return Answer(cuerpo, notice=OFFLINE_NOTICE, suggestions=SUGGESTED_QUESTIONS_LIST[:3])
 
 

@@ -356,6 +356,7 @@ def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
         alto = max(1, int(height))
         colores = gradient_colors(ancho, stops)
         
+        # Batching: agrupar píxeles adyacentes del mismo color para reducir llamadas
         inicio = 0
         for i in range(1, ancho):
             if colores[i] != colores[inicio]:

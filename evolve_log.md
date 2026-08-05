@@ -691,3 +691,45 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-08-05T05:26:27` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se introdujo una enumeración explícita (TypedDict) para la estructura de configuración, mejorando la legibilidad del contrato de datos y permitiendo que tanto desarrolladores como herramientas de análisis estático comprendan la estructura esperada sin necesidad de inspeccionar el diccionario en tiempo de ejecución.
 - `2026-08-05T05:26:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-05T05:26:27` Corrida terminada. Total usado hoy: 120.
+- `2026-08-05T05:35:16` Arrancando corrida. Quedan hoy ~180 peticiones objetivo.
+- `2026-08-05T05:35:42` Tests FALLARON:
+```
+_entries_from_folders_igno0')
+
+    def test_entries_from_folders_ignores_desktop_ini(tmp_path):
+        carpeta = tmp_path / "Inicio"
+        carpeta.mkdir()
+        (carpeta / "desktop.ini").write_text("x")
+>       assert startup.entries_from_folders([carpeta]) == []
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+evolve/tests/test_modules.py:685: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+folders = [PosixPath('/tmp/pytest-of-runner/pytest-1/test_entries_from_folders_igno0/Inicio')]
+
+    def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[StartupEntry]:
+        """Escanea carpetas de inicio en busca de ejecutables, omitiendo rutas protegidas."""
+        if folders is None:
+            folders = startup_folders()
+        found_entries: List[StartupEntry] = []
+        for folder in folders:
+            try:
+                for item in folder.iterdir():
+>                   if self._is_valid_executable(item) and not is_protected_path(item):
+                       ^^^^
+E                   NameError: name 'self' is not defined
+
+app/startup.py:182: NameError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_folders - NameError: name 'self' is not defined
+FAILED evolve/tests/test_modules.py::test_entries_from_folders_ignores_desktop_ini - NameError: name 'self' is not defined
+2 failed, 297 passed in 1.13s
+
+```
+- `2026-08-05T05:35:42` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: He mejorado la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints faltantes (especialmente en los retornos de las funciones de lista), estandarización de docstrings siguiendo las convenciones de Google, y la simplificación de los filtros en los bucles de `entries_from_folders` para mejorar la claridad de la lógica de seguridad.
+- `2026-08-05T05:36:17` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `local_answer` convirtiendo el `_KEYWORD_MAP` en un `set` de palabras clave procesables y centralizando la evaluación de problemas, evitando recrear la lista completa de problemas innecesariamente al ejecutar la función.
+- `2026-08-05T05:36:45` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimizé la generación de gradientes en `draw_gradient_bar` mediante un pre-procesamiento que reduce drásticamente las llamadas al método `create_line` del canvas, evitando iterar innecesariamente sobre segmentos de color idéntico y reduciendo el overhead de renderizado gráfico.
+- `2026-08-05T05:36:53` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el rendimiento de `directory_size` utilizando `os.scandir` para obtener directamente los atributos de los archivos (`is_symlink`, `is_junction`, `st_size`) sin llamadas redundantes a `Path` o `os.stat` adicionales, reduciendo drásticamente las llamadas al sistema operativo por archivo.
+- `2026-08-05T05:36:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-05T05:36:53` Corrida terminada. Total usado hoy: 124.

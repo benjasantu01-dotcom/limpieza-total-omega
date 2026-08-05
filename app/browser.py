@@ -128,44 +128,39 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
 
 def directory_size(path: str | os.PathLike | None) -> int:
     """
-    Calcula el peso total en bytes de un directorio mediante recorrido iterativo.
-    Ignora rutas protegidas, enlaces simbólicos y archivos en NEVER_TOUCH.
+    Calcula el peso total en bytes de un directorio mediante recorrido iterativo optimizado.
+    Usa os.scandir para evitar llamadas adicionales al sistema.
     """
     if path is None:
         return 0
     
     try:
-        root_path = Path(path)
-        if not root_path.exists() or not root_path.is_dir() or is_protected_path(root_path):
+        root = Path(path).resolve(strict=True)
+        if not root.is_dir() or is_protected_path(root):
             return 0
-        root: Path = root_path.resolve(strict=True)
     except (OSError, TypeError, ValueError, PermissionError):
         return 0
     
     total_bytes: int = 0
-    stack: List[Path] = [root]
+    stack: List[str] = [str(root)]
     
     while stack:
-        current_dir: Path = stack.pop()
+        current_dir = stack.pop()
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
-                        entry_path = Path(entry.path)
-                        if is_protected_path(entry_path):
-                            continue
-
-                        entry_name_lower: str = entry.name.lower()
-                        if entry_name_lower in NEVER_TOUCH or any(ord(c) < 32 for c in entry.name):
-                            continue
-                        
+                        # entry.is_symlink/junction y entry.stat ya están cacheados en entry por scandir
                         if entry.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(entry.path)):
                             continue
-                        
+
                         if entry.is_dir(follow_symlinks=False):
-                            stack.append(entry_path)
+                            if not is_protected_path(Path(entry.path)):
+                                stack.append(entry.path)
                         else:
-                            total_bytes += entry.stat(follow_symlinks=False).st_size
+                            name_lower = entry.name.lower()
+                            if name_lower not in NEVER_TOUCH and not any(ord(c) < 32 for c in entry.name):
+                                total_bytes += entry.stat(follow_symlinks=False).st_size
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):
@@ -177,7 +172,6 @@ def directory_size(path: str | os.PathLike | None) -> int:
 def _is_valid_cache_path(candidate: Path | None, base_path: Path) -> bool:
     """
     Valida si una ruta candidata es un objetivo legítimo de limpieza.
-    Comprueba existencia, tipo de directorio y que sea una ruta segura.
     """
     if not isinstance(candidate, Path) or not isinstance(base_path, Path):
         return False
