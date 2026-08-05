@@ -79,17 +79,18 @@ class Scanner:
         """Procesa una entrada del directorio, filtrando rutas protegidas y analizando archivos."""
         try:
             path_obj = Path(entry.path)
+            # Verificación de seguridad básica antes de operar sobre la ruta
+            if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
+                return
+
             if entry.is_dir(follow_symlinks=False):
                 if not self._is_reparse_point(entry):
-                    if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
-                        return
                     path_key = str(path_obj)
                     if path_key not in self.seen:
                         self.seen.add(path_key)
                         stack.append(entry.path)
             elif entry.is_file(follow_symlinks=False):
-                if is_safe_to_modify(path_obj) and not is_protected_path(path_obj):
-                    self.results.extend(scan_file(path_obj, entry=entry, prevalidated=True))
+                self.results.extend(scan_file(path_obj, entry=entry, prevalidated=True))
         except (PermissionError, OSError):
             pass
 

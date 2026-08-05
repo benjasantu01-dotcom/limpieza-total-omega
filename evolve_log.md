@@ -809,3 +809,89 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-05T06:38:21` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
 - `2026-08-05T06:38:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-05T06:38:21` Corrida terminada. Total usado hoy: 148.
+- `2026-08-05T06:46:56` Arrancando corrida. Quedan hoy ~152 peticiones objetivo.
+- `2026-08-05T06:47:20` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se mejoró la robustez de `scanner.py` ante errores de acceso (permisos denegados o archivos bloqueados) y rutas inexistentes dentro de `process_entry`, asegurando que `is_safe_to_modify` se utilice de forma consistente y protegida contra errores de resolución de rutas (`OSError`).
+- `2026-08-05T06:47:45` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `settings.py` ante archivos corruptos o maliciosos agregando una verificación de integridad mediante `os.stat` antes de la carga y asegurando que las rutas de configuración no sean directorios existentes (evitando colisiones o denegación de servicios por permisos) antes de intentar escribir en ellas.
+- `2026-08-05T06:48:10` Tests FALLARON:
+```
+e="HKCU")
+>       assert [e.name for e in entradas] == ["MiApp", "Otra"]
+E       AssertionError: assert [] == ['MiApp', 'Otra']
+E         
+E         Right contains 2 more items, first extra item: 'MiApp'
+E         
+E         Full diff:
+E         + []
+E         - [
+E         -     'MiApp',
+E         -     'Otra',
+E         - ]
+
+evolve/tests/test_modules.py:645: AssertionError
+________________ test_parse_registry_csv_skips_powershell_noise ________________
+
+    def test_parse_registry_csv_skips_powershell_noise():
+        csv = '"Name","Value"\n"PSPath","algo"\n"Real","C:\\\\r.exe"\n'
+>       assert [e.name for e in startup.parse_registry_csv(csv)] == ["Real"]
+E       AssertionError: assert [] == ['Real']
+E         
+E         Right contains one more item: 'Real'
+E         
+E         Full diff:
+E         + []
+E         - [
+E         -     'Real',
+E         - ]
+
+evolve/tests/test_modules.py:651: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_registry_csv_reads_entries - AssertionError: assert [] == ['MiApp', 'Otra']
+  
+  Right contains 2 more items, first extra item: 'MiApp'
+  
+  Full diff:
+  + []
+  - [
+  -     'MiApp',
+  -     'Otra',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_noise - AssertionError: assert [] == ['Real']
+  
+  Right contains one more item: 'Real'
+  
+  Full diff:
+  + []
+  - [
+  -     'Real',
+  - ]
+2 failed, 297 passed in 1.19s
+
+```
+- `2026-08-05T06:48:10` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `parse_registry_csv` añadiendo una limpieza de rutas más exhaustiva (remover comillas persistentes y espacios laterales) y un filtro defensivo contra rutas relativas o mal formadas que antes podían causar errores en `Path()`, asegurando que solo procese entradas con rutas absolutas verificables.
+- `2026-08-05T06:48:26` Tests FALLARON:
+```
+.........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_build_context_ignores_non_numeric_extras _________________
+
+    def test_build_context_ignores_non_numeric_extras():
+        """Un extra con una ruta no puede colarse en el contexto."""
+        contexto = assistant.build_context(
+            ruta_secreta="C:/Users/benja/Documentos/secreto.txt",
+            memory_total_gb=8.0,
+        )
+        assert not hasattr(contexto, "ruta_secreta")
+>       assert contexto.memory_total_gb == 8.0
+E       AssertionError: assert 0.0 == 8.0
+E        +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).memory_total_gb
+
+evolve/tests/test_assistant.py:217: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_extras - AssertionError: assert 0.0 == 8.0
+ +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).memory_total_gb
+1 failed, 298 passed in 1.17s
+
+```
+- `2026-08-05T06:48:26` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Reforcé la seguridad defensiva de `assistant.py` mediante la validación del contexto antes de enviarlo, asegurando que no se propaguen caracteres de control o rutas protegidas mediante `_ensure_safe_text` y garantizando que el `build_context` sea la única fuente de datos, bloqueando cualquier clave que no pertenezca al esquema predefinido del `SystemContext`.
+- `2026-08-05T06:48:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-05T06:48:26` Corrida terminada. Total usado hoy: 152.

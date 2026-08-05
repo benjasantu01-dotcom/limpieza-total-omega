@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **256** (50.8% de aceptación)
-- Rechazadas por tests: 15
+- Mejoras aceptadas: **258** (51.2% de aceptación)
+- Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 30
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 193
+- Sin respuesta de la IA (error o límite): 189
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-03 | 0 | 0 | 0 | 0 | 6 |
+| 2026-08-03 | 0 | 0 | 0 | 0 | 2 |
 | 2026-08-04 | 166 | 11 | 20 | 8 | 145 |
-| 2026-08-05 | 90 | 4 | 10 | 2 | 42 |
+| 2026-08-05 | 92 | 6 | 10 | 2 | 42 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **58**
 - manejo de errores y validación de entradas: **55**
 - rendimiento: **54**
-- robustez ante casos límite: **47**
+- robustez ante casos límite: **49**
 - seguridad defensiva: **42**
 
 ## Mejoras aceptadas por archivo
@@ -33,12 +33,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **22**
 - `quarantine.py`: **22**
 - `duplicates.py`: **21**
+- `settings.py`: **21**
 - `diskreport.py`: **20**
 - `organizer.py`: **20**
-- `settings.py`: **20**
+- `scanner.py`: **20**
 - `healthscore.py`: **19**
 - `browser.py`: **19**
-- `scanner.py`: **19**
 - `branding.py`: **18**
 - `main.py`: **17**
 - `memory.py`: **15**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-05T06:47:45` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante archivos corruptos o maliciosos agregando una verificación de integridad mediante `os.stat` antes de la carga y asegurando que las rutas de configuración no sean directorios existentes (evitando colisiones o denegación de servicios por permisos) antes de intentar escribir en ellas.
+- `2026-08-05T06:47:20` **scanner.py** (robustez ante casos límite): Se mejoró la robustez de `scanner.py` ante errores de acceso (permisos denegados o archivos bloqueados) y rutas inexistentes dentro de `process_entry`, asegurando que `is_safe_to_modify` se utilice de forma consistente y protegida contra errores de resolución de rutas (`OSError`).
 - `2026-08-05T06:37:39` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `quarantine.py` ante errores de concurrencia y estados inconsistentes del sistema de archivos, implementando un chequeo previo de existencia antes de realizar operaciones críticas y envolviendo la lógica de `purge_all` en un bloque de control de errores más estricto para evitar interrupciones en el bucle de limpieza ante archivos bloqueados o inaccesibles.
 - `2026-08-05T06:28:31` **memory.py** (robustez ante casos límite): Mejoré la robustez de `parse_windows_process_csv` implementando un filtro de validación de índices y tipos para evitar excepciones inesperadas al procesar filas CSV mal formadas o truncadas que el comando de PowerShell podría devolver bajo carga.
 - `2026-08-05T06:28:19` **main.py** (robustez ante casos límite): Mejoré la robustez de `on_trim_process` al manejar explícitamente errores durante la conversión de PID y añadí un chequeo preventivo de la existencia del proceso antes de intentar manipularlo, evitando que errores de SO no controlados (como `ProcessLookupError`) interrumpan el hilo principal o lancen excepciones no atrapadas.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-05T06:06:33` **safety.py** (rendimiento): Se implementó un cache local (`_cache_system_check`) dentro de `is_protected_path` para evitar la sobrecarga de resolución de `Path.parts` y los chequeos de `commonpath` en cada iteración del bucle, optimizando significativamente la velocidad de filtrado en recorridos de disco.
 - `2026-08-05T05:57:07` **quarantine.py** (rendimiento): Optimicé el acceso a metadatos en `purge_all` y `total_quarantined_bytes` evitando recorridos innecesarios y redundantes, aprovechando directamente la estructura del manifiesto ya cargado en memoria.
 - `2026-08-05T05:56:39` **organizer.py** (rendimiento): Optimizé el rendimiento de `scan_for_junk` sustituyendo `os.path.splitext` y las llamadas repetidas a `Path()` por el uso directo de las propiedades de `os.DirEntry` y una caché local de extensiones, reduciendo drásticamente las syscalls innecesarias durante la recursión.
-- `2026-08-05T05:56:17` **memory.py** (rendimiento): Optimizé la carga de procesos en `top_memory_processes` reemplazando la creación de objetos `ProcessMemory` mediante el parseo completo del CSV por una filtración temprana, evitando la creación de instancias innecesarias para procesos fuera del límite solicitado y reduciendo el consumo de ciclos de CPU y memoria en cada iteración.
-- `2026-08-05T05:47:24` **main.py** (rendimiento): Se implementó un mecanismo de **invalidación selectiva de caché mediante prefijos** en `_invalidate_cache` y se optimizó `_compile_metrics` para usar de forma consistente el caché de sesión, evitando lecturas redundantes de disco durante el análisis de salud.
