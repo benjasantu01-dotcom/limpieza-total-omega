@@ -1157,3 +1157,12 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-05T08:51:10` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `walk_files` y las funciones de reporte al validar explícitamente que la entrada sea una ruta de sistema válida y existente antes de intentar cualquier operación de I/O, previniendo excepciones innecesarias ante entradas malformadas.
 - `2026-08-05T08:51:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-05T08:51:10` Corrida terminada. Total usado hoy: 200.
+- `2026-08-05T08:59:49` Arrancando corrida. Quedan hoy ~100 peticiones objetivo.
+- `2026-08-05T09:00:17` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-05T09:00:28` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-05T09:00:55` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-05T09:01:55` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-05T09:02:59` ➖ Sin cambios en main.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `on_trim_process` añadiendo una validación explícita para evitar que `int()` falle con entradas vacías o no numéricas antes de procesar el PID, y utilicé `_validate_numeric_setting` para centralizar la lógica de conversión de datos del usuario, reduciendo riesgos de errores en tiempo de ejecución.
+- `2026-08-05T09:03:08` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-05T09:03:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-05T09:03:08` Corrida terminada. Total usado hoy: 204.
