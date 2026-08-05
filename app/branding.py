@@ -32,7 +32,7 @@ SeverityStyle: TypeAlias = Tuple[HexColor, str]
 RGBTuple: TypeAlias = Tuple[int, int, int]
 
 class PaletteDict(TypedDict):
-    """Define la estructura obligatoria de colores de la aplicación."""
+    """Estructura de colores centralizada para la interfaz."""
     background: HexColor
     surface: HexColor
     surface_alt: HexColor
@@ -135,30 +135,30 @@ def app_title() -> str:
 
 @lru_cache(maxsize=32)
 def color(name: str) -> HexColor:
-    """Busca un color hexadecimal en la paleta global."""
+    """Busca un color hexadecimal en la paleta global. Retorna gris si no existe."""
     return PALETTE.get(name, "#808080")
 
 
 @lru_cache(maxsize=16)
 def font_size(name: str) -> int:
-    """Obtiene el tamaño tipográfico numérico según clave."""
+    """Obtiene el tamaño tipográfico numérico según clave, fallback a 'body'."""
     return FONT_SIZES.get(name, FONT_SIZES["body"])
 
 
 def icon(section: Optional[str]) -> str:
-    """Retorna el glifo unicode para la sección; por defecto un punto."""
+    """Retorna el glifo unicode para la sección; por defecto un punto central."""
     if isinstance(section, str) and (glifo := ICONS.get(section.strip())):
         return glifo
     return "\u2022"
 
 
 def tab_label(section: str) -> str:
-    """Formatea el nombre de la sección con su ícono correspondiente."""
+    """Formatea el nombre de la sección prefijando su ícono correspondiente."""
     return f"{icon(section)}  {section}"
 
 
 def severity_color(severity: Optional[str]) -> HexColor:
-    """Devuelve el color hexadecimal asociado a un nivel de riesgo."""
+    """Devuelve el color hex asociado a una severidad; fallback a text_muted."""
     if severity and isinstance(severity, str):
         if style := SEVERITY_STYLES.get(severity.lower()):
             return style[0]
@@ -166,7 +166,7 @@ def severity_color(severity: Optional[str]) -> HexColor:
 
 
 def severity_label(severity: Optional[str]) -> str:
-    """Devuelve el nombre legible de una severidad."""
+    """Devuelve el nombre legible de una severidad o el input en mayúsculas."""
     if severity and isinstance(severity, str):
         if style := SEVERITY_STYLES.get(severity.lower()):
             return style[1]
@@ -175,7 +175,7 @@ def severity_label(severity: Optional[str]) -> str:
 
 
 def severity_icon(severity: Optional[str]) -> str:
-    """Retorna el glifo representativo para una severidad."""
+    """Retorna el glifo representativo para una severidad; fallback a punto."""
     simbolos = {"ok": "\u2713", "info": "\u2139", "warning": "\u26a0", "danger": "\u2716"}
     if severity and isinstance(severity, str):
         return simbolos.get(severity.lower(), "\u2022")
@@ -183,14 +183,14 @@ def severity_icon(severity: Optional[str]) -> str:
 
 
 def grade_color(grade: Optional[str]) -> HexColor:
-    """Obtiene el color correspondiente a una letra de calificación."""
+    """Obtiene el color de calificación (A-F); fallback a text_muted."""
     if isinstance(grade, str) and grade.strip():
         return GRADE_COLORS.get(grade.upper()[0], PALETTE["text_muted"])
     return PALETTE["text_muted"]
 
 
 def score_color(score: Union[float, int, None]) -> HexColor:
-    """Determina el color semántico basado en el puntaje de salud."""
+    """Determina el color semántico (éxito a peligro) según el puntaje."""
     try:
         valor = float(score)  # type: ignore
     except (TypeError, ValueError):
@@ -204,7 +204,7 @@ def score_color(score: Union[float, int, None]) -> HexColor:
 
 def bar(percent: Union[float, int, None], width: int = 24,
         filled: str = "\u2588", empty: str = "\u2591") -> str:
-    """Genera una barra de progreso textual con un ancho definido."""
+    """Genera una barra de progreso textual con ancho definido."""
     try:
         valor = max(0.0, min(100.0, float(percent))) # type: ignore
     except (TypeError, ValueError):
@@ -216,7 +216,7 @@ def bar(percent: Union[float, int, None], width: int = 24,
 
 @lru_cache(maxsize=128)
 def _hex_to_rgb(value: HexColor) -> RGBTuple:
-    """Convierte un color hex a componentes RGB."""
+    """Convierte un color hex (#RRGGBB) a una tupla de componentes RGB."""
     if not isinstance(value, str) or not value.startswith("#") or len(value) != 7:
         return (0, 0, 0)
     try:
@@ -227,7 +227,7 @@ def _hex_to_rgb(value: HexColor) -> RGBTuple:
 
 @lru_cache(maxsize=64)
 def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
-    """Realiza una interpolación lineal entre dos colores."""
+    """Interpolación lineal de color entre dos extremos."""
     proporcion = max(0.0, min(1.0, float(ratio)))
     r1, g1, b1 = _hex_to_rgb(start)
     r2, g2, b2 = _hex_to_rgb(end)
@@ -240,7 +240,7 @@ def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
 
 @lru_cache(maxsize=16)
 def gradient_colors(steps: int, stops: tuple[HexColor, ...] = GRADIENT_STOPS) -> List[HexColor]:
-    """Genera una lista de colores interpolados para degradados."""
+    """Genera una lista de N colores interpolados a partir de una lista de paradas."""
     cantidad = max(1, int(steps))
     if not stops: return [PALETTE["accent"]] * cantidad
     if len(stops) < 2: return [stops[0]] * cantidad
@@ -255,14 +255,14 @@ def gradient_colors(steps: int, stops: tuple[HexColor, ...] = GRADIENT_STOPS) ->
 
 
 def _get_shield_coords(sx: float, sy: float, s: float) -> List[float]:
-    """Calcula vértices normalizados para el diseño del escudo."""
+    """Calcula vértices normalizados para el diseño geométrico del logo."""
     base = [64, 18, 100, 31, 100, 67, 90, 90, 64, 110, 38, 90, 28, 67, 28, 31]
     return [sx + v * s if i % 2 == 0 else sy + v * s for i, v in enumerate(base)]
 
 
 @lru_cache(maxsize=4)
 def logo_svg(size: int = 128) -> str:
-    """Serializa el logo en formato SVG para exportación."""
+    """Serializa la identidad visual en formato SVG embebido."""
     return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{size}" height="{size}" viewBox="0 0 128 128">
   <defs>
     <linearGradient id="omegaShield" x1="0" y1="0" x2="1" y2="1">
@@ -288,12 +288,11 @@ def logo_svg(size: int = 128) -> str:
 
 
 def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
-    """Valida la seguridad de la ruta y guarda el logo como archivo SVG."""
+    """Guarda el logo en SVG tras validar la seguridad de la ruta destino."""
     if not destination:
         return None
     try:
         target = Path(destination).resolve()
-        # Verificar seguridad antes de intentar cualquier operación de I/O
         if is_protected_path(target) or not is_safe_to_modify(target):
             return None
         
@@ -310,7 +309,7 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
 
 @lru_cache(maxsize=1)
 def logo_ascii() -> str:
-    """Retorna el arte ASCII del logo para consola."""
+    """Arte ASCII para logs de consola."""
     return r"""
    ___  __  __ ___ ___   _
   / _ \|  \/  | __/ __| /_\
@@ -321,9 +320,7 @@ def logo_ascii() -> str:
 
 
 def draw_logo(canvas: Any, size: int = 56, canvas_x: int = 0, canvas_y: int = 0) -> None:
-    """
-    Dibuja el logo Omega en un canvas de Tkinter.
-    """
+    """Dibuja el logo Omega usando primitivas de Tkinter canvas."""
     if canvas is None or not hasattr(canvas, "create_polygon"): return
     try:
         s = max(0.1, float(size) / 128)
@@ -353,7 +350,7 @@ def draw_logo(canvas: Any, size: int = 56, canvas_x: int = 0, canvas_y: int = 0)
 def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
                       canvas_x: int = 0, canvas_y: int = 0,
                       stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
-    """Renderiza una línea horizontal con degradado, optimizada mediante agrupación de colores."""
+    """Renderiza una línea horizontal degradada con optimización de segmentos."""
     if canvas is None or not hasattr(canvas, "create_line"): return
     try:
         ancho = max(1, int(width))
@@ -373,9 +370,7 @@ def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
               canvas_x: int = 0, canvas_y: int = 0, thickness: int = 14,
               track: Optional[HexColor] = None,
               fill: Optional[HexColor] = None) -> None:
-    """
-    Renderiza un indicador de salud circular (estilo anillo).
-    """
+    """Dibuja un anillo de progreso de salud (HealthScore)."""
     if canvas is None or not hasattr(canvas, "create_arc"): return
     try:
         valor = max(0.0, min(100.0, float(percent)))

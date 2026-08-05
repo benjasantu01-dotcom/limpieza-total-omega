@@ -187,7 +187,7 @@ def _ensure_safe_text(text: Any) -> bool:
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
     """
-    Transforma fuentes de datos genéricas en una estructura SystemContext tipada.
+    Transforma fuentes de datos externas o parciales (metrics/health) en una estructura SystemContext validada.
     """
     ctx = SystemContext()
 

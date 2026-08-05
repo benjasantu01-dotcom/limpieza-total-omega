@@ -175,8 +175,13 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Recorre recursivamente un directorio omitiendo enlaces simbólicos, puntos de unión (junctions) 
-    y rutas protegidas por sistema.
+    Recorre recursivamente un directorio omitiendo enlaces simbólicos y rutas protegidas.
+    
+    Args:
+        directory: Ruta base para iniciar el escaneo.
+        skip_protected: Si es True, utiliza `is_protected_path` para ignorar directorios sensibles.
+    Yields:
+        Tuplas que contienen el objeto Path del archivo y su tamaño en bytes.
     """
     if not directory:
         return
@@ -310,6 +315,12 @@ def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -> List[str]:
     """
     Genera un reporte de texto con el resumen de uso de disco analizado.
+    
+    Args:
+        directory: Directorio base a analizar.
+        skip_protected: Si se debe saltar contenido del sistema.
+    Returns:
+        Lista de cadenas formateadas para representar el reporte.
     """
     if not directory:
         return ["Error: Ruta no proporcionada."]
@@ -333,6 +344,7 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
             ext_sizes[ext_name] += size
             ext_counts[ext_name] += 1
             
+            # Mantiene un heap de 8 elementos basado en el tamaño (bytes)
             if len(top_heap) < 8:
                 heapq.heappush(top_heap, (size, str(path)))
             elif size > top_heap[0][0]:

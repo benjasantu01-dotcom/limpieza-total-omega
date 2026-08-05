@@ -135,7 +135,7 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
 def directory_size(path: str | os.PathLike | None) -> int:
     """
     Calcula el peso total en bytes mediante recorrido iterativo con os.scandir.
-    Optimizado: evita objetos Path en el loop interno y usa atributos crudos de scandir.
+    Captura excepciones de acceso (PermissionError) para permitir análisis parcial.
     """
     if path is None:
         return 0
@@ -144,7 +144,7 @@ def directory_size(path: str | os.PathLike | None) -> int:
         root = Path(path)
         if not root.exists() or not root.is_dir() or is_protected_path(root):
             return 0
-        root_resolved = str(root.resolve())
+        root_resolved: str = str(root.resolve())
     except (OSError, PermissionError, RuntimeError):
         return 0
     
@@ -153,7 +153,7 @@ def directory_size(path: str | os.PathLike | None) -> int:
     is_junction_func = getattr(os.path, 'isjunction', lambda _: False)
     
     while stack:
-        current_dir = stack.pop()
+        current_dir: str = stack.pop()
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:
@@ -163,11 +163,11 @@ def directory_size(path: str | os.PathLike | None) -> int:
                             continue
 
                         if entry.is_dir():
-                            # Validar cada subcarpeta recursivamente
+                            # Validar cada subcarpeta recursivamente mediante chequeo de seguridad
                             if not is_protected_path(Path(entry.path)):
                                 stack.append(entry.path)
                         else:
-                            name_lower = entry.name.lower()
+                            name_lower: str = entry.name.lower()
                             if name_lower not in NEVER_TOUCH and not any(ord(c) < 32 for c in entry.name):
                                 try:
                                     total_bytes += entry.stat().st_size
