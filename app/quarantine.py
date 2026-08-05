@@ -150,8 +150,10 @@ def _is_file_locked(path: Path) -> bool:
 def _safe_unlink(path: Path) -> bool:
     """Intenta borrar un archivo de forma segura capturando errores de E/S."""
     try:
-        path.unlink()
-        return True
+        if path.is_file():
+            path.unlink()
+            return True
+        return False
     except (OSError, PermissionError):
         return False
 
@@ -247,7 +249,6 @@ def quarantine_file(
     if not source_path.exists():
         raise FileNotFoundError(f"El archivo de origen no existe: {source_path}")
     
-    # Defensa contra evasión de rutas y caracteres inválidos
     if "\0" in str(source_path) or any(c in str(source_path.name) for c in "<>:\"|?*"):
         raise UnsafePathError(f"Ruta con caracteres maliciosos o inválidos: {source_path.name}")
     
@@ -280,7 +281,6 @@ def quarantine_file(
     except OSError as e:
         raise OSError(f"Error al acceder a metadatos de archivo: {e}")
 
-    # Verificar espacio antes de mover
     usage = shutil.disk_usage(dest_dir)
     if usage.free < file_size:
         raise RuntimeError("Espacio insuficiente en disco para mover a cuarentena.")
@@ -433,19 +433,22 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
             if entry.name == MANIFEST_NAME or not is_within_directory(entry, quarantine_root):
                 continue
             
-            # Solo verificamos integridad si el archivo está registrado
-            if entry.name in item_map:
-                if item_map[entry.name].verify_integrity(entry):
-                    if _safe_unlink(entry):
-                        count += 1
-            else:
-                # Archivos huérfanos que no están en el manifiesto
-                _safe_unlink(entry)
+            try:
+                # Solo verificamos integridad si el archivo está registrado
+                if entry.name in item_map:
+                    if item_map[entry.name].verify_integrity(entry):
+                        if _safe_unlink(entry):
+                            count += 1
+                else:
+                    # Archivos huérfanos que no están en el manifiesto
+                    _safe_unlink(entry)
+            except (OSError, PermissionError):
+                continue
     except OSError:
         pass
             
     if count > 0:
-        new_items = [i for i in items if (quarantine_root / i.stored_name).is_file()]
+        new_items = [i for i in items if (quarantine_root / i.stored_name).exists()]
         if len(new_items) != len(items):
             save_manifest(new_items, base)
     return count

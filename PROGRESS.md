@@ -8,31 +8,31 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **256** (50.8% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 29
+- Rechazadas por guardia de seguridad: 30
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 194
+- Sin respuesta de la IA (error o límite): 193
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-03 | 1 | 0 | 0 | 0 | 9 |
+| 2026-08-03 | 0 | 0 | 0 | 0 | 6 |
 | 2026-08-04 | 166 | 11 | 20 | 8 | 145 |
-| 2026-08-05 | 89 | 4 | 9 | 2 | 40 |
+| 2026-08-05 | 90 | 4 | 10 | 2 | 42 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **58**
 - manejo de errores y validación de entradas: **55**
 - rendimiento: **54**
-- robustez ante casos límite: **46**
-- seguridad defensiva: **43**
+- robustez ante casos límite: **47**
+- seguridad defensiva: **42**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **22**
+- `quarantine.py`: **22**
 - `duplicates.py`: **21**
-- `quarantine.py`: **21**
 - `diskreport.py`: **20**
 - `organizer.py`: **20**
 - `settings.py`: **20**
@@ -43,10 +43,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - `main.py`: **17**
 - `memory.py`: **15**
 - `safety.py`: **15**
-- `startup.py`: **10**
+- `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-05T06:37:39` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `quarantine.py` ante errores de concurrencia y estados inconsistentes del sistema de archivos, implementando un chequeo previo de existencia antes de realizar operaciones críticas y envolviendo la lógica de `purge_all` en un bloque de control de errores más estricto para evitar interrupciones en el bucle de limpieza ante archivos bloqueados o inaccesibles.
 - `2026-08-05T06:28:31` **memory.py** (robustez ante casos límite): Mejoré la robustez de `parse_windows_process_csv` implementando un filtro de validación de índices y tipos para evitar excepciones inesperadas al procesar filas CSV mal formadas o truncadas que el comando de PowerShell podría devolver bajo carga.
 - `2026-08-05T06:28:19` **main.py** (robustez ante casos límite): Mejoré la robustez de `on_trim_process` al manejar explícitamente errores durante la conversión de PID y añadí un chequeo preventivo de la existencia del proceso antes de intentar manipularlo, evitando que errores de SO no controlados (como `ProcessLookupError`) interrumpan el hilo principal o lancen excepciones no atrapadas.
 - `2026-08-05T06:26:52` **duplicates.py** (robustez ante casos límite): Se ha robustecido el manejo de archivos en `_collect_candidates` y `suggest_keeper` añadiendo validaciones explícitas contra `PermissionError` y `OSError` al realizar `stat()` o `exists()`, asegurando que el proceso no se interrumpa ante archivos bloqueados o permisos denegados en el sistema de archivos.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-05T05:56:39` **organizer.py** (rendimiento): Optimizé el rendimiento de `scan_for_junk` sustituyendo `os.path.splitext` y las llamadas repetidas a `Path()` por el uso directo de las propiedades de `os.DirEntry` y una caché local de extensiones, reduciendo drásticamente las syscalls innecesarias durante la recursión.
 - `2026-08-05T05:56:17` **memory.py** (rendimiento): Optimizé la carga de procesos en `top_memory_processes` reemplazando la creación de objetos `ProcessMemory` mediante el parseo completo del CSV por una filtración temprana, evitando la creación de instancias innecesarias para procesos fuera del límite solicitado y reduciendo el consumo de ciclos de CPU y memoria en cada iteración.
 - `2026-08-05T05:47:24` **main.py** (rendimiento): Se implementó un mecanismo de **invalidación selectiva de caché mediante prefijos** en `_invalidate_cache` y se optimizó `_compile_metrics` para usar de forma consistente el caché de sesión, evitando lecturas redundantes de disco durante el análisis de salud.
-- `2026-08-05T05:46:19` **duplicates.py** (rendimiento): Se optimizó el proceso de recolección de candidatos evitando llamadas redundantes a `path.resolve()` y `is_protected_path()` en el bucle principal de `_collect_candidates`, reduciendo significativamente las operaciones de I/O al verificar la seguridad solo cuando es estrictamente necesario.

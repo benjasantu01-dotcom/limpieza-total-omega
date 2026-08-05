@@ -802,3 +802,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-05T06:28:31` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Mejoré la robustez de `parse_windows_process_csv` implementando un filtro de validación de índices y tipos para evitar excepciones inesperadas al procesar filas CSV mal formadas o truncadas que el comando de PowerShell podría devolver bajo carga.
 - `2026-08-05T06:28:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-05T06:28:31` Corrida terminada. Total usado hoy: 144.
+- `2026-08-05T06:36:47` Arrancando corrida. Quedan hoy ~156 peticiones objetivo.
+- `2026-08-05T06:37:11` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-08-05T06:37:39` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `quarantine.py` ante errores de concurrencia y estados inconsistentes del sistema de archivos, implementando un chequeo previo de existencia antes de realizar operaciones críticas y envolviendo la lógica de `purge_all` en un bloque de control de errores más estricto para evitar interrupciones en el bucle de limpieza ante archivos bloqueados o inaccesibles.
+- `2026-08-05T06:38:01` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-08-05T06:38:21` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
+- `2026-08-05T06:38:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-05T06:38:21` Corrida terminada. Total usado hoy: 148.
