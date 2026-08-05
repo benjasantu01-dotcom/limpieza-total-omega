@@ -227,7 +227,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         if not isinstance(jf, JunkFile) or not getattr(jf, 'path', None):
             continue
         try:
-            current_abs = jf.path.resolve()
+            current_abs = jf.path
             
             if not current_abs.exists() or not current_abs.is_file() or not is_safe_to_modify(current_abs):
                 continue

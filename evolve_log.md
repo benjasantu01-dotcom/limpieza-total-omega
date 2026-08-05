@@ -593,3 +593,10 @@
 - `2026-08-05T04:25:15` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `hash_file` y `partial_hash` ante errores inesperados durante la lectura de archivos, integrando una validación de `st_size` más estricta para evitar intentos de lectura innecesarios y garantizando que se manejen correctamente los casos donde el sistema reporta archivos que no se pueden abrir.
 - `2026-08-05T04:25:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-05T04:25:15` Corrida terminada. Total usado hoy: 96.
+- `2026-08-05T04:34:03` Arrancando corrida. Quedan hoy ~204 peticiones objetivo.
+- `2026-08-05T04:34:30` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `summarize` y `_generate_recommendations` añadiendo validaciones de tipo explícitas y manejando casos de valores `None` o estructuras inesperadas, asegurando que la interfaz nunca falle aunque el sistema reciba datos malformados.
+- `2026-08-05T04:35:27` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de la inicialización de la interfaz en `_init_window_properties` y `_build_tabs_container` añadiendo manejo específico de excepciones y verificaciones de existencia de objetos para evitar bloqueos silenciosos de la app.
+- `2026-08-05T04:35:51` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-05T04:35:59` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `stage_for_review` validando explícitamente que la lista de archivos contenga instancias válidas y que las rutas sean accesibles antes de intentar cualquier operación de movimiento, previniendo excepciones innecesarias por datos malformados.
+- `2026-08-05T04:35:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-05T04:35:59` Corrida terminada. Total usado hoy: 100.

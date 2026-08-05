@@ -142,7 +142,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         except Exception as e:
             logging.warning("No se pudo configurar la geometría inicial: %s", e)
         try:
-            self.configure(fg_color=branding.color("background"))
+            bg_color = branding.color("background")
+            if bg_color:
+                self.configure(fg_color=bg_color)
         except Exception as e:
             logging.error("Fallo al aplicar colores de branding: %s", e)
 
@@ -305,11 +307,15 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
         for name in TABS:
             try:
-                frame = self.tabview.add(branding.tab_label(name))
-                self.tabs[name] = frame
-                self._tab_factory(name)
+                label = branding.tab_label(name)
+                frame = self.tabview.add(label)
+                if frame:
+                    self.tabs[name] = frame
+                    self._tab_factory(name)
+                else:
+                    logging.warning("No se pudo obtener frame para la pestaña: %s", name)
             except Exception as e:
-                logging.error("No se pudo construir la pestaña %s: %s", name, e)
+                logging.error("Error al construir la pestaña %s: %s", name, e)
 
     def _build_header(self) -> None:
         """Renderiza logo y cabecera."""
@@ -476,7 +482,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _draw_gauge(self, score: int, grade: str) -> None:
         """Dibuja gauge circular."""
         def update_canvas():
-            if not self.gauge.winfo_exists(): return
+            if not hasattr(self, 'gauge') or not self.gauge.winfo_exists(): return
             self.gauge.delete("all")
             branding.draw_ring(self.gauge, score, size=176, thickness=15)
             color_nota = branding.grade_color(grade) if grade != "-" else branding.color("text_dim")

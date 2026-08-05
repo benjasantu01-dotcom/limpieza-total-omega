@@ -268,6 +268,7 @@ def summarize(result: HealthResult) -> List[str]:
 
     lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     
+    # Validar integridad del desglose antes de iterar
     if not isinstance(result.breakdown, dict):
         return lines + ["  Error: Desglose no procesable."]
 
