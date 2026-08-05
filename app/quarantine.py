@@ -269,7 +269,7 @@ def quarantine_file(
         raise UnsafePathError(f"El archivo ya reside en la carpeta de cuarentena: {source_path}")
         
     if source_path.drive != dest_dir.drive:
-        raise UnsafePathError(f"El archivo está en otro dispositivo; movimiento cruzado denegado: {source_path.drive}")
+        raise UnsafePathError(f"Operación denegada: el archivo está en otro dispositivo o partición.")
 
     ensure_safe_to_modify(source_path, allow_sensitive=True)
     

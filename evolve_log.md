@@ -1327,3 +1327,10 @@ FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - Asse
 - `2026-08-05T11:35:04` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se introdujo una validación defensiva en `trim_working_set` para asegurar que el proceso objetivo existe realmente y es alcanzable antes de intentar interactuar con su memoria, protegiendo contra posibles errores de acceso en PIDs que finalizaron o fueron reciclados durante la ejecución.
 - `2026-08-05T11:35:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-05T11:35:04` Corrida terminada. Total usado hoy: 264.
+- `2026-08-05T11:43:17` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-08-05T11:43:43` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `stage_for_review` añadiendo una validación explícita para evitar que `shutil.move` intente realizar operaciones entre archivos con el mismo descriptor de dispositivo si el origen o destino cambian durante la ejecución, y asegurando que las rutas de origen sean validadas de nuevo justo antes de la operación de movimiento para cerrar una pequeña ventana de race condition.
+- `2026-08-05T11:44:12` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `quarantine_file` añadiendo una comprobación explícita para evitar movimientos entre volúmenes (cross-device moves), lo cual previene errores de I/O impredecibles y garantiza que `shutil.move` se comporte como un movimiento atómico en el mismo sistema de archivos.
+- `2026-08-05T11:44:31` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-05T11:44:40` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-08-05T11:44:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-05T11:44:40` Corrida terminada. Total usado hoy: 268.

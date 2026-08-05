@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **260** (51.6% de aceptación)
+- Mejoras aceptadas: **262** (52.0% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 28
+- Rechazadas por guardia de seguridad: 29
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 188
+- Sin respuesta de la IA (error o límite): 185
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-04 | 117 | 6 | 13 | 6 | 98 |
-| 2026-08-05 | 143 | 9 | 15 | 7 | 90 |
+| 2026-08-04 | 117 | 6 | 13 | 6 | 94 |
+| 2026-08-05 | 145 | 9 | 16 | 7 | 91 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **60**
 - manejo de errores y validación de entradas: **55**
 - rendimiento: **54**
-- seguridad defensiva: **48**
+- seguridad defensiva: **50**
 - robustez ante casos límite: **43**
 
 ## Mejoras aceptadas por archivo
@@ -32,13 +32,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - `duplicates.py`: **23**
 - `assistant.py`: **22**
 - `branding.py`: **22**
+- `quarantine.py`: **22**
 - `browser.py`: **21**
-- `quarantine.py`: **21**
 - `diskreport.py`: **20**
 - `scanner.py`: **20**
 - `settings.py`: **20**
+- `organizer.py`: **19**
 - `healthscore.py`: **18**
-- `organizer.py`: **18**
 - `main.py`: **17**
 - `memory.py`: **14**
 - `safety.py`: **13**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-05T11:44:12` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `quarantine_file` añadiendo una comprobación explícita para evitar movimientos entre volúmenes (cross-device moves), lo cual previene errores de I/O impredecibles y garantiza que `shutil.move` se comporte como un movimiento atómico en el mismo sistema de archivos.
+- `2026-08-05T11:43:43` **organizer.py** (seguridad defensiva): Mejoré la seguridad defensiva en `stage_for_review` añadiendo una validación explícita para evitar que `shutil.move` intente realizar operaciones entre archivos con el mismo descriptor de dispositivo si el origen o destino cambian durante la ejecución, y asegurando que las rutas de origen sean validadas de nuevo justo antes de la operación de movimiento para cerrar una pequeña ventana de race condition.
 - `2026-08-05T11:35:04` **memory.py** (seguridad defensiva): Se introdujo una validación defensiva en `trim_working_set` para asegurar que el proceso objetivo existe realmente y es alcanzable antes de intentar interactuar con su memoria, protegiendo contra posibles errores de acceso en PIDs que finalizaron o fueron reciclados durante la ejecución.
 - `2026-08-05T11:34:53` **main.py** (seguridad defensiva): He mejorado `_ask_folder` para verificar que la ruta seleccionada no contenga caracteres de control o secuencias sospechosas (como ataques RTL o inyección de rutas) y para asegurar explícitamente que la ruta resuelta pase por `is_safe_path` antes de permitir su uso en la aplicación, reforzando la seguridad defensiva al seleccionar destinos de disco.
 - `2026-08-05T11:33:51` **healthscore.py** (seguridad defensiva): Se introdujo una validación defensiva en la generación de recomendaciones para evitar que valores inesperados en el conteo de elementos (como negativos o `NaN`) se filtren al usuario, asegurando que `_to_int` sea siempre invocado antes de interpolar datos en los strings de recomendación.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-05T10:43:38` **browser.py** (robustez ante casos límite): Mejoré la robustez de `directory_size` ante el caso límite de archivos bloqueados por el SO (sharing violation) y directorios con permisos denegados, asegurando que `entry.stat()` sea invocado con manejo explícito de errores para evitar que el escaneo se aborte silenciosamente ante archivos en uso o protegidos, además de validar la existencia de `candidate` dentro de `directory_size` antes de iniciar el ciclo.
 - `2026-08-05T10:43:30` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de sistema de archivos (como rutas inexistentes o permisos denegados) mediante una verificación más estricta de las condiciones previas y un manejo de excepciones localizado, evitando fallos silenciosos al intentar persistir el logo.
 - `2026-08-05T10:43:00` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` ante la posible inyección de valores numéricos `NaN` o `Inf` mediante una validación más estricta en el helper interno, asegurando que el asistente trabaje exclusivamente con datos numéricos válidos.
-- `2026-08-05T10:42:29` **startup.py** (rendimiento): Se optimizó `list_startup_entries` para realizar una única pasada sobre la colección combinada, evitando la redundancia de iteraciones mediante el uso de un generador y la consolidación de la lógica de filtrado por nombre.
-- `2026-08-05T10:33:14` **scanner.py** (rendimiento): Optimizé la lógica de escaneo en `scan_file` y `CHECK_REGISTRY` para reducir la creación de objetos `Path` y llamadas redundantes a métodos de string, aprovechando que el nombre y sufijo ya están disponibles en el objeto `entry` cuando se procesa durante el escaneo recursivo.
