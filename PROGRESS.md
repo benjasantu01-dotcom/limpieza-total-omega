@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **262** (52.0% de aceptación)
+- Mejoras aceptadas: **264** (52.4% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 29
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 185
+- Sin respuesta de la IA (error o límite): 183
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-04 | 117 | 6 | 13 | 6 | 94 |
-| 2026-08-05 | 145 | 9 | 16 | 7 | 91 |
+| 2026-08-04 | 117 | 6 | 13 | 6 | 90 |
+| 2026-08-05 | 147 | 9 | 16 | 7 | 93 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **60**
 - manejo de errores y validación de entradas: **55**
 - rendimiento: **54**
-- seguridad defensiva: **50**
+- seguridad defensiva: **52**
 - robustez ante casos límite: **43**
 
 ## Mejoras aceptadas por archivo
@@ -34,9 +34,9 @@ Este archivo se regenera solo en cada corrida a partir de
 - `branding.py`: **22**
 - `quarantine.py`: **22**
 - `browser.py`: **21**
+- `scanner.py`: **21**
+- `settings.py`: **21**
 - `diskreport.py`: **20**
-- `scanner.py`: **20**
-- `settings.py`: **20**
 - `organizer.py`: **19**
 - `healthscore.py`: **18**
 - `main.py`: **17**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-05T11:54:23` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save` eliminando el uso de `os.replace` y `tempfile` por técnicas más controladas, validando explícitamente que la carpeta de configuración no haya sido reemplazada por un enlace simbólico que apunte a una ruta protegida.
+- `2026-08-05T11:53:52` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `scanner.py` implementando un chequeo de normalización de rutas mediante `resolve()` para prevenir ataques de *path traversal* o ambigüedades mediante nombres de dispositivos (ej. `\\.\`), asegurando que las rutas procesadas siempre estén bajo el `base_root` esperado.
 - `2026-08-05T11:44:12` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `quarantine_file` añadiendo una comprobación explícita para evitar movimientos entre volúmenes (cross-device moves), lo cual previene errores de I/O impredecibles y garantiza que `shutil.move` se comporte como un movimiento atómico en el mismo sistema de archivos.
 - `2026-08-05T11:43:43` **organizer.py** (seguridad defensiva): Mejoré la seguridad defensiva en `stage_for_review` añadiendo una validación explícita para evitar que `shutil.move` intente realizar operaciones entre archivos con el mismo descriptor de dispositivo si el origen o destino cambian durante la ejecución, y asegurando que las rutas de origen sean validadas de nuevo justo antes de la operación de movimiento para cerrar una pequeña ventana de race condition.
 - `2026-08-05T11:35:04` **memory.py** (seguridad defensiva): Se introdujo una validación defensiva en `trim_working_set` para asegurar que el proceso objetivo existe realmente y es alcanzable antes de intentar interactuar con su memoria, protegiendo contra posibles errores de acceso en PIDs que finalizaron o fueron reciclados durante la ejecución.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-05T11:14:03` **startup.py** (robustez ante casos límite): Se mejora la robustez de `_resolve_and_cache_path` añadiendo un manejo explícito de rutas que contienen caracteres no válidos o espacios mal formados, previniendo excepciones no controladas durante la inspección de ejecutables.
 - `2026-08-05T11:13:52` **settings.py** (robustez ante casos límite): Mejoré la robustez de `save()` ante fallos de escritura en disco añadiendo un manejo de excepciones explícito para `os.replace`, evitando que una falla parcial en el sistema de archivos deje el proceso en estado inconsistente o con descriptores de archivo abiertos.
 - `2026-08-05T10:43:38` **browser.py** (robustez ante casos límite): Mejoré la robustez de `directory_size` ante el caso límite de archivos bloqueados por el SO (sharing violation) y directorios con permisos denegados, asegurando que `entry.stat()` sea invocado con manejo explícito de errores para evitar que el escaneo se aborte silenciosamente ante archivos en uso o protegidos, además de validar la existencia de `candidate` dentro de `directory_size` antes de iniciar el ciclo.
-- `2026-08-05T10:43:30` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de sistema de archivos (como rutas inexistentes o permisos denegados) mediante una verificación más estricta de las condiciones previas y un manejo de excepciones localizado, evitando fallos silenciosos al intentar persistir el logo.
-- `2026-08-05T10:43:00` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` ante la posible inyección de valores numéricos `NaN` o `Inf` mediante una validación más estricta en el helper interno, asegurando que el asistente trabaje exclusivamente con datos numéricos válidos.

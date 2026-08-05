@@ -212,7 +212,7 @@ def load(path_or_base: PathLike | None = None) -> AppSettings:
         return _cached_settings
 
 def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
-    """Persiste el diccionario de configuración en disco usando un archivo temporal."""
+    """Persiste la configuración validando que la ruta no haya sido comprometida."""
     global _cached_settings, _last_path, _last_mtime
     if not isinstance(values, dict): return None
     
@@ -224,6 +224,8 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     
     try:
         if not is_safe_to_modify(str(ruta)): raise PermissionError("Unsafe path")
+        if ruta.is_symlink(): raise PermissionError("Symlink detected in config path")
+        
         json_data = json.dumps(limpio, indent=2, ensure_ascii=False)
         ruta.parent.mkdir(parents=True, exist_ok=True)
     except (OSError, PermissionError): return None
@@ -235,7 +237,11 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
             tf.write(json_data)
             tf.flush()
             os.fsync(tf.fileno())
+        
+        # Verificar nuevamente la seguridad antes de aplicar cambios
+        if not is_safe_to_modify(str(ruta)): raise PermissionError("Path safety check failed pre-replace")
         os.replace(temp_path, ruta)
+        
         _cached_settings, _last_path, _last_mtime = limpio, ruta, ruta.stat().st_mtime
         return ruta
     except (OSError, PermissionError, RuntimeError):
