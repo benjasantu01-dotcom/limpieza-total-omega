@@ -254,20 +254,20 @@ def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[Start
 
 def list_startup_entries() -> List[StartupEntry]:
     """Combina fuentes de inicio (registro + carpetas) deduplicando por nombre."""
-    seen_names: set[str] = set()
-    unique_entries: List[StartupEntry] = []
+    seen: set[str] = set()
+    unique: List[StartupEntry] = []
     
-    for entry in entries_from_folders():
-        if entry.name.lower() not in seen_names:
-            seen_names.add(entry.name.lower())
-            unique_entries.append(entry)
+    def process_entries(entries: Iterable[StartupEntry]) -> Iterator[StartupEntry]:
+        for entry in entries:
+            name_lower = entry.name.lower()
+            if name_lower not in seen:
+                seen.add(name_lower)
+                yield entry
+
+    unique.extend(process_entries(entries_from_folders()))
+    unique.extend(process_entries(entries_from_registry()))
             
-    for entry in entries_from_registry():
-        if entry.name.lower() not in seen_names:
-            seen_names.add(entry.name.lower())
-            unique_entries.append(entry)
-            
-    return unique_entries
+    return unique
 
 
 def estimate_impact(entries: Sequence[StartupEntry]) -> str:

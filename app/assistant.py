@@ -197,6 +197,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     ctx = SystemContext()
 
     def is_valid_num(v: Any) -> bool:
+        # Verifica que sea número, no bool, y que sea finito (sin NaN ni Inf)
         return isinstance(v, (int, float)) and not isinstance(v, bool) and math.isfinite(v)
 
     def extract(source: Any, attr: str, default: Any, cast: Callable = float) -> Any:
@@ -212,13 +213,13 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
 
     if metrics is not None:
         ctx.junk_mb = max(0.0, extract(metrics, "junk_mb", 0.0))
-        ctx.suspicious_count = max(0, extract(metrics, "suspicious_count", 0, int))
-        ctx.suspicious_warnings = max(0, extract(metrics, "suspicious_warnings", 0, int))
+        ctx.suspicious_count = int(max(0, extract(metrics, "suspicious_count", 0, int)))
+        ctx.suspicious_warnings = int(max(0, extract(metrics, "suspicious_warnings", 0, int)))
         ctx.memory_available_percent = max(0.0, min(extract(metrics, "memory_available_percent", 0.0), 100.0))
         ctx.disk_free_percent = max(0.0, min(extract(metrics, "disk_free_percent", 0.0), 100.0))
         ctx.duplicate_mb = max(0.0, extract(metrics, "duplicate_mb", 0.0))
-        ctx.startup_count = max(0, extract(metrics, "startup_count", 0, int))
-        ctx.quarantined_count = max(0, extract(metrics, "quarantined_count", 0, int))
+        ctx.startup_count = int(max(0, extract(metrics, "startup_count", 0, int)))
+        ctx.quarantined_count = int(max(0, extract(metrics, "quarantined_count", 0, int)))
         ctx.browser_cache_mb = max(0.0, extract(metrics, "browser_cache_mb", 0.0))
         ctx.memory_total_gb = max(0.0, extract(metrics, "memory_total_gb", 0.0))
         ctx.analyzed = True
@@ -226,7 +227,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     if health is not None:
         score_val = extract(health, "score", None, int)
         if score_val is not None:
-            ctx.score = max(0, min(score_val, 100))
+            ctx.score = int(max(0, min(score_val, 100)))
         grade = getattr(health, "grade", "") if hasattr(health, "grade") else ""
         ctx.grade = str(grade) if isinstance(grade, (str, int, float)) else ""
         ctx.analyzed = True

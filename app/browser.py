@@ -139,15 +139,12 @@ def directory_size(path: str | os.PathLike | None) -> int:
     if path is None:
         return 0
     
-    try:
-        root = Path(path).resolve()
-        if not root.is_dir() or is_protected_path(root):
-            return 0
-    except (OSError, TypeError, ValueError, PermissionError):
+    root = Path(path)
+    if not root.exists() or not root.is_dir() or is_protected_path(root):
         return 0
     
     total_bytes: int = 0
-    stack: List[str] = [str(root)]
+    stack: List[str] = [str(root.resolve())]
     is_junction_func = getattr(os.path, 'isjunction', lambda _: False)
     
     while stack:
@@ -165,7 +162,10 @@ def directory_size(path: str | os.PathLike | None) -> int:
                         else:
                             name_lower = entry.name.lower()
                             if name_lower not in NEVER_TOUCH and not any(ord(c) < 32 for c in entry.name):
-                                total_bytes += entry.stat(follow_symlinks=False).st_size
+                                try:
+                                    total_bytes += entry.stat(follow_symlinks=False).st_size
+                                except (OSError, PermissionError):
+                                    continue
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):

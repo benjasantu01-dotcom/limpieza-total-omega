@@ -292,15 +292,15 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     if not destination:
         return None
     try:
-        # Usamos Path(destination) directamente sin expanduser/resolve para 
-        # mantener control total sobre la validación antes de realizar cambios.
         target = Path(destination)
-        
+        # Validación de seguridad: no permitir rutas protegidas o inseguras
         if is_protected_path(target) or not is_safe_to_modify(target):
             return None
         
+        # Validación explícita de escritura requerida por seguridad
         ensure_safe_to_modify(target)
-        ensure_safe_to_modify(target.parent)
+        if target.parent.exists():
+            ensure_safe_to_modify(target.parent)
         
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(logo_svg(), encoding="utf-8")
