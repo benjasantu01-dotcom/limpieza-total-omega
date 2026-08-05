@@ -138,7 +138,10 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
 
 def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """
-    Recorrido recursivo por directorios, indexando archivos por tamaño e identificando por inodo.
+    Realiza un recorrido recursivo del sistema de archivos para indexar candidatos por tamaño.
+    
+    Utiliza el par (dispositivo, inodo) para garantizar que archivos vinculados físicamente 
+    no sean contados como duplicados redundantes.
     """
     groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: set[Tuple[int, int]] = set()
@@ -179,11 +182,8 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
 
 def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
     """
-    Filtra una lista de archivos, manteniendo solo aquellos grupos que comparten el mismo hash.
-    
-    Args:
-        paths: Lista de archivos a evaluar.
-        hash_func: Función para calcular el hash (parcial o completo).
+    Filtra una lista de archivos, agrupándolos según el resultado de una función de hash proporcionada.
+    Solo retorna grupos que contengan más de un elemento.
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     if paths is None: return {}

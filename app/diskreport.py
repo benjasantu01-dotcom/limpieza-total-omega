@@ -178,7 +178,11 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Recorre recursivamente un directorio, omitiendo enlaces simbólicos y rutas protegidas.
+    Recorre recursivamente un directorio omitiendo enlaces simbólicos, puntos de unión (junctions) 
+    y rutas protegidas por sistema.
+    
+    Utiliza un conjunto `visited_directories` para prevenir recursiones infinitas causadas 
+    por enlaces circulares en el sistema de archivos.
     """
     if not isinstance(directory, (str, os.PathLike)):
         return
@@ -199,6 +203,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
             with os.scandir(current_path) as iterator:
                 for entry in iterator:
                     try:
+                        # Saltar symlinks y puntos de reanálisis (Junctions/Reparse Points en Windows)
                         if entry.is_symlink() or (os.name == 'nt' and entry.stat(follow_symlinks=False).st_reparse_tag != 0):
                             continue
                         
@@ -254,6 +259,9 @@ def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip
 def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
     """
     Calcula qué subdirectorios de primer nivel ocupan más espacio total.
+    
+    Para cada archivo encontrado en `walk_files`, identifica su contenedor directo bajo la raíz
+    analizada, permitiendo consolidar el peso total de cada rama del árbol de archivos.
     """
     if not directory or not isinstance(directory, (str, os.PathLike)):
         return []
@@ -268,6 +276,7 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
                 rel = path.relative_to(base)
                 if not rel.parts:
                     continue
+                # Agrupar por el directorio padre inmediato bajo la base
                 top_level = base / rel.parts[0]
                 
                 if top_level not in folder_map:

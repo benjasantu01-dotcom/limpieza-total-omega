@@ -149,7 +149,7 @@ def _to_int(value: Any, default: int = 0) -> int:
 
 
 def score_junk(junk_mb: float) -> float:
-    """Calcula el ratio de limpieza [0.0, 1.0]. A medida que junk_mb se acerca a JUNK_LIMIT_MB, el ratio tiende a 0.0."""
+    """Calcula el ratio de salud de limpieza [0.0, 1.0]. A medida que junk_mb alcanza JUNK_LIMIT_MB, el ratio disminuye a 0.0."""
     val: float = _to_float(junk_mb)
     if JUNK_LIMIT_MB <= 0: return 0.0
     return _clamp(1.0 - (val / JUNK_LIMIT_MB))
@@ -167,7 +167,7 @@ def score_security(suspicious_count: int, warnings: int = 0) -> float:
 
 
 def score_memory(available_percent: float) -> float:
-    """Calcula el ratio de salud de memoria comparando disponibilidad actual contra RAM_IDEAL_PERCENT."""
+    """Calcula el ratio de salud de memoria [0.0, 1.0] comparando disponibilidad contra RAM_IDEAL_PERCENT."""
     val: float = _to_float(available_percent)
     if RAM_IDEAL_PERCENT <= 0: return 0.0
     return _clamp(val / RAM_IDEAL_PERCENT)
@@ -188,7 +188,7 @@ def score_duplicates(duplicate_mb: float) -> float:
 
 
 def score_startup(startup_count: int) -> float:
-    """Calcula el ratio de optimización de arranque [0.0, 1.0] basado en la cantidad de elementos detectados."""
+    """Calcula el ratio de optimización de arranque [0.0, 1.0] inversamente proporcional a la cantidad de elementos."""
     count: float = float(_to_int(startup_count))
     if STARTUP_LIMIT_COUNT <= 0: return 0.0
     return _clamp(1.0 - (count / STARTUP_LIMIT_COUNT))

@@ -1384,3 +1384,12 @@ FAILED evolve/tests/test_modules.py::test_summarize_mentions_the_folder_and_tota
 - `2026-08-05T00:10:02` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Se introdujeron docstrings y type hints detallados en las funciones de validación y recorrido de directorios, clarificando la lógica de seguridad y el manejo de excepciones para mejorar la mantenibilidad del módulo.
 - `2026-08-05T00:10:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-05T00:10:02` Corrida terminada. Total usado hoy: 4.
+- `2026-08-05T00:18:38` Arrancando corrida. Quedan hoy ~296 peticiones objetivo.
+- `2026-08-05T00:19:07` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica de `walk_files` y `largest_folders` clarificando los mecanismos de seguridad y exclusión que protegen al usuario frente a recursiones infinitas y accesos no deseados.
+- `2026-08-05T00:19:31` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante la estandarización de docstrings (especialmente en funciones internas) y se ha añadido un type hint faltante en `_collect_candidates` para mayor claridad y cumplimiento con las normas de estilo senior.
+- `2026-08-05T00:19:57` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Documenté con type hints más precisos y docstrings enriquecidos las funciones de puntuación para clarificar que operan en un espacio normalizado [0.0, 1.0], eliminando ambigüedades sobre el rango esperado de los inputs.
+- `2026-08-05T00:20:09` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-05T00:21:12` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-08-05T00:22:06` ✅ Mejora aceptada en main.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenibilidad de la lógica de construcción de pestañas en `main.py` mediante la implementación de un método de fábrica centralizado `_tab_factory` que encapsula la instanciación de los marcos de contenido, reduciendo la repetición y mejorando la robustez ante errores en la inicialización de cada pestaña.
+- `2026-08-05T00:22:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-05T00:22:06` Corrida terminada. Total usado hoy: 8.

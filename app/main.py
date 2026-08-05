@@ -263,6 +263,26 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._build_tabs_container()
         self._build_footer()
 
+    def _tab_factory(self, name: str) -> None:
+        """Mapea los nombres de pestaña a sus constructores de interfaz."""
+        constructors = {
+            "Salud": self._build_tab_salud,
+            "Limpieza": self._build_tab_limpieza,
+            "Seguridad": self._build_tab_seguridad,
+            "Cuarentena": self._build_tab_cuarentena,
+            "Memoria": self._build_tab_memoria,
+            "Disco": self._build_tab_disco,
+            "Duplicados": self._build_tab_duplicados,
+            "Navegadores": self._build_tab_navegadores,
+            "Inicio": self._build_tab_inicio,
+            "Informe": self._build_tab_informe,
+            "Asistente": self._build_tab_asistente,
+            "Ajustes": self._build_tab_ajustes,
+        }
+        constructor = constructors.get(name)
+        if constructor:
+            constructor()
+
     def _build_tabs_container(self) -> None:
         """Crea el Tabview y vincula los métodos de construcción de cada sección."""
         self.tabview = ctk.CTkTabview(
@@ -280,28 +300,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         )
         self.tabview.pack(fill="both", expand=True, padx=18, pady=(4, 8))
 
-        tab_constructors: Dict[str, Callable[[], None]] = {
-            "Salud": self._build_tab_salud,
-            "Limpieza": self._build_tab_limpieza,
-            "Seguridad": self._build_tab_seguridad,
-            "Cuarentena": self._build_tab_cuarentena,
-            "Memoria": self._build_tab_memoria,
-            "Disco": self._build_tab_disco,
-            "Duplicados": self._build_tab_duplicados,
-            "Navegadores": self._build_tab_navegadores,
-            "Inicio": self._build_tab_inicio,
-            "Informe": self._build_tab_informe,
-            "Asistente": self._build_tab_asistente,
-            "Ajustes": self._build_tab_ajustes,
-        }
-
         for name in TABS:
             try:
                 frame = self.tabview.add(branding.tab_label(name))
                 self.tabs[name] = frame
-                constructor = tab_constructors.get(name)
-                if constructor:
-                    constructor()
+                self._tab_factory(name)
             except Exception as e:
                 logging.error("No se pudo construir la pestaña %s: %s", name, e)
 

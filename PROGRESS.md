@@ -6,40 +6,40 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **247** (49.0% de aceptación)
+- Mejoras aceptadas: **249** (49.4% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 28
+- Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 205
+- Sin respuesta de la IA (error o límite): 204
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-03 | 77 | 1 | 8 | 4 | 60 |
+| 2026-08-03 | 75 | 1 | 7 | 4 | 59 |
 | 2026-08-04 | 166 | 11 | 20 | 8 | 145 |
-| 2026-08-05 | 4 | 0 | 0 | 0 | 0 |
+| 2026-08-05 | 8 | 0 | 0 | 0 | 0 |
 
 ## Mejoras aceptadas por enfoque
 
+- legibilidad y documentación: **55**
 - manejo de errores y validación de entradas: **53**
-- legibilidad y documentación: **51**
 - seguridad defensiva: **50**
 - robustez ante casos límite: **49**
-- rendimiento: **44**
+- rendimiento: **42**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **22**
 - `settings.py`: **21**
 - `assistant.py`: **21**
-- `scanner.py`: **20**
+- `quarantine.py`: **21**
+- `duplicates.py`: **20**
+- `healthscore.py`: **20**
 - `organizer.py`: **20**
-- `duplicates.py`: **19**
-- `healthscore.py`: **19**
+- `scanner.py`: **19**
 - `browser.py`: **18**
-- `diskreport.py`: **16**
-- `main.py`: **15**
+- `diskreport.py`: **17**
+- `main.py`: **16**
 - `memory.py`: **15**
 - `branding.py`: **15**
 - `safety.py`: **14**
@@ -47,6 +47,10 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-05T00:22:06` **main.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de la lógica de construcción de pestañas en `main.py` mediante la implementación de un método de fábrica centralizado `_tab_factory` que encapsula la instanciación de los marcos de contenido, reduciendo la repetición y mejorando la robustez ante errores en la inicialización de cada pestaña.
+- `2026-08-05T00:19:57` **healthscore.py** (legibilidad y documentación): Documenté con type hints más precisos y docstrings enriquecidos las funciones de puntuación para clarificar que operan en un espacio normalizado [0.0, 1.0], eliminando ambigüedades sobre el rango esperado de los inputs.
+- `2026-08-05T00:19:31` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de docstrings (especialmente en funciones internas) y se ha añadido un type hint faltante en `_collect_candidates` para mayor claridad y cumplimiento con las normas de estilo senior.
+- `2026-08-05T00:19:07` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica de `walk_files` y `largest_folders` clarificando los mecanismos de seguridad y exclusión que protegen al usuario frente a recursiones infinitas y accesos no deseados.
 - `2026-08-05T00:10:02` **browser.py** (legibilidad y documentación): Se introdujeron docstrings y type hints detallados en las funciones de validación y recorrido de directorios, clarificando la lógica de seguridad y el manejo de excepciones para mejorar la mantenibilidad del módulo.
 - `2026-08-05T00:09:53` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de docstrings siguiendo convenciones de Google y se han sustituido los tipos complejos por `TypeAlias` más explícitos para mejorar la legibilidad y el mantenimiento.
 - `2026-08-05T00:09:24` **assistant.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en funciones críticas y la estandarización de la terminología de tipos, facilitando la comprensión del flujo de datos sin alterar el comportamiento.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-04T14:36:01` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `summarize` y `_generate_recommendations` validando exhaustivamente los tipos y el contenido de los datos antes de operar sobre ellos para evitar excepciones de tiempo de ejecución ante estados de objeto inconsistentes.
 - `2026-08-04T14:35:35` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `hash_file` y `partial_hash` implementando un chequeo preventivo de `None` y excepciones específicas para evitar que operaciones de E/S fallidas sobre archivos bloqueados o inaccesibles provoquen retornos silenciosos erróneos, centralizando la lógica de validación de rutas mediante `is_protected_path`.
 - `2026-08-04T14:26:55` **diskreport.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `walk_files` y `largest_folders` añadiendo validaciones de tipo y capturas de excepciones más específicas en el manejo de rutas para evitar caídas silenciosas ante entradas malformadas o permisos denegados.
-- `2026-08-04T14:26:38` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `directory_size` y `_is_safe_path` ante errores de sistema, añadiendo chequeos de tipo más estrictos y capturando excepciones específicas (`PermissionError`, `OSError`) que ocurren habitualmente al iterar sobre carpetas del sistema, evitando que la app falle ante archivos bloqueados o inaccesibles.
-- `2026-08-04T14:25:53` **branding.py** (manejo de errores y validación de entradas): Refactoricé `save_logo_svg` y `draw_logo` para centralizar la validación de parámetros, eliminando el riesgo de errores inesperados al recibir tipos de datos inesperados en el flujo de renderizado y persistencia.
-- `2026-08-04T14:25:22` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `build_context` y el manejo de `settings` agregando validaciones de tipo explícitas y capturas de errores en los puntos de entrada, evitando que valores inesperados o configuraciones corruptas causen el fallo de toda la lógica del asistente.
-- `2026-08-04T13:02:48` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save` incorporando `ensure_safe_to_modify` para validar la integridad de la ruta antes de realizar cualquier operación de escritura, asegurando que la estructura de directorios no haya sido comprometida o sea una ruta crítica bloqueada.
