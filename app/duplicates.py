@@ -163,7 +163,7 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
                                 _scan(Path(entry.path))
                         elif entry.is_file(follow_symlinks=False):
                             if stat.S_ISREG(lstat.st_mode) and lstat.st_size >= min_size:
-                                file_path = Path(entry.path)
+                                file_path = Path(entry.path).resolve()
                                 if not (skip_protected and is_protected_path(file_path)):
                                     temp_groups[lstat.st_size].append(file_path)
                     except (OSError, PermissionError): continue
@@ -187,6 +187,7 @@ def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
+        if is_protected_path(path): continue
         if digest := hash_func(path):
             groups_by_digest[digest].append(path)
     return {d: p for d, p in groups_by_digest.items() if len(p) > 1}
@@ -205,7 +206,9 @@ def find_duplicates(
     
     groups: List[DuplicateGroup] = []
     for size, same_size_paths in size_map.items():
-        for partial_candidates in _refine_by_hash(same_size_paths, partial_hash).values():
+        # Validar nuevamente antes de refinar para asegurar que la resolución sea actual
+        valid_paths = [p for p in same_size_paths if not is_protected_path(p)]
+        for partial_candidates in _refine_by_hash(valid_paths, partial_hash).values():
             for digest, confirmed_paths in _refine_by_hash(partial_candidates, hash_file).items():
                 groups.append(DuplicateGroup(digest, size, sorted(confirmed_paths)))
 

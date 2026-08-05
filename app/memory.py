@@ -343,12 +343,18 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     kernel32 = ctypes.windll.kernel32
     psapi = ctypes.windll.psapi
     
+    # Validar que el proceso existe antes de operar
     handle = kernel32.OpenProcess(REQUIRED_ACCESS, False, target_pid)
     if not handle:
         error_code = kernel32.GetLastError()
         return False, f"Acceso denegado (Error {error_code}). Requiere permisos de administrador."
     
     try:
+        # Verificación adicional de existencia del proceso vía exit code
+        exit_code = ctypes.c_ulong()
+        if not kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)) or exit_code.value != 259:
+            return False, "El proceso seleccionado ya no está activo."
+
         if not psapi.EmptyWorkingSet(handle):
             return False, "Error al intentar liberar memoria del proceso."
         return True, f"Working set liberado. {TRIM_WARNING}"
