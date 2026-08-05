@@ -312,8 +312,14 @@ def _is_system_process(pid: int) -> bool:
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
-    Solicita al OS liberar el working set de un proceso (Windows).
-    Requiere privilegios administrativos y proceso no protegido.
+    Solicita al OS la reducción del working set de un proceso (Windows API).
+    
+    Esta operación invoca `psapi.EmptyWorkingSet` para forzar la expulsión de 
+    páginas de memoria del proceso objetivo. Es una operación de alto riesgo 
+    que puede causar inestabilidad si se aplica a procesos críticos.
+    
+    Returns:
+        Tuple[bool, str]: (Success, Feedback message).
     """
     if os.name != "nt":
         return False, "Solo disponible en Windows."
@@ -330,6 +336,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     kernel32 = ctypes.windll.kernel32
     psapi = ctypes.windll.psapi
 
+    # Obtener handle con privilegios limitados para consulta y modificación de cuota
     handle = kernel32.OpenProcess(REQUIRED_ACCESS, False, target_pid)
     if not handle:
         error_code = kernel32.GetLastError()
@@ -338,6 +345,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, f"No se pudo acceder al proceso {target_pid} (Error {error_code})."
     
     try:
+        # Intenta liberar memoria; si falla, el sistema bloquea la acción por ser proceso protegido
         if not psapi.EmptyWorkingSet(handle):
             return False, "Error interno al intentar liberar memoria del proceso."
         return True, f"Working set liberado. {TRIM_WARNING}"

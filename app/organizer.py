@@ -17,7 +17,7 @@ import logging
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional, Final, Callable, Union, TypeAlias, NamedTuple
+from typing import List, Optional, Final, Callable, Union, TypeAlias, NamedTuple, Dict
 
 from safety import is_safe_to_modify, ensure_safe_to_modify
 
@@ -126,11 +126,14 @@ def _is_allowed_directory(name: str) -> bool:
     return name.lower() not in SYSTEM_FOLDER_BLOCKLIST
 
 
+def _is_junk_file(file_path: Path) -> bool:
+    """Valida si el archivo tiene una extensión considerada basura."""
+    return file_path.suffix.lower() in _LOWER_JUNK_EXTS
+
+
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     """
     Escaneo recursivo de directorios buscando candidatos a limpieza.
-    
-    Nota: Utiliza `is_safe_to_modify` para cada archivo antes de incluirlo.
     
     Args:
         directories: Lista de rutas a escanear. Si es None, usa DEFAULT_SCAN_DIRS.
@@ -153,7 +156,7 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
                         if entry.is_dir(follow_symlinks=False):
                             if _is_allowed_directory(entry.name):
                                 _walk_dir(entry.path)
-                        elif Path(entry.name).suffix.lower() in _LOWER_JUNK_EXTS:
+                        elif _is_junk_file(Path(entry.name)):
                             entry_path = Path(entry.path)
                             if is_safe_to_modify(entry_path):
                                 stat = entry.stat()
@@ -190,7 +193,7 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
     if not files:
         return []
         
-    configs: dict[str, SortConfig] = {
+    configs: Dict[str, SortConfig] = {
         "size": SortConfig("size", lambda f: f.size_bytes),
         "date": SortConfig("date", lambda f: f.modified)
     }
@@ -220,22 +223,17 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         if not isinstance(jf, JunkFile) or not getattr(jf, 'path', None):
             continue
         try:
-            # Validar resolución de ruta antes de operar
             current_abs = jf.path.resolve()
             
-            # Verificar existencia y seguridad
             if not current_abs.exists() or not current_abs.is_file() or not is_safe_to_modify(current_abs):
                 continue
             
-            # Evita anidamiento: no mover si el destino es padre o hijo del origen
             if current_abs.parent == dest or dest in current_abs.parents or current_abs in dest.parents:
                 continue
             
-            # Evitar colisión de ruta absoluta
             if os.path.samefile(current_abs, dest):
                 continue
             
-            # Verificación de exclusividad: intentar abrir en modo lectura
             try:
                 with open(current_abs, 'rb'): pass
             except (OSError, PermissionError):

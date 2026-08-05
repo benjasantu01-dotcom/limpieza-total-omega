@@ -72,6 +72,12 @@ class QuarantineItem:
     quarantined_at: str
     sha256: str = ""
 
+    def __post_init__(self):
+        """Valida tipos básicos y asegura consistencia post-instanciación."""
+        self.size_bytes = int(self.size_bytes)
+        if not isinstance(self.item_id, str) or not self.item_id:
+            raise ValueError("ID de ítem inválido")
+
     @property
     def size_mb(self) -> float:
         """Calcula el tamaño del archivo en MB con precisión de dos decimales."""
@@ -103,12 +109,6 @@ class QuarantineItem:
     def verify_integrity(self, stored_path: Path) -> bool:
         """
         Valida que el archivo en cuarentena coincida con los metadatos registrados.
-        
-        Args:
-            stored_path: Ruta del archivo dentro de la carpeta de cuarentena.
-            
-        Returns:
-            bool: True si el tamaño y hash coinciden con los guardados en el manifiesto.
         """
         if not stored_path or not stored_path.is_file():
             return False
