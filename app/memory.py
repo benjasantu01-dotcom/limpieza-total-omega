@@ -152,7 +152,11 @@ def parse_linux_meminfo(text: str) -> MemorySnapshot:
 
 
 def _is_valid_process_row(parts: List[str]) -> bool:
-    """Valida que una fila CSV contenga al menos Name, PID (numérico) y WorkingSet (numérico)."""
+    """
+    Valida la integridad de una línea procesada desde Get-Process.
+    Requiere al menos 3 columnas: [Name, PID, WorkingSet].
+    PID y WorkingSet deben ser enteros no negativos.
+    """
     return (len(parts) >= 3 and 
             parts[1].strip().isdigit() and 
             parts[2].strip().isdigit() and 
@@ -186,7 +190,10 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
 
 
 def _create_memstat_struct(ctypes_lib: "ctypes") -> "ctypes.Structure":
-    """Instancia la estructura MEMORYSTATUSEX para llamadas a la API de Windows."""
+    """
+    Define y retorna una estructura C compatible con la API Win32 MEMORYSTATUSEX.
+    Requiere una instancia de ctypes inyectada para realizar el mapeo de tipos.
+    """
     class MEMORYSTATUSEX(ctypes_lib.Structure):
         _fields_ = [
             ("dwLength", ctypes_lib.c_ulong),

@@ -149,37 +149,37 @@ def _to_int(value: Any, default: int = 0) -> int:
 
 
 def score_junk(junk_mb: float) -> float:
-    """Calcula el ratio [0.0, 1.0] basado en JUNK_LIMIT_MB; 0% si supera el límite de basura acumulada."""
+    """Calcula el ratio [0.0, 1.0] de limpieza de basura; el ratio decae linealmente conforme el volumen de basura se acerca a JUNK_LIMIT_MB."""
     if JUNK_LIMIT_MB <= 0: return 0.0
     return _clamp(1.0 - (junk_mb / JUNK_LIMIT_MB))
 
 
 def score_security(suspicious_count: int, warnings: int = 0) -> float:
-    """Calcula el ratio [0.0, 1.0] penalizando hallazgos (5% c/u) y advertencias (25% c/u) sobre seguridad."""
+    """Calcula el ratio [0.0, 1.0] de seguridad; aplica una penalización acumulativa fija: 5% por hallazgo y 25% por advertencia crítica."""
     penalty: float = (float(suspicious_count) * 0.05) + (float(warnings) * 0.25)
     return _clamp(1.0 - penalty, 0.0, 1.0)
 
 
 def score_memory(available_percent: float) -> float:
-    """Calcula el ratio [0.0, 1.0] de salud de memoria respecto al objetivo RAM_IDEAL_PERCENT."""
+    """Calcula el ratio [0.0, 1.0] de salud de memoria; compara la disponibilidad actual contra el umbral RAM_IDEAL_PERCENT."""
     if RAM_IDEAL_PERCENT <= 0: return 0.0
     return _clamp(available_percent / RAM_IDEAL_PERCENT)
 
 
 def score_disk(free_percent: float) -> float:
-    """Calcula el ratio [0.0, 1.0] de salud de disco respecto al objetivo DISK_IDEAL_PERCENT."""
+    """Calcula el ratio [0.0, 1.0] de salud de disco; mide el porcentaje de espacio libre respecto al objetivo DISK_IDEAL_PERCENT."""
     if DISK_IDEAL_PERCENT <= 0: return 0.0
     return _clamp(free_percent / DISK_IDEAL_PERCENT)
 
 
 def score_duplicates(duplicate_mb: float) -> float:
-    """Calcula el ratio [0.0, 1.0] de duplicados basado en DUPLICATE_LIMIT_MB; 0% si supera el límite."""
+    """Calcula el ratio [0.0, 1.0] de optimización por duplicados; penaliza el espacio desperdiciado en función de DUPLICATE_LIMIT_MB."""
     if DUPLICATE_LIMIT_MB <= 0: return 0.0
     return _clamp(1.0 - (duplicate_mb / DUPLICATE_LIMIT_MB))
 
 
 def score_startup(startup_count: int) -> float:
-    """Calcula el ratio [0.0, 1.0] de arranque basándose en no exceder STARTUP_LIMIT_COUNT."""
+    """Calcula el ratio [0.0, 1.0] de eficiencia de arranque; penaliza la cantidad de procesos que inician automáticamente al superar STARTUP_LIMIT_COUNT."""
     if STARTUP_LIMIT_COUNT <= 0: return 0.0
     return _clamp(1.0 - (float(startup_count) / STARTUP_LIMIT_COUNT))
 
@@ -232,7 +232,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     if not metrics.is_finite() or not _validate_weights():
         return HealthResult(0, "F", {}, ["Error: Datos de entrada o configuración no procesables."])
 
-    scores = {
+    scores: Dict[str, float] = {
         "seguridad": score_security(metrics.suspicious_count, metrics.suspicious_warnings),
         "disco": score_disk(metrics.disk_free_percent),
         "memoria": score_memory(metrics.memory_available_percent),
