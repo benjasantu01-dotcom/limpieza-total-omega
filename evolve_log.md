@@ -448,3 +448,10 @@ FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - Asse
 - `2026-08-05T13:27:31` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `on_trim_process` integrando una validación previa de existencia del proceso mediante `memory_mod.process_exists` para evitar intentos de manipulación sobre PIDs huérfanos, y añadí bloques de captura específicos para evitar que errores en el acceso a atributos de la UI bloqueen la ejecución del bucle.
 - `2026-08-05T13:27:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-05T13:27:31` Corrida terminada. Total usado hoy: 308.
+- `2026-08-05T13:35:47` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-05T13:36:14` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-05T13:36:40` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-05T13:37:09` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `load_manifest` mediante un bloque `try-except` más específico y la validación de la integridad del JSON cargado para evitar fallos catastróficos ante archivos corruptos, aplicando una técnica de defensa ante entradas externas inesperadas.
+- `2026-08-05T13:37:25` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
+- `2026-08-05T13:37:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-05T13:37:25` Corrida terminada. Total usado hoy: 312.

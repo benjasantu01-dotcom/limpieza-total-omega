@@ -91,7 +91,7 @@ class QuarantineItem:
     def from_dict(cls, data: Dict[str, Any]) -> Optional[QuarantineItem]:
         """Crea una instancia desde un diccionario validando campos requeridos."""
         required = {"item_id", "original_path", "stored_name", "size_bytes", "reason", "quarantined_at"}
-        if not required.issubset(data.keys()):
+        if not isinstance(data, dict) or not required.issubset(data.keys()):
             return None
         try:
             return cls(
@@ -202,15 +202,15 @@ def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload:
     try:
         with open(path, "r", encoding="utf-8") as f:
             raw_data = json.load(f)
-    except (json.JSONDecodeError, OSError, PermissionError):
-        return []
-    
-    if not isinstance(raw_data, list):
-        return []
+            
+        if not isinstance(raw_data, list):
+            return []
 
-    items = [item for entry in raw_data if (item := QuarantineItem.from_dict(entry))]
-    _manifest_cache[base_str] = (current_mtime, items)
-    return items
+        items = [item for entry in raw_data if (item := QuarantineItem.from_dict(entry))]
+        _manifest_cache[base_str] = (current_mtime, items)
+        return items
+    except (json.JSONDecodeError, OSError, PermissionError, ValueError):
+        return []
 
 
 def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:

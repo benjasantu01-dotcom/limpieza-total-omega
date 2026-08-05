@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **249** (49.4% de aceptación)
+- Mejoras aceptadas: **246** (48.8% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 26
+- Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 202
+- Sin respuesta de la IA (error o límite): 204
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-04 | 95 | 6 | 10 | 5 | 80 |
-| 2026-08-05 | 154 | 9 | 16 | 7 | 122 |
+| 2026-08-04 | 91 | 6 | 10 | 5 | 80 |
+| 2026-08-05 | 155 | 9 | 17 | 7 | 124 |
 
 ## Mejoras aceptadas por enfoque
 
-- rendimiento: **54**
+- rendimiento: **52**
 - seguridad defensiva: **52**
-- legibilidad y documentación: **50**
-- manejo de errores y validación de entradas: **50**
+- manejo de errores y validación de entradas: **51**
+- legibilidad y documentación: **48**
 - robustez ante casos límite: **43**
 
 ## Mejoras aceptadas por archivo
 
 - `duplicates.py`: **22**
-- `assistant.py`: **21**
-- `branding.py`: **21**
-- `settings.py`: **20**
+- `quarantine.py`: **21**
 - `browser.py`: **20**
-- `quarantine.py`: **20**
+- `assistant.py`: **20**
+- `branding.py`: **20**
 - `diskreport.py`: **19**
 - `scanner.py`: **19**
+- `settings.py`: **19**
 - `main.py`: **18**
 - `organizer.py`: **17**
 - `healthscore.py`: **17**
 - `safety.py`: **13**
 - `memory.py`: **12**
-- `startup.py`: **10**
+- `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-05T13:37:09` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `load_manifest` mediante un bloque `try-except` más específico y la validación de la integridad del JSON cargado para evitar fallos catastróficos ante archivos corruptos, aplicando una técnica de defensa ante entradas externas inesperadas.
 - `2026-08-05T13:27:31` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `on_trim_process` integrando una validación previa de existencia del proceso mediante `memory_mod.process_exists` para evitar intentos de manipulación sobre PIDs huérfanos, y añadí bloques de captura específicos para evitar que errores en el acceso a atributos de la UI bloqueen la ejecución del bucle.
 - `2026-08-05T13:26:45` **healthscore.py** (manejo de errores y validación de entradas): Reforcé la robustez del sistema de puntaje agregando validación de tipos y rangos en las funciones `score_*`, evitando que valores inesperados (como un porcentaje de disco > 100%) corrompan el cálculo ponderado final.
 - `2026-08-05T13:26:18` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `suggest_keeper` capturando excepciones ante posibles cambios en el sistema de archivos durante la ejecución y validando la integridad del grupo, evitando errores inesperados en la UI.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-05T11:35:04` **memory.py** (seguridad defensiva): Se introdujo una validación defensiva en `trim_working_set` para asegurar que el proceso objetivo existe realmente y es alcanzable antes de intentar interactuar con su memoria, protegiendo contra posibles errores de acceso en PIDs que finalizaron o fueron reciclados durante la ejecución.
 - `2026-08-05T11:34:53` **main.py** (seguridad defensiva): He mejorado `_ask_folder` para verificar que la ruta seleccionada no contenga caracteres de control o secuencias sospechosas (como ataques RTL o inyección de rutas) y para asegurar explícitamente que la ruta resuelta pase por `is_safe_path` antes de permitir su uso en la aplicación, reforzando la seguridad defensiva al seleccionar destinos de disco.
 - `2026-08-05T11:33:51` **healthscore.py** (seguridad defensiva): Se introdujo una validación defensiva en la generación de recomendaciones para evitar que valores inesperados en el conteo de elementos (como negativos o `NaN`) se filtren al usuario, asegurando que `_to_int` sea siempre invocado antes de interpolar datos en los strings de recomendación.
-- `2026-08-05T11:33:25` **duplicates.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_collect_candidates` y `find_duplicates` validando que las rutas resultantes no hayan sido manipuladas fuera de los límites mediante `is_protected_path` después de cada resolución simbólica, evitando riesgos de acceso a archivos sensibles por cambios en el sistema de archivos durante la ejecución.
