@@ -338,21 +338,19 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
     total_bytes = 0
     total_files = 0
     
-    try:
-        for path, size in walk_files(path_obj, skip_protected):
-            total_bytes += size
-            total_files += 1
-            ext_name = path.suffix.lower() or "(sin extensión)"
-            ext_sizes[ext_name] += size
-            ext_counts[ext_name] += 1
-            
-            # Mantiene un heap de 8 elementos basado en el tamaño (bytes)
-            if len(top_heap) < 8:
-                heapq.heappush(top_heap, (size, str(path)))
-            elif size > top_heap[0][0]:
-                heapq.heapreplace(top_heap, (size, str(path)))
-    except (OSError, PermissionError, Exception):
-        return ["Error: Fallo durante la recolección de métricas de archivos."]
+    # Recolector robusto: procesa cada archivo individualmente evitando propagar errores de IO
+    for path, size in walk_files(path_obj, skip_protected):
+        total_bytes += size
+        total_files += 1
+        ext_name = path.suffix.lower() or "(sin extensión)"
+        ext_sizes[ext_name] += size
+        ext_counts[ext_name] += 1
+        
+        # Mantiene un heap de 8 elementos basado en el tamaño (bytes)
+        if len(top_heap) < 8:
+            heapq.heappush(top_heap, (size, str(path)))
+        elif size > top_heap[0][0]:
+            heapq.heapreplace(top_heap, (size, str(path)))
 
     lines: List[str] = [
         f"Carpeta analizada: {path_obj}",

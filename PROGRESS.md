@@ -5,10 +5,10 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **504**
-- Mejoras aceptadas: **249** (49.4% de aceptación)
+- Iteraciones totales: **502**
+- Mejoras aceptadas: **248** (49.4% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 26
+- Rechazadas por guardia de seguridad: 25
 - Sin cambios (nada sustancial que mejorar): 12
 - Sin respuesta de la IA (error o límite): 200
 
@@ -16,36 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-04 | 66 | 5 | 7 | 4 | 74 |
-| 2026-08-05 | 183 | 12 | 19 | 8 | 126 |
+| 2026-08-04 | 63 | 5 | 6 | 4 | 74 |
+| 2026-08-05 | 185 | 12 | 19 | 8 | 126 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **61**
 - manejo de errores y validación de entradas: **54**
 - rendimiento: **53**
-- seguridad defensiva: **46**
-- robustez ante casos límite: **35**
+- seguridad defensiva: **43**
+- robustez ante casos límite: **37**
 
 ## Mejoras aceptadas por archivo
 
 - `branding.py`: **22**
 - `assistant.py`: **21**
 - `duplicates.py`: **21**
-- `quarantine.py`: **20**
+- `browser.py`: **21**
 - `settings.py`: **20**
-- `browser.py`: **20**
-- `diskreport.py`: **19**
+- `diskreport.py`: **20**
+- `quarantine.py`: **19**
 - `scanner.py`: **19**
 - `healthscore.py`: **18**
 - `main.py`: **18**
-- `organizer.py`: **17**
-- `safety.py`: **15**
+- `organizer.py`: **16**
+- `safety.py`: **14**
 - `memory.py`: **11**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-05T15:19:10` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `summarize` y las funciones de escaneo ante rutas inexistentes o inaccesibles, asegurando que la recolección de métricas no falle catastróficamente si una subcarpeta cambia su estado de permisos durante la ejecución del bucle.
+- `2026-08-05T15:18:44` **browser.py** (robustez ante casos límite): Se reforzó la robustez de `directory_size` ante el caso límite de archivos cuyo tamaño cambia durante el escaneo (Race Condition) y se añadió una validación estricta para evitar procesar rutas que superen `MAX_PATH` de forma silenciosa, mejorando la fiabilidad del cálculo.
 - `2026-08-05T15:09:51` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` al reemplazar los chequeos condicionales redundantes por un manejo centralizado en `ensure_safe_to_modify`, garantizando que cualquier error de validación de ruta (incluyendo rutas inexistentes o permisos denegados) sea capturado de forma consistente sin abortar la ejecución.
 - `2026-08-05T15:09:37` **assistant.py** (robustez ante casos límite): Reforcé la robustez del motor local ante valores inesperados en el contexto y posibles fallos de procesamiento, garantizando que una métrica corrupta o un resultado de cálculo no bloqueen la respuesta del asistente.
 - `2026-08-05T14:59:22` **scanner.py** (rendimiento): Optimicé el bucle de escaneo eliminando la resolución innecesaria de rutas `Path().resolve()` dentro de `process_entry` (operación costosa en I/O) y reemplazando `path_obj.parents` por una comparación de cadenas con `str.startswith()` para verificar la contención en el directorio base, reduciendo drásticamente las llamadas al sistema.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-05T14:38:22` **browser.py** (rendimiento): Optimicé `directory_size` reemplazando la creación innecesaria de objetos `Path` dentro del bucle principal por el uso de `os.DirEntry.path` (string), reduciendo la presión sobre el recolector de basura y mejorando la velocidad de escaneo al evitar el overhead de instanciación de `Path` miles de veces por segundo.
 - `2026-08-05T14:28:47` **assistant.py** (rendimiento): Optimicé el rendimiento de `_gen_problems` convirtiéndola en una función que evalúa condiciones de forma secuencial y eficiente, evitando iterar sobre estructuras intermedias o realizar cálculos redundantes en llamadas repetidas.
 - `2026-08-05T14:28:30` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `startup.py` mediante docstrings detallados en los métodos de la clase `StartupEntry` para clarificar la lógica de resolución de rutas y validación de seguridad, facilitando el mantenimiento.
-- `2026-08-05T14:28:04` **settings.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos en las funciones de validación y la clarificación de las responsabilidades de `_validate_str` mediante la extracción de la lógica de normalización de rutas.
-- `2026-08-05T14:18:17` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad funcional de `safety.py` mediante la adición de docstrings estructurados (usando el formato Google-style) que explican el *porqué* de las decisiones de seguridad, facilitando el mantenimiento y la comprensión de los criterios de filtrado para futuros colaboradores.

@@ -586,3 +586,9 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-05T15:09:51` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Mejoré la robustez de `save_logo_svg` al reemplazar los chequeos condicionales redundantes por un manejo centralizado en `ensure_safe_to_modify`, garantizando que cualquier error de validación de ruta (incluyendo rutas inexistentes o permisos denegados) sea capturado de forma consistente sin abortar la ejecución.
 - `2026-08-05T15:09:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-05T15:09:51` Corrida terminada. Total usado hoy: 348.
+- `2026-08-05T15:18:19` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-05T15:18:44` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `directory_size` ante el caso límite de archivos cuyo tamaño cambia durante el escaneo (Race Condition) y se añadió una validación estricta para evitar procesar rutas que superen `MAX_PATH` de forma silenciosa, mejorando la fiabilidad del cálculo.
+- `2026-08-05T15:19:10` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la robustez de `summarize` y las funciones de escaneo ante rutas inexistentes o inaccesibles, asegurando que la recolección de métricas no falle catastróficamente si una subcarpeta cambia su estado de permisos durante la ejecución del bucle.
+- `2026-08-05T15:19:10` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-08-05T15:19:10` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-05T15:19:10` Corrida terminada. Total usado hoy: 350.

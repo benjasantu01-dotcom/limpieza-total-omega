@@ -142,6 +142,9 @@ def directory_size(path: str | os.PathLike | None) -> int:
     
     try:
         root = Path(path)
+        # Pre-chequeo de longitud de ruta para evitar problemas con APIs de SO
+        if len(str(root.absolute())) > 260:
+            return 0
         if not root.exists() or not root.is_dir() or is_protected_path(root):
             return 0
         root_resolved: str = str(root.resolve())
@@ -158,21 +161,17 @@ def directory_size(path: str | os.PathLike | None) -> int:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
-                        # Si es un enlace o junction, ignorar para evitar saltos fuera de la estructura
                         if entry.is_symlink() or is_junction_func(entry.path):
                             continue
 
                         if entry.is_dir():
-                            # Validar cada subcarpeta recursivamente sin instanciar Path innecesariamente
                             if not is_protected_path(Path(entry.path)):
                                 stack.append(entry.path)
                         else:
                             name_lower: str = entry.name.lower()
                             if name_lower not in NEVER_TOUCH and not any(ord(c) < 32 for c in entry.name):
-                                try:
-                                    total_bytes += entry.stat().st_size
-                                except (OSError, PermissionError):
-                                    continue
+                                # st_size puede fallar si el archivo es bloqueado durante la iteración
+                                total_bytes += entry.stat(follow_symlinks=False).st_size
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):
