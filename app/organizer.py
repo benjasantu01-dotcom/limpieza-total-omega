@@ -135,6 +135,11 @@ def _is_file_accessible(path: Path) -> bool:
         return False
 
 
+def _is_valid_candidate(path: Path) -> bool:
+    """Valida si un archivo es seguro, accesible y tiene una extensión de basura."""
+    return is_safe_to_modify(path) and _is_file_accessible(path)
+
+
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     """
     Escaneo recursivo de directorios buscando candidatos a limpieza.
@@ -147,7 +152,6 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     """
     dirs = directories if directories is not None else DEFAULT_SCAN_DIRS
     found: List[JunkFile] = []
-    # Cache local de extensiones para evitar llamadas a os.path.splitext constantes
     junk_exts = _LOWER_JUNK_EXTS
 
     def _walk_dir(base_path: str) -> None:
@@ -163,12 +167,10 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
                             if _is_allowed_directory(entry.name):
                                 _walk_dir(entry.path)
                         else:
-                            # Optimización: uso de os.path.splitext solo si el nombre tiene puntos
                             _, ext = os.path.splitext(entry.name)
                             if ext.lower() in junk_exts:
                                 entry_path = Path(entry.path)
-                                if is_safe_to_modify(entry_path) and _is_file_accessible(entry_path):
-                                    # Aprovechamos el objeto stat cacheado en la entrada si está disponible
+                                if _is_valid_candidate(entry_path):
                                     stat = entry.stat()
                                     found.append(JunkFile(
                                         path=entry_path,
