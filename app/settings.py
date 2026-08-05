@@ -115,12 +115,14 @@ _NUMERIC_LIMITS: Final[dict[str, tuple[int, int]]] = {
 }
 
 def _validate_bool(key: str, val: Any) -> bool | None:
+    """Valida tipos booleanos aceptando strings comunes de configuración."""
     if isinstance(val, bool): return val
     if isinstance(val, str) and val.strip().lower() in ("1", "true", "si", "sí", "yes"): return True
     if isinstance(val, str) and val.strip().lower() in ("0", "false", "no", "none"): return False
     return None
 
 def _validate_int(key: str, val: Any) -> int | None:
+    """Valida enteros dentro de los límites definidos en _NUMERIC_LIMITS."""
     if val is None or isinstance(val, bool): return None
     try:
         parsed = int(val)
@@ -128,7 +130,18 @@ def _validate_int(key: str, val: Any) -> int | None:
         return max(low, min(high, parsed))
     except (TypeError, ValueError): return None
 
+def _validate_path(val: Any) -> str | None:
+    """Normaliza y verifica seguridad de rutas de directorio."""
+    try:
+        path = Path(str(val)).expanduser().resolve()
+        if is_safe_to_modify(str(path)):
+            return str(path)
+    except (OSError, RuntimeError, ValueError, TypeError, PermissionError):
+        pass
+    return None
+
 def _validate_str(key: str, val: Any) -> str | None:
+    """Valida strings según restricciones de longitud y enumera claves especiales."""
     if not isinstance(val, (str, Path)): return None
     text = str(val).strip()
     if not text: return "" if key in ("ultima_carpeta", "asistente_clave_api") else None
@@ -136,14 +149,7 @@ def _validate_str(key: str, val: Any) -> str | None:
     text_lower = text.lower()
     if key == "tema": return text_lower if text_lower in VALID_THEMES else None
     if key == "acento": return text_lower if text_lower in VALID_ACCENTS else None
-    
-    if key == "ultima_carpeta":
-        try:
-            path = Path(text).expanduser().resolve()
-            if is_safe_to_modify(str(path)):
-                return str(path)
-            return None
-        except (OSError, RuntimeError, ValueError, TypeError, PermissionError): return None
+    if key == "ultima_carpeta": return _validate_path(text)
         
     return text if len(text) <= 256 else None
 

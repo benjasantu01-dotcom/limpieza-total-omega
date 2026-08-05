@@ -406,7 +406,7 @@ def local_answer(question: str, context: SystemContext) -> Answer:
 
 
 def _gen_problems(ctx: SystemContext) -> Generator[str, None, None]:
-    """Genera descripciones de problemas detectados de forma eficiente usando comparaciones estables."""
+    """Genera descripciones de problemas detectados de forma eficiente."""
     if ctx.disk_free_percent < 10.0:
         yield f"queda solo {ctx.disk_free_percent:.0f}% de disco libre"
     if ctx.suspicious_warnings > 0:

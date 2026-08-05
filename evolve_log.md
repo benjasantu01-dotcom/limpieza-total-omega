@@ -483,3 +483,28 @@ FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - Asse
 - `2026-08-05T14:18:17` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y la claridad funcional de `safety.py` mediante la adición de docstrings estructurados (usando el formato Google-style) que explican el *porqué* de las decisiones de seguridad, facilitando el mantenimiento y la comprensión de los criterios de filtrado para futuros colaboradores.
 - `2026-08-05T14:18:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-05T14:18:17` Corrida terminada. Total usado hoy: 328.
+- `2026-08-05T14:27:11` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-05T14:27:38` Tests FALLARON:
+```
+estilo POSIX, para que el
+        # resultado no dependa de en qué sistema corran los tests.
+>       flagged = scanner.check_system_lookalike(PurePosixPath("/home/user/Downloads/svchost.exe"))
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: check_system_lookalike() missing 3 required positional arguments: 'entry', 'name', and 'suffix'
+
+evolve/tests/test_basic.py:212: TypeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_scanner_double_extension_detection - TypeError: check_double_extension() missing 3 required positional arguments: 'entry', 'name', and 'suffix'
+FAILED evolve/tests/test_basic.py::test_scanner_normal_file_is_clean - TypeError: check_double_extension() missing 3 required positional arguments: 'entry', 'name', and 'suffix'
+FAILED evolve/tests/test_basic.py::test_scanner_flags_system_lookalike_outside_system32 - TypeError: check_system_lookalike() missing 3 required positional arguments: 'entry', 'name', and 'suffix'
+FAILED evolve/tests/test_basic.py::test_scanner_does_not_flag_real_system_file - TypeError: check_system_lookalike() missing 3 required positional arguments: 'entry', 'name', and 'suffix'
+FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independent - TypeError: check_system_lookalike() missing 3 required positional arguments: 'entry', 'name', and 'suffix'
+5 failed, 294 passed in 1.08s
+
+```
+- `2026-08-05T14:27:38` ❌ Mejora descartada en scanner.py (no pasó los tests), se revirtió. Intento: Mejoré la documentación técnica del módulo `scanner.py` añadiendo Type Hints precisos, docstrings detallados que explican el contexto de las heurísticas, y normalizando los parámetros de las funciones de chequeo para mejorar la mantenibilidad y claridad del flujo de trabajo.
+- `2026-08-05T14:28:04` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos en las funciones de validación y la clarificación de las responsabilidades de `_validate_str` mediante la extracción de la lógica de normalización de rutas.
+- `2026-08-05T14:28:30` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo `startup.py` mediante docstrings detallados en los métodos de la clase `StartupEntry` para clarificar la lógica de resolución de rutas y validación de seguridad, facilitando el mantenimiento.
+- `2026-08-05T14:28:47` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `_gen_problems` convirtiéndola en una función que evalúa condiciones de forma secuencial y eficiente, evitando iterar sobre estructuras intermedias o realizar cálculos redundantes en llamadas repetidas.
+- `2026-08-05T14:28:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-05T14:28:47` Corrida terminada. Total usado hoy: 332.

@@ -82,7 +82,11 @@ class StartupEntry:
         return "".join(c for c in raw_cmd.strip() if ord(c) >= 32)
 
     def _extract_quoted_path(self, raw_cmd: str) -> str:
-        """Extrae la ruta de un comando entrecomillado validando caracteres prohibidos."""
+        """
+        Extrae la ruta contenida entre comillas dentro de un comando.
+        Valida que no contenga caracteres prohibidos del sistema y que
+        la ruta no sea una ubicación protegida mediante `is_protected_path`.
+        """
         if not isinstance(raw_cmd, str) or len(raw_cmd) < 2:
             return ""
         end_quote: int = raw_cmd.find('"', 1)
@@ -102,7 +106,12 @@ class StartupEntry:
             return ""
 
     def _resolve_and_cache_path(self, path_str: str) -> str:
-        """Normaliza rutas, resolviendo enlaces y cacheando resultados de existencia."""
+        """
+        Normaliza rutas, resolviendo enlaces simbólicos y usando caché de existencia.
+        Aplica validaciones estrictas: las rutas protegidas, symlinks o archivos
+        inexistentes son marcados como no válidos. Retorna la ruta absoluta o
+        vacío si la validación falla.
+        """
         if not isinstance(path_str, str) or not path_str:
             return ""
         
@@ -142,7 +151,7 @@ class StartupEntry:
             return path_str
 
     def _resolve_path_from_command(self, cmd: str) -> str:
-        """Determina la estrategia de resolución según el formato del comando."""
+        """Determina la estrategia de resolución (entrecomillada vs directa) según el formato del comando."""
         if cmd.startswith('"'):
             return self._extract_quoted_path(cmd)
         parts: List[str] = cmd.split()
