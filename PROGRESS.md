@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **262** (52.0% de aceptación)
+- Mejoras aceptadas: **265** (52.6% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 30
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 185
+- Sin respuesta de la IA (error o límite): 182
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-04 | 166 | 11 | 20 | 8 | 143 |
-| 2026-08-05 | 96 | 6 | 10 | 2 | 42 |
+| 2026-08-04 | 166 | 11 | 20 | 8 | 139 |
+| 2026-08-05 | 99 | 6 | 10 | 2 | 43 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,7 +25,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **55**
 - rendimiento: **54**
 - robustez ante casos límite: **49**
-- seguridad defensiva: **46**
+- seguridad defensiva: **49**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,18 +34,21 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **22**
 - `diskreport.py`: **21**
 - `settings.py`: **21**
+- `healthscore.py`: **20**
 - `organizer.py`: **20**
 - `browser.py`: **20**
 - `scanner.py`: **20**
-- `healthscore.py`: **19**
 - `branding.py`: **19**
-- `main.py`: **17**
-- `memory.py`: **15**
+- `main.py`: **18**
+- `memory.py`: **16**
 - `safety.py`: **15**
 - `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-05T07:09:06` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva de `trim_working_set` al centralizar el chequeo de PIDs críticos y eliminar la llamada a `is_protected_path` (que está diseñada para rutas de archivos y no para PIDs), asegurando que el acceso al handle de proceso sea siempre liberado de forma robusta mediante un bloque `finally` incluso si la carga de librerías falla.
+- `2026-08-05T07:08:41` **main.py** (seguridad defensiva): Se introdujo una validación de seguridad adicional en `_ask_folder` para evitar la selección de rutas que contengan caracteres de control RTL (Right-to-Left) o secuencias de escape sospechosas, mitigando un vector de ataque que busca confundir al usuario o evadir filtros de ruta, reforzando la postura de seguridad defensiva.
+- `2026-08-05T07:07:44` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_generate_recommendations` validando la integridad del contenido de `m.suspicious_count` antes de inyectarlo en cadenas de texto, evitando potenciales errores de formato o valores inesperados que pudieran comprometer la salida, y añadiendo chequeos de finitud para evitar que valores NaN o Inf maliciosos (en caso de entrada corrompida) afecten el reporte.
 - `2026-08-05T06:58:35` **duplicates.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_collect_candidates` y las funciones de hash (`hash_file`, `partial_hash`) implementando una verificación robusta contra archivos especiales (dispositivos, sockets, pipes) mediante `stat.S_ISREG`, asegurando que solo procesamos archivos regulares, tal como lo exige el enfoque de seguridad defensiva.
 - `2026-08-05T06:58:26` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `walk_files` y `largest_folders` validando que las rutas base no sean puntos de reparse antes de iniciar, evitando así seguir estructuras de archivos potencialmente peligrosas o fuera del árbol esperado.
 - `2026-08-05T06:58:01` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva en `directory_size` y `_is_safe_path` para prevenir la navegación hacia rutas UNC y mejorar la detección de enlaces simbólicos/junctions mediante el uso de `pathlib` de forma más robusta, evitando posibles escapes fuera de la base permitida.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-05T06:26:52` **duplicates.py** (robustez ante casos límite): Se ha robustecido el manejo de archivos en `_collect_candidates` y `suggest_keeper` añadiendo validaciones explícitas contra `PermissionError` y `OSError` al realizar `stat()` o `exists()`, asegurando que el proceso no se interrumpa ante archivos bloqueados o permisos denegados en el sistema de archivos.
 - `2026-08-05T06:17:50` **diskreport.py** (robustez ante casos límite): Se mejoró la robustez de `walk_files` y `largest_folders` ante archivos que desaparecen durante la iteración (condición de carrera común) envolviendo la lectura de `st_size` en bloques `try-except` más granulares y verificando la existencia del nodo antes de procesarlo, evitando que el escaneo completo aborte prematuramente.
 - `2026-08-05T06:17:40` **browser.py** (robustez ante casos límite): Mejoré `_is_safe_path` para prevenir la resolución de rutas mediante `resolve(strict=True)` cuando el archivo no existe, evitando que el escáner aborte prematuramente ante rutas parciales o inexistentes que los navegadores aún no han creado, utilizando en su lugar una verificación de componentes más robusta.
-- `2026-08-05T06:17:17` **branding.py** (robustez ante casos límite): Se ha mejorado `save_logo_svg` para manejar de manera robusta rutas inexistentes o mal formadas mediante el uso de `resolve()` y validaciones previas de seguridad, evitando excepciones innecesarias en entornos donde las rutas de destino puedan estar bloqueadas o ser inválidas.
-- `2026-08-05T06:16:48` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` implementando una validación exhaustiva de tipos y límites para cada métrica, asegurando que valores `NaN`, `inf`, o tipos inesperados (como `None` o listas) no propaguen errores hacia la lógica de decisión del asistente.
-- `2026-08-05T06:07:20` **settings.py** (rendimiento): Optimicé el sistema de validación reemplazando la creación de diccionarios completos en cada llamada a `validate` por una actualización in-place con iteración directa, reduciendo la asignación de memoria innecesaria.

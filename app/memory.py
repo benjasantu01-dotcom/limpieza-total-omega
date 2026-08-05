@@ -320,9 +320,6 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     
     Esta función es de alto riesgo: realiza una validación estricta de seguridad contra PIDs
     protegidos y requiere permisos administrativos para interactuar con procesos externos.
-    
-    Returns:
-        Tuple[bool, str]: (Éxito booleano, Mensaje explicativo para el usuario).
     """
     if os.name != "nt":
         return False, "Solo disponible en Windows."
@@ -332,27 +329,21 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except (ValueError, TypeError):
         return False, "El PID debe ser un número entero válido."
 
-    # Validación de seguridad: no permitir intervención sobre el propio proceso o procesos críticos
-    if target_pid == os.getpid():
-        return False, "Operación denegada: no se permite modificar el propio proceso."
-    if _is_system_process(target_pid) or is_protected_path(str(target_pid)):
-        return False, "Operación denegada: PID de sistema o de app protegido."
+    if target_pid == os.getpid() or _is_system_process(target_pid):
+        return False, "Operación denegada: PID crítico o protegido."
     
     import ctypes
     kernel32 = ctypes.windll.kernel32
     psapi = ctypes.windll.psapi
-
-    # Obtener handle con privilegios para modificar el working set
+    
     handle = kernel32.OpenProcess(REQUIRED_ACCESS, False, target_pid)
     if not handle:
         error_code = kernel32.GetLastError()
-        if error_code == 5: 
-            return False, "Acceso denegado: se requieren privilegios de administrador."
-        return False, f"No se pudo acceder al proceso {target_pid} (Error {error_code})."
+        return False, f"Acceso denegado (Error {error_code}). Requiere permisos de administrador."
     
     try:
         if not psapi.EmptyWorkingSet(handle):
-            return False, "Error interno al intentar liberar memoria del proceso."
+            return False, "Error al intentar liberar memoria del proceso."
         return True, f"Working set liberado. {TRIM_WARNING}"
     finally:
         kernel32.CloseHandle(handle)

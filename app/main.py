@@ -884,6 +884,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         if not folder or not isinstance(folder, str):
             return None
         
+        # Pre-validación contra caracteres de control o inyección sutil
+        if any(ord(c) < 32 for c in folder) or "\u202e" in folder:
+            messagebox.showerror("Ruta sospechosa", "La ruta contiene caracteres ilegales.")
+            return None
+        
         if not self._is_safe_path(folder):
             messagebox.showwarning("Ruta no segura", "Esa ruta está protegida o es inválida.")
             return None
