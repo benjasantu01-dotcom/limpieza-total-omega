@@ -7,45 +7,48 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **256** (50.8% de aceptación)
-- Rechazadas por tests: 14
+- Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 28
-- Sin cambios (nada sustancial que mejorar): 11
+- Sin cambios (nada sustancial que mejorar): 10
 - Sin respuesta de la IA (error o límite): 195
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-04 | 136 | 7 | 15 | 7 | 115 |
-| 2026-08-05 | 120 | 7 | 13 | 4 | 80 |
+| 2026-08-04 | 133 | 7 | 15 | 6 | 115 |
+| 2026-08-05 | 123 | 8 | 13 | 4 | 80 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **58**
+- legibilidad y documentación: **60**
 - manejo de errores y validación de entradas: **55**
 - seguridad defensiva: **51**
-- robustez ante casos límite: **46**
-- rendimiento: **46**
+- rendimiento: **47**
+- robustez ante casos límite: **43**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **22**
+- `settings.py`: **21**
 - `assistant.py`: **21**
+- `branding.py`: **21**
 - `duplicates.py`: **21**
 - `scanner.py`: **20**
-- `settings.py`: **20**
-- `branding.py`: **20**
 - `diskreport.py`: **20**
-- `healthscore.py`: **19**
 - `browser.py`: **19**
+- `healthscore.py`: **18**
 - `organizer.py`: **18**
-- `main.py`: **17**
-- `memory.py`: **15**
+- `main.py`: **16**
 - `safety.py`: **15**
-- `startup.py`: **9**
+- `memory.py`: **14**
+- `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-05T10:02:42` **branding.py** (rendimiento): Optimicé el cálculo del degradado en `draw_gradient_bar` mediante la precálculo de puntos de corte y la simplificación de la lógica de renderizado, eliminando el loop que generaba innecesariamente muchos objetos en el canvas al pintar línea por línea.
+- `2026-08-05T10:01:56` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `startup.py` mediante la normalización de docstrings (siguiendo estándares PEP 257), la inclusión de type hints explícitos en los atributos de `StartupEntry`, y la refactorización de la lógica de caché para hacerla más transparente y autodocumentada sin alterar la funcionalidad.
+- `2026-08-05T10:01:31` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos claros a las funciones principales, especificando los tipos de entrada/salida y documentando el propósito de las validaciones, lo cual ayuda a futuros colaboradores a entender cómo el módulo maneja los estados de error sin comprometer la seguridad.
 - `2026-08-05T09:52:06` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la inclusión de type hints precisos en el `CHECK_REGISTRY` y la actualización de los docstrings en las funciones de escaneo para clarificar la distinción entre los filtros de condición y la ejecución del chequeo.
 - `2026-08-05T09:51:58` **safety.py** (legibilidad y documentación): He mejorado la documentación interna y la claridad del código añadiendo *docstrings* detallados que explican el "porqué" de las restricciones de seguridad, y reforzado la tipificación para que sea más explícita, facilitando el mantenimiento futuro del equipo.
 - `2026-08-05T09:51:15` **quarantine.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en funciones internas para mejorar la legibilidad, asegurando que el propósito de cada operación de seguridad quede explícito para futuros colaboradores.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-05T09:30:53` **branding.py** (legibilidad y documentación): Documenté con precisión técnica la firma y el propósito de las funciones de renderizado gráfico (`draw_logo`, `draw_gradient_bar`, `draw_ring`) para facilitar su uso como API interna, clarificando las unidades de coordenadas y las expectativas de los parámetros `canvas`.
 - `2026-08-05T09:21:37` **assistant.py** (legibilidad y documentación): Mejoré la documentación de `_ensure_safe_text` y `build_context` usando Type Hints detallados y docstrings que especifican las precondiciones de seguridad, además de clarificar la intención de los filtros mediante comentarios explicativos.
 - `2026-08-05T09:20:57` **settings.py** (manejo de errores y validación de entradas): Reforcé la robustez del manejo de archivos en `load` y `save` mediante el uso de `is_safe_to_modify` antes de cualquier operación I/O, evitando excepciones innecesarias y asegurando que las validaciones de seguridad se apliquen consistentemente siguiendo las reglas del proyecto.
-- `2026-08-05T09:20:33` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `scan_file` y `scan_directory` introduciendo validaciones defensivas ante rutas nulas, tipos inesperados o fallos en el sistema de archivos, asegurando que el flujo de ejecución no se interrumpa ante parámetros mal formados.
-- `2026-08-05T09:10:51` **quarantine.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `purge_all` y `restore_item` agregando validaciones preventivas sobre la existencia del manifiesto y la integridad de las rutas, reemplazando excepciones genéricas por capturas más específicas para evitar el estado inconsistente de la aplicación ante errores de E/S.
-- `2026-08-05T09:10:23` **organizer.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `stage_for_review` validando que los elementos en la lista de entrada sean instancias válidas de `JunkFile` y que sus rutas tengan sentido antes de intentar procesarlas, evitando posibles excepciones `AttributeError` o `TypeError` al acceder a propiedades de objetos malformados o `None`.

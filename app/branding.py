@@ -358,27 +358,19 @@ def draw_logo(canvas: Any, size: int = 56, canvas_x: int = 0, canvas_y: int = 0)
 def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
                       canvas_x: int = 0, canvas_y: int = 0,
                       stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
-    """
-    Renderiza una línea horizontal con degradado lineal.
-    Parámetros:
-      - canvas: Instancia de tkinter.Canvas (requiere método create_line).
-      - width, height: Dimensiones del área de dibujo en píxeles.
-      - canvas_x, canvas_y: Posición de anclaje.
-      - stops: Colores clave del degradado.
-    """
+    """Renderiza una línea horizontal con degradado, optimizada mediante agrupación de colores."""
     if canvas is None or not hasattr(canvas, "create_line"): return
     try:
         ancho = max(1, int(width))
         alto = max(1, int(height))
         colores = gradient_colors(ancho, stops)
         
-        # Batching: agrupar píxeles adyacentes del mismo color para reducir llamadas
-        inicio = 0
+        start_idx = 0
         for i in range(1, ancho):
-            if colores[i] != colores[inicio]:
-                canvas.create_line(canvas_x + inicio, canvas_y, canvas_x + i, canvas_y, fill=colores[inicio], width=alto)
-                inicio = i
-        canvas.create_line(canvas_x + inicio, canvas_y, canvas_x + ancho, canvas_y, fill=colores[inicio], width=alto)
+            if colores[i] != colores[start_idx]:
+                canvas.create_line(canvas_x + start_idx, canvas_y, canvas_x + i, canvas_y, fill=colores[start_idx], width=alto)
+                start_idx = i
+        canvas.create_line(canvas_x + start_idx, canvas_y, canvas_x + ancho, canvas_y, fill=colores[start_idx], width=alto)
     except (ValueError, TypeError, AttributeError): pass
 
 

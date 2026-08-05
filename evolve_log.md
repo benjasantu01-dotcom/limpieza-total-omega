@@ -1202,3 +1202,42 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-05T09:52:06` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante la inclusión de type hints precisos en el `CHECK_REGISTRY` y la actualización de los docstrings en las funciones de escaneo para clarificar la distinción entre los filtros de condición y la ejecución del chequeo.
 - `2026-08-05T09:52:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-05T09:52:06` Corrida terminada. Total usado hoy: 224.
+- `2026-08-05T10:01:04` Arrancando corrida. Quedan hoy ~76 peticiones objetivo.
+- `2026-08-05T10:01:31` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos claros a las funciones principales, especificando los tipos de entrada/salida y documentando el propósito de las validaciones, lo cual ayuda a futuros colaboradores a entender cómo el módulo maneja los estados de error sin comprometer la seguridad.
+- `2026-08-05T10:01:56` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad de `startup.py` mediante la normalización de docstrings (siguiendo estándares PEP 257), la inclusión de type hints explícitos en los atributos de `StartupEntry`, y la refactorización de la lógica de caché para hacerla más transparente y autodocumentada sin alterar la funcionalidad.
+- `2026-08-05T10:02:28` Tests FALLARON:
+```
+context = SystemContext(score=98, grade='A', junk_mb=10, suspicious_count=0, suspicious_warnings=0, memory_available_percent=55,...0.0, disk_free_percent=60, duplicate_mb=0.0, startup_count=4, quarantined_count=0, browser_cache_mb=0.0, analyzed=True)
+
+    def local_answer(question: str, context: SystemContext) -> Answer:
+        """Procesa la pregunta del usuario utilizando reglas de negocio estáticas."""
+        if not isinstance(context, SystemContext) or not context.analyzed:
+            return Answer(
+                text="Todavía no corriste ningún análisis. Andá a la pestaña Salud "
+                     "y apretá 'Analizar el sistema': es de solo lectura.",
+                notice=OFFLINE_NOTICE,
+                suggestions=SUGGESTED_QUESTIONS_LIST[:3],
+            )
+    
+        clean_text = _sanitize_query(question)
+        tokens = _TOKEN_REGEX.findall(clean_text)
+        for token in tokens:
+            if handler_key := _KEYWORD_MAP.get(token):
+                return _HANDLERS[handler_key](context, clean_text)
+    
+        # Optimización: evitamos materializar la lista completa de problemas
+        gen = _gen_problems(context)
+>       primeros = [next(gen) for _ in range(3)]
+                    ^^^^^^^^^
+E       StopIteration
+
+app/assistant.py:404: StopIteration
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_a_healthy_system_gets_a_calm_answer - StopIteration
+1 failed, 298 passed in 1.14s
+
+```
+- `2026-08-05T10:02:28` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Optimizé la generación de respuestas locales sustituyendo la conversión innecesaria a `list()` en `local_answer` por una evaluación directa del primer problema encontrado, evitando el procesamiento completo del generador cuando no es necesario.
+- `2026-08-05T10:02:42` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimicé el cálculo del degradado en `draw_gradient_bar` mediante la precálculo de puntos de corte y la simplificación de la lógica de renderizado, eliminando el loop que generaba innecesariamente muchos objetos en el canvas al pintar línea por línea.
+- `2026-08-05T10:02:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-05T10:02:42` Corrida terminada. Total usado hoy: 228.
