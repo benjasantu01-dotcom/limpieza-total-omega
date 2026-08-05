@@ -66,6 +66,8 @@ _RESERVED_NAMES: Final[frozenset[str]] = frozenset({
     "com7", "com8", "com9", "lpt1", "lpt2", "lpt3", "lpt4", "lpt5", "lpt6", "lpt7", "lpt8", "lpt9"
 })
 
+_cache_system_check: dict[Path, bool] = {}
+
 
 def _has_invalid_chars(path_str: str) -> bool:
     """Detecta caracteres no permitidos en sistemas de archivos Windows (control/RTL/Unicode especial)."""
@@ -153,15 +155,26 @@ def is_protected_path(path: PathLike) -> bool:
     
     try:
         p = normalize(path)
+        if p in _cache_system_check:
+            return _cache_system_check[p]
+        
+        is_protected = False
         if any(part.lower() in PROTECTED_DIR_NAMES for part in p.parts):
-            return True
-        for sys_root in _SYSTEM_ROOTS:
-            try:
-                if os.path.commonpath([str(p), str(sys_root)]) == str(sys_root):
-                    return True
-            except ValueError:
-                continue
-        return p == Path(p.anchor) or (p.exists() and _is_reparse_point(p))
+            is_protected = True
+        else:
+            for sys_root in _SYSTEM_ROOTS:
+                try:
+                    if os.path.commonpath([str(p), str(sys_root)]) == str(sys_root):
+                        is_protected = True
+                        break
+                except ValueError:
+                    continue
+        
+        if not is_protected:
+            is_protected = p == Path(p.anchor) or (p.exists() and _is_reparse_point(p))
+            
+        _cache_system_check[p] = is_protected
+        return is_protected
     except (PermissionError, OSError, ValueError, TypeError):
         return True 
 

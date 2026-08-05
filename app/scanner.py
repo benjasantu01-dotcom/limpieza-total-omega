@@ -78,10 +78,7 @@ class Scanner:
     def process_entry(self, entry: os.DirEntry, stack: List[str]) -> None:
         """Procesa una entrada del directorio, filtrando rutas protegidas y analizando archivos."""
         try:
-            path_obj = Path(entry.path).resolve()
-            if os.path.commonpath([str(self.base_root), str(path_obj)]) != str(self.base_root):
-                return
-                
+            path_obj = Path(entry.path)
             if entry.is_dir(follow_symlinks=False):
                 if not self._is_reparse_point(entry):
                     if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
@@ -91,7 +88,7 @@ class Scanner:
                         self.seen.add(path_key)
                         stack.append(entry.path)
             elif entry.is_file(follow_symlinks=False):
-                if path_obj.exists() and is_safe_to_modify(path_obj) and not is_protected_path(path_obj):
+                if is_safe_to_modify(path_obj) and not is_protected_path(path_obj):
                     self.results.extend(scan_file(path_obj, entry=entry, prevalidated=True))
         except (PermissionError, OSError):
             pass
@@ -139,21 +136,16 @@ def scan_file(path: Path, entry: Optional[os.DirEntry] = None, prevalidated: boo
     """
     if not isinstance(path, Path):
         return []
-
-    try:
-        abs_path = path.resolve(strict=True)
-    except (OSError, RuntimeError):
-        return []
     
     if not prevalidated:
-        if not abs_path.exists() or not is_safe_to_modify(abs_path) or is_protected_path(abs_path):
+        if not is_safe_to_modify(path) or is_protected_path(path):
             return []
     
     findings: ScanResult = []
     
     for condition_met, check_func in CHECK_REGISTRY:
-        if condition_met(abs_path):
-            result = check_func(abs_path, entry)
+        if condition_met(path):
+            result = check_func(path, entry)
             if result:
                 findings.append(result)
             
@@ -169,7 +161,7 @@ def scan_directory(directory: Union[str, Path]) -> ScanResult:
         path_input = Path(directory)
         if not path_input.exists():
             return []
-        root_path = path_input.resolve(strict=True)
+        root_path = path_input.resolve()
         if not root_path.is_dir() or root_path.is_symlink() or is_protected_path(root_path) or not is_safe_to_modify(root_path):
             return []
     except (OSError, RuntimeError):

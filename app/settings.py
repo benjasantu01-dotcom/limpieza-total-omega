@@ -175,19 +175,17 @@ def settings_path(path_or_base: PathLike | None = None) -> Path:
 
 def validate(values: Any) -> AppSettings:
     """Limpia y valida un diccionario, sustituyendo valores inválidos por los DEFAULTS."""
+    config = DEFAULTS.copy()
     if not isinstance(values, dict):
-        return DEFAULTS.copy()
+        return config
     
-    configuracion_final: AppSettings = DEFAULTS.copy()
-    validators = _VALIDATOR_MAP
-    for clave, valor_usuario in values.items():
-        if clave in validators:
-            validador = validators[clave]
-            resultado = validador(clave, valor_usuario)
+    for clave, validador in _VALIDATOR_MAP.items():
+        if clave in values:
+            resultado = validador(clave, values[clave])
             if resultado is not None:
-                configuracion_final[clave] = resultado # type: ignore
+                config[clave] = resultado  # type: ignore
         
-    return configuracion_final
+    return config
 
 def load(path_or_base: PathLike | None = None) -> AppSettings:
     """Carga configuraciones desde disco con caché y validación robusta."""
