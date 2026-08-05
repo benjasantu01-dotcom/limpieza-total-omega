@@ -128,7 +128,7 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
         # Verifica que la ruta resuelta esté contenida estrictamente dentro de la base resuelta
         real_target.relative_to(real_base)
         return True
-    except (OSError, ValueError, RuntimeError, PermissionError, ValueError):
+    except (OSError, ValueError, RuntimeError, PermissionError):
         return False
 
 
@@ -140,13 +140,15 @@ def directory_size(path: str | os.PathLike | None) -> int:
     if path is None:
         return 0
     
-    root = Path(path)
-    # Validar integridad inicial antes de empezar el recorrido
-    if not root.exists() or not root.is_dir() or is_protected_path(root):
+    try:
+        root = Path(path)
+        if not root.exists() or not root.is_dir() or is_protected_path(root):
+            return 0
+        root_resolved = str(root.resolve())
+    except (OSError, PermissionError, RuntimeError):
         return 0
     
     total_bytes: int = 0
-    root_resolved = str(root.resolve())
     stack: List[str] = [root_resolved]
     is_junction_func = getattr(os.path, 'isjunction', lambda _: False)
     
@@ -208,14 +210,15 @@ def detect_profiles(
     cache_paths = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
 
     found: List[BrowserCache] = []
-    if not bases:
+    if not bases or not isinstance(cache_paths, dict):
         return found
         
     for base in bases:
         if not isinstance(base, Path): continue
         for browser_name, relative_path_str in cache_paths.items():
+            if not isinstance(relative_path_str, str) or not isinstance(browser_name, str):
+                continue
             try:
-                if not isinstance(relative_path_str, str): continue
                 parts: List[str] = relative_path_str.split("\\")
                 candidate: Path = base.joinpath(*parts)
                 

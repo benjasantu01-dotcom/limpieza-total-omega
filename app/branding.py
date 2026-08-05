@@ -292,14 +292,11 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     if not destination:
         return None
     try:
-        # Resolver ruta absoluta para evitar path traversal
         target = Path(destination).resolve()
-        
-        # Validación de seguridad: no permitir rutas protegidas o inseguras
+        # Verificar seguridad antes de intentar cualquier operación de I/O
         if is_protected_path(target) or not is_safe_to_modify(target):
             return None
         
-        # Validación explícita de escritura requerida por seguridad
         ensure_safe_to_modify(target)
         if target.parent.exists():
             ensure_safe_to_modify(target.parent)
@@ -326,10 +323,6 @@ def logo_ascii() -> str:
 def draw_logo(canvas: Any, size: int = 56, canvas_x: int = 0, canvas_y: int = 0) -> None:
     """
     Dibuja el logo Omega en un canvas de Tkinter.
-    Parámetros:
-      - canvas: Instancia de tkinter.Canvas (requiere método create_polygon).
-      - size: Dimensión base del escudo en píxeles.
-      - canvas_x, canvas_y: Coordenadas de origen (esquina superior izquierda).
     """
     if canvas is None or not hasattr(canvas, "create_polygon"): return
     try:
@@ -382,12 +375,6 @@ def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
               fill: Optional[HexColor] = None) -> None:
     """
     Renderiza un indicador de salud circular (estilo anillo).
-    Parámetros:
-      - canvas: Instancia de tkinter.Canvas (requiere método create_arc).
-      - percent: Valor numérico 0-100.
-      - size: Diámetro exterior total en píxeles.
-      - canvas_x, canvas_y: Esquina superior izquierda del bounding box.
-      - thickness: Grosor del trazo del arco en píxeles.
     """
     if canvas is None or not hasattr(canvas, "create_arc"): return
     try:

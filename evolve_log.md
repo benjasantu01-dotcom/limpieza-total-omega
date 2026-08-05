@@ -429,3 +429,15 @@ FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - Asse
 - `2026-08-05T13:09:04` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-08-05T13:09:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-05T13:09:04` Corrida terminada. Total usado hoy: 300.
+- `2026-08-05T13:15:09` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-05T13:15:11` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-08-05T13:15:11` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-08-05T13:15:31` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-08-05T13:15:31` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-08-05T13:16:01` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-08-05T13:16:01` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-08-05T13:16:48` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_ensure_safe_text` y `_call_gemini` para prevenir inyecciones de control mediante una validación más estricta de los tipos de datos y la sanitización proactiva de los payloads, asegurando que cualquier entrada nula o mal formada sea descartada sin causar excepciones en el flujo.
+- `2026-08-05T13:17:18` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save_logo_svg` y `draw_logo` capturando excepciones de forma granular, validando la integridad del sistema de coordenadas y asegurando que las operaciones críticas de I/O no queden expuestas a entradas malformadas que provoquen fallos silenciosos.
+- `2026-08-05T13:17:26` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Reforcé la robustez de `directory_size` y `detect_profiles` añadiendo validaciones de tipo explícitas y capturando errores ante entradas malformadas que podrían disparar excepciones inesperadas durante la navegación del sistema de archivos.
+- `2026-08-05T13:17:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-05T13:17:26` Corrida terminada. Total usado hoy: 304.

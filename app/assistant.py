@@ -169,20 +169,17 @@ class Answer:
         """Indica si la respuesta fue generada por el motor Gemini."""
         return self.source == "gemini"
 
-def _ensure_safe_text(text: str) -> bool:
+def _ensure_safe_text(text: Any) -> bool:
     """
     Valida la integridad del texto. Rechaza entradas con indicios de rutas,
     caracteres no imprimibles (control) o secuencias de escape.
-    
-    Precondición: text debe ser una cadena no nula.
-    Retorna: bool indicando si el texto es apto para procesamiento remoto.
     """
-    if not isinstance(text, str) or not text or len(text) > 2000:
+    if not isinstance(text, str) or not text:
         return False
-    # Rechazo si detecta patrones de archivos, inyecciones de control o rutas
+    if len(text) > 2000:
+        return False
     if _PATH_REGEX.search(text) or _CONTROL_CHARS_REGEX.search(text):
         return False
-    # Verificación extra: si el texto parece contener una ruta, validamos seguridad
     if any(c in text for c in (":\\", "/", "\\")):
         if is_protected_path(text):
             return False
@@ -191,13 +188,10 @@ def _ensure_safe_text(text: str) -> bool:
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
     """
     Transforma fuentes de datos genéricas en una estructura SystemContext tipada.
-    Valida que los valores numéricos sean finitos y dentro de rangos lógicos
-    para evitar errores durante el análisis o el envío de métricas.
     """
     ctx = SystemContext()
 
     def is_valid_num(v: Any) -> bool:
-        # Verifica que sea número, no bool, y que sea finito (sin NaN ni Inf)
         return isinstance(v, (int, float)) and not isinstance(v, bool) and math.isfinite(v)
 
     def extract(source: Any, attr: str, default: Any, cast: Callable = float) -> Any:
@@ -242,7 +236,6 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
 def context_as_text(context: SystemContext) -> str:
     """
     Serializa el estado del sistema en un formato de texto compacto y neutral.
-    Es el formato que se envía al motor remoto; se limpia preventivamente.
     """
     if not isinstance(context, SystemContext) or not context.analyzed:
         return "No hay métricas disponibles todavía."
@@ -400,7 +393,6 @@ def local_answer(question: str, context: SystemContext) -> Answer:
         if handler_key := _KEYWORD_MAP.get(token):
             return _HANDLERS[handler_key](context, clean_text)
 
-    # Evaluación perezosa de los problemas usando un listado eficiente
     problemas = list(_gen_problems(context))
     puntaje_str = str(context.score) if context.score is not None else "N/A"
     
@@ -444,60 +436,45 @@ def _call_gemini(
     model: str
 ) -> Optional[str]:
     """Envía métricas agregadas a Gemini mediante la librería estándar urllib."""
-    if not isinstance(api_key, str) or not api_key or not isinstance(model, str) or not _MODEL_NAME_REGEX.match(model):
-        return None
+    if not isinstance(api_key, str) or not api_key: return None
+    if not isinstance(model, str) or not _MODEL_NAME_REGEX.match(model): return None
     
     safe_q: str = _sanitize_query(question)
     safe_ctx: str = context_text[:1000]
     
-    # Defensa adicional: verificar que el contexto y la pregunta no contengan elementos inseguros
     if not _ensure_safe_text(safe_q) or not _ensure_safe_text(safe_ctx):
         return None
         
     try:
         cuerpo_json: bytes = json.dumps({
             "contents": [{
-                "parts": [{
-                    "text": f"{SYSTEM_PROMPT}\n\nMétricas del sistema:\n{safe_ctx}\n\n"
-                            f"Pregunta del usuario: {safe_q}"
-                }]
+                "parts": [{"text": f"{SYSTEM_PROMPT}\n\nMétricas del sistema:\n{safe_ctx}\n\nPregunta del usuario: {safe_q}"}]
             }]
         }).encode("utf-8")
 
         url: str = _ENDPOINT.format(model=model) + f"?key={api_key}"
         peticion: urllib.request.Request = urllib.request.Request(
-            url, 
-            data=cuerpo_json, 
-            headers={"Content-Type": "application/json"}, 
-            method="POST"
+            url, data=cuerpo_json, headers={"Content-Type": "application/json"}, method="POST"
         )
         
         with urllib.request.urlopen(peticion, timeout=_TIMEOUT_SECONDS) as respuesta:
-            if respuesta.status != 200:
-                return None
+            if respuesta.status != 200: return None
             datos: Any = json.loads(respuesta.read().decode("utf-8"))
         
-        if not isinstance(datos, dict):
-            return None
-
+        if not isinstance(datos, dict): return None
         candidatos: Any = datos.get("candidates", [])
-        if not isinstance(candidatos, list) or not candidatos or not isinstance(candidatos[0], dict):
-            return None
-            
-        partes: Any = candidatos[0].get("content", {}).get("parts", [])
-        if not isinstance(partes, list):
-            return None
-            
-        texto_parts = [p.get("text") for p in partes if isinstance(p, dict) and isinstance(p.get("text"), str)]
-        texto: str = "".join(texto_parts).strip()
+        if not isinstance(candidatos, list) or not candidatos: return None
         
-        # Validar la respuesta recibida antes de retornarla, descartando contenido inseguro
-        if not _ensure_safe_text(texto):
-            return None
+        cuerpo = candidatos[0].get("content", {})
+        if not isinstance(cuerpo, dict): return None
+        partes: Any = cuerpo.get("parts", [])
+        if not isinstance(partes, list): return None
             
-        return texto
-    except (urllib.error.URLError, urllib.error.HTTPError, OSError,
-            json.JSONDecodeError, KeyError, IndexError, TypeError):
+        texto = "".join(p.get("text", "") for p in partes if isinstance(p, dict))
+        if not _ensure_safe_text(texto): return None
+            
+        return texto.strip()
+    except (Exception):
         return None
 
 
@@ -515,13 +492,12 @@ def ask(question: str, context: Optional[SystemContext] = None,
         if not isinstance(configuracion, dict):
             return respaldo
             
-        clave_raw = configuracion.get("asistente_api_key")
-        clave: str = str(clave_raw) if clave_raw else ""
-        modelo: str = str(configuracion.get("asistente_modelo", "gemini-3.1-flash-lite"))
-        enviar: bool = bool(configuracion.get("asistente_enviar_metricas", True))
+        clave = str(configuracion.get("asistente_api_key", ""))
+        modelo = str(configuracion.get("asistente_modelo", "gemini-3.1-flash-lite"))
+        enviar = bool(configuracion.get("asistente_enviar_metricas", True))
         
-        texto_contexto: str = context_as_text(ctx) if enviar else "El usuario no autorizó enviar métricas."
-        remoto: Optional[str] = _call_gemini(question, texto_contexto, clave, modelo)
+        texto_contexto = context_as_text(ctx) if enviar else "El usuario no autorizó enviar métricas."
+        remoto = _call_gemini(question, texto_contexto, clave, modelo)
 
         if not remoto:
             respaldo.notice = "No se pudo consultar al asistente en línea, respondí con el motor local."
