@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **256** (50.8% de aceptación)
+- Mejoras aceptadas: **255** (50.6% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 196
+- Sin respuesta de la IA (error o límite): 197
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-04 | 131 | 7 | 14 | 6 | 114 |
-| 2026-08-05 | 125 | 8 | 13 | 4 | 82 |
+| 2026-08-04 | 127 | 7 | 14 | 6 | 114 |
+| 2026-08-05 | 128 | 8 | 13 | 4 | 83 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **60**
 - manejo de errores y validación de entradas: **55**
-- seguridad defensiva: **51**
-- rendimiento: **49**
-- robustez ante casos límite: **41**
+- rendimiento: **52**
+- seguridad defensiva: **50**
+- robustez ante casos límite: **38**
 
 ## Mejoras aceptadas por archivo
 
+- `quarantine.py`: **22**
 - `duplicates.py`: **22**
-- `settings.py`: **21**
-- `assistant.py`: **21**
 - `branding.py`: **21**
-- `quarantine.py`: **21**
-- `scanner.py`: **20**
 - `browser.py`: **20**
 - `diskreport.py`: **20**
+- `settings.py`: **20**
+- `assistant.py`: **20**
+- `organizer.py`: **19**
+- `scanner.py`: **19**
 - `healthscore.py`: **18**
-- `organizer.py`: **18**
-- `main.py`: **16**
+- `main.py`: **17**
 - `memory.py`: **14**
 - `safety.py`: **14**
-- `startup.py`: **10**
+- `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-05T10:23:41` **quarantine.py** (rendimiento): Se optimizó el acceso al manifiesto en `purge_all` y `total_quarantined_bytes` evitando llamadas innecesarias a `load_manifest` (que puede disparar I/O pesado) al reutilizar instancias existentes, y se implementó un `set` para la validación de nombres en `purge_all` para reducir la complejidad de O(N) a O(1) por cada archivo analizado.
+- `2026-08-05T10:23:29` **organizer.py** (rendimiento): Se optimizó el proceso de escaneo sustituyendo la llamada redundante y costosa a `entry.stat()` dentro del loop por un acceso directo a `entry.stat()` ya disponible en el objeto `os.DirEntry` tras las validaciones iniciales, reduciendo llamadas al sistema.
+- `2026-08-05T10:22:42` **main.py** (rendimiento): Se implementó un método `_get_cached_or_run` que unifica la lógica de consulta de caché con la ejecución diferida de tareas, evitando disparar múltiples hilos para una misma solicitud si el caché ya es válido, optimizando así los recursos del sistema.
 - `2026-08-05T10:12:37` **duplicates.py** (rendimiento): Optimizamos `_collect_candidates` utilizando un conjunto de "tamaños candidatos" para evitar realizar hashing completo o parcial en archivos únicos, asegurando que solo se procesen grupos donde el tamaño ya garantiza la existencia de al menos un duplicado.
 - `2026-08-05T10:11:50` **browser.py** (rendimiento): Optimicé `directory_size` reemplazando la creación repetitiva de objetos `Path` y llamadas a `resolve()` dentro del bucle de escaneo por operaciones directas sobre el string `entry.path` provisto por `os.scandir`, reduciendo significativamente la carga de I/O y el uso de CPU.
 - `2026-08-05T10:02:42` **branding.py** (rendimiento): Optimicé el cálculo del degradado en `draw_gradient_bar` mediante la precálculo de puntos de corte y la simplificación de la lógica de renderizado, eliminando el loop que generaba innecesariamente muchos objetos en el canvas al pintar línea por línea.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-05T09:42:11` **main.py** (legibilidad y documentación): Se ha mejorado la documentación interna mediante la implementación de `docstrings` en todos los métodos de construcción de la interfaz y la adición de anotaciones de tipo faltantes, permitiendo que el bucle autónomo y futuros colaboradores identifiquen rápidamente la responsabilidad de cada componente de la GUI sin necesidad de interpretar la lógica interna.
 - `2026-08-05T09:41:08` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `healthscore.py` mediante la adición de docstrings técnicos detallados en las funciones de puntuación individuales y la tipificación explícita de retornos, facilitando la comprensión del cálculo de ratios sin alterar el comportamiento.
 - `2026-08-05T09:31:50` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación técnica interna mediante la adición de Type Hints más precisos, la simplificación de las validaciones de entrada para mejorar la legibilidad y la clarificación de las responsabilidades de las funciones mediante docstrings más descriptivos.
-- `2026-08-05T09:31:41` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del código añadiendo *type hints* faltantes en funciones clave y reemplazando bloques de código redundantes por llamadas a funciones existentes, lo que facilita el mantenimiento y reduce la complejidad de la lógica de escaneo.
-- `2026-08-05T09:31:16` **browser.py** (legibilidad y documentación): Mejoré la documentación de `directory_size` y `_is_safe_path` para explicitar el uso de `os.scandir` y la validación de enlaces simbólicos, garantizando que futuras modificaciones mantengan la seguridad exigida.
-- `2026-08-05T09:30:53` **branding.py** (legibilidad y documentación): Documenté con precisión técnica la firma y el propósito de las funciones de renderizado gráfico (`draw_logo`, `draw_gradient_bar`, `draw_ring`) para facilitar su uso como API interna, clarificando las unidades de coordenadas y las expectativas de los parámetros `canvas`.

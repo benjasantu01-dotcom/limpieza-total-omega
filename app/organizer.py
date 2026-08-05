@@ -168,6 +168,7 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
                             if ext.lower() in junk_exts:
                                 entry_path = Path(entry.path)
                                 if is_safe_to_modify(entry_path) and _is_file_accessible(entry_path):
+                                    # Aprovechamos el objeto stat cacheado en la entrada si está disponible
                                     stat = entry.stat()
                                     found.append(JunkFile(
                                         path=entry_path,

@@ -775,6 +775,14 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 logging.error("Error al obtener datos para caché %s: %s", key, e)
         return None
 
+    def _get_cached_or_run(self, key: str, provider: Callable, on_complete: Callable) -> None:
+        """Helper para evitar relanzar tareas en curso si ya se tiene caché."""
+        cached = self._get_cached(key)
+        if cached is not None:
+            on_complete(cached)
+        else:
+            self.run_async(lambda: on_complete(provider()))
+
     def _invalidate_cache(self, key_prefix: str) -> None:
         """Purga entradas del caché que coincidan con un prefijo."""
         keys_to_del = [k for k in self._cache if k.startswith(key_prefix)]

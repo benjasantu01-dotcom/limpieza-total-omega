@@ -1248,3 +1248,10 @@ FAILED evolve/tests/test_assistant.py::test_a_healthy_system_gets_a_calm_answer 
 - `2026-08-05T10:12:49` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
 - `2026-08-05T10:12:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-05T10:12:49` Corrida terminada. Total usado hoy: 232.
+- `2026-08-05T10:21:38` Arrancando corrida. Quedan hoy ~68 peticiones objetivo.
+- `2026-08-05T10:22:42` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Se implementó un método `_get_cached_or_run` que unifica la lógica de consulta de caché con la ejecución diferida de tareas, evitando disparar múltiples hilos para una misma solicitud si el caché ya es válido, optimizando así los recursos del sistema.
+- `2026-08-05T10:23:06` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: rendimiento).
+- `2026-08-05T10:23:29` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Se optimizó el proceso de escaneo sustituyendo la llamada redundante y costosa a `entry.stat()` dentro del loop por un acceso directo a `entry.stat()` ya disponible en el objeto `os.DirEntry` tras las validaciones iniciales, reduciendo llamadas al sistema.
+- `2026-08-05T10:23:41` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Se optimizó el acceso al manifiesto en `purge_all` y `total_quarantined_bytes` evitando llamadas innecesarias a `load_manifest` (que puede disparar I/O pesado) al reutilizar instancias existentes, y se implementó un `set` para la validación de nombres en `purge_all` para reducir la complejidad de O(N) a O(1) por cada archivo analizado.
+- `2026-08-05T10:23:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-05T10:23:41` Corrida terminada. Total usado hoy: 236.
