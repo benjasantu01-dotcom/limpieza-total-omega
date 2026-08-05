@@ -120,6 +120,7 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
         if real_target.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(str(real_target))):
             return False
 
+        # Verifica si real_target está contenido en real_base
         real_target.relative_to(real_base)
         return True
     except (OSError, ValueError, RuntimeError, PermissionError, ValueError):
@@ -149,24 +150,24 @@ def directory_size(path: str | os.PathLike | None) -> int:
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:
-                    entry_path = Path(entry.path)
-                    if is_protected_path(entry_path):
-                        continue
-
-                    entry_name_lower = entry.name.lower()
-                    if entry_name_lower in NEVER_TOUCH or any(ord(c) < 32 for c in entry.name):
-                        continue
-                    
-                    if entry.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(entry.path)):
-                        continue
-                    
-                    if entry.is_dir(follow_symlinks=False):
-                        stack.append(entry_path)
-                    else:
-                        try:
-                            total_bytes += entry.stat(follow_symlinks=False).st_size
-                        except (OSError, PermissionError):
+                    try:
+                        entry_path = Path(entry.path)
+                        if is_protected_path(entry_path):
                             continue
+
+                        entry_name_lower = entry.name.lower()
+                        if entry_name_lower in NEVER_TOUCH or any(ord(c) < 32 for c in entry.name):
+                            continue
+                        
+                        if entry.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(entry.path)):
+                            continue
+                        
+                        if entry.is_dir(follow_symlinks=False):
+                            stack.append(entry_path)
+                        else:
+                            total_bytes += entry.stat(follow_symlinks=False).st_size
+                    except (OSError, PermissionError):
+                        continue
         except (OSError, PermissionError):
             continue
             
@@ -190,7 +191,7 @@ def _is_valid_cache_path(candidate: Path | None, base_path: Path) -> bool:
             _is_safe_path(candidate, base_path) and
             candidate.name.lower() not in NEVER_TOUCH
         )
-    except (OSError, PermissionError):
+    except (OSError, PermissionError, RuntimeError):
         return False
 
 

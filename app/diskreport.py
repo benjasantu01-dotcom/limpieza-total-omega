@@ -230,11 +230,14 @@ def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_prot
     """Identifica los N archivos más grandes en la ruta dada usando un min-heap."""
     if not directory:
         return []
-    return heapq.nlargest(
-        max(0, limit), 
-        (FileEntry(path=p, size_bytes=s) for p, s in walk_files(directory, skip_protected)),
-        key=lambda e: e.size_bytes
-    )
+    try:
+        return heapq.nlargest(
+            max(0, limit), 
+            (FileEntry(path=p, size_bytes=s) for p, s in walk_files(directory, skip_protected)),
+            key=lambda e: e.size_bytes
+        )
+    except (OSError, PermissionError):
+        return []
 
 
 def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip_protected: bool = True) -> List[ExtensionUsage]:
@@ -243,17 +246,20 @@ def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip
     """
     if not directory:
         return []
-    sizes: Dict[str, int] = defaultdict(int)
-    counts: Dict[str, int] = defaultdict(int)
-    for path, size in walk_files(directory, skip_protected):
-        ext = path.suffix.lower() or "(sin extensión)"
-        sizes[ext] += size
-        counts[ext] += 1
-    
-    usage_list = [ExtensionUsage(extension=ext, size_bytes=size, count=counts[ext])
-                  for ext, size in sizes.items()]
-    
-    return heapq.nlargest(max(0, limit), usage_list, key=lambda u: u.size_bytes)
+    try:
+        sizes: Dict[str, int] = defaultdict(int)
+        counts: Dict[str, int] = defaultdict(int)
+        for path, size in walk_files(directory, skip_protected):
+            ext = path.suffix.lower() or "(sin extensión)"
+            sizes[ext] += size
+            counts[ext] += 1
+        
+        usage_list = [ExtensionUsage(extension=ext, size_bytes=size, count=counts[ext])
+                      for ext, size in sizes.items()]
+        
+        return heapq.nlargest(max(0, limit), usage_list, key=lambda u: u.size_bytes)
+    except (OSError, PermissionError):
+        return []
 
 
 def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
@@ -295,12 +301,15 @@ def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     """Calcula la suma total de bytes y cantidad de archivos en un directorio."""
     if not directory:
         return 0, 0
-    total = 0
-    count = 0
-    for _, size in walk_files(directory, skip_protected):
-        total += size
-        count += 1
-    return total, count
+    try:
+        total = 0
+        count = 0
+        for _, size in walk_files(directory, skip_protected):
+            total += size
+            count += 1
+        return total, count
+    except (OSError, PermissionError):
+        return 0, 0
 
 
 def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -> List[str]:
@@ -323,18 +332,21 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
     total_bytes = 0
     total_files = 0
 
-    for path, size in walk_files(path_obj, skip_protected):
-        total_bytes += size
-        total_files += 1
-        
-        ext_name = path.suffix.lower() or "(sin extensión)"
-        ext_sizes[ext_name] += size
-        ext_counts[ext_name] += 1
-        
-        if len(top_heap) < 8:
-            heapq.heappush(top_heap, (size, str(path)))
-        elif size > top_heap[0][0]:
-            heapq.heapreplace(top_heap, (size, str(path)))
+    try:
+        for path, size in walk_files(path_obj, skip_protected):
+            total_bytes += size
+            total_files += 1
+            
+            ext_name = path.suffix.lower() or "(sin extensión)"
+            ext_sizes[ext_name] += size
+            ext_counts[ext_name] += 1
+            
+            if len(top_heap) < 8:
+                heapq.heappush(top_heap, (size, str(path)))
+            elif size > top_heap[0][0]:
+                heapq.heapreplace(top_heap, (size, str(path)))
+    except Exception as e:
+        return [f"Error crítico durante el escaneo: {str(e)}"]
 
     lines: List[str] = [
         f"Carpeta analizada: {path_obj}",

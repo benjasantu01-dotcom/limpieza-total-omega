@@ -289,9 +289,10 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         return None
     try:
         target = Path(destination).expanduser().resolve()
-        # Validación defensiva antes de cualquier operación
         if is_protected_path(target) or not is_safe_to_modify(target):
             return None
+        
+        # ensure_safe_to_modify lanza excepción si la ruta no es segura
         ensure_safe_to_modify(target)
         ensure_safe_to_modify(target.parent)
         
@@ -338,7 +339,7 @@ def draw_logo(canvas: Any, size: int = 56, canvas_x: int = 0, canvas_y: int = 0)
         canvas.create_line(x + 41*s, y + 75*s, x + 75*s, y + 41*s, fill=PALETTE["background"], width=max(2, int(8*s)), capstyle="round")
         canvas.create_polygon(x + 75*s, y + 41*s, x + 89*s, y + 38*s, x + 92*s, y + 52*s, fill=PALETTE["background"], outline="")
         canvas.create_text(x + 64*s, y + 96*s, text="\u03a9", fill=PALETTE["background"], font=("Segoe UI", max(8, int(23*s)), "bold"))
-    except (ValueError, TypeError, AttributeError, ZeroDivisionError):
+    except (ValueError, TypeError, AttributeError, ZeroDivisionError, OverflowError):
         pass
 
 
