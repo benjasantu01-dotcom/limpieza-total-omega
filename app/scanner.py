@@ -123,7 +123,10 @@ def check_system_lookalike(path: Path) -> Optional[Suspicion]:
     return None
 
 def scan_file(path: Path, prevalidated: bool = False) -> ScanResult:
-    """Ejecuta todos los chequeos heurísticos registrados contra un archivo específico."""
+    """
+    Ejecuta todos los chequeos heurísticos registrados contra un archivo específico.
+    Utiliza un mapa de chequeos para desacoplar la lógica de validación de la ejecución.
+    """
     if not isinstance(path, Path):
         return []
 
@@ -139,20 +142,19 @@ def scan_file(path: Path, prevalidated: bool = False) -> ScanResult:
             return []
     
     findings: ScanResult = []
-    path_name_lower = abs_path.name.lower()
-    path_suffix_lower = abs_path.suffix.lower()
-
-    if path_name_lower in SYSTEM_LOOKALIKES:
-        res = check_system_lookalike(abs_path)
-        if res: findings.append(res)
     
-    if path_suffix_lower in SUSPICIOUS_EXECUTABLE_EXT:
-        res = check_recent_executable_in_downloads(abs_path)
-        if res: findings.append(res)
-        
-    if DOUBLE_EXTENSION_RE.search(abs_path.name):
-        res = check_double_extension(abs_path)
-        if res: findings.append(res)
+    # Registro de reglas heurísticas condicionales
+    checks: List[tuple[bool, Callable[[Path], Optional[Suspicion]]]] = [
+        (abs_path.name.lower() in SYSTEM_LOOKALIKES, check_system_lookalike),
+        (abs_path.suffix.lower() in SUSPICIOUS_EXECUTABLE_EXT, check_recent_executable_in_downloads),
+        (bool(DOUBLE_EXTENSION_RE.search(abs_path.name)), check_double_extension)
+    ]
+
+    for condition, check_func in checks:
+        if condition:
+            result = check_func(abs_path)
+            if result:
+                findings.append(result)
             
     return findings
 

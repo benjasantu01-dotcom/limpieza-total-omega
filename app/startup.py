@@ -69,21 +69,22 @@ class StartupEntry:
     _checked_exists: bool = False
 
     def _is_valid_executable(self, path: Path) -> bool:
-        """Determina si un objeto Path apunta a un ejecutable válido y seguro."""
+        """Determina si el objeto Path corresponde a una extensión ejecutable y no es un symlink."""
         try:
             return path.suffix.lower() in EXECUTABLE_EXTS and not path.is_symlink()
         except (OSError, ValueError, RuntimeError, TypeError):
             return False
 
     def _sanitize_command(self, raw_cmd: str) -> str:
-        """Filtra caracteres no imprimibles del comando para evitar inyecciones o errores de display."""
+        """Limpia la cadena de comando eliminando caracteres de control y espacios innecesarios."""
         if not isinstance(raw_cmd, str):
             return ""
         return "".join(c for c in raw_cmd.strip() if ord(c) >= 32)
 
     def _extract_quoted_path(self, raw_cmd: str) -> str:
         """
-        Extracts path from quoted command. Returns empty string if invalid or unsafe.
+        Analiza cadenas entre comillas para extraer la ruta del ejecutable.
+        Valida que no contenga caracteres inválidos para el sistema de archivos.
         """
         if not isinstance(raw_cmd, str) or len(raw_cmd) < 2:
             return ""
@@ -104,7 +105,10 @@ class StartupEntry:
             return ""
 
     def _resolve_and_cache_path(self, path_str: str) -> str:
-        """Expande y valida la ruta contra el sistema de archivos usando caché."""
+        """
+        Intenta normalizar una ruta, resolviendo enlaces simbólicos. 
+        Usa caché para evitar accesos repetidos a disco en rutas ya validadas.
+        """
         if not isinstance(path_str, str) or not path_str or any(c in path_str for c in '<>|?*'):
             return ""
         
@@ -129,7 +133,7 @@ class StartupEntry:
             return path_str
 
     def _resolve_path_from_command(self, cmd: str) -> str:
-        """Selecciona la estrategia de extracción según el formato del comando."""
+        """Despacha la estrategia de resolución basada en si la ruta está entrecomillada o no."""
         if cmd.startswith('"'):
             return self._extract_quoted_path(cmd)
         parts: List[str] = cmd.split()
@@ -137,7 +141,7 @@ class StartupEntry:
         
     @property
     def executable(self) -> str:
-        """Resuelve el ejecutable principal mediante caché."""
+        """Resuelve el ejecutable principal mediante caché una vez calculada la ruta."""
         if self._checked_exists:
             return self._exec_cache or ""
             

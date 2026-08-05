@@ -12,7 +12,7 @@ import stat
 import re
 import ctypes
 from pathlib import Path
-from typing import Union, Iterable, TypeAlias, Final, Mapping, Sequence
+from typing import Union, Iterable, TypeAlias, Final
 from functools import lru_cache
 
 PathLike: TypeAlias = Union[str, os.PathLike]
@@ -121,7 +121,17 @@ def _is_readonly(path: Path) -> bool:
 
 @lru_cache(maxsize=2048)
 def normalize(path: PathLike) -> Path:
-    """Resuelve la ruta a su forma absoluta y canonizada. Expande '~' y elimina redundancias."""
+    """
+    Resuelve una ruta a su forma absoluta y canonizada.
+    
+    Args:
+        path: Ruta a normalizar.
+    Returns:
+        Un objeto Path absoluto.
+    Raises:
+        ValueError: Si la ruta está vacía o no puede resolverse.
+        TypeError: Si el input no es un tipo soportado.
+    """
     if not isinstance(path, (str, os.PathLike)):
         raise TypeError(f"Entrada inválida: tipo {type(path)} no soportado.")
     
@@ -190,7 +200,14 @@ def is_sensitive_file(path: PathLike) -> bool:
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> Path:
     """
     Realiza una validación exhaustiva de seguridad antes de permitir cualquier modificación física.
-    Lanza UnsafePathError ante cualquier irregularidad o riesgo de seguridad.
+    
+    Args:
+        path: Ruta a validar.
+        allow_sensitive: Si es True, permite archivos con extensiones marcadas como sensibles.
+    Returns:
+        El objeto Path verificado si la ruta es segura.
+    Raises:
+        UnsafePathError: Si la ruta viola cualquier regla de seguridad.
     """
     if path is None:
         raise UnsafePathError("La ruta proporcionada es None.")
@@ -209,7 +226,6 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
         raise UnsafePathError("Operación bloqueada: ruta demasiado larga.")
     
     try:
-        raw_path = Path(str_val).expanduser()
         p = normalize(str_val)
     except (TypeError, ValueError, OSError, RuntimeError) as e:
         raise UnsafePathError(f"Error al procesar ruta: {e}")
