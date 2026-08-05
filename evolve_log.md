@@ -647,3 +647,40 @@ FAILED evolve/tests/test_assistant.py::test_explain_area_on_unknown_input - Attr
 - `2026-08-05T05:06:10` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad mediante la adición de Type Hints en la constante `_WEIGHT_ITEMS` y la estandarización de los `docstrings` de las funciones de puntuación para que describan explícitamente el impacto de los umbrales configurados.
 - `2026-08-05T05:06:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-05T05:06:10` Corrida terminada. Total usado hoy: 112.
+- `2026-08-05T05:14:52` Arrancando corrida. Quedan hoy ~188 peticiones objetivo.
+- `2026-08-05T05:15:53` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-05T05:16:08` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-08-05T05:16:40` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): el archivo se encogió al 23% del original (posible pérdida de código)
+- `2026-08-05T05:17:05` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica y legibilidad añadiendo docstrings descriptivos, especificando el contrato de las funciones (parámetros y retornos), y renombrando variables internas para clarificar su propósito sin alterar la lógica.
+- `2026-08-05T05:17:28` ✅ Mejora aceptada en organizer.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenibilidad de `organizer.py` mediante la refactorización de `scan_for_junk` para extraer la lógica de filtrado de archivos a un método privado y robusto, mejorando la documentación interna con tipos explícitos y comentarios claros sobre la lógica de seguridad.
+- `2026-08-05T05:17:43` Tests FALLARON:
+```
+.. [ 72%]
+........................................................................ [ 96%]
+....F......                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_quarantine_summary_reports_size_and_origin ________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-3/test_quarantine_summary_report0')
+cuarentena = PosixPath('/tmp/pytest-of-runner/pytest-3/test_quarantine_summary_report0/_Cuarentena')
+
+    def test_quarantine_summary_reports_size_and_origin(tmp_path, cuarentena):
+        origen = tmp_path / "pesado.bin"
+        origen.write_bytes(b"0" * 2048)
+        quarantine.quarantine_file(origen, reason="motivo de prueba", base=cuarentena)
+    
+        texto = "\n".join(quarantine.summarize(cuarentena))
+        assert "pesado.bin" in texto
+        assert "motivo de prueba" in texto
+>       assert "restaurar" in texto
+E       AssertionError: assert 'restaurar' in '1 archivo(s) en cuarentena — 0.0 MB\n\n  [9039a7212abf] pesado.bin — 0.0 MB\n      Motivo: motivo de prueba'
+
+evolve/tests/test_safety.py:311: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - AssertionError: assert 'restaurar' in '1 archivo(s) en cuarentena — 0.0 MB\n\n  [9039a7212abf] pesado.bin — 0.0 MB\n      Motivo: motivo de prueba'
+1 failed, 298 passed in 1.06s
+
+```
+- `2026-08-05T05:17:43` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la adición de docstrings estructurados, mayor tipado explícito en la lógica de manifiestos y la normalización de la validación de integridad para reducir la redundancia en `purge` y `restore`.
+- `2026-08-05T05:17:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-05T05:17:43` Corrida terminada. Total usado hoy: 116.

@@ -126,6 +126,15 @@ def _is_allowed_directory(name: str) -> bool:
     return name.lower() not in SYSTEM_FOLDER_BLOCKLIST
 
 
+def _is_file_accessible(path: Path) -> bool:
+    """Verifica si un archivo puede ser abierto en modo lectura exclusiva."""
+    try:
+        with open(path, 'rb'):
+            return True
+    except (OSError, PermissionError):
+        return False
+
+
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     """
     Escaneo recursivo de directorios buscando candidatos a limpieza.
@@ -152,17 +161,11 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
                             if _is_allowed_directory(entry.name):
                                 _walk_dir(entry.path)
                         else:
-                            # Filtro por extensión usando el nombre directo del entry
+                            # Filtro: debe ser extensión de basura, modificable, y no estar en uso
                             ext = os.path.splitext(entry.name)[1].lower()
                             if ext in _LOWER_JUNK_EXTS:
                                 entry_path = Path(entry.path)
-                                if is_safe_to_modify(entry_path):
-                                    # Verificar si el archivo está accesible para lectura
-                                    try:
-                                        with open(entry_path, 'rb'): pass
-                                    except (OSError, PermissionError):
-                                        continue
-                                    
+                                if is_safe_to_modify(entry_path) and _is_file_accessible(entry_path):
                                     stat = entry.stat()
                                     found.append(JunkFile(
                                         path=entry_path,
@@ -238,9 +241,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             if os.path.samefile(current_abs, dest):
                 continue
             
-            try:
-                with open(current_abs, 'rb'): pass
-            except (OSError, PermissionError):
+            if not _is_file_accessible(current_abs):
                 continue
 
             target = _generate_unique_target(dest / f"{current_abs.stem}_{int(jf.modified.timestamp())}{current_abs.suffix}")
