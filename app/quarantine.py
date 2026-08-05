@@ -72,7 +72,7 @@ class QuarantineItem:
     quarantined_at: str
     sha256: str = ""
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Valida tipos básicos y asegura consistencia post-instanciación."""
         self.size_bytes = int(self.size_bytes)
         if not isinstance(self.item_id, str) or not self.item_id:
@@ -109,6 +109,7 @@ class QuarantineItem:
     def verify_integrity(self, stored_path: Path) -> bool:
         """
         Valida que el archivo en cuarentena coincida con los metadatos registrados.
+        Verifica tanto el tamaño en bytes como el hash SHA-256 almacenado.
         """
         if not stored_path or not stored_path.is_file():
             return False
@@ -139,7 +140,7 @@ def _get_sha256(path: Path) -> str:
 
 
 def _is_file_locked(path: Path) -> bool:
-    """Verifica si un archivo está bloqueado intentando abrirlo en modo lectura."""
+    """Verifica si un archivo está bloqueado intentando abrirlo en modo lectura exclusiva."""
     try:
         with open(path, "rb") as f:
             return False
@@ -148,7 +149,7 @@ def _is_file_locked(path: Path) -> bool:
 
 
 def _safe_unlink(path: Path) -> bool:
-    """Intenta borrar un archivo de forma segura capturando errores de E/S."""
+    """Intenta borrar un archivo de forma segura capturando errores de E/S del SO."""
     try:
         if path.is_file():
             path.unlink()
@@ -171,7 +172,7 @@ def quarantine_dir(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
 
 
 def _manifest_path(base_dir: Path) -> Path:
-    """Retorna la ubicación esperada del archivo manifest.json."""
+    """Retorna la ubicación absoluta del archivo manifest.json."""
     return base_dir / MANIFEST_NAME
 
 
@@ -213,7 +214,7 @@ def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload:
 
 
 def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
-    """Persiste la lista de ítems de forma atómica usando un archivo temporal."""
+    """Persiste la lista de ítems de forma atómica usando un archivo temporal y reemplazo."""
     if not isinstance(items, list):
         raise ValueError("El manifiesto debe ser una lista de ítems.")
         
@@ -239,7 +240,7 @@ def quarantine_file(
     reason: str = "Marcado como sospechoso",
     base: Union[str, Path] = DEFAULT_QUARANTINE_DIR,
 ) -> QuarantineItem:
-    """Mueve un archivo a cuarentena tras validar que es seguro operarlo."""
+    """Mueve un archivo a cuarentena tras validar que no es del sistema y es seguro operarlo."""
     if not source:
         raise ValueError("La ruta de origen no puede estar vacía.")
     
@@ -329,12 +330,12 @@ def quarantine_file(
 
 
 def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
-    """Retorna los ítems en cuarentena, ordenados cronológicamente."""
+    """Retorna los ítems en cuarentena, ordenados cronológicamente (recientes primero)."""
     return sorted(load_manifest(base), key=lambda i: i.quarantined_at, reverse=True)
 
 
 def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
-    """Restaura un archivo a su ruta original tras verificar su integridad."""
+    """Restaura un archivo a su ruta original tras verificar que el destino es seguro."""
     if not item_id:
         raise ValueError("ID de ítem inválido.")
     
@@ -386,7 +387,7 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
 
 
 def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> bool:
-    """Elimina físicamente un ítem tras validar su integridad."""
+    """Elimina físicamente un ítem tras validar que su integridad no fue comprometida."""
     if not item_id:
         return False
         
@@ -434,7 +435,7 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
                 continue
             
             try:
-                # Solo verificamos integridad si el archivo está registrado
+                # Solo verificamos integridad si el archivo está registrado en el manifiesto
                 if entry.name in item_map:
                     if item_map[entry.name].verify_integrity(entry):
                         if _safe_unlink(entry):
@@ -455,7 +456,7 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
 
 
 def total_quarantined_bytes(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
-    """Calcula el peso total en bytes de los archivos bajo cuarentena usando el manifiesto."""
+    """Calcula el peso total en bytes de los archivos bajo cuarentena registrados."""
     return sum(item.size_bytes for item in load_manifest(base))
 
 

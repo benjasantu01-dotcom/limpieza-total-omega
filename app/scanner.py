@@ -19,7 +19,7 @@ import os
 from dataclasses import dataclass
 from pathlib import Path
 from datetime import datetime, timedelta
-from typing import List, Optional, Union, Final, Callable, TypeAlias
+from typing import List, Optional, Union, Final, Callable, TypeAlias, Tuple
 from safety import is_protected_path, is_safe_to_modify
 
 # Configuración de logger para el módulo
@@ -41,6 +41,7 @@ class Suspicion:
 
 # Alias de tipos para mejorar la legibilidad y mantenibilidad de la lógica de escaneo
 SuspicionCheck: TypeAlias = Callable[[Path, Optional[os.DirEntry]], Optional[Suspicion]]
+ConditionCheck: TypeAlias = Callable[[Path], bool]
 ScanResult: TypeAlias = List[Suspicion]
 
 # REGEX para detectar extensiones dobles donde la última es ejecutable,
@@ -126,8 +127,8 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None) -> O
         pass
     return None
 
-# Registro de heurísticas para desacoplar la ejecución de los chequeos de la función scan_file
-CHECK_REGISTRY: Final[List[tuple[Callable[[Path], bool], SuspicionCheck]]] = [
+# Registro de heurísticas: Tuplas conteniendo (función que valida si aplicar el chequeo, función que ejecuta el chequeo).
+CHECK_REGISTRY: Final[List[Tuple[ConditionCheck, SuspicionCheck]]] = [
     (lambda p: p.name.lower() in SYSTEM_LOOKALIKES, check_system_lookalike),
     (lambda p: p.suffix.lower() in SUSPICIOUS_EXECUTABLE_EXT, check_recent_executable_in_downloads),
     (lambda p: bool(DOUBLE_EXTENSION_RE.search(p.name)), check_double_extension)
@@ -135,7 +136,8 @@ CHECK_REGISTRY: Final[List[tuple[Callable[[Path], bool], SuspicionCheck]]] = [
 
 def scan_file(path: Path, entry: Optional[os.DirEntry] = None, prevalidated: bool = False) -> ScanResult:
     """
-    Ejecuta todos los chequeos heurísticos registrados contra un archivo específico.
+    Ejecuta los chequeos registrados si se cumplen las condiciones pre-requisito.
+    Utiliza el registro global CHECK_REGISTRY para aplicar heurísticas desacopladas.
     """
     if not isinstance(path, Path) or not path.exists():
         return []

@@ -1195,3 +1195,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-05T09:42:53` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: legibilidad y documentación).
 - `2026-08-05T09:42:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-05T09:42:53` Corrida terminada. Total usado hoy: 220.
+- `2026-08-05T09:50:45` Arrancando corrida. Quedan hoy ~80 peticiones objetivo.
+- `2026-08-05T09:51:15` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Se introdujeron docstrings descriptivos y type hints faltantes en funciones internas para mejorar la legibilidad, asegurando que el propósito de cada operación de seguridad quede explícito para futuros colaboradores.
+- `2026-08-05T09:51:33` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 110): unterminated string literal (detected at line 110)
+- `2026-08-05T09:51:58` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). He mejorado la documentación interna y la claridad del código añadiendo *docstrings* detallados que explican el "porqué" de las restricciones de seguridad, y reforzado la tipificación para que sea más explícita, facilitando el mantenimiento futuro del equipo.
+- `2026-08-05T09:52:06` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante la inclusión de type hints precisos en el `CHECK_REGISTRY` y la actualización de los docstrings en las funciones de escaneo para clarificar la distinción entre los filtros de condición y la ejecución del chequeo.
+- `2026-08-05T09:52:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-05T09:52:06` Corrida terminada. Total usado hoy: 224.
