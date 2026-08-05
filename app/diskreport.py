@@ -180,6 +180,9 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     """
     Recorre recursivamente un directorio omitiendo enlaces simbólicos, puntos de unión (junctions) 
     y rutas protegidas por sistema.
+    
+    Yields:
+        Tuplas conteniendo la ruta completa del archivo y su tamaño en bytes.
     """
     if not isinstance(directory, (str, os.PathLike)):
         return
@@ -196,13 +199,15 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     except (OSError, RuntimeError, PermissionError, ValueError, TypeError):
         return
 
-    visited_directories = {base_path}
+    visited_directories: set[Path] = {base_path}
 
     def scan_level(current_path: Path) -> Generator[Tuple[Path, int], None, None]:
+        """Función interna para el recorrido recursivo con validación de seguridad."""
         try:
             with os.scandir(current_path) as iterator:
                 for entry in iterator:
                     try:
+                        # Excluye enlaces simbólicos y puntos de reparse (Windows Junctions)
                         if entry.is_symlink() or (os.name == 'nt' and entry.stat(follow_symlinks=False).st_reparse_tag != 0):
                             continue
                         
@@ -270,7 +275,6 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
         return []
     try:
         base = Path(directory).expanduser().resolve()
-        # Seguridad adicional: validar que la base sea un directorio real no reparseado
         if base.is_symlink() or (os.name == 'nt' and base.stat().st_reparse_tag != 0):
             return []
         if not base.is_dir() or (skip_protected and is_protected_path(base)):

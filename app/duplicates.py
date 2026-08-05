@@ -81,15 +81,15 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
     """
     if path is None or chunk_size <= 0: return None
     try:
-        p = Path(path).resolve(strict=True)
-        if is_protected_path(p) or not p.is_file() or p.is_symlink():
+        file_path = Path(path).resolve(strict=True)
+        if is_protected_path(file_path) or not file_path.is_file() or file_path.is_symlink():
             return None
         
-        st = p.stat()
-        if st.st_size <= 0: return None
+        stat_info = file_path.stat()
+        if stat_info.st_size <= 0: return None
             
         digest = hashlib.sha256()
-        with open(p, "rb", buffering=chunk_size) as f:
+        with open(file_path, "rb", buffering=chunk_size) as f:
             while True:
                 chunk = f.read(chunk_size)
                 if not chunk: break
@@ -105,14 +105,14 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
     """
     if path is None or read_bytes <= 0: return None
     try:
-        p = Path(path).resolve(strict=True)
-        if is_protected_path(p) or not p.is_file() or p.is_symlink():
+        file_path = Path(path).resolve(strict=True)
+        if is_protected_path(file_path) or not file_path.is_file() or file_path.is_symlink():
             return None
             
-        st = p.stat()
-        if st.st_size <= 0: return None
+        stat_info = file_path.stat()
+        if stat_info.st_size <= 0: return None
 
-        with open(p, "rb", buffering=read_bytes) as f:
+        with open(file_path, "rb", buffering=read_bytes) as f:
             content = f.read(read_bytes)
             if not content:
                 return None
@@ -141,6 +141,11 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
 def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """
     Realiza un recorrido recursivo del sistema de archivos para indexar candidatos por tamaño.
+
+    Args:
+        directories: Lista de rutas base donde comenzar el escaneo.
+        min_size: Tamaño mínimo en bytes para considerar un archivo.
+        skip_protected: Si se deben omitir rutas protegidas.
     """
     groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: set[Tuple[int, int]] = set()
@@ -153,10 +158,9 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
             return
 
         try:
-            with os.scandir(root_path) as it:
-                for entry in it:
+            with os.scandir(root_path) as dir_iterator:
+                for entry in dir_iterator:
                     try:
-                        # Seguridad: no seguir symlinks, ni siquiera de directorios, para evitar bucles.
                         if entry.is_symlink(): continue
                         
                         if entry.is_dir():
@@ -168,14 +172,14 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
                             st = entry.stat()
                             if st.st_size < min_size: continue
                             
-                            p = Path(entry.path)
-                            if is_protected_path(p): continue
+                            file_path = Path(entry.path)
+                            if is_protected_path(file_path): continue
                             
                             inode_key = (st.st_dev, st.st_ino)
                             if inode_key in visited_inodes: continue
                             visited_inodes.add(inode_key)
                             
-                            groups[st.st_size].append(p.resolve())
+                            groups[st.st_size].append(file_path.resolve())
                     except (OSError, PermissionError, FileNotFoundError): continue
         except (OSError, PermissionError, FileNotFoundError): pass
 
@@ -223,11 +227,9 @@ def find_duplicates(
     groups: List[DuplicateGroup] = []
     
     for size, same_size_paths in potential_groups:
-        # Etapa 2: Refinamiento por cabecera
         partial_map: Dict[str, List[Path]] = _refine_by_hash(same_size_paths, partial_hash)
         
         for partial_candidates in partial_map.values():
-            # Etapa 3: Confirmación por hash completo
             full_map: Dict[str, List[Path]] = _refine_by_hash(partial_candidates, hash_file)
             
             for digest, confirmed_paths in full_map.items():
@@ -237,7 +239,6 @@ def find_duplicates(
                     paths=sorted(confirmed_paths)
                 ))
 
-    # Ordenar grupos por mayor impacto de recuperación de espacio
     groups.sort(key=lambda g: g.wasted_bytes, reverse=True)
     return groups
 
@@ -268,7 +269,6 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     if not valid_paths:
         return None
 
-    # Conservar el más antiguo (menor mtime), luego el de ruta más corta
     return min(valid_paths, key=lambda x: (x[0], x[1]))[2]
 
 

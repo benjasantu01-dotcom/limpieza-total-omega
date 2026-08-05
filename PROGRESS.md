@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **251** (49.8% de aceptación)
+- Mejoras aceptadas: **252** (50.0% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 29
+- Rechazadas por guardia de seguridad: 28
 - Sin cambios (nada sustancial que mejorar): 12
 - Sin respuesta de la IA (error o límite): 200
 
@@ -16,37 +16,41 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-03 | 23 | 0 | 3 | 2 | 18 |
+| 2026-08-03 | 20 | 0 | 2 | 2 | 18 |
 | 2026-08-04 | 166 | 11 | 20 | 8 | 145 |
-| 2026-08-05 | 62 | 1 | 6 | 2 | 37 |
+| 2026-08-05 | 66 | 1 | 6 | 2 | 37 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **55**
+- legibilidad y documentación: **53**
 - seguridad defensiva: **50**
 - robustez ante casos límite: **49**
-- legibilidad y documentación: **49**
-- rendimiento: **48**
+- rendimiento: **45**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **23**
-- `organizer.py`: **21**
+- `quarantine.py`: **22**
 - `settings.py`: **21**
 - `assistant.py`: **21**
 - `scanner.py`: **20**
-- `healthscore.py`: **19**
-- `duplicates.py`: **19**
+- `healthscore.py`: **20**
+- `organizer.py`: **20**
+- `duplicates.py`: **20**
+- `browser.py`: **19**
+- `diskreport.py`: **19**
 - `branding.py`: **18**
-- `browser.py`: **18**
-- `diskreport.py`: **18**
 - `main.py`: **16**
-- `safety.py`: **15**
+- `safety.py`: **14**
 - `memory.py`: **12**
 - `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-05T05:06:10` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad mediante la adición de Type Hints en la constante `_WEIGHT_ITEMS` y la estandarización de los `docstrings` de las funciones de puntuación para que describan explícitamente el impacto de los umbrales configurados.
+- `2026-08-05T05:05:56` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints detallados en las funciones de escaneo y el uso de docstrings estilo Google para clarificar los parámetros, además de renombrar variables internas (`it`, `p`, `st`) por nombres más descriptivos como `dir_iterator` o `file_path` para facilitar el mantenimiento del código.
+- `2026-08-05T05:05:31` **diskreport.py** (legibilidad y documentación): Mejora la legibilidad del código mediante el uso de type hints más explícitos y la incorporación de docstrings descriptivos que aclaran la intención de los algoritmos de filtrado y estructuras de datos, facilitando el mantenimiento.
+- `2026-08-05T05:05:04` **browser.py** (legibilidad y documentación): Mejoré la documentación y mantenibilidad del módulo añadiendo type hints faltantes, tipado explícito para evitar ambigüedades en `directory_size` y `_is_valid_cache_path`, y una mejor estructura en los docstrings para clarificar las responsabilidades de las funciones.
 - `2026-08-05T04:56:02` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints faltantes en las firmas de funciones, documentando los parámetros de las funciones gráficas y añadiendo una sección de "Glosario" en el docstring inicial para clarificar la terminología visual utilizada en toda la app.
 - `2026-08-05T04:54:52` **settings.py** (manejo de errores y validación de entradas): Mejora la robustez del validador `_validate_str` mediante la inclusión de un chequeo explícito de tipos y la sanitización de rutas para evitar excepciones no capturadas al procesar configuraciones maliciosas o malformadas.
 - `2026-08-05T04:45:34` **scanner.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `check_system_lookalike` y `scan_file` para evitar fallos silenciosos o excepciones al procesar rutas, validando explícitamente que los componentes de la ruta sean accesibles antes de operar sobre ellos.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-05T04:25:15` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `hash_file` y `partial_hash` ante errores inesperados durante la lectura de archivos, integrando una validación de `st_size` más estricta para evitar intentos de lectura innecesarios y garantizando que se manejen correctamente los casos donde el sistema reporta archivos que no se pueden abrir.
 - `2026-08-05T04:25:06` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `summarize` y las funciones de consulta integrando validaciones de tipo y excepciones específicas para evitar que rutas malformadas o errores de permisos silencien el análisis, asegurando que el reporte siempre contenga información diagnóstica útil incluso ante fallos parciales.
 - `2026-08-05T04:24:40` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `directory_size` y `_is_safe_path` ante errores de entrada (`None`, tipos incorrectos o rutas malformadas) centralizando la validación mediante `try/except` más específicos y chequeos de tipo defensivos para evitar que fallos inesperados en el sistema de archivos detengan la ejecución del escáner.
-- `2026-08-05T04:24:16` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y `draw_logo` capturando excepciones de forma específica y validando parámetros críticos para prevenir fallos silenciosos o bloqueos inesperados.
-- `2026-08-05T03:56:39` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_gen_problems` y `local_answer` implementando un manejo de iteradores más seguro y un chequeo explícito de estados vacíos para evitar `StopIteration` inesperados o errores de lógica en la generación de sugerencias.
-- `2026-08-05T02:32:58` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `settings_path` reemplazando el bucle `while` manual por una validación estricta que utiliza `ensure_safe_to_modify`, previniendo así cualquier escalada fuera de los directorios permitidos antes de intentar resolver la ruta.
-- `2026-08-05T02:32:48` **scanner.py** (seguridad defensiva): Mejoré la seguridad defensiva en `scan_file` y `scan_directory` para validar que los archivos/directorios procesados no se encuentren fuera de la raíz original escaneada (previniendo *path traversal* o navegación indebida ante enlaces simbólicos maliciosos), utilizando `commonpath` para asegurar el confinamiento de la operación.
