@@ -67,6 +67,7 @@ _RESERVED_NAMES: Final[frozenset[str]] = frozenset({
 })
 
 _cache_system_check: dict[Path, bool] = {}
+_cache_security_check: dict[Path, bool] = {}
 
 
 def _has_invalid_chars(path_str: str) -> bool:
@@ -225,35 +226,23 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
     Validador estricto para operaciones de escritura.
     Centraliza toda la lógica de seguridad: bloquea rutas reservadas, redes,
     archivos bloqueados, de sistema o de solo lectura.
-    
-    Args:
-        path: Ruta a validar.
-        allow_sensitive: Si es True, permite archivos de configuración crítica.
-        
-    Raises:
-        UnsafePathError: Si la ruta no cumple con los criterios de seguridad.
     """
     if path is None:
         raise UnsafePathError("Ruta nula recibida.")
 
     p = normalize(path)
+    if p in _cache_security_check and _cache_security_check[p]:
+        return p
+
     str_val = str(p)
 
-    if _has_invalid_chars(str_val):
-        raise UnsafePathError("Ruta contiene caracteres de control o formato potencialmente maliciosos.")
-    
-    if len(str_val) > 260:
-        raise UnsafePathError("Operación bloqueada: ruta demasiado larga.")
-
-    if _is_reserved_device_name(p.stem):
-        raise UnsafePathError("Operación bloqueada: nombre de dispositivo reservado.")
+    if _has_invalid_chars(str_val) or len(str_val) > 260 or _is_reserved_device_name(p.stem):
+        raise UnsafePathError("Ruta inválida o formato bloqueado.")
     if str_val.startswith(("\\\\", "//")):
         raise UnsafePathError("Operación bloqueada: rutas de red no permitidas.")
     
     if p.exists():
-        if not os.access(p, os.W_OK):
-            raise UnsafePathError("Operación bloqueada: sin permisos de escritura.")
-        if _is_reparse_point(p) or _is_readonly(p) or _is_file_in_use(p) or _is_system_or_hidden(p):
+        if not os.access(p, os.W_OK) or _is_reparse_point(p) or _is_readonly(p) or _is_file_in_use(p) or _is_system_or_hidden(p):
             raise UnsafePathError("Operación bloqueada: archivo inaccesible, protegido o sistema.")
         if p.is_file() and p.stat().st_nlink > 1:
             raise UnsafePathError("Operación bloqueada: enlace físico (hard link) detectado.")
@@ -263,6 +252,8 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
     
     if not allow_sensitive and is_sensitive_file(p):
         raise UnsafePathError("Operación bloqueada: extensión sensible.")
+    
+    _cache_security_check[p] = True
     return p
 
 

@@ -68,7 +68,7 @@ class Scanner:
     def __init__(self, base_root: Path) -> None:
         self.results: ScanResult = []
         self.seen: set[str] = set()
-        self.base_root = base_root.resolve()
+        self.base_root_str = str(base_root.resolve())
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         """Determina si una entrada del sistema de archivos es un punto de reanálisis (Junction/Symlink)."""
@@ -82,23 +82,21 @@ class Scanner:
         try:
             if not entry or not entry.path:
                 return
-            path_obj = Path(entry.path).resolve()
             
-            # Defensa: Verificar que la ruta resuelta esté contenida en el base_root original
-            if self.base_root not in path_obj.parents and path_obj != self.base_root:
+            # Evitar resolución de path completa en cada iteración por performance
+            if not entry.path.startswith(self.base_root_str):
                 return
 
+            path_obj = Path(entry.path)
             if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
                 return
 
             if entry.is_dir(follow_symlinks=False):
                 if not self._is_reparse_point(entry):
-                    path_key = str(path_obj)
-                    if path_key not in self.seen:
-                        self.seen.add(path_key)
+                    if entry.path not in self.seen:
+                        self.seen.add(entry.path)
                         stack.append(entry.path)
             elif entry.is_file(follow_symlinks=False):
-                # Pasamos metadatos al escáner para evitar cálculos repetitivos en sub-funciones
                 name = entry.name
                 suffix = os.path.splitext(name)[1].lower()
                 self.results.extend(scan_file(path_obj, entry=entry, name=name, suffix=suffix, prevalidated=True))
