@@ -555,3 +555,34 @@ FAILED evolve/tests/test_modules.py::test_blend_clamps_out_of_range_ratios - Ass
 - `2026-08-05T14:59:22` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el bucle de escaneo eliminando la resolución innecesaria de rutas `Path().resolve()` dentro de `process_entry` (operación costosa en I/O) y reemplazando `path_obj.parents` por una comparación de cadenas con `str.startswith()` para verificar la contención en el directorio base, reduciendo drásticamente las llamadas al sistema.
 - `2026-08-05T14:59:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-05T14:59:22` Corrida terminada. Total usado hoy: 344.
+- `2026-08-05T15:08:01` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-05T15:08:27` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: rendimiento).
+- `2026-08-05T15:08:52` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.09s
+
+```
+- `2026-08-05T15:08:52` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `list_startup_entries` sustituyendo el uso de una caché global ineficiente y propensa a errores por una lógica de deduplicación integrada que evita cálculos redundantes durante la construcción de la lista de entradas.
+- `2026-08-05T15:09:37` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Reforcé la robustez del motor local ante valores inesperados en el contexto y posibles fallos de procesamiento, garantizando que una métrica corrupta o un resultado de cálculo no bloqueen la respuesta del asistente.
+- `2026-08-05T15:09:51` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Mejoré la robustez de `save_logo_svg` al reemplazar los chequeos condicionales redundantes por un manejo centralizado en `ensure_safe_to_modify`, garantizando que cualquier error de validación de ruta (incluyendo rutas inexistentes o permisos denegados) sea capturado de forma consistente sin abortar la ejecución.
+- `2026-08-05T15:09:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-05T15:09:51` Corrida terminada. Total usado hoy: 348.

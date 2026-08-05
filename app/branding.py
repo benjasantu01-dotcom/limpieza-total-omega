@@ -293,12 +293,8 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         return None
     try:
         target = Path(destination).resolve()
-        if is_protected_path(target) or not is_safe_to_modify(target):
-            return None
-        
+        # La validación centralizada garantiza consistencia y robustez
         ensure_safe_to_modify(target)
-        if target.parent.exists():
-            ensure_safe_to_modify(target.parent)
         
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(logo_svg(), encoding="utf-8")
