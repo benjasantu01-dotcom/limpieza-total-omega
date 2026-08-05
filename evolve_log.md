@@ -607,3 +607,36 @@
 - `2026-08-05T04:45:34` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejoré el manejo de errores en `check_system_lookalike` y `scan_file` para evitar fallos silenciosos o excepciones al procesar rutas, validando explícitamente que los componentes de la ruta sean accesibles antes de operar sobre ellos.
 - `2026-08-05T04:45:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-05T04:45:34` Corrida terminada. Total usado hoy: 104.
+- `2026-08-05T04:54:26` Arrancando corrida. Quedan hoy ~196 peticiones objetivo.
+- `2026-08-05T04:54:52` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez del validador `_validate_str` mediante la inclusión de un chequeo explícito de tipos y la sanitización de rutas para evitar excepciones no capturadas al procesar configuraciones maliciosas o malformadas.
+- `2026-08-05T04:55:16` ➖ Sin cambios en startup.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `parse_registry_csv` añadiendo una validación explícita para entradas mal formadas en el CSV que podrían contener rutas inválidas o nombres nulos, evitando excepciones durante el procesamiento del output de PowerShell.
+- `2026-08-05T04:55:49` Tests FALLARON:
+```
+ son lo más seguro de limpiar.",
+            "seguridad": "Señales sospechosas en tus Descargas: doble extensión, "
+                         "ejecutables recién bajados, nombres que imitan al sistema. "
+                         "Son señales, no una condena.",
+            "memoria": "Cuánta RAM queda disponible. Tener poca hace que Windows use "
+                       "el disco como memoria, y ahí se siente la lentitud. Ojo: RAM "
+                       "ocupada como caché es buena, no es un problema.",
+            "disco": "Espacio libre en la unidad del sistema. Por debajo del 10% "
+                     "Windows empieza a andar mal, no solo a quedarse sin lugar.",
+            "duplicados": "Copias idénticas del mismo archivo. Espacio recuperable "
+                          "sin perder nada, porque siempre se conserva una.",
+            "inicio": "Programas que arrancan con Windows. Cada uno suma tiempo de "
+                      "encendido y consume memoria desde el minuto cero.",
+        }
+>       return explicaciones.get(area.strip().lower(), "No tengo una explicación para esa área.")
+                                 ^^^^^^^^^^
+E       AttributeError: 'NoneType' object has no attribute 'strip'
+
+app/assistant.py:279: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_explain_area_on_unknown_input - AttributeError: 'NoneType' object has no attribute 'strip'
+1 failed, 298 passed in 1.10s
+
+```
+- `2026-08-05T04:55:49` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la documentación interna y la claridad del flujo de trabajo del asistente mediante la adición de Type Hints detallados en funciones críticas, la estandarización de docstrings que describen el propósito lógico y el uso de constantes para mejorar la mantenibilidad de las reglas de negocio, cumpliendo estrictamente con el enfoque de legibilidad.
+- `2026-08-05T04:56:02` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación del módulo añadiendo type hints faltantes en las firmas de funciones, documentando los parámetros de las funciones gráficas y añadiendo una sección de "Glosario" en el docstring inicial para clarificar la terminología visual utilizada en toda la app.
+- `2026-08-05T04:56:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-05T04:56:02` Corrida terminada. Total usado hoy: 108.

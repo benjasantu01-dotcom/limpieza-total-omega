@@ -1,17 +1,20 @@
 """
 branding.py — identidad visual de Limpieza Total Omega.
 
-Centraliza nombre, versión, paleta, tipografía, iconografía y logo en un solo
-lugar, para que la interfaz sea consistente.
+Centraliza nombre, versión, paleta, tipografía, iconografía y logo.
+
+GLOSARIO VISUAL:
+  - Surface: Fondos de contenedores y áreas de trabajo.
+  - Accent: Colores de marca para llamados a la acción o elementos destacados.
+  - Glow: Efectos de iluminación sutil para resaltar estados de salud.
+  - Severity: Código cromático para niveles de riesgo (OK, Info, Warning, Danger).
 
 Referencia de funciones gráficas para el layout:
-  - `draw_logo(canvas, ...)`: Renderiza el escudo/omega en widgets Tkinter.
-  - `draw_ring(canvas, percent, ...)`: Medidor circular de estado (HealthScore).
-  - `draw_gradient_bar(canvas, ...)`: Franja decorativa de alta fidelidad.
-  - `bar(percent, ...)`: Generador de texto para paneles de consola/reporte.
+  - `draw_logo(...)`: Renderiza el escudo/omega en widgets Tkinter.
+  - `draw_ring(...)`: Medidor circular de estado (HealthScore).
+  - `draw_gradient_bar(...)`: Franja decorativa de alta fidelidad.
+  - `bar(...)`: Generador de texto para paneles de consola/reporte.
   - `logo_svg(...)`: Serializador de identidad para exportación.
-
-El motivo es un escudo (seguridad) cruzado por un trazo de limpieza.
 """
 
 from __future__ import annotations

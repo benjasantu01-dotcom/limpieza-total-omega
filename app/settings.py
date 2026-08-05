@@ -113,8 +113,8 @@ def _validate_int(key: str, val: Any) -> int | None:
 
 def _validate_str(key: str, val: Any) -> str | None:
     """Valida strings según su contexto (Enum, ruta segura o texto general)."""
-    if not isinstance(val, str): return None
-    text = val.strip()
+    if not isinstance(val, (str, Path)): return None
+    text = str(val).strip()
     if not text: return "" if key in ("ultima_carpeta", "asistente_clave_api") else None
     
     text_lower = text.lower()
@@ -124,7 +124,9 @@ def _validate_str(key: str, val: Any) -> str | None:
     if key == "ultima_carpeta":
         try:
             path = Path(text).expanduser().resolve()
-            return str(path) if is_safe_to_modify(str(path)) else None
+            if is_safe_to_modify(str(path)):
+                return str(path)
+            return None
         except (OSError, RuntimeError, ValueError, TypeError, PermissionError): return None
         
     return text if len(text) <= 256 else None
