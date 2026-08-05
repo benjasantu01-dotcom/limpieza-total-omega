@@ -174,18 +174,16 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
     if len(lines) < 2:
         return []
 
-    candidates: List[Tuple[str, int, int]] = []
-    for line in lines[1:]:
-        parts = [p.strip().strip('"') for p in line.split(",")]
-        if _is_valid_process_row(parts):
-            try:
-                name = parts[0] if parts[0] else "Unknown"
-                candidates.append((name, int(parts[1]), int(parts[2])))
-            except (ValueError, IndexError):
-                continue
+    def _gen_proc():
+        for line in lines[1:]:
+            parts = [p.strip().strip('"') for p in line.split(",")]
+            if _is_valid_process_row(parts):
+                try:
+                    yield ProcessMemory(name=parts[0] or "Unknown", pid=int(parts[1]), working_set=int(parts[2]))
+                except (ValueError, IndexError):
+                    continue
 
-    candidates.sort(key=lambda x: x[2], reverse=True)
-    return [ProcessMemory(name=c[0], pid=c[1], working_set=c[2]) for c in candidates[:limit]]
+    return sorted(_gen_proc(), key=lambda p: p.working_set, reverse=True)[:limit]
 
 
 def _create_memstat_struct(ctypes_lib: "ctypes") -> "ctypes.Structure":

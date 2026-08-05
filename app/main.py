@@ -888,15 +888,16 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _compile_metrics(self) -> Tuple[healthscore.SystemMetrics, memory_mod.Snapshot, diskreport.DriveInfo]:
         """Consolida métricas del sistema priorizando caché existente."""
+        # Se recupera información del cache sin forzar re-procesado si está presente
         hallazgos = self._get_cached("suspicions") or []
-        snapshot = memory_mod.read_snapshot()
-        home = os.path.expanduser("~")
-        unidad = diskreport.drive_usage(home) if os.path.exists(home) else None
-        
         arranque = self._get_cached("startup") or []
         junk = self._get_cached("junk") or []
         dups = self._get_cached("dups") or []
 
+        snapshot = memory_mod.read_snapshot()
+        home = os.path.expanduser("~")
+        unidad = diskreport.drive_usage(home) if os.path.exists(home) else None
+        
         metrics = healthscore.SystemMetrics(
             junk_mb=sum(j.size_bytes for j in junk) / (1024 * 1024),
             suspicious_count=len(hallazgos),

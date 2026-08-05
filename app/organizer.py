@@ -167,10 +167,12 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
                             if _is_allowed_directory(entry.name):
                                 _walk_dir(entry.path)
                         else:
+                            # Optimizacion: extraer extension directamente del nombre de entrada
                             _, ext = os.path.splitext(entry.name)
                             if ext.lower() in junk_exts:
                                 entry_path = Path(entry.path)
                                 if _is_valid_candidate(entry_path):
+                                    # Usamos el stat ya cargado por la entrada del scandir
                                     stat = entry.stat()
                                     found.append(JunkFile(
                                         path=entry_path,
