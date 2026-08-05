@@ -53,12 +53,10 @@ SENSITIVE_EXTENSIONS: Final[frozenset[str]] = frozenset({
     ".reg", ".pol", ".key", ".pem", ".pfx", ".p12", ".crt", ".cer",
 })
 
-_SYSTEM_ROOTS_NAMES: Final[frozenset[str]] = frozenset({
-    os.path.basename(os.environ.get(v, "")).lower() 
-    for v in ("SystemRoot", "windir", "ProgramFiles", "ProgramFiles(x86)", "ProgramData")
+_SYSTEM_ROOTS: Final[list[Path]] = [
+    Path(os.environ.get(v)) for v in ("SystemRoot", "ProgramFiles", "ProgramFiles(x86)", "ProgramData")
     if os.environ.get(v)
-} - {""})
-_ALL_PROTECTED_TOKENS: Final[frozenset[str]] = PROTECTED_DIR_NAMES | _SYSTEM_ROOTS_NAMES
+]
 
 _RESERVED_NAMES: Final[frozenset[str]] = frozenset({
     "con", "prn", "aux", "nul", "com1", "com2", "com3", "com4", "com5", "com6", 
@@ -152,11 +150,11 @@ def is_protected_path(path: PathLike) -> bool:
     
     try:
         p = normalize(path)
-        if any(part.lower() in _ALL_PROTECTED_TOKENS or "~" in part.lower() for part in p.parts):
+        if any(part.lower() in PROTECTED_DIR_NAMES for part in p.parts):
             return True
-        if p == Path(p.anchor):
+        if any(os.path.commonpath([p, sys_root]) == str(sys_root) for sys_root in _SYSTEM_ROOTS):
             return True
-        return p.exists() and _is_reparse_point(p)
+        return p == Path(p.anchor) or (p.exists() and _is_reparse_point(p))
     except (PermissionError, OSError, ValueError, TypeError):
         return True 
 
@@ -258,8 +256,7 @@ def describe_protection(path: PathLike) -> str:
     if is_drive_root(p):
         return f"'{p}' es la raíz de una unidad."
     if is_protected_path(p):
-        protegida = next((part for part in p.parts if part.lower() in _ALL_PROTECTED_TOKENS or "~" in part.lower()), "sistema")
-        return f"'{p}' protegida por directorio '{protegida}'."
+        return f"'{p}' protegida por reglas de sistema."
     if p.exists():
         if not os.access(p, os.W_OK):
             return f"'{p}' sin permisos de escritura."

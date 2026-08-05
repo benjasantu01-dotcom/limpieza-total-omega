@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **264** (52.4% de aceptación)
+- Mejoras aceptadas: **267** (53.0% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 29
+- Rechazadas por guardia de seguridad: 30
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 186
+- Sin respuesta de la IA (error o límite): 182
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-03 | 52 | 1 | 5 | 4 | 36 |
+| 2026-08-03 | 52 | 1 | 5 | 4 | 32 |
 | 2026-08-04 | 166 | 11 | 20 | 8 | 145 |
-| 2026-08-05 | 46 | 0 | 4 | 1 | 5 |
+| 2026-08-05 | 49 | 0 | 5 | 1 | 5 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **62**
 - manejo de errores y validación de entradas: **53**
 - rendimiento: **53**
+- seguridad defensiva: **50**
 - robustez ante casos límite: **49**
-- seguridad defensiva: **47**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **24**
 - `organizer.py`: **22**
+- `settings.py`: **22**
 - `assistant.py`: **22**
 - `duplicates.py`: **21**
 - `healthscore.py`: **21**
-- `settings.py`: **21**
-- `scanner.py`: **20**
+- `scanner.py`: **21**
 - `diskreport.py`: **19**
 - `browser.py`: **19**
 - `branding.py`: **17**
+- `safety.py`: **16**
 - `main.py`: **16**
 - `memory.py`: **15**
-- `safety.py`: **15**
 - `startup.py`: **12**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-05T02:32:58` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `settings_path` reemplazando el bucle `while` manual por una validación estricta que utiliza `ensure_safe_to_modify`, previniendo así cualquier escalada fuera de los directorios permitidos antes de intentar resolver la ruta.
+- `2026-08-05T02:32:48` **scanner.py** (seguridad defensiva): Mejoré la seguridad defensiva en `scan_file` y `scan_directory` para validar que los archivos/directorios procesados no se encuentren fuera de la raíz original escaneada (previniendo *path traversal* o navegación indebida ante enlaces simbólicos maliciosos), utilizando `commonpath` para asegurar el confinamiento de la operación.
+- `2026-08-05T02:32:25` **safety.py** (seguridad defensiva): Se ha mejorado `ensure_safe_to_modify` para detectar de forma preventiva si una ruta apunta a un directorio de sistema mediante el uso de `os.path.commonpath`, lo cual es mucho más robusto que iterar sobre los tokens de `parts`, evitando errores por coincidencias parciales de nombres en rutas profundas.
 - `2026-08-05T02:23:20` **quarantine.py** (seguridad defensiva): Se añadió una validación explícita en `quarantine_file` para detectar y rechazar archivos que contengan nombres o rutas que intenten evadir el sistema de archivos (ej. caracteres nulos o nombres de dispositivos reservados en Windows), mejorando la defensa contra posibles inyecciones de rutas.
 - `2026-08-05T02:22:45` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva de `trim_working_set` implementando una validación estricta del PID mediante una lista de bloqueo de procesos críticos conocidos y verificando que el proceso objetivo no sea el propio proceso de la aplicación (auto-protección), evitando así posibles ataques de denegación de servicio sobre la estabilidad de la herramienta.
 - `2026-08-05T02:12:40` **healthscore.py** (seguridad defensiva): Reforcé la seguridad defensiva encapsulando la lógica de ponderación dentro de `compute_score` y añadiendo validaciones estrictas para evitar que valores fuera de rango o malformados alteren la integridad del cálculo de salud.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-05T02:01:22` **settings.py** (robustez ante casos límite): Mejoré la robustez de `load` añadiendo una verificación explícita de `ruta.exists()` para prevenir excepciones innecesarias ante estados de carrera o archivos inexistentes, y aseguré que `settings_path` sea resiliente ante errores de resolución de rutas en sistemas con permisos restrictivos.
 - `2026-08-05T01:52:02` **scanner.py** (robustez ante casos límite): Mejoré la robustez de `process_entry` y `scan_directory` añadiendo validaciones específicas para rutas inexistentes, enlaces simbólicos rotos y errores de acceso, asegurando que el bucle de escaneo no se interrumpa ante inconsistencias del sistema de archivos mediante el uso de `path.exists()` y un manejo de excepciones más granular.
 - `2026-08-05T01:51:13` **quarantine.py** (robustez ante casos límite): Se reforzó la robustez ante errores de E/S en `purge_all` y se mejoró la resiliencia en la gestión del manifiesto ante archivos huérfanos o parcialmente escritos durante fallos catastróficos, evitando que estados inconsistentes del sistema de archivos bloqueen la app.
-- `2026-08-05T01:42:31` **organizer.py** (robustez ante casos límite): Se añadió una verificación de estado de archivo en `scan_for_junk` mediante la apertura en modo lectura exclusiva para evitar errores de `PermissionError` o `OSError` al intentar procesar archivos bloqueados por el sistema, mejorando la robustez ante casos límite de concurrencia.
-- `2026-08-05T01:41:59` **main.py** (robustez ante casos límite): Mejoré la robustez de la inicialización de `LimpiezaTotalOmegaApp` añadiendo una limpieza de estado previa al bucle principal, asegurando que si la app intenta reiniciarse o se encuentra en un estado inconsistente, no herede residuos de caché o de hilos que puedan fallar ante rutas inexistentes o permisos denegados.
-- `2026-08-05T01:40:56` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez de `compute_score` ante valores nulos o atípicos en `SystemMetrics` mediante la adición de un chequeo de integridad en `summarize` y una validación explícita de las claves de `scores` para prevenir errores de tipo `KeyError` ante configuraciones de `WEIGHTS` incompatibles.

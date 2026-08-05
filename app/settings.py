@@ -143,12 +143,10 @@ def settings_path(path_or_base: PathLike | None = None) -> Path:
     key = str(path_or_base or SETTINGS_DIR)
     if key in _path_cache: return _path_cache[key]
     try:
-        base = Path(key).expanduser()
-        current = base
-        # Evitar bucles infinitos en raíces de sistema
-        while not is_safe_to_modify(str(current)) and current != current.parent:
-            current = current.parent
-        res = (current / SETTINGS_FILE).resolve()
+        candidate = Path(key).expanduser().resolve()
+        # Verificar que la ruta resuelta sea segura para modificar
+        ensure_safe_to_modify(candidate)
+        res = candidate / SETTINGS_FILE
     except (OSError, RuntimeError, ValueError, PermissionError):
         res = SETTINGS_DIR.expanduser().resolve() / SETTINGS_FILE
     _path_cache[key] = res

@@ -63,9 +63,10 @@ class Scanner:
     Controlador de estado para el escaneo recursivo.
     """
     
-    def __init__(self) -> None:
+    def __init__(self, base_root: Path) -> None:
         self.results: ScanResult = []
         self.seen: set[str] = set()
+        self.base_root = base_root
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         """Determina si una entrada del sistema de archivos es un punto de reanálisis (Junction/Symlink)."""
@@ -77,17 +78,19 @@ class Scanner:
     def process_entry(self, entry: os.DirEntry, stack: List[str]) -> None:
         """Procesa una entrada del directorio, filtrando rutas protegidas y analizando archivos."""
         try:
+            path_obj = Path(entry.path).resolve()
+            if os.path.commonpath([str(self.base_root), str(path_obj)]) != str(self.base_root):
+                return
+                
             if entry.is_dir(follow_symlinks=False):
                 if not self._is_reparse_point(entry):
-                    path_obj = Path(entry.path)
                     if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
                         return
-                    path_key = str(path_obj.resolve())
+                    path_key = str(path_obj)
                     if path_key not in self.seen:
                         self.seen.add(path_key)
                         stack.append(entry.path)
             elif entry.is_file(follow_symlinks=False):
-                path_obj = Path(entry.path)
                 if path_obj.exists() and is_safe_to_modify(path_obj) and not is_protected_path(path_obj):
                     self.results.extend(scan_file(path_obj, entry=entry, prevalidated=True))
         except (PermissionError, OSError):
@@ -168,7 +171,7 @@ def scan_directory(directory: Union[str, Path]) -> ScanResult:
     except (OSError, RuntimeError):
         return []
 
-    scanner = Scanner()
+    scanner = Scanner(base_root=root_path)
     root_str = str(root_path)
     stack: List[str] = [root_str]
     scanner.seen.add(root_str)
