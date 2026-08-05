@@ -234,7 +234,6 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     if not metrics.is_finite() or not _validate_weights():
         return HealthResult(0, "F", {}, ["Error: Datos de entrada o configuración no procesables."])
 
-    # Mapeo usando valores ya validados y sanitizados por metrics.validate()
     scores = {
         "seguridad": score_security(metrics.suspicious_count, metrics.suspicious_warnings),
         "disco": score_disk(metrics.disk_free_percent),
@@ -247,9 +246,9 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     breakdown: Dict[str, int] = {}
     total_score: float = 0.0
     
-    # Iteración sobre tuplas precalculadas
     for area, weight in _WEIGHT_ITEMS:
-        score_val = scores[area] * float(weight) * _NORM_FACTOR
+        # Validación de seguridad ante claves inexistentes en WEIGHTS
+        score_val = scores.get(area, 0.0) * float(weight) * _NORM_FACTOR
         breakdown[area] = int(score_val + 0.5)
         total_score += score_val
 

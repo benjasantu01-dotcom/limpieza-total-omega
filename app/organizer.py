@@ -157,6 +157,12 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
                             if ext in _LOWER_JUNK_EXTS:
                                 entry_path = Path(entry.path)
                                 if is_safe_to_modify(entry_path):
+                                    # Verificar si el archivo está accesible para lectura
+                                    try:
+                                        with open(entry_path, 'rb'): pass
+                                    except (OSError, PermissionError):
+                                        continue
+                                    
                                     stat = entry.stat()
                                     found.append(JunkFile(
                                         path=entry_path,

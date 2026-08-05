@@ -119,6 +119,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def __init__(self):
         super().__init__()
         self.tabs: Dict[str, ctk.CTkFrame] = {}
+        # Asegurar estado limpio antes de intentar inicializar la GUI
+        self._executor = None
         try:
             self._init_window_properties()
             self._init_state()
@@ -171,6 +173,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.area_bars: Dict[str, Tuple[ctk.CTkProgressBar, ctk.CTkLabel]] = {}
         
         self._tasks_running = 0
+        if self._executor: self._executor.shutdown(wait=False)
         self._executor = concurrent.futures.ThreadPoolExecutor(max_workers=5)
         self._debounce_id: Optional[str] = None
 
