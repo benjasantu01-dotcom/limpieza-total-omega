@@ -186,6 +186,10 @@ def load(path_or_base: PathLike | None = None) -> AppSettings:
     ruta = settings_path(path_or_base)
     
     try:
+        # Verificación defensiva adicional: asegurar que la ruta resuelta es segura antes de procesar
+        if not is_safe_to_modify(str(ruta.resolve())):
+            raise PermissionError("Path restricted by safety policy")
+        
         if not ruta.exists() or ruta.is_dir():
             raise FileNotFoundError
         
@@ -195,7 +199,6 @@ def load(path_or_base: PathLike | None = None) -> AppSettings:
         if _cached_settings is not None and ruta == _last_path and stat.st_mtime == _last_mtime:
             return _cached_settings
         
-        if not is_safe_to_modify(str(ruta)): raise PermissionError("Unsafe path")
         if stat.st_size > MAX_SETTINGS_SIZE: raise OSError("Config too large")
         
         data = json.loads(ruta.read_text(encoding="utf-8")) if stat.st_size > 0 else {}
