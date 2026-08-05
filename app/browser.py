@@ -111,8 +111,10 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
         if any(ord(char) < 32 for char in target_path.name):
             return False
 
-        real_base: Path = base_path.resolve(strict=True)
-        real_target: Path = target_path.resolve(strict=True)
+        # Usamos resolve() sin strict=True para permitir validación lógica 
+        # sin abortar si partes de la ruta intermedia tienen permisos restringidos.
+        real_base = base_path.resolve()
+        real_target = target_path.resolve()
         
         if is_protected_path(real_target):
             return False

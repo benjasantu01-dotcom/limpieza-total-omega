@@ -185,8 +185,7 @@ def _ensure_safe_text(text: str) -> bool:
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
     """
-    Transforma datos crudos de otros módulos en un objeto SystemContext, 
-    asegurando que todos los valores sean numéricos válidos y finitos.
+    Transforma datos crudos en SystemContext validando estrictamente tipos y límites.
     """
     ctx = SystemContext()
 
@@ -216,16 +215,12 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         ctx.analyzed = True
 
     if health is not None:
-        try:
-            score_val = getattr(health, "score", None)
-            ctx.score = int(score_val) if is_valid_num(score_val) else None
-            if ctx.score is not None:
-                ctx.score = max(0, min(ctx.score, 100))
-            grade = getattr(health, "grade", "")
-            ctx.grade = str(grade) if isinstance(grade, (str, int, float)) else ""
-            ctx.analyzed = True
-        except (ValueError, TypeError):
-            pass
+        score_val = getattr(health, "score", None)
+        if is_valid_num(score_val):
+            ctx.score = max(0, min(int(score_val), 100))
+        grade = getattr(health, "grade", "")
+        ctx.grade = str(grade) if isinstance(grade, (str, int, float)) else ""
+        ctx.analyzed = True
 
     for k, v in extra.items():
         if hasattr(ctx, k) and is_valid_num(v):

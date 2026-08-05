@@ -180,16 +180,12 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     """
     Recorre recursivamente un directorio omitiendo enlaces simbólicos, puntos de unión (junctions) 
     y rutas protegidas por sistema.
-    
-    Yields:
-        Tuplas conteniendo la ruta completa del archivo y su tamaño en bytes.
     """
     if not isinstance(directory, (str, os.PathLike)):
         return
 
     try:
         base_path = Path(directory).expanduser().resolve()
-        # Seguridad adicional: verificar si la base es en sí misma un punto de reparse
         if base_path.is_symlink() or (os.name == 'nt' and base_path.stat().st_reparse_tag != 0):
             return
         if not base_path.is_dir():
@@ -202,12 +198,10 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     visited_directories: set[Path] = {base_path}
 
     def scan_level(current_path: Path) -> Generator[Tuple[Path, int], None, None]:
-        """Función interna para el recorrido recursivo con validación de seguridad."""
         try:
             with os.scandir(current_path) as iterator:
                 for entry in iterator:
                     try:
-                        # Excluye enlaces simbólicos y puntos de reparse (Windows Junctions)
                         if entry.is_symlink() or (os.name == 'nt' and entry.stat(follow_symlinks=False).st_reparse_tag != 0):
                             continue
                         
@@ -221,8 +215,11 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                                 visited_directories.add(full_path)
                                 yield from scan_level(full_path)
                         else:
-                            size = entry.stat().st_size
-                            yield full_path, size
+                            # Captura de error específica si el archivo fue borrado mientras se recorre
+                            try:
+                                yield full_path, entry.stat().st_size
+                            except (OSError, FileNotFoundError):
+                                continue
                     except (OSError, PermissionError, FileNotFoundError, TypeError, AttributeError):
                         continue
         except (OSError, PermissionError, FileNotFoundError, TypeError):
@@ -283,6 +280,7 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
         folder_map: Dict[Path, FolderUsage] = {}
         for path, size in walk_files(base, skip_protected):
             try:
+                if not path.exists(): continue
                 rel = path.relative_to(base)
                 if not rel.parts:
                     continue

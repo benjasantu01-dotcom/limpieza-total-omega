@@ -291,11 +291,14 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     if not destination:
         return None
     try:
-        target = Path(destination).expanduser().resolve()
+        raw_path = Path(destination).expanduser()
+        # Resolvemos parcialmente para validar existencia de padres, 
+        # sin fallar si el destino aún no existe.
+        target = raw_path.resolve() if raw_path.exists() else raw_path.absolute()
+        
         if is_protected_path(target) or not is_safe_to_modify(target):
             return None
         
-        # ensure_safe_to_modify lanza excepción si la ruta no es segura
         ensure_safe_to_modify(target)
         ensure_safe_to_modify(target.parent)
         
