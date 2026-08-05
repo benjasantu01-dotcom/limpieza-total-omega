@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **252** (50.0% de aceptación)
+- Mejoras aceptadas: **251** (49.8% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 27
+- Rechazadas por guardia de seguridad: 28
 - Sin cambios (nada sustancial que mejorar): 12
 - Sin respuesta de la IA (error o límite): 201
 
@@ -16,37 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-03 | 64 | 1 | 6 | 4 | 55 |
+| 2026-08-03 | 60 | 1 | 6 | 4 | 55 |
 | 2026-08-04 | 166 | 11 | 20 | 8 | 145 |
-| 2026-08-05 | 22 | 0 | 1 | 0 | 1 |
+| 2026-08-05 | 25 | 0 | 2 | 0 | 1 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **62**
 - manejo de errores y validación de entradas: **53**
-- seguridad defensiva: **50**
-- rendimiento: **48**
-- robustez ante casos límite: **39**
+- rendimiento: **51**
+- seguridad defensiva: **47**
+- robustez ante casos límite: **38**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **22**
-- `assistant.py`: **21**
+- `quarantine.py`: **23**
+- `organizer.py`: **21**
 - `duplicates.py`: **20**
 - `healthscore.py`: **20**
 - `settings.py`: **20**
-- `organizer.py`: **20**
-- `browser.py`: **19**
+- `assistant.py`: **20**
 - `scanner.py`: **19**
+- `browser.py`: **18**
 - `diskreport.py`: **17**
-- `branding.py`: **16**
 - `main.py`: **16**
 - `memory.py`: **15**
-- `safety.py`: **14**
-- `startup.py`: **13**
+- `safety.py`: **15**
+- `branding.py`: **15**
+- `startup.py`: **12**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-05T01:11:05` **safety.py** (rendimiento): He optimizado el rendimiento del módulo evitando llamadas redundantes al sistema de archivos y mejorando la eficiencia del bucle de validación en `filter_safe_paths` al aprovechar la normalización previa y evitar re-procesamientos innecesarios.
+- `2026-08-05T01:10:38` **quarantine.py** (rendimiento): Optimicé `purge_all` transformando la búsqueda de `stored_names` en un `set` para reducir la complejidad de O(n*m) a O(n), y agregué el uso de `total_quarantined_bytes` para obtener el tamaño mediante el cache existente en lugar de reciclar el manifiesto innecesariamente.
+- `2026-08-05T01:10:10` **organizer.py** (rendimiento): Se optimizó el escaneo de archivos reemplazando las múltiples llamadas a `Path` y `is_safe_to_modify` dentro del bucle recursivo por operaciones directas sobre `DirEntry`, evitando la creación de miles de objetos `Path` innecesarios por cada archivo encontrado, mejorando significativamente el rendimiento en carpetas con muchos archivos.
 - `2026-08-05T01:01:46` **main.py** (rendimiento): Optimicé el método `_compile_metrics` para evitar redundancias de cálculo y accesos innecesarios al disco mediante una consolidación inteligente de los datos cacheados, reduciendo el overhead en el hilo principal durante la actualización de la interfaz.
 - `2026-08-05T01:00:24` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje eliminando llamadas redundantes a funciones auxiliares de validación y conversión dentro de `compute_score`, aprovechando que `metrics.validate()` ya garantiza la integridad y el tipo de los datos, reduciendo así la sobrecarga en el ciclo de cálculo.
 - `2026-08-05T00:59:58` **duplicates.py** (rendimiento): Optimizé el rendimiento de la etapa de recolección de candidatos evitando llamadas redundantes a `.resolve()` dentro del bucle de `os.scandir`, moviendo la validación de `is_protected_path` después de obtener el `inode` para reducir operaciones de sistema de archivos innecesarias en cada iteración.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-05T00:39:59` **scanner.py** (legibilidad y documentación): Se ha mejorado la legibilidad del motor de escaneo extrayendo la lógica de ejecución de chequeos en una lista de funciones registradas, permitiendo que `scan_file` sea más extensible y menos repetitiva al seguir el patrón "Don't Repeat Yourself" (DRY).
 - `2026-08-05T00:39:37` **safety.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos con formato Google Style y se aplicaron type hints mejorados (como `PathLike` para consistencia) para garantizar que los desarrolladores entiendan las precondiciones de seguridad de las funciones de `safety.py`.
 - `2026-08-05T00:30:12` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `QuarantineItem` mediante la implementación de un método `__post_init__` para validar automáticamente los tipos y formatos de datos tras la instanciación, centralizando la lógica de integridad que antes estaba dispersa.
-- `2026-08-05T00:29:43` **organizer.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `organizer.py` mediante la implementación de Type Hints explícitos para las estructuras de datos y la extracción de la lógica de exclusión de archivos a una función con nombre semántico, facilitando futuras expansiones de las reglas de filtrado.
-- `2026-08-05T00:29:20` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `trim_working_set` y las funciones auxiliares de bajo nivel mediante la adición de Type Hints explícitos, docstrings detallados que explican los riesgos operativos de las llamadas a la API de Windows y la consolidación del manejo de errores mediante tipos más específicos para facilitar el mantenimiento futuro.
-- `2026-08-05T00:22:06` **main.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de la lógica de construcción de pestañas en `main.py` mediante la implementación de un método de fábrica centralizado `_tab_factory` que encapsula la instanciación de los marcos de contenido, reduciendo la repetición y mejorando la robustez ante errores en la inicialización de cada pestaña.

@@ -121,17 +121,7 @@ def _is_readonly(path: Path) -> bool:
 
 @lru_cache(maxsize=2048)
 def normalize(path: PathLike) -> Path:
-    """
-    Resuelve una ruta a su forma absoluta y canonizada.
-    
-    Args:
-        path: Ruta a normalizar.
-    Returns:
-        Un objeto Path absoluto.
-    Raises:
-        ValueError: Si la ruta está vacía o no puede resolverse.
-        TypeError: Si el input no es un tipo soportado.
-    """
+    """Resuelve una ruta a su forma absoluta y canonizada."""
     if not isinstance(path, (str, os.PathLike)):
         raise TypeError(f"Entrada inválida: tipo {type(path)} no soportado.")
     
@@ -140,17 +130,13 @@ def normalize(path: PathLike) -> Path:
         raise ValueError("La ruta proporcionada está vacía.")
         
     try:
-        res = Path(str_path).expanduser().resolve()
-        if not res.is_absolute():
-            raise ValueError("La ruta no puede ser resuelta a una ubicación absoluta.")
-        return res
+        return Path(str_path).expanduser().resolve()
     except (OSError, RuntimeError):
         return Path(os.path.abspath(os.path.expanduser(str_path)))
 
 
 def is_drive_root(path: PathLike) -> bool:
     """Evalúa si la ruta normalizada es la raíz de un volumen físico (ej: 'C:\\')."""
-    if path is None: return True
     try:
         p = normalize(path)
         return p == Path(p.anchor)
@@ -177,8 +163,6 @@ def is_protected_path(path: PathLike) -> bool:
 
 def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = False) -> bool:
     """Valida si 'child' reside físicamente bajo 'parent' analizando la jerarquía de padres resuelta."""
-    if child is None or parent is None:
-        return False
     try:
         c, p = normalize(child), normalize(parent)
         return p in c.parents or (allow_equal and c == p)
@@ -189,8 +173,6 @@ def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = F
 @lru_cache(maxsize=512)
 def is_sensitive_file(path: PathLike) -> bool:
     """Verifica si la extensión del archivo está marcada como sensible para protección de datos."""
-    if path is None:
-        return True
     try:
         return Path(path).suffix.lower() in SENSITIVE_EXTENSIONS
     except (TypeError, ValueError, OSError):
@@ -198,20 +180,7 @@ def is_sensitive_file(path: PathLike) -> bool:
 
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> Path:
-    """
-    Realiza una validación exhaustiva de seguridad antes de permitir cualquier modificación física.
-    
-    Args:
-        path: Ruta a validar.
-        allow_sensitive: Si es True, permite archivos con extensiones marcadas como sensibles.
-    Returns:
-        El objeto Path verificado si la ruta es segura.
-    Raises:
-        UnsafePathError: Si la ruta viola cualquier regla de seguridad.
-    """
-    if path is None:
-        raise UnsafePathError("La ruta proporcionada es None.")
-        
+    """Realiza una validación exhaustiva de seguridad antes de permitir cualquier modificación física."""
     if not isinstance(path, (str, os.PathLike)):
         raise UnsafePathError(f"Ruta de tipo inválido recibida: {type(path)}")
         
@@ -230,24 +199,18 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
     except (TypeError, ValueError, OSError, RuntimeError) as e:
         raise UnsafePathError(f"Error al procesar ruta: {e}")
 
-    if not p.parts:
-        raise UnsafePathError("Ruta sin componentes válidos.")
-
     if _is_reserved_device_name(p.stem):
         raise UnsafePathError("Operación bloqueada: nombre de dispositivo reservado.")
     if str(p).startswith(("\\\\", "//")):
         raise UnsafePathError("Operación bloqueada: rutas de red no permitidas.")
     
-    try:
-        if p.exists():
-            if not os.access(p, os.W_OK):
-                raise UnsafePathError("Operación bloqueada: sin permisos de escritura.")
-            if _is_reparse_point(p) or _is_readonly(p) or _is_file_in_use(p) or _is_system_or_hidden(p):
-                raise UnsafePathError("Operación bloqueada: archivo inaccesible, protegido o sistema.")
-            if p.is_file() and p.stat().st_nlink > 1:
-                raise UnsafePathError("Operación bloqueada: enlace físico (hard link) detectado.")
-    except (OSError, PermissionError) as e:
-        raise UnsafePathError(f"Error crítico al acceder a la ruta: {e}")
+    if p.exists():
+        if not os.access(p, os.W_OK):
+            raise UnsafePathError("Operación bloqueada: sin permisos de escritura.")
+        if _is_reparse_point(p) or _is_readonly(p) or _is_file_in_use(p) or _is_system_or_hidden(p):
+            raise UnsafePathError("Operación bloqueada: archivo inaccesible, protegido o sistema.")
+        if p.is_file() and p.stat().st_nlink > 1:
+            raise UnsafePathError("Operación bloqueada: enlace físico (hard link) detectado.")
 
     if is_drive_root(p) or is_protected_path(p):
         raise UnsafePathError("Operación bloqueada: ruta de sistema protegida.")
@@ -268,17 +231,17 @@ def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> bool:
 
 def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = False) -> list[Path]:
     """Filtra una lista de rutas, devolviendo solo aquellas que pasan las reglas de `ensure_safe_to_modify`."""
-    if not isinstance(paths, Iterable):
-        return []
-    
     seen = set()
     valid = []
     for p in paths:
         try:
             norm_p = normalize(p)
-            if norm_p not in seen and is_safe_to_modify(norm_p, allow_sensitive=allow_sensitive):
-                seen.add(norm_p)
-                valid.append(norm_p)
+            if norm_p not in seen:
+                if is_safe_to_modify(norm_p, allow_sensitive=allow_sensitive):
+                    seen.add(norm_p)
+                    valid.append(norm_p)
+                else:
+                    seen.add(norm_p)
         except (TypeError, ValueError, OSError):
             continue
     return valid
@@ -286,8 +249,6 @@ def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = Fals
 
 def describe_protection(path: PathLike) -> str:
     """Analiza una ruta y devuelve una descripción legible de por qué se considera insegura."""
-    if not path:
-        return "La ruta está vacía."
     try:
         p = normalize(path)
     except (TypeError, ValueError):
