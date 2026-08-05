@@ -901,21 +901,15 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         junk = self._get_cached("junk") or []
         dups = self._get_cached("dups") or []
 
-        junk_mb = sum(j.size_bytes for j in junk) / (1024 * 1024)
-        advertencias = sum(1 for h in hallazgos if h.severity == "warning")
-        libre_pct = (unidad.free / unidad.total * 100) if (unidad and unidad.total and unidad.total > 0) else 100.0
-        en_cuarentena = quarantine.list_items()
-        duplicado_mb = duplicates_mod.reclaimable_bytes(dups) / (1024 * 1024)
-
         metrics = healthscore.SystemMetrics(
-            junk_mb=junk_mb,
+            junk_mb=sum(j.size_bytes for j in junk) / (1024 * 1024),
             suspicious_count=len(hallazgos),
-            suspicious_warnings=advertencias,
+            suspicious_warnings=sum(1 for h in hallazgos if h.severity == "warning"),
             memory_available_percent=snapshot.available_percent if snapshot else 100.0,
-            disk_free_percent=libre_pct,
-            duplicate_mb=duplicado_mb,
+            disk_free_percent=(unidad.free / unidad.total * 100) if (unidad and unidad.total > 0) else 100.0,
+            duplicate_mb=duplicates_mod.reclaimable_bytes(dups) / (1024 * 1024),
             startup_count=len(arranque),
-            quarantined_count=len(en_cuarentena),
+            quarantined_count=len(quarantine.list_items()),
         )
         return metrics, snapshot or memory_mod.Snapshot(0, 0, 0), unidad or diskreport.DriveInfo(0, 0, 0, "")
 

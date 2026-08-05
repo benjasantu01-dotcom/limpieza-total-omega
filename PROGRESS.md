@@ -8,45 +8,48 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **252** (50.0% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 28
+- Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 200
+- Sin respuesta de la IA (error o límite): 201
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-03 | 67 | 1 | 7 | 4 | 55 |
+| 2026-08-03 | 64 | 1 | 6 | 4 | 55 |
 | 2026-08-04 | 166 | 11 | 20 | 8 | 145 |
-| 2026-08-05 | 19 | 0 | 1 | 0 | 0 |
+| 2026-08-05 | 22 | 0 | 1 | 0 | 1 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **62**
 - manejo de errores y validación de entradas: **53**
 - seguridad defensiva: **50**
-- rendimiento: **45**
-- robustez ante casos límite: **42**
+- rendimiento: **48**
+- robustez ante casos límite: **39**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **22**
-- `settings.py`: **21**
 - `assistant.py`: **21**
-- `scanner.py`: **20**
+- `duplicates.py`: **20**
+- `healthscore.py`: **20**
+- `settings.py`: **20**
 - `organizer.py`: **20**
 - `browser.py`: **19**
-- `duplicates.py`: **19**
-- `healthscore.py`: **19**
+- `scanner.py`: **19**
 - `diskreport.py`: **17**
 - `branding.py`: **16**
-- `safety.py`: **15**
-- `main.py`: **15**
+- `main.py`: **16**
 - `memory.py`: **15**
+- `safety.py`: **14**
 - `startup.py`: **13**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-05T01:01:46` **main.py** (rendimiento): Optimicé el método `_compile_metrics` para evitar redundancias de cálculo y accesos innecesarios al disco mediante una consolidación inteligente de los datos cacheados, reduciendo el overhead en el hilo principal durante la actualización de la interfaz.
+- `2026-08-05T01:00:24` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje eliminando llamadas redundantes a funciones auxiliares de validación y conversión dentro de `compute_score`, aprovechando que `metrics.validate()` ya garantiza la integridad y el tipo de los datos, reduciendo así la sobrecarga en el ciclo de cálculo.
+- `2026-08-05T00:59:58` **duplicates.py** (rendimiento): Optimizé el rendimiento de la etapa de recolección de candidatos evitando llamadas redundantes a `.resolve()` dentro del bucle de `os.scandir`, moviendo la validación de `is_protected_path` después de obtener el `inode` para reducir operaciones de sistema de archivos innecesarias en cada iteración.
 - `2026-08-05T00:51:05` **diskreport.py** (rendimiento): Optimicé el rendimiento de `summarize` integrando la lógica de recolección de datos en un solo paso de iteración, eliminando llamadas redundantes a `walk_files` y mejorando la eficiencia de las estructuras de datos.
 - `2026-08-05T00:50:55` **browser.py** (rendimiento): Optimizé el rendimiento de `directory_size` utilizando un `set` para la comprobación de `NEVER_TOUCH` (reduciendo la complejidad de búsqueda de O(N) a O(1)) y minimizando las llamadas redundantes a `Path` y `resolve` dentro del bucle de escaneo.
 - `2026-08-05T00:50:32` **branding.py** (rendimiento): Se optimizó el renderizado de la barra de degradado (`draw_gradient_bar`) consolidando líneas adyacentes del mismo color para reducir drásticamente las llamadas al método `create_line` del canvas, mejorando el rendimiento en cada actualización de interfaz.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-05T00:29:43` **organizer.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `organizer.py` mediante la implementación de Type Hints explícitos para las estructuras de datos y la extracción de la lógica de exclusión de archivos a una función con nombre semántico, facilitando futuras expansiones de las reglas de filtrado.
 - `2026-08-05T00:29:20` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `trim_working_set` y las funciones auxiliares de bajo nivel mediante la adición de Type Hints explícitos, docstrings detallados que explican los riesgos operativos de las llamadas a la API de Windows y la consolidación del manejo de errores mediante tipos más específicos para facilitar el mantenimiento futuro.
 - `2026-08-05T00:22:06` **main.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de la lógica de construcción de pestañas en `main.py` mediante la implementación de un método de fábrica centralizado `_tab_factory` que encapsula la instanciación de los marcos de contenido, reduciendo la repetición y mejorando la robustez ante errores en la inicialización de cada pestaña.
-- `2026-08-05T00:19:57` **healthscore.py** (legibilidad y documentación): Documenté con type hints más precisos y docstrings enriquecidos las funciones de puntuación para clarificar que operan en un espacio normalizado [0.0, 1.0], eliminando ambigüedades sobre el rango esperado de los inputs.
-- `2026-08-05T00:19:31` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de docstrings (especialmente en funciones internas) y se ha añadido un type hint faltante en `_collect_candidates` para mayor claridad y cumplimiento con las normas de estilo senior.
-- `2026-08-05T00:19:07` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica de `walk_files` y `largest_folders` clarificando los mecanismos de seguridad y exclusión que protegen al usuario frente a recursiones infinitas y accesos no deseados.

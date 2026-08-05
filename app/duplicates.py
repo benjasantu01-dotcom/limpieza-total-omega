@@ -139,9 +139,6 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
 def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """
     Realiza un recorrido recursivo del sistema de archivos para indexar candidatos por tamaño.
-    
-    Utiliza el par (dispositivo, inodo) para garantizar que archivos vinculados físicamente 
-    no sean contados como duplicados redundantes.
     """
     groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: set[Tuple[int, int]] = set()
@@ -161,11 +158,12 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
                             inode_key = (st.st_dev, st.st_ino)
                             if inode_key in visited_inodes: continue
                             
-                            full_path = Path(entry.path).resolve()
-                            if is_protected_path(full_path): continue
+                            # Resolvemos solo si el archivo es candidato para evitar syscalls innecesarias
+                            p = Path(entry.path)
+                            if is_protected_path(p): continue
                             
                             visited_inodes.add(inode_key)
-                            groups[st.st_size].append(full_path)
+                            groups[st.st_size].append(p.resolve())
                     except (OSError, PermissionError): continue
         except (OSError, PermissionError): pass
 

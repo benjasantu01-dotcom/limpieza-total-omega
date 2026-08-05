@@ -1414,3 +1414,11 @@ FAILED evolve/tests/test_modules.py::test_summarize_mentions_the_folder_and_tota
 - `2026-08-05T00:51:05` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el rendimiento de `summarize` integrando la lógica de recolección de datos en un solo paso de iteración, eliminando llamadas redundantes a `walk_files` y mejorando la eficiencia de las estructuras de datos.
 - `2026-08-05T00:51:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-05T00:51:05` Corrida terminada. Total usado hoy: 20.
+- `2026-08-05T00:59:33` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-08-05T00:59:58` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé el rendimiento de la etapa de recolección de candidatos evitando llamadas redundantes a `.resolve()` dentro del bucle de `os.scandir`, moviendo la validación de `is_protected_path` después de obtener el `inode` para reducir operaciones de sistema de archivos innecesarias en cada iteración.
+- `2026-08-05T01:00:24` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del puntaje eliminando llamadas redundantes a funciones auxiliares de validación y conversión dentro de `compute_score`, aprovechando que `metrics.validate()` ya garantiza la integridad y el tipo de los datos, reduciendo así la sobrecarga en el ciclo de cálculo.
+- `2026-08-05T01:00:41` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-05T01:01:46` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Optimicé el método `_compile_metrics` para evitar redundancias de cálculo y accesos innecesarios al disco mediante una consolidación inteligente de los datos cacheados, reduciendo el overhead en el hilo principal durante la actualización de la interfaz.
+- `2026-08-05T01:01:56` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: rendimiento).
+- `2026-08-05T01:01:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-05T01:01:56` Corrida terminada. Total usado hoy: 24.

@@ -150,9 +150,8 @@ def _to_int(value: Any, default: int = 0) -> int:
 
 def score_junk(junk_mb: float) -> float:
     """Calcula el ratio de salud de limpieza [0.0, 1.0]. A medida que junk_mb alcanza JUNK_LIMIT_MB, el ratio disminuye a 0.0."""
-    val: float = _to_float(junk_mb)
     if JUNK_LIMIT_MB <= 0: return 0.0
-    return _clamp(1.0 - (val / JUNK_LIMIT_MB))
+    return _clamp(1.0 - (junk_mb / JUNK_LIMIT_MB))
 
 
 def score_security(suspicious_count: int, warnings: int = 0) -> float:
@@ -160,47 +159,40 @@ def score_security(suspicious_count: int, warnings: int = 0) -> float:
     Calcula el ratio de seguridad [0.0, 1.0].
     Penaliza hallazgos (5%) y advertencias (25%) para reflejar mayor criticidad en las advertencias.
     """
-    s: float = float(max(0, _to_int(suspicious_count)))
-    w: float = float(max(0, _to_int(warnings)))
-    penalty: float = (s * 0.05) + (w * 0.25)
+    penalty: float = (float(suspicious_count) * 0.05) + (float(warnings) * 0.25)
     return _clamp(1.0 - penalty, 0.0, 1.0)
 
 
 def score_memory(available_percent: float) -> float:
     """Calcula el ratio de salud de memoria [0.0, 1.0] comparando disponibilidad contra RAM_IDEAL_PERCENT."""
-    val: float = _to_float(available_percent)
     if RAM_IDEAL_PERCENT <= 0: return 0.0
-    return _clamp(val / RAM_IDEAL_PERCENT)
+    return _clamp(available_percent / RAM_IDEAL_PERCENT)
 
 
 def score_disk(free_percent: float) -> float:
     """Calcula el ratio de espacio en disco [0.0, 1.0] respecto al umbral DISK_IDEAL_PERCENT."""
-    val: float = _to_float(free_percent)
     if DISK_IDEAL_PERCENT <= 0: return 0.0
-    return _clamp(val / DISK_IDEAL_PERCENT)
+    return _clamp(free_percent / DISK_IDEAL_PERCENT)
 
 
 def score_duplicates(duplicate_mb: float) -> float:
     """Calcula el ratio de eficiencia [0.0, 1.0] basado en el impacto de duplicados sobre DUPLICATE_LIMIT_MB."""
-    val: float = _to_float(duplicate_mb)
     if DUPLICATE_LIMIT_MB <= 0: return 0.0
-    return _clamp(1.0 - (val / DUPLICATE_LIMIT_MB))
+    return _clamp(1.0 - (duplicate_mb / DUPLICATE_LIMIT_MB))
 
 
 def score_startup(startup_count: int) -> float:
     """Calcula el ratio de optimización de arranque [0.0, 1.0] inversamente proporcional a la cantidad de elementos."""
-    count: float = float(_to_int(startup_count))
     if STARTUP_LIMIT_COUNT <= 0: return 0.0
-    return _clamp(1.0 - (count / STARTUP_LIMIT_COUNT))
+    return _clamp(1.0 - (float(startup_count) / STARTUP_LIMIT_COUNT))
 
 
 def grade_for_score(score: int) -> str:
     """Asigna una calificación cualitativa (A-F) basada en el rango del puntaje [0, 100]."""
-    s = _to_int(score)
-    if s >= 90: return "A"
-    if s >= 80: return "B"
-    if s >= 65: return "C"
-    if s >= 50: return "D"
+    if score >= 90: return "A"
+    if score >= 80: return "B"
+    if score >= 65: return "C"
+    if score >= 50: return "D"
     return "F"
 
 
@@ -242,7 +234,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     if not metrics.is_finite() or not _validate_weights():
         return HealthResult(0, "F", {}, ["Error: Datos de entrada o configuración no procesables."])
 
-    # Mapeo directo para evitar búsquedas repetitivas en diccionario
+    # Mapeo usando valores ya validados y sanitizados por metrics.validate()
     scores = {
         "seguridad": score_security(metrics.suspicious_count, metrics.suspicious_warnings),
         "disco": score_disk(metrics.disk_free_percent),
@@ -255,10 +247,9 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     breakdown: Dict[str, int] = {}
     total_score: float = 0.0
     
-    # Iteración optimizada sobre lista de tuplas precalculada
+    # Iteración sobre tuplas precalculadas
     for area, weight in _WEIGHT_ITEMS:
-        ratio_val = scores.get(area, 0.0)
-        score_val = ratio_val * float(weight) * _NORM_FACTOR
+        score_val = scores[area] * float(weight) * _NORM_FACTOR
         breakdown[area] = int(score_val + 0.5)
         total_score += score_val
 
@@ -283,9 +274,7 @@ def summarize(result: HealthResult) -> List[str]:
 
     for area, maximo in _WEIGHT_ITEMS:
         puntos = result.breakdown.get(area, 0)
-        # Validación de tipo y rango para la visualización del gráfico de barras
-        puntos_val = puntos if isinstance(puntos, int) else 0
-        puntos_val = max(0, min(maximo, puntos_val))
+        puntos_val = max(0, min(maximo, puntos))
         visual = f"[{'#' * puntos_val}{'.' * (maximo - puntos_val)}]"
         lines.append(f"  {area.capitalize():<12} {puntos_val:>2}/{maximo:<2} {visual}")
     
