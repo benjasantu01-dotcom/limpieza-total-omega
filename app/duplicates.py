@@ -141,11 +141,6 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
 def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """
     Realiza un recorrido recursivo del sistema de archivos para indexar candidatos por tamaño.
-
-    Args:
-        directories: Lista de rutas base donde comenzar el escaneo.
-        min_size: Tamaño mínimo en bytes para considerar un archivo.
-        skip_protected: Si se deben omitir rutas protegidas.
     """
     groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: set[Tuple[int, int]] = set()
@@ -171,8 +166,8 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
                             file_path = Path(entry.path)
                             if skip_protected and is_protected_path(file_path): continue
                             groups[st.st_size].append(file_path)
-                    except (OSError, PermissionError, FileNotFoundError): continue
-        except (OSError, PermissionError, FileNotFoundError): pass
+                    except (OSError, PermissionError): continue
+        except (OSError, PermissionError): pass
 
     if directories is not None:
         for directory in directories:
@@ -189,7 +184,6 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
 def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
     """
     Filtra una lista de archivos, agrupándolos según el resultado de una función de hash proporcionada.
-    Solo retorna grupos que contengan más de un elemento.
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     if paths is None: return {}
@@ -255,7 +249,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
             if p.exists() and p.is_file() and not is_protected_path(p):
                 stat = p.stat()
                 valid_paths.append((stat.st_mtime, len(str(p)), p))
-        except (OSError, PermissionError, FileNotFoundError):
+        except (OSError, PermissionError):
             continue
             
     if not valid_paths:

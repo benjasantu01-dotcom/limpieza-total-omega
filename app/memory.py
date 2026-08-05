@@ -154,9 +154,9 @@ def parse_linux_meminfo(text: str) -> MemorySnapshot:
 def _is_valid_process_row(parts: List[str]) -> bool:
     """Valida que una fila CSV contenga al menos Name, PID (numérico) y WorkingSet (numérico)."""
     return (len(parts) >= 3 and 
-            parts[1].isdigit() and 
-            parts[2].isdigit() and 
-            int(parts[2]) >= 0)
+            parts[1].strip().isdigit() and 
+            parts[2].strip().isdigit() and 
+            int(parts[2].strip()) >= 0)
 
 
 def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]:
@@ -171,17 +171,16 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
     if len(lines) < 2:
         return []
 
-    # Pre-parseo a lista de tuplas para evitar crear instancias de dataclass innecesarias
     candidates: List[Tuple[str, int, int]] = []
     for line in lines[1:]:
         parts = [p.strip().strip('"') for p in line.split(",")]
         if _is_valid_process_row(parts):
             try:
-                candidates.append((parts[0] or "Unknown", int(parts[1]), int(parts[2])))
+                name = parts[0] if parts[0] else "Unknown"
+                candidates.append((name, int(parts[1]), int(parts[2])))
             except (ValueError, IndexError):
                 continue
 
-    # Ordenar y truncar antes de instanciar los objetos
     candidates.sort(key=lambda x: x[2], reverse=True)
     return [ProcessMemory(name=c[0], pid=c[1], working_set=c[2]) for c in candidates[:limit]]
 

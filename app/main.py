@@ -1304,9 +1304,14 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             messagebox.showwarning("PID inválido", "El PID debe ser positivo.")
             return
         
-        # Validación: solo procesos con un nombre reconocible (excluir PIDs de sistema críticos)
+        # Validación: procesos del sistema (PID < 100)
         if pid < 100:
             messagebox.showerror("Bloqueado", "Este PID corresponde a un proceso del sistema esencial y no puede ser modificado.")
+            return
+
+        # Pre-chequeo básico de existencia del proceso antes de intentar trim
+        if not memory_mod.process_exists(pid):
+            messagebox.showerror("No encontrado", f"No se encontró un proceso activo con PID {pid}.")
             return
 
         if not self._confirm("Liberar working set", memory_mod.TRIM_WARNING + "\n\n¿Seguimos?"):
