@@ -1429,3 +1429,10 @@ FAILED evolve/tests/test_modules.py::test_summarize_mentions_the_folder_and_tota
 - `2026-08-05T01:11:05` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). He optimizado el rendimiento del módulo evitando llamadas redundantes al sistema de archivos y mejorando la eficiencia del bucle de validación en `filter_safe_paths` al aprovechar la normalización previa y evitar re-procesamientos innecesarios.
 - `2026-08-05T01:11:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-05T01:11:05` Corrida terminada. Total usado hoy: 28.
+- `2026-08-05T01:20:07` Arrancando corrida. Quedan hoy ~272 peticiones objetivo.
+- `2026-08-05T01:20:31` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el bucle de escaneo de archivos delegando la obtención de metadatos (`stat`) al `os.DirEntry` existente, evitando así llamadas redundantes a `path.lstat()` que degradaban el rendimiento en directorios grandes.
+- `2026-08-05T01:20:56` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimizé la función `validate` para evitar recrear diccionarios innecesariamente y reduje las búsquedas en `_VALIDATOR_MAP` utilizando una referencia local, mejorando la eficiencia durante la carga o actualización de configuraciones.
+- `2026-08-05T01:21:18` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-08-05T01:21:35` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_gen_problems` ante posibles errores de redondeo o datos de entrada incoherentes en las métricas (usando `math.isclose` para comparaciones de punto flotante) y agregué un manejo de excepciones más defensivo en `context_as_text` para evitar fallos si el objeto `SystemContext` llega con datos mal formados, garantizando la estabilidad ante valores atípicos.
+- `2026-08-05T01:21:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-05T01:21:35` Corrida terminada. Total usado hoy: 32.

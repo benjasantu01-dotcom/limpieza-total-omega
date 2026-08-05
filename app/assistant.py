@@ -242,18 +242,20 @@ def context_as_text(context: SystemContext) -> str:
     if not isinstance(context, SystemContext) or not context.analyzed:
         return "No hay métricas disponibles todavía."
 
-    lineas = [
-        f"Puntaje de salud: {context.score if context.score is not None else 'N/A'}"
-        f"{f' nota {context.grade}' if context.grade else ''}",
-        f"Basura: {context.junk_mb:.0f} MB",
-        f"Sospechosos: {context.suspicious_count}",
-        f"RAM disponible: {context.memory_available_percent:.0f} percent",
-        f"Disco libre: {context.disk_free_percent:.0f} percent",
-        f"Duplicados: {context.duplicate_mb:.0f} MB",
-        f"Inicio: {context.startup_count} items",
-    ]
-    
-    return _CONTROL_CHARS_REGEX.sub(" ", _PATH_REGEX.sub(" ", "\n".join(lineas)))
+    try:
+        lineas = [
+            f"Puntaje de salud: {context.score if context.score is not None else 'N/A'}"
+            f"{f' nota {context.grade}' if context.grade else ''}",
+            f"Basura: {context.junk_mb:.0f} MB",
+            f"Sospechosos: {context.suspicious_count}",
+            f"RAM disponible: {context.memory_available_percent:.0f} percent",
+            f"Disco libre: {context.disk_free_percent:.0f} percent",
+            f"Duplicados: {context.duplicate_mb:.0f} MB",
+            f"Inicio: {context.startup_count} items",
+        ]
+        return _CONTROL_CHARS_REGEX.sub(" ", _PATH_REGEX.sub(" ", "\n".join(lineas)))
+    except (ValueError, TypeError, AttributeError):
+        return "Error al procesar métricas para el asistente."
 
 
 def explain_area(area: Any) -> str:
@@ -405,16 +407,16 @@ def local_answer(question: str, context: SystemContext) -> Answer:
 
 
 def _gen_problems(ctx: SystemContext) -> Generator[str, None, None]:
-    """Genera descripciones de problemas detectados de forma eficiente."""
-    if ctx.disk_free_percent < 10:
+    """Genera descripciones de problemas detectados de forma eficiente usando comparaciones estables."""
+    if ctx.disk_free_percent < 10.0:
         yield f"queda solo {ctx.disk_free_percent:.0f}% de disco libre"
     if ctx.suspicious_warnings > 0:
         yield f"{ctx.suspicious_warnings} archivo(s) sospechosos"
-    if ctx.memory_available_percent < 15:
+    if ctx.memory_available_percent < 15.0:
         yield f"queda {ctx.memory_available_percent:.0f}% de RAM"
-    if ctx.junk_mb > 1000:
+    if ctx.junk_mb > 1000.0:
         yield f"{ctx.junk_mb:.0f} MB de archivos basura"
-    if ctx.duplicate_mb > 500:
+    if ctx.duplicate_mb > 500.0:
         yield f"{ctx.duplicate_mb:.0f} MB en duplicados"
     if ctx.startup_count > 15:
         yield f"{ctx.startup_count} programas de inicio"

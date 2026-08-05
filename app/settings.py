@@ -158,12 +158,14 @@ def validate(values: Any) -> dict[str, Any]:
     if not isinstance(values, dict):
         return DEFAULTS.copy()
     
-    configuracion_final: dict[str, Any] = {}
-    for clave, valor_defecto in DEFAULTS.items():
-        valor_usuario = values.get(clave)
-        validador = _VALIDATOR_MAP.get(clave)
-        resultado = validador(clave, valor_usuario) if (validador and valor_usuario is not None) else None
-        configuracion_final[clave] = resultado if resultado is not None else valor_defecto
+    configuracion_final = DEFAULTS.copy()
+    validators = _VALIDATOR_MAP
+    for clave, valor_usuario in values.items():
+        if clave in validators:
+            validador = validators[clave]
+            resultado = validador(clave, valor_usuario)
+            if resultado is not None:
+                configuracion_final[clave] = resultado
         
     return configuracion_final
 
