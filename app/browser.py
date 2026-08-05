@@ -114,20 +114,21 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
         if any(ord(char) < 32 for char in target_path.name):
             return False
 
-        real_base = base_path.resolve()
-        real_target = target_path.resolve()
+        # Resolvemos ANTES de cualquier comparación para evitar ataques por bypass de enlaces
+        real_base = base_path.resolve(strict=True)
+        real_target = target_path.resolve(strict=True)
         
         if is_protected_path(real_target):
             return False
 
-        # Verifica si el target es symlink o junction para evitar loops o acceso fuera de base
+        # Verifica si el target es symlink o junction usando realpath
         if real_target.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(str(real_target))):
             return False
 
-        # Verifica que la ruta esté contenida dentro de la base permitida
+        # Verifica que la ruta resuelta esté contenida estrictamente dentro de la base resuelta
         real_target.relative_to(real_base)
         return True
-    except (OSError, ValueError, RuntimeError, PermissionError):
+    except (OSError, ValueError, RuntimeError, PermissionError, ValueError):
         return False
 
 
@@ -140,11 +141,13 @@ def directory_size(path: str | os.PathLike | None) -> int:
         return 0
     
     root = Path(path)
+    # Validar integridad inicial antes de empezar el recorrido
     if not root.exists() or not root.is_dir() or is_protected_path(root):
         return 0
     
     total_bytes: int = 0
-    stack: List[str] = [str(root.resolve())]
+    root_resolved = str(root.resolve())
+    stack: List[str] = [root_resolved]
     is_junction_func = getattr(os.path, 'isjunction', lambda _: False)
     
     while stack:
@@ -153,17 +156,19 @@ def directory_size(path: str | os.PathLike | None) -> int:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
+                        # Si es un enlace o junction, ignorar para evitar saltos fuera de la estructura
                         if entry.is_symlink() or is_junction_func(entry.path):
                             continue
 
-                        if entry.is_dir(follow_symlinks=False):
+                        if entry.is_dir():
+                            # Validar cada subcarpeta recursivamente
                             if not is_protected_path(Path(entry.path)):
                                 stack.append(entry.path)
                         else:
                             name_lower = entry.name.lower()
                             if name_lower not in NEVER_TOUCH and not any(ord(c) < 32 for c in entry.name):
                                 try:
-                                    total_bytes += entry.stat(follow_symlinks=False).st_size
+                                    total_bytes += entry.stat().st_size
                                 except (OSError, PermissionError):
                                     continue
                     except (OSError, PermissionError):

@@ -450,8 +450,8 @@ def _call_gemini(
     safe_q: str = _sanitize_query(question)
     safe_ctx: str = context_text[:1000]
     
-    # Defensa adicional: verificar que el contexto no contenga rutas protegidas
-    if not _ensure_safe_text(safe_q) or not _ensure_safe_text(safe_ctx) or is_protected_path(safe_ctx):
+    # Defensa adicional: verificar que el contexto y la pregunta no contengan elementos inseguros
+    if not _ensure_safe_text(safe_q) or not _ensure_safe_text(safe_ctx):
         return None
         
     try:

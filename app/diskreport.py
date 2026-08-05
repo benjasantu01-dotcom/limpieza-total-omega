@@ -181,12 +181,15 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     if not directory:
         return
 
+    def is_reparse_point(p: Path) -> bool:
+        try:
+            return os.name == 'nt' and getattr(p.stat(follow_symlinks=False), 'st_reparse_tag', 0) != 0
+        except (OSError, AttributeError):
+            return False
+
     try:
         base_path = Path(directory).expanduser().resolve()
-        if not base_path.exists() or not base_path.is_dir():
-            return
-        # Verificación estricta de seguridad ante reparse points
-        if base_path.is_symlink() or (os.name == 'nt' and base_path.stat().st_reparse_tag != 0):
+        if not base_path.exists() or not base_path.is_dir() or base_path.is_symlink() or is_reparse_point(base_path):
             return
         if skip_protected and is_protected_path(base_path):
             return
@@ -200,12 +203,10 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
             with os.scandir(current_path) as iterator:
                 for entry in iterator:
                     try:
-                        # Evitar seguir reparse points detectados mediante el iterator
-                        if entry.is_symlink() or (os.name == 'nt' and entry.stat(follow_symlinks=False).st_reparse_tag != 0):
+                        if entry.is_symlink() or is_reparse_point(Path(entry.path)):
                             continue
                         
                         full_path = Path(entry.path).resolve()
-                        
                         if skip_protected and is_protected_path(full_path):
                             continue
                         
@@ -214,10 +215,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                                 visited_directories.add(full_path)
                                 yield from scan_level(full_path)
                         else:
-                            try:
-                                yield full_path, entry.stat().st_size
-                            except (OSError, FileNotFoundError):
-                                continue
+                            yield full_path, entry.stat().st_size
                     except (OSError, PermissionError, FileNotFoundError, TypeError, AttributeError):
                         continue
         except (OSError, PermissionError, FileNotFoundError, TypeError):
@@ -271,11 +269,6 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
     try:
         base = Path(directory).expanduser().resolve()
         if not base.exists() or not base.is_dir():
-            return []
-        
-        # Reutilizamos lógica de validación básica
-        if (base.is_symlink() or (os.name == 'nt' and base.stat().st_reparse_tag != 0) 
-            or (skip_protected and is_protected_path(base))):
             return []
         
         folder_map: Dict[Path, FolderUsage] = {}
