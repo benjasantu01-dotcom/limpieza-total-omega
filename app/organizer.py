@@ -229,7 +229,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         raise ValueError(f"No se pudo preparar el directorio de revisión: {e}")
 
     for jf in files:
-        if not isinstance(jf, JunkFile) or not getattr(jf, 'path', None):
+        if not isinstance(jf, JunkFile) or not hasattr(jf, 'path') or jf.path is None:
             continue
         try:
             current_abs = jf.path

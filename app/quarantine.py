@@ -339,14 +339,16 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
         raise ValueError("ID de ítem inválido.")
     
     items = load_manifest(base)
-    item_map = {i.item_id: i for i in items}
-    match = item_map.get(item_id)
+    match = next((i for i in items if i.item_id == item_id), None)
     
     if not match:
         raise KeyError(f"No se encontró ítem con ID: {item_id}")
 
-    base_path = quarantine_dir(base)
-    stored_file = (base_path / match.stored_name).resolve()
+    try:
+        base_path = quarantine_dir(base)
+        stored_file = (base_path / match.stored_name).resolve()
+    except (OSError, ValueError):
+        raise RuntimeError("No se pudo acceder al directorio de cuarentena.")
     
     if not stored_file.exists():
         items.remove(match)
@@ -371,16 +373,11 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
 
     try:
         parent_dir = destination.parent
-        if parent_dir.exists() and not parent_dir.is_dir():
-            raise NotADirectoryError(f"La ruta padre no es un directorio: {parent_dir}")
-        
         if not parent_dir.exists():
             parent_dir.mkdir(parents=True, exist_ok=True)
             
         shutil.move(str(stored_file), str(destination))
     except (OSError, PermissionError) as e:
-        if not stored_file.exists():
-             raise RuntimeError("El archivo de origen desapareció antes de la restauración.")
         raise RuntimeError(f"Fallo durante la operación de restauración: {e}")
 
     items.remove(match)
@@ -394,8 +391,7 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
         return False
         
     items = load_manifest(base)
-    item_map = {i.item_id: i for i in items}
-    match = item_map.get(item_id)
+    match = next((i for i in items if i.item_id == item_id), None)
     
     if not match:
         return False
@@ -418,7 +414,11 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
 
 def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     """Limpia el almacén completo, borrando solo archivos cuya integridad es verificable."""
-    quarantine_root = quarantine_dir(base)
+    try:
+        quarantine_root = quarantine_dir(base)
+    except OSError:
+        return 0
+        
     if is_protected_path(quarantine_root):
         raise UnsafePathError("Operación denegada en ruta protegida.")
         
@@ -440,7 +440,7 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
                         if _safe_unlink(entry):
                             count += 1
                 else:
-                    # Archivos huérfanos que no están en el manifiesto
+                    # Archivos huérfanos que no están en el manifiesto se consideran basura
                     _safe_unlink(entry)
             except (OSError, PermissionError):
                 continue

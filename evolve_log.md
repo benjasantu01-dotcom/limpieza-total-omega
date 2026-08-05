@@ -1166,3 +1166,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-05T09:03:08` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: manejo de errores y validación de entradas).
 - `2026-08-05T09:03:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-05T09:03:08` Corrida terminada. Total usado hoy: 204.
+- `2026-08-05T09:09:59` Arrancando corrida. Quedan hoy ~96 peticiones objetivo.
+- `2026-08-05T09:10:23` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `stage_for_review` validando que los elementos en la lista de entrada sean instancias válidas de `JunkFile` y que sus rutas tengan sentido antes de intentar procesarlas, evitando posibles excepciones `AttributeError` o `TypeError` al acceder a propiedades de objetos malformados o `None`.
+- `2026-08-05T09:10:51` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré el manejo de errores en `purge_all` y `restore_item` agregando validaciones preventivas sobre la existencia del manifiesto y la integridad de las rutas, reemplazando excepciones genéricas por capturas más específicas para evitar el estado inconsistente de la aplicación ante errores de E/S.
+- `2026-08-05T09:11:10` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-08-05T09:11:17` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-05T09:11:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-05T09:11:17` Corrida terminada. Total usado hoy: 208.
