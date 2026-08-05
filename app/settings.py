@@ -145,11 +145,12 @@ def settings_path(path_or_base: PathLike | None = None) -> Path:
     try:
         base = Path(key).expanduser()
         current = base
+        # Evitar bucles infinitos en raíces de sistema
         while not is_safe_to_modify(str(current)) and current != current.parent:
             current = current.parent
         res = (current / SETTINGS_FILE).resolve()
     except (OSError, RuntimeError, ValueError, PermissionError):
-        res = SETTINGS_DIR.resolve() / SETTINGS_FILE
+        res = SETTINGS_DIR.expanduser().resolve() / SETTINGS_FILE
     _path_cache[key] = res
     return res
 
@@ -175,6 +176,8 @@ def load(path_or_base: PathLike | None = None) -> dict[str, Any]:
     ruta = settings_path(path_or_base)
     
     try:
+        if not ruta.exists():
+            raise FileNotFoundError
         stat = ruta.stat()
         if _cached_settings is not None and ruta == _last_path and stat.st_mtime == _last_mtime:
             return _cached_settings

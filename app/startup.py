@@ -118,18 +118,25 @@ class StartupEntry:
         try:
             p = Path(path_str)
             if is_protected_path(p) or p.is_symlink():
+                _EXISTS_CACHE[path_str] = False
                 return path_str
             
-            p_abs = p.expanduser().resolve(strict=False)
+            # Resolvemos de forma segura, evitando que rutas inexistentes aborten el proceso
+            if not p.exists():
+                _EXISTS_CACHE[path_str] = False
+                return path_str
+                
+            p_abs = p.resolve(strict=True)
             
             if is_protected_path(p_abs):
+                _EXISTS_CACHE[path_str] = False
                 return ""
                 
             p_str = str(p_abs)
             _EXISTS_CACHE[p_str] = p_abs.is_file()
-            
             return p_str if _EXISTS_CACHE[p_str] else path_str
         except (OSError, ValueError, RuntimeError, TypeError):
+            _EXISTS_CACHE[path_str] = False
             return path_str
 
     def _resolve_path_from_command(self, cmd: str) -> str:
@@ -202,7 +209,6 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
         if not line or not line.strip():
             continue
         
-        # Debemos asegurar que existan al menos 2 columnas para procesar
         parts: List[str] = line.split(",", 1)
         if len(parts) < 2:
             continue
@@ -210,7 +216,6 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
         name_raw = parts[0].strip().strip('"')
         cmd_raw = parts[1].strip().strip('"')
         
-        # Limpieza robusta de datos de entrada
         if not isinstance(name_raw, str) or not isinstance(cmd_raw, str):
             continue
 
