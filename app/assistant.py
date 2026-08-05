@@ -171,13 +171,18 @@ class Answer:
 
 def _ensure_safe_text(text: str) -> bool:
     """
-    Valida que el texto no contenga rutas, caracteres de control o inyecciones.
-    Asegura que el asistente no procese rutas del sistema o caracteres sospechosos.
+    Valida la integridad del texto. Rechaza entradas con indicios de rutas,
+    caracteres no imprimibles (control) o secuencias de escape.
+    
+    Precondición: text debe ser una cadena no nula.
+    Retorna: bool indicando si el texto es apto para procesamiento remoto.
     """
     if not isinstance(text, str) or not text or len(text) > 2000:
         return False
+    # Rechazo si detecta patrones de archivos, inyecciones de control o rutas
     if _PATH_REGEX.search(text) or _CONTROL_CHARS_REGEX.search(text):
         return False
+    # Verificación extra: si el texto parece contener una ruta, validamos seguridad
     if any(c in text for c in (":\\", "/", "\\")):
         if is_protected_path(text):
             return False
@@ -185,7 +190,9 @@ def _ensure_safe_text(text: str) -> bool:
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
     """
-    Transforma datos crudos en SystemContext validando estrictamente tipos y límites.
+    Transforma fuentes de datos genéricas en una estructura SystemContext tipada.
+    Valida que los valores numéricos sean finitos y dentro de rangos lógicos
+    para evitar errores durante el análisis o el envío de métricas.
     """
     ctx = SystemContext()
 

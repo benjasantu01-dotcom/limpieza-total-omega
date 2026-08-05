@@ -1173,3 +1173,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-05T09:11:17` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: manejo de errores y validación de entradas).
 - `2026-08-05T09:11:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-05T09:11:17` Corrida terminada. Total usado hoy: 208.
+- `2026-08-05T09:20:09` Arrancando corrida. Quedan hoy ~92 peticiones objetivo.
+- `2026-08-05T09:20:33` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `scan_file` y `scan_directory` introduciendo validaciones defensivas ante rutas nulas, tipos inesperados o fallos en el sistema de archivos, asegurando que el flujo de ejecución no se interrumpa ante parámetros mal formados.
+- `2026-08-05T09:20:57` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Reforcé la robustez del manejo de archivos en `load` y `save` mediante el uso de `is_safe_to_modify` antes de cualquier operación I/O, evitando excepciones innecesarias y asegurando que las validaciones de seguridad se apliquen consistentemente siguiendo las reglas del proyecto.
+- `2026-08-05T09:21:20` ➖ Sin cambios en startup.py (enfoque: manejo de errores y validación de entradas). Motivo: Reforcé la robustez de `parse_registry_csv` añadiendo una validación explícita de `len(parts)` tras el `split` y un chequeo de tipos para prevenir errores de ejecución ante entradas mal formadas provenientes de PowerShell.
+- `2026-08-05T09:21:37` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejoré la documentación de `_ensure_safe_text` y `build_context` usando Type Hints detallados y docstrings que especifican las precondiciones de seguridad, además de clarificar la intención de los filtros mediante comentarios explicativos.
+- `2026-08-05T09:21:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-05T09:21:37` Corrida terminada. Total usado hoy: 212.

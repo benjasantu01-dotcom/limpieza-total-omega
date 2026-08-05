@@ -186,11 +186,7 @@ def load(path_or_base: PathLike | None = None) -> AppSettings:
     ruta = settings_path(path_or_base)
     
     try:
-        # Verificación defensiva adicional: asegurar que la ruta resuelta es segura antes de procesar
-        if not is_safe_to_modify(str(ruta.resolve())):
-            raise PermissionError("Path restricted by safety policy")
-        
-        if not ruta.exists() or ruta.is_dir():
+        if not ruta.exists() or not is_safe_to_modify(str(ruta)):
             raise FileNotFoundError
         
         stat = ruta.stat()
@@ -207,7 +203,7 @@ def load(path_or_base: PathLike | None = None) -> AppSettings:
         _cached_settings = validate(data)
         _last_path, _last_mtime = ruta, stat.st_mtime
         return _cached_settings
-    except (OSError, json.JSONDecodeError, UnicodeDecodeError, FileNotFoundError, PermissionError, ValueError):
+    except (OSError, json.JSONDecodeError, UnicodeDecodeError, ValueError):
         _cached_settings = DEFAULTS.copy()
         _last_path, _last_mtime = ruta, 0.0
         return _cached_settings
@@ -223,9 +219,7 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
         limpio["asistente_activado"] = False
     
     try:
-        if ruta.exists() and not ruta.is_file(): raise OSError("Path is not file")
-        ensure_safe_to_modify(ruta.parent)
-        
+        if not is_safe_to_modify(str(ruta)): raise PermissionError("Unsafe path")
         json_data = json.dumps(limpio, indent=2, ensure_ascii=False)
         ruta.parent.mkdir(parents=True, exist_ok=True)
     except (OSError, PermissionError): return None

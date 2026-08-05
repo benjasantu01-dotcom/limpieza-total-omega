@@ -78,6 +78,8 @@ class Scanner:
     def process_entry(self, entry: os.DirEntry, stack: List[str]) -> None:
         """Procesa una entrada del directorio, filtrando rutas protegidas y analizando archivos."""
         try:
+            if not entry or not entry.path:
+                return
             path_obj = Path(entry.path)
             # Verificación de seguridad básica antes de operar sobre la ruta
             if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
@@ -135,7 +137,7 @@ def scan_file(path: Path, entry: Optional[os.DirEntry] = None, prevalidated: boo
     """
     Ejecuta todos los chequeos heurísticos registrados contra un archivo específico.
     """
-    if not isinstance(path, Path):
+    if not isinstance(path, Path) or not path.exists():
         return []
     
     if not prevalidated:
@@ -145,10 +147,13 @@ def scan_file(path: Path, entry: Optional[os.DirEntry] = None, prevalidated: boo
     findings: ScanResult = []
     
     for condition_met, check_func in CHECK_REGISTRY:
-        if condition_met(path):
-            result = check_func(path, entry)
-            if result:
-                findings.append(result)
+        try:
+            if condition_met(path):
+                result = check_func(path, entry)
+                if result:
+                    findings.append(result)
+        except Exception:
+            continue
             
     return findings
 
