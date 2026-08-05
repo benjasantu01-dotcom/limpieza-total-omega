@@ -103,7 +103,11 @@ class StartupEntry:
 
     def _resolve_and_cache_path(self, path_str: str) -> str:
         """Normaliza rutas, resolviendo enlaces y cacheando resultados de existencia."""
-        if not isinstance(path_str, str) or not path_str or any(c in path_str for c in '<>|?*'):
+        if not isinstance(path_str, str) or not path_str:
+            return ""
+        
+        # Filtro de caracteres prohibidos en rutas de sistema
+        if any(c in path_str for c in '<>|?*'):
             return ""
         
         # Retorno de caché: permite reutilizar chequeos previos de existencia
@@ -112,6 +116,11 @@ class StartupEntry:
         
         try:
             p = Path(path_str)
+            # Validación de integridad antes de resolución costosa
+            if not p.is_absolute():
+                _EXISTS_CACHE[path_str] = False
+                return path_str
+                
             if is_protected_path(p) or p.is_symlink():
                 _EXISTS_CACHE[path_str] = False
                 return path_str

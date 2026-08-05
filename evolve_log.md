@@ -1306,3 +1306,10 @@ FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - Asse
 - `2026-08-05T11:03:50` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-08-05T11:03:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-05T11:03:50` Corrida terminada. Total usado hoy: 252.
+- `2026-08-05T11:12:39` Arrancando corrida. Quedan hoy ~48 peticiones objetivo.
+- `2026-08-05T11:13:04` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
+- `2026-08-05T11:13:25` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-08-05T11:13:52` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `save()` ante fallos de escritura en disco añadiendo un manejo de excepciones explícito para `os.replace`, evitando que una falla parcial en el sistema de archivos deje el proceso en estado inconsistente o con descriptores de archivo abiertos.
+- `2026-08-05T11:14:03` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Se mejora la robustez de `_resolve_and_cache_path` añadiendo un manejo explícito de rutas que contienen caracteres no válidos o espacios mal formados, previniendo excepciones no controladas durante la inspección de ejecutables.
+- `2026-08-05T11:14:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-05T11:14:03` Corrida terminada. Total usado hoy: 256.

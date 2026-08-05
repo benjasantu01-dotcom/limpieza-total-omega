@@ -238,7 +238,8 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
         os.replace(temp_path, ruta)
         _cached_settings, _last_path, _last_mtime = limpio, ruta, ruta.stat().st_mtime
         return ruta
-    except (OSError, PermissionError, RuntimeError): return None
+    except (OSError, PermissionError, RuntimeError):
+        return None
     finally:
         if temp_path and temp_path.exists():
             try: temp_path.unlink()

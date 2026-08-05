@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **250** (49.6% de aceptación)
+- Mejoras aceptadas: **252** (50.0% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 28
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 198
+- Sin respuesta de la IA (error o límite): 196
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-04 | 117 | 6 | 13 | 6 | 110 |
-| 2026-08-05 | 133 | 9 | 15 | 7 | 88 |
+| 2026-08-04 | 117 | 6 | 13 | 6 | 106 |
+| 2026-08-05 | 135 | 9 | 15 | 7 | 90 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **60**
 - manejo de errores y validación de entradas: **55**
 - rendimiento: **54**
-- robustez ante casos límite: **41**
+- robustez ante casos límite: **43**
 - seguridad defensiva: **40**
 
 ## Mejoras aceptadas por archivo
@@ -35,17 +35,19 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **21**
 - `browser.py`: **20**
 - `scanner.py`: **20**
+- `settings.py`: **20**
 - `diskreport.py`: **19**
-- `settings.py`: **19**
 - `organizer.py`: **18**
 - `healthscore.py`: **17**
 - `main.py`: **16**
 - `memory.py`: **13**
 - `safety.py`: **13**
-- `startup.py`: **10**
+- `startup.py`: **11**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-05T11:14:03` **startup.py** (robustez ante casos límite): Se mejora la robustez de `_resolve_and_cache_path` añadiendo un manejo explícito de rutas que contienen caracteres no válidos o espacios mal formados, previniendo excepciones no controladas durante la inspección de ejecutables.
+- `2026-08-05T11:13:52` **settings.py** (robustez ante casos límite): Mejoré la robustez de `save()` ante fallos de escritura en disco añadiendo un manejo de excepciones explícito para `os.replace`, evitando que una falla parcial en el sistema de archivos deje el proceso en estado inconsistente o con descriptores de archivo abiertos.
 - `2026-08-05T10:43:38` **browser.py** (robustez ante casos límite): Mejoré la robustez de `directory_size` ante el caso límite de archivos bloqueados por el SO (sharing violation) y directorios con permisos denegados, asegurando que `entry.stat()` sea invocado con manejo explícito de errores para evitar que el escaneo se aborte silenciosamente ante archivos en uso o protegidos, además de validar la existencia de `candidate` dentro de `directory_size` antes de iniciar el ciclo.
 - `2026-08-05T10:43:30` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de sistema de archivos (como rutas inexistentes o permisos denegados) mediante una verificación más estricta de las condiciones previas y un manejo de excepciones localizado, evitando fallos silenciosos al intentar persistir el logo.
 - `2026-08-05T10:43:00` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` ante la posible inyección de valores numéricos `NaN` o `Inf` mediante una validación más estricta en el helper interno, asegurando que el asistente trabaje exclusivamente con datos numéricos válidos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-05T10:02:42` **branding.py** (rendimiento): Optimicé el cálculo del degradado en `draw_gradient_bar` mediante la precálculo de puntos de corte y la simplificación de la lógica de renderizado, eliminando el loop que generaba innecesariamente muchos objetos en el canvas al pintar línea por línea.
 - `2026-08-05T10:01:56` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `startup.py` mediante la normalización de docstrings (siguiendo estándares PEP 257), la inclusión de type hints explícitos en los atributos de `StartupEntry`, y la refactorización de la lógica de caché para hacerla más transparente y autodocumentada sin alterar la funcionalidad.
 - `2026-08-05T10:01:31` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos claros a las funciones principales, especificando los tipos de entrada/salida y documentando el propósito de las validaciones, lo cual ayuda a futuros colaboradores a entender cómo el módulo maneja los estados de error sin comprometer la seguridad.
-- `2026-08-05T09:52:06` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la inclusión de type hints precisos en el `CHECK_REGISTRY` y la actualización de los docstrings en las funciones de escaneo para clarificar la distinción entre los filtros de condición y la ejecución del chequeo.
-- `2026-08-05T09:51:58` **safety.py** (legibilidad y documentación): He mejorado la documentación interna y la claridad del código añadiendo *docstrings* detallados que explican el "porqué" de las restricciones de seguridad, y reforzado la tipificación para que sea más explícita, facilitando el mantenimiento futuro del equipo.
