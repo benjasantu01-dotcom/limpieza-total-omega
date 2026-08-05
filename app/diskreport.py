@@ -213,7 +213,9 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                                 visited_directories.add(full_path)
                                 yield from scan_level(full_path)
                         else:
-                            yield full_path, entry.stat().st_size
+                            # Captura caso donde el archivo desaparece o no se puede leer durante el escaneo
+                            size = entry.stat().st_size
+                            yield full_path, size
                     except (OSError, PermissionError, FileNotFoundError, TypeError, AttributeError):
                         continue
         except (OSError, PermissionError, FileNotFoundError, TypeError):

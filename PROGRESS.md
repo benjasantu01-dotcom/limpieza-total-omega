@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **251** (49.8% de aceptación)
+- Mejoras aceptadas: **252** (50.0% de aceptación)
 - Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 28
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 201
+- Sin respuesta de la IA (error o límite): 200
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-03 | 57 | 1 | 6 | 4 | 54 |
+| 2026-08-03 | 55 | 1 | 5 | 4 | 53 |
 | 2026-08-04 | 166 | 11 | 20 | 8 | 145 |
-| 2026-08-05 | 28 | 0 | 2 | 0 | 2 |
+| 2026-08-05 | 31 | 0 | 3 | 0 | 2 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **62**
 - manejo de errores y validación de entradas: **53**
 - rendimiento: **53**
-- seguridad defensiva: **44**
-- robustez ante casos límite: **39**
+- seguridad defensiva: **42**
+- robustez ante casos límite: **42**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **23**
+- `quarantine.py`: **22**
 - `settings.py`: **21**
 - `organizer.py`: **21**
 - `assistant.py`: **21**
 - `scanner.py`: **20**
-- `duplicates.py`: **19**
+- `duplicates.py`: **20**
 - `healthscore.py`: **19**
+- `diskreport.py`: **18**
 - `browser.py`: **18**
-- `diskreport.py`: **17**
-- `memory.py`: **15**
+- `branding.py`: **16**
 - `safety.py`: **15**
-- `branding.py`: **15**
 - `main.py`: **15**
+- `memory.py`: **14**
 - `startup.py`: **12**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-05T01:31:43` **duplicates.py** (robustez ante casos límite): Se ha robustecido la función `_collect_candidates` para manejar correctamente rutas que desaparecen durante el escaneo (Race Condition) y se evitó la recursión infinita en casos de puntos de montaje circulares o junctions mediante el uso de `stat` para identificar dispositivos únicos.
+- `2026-08-05T01:31:34` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `walk_files` ante archivos que desaparecen durante el escaneo (condición de carrera común en escaneos de disco) envolviendo la lectura de metadatos en un bloque `try-except` más específico y asegurando que `entry.stat()` no falle ante archivos bloqueados o en proceso de borrado.
+- `2026-08-05T01:30:48` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante escenarios de fallos en el sistema de archivos (como discos de solo lectura o falta de permisos) integrando una validación previa de escritura mediante `is_safe_to_modify` para evitar excepciones innecesarias y asegurar un manejo limpio de errores.
 - `2026-08-05T01:21:35` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_gen_problems` ante posibles errores de redondeo o datos de entrada incoherentes en las métricas (usando `math.isclose` para comparaciones de punto flotante) y agregué un manejo de excepciones más defensivo en `context_as_text` para evitar fallos si el objeto `SystemContext` llega con datos mal formados, garantizando la estabilidad ante valores atípicos.
 - `2026-08-05T01:20:56` **settings.py** (rendimiento): Optimizé la función `validate` para evitar recrear diccionarios innecesariamente y reduje las búsquedas en `_VALIDATOR_MAP` utilizando una referencia local, mejorando la eficiencia durante la carga o actualización de configuraciones.
 - `2026-08-05T01:20:31` **scanner.py** (rendimiento): Optimicé el bucle de escaneo de archivos delegando la obtención de metadatos (`stat`) al `os.DirEntry` existente, evitando así llamadas redundantes a `path.lstat()` que degradaban el rendimiento en directorios grandes.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-05T00:51:05` **diskreport.py** (rendimiento): Optimicé el rendimiento de `summarize` integrando la lógica de recolección de datos en un solo paso de iteración, eliminando llamadas redundantes a `walk_files` y mejorando la eficiencia de las estructuras de datos.
 - `2026-08-05T00:50:55` **browser.py** (rendimiento): Optimizé el rendimiento de `directory_size` utilizando un `set` para la comprobación de `NEVER_TOUCH` (reduciendo la complejidad de búsqueda de O(N) a O(1)) y minimizando las llamadas redundantes a `Path` y `resolve` dentro del bucle de escaneo.
 - `2026-08-05T00:50:32` **branding.py** (rendimiento): Se optimizó el renderizado de la barra de degradado (`draw_gradient_bar`) consolidando líneas adyacentes del mismo color para reducir drásticamente las llamadas al método `create_line` del canvas, mejorando el rendimiento en cada actualización de interfaz.
-- `2026-08-05T00:50:03` **assistant.py** (rendimiento): Se optimizó el proceso de decisión de `local_answer` reemplazando la generación completa de la lista `problemas` por una evaluación perezosa y temprana (lazy evaluation), evitando iterar sobre toda la lista de posibles problemas cuando solo se necesitan los primeros elementos para la respuesta, mejorando el rendimiento en caso de que las reglas crezcan.
-- `2026-08-05T00:40:42` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos a métodos internos y aclarando la lógica de resolución de rutas en `StartupEntry`, facilitando el mantenimiento y la comprensión de las heurísticas de seguridad aplicadas.
-- `2026-08-05T00:40:26` **settings.py** (legibilidad y documentación): Mejoré la legibilidad del validador de configuración mediante la creación de un diccionario de despacho (`_VALIDATOR_MAP`) más estructurado y docstrings que clarifican el propósito de cada función auxiliar, asegurando que cualquier desarrollador entienda la lógica de validación sin ambigüedades.

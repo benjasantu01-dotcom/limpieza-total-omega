@@ -145,27 +145,37 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
     
     def _scan(root_path: Path) -> None:
         try:
+            # Capturamos el device ID para detectar cambios de unidad/montaje
+            root_st = root_path.stat()
+            visited_inodes.add((root_st.st_dev, root_st.st_ino))
+        except (OSError, PermissionError):
+            return
+
+        try:
             with os.scandir(root_path) as it:
                 for entry in it:
                     try:
                         if entry.is_symlink(): continue
                         
                         if entry.is_dir():
-                            _scan(Path(entry.path))
+                            st = entry.stat()
+                            inode_key = (st.st_dev, st.st_ino)
+                            if inode_key not in visited_inodes:
+                                _scan(Path(entry.path))
                         elif entry.is_file():
                             st = entry.stat()
                             if st.st_size < min_size: continue
-                            inode_key = (st.st_dev, st.st_ino)
-                            if inode_key in visited_inodes: continue
                             
-                            # Resolvemos solo si el archivo es candidato para evitar syscalls innecesarias
                             p = Path(entry.path)
                             if is_protected_path(p): continue
                             
+                            inode_key = (st.st_dev, st.st_ino)
+                            if inode_key in visited_inodes: continue
                             visited_inodes.add(inode_key)
+                            
                             groups[st.st_size].append(p.resolve())
-                    except (OSError, PermissionError): continue
-        except (OSError, PermissionError): pass
+                    except (OSError, PermissionError, FileNotFoundError): continue
+        except (OSError, PermissionError, FileNotFoundError): pass
 
     if directories is not None:
         for directory in directories:
