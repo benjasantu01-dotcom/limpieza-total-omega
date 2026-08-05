@@ -98,14 +98,13 @@ def base_directories() -> List[Path]:
 
 def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> bool:
     """
-    Valida la integridad de la ruta, previniendo escapes y enlaces simbólicos.
-    Verifica que la ruta esté contenida dentro de la base permitida.
+    Valida la integridad de la ruta contra escapes (directory traversal) y 
+    evita seguir enlaces simbólicos o puntos de reparse (junctions).
     """
     if not isinstance(target_path, Path) or not isinstance(base_path, Path):
         return False
         
     try:
-        # Prevenir rutas UNC (servidores externos)
         if str(target_path).startswith(r"\\"):
             return False
 
@@ -121,11 +120,11 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
         if is_protected_path(real_target):
             return False
 
-        # Verifica si el target es symlink o junction
+        # Verifica si el target es symlink o junction para evitar loops o acceso fuera de base
         if real_target.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(str(real_target))):
             return False
 
-        # Verifica que real_target sea hijo de real_base
+        # Verifica que la ruta esté contenida dentro de la base permitida
         real_target.relative_to(real_base)
         return True
     except (OSError, ValueError, RuntimeError, PermissionError):
@@ -134,8 +133,9 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
 
 def directory_size(path: str | os.PathLike | None) -> int:
     """
-    Calcula el peso total en bytes de un directorio mediante recorrido iterativo optimizado.
-    Usa os.scandir para evitar llamadas adicionales al sistema.
+    Calcula el peso total en bytes mediante recorrido iterativo con os.scandir.
+    La eficiencia reside en evitar instanciar objetos Path innecesarios y 
+    realizar validaciones de seguridad en cada nodo del árbol antes de procesarlo.
     """
     if path is None:
         return 0
@@ -156,7 +156,7 @@ def directory_size(path: str | os.PathLike | None) -> int:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
-                        # entry.is_symlink y is_junction validados explícitamente
+                        # Saltar enlaces simbólicos/junctions por seguridad (evitar recursión infinita o accesos externos)
                         is_junction = hasattr(os.path, 'isjunction') and os.path.isjunction(entry.path)
                         if entry.is_symlink() or is_junction:
                             continue

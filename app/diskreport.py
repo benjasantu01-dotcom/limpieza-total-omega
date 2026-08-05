@@ -272,10 +272,10 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
         base = Path(directory).expanduser().resolve()
         if not base.exists() or not base.is_dir():
             return []
-        # Validación defensiva ante reparse points antes de comenzar el escaneo
-        if base.is_symlink() or (os.name == 'nt' and base.stat().st_reparse_tag != 0):
-            return []
-        if skip_protected and is_protected_path(base):
+        
+        # Reutilizamos lógica de validación básica
+        if (base.is_symlink() or (os.name == 'nt' and base.stat().st_reparse_tag != 0) 
+            or (skip_protected and is_protected_path(base))):
             return []
         
         folder_map: Dict[Path, FolderUsage] = {}
@@ -301,17 +301,12 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
 
 def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Tuple[int, int]:
     """Calcula la suma total de bytes y cantidad de archivos en un directorio."""
-    if not directory:
-        return 0, 0
-    try:
-        total = 0
-        count = 0
-        for _, size in walk_files(directory, skip_protected):
-            total += size
-            count += 1
-        return total, count
-    except (OSError, PermissionError):
-        return 0, 0
+    total = 0
+    count = 0
+    for _, size in walk_files(directory, skip_protected):
+        total += size
+        count += 1
+    return total, count
 
 
 def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -> List[str]:
@@ -331,14 +326,11 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
     ext_sizes: Dict[str, int] = defaultdict(int)
     ext_counts: Dict[str, int] = defaultdict(int)
     top_heap: List[Tuple[int, str]] = []
-    total_bytes = 0
-    total_files = 0
+    
+    total_bytes, total_files = total_size(directory, skip_protected)
 
     try:
         for path, size in walk_files(path_obj, skip_protected):
-            total_bytes += size
-            total_files += 1
-            
             ext_name = path.suffix.lower() or "(sin extensión)"
             ext_sizes[ext_name] += size
             ext_counts[ext_name] += 1
@@ -357,7 +349,7 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
         "Por tipo de archivo:",
     ]
     
-    sorted_exts = heapq.nlargest(8, ext_sizes.items(), key=lambda item: item[1])
+    sorted_exts: List[Tuple[str, int]] = heapq.nlargest(8, ext_sizes.items(), key=lambda item: item[1])
     for ext, size in sorted_exts:
         lines.append(f"  {ext:<18} {format_size(size):>10}  ({ext_counts[ext]} archivos)")
         
