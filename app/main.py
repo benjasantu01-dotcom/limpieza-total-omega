@@ -988,17 +988,23 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 "disco": branding.score_color(disco_libre * 5),
             }
             for clave, label in self.cards.items():
-                label.configure(text=valores.get(clave, "-"),
-                                text_color=colores.get(clave, branding.color("accent")))
+                try:
+                    label.configure(text=valores.get(clave, "-"),
+                                    text_color=colores.get(clave, branding.color("accent")))
+                except Exception:
+                    pass
 
             for clave, (barra, label) in self.area_bars.items():
-                puntos = resultado.breakdown.get(clave, 0)
-                maximo = healthscore.WEIGHTS.get(clave, 1)
-                proporcion = puntos / maximo if maximo else 0
-                barra.set(proporcion)
-                barra.configure(progress_color=branding.score_color(proporcion * 100))
-                label.configure(text=f"{puntos:.0f}/{maximo}",
-                                text_color=branding.score_color(proporcion * 100))
+                try:
+                    puntos = resultado.breakdown.get(clave, 0)
+                    maximo = healthscore.WEIGHTS.get(clave, 1)
+                    proporcion = puntos / maximo if maximo else 0
+                    barra.set(proporcion)
+                    barra.configure(progress_color=branding.score_color(proporcion * 100))
+                    label.configure(text=f"{puntos:.0f}/{maximo}",
+                                    text_color=branding.score_color(proporcion * 100))
+                except Exception:
+                    pass
 
         self.after(0, actualizar)
 
@@ -1323,7 +1329,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             messagebox.showerror("Bloqueado", "Este PID corresponde a un proceso del sistema esencial y no puede ser modificado.")
             return
 
-        # Pre-chequeo básico de existencia del proceso antes de intentar trim
+        # Pre-chequeo de existencia del proceso antes de intentar trim
         if not memory_mod.process_exists(pid):
             messagebox.showerror("No encontrado", f"No se encontró un proceso activo con PID {pid}.")
             return

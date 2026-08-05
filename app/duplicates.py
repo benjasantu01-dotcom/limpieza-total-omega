@@ -231,13 +231,17 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     keepers: List[Tuple[float, int, Path]] = []
     for p in group.paths:
         try:
-            if p.is_file() and not is_protected_path(p):
+            # Validamos existencia y seguridad antes de consultar metadatos
+            if p.exists() and not is_protected_path(p):
                 stat_info = p.stat()
                 keepers.append((stat_info.st_mtime, len(str(p)), p))
         except (OSError, PermissionError):
             continue
             
-    return min(keepers, key=lambda x: (x[0], x[1]))[2] if keepers else None
+    if not keepers:
+        return None
+        
+    return min(keepers, key=lambda x: (x[0], x[1]))[2]
 
 
 def format_group(group: DuplicateGroup) -> List[str]:

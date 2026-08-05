@@ -226,7 +226,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 
 def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_protected: bool = True) -> List[FileEntry]:
     """Identifica los N archivos más grandes en la ruta dada usando un min-heap."""
-    if not directory:
+    if not directory or not isinstance(directory, (str, Path)):
         return []
     try:
         return heapq.nlargest(
@@ -294,11 +294,16 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
 
 def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Tuple[int, int]:
     """Calcula la suma total de bytes y cantidad de archivos en un directorio."""
+    if not directory:
+        return 0, 0
     total = 0
     count = 0
-    for _, size in walk_files(directory, skip_protected):
-        total += size
-        count += 1
+    try:
+        for _, size in walk_files(directory, skip_protected):
+            total += size
+            count += 1
+    except (OSError, PermissionError):
+        pass
     return total, count
 
 
@@ -320,7 +325,7 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
     ext_counts: Dict[str, int] = defaultdict(int)
     top_heap: List[Tuple[int, str]] = []
     
-    total_bytes, total_files = total_size(directory, skip_protected)
+    total_bytes, total_files = total_size(path_obj, skip_protected)
 
     try:
         for path, size in walk_files(path_obj, skip_protected):
@@ -332,8 +337,8 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
                 heapq.heappush(top_heap, (size, str(path)))
             elif size > top_heap[0][0]:
                 heapq.heapreplace(top_heap, (size, str(path)))
-    except Exception as e:
-        return [f"Error crítico durante el escaneo: {str(e)}"]
+    except (OSError, PermissionError, Exception):
+        return ["Error: Fallo durante la recolección de métricas de archivos."]
 
     lines: List[str] = [
         f"Carpeta analizada: {path_obj}",

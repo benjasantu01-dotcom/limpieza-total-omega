@@ -150,42 +150,50 @@ def _to_int(value: Any, default: int = 0) -> int:
 
 def score_junk(junk_mb: float) -> float:
     """Calcula el ratio [0.0, 1.0] de limpieza de basura; el ratio decae linealmente conforme el volumen de basura se acerca a JUNK_LIMIT_MB."""
+    val = _to_float(junk_mb)
     if JUNK_LIMIT_MB <= 0: return 0.0
-    return _clamp(1.0 - (junk_mb / JUNK_LIMIT_MB))
+    return _clamp(1.0 - (val / JUNK_LIMIT_MB))
 
 
 def score_security(suspicious_count: int, warnings: int = 0) -> float:
     """Calcula el ratio [0.0, 1.0] de seguridad; aplica una penalización acumulativa fija: 5% por hallazgo y 25% por advertencia crítica."""
-    penalty: float = (float(suspicious_count) * 0.05) + (float(warnings) * 0.25)
+    s_count = _to_int(suspicious_count)
+    w_count = _to_int(warnings)
+    penalty: float = (float(s_count) * 0.05) + (float(w_count) * 0.25)
     return _clamp(1.0 - penalty, 0.0, 1.0)
 
 
 def score_memory(available_percent: float) -> float:
     """Calcula el ratio [0.0, 1.0] de salud de memoria; compara la disponibilidad actual contra el umbral RAM_IDEAL_PERCENT."""
+    val = _to_float(available_percent)
     if RAM_IDEAL_PERCENT <= 0: return 0.0
-    return _clamp(available_percent / RAM_IDEAL_PERCENT)
+    return _clamp(val / RAM_IDEAL_PERCENT)
 
 
 def score_disk(free_percent: float) -> float:
     """Calcula el ratio [0.0, 1.0] de salud de disco; mide el porcentaje de espacio libre respecto al objetivo DISK_IDEAL_PERCENT."""
+    val = _to_float(free_percent)
     if DISK_IDEAL_PERCENT <= 0: return 0.0
-    return _clamp(free_percent / DISK_IDEAL_PERCENT)
+    return _clamp(val / DISK_IDEAL_PERCENT)
 
 
 def score_duplicates(duplicate_mb: float) -> float:
     """Calcula el ratio [0.0, 1.0] de optimización por duplicados; penaliza el espacio desperdiciado en función de DUPLICATE_LIMIT_MB."""
+    val = _to_float(duplicate_mb)
     if DUPLICATE_LIMIT_MB <= 0: return 0.0
-    return _clamp(1.0 - (duplicate_mb / DUPLICATE_LIMIT_MB))
+    return _clamp(1.0 - (val / DUPLICATE_LIMIT_MB))
 
 
 def score_startup(startup_count: int) -> float:
     """Calcula el ratio [0.0, 1.0] de eficiencia de arranque; penaliza la cantidad de procesos que inician automáticamente al superar STARTUP_LIMIT_COUNT."""
+    val = _to_int(startup_count)
     if STARTUP_LIMIT_COUNT <= 0: return 0.0
-    return _clamp(1.0 - (float(startup_count) / STARTUP_LIMIT_COUNT))
+    return _clamp(1.0 - (float(val) / STARTUP_LIMIT_COUNT))
 
 
 def grade_for_score(score: int) -> str:
     """Asigna una calificación cualitativa (A-F) basada en el rango del puntaje [0, 100]."""
+    score = int(score)
     if score >= 90: return "A"
     if score >= 80: return "B"
     if score >= 65: return "C"
