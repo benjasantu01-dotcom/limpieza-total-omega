@@ -733,3 +733,10 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_ignores_desktop_i
 - `2026-08-05T05:36:53` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el rendimiento de `directory_size` utilizando `os.scandir` para obtener directamente los atributos de los archivos (`is_symlink`, `is_junction`, `st_size`) sin llamadas redundantes a `Path` o `os.stat` adicionales, reduciendo drásticamente las llamadas al sistema operativo por archivo.
 - `2026-08-05T05:36:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-05T05:36:53` Corrida terminada. Total usado hoy: 124.
+- `2026-08-05T05:45:30` Arrancando corrida. Quedan hoy ~176 peticiones objetivo.
+- `2026-08-05T05:45:56` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-08-05T05:46:19` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Se optimizó el proceso de recolección de candidatos evitando llamadas redundantes a `path.resolve()` y `is_protected_path()` en el bucle principal de `_collect_candidates`, reduciendo significativamente las operaciones de I/O al verificar la seguridad solo cuando es estrictamente necesario.
+- `2026-08-05T05:46:43` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
+- `2026-08-05T05:47:24` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Se implementó un mecanismo de **invalidación selectiva de caché mediante prefijos** en `_invalidate_cache` y se optimizó `_compile_metrics` para usar de forma consistente el caché de sesión, evitando lecturas redundantes de disco durante el análisis de salud.
+- `2026-08-05T05:47:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-05T05:47:24` Corrida terminada. Total usado hoy: 128.

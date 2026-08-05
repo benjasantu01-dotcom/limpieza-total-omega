@@ -900,7 +900,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _compile_metrics(self) -> Tuple[healthscore.SystemMetrics, memory_mod.Snapshot, diskreport.DriveInfo]:
         """Consolida métricas del sistema priorizando caché existente."""
-        # Se utilizan valores existentes sin refrescar todo para mantener el rendimiento alto
         hallazgos = self._get_cached("suspicions") or []
         snapshot = memory_mod.read_snapshot()
         home = os.path.expanduser("~")

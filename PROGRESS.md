@@ -6,47 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **252** (50.0% de aceptación)
+- Mejoras aceptadas: **251** (49.8% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 30
+- Rechazadas por guardia de seguridad: 29
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 197
+- Sin respuesta de la IA (error o límite): 199
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-03 | 12 | 0 | 2 | 1 | 15 |
+| 2026-08-03 | 9 | 0 | 1 | 1 | 15 |
 | 2026-08-04 | 166 | 11 | 20 | 8 | 145 |
-| 2026-08-05 | 74 | 3 | 8 | 2 | 37 |
+| 2026-08-05 | 76 | 3 | 8 | 2 | 39 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **58**
 - manejo de errores y validación de entradas: **55**
 - seguridad defensiva: **50**
-- rendimiento: **46**
-- robustez ante casos límite: **43**
+- rendimiento: **48**
+- robustez ante casos límite: **40**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **22**
 - `settings.py`: **21**
+- `duplicates.py`: **21**
+- `quarantine.py`: **21**
 - `assistant.py`: **21**
-- `scanner.py`: **20**
-- `duplicates.py`: **20**
 - `organizer.py`: **20**
 - `browser.py`: **19**
+- `scanner.py`: **19**
 - `diskreport.py`: **19**
 - `healthscore.py`: **19**
 - `branding.py`: **18**
-- `safety.py`: **15**
-- `main.py`: **15**
+- `main.py`: **16**
+- `safety.py`: **14**
 - `memory.py`: **13**
 - `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-05T05:47:24` **main.py** (rendimiento): Se implementó un mecanismo de **invalidación selectiva de caché mediante prefijos** en `_invalidate_cache` y se optimizó `_compile_metrics` para usar de forma consistente el caché de sesión, evitando lecturas redundantes de disco durante el análisis de salud.
+- `2026-08-05T05:46:19` **duplicates.py** (rendimiento): Se optimizó el proceso de recolección de candidatos evitando llamadas redundantes a `path.resolve()` y `is_protected_path()` en el bucle principal de `_collect_candidates`, reduciendo significativamente las operaciones de I/O al verificar la seguridad solo cuando es estrictamente necesario.
 - `2026-08-05T05:36:53` **browser.py** (rendimiento): Optimicé el rendimiento de `directory_size` utilizando `os.scandir` para obtener directamente los atributos de los archivos (`is_symlink`, `is_junction`, `st_size`) sin llamadas redundantes a `Path` o `os.stat` adicionales, reduciendo drásticamente las llamadas al sistema operativo por archivo.
 - `2026-08-05T05:36:45` **branding.py** (rendimiento): Optimizé la generación de gradientes en `draw_gradient_bar` mediante un pre-procesamiento que reduce drásticamente las llamadas al método `create_line` del canvas, evitando iterar innecesariamente sobre segmentos de color idéntico y reduciendo el overhead de renderizado gráfico.
 - `2026-08-05T05:36:17` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` convirtiendo el `_KEYWORD_MAP` en un `set` de palabras clave procesables y centralizando la evaluación de problemas, evitando recrear la lista completa de problemas innecesariamente al ejecutar la función.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-05T05:05:31` **diskreport.py** (legibilidad y documentación): Mejora la legibilidad del código mediante el uso de type hints más explícitos y la incorporación de docstrings descriptivos que aclaran la intención de los algoritmos de filtrado y estructuras de datos, facilitando el mantenimiento.
 - `2026-08-05T05:05:04` **browser.py** (legibilidad y documentación): Mejoré la documentación y mantenibilidad del módulo añadiendo type hints faltantes, tipado explícito para evitar ambigüedades en `directory_size` y `_is_valid_cache_path`, y una mejor estructura en los docstrings para clarificar las responsabilidades de las funciones.
 - `2026-08-05T04:56:02` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints faltantes en las firmas de funciones, documentando los parámetros de las funciones gráficas y añadiendo una sección de "Glosario" en el docstring inicial para clarificar la terminología visual utilizada en toda la app.
-- `2026-08-05T04:54:52` **settings.py** (manejo de errores y validación de entradas): Mejora la robustez del validador `_validate_str` mediante la inclusión de un chequeo explícito de tipos y la sanitización de rutas para evitar excepciones no capturadas al procesar configuraciones maliciosas o malformadas.
-- `2026-08-05T04:45:34` **scanner.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `check_system_lookalike` y `scan_file` para evitar fallos silenciosos o excepciones al procesar rutas, validando explícitamente que los componentes de la ruta sean accesibles antes de operar sobre ellos.

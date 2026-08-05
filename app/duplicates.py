@@ -152,34 +152,25 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
     
     def _scan(root_path: Path) -> None:
         try:
-            root_st = root_path.stat()
-            visited_inodes.add((root_st.st_dev, root_st.st_ino))
-        except (OSError, PermissionError):
-            return
-
-        try:
             with os.scandir(root_path) as dir_iterator:
                 for entry in dir_iterator:
                     try:
                         if entry.is_symlink(): continue
                         
+                        st = entry.stat(follow_symlinks=False)
+                        inode_key = (st.st_dev, st.st_ino)
+                        
                         if entry.is_dir():
-                            st = entry.stat()
-                            inode_key = (st.st_dev, st.st_ino)
                             if inode_key not in visited_inodes:
+                                visited_inodes.add(inode_key)
                                 _scan(Path(entry.path))
                         elif entry.is_file():
-                            st = entry.stat()
-                            if st.st_size < min_size: continue
-                            
-                            file_path = Path(entry.path)
-                            if is_protected_path(file_path): continue
-                            
-                            inode_key = (st.st_dev, st.st_ino)
-                            if inode_key in visited_inodes: continue
+                            if st.st_size < min_size or inode_key in visited_inodes: continue
                             visited_inodes.add(inode_key)
                             
-                            groups[st.st_size].append(file_path.resolve())
+                            file_path = Path(entry.path)
+                            if skip_protected and is_protected_path(file_path): continue
+                            groups[st.st_size].append(file_path)
                     except (OSError, PermissionError, FileNotFoundError): continue
         except (OSError, PermissionError, FileNotFoundError): pass
 
@@ -188,7 +179,8 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
             if directory is None: continue
             try:
                 path_obj = Path(directory).resolve(strict=True)
-                if path_obj.is_dir() and not is_protected_path(path_obj):
+                if path_obj.is_dir():
+                    if skip_protected and is_protected_path(path_obj): continue
                     _scan(path_obj)
             except (OSError, PermissionError, RuntimeError): continue
     return groups
