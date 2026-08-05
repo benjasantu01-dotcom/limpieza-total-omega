@@ -118,9 +118,12 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None) -> Optional[Suspicion]:
     """Detecta archivos con nombres de procesos críticos del sistema fuera del directorio System32."""
-    parent = path.parent
-    if parent and SYSTEM32_LOWER not in str(parent).lower():
-        return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
+    try:
+        parent = path.parent
+        if parent and SYSTEM32_LOWER not in str(parent).lower():
+            return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
+    except (OSError, RuntimeError):
+        pass
     return None
 
 def scan_file(path: Path, entry: Optional[os.DirEntry] = None, prevalidated: bool = False) -> ScanResult:
@@ -141,10 +144,14 @@ def scan_file(path: Path, entry: Optional[os.DirEntry] = None, prevalidated: boo
     
     findings: ScanResult = []
     
+    # Validar nombre y sufijo antes de operar para evitar errores en archivos truncados
+    name = abs_path.name or ""
+    suffix = abs_path.suffix.lower() if abs_path.suffix else ""
+    
     checks: List[tuple[bool, SuspicionCheck]] = [
-        (abs_path.name.lower() in SYSTEM_LOOKALIKES, check_system_lookalike),
-        (abs_path.suffix.lower() in SUSPICIOUS_EXECUTABLE_EXT, check_recent_executable_in_downloads),
-        (bool(DOUBLE_EXTENSION_RE.search(abs_path.name)), check_double_extension)
+        (name.lower() in SYSTEM_LOOKALIKES, check_system_lookalike),
+        (suffix in SUSPICIOUS_EXECUTABLE_EXT, check_recent_executable_in_downloads),
+        (bool(DOUBLE_EXTENSION_RE.search(name)), check_double_extension)
     ]
 
     for condition, check_func in checks:

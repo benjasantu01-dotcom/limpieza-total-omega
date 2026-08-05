@@ -379,6 +379,8 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
             
         shutil.move(str(stored_file), str(destination))
     except (OSError, PermissionError) as e:
+        if not stored_file.exists():
+             raise RuntimeError("El archivo de origen desapareció antes de la restauración.")
         raise RuntimeError(f"Fallo durante la operación de restauración: {e}")
 
     items.remove(match)

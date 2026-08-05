@@ -54,7 +54,7 @@ SENSITIVE_EXTENSIONS: Final[frozenset[str]] = frozenset({
 })
 
 _SYSTEM_ROOTS: Final[list[Path]] = [
-    Path(os.environ.get(v)) for v in ("SystemRoot", "ProgramFiles", "ProgramFiles(x86)", "ProgramData")
+    Path(os.environ[v]) for v in ("SystemRoot", "ProgramFiles", "ProgramFiles(x86)", "ProgramData")
     if os.environ.get(v)
 ]
 
@@ -120,8 +120,8 @@ def _is_readonly(path: Path) -> bool:
 @lru_cache(maxsize=2048)
 def normalize(path: PathLike) -> Path:
     """Resuelve una ruta a su forma absoluta y canonizada."""
-    if not isinstance(path, (str, os.PathLike)):
-        raise TypeError(f"Entrada inválida: tipo {type(path)} no soportado.")
+    if path is None or not isinstance(path, (str, os.PathLike)):
+        raise TypeError(f"Entrada inválida: tipo {type(path) if path is not None else 'None'} no soportado.")
     
     str_path = str(path).strip()
     if not str_path:
@@ -152,8 +152,12 @@ def is_protected_path(path: PathLike) -> bool:
         p = normalize(path)
         if any(part.lower() in PROTECTED_DIR_NAMES for part in p.parts):
             return True
-        if any(os.path.commonpath([p, sys_root]) == str(sys_root) for sys_root in _SYSTEM_ROOTS):
-            return True
+        for sys_root in _SYSTEM_ROOTS:
+            try:
+                if os.path.commonpath([str(p), str(sys_root)]) == str(sys_root):
+                    return True
+            except ValueError:
+                continue
         return p == Path(p.anchor) or (p.exists() and _is_reparse_point(p))
     except (PermissionError, OSError, ValueError, TypeError):
         return True 
@@ -179,27 +183,21 @@ def is_sensitive_file(path: PathLike) -> bool:
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> Path:
     """Realiza una validación exhaustiva de seguridad antes de permitir cualquier modificación física."""
-    if not isinstance(path, (str, os.PathLike)):
-        raise UnsafePathError(f"Ruta de tipo inválido recibida: {type(path)}")
-        
-    str_val = str(path).strip()
-    if not str_val:
-        raise UnsafePathError("La ruta proporcionada está vacía.")
+    if path is None:
+        raise UnsafePathError("Ruta nula recibida.")
+
+    p = normalize(path)
+    str_val = str(p)
 
     if _has_invalid_chars(str_val):
         raise UnsafePathError("Ruta contiene caracteres de control o formato potencialmente maliciosos.")
     
     if len(str_val) > 260:
         raise UnsafePathError("Operación bloqueada: ruta demasiado larga.")
-    
-    try:
-        p = normalize(str_val)
-    except (TypeError, ValueError, OSError, RuntimeError) as e:
-        raise UnsafePathError(f"Error al procesar ruta: {e}")
 
     if _is_reserved_device_name(p.stem):
         raise UnsafePathError("Operación bloqueada: nombre de dispositivo reservado.")
-    if str(p).startswith(("\\\\", "//")):
+    if str_val.startswith(("\\\\", "//")):
         raise UnsafePathError("Operación bloqueada: rutas de red no permitidas.")
     
     if p.exists():
