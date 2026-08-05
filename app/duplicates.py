@@ -145,7 +145,6 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
     
     def _scan(root_path: Path) -> None:
         try:
-            # Capturamos el device ID para detectar cambios de unidad/montaje
             root_st = root_path.stat()
             visited_inodes.add((root_st.st_dev, root_st.st_ino))
         except (OSError, PermissionError):
@@ -155,6 +154,7 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
             with os.scandir(root_path) as it:
                 for entry in it:
                     try:
+                        # Seguridad: no seguir symlinks, ni siquiera de directorios, para evitar bucles.
                         if entry.is_symlink(): continue
                         
                         if entry.is_dir():

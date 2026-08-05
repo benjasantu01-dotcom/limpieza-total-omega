@@ -99,9 +99,6 @@ def base_directories() -> List[Path]:
 def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> bool:
     """
     Valida la integridad de la ruta y previene escapes de directorio.
-    
-    Verifica que la ruta sea absoluta, no apunte a un sistema protegido,
-    y que resida efectivamente bajo el directorio base proporcionado.
     """
     if not isinstance(target_path, Path) or not isinstance(base_path, Path):
         return False
@@ -116,16 +113,16 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
         real_base = base_path.resolve(strict=True)
         real_target = target_path.resolve(strict=True)
         
+        # Validar jerarquía y protección
         if is_protected_path(real_target):
             return False
 
         if real_target.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(str(real_target))):
             return False
 
-        # Verifica que la ruta resuelta esté bajo la base (evita escapes con ..)
         real_target.relative_to(real_base)
         return True
-    except (OSError, ValueError, RuntimeError, PermissionError):
+    except (OSError, ValueError, RuntimeError, PermissionError, ValueError):
         return False
 
 
@@ -152,6 +149,10 @@ def directory_size(path: str | os.PathLike | None) -> int:
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:
+                    entry_path = Path(entry.path)
+                    if is_protected_path(entry_path):
+                        continue
+
                     entry_name_lower = entry.name.lower()
                     if entry_name_lower in NEVER_TOUCH or any(ord(c) < 32 for c in entry.name):
                         continue
@@ -160,8 +161,7 @@ def directory_size(path: str | os.PathLike | None) -> int:
                         continue
                     
                     if entry.is_dir(follow_symlinks=False):
-                        if not is_protected_path(Path(entry.path)):
-                            stack.append(Path(entry.path))
+                        stack.append(entry_path)
                     else:
                         try:
                             total_bytes += entry.stat(follow_symlinks=False).st_size

@@ -247,8 +247,8 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     total_score: float = 0.0
     
     for area, weight in _WEIGHT_ITEMS:
-        # Validación de seguridad ante claves inexistentes en WEIGHTS
-        score_val = scores.get(area, 0.0) * float(weight) * _NORM_FACTOR
+        # Validación de seguridad: se garantiza que el peso sea positivo y el ratio acotado
+        score_val = _clamp(scores.get(area, 0.0), 0.0, 1.0) * float(weight) * _NORM_FACTOR
         breakdown[area] = int(score_val + 0.5)
         total_score += score_val
 

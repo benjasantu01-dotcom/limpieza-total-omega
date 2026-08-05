@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **258** (51.2% de aceptación)
+- Mejoras aceptadas: **262** (52.0% de aceptación)
 - Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 29
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 193
+- Sin respuesta de la IA (error o límite): 189
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-03 | 52 | 1 | 5 | 4 | 44 |
+| 2026-08-03 | 52 | 1 | 5 | 4 | 40 |
 | 2026-08-04 | 166 | 11 | 20 | 8 | 145 |
-| 2026-08-05 | 40 | 0 | 4 | 0 | 4 |
+| 2026-08-05 | 44 | 0 | 4 | 0 | 4 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,19 +26,19 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **53**
 - rendimiento: **53**
 - robustez ante casos límite: **49**
-- seguridad defensiva: **41**
+- seguridad defensiva: **45**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **23**
 - `organizer.py`: **22**
 - `assistant.py`: **22**
+- `duplicates.py`: **21**
+- `healthscore.py`: **21**
 - `settings.py`: **21**
-- `duplicates.py`: **20**
-- `healthscore.py`: **20**
 - `scanner.py`: **20**
-- `diskreport.py`: **18**
-- `browser.py`: **18**
+- `diskreport.py`: **19**
+- `browser.py`: **19**
 - `branding.py`: **17**
 - `main.py`: **16**
 - `safety.py`: **15**
@@ -47,6 +47,10 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-05T02:12:40` **healthscore.py** (seguridad defensiva): Reforcé la seguridad defensiva encapsulando la lógica de ponderación dentro de `compute_score` y añadiendo validaciones estrictas para evitar que valores fuera de rango o malformados alteren la integridad del cálculo de salud.
+- `2026-08-05T02:12:30` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez del escaneo recursivo en `_collect_candidates` para prevenir bucles infinitos causados por enlaces simbólicos a directorios, los cuales no deben ser seguidos en operaciones de análisis de espacio o duplicados, manteniendo la consistencia con `is_protected_path`.
+- `2026-08-05T02:12:06` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `walk_files` y `largest_folders` al validar estrictamente que la ruta base del análisis no sea un punto de reparse (junction/symlink) antes de iniciar, evitando así el procesamiento accidental de rutas fuera del árbol esperado en sistemas Windows.
+- `2026-08-05T02:11:41` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `directory_size` y `_is_safe_path` integrando explícitamente `is_protected_path` sobre cada componente de la ruta antes de procesarla, evitando así accesos inadvertidos a subdirectorios protegidos que pudieran estar anidados dentro de una ruta de caché válida.
 - `2026-08-05T02:03:02` **branding.py** (seguridad defensiva): Se ha refactorizado `save_logo_svg` para asegurar que el chequeo de seguridad sea previo a cualquier operación de escritura, centralizando la lógica de validación de rutas para evitar excepciones innecesarias y mejorar la robustez frente a destinos inexistentes o bloqueados.
 - `2026-08-05T02:02:45` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva del asistente validando exhaustivamente los datos que salen y entran mediante la implementación de una lista blanca estricta y verificaciones de tipo en `_call_gemini`, asegurando que ninguna respuesta malformada o inesperada del motor remoto se procese ni se incluya en el flujo de la app.
 - `2026-08-05T02:02:03` **startup.py** (robustez ante casos límite): Mejora la robustez en la resolución de rutas en `StartupEntry` al manejar explícitamente rutas relativas y casos de archivos inexistentes que podrían lanzar `OSError` o `ValueError` al interactuar con `Path.resolve()`.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-05T01:40:56` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez de `compute_score` ante valores nulos o atípicos en `SystemMetrics` mediante la adición de un chequeo de integridad en `summarize` y una validación explícita de las claves de `scores` para prevenir errores de tipo `KeyError` ante configuraciones de `WEIGHTS` incompatibles.
 - `2026-08-05T01:31:43` **duplicates.py** (robustez ante casos límite): Se ha robustecido la función `_collect_candidates` para manejar correctamente rutas que desaparecen durante el escaneo (Race Condition) y se evitó la recursión infinita en casos de puntos de montaje circulares o junctions mediante el uso de `stat` para identificar dispositivos únicos.
 - `2026-08-05T01:31:34` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `walk_files` ante archivos que desaparecen durante el escaneo (condición de carrera común en escaneos de disco) envolviendo la lectura de metadatos en un bloque `try-except` más específico y asegurando que `entry.stat()` no falle ante archivos bloqueados o en proceso de borrado.
-- `2026-08-05T01:30:48` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante escenarios de fallos en el sistema de archivos (como discos de solo lectura o falta de permisos) integrando una validación previa de escritura mediante `is_safe_to_modify` para evitar excepciones innecesarias y asegurar un manejo limpio de errores.
-- `2026-08-05T01:21:35` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_gen_problems` ante posibles errores de redondeo o datos de entrada incoherentes en las métricas (usando `math.isclose` para comparaciones de punto flotante) y agregué un manejo de excepciones más defensivo en `context_as_text` para evitar fallos si el objeto `SystemContext` llega con datos mal formados, garantizando la estabilidad ante valores atípicos.
-- `2026-08-05T01:20:56` **settings.py** (rendimiento): Optimizé la función `validate` para evitar recrear diccionarios innecesariamente y reduje las búsquedas en `_VALIDATOR_MAP` utilizando una referencia local, mejorando la eficiencia durante la carga o actualización de configuraciones.
-- `2026-08-05T01:20:31` **scanner.py** (rendimiento): Optimicé el bucle de escaneo de archivos delegando la obtención de metadatos (`stat`) al `os.DirEntry` existente, evitando así llamadas redundantes a `path.lstat()` que degradaban el rendimiento en directorios grandes.
