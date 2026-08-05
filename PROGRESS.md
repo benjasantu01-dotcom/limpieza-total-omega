@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **251** (49.8% de aceptación)
+- Mejoras aceptadas: **252** (50.0% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 29
-- Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 199
+- Rechazadas por guardia de seguridad: 30
+- Sin cambios (nada sustancial que mejorar): 11
+- Sin respuesta de la IA (error o límite): 198
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-03 | 17 | 0 | 2 | 2 | 17 |
+| 2026-08-03 | 15 | 0 | 2 | 1 | 16 |
 | 2026-08-04 | 166 | 11 | 20 | 8 | 145 |
-| 2026-08-05 | 68 | 2 | 7 | 2 | 37 |
+| 2026-08-05 | 71 | 2 | 8 | 2 | 37 |
 
 ## Mejoras aceptadas por enfoque
 
+- legibilidad y documentación: **58**
 - manejo de errores y validación de entradas: **55**
-- legibilidad y documentación: **55**
 - seguridad defensiva: **50**
-- robustez ante casos límite: **48**
+- robustez ante casos límite: **46**
 - rendimiento: **43**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **22**
 - `organizer.py`: **21**
+- `settings.py`: **21**
 - `healthscore.py`: **20**
-- `settings.py`: **20**
+- `scanner.py`: **20**
 - `duplicates.py`: **20**
 - `assistant.py`: **20**
-- `browser.py`: **19**
-- `scanner.py`: **19**
 - `diskreport.py`: **19**
-- `branding.py`: **18**
+- `browser.py`: **18**
+- `branding.py`: **17**
 - `main.py`: **16**
-- `safety.py`: **14**
+- `safety.py`: **15**
 - `memory.py`: **13**
 - `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-05T05:26:27` **settings.py** (legibilidad y documentación): Se introdujo una enumeración explícita (TypedDict) para la estructura de configuración, mejorando la legibilidad del contrato de datos y permitiendo que tanto desarrolladores como herramientas de análisis estático comprendan la estructura esperada sin necesidad de inspeccionar el diccionario en tiempo de ejecución.
+- `2026-08-05T05:26:17` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `scan_file` reemplazando la lógica de ejecución de chequeos basada en una estructura de datos `List[tuple]` implícita por un registro explícito (`CHECK_REGISTRY`), lo que facilita la adición de futuras heurísticas sin ensuciar la función principal.
+- `2026-08-05T05:25:55` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de las constantes de seguridad utilizando diccionarios para agrupar variables relacionadas y agregué docstrings detallados que explican el "porqué" de las exclusiones y verificaciones de seguridad.
 - `2026-08-05T05:17:28` **organizer.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `organizer.py` mediante la refactorización de `scan_for_junk` para extraer la lógica de filtrado de archivos a un método privado y robusto, mejorando la documentación interna con tipos explícitos y comentarios claros sobre la lógica de seguridad.
 - `2026-08-05T05:17:05` **memory.py** (legibilidad y documentación): Mejoré la documentación técnica y legibilidad añadiendo docstrings descriptivos, especificando el contrato de las funciones (parámetros y retornos), y renombrando variables internas para clarificar su propósito sin alterar la lógica.
 - `2026-08-05T05:06:10` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad mediante la adición de Type Hints en la constante `_WEIGHT_ITEMS` y la estandarización de los `docstrings` de las funciones de puntuación para que describan explícitamente el impacto de los umbrales configurados.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-05T04:45:26` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ensure_safe_to_modify` ante entradas `None` o tipos inesperados mediante una comprobación defensiva temprana y refiné la lógica de `is_protected_path` para evitar que el uso de `str(sys_root)` en `commonpath` cause errores innecesarios si la variable de entorno no existe o está mal configurada.
 - `2026-08-05T04:44:44` **quarantine.py** (manejo de errores y validación de entradas): Se mejora el manejo de errores en `restore_item` al validar la existencia y legibilidad del archivo en cuarentena antes de intentar moverlo, reemplazando una falla genérica de `shutil.move` por un error específico que protege el estado del manifiesto.
 - `2026-08-05T04:35:59` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` validando explícitamente que la lista de archivos contenga instancias válidas y que las rutas sean accesibles antes de intentar cualquier operación de movimiento, previniendo excepciones innecesarias por datos malformados.
-- `2026-08-05T04:35:27` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de la inicialización de la interfaz en `_init_window_properties` y `_build_tabs_container` añadiendo manejo específico de excepciones y verificaciones de existencia de objetos para evitar bloqueos silenciosos de la app.
-- `2026-08-05T04:34:30` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `summarize` y `_generate_recommendations` añadiendo validaciones de tipo explícitas y manejando casos de valores `None` o estructuras inesperadas, asegurando que la interfaz nunca falle aunque el sistema reciba datos malformados.
-- `2026-08-05T04:25:15` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `hash_file` y `partial_hash` ante errores inesperados durante la lectura de archivos, integrando una validación de `st_size` más estricta para evitar intentos de lectura innecesarios y garantizando que se manejen correctamente los casos donde el sistema reporta archivos que no se pueden abrir.

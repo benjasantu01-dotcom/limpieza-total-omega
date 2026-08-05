@@ -31,11 +31,30 @@ import json
 import os
 import tempfile
 from pathlib import Path
-from typing import Any, Final, TypeAlias, Callable
+from typing import Any, Final, TypeAlias, Callable, TypedDict
 
 from safety import is_safe_to_modify, ensure_safe_to_modify
 
 PathLike: TypeAlias = str | Path
+
+class AppSettings(TypedDict):
+    """Estructura esperada de la configuración de la aplicación."""
+    tema: str
+    acento: str
+    mostrar_barras: bool
+    animaciones: bool
+    confirmar_siempre: bool
+    abrir_en: str
+    recordar_ultima_carpeta: bool
+    ultima_carpeta: str
+    duplicados_tamano_minimo_kb: int
+    top_archivos: int
+    top_procesos: int
+    analisis_en_paralelo: bool
+    asistente_activado: bool
+    asistente_clave_api: str
+    asistente_enviar_metricas: bool
+    asistente_modelo: str
 
 __all__ = [
     "DEFAULTS",
@@ -65,12 +84,12 @@ API_KEY_ENV_VAR: Final = "OMEGA_GEMINI_KEY"
 VALID_THEMES: Final = ("oscuro", "claro", "sistema")
 VALID_ACCENTS: Final = ("menta", "violeta", "magenta", "cian", "ambar")
 
-_cached_settings: dict[str, Any] | None = None
+_cached_settings: AppSettings | None = None
 _last_path: Path | None = None
 _last_mtime: float = -1.0
 _path_cache: dict[str, Path] = {}
 
-DEFAULTS: Final[dict[str, Any]] = {
+DEFAULTS: Final[AppSettings] = {
     "tema": "oscuro",
     "acento": "menta",
     "mostrar_barras": True,
@@ -154,23 +173,23 @@ def settings_path(path_or_base: PathLike | None = None) -> Path:
     _path_cache[key] = res
     return res
 
-def validate(values: Any) -> dict[str, Any]:
+def validate(values: Any) -> AppSettings:
     """Limpia y valida un diccionario, sustituyendo valores inválidos por los DEFAULTS."""
     if not isinstance(values, dict):
         return DEFAULTS.copy()
     
-    configuracion_final = DEFAULTS.copy()
+    configuracion_final: AppSettings = DEFAULTS.copy()
     validators = _VALIDATOR_MAP
     for clave, valor_usuario in values.items():
         if clave in validators:
             validador = validators[clave]
             resultado = validador(clave, valor_usuario)
             if resultado is not None:
-                configuracion_final[clave] = resultado
+                configuracion_final[clave] = resultado # type: ignore
         
     return configuracion_final
 
-def load(path_or_base: PathLike | None = None) -> dict[str, Any]:
+def load(path_or_base: PathLike | None = None) -> AppSettings:
     """Carga configuraciones desde disco con caché y validación robusta."""
     global _cached_settings, _last_path, _last_mtime
     ruta = settings_path(path_or_base)
@@ -231,14 +250,14 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
             try: temp_path.unlink()
             except OSError: pass
 
-def update(changes: dict[str, Any], path_or_base: PathLike | None = None) -> dict[str, Any]:
+def update(changes: dict[str, Any], path_or_base: PathLike | None = None) -> AppSettings:
     """Aplica cambios parciales a la configuración y los guarda."""
     actual = (load(path_or_base)).copy()
     actual.update(changes)
     save(actual, path_or_base)
-    return actual
+    return actual # type: ignore
 
-def reset(path_or_base: PathLike | None = None) -> dict[str, Any]:
+def reset(path_or_base: PathLike | None = None) -> AppSettings:
     """Restaura todos los valores a los definidos en DEFAULTS."""
     save(DEFAULTS, path_or_base)
     return DEFAULTS.copy()

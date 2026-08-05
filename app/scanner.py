@@ -126,6 +126,13 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None) -> O
         pass
     return None
 
+# Registro de heurísticas para desacoplar la ejecución de los chequeos de la función scan_file
+CHECK_REGISTRY: Final[List[tuple[Callable[[Path], bool], SuspicionCheck]]] = [
+    (lambda p: p.name.lower() in SYSTEM_LOOKALIKES, check_system_lookalike),
+    (lambda p: p.suffix.lower() in SUSPICIOUS_EXECUTABLE_EXT, check_recent_executable_in_downloads),
+    (lambda p: bool(DOUBLE_EXTENSION_RE.search(p.name)), check_double_extension)
+]
+
 def scan_file(path: Path, entry: Optional[os.DirEntry] = None, prevalidated: bool = False) -> ScanResult:
     """
     Ejecuta todos los chequeos heurísticos registrados contra un archivo específico.
@@ -144,18 +151,8 @@ def scan_file(path: Path, entry: Optional[os.DirEntry] = None, prevalidated: boo
     
     findings: ScanResult = []
     
-    # Validar nombre y sufijo antes de operar para evitar errores en archivos truncados
-    name = abs_path.name or ""
-    suffix = abs_path.suffix.lower() if abs_path.suffix else ""
-    
-    checks: List[tuple[bool, SuspicionCheck]] = [
-        (name.lower() in SYSTEM_LOOKALIKES, check_system_lookalike),
-        (suffix in SUSPICIOUS_EXECUTABLE_EXT, check_recent_executable_in_downloads),
-        (bool(DOUBLE_EXTENSION_RE.search(name)), check_double_extension)
-    ]
-
-    for condition, check_func in checks:
-        if condition:
+    for condition_met, check_func in CHECK_REGISTRY:
+        if condition_met(abs_path):
             result = check_func(abs_path, entry)
             if result:
                 findings.append(result)

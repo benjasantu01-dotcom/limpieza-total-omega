@@ -37,6 +37,8 @@ class UnsafePathError(Exception):
     """Lanzada cuando una operación intenta manipular rutas protegidas."""
 
 
+# DIRECTORIOS_BLOQUEADOS: Nombres que, si aparecen en una ruta, indican riesgo de sistema.
+# Se incluyen rutas de configuración de seguridad y carpetas críticas del SO.
 PROTECTED_DIR_NAMES: Final[frozenset[str]] = frozenset({
     "windows", "winnt", "system32", "syswow64", "system", "boot",
     "program files", "program files (x86)", "programdata",
@@ -48,6 +50,7 @@ PROTECTED_DIR_NAMES: Final[frozenset[str]] = frozenset({
     "dev", "root", "library", "applications",
 })
 
+# EXTENSIONES_SENSIBLES: Archivos que son fundamentales para la integridad o configuración.
 SENSITIVE_EXTENSIONS: Final[frozenset[str]] = frozenset({
     ".sys", ".dll", ".exe", ".msi", ".drv", ".ocx", ".cpl", ".efi",
     ".reg", ".pol", ".key", ".pem", ".pfx", ".p12", ".crt", ".cer",
@@ -182,7 +185,12 @@ def is_sensitive_file(path: PathLike) -> bool:
 
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> Path:
-    """Realiza una validación exhaustiva de seguridad antes de permitir cualquier modificación física."""
+    """
+    Realiza una validación exhaustiva antes de permitir la modificación física.
+    
+    Verifica: integridad de la ruta, permisos, estado del sistema, dispositivos reservados
+    y exclusión de archivos de sistema en uso. Lanza UnsafePathError en cualquier falla.
+    """
     if path is None:
         raise UnsafePathError("Ruta nula recibida.")
 
