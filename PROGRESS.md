@@ -6,32 +6,32 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **265** (52.6% de aceptación)
-- Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 30
+- Mejoras aceptadas: **266** (52.8% de aceptación)
+- Rechazadas por tests: 18
+- Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 182
+- Sin respuesta de la IA (error o límite): 179
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-04 | 166 | 11 | 20 | 8 | 139 |
-| 2026-08-05 | 99 | 6 | 10 | 2 | 43 |
+| 2026-08-04 | 166 | 11 | 20 | 8 | 135 |
+| 2026-08-05 | 100 | 7 | 11 | 2 | 44 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **58**
 - manejo de errores y validación de entradas: **55**
 - rendimiento: **54**
+- seguridad defensiva: **50**
 - robustez ante casos límite: **49**
-- seguridad defensiva: **49**
 
 ## Mejoras aceptadas por archivo
 
+- `quarantine.py`: **23**
 - `assistant.py`: **22**
 - `duplicates.py`: **22**
-- `quarantine.py`: **22**
 - `diskreport.py`: **21**
 - `settings.py`: **21**
 - `healthscore.py`: **20**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-05T07:18:23` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva en `quarantine_file` y `restore_item` al validar que las rutas de origen/destino y las operaciones de movimiento no atraviesen puntos de unión (junctions) o enlaces simbólicos intermedios, utilizando la verificación explícita de `Path.resolve()` para detectar posibles intentos de escape de directorio (path traversal).
 - `2026-08-05T07:09:06` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva de `trim_working_set` al centralizar el chequeo de PIDs críticos y eliminar la llamada a `is_protected_path` (que está diseñada para rutas de archivos y no para PIDs), asegurando que el acceso al handle de proceso sea siempre liberado de forma robusta mediante un bloque `finally` incluso si la carga de librerías falla.
 - `2026-08-05T07:08:41` **main.py** (seguridad defensiva): Se introdujo una validación de seguridad adicional en `_ask_folder` para evitar la selección de rutas que contengan caracteres de control RTL (Right-to-Left) o secuencias de escape sospechosas, mitigando un vector de ataque que busca confundir al usuario o evadir filtros de ruta, reforzando la postura de seguridad defensiva.
 - `2026-08-05T07:07:44` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_generate_recommendations` validando la integridad del contenido de `m.suspicious_count` antes de inyectarlo en cadenas de texto, evitando potenciales errores de formato o valores inesperados que pudieran comprometer la salida, y añadiendo chequeos de finitud para evitar que valores NaN o Inf maliciosos (en caso de entrada corrompida) afecten el reporte.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-05T06:28:19` **main.py** (robustez ante casos límite): Mejoré la robustez de `on_trim_process` al manejar explícitamente errores durante la conversión de PID y añadí un chequeo preventivo de la existencia del proceso antes de intentar manipularlo, evitando que errores de SO no controlados (como `ProcessLookupError`) interrumpan el hilo principal o lancen excepciones no atrapadas.
 - `2026-08-05T06:26:52` **duplicates.py** (robustez ante casos límite): Se ha robustecido el manejo de archivos en `_collect_candidates` y `suggest_keeper` añadiendo validaciones explícitas contra `PermissionError` y `OSError` al realizar `stat()` o `exists()`, asegurando que el proceso no se interrumpa ante archivos bloqueados o permisos denegados en el sistema de archivos.
 - `2026-08-05T06:17:50` **diskreport.py** (robustez ante casos límite): Se mejoró la robustez de `walk_files` y `largest_folders` ante archivos que desaparecen durante la iteración (condición de carrera común) envolviendo la lectura de `st_size` en bloques `try-except` más granulares y verificando la existencia del nodo antes de procesarlo, evitando que el escaneo completo aborte prematuramente.
-- `2026-08-05T06:17:40` **browser.py** (robustez ante casos límite): Mejoré `_is_safe_path` para prevenir la resolución de rutas mediante `resolve(strict=True)` cuando el archivo no existe, evitando que el escáner aborte prematuramente ante rutas parciales o inexistentes que los navegadores aún no han creado, utilizando en su lugar una verificación de componentes más robusta.

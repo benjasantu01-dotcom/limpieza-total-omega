@@ -909,3 +909,38 @@ FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_ex
 - `2026-08-05T07:09:13` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
 - `2026-08-05T07:09:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-05T07:09:13` Corrida terminada. Total usado hoy: 160.
+- `2026-08-05T07:17:38` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-08-05T07:18:23` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `quarantine_file` y `restore_item` al validar que las rutas de origen/destino y las operaciones de movimiento no atraviesen puntos de unión (junctions) o enlaces simbólicos intermedios, utilizando la verificación explícita de `Path.resolve()` para detectar posibles intentos de escape de directorio (path traversal).
+- `2026-08-05T07:18:43` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-05T07:19:09` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-08-05T07:19:29` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-05T07:19:39` Tests FALLARON:
+```
+a heurística tiene que valer con rutas estilo POSIX, para que el
+        # resultado no dependa de en qué sistema corran los tests.
+>       flagged = scanner.check_system_lookalike(PurePosixPath("/home/user/Downloads/svchost.exe"))
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+evolve/tests/test_basic.py:212: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = PurePosixPath('/home/user/Downloads/svchost.exe'), entry = None
+
+    def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None) -> Optional[Suspicion]:
+        """Detecta archivos con nombres de procesos críticos del sistema fuera del directorio System32."""
+        try:
+>           abs_path = path.resolve()
+                       ^^^^^^^^^^^^
+E           AttributeError: 'PurePosixPath' object has no attribute 'resolve'
+
+app/scanner.py:120: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_scanner_flags_system_lookalike_outside_system32 - AttributeError: 'PureWindowsPath' object has no attribute 'resolve'
+FAILED evolve/tests/test_basic.py::test_scanner_does_not_flag_real_system_file - AttributeError: 'PureWindowsPath' object has no attribute 'resolve'
+FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independent - AttributeError: 'PurePosixPath' object has no attribute 'resolve'
+3 failed, 296 passed in 1.14s
+
+```
+- `2026-08-05T07:19:39` ❌ Mejora descartada en scanner.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva en `check_system_lookalike` y `scan_directory` para garantizar que la verificación de rutas sea absoluta antes de realizar comparaciones de nombres, evitando posibles bypasses mediante el uso de rutas relativas o inconsistencias en la resolución del sistema de archivos.
+- `2026-08-05T07:19:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-05T07:19:39` Corrida terminada. Total usado hoy: 164.

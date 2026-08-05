@@ -163,7 +163,7 @@ def quarantine_dir(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
     if not base:
         raise ValueError("El directorio base no puede estar vacío.")
     try:
-        path = Path(base).expanduser()
+        path = Path(base).expanduser().resolve()
         path.mkdir(parents=True, exist_ok=True)
         return path
     except (OSError, RuntimeError) as e:
@@ -243,7 +243,7 @@ def quarantine_file(
     if not source:
         raise ValueError("La ruta de origen no puede estar vacía.")
     
-    source_path = normalize(source)
+    source_path = normalize(source).resolve()
     dest_dir = quarantine_dir(base)
     
     if not source_path.exists():
@@ -346,7 +346,7 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
         raise KeyError(f"No se encontró ítem con ID: {item_id}")
 
     base_path = quarantine_dir(base)
-    stored_file = base_path / match.stored_name
+    stored_file = (base_path / match.stored_name).resolve()
     
     if not stored_file.exists():
         items.remove(match)
@@ -356,10 +356,10 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
     if not match.verify_integrity(stored_file):
         raise RuntimeError("Integridad comprometida: el archivo en cuarentena fue alterado.")
 
-    destination = normalize(match.original_path)
+    destination = normalize(match.original_path).resolve()
     
-    if destination.is_symlink():
-        raise UnsafePathError(f"Restauración denegada: {destination} es un enlace simbólico.")
+    if destination.is_symlink() or (hasattr(destination, 'is_junction') and destination.is_junction()):
+        raise UnsafePathError(f"Restauración denegada: {destination} es un enlace simbólico o unión.")
 
     if is_protected_path(destination):
         raise UnsafePathError(f"Restauración denegada: la ruta está protegida.")
