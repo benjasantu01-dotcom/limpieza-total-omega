@@ -159,14 +159,15 @@ def tab_label(section: str) -> str:
 
 def severity_color(severity: Optional[str]) -> HexColor:
     """Devuelve el color hexadecimal asociado a un nivel de riesgo."""
-    if isinstance(severity, str) and (style := SEVERITY_STYLES.get(severity.lower())):
-        return style[0]
+    if severity and isinstance(severity, str):
+        if style := SEVERITY_STYLES.get(severity.lower()):
+            return style[0]
     return PALETTE["text_muted"]
 
 
 def severity_label(severity: Optional[str]) -> str:
     """Devuelve el nombre legible de una severidad."""
-    if isinstance(severity, str) and severity.strip():
+    if severity and isinstance(severity, str):
         if style := SEVERITY_STYLES.get(severity.lower()):
             return style[1]
         return severity.upper()
@@ -176,7 +177,7 @@ def severity_label(severity: Optional[str]) -> str:
 def severity_icon(severity: Optional[str]) -> str:
     """Retorna el glifo representativo para una severidad."""
     simbolos = {"ok": "\u2713", "info": "\u2139", "warning": "\u26a0", "danger": "\u2716"}
-    if isinstance(severity, str):
+    if severity and isinstance(severity, str):
         return simbolos.get(severity.lower(), "\u2022")
     return "\u2022"
 

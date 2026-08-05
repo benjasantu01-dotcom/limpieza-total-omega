@@ -136,15 +136,12 @@ def drive_usage(mount: Union[str, os.PathLike]) -> Optional[DriveUsage]:
     Returns:
         Instancia de DriveUsage o None si la ruta es inaccesible o protegida.
     """
-    if not mount or not isinstance(mount, (str, os.PathLike)):
+    if not mount:
         return None
     try:
         path_str = os.fspath(mount)
-        p = Path(path_str).expanduser()
-        if not p.is_absolute():
-            return None
-        p = p.resolve()
-        if not p.exists() or is_protected_path(p):
+        p = Path(path_str).expanduser().resolve()
+        if not p.exists() or not p.is_absolute() or is_protected_path(p):
             return None
         usage = shutil.disk_usage(path_str)
         return DriveUsage(mount=str(mount), total=usage.total, used=usage.used, free=usage.free)
@@ -181,15 +178,15 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     Recorre recursivamente un directorio omitiendo enlaces simbólicos, puntos de unión (junctions) 
     y rutas protegidas por sistema.
     """
-    if not isinstance(directory, (str, os.PathLike)):
+    if not directory:
         return
 
     try:
         base_path = Path(directory).expanduser().resolve()
+        if not base_path.exists() or not base_path.is_dir():
+            return
         # Verificación estricta de seguridad ante reparse points
         if base_path.is_symlink() or (os.name == 'nt' and base_path.stat().st_reparse_tag != 0):
-            return
-        if not base_path.is_dir():
             return
         if skip_protected and is_protected_path(base_path):
             return
@@ -269,20 +266,21 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
     """
     Calcula qué subdirectorios de primer nivel ocupan más espacio total.
     """
-    if not directory or not isinstance(directory, (str, os.PathLike)):
+    if not directory:
         return []
     try:
         base = Path(directory).expanduser().resolve()
+        if not base.exists() or not base.is_dir():
+            return []
         # Validación defensiva ante reparse points antes de comenzar el escaneo
         if base.is_symlink() or (os.name == 'nt' and base.stat().st_reparse_tag != 0):
             return []
-        if not base.is_dir() or (skip_protected and is_protected_path(base)):
+        if skip_protected and is_protected_path(base):
             return []
         
         folder_map: Dict[Path, FolderUsage] = {}
         for path, size in walk_files(base, skip_protected):
             try:
-                if not path.exists(): continue
                 rel = path.relative_to(base)
                 if not rel.parts:
                     continue
@@ -320,8 +318,8 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
     """
     Genera un reporte de texto con el resumen de uso de disco analizado.
     """
-    if not directory or not isinstance(directory, (str, os.PathLike)):
-        return ["Error: Ruta no válida o no especificada."]
+    if not directory:
+        return ["Error: Ruta no proporcionada."]
         
     try:
         path_obj = Path(directory).expanduser().resolve()

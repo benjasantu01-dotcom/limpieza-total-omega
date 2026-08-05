@@ -212,6 +212,7 @@ def detect_profiles(
         if not isinstance(base, Path): continue
         for browser_name, relative_path_str in cache_paths.items():
             try:
+                if not isinstance(relative_path_str, str): continue
                 parts: List[str] = relative_path_str.split("\\")
                 candidate: Path = base.joinpath(*parts)
                 

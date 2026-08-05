@@ -1,5 +1,5 @@
 """
-assistant.py — asistente que explica el estado del sistema y qué conviene hacer.
+assistant.py — asistente que explica el estado del sistema y qué conviene hace.
 
 Tiene DOS motores, y el orden importa:
 
@@ -193,12 +193,14 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         return isinstance(v, (int, float)) and not isinstance(v, bool) and math.isfinite(v)
 
     def extract(source: Any, attr: str, default: Any, cast: Callable = float) -> Any:
+        if not hasattr(source, attr):
+            return default
         try:
-            val = getattr(source, attr, None)
+            val = getattr(source, attr)
             if val is None or not is_valid_num(val):
                 return default
             return cast(val)
-        except (AttributeError, ValueError, TypeError):
+        except (ValueError, TypeError):
             return default
 
     if metrics is not None:
@@ -215,10 +217,10 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         ctx.analyzed = True
 
     if health is not None:
-        score_val = getattr(health, "score", None)
-        if is_valid_num(score_val):
-            ctx.score = max(0, min(int(score_val), 100))
-        grade = getattr(health, "grade", "")
+        score_val = extract(health, "score", None, int)
+        if score_val is not None:
+            ctx.score = max(0, min(score_val, 100))
+        grade = getattr(health, "grade", "") if hasattr(health, "grade") else ""
         ctx.grade = str(grade) if isinstance(grade, (str, int, float)) else ""
         ctx.analyzed = True
 

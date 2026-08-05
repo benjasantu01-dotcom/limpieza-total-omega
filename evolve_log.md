@@ -1150,3 +1150,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-05T08:43:33` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-08-05T08:43:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-05T08:43:33` Corrida terminada. Total usado hoy: 196.
+- `2026-08-05T08:49:37` Arrancando corrida. Quedan hoy ~104 peticiones objetivo.
+- `2026-08-05T08:50:09` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `build_context` al evitar el uso de `getattr` sobre objetos desconocidos mediante un chequeo previo de `isinstance` y validación de tipos, evitando que errores de acceso a atributos rompan la lógica de construcción del contexto.
+- `2026-08-05T08:50:37` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las funciones `severity_color`, `severity_label` y `severity_icon` mediante la validación explícita de `None` y tipos, asegurando que operen de forma segura ante entradas inesperadas sin recurrir a excepciones.
+- `2026-08-05T08:51:00` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Reforcé la robustez de `directory_size` y `_is_safe_path` ante errores de resolución de rutas (como `Path.resolve()` fallando en entornos de permisos restringidos) y mejoré el manejo de tipos `None` en `detect_profiles` para garantizar que la lógica de búsqueda sea resiliente.
+- `2026-08-05T08:51:10` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `walk_files` y las funciones de reporte al validar explícitamente que la entrada sea una ruta de sistema válida y existente antes de intentar cualquier operación de I/O, previniendo excepciones innecesarias ante entradas malformadas.
+- `2026-08-05T08:51:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-05T08:51:10` Corrida terminada. Total usado hoy: 200.
