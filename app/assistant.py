@@ -393,11 +393,13 @@ def local_answer(question: str, context: SystemContext) -> Answer:
         if handler_key := _KEYWORD_MAP.get(token):
             return _HANDLERS[handler_key](context, clean_text)
 
-    problemas = list(_gen_problems(context))
-    if problemas:
+    # Evaluación perezosa (lazy) de los problemas actuales
+    problemas_it = _gen_problems(context)
+    try:
+        primero = next(problemas_it)
         cuerpo = (f"Con un puntaje de {context.score if context.score is not None else 'N/A'}/100, por orden de prioridad: "
-                  + "; ".join(problemas[:3]) + ".")
-    else:
+                  f"{primero}{', ' + next(problemas_it) if (segundo := next(problemas_it, None)) else ''}.")
+    except StopIteration:
         cuerpo = (f"Tu sistema está en buen estado ({context.score if context.score is not None else 'N/A'}/100). No hay nada urgente.")
     return Answer(cuerpo, notice=OFFLINE_NOTICE, suggestions=SUGGESTED_QUESTIONS_LIST[:3])
 

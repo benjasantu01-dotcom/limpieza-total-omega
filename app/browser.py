@@ -132,10 +132,6 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
 def directory_size(path: str | os.PathLike | None) -> int:
     """
     Calcula el peso total de un directorio mediante un recorrido iterativo.
-    
-    Utiliza una pila para evitar desbordamiento por recursión y realiza
-    validaciones de seguridad en cada nodo para no seguir enlaces ni
-    rutas protegidas.
     """
     if path is None:
         return 0
@@ -156,19 +152,16 @@ def directory_size(path: str | os.PathLike | None) -> int:
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:
-                    if entry.name.lower() in NEVER_TOUCH or any(ord(c) < 32 for c in entry.name):
+                    entry_name_lower = entry.name.lower()
+                    if entry_name_lower in NEVER_TOUCH or any(ord(c) < 32 for c in entry.name):
                         continue
                     
-                    # Verificación de seguridad en cada subnodo visitado
-                    entry_path = Path(entry.path)
-                    if is_protected_path(entry_path):
-                        continue
-
                     if entry.is_symlink() or (hasattr(os.path, 'isjunction') and os.path.isjunction(entry.path)):
                         continue
                     
                     if entry.is_dir(follow_symlinks=False):
-                        stack.append(entry_path)
+                        if not is_protected_path(Path(entry.path)):
+                            stack.append(Path(entry.path))
                     else:
                         try:
                             total_bytes += entry.stat(follow_symlinks=False).st_size
@@ -183,9 +176,6 @@ def directory_size(path: str | os.PathLike | None) -> int:
 def _is_valid_cache_path(candidate: Path | None, base_path: Path) -> bool:
     """
     Valida si una ruta candidata es un objetivo legítimo de limpieza.
-    
-    Descarta rutas UNC y verifica las restricciones de seguridad contra
-    listas de bloqueo y rutas protegidas del sistema.
     """
     if not isinstance(candidate, Path) or not isinstance(base_path, Path):
         return False

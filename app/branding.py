@@ -343,18 +343,19 @@ def draw_logo(canvas: Any, size: int = 56, canvas_x: int = 0, canvas_y: int = 0)
 def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
                       canvas_x: int = 0, canvas_y: int = 0,
                       stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
-    """Renderiza una franja decorativa con degradado lineal."""
+    """Renderiza una franja decorativa con degradado lineal (optimizada)."""
     if canvas is None or not hasattr(canvas, "create_line"): return
     try:
         ancho = max(1, int(width))
         alto = max(1, int(height))
         colores = gradient_colors(ancho, stops)
-        start_x = 0
-        for i in range(1, ancho + 1):
-            if i == ancho or colores[i] != colores[start_x]:
-                canvas.create_line(canvas_x + start_x, canvas_y, canvas_x + i, canvas_y, 
-                                   fill=colores[start_x], width=alto)
-                start_x = i
+        
+        inicio = 0
+        for i in range(1, ancho):
+            if colores[i] != colores[inicio]:
+                canvas.create_line(canvas_x + inicio, canvas_y, canvas_x + i, canvas_y, fill=colores[inicio], width=alto)
+                inicio = i
+        canvas.create_line(canvas_x + inicio, canvas_y, canvas_x + ancho, canvas_y, fill=colores[inicio], width=alto)
     except (ValueError, TypeError, AttributeError): pass
 
 

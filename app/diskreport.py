@@ -180,9 +180,6 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     """
     Recorre recursivamente un directorio omitiendo enlaces simbólicos, puntos de unión (junctions) 
     y rutas protegidas por sistema.
-    
-    Utiliza un conjunto `visited_directories` para prevenir recursiones infinitas causadas 
-    por enlaces circulares en el sistema de archivos.
     """
     if not isinstance(directory, (str, os.PathLike)):
         return
@@ -203,7 +200,6 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
             with os.scandir(current_path) as iterator:
                 for entry in iterator:
                     try:
-                        # Saltar symlinks y puntos de reanálisis (Junctions/Reparse Points en Windows)
                         if entry.is_symlink() or (os.name == 'nt' and entry.stat(follow_symlinks=False).st_reparse_tag != 0):
                             continue
                         
@@ -259,9 +255,6 @@ def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip
 def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
     """
     Calcula qué subdirectorios de primer nivel ocupan más espacio total.
-    
-    Para cada archivo encontrado en `walk_files`, identifica su contenedor directo bajo la raíz
-    analizada, permitiendo consolidar el peso total de cada rama del árbol de archivos.
     """
     if not directory or not isinstance(directory, (str, os.PathLike)):
         return []
@@ -276,14 +269,13 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
                 rel = path.relative_to(base)
                 if not rel.parts:
                     continue
-                # Agrupar por el directorio padre inmediato bajo la base
                 top_level = base / rel.parts[0]
                 
                 if top_level not in folder_map:
-                    folder_map[top_level] = FolderUsage(path=top_level, size_bytes=0, file_count=0)
-                stats = folder_map[top_level]
-                stats.size_bytes += size
-                stats.file_count += 1
+                    folder_map[top_level] = FolderUsage(path=top_level, size_bytes=size, file_count=1)
+                else:
+                    folder_map[top_level].size_bytes += size
+                    folder_map[top_level].file_count += 1
             except (ValueError, IndexError, OSError, FileNotFoundError, TypeError, AttributeError):
                 continue
 
@@ -344,7 +336,8 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
         "Por tipo de archivo:",
     ]
     
-    for ext, size in heapq.nlargest(8, ext_sizes.items(), key=lambda item: item[1]):
+    sorted_exts = heapq.nlargest(8, ext_sizes.items(), key=lambda item: item[1])
+    for ext, size in sorted_exts:
         lines.append(f"  {ext:<18} {format_size(size):>10}  ({ext_counts[ext]} archivos)")
         
     lines.append("")
