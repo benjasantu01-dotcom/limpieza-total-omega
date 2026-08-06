@@ -161,8 +161,10 @@ def directory_size(path: str | os.PathLike | None) -> int:
             if f.lower() not in NEVER_TOUCH:
                 try:
                     full_f = os.path.join(dirpath, f)
-                    total_bytes += os.path.getsize(full_f)
+                    if not os.path.islink(full_f):
+                        total_bytes += os.path.getsize(full_f)
                 except (OSError, PermissionError):
+                    # Archivo bloqueado o inaccesible, se ignora en la suma total
                     continue
             
     return total_bytes

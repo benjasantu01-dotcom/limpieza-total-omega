@@ -217,7 +217,7 @@ def bar(percent: Union[float, int, None], width: int = 24,
 @lru_cache(maxsize=128)
 def _hex_to_rgb(value: HexColor) -> RGBTuple:
     """Convierte un color hex (#RRGGBB) a una tupla de componentes RGB."""
-    if not isinstance(value, str) or not value.startswith("#") or len(value) != 7:
+    if not isinstance(value, str) or len(value) != 7 or not value.startswith("#"):
         return (0, 0, 0)
     try:
         return (int(value[1:3], 16), int(value[3:5], 16), int(value[5:7], 16))
@@ -289,13 +289,11 @@ def logo_svg(size: int = 128) -> str:
 
 def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     """Guarda el logo en SVG tras validar la seguridad de la ruta destino."""
-    if not destination:
-        return None
+    if not destination: return None
     try:
         target = Path(destination).resolve()
-        if is_protected_path(target) or not is_safe_to_modify(target):
-            return None
-        
+        if not is_safe_to_modify(target): return None
+        ensure_safe_to_modify(target)
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(logo_svg(), encoding="utf-8")
         return target

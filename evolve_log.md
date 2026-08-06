@@ -1067,3 +1067,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-06T04:08:28` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: rendimiento).
 - `2026-08-06T04:08:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-06T04:08:28` Corrida terminada. Total usado hoy: 100.
+- `2026-08-06T04:17:14` Arrancando corrida. Quedan hoy ~200 peticiones objetivo.
+- `2026-08-06T04:17:41` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Optimizé `entries_from_folders` para reducir las llamadas repetitivas a `is_protected_path` y `item.is_symlink()` mediante el uso de un cache local de rutas protegidas y una secuencia de comprobaciones más eficiente.
+- `2026-08-06T04:18:24` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Reforcé la robustez de `_call_gemini` y `_ensure_safe_text` ante entradas malformadas o inesperadas, asegurando que cualquier fallo en la serialización o respuesta externa sea capturado sin romper el flujo de la aplicación.
+- `2026-08-06T04:18:53` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Mejoré la robustez de `save_logo_svg` y `_hex_to_rgb` frente a entradas mal formadas, implementando chequeos explícitos para evitar excepciones no controladas y asegurar la integridad de las rutas mediante `ensure_safe_to_modify` antes de cualquier operación de escritura.
+- `2026-08-06T04:19:00` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Mejoré la robustez de `directory_size` ante el acceso a archivos bloqueados por el sistema durante el escaneo, reemplazando la lógica simple de `os.walk` por un manejo de errores más granular y filtrado proactivo de excepciones, evitando que el proceso de cálculo falle prematuramente ante archivos protegidos o bloqueados.
+- `2026-08-06T04:19:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-06T04:19:00` Corrida terminada. Total usado hoy: 104.

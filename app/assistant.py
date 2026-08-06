@@ -467,21 +467,21 @@ def _call_gemini(
         
         with urllib.request.urlopen(peticion, timeout=_TIMEOUT_SECONDS) as respuesta:
             if respuesta.status != 200: return None
-            datos: Any = json.loads(respuesta.read().decode("utf-8"))
+            datos_bytes = respuesta.read()
+            if not datos_bytes: return None
+            datos = json.loads(datos_bytes.decode("utf-8"))
         
         if not isinstance(datos, dict): return None
-        candidatos: Any = datos.get("candidates", [])
+        candidatos = datos.get("candidates")
         if not isinstance(candidatos, list) or not candidatos: return None
         
-        cuerpo = candidatos[0].get("content", {})
+        cuerpo = candidatos[0].get("content")
         if not isinstance(cuerpo, dict): return None
-        partes: Any = cuerpo.get("parts", [])
+        partes = cuerpo.get("parts")
         if not isinstance(partes, list): return None
             
         texto = "".join(p.get("text", "") for p in partes if isinstance(p, dict))
-        if not _ensure_safe_text(texto): return None
-            
-        return texto.strip()
+        return texto.strip() if _ensure_safe_text(texto) else None
     except (Exception):
         return None
 

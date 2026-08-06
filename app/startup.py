@@ -194,13 +194,25 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
     """Escanea carpetas de inicio en busca de ejecutables."""
     if folders is None:
         folders = startup_folders()
+    
     found_entries: List[StartupEntry] = []
+    # Cache local de protegidos para evitar llamar a is_protected_path repetidas veces
+    protected_cache: Dict[Path, bool] = {}
+
     for folder in folders:
         try:
             for item in folder.iterdir():
-                if item.is_file() and item.suffix.lower() in EXECUTABLE_EXTS and not item.is_symlink():
-                    if not is_protected_path(item):
-                        found_entries.append(StartupEntry(name=item.stem, command=str(item), source="carpeta"))
+                # Primero chequear extensión (es operación en memoria, la más rápida)
+                if item.suffix.lower() not in EXECUTABLE_EXTS:
+                    continue
+                
+                # Chequear si está protegido (usando cache local)
+                if protected_cache.setdefault(item, is_protected_path(item)):
+                    continue
+                
+                # Chequear tipo de archivo y symlink (I/O, dejar al final)
+                if item.is_file() and not item.is_symlink():
+                    found_entries.append(StartupEntry(name=item.stem, command=str(item), source="carpeta"))
         except (OSError, PermissionError, RuntimeError):
             continue
     return found_entries
