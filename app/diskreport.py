@@ -133,6 +133,7 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
         if path_str.startswith(("\\\\", "//")):
             return None
         p = Path(path_str).expanduser().resolve()
+        # Seguridad defensiva: verificar que no sea un punto de reparse fuera de la unidad
         if not p.exists() or not p.is_absolute() or is_protected_path(p):
             return None
         usage = shutil.disk_usage(path_str)
@@ -163,7 +164,7 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Generador recursivo que recorre archivos ignorando enlaces y rutas protegidas.
+    Generador recursivo que recorre archivos ignorando enlaces, junctions y rutas protegidas.
     """
     if not directory:
         return
@@ -182,8 +183,14 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
             with os.scandir(current_path) as iterator:
                 for entry in iterator:
                     try:
+                        # Seguridad defensiva: evitar puntos de reparse (junctions/symlinks)
                         if entry.is_symlink():
                             continue
+                        # Verificar atributos específicos de Windows para junctions
+                        if os.name == 'nt':
+                            attrs = entry.stat().st_file_attributes
+                            if attrs & 0x400: # FILE_ATTRIBUTE_REPARSE_POINT
+                                continue
                         
                         if entry.is_dir():
                             full_path = Path(entry.path).resolve()

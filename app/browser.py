@@ -121,13 +121,17 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
         if is_protected_path(real_target):
             return False
 
+        # Verifica que la ruta esté estrictamente contenida en el directorio base
+        try:
+            real_target.relative_to(real_base)
+        except ValueError:
+            return False
+
         # Previene escapes mediante enlaces simbólicos o junctions de NTFS
         is_junction = getattr(os.path, 'isjunction', lambda _: False)
         if real_target.is_symlink() or is_junction(str(real_target)):
             return False
 
-        # Verifica que la ruta esté contenida en el directorio base (base_path)
-        real_target.relative_to(real_base)
         return True
     except (OSError, ValueError, RuntimeError, PermissionError, AttributeError):
         return False

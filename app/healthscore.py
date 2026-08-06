@@ -103,13 +103,8 @@ class SystemMetrics:
 
     def is_finite(self) -> bool:
         """Verifica la integridad numérica de todos los campos mediante comprobación de finitud IEEE 754."""
-        return (math.isfinite(self.junk_mb) and 
-                math.isfinite(self.memory_available_percent) and 
-                math.isfinite(self.disk_free_percent) and 
-                math.isfinite(self.duplicate_mb) and
-                math.isfinite(float(self.suspicious_count)) and
-                math.isfinite(float(self.startup_count)) and
-                math.isfinite(float(self.quarantined_count)))
+        return all(math.isfinite(getattr(self, field)) for field in self.__dataclass_fields__ 
+                   if isinstance(getattr(self, field), (int, float)))
 
 
 @dataclass
@@ -123,7 +118,7 @@ class HealthResult:
     @property
     def is_healthy(self) -> bool:
         """Retorna True si el puntaje global alcanza el nivel de salud satisfactorio (>= 80)."""
-        return self.score >= 80
+        return math.isfinite(self.score) and self.score >= 80
 
 
 def _clamp(value: float, low: float = 0.0, high: float = 1.0) -> float:
@@ -196,7 +191,7 @@ def score_startup(startup_count: int) -> float:
 
 def grade_for_score(score: int) -> str:
     """Asigna una calificación cualitativa (A-F) basada en el rango del puntaje [0, 100]."""
-    score_int = int(score)
+    score_int = int(_clamp(float(score), 0.0, 100.0))
     if score_int >= 90: return "A"
     if score_int >= 80: return "B"
     if score_int >= 65: return "C"

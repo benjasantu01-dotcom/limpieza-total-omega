@@ -806,3 +806,12 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-08-06T13:52:07` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Mejoré la seguridad de `save_logo_svg` utilizando `is_safe_to_modify` para el filtrado previo y `ensure_safe_to_modify` solo para la operación de escritura, garantizando que el acceso al sistema de archivos sea defensivo y cumpla con el contrato de seguridad del proyecto.
 - `2026-08-06T13:52:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-06T13:52:07` Corrida terminada. Total usado hoy: 328.
+- `2026-08-06T14:00:44` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-06T14:00:49` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-06T14:01:16` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_is_safe_path` y `directory_size` al implementar una validación estricta de que la ruta analizada sea siempre un hijo directo o recursivo del `base_path` esperado, previniendo inyecciones de rutas mediante el uso de `pathlib.Path.is_relative_to` (o equivalente compatible) y consolidando la detección de enlaces simbólicos y puntos de reparse antes de realizar cualquier operación de I/O.
+- `2026-08-06T14:01:27` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-06T14:02:01` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `walk_files` y `drive_usage` detectando explícitamente puntos de reparse (junctions/symlinks) mediante `os.path.isjunction` o atributos de archivo antes de seguir rutas, previniendo el bucle infinito y la navegación accidental fuera de los límites del directorio raíz solicitado.
+- `2026-08-06T14:02:26` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-08-06T14:02:39` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Mejoré la robustez de `SystemMetrics.is_finite` y `HealthResult` añadiendo una validación explícita contra valores `NaN` o `Inf` en los datos de entrada para evitar que el motor de scoring calcule resultados matemáticamente inválidos o bloqueantes.
+- `2026-08-06T14:02:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-06T14:02:39` Corrida terminada. Total usado hoy: 332.
