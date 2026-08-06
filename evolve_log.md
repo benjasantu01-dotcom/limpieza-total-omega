@@ -642,3 +642,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-05T23:30:41` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-08-05T23:40:58` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-08-05T23:51:11` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-08-06T00:01:23` Arrancando corrida. Quedan hoy ~300 peticiones objetivo.
+- `2026-08-06T00:01:49` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_collect_candidates` ante archivos que cambian o desaparecen durante el escaneo (condición de carrera) y enlaces simbólicos que apuntan fuera del árbol base, asegurando que `stat` y `resolve` fallen grácilmente sin interrumpir el proceso de escaneo recursivo.
+- `2026-08-06T00:02:15` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: robustez ante casos límite).
+- `2026-08-06T00:03:13` ➖ Sin cambios en main.py (enfoque: robustez ante casos límite). Motivo: Se ha mejorado la robustez de `on_trim_process` añadiendo una comprobación previa de existencia del proceso y un bloqueo explícito para procesos con PID < 100, evitando así llamadas potencialmente peligrosas a funciones de nivel inferior del sistema operativo incluso cuando el usuario intenta forzar la operación.
+- `2026-08-06T00:03:25` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-08-06T00:03:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-06T00:03:25` Corrida terminada. Total usado hoy: 4.

@@ -153,6 +153,7 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
             with os.scandir(root_path) as dir_iterator:
                 for entry in dir_iterator:
                     try:
+                        # Usamos lstat para evitar seguir enlaces simbólicos por seguridad
                         lstat = entry.stat(follow_symlinks=False)
                         inode_key = (lstat.st_dev, lstat.st_ino)
                         
@@ -171,6 +172,7 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
     if directories:
         for directory in directories:
             try:
+                # Verificamos existencia real antes de escanear
                 path_obj = Path(directory).resolve(strict=True)
                 if path_obj.is_dir():
                     if not (skip_protected and is_protected_path(path_obj)):
