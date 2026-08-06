@@ -1337,3 +1337,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-06T07:03:36` ➖ Sin cambios en main.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `on_trim_process` al implementar un chequeo previo de existencia del proceso mediante `memory_mod.process_exists(pid)` antes de intentar cualquier operación de gestión, evitando lanzar excepciones de sistema innecesarias cuando el usuario ingresa un PID de un proceso que ya terminó.
 - `2026-08-06T07:03:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-06T07:03:36` Corrida terminada. Total usado hoy: 168.
+- `2026-08-06T07:11:40` Arrancando corrida. Quedan hoy ~132 peticiones objetivo.
+- `2026-08-06T07:12:06` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-06T07:12:28` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-06T07:12:58` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `quarantine_file` añadiendo una validación explícita de `is_protected_path` sobre la ruta resultante (`destination`) para prevenir condiciones de carrera o configuraciones erróneas donde una ruta de cuarentena dinámica pudiera apuntar a una zona restringida del sistema.
+- `2026-08-06T07:13:02` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 110): unterminated string literal (detected at line 110)
+- `2026-08-06T07:13:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-06T07:13:02` Corrida terminada. Total usado hoy: 172.
