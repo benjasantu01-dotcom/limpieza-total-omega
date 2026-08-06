@@ -75,7 +75,11 @@ class Scanner:
             if entry is None or not entry.path:
                 return
             
+            # Verificación de integridad: asegurar que la entrada sigue existiendo
             path_obj = Path(entry.path)
+            if not path_obj.exists():
+                return
+
             if not str(path_obj.resolve()).startswith(self.base_root_str):
                 return
 

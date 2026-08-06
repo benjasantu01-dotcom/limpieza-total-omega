@@ -1088,3 +1088,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-06T04:38:52` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-08-06T04:38:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-06T04:38:52` Corrida terminada. Total usado hoy: 112.
+- `2026-08-06T04:47:45` Arrancando corrida. Quedan hoy ~188 peticiones objetivo.
+- `2026-08-06T04:48:10` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
+- `2026-08-06T04:48:32` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `process_entry` ante condiciones de carrera (time-of-check to time-of-use) y estados inconsistentes del sistema de archivos al añadir verificaciones de existencia previas al procesamiento de `os.DirEntry` y manejo explícito de errores durante la resolución de rutas.
+- `2026-08-06T04:48:57` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `settings.py` ante casos límite en la escritura de archivos, asegurando que `tempfile` siempre se cree con un nombre único y se gestione correctamente su limpieza incluso si el proceso es interrumpido, además de mejorar la resiliencia ante permisos denegados al escribir en `config.json`.
+- `2026-08-06T04:49:06` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-08-06T04:49:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-06T04:49:06` Corrida terminada. Total usado hoy: 116.

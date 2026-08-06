@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **249** (49.4% de aceptación)
+- Mejoras aceptadas: **251** (49.8% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 26
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 203
+- Sin respuesta de la IA (error o límite): 201
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-04 | 10 | 0 | 1 | 1 | 30 |
+| 2026-08-04 | 10 | 0 | 1 | 1 | 26 |
 | 2026-08-05 | 185 | 12 | 19 | 8 | 126 |
-| 2026-08-06 | 54 | 4 | 6 | 1 | 47 |
+| 2026-08-06 | 56 | 4 | 6 | 1 | 49 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **61**
 - manejo de errores y validación de entradas: **52**
 - rendimiento: **51**
-- robustez ante casos límite: **43**
+- robustez ante casos límite: **45**
 - seguridad defensiva: **42**
 
 ## Mejoras aceptadas por archivo
@@ -33,12 +33,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - `branding.py`: **23**
 - `browser.py`: **23**
 - `duplicates.py`: **21**
+- `scanner.py`: **21**
 - `assistant.py`: **20**
-- `scanner.py`: **20**
 - `quarantine.py`: **20**
+- `settings.py`: **20**
 - `diskreport.py`: **19**
 - `main.py`: **19**
-- `settings.py`: **19**
 - `healthscore.py`: **16**
 - `organizer.py`: **15**
 - `safety.py`: **13**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-06T04:48:57` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `settings.py` ante casos límite en la escritura de archivos, asegurando que `tempfile` siempre se cree con un nombre único y se gestione correctamente su limpieza incluso si el proceso es interrumpido, además de mejorar la resiliencia ante permisos denegados al escribir en `config.json`.
+- `2026-08-06T04:48:32` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez de `process_entry` ante condiciones de carrera (time-of-check to time-of-use) y estados inconsistentes del sistema de archivos al añadir verificaciones de existencia previas al procesamiento de `os.DirEntry` y manejo explícito de errores durante la resolución de rutas.
 - `2026-08-06T04:38:49` **quarantine.py** (robustez ante casos límite): Se reforzó la robustez de `quarantine_file` ante condiciones de carrera y fallos parciales de escritura mediante la implementación de un mecanismo de validación de espacio en disco más preciso y una limpieza preventiva más estricta, evitando dejar archivos temporales huérfanos en caso de interrupción del proceso.
 - `2026-08-06T04:38:20` **organizer.py** (robustez ante casos límite): Se reforzó la robustez de `stage_for_review` ante casos límite mediante la validación explícita de `is_file()` en el origen y la comprobación de que el archivo no haya cambiado de estado (ej. borrado por otro proceso) entre el escaneo y la ejecución, asegurando además que no existan errores de referencia cruzada con `resolve()` si la ruta base es inválida.
 - `2026-08-06T04:37:57` **memory.py** (robustez ante casos límite): Mejora la robustez de la función `read_snapshot` ante errores de formato o valores inesperados en `/proc/meminfo` mediante una validación más estricta en el parsing y el manejo de excepciones, garantizando que el sistema no reporte datos inconsistentes si los archivos del sistema están temporalmente bloqueados o corrompidos.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-06T03:58:05` **memory.py** (rendimiento): Optimizé la eficiencia de `parse_windows_process_csv` reemplazando la creación de una lista intermedia de todas las líneas procesadas por un generador que filtra y parsea bajo demanda, reduciendo la huella de memoria al procesar listas largas de procesos.
 - `2026-08-06T03:57:40` **main.py** (rendimiento): Optimicé el sistema de caché implementando una invalidación granular basada en prefijos y añadiendo un chequeo preventivo de tamaño para evitar que el `OrderedDict` crezca indefinidamente, reduciendo así la sobrecarga de memoria en sesiones prolongadas.
 - `2026-08-06T03:47:40` **healthscore.py** (rendimiento): Optimicé el bucle principal de `compute_score` eliminando búsquedas innecesarias en el diccionario `scores` y mejorando la eficiencia del cálculo ponderado mediante el uso directo de las tuplas precalculadas `_WEIGHT_ITEMS`.
-- `2026-08-06T03:47:30` **duplicates.py** (rendimiento): Se optimizó el proceso de recolección de candidatos evitando llamadas redundantes a `Path.resolve()` dentro de `_collect_candidates`, reduciendo significativamente la sobrecarga de I/O y el tiempo de ejecución en directorios con muchos archivos.
-- `2026-08-06T03:46:44` **browser.py** (rendimiento): Se optimizó `directory_size` para reducir el uso de `pathlib.Path` dentro del loop crítico, reemplazando la instanciación de objetos por el uso directo de strings y `os.path.join`, evitando así la creación masiva de objetos `Path` que impactaba en el rendimiento durante el recorrido recursivo.

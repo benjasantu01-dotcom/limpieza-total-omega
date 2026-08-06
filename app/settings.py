@@ -192,20 +192,25 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     limpio = validate(values)
     if limpio.get("asistente_activado") and not (limpio.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)):
         limpio["asistente_activado"] = False
+    
     temp_path: Path | None = None
     try:
         ruta.parent.mkdir(parents=True, exist_ok=True)
-        with tempfile.NamedTemporaryFile("w", dir=ruta.parent, delete=False, encoding="utf-8") as tf:
-            temp_path = Path(tf.name)
+        fd, temp_name = tempfile.mkstemp(dir=ruta.parent, text=True)
+        temp_path = Path(temp_name)
+        with os.fdopen(fd, "w", encoding="utf-8") as tf:
             json.dump(limpio, tf, indent=2, ensure_ascii=False)
             tf.flush()
             os.fsync(tf.fileno())
+        
         if not is_safe_to_modify(str(ruta)): raise PermissionError
         os.replace(temp_path, ruta)
         _cached_settings, _current_path = limpio, ruta
         return ruta
     except (OSError, PermissionError, RuntimeError):
-        if temp_path and temp_path.exists(): temp_path.unlink()
+        if temp_path and temp_path.exists():
+            try: temp_path.unlink()
+            except OSError: pass
         return None
 
 def update(changes: dict[str, Any], path_or_base: PathLike | None = None) -> AppSettings:
