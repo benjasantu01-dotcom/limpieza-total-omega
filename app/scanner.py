@@ -102,6 +102,10 @@ class Scanner:
 
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None) -> Optional[Suspicion]:
+    """
+    Detecta archivos con doble extensión (ej. .pdf.exe) utilizando REGEX.
+    Analiza tanto el nombre proporcionado como el nombre base del objeto Path.
+    """
     if not path: return None
     target = name or path.name
     if target and DOUBLE_EXTENSION_RE.search(target):
@@ -110,6 +114,10 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, name
 
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, hours: int = RECENT_FILE_THRESHOLD_HOURS) -> Optional[Suspicion]:
+    """
+    Evalúa la marca de tiempo de modificación de un ejecutable.
+    Usa el entry proporcionado para evitar llamadas redundantes a lstat() si está disponible.
+    """
     if not path: return None
     try:
         st = entry.stat() if entry else path.lstat()
@@ -122,6 +130,10 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None) -> Optional[Suspicion]:
+    """
+    Verifica si un ejecutable tiene nombre de proceso crítico pero reside fuera de System32.
+    El chequeo es preventivo para identificar binarios potencialmente maliciosos (masquerading).
+    """
     if not path: return None
     try:
         if SYSTEM32_LOWER not in str(path.parent).lower():

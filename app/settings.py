@@ -148,7 +148,7 @@ _VALIDATOR_MAP: Final[dict[str, Callable[[str, Any], Any]]] = {
 }
 
 def settings_path(path_or_base: PathLike | None = None) -> Path:
-    """Calcula la ruta al archivo config.json, forzando seguridad."""
+    """Calcula la ruta absoluta al archivo config.json, validando el directorio padre."""
     key = str(path_or_base or SETTINGS_DIR)
     if key in _path_cache: return _path_cache[key]
     try:
@@ -161,7 +161,7 @@ def settings_path(path_or_base: PathLike | None = None) -> Path:
     return res
 
 def validate(values: Any) -> AppSettings:
-    """Aplica validaciones de tipo y rango a un diccionario."""
+    """Limpia y valida un diccionario de entrada contra el esquema DEFAULTS."""
     config = DEFAULTS.copy()
     if not isinstance(values, dict): return config
     for clave, validador in _VALIDATOR_MAP.items():
@@ -171,7 +171,7 @@ def validate(values: Any) -> AppSettings:
     return config
 
 def load(path_or_base: PathLike | None = None) -> AppSettings:
-    """Lee el archivo desde disco y retorna el estado validado."""
+    """Lee el archivo desde disco, valida el contenido y gestiona el caché en memoria."""
     global _cached_settings, _current_path
     ruta = settings_path(path_or_base)
     if _cached_settings is not None and _current_path == ruta:
@@ -190,12 +190,14 @@ def load(path_or_base: PathLike | None = None) -> AppSettings:
         return _cached_settings
 
 def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
-    """Persiste la configuración validando integridad."""
+    """
+    Persiste la configuración en un archivo temporal y realiza un reemplazo atómico.
+    Verifica seguridad de escritura mediante ensure_safe_to_modify antes de reemplazar.
+    """
     global _cached_settings, _current_path
     if not isinstance(values, dict): return None
     ruta = settings_path(path_or_base)
     
-    # Validar seguridad antes de realizar cualquier operación de I/O
     if not is_safe_to_modify(str(ruta.parent)):
         return None
         
@@ -227,34 +229,34 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
         return None
 
 def update(changes: dict[str, Any], path_or_base: PathLike | None = None) -> AppSettings:
-    """Actualiza la configuración y guarda."""
+    """Aplica cambios parciales a la configuración actual y guarda a disco."""
     actual = (load(path_or_base)).copy()
     actual.update(changes)
     save(actual, path_or_base)
     return actual
 
 def reset(path_or_base: PathLike | None = None) -> AppSettings:
-    """Restablece a valores de fábrica."""
+    """Reestablece todos los valores a los definidos en DEFAULTS."""
     save(DEFAULTS, path_or_base)
     return DEFAULTS.copy()
 
 def get(key: str, path_or_base: PathLike | None = None) -> Any:
-    """Obtiene un valor específico."""
+    """Recupera el valor de una clave específica."""
     return load(path_or_base).get(key, DEFAULTS.get(key))
 
 def assistant_api_key(path_or_base: PathLike | None = None) -> str:
-    """Retorna la API Key priorizando la variable de entorno."""
+    """Retorna la API Key priorizando la variable de entorno por seguridad."""
     desde_entorno = os.environ.get(API_KEY_ENV_VAR, "").strip()
     if desde_entorno: return desde_entorno
     return load(path_or_base).get("asistente_clave_api", "").strip()
 
 def assistant_enabled(path_or_base: PathLike | None = None) -> bool:
-    """Verifica si el asistente puede operar."""
+    """Verifica si el asistente está activo y dispone de una clave válida."""
     config = load(path_or_base)
     return bool(config.get("asistente_activado")) and bool(assistant_api_key(path_or_base))
 
 def describe(path_or_base: PathLike | None = None) -> list[str]:
-    """Genera una lista de strings para informe de estado."""
+    """Genera un reporte legible de la configuración actual."""
     actual = load(path_or_base)
     clave = assistant_api_key(path_or_base)
     origen = f"variable de entorno {API_KEY_ENV_VAR}" if os.environ.get(API_KEY_ENV_VAR) else ("archivo de configuración" if clave else "no configurada")

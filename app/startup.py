@@ -20,7 +20,7 @@ import os
 import subprocess
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Iterable, Optional, Iterator, List, Tuple, Dict, Sequence
+from typing import Iterable, Optional, Iterator, List, Tuple, Dict, Sequence, Set
 from safety import is_protected_path
 
 __all__ = [
@@ -291,20 +291,19 @@ def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[Start
 
 def list_startup_entries() -> List[StartupEntry]:
     """Combina fuentes de inicio (registro + carpetas) deduplicando por nombre."""
-    seen: set[str] = set()
-    unique: List[StartupEntry] = []
+    seen_names: Set[str] = set()
+    unique_entries: List[StartupEntry] = []
     
-    def process_entries(entries: Iterable[StartupEntry]) -> Iterator[StartupEntry]:
-        for entry in entries:
-            name_lower = entry.name.lower()
-            if name_lower not in seen:
-                seen.add(name_lower)
-                yield entry
-
-    unique.extend(process_entries(entries_from_folders()))
-    unique.extend(process_entries(entries_from_registry()))
+    # Recolectar todas las entradas disponibles
+    all_raw_entries = entries_from_folders() + entries_from_registry()
+    
+    for entry in all_raw_entries:
+        name_normalized = entry.name.lower()
+        if name_normalized not in seen_names:
+            seen_names.add(name_normalized)
+            unique_entries.append(entry)
             
-    return unique
+    return unique_entries
 
 
 def estimate_impact(entries: Sequence[StartupEntry]) -> str:
