@@ -14,8 +14,11 @@ vive en los otros módulos; acá solo se puntúa.
 
 from __future__ import annotations
 from dataclasses import dataclass, field
-from typing import Dict, List, Any, Final, Tuple
+from typing import Dict, List, Any, Final, Tuple, TypeAlias
 import math
+
+# Tipos para mejorar la claridad en el flujo de datos
+ScoreMap: TypeAlias = Dict[str, float]
 
 __all__ = [
     "SystemMetrics",
@@ -124,7 +127,7 @@ class HealthResult:
 
 
 def _clamp(value: float, low: float = 0.0, high: float = 1.0) -> float:
-    """Restringe un número de punto flotante al intervalo [low, high]. Retorna 'low' ante NaN/Inf."""
+    """Restringe un número al intervalo [low, high]. Retorna 'low' ante NaN/Inf."""
     if not isinstance(value, (int, float)) or not math.isfinite(value):
         return low
     return max(low, min(high, float(value)))
@@ -140,7 +143,7 @@ def _to_float(value: Any, default: float = 0.0) -> float:
 
 
 def _to_int(value: Any, default: int = 0) -> int:
-    """Convierte un objeto genérico a int mediante una conversión intermedia a float para robustez."""
+    """Convierte un objeto genérico a int mediante una conversión intermedia a float."""
     try:
         val = int(float(value)) if value is not None else default
         return val if math.isfinite(float(val)) else default
@@ -149,20 +152,14 @@ def _to_int(value: Any, default: int = 0) -> int:
 
 
 def score_junk(junk_mb: float) -> float:
-    """
-    Normaliza el volumen de basura (MB) a un ratio [0.0, 1.0].
-    Un valor de 0 MB resulta en 1.0, mientras que alcanzar JUNK_LIMIT_MB resulta en 0.0.
-    """
+    """Normaliza basura: 0 MB es 1.0, JUNK_LIMIT_MB es 0.0 (escala lineal inversa)."""
     val = _to_float(junk_mb)
     if JUNK_LIMIT_MB <= 0: return 0.0
     return _clamp(1.0 - (val / JUNK_LIMIT_MB))
 
 
 def score_security(suspicious_count: int, warnings: int = 0) -> float:
-    """
-    Calcula el ratio de seguridad [0.0, 1.0] basado en penalizaciones discretas.
-    Aplica una reducción de 0.05 por cada hallazgo y 0.25 por cada advertencia crítica.
-    """
+    """Penaliza hallazgos: -0.05 por cada archivo sospechoso, -0.25 por advertencia crítica."""
     s_count = _to_int(suspicious_count)
     w_count = _to_int(warnings)
     penalty: float = (float(s_count) * 0.05) + (float(w_count) * 0.25)
@@ -170,40 +167,28 @@ def score_security(suspicious_count: int, warnings: int = 0) -> float:
 
 
 def score_memory(available_percent: float) -> float:
-    """
-    Normaliza la disponibilidad de memoria RAM a un ratio [0.0, 1.0].
-    El ratio es 1.0 cuando la disponibilidad alcanza o supera RAM_IDEAL_PERCENT.
-    """
+    """Normaliza memoria: ratio de disponibilidad frente al objetivo ideal."""
     val = _to_float(available_percent)
     if RAM_IDEAL_PERCENT <= 0: return 0.0
     return _clamp(val / RAM_IDEAL_PERCENT)
 
 
 def score_disk(free_percent: float) -> float:
-    """
-    Normaliza el espacio en disco libre a un ratio [0.0, 1.0].
-    El ratio es 1.0 cuando el espacio libre alcanza o supera DISK_IDEAL_PERCENT.
-    """
+    """Normaliza disco: ratio de espacio libre frente al objetivo ideal."""
     val = _to_float(free_percent)
     if DISK_IDEAL_PERCENT <= 0: return 0.0
     return _clamp(val / DISK_IDEAL_PERCENT)
 
 
 def score_duplicates(duplicate_mb: float) -> float:
-    """
-    Calcula el ratio [0.0, 1.0] basado en el espacio ocupado por duplicados.
-    Penaliza linealmente el espacio en función de DUPLICATE_LIMIT_MB.
-    """
+    """Normaliza duplicados: 0 MB es 1.0, DUPLICATE_LIMIT_MB es 0.0 (escala lineal inversa)."""
     val = _to_float(duplicate_mb)
     if DUPLICATE_LIMIT_MB <= 0: return 0.0
     return _clamp(1.0 - (val / DUPLICATE_LIMIT_MB))
 
 
 def score_startup(startup_count: int) -> float:
-    """
-    Calcula el ratio [0.0, 1.0] de eficiencia de arranque.
-    Penaliza la cantidad de procesos detectados, reduciendo el ratio a 0.0 al llegar a STARTUP_LIMIT_COUNT.
-    """
+    """Normaliza arranque: penalización lineal creciente según cantidad de entradas."""
     val = _to_int(startup_count)
     if STARTUP_LIMIT_COUNT <= 0: return 0.0
     return _clamp(1.0 - (float(val) / STARTUP_LIMIT_COUNT))
@@ -219,8 +204,8 @@ def grade_for_score(score: int) -> str:
     return "F"
 
 
-def _generate_recommendations(m: SystemMetrics, ratios: Dict[str, float]) -> List[str]:
-    """Genera una lista de textos explicativos según el estado de salud de cada métrica normalizada."""
+def _generate_recommendations(m: SystemMetrics, ratios: ScoreMap) -> List[str]:
+    """Genera textos explicativos según el estado de salud de cada métrica normalizada."""
     if not isinstance(m, SystemMetrics) or not isinstance(ratios, dict):
         return ["Error: Datos de entrada inválidos para recomendaciones."]
     
@@ -248,8 +233,8 @@ def _generate_recommendations(m: SystemMetrics, ratios: Dict[str, float]) -> Lis
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
     """
-    Función principal: toma métricas crudas, las valida, calcula el puntaje ponderado 
-    y genera un objeto HealthResult con el estado del sistema.
+    Función principal: toma métricas crudas, calcula el puntaje ponderado 
+    y genera un objeto HealthResult.
     """
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Instancia de métricas no válida."])
@@ -258,7 +243,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     if not metrics.is_finite() or not _validate_weights():
         return HealthResult(0, "F", {}, ["Error: Datos de entrada o configuración no procesables."])
 
-    scores: Dict[str, float] = {
+    scores: ScoreMap = {
         "seguridad": score_security(metrics.suspicious_count, metrics.suspicious_warnings),
         "disco": score_disk(metrics.disk_free_percent),
         "memoria": score_memory(metrics.memory_available_percent),
@@ -271,13 +256,11 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     total_weighted_score: float = 0.0
     
     for area, weight in _WEIGHT_ITEMS:
-        # Normalización ponderada con verificación de integridad aritmética
         raw_weighted = scores[area] * float(weight)
         score_val = raw_weighted * _NORM_FACTOR
         breakdown[area] = int(score_val + 0.5)
         total_weighted_score += score_val
 
-    # Validación final de sumatoria para evitar deriva de punto flotante
     final_score = int(_clamp(total_weighted_score, 0.0, 100.0))
     if not math.isclose(sum(breakdown.values()), final_score, abs_tol=1):
         final_score = sum(breakdown.values())
@@ -291,7 +274,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
 
 
 def summarize(result: HealthResult) -> List[str]:
-    """Crea una representación textual legible de los resultados para ser mostrada en la UI."""
+    """Crea una representación textual legible de los resultados para UI."""
     if not isinstance(result, HealthResult):
         return ["Error: Resultado de salud no válido."]
 

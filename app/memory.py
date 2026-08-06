@@ -299,7 +299,7 @@ def pressure_level(snapshot: MemorySnapshot) -> str:
 def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] = None) -> List[str]:
     """
     Genera un informe textual de salud de memoria para la interfaz.
-    Retorna una lista de strings con métricas formateadas y recomendaciones.
+    Recibe un snapshot y una lista opcional de procesos para reportar el mayor consumo.
     """
     if not isinstance(snapshot, MemorySnapshot) or snapshot.total <= 0:
         return ["No se pudo leer el estado de la memoria en este sistema."]
@@ -328,14 +328,21 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
 
 
 def _is_system_process(pid: int) -> bool:
-    """Verifica si un proceso es crítico del sistema (protección de seguridad)."""
+    """
+    Verifica si un PID pertenece a procesos críticos (System, Idle) 
+    o procesos de muy bajo número (servicios del kernel) para evitar 
+    intentar modificar su working set mediante APIs de usuario.
+    """
     return pid in SYSTEM_CRITICAL_PIDS or pid <= 100
 
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
-    Solicita al S.O. reducir el Working Set de un proceso.
-    Realiza validación de seguridad contra PIDs críticos y comprueba permisos.
+    Solicita al S.O. reducir el Working Set de un proceso llamando a EmptyWorkingSet.
+    
+    Riesgo operativo: El S.O. forzará al proceso a descartar páginas de memoria
+    física, lo que puede causar latencia inmediata al acceder a datos no cacheados.
+    Solo debe invocarse manualmente tras advertir al usuario.
     """
     if os.name != "nt":
         return False, "Solo disponible en Windows."

@@ -120,7 +120,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         super().__init__()
         self.tabs: Dict[str, ctk.CTkFrame] = {}
         # Asegurar estado limpio antes de intentar inicializar la GUI
-        self._executor = None
+        self._executor: Optional[concurrent.futures.ThreadPoolExecutor] = None
         try:
             self._validate_environment()
             self._init_window_properties()
@@ -716,7 +716,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     # ------------------------------------------------------------------
 
     def _is_safe_path(self, path: Union[str, Path]) -> bool:
-        """Chequeo robusto de seguridad para evitar seguir junctions o rutas inválidas."""
+        """Valida que una ruta no esté protegida y no sea un enlace simbólico."""
         try:
             p = Path(path).resolve(strict=True)
             if p.is_symlink():
@@ -767,7 +767,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         return None
 
     def _get_cached_or_run(self, key: str, provider: Callable, on_complete: Callable) -> None:
-        """Helper para evitar relanzar tareas en curso si ya se tiene caché."""
+        """Ejecuta una función asíncrona solo si no existe caché válido."""
         cached = self._get_cached(key)
         if cached is not None:
             on_complete(cached)
@@ -831,7 +831,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.after(0, actualizar)
 
     def _validate_and_log_error(self, e: Exception, tab: str) -> None:
-        """Manejador centralizado que traduce excepciones de sistema."""
+        """Manejador centralizado que traduce excepciones de sistema para el usuario."""
         if isinstance(e, safety.UnsafePathError):
             self.log(f"Bloqueado por seguridad: {e}", tab)
         elif isinstance(e, PermissionError):
@@ -905,7 +905,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _compile_metrics(self) -> Tuple[healthscore.SystemMetrics, memory_mod.Snapshot, diskreport.DriveInfo]:
         """Consolida métricas del sistema priorizando caché existente."""
-        # Se recupera información del cache sin forzar re-procesado si está presente
         hallazgos = self._get_cached("suspicions") or []
         arranque = self._get_cached("startup") or []
         junk = self._get_cached("junk") or []

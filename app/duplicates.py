@@ -147,7 +147,10 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
 
 def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """
-    Realiza un escaneo recursivo del sistema de archivos para indexar candidatos a duplicados.
+    Escaneo recursivo del sistema de archivos indexando archivos por tamaño.
+    
+    Utiliza un set de inodos (dev, ino) para evitar procesar recursivamente 
+    el mismo archivo si existen enlaces físicos o puntos de reparse (junctions).
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: set[Tuple[int, int]] = set()
@@ -190,7 +193,7 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
 
 def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
     """
-    Filtra una lista de archivos agrupándolos por un hash calculado externamente.
+    Aplica una función de hash a un listado de archivos y agrupa aquellos con colisiones.
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     if paths is None: return groups_by_digest
@@ -214,7 +217,7 @@ def find_duplicates(
     2. Fase de Muestreo (Partial-hash): Lectura de los primeros 64KB para descartar falsos positivos.
     3. Fase de Confirmación (Full-hash): Lectura completa para verificar coincidencia absoluta.
     
-    Retorna una lista de grupos ordenados por espacio desperdiciado descendente.
+    Retorna una lista de objetos DuplicateGroup ordenados por espacio desperdiciado descendente.
     """
     if directories is None: return []
     
@@ -223,10 +226,10 @@ def find_duplicates(
     groups: List[DuplicateGroup] = []
     for size, paths_in_size_group in size_map.items():
         
-        # Refinamiento intermedio: Hash de los primeros N bytes
+        # Etapa 2: Reducir candidatos mediante hash parcial de cabecera
         partial_groups = _refine_by_hash(paths_in_size_group, partial_hash)
         
-        # Validación final: Hash completo de archivo
+        # Etapa 3: Confirmar identidad mediante hash completo
         for partial_candidates in partial_groups.values():
             full_hash_groups = _refine_by_hash(partial_candidates, hash_file)
             for digest, confirmed_paths in full_hash_groups.items():
@@ -244,7 +247,8 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     """
-    Selecciona el archivo candidato para conservar basado en antigüedad y ruta.
+    Selecciona el archivo candidato para conservar basado en la fecha de modificación 
+    más antigua (el original) y la brevedad de su ruta (fácil lectura).
     """
     if not group or not group.paths:
         return None
@@ -266,7 +270,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
 
 
 def format_group(group: DuplicateGroup) -> List[str]:
-    """Genera un resumen legible de un grupo de duplicados."""
+    """Genera un reporte legible de un grupo de archivos duplicados."""
     if not isinstance(group, DuplicateGroup): return []
     keeper = suggest_keeper(group)
     mb_total = round(group.size_bytes / (1024 * 1024), 2)
