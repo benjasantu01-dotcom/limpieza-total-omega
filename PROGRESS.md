@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **247** (49.0% de aceptación)
-- Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 25
+- Mejoras aceptadas: **245** (48.6% de aceptación)
+- Rechazadas por tests: 15
+- Rechazadas por guardia de seguridad: 26
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 203
+- Sin respuesta de la IA (error o límite): 205
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-04 | 39 | 2 | 4 | 4 | 41 |
+| 2026-08-04 | 36 | 1 | 4 | 4 | 41 |
 | 2026-08-05 | 185 | 12 | 19 | 8 | 126 |
-| 2026-08-06 | 23 | 2 | 2 | 1 | 36 |
+| 2026-08-06 | 24 | 2 | 3 | 1 | 38 |
 
 ## Mejoras aceptadas por enfoque
 
-- rendimiento: **53**
 - seguridad defensiva: **52**
+- rendimiento: **50**
+- manejo de errores y validación de entradas: **50**
 - legibilidad y documentación: **50**
-- manejo de errores y validación de entradas: **49**
 - robustez ante casos límite: **43**
 
 ## Mejoras aceptadas por archivo
 
-- `branding.py`: **22**
-- `browser.py`: **22**
 - `duplicates.py`: **22**
-- `assistant.py`: **21**
+- `branding.py`: **21**
+- `browser.py`: **21**
 - `diskreport.py`: **20**
+- `quarantine.py`: **20**
 - `scanner.py`: **20**
-- `quarantine.py`: **19**
+- `assistant.py`: **20**
 - `settings.py`: **19**
 - `healthscore.py`: **18**
 - `main.py`: **18**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-06T02:45:42` **quarantine.py** (manejo de errores y validación de entradas): Se introdujo una validación robusta de los argumentos de entrada en las funciones públicas `restore_item` y `purge_item` para evitar el procesamiento de datos mal formados, reemplazando la lógica implícita por validaciones explícitas que lanzan excepciones informativas antes de intentar operaciones de I/O.
 - `2026-08-06T02:36:27` **main.py** (manejo de errores y validación de entradas): Se introdujo una validación robusta y centralizada para las entradas numéricas en los diálogos de configuración, evitando que entradas vacías o malformadas bloqueen la app o generen valores inesperados en el sistema de preferencias.
 - `2026-08-06T02:35:27` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `summarize` y `compute_score` ante fallos de integridad, asegurando que el desglose del puntaje se valide explícitamente antes de procesarlo, evitando errores de clave o tipos inesperados durante la generación de reportes.
 - `2026-08-06T02:35:01` **duplicates.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `suggest_keeper` y `hash_file`/`partial_hash` añadiendo validaciones explícitas contra valores `None` o rutas inexistentes antes de realizar operaciones de E/S, evitando excepciones innecesarias en el bucle principal.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-06T00:42:38` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_generate_recommendations` validando que los datos de entrada (específicamente métricas de seguridad) sean tratados como tipos seguros antes de ser incluidos en texto, evitando inyecciones de datos no verificados en el reporte final.
 - `2026-08-06T00:33:41` **duplicates.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_collect_candidates` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta resuelta antes de procesar el contenido de directorios, evitando así el posible seguimiento de enlaces simbólicos o junctions que podrían apuntar a áreas protegidas del sistema fuera del árbol escaneado.
 - `2026-08-06T00:33:22` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `drive_usage` y `walk_files` para detectar y rechazar rutas UNC (`\\servidor\recurso`) y puntos de montaje de red, evitando bloqueos inesperados o intentos de escaneo sobre recursos compartidos de red que pueden ser inestables o maliciosos.
-- `2026-08-06T00:32:57` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_path` mediante la validación estricta de que la ruta resuelta no contenga caracteres de control o nombres prohibidos (Unicode RTL) antes de su resolución, y se añadió una verificación de integridad adicional para evitar seguimientos accidentales fuera del directorio base, asegurando que la operación se limite exclusivamente a los perfiles de usuario esperados.

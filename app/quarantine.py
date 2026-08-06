@@ -337,8 +337,8 @@ def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[Quaranti
 
 def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
     """Restaura un archivo de la cuarentena a su ruta original tras verificaciones de seguridad."""
-    if not item_id:
-        raise ValueError("ID de ítem inválido.")
+    if not item_id or not isinstance(item_id, str):
+        raise ValueError("ID de ítem vacío o tipo incorrecto.")
     
     items = load_manifest(base)
     match = next((i for i in items if i.item_id == item_id), None)
@@ -389,7 +389,7 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
 
 def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> bool:
     """Borra un archivo específico de la cuarentena previa validación de integridad."""
-    if not item_id:
+    if not item_id or not isinstance(item_id, str):
         return False
         
     items = load_manifest(base)
