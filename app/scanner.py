@@ -207,6 +207,14 @@ def scan_directory(directory: Union[str, Path]) -> ScanResult:
 def run_windows_defender_quick_scan() -> str:
     """Invoca la herramienta de escaneo rápido de Windows Defender mediante PowerShell."""
     try:
+        # Verificar estado previo para evitar fallos de ejecución
+        status = subprocess.run(
+            ["powershell", "-Command", "Get-MpComputerStatus | Select-Object -ExpandProperty RealTimeProtectionEnabled"],
+            capture_output=True, text=True, timeout=10
+        )
+        if status.stdout.strip() != "True":
+            return "Protección en tiempo real desactivada. Escaneo omitido."
+            
         result = subprocess.run(
             ["powershell", "-Command", "Start-MpScan -ScanType QuickScan"],
             capture_output=True, text=True, timeout=1800,

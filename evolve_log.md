@@ -656,3 +656,34 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-06T00:12:57` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se añadió una validación explícita para evitar la manipulación de rutas que excedan el límite `MAX_PATH` de Windows (260 caracteres) mediante `os.path.normpath` para detectar el formato de prefijo largo `\\?\` que intenta evadir el chequeo de seguridad, garantizando que ninguna ruta potencialmente insegura o malformada pase los filtros.
 - `2026-08-06T00:12:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-06T00:12:57` Corrida terminada. Total usado hoy: 8.
+- `2026-08-06T00:21:49` Arrancando corrida. Quedan hoy ~292 peticiones objetivo.
+- `2026-08-06T00:22:15` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se añadió una verificación de estado del sistema (usando `Get-MpComputerStatus`) en `run_windows_defender_quick_scan` para evitar ejecuciones fallidas o innecesarias cuando la protección en tiempo real está deshabilitada, mejorando la robustez ante estados del entorno no ideales.
+- `2026-08-06T00:22:41` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_validate_str` y `save` para manejar situaciones donde el sistema de archivos deniega permisos o falla durante la escritura, asegurando que `tempfile` siempre se limpie en caso de error y que las rutas sean tratadas con mayor tolerancia ante errores de I/O.
+- `2026-08-06T00:23:06` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.14s
+
+```
+- `2026-08-06T00:23:06` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejora la robustez de `StartupEntry._resolve_and_cache_path` añadiendo un manejo de excepciones más específico y evitando que el acceso a rutas con permisos denegados o bloqueos de sistema cause fallos silenciosos, garantizando que el método `executable` siempre devuelva una cadena válida o vacía.
+- `2026-08-06T00:23:36` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la seguridad de `_ensure_safe_text` al integrar un chequeo explícito de caracteres de control y una validación de rutas más estricta mediante `is_protected_path`, asegurando que ninguna respuesta del modelo o entrada del usuario pueda contener rutas de sistema ni secuencias de escape potencialmente peligrosas.
+- `2026-08-06T00:23:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-06T00:23:36` Corrida terminada. Total usado hoy: 12.

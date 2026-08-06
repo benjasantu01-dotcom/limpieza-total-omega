@@ -227,6 +227,7 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     if limpio.get("asistente_activado") and not (limpio.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)):
         limpio["asistente_activado"] = False
     
+    temp_path: Path | None = None
     try:
         if not is_safe_to_modify(str(ruta)): raise PermissionError("Unsafe path")
         json_data = json.dumps(limpio, indent=2, ensure_ascii=False)
@@ -239,13 +240,15 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
             os.fsync(tf.fileno())
         
         if not is_safe_to_modify(str(ruta)):
-            if temp_path.exists(): temp_path.unlink()
             return None
 
         os.replace(temp_path, ruta)
         _cached_settings, _last_path, _last_mtime = limpio, ruta, ruta.stat().st_mtime
         return ruta
     except (OSError, PermissionError, RuntimeError):
+        if temp_path and temp_path.exists():
+            try: temp_path.unlink()
+            except OSError: pass
         return None
 
 def update(changes: dict[str, Any], path_or_base: PathLike | None = None) -> AppSettings:

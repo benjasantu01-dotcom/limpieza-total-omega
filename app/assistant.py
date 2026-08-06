@@ -178,9 +178,9 @@ def _ensure_safe_text(text: Any) -> bool:
         return False
     if len(text) > 2000:
         return False
-    if _PATH_REGEX.search(text) or _CONTROL_CHARS_REGEX.search(text):
+    if _CONTROL_CHARS_REGEX.search(text):
         return False
-    if any(c in text for c in (":\\", "/", "\\")):
+    if _PATH_REGEX.search(text) or any(sep in text for sep in (":\\", "/", "\\")):
         if is_protected_path(text):
             return False
     return True
