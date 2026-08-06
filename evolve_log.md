@@ -1074,3 +1074,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-06T04:19:00` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Mejoré la robustez de `directory_size` ante el acceso a archivos bloqueados por el sistema durante el escaneo, reemplazando la lógica simple de `os.walk` por un manejo de errores más granular y filtrado proactivo de excepciones, evitando que el proceso de cálculo falle prematuramente ante archivos protegidos o bloqueados.
 - `2026-08-06T04:19:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-06T04:19:00` Corrida terminada. Total usado hoy: 104.
+- `2026-08-06T04:27:21` Arrancando corrida. Quedan hoy ~196 peticiones objetivo.
+- `2026-08-06T04:27:47` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: robustez ante casos límite).
+- `2026-08-06T04:28:10` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-08-06T04:28:34` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: robustez ante casos límite).
+- `2026-08-06T04:29:19` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Mejoré la robustez de la inicialización de `LimpiezaTotalOmegaApp` añadiendo una comprobación de existencia y permisos para el directorio raíz del usuario antes de que la GUI intente acceder a él, evitando fallos en entornos con perfiles de usuario restringidos o no estándar.
+- `2026-08-06T04:29:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-06T04:29:19` Corrida terminada. Total usado hoy: 108.

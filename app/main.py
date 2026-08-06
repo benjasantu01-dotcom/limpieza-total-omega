@@ -122,6 +122,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         # Asegurar estado limpio antes de intentar inicializar la GUI
         self._executor = None
         try:
+            self._validate_environment()
             self._init_window_properties()
             self._init_state()
             self._build_layout()
@@ -132,6 +133,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     # ------------------------------------------------------------------
     # Inicialización
     # ------------------------------------------------------------------
+
+    def _validate_environment(self) -> None:
+        """Verifica que el entorno de ejecución sea apto antes de iniciar la GUI."""
+        home = os.path.expanduser("~")
+        if not os.path.exists(home) or not os.access(home, os.R_OK):
+            raise OSError(f"Directorio de usuario inaccesible: {home}")
 
     def _init_window_properties(self) -> None:
         """Establece la geometría inicial, título y colores globales desde el branding."""

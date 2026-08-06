@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **248** (49.2% de aceptación)
+- Mejoras aceptadas: **247** (49.0% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 26
+- Rechazadas por guardia de seguridad: 25
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 204
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-04 | 13 | 0 | 2 | 1 | 34 |
+| 2026-08-04 | 11 | 0 | 1 | 1 | 33 |
 | 2026-08-05 | 185 | 12 | 19 | 8 | 126 |
-| 2026-08-06 | 50 | 4 | 5 | 1 | 44 |
+| 2026-08-06 | 51 | 4 | 5 | 1 | 47 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **61**
 - manejo de errores y validación de entradas: **52**
 - rendimiento: **51**
-- seguridad defensiva: **45**
-- robustez ante casos límite: **39**
+- seguridad defensiva: **43**
+- robustez ante casos límite: **40**
 
 ## Mejoras aceptadas por archivo
 
 - `branding.py`: **23**
 - `browser.py`: **23**
-- `scanner.py`: **21**
 - `duplicates.py`: **21**
-- `quarantine.py`: **20**
 - `settings.py`: **20**
 - `assistant.py`: **20**
+- `scanner.py`: **20**
 - `diskreport.py`: **19**
-- `main.py`: **18**
+- `main.py`: **19**
+- `quarantine.py`: **19**
 - `healthscore.py`: **16**
 - `organizer.py`: **14**
 - `safety.py`: **13**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-06T04:29:19` **main.py** (robustez ante casos límite): Mejoré la robustez de la inicialización de `LimpiezaTotalOmegaApp` añadiendo una comprobación de existencia y permisos para el directorio raíz del usuario antes de que la GUI intente acceder a él, evitando fallos en entornos con perfiles de usuario restringidos o no estándar.
 - `2026-08-06T04:19:00` **browser.py** (robustez ante casos límite): Mejoré la robustez de `directory_size` ante el acceso a archivos bloqueados por el sistema durante el escaneo, reemplazando la lógica simple de `os.walk` por un manejo de errores más granular y filtrado proactivo de excepciones, evitando que el proceso de cálculo falle prematuramente ante archivos protegidos o bloqueados.
 - `2026-08-06T04:18:53` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` y `_hex_to_rgb` frente a entradas mal formadas, implementando chequeos explícitos para evitar excepciones no controladas y asegurar la integridad de las rutas mediante `ensure_safe_to_modify` antes de cualquier operación de escritura.
 - `2026-08-06T04:18:24` **assistant.py** (robustez ante casos límite): Reforcé la robustez de `_call_gemini` y `_ensure_safe_text` ante entradas malformadas o inesperadas, asegurando que cualquier fallo en la serialización o respuesta externa sea capturado sin romper el flujo de la aplicación.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-06T03:37:48` **branding.py** (rendimiento): Se optimizó `draw_gradient_bar` para reducir drásticamente el número de llamadas al canvas, agrupando segmentos contiguos del mismo color en lugar de dibujar línea por línea.
 - `2026-08-06T03:37:34` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` y `_gen_problems` evitando la creación innecesaria de listas completas en memoria mediante el uso de expresiones generadoras y `next()` para la detección de problemas, mejorando la eficiencia al reducir la carga de recolección de basura.
 - `2026-08-06T03:36:35` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad al extraer la lógica de validación de rutas y tipos primitivos a un contenedor semántico (`_Validators`) y documentar explícitamente el uso de `load` y `save` mediante el nuevo atributo `_current_path` para evitar dependencias innecesarias de `global` en la gestión de estado del sistema de archivos.
-- `2026-08-06T03:27:15` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de las funciones de escaneo mediante la estandarización de docstrings, la clarificación de las responsabilidades en la firma de las funciones de chequeo y la adición de una descripción detallada en `scan_file` para clarificar el flujo de validación.
