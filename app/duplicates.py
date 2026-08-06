@@ -162,17 +162,18 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
             with os.scandir(root_path) as dir_iterator:
                 for entry in dir_iterator:
                     try:
-                        lstat: os.stat_result = entry.stat(follow_symlinks=False)
-                        inode_key: Tuple[int, int] = (lstat.st_dev, lstat.st_ino)
+                        # Obtenemos lstat una sola vez para filtrar inodos y validar tipo
+                        lstat = entry.stat(follow_symlinks=False)
+                        inode_key = (lstat.st_dev, lstat.st_ino)
                         
                         if entry.is_dir(follow_symlinks=False):
                             if inode_key not in visited_inodes:
                                 visited_inodes.add(inode_key)
-                                sub_path = Path(entry.path)
-                                if not (skip_protected and is_protected_path(sub_path)):
-                                    _scan(sub_path)
+                                if not (skip_protected and is_protected_path(Path(entry.path))):
+                                    _scan(Path(entry.path))
+                        
                         elif entry.is_file(follow_symlinks=False):
-                            if stat.S_ISREG(lstat.st_mode) and lstat.st_size >= min_size:
+                            if lstat.st_size >= min_size:
                                 path_obj = Path(entry.path)
                                 if not (skip_protected and is_protected_path(path_obj)):
                                     temp_groups[lstat.st_size].append(path_obj)
@@ -181,12 +182,9 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
 
     for directory in directories:
         if directory is None: continue
-        try:
-            path_obj = Path(directory)
-            if path_obj.is_dir():
-                if not (skip_protected and is_protected_path(path_obj)):
-                    _scan(path_obj)
-        except (OSError, PermissionError, RuntimeError): continue
+        path_obj = Path(directory)
+        if path_obj.is_dir() and not (skip_protected and is_protected_path(path_obj)):
+            _scan(path_obj)
             
     return {size: paths for size, paths in temp_groups.items() if len(paths) > 1}
 

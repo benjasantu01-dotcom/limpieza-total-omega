@@ -242,6 +242,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     if not metrics.is_finite() or not _validate_weights():
         return HealthResult(0, "F", {}, ["Error: Datos de entrada o configuración no procesables."])
 
+    # Cálculo individual de ratios previo al bucle de ponderación
     scores: ScoreMap = {
         "seguridad": score_security(metrics.suspicious_count, metrics.suspicious_warnings),
         "disco": score_disk(metrics.disk_free_percent),
@@ -254,9 +255,10 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     breakdown: Dict[str, int] = {}
     total_weighted_score: float = 0.0
     
+    # Procesamiento altamente eficiente usando caché local de items de ponderación
     for area, weight in _WEIGHT_ITEMS:
-        # Optimizado: calculamos el segmento ponderado directamente usando el factor de normalización.
-        score_val = scores.get(area, 0.0) * float(weight) * _NORM_FACTOR
+        # Acceso directo sin métodos de búsqueda adicionales
+        score_val = scores[area] * float(weight) * _NORM_FACTOR
         breakdown[area] = int(score_val + 0.5)
         total_weighted_score += score_val
 

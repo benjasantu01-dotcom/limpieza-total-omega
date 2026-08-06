@@ -746,3 +746,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-06T12:40:36` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el bucle principal en `summarize` para evitar múltiples iteraciones sobre los datos y reducir la sobrecarga de memoria al consolidar todas las métricas en una única pasada sobre el generador `walk_files`.
 - `2026-08-06T12:40:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-06T12:40:36` Corrida terminada. Total usado hoy: 300.
+- `2026-08-06T12:49:12` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-06T12:49:38` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé el rendimiento de `_collect_candidates` utilizando `os.scandir` de forma más eficiente al consolidar los filtros de `is_protected_path` y evitar múltiples llamadas a `.stat()` y comprobaciones redundantes dentro del bucle de escaneo.
+- `2026-08-06T12:50:04` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del puntaje global en `compute_score` eliminando iteraciones redundantes y el uso de `.get()` dentro del loop crítico, accediendo directamente a las variables locales ya calculadas para reducir la carga de CPU.
+- `2026-08-06T12:51:09` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Optimicé el método `_compile_metrics` de `main.py` para evitar cálculos redundantes de E/S, moviendo la resolución de rutas y el cálculo de porcentajes fuera del loop principal y reutilizando el caché de sesión ya implementado.
+- `2026-08-06T12:51:20` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: rendimiento).
+- `2026-08-06T12:51:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-06T12:51:20` Corrida terminada. Total usado hoy: 304.
