@@ -79,10 +79,10 @@ class Scanner:
             if entry.is_symlink():
                 return
             
-            path_obj = Path(entry.path)
+            path_obj = Path(entry.path).resolve()
             
             # Validar confinamiento estricto
-            if self.base_root not in path_obj.resolve().parents and path_obj.resolve() != self.base_root:
+            if self.base_root not in path_obj.parents and path_obj != self.base_root:
                 return
 
             if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
@@ -97,7 +97,7 @@ class Scanner:
                 name = entry.name
                 suffix = os.path.splitext(name)[1].lower()
                 self.results.extend(scan_file(path_obj, entry=entry, name=name, suffix=suffix, prevalidated=True))
-        except (PermissionError, OSError):
+        except (PermissionError, OSError, RuntimeError):
             pass
 
 
@@ -203,6 +203,8 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     while stack:
         current_dir = stack.pop()
         try:
+            if not os.path.exists(current_dir):
+                continue
             with os.scandir(current_dir) as it:
                 for entry in it:
                     scanner.process_entry(entry, stack)

@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **230** (45.6% de aceptación)
-- Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 25
+- Mejoras aceptadas: **232** (46.0% de aceptación)
+- Rechazadas por tests: 14
+- Rechazadas por guardia de seguridad: 26
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 218
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-05 | 84 | 5 | 8 | 6 | 81 |
-| 2026-08-06 | 146 | 8 | 17 | 12 | 137 |
+| 2026-08-05 | 84 | 5 | 8 | 6 | 77 |
+| 2026-08-06 | 148 | 9 | 18 | 12 | 137 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,16 +25,16 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **46**
 - rendimiento: **45**
 - seguridad defensiva: **41**
-- robustez ante casos límite: **37**
+- robustez ante casos límite: **39**
 
 ## Mejoras aceptadas por archivo
 
 - `branding.py`: **22**
+- `quarantine.py`: **22**
 - `browser.py`: **21**
-- `quarantine.py`: **21**
 - `assistant.py`: **20**
+- `scanner.py`: **20**
 - `diskreport.py`: **19**
-- `scanner.py`: **19**
 - `settings.py`: **18**
 - `healthscore.py`: **17**
 - `duplicates.py`: **16**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-06T13:41:53` **scanner.py** (robustez ante casos límite): Se reforzó la robustez de `process_entry` y `scan_directory` manejando explícitamente rutas inexistentes o inaccesibles mediante la resolución de `path_obj` y `current_dir` dentro de bloques `try-except` más granulares, evitando que el escáner se interrumpa ante errores de E/S comunes en sistemas de archivos dinámicos o bloqueados.
+- `2026-08-06T13:40:49` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de `os.path.samefile` en `_validate_isolation_request` para prevenir un caso límite donde una ruta simbólica o un alias de sistema apunta al destino, evitando así posibles colisiones de manipulación de archivos que `is_within_directory` podría no capturar en ciertos sistemas de archivos.
 - `2026-08-06T13:31:36` **main.py** (robustez ante casos límite): Mejoré la robustez de `on_trim_process` añadiendo una verificación de permisos de sistema (validación de nombre de proceso esencial y acceso a nivel de usuario) y asegurando que las llamadas a funciones de sistema (como `process_exists`) se realicen dentro de bloques `try/except` para manejar excepciones inesperadas de sistema operativo que podrían ocurrir si un proceso finaliza justo antes de ser consultado.
 - `2026-08-06T13:30:32` **healthscore.py** (robustez ante casos límite): Mejora la robustez ante casos límite en `compute_score` asegurando que el acceso al diccionario `scores` sea seguro mediante `.get()` con valores por defecto, evitando posibles `KeyError` ante desincronizaciones entre el diccionario `WEIGHTS` y los cálculos de `scores`.
 - `2026-08-06T13:21:16` **duplicates.py** (robustez ante casos límite): Se ha añadido una validación explícita para detectar y saltar puntos de reparse (reparse points/junctions) durante el escaneo recursivo en `_collect_candidates`, protegiendo el proceso ante ciclos infinitos o lectura de volúmenes externos montados inesperadamente, conforme al enfoque de robustez ante casos límite.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-06T12:49:38` **duplicates.py** (rendimiento): Optimizé el rendimiento de `_collect_candidates` utilizando `os.scandir` de forma más eficiente al consolidar los filtros de `is_protected_path` y evitar múltiples llamadas a `.stat()` y comprobaciones redundantes dentro del bucle de escaneo.
 - `2026-08-06T12:40:36` **diskreport.py** (rendimiento): Optimicé el bucle principal en `summarize` para evitar múltiples iteraciones sobre los datos y reducir la sobrecarga de memoria al consolidar todas las métricas en una única pasada sobre el generador `walk_files`.
 - `2026-08-06T12:40:05` **branding.py** (rendimiento): Optimicé el cálculo de colores en `draw_gradient_bar` y `draw_logo` pre-calculando las tuplas de colores mediante `gradient_colors`, evitando la ejecución repetida de lógica de interpolación dentro de los bucles de renderizado.
-- `2026-08-06T12:39:36` **assistant.py** (rendimiento): Se optimizó el acceso a los datos de la clase `SystemContext` en los bucles de `_gen_problems` y `build_context` evitando llamadas repetitivas a `getattr` y `setattr`, y consolidando la lógica de validación de métricas para reducir el overhead de procesamiento en cada consulta.
-- `2026-08-06T12:30:19` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints en la firma de funciones (`list_startup_entries` y `estimate_impact`), además de transformar el bucle de deduplicación en `list_startup_entries` en una lógica más legible y robusta, facilitando la comprensión del flujo de datos sin alterar el comportamiento.

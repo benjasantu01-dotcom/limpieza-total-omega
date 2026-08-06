@@ -781,3 +781,21 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-06T13:32:09` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
 - `2026-08-06T13:32:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-06T13:32:09` Corrida terminada. Total usado hoy: 320.
+- `2026-08-06T13:40:16` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-06T13:40:49` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se introdujo una validación de `os.path.samefile` en `_validate_isolation_request` para prevenir un caso límite donde una ruta simbólica o un alias de sistema apunta al destino, evitando así posibles colisiones de manipulación de archivos que `is_within_directory` podría no capturar en ciertos sistemas de archivos.
+- `2026-08-06T13:41:13` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-08-06T13:41:40` Tests FALLARON:
+```
+s/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - safety.UnsafePathError: Ruta de cuarentena final insegura: /tmp/pytest-of-runner/pytest-2/test_restore_puts_the_file_bac0/_Cuarentena/88ae840b3ce7__vuelve.txt
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - safety.UnsafePathError: Ruta de cuarentena final insegura: /tmp/pytest-of-runner/pytest-2/test_restore_into_a_system_pat0/_Cuarentena/047114774a3c__normal.txt
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - safety.UnsafePathError: Ruta de cuarentena final insegura: /tmp/pytest-of-runner/pytest-2/test_purge_item_cannot_delete_0/_Cuarentena/c6398a6ccf0b__cualquiera.txt
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - safety.UnsafePathError: Ruta de cuarentena final insegura: /tmp/pytest-of-runner/pytest-2/test_purge_all_only_deletes_in0/_Cuarentena/dc6e031a40ae__a.txt
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - safety.UnsafePathError: Ruta de cuarentena final insegura: /tmp/pytest-of-runner/pytest-2/test_quarantine_two_files_with0/_Cuarentena/0f15168d0f69__igual.tmp
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - safety.UnsafePathError: Ruta de cuarentena final insegura: /tmp/pytest-of-runner/pytest-2/test_quarantine_summary_report0/_Cuarentena/5fe447c803da__pesado.bin
+31 failed, 268 passed in 1.38s
+
+```
+- `2026-08-06T13:41:40` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se implementó una lógica de validación para prevenir el seguimiento de puntos de reparse (junctions/symlinks) en `is_protected_path` evitando la recursión profunda o el acceso accidental a rutas fuera del scope de usuario, mejorando la robustez frente a casos límite de la estructura del sistema de archivos.
+- `2026-08-06T13:41:53` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `process_entry` y `scan_directory` manejando explícitamente rutas inexistentes o inaccesibles mediante la resolución de `path_obj` y `current_dir` dentro de bloques `try-except` más granulares, evitando que el escáner se interrumpa ante errores de E/S comunes en sistemas de archivos dinámicos o bloqueados.
+- `2026-08-06T13:41:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-06T13:41:53` Corrida terminada. Total usado hoy: 324.

@@ -199,6 +199,11 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
     if source_path.drive != dest_dir.drive:
         raise UnsafePathError(f"Operación denegada: el archivo está en otro dispositivo o partición.")
 
+    # Protección contra alias/hardlinks internos de filesystem
+    if os.path.exists(dest_dir) and os.path.exists(source_path):
+        if os.path.samefile(source_path, dest_dir):
+            raise UnsafePathError(f"Ruta de origen y destino colisionan mediante alias: {source_path}")
+
     ensure_safe_to_modify(source_path, allow_sensitive=True)
     
     if _is_file_locked(source_path):
