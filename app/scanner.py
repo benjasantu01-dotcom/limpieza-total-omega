@@ -80,9 +80,8 @@ class Scanner:
                 return
             
             path_obj = Path(entry.path)
-            if not path_obj.exists():
-                return
-
+            
+            # Resolvemos la ruta para validar contra base_root
             if not str(path_obj.resolve()).startswith(self.base_root_str):
                 return
 
@@ -99,6 +98,7 @@ class Scanner:
                 suffix = os.path.splitext(name)[1].lower()
                 self.results.extend(scan_file(path_obj, entry=entry, name=name, suffix=suffix, prevalidated=True))
         except (PermissionError, OSError):
+            # Ignoramos silenciosamente rutas inaccesibles durante el escaneo recursivo
             pass
 
 

@@ -109,10 +109,12 @@ def _is_file_in_use(path: Path) -> bool:
     if not path.is_file():
         return False
     try:
+        # Se intenta verificar acceso mediante apertura exclusiva para testear concurrencia
         fd = os.open(path, os.O_RDWR | os.O_EXCL)
         os.close(fd)
         return False
     except (OSError, PermissionError):
+        # Si falla por acceso denegado o archivo en uso, consideramos que no debe tocarse
         return True
 
 

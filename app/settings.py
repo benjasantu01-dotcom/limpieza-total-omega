@@ -179,7 +179,9 @@ def load(path_or_base: PathLike | None = None) -> AppSettings:
     try:
         if not ruta.exists(): raise FileNotFoundError
         if ruta.stat().st_size > MAX_SETTINGS_SIZE or ruta.stat().st_size == 0: raise ValueError
-        _cached_settings = validate(json.loads(ruta.read_text(encoding="utf-8")))
+        data = json.loads(ruta.read_text(encoding="utf-8"))
+        if not isinstance(data, dict): raise ValueError
+        _cached_settings = validate(data)
         _current_path = ruta
         return _cached_settings
     except (OSError, PermissionError, json.JSONDecodeError, UnicodeDecodeError, ValueError):
@@ -198,8 +200,11 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     
     temp_path: Path | None = None
     try:
-        ruta.parent.mkdir(parents=True, exist_ok=True)
-        fd, temp_name = tempfile.mkstemp(dir=ruta.parent, text=True)
+        parent_dir = ruta.parent
+        if not parent_dir.exists():
+            parent_dir.mkdir(parents=True, exist_ok=True)
+        
+        fd, temp_name = tempfile.mkstemp(dir=parent_dir, text=True)
         temp_path = Path(temp_name)
         with os.fdopen(fd, "w", encoding="utf-8") as tf:
             json.dump(limpio, tf, indent=2, ensure_ascii=False)
