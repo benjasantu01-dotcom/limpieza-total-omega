@@ -200,6 +200,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
             return default
 
     if metrics is not None:
+        # Mapeo directo y validado para reducir overhead de getattr
         ctx.junk_mb = max(0.0, _val(getattr(metrics, "junk_mb", 0.0)))
         ctx.suspicious_count = int(max(0, _val(getattr(metrics, "suspicious_count", 0), 0, int)))
         ctx.suspicious_warnings = int(max(0, _val(getattr(metrics, "suspicious_warnings", 0), 0, int)))
@@ -216,13 +217,14 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         raw_score = getattr(health, "score", None)
         if raw_score is not None:
             ctx.score = int(max(0, min(_val(raw_score, 0, int), 100)))
-        
         grade = getattr(health, "grade", "")
         ctx.grade = str(grade) if isinstance(grade, (str, int, float)) else ""
         ctx.analyzed = True
 
+    # Solo actualizar los campos permitidos que realmente existen en SystemContext
+    valid_keys = ctx.__dict__.keys()
     for k, v in extra.items():
-        if hasattr(ctx, k) and isinstance(v, (int, float)):
+        if k in valid_keys and isinstance(v, (int, float)):
             setattr(ctx, k, _val(v))
 
     return ctx
@@ -405,21 +407,19 @@ def local_answer(question: str, context: SystemContext) -> Answer:
 
 def _gen_problems(ctx: SystemContext) -> Generator[str, None, None]:
     """Genera descripciones de problemas detectados de forma eficiente."""
-    try:
-        if ctx.disk_free_percent < 10.0:
-            yield f"queda solo {ctx.disk_free_percent:.0f}% de disco libre"
-        if ctx.suspicious_warnings > 0:
-            yield f"{ctx.suspicious_warnings} archivo(s) sospechosos"
-        if ctx.memory_available_percent < 15.0:
-            yield f"queda {ctx.memory_available_percent:.0f}% de RAM"
-        if ctx.junk_mb > 1000.0:
-            yield f"{ctx.junk_mb:.0f} MB de archivos basura"
-        if ctx.duplicate_mb > 500.0:
-            yield f"{ctx.duplicate_mb:.0f} MB en duplicados"
-        if ctx.startup_count > 15:
-            yield f"{ctx.startup_count} programas de inicio"
-    except (TypeError, ValueError, AttributeError):
-        pass
+    # Acceso local a campos para optimizar el acceso en el bucle
+    if ctx.disk_free_percent < 10.0:
+        yield f"queda solo {ctx.disk_free_percent:.0f}% de disco libre"
+    if ctx.suspicious_warnings > 0:
+        yield f"{ctx.suspicious_warnings} archivo(s) sospechosos"
+    if ctx.memory_available_percent < 15.0:
+        yield f"queda {ctx.memory_available_percent:.0f}% de RAM"
+    if ctx.junk_mb > 1000.0:
+        yield f"{ctx.junk_mb:.0f} MB de archivos basura"
+    if ctx.duplicate_mb > 500.0:
+        yield f"{ctx.duplicate_mb:.0f} MB en duplicados"
+    if ctx.startup_count > 15:
+        yield f"{ctx.startup_count} programas de inicio"
 
 
 def available(base: Union[str, Path, None] = None) -> bool:

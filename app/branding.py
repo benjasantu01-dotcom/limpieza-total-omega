@@ -324,7 +324,8 @@ def draw_logo(canvas: Any, size: int = 56, canvas_x: int = 0, canvas_y: int = 0)
         canvas.create_polygon(contorno, fill=GRADIENT_STOPS[1], outline="")
         franjas = max(6, int(28 * s))
         alto = max(0.1, 92 * s / franjas)
-        for i, tono in enumerate(gradient_colors(franjas)):
+        colores = gradient_colors(franjas)
+        for i, tono in enumerate(colores):
             w = 36 * s * (1.0 if i / (franjas - 1) < 0.55 else 1.0 - (i / (franjas - 1) - 0.55) * 1.9)
             canvas.create_rectangle(x + 64*s - w, y + 18*s + i*alto, x + 64*s + w, y + 18*s + (i+1)*alto + 1, 
                                     fill=tono, outline="")
@@ -347,11 +348,13 @@ def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
         colores = gradient_colors(ancho, stops)
         
         start = 0
+        current_color = colores[0]
         for i in range(1, ancho):
-            if colores[i] != colores[start]:
-                canvas.create_line(canvas_x + start, canvas_y, canvas_x + i, canvas_y, fill=colores[start], width=alto)
+            if colores[i] != current_color:
+                canvas.create_line(canvas_x + start, canvas_y, canvas_x + i, canvas_y, fill=current_color, width=alto)
                 start = i
-        canvas.create_line(canvas_x + start, canvas_y, canvas_x + ancho, canvas_y, fill=colores[start], width=alto)
+                current_color = colores[i]
+        canvas.create_line(canvas_x + start, canvas_y, canvas_x + ancho, canvas_y, fill=current_color, width=alto)
     except (ValueError, TypeError, AttributeError): pass
 
 

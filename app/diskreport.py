@@ -286,7 +286,6 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
         
     ext_size_map: Dict[str, int] = defaultdict(int)
     ext_count_map: Dict[str, int] = defaultdict(int)
-    # Heap de tuplas (tamaño_bytes, ruta_archivo) para los archivos más pesados
     top_files_heap: List[Tuple[int, str]] = []
     
     total_bytes = 0
@@ -305,15 +304,14 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
         elif size > top_files_heap[0][0]:
             heapq.heapreplace(top_files_heap, (size, str(path)))
 
-    lines: List[str] = [
+    lines = [
         f"Carpeta analizada: {path_obj}",
         f"Total: {format_size(total_bytes)} en {total_files} archivos",
         "",
         "Por tipo de archivo:",
     ]
     
-    sorted_exts: List[Tuple[str, int]] = heapq.nlargest(8, ext_size_map.items(), key=lambda item: item[1])
-    for ext, size in sorted_exts:
+    for ext, size in heapq.nlargest(8, ext_size_map.items(), key=lambda item: item[1]):
         lines.append(f"  {ext:<18} {format_size(size):>10}  ({ext_count_map[ext]} archivos)")
         
     lines.append("")
