@@ -317,9 +317,7 @@ def quarantine_file(
     except Exception as e:
         if temp_dest.exists():
             _safe_unlink(temp_dest)
-        if destination.exists():
-            _safe_unlink(destination)
-        raise RuntimeError(f"Falla crítica al mover archivo: {e}")
+        raise RuntimeError(f"Falla crítica al procesar archivo: {e}")
 
     try:
         file_hash = _get_sha256(destination)
@@ -338,8 +336,7 @@ def quarantine_file(
         return item
     except Exception as e:
         if destination.exists():
-            try: shutil.move(str(destination), str(source_path))
-            except: pass
+            shutil.move(str(destination), str(source_path))
         raise RuntimeError(f"Error irrecuperable procesando metadatos: {e}")
 
 

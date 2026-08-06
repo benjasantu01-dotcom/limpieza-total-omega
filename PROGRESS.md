@@ -6,35 +6,35 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **236** (46.8% de aceptación)
+- Mejoras aceptadas: **235** (46.6% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 25
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 212
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-05 | 138 | 12 | 14 | 7 | 121 |
-| 2026-08-06 | 98 | 6 | 11 | 6 | 91 |
+| 2026-08-05 | 136 | 12 | 14 | 7 | 119 |
+| 2026-08-06 | 99 | 6 | 11 | 6 | 94 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **58**
 - manejo de errores y validación de entradas: **50**
 - rendimiento: **47**
-- seguridad defensiva: **43**
-- robustez ante casos límite: **38**
+- seguridad defensiva: **41**
+- robustez ante casos límite: **39**
 
 ## Mejoras aceptadas por archivo
 
 - `browser.py`: **23**
 - `branding.py`: **22**
-- `scanner.py`: **20**
-- `settings.py`: **20**
-- `quarantine.py`: **20**
+- `quarantine.py`: **21**
 - `diskreport.py`: **19**
+- `scanner.py`: **19**
+- `settings.py`: **19**
 - `assistant.py`: **18**
 - `duplicates.py`: **18**
 - `main.py`: **17**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-06T09:07:05` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` ante fallos parciales durante la copia y el registro, asegurando que si ocurre una interrupción, el archivo temporal se limpie y el sistema no quede en un estado inconsistente.
 - `2026-08-06T08:55:10` **healthscore.py** (robustez ante casos límite): He mejorado la robustez de `score_security` ante entradas negativas o no numéricas (mediante `_to_int`) y he blindado `_generate_recommendations` contra posibles fallos de división por cero o datos incompletos en el mapeo de puntajes, asegurando que la UI nunca reciba resultados inconsistentes.
 - `2026-08-06T08:54:37` **diskreport.py** (robustez ante casos límite): Se mejoró la robustez de `walk_files` y `largest_folders` ante archivos inaccesibles o bloqueados, asegurando que `entry.stat()` no lance excepciones fatales que interrumpan el análisis completo al intentar leer metadatos de archivos protegidos por el sistema o en uso.
 - `2026-08-06T08:54:13` **browser.py** (robustez ante casos límite): Se ha mejorado la robustez de `directory_size` ante el acceso a directorios con permisos denegados o rutas inválidas, envolviendo la obtención de atributos de archivo en un bloque `try-except` más granular dentro del bucle de escaneo, evitando que una sola excepción de acceso detenga el cálculo del tamaño de toda la carpeta.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-06T08:14:04` **browser.py** (rendimiento): Optimicé el rendimiento de `directory_size` utilizando `os.scandir` en lugar de `os.walk`, lo cual reduce drásticamente las llamadas al sistema (stat) al obtener la información de tipo de archivo y tamaño directamente durante la iteración del directorio, mejorando la velocidad en unidades con muchos archivos pequeños.
 - `2026-08-06T07:53:55` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `ensure_safe_to_modify` extrayendo la lógica de validación de condiciones de archivos existentes a una función dedicada `_check_file_integrity`, reduciendo la carga cognitiva y facilitando futuras expansiones de reglas de seguridad.
 - `2026-08-06T07:53:28` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `quarantine_file`, extrayendo la compleja secuencia de validaciones de seguridad y preparación de directorios en una función privada más descriptiva, mejorando la claridad de la lógica de negocio frente a las guardas de seguridad.
-- `2026-08-06T07:52:58` **organizer.py** (legibilidad y documentación): Se introdujeron type hints en funciones auxiliares, se documentó mediante docstrings el propósito de funciones críticas y se mejoró la legibilidad de las estructuras de control dentro de `scan_for_junk` para asegurar que el flujo de escaneo sea comprensible sin sacrificar el rendimiento.

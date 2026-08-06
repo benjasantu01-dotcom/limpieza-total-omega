@@ -1468,3 +1468,13 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-06T08:55:10` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). He mejorado la robustez de `score_security` ante entradas negativas o no numéricas (mediante `_to_int`) y he blindado `_generate_recommendations` contra posibles fallos de división por cero o datos incompletos en el mapeo de puntajes, asegurando que la UI nunca reciba resultados inconsistentes.
 - `2026-08-06T08:55:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-06T08:55:10` Corrida terminada. Total usado hoy: 212.
+- `2026-08-06T09:04:10` Arrancando corrida. Quedan hoy ~88 peticiones objetivo.
+- `2026-08-06T09:04:16` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-06T09:04:39` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-08-06T09:05:06` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-08-06T09:05:47` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-08-06T09:06:28` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-08-06T09:06:50` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-08-06T09:07:05` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Mejoré la robustez de `quarantine_file` ante fallos parciales durante la copia y el registro, asegurando que si ocurre una interrupción, el archivo temporal se limpie y el sistema no quede en un estado inconsistente.
+- `2026-08-06T09:07:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-06T09:07:05` Corrida terminada. Total usado hoy: 216.
