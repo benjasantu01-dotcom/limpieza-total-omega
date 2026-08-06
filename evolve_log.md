@@ -760,3 +760,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-06T13:00:57` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
 - `2026-08-06T13:00:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-06T13:00:57` Corrida terminada. Total usado hoy: 308.
+- `2026-08-06T13:09:36` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-06T13:10:03` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizé la lógica de filtrado inicial en `scan_file` para evitar realizar múltiples llamadas a `path.exists()` y `is_symlink()` mediante el uso de la información ya presente en el `os.DirEntry` proporcionado, reduciendo el I/O innecesario en cada iteración del escáner.
+- `2026-08-06T13:10:28` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de `load` y `save` sustituyendo la validación completa del diccionario por una verificación selectiva y mejorando el manejo del caché, evitando lecturas innecesarias de disco y conversiones costosas en cada acceso.
+- `2026-08-06T13:10:53` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-08-06T13:11:11` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se robusteció `build_context` para manejar situaciones donde el objeto `metrics` sea un objeto vacío o mal formado (evitando `AttributeError`) y se añadió una validación defensiva en `_val` para descartar valores infinitos o `NaN` provenientes de cálculos de disco o RAM que podrían corromper la lógica de toma de decisiones.
+- `2026-08-06T13:11:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-06T13:11:11` Corrida terminada. Total usado hoy: 312.

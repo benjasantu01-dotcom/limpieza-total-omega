@@ -193,14 +193,16 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
 
     def _val(v: Any, default: float = 0.0, cast: Callable = float) -> Any:
         try:
-            if v is None or isinstance(v, bool) or not math.isfinite(float(v)):
+            # Rechazar nulos, booleanos, infinitos o NaN para mantener integridad
+            val = float(v)
+            if not math.isfinite(val):
                 return default
-            return cast(v)
+            return cast(val)
         except (ValueError, TypeError):
             return default
 
     if metrics is not None:
-        # Mapeo directo y validado para reducir overhead de getattr
+        # Uso de getattr con default seguro para evitar fallos si el objeto es inesperado
         ctx.junk_mb = max(0.0, _val(getattr(metrics, "junk_mb", 0.0)))
         ctx.suspicious_count = int(max(0, _val(getattr(metrics, "suspicious_count", 0), 0, int)))
         ctx.suspicious_warnings = int(max(0, _val(getattr(metrics, "suspicious_warnings", 0), 0, int)))

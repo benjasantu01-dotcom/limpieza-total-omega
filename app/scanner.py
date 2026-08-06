@@ -147,14 +147,15 @@ CHECK_REGISTRY: Final[List[SuspicionCheck]] = [check_double_extension]
 def scan_file(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, prevalidated: bool = False) -> ScanResult:
     if not isinstance(path, Path):
         return []
-        
-    try:
-        if not path.exists() or path.is_symlink():
-            return []
-    except (OSError, PermissionError):
-        return []
     
+    # Si tenemos entry, aprovechamos que ya verificamos existencia y symlinks en el proceso padre
     if not prevalidated:
+        try:
+            if not path.exists() or path.is_symlink():
+                return []
+        except (OSError, PermissionError):
+            return []
+        
         if not is_safe_to_modify(path) or is_protected_path(path):
             return []
     

@@ -175,41 +175,39 @@ def load(path_or_base: PathLike | None = None) -> AppSettings:
     global _cached_settings, _current_path
     ruta = settings_path(path_or_base)
     if _cached_settings is not None and _current_path == ruta:
-        return _cached_settings
+        return _cached_settings.copy()
+    
     try:
-        if not ruta.exists(): raise FileNotFoundError
-        if ruta.stat().st_size > MAX_SETTINGS_SIZE or ruta.stat().st_size == 0: raise ValueError
-        data = json.loads(ruta.read_text(encoding="utf-8"))
-        if not isinstance(data, dict): raise ValueError
-        _cached_settings = validate(data)
-        _current_path = ruta
-        return _cached_settings
+        if ruta.exists() and 0 < ruta.stat().st_size <= MAX_SETTINGS_SIZE:
+            data = json.loads(ruta.read_text(encoding="utf-8"))
+            if isinstance(data, dict):
+                _cached_settings = validate(data)
+                _current_path = ruta
+                return _cached_settings.copy()
+        raise ValueError
     except (OSError, PermissionError, json.JSONDecodeError, UnicodeDecodeError, ValueError):
         _cached_settings = DEFAULTS.copy()
         _current_path = ruta
-        return _cached_settings
+        return _cached_settings.copy()
 
 def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
-    """
-    Persiste la configuración en un archivo temporal y realiza un reemplazo atómico.
-    Verifica seguridad de escritura mediante ensure_safe_to_modify antes de reemplazar.
-    """
+    """Persiste la configuración con reemplazo atómico tras validar cambios."""
     global _cached_settings, _current_path
     if not isinstance(values, dict): return None
     ruta = settings_path(path_or_base)
     
-    if not is_safe_to_modify(str(ruta.parent)):
-        return None
+    if not is_safe_to_modify(str(ruta.parent)): return None
         
     limpio = validate(values)
     if limpio.get("asistente_activado") and not (limpio.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)):
         limpio["asistente_activado"] = False
     
+    if _cached_settings == limpio and _current_path == ruta: return ruta
+
     temp_path: Path | None = None
     try:
         parent_dir = ruta.parent
-        if not parent_dir.exists():
-            parent_dir.mkdir(parents=True, exist_ok=True)
+        if not parent_dir.exists(): parent_dir.mkdir(parents=True, exist_ok=True)
         
         fd, temp_name = tempfile.mkstemp(dir=parent_dir, text=True)
         temp_path = Path(temp_name)
@@ -230,7 +228,7 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
 
 def update(changes: dict[str, Any], path_or_base: PathLike | None = None) -> AppSettings:
     """Aplica cambios parciales a la configuración actual y guarda a disco."""
-    actual = (load(path_or_base)).copy()
+    actual = load(path_or_base)
     actual.update(changes)
     save(actual, path_or_base)
     return actual
@@ -241,7 +239,7 @@ def reset(path_or_base: PathLike | None = None) -> AppSettings:
     return DEFAULTS.copy()
 
 def get(key: str, path_or_base: PathLike | None = None) -> Any:
-    """Recupera el valor de una clave específica."""
+    """Recupera el valor de una clave específica evitando copias innecesarias."""
     return load(path_or_base).get(key, DEFAULTS.get(key))
 
 def assistant_api_key(path_or_base: PathLike | None = None) -> str:
