@@ -1046,3 +1046,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-06T03:37:48` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se optimizó `draw_gradient_bar` para reducir drásticamente el número de llamadas al canvas, agrupando segmentos contiguos del mismo color en lugar de dibujar línea por línea.
 - `2026-08-06T03:37:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-06T03:37:48` Corrida terminada. Total usado hoy: 88.
+- `2026-08-06T03:46:20` Arrancando corrida. Quedan hoy ~212 peticiones objetivo.
+- `2026-08-06T03:46:44` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Se optimizó `directory_size` para reducir el uso de `pathlib.Path` dentro del loop crítico, reemplazando la instanciación de objetos por el uso directo de strings y `os.path.join`, evitando así la creación masiva de objetos `Path` que impactaba en el rendimiento durante el recorrido recursivo.
+- `2026-08-06T03:47:07` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-08-06T03:47:30` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Se optimizó el proceso de recolección de candidatos evitando llamadas redundantes a `Path.resolve()` dentro de `_collect_candidates`, reduciendo significativamente la sobrecarga de I/O y el tiempo de ejecución en directorios con muchos archivos.
+- `2026-08-06T03:47:40` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el bucle principal de `compute_score` eliminando búsquedas innecesarias en el diccionario `scores` y mejorando la eficiencia del cálculo ponderado mediante el uso directo de las tuplas precalculadas `_WEIGHT_ITEMS`.
+- `2026-08-06T03:47:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-06T03:47:40` Corrida terminada. Total usado hoy: 92.

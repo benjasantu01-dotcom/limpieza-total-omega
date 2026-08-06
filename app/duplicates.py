@@ -84,7 +84,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
         return None
         
     try:
-        file_path = Path(path).resolve(strict=True)
+        file_path = Path(path)
         if not file_path.exists():
             return None
         st = file_path.stat()
@@ -109,7 +109,7 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
         return None
         
     try:
-        file_path = Path(path).resolve(strict=True)
+        file_path = Path(path)
         if not file_path.exists():
             return None
         st = file_path.stat()
@@ -136,11 +136,10 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     for p in paths:
         if not isinstance(p, Path): continue
         try:
-            resolved = p.resolve(strict=True)
-            if not resolved.exists(): continue
-            st = resolved.stat()
-            if stat.S_ISREG(st.st_mode) and not is_protected_path(resolved):
-                groups[st.st_size].append(resolved)
+            if not p.exists(): continue
+            st = p.stat()
+            if stat.S_ISREG(st.st_mode) and not is_protected_path(p):
+                groups[st.st_size].append(p)
         except (OSError, PermissionError, FileNotFoundError, RuntimeError):
             continue
     return groups
@@ -149,10 +148,6 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
 def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """
     Realiza un escaneo recursivo del sistema de archivos para indexar candidatos a duplicados.
-    
-    Usa el tamaño como clave primaria para agrupar archivos, evitando el acceso a 
-    contenido hasta que sea estrictamente necesario. Implementa detección de 
-    ciclos mediante inodes para evitar recursión infinita en enlaces simbólicos.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: set[Tuple[int, int]] = set()
@@ -162,7 +157,6 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
             with os.scandir(root_path) as dir_iterator:
                 for entry in dir_iterator:
                     try:
-                        # Usamos lstat para evitar seguir enlaces simbólicos por seguridad
                         lstat = entry.stat(follow_symlinks=False)
                         inode_key = (lstat.st_dev, lstat.st_ino)
                         
@@ -182,7 +176,7 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
 
     for directory in directories:
         try:
-            path_obj = Path(directory).resolve(strict=True)
+            path_obj = Path(directory)
             if path_obj.is_dir():
                 if not (skip_protected and is_protected_path(path_obj)):
                     _scan(path_obj)

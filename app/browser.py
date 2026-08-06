@@ -141,27 +141,27 @@ def directory_size(path: str | os.PathLike | None) -> int:
     if path is None:
         return 0
     
-    root = Path(path)
-    if not root.exists() or not root.is_dir() or is_protected_path(root):
+    root_path = Path(path)
+    if not root_path.exists() or not root_path.is_dir() or is_protected_path(root_path):
         return 0
 
     total_bytes: int = 0
     is_junction = getattr(os.path, 'isjunction', lambda _: False)
 
-    for dirpath, dirnames, filenames in os.walk(root):
+    for dirpath, dirnames, filenames in os.walk(path):
         # Filtra carpetas protegidas o enlaces simbólicos/junctions en el proceso
-        dirnames[:] = [
-            d for d in dirnames 
-            if not is_protected_path(Path(dirpath) / d) 
-            and not os.path.islink(os.path.join(dirpath, d))
-            and not is_junction(os.path.join(dirpath, d))
-        ]
+        filtered_dirs = []
+        for d in dirnames:
+            full_d = os.path.join(dirpath, d)
+            if not is_protected_path(Path(full_d)) and not os.path.islink(full_d) and not is_junction(full_d):
+                filtered_dirs.append(d)
+        dirnames[:] = filtered_dirs
 
         for f in filenames:
-            file_path = Path(dirpath) / f
-            if file_path.name.lower() not in NEVER_TOUCH:
+            if f.lower() not in NEVER_TOUCH:
                 try:
-                    total_bytes += file_path.stat(follow_symlinks=False).st_size
+                    full_f = os.path.join(dirpath, f)
+                    total_bytes += os.path.getsize(full_f)
                 except (OSError, PermissionError):
                     continue
             
