@@ -177,10 +177,14 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
             return False
 
     def is_path_excluded(path: Path) -> bool:
-        """Determina si la ruta debe ser omitida del análisis."""
-        if path.is_symlink() or is_reparse_point(path):
+        """Determina si la ruta debe ser omitida del análisis usando resolución estricta."""
+        try:
+            resolved_path = path.resolve()
+            if path.is_symlink() or is_reparse_point(path):
+                return True
+            return skip_protected and is_protected_path(resolved_path)
+        except (OSError, RuntimeError):
             return True
-        return skip_protected and is_protected_path(path)
 
     try:
         path_str = os.fspath(directory)
@@ -203,7 +207,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                         if is_path_excluded(full_path):
                             continue
                         
-                        if entry.is_dir():
+                        if entry.is_dir(follow_symlinks=False):
                             if full_path not in visited_directories:
                                 visited_directories.add(full_path)
                                 yield from scan_level(full_path)

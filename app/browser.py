@@ -149,22 +149,22 @@ def directory_size(path: str | os.PathLike | None) -> int:
     is_junction = getattr(os.path, 'isjunction', lambda _: False)
 
     for dirpath, dirnames, filenames in os.walk(path):
-        # Filtra carpetas protegidas o enlaces simbólicos/junctions en el proceso
-        filtered_dirs = []
-        for d in dirnames:
-            full_d = os.path.join(dirpath, d)
-            if not is_protected_path(Path(full_d)) and not os.path.islink(full_d) and not is_junction(full_d):
-                filtered_dirs.append(d)
-        dirnames[:] = filtered_dirs
+        # Limpieza de dirnames antes de descender para evitar puntos inseguros
+        dirnames[:] = [
+            d for d in dirnames 
+            if not is_protected_path(Path(os.path.join(dirpath, d))) 
+            and not os.path.islink(os.path.join(dirpath, d))
+            and not is_junction(os.path.join(dirpath, d))
+        ]
 
         for f in filenames:
             if f.lower() not in NEVER_TOUCH:
                 try:
                     full_f = os.path.join(dirpath, f)
-                    if not os.path.islink(full_f):
+                    # Doble check de seguridad antes de medir para evitar TOCTOU
+                    if not os.path.islink(full_f) and not is_junction(full_f):
                         total_bytes += os.path.getsize(full_f)
                 except (OSError, PermissionError):
-                    # Archivo bloqueado o inaccesible, se ignora en la suma total
                     continue
             
     return total_bytes

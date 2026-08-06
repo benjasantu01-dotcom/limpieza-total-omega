@@ -445,6 +445,8 @@ def _call_gemini(
 ) -> Optional[str]:
     """Envía métricas agregadas a Gemini mediante la librería estándar urllib."""
     if not isinstance(api_key, str) or not api_key: return None
+    # Validar que la API key no contenga caracteres de control o inusuales (defensa contra inyección)
+    if _CONTROL_CHARS_REGEX.search(api_key) or len(api_key) > 256: return None
     if not isinstance(model, str) or not _MODEL_NAME_REGEX.match(model): return None
     
     safe_q: str = _sanitize_query(question)
