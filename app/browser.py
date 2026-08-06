@@ -111,7 +111,8 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
         if not target_path.exists():
             return False
             
-        if any(ord(char) < 32 for char in target_path.name):
+        # Validación de caracteres de control o RTL antes de resolución
+        if any(ord(char) < 32 or ord(char) in (0x200E, 0x200F, 0x202A, 0x202E) for char in str(target_path)):
             return False
 
         # Resolvemos ANTES de cualquier comparación para evitar ataques por bypass de enlaces

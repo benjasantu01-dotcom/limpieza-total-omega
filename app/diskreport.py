@@ -129,17 +129,14 @@ def format_size(num: Union[int, float]) -> str:
 
 def drive_usage(mount: Union[str, os.PathLike]) -> Optional[DriveUsage]:
     """
-    Consulta el estado de almacenamiento de una unidad montada.
-    
-    Args:
-        mount: Ruta de la unidad (ej: 'C:\\').
-    Returns:
-        Instancia de DriveUsage o None si la ruta es inaccesible o protegida.
+    Consulta el estado de almacenamiento de una unidad montada localmente.
     """
     if not mount:
         return None
     try:
         path_str = os.fspath(mount)
+        if path_str.startswith(("\\\\", "//")):
+            return None
         p = Path(path_str).expanduser().resolve()
         if not p.exists() or not p.is_absolute() or is_protected_path(p):
             return None
@@ -176,12 +173,6 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Recorre recursivamente un directorio omitiendo enlaces simbólicos y rutas protegidas.
-    
-    Args:
-        directory: Ruta base para iniciar el escaneo.
-        skip_protected: Si es True, utiliza `is_protected_path` para ignorar directorios sensibles.
-    Yields:
-        Tuplas que contienen el objeto Path del archivo y su tamaño en bytes.
     """
     if not directory:
         return
@@ -193,7 +184,10 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
             return False
 
     try:
-        base_path = Path(directory).expanduser().resolve()
+        path_str = os.fspath(directory)
+        if path_str.startswith(("\\\\", "//")):
+            return
+        base_path = Path(path_str).expanduser().resolve()
         if not base_path.exists() or not base_path.is_dir() or base_path.is_symlink() or is_reparse_point(base_path):
             return
         if skip_protected and is_protected_path(base_path):
@@ -315,12 +309,6 @@ def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -> List[str]:
     """
     Genera un reporte de texto con el resumen de uso de disco analizado.
-    
-    Args:
-        directory: Directorio base a analizar.
-        skip_protected: Si se debe saltar contenido del sistema.
-    Returns:
-        Lista de cadenas formateadas para representar el reporte.
     """
     if not directory:
         return ["Error: Ruta no proporcionada."]
@@ -338,7 +326,6 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
     total_bytes = 0
     total_files = 0
     
-    # Recolector robusto: procesa cada archivo individualmente evitando propagar errores de IO
     for path, size in walk_files(path_obj, skip_protected):
         total_bytes += size
         total_files += 1
@@ -346,7 +333,6 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
         ext_sizes[ext_name] += size
         ext_counts[ext_name] += 1
         
-        # Mantiene un heap de 8 elementos basado en el tamaño (bytes)
         if len(top_heap) < 8:
             heapq.heappush(top_heap, (size, str(path)))
         elif size > top_heap[0][0]:

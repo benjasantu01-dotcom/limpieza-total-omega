@@ -160,7 +160,10 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
                         if entry.is_dir(follow_symlinks=False):
                             if inode_key not in visited_inodes:
                                 visited_inodes.add(inode_key)
-                                _scan(Path(entry.path))
+                                # Validación defensiva: verificar que la subcarpeta no sea protegida
+                                sub_path = Path(entry.path)
+                                if not (skip_protected and is_protected_path(sub_path)):
+                                    _scan(sub_path)
                         elif entry.is_file(follow_symlinks=False):
                             if stat.S_ISREG(lstat.st_mode) and lstat.st_size >= min_size:
                                 path_obj = Path(entry.path)
