@@ -465,7 +465,8 @@ def _call_gemini(
         
         with urllib.request.urlopen(req, timeout=_TIMEOUT_SECONDS) as res:
             if res.status != 200: return None
-            raw_res = res.read()
+            # Limitamos la lectura para prevenir ataques de agotamiento de memoria
+            raw_res = res.read(10000) 
             if not raw_res: return None
             data = json.loads(raw_res.decode("utf-8"))
         
@@ -476,8 +477,10 @@ def _call_gemini(
         parts = candidates[0].get("content", {}).get("parts", [])
         text = "".join(p.get("text", "") for p in parts if isinstance(p, dict))
         
-        return text.strip() if _ensure_safe_text(text) else None
-    except (json.JSONDecodeError, urllib.error.URLError, TypeError, KeyError):
+        # Limitar longitud de respuesta y verificar integridad antes de retornar
+        final_text = text.strip()[:1500]
+        return final_text if _ensure_safe_text(final_text) else None
+    except (json.JSONDecodeError, urllib.error.URLError, TypeError, KeyError, ValueError):
         return None
 
 

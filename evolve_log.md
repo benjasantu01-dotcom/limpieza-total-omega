@@ -799,3 +799,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-08-06T13:41:53` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `process_entry` y `scan_directory` manejando explícitamente rutas inexistentes o inaccesibles mediante la resolución de `path_obj` y `current_dir` dentro de bloques `try-except` más granulares, evitando que el escáner se interrumpa ante errores de E/S comunes en sistemas de archivos dinámicos o bloqueados.
 - `2026-08-06T13:41:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-06T13:41:53` Corrida terminada. Total usado hoy: 324.
+- `2026-08-06T13:50:29` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-06T13:50:55` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: robustez ante casos límite).
+- `2026-08-06T13:51:19` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-08-06T13:51:52` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la seguridad defensiva al limitar estrictamente el tamaño y el contenido de las respuestas recibidas desde Gemini, además de aplicar un filtro de saneamiento adicional antes de procesar el JSON remoto para prevenir inyecciones o desbordamientos inesperados.
+- `2026-08-06T13:52:07` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Mejoré la seguridad de `save_logo_svg` utilizando `is_safe_to_modify` para el filtrado previo y `ensure_safe_to_modify` solo para la operación de escritura, garantizando que el acceso al sistema de archivos sea defensivo y cumpla con el contrato de seguridad del proyecto.
+- `2026-08-06T13:52:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-06T13:52:07` Corrida terminada. Total usado hoy: 328.

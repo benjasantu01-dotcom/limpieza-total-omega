@@ -6,33 +6,33 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **232** (46.0% de aceptación)
+- Mejoras aceptadas: **234** (46.4% de aceptación)
 - Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 26
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 214
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-05 | 84 | 5 | 8 | 6 | 77 |
-| 2026-08-06 | 148 | 9 | 18 | 12 | 137 |
+| 2026-08-05 | 84 | 5 | 8 | 6 | 73 |
+| 2026-08-06 | 150 | 9 | 18 | 12 | 139 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **61**
 - manejo de errores y validación de entradas: **46**
 - rendimiento: **45**
-- seguridad defensiva: **41**
+- seguridad defensiva: **43**
 - robustez ante casos límite: **39**
 
 ## Mejoras aceptadas por archivo
 
-- `branding.py`: **22**
+- `branding.py`: **23**
 - `quarantine.py`: **22**
+- `assistant.py`: **21**
 - `browser.py`: **21**
-- `assistant.py`: **20**
 - `scanner.py`: **20**
 - `diskreport.py`: **19**
 - `settings.py`: **18**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-06T13:52:07` **branding.py** (seguridad defensiva): Mejoré la seguridad de `save_logo_svg` utilizando `is_safe_to_modify` para el filtrado previo y `ensure_safe_to_modify` solo para la operación de escritura, garantizando que el acceso al sistema de archivos sea defensivo y cumpla con el contrato de seguridad del proyecto.
+- `2026-08-06T13:51:52` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva al limitar estrictamente el tamaño y el contenido de las respuestas recibidas desde Gemini, además de aplicar un filtro de saneamiento adicional antes de procesar el JSON remoto para prevenir inyecciones o desbordamientos inesperados.
 - `2026-08-06T13:41:53` **scanner.py** (robustez ante casos límite): Se reforzó la robustez de `process_entry` y `scan_directory` manejando explícitamente rutas inexistentes o inaccesibles mediante la resolución de `path_obj` y `current_dir` dentro de bloques `try-except` más granulares, evitando que el escáner se interrumpa ante errores de E/S comunes en sistemas de archivos dinámicos o bloqueados.
 - `2026-08-06T13:40:49` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de `os.path.samefile` en `_validate_isolation_request` para prevenir un caso límite donde una ruta simbólica o un alias de sistema apunta al destino, evitando así posibles colisiones de manipulación de archivos que `is_within_directory` podría no capturar en ciertos sistemas de archivos.
 - `2026-08-06T13:31:36` **main.py** (robustez ante casos límite): Mejoré la robustez de `on_trim_process` añadiendo una verificación de permisos de sistema (validación de nombre de proceso esencial y acceso a nivel de usuario) y asegurando que las llamadas a funciones de sistema (como `process_exists`) se realicen dentro de bloques `try/except` para manejar excepciones inesperadas de sistema operativo que podrían ocurrir si un proceso finaliza justo antes de ser consultado.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-06T12:51:09` **main.py** (rendimiento): Optimicé el método `_compile_metrics` de `main.py` para evitar cálculos redundantes de E/S, moviendo la resolución de rutas y el cálculo de porcentajes fuera del loop principal y reutilizando el caché de sesión ya implementado.
 - `2026-08-06T12:50:04` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje global en `compute_score` eliminando iteraciones redundantes y el uso de `.get()` dentro del loop crítico, accediendo directamente a las variables locales ya calculadas para reducir la carga de CPU.
 - `2026-08-06T12:49:38` **duplicates.py** (rendimiento): Optimizé el rendimiento de `_collect_candidates` utilizando `os.scandir` de forma más eficiente al consolidar los filtros de `is_protected_path` y evitar múltiples llamadas a `.stat()` y comprobaciones redundantes dentro del bucle de escaneo.
-- `2026-08-06T12:40:36` **diskreport.py** (rendimiento): Optimicé el bucle principal en `summarize` para evitar múltiples iteraciones sobre los datos y reducir la sobrecarga de memoria al consolidar todas las métricas en una única pasada sobre el generador `walk_files`.
-- `2026-08-06T12:40:05` **branding.py** (rendimiento): Optimicé el cálculo de colores en `draw_gradient_bar` y `draw_logo` pre-calculando las tuplas de colores mediante `gradient_colors`, evitando la ejecución repetida de lógica de interpolación dentro de los bucles de renderizado.
