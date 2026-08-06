@@ -261,6 +261,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         total_weighted_score += score_val
 
     final_score = int(_clamp(total_weighted_score, 0.0, 100.0))
+    # Corrección de redondeo si la suma difiere ligeramente del total calculado
     if not math.isclose(sum(breakdown.values()), final_score, abs_tol=1):
         final_score = sum(breakdown.values())
 

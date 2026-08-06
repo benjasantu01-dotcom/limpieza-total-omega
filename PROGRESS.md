@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **231** (45.8% de aceptación)
-- Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 26
+- Mejoras aceptadas: **232** (46.0% de aceptación)
+- Rechazadas por tests: 17
+- Rechazadas por guardia de seguridad: 25
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 216
+- Sin respuesta de la IA (error o límite): 217
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-05 | 118 | 11 | 12 | 6 | 89 |
-| 2026-08-06 | 113 | 7 | 14 | 7 | 127 |
+| 2026-08-05 | 116 | 10 | 11 | 6 | 89 |
+| 2026-08-06 | 116 | 7 | 14 | 7 | 128 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **52**
+- legibilidad y documentación: **50**
 - seguridad defensiva: **50**
 - rendimiento: **47**
+- manejo de errores y validación de entradas: **43**
 - robustez ante casos límite: **42**
-- manejo de errores y validación de entradas: **40**
 
 ## Mejoras aceptadas por archivo
 
+- `browser.py`: **23**
 - `branding.py`: **22**
-- `browser.py`: **22**
 - `quarantine.py`: **21**
 - `scanner.py`: **20**
 - `settings.py`: **20**
 - `assistant.py`: **19**
-- `diskreport.py`: **18**
+- `diskreport.py`: **19**
 - `duplicates.py`: **16**
 - `main.py`: **16**
-- `healthscore.py`: **14**
-- `organizer.py`: **13**
+- `healthscore.py`: **15**
 - `memory.py`: **13**
-- `safety.py`: **11**
+- `organizer.py`: **12**
+- `safety.py`: **10**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-06T11:28:57` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` y `_generate_recommendations` validando explícitamente los datos de entrada, evitando posibles accesos a `None` o estados inconsistentes que podrían resultar en divisiones por cero o comportamientos indefinidos durante el cálculo del puntaje.
+- `2026-08-06T11:28:23` **diskreport.py** (manejo de errores y validación de entradas): Mejora la robustez del módulo `diskreport.py` mediante la validación proactiva de parámetros, el manejo explícito de errores en la resolución de rutas y la implementación de guardas de seguridad en las funciones de reporte para evitar fallos silenciosos al procesar entradas inválidas.
+- `2026-08-06T11:27:59` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `directory_size` y `_is_safe_path` ante errores de resolución de rutas (como enlaces simbólicos rotos o permisos restringidos) encapsulando accesos a `Path` y `resolve()` en bloques `try-except` más precisos, asegurando que los fallos en rutas individuales no propaguen excepciones inesperadas hacia `main.py`.
 - `2026-08-06T11:20:16` **branding.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las funciones de acceso a datos (`color`, `font_size`, `icon`, `severity_color`, `severity_label`, `severity_icon`, `grade_color`) mediante la validación temprana de entradas y el manejo explícito de casos `None` o inválidos, evitando excepciones inesperadas y garantizando siempre un retorno seguro.
 - `2026-08-06T11:20:02` **assistant.py** (manejo de errores y validación de entradas): Reforcé la robustez de `_call_gemini` mediante la validación explícita de tipos y la captura de errores específicos durante la carga de JSON, evitando excepciones durante el parseo de respuestas potencialmente malformadas o vacías.
 - `2026-08-06T09:56:32` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save` integrando una validación previa mediante `is_safe_to_modify` antes de intentar cualquier operación de disco, evitando así el riesgo de operar sobre rutas protegidas antes de lanzar la excepción definitiva.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-06T09:26:03` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad en `save_logo_svg` reemplazando la resolución absoluta de la ruta (`Path.resolve()`) por una verificación explícita de seguridad antes de cualquier operación de escritura, asegurando que `ensure_safe_to_modify` valide la ruta original proporcionada y evitando así posibles manipulaciones de rutas fuera del entorno permitido.
 - `2026-08-06T09:25:34` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva al invocar `is_protected_path` como una barrera adicional en `_call_gemini` para asegurar que, bajo ninguna circunstancia de error o manipulación, el contenido que se envía a la API externa pueda ser interpretado como un path local.
 - `2026-08-06T09:15:38` **settings.py** (robustez ante casos límite): Se añadió una validación explícita para la existencia del directorio antes de la escritura en `save()` y se mejoró la resiliencia en `load()` ante archivos que, aunque no estén corruptos, devuelvan un diccionario incompleto respecto al `TypedDict` actual, asegurando que la configuración siempre retenga los valores por defecto si una clave está ausente.
-- `2026-08-06T09:15:28` **scanner.py** (robustez ante casos límite): Se ha añadido un bloque `try-except` robusto y validación de atributos de archivo en `scan_directory` y `process_entry` para manejar correctamente rutas con permisos denegados o archivos inaccesibles durante el recorrido del sistema de archivos, mejorando la resiliencia ante errores de E/S.
-- `2026-08-06T09:15:05` **safety.py** (robustez ante casos límite): Se ha implementado un mecanismo de control de concurrencia y acceso mediante un bloque `try-except` robusto en `_is_file_in_use` para manejar mejor el caso en que el archivo es bloqueado por procesos del sistema o permisos denegados, evitando que el escáner aborte por excepciones no controladas.
-- `2026-08-06T09:07:05` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` ante fallos parciales durante la copia y el registro, asegurando que si ocurre una interrupción, el archivo temporal se limpie y el sistema no quede en un estado inconsistente.

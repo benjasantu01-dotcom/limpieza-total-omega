@@ -169,8 +169,11 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     if not directory:
         return
 
-    base_path = Path(directory).expanduser().resolve()
-    if not base_path.exists() or not base_path.is_dir() or (skip_protected and is_protected_path(base_path)):
+    try:
+        base_path = Path(directory).expanduser().resolve()
+        if not base_path.exists() or not base_path.is_dir() or (skip_protected and is_protected_path(base_path)):
+            return
+    except (OSError, RuntimeError):
         return
 
     visited_directories: set[Path] = {base_path}
@@ -202,10 +205,10 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 
 def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_protected: bool = True) -> List[FileEntry]:
     """Identifica los N archivos más grandes en la ruta dada usando un min-heap."""
-    if not directory:
+    if not directory or limit <= 0:
         return []
     return heapq.nlargest(
-        max(0, limit), 
+        limit, 
         (FileEntry(path=p, size_bytes=s) for p, s in walk_files(directory, skip_protected)),
         key=lambda e: e.size_bytes
     )
@@ -215,7 +218,7 @@ def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip
     """
     Calcula el uso de espacio total agrupado por extensión de archivo.
     """
-    if not directory:
+    if not directory or limit <= 0:
         return []
     sizes: Dict[str, int] = defaultdict(int)
     counts: Dict[str, int] = defaultdict(int)
@@ -227,14 +230,14 @@ def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip
     usage_list = [ExtensionUsage(extension=ext, size_bytes=size, count=counts[ext])
                   for ext, size in sizes.items()]
     
-    return heapq.nlargest(max(0, limit), usage_list, key=lambda u: u.size_bytes)
+    return heapq.nlargest(limit, usage_list, key=lambda u: u.size_bytes)
 
 
 def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
     """
     Calcula qué subdirectorios de primer nivel ocupan más espacio total.
     """
-    if not directory:
+    if not directory or limit <= 0:
         return []
     try:
         base = Path(directory).expanduser().resolve()
@@ -255,7 +258,7 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
             except (ValueError, IndexError):
                 continue
 
-        return heapq.nlargest(max(0, limit), folder_map.values(), key=lambda f: f.size_bytes)
+        return heapq.nlargest(limit, folder_map.values(), key=lambda f: f.size_bytes)
     except (OSError, RuntimeError):
         return []
 
