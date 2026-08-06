@@ -6,36 +6,36 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **238** (47.2% de aceptación)
+- Mejoras aceptadas: **241** (47.8% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 26
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-05 | 136 | 12 | 14 | 7 | 115 |
-| 2026-08-06 | 102 | 6 | 12 | 6 | 94 |
+| 2026-08-05 | 136 | 12 | 14 | 7 | 111 |
+| 2026-08-06 | 105 | 6 | 12 | 6 | 95 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **58**
 - manejo de errores y validación de entradas: **50**
 - rendimiento: **47**
+- seguridad defensiva: **44**
 - robustez ante casos límite: **42**
-- seguridad defensiva: **41**
 
 ## Mejoras aceptadas por archivo
 
-- `browser.py`: **23**
-- `branding.py`: **22**
+- `browser.py`: **24**
+- `branding.py`: **23**
 - `quarantine.py`: **21**
 - `scanner.py`: **20**
 - `settings.py`: **20**
+- `assistant.py`: **19**
 - `diskreport.py`: **19**
-- `assistant.py`: **18**
 - `duplicates.py`: **18**
 - `main.py`: **17**
 - `healthscore.py`: **16**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-06T09:26:11` **browser.py** (seguridad defensiva): Reforcé la seguridad defensiva en `directory_size` validando que la ruta escaneada sea absoluta y esté estrictamente contenida dentro de la base (usando `resolve`), previniendo ataques de escalada de privilegios o lectura de archivos fuera del scope esperado.
+- `2026-08-06T09:26:03` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad en `save_logo_svg` reemplazando la resolución absoluta de la ruta (`Path.resolve()`) por una verificación explícita de seguridad antes de cualquier operación de escritura, asegurando que `ensure_safe_to_modify` valide la ruta original proporcionada y evitando así posibles manipulaciones de rutas fuera del entorno permitido.
+- `2026-08-06T09:25:34` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva al invocar `is_protected_path` como una barrera adicional en `_call_gemini` para asegurar que, bajo ninguna circunstancia de error o manipulación, el contenido que se envía a la API externa pueda ser interpretado como un path local.
 - `2026-08-06T09:15:38` **settings.py** (robustez ante casos límite): Se añadió una validación explícita para la existencia del directorio antes de la escritura en `save()` y se mejoró la resiliencia en `load()` ante archivos que, aunque no estén corruptos, devuelvan un diccionario incompleto respecto al `TypedDict` actual, asegurando que la configuración siempre retenga los valores por defecto si una clave está ausente.
 - `2026-08-06T09:15:28` **scanner.py** (robustez ante casos límite): Se ha añadido un bloque `try-except` robusto y validación de atributos de archivo en `scan_directory` y `process_entry` para manejar correctamente rutas con permisos denegados o archivos inaccesibles durante el recorrido del sistema de archivos, mejorando la resiliencia ante errores de E/S.
 - `2026-08-06T09:15:05` **safety.py** (robustez ante casos límite): Se ha implementado un mecanismo de control de concurrencia y acceso mediante un bloque `try-except` robusto en `_is_file_in_use` para manejar mejor el caso en que el archivo es bloqueado por procesos del sistema o permisos denegados, evitando que el escáner aborte por excepciones no controladas.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-06T08:34:47` **scanner.py** (rendimiento): Optimicé el rendimiento del escaneo restringiendo la ejecución de las funciones de chequeo (checkers) únicamente a archivos con extensiones sospechosas mediante una pre-selección, evitando llamadas innecesarias a la lógica de heurística para archivos comunes o benignos.
 - `2026-08-06T08:33:55` **quarantine.py** (rendimiento): Optimicé el manejo de la memoria y el rendimiento en `purge_all` reemplazando la lógica de bucle redundante y mejorando la eficiencia de búsqueda con un conjunto, evitando iteraciones innecesarias sobre el manifiesto.
 - `2026-08-06T08:25:11` **organizer.py** (rendimiento): Optimizé `scan_for_junk` sustituyendo el uso repetido de `Path(entry.path).suffix` dentro del bucle de escaneo por una comparación directa usando `entry.name`, evitando la creación redundante de miles de objetos `Path` en el disco durante el recorrido.
-- `2026-08-06T08:24:34` **main.py** (rendimiento): Se implementó un método `_get_cached_data` para consolidar el acceso a datos cacheados y se reemplazaron múltiples llamadas dispersas a `self._cache` por accesos centralizados, eliminando la redundancia en la lógica de invalidación y actualización del pool de hilos para mejorar la performance general.
-- `2026-08-06T08:23:31` **healthscore.py** (rendimiento): Optimicé el bucle principal de `compute_score` eliminando accesos repetitivos a diccionarios y conversiones de tipo innecesarias dentro de la iteración, utilizando el precalculado `_WEIGHT_ITEMS` y calculando el puntaje ponderado de forma más eficiente.
-- `2026-08-06T08:14:28` **diskreport.py** (rendimiento): Optimicé `walk_files` eliminando la resolución redundante de rutas dentro de cada iteración y evitando llamadas innecesarias a `is_protected_path` al validar solo la entrada raíz de cada subdirectorio, reduciendo drásticamente las llamadas al sistema operativo durante el recorrido.

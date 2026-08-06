@@ -291,7 +291,7 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     """Guarda el logo en SVG tras validar la seguridad de la ruta destino."""
     if destination is None: return None
     try:
-        target = Path(destination).resolve()
+        target = Path(destination)
         # La validación asegura integridad, lanzando excepciones controladas.
         ensure_safe_to_modify(target)
         target.parent.mkdir(parents=True, exist_ok=True)

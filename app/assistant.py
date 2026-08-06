@@ -448,7 +448,9 @@ def _call_gemini(
     safe_q: str = _sanitize_query(question)
     safe_ctx: str = context_text[:1000]
     
-    if not _ensure_safe_text(safe_q) or not _ensure_safe_text(safe_ctx):
+    # Defensa extra contra paths locales: si por alguna razón falla la serialización y se filtra un path, 
+    # la validación de integridad lo detiene antes de la red.
+    if not _ensure_safe_text(safe_q) or not _ensure_safe_text(safe_ctx) or is_protected_path(safe_ctx):
         return None
         
     try:

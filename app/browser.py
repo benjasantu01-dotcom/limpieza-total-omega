@@ -143,7 +143,7 @@ def directory_size(path: str | os.PathLike | None) -> int:
     if path is None:
         return 0
     
-    root_path = Path(path)
+    root_path = Path(path).resolve()
     if not root_path.exists() or not root_path.is_dir() or is_protected_path(root_path):
         return 0
 
@@ -156,8 +156,14 @@ def directory_size(path: str | os.PathLike | None) -> int:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
-                        if entry.is_symlink() or is_junction(entry.path) or is_protected_path(Path(entry.path)):
+                        entry_path = Path(entry.path).resolve()
+                        if entry.is_symlink() or is_junction(entry.path) or is_protected_path(entry_path):
                             continue
+                        
+                        # Seguridad adicional: verificar que la sub-ruta no escape del root
+                        if not str(entry_path).startswith(str(root_path)):
+                            continue
+
                         if entry.is_dir():
                             _walk_size(entry.path)
                         elif entry.is_file() and entry.name.lower() not in NEVER_TOUCH:
@@ -167,7 +173,7 @@ def directory_size(path: str | os.PathLike | None) -> int:
         except (OSError, PermissionError):
             pass
 
-    _walk_size(str(path))
+    _walk_size(str(root_path))
     return total_bytes
 
 
