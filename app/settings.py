@@ -207,6 +207,7 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     temp_path: Path | None = None
     try:
         parent_dir = ruta.parent
+        ensure_safe_to_modify(parent_dir)
         if not parent_dir.exists(): parent_dir.mkdir(parents=True, exist_ok=True)
         
         fd, temp_name = tempfile.mkstemp(dir=parent_dir, text=True)

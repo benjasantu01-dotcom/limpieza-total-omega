@@ -201,10 +201,14 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     scanner.seen.add(str(root_path))
     
     while stack:
-        current_dir = stack.pop()
+        current_dir_str = stack.pop()
+        current_dir = Path(current_dir_str)
+        
+        # Validar nuevamente antes de procesar
+        if not current_dir.is_dir() or is_protected_path(current_dir):
+            continue
+            
         try:
-            if not os.path.exists(current_dir):
-                continue
             with os.scandir(current_dir) as it:
                 for entry in it:
                     scanner.process_entry(entry, stack)

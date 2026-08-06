@@ -825,3 +825,11 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-08-06T14:13:22` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `purge_all` y `_should_purge_file` para asegurar que ningún archivo huérfano (no presente en el manifiesto) pueda ser eliminado, previniendo borrados accidentales de archivos ajenos que pudieran existir en la misma carpeta.
 - `2026-08-06T14:13:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-06T14:13:22` Corrida terminada. Total usado hoy: 336.
+- `2026-08-06T14:21:17` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-06T14:21:39` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-06T14:21:41` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-06T14:22:24` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-08-06T14:22:50` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva de `scan_directory` reemplazando el uso de `os.path.exists` dentro del bucle principal por una validación que utiliza la ruta normalizada y el chequeo de seguridad `is_protected_path`, previniendo así el acceso a rutas que hayan podido ser alteradas durante la ejecución del escaneo.
+- `2026-08-06T14:23:02` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `save()` añadiendo una verificación explícita mediante `ensure_safe_to_modify` sobre el directorio padre antes de intentar crear el archivo de configuración, asegurando que ninguna manipulación de la ruta pueda derivar en escrituras fuera de las zonas permitidas.
+- `2026-08-06T14:23:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-06T14:23:02` Corrida terminada. Total usado hoy: 340.
