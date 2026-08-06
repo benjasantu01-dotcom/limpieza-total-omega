@@ -184,14 +184,13 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                             continue
                         
                         if entry.is_dir():
-                            full_path = Path(entry.path)
+                            full_path = Path(entry.path).resolve()
                             if full_path not in visited_directories:
                                 if skip_protected and is_protected_path(full_path):
                                     continue
                                 visited_directories.add(full_path)
                                 yield from scan_level(full_path)
                         else:
-                            # Capturamos OSError al intentar obtener estatuto de archivos bloqueados
                             yield Path(entry.path), entry.stat(follow_symlinks=False).st_size
                     except (OSError, PermissionError):
                         continue
@@ -239,7 +238,7 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
         return []
     try:
         base = Path(directory).expanduser().resolve()
-        if not base.exists() or not base.is_dir():
+        if not base.exists() or not base.is_dir() or (skip_protected and is_protected_path(base)):
             return []
         
         folder_map: Dict[Path, FolderUsage] = {}

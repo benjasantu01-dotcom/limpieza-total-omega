@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **241** (47.8% de aceptación)
+- Mejoras aceptadas: **242** (48.0% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 26
-- Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 206
+- Rechazadas por guardia de seguridad: 27
+- Sin cambios (nada sustancial que mejorar): 14
+- Sin respuesta de la IA (error o límite): 203
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-05 | 136 | 12 | 14 | 7 | 111 |
-| 2026-08-06 | 105 | 6 | 12 | 6 | 95 |
+| 2026-08-05 | 136 | 12 | 14 | 7 | 107 |
+| 2026-08-06 | 106 | 6 | 13 | 7 | 96 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **58**
 - manejo de errores y validación de entradas: **50**
 - rendimiento: **47**
-- seguridad defensiva: **44**
+- seguridad defensiva: **45**
 - robustez ante casos límite: **42**
 
 ## Mejoras aceptadas por archivo
@@ -32,10 +32,10 @@ Este archivo se regenera solo en cada corrida a partir de
 - `browser.py`: **24**
 - `branding.py`: **23**
 - `quarantine.py`: **21**
+- `diskreport.py`: **20**
 - `scanner.py`: **20**
 - `settings.py`: **20**
 - `assistant.py`: **19**
-- `diskreport.py`: **19**
 - `duplicates.py`: **18**
 - `main.py`: **17**
 - `healthscore.py`: **16**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-06T09:35:13` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `walk_files` y `largest_folders` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta real (resuelta con `resolve()`) de cada subdirectorio antes de procesarlo, evitando así que rutas con enlaces simbólicos o puntos de reparse fuera del árbol permitido sean seguidas inadvertidamente.
 - `2026-08-06T09:26:11` **browser.py** (seguridad defensiva): Reforcé la seguridad defensiva en `directory_size` validando que la ruta escaneada sea absoluta y esté estrictamente contenida dentro de la base (usando `resolve`), previniendo ataques de escalada de privilegios o lectura de archivos fuera del scope esperado.
 - `2026-08-06T09:26:03` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad en `save_logo_svg` reemplazando la resolución absoluta de la ruta (`Path.resolve()`) por una verificación explícita de seguridad antes de cualquier operación de escritura, asegurando que `ensure_safe_to_modify` valide la ruta original proporcionada y evitando así posibles manipulaciones de rutas fuera del entorno permitido.
 - `2026-08-06T09:25:34` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva al invocar `is_protected_path` como una barrera adicional en `_call_gemini` para asegurar que, bajo ninguna circunstancia de error o manipulación, el contenido que se envía a la API externa pueda ser interpretado como un path local.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-06T08:44:03` **settings.py** (rendimiento): Se implementó un mecanismo de caché (`_cached_settings` y `_current_path`) en todas las funciones de acceso y escritura para evitar lecturas de disco innecesarias durante la ejecución, mejorando la performance al consultar configuraciones recurrentes.
 - `2026-08-06T08:34:47` **scanner.py** (rendimiento): Optimicé el rendimiento del escaneo restringiendo la ejecución de las funciones de chequeo (checkers) únicamente a archivos con extensiones sospechosas mediante una pre-selección, evitando llamadas innecesarias a la lógica de heurística para archivos comunes o benignos.
 - `2026-08-06T08:33:55` **quarantine.py** (rendimiento): Optimicé el manejo de la memoria y el rendimiento en `purge_all` reemplazando la lógica de bucle redundante y mejorando la eficiencia de búsqueda con un conjunto, evitando iteraciones innecesarias sobre el manifiesto.
-- `2026-08-06T08:25:11` **organizer.py** (rendimiento): Optimizé `scan_for_junk` sustituyendo el uso repetido de `Path(entry.path).suffix` dentro del bucle de escaneo por una comparación directa usando `entry.name`, evitando la creación redundante de miles de objetos `Path` en el disco durante el recorrido.

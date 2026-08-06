@@ -409,3 +409,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-06T09:26:11` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Reforcé la seguridad defensiva en `directory_size` validando que la ruta escaneada sea absoluta y esté estrictamente contenida dentro de la base (usando `resolve`), previniendo ataques de escalada de privilegios o lectura de archivos fuera del scope esperado.
 - `2026-08-06T09:26:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-06T09:26:11` Corrida terminada. Total usado hoy: 224.
+- `2026-08-06T09:34:47` Arrancando corrida. Quedan hoy ~76 peticiones objetivo.
+- `2026-08-06T09:35:13` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `walk_files` y `largest_folders` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta real (resuelta con `resolve()`) de cada subdirectorio antes de procesarlo, evitando así que rutas con enlaces simbólicos o puntos de reparse fuera del árbol permitido sean seguidas inadvertidamente.
+- `2026-08-06T09:35:42` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-08-06T09:36:07` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 272): invalid syntax
+- `2026-08-06T09:36:51` ➖ Sin cambios en main.py (enfoque: seguridad defensiva). Motivo: Se ha mejorado la seguridad defensiva al centralizar y robustecer la validación de directorios en `_ask_folder`, incorporando una verificación explícita de `is_protected_path` de `safety.py` y una protección adicional contra caracteres de control/RTL (que pueden ser utilizados para ofuscar rutas en la UI).
+- `2026-08-06T09:36:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-06T09:36:51` Corrida terminada. Total usado hoy: 228.
