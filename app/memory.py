@@ -170,12 +170,14 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
     if not text:
         return []
 
-    lines = [line.strip() for line in text.splitlines() if line.strip()]
+    lines = text.splitlines()
     if len(lines) < 2:
         return []
 
     def _gen_proc():
         for line in lines[1:]:
+            line = line.strip()
+            if not line: continue
             parts = [p.strip().strip('"') for p in line.split(",")]
             if _is_valid_process_row(parts):
                 try:

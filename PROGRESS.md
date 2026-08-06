@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **248** (49.2% de aceptación)
+- Mejoras aceptadas: **249** (49.4% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 25
-- Sin cambios (nada sustancial que mejorar): 11
+- Sin cambios (nada sustancial que mejorar): 10
 - Sin respuesta de la IA (error o límite): 204
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-04 | 21 | 0 | 2 | 2 | 37 |
+| 2026-08-04 | 19 | 0 | 2 | 1 | 36 |
 | 2026-08-05 | 185 | 12 | 19 | 8 | 126 |
-| 2026-08-06 | 42 | 4 | 4 | 1 | 41 |
+| 2026-08-06 | 45 | 4 | 4 | 1 | 42 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **61**
-- seguridad defensiva: **52**
 - manejo de errores y validación de entradas: **52**
-- rendimiento: **46**
-- robustez ante casos límite: **37**
+- seguridad defensiva: **51**
+- rendimiento: **49**
+- robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `branding.py`: **23**
 - `browser.py`: **23**
 - `duplicates.py`: **22**
-- `scanner.py`: **21**
-- `assistant.py`: **20**
 - `diskreport.py`: **20**
+- `quarantine.py`: **20**
+- `scanner.py`: **20**
 - `settings.py`: **20**
-- `quarantine.py`: **19**
-- `main.py`: **18**
+- `main.py`: **19**
+- `assistant.py`: **19**
 - `healthscore.py`: **17**
 - `organizer.py`: **14**
 - `safety.py`: **13**
-- `memory.py`: **11**
+- `memory.py`: **12**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-06T03:58:40` **quarantine.py** (rendimiento): Optimizé la gestión de la caché del manifiesto implementando un acceso indexado (`item_map`) en `purge_all` y `restore_item` para evitar iteraciones lineales $O(N)$ sobre la lista de ítems, mejorando el rendimiento en escenarios con muchos archivos en cuarentena.
+- `2026-08-06T03:58:05` **memory.py** (rendimiento): Optimizé la eficiencia de `parse_windows_process_csv` reemplazando la creación de una lista intermedia de todas las líneas procesadas por un generador que filtra y parsea bajo demanda, reduciendo la huella de memoria al procesar listas largas de procesos.
+- `2026-08-06T03:57:40` **main.py** (rendimiento): Optimicé el sistema de caché implementando una invalidación granular basada en prefijos y añadiendo un chequeo preventivo de tamaño para evitar que el `OrderedDict` crezca indefinidamente, reduciendo así la sobrecarga de memoria en sesiones prolongadas.
 - `2026-08-06T03:47:40` **healthscore.py** (rendimiento): Optimicé el bucle principal de `compute_score` eliminando búsquedas innecesarias en el diccionario `scores` y mejorando la eficiencia del cálculo ponderado mediante el uso directo de las tuplas precalculadas `_WEIGHT_ITEMS`.
 - `2026-08-06T03:47:30` **duplicates.py** (rendimiento): Se optimizó el proceso de recolección de candidatos evitando llamadas redundantes a `Path.resolve()` dentro de `_collect_candidates`, reduciendo significativamente la sobrecarga de I/O y el tiempo de ejecución en directorios con muchos archivos.
 - `2026-08-06T03:46:44` **browser.py** (rendimiento): Se optimizó `directory_size` para reducir el uso de `pathlib.Path` dentro del loop crítico, reemplazando la instanciación de objetos por el uso directo de strings y `os.path.join`, evitando así la creación masiva de objetos `Path` que impactaba en el rendimiento durante el recorrido recursivo.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-06T03:17:34` **organizer.py** (legibilidad y documentación): He mejorado la documentación de las funciones y métodos mediante la adición de docstrings estructurados (estilo Google/NumPy) y la inclusión de type hints en variables internas para clarificar la lógica de las operaciones de escaneo y ordenamiento.
 - `2026-08-06T03:17:26` **memory.py** (legibilidad y documentación): Se añadieron Type Hints ausentes y se mejoró la documentación (docstrings) de `MemorySnapshot` y las funciones de lectura para clarificar el flujo de datos y las unidades de medida, cumpliendo con los estándares de legibilidad exigidos.
 - `2026-08-06T03:17:01` **main.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de la clase principal mediante la extracción de los métodos de construcción de UI de las pestañas (`_build_tab_...`) a una estructura que separa claramente la definición de la interfaz de la lógica operativa, facilitando la comprensión del flujo de la aplicación.
-- `2026-08-06T03:06:48` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del pipeline de detección en `find_duplicates` mediante docstrings detallados y refiné los tipos de datos y la claridad de `_collect_candidates`, permitiendo que el flujo de trabajo sea más fácil de auditar sin alterar su lógica ni dependencias.
-- `2026-08-06T03:06:39` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `walk_files` extrayendo la lógica de filtrado de rutas y la detección de puntos de reparse en funciones locales con nombres auto-explicativos, evitando la anidación excesiva y clarificando las condiciones de exclusión.
-- `2026-08-06T03:06:13` **browser.py** (legibilidad y documentación): Mejora la legibilidad y seguridad del módulo `browser.py` mediante la refactorización de `directory_size` para eliminar el uso de `stack` manual, reemplazándolo por una estructura más clara y robusta que respeta los límites de recursión implícitos y las buenas prácticas de manejo de excepciones.

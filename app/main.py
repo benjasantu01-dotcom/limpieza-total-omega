@@ -751,6 +751,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 data = provider()
                 if data is not None:
                     if len(self._cache) >= self._cache_max_size:
+                        # Política FIFO (popitem(last=False)) para mantener el tamaño bajo control
                         self._cache.popitem(last=False)
                     self._cache[key] = (data, now)
                 return data
@@ -1030,8 +1031,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             directories = [self.scan_target] if self.scan_target else None
             junk = scan_for_junk(directories)
             
-            if len(self._cache) >= self._cache_max_size:
-                self._cache.popitem(last=False)
+            # Gestión de caché: invalidar caché previo de basura antes de insertar el nuevo
+            self._invalidate_cache("junk")
             self._cache["junk"] = (junk, time.time())
             
             total_mb = round(sum(j.size_bytes for j in junk) / (1024 * 1024), 2)
@@ -1110,8 +1111,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             
             results = scan_directory(folder)
             
-            if len(self._cache) >= self._cache_max_size:
-                self._cache.popitem(last=False)
+            self._invalidate_cache("suspicions")
             self._cache["suspicions"] = (results, time.time())
 
             if not results:
@@ -1392,8 +1392,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                      "Duplicados")
             dups = duplicates_mod.find_duplicates([folder])
             
-            if len(self._cache) >= self._cache_max_size:
-                self._cache.popitem(last=False)
+            self._invalidate_cache("dups")
             self._cache["dups"] = (dups, time.time())
             
             if not dups:
@@ -1464,6 +1463,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """Genera el reporte de elementos de inicio."""
         def task():
             self.set_status("Leyendo programas de inicio...")
+            # Limpiar caché viejo de inicio si existiera
+            self._invalidate_cache("startup")
             self._get_cached("startup", startup_mod.list_startup_entries)
             self.log_lines(startup_mod.summarize(), "Inicio")
 

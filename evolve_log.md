@@ -1053,3 +1053,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-06T03:47:40` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el bucle principal de `compute_score` eliminando búsquedas innecesarias en el diccionario `scores` y mejorando la eficiencia del cálculo ponderado mediante el uso directo de las tuplas precalculadas `_WEIGHT_ITEMS`.
 - `2026-08-06T03:47:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-06T03:47:40` Corrida terminada. Total usado hoy: 92.
+- `2026-08-06T03:56:39` Arrancando corrida. Quedan hoy ~208 peticiones objetivo.
+- `2026-08-06T03:57:40` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Optimicé el sistema de caché implementando una invalidación granular basada en prefijos y añadiendo un chequeo preventivo de tamaño para evitar que el `OrderedDict` crezca indefinidamente, reduciendo así la sobrecarga de memoria en sesiones prolongadas.
+- `2026-08-06T03:58:05` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimizé la eficiencia de `parse_windows_process_csv` reemplazando la creación de una lista intermedia de todas las líneas procesadas por un generador que filtra y parsea bajo demanda, reduciendo la huella de memoria al procesar listas largas de procesos.
+- `2026-08-06T03:58:27` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-08-06T03:58:40` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimizé la gestión de la caché del manifiesto implementando un acceso indexado (`item_map`) en `purge_all` y `restore_item` para evitar iteraciones lineales $O(N)$ sobre la lista de ítems, mejorando el rendimiento en escenarios con muchos archivos en cuarentena.
+- `2026-08-06T03:58:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-06T03:58:40` Corrida terminada. Total usado hoy: 96.

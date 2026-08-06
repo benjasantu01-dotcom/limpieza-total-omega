@@ -352,7 +352,8 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
         raise ValueError("ID de ítem vacío o tipo incorrecto.")
     
     items = load_manifest(base)
-    match = next((i for i in items if i.item_id == item_id), None)
+    item_map = {i.item_id: i for i in items}
+    match = item_map.get(item_id)
     
     if not match:
         raise KeyError(f"No se encontró ítem con ID: {item_id}")
@@ -404,7 +405,8 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
         return False
         
     items = load_manifest(base)
-    match = next((i for i in items if i.item_id == item_id), None)
+    item_map = {i.item_id: i for i in items}
+    match = item_map.get(item_id)
     
     if not match:
         return False
@@ -441,6 +443,7 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     ensure_safe_to_modify(quarantine_root, allow_sensitive=False)
     
     items = load_manifest(base)
+    # Mapeo por nombre de archivo para acceso eficiente O(1)
     item_map: Dict[str, QuarantineItem] = {item.stored_name: item for item in items}
     stored_names_in_manifest = set(item_map.keys())
     count = 0
