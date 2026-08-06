@@ -204,12 +204,16 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
                 if is_protected_path(item):
                     continue
                 
+                # No seguir puntos de reparse (junctions/symlinks) para evitar saltos inesperados
+                if item.is_symlink():
+                    continue
+
                 # Primero chequear extensión (es operación en memoria, la más rápida)
                 if item.suffix.lower() not in EXECUTABLE_EXTS:
                     continue
                 
-                # Chequear tipo de archivo y symlink (I/O)
-                if item.is_file() and not item.is_symlink():
+                # Chequear tipo de archivo (I/O)
+                if item.is_file():
                     try:
                         # Validar que el nombre del archivo sea una cadena no vacía
                         name = item.stem

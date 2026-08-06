@@ -6,23 +6,23 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **242** (48.0% de aceptación)
+- Mejoras aceptadas: **243** (48.2% de aceptación)
 - Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 203
+- Sin respuesta de la IA (error o límite): 202
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-05 | 84 | 5 | 8 | 6 | 61 |
-| 2026-08-06 | 158 | 9 | 19 | 12 | 142 |
+| 2026-08-05 | 84 | 5 | 8 | 6 | 57 |
+| 2026-08-06 | 159 | 9 | 19 | 12 | 145 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **61**
-- seguridad defensiva: **51**
+- seguridad defensiva: **52**
 - manejo de errores y validación de entradas: **46**
 - rendimiento: **45**
 - robustez ante casos límite: **39**
@@ -42,10 +42,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - `organizer.py`: **13**
 - `memory.py`: **13**
 - `safety.py`: **10**
-- `startup.py`: **8**
+- `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-06T14:32:01` **startup.py** (seguridad defensiva): Se ha mejorado `entries_from_folders` añadiendo una comprobación explícita para evitar seguir puntos de reparse (junctions o symlinks a directorios), reforzando la seguridad defensiva al evitar bucles infinitos o accesos fuera de la jerarquía esperada al listar el contenido de las carpetas de inicio.
 - `2026-08-06T14:23:02` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save()` añadiendo una verificación explícita mediante `ensure_safe_to_modify` sobre el directorio padre antes de intentar crear el archivo de configuración, asegurando que ninguna manipulación de la ruta pueda derivar en escrituras fuera de las zonas permitidas.
 - `2026-08-06T14:22:50` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `scan_directory` reemplazando el uso de `os.path.exists` dentro del bucle principal por una validación que utiliza la ruta normalizada y el chequeo de seguridad `is_protected_path`, previniendo así el acceso a rutas que hayan podido ser alteradas durante la ejecución del escaneo.
 - `2026-08-06T14:13:22` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `purge_all` y `_should_purge_file` para asegurar que ningún archivo huérfano (no presente en el manifiesto) pueda ser eliminado, previniendo borrados accidentales de archivos ajenos que pudieran existir en la misma carpeta.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-06T13:40:49` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de `os.path.samefile` en `_validate_isolation_request` para prevenir un caso límite donde una ruta simbólica o un alias de sistema apunta al destino, evitando así posibles colisiones de manipulación de archivos que `is_within_directory` podría no capturar en ciertos sistemas de archivos.
 - `2026-08-06T13:31:36` **main.py** (robustez ante casos límite): Mejoré la robustez de `on_trim_process` añadiendo una verificación de permisos de sistema (validación de nombre de proceso esencial y acceso a nivel de usuario) y asegurando que las llamadas a funciones de sistema (como `process_exists`) se realicen dentro de bloques `try/except` para manejar excepciones inesperadas de sistema operativo que podrían ocurrir si un proceso finaliza justo antes de ser consultado.
 - `2026-08-06T13:30:32` **healthscore.py** (robustez ante casos límite): Mejora la robustez ante casos límite en `compute_score` asegurando que el acceso al diccionario `scores` sea seguro mediante `.get()` con valores por defecto, evitando posibles `KeyError` ante desincronizaciones entre el diccionario `WEIGHTS` y los cálculos de `scores`.
-- `2026-08-06T13:21:16` **duplicates.py** (robustez ante casos límite): Se ha añadido una validación explícita para detectar y saltar puntos de reparse (reparse points/junctions) durante el escaneo recursivo en `_collect_candidates`, protegiendo el proceso ante ciclos infinitos o lectura de volúmenes externos montados inesperadamente, conforme al enfoque de robustez ante casos límite.
