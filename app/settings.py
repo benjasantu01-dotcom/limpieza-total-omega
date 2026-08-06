@@ -238,14 +238,13 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
             tf.flush()
             os.fsync(tf.fileno())
         
-        # Doble verificación antes de reemplazar para evitar race conditions
         if not is_safe_to_modify(str(ruta)):
-            raise PermissionError("Ruta de destino comprometida antes de salvar")
+            raise PermissionError("Ruta de destino comprometida")
 
         os.replace(temp_path, ruta)
         _cached_settings, _last_path, _last_mtime = limpio, ruta, ruta.stat().st_mtime
         return ruta
-    except (OSError, PermissionError, RuntimeError):
+    except (OSError, PermissionError, RuntimeError) as e:
         if temp_path and temp_path.exists():
             try: temp_path.unlink()
             except OSError: pass

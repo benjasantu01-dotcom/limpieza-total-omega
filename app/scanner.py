@@ -40,7 +40,6 @@ class Suspicion:
     severity: str
 
 # Alias de tipos para mejorar la legibilidad y mantenibilidad de la lógica de escaneo
-# Se actualiza SuspicionCheck para recibir name/suffix opcionales para evitar recreación de Path
 SuspicionCheck: TypeAlias = Callable[[Path, Optional[os.DirEntry], Optional[str], Optional[str]], Optional[Suspicion]]
 ConditionCheck: TypeAlias = Callable[[Path, str, str], bool]
 ScanResult: TypeAlias = List[Suspicion]
@@ -80,7 +79,7 @@ class Scanner:
     def process_entry(self, entry: os.DirEntry, stack: List[str]) -> None:
         """Procesa una entrada del directorio, filtrando rutas protegidas y analizando archivos."""
         try:
-            if not entry or not entry.path:
+            if entry is None or not entry.path:
                 return
             
             path_obj = Path(entry.path)
@@ -106,7 +105,7 @@ class Scanner:
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None) -> Optional[Suspicion]:
     """Valida si el archivo posee extensiones dobles engañosas (ej: .pdf.exe)."""
-    target = name or path.name
+    target = name or (path.name if path else "")
     if target and DOUBLE_EXTENSION_RE.search(target):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
     return None
@@ -127,7 +126,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None) -> Optional[Suspicion]:
     """Detecta archivos con nombres de procesos críticos del sistema fuera del directorio System32."""
     try:
-        if SYSTEM32_LOWER not in str(path.parent).lower():
+        if path and SYSTEM32_LOWER not in str(path.parent).lower():
             return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
     except (OSError, RuntimeError):
         pass
@@ -172,7 +171,7 @@ def scan_file(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[st
     return findings
 
 
-def scan_directory(directory: Union[str, Path]) -> ScanResult:
+def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     """Realiza un escaneo recursivo de un directorio, recolectando hallazgos sospechosos."""
     if directory is None:
         return []

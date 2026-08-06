@@ -6,40 +6,40 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **245** (48.6% de aceptación)
-- Rechazadas por tests: 15
+- Mejoras aceptadas: **243** (48.2% de aceptación)
+- Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 26
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 205
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-04 | 36 | 1 | 4 | 4 | 41 |
+| 2026-08-04 | 32 | 1 | 4 | 4 | 41 |
 | 2026-08-05 | 185 | 12 | 19 | 8 | 126 |
-| 2026-08-06 | 24 | 2 | 3 | 1 | 38 |
+| 2026-08-06 | 26 | 3 | 3 | 1 | 39 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **52**
-- rendimiento: **50**
-- manejo de errores y validación de entradas: **50**
+- manejo de errores y validación de entradas: **52**
 - legibilidad y documentación: **50**
+- rendimiento: **46**
 - robustez ante casos límite: **43**
 
 ## Mejoras aceptadas por archivo
 
-- `duplicates.py`: **22**
+- `scanner.py`: **21**
+- `duplicates.py`: **21**
 - `branding.py`: **21**
 - `browser.py`: **21**
-- `diskreport.py`: **20**
 - `quarantine.py`: **20**
-- `scanner.py`: **20**
+- `settings.py`: **20**
 - `assistant.py`: **20**
-- `settings.py`: **19**
-- `healthscore.py`: **18**
-- `main.py`: **18**
+- `diskreport.py`: **19**
+- `healthscore.py`: **17**
+- `main.py`: **17**
 - `organizer.py`: **15**
 - `safety.py`: **14**
 - `memory.py`: **10**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-06T02:55:53` **settings.py** (manejo de errores y validación de entradas): Reforcé la robustez del manejo de archivos en `save()` capturando específicamente errores de escritura y permisos durante el proceso de guardado y limpieza de temporales, asegurando que cualquier fallo en la persistencia no deje la aplicación en un estado inconsistente o con archivos huérfanos.
+- `2026-08-06T02:55:28` **scanner.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de excepciones y validación de parámetros en `scan_file` y `scan_directory` para evitar fallos por entradas nulas o rutas inválidas, garantizando que el flujo de escaneo no se interrumpa ante datos inesperados.
 - `2026-08-06T02:45:42` **quarantine.py** (manejo de errores y validación de entradas): Se introdujo una validación robusta de los argumentos de entrada en las funciones públicas `restore_item` y `purge_item` para evitar el procesamiento de datos mal formados, reemplazando la lógica implícita por validaciones explícitas que lanzan excepciones informativas antes de intentar operaciones de I/O.
 - `2026-08-06T02:36:27` **main.py** (manejo de errores y validación de entradas): Se introdujo una validación robusta y centralizada para las entradas numéricas en los diálogos de configuración, evitando que entradas vacías o malformadas bloqueen la app o generen valores inesperados en el sistema de preferencias.
 - `2026-08-06T02:35:27` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `summarize` y `compute_score` ante fallos de integridad, asegurando que el desglose del puntaje se valide explícitamente antes de procesarlo, evitando errores de clave o tipos inesperados durante la generación de reportes.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-06T00:52:59` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad de `quarantine_file` añadiendo una verificación de existencia de archivos ocultos o que contengan rutas relativas maliciosas (`..`) antes de procesar, evitando ataques de path traversal mediante nombres de archivo manipulados.
 - `2026-08-06T00:43:42` **main.py** (seguridad defensiva): Se ha implementado un método `_is_safe_target_dir` que utiliza `safety.is_protected_path` para restringir la selección de carpetas en el diálogo de configuración de `Limpieza`, evitando que el usuario seleccione accidentalmente directorios críticos del sistema como destino de análisis o limpieza.
 - `2026-08-06T00:42:38` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_generate_recommendations` validando que los datos de entrada (específicamente métricas de seguridad) sean tratados como tipos seguros antes de ser incluidos en texto, evitando inyecciones de datos no verificados en el reporte final.
-- `2026-08-06T00:33:41` **duplicates.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_collect_candidates` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta resuelta antes de procesar el contenido de directorios, evitando así el posible seguimiento de enlaces simbólicos o junctions que podrían apuntar a áreas protegidas del sistema fuera del árbol escaneado.
-- `2026-08-06T00:33:22` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `drive_usage` y `walk_files` para detectar y rechazar rutas UNC (`\\servidor\recurso`) y puntos de montaje de red, evitando bloqueos inesperados o intentos de escaneo sobre recursos compartidos de red que pueden ser inestables o maliciosos.

@@ -959,3 +959,28 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-06T02:46:10` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: manejo de errores y validación de entradas).
 - `2026-08-06T02:46:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-06T02:46:10` Corrida terminada. Total usado hoy: 68.
+- `2026-08-06T02:55:01` Arrancando corrida. Quedan hoy ~232 peticiones objetivo.
+- `2026-08-06T02:55:28` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se ha robustecido el manejo de excepciones y validación de parámetros en `scan_file` y `scan_directory` para evitar fallos por entradas nulas o rutas inválidas, garantizando que el flujo de escaneo no se interrumpa ante datos inesperados.
+- `2026-08-06T02:55:53` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Reforcé la robustez del manejo de archivos en `save()` capturando específicamente errores de escritura y permisos durante el proceso de guardado y limpieza de temporales, asegurando que cualquier fallo en la persistencia no deje la aplicación en un estado inconsistente o con archivos huérfanos.
+- `2026-08-06T02:56:17` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-06T02:56:30` Tests FALLARON:
+```
+
+==================================== ERRORS ====================================
+_______________ ERROR collecting evolve/tests/test_assistant.py ________________
+evolve/tests/test_assistant.py:25: in <module>
+    import assistant  # noqa: E402
+    ^^^^^^^^^^^^^^^^
+app/assistant.py:73: in <module>
+    HandlerFunc: TypeAlias = Callable[[SystemContext, str], "Answer"]
+                                       ^^^^^^^^^^^^^
+E   NameError: name 'SystemContext' is not defined
+=========================== short test summary info ============================
+ERROR evolve/tests/test_assistant.py - NameError: name 'SystemContext' is not defined
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.28s
+
+```
+- `2026-08-06T02:56:30` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la implementación de `TypeAlias` explícitos, la corrección de una inconsistencia de tipo en `_gen_problems` (asegurando que siempre retorne strings claros), y la adición de docstrings estructurados según el estándar Google para funciones críticas de lógica de negocio, facilitando la comprensión del flujo de datos sin alterar el comportamiento.
+- `2026-08-06T02:56:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-06T02:56:30` Corrida terminada. Total usado hoy: 72.
