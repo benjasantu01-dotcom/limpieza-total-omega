@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **258** (51.2% de aceptación)
+- Mejoras aceptadas: **261** (51.8% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 192
+- Sin respuesta de la IA (error o límite): 189
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-04 | 10 | 0 | 1 | 1 | 14 |
+| 2026-08-04 | 10 | 0 | 1 | 1 | 10 |
 | 2026-08-05 | 185 | 12 | 19 | 8 | 126 |
-| 2026-08-06 | 63 | 4 | 7 | 2 | 52 |
+| 2026-08-06 | 66 | 4 | 7 | 2 | 53 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **61**
 - manejo de errores y validación de entradas: **52**
+- seguridad defensiva: **52**
 - rendimiento: **51**
-- seguridad defensiva: **49**
 - robustez ante casos límite: **45**
 
 ## Mejoras aceptadas por archivo
 
 - `branding.py`: **24**
 - `browser.py`: **24**
+- `scanner.py`: **22**
 - `assistant.py`: **21**
 - `duplicates.py`: **21**
-- `scanner.py`: **21**
 - `quarantine.py`: **21**
+- `settings.py`: **21**
 - `diskreport.py`: **20**
-- `settings.py`: **20**
 - `main.py`: **19**
 - `healthscore.py`: **17**
 - `organizer.py`: **15**
 - `memory.py`: **14**
 - `safety.py`: **13**
-- `startup.py`: **8**
+- `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-06T05:30:21` **startup.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `entries_from_folders` al integrar la validación mediante `is_protected_path` directamente en el bucle de escaneo, asegurando que ninguna ruta sea procesada ni añadida a la lista si infringe las políticas de seguridad antes de cualquier operación de I/O.
+- `2026-08-06T05:29:56` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad en la carga de archivos al utilizar `ensure_safe_to_modify` antes de la lectura, eliminando la ambigüedad de `is_safe_to_modify` para operaciones críticas y evitando posibles lecturas en rutas bloqueadas que podrían ser inyectadas externamente.
+- `2026-08-06T05:29:32` **scanner.py** (seguridad defensiva): Mejoré la seguridad defensiva en `scanner.py` al implementar un chequeo estricto de puntos de reparse (junctions y symlinks) utilizando `os.lstat` antes de procesar archivos, evitando que el escáner siga rutas fuera del árbol de directorios autorizado, tal como lo exige el enfoque de seguridad defensiva.
 - `2026-08-06T05:19:43` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad de la función `purge_all` aplicando explícitamente `ensure_safe_to_modify` antes de cada operación de borrado individual para prevenir condiciones de carrera y garantizar que cada archivo sea validado en el momento exacto de su eliminación.
 - `2026-08-06T05:10:22` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad en `trim_working_set` implementando una validación explícita para evitar que se intente manipular procesos que pertenecen a sesiones de usuario distintas o fuera de control del usuario actual, previniendo riesgos de errores de manejo de memoria al interactuar con PIDs que podrían haber sido reciclados por el sistema operativo.
 - `2026-08-06T05:09:12` **healthscore.py** (seguridad defensiva): Reforcé la integridad del cálculo del `total_score` asegurando que la suma de pesos normalizados sea estrictamente consistente mediante una validación de `math.isclose` al procesar los resultados, evitando derivas numéricas por coma flotante que podrían corromper la fiabilidad del puntaje final.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-06T04:38:49` **quarantine.py** (robustez ante casos límite): Se reforzó la robustez de `quarantine_file` ante condiciones de carrera y fallos parciales de escritura mediante la implementación de un mecanismo de validación de espacio en disco más preciso y una limpieza preventiva más estricta, evitando dejar archivos temporales huérfanos en caso de interrupción del proceso.
 - `2026-08-06T04:38:20` **organizer.py** (robustez ante casos límite): Se reforzó la robustez de `stage_for_review` ante casos límite mediante la validación explícita de `is_file()` en el origen y la comprobación de que el archivo no haya cambiado de estado (ej. borrado por otro proceso) entre el escaneo y la ejecución, asegurando además que no existan errores de referencia cruzada con `resolve()` si la ruta base es inválida.
 - `2026-08-06T04:37:57` **memory.py** (robustez ante casos límite): Mejora la robustez de la función `read_snapshot` ante errores de formato o valores inesperados en `/proc/meminfo` mediante una validación más estricta en el parsing y el manejo de excepciones, garantizando que el sistema no reporte datos inconsistentes si los archivos del sistema están temporalmente bloqueados o corrompidos.
-- `2026-08-06T04:29:19` **main.py** (robustez ante casos límite): Mejoré la robustez de la inicialización de `LimpiezaTotalOmegaApp` añadiendo una comprobación de existencia y permisos para el directorio raíz del usuario antes de que la GUI intente acceder a él, evitando fallos en entornos con perfiles de usuario restringidos o no estándar.
-- `2026-08-06T04:19:00` **browser.py** (robustez ante casos límite): Mejoré la robustez de `directory_size` ante el acceso a archivos bloqueados por el sistema durante el escaneo, reemplazando la lógica simple de `os.walk` por un manejo de errores más granular y filtrado proactivo de excepciones, evitando que el proceso de cálculo falle prematuramente ante archivos protegidos o bloqueados.
-- `2026-08-06T04:18:53` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` y `_hex_to_rgb` frente a entradas mal formadas, implementando chequeos explícitos para evitar excepciones no controladas y asegurar la integridad de las rutas mediante `ensure_safe_to_modify` antes de cualquier operación de escritura.

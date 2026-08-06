@@ -75,7 +75,10 @@ class Scanner:
             if entry is None or not entry.path:
                 return
             
-            # Verificación de integridad: asegurar que la entrada sigue existiendo
+            # Verificación de integridad: asegurar que la entrada no es un symlink/reparse y sigue existiendo
+            if entry.is_symlink():
+                return
+            
             path_obj = Path(entry.path)
             if not path_obj.exists():
                 return

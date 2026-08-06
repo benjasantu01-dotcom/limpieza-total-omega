@@ -174,7 +174,8 @@ def load(path_or_base: PathLike | None = None) -> AppSettings:
     global _cached_settings, _current_path
     ruta = settings_path(path_or_base)
     try:
-        if not ruta.exists() or not is_safe_to_modify(str(ruta)): raise FileNotFoundError
+        ensure_safe_to_modify(ruta)
+        if not ruta.exists(): raise FileNotFoundError
         if ruta.stat().st_size > MAX_SETTINGS_SIZE or ruta.stat().st_size == 0: raise ValueError
         _cached_settings = validate(json.loads(ruta.read_text(encoding="utf-8")))
         _current_path = ruta
@@ -203,7 +204,7 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
             tf.flush()
             os.fsync(tf.fileno())
         
-        if not is_safe_to_modify(str(ruta)): raise PermissionError
+        ensure_safe_to_modify(ruta)
         os.replace(temp_path, ruta)
         _cached_settings, _current_path = limpio, ruta
         return ruta
