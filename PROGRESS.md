@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **249** (49.4% de aceptación)
+- Mejoras aceptadas: **246** (48.8% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 25
+- Rechazadas por guardia de seguridad: 26
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 204
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-04 | 19 | 0 | 2 | 1 | 36 |
+| 2026-08-04 | 15 | 0 | 2 | 1 | 36 |
 | 2026-08-05 | 185 | 12 | 19 | 8 | 126 |
-| 2026-08-06 | 45 | 4 | 4 | 1 | 42 |
+| 2026-08-06 | 46 | 4 | 5 | 1 | 44 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **61**
 - manejo de errores y validación de entradas: **52**
-- seguridad defensiva: **51**
-- rendimiento: **49**
+- rendimiento: **50**
+- seguridad defensiva: **47**
 - robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
-- `branding.py`: **23**
-- `browser.py`: **23**
-- `duplicates.py`: **22**
-- `diskreport.py`: **20**
+- `branding.py`: **22**
+- `browser.py`: **22**
+- `scanner.py`: **21**
+- `duplicates.py`: **21**
 - `quarantine.py`: **20**
-- `scanner.py`: **20**
 - `settings.py`: **20**
 - `main.py`: **19**
 - `assistant.py`: **19**
+- `diskreport.py`: **19**
 - `healthscore.py`: **17**
 - `organizer.py`: **14**
 - `safety.py`: **13**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-06T04:08:18` **scanner.py** (rendimiento): Optimizé el registro de heurísticas convirtiendo las lambdas de condición en un mapeo de diccionario (`REGISTRY_MAP`) para evitar la evaluación innecesaria de múltiples condiciones, permitiendo un acceso directo a la heurística basada en la extensión del archivo, mejorando así la eficiencia en cada iteración del bucle de escaneo.
 - `2026-08-06T03:58:40` **quarantine.py** (rendimiento): Optimizé la gestión de la caché del manifiesto implementando un acceso indexado (`item_map`) en `purge_all` y `restore_item` para evitar iteraciones lineales $O(N)$ sobre la lista de ítems, mejorando el rendimiento en escenarios con muchos archivos en cuarentena.
 - `2026-08-06T03:58:05` **memory.py** (rendimiento): Optimizé la eficiencia de `parse_windows_process_csv` reemplazando la creación de una lista intermedia de todas las líneas procesadas por un generador que filtra y parsea bajo demanda, reduciendo la huella de memoria al procesar listas largas de procesos.
 - `2026-08-06T03:57:40` **main.py** (rendimiento): Optimicé el sistema de caché implementando una invalidación granular basada en prefijos y añadiendo un chequeo preventivo de tamaño para evitar que el `OrderedDict` crezca indefinidamente, reduciendo así la sobrecarga de memoria en sesiones prolongadas.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-06T03:26:20` **quarantine.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en funciones críticas y la estandarización de tipos, asegurando que la lógica de validación (el PORQUÉ de las restricciones) sea transparente para futuras auditorías o mantenimiento.
 - `2026-08-06T03:17:34` **organizer.py** (legibilidad y documentación): He mejorado la documentación de las funciones y métodos mediante la adición de docstrings estructurados (estilo Google/NumPy) y la inclusión de type hints en variables internas para clarificar la lógica de las operaciones de escaneo y ordenamiento.
 - `2026-08-06T03:17:26` **memory.py** (legibilidad y documentación): Se añadieron Type Hints ausentes y se mejoró la documentación (docstrings) de `MemorySnapshot` y las funciones de lectura para clarificar el flujo de datos y las unidades de medida, cumpliendo con los estándares de legibilidad exigidos.
-- `2026-08-06T03:17:01` **main.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de la clase principal mediante la extracción de los métodos de construcción de UI de las pestañas (`_build_tab_...`) a una estructura que separa claramente la definición de la interfaz de la lógica operativa, facilitando la comprensión del flujo de la aplicación.

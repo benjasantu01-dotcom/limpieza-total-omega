@@ -1060,3 +1060,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-06T03:58:40` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimizé la gestión de la caché del manifiesto implementando un acceso indexado (`item_map`) en `purge_all` y `restore_item` para evitar iteraciones lineales $O(N)$ sobre la lista de ítems, mejorando el rendimiento en escenarios con muchos archivos en cuarentena.
 - `2026-08-06T03:58:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-06T03:58:40` Corrida terminada. Total usado hoy: 96.
+- `2026-08-06T04:07:00` Arrancando corrida. Quedan hoy ~204 peticiones objetivo.
+- `2026-08-06T04:07:29` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 104): unterminated string literal (detected at line 104)
+- `2026-08-06T04:07:55` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
+- `2026-08-06T04:08:18` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizé el registro de heurísticas convirtiendo las lambdas de condición en un mapeo de diccionario (`REGISTRY_MAP`) para evitar la evaluación innecesaria de múltiples condiciones, permitiendo un acceso directo a la heurística basada en la extensión del archivo, mejorando así la eficiencia en cada iteración del bucle de escaneo.
+- `2026-08-06T04:08:28` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: rendimiento).
+- `2026-08-06T04:08:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-06T04:08:28` Corrida terminada. Total usado hoy: 100.
