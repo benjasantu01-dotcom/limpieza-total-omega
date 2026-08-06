@@ -55,10 +55,10 @@ class PaletteDict(TypedDict):
     border: HexColor
     glow: HexColor
 
-APP_NAME: Final = "Limpieza Total Omega"
-APP_SHORT_NAME: Final = "Omega"
-APP_TAGLINE: Final = "Limpieza y seguridad, en un solo lugar"
-APP_VERSION: Final = "2.1.0"
+APP_NAME: Final[str] = "Limpieza Total Omega"
+APP_SHORT_NAME: Final[str] = "Omega"
+APP_TAGLINE: Final[str] = "Limpieza y seguridad, en un solo lugar"
+APP_VERSION: Final[str] = "2.1.0"
 
 # Paleta de colores centralizada usando MappingProxyType para inmutabilidad forzada.
 PALETTE: Final[Mapping[str, HexColor]] = MappingProxyType({
@@ -204,7 +204,7 @@ def score_color(score: Union[float, int, None]) -> HexColor:
 
 def bar(percent: Union[float, int, None], width: int = 24,
         filled: str = "\u2588", empty: str = "\u2591") -> str:
-    """Genera una barra de progreso textual con ancho definido."""
+    """Genera una cadena de texto representando una barra de progreso."""
     try:
         valor = max(0.0, min(100.0, float(percent))) # type: ignore
     except (TypeError, ValueError):
@@ -227,7 +227,7 @@ def _hex_to_rgb(value: HexColor) -> RGBTuple:
 
 @lru_cache(maxsize=64)
 def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
-    """Interpolación lineal de color entre dos extremos."""
+    """Interpolación lineal de color (0.0 a 1.0) entre dos extremos hex."""
     proporcion = max(0.0, min(1.0, float(ratio)))
     r1, g1, b1 = _hex_to_rgb(start)
     r2, g2, b2 = _hex_to_rgb(end)
@@ -239,14 +239,14 @@ def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
 
 
 @lru_cache(maxsize=16)
-def gradient_colors(steps: int, stops: tuple[HexColor, ...] = GRADIENT_STOPS) -> List[HexColor]:
-    """Genera una lista de N colores interpolados a partir de una lista de paradas."""
+def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> List[HexColor]:
+    """Genera una lista de N colores interpolados a partir de los puntos de parada."""
     cantidad = max(1, int(steps))
     if not stops: return [PALETTE["accent"]] * cantidad
     if len(stops) < 2: return [stops[0]] * cantidad
     
     tramos = len(stops) - 1
-    res = []
+    res: List[HexColor] = []
     for i in range(cantidad):
         posicion = i / max(1, cantidad - 1) * tramos
         idx = min(tramos - 1, int(posicion))
@@ -255,14 +255,14 @@ def gradient_colors(steps: int, stops: tuple[HexColor, ...] = GRADIENT_STOPS) ->
 
 
 def _get_shield_coords(sx: float, sy: float, s: float) -> List[float]:
-    """Calcula vértices normalizados para el diseño geométrico del logo."""
+    """Calcula vértices normalizados para la geometría del logo."""
     base = [64, 18, 100, 31, 100, 67, 90, 90, 64, 110, 38, 90, 28, 67, 28, 31]
     return [sx + v * s if i % 2 == 0 else sy + v * s for i, v in enumerate(base)]
 
 
 @lru_cache(maxsize=4)
 def logo_svg(size: int = 128) -> str:
-    """Serializa la identidad visual en formato SVG embebido."""
+    """Serializa la identidad visual en formato SVG."""
     return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{size}" height="{size}" viewBox="0 0 128 128">
   <defs>
     <linearGradient id="omegaShield" x1="0" y1="0" x2="1" y2="1">
@@ -293,7 +293,6 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         return None
     try:
         target = Path(destination).resolve()
-        # Verificación doble: que sea segura y que no sea una ruta protegida/sistema
         if is_protected_path(target) or not is_safe_to_modify(target):
             return None
         
@@ -317,7 +316,7 @@ def logo_ascii() -> str:
 
 
 def draw_logo(canvas: Any, size: int = 56, canvas_x: int = 0, canvas_y: int = 0) -> None:
-    """Dibuja el logo Omega usando primitivas de Tkinter canvas."""
+    """Renderiza el logo vectorial en un canvas de Tkinter."""
     if not hasattr(canvas, "create_polygon"): return
     try:
         s = max(0.1, float(size) / 128)
@@ -347,7 +346,7 @@ def draw_logo(canvas: Any, size: int = 56, canvas_x: int = 0, canvas_y: int = 0)
 def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
                       canvas_x: int = 0, canvas_y: int = 0,
                       stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
-    """Renderiza una línea horizontal degradada con optimización de segmentos."""
+    """Dibuja una línea horizontal degradada optimizada en el canvas."""
     if not hasattr(canvas, "create_line"): return
     try:
         ancho = max(1, int(width))
@@ -367,7 +366,7 @@ def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
               canvas_x: int = 0, canvas_y: int = 0, thickness: int = 14,
               track: Optional[HexColor] = None,
               fill: Optional[HexColor] = None) -> None:
-    """Dibuja un anillo de progreso de salud (HealthScore)."""
+    """Dibuja un anillo circular de progreso para indicadores de salud."""
     if not hasattr(canvas, "create_arc"): return
     try:
         valor = max(0.0, min(100.0, float(percent)))

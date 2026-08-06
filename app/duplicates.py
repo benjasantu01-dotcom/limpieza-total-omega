@@ -148,7 +148,11 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
 
 def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """
-    Escaneo recursivo para indexar archivos candidatos por tamaño.
+    Realiza un escaneo recursivo del sistema de archivos para indexar candidatos a duplicados.
+    
+    Usa el tamaño como clave primaria para agrupar archivos, evitando el acceso a 
+    contenido hasta que sea estrictamente necesario. Implementa detección de 
+    ciclos mediante inodes para evitar recursión infinita en enlaces simbólicos.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: set[Tuple[int, int]] = set()
@@ -165,7 +169,6 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
                         if entry.is_dir(follow_symlinks=False):
                             if inode_key not in visited_inodes:
                                 visited_inodes.add(inode_key)
-                                # Validación defensiva: verificar que la subcarpeta no sea protegida
                                 sub_path = Path(entry.path)
                                 if not (skip_protected and is_protected_path(sub_path)):
                                     _scan(sub_path)
@@ -177,15 +180,13 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
                     except (OSError, PermissionError): continue
         except (OSError, PermissionError): pass
 
-    if directories:
-        for directory in directories:
-            try:
-                # Verificamos existencia real antes de escanear
-                path_obj = Path(directory).resolve(strict=True)
-                if path_obj.is_dir():
-                    if not (skip_protected and is_protected_path(path_obj)):
-                        _scan(path_obj)
-            except (OSError, PermissionError, RuntimeError): continue
+    for directory in directories:
+        try:
+            path_obj = Path(directory).resolve(strict=True)
+            if path_obj.is_dir():
+                if not (skip_protected and is_protected_path(path_obj)):
+                    _scan(path_obj)
+        except (OSError, PermissionError, RuntimeError): continue
             
     return {size: paths for size, paths in temp_groups.items() if len(paths) > 1}
 
@@ -208,23 +209,25 @@ def find_duplicates(
     skip_protected: bool = True,
 ) -> List[DuplicateGroup]:
     """
-    Ejecuta el pipeline de detección en tres etapas para maximizar rendimiento:
-    1. Agrupación por tamaño (Filtro base).
-    2. Refinamiento por hash parcial (Filtro rápido).
-    3. Validación por hash completo (Confirmación final).
+    Ejecuta el pipeline de detección de duplicados en tres etapas:
+    
+    1. Fase de Metadatos (Size-based): Escaneo recursivo inicial filtrando por tamaño.
+    2. Fase de Muestreo (Partial-hash): Lectura de los primeros 64KB para descartar falsos positivos.
+    3. Fase de Confirmación (Full-hash): Lectura completa para verificar coincidencia absoluta.
+    
+    Retorna una lista de grupos ordenados por espacio desperdiciado descendente.
     """
     if not directories: return []
     
-    # 1. Candidatos iniciales por tamaño (lectura de metadatos)
     size_map = _collect_candidates(directories, min_size, skip_protected)
     
     groups: List[DuplicateGroup] = []
     for size, paths_in_size_group in size_map.items():
         
-        # 2. Refinamiento por Hash Parcial (primeros 64KB)
+        # Refinamiento intermedio: Hash de los primeros N bytes
         partial_groups = _refine_by_hash(paths_in_size_group, partial_hash)
         
-        # 3. Confirmación final por Hash Completo (integridad total)
+        # Validación final: Hash completo de archivo
         for partial_candidates in partial_groups.values():
             full_hash_groups = _refine_by_hash(partial_candidates, hash_file)
             for digest, confirmed_paths in full_hash_groups.items():

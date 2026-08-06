@@ -169,20 +169,25 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     if not directory:
         return
 
-    def is_reparse_point(p: Path) -> bool:
+    def is_reparse_point(path: Path) -> bool:
+        """Verifica si la ruta es un punto de reparse (junction o symlink avanzado)."""
         try:
-            return os.name == 'nt' and getattr(p.stat(follow_symlinks=False), 'st_reparse_tag', 0) != 0
+            return os.name == 'nt' and getattr(path.stat(follow_symlinks=False), 'st_reparse_tag', 0) != 0
         except (OSError, AttributeError):
             return False
+
+    def is_path_excluded(path: Path) -> bool:
+        """Determina si la ruta debe ser omitida del análisis."""
+        if path.is_symlink() or is_reparse_point(path):
+            return True
+        return skip_protected and is_protected_path(path)
 
     try:
         path_str = os.fspath(directory)
         if path_str.startswith(("\\\\", "//")):
             return
         base_path = Path(path_str).expanduser().resolve()
-        if not base_path.exists() or not base_path.is_dir() or base_path.is_symlink() or is_reparse_point(base_path):
-            return
-        if skip_protected and is_protected_path(base_path):
+        if not base_path.exists() or not base_path.is_dir() or is_path_excluded(base_path):
             return
     except (OSError, RuntimeError, PermissionError, ValueError, TypeError):
         return
@@ -194,11 +199,8 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
             with os.scandir(current_path) as iterator:
                 for entry in iterator:
                     try:
-                        if entry.is_symlink() or is_reparse_point(Path(entry.path)):
-                            continue
-                        
                         full_path = Path(entry.path).resolve()
-                        if skip_protected and is_protected_path(full_path):
+                        if is_path_excluded(full_path):
                             continue
                         
                         if entry.is_dir():

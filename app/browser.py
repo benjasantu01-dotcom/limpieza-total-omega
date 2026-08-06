@@ -135,48 +135,35 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
 
 def directory_size(path: str | os.PathLike | None) -> int:
     """
-    Calcula el peso total en bytes mediante recorrido iterativo con os.scandir.
-    Captura excepciones de acceso (PermissionError) para permitir análisis parcial.
+    Calcula el peso total en bytes mediante un recorrido recursivo controlado.
+    Ignora enlaces simbólicos y puntos de reparse para evitar loops o conteos erróneos.
     """
     if path is None:
         return 0
     
-    try:
-        root = Path(path).resolve()
-        # Pre-chequeo de longitud de ruta para evitar problemas con APIs de SO
-        if len(str(root)) > 260:
-            return 0
-        if not root.exists() or not root.is_dir() or is_protected_path(root):
-            return 0
-        root_resolved: str = str(root)
-    except (OSError, PermissionError, RuntimeError):
+    root = Path(path)
+    if not root.exists() or not root.is_dir() or is_protected_path(root):
         return 0
-    
-    total_bytes: int = 0
-    stack: List[str] = [root_resolved]
-    is_junction_func = getattr(os.path, 'isjunction', lambda _: False)
-    
-    while stack:
-        current_dir: str = stack.pop()
-        try:
-            with os.scandir(current_dir) as it:
-                for entry in it:
-                    try:
-                        if entry.is_symlink() or is_junction_func(entry.path):
-                            continue
 
-                        if entry.is_dir():
-                            if not is_protected_path(Path(entry.path)):
-                                stack.append(entry.path)
-                        else:
-                            name_lower: str = entry.name.lower()
-                            if name_lower not in NEVER_TOUCH and not any(ord(c) < 32 for c in entry.name):
-                                # st_size puede fallar si el archivo es bloqueado durante la iteración
-                                total_bytes += entry.stat(follow_symlinks=False).st_size
-                    except (OSError, PermissionError):
-                        continue
-        except (OSError, PermissionError):
-            continue
+    total_bytes: int = 0
+    is_junction = getattr(os.path, 'isjunction', lambda _: False)
+
+    for dirpath, dirnames, filenames in os.walk(root):
+        # Filtra carpetas protegidas o enlaces simbólicos/junctions en el proceso
+        dirnames[:] = [
+            d for d in dirnames 
+            if not is_protected_path(Path(dirpath) / d) 
+            and not os.path.islink(os.path.join(dirpath, d))
+            and not is_junction(os.path.join(dirpath, d))
+        ]
+
+        for f in filenames:
+            file_path = Path(dirpath) / f
+            if file_path.name.lower() not in NEVER_TOUCH:
+                try:
+                    total_bytes += file_path.stat(follow_symlinks=False).st_size
+                except (OSError, PermissionError):
+                    continue
             
     return total_bytes
 
