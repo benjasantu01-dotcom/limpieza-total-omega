@@ -289,12 +289,13 @@ def logo_svg(size: int = 128) -> str:
 
 def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     """Guarda el logo en SVG tras validar la seguridad de la ruta destino."""
-    if not destination: return None
+    if destination is None: return None
     try:
         target = Path(destination).resolve()
-        # Validación: ensure_safe_to_modify confirma la seguridad y lanza si es necesario.
+        # La validación asegura integridad, lanzando excepciones controladas.
         ensure_safe_to_modify(target)
-        target.parent.mkdir(parents=True, exist_ok=True)
+        if not target.parent.exists():
+            target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(logo_svg(), encoding="utf-8")
         return target
     except (OSError, PermissionError, TypeError, ValueError, RuntimeError):
@@ -367,7 +368,8 @@ def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
     """Dibuja un anillo circular de progreso para indicadores de salud."""
     if not hasattr(canvas, "create_arc"): return
     try:
-        valor = max(0.0, min(100.0, float(percent)))
+        val_f = float(percent)
+        valor = max(0.0, min(100.0, val_f))
         diametro = max(20, int(size))
         grosor = max(2, min(int(thickness), diametro // 2 - 1))
     except (TypeError, ValueError): return

@@ -222,7 +222,8 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         score_val = extract(health, "score", None, int)
         if score_val is not None:
             ctx.score = int(max(0, min(score_val, 100)))
-        grade = getattr(health, "grade", "") if hasattr(health, "grade") else ""
+        
+        grade = getattr(health, "grade", "")
         ctx.grade = str(grade) if isinstance(grade, (str, int, float)) else ""
         ctx.analyzed = True
 
