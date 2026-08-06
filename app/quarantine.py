@@ -421,6 +421,9 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
 
     if not stored_file.exists() or not match.verify_integrity(stored_file):
         raise UnsafePathError(f"Integridad comprometida: no se borra un archivo sospechoso modificado.")
+    
+    # Validar seguridad antes de la acción final
+    ensure_safe_to_modify(stored_file, allow_sensitive=False)
 
     success = _safe_unlink(stored_file)
     if success:
@@ -455,13 +458,16 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
                 continue
             
             try:
+                # Verificación de seguridad reforzada: validar antes de cada borrado
                 if entry.name in stored_names_in_manifest:
                     if item_map[entry.name].verify_integrity(entry):
+                        ensure_safe_to_modify(entry, allow_sensitive=False)
                         if _safe_unlink(entry):
                             count += 1
                 else:
+                    ensure_safe_to_modify(entry, allow_sensitive=False)
                     _safe_unlink(entry)
-            except (OSError, PermissionError):
+            except (OSError, PermissionError, UnsafePathError):
                 continue
     except OSError:
         pass

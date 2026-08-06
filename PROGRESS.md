@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **257** (51.0% de aceptación)
+- Mejoras aceptadas: **258** (51.2% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 26
+- Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 194
+- Sin respuesta de la IA (error o límite): 192
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-04 | 10 | 0 | 1 | 1 | 18 |
+| 2026-08-04 | 10 | 0 | 1 | 1 | 14 |
 | 2026-08-05 | 185 | 12 | 19 | 8 | 126 |
-| 2026-08-06 | 62 | 4 | 6 | 2 | 50 |
+| 2026-08-06 | 63 | 4 | 7 | 2 | 52 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **61**
 - manejo de errores y validación de entradas: **52**
 - rendimiento: **51**
-- seguridad defensiva: **48**
+- seguridad defensiva: **49**
 - robustez ante casos límite: **45**
 
 ## Mejoras aceptadas por archivo
@@ -35,8 +35,8 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **21**
 - `duplicates.py`: **21**
 - `scanner.py`: **21**
+- `quarantine.py`: **21**
 - `diskreport.py`: **20**
-- `quarantine.py`: **20**
 - `settings.py`: **20**
 - `main.py`: **19**
 - `healthscore.py`: **17**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-06T05:19:43` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad de la función `purge_all` aplicando explícitamente `ensure_safe_to_modify` antes de cada operación de borrado individual para prevenir condiciones de carrera y garantizar que cada archivo sea validado en el momento exacto de su eliminación.
 - `2026-08-06T05:10:22` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad en `trim_working_set` implementando una validación explícita para evitar que se intente manipular procesos que pertenecen a sesiones de usuario distintas o fuera de control del usuario actual, previniendo riesgos de errores de manejo de memoria al interactuar con PIDs que podrían haber sido reciclados por el sistema operativo.
 - `2026-08-06T05:09:12` **healthscore.py** (seguridad defensiva): Reforcé la integridad del cálculo del `total_score` asegurando que la suma de pesos normalizados sea estrictamente consistente mediante una validación de `math.isclose` al procesar los resultados, evitando derivas numéricas por coma flotante que podrían corromper la fiabilidad del puntaje final.
 - `2026-08-06T05:00:49` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `walk_files` y las funciones de análisis al implementar una resolución de rutas más cautelosa y consistente con las restricciones de seguridad, asegurando que `is_protected_path` se aplique sobre rutas resueltas y normalizadas antes de cualquier operación de exploración, previniendo así posibles escapes de directorio mediante enlaces simbólicos maliciosos.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-06T04:29:19` **main.py** (robustez ante casos límite): Mejoré la robustez de la inicialización de `LimpiezaTotalOmegaApp` añadiendo una comprobación de existencia y permisos para el directorio raíz del usuario antes de que la GUI intente acceder a él, evitando fallos en entornos con perfiles de usuario restringidos o no estándar.
 - `2026-08-06T04:19:00` **browser.py** (robustez ante casos límite): Mejoré la robustez de `directory_size` ante el acceso a archivos bloqueados por el sistema durante el escaneo, reemplazando la lógica simple de `os.walk` por un manejo de errores más granular y filtrado proactivo de excepciones, evitando que el proceso de cálculo falle prematuramente ante archivos protegidos o bloqueados.
 - `2026-08-06T04:18:53` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` y `_hex_to_rgb` frente a entradas mal formadas, implementando chequeos explícitos para evitar excepciones no controladas y asegurar la integridad de las rutas mediante `ensure_safe_to_modify` antes de cualquier operación de escritura.
-- `2026-08-06T04:18:24` **assistant.py** (robustez ante casos límite): Reforcé la robustez de `_call_gemini` y `_ensure_safe_text` ante entradas malformadas o inesperadas, asegurando que cualquier fallo en la serialización o respuesta externa sea capturado sin romper el flujo de la aplicación.
