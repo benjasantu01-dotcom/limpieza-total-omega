@@ -138,7 +138,7 @@ def _get_sha256(path: Path) -> str:
 def _is_file_locked(path: Path) -> bool:
     """Verifica si un archivo está en uso exclusivo por otro proceso."""
     try:
-        with open(path, "rb") as f:
+        with open(path, "rb+") as f:
             return False
     except (OSError, PermissionError):
         return True
@@ -290,8 +290,12 @@ def quarantine_file(
     if destination.exists():
         raise FileExistsError(f"Colisión de nombre en destino: {destination}")
 
+    # Bloqueo preventivo mediante un reintento atómico de renombre
     try:
-        shutil.move(str(source_path), str(destination))
+        temp_dest = destination.with_suffix(".tmp")
+        shutil.copy2(source_path, temp_dest)
+        os.replace(temp_dest, destination)
+        _safe_unlink(source_path)
     except (OSError, PermissionError) as e:
         if destination.exists():
             _safe_unlink(destination)

@@ -219,9 +219,6 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Path:
     """
     Mueve archivos candidatos a un directorio de cuarentena para revisión humana.
-    
-    Utiliza `ensure_safe_to_modify` para proteger el directorio de destino y
-    evita mover archivos que están actualmente en uso o son inseguros.
     """
     if not files:
         raise ValueError("La lista de archivos a procesar no puede estar vacía.")
@@ -234,20 +231,18 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         raise ValueError(f"No se pudo preparar el directorio de revisión: {e}")
 
     for jf in files:
-        if not isinstance(jf, JunkFile) or not hasattr(jf, 'path') or jf.path is None:
-            continue
         try:
+            if not jf.path.exists() or not jf.path.is_file():
+                continue
+                
             current_abs = jf.path.resolve()
             
-            # Verificación de integridad final antes de mover
-            if not current_abs.exists() or not current_abs.is_file() or not is_safe_to_modify(current_abs):
+            # Verificación de seguridad y estado
+            if not is_safe_to_modify(current_abs):
                 continue
             
             # Evitar movimientos circulares o dentro de la propia jerarquía
             if current_abs.parent == dest or dest in current_abs.parents or current_abs in dest.parents:
-                continue
-            
-            if os.path.samefile(current_abs, dest):
                 continue
             
             if not _is_file_accessible(current_abs):
@@ -255,7 +250,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 
             target = _generate_unique_target(dest / f"{current_abs.stem}_{int(jf.modified.timestamp())}{current_abs.suffix}")
             
-            # Asegurar que el destino sigue siendo seguro antes de la operación de E/S
+            # Asegurar que el destino sigue siendo seguro
             if not is_safe_to_modify(target.parent):
                 continue
 

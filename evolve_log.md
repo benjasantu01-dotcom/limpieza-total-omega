@@ -649,3 +649,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-06T00:03:25` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
 - `2026-08-06T00:03:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-06T00:03:25` Corrida terminada. Total usado hoy: 4.
+- `2026-08-06T00:11:34` Arrancando corrida. Quedan hoy ~296 peticiones objetivo.
+- `2026-08-06T00:11:59` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se mejoró `stage_for_review` para manejar correctamente casos donde la ruta de origen o destino no existen, o donde se intentan operaciones sobre archivos que fueron eliminados o renombrados por otros procesos entre el escaneo y el movimiento, añadiendo validaciones de integridad robustas.
+- `2026-08-06T00:12:28` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se introdujo una validación de concurrencia en `quarantine_file` utilizando un bloqueo exclusivo temporal (renombrado atómico) para evitar condiciones de carrera, garantizando que el archivo no sea modificado o accedido por otros procesos durante el movimiento a cuarentena.
+- `2026-08-06T00:12:46` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-06T00:12:57` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se añadió una validación explícita para evitar la manipulación de rutas que excedan el límite `MAX_PATH` de Windows (260 caracteres) mediante `os.path.normpath` para detectar el formato de prefijo largo `\\?\` que intenta evadir el chequeo de seguridad, garantizando que ninguna ruta potencialmente insegura o malformada pase los filtros.
+- `2026-08-06T00:12:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-06T00:12:57` Corrida terminada. Total usado hoy: 8.

@@ -76,8 +76,10 @@ def _has_invalid_chars(path_str: str) -> bool:
     Previene ataques mediante rutas con caracteres RTL o prefijos de dispositivos
     (ej: \\\\?\\) que el API de archivos de Windows interpreta de forma especial.
     """
+    # Se añade normalización previa para detectar prefijos largos que intentan evadir el filtro
+    norm = os.path.normpath(path_str)
     return bool("\0" in path_str or re.search(r'[\u0000-\u001F\u007F-\u009F\u200E\u200F\u202A-\u202E]', path_str) or
-                path_str.startswith(r"\\?") or path_str.startswith(r"\\."))
+                norm.startswith(r"\\?") or norm.startswith(r"\\."))
 
 
 def _is_reserved_device_name(name: str) -> bool:
@@ -236,8 +238,9 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
 
     str_val = str(p)
 
+    # Validaciones críticas: caracteres prohibidos, límite de longitud Win32 (260) y dispositivos
     if _has_invalid_chars(str_val) or len(str_val) > 260 or _is_reserved_device_name(p.stem):
-        raise UnsafePathError("Ruta inválida o formato bloqueado.")
+        raise UnsafePathError("Ruta inválida, demasiado larga o formato bloqueado.")
     if str_val.startswith(("\\\\", "//")):
         raise UnsafePathError("Operación bloqueada: rutas de red no permitidas.")
     
