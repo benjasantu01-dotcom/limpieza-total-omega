@@ -191,45 +191,40 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     """
     ctx = SystemContext()
 
-    def is_valid_num(v: Any) -> bool:
-        return isinstance(v, (int, float)) and not isinstance(v, bool) and math.isfinite(v)
-
-    def extract(source: Any, attr: str, default: Any, cast: Callable = float) -> Any:
-        if source is None or not hasattr(source, attr):
-            return default
+    def _val(v: Any, default: float = 0.0, cast: Callable = float) -> Any:
+        """Helper interno para limpiar y validar valores numéricos finitos."""
         try:
-            val = getattr(source, attr)
-            if val is None or not is_valid_num(val):
+            if v is None or isinstance(v, bool) or not math.isfinite(float(v)):
                 return default
-            return cast(val)
+            return cast(v)
         except (ValueError, TypeError):
             return default
 
     if metrics is not None:
-        ctx.junk_mb = max(0.0, extract(metrics, "junk_mb", 0.0))
-        ctx.suspicious_count = int(max(0, extract(metrics, "suspicious_count", 0, int)))
-        ctx.suspicious_warnings = int(max(0, extract(metrics, "suspicious_warnings", 0, int)))
-        ctx.memory_available_percent = max(0.0, min(extract(metrics, "memory_available_percent", 0.0), 100.0))
-        ctx.disk_free_percent = max(0.0, min(extract(metrics, "disk_free_percent", 0.0), 100.0))
-        ctx.duplicate_mb = max(0.0, extract(metrics, "duplicate_mb", 0.0))
-        ctx.startup_count = int(max(0, extract(metrics, "startup_count", 0, int)))
-        ctx.quarantined_count = int(max(0, extract(metrics, "quarantined_count", 0, int)))
-        ctx.browser_cache_mb = max(0.0, extract(metrics, "browser_cache_mb", 0.0))
-        ctx.memory_total_gb = max(0.0, extract(metrics, "memory_total_gb", 0.0))
+        ctx.junk_mb = max(0.0, _val(getattr(metrics, "junk_mb", 0.0)))
+        ctx.suspicious_count = int(max(0, _val(getattr(metrics, "suspicious_count", 0), 0, int)))
+        ctx.suspicious_warnings = int(max(0, _val(getattr(metrics, "suspicious_warnings", 0), 0, int)))
+        ctx.memory_available_percent = max(0.0, min(_val(getattr(metrics, "memory_available_percent", 0.0)), 100.0))
+        ctx.disk_free_percent = max(0.0, min(_val(getattr(metrics, "disk_free_percent", 0.0)), 100.0))
+        ctx.duplicate_mb = max(0.0, _val(getattr(metrics, "duplicate_mb", 0.0)))
+        ctx.startup_count = int(max(0, _val(getattr(metrics, "startup_count", 0), 0, int)))
+        ctx.quarantined_count = int(max(0, _val(getattr(metrics, "quarantined_count", 0), 0, int)))
+        ctx.browser_cache_mb = max(0.0, _val(getattr(metrics, "browser_cache_mb", 0.0)))
+        ctx.memory_total_gb = max(0.0, _val(getattr(metrics, "memory_total_gb", 0.0)))
         ctx.analyzed = True
 
     if health is not None:
-        score_val = extract(health, "score", None, int)
-        if score_val is not None:
-            ctx.score = int(max(0, min(score_val, 100)))
+        raw_score = getattr(health, "score", None)
+        if raw_score is not None:
+            ctx.score = int(max(0, min(_val(raw_score, 0, int), 100)))
         
         grade = getattr(health, "grade", "")
         ctx.grade = str(grade) if isinstance(grade, (str, int, float)) else ""
         ctx.analyzed = True
 
     for k, v in extra.items():
-        if hasattr(ctx, k) and is_valid_num(v):
-            setattr(ctx, k, float(v))
+        if hasattr(ctx, k) and isinstance(v, (int, float)):
+            setattr(ctx, k, _val(v))
 
     return ctx
 

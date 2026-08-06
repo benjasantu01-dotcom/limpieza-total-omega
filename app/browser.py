@@ -100,6 +100,8 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
     """
     Valida la integridad de la ruta contra escapes (directory traversal) y 
     evita seguir enlaces simbólicos o puntos de reparse (junctions).
+    
+    Requiere paths resueltos y absolutos para comparación.
     """
     if not isinstance(target_path, Path) or not isinstance(base_path, Path):
         return False
@@ -137,6 +139,8 @@ def directory_size(path: str | os.PathLike | None) -> int:
     """
     Calcula el peso total en bytes mediante un recorrido recursivo controlado.
     Ignora enlaces simbólicos y puntos de reparse para evitar loops o conteos erróneos.
+    
+    Retorna 0 ante errores de acceso o rutas protegidas.
     """
     if path is None:
         return 0
@@ -170,9 +174,11 @@ def directory_size(path: str | os.PathLike | None) -> int:
     return total_bytes
 
 
-def _is_valid_cache_path(candidate: Path | None, base_path: Path) -> bool:
+def _is_valid_cache_path(candidate: Optional[Path], base_path: Path) -> bool:
     """
     Valida si una ruta candidata es un objetivo legítimo de limpieza.
+    
+    Comprueba existencia, que sea directorio, y que cumpla políticas de seguridad.
     """
     if not isinstance(candidate, Path) or not isinstance(base_path, Path):
         return False

@@ -315,7 +315,8 @@ def logo_ascii() -> str:
 
 
 def draw_logo(canvas: Any, size: int = 56, canvas_x: int = 0, canvas_y: int = 0) -> None:
-    """Renderiza el logo vectorial en un canvas de Tkinter."""
+    """Renderiza el logo vectorial en un canvas de Tkinter. 
+    Usa coordenadas escaladas para mantener la fidelidad visual."""
     if not hasattr(canvas, "create_polygon"): return
     try:
         s = max(0.1, float(size) / 128)
@@ -345,7 +346,7 @@ def draw_logo(canvas: Any, size: int = 56, canvas_x: int = 0, canvas_y: int = 0)
 def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
                       canvas_x: int = 0, canvas_y: int = 0,
                       stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
-    """Dibuja una línea horizontal degradada optimizada en el canvas."""
+    """Dibuja una franja horizontal con degradado optimizado mediante segmentos de color."""
     if not hasattr(canvas, "create_line"): return
     try:
         ancho = max(1, int(width))
@@ -365,7 +366,7 @@ def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
               canvas_x: int = 0, canvas_y: int = 0, thickness: int = 14,
               track: Optional[HexColor] = None,
               fill: Optional[HexColor] = None) -> None:
-    """Dibuja un anillo circular de progreso para indicadores de salud."""
+    """Renderiza un anillo circular representando un estado de salud o progreso."""
     if not hasattr(canvas, "create_arc"): return
     try:
         val_f = float(percent)

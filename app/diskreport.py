@@ -165,6 +165,9 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Recorre recursivamente un directorio omitiendo enlaces simbólicos y rutas protegidas.
+    
+    Gestiona errores de acceso (PermissionError) saltando directorios o archivos restringidos
+    de forma silenciosa para permitir que el análisis continúe en el resto del sistema.
     """
     if not directory:
         return
@@ -208,6 +211,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                                 visited_directories.add(full_path)
                                 yield from scan_level(full_path)
                         else:
+                            # entry.stat() podría fallar si el archivo es bloqueado o eliminado
                             yield full_path, entry.stat().st_size
                     except (OSError, PermissionError):
                         continue
@@ -250,6 +254,9 @@ def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip
 def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
     """
     Calcula qué subdirectorios de primer nivel ocupan más espacio total.
+    
+    Agrupa recursivamente todos los archivos encontrados bajo una carpeta de nivel 1 
+    respecto a la ruta base proporcionada.
     """
     if not directory:
         return []
@@ -261,6 +268,7 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
         folder_map: Dict[Path, FolderUsage] = {}
         for path, size in walk_files(base, skip_protected):
             try:
+                # Obtenemos la parte superior (subcarpeta directa de base)
                 rel = path.relative_to(base)
                 top_level = base / rel.parts[0]
                 
