@@ -136,13 +136,17 @@ def app_title() -> str:
 @lru_cache(maxsize=32)
 def color(name: str) -> HexColor:
     """Busca un color hexadecimal en la paleta global. Retorna gris si no existe."""
+    if not isinstance(name, str):
+        return "#808080"
     return PALETTE.get(name, "#808080")
 
 
 @lru_cache(maxsize=16)
 def font_size(name: str) -> int:
     """Obtiene el tamaño tipográfico numérico según clave, fallback a 'body'."""
-    return FONT_SIZES.get(name, FONT_SIZES["body"])
+    if not isinstance(name, str) or name not in FONT_SIZES:
+        return FONT_SIZES["body"]
+    return FONT_SIZES[name]
 
 
 def icon(section: Optional[str]) -> str:
@@ -159,7 +163,7 @@ def tab_label(section: str) -> str:
 
 def severity_color(severity: Optional[str]) -> HexColor:
     """Devuelve el color hex asociado a una severidad; fallback a text_muted."""
-    if severity and isinstance(severity, str):
+    if isinstance(severity, str):
         if style := SEVERITY_STYLES.get(severity.lower()):
             return style[0]
     return PALETTE["text_muted"]
@@ -167,17 +171,18 @@ def severity_color(severity: Optional[str]) -> HexColor:
 
 def severity_label(severity: Optional[str]) -> str:
     """Devuelve el nombre legible de una severidad o el input en mayúsculas."""
-    if severity and isinstance(severity, str):
+    if isinstance(severity, str):
         if style := SEVERITY_STYLES.get(severity.lower()):
             return style[1]
-        return severity.upper()
+        if severity.strip():
+            return severity.upper()
     return "Desconocido"
 
 
 def severity_icon(severity: Optional[str]) -> str:
     """Retorna el glifo representativo para una severidad; fallback a punto."""
     simbolos = {"ok": "\u2713", "info": "\u2139", "warning": "\u26a0", "danger": "\u2716"}
-    if severity and isinstance(severity, str):
+    if isinstance(severity, str):
         return simbolos.get(severity.lower(), "\u2022")
     return "\u2022"
 
@@ -185,7 +190,8 @@ def severity_icon(severity: Optional[str]) -> str:
 def grade_color(grade: Optional[str]) -> HexColor:
     """Obtiene el color de calificación (A-F); fallback a text_muted."""
     if isinstance(grade, str) and grade.strip():
-        return GRADE_COLORS.get(grade.upper()[0], PALETTE["text_muted"])
+        char = grade.upper()[0]
+        return GRADE_COLORS.get(char, PALETTE["text_muted"])
     return PALETTE["text_muted"]
 
 

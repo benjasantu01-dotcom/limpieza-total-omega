@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **232** (46.0% de aceptación)
+- Mejoras aceptadas: **231** (45.8% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 27
+- Rechazadas por guardia de seguridad: 26
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 214
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-05 | 121 | 11 | 13 | 6 | 89 |
-| 2026-08-06 | 111 | 7 | 14 | 7 | 125 |
+| 2026-08-05 | 118 | 11 | 12 | 6 | 89 |
+| 2026-08-06 | 113 | 7 | 14 | 7 | 127 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **55**
+- legibilidad y documentación: **52**
 - seguridad defensiva: **50**
 - rendimiento: **47**
 - robustez ante casos límite: **42**
-- manejo de errores y validación de entradas: **38**
+- manejo de errores y validación de entradas: **40**
 
 ## Mejoras aceptadas por archivo
 
+- `branding.py`: **22**
 - `browser.py`: **22**
-- `branding.py`: **21**
 - `quarantine.py`: **21**
 - `scanner.py`: **20**
 - `settings.py`: **20**
-- `assistant.py`: **18**
+- `assistant.py`: **19**
 - `diskreport.py`: **18**
-- `duplicates.py`: **17**
+- `duplicates.py`: **16**
 - `main.py`: **16**
-- `healthscore.py`: **15**
-- `memory.py`: **14**
+- `healthscore.py`: **14**
 - `organizer.py`: **13**
+- `memory.py`: **13**
 - `safety.py`: **11**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-06T11:20:16` **branding.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las funciones de acceso a datos (`color`, `font_size`, `icon`, `severity_color`, `severity_label`, `severity_icon`, `grade_color`) mediante la validación temprana de entradas y el manejo explícito de casos `None` o inválidos, evitando excepciones inesperadas y garantizando siempre un retorno seguro.
+- `2026-08-06T11:20:02` **assistant.py** (manejo de errores y validación de entradas): Reforcé la robustez de `_call_gemini` mediante la validación explícita de tipos y la captura de errores específicos durante la carga de JSON, evitando excepciones durante el parseo de respuestas potencialmente malformadas o vacías.
 - `2026-08-06T09:56:32` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save` integrando una validación previa mediante `is_safe_to_modify` antes de intentar cualquier operación de disco, evitando así el riesgo de operar sobre rutas protegidas antes de lanzar la excepción definitiva.
 - `2026-08-06T09:56:07` **scanner.py** (seguridad defensiva): Se implementó una validación de rutas mediante `pathlib.Path.resolve().parts` en `scan_directory` para garantizar que el análisis permanezca estrictamente dentro de los límites del directorio raíz solicitado, previniendo posibles ataques de *directory traversal* mediante enlaces simbólicos o referencias relativas que pudieran haber escapado a validaciones previas.
 - `2026-08-06T09:46:29` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva al forzar una resolución absoluta y normalizada de todas las rutas de archivos dentro de `purge_all` antes de cualquier validación, evitando posibles ataques por evasión mediante rutas relativas o cambios en el directorio de trabajo actual.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-06T09:15:28` **scanner.py** (robustez ante casos límite): Se ha añadido un bloque `try-except` robusto y validación de atributos de archivo en `scan_directory` y `process_entry` para manejar correctamente rutas con permisos denegados o archivos inaccesibles durante el recorrido del sistema de archivos, mejorando la resiliencia ante errores de E/S.
 - `2026-08-06T09:15:05` **safety.py** (robustez ante casos límite): Se ha implementado un mecanismo de control de concurrencia y acceso mediante un bloque `try-except` robusto en `_is_file_in_use` para manejar mejor el caso en que el archivo es bloqueado por procesos del sistema o permisos denegados, evitando que el escáner aborte por excepciones no controladas.
 - `2026-08-06T09:07:05` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` ante fallos parciales durante la copia y el registro, asegurando que si ocurre una interrupción, el archivo temporal se limpie y el sistema no quede en un estado inconsistente.
-- `2026-08-06T08:55:10` **healthscore.py** (robustez ante casos límite): He mejorado la robustez de `score_security` ante entradas negativas o no numéricas (mediante `_to_int`) y he blindado `_generate_recommendations` contra posibles fallos de división por cero o datos incompletos en el mapeo de puntajes, asegurando que la UI nunca reciba resultados inconsistentes.
-- `2026-08-06T08:54:37` **diskreport.py** (robustez ante casos límite): Se mejoró la robustez de `walk_files` y `largest_folders` ante archivos inaccesibles o bloqueados, asegurando que `entry.stat()` no lance excepciones fatales que interrumpan el análisis completo al intentar leer metadatos de archivos protegidos por el sistema o en uso.
