@@ -206,10 +206,7 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
 
 
 def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload: bool = False) -> List[QuarantineItem]:
-    """
-    Carga el manifiesto de cuarentena. 
-    Usa una caché basada en mtime para evitar lecturas de disco redundantes.
-    """
+    """Carga el manifiesto de cuarentena con caché de memoria (mtime)."""
     try:
         base_path = quarantine_dir(base)
         path = _manifest_path(base_path)
@@ -272,10 +269,7 @@ def quarantine_file(
     reason: str = "Marcado como sospechoso",
     base: Union[str, Path] = DEFAULT_QUARANTINE_DIR,
 ) -> QuarantineItem:
-    """
-    Realiza la migración segura de un archivo a la carpeta de cuarentena.
-    Incluye validación de seguridad contra path traversal, enlaces y bloqueos.
-    """
+    """Realiza la migración segura de un archivo a la carpeta de cuarentena."""
     if not source:
         raise ValueError("La ruta de origen no puede estar vacía.")
     
@@ -330,7 +324,7 @@ def quarantine_file(
             quarantined_at=datetime.now().isoformat(timespec="seconds"),
             sha256=file_hash,
         )
-        items = load_manifest(base).copy()
+        items = load_manifest(base)
         items.append(item)
         save_manifest(items, base)
         return item
@@ -346,10 +340,7 @@ def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[Quaranti
 
 
 def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
-    """
-    Restaura un archivo de la cuarentena a su ruta original.
-    Verifica integridad del archivo, protege contra rutas de sistema y validaciones de seguridad.
-    """
+    """Restaura un archivo de la cuarentena a su ruta original."""
     if not item_id or not isinstance(item_id, str):
         raise ValueError("ID de ítem vacío o tipo incorrecto.")
     
@@ -449,10 +440,7 @@ def _should_purge_file(entry: Path, quarantine_root: Path, item_map: Dict[str, Q
 
 
 def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
-    """
-    Vacía la cuarentena, borrando solo archivos cuya integridad se puede verificar.
-    Ignora archivos no registrados en el manifiesto por seguridad.
-    """
+    """Vacía la cuarentena, borrando solo archivos cuya integridad se puede verificar."""
     try:
         quarantine_root = quarantine_dir(base)
     except OSError:

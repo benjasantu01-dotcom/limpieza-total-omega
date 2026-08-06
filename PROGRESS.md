@@ -6,32 +6,32 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **231** (45.8% de aceptación)
-- Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 25
+- Mejoras aceptadas: **230** (45.6% de aceptación)
+- Rechazadas por tests: 14
+- Rechazadas por guardia de seguridad: 26
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 216
+- Sin respuesta de la IA (error o límite): 218
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-05 | 93 | 8 | 9 | 6 | 84 |
-| 2026-08-06 | 138 | 8 | 16 | 10 | 132 |
+| 2026-08-05 | 91 | 6 | 9 | 6 | 84 |
+| 2026-08-06 | 139 | 8 | 17 | 10 | 134 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **61**
-- seguridad defensiva: **50**
+- seguridad defensiva: **48**
 - manejo de errores y validación de entradas: **46**
-- rendimiento: **42**
+- rendimiento: **43**
 - robustez ante casos límite: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `branding.py`: **22**
-- `browser.py`: **22**
-- `quarantine.py`: **21**
+- `quarantine.py`: **22**
+- `branding.py`: **21**
+- `browser.py`: **21**
 - `diskreport.py`: **20**
 - `assistant.py`: **19**
 - `settings.py`: **18**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-06T13:00:28` **quarantine.py** (rendimiento): Optimicé el rendimiento de `load_manifest` y `list_items` convirtiendo la operación de carga de O(N) a O(1) cuando el manifiesto no ha cambiado, y eliminé el `copy()` innecesario en `quarantine_file` para reducir el uso de memoria durante la manipulación de la lista de ítems.
 - `2026-08-06T12:51:09` **main.py** (rendimiento): Optimicé el método `_compile_metrics` de `main.py` para evitar cálculos redundantes de E/S, moviendo la resolución de rutas y el cálculo de porcentajes fuera del loop principal y reutilizando el caché de sesión ya implementado.
 - `2026-08-06T12:50:04` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje global en `compute_score` eliminando iteraciones redundantes y el uso de `.get()` dentro del loop crítico, accediendo directamente a las variables locales ya calculadas para reducir la carga de CPU.
 - `2026-08-06T12:49:38` **duplicates.py** (rendimiento): Optimizé el rendimiento de `_collect_candidates` utilizando `os.scandir` de forma más eficiente al consolidar los filtros de `is_protected_path` y evitar múltiples llamadas a `.stat()` y comprobaciones redundantes dentro del bucle de escaneo.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-06T12:19:45` **organizer.py** (legibilidad y documentación): Se introdujo documentación técnica detallada en las funciones críticas de `scan_for_junk` y `stage_for_review` utilizando docstrings que explican las asunciones de seguridad y los riesgos evitados (como la prevención de bucles de recursión), mejorando la mantenibilidad para futuros auditores del código.
 - `2026-08-06T12:19:10` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings precisos en las funciones `_create_memstat_struct` y `_read_windows_snapshot`, y se han clarificado las anotaciones de tipo y constantes críticas para facilitar el mantenimiento del acceso a bajo nivel a la API de Windows.
 - `2026-08-06T12:09:43` **healthscore.py** (legibilidad y documentación): Mejora la legibilidad y la robustez del código mediante la adición de Type Hints faltantes, la estandarización de las firmas de funciones y la documentación de las constantes críticas para facilitar su mantenimiento.
-- `2026-08-06T12:09:17` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad de los métodos mediante la adición de Type Hints en las funciones de `scandir` y la corrección de una inconsistencia en `suggest_keeper`, donde el uso de `min` sobre una lista de tuplas con el criterio `(mtime, len)` podía ser ambiguo ante archivos con idéntica marca de tiempo; se documentó explícitamente el criterio de desempate.
