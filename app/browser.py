@@ -155,12 +155,15 @@ def directory_size(path: str | os.PathLike | None) -> int:
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:
-                    if entry.is_symlink() or is_junction(entry.path) or is_protected_path(Path(entry.path)):
+                    try:
+                        if entry.is_symlink() or is_junction(entry.path) or is_protected_path(Path(entry.path)):
+                            continue
+                        if entry.is_dir():
+                            _walk_size(entry.path)
+                        elif entry.is_file() and entry.name.lower() not in NEVER_TOUCH:
+                            total_bytes += entry.stat().st_size
+                    except (OSError, PermissionError):
                         continue
-                    if entry.is_dir():
-                        _walk_size(entry.path)
-                    elif entry.is_file() and entry.name.lower() not in NEVER_TOUCH:
-                        total_bytes += entry.stat().st_size
         except (OSError, PermissionError):
             pass
 

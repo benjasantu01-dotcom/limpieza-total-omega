@@ -162,7 +162,7 @@ def score_security(suspicious_count: int, warnings: int = 0) -> float:
     """Penaliza hallazgos: -0.05 por cada archivo sospechoso, -0.25 por advertencia crítica."""
     s_count = _to_int(suspicious_count)
     w_count = _to_int(warnings)
-    penalty: float = (float(s_count) * 0.05) + (float(w_count) * 0.25)
+    penalty: float = (float(max(0, s_count)) * 0.05) + (float(max(0, w_count)) * 0.25)
     return _clamp(1.0 - penalty, 0.0, 1.0)
 
 
@@ -191,7 +191,7 @@ def score_startup(startup_count: int) -> float:
     """Normaliza arranque: penalización lineal creciente según cantidad de entradas."""
     val = _to_int(startup_count)
     if STARTUP_LIMIT_COUNT <= 0: return 0.0
-    return _clamp(1.0 - (float(val) / STARTUP_LIMIT_COUNT))
+    return _clamp(1.0 - (float(max(0, val)) / STARTUP_LIMIT_COUNT))
 
 
 def grade_for_score(score: int) -> str:
@@ -212,21 +212,20 @@ def _generate_recommendations(m: SystemMetrics, ratios: ScoreMap) -> List[str]:
     recs: List[str] = []
     
     if ratios.get("seguridad", 1.0) < WARN_THRESHOLD_HIGH:
-        s_val = _to_int(m.suspicious_count)
-        recs.append(f"Revisá los {s_val} hallazgo(s) de seguridad; podés aislarlos en cuarentena sin borrarlos.")
+        recs.append(f"Revisá los {max(0, m.suspicious_count)} hallazgo(s) de seguridad; podés aislarlos en cuarentena sin borrarlos.")
     if ratios.get("disco", 1.0) < WARN_THRESHOLD_LOW:
         recs.append(f"Queda {m.disk_free_percent:.1f}% de disco libre. Mirá el análisis de disco para ver qué ocupa más.")
     if ratios.get("memoria", 1.0) < WARN_THRESHOLD_LOW:
         recs.append("Memoria disponible baja: cerrá programas que no uses. Ojo, 'liberar RAM' no sirve, cerrar procesos sí.")
     if ratios.get("basura", 1.0) < WARN_THRESHOLD_MED:
-        recs.append(f"Hay unos {int(m.junk_mb)} MB de archivos temporales para revisar.")
+        recs.append(f"Hay unos {int(max(0.0, m.junk_mb))} MB de archivos temporales para revisar.")
     if ratios.get("duplicados", 1.0) < WARN_THRESHOLD_MED:
-        recs.append(f"Podrías recuperar ~{int(m.duplicate_mb)} MB eliminando copias duplicadas.")
+        recs.append(f"Podrías recuperar ~{int(max(0.0, m.duplicate_mb))} MB eliminando copias duplicadas.")
     if ratios.get("arranque", 1.0) < WARN_THRESHOLD_LOW:
-        recs.append(f"{_to_int(m.startup_count)} programas arrancan con Windows; desactivá los que no necesites desde el Administrador de tareas.")
+        recs.append(f"{max(0, m.startup_count)} programas arrancan con Windows; desactivá los que no necesites desde el Administrador de tareas.")
     
     if m.quarantined_count > 0:
-        recs.append(f"Tenés {_to_int(m.quarantined_count)} archivo(s) en cuarentena esperando tu decisión.")
+        recs.append(f"Tenés {max(0, m.quarantined_count)} archivo(s) en cuarentena esperando tu decisión.")
     
     return recs if recs else ["No hay nada urgente para hacer. El sistema está en buen estado."]
 
@@ -257,7 +256,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     
     for area, weight in _WEIGHT_ITEMS:
         # Optimizado: evitamos doble look-up y calculamos el segmento ponderado directamente.
-        score_val = scores[area] * float(weight) * _NORM_FACTOR
+        score_val = scores.get(area, 0.0) * float(weight) * _NORM_FACTOR
         breakdown[area] = int(score_val + 0.5)
         total_weighted_score += score_val
 
@@ -283,7 +282,7 @@ def summarize(result: HealthResult) -> List[str]:
     bd = result.breakdown if isinstance(result.breakdown, dict) else {}
     for area, maximo in _WEIGHT_ITEMS:
         puntos_val = bd.get(area, 0)
-        visual = f"[{'#' * puntos_val}{'.' * (maximo - puntos_val)}]"
+        visual = f"[{'#' * puntos_val}{'.' * (max(0, maximo - puntos_val))}]"
         lines.append(f"  {area.capitalize():<12} {puntos_val:>2}/{maximo:<2} {visual}")
     
     lines.extend(["", "Recomendaciones:"])

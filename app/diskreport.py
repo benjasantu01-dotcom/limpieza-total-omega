@@ -180,7 +180,6 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
             with os.scandir(current_path) as iterator:
                 for entry in iterator:
                     try:
-                        # Usar entry directamente es más eficiente que convertir a Path
                         if entry.is_symlink():
                             continue
                         
@@ -192,7 +191,8 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                                 visited_directories.add(full_path)
                                 yield from scan_level(full_path)
                         else:
-                            yield Path(entry.path), entry.stat().st_size
+                            # Capturamos OSError al intentar obtener estatuto de archivos bloqueados
+                            yield Path(entry.path), entry.stat(follow_symlinks=False).st_size
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):
