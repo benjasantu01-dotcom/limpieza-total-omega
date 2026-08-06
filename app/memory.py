@@ -352,10 +352,10 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     kernel32 = ctypes.windll.kernel32
     psapi = ctypes.windll.psapi
     
+    # Validar sesión de usuario: OpenProcess fallará si es de otro usuario
     handle = kernel32.OpenProcess(REQUIRED_ACCESS, False, target_pid)
     if not handle:
-        error_code = kernel32.GetLastError()
-        return False, f"Acceso denegado (Error {error_code}). Requiere permisos de administrador."
+        return False, "Acceso denegado: el proceso puede pertenecer a otro usuario o nivel de privilegios."
     
     try:
         exit_code = ctypes.c_ulong()

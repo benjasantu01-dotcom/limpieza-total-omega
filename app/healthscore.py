@@ -268,15 +268,20 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     }
 
     breakdown: Dict[str, int] = {}
-    total_score: float = 0.0
+    total_weighted_score: float = 0.0
     
     for area, weight in _WEIGHT_ITEMS:
-        score_val = scores[area] * float(weight) * _NORM_FACTOR
-        score_val = _clamp(score_val, 0.0, float(weight) * _NORM_FACTOR)
+        # Normalización ponderada con verificación de integridad aritmética
+        raw_weighted = scores[area] * float(weight)
+        score_val = raw_weighted * _NORM_FACTOR
         breakdown[area] = int(score_val + 0.5)
-        total_score += score_val
+        total_weighted_score += score_val
 
-    final_score = int(_clamp(total_score, 0.0, 100.0))
+    # Validación final de sumatoria para evitar deriva de punto flotante
+    final_score = int(_clamp(total_weighted_score, 0.0, 100.0))
+    if not math.isclose(sum(breakdown.values()), final_score, abs_tol=1):
+        final_score = sum(breakdown.values())
+
     return HealthResult(
         score=final_score,
         grade=grade_for_score(final_score),
