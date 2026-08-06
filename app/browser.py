@@ -137,10 +137,8 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
 
 def directory_size(path: str | os.PathLike | None) -> int:
     """
-    Calcula el peso total en bytes mediante un recorrido recursivo controlado.
-    Ignora enlaces simbólicos y puntos de reparse para evitar loops o conteos erróneos.
-    
-    Retorna 0 ante errores de acceso o rutas protegidas.
+    Calcula el peso total en bytes mediante un recorrido recursivo eficiente.
+    Utiliza os.scandir para evitar múltiples llamadas al sistema stat por archivo.
     """
     if path is None:
         return 0
@@ -151,26 +149,22 @@ def directory_size(path: str | os.PathLike | None) -> int:
 
     total_bytes: int = 0
     is_junction = getattr(os.path, 'isjunction', lambda _: False)
+    
+    def _walk_size(current_dir: str):
+        nonlocal total_bytes
+        try:
+            with os.scandir(current_dir) as it:
+                for entry in it:
+                    if entry.is_symlink() or is_junction(entry.path) or is_protected_path(Path(entry.path)):
+                        continue
+                    if entry.is_dir():
+                        _walk_size(entry.path)
+                    elif entry.is_file() and entry.name.lower() not in NEVER_TOUCH:
+                        total_bytes += entry.stat().st_size
+        except (OSError, PermissionError):
+            pass
 
-    for dirpath, dirnames, filenames in os.walk(path):
-        # Limpieza de dirnames antes de descender para evitar puntos inseguros
-        dirnames[:] = [
-            d for d in dirnames 
-            if not is_protected_path(Path(os.path.join(dirpath, d))) 
-            and not os.path.islink(os.path.join(dirpath, d))
-            and not is_junction(os.path.join(dirpath, d))
-        ]
-
-        for f in filenames:
-            if f.lower() not in NEVER_TOUCH:
-                try:
-                    full_f = os.path.join(dirpath, f)
-                    # Doble check de seguridad antes de medir para evitar TOCTOU
-                    if not os.path.islink(full_f) and not is_junction(full_f):
-                        total_bytes += os.path.getsize(full_f)
-                except (OSError, PermissionError):
-                    continue
-            
+    _walk_size(str(path))
     return total_bytes
 
 

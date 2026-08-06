@@ -8,44 +8,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **238** (47.2% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 26
-- Sin cambios (nada sustancial que mejorar): 11
+- Rechazadas por guardia de seguridad: 25
+- Sin cambios (nada sustancial que mejorar): 12
 - Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-05 | 152 | 12 | 16 | 8 | 124 |
-| 2026-08-06 | 86 | 6 | 10 | 3 | 87 |
+| 2026-08-05 | 150 | 12 | 15 | 8 | 123 |
+| 2026-08-06 | 88 | 6 | 10 | 4 | 88 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **58**
 - seguridad defensiva: **52**
 - manejo de errores y validación de entradas: **50**
-- robustez ante casos límite: **39**
-- rendimiento: **39**
+- rendimiento: **41**
+- robustez ante casos límite: **37**
 
 ## Mejoras aceptadas por archivo
 
+- `browser.py`: **23**
 - `branding.py`: **22**
-- `browser.py`: **22**
-- `quarantine.py`: **21**
 - `scanner.py`: **20**
 - `settings.py`: **20**
+- `quarantine.py`: **20**
 - `assistant.py`: **19**
+- `diskreport.py`: **19**
 - `duplicates.py`: **19**
-- `diskreport.py`: **18**
 - `main.py`: **16**
 - `healthscore.py`: **15**
 - `memory.py`: **14**
-- `organizer.py`: **13**
 - `safety.py`: **12**
+- `organizer.py`: **12**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-06T08:14:28` **diskreport.py** (rendimiento): Optimicé `walk_files` eliminando la resolución redundante de rutas dentro de cada iteración y evitando llamadas innecesarias a `is_protected_path` al validar solo la entrada raíz de cada subdirectorio, reduciendo drásticamente las llamadas al sistema operativo durante el recorrido.
+- `2026-08-06T08:14:04` **browser.py** (rendimiento): Optimicé el rendimiento de `directory_size` utilizando `os.scandir` en lugar de `os.walk`, lo cual reduce drásticamente las llamadas al sistema (stat) al obtener la información de tipo de archivo y tamaño directamente durante la iteración del directorio, mejorando la velocidad en unidades con muchos archivos pequeños.
 - `2026-08-06T07:53:55` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `ensure_safe_to_modify` extrayendo la lógica de validación de condiciones de archivos existentes a una función dedicada `_check_file_integrity`, reduciendo la carga cognitiva y facilitando futuras expansiones de reglas de seguridad.
 - `2026-08-06T07:53:28` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `quarantine_file`, extrayendo la compleja secuencia de validaciones de seguridad y preparación de directorios en una función privada más descriptiva, mejorando la claridad de la lógica de negocio frente a las guardas de seguridad.
 - `2026-08-06T07:52:58` **organizer.py** (legibilidad y documentación): Se introdujeron type hints en funciones auxiliares, se documentó mediante docstrings el propósito de funciones críticas y se mejoró la legibilidad de las estructuras de control dentro de `scan_for_junk` para asegurar que el flujo de escaneo sea comprensible sin sacrificar el rendimiento.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-06T07:32:41` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `build_context` para utilizar un método más robusto y centralizado de validación de números, eliminando redundancias en la lógica de extracción.
 - `2026-08-06T07:23:08` **settings.py** (manejo de errores y validación de entradas): Reforcé la robustez del manejo de archivos en `save()` y `load()` capturando específicamente errores de permisos (`PermissionError`) y posibles excepciones inesperadas, además de garantizar que `_Validators.path` maneje correctamente rutas inexistentes o inválidas evitando errores de propagación durante la validación inicial.
 - `2026-08-06T07:22:43` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de chequeo mediante la validación explícita de parámetros nulos y el manejo de excepciones específicas, evitando que errores en una heurística invaliden el análisis completo del archivo.
-- `2026-08-06T07:22:20` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ensure_safe_to_modify` ante entradas potencialmente maliciosas o mal formadas, añadiendo una validación explícita de tipos al inicio de `_has_invalid_chars` y asegurando que las funciones de chequeo manejen excepciones de sistema (como `OSError` o `PermissionError`) de forma consistente para evitar que la app aborte ante rutas inaccesibles durante un escaneo.
-- `2026-08-06T07:12:58` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` añadiendo una validación explícita de `is_protected_path` sobre la ruta resultante (`destination`) para prevenir condiciones de carrera o configuraciones erróneas donde una ruta de cuarentena dinámica pudiera apuntar a una zona restringida del sistema.

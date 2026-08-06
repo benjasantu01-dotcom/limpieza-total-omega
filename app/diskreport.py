@@ -165,34 +165,12 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Recorre recursivamente un directorio omitiendo enlaces simbólicos y rutas protegidas.
-    
-    Gestiona errores de acceso (PermissionError) saltando directorios o archivos restringidos
-    de forma silenciosa para permitir que el análisis continúe en el resto del sistema.
     """
     if not directory:
         return
 
-    def is_reparse_point(path: Path) -> bool:
-        """Verifica si la ruta es un punto de reparse (junction o symlink avanzado)."""
-        try:
-            return os.name == 'nt' and getattr(path.stat(follow_symlinks=False), 'st_reparse_tag', 0) != 0
-        except OSError:
-            return False
-
-    def is_path_excluded(path: Path) -> bool:
-        """Determina si la ruta debe ser omitida del análisis usando resolución estricta."""
-        try:
-            if path.is_symlink() or is_reparse_point(path):
-                return True
-            return skip_protected and is_protected_path(path.resolve())
-        except OSError:
-            return True
-
-    try:
-        base_path = Path(directory).expanduser().resolve()
-        if not base_path.exists() or not base_path.is_dir() or is_path_excluded(base_path):
-            return
-    except (OSError, RuntimeError):
+    base_path = Path(directory).expanduser().resolve()
+    if not base_path.exists() or not base_path.is_dir() or (skip_protected and is_protected_path(base_path)):
         return
 
     visited_directories: set[Path] = {base_path}
@@ -202,17 +180,19 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
             with os.scandir(current_path) as iterator:
                 for entry in iterator:
                     try:
-                        full_path = Path(entry.path)
-                        if is_path_excluded(full_path):
+                        # Usar entry directamente es más eficiente que convertir a Path
+                        if entry.is_symlink():
                             continue
                         
-                        if entry.is_dir(follow_symlinks=False):
+                        if entry.is_dir():
+                            full_path = Path(entry.path)
                             if full_path not in visited_directories:
+                                if skip_protected and is_protected_path(full_path):
+                                    continue
                                 visited_directories.add(full_path)
                                 yield from scan_level(full_path)
                         else:
-                            # entry.stat() podría fallar si el archivo es bloqueado o eliminado
-                            yield full_path, entry.stat().st_size
+                            yield Path(entry.path), entry.stat().st_size
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):
@@ -254,9 +234,6 @@ def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip
 def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
     """
     Calcula qué subdirectorios de primer nivel ocupan más espacio total.
-    
-    Agrupa recursivamente todos los archivos encontrados bajo una carpeta de nivel 1 
-    respecto a la ruta base proporcionada.
     """
     if not directory:
         return []
@@ -268,7 +245,6 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
         folder_map: Dict[Path, FolderUsage] = {}
         for path, size in walk_files(base, skip_protected):
             try:
-                # Obtenemos la parte superior (subcarpeta directa de base)
                 rel = path.relative_to(base)
                 top_level = base / rel.parts[0]
                 
