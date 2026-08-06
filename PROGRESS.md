@@ -16,37 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-04 | 30 | 1 | 3 | 4 | 40 |
+| 2026-08-04 | 27 | 1 | 3 | 4 | 39 |
 | 2026-08-05 | 185 | 12 | 19 | 8 | 126 |
-| 2026-08-06 | 30 | 3 | 3 | 1 | 39 |
+| 2026-08-06 | 33 | 3 | 3 | 1 | 40 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **54**
+- legibilidad y documentación: **57**
 - seguridad defensiva: **52**
 - manejo de errores y validación de entradas: **52**
-- rendimiento: **44**
 - robustez ante casos límite: **43**
+- rendimiento: **41**
 
 ## Mejoras aceptadas por archivo
 
 - `duplicates.py`: **22**
 - `branding.py`: **22**
 - `browser.py`: **22**
-- `scanner.py`: **21**
-- `settings.py`: **20**
 - `assistant.py`: **20**
+- `scanner.py`: **20**
 - `diskreport.py`: **20**
 - `quarantine.py`: **19**
+- `settings.py`: **19**
+- `main.py`: **18**
 - `healthscore.py`: **17**
-- `main.py`: **17**
-- `safety.py`: **14**
-- `organizer.py`: **14**
-- `memory.py`: **10**
+- `organizer.py`: **15**
+- `safety.py`: **13**
+- `memory.py`: **11**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-06T03:17:34` **organizer.py** (legibilidad y documentación): He mejorado la documentación de las funciones y métodos mediante la adición de docstrings estructurados (estilo Google/NumPy) y la inclusión de type hints en variables internas para clarificar la lógica de las operaciones de escaneo y ordenamiento.
+- `2026-08-06T03:17:26` **memory.py** (legibilidad y documentación): Se añadieron Type Hints ausentes y se mejoró la documentación (docstrings) de `MemorySnapshot` y las funciones de lectura para clarificar el flujo de datos y las unidades de medida, cumpliendo con los estándares de legibilidad exigidos.
+- `2026-08-06T03:17:01` **main.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de la clase principal mediante la extracción de los métodos de construcción de UI de las pestañas (`_build_tab_...`) a una estructura que separa claramente la definición de la interfaz de la lógica operativa, facilitando la comprensión del flujo de la aplicación.
 - `2026-08-06T03:06:48` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del pipeline de detección en `find_duplicates` mediante docstrings detallados y refiné los tipos de datos y la claridad de `_collect_candidates`, permitiendo que el flujo de trabajo sea más fácil de auditar sin alterar su lógica ni dependencias.
 - `2026-08-06T03:06:39` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `walk_files` extrayendo la lógica de filtrado de rutas y la detección de puntos de reparse en funciones locales con nombres auto-explicativos, evitando la anidación excesiva y clarificando las condiciones de exclusión.
 - `2026-08-06T03:06:13` **browser.py** (legibilidad y documentación): Mejora la legibilidad y seguridad del módulo `browser.py` mediante la refactorización de `directory_size` para eliminar el uso de `stack` manual, reemplazándolo por una estructura más clara y robusta que respeta los límites de recursión implícitos y las buenas prácticas de manejo de excepciones.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-06T02:35:01` **duplicates.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `suggest_keeper` y `hash_file`/`partial_hash` añadiendo validaciones explícitas contra valores `None` o rutas inexistentes antes de realizar operaciones de E/S, evitando excepciones innecesarias en el bucle principal.
 - `2026-08-06T02:26:20` **diskreport.py** (manejo de errores y validación de entradas): Se introdujo una validación robusta de tipos en `format_size` y se reemplazó el acceso directo a `os.scandir` por un wrapper que captura `PermissionError` y otros fallos de acceso a nivel de sistema antes de iterar, mejorando la resiliencia ante errores de entrada y privilegios durante el escaneo de disco.
 - `2026-08-06T02:26:08` **browser.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `detect_profiles` y `directory_size` validando explícitamente los parámetros de entrada y normalizando las rutas con `Path.resolve()` antes de realizar comparaciones, evitando así excepciones inesperadas por rutas mal formadas o tipos de datos erróneos que podrían romper el flujo del escaneo.
-- `2026-08-06T02:25:37` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` y `draw_logo` mediante la validación proactiva de tipos y estados, evitando errores de ejecución ante entradas inesperadas o entornos gráficamente degradados.
-- `2026-08-06T02:24:59` **assistant.py** (manejo de errores y validación de entradas): Mejora la robustez de `build_context` y los manejadores de respuestas implementando una validación estricta de tipos y valores nulos, evitando que datos corruptos en el `SystemContext` generen errores en tiempo de ejecución al intentar formatear cadenas.
-- `2026-08-06T01:03:06` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save` reemplazando la verificación `is_safe_to_modify` por un patrón de validación más robusto antes de la escritura, asegurando que la ruta no solo sea segura al iniciar, sino que mantenga su integridad inmediatamente antes de la operación de reemplazo (`os.replace`) para evitar condiciones de carrera o manipulación de archivos.

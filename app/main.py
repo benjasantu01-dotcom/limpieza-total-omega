@@ -180,7 +180,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._debounce_id: Optional[str] = None
 
     # ------------------------------------------------------------------
-    # Factorías de Componentes UI
+    # Factorías de Componentes UI (Modularización)
     # ------------------------------------------------------------------
 
     def _create_styled_label(self, parent: Any, text: str, style: str, **kwargs) -> ctk.CTkLabel:
@@ -286,6 +286,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _tab_factory(self, name: str) -> None:
         """Mapea el nombre de la pestaña a su método de construcción UI."""
+        # Se agrupan los métodos de construcción por lógica de dominio
         constructors: Dict[str, Callable] = {
             "Salud": self._build_tab_salud,
             "Limpieza": self._build_tab_limpieza,
