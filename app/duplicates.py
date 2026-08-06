@@ -162,8 +162,8 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
             with os.scandir(root_path) as dir_iterator:
                 for entry in dir_iterator:
                     try:
-                        lstat = entry.stat(follow_symlinks=False)
-                        inode_key = (lstat.st_dev, lstat.st_ino)
+                        lstat: os.stat_result = entry.stat(follow_symlinks=False)
+                        inode_key: Tuple[int, int] = (lstat.st_dev, lstat.st_ino)
                         
                         if entry.is_dir(follow_symlinks=False):
                             if inode_key not in visited_inodes:
@@ -247,8 +247,11 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     """
-    Selecciona el archivo candidato para conservar basado en la fecha de modificación 
-    más antigua (el original) y la brevedad de su ruta (fácil lectura).
+    Selecciona el archivo candidato para conservar.
+    
+    Criterio de selección: 
+    1. Preferencia por la fecha de modificación más antigua (probablemente el archivo original).
+    2. Ante igual antigüedad, preferencia por la ruta más corta (menor complejidad en el sistema de archivos).
     """
     if not group or not group.paths:
         return None

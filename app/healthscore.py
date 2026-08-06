@@ -196,11 +196,11 @@ def score_startup(startup_count: int) -> float:
 
 def grade_for_score(score: int) -> str:
     """Asigna una calificación cualitativa (A-F) basada en el rango del puntaje [0, 100]."""
-    score = int(score)
-    if score >= 90: return "A"
-    if score >= 80: return "B"
-    if score >= 65: return "C"
-    if score >= 50: return "D"
+    score_int = int(score)
+    if score_int >= 90: return "A"
+    if score_int >= 80: return "B"
+    if score_int >= 65: return "C"
+    if score_int >= 50: return "D"
     return "F"
 
 
@@ -255,7 +255,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     total_weighted_score: float = 0.0
     
     for area, weight in _WEIGHT_ITEMS:
-        # Optimizado: evitamos doble look-up y calculamos el segmento ponderado directamente.
+        # Optimizado: calculamos el segmento ponderado directamente usando el factor de normalización.
         score_val = scores.get(area, 0.0) * float(weight) * _NORM_FACTOR
         breakdown[area] = int(score_val + 0.5)
         total_weighted_score += score_val
