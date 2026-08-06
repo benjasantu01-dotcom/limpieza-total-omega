@@ -255,11 +255,12 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
                 
             current_abs: Path = jf.path.resolve()
             
-            # Verificación de seguridad antes de procesar cada archivo
+            # Verificación de seguridad reforzada antes de procesar cada archivo
             if not is_safe_to_modify(current_abs):
                 continue
             
-            if current_abs.parent == dest or dest in current_abs.parents or current_abs == dest:
+            # Evitar movimientos circulares, destinos inválidos o recursión interna
+            if current_abs == dest or dest in current_abs.parents or current_abs.parent == dest:
                 continue
             
             if not _is_file_accessible(current_abs):
@@ -267,6 +268,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 
             target: Path = _generate_unique_target(dest / f"{current_abs.stem}_{int(jf.modified.timestamp())}{current_abs.suffix}")
             
+            # Validar que el destino calculado mantenga la integridad
             if not is_safe_to_modify(target.parent):
                 continue
 

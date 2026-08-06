@@ -454,14 +454,17 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     
     try:
         for entry in quarantine_root.iterdir():
-            if entry.name == MANIFEST_NAME or not is_within_directory(entry, quarantine_root):
+            # Resolvemos a absoluta para evitar discrepancias de rutas relativas
+            abs_entry = entry.resolve()
+            
+            if entry.name == MANIFEST_NAME or not is_within_directory(abs_entry, quarantine_root):
                 continue
             
             # Si el archivo está en el manifiesto, verificar integridad antes de borrar
             if entry.name in item_map:
-                if item_map[entry.name].verify_integrity(entry):
-                    ensure_safe_to_modify(entry, allow_sensitive=False)
-                    if _safe_unlink(entry):
+                if item_map[entry.name].verify_integrity(abs_entry):
+                    ensure_safe_to_modify(abs_entry, allow_sensitive=False)
+                    if _safe_unlink(abs_entry):
                         count += 1
                     else:
                         remaining_items.append(item_map[entry.name])
@@ -469,8 +472,8 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
                     remaining_items.append(item_map[entry.name])
             else:
                 # Si no está en el manifiesto, borrado preventivo pero seguro
-                ensure_safe_to_modify(entry, allow_sensitive=False)
-                _safe_unlink(entry)
+                ensure_safe_to_modify(abs_entry, allow_sensitive=False)
+                _safe_unlink(abs_entry)
                 
     except OSError:
         pass

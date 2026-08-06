@@ -6,32 +6,32 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **242** (48.0% de aceptación)
+- Mejoras aceptadas: **245** (48.6% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 27
+- Rechazadas por guardia de seguridad: 28
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 203
+- Sin respuesta de la IA (error o límite): 199
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-05 | 136 | 12 | 14 | 7 | 107 |
-| 2026-08-06 | 106 | 6 | 13 | 7 | 96 |
+| 2026-08-05 | 136 | 12 | 14 | 7 | 103 |
+| 2026-08-06 | 109 | 6 | 14 | 7 | 96 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **58**
 - manejo de errores y validación de entradas: **50**
+- seguridad defensiva: **48**
 - rendimiento: **47**
-- seguridad defensiva: **45**
 - robustez ante casos límite: **42**
 
 ## Mejoras aceptadas por archivo
 
 - `browser.py`: **24**
 - `branding.py`: **23**
-- `quarantine.py`: **21**
+- `quarantine.py`: **22**
 - `diskreport.py`: **20**
 - `scanner.py`: **20**
 - `settings.py`: **20**
@@ -39,13 +39,16 @@ Este archivo se regenera solo en cada corrida a partir de
 - `duplicates.py`: **18**
 - `main.py`: **17**
 - `healthscore.py`: **16**
-- `organizer.py`: **13**
-- `memory.py`: **13**
+- `organizer.py`: **14**
+- `memory.py`: **14**
 - `safety.py`: **12**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-06T09:46:29` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva al forzar una resolución absoluta y normalizada de todas las rutas de archivos dentro de `purge_all` antes de cualquier validación, evitando posibles ataques por evasión mediante rutas relativas o cambios en el directorio de trabajo actual.
+- `2026-08-06T09:45:58` **organizer.py** (seguridad defensiva): Se reforzó la seguridad en `stage_for_review` añadiendo una validación explícita para asegurar que el archivo a mover no resida dentro de una ruta protegida mediante `is_safe_to_modify` antes de proceder con el movimiento, y se añadió un chequeo de identidad para prevenir movimientos hacia el propio origen o subdirectorios internos que podrían causar pérdida de datos o bucles de recursión.
+- `2026-08-06T09:45:35` **memory.py** (seguridad defensiva): Mejoré la seguridad de `trim_working_set` añadiendo un chequeo explícito mediante `is_protected_path` sobre la ruta del ejecutable del proceso (si es posible obtenerla) antes de intentar cualquier operación, evitando así que el usuario pueda manipular procesos que residan en carpetas protegidas del sistema, fortaleciendo la defensa contra errores de usuario.
 - `2026-08-06T09:35:13` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `walk_files` y `largest_folders` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta real (resuelta con `resolve()`) de cada subdirectorio antes de procesarlo, evitando así que rutas con enlaces simbólicos o puntos de reparse fuera del árbol permitido sean seguidas inadvertidamente.
 - `2026-08-06T09:26:11` **browser.py** (seguridad defensiva): Reforcé la seguridad defensiva en `directory_size` validando que la ruta escaneada sea absoluta y esté estrictamente contenida dentro de la base (usando `resolve`), previniendo ataques de escalada de privilegios o lectura de archivos fuera del scope esperado.
 - `2026-08-06T09:26:03` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad en `save_logo_svg` reemplazando la resolución absoluta de la ruta (`Path.resolve()`) por una verificación explícita de seguridad antes de cualquier operación de escritura, asegurando que `ensure_safe_to_modify` valide la ruta original proporcionada y evitando así posibles manipulaciones de rutas fuera del entorno permitido.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-06T08:54:37` **diskreport.py** (robustez ante casos límite): Se mejoró la robustez de `walk_files` y `largest_folders` ante archivos inaccesibles o bloqueados, asegurando que `entry.stat()` no lance excepciones fatales que interrumpan el análisis completo al intentar leer metadatos de archivos protegidos por el sistema o en uso.
 - `2026-08-06T08:54:13` **browser.py** (robustez ante casos límite): Se ha mejorado la robustez de `directory_size` ante el acceso a directorios con permisos denegados o rutas inválidas, envolviendo la obtención de atributos de archivo en un bloque `try-except` más granular dentro del bucle de escaneo, evitando que una sola excepción de acceso detenga el cálculo del tamaño de toda la carpeta.
 - `2026-08-06T08:45:19` **branding.py** (robustez ante casos límite): Se ha mejorado `save_logo_svg` para manejar casos límite de permisos y rutas de forma más robusta, asegurando que la creación de directorios y la escritura de archivos capturen errores específicos (como `OSError` al intentar escribir en volúmenes de solo lectura) y devolviendo `None` explícitamente sin detener la ejecución de la app ante fallos de disco.
-- `2026-08-06T08:44:03` **settings.py** (rendimiento): Se implementó un mecanismo de caché (`_cached_settings` y `_current_path`) en todas las funciones de acceso y escritura para evitar lecturas de disco innecesarias durante la ejecución, mejorando la performance al consultar configuraciones recurrentes.
-- `2026-08-06T08:34:47` **scanner.py** (rendimiento): Optimicé el rendimiento del escaneo restringiendo la ejecución de las funciones de chequeo (checkers) únicamente a archivos con extensiones sospechosas mediante una pre-selección, evitando llamadas innecesarias a la lógica de heurística para archivos comunes o benignos.
-- `2026-08-06T08:33:55` **quarantine.py** (rendimiento): Optimicé el manejo de la memoria y el rendimiento en `purge_all` reemplazando la lógica de bucle redundante y mejorando la eficiencia de búsqueda con un conjunto, evitando iteraciones innecesarias sobre el manifiesto.
