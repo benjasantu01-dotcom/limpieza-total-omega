@@ -222,13 +222,13 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
     if not files:
         return []
         
-    configs: Dict[str, SortConfig] = {
-        "size": SortConfig("size", lambda f: f.size_bytes),
-        "date": SortConfig("date", lambda f: f.modified)
+    configs: Dict[str, SortKey] = {
+        "size": lambda f: f.size_bytes,
+        "date": lambda f: f.modified
     }
         
-    config: SortConfig = configs.get(by.lower(), configs["size"])
-    return sorted(files, key=config.key_func, reverse=not ascending)
+    key_func = configs.get(by.lower(), configs["size"])
+    return sorted(files, key=key_func, reverse=not ascending)
 
 
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Path:
@@ -241,13 +241,6 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
        errores catastróficos de reescritura.
     3. Utiliza `_generate_unique_target` para garantizar que no se pierdan datos 
        por colisión de nombres (sobreescritura).
-    
-    Args:
-        files: Archivos a mover.
-        review_dir: Ruta donde se almacenarán temporalmente.
-        
-    Returns:
-        Path: Ruta del directorio de revisión preparado.
     """
     if not files:
         raise ValueError("La lista de archivos a procesar no puede estar vacía.")
@@ -270,7 +263,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             if not is_safe_to_modify(current_abs):
                 continue
             
-            # Evitar movimientos circulares, destinos inválidos o recursión interna
+            # Evitar movimientos circulares: el destino no puede ser padre ni hijo directo
             if current_abs == dest or dest in current_abs.parents or current_abs.parent == dest:
                 continue
             
@@ -279,7 +272,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 
             target: Path = _generate_unique_target(dest / f"{current_abs.stem}_{int(jf.modified.timestamp())}{current_abs.suffix}")
             
-            # Validar que el destino calculado mantenga la integridad
+            # Validar que el destino calculado mantenga la integridad y seguridad
             if not is_safe_to_modify(target.parent):
                 continue
 

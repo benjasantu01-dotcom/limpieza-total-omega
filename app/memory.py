@@ -365,17 +365,16 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     kernel32 = ctypes.windll.kernel32
     psapi = ctypes.windll.psapi
     
-    # Validar sesión de usuario: OpenProcess fallará si es de otro usuario
     handle = kernel32.OpenProcess(REQUIRED_ACCESS, False, target_pid)
     if not handle:
-        return False, "Acceso denegado: el proceso puede pertenecer a otro usuario o nivel de privilegios."
+        return False, "Acceso denegado: permisos insuficientes o el proceso ya no existe."
     
     try:
-        # Pre-chequeo de seguridad: evitar procesos que residan en carpetas protegidas
+        # Pre-chequeo de seguridad: verificar ruta antes de cualquier manipulación
         buf = ctypes.create_unicode_buffer(1024)
         if psapi.GetModuleFileNameExW(handle, 0, buf, 1024) > 0:
             if is_protected_path(buf.value):
-                return False, "Operación denegada: el ejecutable se encuentra en una ruta protegida."
+                return False, "Operación denegada: el ejecutable está en una ruta protegida."
 
         exit_code = ctypes.c_ulong()
         if not kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)) or exit_code.value != 259:
@@ -385,5 +384,4 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
             return False, "Error al intentar liberar memoria del proceso."
         return True, f"Working set liberado. {TRIM_WARNING}"
     finally:
-        if handle:
-            kernel32.CloseHandle(handle)
+        kernel32.CloseHandle(handle)

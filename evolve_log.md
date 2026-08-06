@@ -815,3 +815,13 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-08-06T14:02:39` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Mejoré la robustez de `SystemMetrics.is_finite` y `HealthResult` añadiendo una validación explícita contra valores `NaN` o `Inf` en los datos de entrada para evitar que el motor de scoring calcule resultados matemáticamente inválidos o bloqueantes.
 - `2026-08-06T14:02:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-06T14:02:39` Corrida terminada. Total usado hoy: 332.
+- `2026-08-06T14:10:57` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-06T14:11:21` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-06T14:11:32` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-08-06T14:11:42` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-08-06T14:11:59` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-08-06T14:12:41` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se añadió una validación defensiva en `trim_working_set` para asegurar que el proceso objetivo posea privilegios de acceso adecuados mediante una comprobación explícita del `handle` y se reforzó la seguridad contra rutas protegidas utilizando la validación de rutas antes de cualquier intento de manipulación del `WorkingSet`.
+- `2026-08-06T14:13:07` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `stage_for_review` implementando una validación de ruta absoluta antes de la comparación de `parents`, evitando inconsistencias causadas por rutas relativas o simbólicas, y asegurando que el directorio de destino sea validado estrictamente antes de cualquier operación de movimiento.
+- `2026-08-06T14:13:22` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `purge_all` y `_should_purge_file` para asegurar que ningún archivo huérfano (no presente en el manifiesto) pueda ser eliminado, previniendo borrados accidentales de archivos ajenos que pudieran existir en la misma carpeta.
+- `2026-08-06T14:13:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-06T14:13:22` Corrida terminada. Total usado hoy: 336.

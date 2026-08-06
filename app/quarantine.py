@@ -199,7 +199,6 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
     if source_path.drive != dest_dir.drive:
         raise UnsafePathError(f"Operación denegada: el archivo está en otro dispositivo o partición.")
 
-    # Protección contra alias/hardlinks internos de filesystem
     if os.path.exists(dest_dir) and os.path.exists(source_path):
         if os.path.samefile(source_path, dest_dir):
             raise UnsafePathError(f"Ruta de origen y destino colisionan mediante alias: {source_path}")
@@ -427,16 +426,19 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
     return success
 
 
-def _should_purge_file(entry: Path, quarantine_root: Path, item_map: Dict[str, QuarantineItem]) -> bool:
+def _should_purge_file(entry: Path, quarantine_root: Path, item_map_by_name: Dict[str, QuarantineItem]) -> bool:
     """Verifica si un archivo en cuarentena es seguro para ser eliminado."""
     try:
         abs_entry = entry.resolve()
         if entry.name == MANIFEST_NAME or not is_within_directory(abs_entry, quarantine_root):
             return False
         
-        if entry.name in item_map:
-            if not item_map[entry.name].verify_integrity(abs_entry):
-                return False
+        # Solo purgar si el archivo es un ítem registrado en el manifiesto
+        if entry.name not in item_map_by_name:
+            return False
+            
+        if not item_map_by_name[entry.name].verify_integrity(abs_entry):
+            return False
         
         ensure_safe_to_modify(abs_entry, allow_sensitive=False)
         return True
@@ -457,20 +459,20 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     ensure_safe_to_modify(quarantine_root, allow_sensitive=False)
     
     items = load_manifest(base)
-    item_map: Dict[str, QuarantineItem] = {item.stored_name: item for item in items}
+    item_map_by_name: Dict[str, QuarantineItem] = {item.stored_name: item for item in items}
     
     count = 0
     remaining_items: List[QuarantineItem] = []
     
     try:
         for entry in quarantine_root.iterdir():
-            if _should_purge_file(entry, quarantine_root, item_map):
+            if _should_purge_file(entry, quarantine_root, item_map_by_name):
                 if _safe_unlink(entry):
                     count += 1
-                elif entry.name in item_map:
-                    remaining_items.append(item_map[entry.name])
-            elif entry.name in item_map:
-                remaining_items.append(item_map[entry.name])
+                else:
+                    remaining_items.append(item_map_by_name[entry.name])
+            elif entry.name in item_map_by_name:
+                remaining_items.append(item_map_by_name[entry.name])
                 
     except (OSError, PermissionError):
         pass
