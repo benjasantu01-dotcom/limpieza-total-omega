@@ -132,7 +132,7 @@ def _get_sha256(path: Path) -> str:
     sha256_hash = hashlib.sha256()
     try:
         with open(path, "rb") as f:
-            while chunk := f.read(4096):
+            while chunk := f.read(65536):
                 sha256_hash.update(chunk)
     except (OSError, PermissionError):
         return ""
@@ -288,8 +288,9 @@ def quarantine_file(
     except OSError as e:
         raise OSError(f"Error al acceder a metadatos de archivo: {e}")
 
+    # Verificar espacio con margen de seguridad del 5%
     usage = shutil.disk_usage(dest_dir)
-    if usage.free < file_size:
+    if usage.free < (file_size * 1.05):
         raise RuntimeError("Espacio insuficiente en disco para mover a cuarentena.")
         
     item_id = uuid.uuid4().hex[:12]
@@ -300,20 +301,20 @@ def quarantine_file(
     if destination.exists():
         raise FileExistsError(f"Colisión de nombre en destino: {destination}")
 
+    temp_dest = destination.with_suffix(".tmp")
     try:
-        temp_dest = destination.with_suffix(".tmp")
         shutil.copy2(source_path, temp_dest)
+        if temp_dest.stat().st_size != file_size:
+            raise RuntimeError("La copia de seguridad no coincide en tamaño.")
         os.replace(temp_dest, destination)
         _safe_unlink(source_path)
-    except (OSError, PermissionError) as e:
+    except Exception as e:
+        if temp_dest.exists():
+            _safe_unlink(temp_dest)
         if destination.exists():
             _safe_unlink(destination)
         raise RuntimeError(f"Falla crítica al mover archivo: {e}")
 
-    if not destination.exists() or destination.stat().st_size != file_size:
-        if destination.exists(): _safe_unlink(destination)
-        raise RuntimeError("Integridad comprometida: el archivo no se movió correctamente.")
-    
     try:
         file_hash = _get_sha256(destination)
         item = QuarantineItem(
@@ -330,10 +331,11 @@ def quarantine_file(
         save_manifest(items, base)
         return item
     except Exception as e:
+        # Intento de rollback si el manifiesto falla
         if destination.exists():
             try:
                 shutil.move(str(destination), str(source_path))
-            except (OSError, PermissionError):
+            except:
                 pass
         raise RuntimeError(f"Error irrecuperable procesando metadatos: {e}")
 
@@ -443,7 +445,6 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     ensure_safe_to_modify(quarantine_root, allow_sensitive=False)
     
     items = load_manifest(base)
-    # Mapeo por nombre de archivo para acceso eficiente O(1)
     item_map: Dict[str, QuarantineItem] = {item.stored_name: item for item in items}
     stored_names_in_manifest = set(item_map.keys())
     count = 0

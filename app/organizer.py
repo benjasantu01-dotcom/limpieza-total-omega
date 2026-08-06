@@ -242,6 +242,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 
     for jf in files:
         try:
+            # Validación exhaustiva: debe ser archivo, existir y ser seguro
             if not jf.path.exists() or not jf.path.is_file():
                 continue
                 
@@ -250,10 +251,11 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             if not is_safe_to_modify(current_abs):
                 continue
             
-            # Verificación de jerarquía para evitar bucles de movimiento
-            if current_abs.parent == dest or dest in current_abs.parents or current_abs in dest.parents:
+            # Evitar movimientos circulares o redundantes
+            if current_abs.parent == dest or dest in current_abs.parents or current_abs == dest:
                 continue
             
+            # Verificación final de accesibilidad antes de mover
             if not _is_file_accessible(current_abs):
                 continue
 

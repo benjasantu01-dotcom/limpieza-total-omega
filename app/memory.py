@@ -146,10 +146,20 @@ def parse_linux_meminfo(text: str) -> MemorySnapshot:
     for line in text.splitlines():
         match = re.match(r"^(\w+):\s+(\d+)", line)
         if match:
-            values[match.group(1)] = int(match.group(2)) * 1024
+            try:
+                values[match.group(1)] = int(match.group(2)) * 1024
+            except (ValueError, OverflowError):
+                continue
+    
+    total = values.get("MemTotal", 0)
+    available = values.get("MemAvailable", values.get("MemFree", 0))
+    
+    if total <= 0:
+        return MemorySnapshot(0, 0)
+        
     return MemorySnapshot(
-        total=values.get("MemTotal", 0),
-        available=values.get("MemAvailable", values.get("MemFree", 0)),
+        total=total,
+        available=max(0, min(available, total)),
         cached=values.get("Cached", 0)
     )
 
@@ -235,7 +245,9 @@ def read_snapshot() -> MemorySnapshot:
     if os.path.exists(meminfo_path):
         try:
             with open(meminfo_path, encoding="utf-8", errors="replace") as f:
-                return parse_linux_meminfo(f.read())
+                content = f.read()
+                if content:
+                    return parse_linux_meminfo(content)
         except (OSError, PermissionError, IOError):
             pass
             
