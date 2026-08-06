@@ -711,3 +711,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-06T11:49:20` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: manejo de errores y validación de entradas).
 - `2026-08-06T11:49:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-06T11:49:20` Corrida terminada. Total usado hoy: 280.
+- `2026-08-06T11:58:14` Arrancando corrida. Quedan hoy ~20 peticiones objetivo.
+- `2026-08-06T11:58:41` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `parse_registry_csv` y `entries_from_folders` mediante una validación más estricta de rutas de archivos antes de instanciar objetos `StartupEntry`, evitando la creación de entradas con rutas mal formadas que podrían causar errores en tiempo de ejecución.
+- `2026-08-06T11:59:14` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la aplicación de type hints, la documentación de parámetros complejos y la refactorización de la lógica de `_call_gemini` para clarificar el flujo de datos y mejorar la robustez ante errores de API.
+- `2026-08-06T11:59:43` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación de `branding.py` mediante docstrings más precisas, la corrección de type hints para reflejar mejor la inmutabilidad de los datos y la simplificación de la estructura de las funciones de acceso, asegurando que la intención técnica de cada componente sea autoexplicativa.
+- `2026-08-06T11:59:52` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y robustez de `directory_size` y `_is_safe_path` añadiendo type hints más precisos, documentación clara sobre las excepciones capturadas y una separación lógica entre la lógica de validación de seguridad y la de cálculo de tamaño.
+- `2026-08-06T11:59:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-06T11:59:52` Corrida terminada. Total usado hoy: 284.

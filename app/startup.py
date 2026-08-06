@@ -210,7 +210,14 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
                 
                 # Chequear tipo de archivo y symlink (I/O)
                 if item.is_file() and not item.is_symlink():
-                    found_entries.append(StartupEntry(name=item.stem, command=str(item), source="carpeta"))
+                    try:
+                        # Validar que el nombre del archivo sea una cadena no vacía
+                        name = item.stem
+                        if not name:
+                            continue
+                        found_entries.append(StartupEntry(name=name, command=str(item), source="carpeta"))
+                    except OSError:
+                        continue
         except (OSError, PermissionError, RuntimeError):
             continue
     return found_entries
@@ -250,8 +257,10 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
             continue
             
         try:
-            p: Path = Path(cmd)
-            if not p.parts or is_protected_path(p):
+            # Validar ruta básica antes de instanciar
+            p = Path(cmd)
+            # Evitar rutas que no tienen sentido como ejecutables
+            if not str(p).strip() or is_protected_path(p):
                 continue
             parsed_entries.append(StartupEntry(name=name, command=cmd, source=source))
         except (OSError, ValueError, TypeError):

@@ -44,7 +44,7 @@ import urllib.error
 import urllib.request
 import re
 import math
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Final, TypeAlias, Callable, Optional, Union, Generator
 
@@ -192,7 +192,6 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     ctx = SystemContext()
 
     def _val(v: Any, default: float = 0.0, cast: Callable = float) -> Any:
-        """Helper interno para limpiar y validar valores numéricos finitos."""
         try:
             if v is None or isinstance(v, bool) or not math.isfinite(float(v)):
                 return default
@@ -389,14 +388,12 @@ def local_answer(question: str, context: SystemContext) -> Answer:
         if handler_key := _KEYWORD_MAP.get(token):
             return _HANDLERS[handler_key](context, clean_text)
 
-    # Optimizamos: verificamos si hay problemas sin materializar una lista completa
     gen = _gen_problems(context)
     primer_problema = next(gen, None)
     
     puntaje_str = str(context.score) if context.score is not None else "N/A"
     
     if primer_problema:
-        # Recuperamos el resto eficientemente
         problemas = [primer_problema] + list(gen)
         cuerpo = (f"Con un puntaje de {puntaje_str}/100, por orden de prioridad: "
                   f"{', '.join(problemas[:3])}.")
@@ -441,7 +438,6 @@ def _call_gemini(
 ) -> Optional[str]:
     """Envía métricas agregadas a Gemini mediante la librería estándar urllib."""
     if not isinstance(api_key, str) or not api_key: return None
-    # Validar que la API key no contenga caracteres de control o inusuales (defensa contra inyección)
     if _CONTROL_CHARS_REGEX.search(api_key) or len(api_key) > 256: return None
     if not isinstance(model, str) or not _MODEL_NAME_REGEX.match(model): return None
     
@@ -452,34 +448,33 @@ def _call_gemini(
         return None
         
     try:
-        cuerpo_json: bytes = json.dumps({
+        payload = json.dumps({
             "contents": [{
                 "parts": [{"text": f"{SYSTEM_PROMPT}\n\nMétricas del sistema:\n{safe_ctx}\n\nPregunta del usuario: {safe_q}"}]
             }]
         }).encode("utf-8")
 
-        url: str = _ENDPOINT.format(model=model) + f"?key={api_key}"
-        peticion: urllib.request.Request = urllib.request.Request(
-            url, data=cuerpo_json, headers={"Content-Type": "application/json"}, method="POST"
+        req = urllib.request.Request(
+            _ENDPOINT.format(model=model) + f"?key={api_key}", 
+            data=payload, 
+            headers={"Content-Type": "application/json"}, 
+            method="POST"
         )
         
-        with urllib.request.urlopen(peticion, timeout=_TIMEOUT_SECONDS) as respuesta:
-            if respuesta.status != 200: return None
-            datos_bytes = respuesta.read()
-            if not datos_bytes: return None
-            datos = json.loads(datos_bytes.decode("utf-8"))
+        with urllib.request.urlopen(req, timeout=_TIMEOUT_SECONDS) as res:
+            if res.status != 200: return None
+            raw_res = res.read()
+            if not raw_res: return None
+            data = json.loads(raw_res.decode("utf-8"))
         
-        if not isinstance(datos, dict): return None
-        candidatos = datos.get("candidates")
-        if not isinstance(candidatos, list) or not candidatos: return None
+        # Extracción segura de la respuesta anidada del JSON de Gemini
+        candidates = data.get("candidates", [])
+        if not isinstance(candidates, list) or not candidates: return None
         
-        cuerpo = candidatos[0].get("content")
-        if not isinstance(cuerpo, dict): return None
-        partes = cuerpo.get("parts")
-        if not isinstance(partes, list): return None
-            
-        texto = "".join(p.get("text", "") for p in partes if isinstance(p, dict))
-        return texto.strip() if _ensure_safe_text(texto) else None
+        parts = candidates[0].get("content", {}).get("parts", [])
+        text = "".join(p.get("text", "") for p in parts if isinstance(p, dict))
+        
+        return text.strip() if _ensure_safe_text(text) else None
     except (json.JSONDecodeError, urllib.error.URLError, TypeError, KeyError):
         return None
 
