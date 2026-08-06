@@ -83,11 +83,11 @@ class Scanner:
             if not entry or not entry.path:
                 return
             
-            # Evitar resolución de path completa en cada iteración por performance
-            if not entry.path.startswith(self.base_root_str):
+            path_obj = Path(entry.path)
+            # Defensa: Verificar que la ruta real no escape del base_root mediante symlinks
+            if not str(path_obj.resolve()).startswith(self.base_root_str):
                 return
 
-            path_obj = Path(entry.path)
             if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
                 return
 
@@ -146,7 +146,7 @@ def scan_file(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[st
         return []
         
     try:
-        if not path.exists():
+        if not path.exists() or path.is_symlink():
             return []
     except (OSError, PermissionError):
         return []

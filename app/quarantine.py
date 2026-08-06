@@ -246,8 +246,9 @@ def quarantine_file(
     if not source_path.exists():
         raise FileNotFoundError(f"El archivo de origen no existe: {source_path}")
     
-    if "\0" in str(source_path) or any(c in str(source_path.name) for c in "<>:\"|?*"):
-        raise UnsafePathError(f"Ruta con caracteres maliciosos o inválidos: {source_path.name}")
+    # Prevenir path traversal y caracteres inválidos
+    if ".." in source_path.parts or "\0" in str(source_path) or any(c in str(source_path.name) for c in "<>:\"|?*"):
+        raise UnsafePathError(f"Ruta con caracteres maliciosos o navegación prohibida: {source_path.name}")
     
     if source_path.is_symlink() or (hasattr(source_path, 'is_junction') and source_path.is_junction()):
         raise UnsafePathError(f"Operación denegada en punto de reparse: {source_path}")

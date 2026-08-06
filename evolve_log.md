@@ -701,3 +701,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-06T00:44:18` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
 - `2026-08-06T00:44:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-06T00:44:18` Corrida terminada. Total usado hoy: 20.
+- `2026-08-06T00:52:27` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-08-06T00:52:59` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `quarantine_file` añadiendo una verificación de existencia de archivos ocultos o que contengan rutas relativas maliciosas (`..`) antes de procesar, evitando ataques de path traversal mediante nombres de archivo manipulados.
+- `2026-08-06T00:53:17` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-06T00:53:42` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-08-06T00:53:51` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Reforcé la seguridad defensiva en `scanner.py` al asegurar que los chequeos heurísticos no operen sobre rutas que atraviesan enlaces simbólicos o puntos de reanálisis fuera del directorio base, añadiendo una validación explícita mediante `resolve()` y `path.is_symlink()` en el proceso de escaneo.
+- `2026-08-06T00:53:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-06T00:53:51` Corrida terminada. Total usado hoy: 24.
