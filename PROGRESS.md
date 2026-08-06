@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **262** (52.0% de aceptación)
-- Rechazadas por tests: 16
+- Mejoras aceptadas: **263** (52.2% de aceptación)
+- Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 186
+- Sin respuesta de la IA (error o límite): 184
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-04 | 62 | 3 | 6 | 4 | 55 |
+| 2026-08-04 | 62 | 3 | 6 | 4 | 51 |
 | 2026-08-05 | 185 | 12 | 19 | 8 | 126 |
-| 2026-08-06 | 15 | 1 | 2 | 1 | 5 |
+| 2026-08-06 | 16 | 2 | 2 | 1 | 7 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **61**
 - manejo de errores y validación de entradas: **54**
 - rendimiento: **53**
-- seguridad defensiva: **51**
+- seguridad defensiva: **52**
 - robustez ante casos límite: **43**
 
 ## Mejoras aceptadas por archivo
@@ -37,7 +37,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **21**
 - `quarantine.py`: **21**
 - `scanner.py`: **21**
-- `settings.py`: **20**
+- `settings.py`: **21**
 - `healthscore.py`: **19**
 - `main.py`: **19**
 - `organizer.py`: **17**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-06T01:03:06` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save` reemplazando la verificación `is_safe_to_modify` por un patrón de validación más robusto antes de la escritura, asegurando que la ruta no solo sea segura al iniciar, sino que mantenga su integridad inmediatamente antes de la operación de reemplazo (`os.replace`) para evitar condiciones de carrera o manipulación de archivos.
 - `2026-08-06T00:53:51` **scanner.py** (seguridad defensiva): Reforcé la seguridad defensiva en `scanner.py` al asegurar que los chequeos heurísticos no operen sobre rutas que atraviesan enlaces simbólicos o puntos de reanálisis fuera del directorio base, añadiendo una validación explícita mediante `resolve()` y `path.is_symlink()` en el proceso de escaneo.
 - `2026-08-06T00:52:59` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad de `quarantine_file` añadiendo una verificación de existencia de archivos ocultos o que contengan rutas relativas maliciosas (`..`) antes de procesar, evitando ataques de path traversal mediante nombres de archivo manipulados.
 - `2026-08-06T00:43:42` **main.py** (seguridad defensiva): Se ha implementado un método `_is_safe_target_dir` que utiliza `safety.is_protected_path` para restringir la selección de carpetas en el diálogo de configuración de `Limpieza`, evitando que el usuario seleccione accidentalmente directorios críticos del sistema como destino de análisis o limpieza.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-06T00:12:57` **safety.py** (robustez ante casos límite): Se añadió una validación explícita para evitar la manipulación de rutas que excedan el límite `MAX_PATH` de Windows (260 caracteres) mediante `os.path.normpath` para detectar el formato de prefijo largo `\\?\` que intenta evadir el chequeo de seguridad, garantizando que ninguna ruta potencialmente insegura o malformada pase los filtros.
 - `2026-08-06T00:12:28` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de concurrencia en `quarantine_file` utilizando un bloqueo exclusivo temporal (renombrado atómico) para evitar condiciones de carrera, garantizando que el archivo no sea modificado o accedido por otros procesos durante el movimiento a cuarentena.
 - `2026-08-06T00:11:59` **organizer.py** (robustez ante casos límite): Se mejoró `stage_for_review` para manejar correctamente casos donde la ruta de origen o destino no existen, o donde se intentan operaciones sobre archivos que fueron eliminados o renombrados por otros procesos entre el escaneo y el movimiento, añadiendo validaciones de integridad robustas.
-- `2026-08-06T00:01:49` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `_collect_candidates` ante archivos que cambian o desaparecen durante el escaneo (condición de carrera) y enlaces simbólicos que apuntan fuera del árbol base, asegurando que `stat` y `resolve` fallen grácilmente sin interrumpir el proceso de escaneo recursivo.

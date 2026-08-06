@@ -229,7 +229,6 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     
     temp_path: Path | None = None
     try:
-        if not is_safe_to_modify(str(ruta)): raise PermissionError("Unsafe path")
         json_data = json.dumps(limpio, indent=2, ensure_ascii=False)
         ruta.parent.mkdir(parents=True, exist_ok=True)
         
@@ -239,8 +238,9 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
             tf.flush()
             os.fsync(tf.fileno())
         
+        # Doble verificación antes de reemplazar para evitar race conditions
         if not is_safe_to_modify(str(ruta)):
-            return None
+            raise PermissionError("Ruta de destino comprometida antes de salvar")
 
         os.replace(temp_path, ruta)
         _cached_settings, _last_path, _last_mtime = limpio, ruta, ruta.stat().st_mtime
