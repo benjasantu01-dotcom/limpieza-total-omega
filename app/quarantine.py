@@ -363,8 +363,8 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
     try:
         base_path = quarantine_dir(base)
         stored_file = (base_path / match.stored_name).resolve()
-    except (OSError, ValueError):
-        raise RuntimeError("No se pudo acceder al directorio de cuarentena.")
+    except (OSError, ValueError) as e:
+        raise RuntimeError(f"No se pudo acceder al directorio de cuarentena: {e}")
     
     if not stored_file.exists():
         items.remove(match)
@@ -454,8 +454,10 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     
     try:
         for entry in quarantine_root.iterdir():
-            # Resolvemos a absoluta para evitar discrepancias de rutas relativas
-            abs_entry = entry.resolve()
+            try:
+                abs_entry = entry.resolve()
+            except OSError:
+                continue
             
             if entry.name == MANIFEST_NAME or not is_within_directory(abs_entry, quarantine_root):
                 continue
@@ -463,19 +465,25 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
             # Si el archivo está en el manifiesto, verificar integridad antes de borrar
             if entry.name in item_map:
                 if item_map[entry.name].verify_integrity(abs_entry):
-                    ensure_safe_to_modify(abs_entry, allow_sensitive=False)
-                    if _safe_unlink(abs_entry):
-                        count += 1
-                    else:
+                    try:
+                        ensure_safe_to_modify(abs_entry, allow_sensitive=False)
+                        if _safe_unlink(abs_entry):
+                            count += 1
+                        else:
+                            remaining_items.append(item_map[entry.name])
+                    except (UnsafePathError, OSError):
                         remaining_items.append(item_map[entry.name])
                 else:
                     remaining_items.append(item_map[entry.name])
             else:
                 # Si no está en el manifiesto, borrado preventivo pero seguro
-                ensure_safe_to_modify(abs_entry, allow_sensitive=False)
-                _safe_unlink(abs_entry)
+                try:
+                    ensure_safe_to_modify(abs_entry, allow_sensitive=False)
+                    _safe_unlink(abs_entry)
+                except (UnsafePathError, OSError):
+                    pass
                 
-    except OSError:
+    except (OSError, PermissionError):
         pass
             
     if count > 0:

@@ -248,8 +248,9 @@ def read_snapshot() -> MemorySnapshot:
                 content = f.read()
                 if content:
                     return parse_linux_meminfo(content)
-        except (OSError, PermissionError, IOError):
-            pass
+        except (OSError, PermissionError, IOError) as e:
+            # En producción, registramos o ignoramos el error específico de lectura
+            return MemorySnapshot(total=0, available=0)
             
     return MemorySnapshot(total=0, available=0)
 
@@ -366,7 +367,6 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     
     try:
         # Pre-chequeo de seguridad: evitar procesos que residan en carpetas protegidas
-        # Buffer de 1024 caracteres para la ruta
         buf = ctypes.create_unicode_buffer(1024)
         if psapi.GetModuleFileNameExW(handle, 0, buf, 1024) > 0:
             if is_protected_path(buf.value):
@@ -380,4 +380,5 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
             return False, "Error al intentar liberar memoria del proceso."
         return True, f"Working set liberado. {TRIM_WARNING}"
     finally:
-        kernel32.CloseHandle(handle)
+        if handle:
+            kernel32.CloseHandle(handle)
