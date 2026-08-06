@@ -39,6 +39,7 @@ JUNK_EXTENSIONS: Final = {
 }
 # Pre-calculado para eficiencia en loops
 _LOWER_JUNK_EXTS: Final = {ext.lower() for ext in JUNK_EXTENSIONS}
+_JUNK_TUPLE: Final = tuple(_LOWER_JUNK_EXTS)
 
 # Carpetas típicas donde se acumula basura
 DEFAULT_SCAN_DIRS: Final = [
@@ -162,7 +163,6 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     """
     dirs: List[str] = directories if directories is not None else DEFAULT_SCAN_DIRS
     found: List[JunkFile] = []
-    junk_exts: Final = _LOWER_JUNK_EXTS
 
     def _walk_dir(base_path: str) -> None:
         """Explora recursivamente el árbol de archivos excluyendo bloqueos y enlaces simbólicos."""
@@ -170,7 +170,6 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
             with os.scandir(base_path) as it:
                 for entry in it:
                     try:
-                        # Saltar enlaces simbólicos para evitar bucles o salidas de contexto
                         if entry.is_symlink():
                             continue
                         
@@ -178,8 +177,8 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
                             if _is_allowed_directory(entry.name):
                                 _walk_dir(entry.path)
                         else:
-                            # Filtrado inicial por extensión antes de validaciones pesadas de IO
-                            if entry.name.lower().endswith(tuple(junk_exts)):
+                            # Filtrado inicial eficiente evitando Path objeto innecesario
+                            if entry.name.lower().endswith(_JUNK_TUPLE):
                                 entry_path: Path = Path(entry.path)
                                 if _is_valid_candidate(entry_path):
                                     stat = entry.stat()

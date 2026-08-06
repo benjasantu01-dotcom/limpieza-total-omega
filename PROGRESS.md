@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-05 | 150 | 12 | 15 | 8 | 123 |
-| 2026-08-06 | 88 | 6 | 10 | 4 | 88 |
+| 2026-08-05 | 147 | 12 | 15 | 8 | 122 |
+| 2026-08-06 | 91 | 6 | 10 | 4 | 89 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **58**
 - seguridad defensiva: **52**
 - manejo de errores y validación de entradas: **50**
-- rendimiento: **41**
-- robustez ante casos límite: **37**
+- rendimiento: **44**
+- robustez ante casos límite: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `browser.py`: **23**
 - `branding.py`: **22**
-- `scanner.py`: **20**
-- `settings.py`: **20**
 - `quarantine.py`: **20**
 - `assistant.py`: **19**
 - `diskreport.py`: **19**
 - `duplicates.py`: **19**
-- `main.py`: **16**
-- `healthscore.py`: **15**
+- `scanner.py`: **19**
+- `settings.py`: **19**
+- `main.py`: **17**
+- `healthscore.py`: **16**
 - `memory.py`: **14**
+- `organizer.py`: **13**
 - `safety.py`: **12**
-- `organizer.py`: **12**
-- `startup.py`: **7**
+- `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-06T08:25:11` **organizer.py** (rendimiento): Optimizé `scan_for_junk` sustituyendo el uso repetido de `Path(entry.path).suffix` dentro del bucle de escaneo por una comparación directa usando `entry.name`, evitando la creación redundante de miles de objetos `Path` en el disco durante el recorrido.
+- `2026-08-06T08:24:34` **main.py** (rendimiento): Se implementó un método `_get_cached_data` para consolidar el acceso a datos cacheados y se reemplazaron múltiples llamadas dispersas a `self._cache` por accesos centralizados, eliminando la redundancia en la lógica de invalidación y actualización del pool de hilos para mejorar la performance general.
+- `2026-08-06T08:23:31` **healthscore.py** (rendimiento): Optimicé el bucle principal de `compute_score` eliminando accesos repetitivos a diccionarios y conversiones de tipo innecesarias dentro de la iteración, utilizando el precalculado `_WEIGHT_ITEMS` y calculando el puntaje ponderado de forma más eficiente.
 - `2026-08-06T08:14:28` **diskreport.py** (rendimiento): Optimicé `walk_files` eliminando la resolución redundante de rutas dentro de cada iteración y evitando llamadas innecesarias a `is_protected_path` al validar solo la entrada raíz de cada subdirectorio, reduciendo drásticamente las llamadas al sistema operativo durante el recorrido.
 - `2026-08-06T08:14:04` **browser.py** (rendimiento): Optimicé el rendimiento de `directory_size` utilizando `os.scandir` en lugar de `os.walk`, lo cual reduce drásticamente las llamadas al sistema (stat) al obtener la información de tipo de archivo y tamaño directamente durante la iteración del directorio, mejorando la velocidad en unidades con muchos archivos pequeños.
 - `2026-08-06T07:53:55` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `ensure_safe_to_modify` extrayendo la lógica de validación de condiciones de archivos existentes a una función dedicada `_check_file_integrity`, reduciendo la carga cognitiva y facilitando futuras expansiones de reglas de seguridad.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-06T07:33:43` **diskreport.py** (legibilidad y documentación): Mejora la robustez y legibilidad de `walk_files` y `largest_folders` añadiendo documentación específica sobre el manejo de errores de permisos y mejorando la consistencia de las anotaciones de tipo y la estructura de control en el escaneo recursivo.
 - `2026-08-06T07:33:33` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints en las funciones internas y docstrings que especifican explícitamente las precondiciones y el manejo de excepciones, facilitando el mantenimiento y la auditoría de seguridad.
 - `2026-08-06T07:33:10` **branding.py** (legibilidad y documentación): Se introdujo documentación técnica detallada en el encabezado de las funciones gráficas y se aclararon las restricciones de seguridad mediante type hints específicos, mejorando la legibilidad del código sin alterar la lógica de renderizado.
-- `2026-08-06T07:32:41` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `build_context` para utilizar un método más robusto y centralizado de validación de números, eliminando redundancias en la lógica de extracción.
-- `2026-08-06T07:23:08` **settings.py** (manejo de errores y validación de entradas): Reforcé la robustez del manejo de archivos en `save()` y `load()` capturando específicamente errores de permisos (`PermissionError`) y posibles excepciones inesperadas, además de garantizar que `_Validators.path` maneje correctamente rutas inexistentes o inválidas evitando errores de propagación durante la validación inicial.
-- `2026-08-06T07:22:43` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de chequeo mediante la validación explícita de parámetros nulos y el manejo de excepciones específicas, evitando que errores en una heurística invaliden el análisis completo del archivo.

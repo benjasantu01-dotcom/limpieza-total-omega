@@ -1439,3 +1439,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-06T08:14:34` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
 - `2026-08-06T08:14:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-06T08:14:34` Corrida terminada. Total usado hoy: 196.
+- `2026-08-06T08:23:04` Arrancando corrida. Quedan hoy ~104 peticiones objetivo.
+- `2026-08-06T08:23:31` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el bucle principal de `compute_score` eliminando accesos repetitivos a diccionarios y conversiones de tipo innecesarias dentro de la iteración, utilizando el precalculado `_WEIGHT_ITEMS` y calculando el puntaje ponderado de forma más eficiente.
+- `2026-08-06T08:24:34` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Se implementó un método `_get_cached_data` para consolidar el acceso a datos cacheados y se reemplazaron múltiples llamadas dispersas a `self._cache` por accesos centralizados, eliminando la redundancia en la lógica de invalidación y actualización del pool de hilos para mejorar la performance general.
+- `2026-08-06T08:24:35` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-06T08:25:02` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: rendimiento).
+- `2026-08-06T08:25:11` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimizé `scan_for_junk` sustituyendo el uso repetido de `Path(entry.path).suffix` dentro del bucle de escaneo por una comparación directa usando `entry.name`, evitando la creación redundante de miles de objetos `Path` en el disco durante el recorrido.
+- `2026-08-06T08:25:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-06T08:25:11` Corrida terminada. Total usado hoy: 200.

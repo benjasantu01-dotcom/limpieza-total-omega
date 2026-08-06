@@ -743,6 +743,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         except (OSError, PermissionError):
             return False
 
+    def _get_cached_data(self, key: str) -> Any:
+        """Helper para recuperar datos del caché centralizado."""
+        return self._get_cached(key)
+
     def _get_cached(self, key: str, provider: Optional[Callable] = None, force: bool = False) -> Any:
         """Retorna datos cacheados si están vigentes; gestiona política LRU."""
         now = time.time()
@@ -905,10 +909,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _compile_metrics(self) -> Tuple[healthscore.SystemMetrics, memory_mod.Snapshot, diskreport.DriveInfo]:
         """Consolida métricas del sistema priorizando caché existente."""
-        hallazgos = self._get_cached("suspicions") or []
-        arranque = self._get_cached("startup") or []
-        junk = self._get_cached("junk") or []
-        dups = self._get_cached("dups") or []
+        hallazgos = self._get_cached_data("suspicions") or []
+        arranque = self._get_cached_data("startup") or []
+        junk = self._get_cached_data("junk") or []
+        dups = self._get_cached_data("dups") or []
 
         snapshot = memory_mod.read_snapshot()
         home = os.path.expanduser("~")
@@ -947,7 +951,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             )
 
             lineas = healthscore.summarize(resultado)
-            if not self._cache.get("dups"):
+            if not self._get_cached_data("dups"):
                 lineas += ["", "Nota: los duplicados no se contaron todavía. "
                                "Corré la pestaña Duplicados para incluirlos."]
             self.log_lines(lineas, "Salud")
@@ -1049,7 +1053,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def refresh_list(self) -> None:
         """Refresca la vista de la lista de basura según el criterio seleccionado."""
-        junk = self._get_cached("junk") or []
+        junk = self._get_cached_data("junk") or []
         ordered = sort_junk(junk, by=self.sort_by.get())
         lines = [f"{jf.size_mb:>8} MB  |  {jf.modified:%Y-%m-%d}  |  {jf.path}" for jf in ordered]
         self.report_data["limpieza"] = lines
@@ -1058,7 +1062,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def on_stage(self) -> None:
         """Mueve candidatos de limpieza a la zona de revisión."""
-        junk = self._get_cached("junk") or []
+        junk = self._get_cached_data("junk") or []
         if not junk:
             messagebox.showinfo("Sin candidatos", "Primero usá 'Buscar basura'.")
             return
@@ -1153,7 +1157,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def on_quarantine_findings(self) -> None:
         """Mueve hallazgos de seguridad a cuarentena."""
-        suspicions = self._get_cached("suspicions") or []
+        suspicions = self._get_cached_data("suspicions") or []
         if not suspicions:
             messagebox.showinfo("Sin hallazgos", "Primero corré un escaneo heurístico.")
             return
@@ -1419,7 +1423,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def on_quarantine_duplicates(self) -> None:
         """Aísla archivos duplicados redundantes."""
-        dups = self._get_cached("dups") or []
+        dups = self._get_cached_data("dups") or []
         if not dups:
             messagebox.showinfo("Sin duplicados", "Primero usá 'Buscar duplicados'.")
             return

@@ -256,8 +256,8 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     total_weighted_score: float = 0.0
     
     for area, weight in _WEIGHT_ITEMS:
-        raw_weighted = scores[area] * float(weight)
-        score_val = raw_weighted * _NORM_FACTOR
+        # Optimizado: evitamos doble look-up y calculamos el segmento ponderado directamente.
+        score_val = scores[area] * float(weight) * _NORM_FACTOR
         breakdown[area] = int(score_val + 0.5)
         total_weighted_score += score_val
 
@@ -282,8 +282,7 @@ def summarize(result: HealthResult) -> List[str]:
     
     bd = result.breakdown if isinstance(result.breakdown, dict) else {}
     for area, maximo in _WEIGHT_ITEMS:
-        puntos = bd.get(area, 0)
-        puntos_val = max(0, min(maximo, int(puntos)))
+        puntos_val = bd.get(area, 0)
         visual = f"[{'#' * puntos_val}{'.' * (maximo - puntos_val)}]"
         lines.append(f"  {area.capitalize():<12} {puntos_val:>2}/{maximo:<2} {visual}")
     
