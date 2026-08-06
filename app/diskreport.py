@@ -137,7 +137,7 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
             return None
         usage = shutil.disk_usage(path_str)
         return DriveUsage(mount=str(mount), total=usage.total, used=usage.used, free=usage.free)
-    except (OSError, ValueError, TypeError, PermissionError, RuntimeError):
+    except (OSError, ValueError, TypeError):
         return None
 
 
@@ -173,27 +173,23 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
         """Verifica si la ruta es un punto de reparse (junction o symlink avanzado)."""
         try:
             return os.name == 'nt' and getattr(path.stat(follow_symlinks=False), 'st_reparse_tag', 0) != 0
-        except (OSError, AttributeError):
+        except OSError:
             return False
 
     def is_path_excluded(path: Path) -> bool:
         """Determina si la ruta debe ser omitida del análisis usando resolución estricta."""
         try:
-            resolved_path = path.resolve()
             if path.is_symlink() or is_reparse_point(path):
                 return True
-            return skip_protected and is_protected_path(resolved_path)
-        except (OSError, RuntimeError):
+            return skip_protected and is_protected_path(path.resolve())
+        except OSError:
             return True
 
     try:
-        path_str = os.fspath(directory)
-        if path_str.startswith(("\\\\", "//")):
-            return
-        base_path = Path(path_str).expanduser().resolve()
+        base_path = Path(directory).expanduser().resolve()
         if not base_path.exists() or not base_path.is_dir() or is_path_excluded(base_path):
             return
-    except (OSError, RuntimeError, PermissionError, ValueError, TypeError):
+    except (OSError, RuntimeError):
         return
 
     visited_directories: set[Path] = {base_path}
@@ -203,7 +199,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
             with os.scandir(current_path) as iterator:
                 for entry in iterator:
                     try:
-                        full_path = Path(entry.path).resolve()
+                        full_path = Path(entry.path)
                         if is_path_excluded(full_path):
                             continue
                         
@@ -213,9 +209,9 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                                 yield from scan_level(full_path)
                         else:
                             yield full_path, entry.stat().st_size
-                    except (OSError, PermissionError, FileNotFoundError, TypeError, AttributeError):
+                    except (OSError, PermissionError):
                         continue
-        except (OSError, PermissionError, FileNotFoundError, TypeError):
+        except (OSError, PermissionError):
             return
 
     yield from scan_level(base_path)
@@ -223,16 +219,13 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 
 def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_protected: bool = True) -> List[FileEntry]:
     """Identifica los N archivos más grandes en la ruta dada usando un min-heap."""
-    if not directory or not isinstance(directory, (str, Path)):
+    if not directory:
         return []
-    try:
-        return heapq.nlargest(
-            max(0, limit), 
-            (FileEntry(path=p, size_bytes=s) for p, s in walk_files(directory, skip_protected)),
-            key=lambda e: e.size_bytes
-        )
-    except (OSError, PermissionError):
-        return []
+    return heapq.nlargest(
+        max(0, limit), 
+        (FileEntry(path=p, size_bytes=s) for p, s in walk_files(directory, skip_protected)),
+        key=lambda e: e.size_bytes
+    )
 
 
 def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip_protected: bool = True) -> List[ExtensionUsage]:
@@ -241,20 +234,17 @@ def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip
     """
     if not directory:
         return []
-    try:
-        sizes: Dict[str, int] = defaultdict(int)
-        counts: Dict[str, int] = defaultdict(int)
-        for path, size in walk_files(directory, skip_protected):
-            ext = path.suffix.lower() or "(sin extensión)"
-            sizes[ext] += size
-            counts[ext] += 1
-        
-        usage_list = [ExtensionUsage(extension=ext, size_bytes=size, count=counts[ext])
-                      for ext, size in sizes.items()]
-        
-        return heapq.nlargest(max(0, limit), usage_list, key=lambda u: u.size_bytes)
-    except (OSError, PermissionError):
-        return []
+    sizes: Dict[str, int] = defaultdict(int)
+    counts: Dict[str, int] = defaultdict(int)
+    for path, size in walk_files(directory, skip_protected):
+        ext = path.suffix.lower() or "(sin extensión)"
+        sizes[ext] += size
+        counts[ext] += 1
+    
+    usage_list = [ExtensionUsage(extension=ext, size_bytes=size, count=counts[ext])
+                  for ext, size in sizes.items()]
+    
+    return heapq.nlargest(max(0, limit), usage_list, key=lambda u: u.size_bytes)
 
 
 def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
@@ -272,8 +262,6 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
         for path, size in walk_files(base, skip_protected):
             try:
                 rel = path.relative_to(base)
-                if not rel.parts:
-                    continue
                 top_level = base / rel.parts[0]
                 
                 if top_level not in folder_map:
@@ -281,11 +269,11 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
                 else:
                     folder_map[top_level].size_bytes += size
                     folder_map[top_level].file_count += 1
-            except (ValueError, IndexError, OSError, FileNotFoundError, TypeError, AttributeError):
+            except (ValueError, IndexError):
                 continue
 
         return heapq.nlargest(max(0, limit), folder_map.values(), key=lambda f: f.size_bytes)
-    except (OSError, RuntimeError, PermissionError, ValueError, TypeError):
+    except (OSError, RuntimeError):
         return []
 
 
@@ -295,12 +283,9 @@ def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) 
         return 0, 0
     total = 0
     count = 0
-    try:
-        for _, size in walk_files(directory, skip_protected):
-            total += size
-            count += 1
-    except (OSError, PermissionError):
-        pass
+    for _, size in walk_files(directory, skip_protected):
+        total += size
+        count += 1
     return total, count
 
 
@@ -315,7 +300,7 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
         path_obj = Path(directory).expanduser().resolve()
         if not path_obj.exists() or not path_obj.is_dir():
             return [f"Error: La ruta '{directory}' no es un directorio válido."]
-    except (OSError, RuntimeError, PermissionError, ValueError, TypeError):
+    except (OSError, RuntimeError):
         return ["Error: No se pudo acceder a la ruta especificada."]
         
     ext_sizes: Dict[str, int] = defaultdict(int)

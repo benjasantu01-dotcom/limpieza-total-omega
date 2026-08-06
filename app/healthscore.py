@@ -297,17 +297,15 @@ def summarize(result: HealthResult) -> List[str]:
 
     lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     
-    if not isinstance(result.breakdown, dict):
-        return lines + ["  Error: Desglose no procesable."]
-
+    bd = result.breakdown if isinstance(result.breakdown, dict) else {}
     for area, maximo in _WEIGHT_ITEMS:
-        puntos = result.breakdown.get(area, 0)
+        puntos = bd.get(area, 0)
         puntos_val = max(0, min(maximo, int(puntos)))
         visual = f"[{'#' * puntos_val}{'.' * (maximo - puntos_val)}]"
         lines.append(f"  {area.capitalize():<12} {puntos_val:>2}/{maximo:<2} {visual}")
     
     lines.extend(["", "Recomendaciones:"])
-    recs = result.recommendations if isinstance(result.recommendations, list) else []
+    recs = result.recommendations if isinstance(result.recommendations, list) else ["No hay recomendaciones disponibles."]
     for rec in recs:
         lines.append(f"  - {str(rec)}")
     return lines

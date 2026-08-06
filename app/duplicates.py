@@ -80,7 +80,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
     Calcula el hash SHA256 completo del archivo mediante bloques de datos.
     Retorna None si el archivo es inaccesible, protegido o inválido.
     """
-    if not path or chunk_size <= 0: 
+    if path is None or chunk_size <= 0: 
         return None
         
     try:
@@ -105,7 +105,7 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
     """
     Calcula un hash SHA256 sobre los primeros N bytes para comparación rápida.
     """
-    if not path or read_bytes <= 0: 
+    if path is None or read_bytes <= 0: 
         return None
         
     try:
@@ -130,7 +130,7 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     Agrupa rutas de archivos por su tamaño, filtrando accesos protegidos.
     """
     groups: Dict[int, List[Path]] = defaultdict(list)
-    if not paths: 
+    if paths is None: 
         return groups
         
     for p in paths:
@@ -151,6 +151,8 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: set[Tuple[int, int]] = set()
+    
+    if directories is None: return temp_groups
     
     def _scan(root_path: Path) -> None:
         try:
@@ -175,6 +177,7 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
         except (OSError, PermissionError): pass
 
     for directory in directories:
+        if directory is None: continue
         try:
             path_obj = Path(directory)
             if path_obj.is_dir():
@@ -190,8 +193,10 @@ def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[
     Filtra una lista de archivos agrupándolos por un hash calculado externamente.
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
+    if paths is None: return groups_by_digest
+    
     for path in paths:
-        if not path or is_protected_path(path): continue
+        if path is None or is_protected_path(path): continue
         if digest := hash_func(path):
             groups_by_digest[digest].append(path)
     return {d: p for d, p in groups_by_digest.items() if len(p) > 1}
@@ -211,7 +216,7 @@ def find_duplicates(
     
     Retorna una lista de grupos ordenados por espacio desperdiciado descendente.
     """
-    if not directories: return []
+    if directories is None: return []
     
     size_map = _collect_candidates(directories, min_size, skip_protected)
     
@@ -233,6 +238,7 @@ def find_duplicates(
 
 def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
     """Suma el total de espacio en bytes recuperable de todos los grupos."""
+    if not groups: return 0
     return sum(g.wasted_bytes for g in groups)
 
 
@@ -245,12 +251,12 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
 
     keepers: List[Tuple[float, int, Path]] = []
     for p in group.paths:
-        if not p: continue
+        if p is None: continue
         try:
             if p.exists() and not is_protected_path(p):
                 stat_info = p.stat()
-                keepers.append((stat_info.st_mtime, len(str(p)), p))
-        except (OSError, PermissionError):
+                keepers.append((float(stat_info.st_mtime), len(str(p)), p))
+        except (OSError, PermissionError, AttributeError):
             continue
             
     if not keepers:
