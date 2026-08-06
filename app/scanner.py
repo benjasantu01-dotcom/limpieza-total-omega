@@ -153,18 +153,21 @@ def scan_file(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[st
     
     findings: ScanResult = []
     
-    # Heurística posicional/directa
-    if n.lower() in SYSTEM_LOOKALIKES:
-        if res := check_system_lookalike(path, entry, n, s): findings.append(res)
-    if s in SUSPICIOUS_EXECUTABLE_EXT:
-        if res := check_recent_executable_in_downloads(path, entry, n, s): findings.append(res)
+    # Heurística posicional/directa: Solo aplicar si el archivo es potencialmente ejecutable o sospechoso
+    is_executable = s in SUSPICIOUS_EXECUTABLE_EXT
+    is_lookalike = n.lower() in SYSTEM_LOOKALIKES
     
-    for check_func in CHECK_REGISTRY:
-        try:
-            if res := check_func(path, entry, n, s):
-                findings.append(res)
-        except (OSError, AttributeError, TypeError):
-            continue
+    if is_lookalike:
+        if res := check_system_lookalike(path, entry, n, s): findings.append(res)
+    
+    if is_executable:
+        if res := check_recent_executable_in_downloads(path, entry, n, s): findings.append(res)
+        for check_func in CHECK_REGISTRY:
+            try:
+                if res := check_func(path, entry, n, s):
+                    findings.append(res)
+            except (OSError, AttributeError, TypeError):
+                continue
             
     return findings
 

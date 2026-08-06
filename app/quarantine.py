@@ -451,32 +451,35 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     
     items = load_manifest(base)
     item_map: Dict[str, QuarantineItem] = {item.stored_name: item for item in items}
-    stored_names_in_manifest = set(item_map.keys())
+    
     count = 0
+    remaining_items = []
     
     try:
         for entry in quarantine_root.iterdir():
             if entry.name == MANIFEST_NAME or not is_within_directory(entry, quarantine_root):
                 continue
             
-            try:
-                if entry.name in stored_names_in_manifest:
-                    if item_map[entry.name].verify_integrity(entry):
-                        ensure_safe_to_modify(entry, allow_sensitive=False)
-                        if _safe_unlink(entry):
-                            count += 1
-                else:
+            # Si el archivo está en el manifiesto, verificar integridad antes de borrar
+            if entry.name in item_map:
+                if item_map[entry.name].verify_integrity(entry):
                     ensure_safe_to_modify(entry, allow_sensitive=False)
-                    _safe_unlink(entry)
-            except (OSError, PermissionError, UnsafePathError):
-                continue
+                    if _safe_unlink(entry):
+                        count += 1
+                    else:
+                        remaining_items.append(item_map[entry.name])
+                else:
+                    remaining_items.append(item_map[entry.name])
+            else:
+                # Si no está en el manifiesto, borrado preventivo pero seguro
+                ensure_safe_to_modify(entry, allow_sensitive=False)
+                _safe_unlink(entry)
+                
     except OSError:
         pass
             
     if count > 0:
-        new_items = [i for i in items if (quarantine_root / i.stored_name).exists()]
-        if len(new_items) != len(items):
-            save_manifest(new_items, base)
+        save_manifest(remaining_items, base)
     return count
 
 

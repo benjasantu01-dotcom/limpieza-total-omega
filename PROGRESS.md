@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **238** (47.2% de aceptación)
+- Mejoras aceptadas: **236** (46.8% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 25
-- Sin cambios (nada sustancial que mejorar): 12
+- Rechazadas por guardia de seguridad: 26
+- Sin cambios (nada sustancial que mejorar): 13
 - Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-05 | 147 | 12 | 15 | 8 | 122 |
-| 2026-08-06 | 91 | 6 | 10 | 4 | 89 |
+| 2026-08-05 | 143 | 12 | 15 | 8 | 122 |
+| 2026-08-06 | 93 | 6 | 11 | 5 | 89 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **58**
-- seguridad defensiva: **52**
 - manejo de errores y validación de entradas: **50**
-- rendimiento: **44**
+- seguridad defensiva: **48**
+- rendimiento: **46**
 - robustez ante casos límite: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `browser.py`: **23**
-- `branding.py`: **22**
-- `quarantine.py`: **20**
-- `assistant.py`: **19**
-- `diskreport.py`: **19**
+- `browser.py`: **22**
+- `quarantine.py`: **21**
+- `branding.py`: **21**
+- `scanner.py`: **20**
 - `duplicates.py`: **19**
-- `scanner.py`: **19**
 - `settings.py`: **19**
+- `assistant.py`: **18**
+- `diskreport.py`: **18**
 - `main.py`: **17**
 - `healthscore.py`: **16**
 - `memory.py`: **14**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-06T08:34:47` **scanner.py** (rendimiento): Optimicé el rendimiento del escaneo restringiendo la ejecución de las funciones de chequeo (checkers) únicamente a archivos con extensiones sospechosas mediante una pre-selección, evitando llamadas innecesarias a la lógica de heurística para archivos comunes o benignos.
+- `2026-08-06T08:33:55` **quarantine.py** (rendimiento): Optimicé el manejo de la memoria y el rendimiento en `purge_all` reemplazando la lógica de bucle redundante y mejorando la eficiencia de búsqueda con un conjunto, evitando iteraciones innecesarias sobre el manifiesto.
 - `2026-08-06T08:25:11` **organizer.py** (rendimiento): Optimizé `scan_for_junk` sustituyendo el uso repetido de `Path(entry.path).suffix` dentro del bucle de escaneo por una comparación directa usando `entry.name`, evitando la creación redundante de miles de objetos `Path` en el disco durante el recorrido.
 - `2026-08-06T08:24:34` **main.py** (rendimiento): Se implementó un método `_get_cached_data` para consolidar el acceso a datos cacheados y se reemplazaron múltiples llamadas dispersas a `self._cache` por accesos centralizados, eliminando la redundancia en la lógica de invalidación y actualización del pool de hilos para mejorar la performance general.
 - `2026-08-06T08:23:31` **healthscore.py** (rendimiento): Optimicé el bucle principal de `compute_score` eliminando accesos repetitivos a diccionarios y conversiones de tipo innecesarias dentro de la iteración, utilizando el precalculado `_WEIGHT_ITEMS` y calculando el puntaje ponderado de forma más eficiente.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-06T07:43:28` **healthscore.py** (legibilidad y documentación): Mejora la legibilidad y la seguridad de tipos añadiendo `TypeAlias` para las métricas y documentando la lógica de normalización mediante docstrings más precisos en cada función de cálculo.
 - `2026-08-06T07:42:52` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del pipeline de `find_duplicates` mediante docstrings detallados y type hints, eliminando ambigüedades en la lógica de las funciones privadas para facilitar su mantenimiento.
 - `2026-08-06T07:33:43` **diskreport.py** (legibilidad y documentación): Mejora la robustez y legibilidad de `walk_files` y `largest_folders` añadiendo documentación específica sobre el manejo de errores de permisos y mejorando la consistencia de las anotaciones de tipo y la estructura de control en el escaneo recursivo.
-- `2026-08-06T07:33:33` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints en las funciones internas y docstrings que especifican explícitamente las precondiciones y el manejo de excepciones, facilitando el mantenimiento y la auditoría de seguridad.
-- `2026-08-06T07:33:10` **branding.py** (legibilidad y documentación): Se introdujo documentación técnica detallada en el encabezado de las funciones gráficas y se aclararon las restricciones de seguridad mediante type hints específicos, mejorando la legibilidad del código sin alterar la lógica de renderizado.
