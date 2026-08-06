@@ -353,12 +353,12 @@ def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
         alto = max(1, int(height))
         colores = gradient_colors(ancho, stops)
         
-        start_idx = 0
+        start = 0
         for i in range(1, ancho):
-            if colores[i] != colores[start_idx]:
-                canvas.create_line(canvas_x + start_idx, canvas_y, canvas_x + i, canvas_y, fill=colores[start_idx], width=alto)
-                start_idx = i
-        canvas.create_line(canvas_x + start_idx, canvas_y, canvas_x + ancho, canvas_y, fill=colores[start_idx], width=alto)
+            if colores[i] != colores[start]:
+                canvas.create_line(canvas_x + start, canvas_y, canvas_x + i, canvas_y, fill=colores[start], width=alto)
+                start = i
+        canvas.create_line(canvas_x + start, canvas_y, canvas_x + ancho, canvas_y, fill=colores[start], width=alto)
     except (ValueError, TypeError, AttributeError): pass
 
 

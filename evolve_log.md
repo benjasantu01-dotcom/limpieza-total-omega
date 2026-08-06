@@ -1005,3 +1005,44 @@ ERROR evolve/tests/test_assistant.py - NameError: name 'SystemContext' is not de
 - `2026-08-06T03:27:15` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad de las funciones de escaneo mediante la estandarización de docstrings, la clarificación de las responsabilidades en la firma de las funciones de chequeo y la adición de una descripción detallada en `scan_file` para clarificar el flujo de validación.
 - `2026-08-06T03:27:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-06T03:27:15` Corrida terminada. Total usado hoy: 84.
+- `2026-08-06T03:36:08` Arrancando corrida. Quedan hoy ~216 peticiones objetivo.
+- `2026-08-06T03:36:35` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad al extraer la lógica de validación de rutas y tipos primitivos a un contenedor semántico (`_Validators`) y documentar explícitamente el uso de `load` y `save` mediante el nuevo atributo `_current_path` para evitar dependencias innecesarias de `global` en la gestión de estado del sistema de archivos.
+- `2026-08-06T03:37:02` Tests FALLARON:
+```
+.................................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed in 0.91s
+
+```
+- `2026-08-06T03:37:02` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejora la legibilidad y mantenibilidad de `startup.py` mediante la refactorización de `StartupEntry._resolve_and_cache_path` y `parse_registry_csv` para reducir su complejidad ciclomática y clarificar el flujo de validación.
+- `2026-08-06T03:37:34` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `local_answer` y `_gen_problems` evitando la creación innecesaria de listas completas en memoria mediante el uso de expresiones generadoras y `next()` para la detección de problemas, mejorando la eficiencia al reducir la carga de recolección de basura.
+- `2026-08-06T03:37:48` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se optimizó `draw_gradient_bar` para reducir drásticamente el número de llamadas al canvas, agrupando segmentos contiguos del mismo color en lugar de dibujar línea por línea.
+- `2026-08-06T03:37:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-06T03:37:48` Corrida terminada. Total usado hoy: 88.

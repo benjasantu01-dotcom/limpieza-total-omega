@@ -393,10 +393,15 @@ def local_answer(question: str, context: SystemContext) -> Answer:
         if handler_key := _KEYWORD_MAP.get(token):
             return _HANDLERS[handler_key](context, clean_text)
 
-    problemas = list(_gen_problems(context))
+    # Optimizamos: verificamos si hay problemas sin materializar una lista completa
+    gen = _gen_problems(context)
+    primer_problema = next(gen, None)
+    
     puntaje_str = str(context.score) if context.score is not None else "N/A"
     
-    if problemas:
+    if primer_problema:
+        # Recuperamos el resto eficientemente
+        problemas = [primer_problema] + list(gen)
         cuerpo = (f"Con un puntaje de {puntaje_str}/100, por orden de prioridad: "
                   f"{', '.join(problemas[:3])}.")
     else:
