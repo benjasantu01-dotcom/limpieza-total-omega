@@ -423,3 +423,34 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-06T09:46:33` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-08-06T09:46:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-06T09:46:33` Corrida terminada. Total usado hoy: 232.
+- `2026-08-06T09:55:19` Arrancando corrida. Quedan hoy ~68 peticiones objetivo.
+- `2026-08-06T09:55:44` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-08-06T09:56:07` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se implementó una validación de rutas mediante `pathlib.Path.resolve().parts` en `scan_directory` para garantizar que el análisis permanezca estrictamente dentro de los límites del directorio raíz solicitado, previniendo posibles ataques de *directory traversal* mediante enlaces simbólicos o referencias relativas que pudieran haber escapado a validaciones previas.
+- `2026-08-06T09:56:32` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `save` integrando una validación previa mediante `is_safe_to_modify` antes de intentar cualquier operación de disco, evitando así el riesgo de operar sobre rutas protegidas antes de lanzar la excepción definitiva.
+- `2026-08-06T09:56:43` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.14s
+
+```
+- `2026-08-06T09:56:43` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: He robustecido la seguridad defensiva de `StartupEntry` añadiendo una validación explícita mediante `is_protected_path` en `_sanitize_command` y reforzando la resolución de rutas para evitar el procesamiento de archivos que, aunque tengan una extensión válida, sean punteros dinámicos potencialmente peligrosos (como los puntos de reparse o junctions).
+- `2026-08-06T09:56:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-06T09:56:43` Corrida terminada. Total usado hoy: 236.

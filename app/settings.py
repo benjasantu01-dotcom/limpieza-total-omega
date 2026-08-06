@@ -194,6 +194,11 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     global _cached_settings, _current_path
     if not isinstance(values, dict): return None
     ruta = settings_path(path_or_base)
+    
+    # Validar seguridad antes de realizar cualquier operación de I/O
+    if not is_safe_to_modify(str(ruta.parent)):
+        return None
+        
     limpio = validate(values)
     if limpio.get("asistente_activado") and not (limpio.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)):
         limpio["asistente_activado"] = False

@@ -62,7 +62,7 @@ class Scanner:
     def __init__(self, base_root: Path) -> None:
         self.results: ScanResult = []
         self.seen: set[str] = set()
-        self.base_root_str = str(base_root.resolve())
+        self.base_root = base_root.resolve()
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         try:
@@ -81,8 +81,8 @@ class Scanner:
             
             path_obj = Path(entry.path)
             
-            # Resolvemos la ruta para validar contra base_root
-            if not str(path_obj.resolve()).startswith(self.base_root_str):
+            # Validar confinamiento estricto
+            if self.base_root not in path_obj.resolve().parents and path_obj.resolve() != self.base_root:
                 return
 
             if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
@@ -98,7 +98,6 @@ class Scanner:
                 suffix = os.path.splitext(name)[1].lower()
                 self.results.extend(scan_file(path_obj, entry=entry, name=name, suffix=suffix, prevalidated=True))
         except (PermissionError, OSError):
-            # Ignoramos silenciosamente rutas inaccesibles durante el escaneo recursivo
             pass
 
 
@@ -131,7 +130,6 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, name
         pass
     return None
 
-# Registro eficiente: mapeo para acceso directo por tipo/nombre
 CHECK_REGISTRY: Final[List[SuspicionCheck]] = [check_double_extension]
 
 def scan_file(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, prevalidated: bool = False) -> ScanResult:
@@ -153,7 +151,6 @@ def scan_file(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[st
     
     findings: ScanResult = []
     
-    # Heurística posicional/directa: Solo aplicar si el archivo es potencialmente ejecutable o sospechoso
     is_executable = s in SUSPICIOUS_EXECUTABLE_EXT
     is_lookalike = n.lower() in SYSTEM_LOOKALIKES
     
@@ -187,9 +184,8 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         return []
 
     scanner = Scanner(base_root=root_path)
-    root_str = str(root_path)
-    stack: List[str] = [root_str]
-    scanner.seen.add(root_str)
+    stack: List[str] = [str(root_path)]
+    scanner.seen.add(str(root_path))
     
     while stack:
         current_dir = stack.pop()
