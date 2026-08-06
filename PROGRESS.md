@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **245** (48.6% de aceptación)
-- Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 25
-- Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 205
+- Mejoras aceptadas: **247** (49.0% de aceptación)
+- Rechazadas por tests: 15
+- Rechazadas por guardia de seguridad: 26
+- Sin cambios (nada sustancial que mejorar): 12
+- Sin respuesta de la IA (error o límite): 204
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-04 | 27 | 1 | 3 | 4 | 39 |
+| 2026-08-04 | 26 | 0 | 3 | 3 | 38 |
 | 2026-08-05 | 185 | 12 | 19 | 8 | 126 |
-| 2026-08-06 | 33 | 3 | 3 | 1 | 40 |
+| 2026-08-06 | 36 | 3 | 4 | 1 | 40 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **57**
+- legibilidad y documentación: **60**
 - seguridad defensiva: **52**
 - manejo de errores y validación de entradas: **52**
-- robustez ante casos límite: **43**
+- robustez ante casos límite: **42**
 - rendimiento: **41**
 
 ## Mejoras aceptadas por archivo
@@ -33,20 +33,23 @@ Este archivo se regenera solo en cada corrida a partir de
 - `duplicates.py`: **22**
 - `branding.py`: **22**
 - `browser.py`: **22**
-- `assistant.py`: **20**
-- `scanner.py`: **20**
+- `scanner.py`: **21**
+- `quarantine.py`: **20**
 - `diskreport.py`: **20**
-- `quarantine.py`: **19**
+- `assistant.py`: **19**
 - `settings.py`: **19**
 - `main.py`: **18**
 - `healthscore.py`: **17**
 - `organizer.py`: **15**
-- `safety.py`: **13**
+- `safety.py`: **14**
 - `memory.py`: **11**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-06T03:27:15` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de las funciones de escaneo mediante la estandarización de docstrings, la clarificación de las responsabilidades en la firma de las funciones de chequeo y la adición de una descripción detallada en `scan_file` para clarificar el flujo de validación.
+- `2026-08-06T03:27:06` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `safety.py` mediante la adición de docstrings estructuradas y el uso de anotaciones de tipo más específicas, además de extraer la lógica de comprobación de privilegios en `ensure_safe_to_modify` hacia una estructura de "lista de razones" que facilita el mantenimiento sin alterar la funcionalidad.
+- `2026-08-06T03:26:20` **quarantine.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en funciones críticas y la estandarización de tipos, asegurando que la lógica de validación (el PORQUÉ de las restricciones) sea transparente para futuras auditorías o mantenimiento.
 - `2026-08-06T03:17:34` **organizer.py** (legibilidad y documentación): He mejorado la documentación de las funciones y métodos mediante la adición de docstrings estructurados (estilo Google/NumPy) y la inclusión de type hints en variables internas para clarificar la lógica de las operaciones de escaneo y ordenamiento.
 - `2026-08-06T03:17:26` **memory.py** (legibilidad y documentación): Se añadieron Type Hints ausentes y se mejoró la documentación (docstrings) de `MemorySnapshot` y las funciones de lectura para clarificar el flujo de datos y las unidades de medida, cumpliendo con los estándares de legibilidad exigidos.
 - `2026-08-06T03:17:01` **main.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de la clase principal mediante la extracción de los métodos de construcción de UI de las pestañas (`_build_tab_...`) a una estructura que separa claramente la definición de la interfaz de la lógica operativa, facilitando la comprensión del flujo de la aplicación.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-06T02:45:42` **quarantine.py** (manejo de errores y validación de entradas): Se introdujo una validación robusta de los argumentos de entrada en las funciones públicas `restore_item` y `purge_item` para evitar el procesamiento de datos mal formados, reemplazando la lógica implícita por validaciones explícitas que lanzan excepciones informativas antes de intentar operaciones de I/O.
 - `2026-08-06T02:36:27` **main.py** (manejo de errores y validación de entradas): Se introdujo una validación robusta y centralizada para las entradas numéricas en los diálogos de configuración, evitando que entradas vacías o malformadas bloqueen la app o generen valores inesperados en el sistema de preferencias.
 - `2026-08-06T02:35:27` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `summarize` y `compute_score` ante fallos de integridad, asegurando que el desglose del puntaje se valide explícitamente antes de procesarlo, evitando errores de clave o tipos inesperados durante la generación de reportes.
-- `2026-08-06T02:35:01` **duplicates.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `suggest_keeper` y `hash_file`/`partial_hash` añadiendo validaciones explícitas contra valores `None` o rutas inexistentes antes de realizar operaciones de E/S, evitando excepciones innecesarias en el bucle principal.
-- `2026-08-06T02:26:20` **diskreport.py** (manejo de errores y validación de entradas): Se introdujo una validación robusta de tipos en `format_size` y se reemplazó el acceso directo a `os.scandir` por un wrapper que captura `PermissionError` y otros fallos de acceso a nivel de sistema antes de iterar, mejorando la resiliencia ante errores de entrada y privilegios durante el escaneo de disco.
-- `2026-08-06T02:26:08` **browser.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `detect_profiles` y `directory_size` validando explícitamente los parámetros de entrada y normalizando las rutas con `Path.resolve()` antes de realizar comparaciones, evitando así excepciones inesperadas por rutas mal formadas o tipos de datos erróneos que podrían romper el flujo del escaneo.

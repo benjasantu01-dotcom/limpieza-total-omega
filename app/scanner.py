@@ -40,6 +40,8 @@ class Suspicion:
     severity: str
 
 # Alias de tipos para mejorar la legibilidad y mantenibilidad de la lógica de escaneo
+# SuspicionCheck: Ejecuta la heurística específica si la condición previa se cumple.
+# ConditionCheck: Filtra rápidamente si un archivo debe ser sometido a un chequeo.
 SuspicionCheck: TypeAlias = Callable[[Path, Optional[os.DirEntry], Optional[str], Optional[str]], Optional[Suspicion]]
 ConditionCheck: TypeAlias = Callable[[Path, str, str], bool]
 ScanResult: TypeAlias = List[Suspicion]
@@ -61,7 +63,7 @@ RECENT_FILE_THRESHOLD_HOURS: Final[int] = 24
 
 class Scanner:
     """
-    Controlador de estado para el escaneo recursivo.
+    Controlador de estado para el escaneo recursivo. Gestiona el rastreo de carpetas visitadas.
     """
     
     def __init__(self, base_root: Path) -> None:
@@ -104,7 +106,7 @@ class Scanner:
 
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None) -> Optional[Suspicion]:
-    """Valida si el archivo posee extensiones dobles engañosas (ej: .pdf.exe)."""
+    """Analiza si el nombre del archivo contiene extensiones anidadas engañosas."""
     target = name or (path.name if path else "")
     if target and DOUBLE_EXTENSION_RE.search(target):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
@@ -112,7 +114,7 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, name
 
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, hours: int = RECENT_FILE_THRESHOLD_HOURS) -> Optional[Suspicion]:
-    """Evalúa si un archivo ejecutable fue modificado recientemente usando metadatos del DirEntry."""
+    """Evalúa si el archivo ejecutable fue creado/modificado recientemente mediante metadatos."""
     try:
         st = entry.stat() if entry else path.lstat()
         mtime = datetime.fromtimestamp(st.st_mtime)
@@ -124,7 +126,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None) -> Optional[Suspicion]:
-    """Detecta archivos con nombres de procesos críticos del sistema fuera del directorio System32."""
+    """Verifica si el archivo intenta suplantar nombres de procesos críticos del sistema."""
     try:
         if path and SYSTEM32_LOWER not in str(path.parent).lower():
             return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
@@ -132,7 +134,7 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, name
         pass
     return None
 
-# Registro de heurísticas: Tuplas conteniendo (función que valida si aplicar, función que ejecuta).
+# Registro de heurísticas: Lista de tuplas (Condición, Función de Chequeo).
 CHECK_REGISTRY: Final[List[Tuple[ConditionCheck, SuspicionCheck]]] = [
     (lambda p, n, s: n.lower() in SYSTEM_LOOKALIKES, check_system_lookalike),
     (lambda p, n, s: s in SUSPICIOUS_EXECUTABLE_EXT, check_recent_executable_in_downloads),
@@ -140,7 +142,14 @@ CHECK_REGISTRY: Final[List[Tuple[ConditionCheck, SuspicionCheck]]] = [
 ]
 
 def scan_file(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, prevalidated: bool = False) -> ScanResult:
-    """Ejecuta los chequeos registrados utilizando metadatos precalculados para eficiencia."""
+    """
+    Ejecuta el conjunto de heurísticas registradas sobre un archivo.
+    
+    Args:
+        path: Objeto Path del archivo.
+        prevalidated: Si es True, omite los chequeos de seguridad (is_safe_to_modify) 
+                      asumiendo que ya fueron realizados por el llamador (ej: Scanner).
+    """
     if not isinstance(path, Path):
         return []
         
@@ -154,7 +163,7 @@ def scan_file(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[st
         if not is_safe_to_modify(path) or is_protected_path(path):
             return []
     
-    # Derivación diferida solo si no se proveyeron los metadatos
+    # Derivación diferida de metadatos si no se proveyeron en la llamada
     n = name or path.name
     s = suffix or path.suffix.lower()
     
@@ -172,7 +181,7 @@ def scan_file(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[st
 
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
-    """Realiza un escaneo recursivo de un directorio, recolectando hallazgos sospechosos."""
+    """Realiza un escaneo recursivo desde un directorio raíz, recolectando hallazgos."""
     if directory is None:
         return []
         
