@@ -1373,3 +1373,62 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-06T07:53:55` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `ensure_safe_to_modify` extrayendo la lógica de validación de condiciones de archivos existentes a una función dedicada `_check_file_integrity`, reduciendo la carga cognitiva y facilitando futuras expansiones de reglas de seguridad.
 - `2026-08-06T07:53:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-06T07:53:55` Corrida terminada. Total usado hoy: 188.
+- `2026-08-06T08:02:45` Arrancando corrida. Quedan hoy ~112 peticiones objetivo.
+- `2026-08-06T08:03:09` Tests FALLARON:
+```
+estilo POSIX, para que el
+        # resultado no dependa de en qué sistema corran los tests.
+>       flagged = scanner.check_system_lookalike(PurePosixPath("/home/user/Downloads/svchost.exe"))
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: check_system_lookalike() missing 3 required positional arguments: 'entry', 'name', and 'suffix'
+
+evolve/tests/test_basic.py:212: TypeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_scanner_double_extension_detection - TypeError: check_double_extension() missing 3 required positional arguments: 'entry', 'name', and 'suffix'
+FAILED evolve/tests/test_basic.py::test_scanner_normal_file_is_clean - TypeError: check_double_extension() missing 3 required positional arguments: 'entry', 'name', and 'suffix'
+FAILED evolve/tests/test_basic.py::test_scanner_flags_system_lookalike_outside_system32 - TypeError: check_system_lookalike() missing 3 required positional arguments: 'entry', 'name', and 'suffix'
+FAILED evolve/tests/test_basic.py::test_scanner_does_not_flag_real_system_file - TypeError: check_system_lookalike() missing 3 required positional arguments: 'entry', 'name', and 'suffix'
+FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independent - TypeError: check_system_lookalike() missing 3 required positional arguments: 'entry', 'name', and 'suffix'
+5 failed, 294 passed in 1.09s
+
+```
+- `2026-08-06T08:03:09` ❌ Mejora descartada en scanner.py (no pasó los tests), se revirtió. Intento: Mejoré la legibilidad y mantenibilidad del módulo `scanner.py` reemplazando los chequeos manuales de tipos por Type Hints claros en los parámetros, refinando los docstrings de las funciones de chequeo y estandarizando la firma de las funciones en `CHECK_REGISTRY` para asegurar una arquitectura más robusta.
+- `2026-08-06T08:03:33` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _Validators.bool, _Validators.int, _Validators.path, _Validators.str
+- `2026-08-06T08:03:57` Tests FALLARON:
+```
+.................................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed in 1.11s
+
+```
+- `2026-08-06T08:03:57` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la legibilidad y mantenibilidad de la clase `StartupEntry` mediante la aplicación de Type Hints más precisos, la estructuración de la lógica de resolución de rutas en métodos privados con mejor documentación (Docstrings), y la eliminación de redundancias en la lógica de validación de ejecutables.
+- `2026-08-06T08:04:14` Gemini no devolvió un bloque de archivo válido para assistant.py (enfoque: rendimiento).
+- `2026-08-06T08:04:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-06T08:04:14` Corrida terminada. Total usado hoy: 192.
