@@ -155,6 +155,10 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     """
     Realiza un escaneo recursivo de directorios buscando candidatos a limpieza.
     
+    La estrategia de escaneo utiliza `os.scandir` para minimizar llamadas al sistema,
+    excluye explícitamente enlaces simbólicos para evitar recursión infinita y 
+    valida cada ruta contra `safety.py` antes de cualquier procesamiento pesado.
+    
     Args:
         directories: Lista de rutas a escanear. Si es None, usa DEFAULT_SCAN_DIRS.
     
@@ -230,6 +234,13 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Path:
     """
     Mueve archivos candidatos a un directorio de cuarentena (revisión).
+    
+    Esta función implementa una arquitectura defensiva:
+    1. Verifica la seguridad del directorio destino mediante `ensure_safe_to_modify`.
+    2. Valida que el archivo fuente no sea un ancestro o igual al destino para evitar 
+       errores catastróficos de reescritura.
+    3. Utiliza `_generate_unique_target` para garantizar que no se pierdan datos 
+       por colisión de nombres (sobreescritura).
     
     Args:
         files: Archivos a mover.

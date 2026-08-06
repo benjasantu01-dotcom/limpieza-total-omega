@@ -199,7 +199,10 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
 
 
 def _create_memstat_struct(ctypes_lib: "ctypes") -> "ctypes.Structure":
-    """Define la estructura Win32 MEMORYSTATUSEX para consulta de memoria de sistema."""
+    """
+    Define la estructura C `MEMORYSTATUSEX` requerida por la API de Windows.
+    Esta estructura mapea los estados de memoria física y virtual del sistema.
+    """
     class MEMORYSTATUSEX(ctypes_lib.Structure):
         _fields_ = [
             ("dwLength", ctypes_lib.c_ulong),
@@ -218,7 +221,10 @@ def _create_memstat_struct(ctypes_lib: "ctypes") -> "ctypes.Structure":
 
 
 def _read_windows_snapshot() -> MemorySnapshot:
-    """Consulta la API GlobalMemoryStatusEx de Windows mediante ctypes."""
+    """
+    Consulta la API Win32 `GlobalMemoryStatusEx` mediante ctypes para obtener
+    métricas precisas de memoria física actual del sistema host.
+    """
     import ctypes
 
     stat = _create_memstat_struct(ctypes)
@@ -249,7 +255,6 @@ def read_snapshot() -> MemorySnapshot:
                 if content:
                     return parse_linux_meminfo(content)
         except (OSError, PermissionError, IOError) as e:
-            # En producción, registramos o ignoramos el error específico de lectura
             return MemorySnapshot(total=0, available=0)
             
     return MemorySnapshot(total=0, available=0)

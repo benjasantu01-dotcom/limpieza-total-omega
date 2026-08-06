@@ -431,6 +431,23 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
     return success
 
 
+def _should_purge_file(entry: Path, quarantine_root: Path, item_map: Dict[str, QuarantineItem]) -> bool:
+    """Verifica si un archivo en cuarentena es seguro para ser eliminado."""
+    try:
+        abs_entry = entry.resolve()
+        if entry.name == MANIFEST_NAME or not is_within_directory(abs_entry, quarantine_root):
+            return False
+        
+        if entry.name in item_map:
+            if not item_map[entry.name].verify_integrity(abs_entry):
+                return False
+        
+        ensure_safe_to_modify(abs_entry, allow_sensitive=False)
+        return True
+    except (UnsafePathError, OSError):
+        return False
+
+
 def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     """
     Vacía la cuarentena, borrando solo archivos cuya integridad se puede verificar.
@@ -450,38 +467,17 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     item_map: Dict[str, QuarantineItem] = {item.stored_name: item for item in items}
     
     count = 0
-    remaining_items = []
+    remaining_items: List[QuarantineItem] = []
     
     try:
         for entry in quarantine_root.iterdir():
-            try:
-                abs_entry = entry.resolve()
-            except OSError:
-                continue
-            
-            if entry.name == MANIFEST_NAME or not is_within_directory(abs_entry, quarantine_root):
-                continue
-            
-            # Si el archivo está en el manifiesto, verificar integridad antes de borrar
-            if entry.name in item_map:
-                if item_map[entry.name].verify_integrity(abs_entry):
-                    try:
-                        ensure_safe_to_modify(abs_entry, allow_sensitive=False)
-                        if _safe_unlink(abs_entry):
-                            count += 1
-                        else:
-                            remaining_items.append(item_map[entry.name])
-                    except (UnsafePathError, OSError):
-                        remaining_items.append(item_map[entry.name])
-                else:
+            if _should_purge_file(entry, quarantine_root, item_map):
+                if _safe_unlink(entry):
+                    count += 1
+                elif entry.name in item_map:
                     remaining_items.append(item_map[entry.name])
-            else:
-                # Si no está en el manifiesto, borrado preventivo pero seguro
-                try:
-                    ensure_safe_to_modify(abs_entry, allow_sensitive=False)
-                    _safe_unlink(abs_entry)
-                except (UnsafePathError, OSError):
-                    pass
+            elif entry.name in item_map:
+                remaining_items.append(item_map[entry.name])
                 
     except (OSError, PermissionError):
         pass
