@@ -774,3 +774,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-06T13:21:16` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se ha añadido una validación explícita para detectar y saltar puntos de reparse (reparse points/junctions) durante el escaneo recursivo en `_collect_candidates`, protegiendo el proceso ante ciclos infinitos o lectura de volúmenes externos montados inesperadamente, conforme al enfoque de robustez ante casos límite.
 - `2026-08-06T13:21:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-06T13:21:16` Corrida terminada. Total usado hoy: 316.
+- `2026-08-06T13:30:03` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-06T13:30:32` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejora la robustez ante casos límite en `compute_score` asegurando que el acceso al diccionario `scores` sea seguro mediante `.get()` con valores por defecto, evitando posibles `KeyError` ante desincronizaciones entre el diccionario `WEIGHTS` y los cálculos de `scores`.
+- `2026-08-06T13:31:36` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Mejoré la robustez de `on_trim_process` añadiendo una verificación de permisos de sistema (validación de nombre de proceso esencial y acceso a nivel de usuario) y asegurando que las llamadas a funciones de sistema (como `process_exists`) se realicen dentro de bloques `try/except` para manejar excepciones inesperadas de sistema operativo que podrían ocurrir si un proceso finaliza justo antes de ser consultado.
+- `2026-08-06T13:32:02` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-08-06T13:32:09` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-08-06T13:32:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-06T13:32:09` Corrida terminada. Total usado hoy: 320.

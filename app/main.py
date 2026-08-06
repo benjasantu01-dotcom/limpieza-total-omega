@@ -1329,16 +1329,23 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         # Pre-chequeo de existencia del proceso antes de intentar trim
-        if not memory_mod.process_exists(pid):
-            messagebox.showerror("No encontrado", f"No se encontró un proceso activo con PID {pid}.")
+        try:
+            if not memory_mod.process_exists(pid):
+                messagebox.showerror("No encontrado", f"No se encontró un proceso activo con PID {pid}.")
+                return
+        except Exception as e:
+            self.log(f"Error al verificar proceso {pid}: {e}", "Memoria")
             return
 
         if not self._confirm("Liberar working set", memory_mod.TRIM_WARNING + "\n\n¿Seguimos?"):
             return
 
         def task():
-            ok, mensaje = memory_mod.trim_working_set(pid)
-            self.log(("OK: " if ok else "Sin efecto: ") + mensaje, "Memoria")
+            try:
+                ok, mensaje = memory_mod.trim_working_set(pid)
+                self.log(("OK: " if ok else "Sin efecto: ") + mensaje, "Memoria")
+            except Exception as e:
+                self.log(f"Error crítico al intentar trim en PID {pid}: {e}", "Memoria")
 
         self.run_async(task)
 

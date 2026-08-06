@@ -6,8 +6,8 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **229** (45.4% de aceptación)
-- Rechazadas por tests: 14
+- Mejoras aceptadas: **230** (45.6% de aceptación)
+- Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 25
 - Sin cambios (nada sustancial que mejorar): 18
 - Sin respuesta de la IA (error o límite): 218
@@ -16,16 +16,16 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-05 | 85 | 6 | 8 | 6 | 83 |
-| 2026-08-06 | 144 | 8 | 17 | 12 | 135 |
+| 2026-08-05 | 84 | 5 | 8 | 6 | 81 |
+| 2026-08-06 | 146 | 8 | 17 | 12 | 137 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **61**
 - manejo de errores y validación de entradas: **46**
 - rendimiento: **45**
-- seguridad defensiva: **42**
-- robustez ante casos límite: **35**
+- seguridad defensiva: **41**
+- robustez ante casos límite: **37**
 
 ## Mejoras aceptadas por archivo
 
@@ -33,12 +33,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - `browser.py`: **21**
 - `quarantine.py`: **21**
 - `assistant.py`: **20**
-- `settings.py`: **19**
 - `diskreport.py`: **19**
 - `scanner.py`: **19**
+- `settings.py`: **18**
+- `healthscore.py`: **17**
 - `duplicates.py`: **16**
-- `healthscore.py`: **16**
-- `main.py`: **14**
+- `main.py`: **15**
 - `organizer.py`: **12**
 - `memory.py`: **12**
 - `safety.py`: **10**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-06T13:31:36` **main.py** (robustez ante casos límite): Mejoré la robustez de `on_trim_process` añadiendo una verificación de permisos de sistema (validación de nombre de proceso esencial y acceso a nivel de usuario) y asegurando que las llamadas a funciones de sistema (como `process_exists`) se realicen dentro de bloques `try/except` para manejar excepciones inesperadas de sistema operativo que podrían ocurrir si un proceso finaliza justo antes de ser consultado.
+- `2026-08-06T13:30:32` **healthscore.py** (robustez ante casos límite): Mejora la robustez ante casos límite en `compute_score` asegurando que el acceso al diccionario `scores` sea seguro mediante `.get()` con valores por defecto, evitando posibles `KeyError` ante desincronizaciones entre el diccionario `WEIGHTS` y los cálculos de `scores`.
 - `2026-08-06T13:21:16` **duplicates.py** (robustez ante casos límite): Se ha añadido una validación explícita para detectar y saltar puntos de reparse (reparse points/junctions) durante el escaneo recursivo en `_collect_candidates`, protegiendo el proceso ante ciclos infinitos o lectura de volúmenes externos montados inesperadamente, conforme al enfoque de robustez ante casos límite.
 - `2026-08-06T13:20:21` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` y las funciones de dibujo mediante la validación proactiva de rutas y manejo explícito de excepciones, asegurando que fallos en la escritura o cálculos matemáticos no detengan la interfaz.
 - `2026-08-06T13:11:11` **assistant.py** (robustez ante casos límite): Se robusteció `build_context` para manejar situaciones donde el objeto `metrics` sea un objeto vacío o mal formado (evitando `AttributeError`) y se añadió una validación defensiva en `_val` para descartar valores infinitos o `NaN` provenientes de cálculos de disco o RAM que podrían corromper la lógica de toma de decisiones.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-06T12:40:05` **branding.py** (rendimiento): Optimicé el cálculo de colores en `draw_gradient_bar` y `draw_logo` pre-calculando las tuplas de colores mediante `gradient_colors`, evitando la ejecución repetida de lógica de interpolación dentro de los bucles de renderizado.
 - `2026-08-06T12:39:36` **assistant.py** (rendimiento): Se optimizó el acceso a los datos de la clase `SystemContext` en los bucles de `_gen_problems` y `build_context` evitando llamadas repetitivas a `getattr` y `setattr`, y consolidando la lógica de validación de métricas para reducir el overhead de procesamiento en cada consulta.
 - `2026-08-06T12:30:19` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints en la firma de funciones (`list_startup_entries` y `estimate_impact`), además de transformar el bucle de deduplicación en `list_startup_entries` en una lógica más legible y robusta, facilitando la comprensión del flujo de datos sin alterar el comportamiento.
-- `2026-08-06T12:30:08` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de Type Hints en las funciones de validación y la clarificación de los docstrings en los métodos de persistencia, asegurando que el flujo de datos sea auto-explicativo sin alterar la lógica de negocio.
-- `2026-08-06T12:29:43` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `scanner.py` mediante docstrings detallados en las funciones de chequeo heurístico, especificando las precondiciones, el rol de los parámetros opcionales y la lógica detrás de cada señal sospechosa, mejorando la mantenibilidad para futuros colaboradores.
