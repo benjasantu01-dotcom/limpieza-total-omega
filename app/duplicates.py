@@ -148,9 +148,6 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
 def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """
     Escaneo recursivo del sistema de archivos indexando archivos por tamaño.
-    
-    Utiliza un set de inodos (dev, ino) para evitar procesar recursivamente 
-    el mismo archivo si existen enlaces físicos o puntos de reparse (junctions).
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: set[Tuple[int, int]] = set()
@@ -162,8 +159,13 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
             with os.scandir(root_path) as dir_iterator:
                 for entry in dir_iterator:
                     try:
-                        # Obtenemos lstat una sola vez para filtrar inodos y validar tipo
+                        # Obtenemos lstat para verificar reparse points y tipo
                         lstat = entry.stat(follow_symlinks=False)
+                        
+                        # Detectar y saltar puntos de reparse (Windows junctions/reparse points)
+                        if getattr(lstat, 'st_file_attributes', 0) & 0x400:
+                            continue
+                            
                         inode_key = (lstat.st_dev, lstat.st_ino)
                         
                         if entry.is_dir(follow_symlinks=False):
