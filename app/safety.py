@@ -71,6 +71,8 @@ _cache_security_check: dict[Path, bool] = {}
 
 def _has_invalid_chars(path_str: str) -> bool:
     """Valida ausencia de caracteres prohibidos y prefijos de dispositivos Windows."""
+    if not isinstance(path_str, str):
+        return True
     norm = os.path.normpath(path_str)
     return bool("\0" in path_str or re.search(r'[\u0000-\u001F\u007F-\u009F\u200E\u200F\u202A-\u202E]', path_str) or
                 norm.startswith(r"\\?") or norm.startswith(r"\\."))
@@ -89,7 +91,7 @@ def _is_system_or_hidden(path: Path) -> bool:
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
         return attrs != -1 and bool(attrs & (0x02 | 0x04))
-    except Exception:
+    except (OSError, AttributeError, TypeError):
         return False
 
 
@@ -206,25 +208,25 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
         return p
 
     str_val = str(p)
-    # Validaciones básicas de formato y red
     if _has_invalid_chars(str_val) or len(str_val) > 260 or _is_reserved_device_name(p.stem):
         raise UnsafePathError("Ruta inválida, demasiado larga o formato bloqueado.")
     if str_val.startswith(("\\\\", "//")):
         raise UnsafePathError("Operación bloqueada: rutas de red no permitidas.")
     
-    # Validaciones de estado de archivo
     if p.exists():
-        if any([
-            not os.access(p, os.W_OK),
-            _is_reparse_point(p),
-            _is_readonly(p),
-            _is_file_in_use(p),
-            _is_system_or_hidden(p),
-            (p.is_file() and p.stat().st_nlink > 1)
-        ]):
-            raise UnsafePathError("Operación bloqueada: archivo inaccesible, protegido o sistema.")
+        try:
+            if any([
+                not os.access(p, os.W_OK),
+                _is_reparse_point(p),
+                _is_readonly(p),
+                _is_file_in_use(p),
+                _is_system_or_hidden(p),
+                (p.is_file() and p.stat().st_nlink > 1)
+            ]):
+                raise UnsafePathError("Operación bloqueada: archivo inaccesible, protegido o sistema.")
+        except (OSError, PermissionError):
+            raise UnsafePathError("Operación bloqueada: error de acceso al verificar estado.")
 
-    # Validaciones de jerarquía y tipos protegidos
     if is_drive_root(p) or is_protected_path(p):
         raise UnsafePathError("Operación bloqueada: ruta de sistema protegida.")
     
@@ -275,14 +277,17 @@ def describe_protection(path: PathLike) -> str:
     if is_protected_path(p):
         return f"'{p}' protegida por reglas de sistema."
     if p.exists():
-        if not os.access(p, os.W_OK):
-            return f"'{p}' sin permisos de escritura."
-        if _is_readonly(p):
-            return f"'{p}' atributos de solo lectura."
-        if _is_file_in_use(p):
-            return f"'{p}' está en uso por otro proceso."
-        if _is_system_or_hidden(p):
-            return f"'{p}' archivo de sistema o oculto."
+        try:
+            if not os.access(p, os.W_OK):
+                return f"'{p}' sin permisos de escritura."
+            if _is_readonly(p):
+                return f"'{p}' atributos de solo lectura."
+            if _is_file_in_use(p):
+                return f"'{p}' está en uso por otro proceso."
+            if _is_system_or_hidden(p):
+                return f"'{p}' archivo de sistema o oculto."
+        except (OSError, PermissionError):
+            return f"'{p}' error al verificar permisos."
     if is_sensitive_file(p):
         return f"'{p.name}' extensión sensible."
     return f"'{p}' es candidata a modificación."

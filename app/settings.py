@@ -120,6 +120,7 @@ class _Validators:
 
     @staticmethod
     def path(val: Any) -> str | None:
+        if not val: return ""
         try:
             path = Path(str(val)).expanduser().resolve()
             return str(path) if is_safe_to_modify(str(path)) else None
@@ -174,13 +175,12 @@ def load(path_or_base: PathLike | None = None) -> AppSettings:
     global _cached_settings, _current_path
     ruta = settings_path(path_or_base)
     try:
-        ensure_safe_to_modify(ruta)
         if not ruta.exists(): raise FileNotFoundError
         if ruta.stat().st_size > MAX_SETTINGS_SIZE or ruta.stat().st_size == 0: raise ValueError
         _cached_settings = validate(json.loads(ruta.read_text(encoding="utf-8")))
         _current_path = ruta
         return _cached_settings
-    except (OSError, json.JSONDecodeError, UnicodeDecodeError, ValueError):
+    except (OSError, PermissionError, json.JSONDecodeError, UnicodeDecodeError, ValueError):
         _cached_settings = DEFAULTS.copy()
         _current_path = ruta
         return _cached_settings
@@ -208,7 +208,7 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
         os.replace(temp_path, ruta)
         _cached_settings, _current_path = limpio, ruta
         return ruta
-    except (OSError, PermissionError, RuntimeError):
+    except (OSError, PermissionError, RuntimeError, Exception):
         if temp_path and temp_path.exists():
             try: temp_path.unlink()
             except OSError: pass

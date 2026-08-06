@@ -1344,3 +1344,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-06T07:13:02` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 110): unterminated string literal (detected at line 110)
 - `2026-08-06T07:13:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-06T07:13:02` Corrida terminada. Total usado hoy: 172.
+- `2026-08-06T07:21:55` Arrancando corrida. Quedan hoy ~128 peticiones objetivo.
+- `2026-08-06T07:22:20` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `ensure_safe_to_modify` ante entradas potencialmente maliciosas o mal formadas, añadiendo una validación explícita de tipos al inicio de `_has_invalid_chars` y asegurando que las funciones de chequeo manejen excepciones de sistema (como `OSError` o `PermissionError`) de forma consistente para evitar que la app aborte ante rutas inaccesibles durante un escaneo.
+- `2026-08-06T07:22:43` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las funciones de chequeo mediante la validación explícita de parámetros nulos y el manejo de excepciones específicas, evitando que errores en una heurística invaliden el análisis completo del archivo.
+- `2026-08-06T07:23:08` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Reforcé la robustez del manejo de archivos en `save()` y `load()` capturando específicamente errores de permisos (`PermissionError`) y posibles excepciones inesperadas, además de garantizar que `_Validators.path` maneje correctamente rutas inexistentes o inválidas evitando errores de propagación durante la validación inicial.
+- `2026-08-06T07:23:17` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-06T07:23:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-06T07:23:17` Corrida terminada. Total usado hoy: 176.

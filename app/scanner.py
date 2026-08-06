@@ -19,7 +19,7 @@ import os
 from dataclasses import dataclass
 from pathlib import Path
 from datetime import datetime, timedelta
-from typing import List, Optional, Union, Final, Callable, TypeAlias, Tuple, Dict
+from typing import List, Optional, Union, Final, Callable, TypeAlias
 from safety import is_protected_path, is_safe_to_modify
 
 # Configuración de logger para el módulo
@@ -103,13 +103,15 @@ class Scanner:
 
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None) -> Optional[Suspicion]:
-    target = name or (path.name if path else "")
+    if not path: return None
+    target = name or path.name
     if target and DOUBLE_EXTENSION_RE.search(target):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
     return None
 
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, hours: int = RECENT_FILE_THRESHOLD_HOURS) -> Optional[Suspicion]:
+    if not path: return None
     try:
         st = entry.stat() if entry else path.lstat()
         mtime = datetime.fromtimestamp(st.st_mtime)
@@ -121,8 +123,9 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None) -> Optional[Suspicion]:
+    if not path: return None
     try:
-        if path and SYSTEM32_LOWER not in str(path.parent).lower():
+        if SYSTEM32_LOWER not in str(path.parent).lower():
             return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
     except (OSError, RuntimeError):
         pass
@@ -160,7 +163,7 @@ def scan_file(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[st
         try:
             if res := check_func(path, entry, n, s):
                 findings.append(res)
-        except Exception:
+        except (OSError, AttributeError, TypeError):
             continue
             
     return findings
