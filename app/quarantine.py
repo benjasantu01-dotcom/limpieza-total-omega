@@ -176,6 +176,35 @@ def _manifest_path(base_dir: Path) -> Path:
     return base_dir / MANIFEST_NAME
 
 
+def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
+    """Valida que una ruta pueda ser movida a cuarentena sin violar políticas de seguridad."""
+    if ".." in source_path.parts or "\0" in str(source_path) or any(c in str(source_path.name) for c in "<>:\"|?*"):
+        raise UnsafePathError(f"Ruta con caracteres maliciosos o navegación prohibida: {source_path.name}")
+    
+    if source_path.is_symlink() or (hasattr(source_path, 'is_junction') and source_path.is_junction()):
+        raise UnsafePathError(f"Operación denegada en punto de reparse: {source_path}")
+
+    if not source_path.is_file():
+        raise UnsafePathError(f"Solo se permiten archivos regulares: {source_path}")
+        
+    if is_protected_path(source_path):
+        raise UnsafePathError(f"Operación prohibida en ruta del sistema: {source_path}")
+        
+    if is_protected_path(dest_dir):
+        raise UnsafePathError(f"Directorio de cuarentena protegido o inválido: {dest_dir}")
+    
+    if is_within_directory(source_path, dest_dir):
+        raise UnsafePathError(f"El archivo ya reside en la carpeta de cuarentena: {source_path}")
+        
+    if source_path.drive != dest_dir.drive:
+        raise UnsafePathError(f"Operación denegada: el archivo está en otro dispositivo o partición.")
+
+    ensure_safe_to_modify(source_path, allow_sensitive=True)
+    
+    if _is_file_locked(source_path):
+        raise IOError(f"El archivo está en uso por otro proceso: {source_path}")
+
+
 def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload: bool = False) -> List[QuarantineItem]:
     """
     Carga el manifiesto de cuarentena. 
@@ -256,39 +285,13 @@ def quarantine_file(
     if not source_path.exists():
         raise FileNotFoundError(f"El archivo de origen no existe: {source_path}")
     
-    if ".." in source_path.parts or "\0" in str(source_path) or any(c in str(source_path.name) for c in "<>:\"|?*"):
-        raise UnsafePathError(f"Ruta con caracteres maliciosos o navegación prohibida: {source_path.name}")
-    
-    if source_path.is_symlink() or (hasattr(source_path, 'is_junction') and source_path.is_junction()):
-        raise UnsafePathError(f"Operación denegada en punto de reparse: {source_path}")
-
-    if not source_path.is_file():
-        raise UnsafePathError(f"Solo se permiten archivos regulares: {source_path}")
-        
-    if is_protected_path(source_path):
-        raise UnsafePathError(f"Operación prohibida en ruta del sistema: {source_path}")
-        
-    if is_protected_path(dest_dir):
-        raise UnsafePathError(f"Directorio de cuarentena protegido o inválido: {dest_dir}")
-    
-    if is_within_directory(source_path, dest_dir):
-        raise UnsafePathError(f"El archivo ya reside en la carpeta de cuarentena: {source_path}")
-        
-    if source_path.drive != dest_dir.drive:
-        raise UnsafePathError(f"Operación denegada: el archivo está en otro dispositivo o partición.")
-
-    ensure_safe_to_modify(source_path, allow_sensitive=True)
-    
-    if _is_file_locked(source_path):
-        raise IOError(f"El archivo está en uso por otro proceso: {source_path}")
+    _validate_isolation_request(source_path, dest_dir)
     
     try:
-        pre_stats = source_path.stat()
-        file_size = pre_stats.st_size
+        file_size = source_path.stat().st_size
     except OSError as e:
         raise OSError(f"Error al acceder a metadatos de archivo: {e}")
 
-    # Verificar espacio con margen de seguridad del 5%
     usage = shutil.disk_usage(dest_dir)
     if usage.free < (file_size * 1.05):
         raise RuntimeError("Espacio insuficiente en disco para mover a cuarentena.")
@@ -298,7 +301,6 @@ def quarantine_file(
     stored_name = f"{item_id}__{safe_name}"[:250] 
     destination = dest_dir / stored_name
 
-    # Validar que el destino final no sea una ruta sensible (ej. protección contra path traversal dinámico)
     if is_protected_path(destination):
         raise UnsafePathError(f"Ruta de cuarentena final insegura: {destination}")
 
@@ -335,12 +337,9 @@ def quarantine_file(
         save_manifest(items, base)
         return item
     except Exception as e:
-        # Intento de rollback si el manifiesto falla
         if destination.exists():
-            try:
-                shutil.move(str(destination), str(source_path))
-            except:
-                pass
+            try: shutil.move(str(destination), str(source_path))
+            except: pass
         raise RuntimeError(f"Error irrecuperable procesando metadatos: {e}")
 
 
@@ -426,7 +425,6 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
     if not stored_file.exists() or not match.verify_integrity(stored_file):
         raise UnsafePathError(f"Integridad comprometida: no se borra un archivo sospechoso modificado.")
     
-    # Validar seguridad antes de la acción final
     ensure_safe_to_modify(stored_file, allow_sensitive=False)
 
     success = _safe_unlink(stored_file)
@@ -462,7 +460,6 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
                 continue
             
             try:
-                # Verificación de seguridad reforzada: validar antes de cada borrado
                 if entry.name in stored_names_in_manifest:
                     if item_map[entry.name].verify_integrity(entry):
                         ensure_safe_to_modify(entry, allow_sensitive=False)

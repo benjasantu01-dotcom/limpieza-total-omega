@@ -116,6 +116,19 @@ def _is_file_in_use(path: Path) -> bool:
         return True
 
 
+def _check_file_integrity(p: Path) -> None:
+    """Valida condiciones de seguridad sobre un archivo existente en el disco."""
+    if any([
+        not os.access(p, os.W_OK),
+        _is_reparse_point(p),
+        _is_readonly(p),
+        _is_file_in_use(p),
+        _is_system_or_hidden(p),
+        (p.is_file() and p.stat().st_nlink > 1)
+    ]):
+        raise UnsafePathError("Operación bloqueada: archivo inaccesible, protegido o sistema.")
+
+
 @lru_cache(maxsize=1024)
 def _is_readonly(path: Path) -> bool:
     """Verifica el permiso de escritura del sistema de archivos."""
@@ -215,15 +228,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
     
     if p.exists():
         try:
-            if any([
-                not os.access(p, os.W_OK),
-                _is_reparse_point(p),
-                _is_readonly(p),
-                _is_file_in_use(p),
-                _is_system_or_hidden(p),
-                (p.is_file() and p.stat().st_nlink > 1)
-            ]):
-                raise UnsafePathError("Operación bloqueada: archivo inaccesible, protegido o sistema.")
+            _check_file_integrity(p)
         except (OSError, PermissionError):
             raise UnsafePathError("Operación bloqueada: error de acceso al verificar estado.")
 

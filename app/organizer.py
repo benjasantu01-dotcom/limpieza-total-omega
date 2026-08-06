@@ -129,7 +129,15 @@ def _is_allowed_directory(name: str) -> bool:
 
 
 def _is_file_accessible(path: Path) -> bool:
-    """Verifica si un archivo puede ser abierto en modo lectura exclusiva."""
+    """
+    Intenta abrir el archivo en modo lectura binaria para verificar si está bloqueado.
+    
+    Args:
+        path: Ruta del archivo a testear.
+        
+    Returns:
+        bool: True si el archivo se puede abrir, False si está bloqueado o inaccesible.
+    """
     try:
         with open(path, 'rb'):
             return True
@@ -157,11 +165,12 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     junk_exts: Final = _LOWER_JUNK_EXTS
 
     def _walk_dir(base_path: str) -> None:
-        """Función auxiliar que recorre el sistema de archivos evitando bloqueos."""
+        """Explora recursivamente el árbol de archivos excluyendo bloqueos y enlaces simbólicos."""
         try:
             with os.scandir(base_path) as it:
                 for entry in it:
                     try:
+                        # Saltar enlaces simbólicos para evitar bucles o salidas de contexto
                         if entry.is_symlink():
                             continue
                         
@@ -169,8 +178,8 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
                             if _is_allowed_directory(entry.name):
                                 _walk_dir(entry.path)
                         else:
-                            _, ext = os.path.splitext(entry.name)
-                            if ext.lower() in junk_exts:
+                            # Filtrado inicial por extensión antes de validaciones pesadas de IO
+                            if entry.name.lower().endswith(tuple(junk_exts)):
                                 entry_path: Path = Path(entry.path)
                                 if _is_valid_candidate(entry_path):
                                     stat = entry.stat()
@@ -185,7 +194,7 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
             pass
 
     for d in dirs:
-        if d and isinstance(d, str):
+        if isinstance(d, str):
             try:
                 p: Path = Path(d).expanduser().resolve()
                 if p.exists() and p.is_dir() and is_safe_to_modify(p):
@@ -242,20 +251,18 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 
     for jf in files:
         try:
-            # Validación exhaustiva: debe ser archivo, existir y ser seguro
             if not jf.path.exists() or not jf.path.is_file():
                 continue
                 
             current_abs: Path = jf.path.resolve()
             
+            # Verificación de seguridad antes de procesar cada archivo
             if not is_safe_to_modify(current_abs):
                 continue
             
-            # Evitar movimientos circulares o redundantes
             if current_abs.parent == dest or dest in current_abs.parents or current_abs == dest:
                 continue
             
-            # Verificación final de accesibilidad antes de mover
             if not _is_file_accessible(current_abs):
                 continue
 
