@@ -16,37 +16,41 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-04 | 44 | 3 | 5 | 4 | 42 |
+| 2026-08-04 | 40 | 3 | 5 | 4 | 42 |
 | 2026-08-05 | 185 | 12 | 19 | 8 | 126 |
-| 2026-08-06 | 16 | 2 | 2 | 1 | 35 |
+| 2026-08-06 | 20 | 2 | 2 | 1 | 35 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **55**
 - rendimiento: **53**
 - seguridad defensiva: **52**
+- legibilidad y documentación: **51**
+- manejo de errores y validación de entradas: **46**
 - robustez ante casos límite: **43**
-- manejo de errores y validación de entradas: **42**
 
 ## Mejoras aceptadas por archivo
 
-- `branding.py`: **21**
-- `browser.py`: **21**
+- `branding.py`: **22**
+- `browser.py`: **22**
+- `assistant.py`: **21**
 - `duplicates.py`: **21**
-- `quarantine.py`: **20**
 - `settings.py`: **20**
-- `assistant.py`: **20**
+- `diskreport.py`: **20**
 - `scanner.py`: **20**
-- `diskreport.py`: **19**
-- `main.py`: **18**
+- `quarantine.py`: **19**
 - `healthscore.py`: **17**
-- `organizer.py`: **16**
+- `main.py`: **17**
+- `organizer.py`: **15**
 - `safety.py`: **14**
-- `memory.py`: **11**
+- `memory.py`: **10**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-06T02:26:20` **diskreport.py** (manejo de errores y validación de entradas): Se introdujo una validación robusta de tipos en `format_size` y se reemplazó el acceso directo a `os.scandir` por un wrapper que captura `PermissionError` y otros fallos de acceso a nivel de sistema antes de iterar, mejorando la resiliencia ante errores de entrada y privilegios durante el escaneo de disco.
+- `2026-08-06T02:26:08` **browser.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `detect_profiles` y `directory_size` validando explícitamente los parámetros de entrada y normalizando las rutas con `Path.resolve()` antes de realizar comparaciones, evitando así excepciones inesperadas por rutas mal formadas o tipos de datos erróneos que podrían romper el flujo del escaneo.
+- `2026-08-06T02:25:37` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` y `draw_logo` mediante la validación proactiva de tipos y estados, evitando errores de ejecución ante entradas inesperadas o entornos gráficamente degradados.
+- `2026-08-06T02:24:59` **assistant.py** (manejo de errores y validación de entradas): Mejora la robustez de `build_context` y los manejadores de respuestas implementando una validación estricta de tipos y valores nulos, evitando que datos corruptos en el `SystemContext` generen errores en tiempo de ejecución al intentar formatear cadenas.
 - `2026-08-06T01:03:06` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save` reemplazando la verificación `is_safe_to_modify` por un patrón de validación más robusto antes de la escritura, asegurando que la ruta no solo sea segura al iniciar, sino que mantenga su integridad inmediatamente antes de la operación de reemplazo (`os.replace`) para evitar condiciones de carrera o manipulación de archivos.
 - `2026-08-06T00:53:51` **scanner.py** (seguridad defensiva): Reforcé la seguridad defensiva en `scanner.py` al asegurar que los chequeos heurísticos no operen sobre rutas que atraviesan enlaces simbólicos o puntos de reanálisis fuera del directorio base, añadiendo una validación explícita mediante `resolve()` y `path.is_symlink()` en el proceso de escaneo.
 - `2026-08-06T00:52:59` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad de `quarantine_file` añadiendo una verificación de existencia de archivos ocultos o que contengan rutas relativas maliciosas (`..`) antes de procesar, evitando ataques de path traversal mediante nombres de archivo manipulados.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-06T00:32:31` **branding.py** (seguridad defensiva): Se ha mejorado `save_logo_svg` para prevenir el uso de rutas que apunten a dispositivos o nombres reservados de Windows mediante `is_protected_path`, garantizando que la validación sea más exhaustiva antes de proceder con la escritura en disco.
 - `2026-08-06T00:23:36` **assistant.py** (seguridad defensiva): Reforcé la seguridad de `_ensure_safe_text` al integrar un chequeo explícito de caracteres de control y una validación de rutas más estricta mediante `is_protected_path`, asegurando que ninguna respuesta del modelo o entrada del usuario pueda contener rutas de sistema ni secuencias de escape potencialmente peligrosas.
 - `2026-08-06T00:22:41` **settings.py** (robustez ante casos límite): Se ha mejorado la robustez de `_validate_str` y `save` para manejar situaciones donde el sistema de archivos deniega permisos o falla durante la escritura, asegurando que `tempfile` siempre se limpie en caso de error y que las rutas sean tratadas con mayor tolerancia ante errores de I/O.
-- `2026-08-06T00:22:15` **scanner.py** (robustez ante casos límite): Se añadió una verificación de estado del sistema (usando `Get-MpComputerStatus`) en `run_windows_defender_quick_scan` para evitar ejecuciones fallidas o innecesarias cuando la protección en tiempo real está deshabilitada, mejorando la robustez ante estados del entorno no ideales.
-- `2026-08-06T00:12:57` **safety.py** (robustez ante casos límite): Se añadió una validación explícita para evitar la manipulación de rutas que excedan el límite `MAX_PATH` de Windows (260 caracteres) mediante `os.path.normpath` para detectar el formato de prefijo largo `\\?\` que intenta evadir el chequeo de seguridad, garantizando que ninguna ruta potencialmente insegura o malformada pase los filtros.
-- `2026-08-06T00:12:28` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de concurrencia en `quarantine_file` utilizando un bloqueo exclusivo temporal (renombrado atómico) para evitar condiciones de carrera, garantizando que el archivo no sea modificado o accedido por otros procesos durante el movimiento a cuarentena.
-- `2026-08-06T00:11:59` **organizer.py** (robustez ante casos límite): Se mejoró `stage_for_review` para manejar correctamente casos donde la ruta de origen o destino no existen, o donde se intentan operaciones sobre archivos que fueron eliminados o renombrados por otros procesos entre el escaneo y el movimiento, añadiendo validaciones de integridad robustas.

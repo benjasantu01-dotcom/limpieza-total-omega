@@ -294,9 +294,8 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     try:
         target = Path(destination).resolve()
         # Verificación doble: que sea segura y que no sea una ruta protegida/sistema
-        if is_protected_path(target):
+        if is_protected_path(target) or not is_safe_to_modify(target):
             return None
-        ensure_safe_to_modify(target)
         
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(logo_svg(), encoding="utf-8")
@@ -319,7 +318,7 @@ def logo_ascii() -> str:
 
 def draw_logo(canvas: Any, size: int = 56, canvas_x: int = 0, canvas_y: int = 0) -> None:
     """Dibuja el logo Omega usando primitivas de Tkinter canvas."""
-    if canvas is None or not hasattr(canvas, "create_polygon"): return
+    if not hasattr(canvas, "create_polygon"): return
     try:
         s = max(0.1, float(size) / 128)
         x, y = float(canvas_x), float(canvas_y)
@@ -349,7 +348,7 @@ def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
                       canvas_x: int = 0, canvas_y: int = 0,
                       stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
     """Renderiza una línea horizontal degradada con optimización de segmentos."""
-    if canvas is None or not hasattr(canvas, "create_line"): return
+    if not hasattr(canvas, "create_line"): return
     try:
         ancho = max(1, int(width))
         alto = max(1, int(height))
@@ -369,7 +368,7 @@ def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
               track: Optional[HexColor] = None,
               fill: Optional[HexColor] = None) -> None:
     """Dibuja un anillo de progreso de salud (HealthScore)."""
-    if canvas is None or not hasattr(canvas, "create_arc"): return
+    if not hasattr(canvas, "create_arc"): return
     try:
         valor = max(0.0, min(100.0, float(percent)))
         diametro = max(20, int(size))

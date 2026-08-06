@@ -142,13 +142,13 @@ def directory_size(path: str | os.PathLike | None) -> int:
         return 0
     
     try:
-        root = Path(path)
+        root = Path(path).resolve()
         # Pre-chequeo de longitud de ruta para evitar problemas con APIs de SO
-        if len(str(root.absolute())) > 260:
+        if len(str(root)) > 260:
             return 0
         if not root.exists() or not root.is_dir() or is_protected_path(root):
             return 0
-        root_resolved: str = str(root.resolve())
+        root_resolved: str = str(root)
     except (OSError, PermissionError, RuntimeError):
         return 0
     
@@ -210,7 +210,7 @@ def detect_profiles(
     cache_paths = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
 
     found: List[BrowserCache] = []
-    if not bases or not isinstance(cache_paths, dict):
+    if not isinstance(bases, (list, tuple)) or not isinstance(cache_paths, dict):
         return found
         
     for base in bases:
@@ -219,8 +219,9 @@ def detect_profiles(
             if not isinstance(relative_path_str, str) or not isinstance(browser_name, str):
                 continue
             try:
+                # Normalizamos base y unimos con partes de ruta de forma segura
                 parts: List[str] = relative_path_str.split("\\")
-                candidate: Path = base.joinpath(*parts)
+                candidate: Path = base.joinpath(*parts).resolve()
                 
                 if _is_valid_cache_path(candidate, base):
                     size: int = directory_size(candidate)

@@ -938,3 +938,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-06T02:18:21` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-08-06T02:18:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-06T02:18:21` Corrida terminada. Total usado hoy: 56.
+- `2026-08-06T02:24:25` Arrancando corrida. Quedan hoy ~244 peticiones objetivo.
+- `2026-08-06T02:24:59` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `build_context` y los manejadores de respuestas implementando una validación estricta de tipos y valores nulos, evitando que datos corruptos en el `SystemContext` generen errores en tiempo de ejecución al intentar formatear cadenas.
+- `2026-08-06T02:25:37` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `save_logo_svg` y `draw_logo` mediante la validación proactiva de tipos y estados, evitando errores de ejecución ante entradas inesperadas o entornos gráficamente degradados.
+- `2026-08-06T02:26:08` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `detect_profiles` y `directory_size` validando explícitamente los parámetros de entrada y normalizando las rutas con `Path.resolve()` antes de realizar comparaciones, evitando así excepciones inesperadas por rutas mal formadas o tipos de datos erróneos que podrían romper el flujo del escaneo.
+- `2026-08-06T02:26:20` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Se introdujo una validación robusta de tipos en `format_size` y se reemplazó el acceso directo a `os.scandir` por un wrapper que captura `PermissionError` y otros fallos de acceso a nivel de sistema antes de iterar, mejorando la resiliencia ante errores de entrada y privilegios durante el escaneo de disco.
+- `2026-08-06T02:26:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-06T02:26:20` Corrida terminada. Total usado hoy: 60.

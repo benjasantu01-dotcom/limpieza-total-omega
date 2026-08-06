@@ -102,14 +102,9 @@ class DriveUsage:
         return self.total > 0 and (self.free / self.total) < 0.10
 
 
-def format_size(num: Union[int, float]) -> str:
+def format_size(num: Union[int, float, None]) -> str:
     """
     Convierte un valor de bytes a una cadena legible con su unidad (B, KB, MB, GB, TB).
-    
-    Args:
-        num: Cantidad numérica de bytes.
-    Returns:
-        Cadena formateada, ej: '1.2 GB'.
     """
     if num is None:
         return "0 B"
@@ -127,7 +122,7 @@ def format_size(num: Union[int, float]) -> str:
     return f"{value:.1f} TB"
 
 
-def drive_usage(mount: Union[str, os.PathLike]) -> Optional[DriveUsage]:
+def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     """
     Consulta el estado de almacenamiento de una unidad montada localmente.
     """
@@ -149,9 +144,6 @@ def drive_usage(mount: Union[str, os.PathLike]) -> Optional[DriveUsage]:
 def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]:
     """
     Obtiene el reporte de uso para una lista de unidades o todas las detectadas.
-    
-    Returns:
-        Lista de objetos DriveUsage con el estado de cada unidad válida.
     """
     if mounts is None:
         if os.name == "nt":

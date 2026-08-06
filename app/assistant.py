@@ -195,7 +195,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         return isinstance(v, (int, float)) and not isinstance(v, bool) and math.isfinite(v)
 
     def extract(source: Any, attr: str, default: Any, cast: Callable = float) -> Any:
-        if not hasattr(source, attr):
+        if source is None or not hasattr(source, attr):
             return default
         try:
             val = getattr(source, attr)
