@@ -227,7 +227,6 @@ def _generate_recommendations(m: SystemMetrics, ratios: Dict[str, float]) -> Lis
     recs: List[str] = []
     
     if ratios.get("seguridad", 1.0) < WARN_THRESHOLD_HIGH:
-        # Validación estricta mediante _to_int antes de formatear para evitar inyecciones
         s_val = _to_int(m.suspicious_count)
         recs.append(f"Revisá los {s_val} hallazgo(s) de seguridad; podés aislarlos en cuarentena sin borrarlos.")
     if ratios.get("disco", 1.0) < WARN_THRESHOLD_LOW:
@@ -272,8 +271,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     total_score: float = 0.0
     
     for area, weight in _WEIGHT_ITEMS:
-        # Optimización: acceso directo a la key, ya que el dict es estático y garantizado.
-        score_val = _clamp(scores[area], 0.0, 1.0) * float(weight) * _NORM_FACTOR
+        score_val = _clamp(scores.get(area, 0.0), 0.0, 1.0) * float(weight) * _NORM_FACTOR
         breakdown[area] = int(score_val + 0.5)
         total_score += score_val
 
@@ -293,13 +291,12 @@ def summarize(result: HealthResult) -> List[str]:
 
     lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     
-    # Validar integridad del desglose antes de iterar
     if not isinstance(result.breakdown, dict):
         return lines + ["  Error: Desglose no procesable."]
 
     for area, maximo in _WEIGHT_ITEMS:
         puntos = result.breakdown.get(area, 0)
-        puntos_val = max(0, min(maximo, puntos))
+        puntos_val = max(0, min(maximo, int(puntos)))
         visual = f"[{'#' * puntos_val}{'.' * (maximo - puntos_val)}]"
         lines.append(f"  {area.capitalize():<12} {puntos_val:>2}/{maximo:<2} {visual}")
     

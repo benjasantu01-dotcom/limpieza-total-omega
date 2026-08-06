@@ -1537,8 +1537,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     # ------------------------------------------------------------------
 
     def _validate_numeric_setting(self, value: Optional[str], default: int) -> int:
-        """Valida que una entrada de configuración sea un número entero válido."""
-        if value is None:
+        """Valida que una entrada de configuración sea un número entero positivo."""
+        if not value or not isinstance(value, str):
             return default
         try:
             val = int(value.strip())
@@ -1555,15 +1555,13 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             except Exception:
                 continue
         
-        try:
-            valores["duplicados_tamano_minimo_kb"] = self._validate_numeric_setting(
-                self.min_dup_entry.get() if hasattr(self, 'min_dup_entry') else None, 64
-            )
-            valores["top_archivos"] = self._validate_numeric_setting(
-                self.top_files_entry.get() if hasattr(self, 'top_files_entry') else None, 15
-            )
-        except Exception:
-            pass
+        # Aplicar validación de entradas numéricas antes de guardar
+        valores["duplicados_tamano_minimo_kb"] = self._validate_numeric_setting(
+            self.min_dup_entry.get() if hasattr(self, 'min_dup_entry') else None, 64
+        )
+        valores["top_archivos"] = self._validate_numeric_setting(
+            self.top_files_entry.get() if hasattr(self, 'top_files_entry') else None, 15
+        )
             
         clave_api = self.api_key_entry.get().strip() if hasattr(self, 'api_key_entry') else ""
         if clave_api:

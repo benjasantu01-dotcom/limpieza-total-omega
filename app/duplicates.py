@@ -85,6 +85,8 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
         
     try:
         file_path = Path(path).resolve(strict=True)
+        if not file_path.exists():
+            return None
         st = file_path.stat()
         
         if not stat.S_ISREG(st.st_mode) or is_protected_path(file_path) or st.st_size <= 0:
@@ -108,6 +110,8 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
         
     try:
         file_path = Path(path).resolve(strict=True)
+        if not file_path.exists():
+            return None
         st = file_path.stat()
         
         if not stat.S_ISREG(st.st_mode) or is_protected_path(file_path) or st.st_size <= 0:
@@ -133,6 +137,7 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
         if not isinstance(p, Path): continue
         try:
             resolved = p.resolve(strict=True)
+            if not resolved.exists(): continue
             st = resolved.stat()
             if stat.S_ISREG(st.st_mode) and not is_protected_path(resolved):
                 groups[st.st_size].append(resolved)
@@ -191,7 +196,7 @@ def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
-        if is_protected_path(path): continue
+        if not path or is_protected_path(path): continue
         if digest := hash_func(path):
             groups_by_digest[digest].append(path)
     return {d: p for d, p in groups_by_digest.items() if len(p) > 1}
@@ -243,6 +248,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
 
     keepers: List[Tuple[float, int, Path]] = []
     for p in group.paths:
+        if not p: continue
         try:
             if p.exists() and not is_protected_path(p):
                 stat_info = p.stat()
@@ -265,6 +271,6 @@ def format_group(group: DuplicateGroup) -> List[str]:
     
     lines = [f"{group.count} copias de {mb_total} MB (recuperable: {mb_wasted} MB)"]
     for path in group.paths:
-        marca = "conservar" if path == keeper else "duplicado"
+        marca = "conservar" if (keeper and path == keeper) else "duplicado"
         lines.append(f"   [{marca}] {path}")
     return lines
