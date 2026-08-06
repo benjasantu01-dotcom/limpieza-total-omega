@@ -294,8 +294,7 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         target = Path(destination).resolve()
         # La validación asegura integridad, lanzando excepciones controladas.
         ensure_safe_to_modify(target)
-        if not target.parent.exists():
-            target.parent.mkdir(parents=True, exist_ok=True)
+        target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(logo_svg(), encoding="utf-8")
         return target
     except (OSError, PermissionError, TypeError, ValueError, RuntimeError):

@@ -174,6 +174,8 @@ def load(path_or_base: PathLike | None = None) -> AppSettings:
     """Lee el archivo desde disco y retorna el estado validado."""
     global _cached_settings, _current_path
     ruta = settings_path(path_or_base)
+    if _cached_settings is not None and _current_path == ruta:
+        return _cached_settings
     try:
         if not ruta.exists(): raise FileNotFoundError
         if ruta.stat().st_size > MAX_SETTINGS_SIZE or ruta.stat().st_size == 0: raise ValueError
@@ -228,19 +230,17 @@ def reset(path_or_base: PathLike | None = None) -> AppSettings:
 
 def get(key: str, path_or_base: PathLike | None = None) -> Any:
     """Obtiene un valor específico."""
-    if _cached_settings is not None: return _cached_settings.get(key, DEFAULTS.get(key))
     return load(path_or_base).get(key, DEFAULTS.get(key))
 
 def assistant_api_key(path_or_base: PathLike | None = None) -> str:
     """Retorna la API Key priorizando la variable de entorno."""
     desde_entorno = os.environ.get(API_KEY_ENV_VAR, "").strip()
     if desde_entorno: return desde_entorno
-    config = _cached_settings if _cached_settings is not None else load(path_or_base)
-    return config.get("asistente_clave_api", "").strip()
+    return load(path_or_base).get("asistente_clave_api", "").strip()
 
 def assistant_enabled(path_or_base: PathLike | None = None) -> bool:
     """Verifica si el asistente puede operar."""
-    config = _cached_settings if _cached_settings is not None else load(path_or_base)
+    config = load(path_or_base)
     return bool(config.get("asistente_activado")) and bool(assistant_api_key(path_or_base))
 
 def describe(path_or_base: PathLike | None = None) -> list[str]:

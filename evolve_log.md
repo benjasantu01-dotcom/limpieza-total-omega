@@ -1454,3 +1454,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-06T08:34:47` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento del escaneo restringiendo la ejecución de las funciones de chequeo (checkers) únicamente a archivos con extensiones sospechosas mediante una pre-selección, evitando llamadas innecesarias a la lógica de heurística para archivos comunes o benignos.
 - `2026-08-06T08:34:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-06T08:34:47` Corrida terminada. Total usado hoy: 204.
+- `2026-08-06T08:43:37` Arrancando corrida. Quedan hoy ~96 peticiones objetivo.
+- `2026-08-06T08:44:03` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se implementó un mecanismo de caché (`_cached_settings` y `_current_path`) en todas las funciones de acceso y escritura para evitar lecturas de disco innecesarias durante la ejecución, mejorando la performance al consultar configuraciones recurrentes.
+- `2026-08-06T08:44:34` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-08-06T08:45:05` ➖ Sin cambios en assistant.py (enfoque: robustez ante casos límite). Motivo: Mejora la robustez del motor de consulta ante entradas corruptas o inesperadas al validar la integridad de la configuración cargada en `ask()` antes de procesarla, evitando posibles fallos de ejecución si `settings.load()` devuelve un objeto malformado.
+- `2026-08-06T08:45:19` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se ha mejorado `save_logo_svg` para manejar casos límite de permisos y rutas de forma más robusta, asegurando que la creación de directorios y la escritura de archivos capturen errores específicos (como `OSError` al intentar escribir en volúmenes de solo lectura) y devolviendo `None` explícitamente sin detener la ejecución de la app ante fallos de disco.
+- `2026-08-06T08:45:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-06T08:45:19` Corrida terminada. Total usado hoy: 208.
