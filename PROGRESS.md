@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **258** (51.2% de aceptación)
+- Mejoras aceptadas: **260** (51.6% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 26
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 191
+- Sin respuesta de la IA (error o límite): 189
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-04 | 62 | 3 | 6 | 4 | 63 |
+| 2026-08-04 | 62 | 3 | 6 | 4 | 59 |
 | 2026-08-05 | 185 | 12 | 19 | 8 | 126 |
-| 2026-08-06 | 11 | 1 | 1 | 1 | 2 |
+| 2026-08-06 | 13 | 1 | 1 | 1 | 4 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **61**
 - manejo de errores y validación de entradas: **54**
 - rendimiento: **53**
-- seguridad defensiva: **47**
+- seguridad defensiva: **49**
 - robustez ante casos límite: **43**
 
 ## Mejoras aceptadas por archivo
@@ -38,8 +38,8 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **20**
 - `scanner.py`: **20**
 - `settings.py`: **20**
-- `healthscore.py`: **18**
-- `main.py`: **18**
+- `healthscore.py`: **19**
+- `main.py`: **19**
 - `organizer.py`: **17**
 - `safety.py`: **15**
 - `memory.py`: **11**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-06T00:43:42` **main.py** (seguridad defensiva): Se ha implementado un método `_is_safe_target_dir` que utiliza `safety.is_protected_path` para restringir la selección de carpetas en el diálogo de configuración de `Limpieza`, evitando que el usuario seleccione accidentalmente directorios críticos del sistema como destino de análisis o limpieza.
+- `2026-08-06T00:42:38` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_generate_recommendations` validando que los datos de entrada (específicamente métricas de seguridad) sean tratados como tipos seguros antes de ser incluidos en texto, evitando inyecciones de datos no verificados en el reporte final.
 - `2026-08-06T00:33:41` **duplicates.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_collect_candidates` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta resuelta antes de procesar el contenido de directorios, evitando así el posible seguimiento de enlaces simbólicos o junctions que podrían apuntar a áreas protegidas del sistema fuera del árbol escaneado.
 - `2026-08-06T00:33:22` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `drive_usage` y `walk_files` para detectar y rechazar rutas UNC (`\\servidor\recurso`) y puntos de montaje de red, evitando bloqueos inesperados o intentos de escaneo sobre recursos compartidos de red que pueden ser inestables o maliciosos.
 - `2026-08-06T00:32:57` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_path` mediante la validación estricta de que la ruta resuelta no contenga caracteres de control o nombres prohibidos (Unicode RTL) antes de su resolución, y se añadió una verificación de integridad adicional para evitar seguimientos accidentales fuera del directorio base, asegurando que la operación se limite exclusivamente a los perfiles de usuario esperados.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-06T00:01:49` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `_collect_candidates` ante archivos que cambian o desaparecen durante el escaneo (condición de carrera) y enlaces simbólicos que apuntan fuera del árbol base, asegurando que `stat` y `resolve` fallen grácilmente sin interrumpir el proceso de escaneo recursivo.
 - `2026-08-05T15:19:10` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `summarize` y las funciones de escaneo ante rutas inexistentes o inaccesibles, asegurando que la recolección de métricas no falle catastróficamente si una subcarpeta cambia su estado de permisos durante la ejecución del bucle.
 - `2026-08-05T15:18:44` **browser.py** (robustez ante casos límite): Se reforzó la robustez de `directory_size` ante el caso límite de archivos cuyo tamaño cambia durante el escaneo (Race Condition) y se añadió una validación estricta para evitar procesar rutas que superen `MAX_PATH` de forma silenciosa, mejorando la fiabilidad del cálculo.
-- `2026-08-05T15:09:51` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` al reemplazar los chequeos condicionales redundantes por un manejo centralizado en `ensure_safe_to_modify`, garantizando que cualquier error de validación de ruta (incluyendo rutas inexistentes o permisos denegados) sea capturado de forma consistente sin abortar la ejecución.
-- `2026-08-05T15:09:37` **assistant.py** (robustez ante casos límite): Reforcé la robustez del motor local ante valores inesperados en el contexto y posibles fallos de procesamiento, garantizando que una métrica corrupta o un resultado de cálculo no bloqueen la respuesta del asistente.

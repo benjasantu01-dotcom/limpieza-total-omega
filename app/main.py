@@ -717,6 +717,14 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         except (OSError, RuntimeError, PermissionError):
             return False
 
+    def _is_safe_target_dir(self, path: Union[str, Path]) -> bool:
+        """Valida que un directorio sea seguro para ser seleccionado como objetivo."""
+        try:
+            p = Path(path).resolve(strict=True)
+            return p.is_dir() and not safety.is_protected_path(p)
+        except (OSError, PermissionError):
+            return False
+
     def _is_valid_dir(self, path: Optional[Union[str, Path]]) -> bool:
         """Valida la existencia y accesibilidad de lectura de un directorio."""
         if not path:
@@ -872,7 +880,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return None
         
         # Validación final de seguridad contra el sistema
-        if not self._is_safe_path(folder):
+        if not self._is_safe_target_dir(folder):
             messagebox.showwarning("Ruta no segura", "Esa ruta está protegida o es inválida.")
             return None
             

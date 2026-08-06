@@ -227,7 +227,9 @@ def _generate_recommendations(m: SystemMetrics, ratios: Dict[str, float]) -> Lis
     recs: List[str] = []
     
     if ratios.get("seguridad", 1.0) < WARN_THRESHOLD_HIGH:
-        recs.append(f"Revisá los {_to_int(m.suspicious_count)} hallazgo(s) de seguridad; podés aislarlos en cuarentena sin borrarlos.")
+        # Validación estricta mediante _to_int antes de formatear para evitar inyecciones
+        s_val = _to_int(m.suspicious_count)
+        recs.append(f"Revisá los {s_val} hallazgo(s) de seguridad; podés aislarlos en cuarentena sin borrarlos.")
     if ratios.get("disco", 1.0) < WARN_THRESHOLD_LOW:
         recs.append(f"Queda {m.disk_free_percent:.1f}% de disco libre. Mirá el análisis de disco para ver qué ocupa más.")
     if ratios.get("memoria", 1.0) < WARN_THRESHOLD_LOW:

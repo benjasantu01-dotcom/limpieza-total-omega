@@ -694,3 +694,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-06T00:33:41` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `_collect_candidates` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta resuelta antes de procesar el contenido de directorios, evitando así el posible seguimiento de enlaces simbólicos o junctions que podrían apuntar a áreas protegidas del sistema fuera del árbol escaneado.
 - `2026-08-06T00:33:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-06T00:33:41` Corrida terminada. Total usado hoy: 16.
+- `2026-08-06T00:42:09` Arrancando corrida. Quedan hoy ~284 peticiones objetivo.
+- `2026-08-06T00:42:38` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_generate_recommendations` validando que los datos de entrada (específicamente métricas de seguridad) sean tratados como tipos seguros antes de ser incluidos en texto, evitando inyecciones de datos no verificados en el reporte final.
+- `2026-08-06T00:43:42` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Se ha implementado un método `_is_safe_target_dir` que utiliza `safety.is_protected_path` para restringir la selección de carpetas en el diálogo de configuración de `Limpieza`, evitando que el usuario seleccione accidentalmente directorios críticos del sistema como destino de análisis o limpieza.
+- `2026-08-06T00:44:08` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
+- `2026-08-06T00:44:18` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-08-06T00:44:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-06T00:44:18` Corrida terminada. Total usado hoy: 20.
