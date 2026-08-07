@@ -192,9 +192,12 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
             with os.scandir(current_path) as iterator:
                 for entry in iterator:
                     try:
-                        if entry.is_symlink():
-                            continue
-                        if os.name == 'nt' and (entry.stat().st_file_attributes & 0x400):
+                        # Detectar junctions, puntos de montaje y symlinks en Windows
+                        if os.name == 'nt':
+                            st = entry.stat(follow_symlinks=False)
+                            if (st.st_file_attributes & 0x400) != 0:
+                                continue
+                        elif entry.is_symlink():
                             continue
                         
                         if entry.is_dir():
@@ -254,10 +257,8 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
             return []
         
         folder_map: Dict[Path, FolderUsage] = {}
-        # Pre-caché para optimizar la comparación de padres
         for path, size in walk_files(base, skip_protected):
             try:
-                # Obtenemos la parte del path inmediatamente inferior a la base
                 parts = path.parts
                 base_len = len(base.parts)
                 if len(parts) <= base_len:

@@ -579,3 +579,10 @@ FAILED evolve/tests/test_modules.py::test_score_color_survives_garbage - Asserti
 - `2026-08-07T07:43:35` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejora la robustez en `build_context` al añadir un validador de tipos más estricto y un manejo de errores robusto para evitar que valores mal formados o tipos inesperados durante la carga de métricas causen inconsistencias en el estado del sistema.
 - `2026-08-07T07:43:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-07T07:43:35` Corrida terminada. Total usado hoy: 172.
+- `2026-08-07T07:52:22` Arrancando corrida. Quedan hoy ~128 peticiones objetivo.
+- `2026-08-07T07:52:54` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Mejoré la resiliencia de la función `save_logo_svg` ante errores de entrada no controlados y añadí una validación de seguridad mediante `is_protected_path` antes de intentar operaciones de escritura en disco.
+- `2026-08-07T07:53:16` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-08-07T07:53:41` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `walk_files` ante puntos de reparse (reparse points) críticos en Windows, asegurando que no solo se detecten enlaces simbólicos, sino también carpetas de sistema especiales que podrían causar recursión infinita o accesos indebidos, mediante el chequeo explícito de atributos de archivo (`FILE_ATTRIBUTE_REPARSE_POINT`).
+- `2026-08-07T07:53:49` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se ha robustecido el manejo de archivos en `duplicates.py` mediante una validación de estado de archivo previa a la apertura y una gestión defensiva ante archivos que cambian de tamaño o desaparecen durante el proceso de hashing, evitando errores en tiempo de ejecución.
+- `2026-08-07T07:53:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-07T07:53:49` Corrida terminada. Total usado hoy: 176.

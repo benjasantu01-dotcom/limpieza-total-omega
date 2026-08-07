@@ -290,6 +290,9 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     if destination is None: return None
     try:
         target = Path(destination).resolve()
+        # Verificamos si la ruta es protegida o insegura antes de cualquier acción
+        if is_protected_path(target) or not is_safe_to_modify(target):
+            return None
         ensure_safe_to_modify(target)
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(logo_svg(), encoding="utf-8")

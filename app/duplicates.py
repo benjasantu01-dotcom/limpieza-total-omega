@@ -203,7 +203,7 @@ def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[
     if paths is None: return groups_by_digest
     
     for path in paths:
-        if path is None or is_protected_path(path): continue
+        if path is None or not path.exists() or is_protected_path(path): continue
         if digest := hash_func(path):
             groups_by_digest[digest].append(path)
     return {d: p for d, p in groups_by_digest.items() if len(p) > 1}
