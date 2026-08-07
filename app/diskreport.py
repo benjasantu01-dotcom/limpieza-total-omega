@@ -188,8 +188,11 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                             continue
                         # Verificar atributos específicos de Windows para junctions
                         if os.name == 'nt':
-                            attrs = entry.stat().st_file_attributes
-                            if attrs & 0x400: # FILE_ATTRIBUTE_REPARSE_POINT
+                            try:
+                                attrs = entry.stat().st_file_attributes
+                                if attrs & 0x400: # FILE_ATTRIBUTE_REPARSE_POINT
+                                    continue
+                            except OSError:
                                 continue
                         
                         if entry.is_dir():
@@ -252,6 +255,8 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
         for path, size in walk_files(base, skip_protected):
             try:
                 rel = path.relative_to(base)
+                if not rel.parts:
+                    continue
                 top_level = base / rel.parts[0]
                 
                 if top_level not in folder_map:
@@ -259,7 +264,7 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
                 else:
                     folder_map[top_level].size_bytes += size
                     folder_map[top_level].file_count += 1
-            except (ValueError, IndexError):
+            except (ValueError, IndexError, OSError):
                 continue
 
         return heapq.nlargest(limit, folder_map.values(), key=lambda f: f.size_bytes)

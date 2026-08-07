@@ -1145,3 +1145,11 @@ assert not {'replace'}
 - `2026-08-07T01:26:48` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `detect_profiles` y `directory_size` validando explícitamente los parámetros de entrada y normalizando el manejo de errores para evitar fallos silenciosos o inesperados al tratar con rutas malformadas o permisos denegados.
 - `2026-08-07T01:26:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-07T01:26:48` Corrida terminada. Total usado hoy: 24.
+- `2026-08-07T01:34:32` Arrancando corrida. Quedan hoy ~276 peticiones objetivo.
+- `2026-08-07T01:35:00` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `largest_folders` añadiendo validaciones preventivas de tipos y excepciones específicas para evitar que rutas malformadas o errores de permisos detengan prematuramente el análisis, asegurando que las funciones devuelvan resultados consistentes en lugar de fallar silenciosamente o lanzar excepciones no controladas.
+- `2026-08-07T01:35:27` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de las funciones de hash (`hash_file` y `partial_hash`) centralizando la validación de parámetros, asegurando que los archivos sean legibles antes de abrirlos, y garantizando que los descriptores de archivo se cierren correctamente ante excepciones inesperadas mediante el uso de `try...finally` (a través del gestor de contexto `with`).
+- `2026-08-07T01:35:52` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-07T01:36:00` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-07T01:36:50` ➖ Sin cambios en main.py (enfoque: manejo de errores y validación de entradas). Motivo: Se ha mejorado la robustez de `main.py` implementando validación de tipo y valor para las entradas críticas en `_collect_settings`, evitando posibles fallos de ejecución si el usuario ingresa texto no numérico en campos que requieren enteros.
+- `2026-08-07T01:36:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-07T01:36:50` Corrida terminada. Total usado hoy: 28.

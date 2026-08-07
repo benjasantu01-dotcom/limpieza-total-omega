@@ -85,16 +85,19 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
         
     try:
         file_path = Path(path)
-        if not file_path.exists():
+        if not file_path.is_file() or is_protected_path(file_path):
             return None
-        st = file_path.stat()
         
-        if not stat.S_ISREG(st.st_mode) or is_protected_path(file_path) or st.st_size <= 0:
+        st = file_path.stat()
+        if st.st_size <= 0:
             return None
             
         digest = hashlib.sha256()
         with open(file_path, "rb", buffering=chunk_size) as f:
-            while chunk := f.read(chunk_size):
+            while True:
+                chunk = f.read(chunk_size)
+                if not chunk:
+                    break
                 digest.update(chunk)
         return digest.hexdigest()
     except (OSError, PermissionError, ValueError, TypeError, FileNotFoundError, IsADirectoryError, RuntimeError):
@@ -110,17 +113,18 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
         
     try:
         file_path = Path(path)
-        if not file_path.exists():
+        if not file_path.is_file() or is_protected_path(file_path):
             return None
+
         st = file_path.stat()
-        
-        if not stat.S_ISREG(st.st_mode) or is_protected_path(file_path) or st.st_size <= 0:
+        if st.st_size <= 0:
             return None
 
         with open(file_path, "rb", buffering=read_bytes) as f:
-            if content := f.read(read_bytes):
-                return hashlib.sha256(content).hexdigest()
-            return None
+            content = f.read(read_bytes)
+            if not content:
+                return None
+            return hashlib.sha256(content).hexdigest()
     except (OSError, PermissionError, ValueError, TypeError, FileNotFoundError, IsADirectoryError, RuntimeError):
         return None
 
@@ -136,9 +140,8 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     for p in paths:
         if not isinstance(p, Path): continue
         try:
-            if not p.exists(): continue
-            st = p.stat()
-            if stat.S_ISREG(st.st_mode) and not is_protected_path(p):
+            if p.is_file() and not is_protected_path(p):
+                st = p.stat()
                 groups[st.st_size].append(p)
         except (OSError, PermissionError, FileNotFoundError, RuntimeError):
             continue
