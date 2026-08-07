@@ -78,9 +78,10 @@ class Scanner:
             # Resolvemos ruta ignorando errores por archivos inexistentes o bloqueados
             path_obj = Path(entry.path).resolve()
             
+            # Validación de seguridad defensiva antes de procesar
             if not (self.base_root == path_obj or self.base_root in path_obj.parents):
                 return
-            if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
+            if is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
                 return
 
             if entry.is_dir(follow_symlinks=False):
@@ -126,7 +127,7 @@ def scan_file(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[st
     if not isinstance(path, Path):
         return []
     
-    if not prevalidated and (not is_safe_to_modify(path) or is_protected_path(path)):
+    if not prevalidated and (is_protected_path(path) or not is_safe_to_modify(path)):
         return []
     
     n = name or path.name
@@ -155,6 +156,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         
     try:
         path_input = Path(directory).resolve()
+        # Validación inicial de seguridad antes de comenzar el escaneo
         if not path_input.is_dir() or is_protected_path(path_input) or not is_safe_to_modify(path_input):
             return []
     except (OSError, RuntimeError):

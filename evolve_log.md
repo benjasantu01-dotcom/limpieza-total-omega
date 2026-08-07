@@ -1365,3 +1365,10 @@ assert not {'replace'}
 - `2026-08-07T04:19:05` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-08-07T04:19:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-07T04:19:05` Corrida terminada. Total usado hoy: 92.
+- `2026-08-07T04:27:52` Arrancando corrida. Quedan hoy ~208 peticiones objetivo.
+- `2026-08-07T04:28:17` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-08-07T04:28:40` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se reforzó la integridad del escáner en `scan_directory` y `process_entry` aplicando la regla de seguridad de usar `is_safe_to_modify` para el filtrado preventivo sin interrumpir el proceso ante errores de acceso, asegurando que la validación sea consistente con el estado del disco.
+- `2026-08-07T04:29:05` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `save()` aplicando una validación explícita con `is_safe_to_modify` antes de cualquier operación de escritura, asegurando que la ruta del archivo y su directorio padre sigan siendo válidos tras posibles cambios en el estado del sistema.
+- `2026-08-07T04:29:15` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: seguridad defensiva).
+- `2026-08-07T04:29:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-07T04:29:15` Corrida terminada. Total usado hoy: 96.
