@@ -255,12 +255,14 @@ def assistant_api_key(path_or_base: PathLike | None = None) -> str:
     """Retorna la API Key priorizando la variable de entorno por seguridad."""
     desde_entorno = os.environ.get(API_KEY_ENV_VAR, "").strip()
     if desde_entorno: return desde_entorno
-    return load(path_or_base).get("asistente_clave_api", "").strip()
+    config = load(path_or_base)
+    return config.get("asistente_clave_api", "").strip()
 
 def assistant_enabled(path_or_base: PathLike | None = None) -> bool:
     """Verifica si el asistente está activo y dispone de una clave válida."""
     config = load(path_or_base)
-    return bool(config.get("asistente_activado")) and bool(assistant_api_key(path_or_base))
+    if not config.get("asistente_activado"): return False
+    return bool(assistant_api_key(path_or_base))
 
 def describe(path_or_base: PathLike | None = None) -> list[str]:
     """Genera un reporte legible de la configuración actual."""

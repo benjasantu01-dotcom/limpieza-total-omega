@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **232** (46.0% de aceptación)
+- Mejoras aceptadas: **231** (45.8% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 212
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-05 | 46 | 3 | 4 | 1 | 36 |
+| 2026-08-05 | 42 | 3 | 4 | 1 | 36 |
 | 2026-08-06 | 159 | 9 | 19 | 12 | 151 |
-| 2026-08-07 | 27 | 6 | 4 | 2 | 25 |
+| 2026-08-07 | 30 | 6 | 4 | 2 | 26 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
-- seguridad defensiva: **48**
-- rendimiento: **48**
+- rendimiento: **49**
 - manejo de errores y validación de entradas: **45**
-- robustez ante casos límite: **34**
+- seguridad defensiva: **44**
+- robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **22**
+- `branding.py`: **21**
 - `scanner.py`: **20**
-- `branding.py`: **20**
 - `diskreport.py`: **20**
+- `settings.py`: **19**
+- `assistant.py`: **19**
 - `browser.py`: **19**
-- `healthscore.py`: **18**
-- `settings.py`: **18**
-- `assistant.py`: **18**
-- `duplicates.py`: **17**
-- `main.py`: **15**
-- `memory.py`: **15**
+- `healthscore.py`: **17**
+- `duplicates.py`: **16**
+- `main.py`: **14**
+- `memory.py`: **14**
 - `organizer.py`: **13**
 - `safety.py`: **11**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-07T03:18:08` **branding.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `save_logo_svg` para prevenir operaciones de escritura con rutas de destino mal formadas o inválidas que podrían causar excepciones no capturadas durante la persistencia.
+- `2026-08-07T03:17:55` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` ante entradas malformadas o tipos inesperados mediante la implementación de una validación explícita de `metrics` (verificación de instancia) y un manejo más resiliente de los valores numéricos, evitando que valores inesperados (como listas o dicts inyectados por error) rompan la construcción del contexto.
+- `2026-08-07T03:16:59` **settings.py** (rendimiento): Optimizé `get` y las funciones auxiliares del asistente para eliminar lecturas redundantes a disco mediante el uso del estado en caché, evitando así operaciones de I/O innecesarias en llamadas repetidas.
 - `2026-08-07T03:07:42` **scanner.py** (rendimiento): Optimizé la lógica de evaluación en `scan_file` reemplazando los chequeos redundantes de listas y múltiples llamadas a `is_safe_to_modify` por un flujo más directo que minimiza operaciones de E/S y llamadas a funciones innecesarias durante la iteración.
 - `2026-08-07T03:07:35` **safety.py** (rendimiento): Se implementó un mecanismo de caché TTL simple y eficiente en `is_protected_path` y `ensure_safe_to_modify`, reemplazando los diccionarios globales con una estructura que permite invalidación o simplemente mejorando el acceso mediante `lru_cache` para evitar el re-procesamiento costoso de rutas redundantes en operaciones de escaneo masivo.
 - `2026-08-07T02:58:23` **organizer.py** (rendimiento): Se optimizó el rendimiento de `scan_for_junk` moviendo la comprobación de `is_safe_to_modify` y la conversión a `Path` fuera del bloque interno mediante el uso de `os.scandir` para obtener metadatos de forma atómica, evitando lecturas redundantes del sistema de archivos y reduciendo la creación innecesaria de objetos `Path`.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-07T02:47:00` **branding.py** (rendimiento): Se optimizó la generación de degradados en `draw_gradient_bar` y `draw_logo` reemplazando la creación de líneas individuales por una pre-agrupación de segmentos contiguos del mismo color, reduciendo drásticamente las llamadas al método `create_line` en el canvas de Tkinter.
 - `2026-08-07T02:37:20` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` reemplazando la creación innecesaria de listas completas (mediante `list(gen)`) por el uso de `next()` y `islice` para procesar solo los elementos necesarios para la respuesta, evitando iteraciones sobre colecciones que no se muestran.
 - `2026-08-07T02:36:40` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints explícitos, docstrings detallados para métodos complejos y la clarificación de la lógica de validación, asegurando que el código sea más auto-explicativo sin alterar su comportamiento.
-- `2026-08-07T02:26:37` **quarantine.py** (legibilidad y documentación): He mejorado la documentación técnica agregando docstrings descriptivos con secciones de argumentos y excepciones en las funciones críticas de gestión de archivos, facilitando la comprensión del flujo de seguridad para futuros colaboradores.
-- `2026-08-07T02:26:08` **organizer.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `organizer.py` añadiendo type hints faltantes en los retornos de funciones (como en `_is_allowed_directory` y `_is_valid_candidate`) y clarificando mediante docstrings el propósito de las variables auxiliares `_LOWER_JUNK_EXTS` y `_JUNK_TUPLE` para evitar errores de mantenimiento futuro.
-- `2026-08-07T02:17:29` **memory.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `memory.py` mediante la refactorización de `_create_memstat_struct` hacia una clase de estructura más clara, la adición de Type Hints detallados en las funciones de procesamiento de datos y la mejora de la documentación en los métodos de diagnóstico, asegurando que las intenciones del código sean explícitas sin alterar la funcionalidad.

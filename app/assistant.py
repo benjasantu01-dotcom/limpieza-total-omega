@@ -188,22 +188,20 @@ def _ensure_safe_text(text: Any) -> bool:
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
     """
-    Transforma fuentes de datos externas o parciales (metrics/health) en una estructura SystemContext validada.
+    Transforma fuentes de datos externas o parciales en una estructura SystemContext validada.
     """
     ctx = SystemContext()
 
     def _val(v: Any, default: float = 0.0, cast: Callable = float) -> Any:
         try:
-            # Rechazar nulos, booleanos, infinitos o NaN para mantener integridad
+            if isinstance(v, (list, dict)): return default
             val = float(v)
-            if not math.isfinite(val):
-                return default
+            if not math.isfinite(val): return default
             return cast(val)
         except (ValueError, TypeError):
             return default
 
-    if metrics is not None:
-        # Uso de getattr con default seguro para evitar fallos si el objeto es inesperado
+    if metrics is not None and hasattr(metrics, "__dict__"):
         ctx.junk_mb = max(0.0, _val(getattr(metrics, "junk_mb", 0.0)))
         ctx.suspicious_count = int(max(0, _val(getattr(metrics, "suspicious_count", 0), 0, int)))
         ctx.suspicious_warnings = int(max(0, _val(getattr(metrics, "suspicious_warnings", 0), 0, int)))
@@ -216,7 +214,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         ctx.memory_total_gb = max(0.0, _val(getattr(metrics, "memory_total_gb", 0.0)))
         ctx.analyzed = True
 
-    if health is not None:
+    if health is not None and hasattr(health, "__dict__"):
         raw_score = getattr(health, "score", None)
         if raw_score is not None:
             ctx.score = int(max(0, min(_val(raw_score, 0, int), 100)))
@@ -224,7 +222,6 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         ctx.grade = str(grade) if isinstance(grade, (str, int, float)) else ""
         ctx.analyzed = True
 
-    # Solo actualizar los campos permitidos que realmente existen en SystemContext
     valid_keys = ctx.__dict__.keys()
     for k, v in extra.items():
         if k in valid_keys and isinstance(v, (int, float)):
@@ -399,7 +396,6 @@ def local_answer(question: str, context: SystemContext) -> Answer:
     puntaje_str = str(context.score) if context.score is not None else "N/A"
     
     if primer_problema:
-        # Usamos islice para no procesar más de 3 problemas innecesariamente
         problemas = [primer_problema] + list(islice(gen, 2))
         cuerpo = (f"Con un puntaje de {puntaje_str}/100, por orden de prioridad: "
                   f"{', '.join(problemas)}.")
@@ -411,7 +407,6 @@ def local_answer(question: str, context: SystemContext) -> Answer:
 
 def _gen_problems(ctx: SystemContext) -> Generator[str, None, None]:
     """Genera descripciones de problemas detectados de forma eficiente."""
-    # Acceso local a campos para optimizar el acceso en el bucle
     if ctx.disk_free_percent < 10.0:
         yield f"queda solo {ctx.disk_free_percent:.0f}% de disco libre"
     if ctx.suspicious_warnings > 0:
@@ -467,19 +462,16 @@ def _call_gemini(
         
         with urllib.request.urlopen(req, timeout=_TIMEOUT_SECONDS) as res:
             if res.status != 200: return None
-            # Limitamos la lectura para prevenir ataques de agotamiento de memoria
             raw_res = res.read(10000) 
             if not raw_res: return None
             data = json.loads(raw_res.decode("utf-8"))
         
-        # Extracción segura de la respuesta anidada del JSON de Gemini
         candidates = data.get("candidates", [])
         if not isinstance(candidates, list) or not candidates: return None
         
         parts = candidates[0].get("content", {}).get("parts", [])
         text = "".join(p.get("text", "") for p in parts if isinstance(p, dict))
         
-        # Limitar longitud de respuesta y verificar integridad antes de retornar
         final_text = text.strip()[:1500]
         return final_text if _ensure_safe_text(final_text) else None
     except (json.JSONDecodeError, urllib.error.URLError, TypeError, KeyError, ValueError):
