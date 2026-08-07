@@ -140,23 +140,18 @@ def scan_file(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[st
     Ejecuta el conjunto de chequeos heurísticos sobre un archivo individual.
     Si 'prevalidated' es True, omite las comprobaciones de seguridad de ruta.
     """
-    if not isinstance(path, Path):
-        return []
-    
     if not prevalidated and (is_protected_path(path) or not is_safe_to_modify(path)):
         return []
     
     n = name or path.name
     s = suffix or (path.suffix.lower() if path.suffix else "")
-    
     findings: ScanResult = []
-    is_executable = s in SUSPICIOUS_EXECUTABLE_EXT
     
     if n.lower() in SYSTEM_LOOKALIKES:
         if res := check_system_lookalike(path, entry, n, s): 
             findings.append(res)
     
-    if is_executable:
+    if s in SUSPICIOUS_EXECUTABLE_EXT:
         if res := check_recent_executable_in_downloads(path, entry, n, s): 
             findings.append(res)
         for check_func in CHECK_REGISTRY:

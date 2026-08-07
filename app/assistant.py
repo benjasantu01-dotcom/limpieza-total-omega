@@ -197,14 +197,15 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
 
     def _val(v: Any, default: float = 0.0, cast: Callable = float) -> Any:
         try:
-            if isinstance(v, (list, dict)): return default
+            if v is None or isinstance(v, (list, dict)): return default
             val = float(v)
             if not math.isfinite(val): return default
             return cast(val)
         except (ValueError, TypeError):
             return default
 
-    if metrics is not None and hasattr(metrics, "__dict__"):
+    # Validar fuente de métricas si existe
+    if metrics is not None and not isinstance(metrics, (list, dict)):
         ctx.junk_mb = max(0.0, _val(getattr(metrics, "junk_mb", 0.0)))
         ctx.suspicious_count = int(max(0, _val(getattr(metrics, "suspicious_count", 0), 0, int)))
         ctx.suspicious_warnings = int(max(0, _val(getattr(metrics, "suspicious_warnings", 0), 0, int)))
@@ -217,7 +218,8 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         ctx.memory_total_gb = max(0.0, _val(getattr(metrics, "memory_total_gb", 0.0)))
         ctx.analyzed = True
 
-    if health is not None and hasattr(health, "__dict__"):
+    # Validar fuente de salud si existe
+    if health is not None and not isinstance(health, (list, dict)):
         raw_score = getattr(health, "score", None)
         if raw_score is not None:
             ctx.score = int(max(0, min(_val(raw_score, 0, int), 100)))
@@ -225,6 +227,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         ctx.grade = str(grade) if isinstance(grade, (str, int, float)) else ""
         ctx.analyzed = True
 
+    # Integrar valores extra solo si son numéricos y existen en la estructura
     valid_keys = ctx.__dict__.keys()
     for k, v in extra.items():
         if k in valid_keys and isinstance(v, (int, float)):
