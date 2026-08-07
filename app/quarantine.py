@@ -14,7 +14,7 @@ Garantías de seguridad que este módulo respeta siempre:
   - No se puede poner en cuarentena algo de una ruta protegida del sistema
     (se valida con `safety.ensure_safe_to_modify`).
   - Al restaurar, el destino se valida para que un manifiesto manipulado no
-    pueda escribir en una ruta de sistema.
+    puela escribir en una ruta de sistema.
   - Vaciar la cuarentena solo borra dentro de la carpeta de cuarentena, y
     se verifica con `safety.is_within_directory` antes de cada borrado.
 """
@@ -312,6 +312,12 @@ def quarantine_file(
         
     item_id = uuid.uuid4().hex[:12]
     safe_name = "".join(c for c in source_path.name if c.isalnum() or c in "._-")
+    
+    # Prevenir nombres reservados de sistema (ej. CON, NUL) que cuelgan el OS
+    name_no_ext = Path(safe_name).stem.upper()
+    if name_no_ext in ("CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"):
+        safe_name = f"q_{safe_name}"
+
     stored_name = f"{item_id}__{safe_name}"[:250] 
     destination = dest_dir / stored_name
 

@@ -218,7 +218,8 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             
             if not current_abs.exists() or not current_abs.is_file():
                 continue
-                
+            
+            # Verificación defensiva extra: el origen debe seguir siendo seguro justo antes de mover
             if not is_safe_to_modify(current_abs):
                 continue
             
