@@ -897,3 +897,10 @@ FAILED evolve/tests/test_modules.py::test_a_healthy_system_still_gets_a_recommen
 - `2026-08-07T10:37:25` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
 - `2026-08-07T10:37:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-07T10:37:25` Corrida terminada. Total usado hoy: 240.
+- `2026-08-07T10:45:50` Arrancando corrida. Quedan hoy ~60 peticiones objetivo.
+- `2026-08-07T10:46:22` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `purge_all` y `_should_purge_file` mediante la validación explícita de la existencia de archivos antes de operar y la captura granular de excepciones, evitando que fallos de acceso a archivos individuales impidan la limpieza del resto de la cuarentena.
+- `2026-08-07T10:46:41` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-08-07T10:47:05` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_is_file_in_use` y `_check_file_integrity` mediante un manejo de excepciones más granular y específico para evitar falsos positivos que bloquean operaciones válidas, y se ha añadido una validación de `path.exists()` en `_is_file_in_use` para evitar llamadas a `os.open` sobre rutas inexistentes.
+- `2026-08-07T10:47:14` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `scan_directory` y `process_entry` mediante una validación estricta de parámetros de entrada, evitando el procesamiento de rutas inexistentes, vacías o inválidas antes de delegarlas a `Scanner`, alineándome con el enfoque de manejo de errores y validación.
+- `2026-08-07T10:47:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-07T10:47:14` Corrida terminada. Total usado hoy: 244.

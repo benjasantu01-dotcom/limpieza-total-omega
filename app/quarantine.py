@@ -450,6 +450,8 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
 def _should_purge_file(entry: Path, quarantine_root: Path, item_map_by_name: Dict[str, QuarantineItem]) -> bool:
     """Verifica si una entrada del sistema de archivos dentro de cuarentena es apta para borrado."""
     try:
+        if not entry.exists():
+            return False
         abs_entry = entry.resolve()
         if entry.name == MANIFEST_NAME or not is_within_directory(abs_entry, quarantine_root):
             return False
@@ -480,10 +482,8 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     count = 0
     remaining_items: List[QuarantineItem] = []
     
-    try:
-        for entry in quarantine_root.iterdir():
-            if not entry.exists():
-                continue
+    for entry in quarantine_root.iterdir():
+        try:
             if _should_purge_file(entry, quarantine_root, item_map_by_name):
                 if _safe_unlink(entry):
                     count += 1
@@ -491,9 +491,9 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
                     remaining_items.append(item_map_by_name[entry.name])
             elif entry.name in item_map_by_name:
                 remaining_items.append(item_map_by_name[entry.name])
-                
-    except (OSError, PermissionError):
-        pass
+        except (OSError, PermissionError):
+            if entry.name in item_map_by_name:
+                remaining_items.append(item_map_by_name[entry.name])
             
     if count > 0:
         save_manifest(remaining_items, base)

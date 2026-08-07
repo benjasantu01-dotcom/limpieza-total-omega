@@ -71,14 +71,13 @@ class Scanner:
             return False
 
     def process_entry(self, entry: os.DirEntry, stack: List[str]) -> None:
+        if not entry or not entry.path:
+            return
+        
         try:
-            if not entry or not entry.path:
-                return
-            
-            # Resolvemos ruta ignorando errores por archivos inexistentes o bloqueados
             path_obj = Path(entry.path).resolve()
             
-            # Validación de seguridad defensiva antes de procesar
+            # Validación de seguridad defensiva
             if not (self.base_root == path_obj or self.base_root in path_obj.parents):
                 return
             if is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
@@ -127,7 +126,6 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, name
     pero se encuentra fuera de los directorios protegidos de System32.
     """
     try:
-        # Defensa adicional: nunca reportar archivos dentro de rutas protegidas
         if is_protected_path(path):
             return None
         if SYSTEM32_LOWER not in str(path.parent).lower():
@@ -143,7 +141,6 @@ def scan_file(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[st
     Ejecuta el conjunto de chequeos heurísticos sobre un archivo individual.
     Si 'prevalidated' es True, omite las comprobaciones de seguridad de ruta.
     """
-    # Siempre verificar protección contra escritura, incluso si prevalidated es True
     if is_protected_path(path):
         return []
         
@@ -173,7 +170,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     Inicia un escaneo recursivo desde la raíz proporcionada.
     Valida la integridad de la ruta antes de instanciar el proceso de escaneo.
     """
-    if directory is None:
+    if not directory:
         return []
         
     try:
@@ -184,7 +181,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         # Validación inicial de seguridad antes de comenzar el escaneo
         if is_protected_path(path_input) or not is_safe_to_modify(path_input):
             return []
-    except (OSError, RuntimeError):
+    except (OSError, RuntimeError, TypeError):
         return []
 
     scanner = Scanner(base_root=path_input)

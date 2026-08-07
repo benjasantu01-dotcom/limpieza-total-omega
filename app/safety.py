@@ -103,14 +103,16 @@ def _is_reparse_point(path: Path) -> bool:
 
 def _is_file_in_use(path: Path) -> bool:
     """Intenta abrir el archivo en modo exclusivo para detectar bloqueos de otros procesos."""
-    if not path.is_file():
+    if not path.exists() or not path.is_file():
         return False
     try:
         fd = os.open(path, os.O_RDWR | os.O_EXCL)
         os.close(fd)
         return False
-    except (OSError, PermissionError):
+    except (PermissionError, BlockingIOError):
         return True
+    except OSError:
+        return False
 
 
 def _check_file_integrity(p: Path) -> None:
