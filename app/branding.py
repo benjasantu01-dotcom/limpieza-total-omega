@@ -299,7 +299,8 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(logo_svg(), encoding="utf-8")
         return target
-    except (OSError, PermissionError, TypeError, ValueError, RuntimeError):
+    except (OSError, PermissionError, TypeError, ValueError, RuntimeError, IOError):
+        # Capturamos fallos de I/O (ej. disco lleno o falta de permisos en carpeta padre)
         return None
 
 

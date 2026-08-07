@@ -1001,3 +1001,10 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-08-07T12:08:48` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
 - `2026-08-07T12:08:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-07T12:08:48` Corrida terminada. Total usado hoy: 276.
+- `2026-08-07T12:17:31` Arrancando corrida. Quedan hoy ~24 peticiones objetivo.
+- `2026-08-07T12:18:13` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `build_context` ante valores inesperados en el origen de las métricas (como tipos `None` inesperados o diccionarios malformados) mediante un filtrado de tipos más estricto y seguro en `getattr` y la lógica de asignación.
+- `2026-08-07T12:18:46` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se ha robustecido la función `save_logo_svg` añadiendo un manejo de excepciones más granular para capturar posibles errores de sistema de archivos (como discos de solo lectura o falta de espacio) antes de intentar la operación, garantizando que un fallo en la escritura no deje la aplicación en un estado inconsistente.
+- `2026-08-07T12:19:09` ➖ Sin cambios en browser.py (enfoque: robustez ante casos límite). Motivo: Se reforzó la robustez de `_sum_directory_recursive` ante archivos bloqueados o en uso (casos límite comunes al acceder a caché de navegadores abiertos) mediante la captura explícita de `OSError` en la llamada a `stat()`, evitando que un solo archivo bloqueado detenga el conteo de toda la carpeta.
+- `2026-08-07T12:19:18` ➖ Sin cambios en diskreport.py (enfoque: robustez ante casos límite). Motivo: Reforcé la robustez de `walk_files` ante errores de acceso (denegación de permisos o archivos bloqueados por el sistema) mediante el manejo explícito de `PermissionError` y `OSError` en el acceso a atributos, garantizando que el escaneo no se interrumpa ante un archivo ocupado.
+- `2026-08-07T12:19:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-07T12:19:18` Corrida terminada. Total usado hoy: 280.
