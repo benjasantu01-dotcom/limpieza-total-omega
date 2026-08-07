@@ -65,9 +65,6 @@ _RESERVED_NAMES: Final[frozenset[str]] = frozenset({
     "com7", "com8", "com9", "lpt1", "lpt2", "lpt3", "lpt4", "lpt5", "lpt6", "lpt7", "lpt8", "lpt9"
 })
 
-_cache_system_check: dict[Path, bool] = {}
-_cache_security_check: dict[Path, bool] = {}
-
 
 def _has_invalid_chars(path_str: str) -> bool:
     """Valida si la cadena contiene caracteres prohibidos o prefijos de dispositivos Windows."""
@@ -96,12 +93,7 @@ def _is_system_or_hidden(path: Path) -> bool:
 
 
 def _is_reparse_point(path: Path) -> bool:
-    """
-    Determina si la ruta es un punto de reparse (Junction/Symlink).
-    
-    Returns:
-        bool: True si es un punto de reparse o no se puede acceder a sus atributos.
-    """
+    """Determina si la ruta es un punto de reparse (Junction/Symlink)."""
     try:
         stats = path.lstat()
         return bool(getattr(stats, "st_file_attributes", 0) & 0x400) or path.is_symlink()
@@ -110,12 +102,7 @@ def _is_reparse_point(path: Path) -> bool:
 
 
 def _is_file_in_use(path: Path) -> bool:
-    """
-    Intenta abrir el archivo en modo exclusivo para detectar bloqueos de otros procesos.
-    
-    Returns:
-        bool: True si el archivo está en uso o inaccesible; False si se pudo abrir.
-    """
+    """Intenta abrir el archivo en modo exclusivo para detectar bloqueos de otros procesos."""
     if not path.is_file():
         return False
     try:
@@ -127,12 +114,7 @@ def _is_file_in_use(path: Path) -> bool:
 
 
 def _check_file_integrity(p: Path) -> None:
-    """
-    Ejecuta una serie de validaciones sobre un archivo existente.
-    
-    Raises:
-        UnsafePathError: Si el archivo es de sistema, está en uso o es un reparse point.
-    """
+    """Ejecuta una serie de validaciones sobre un archivo existente."""
     if any([
         not os.access(p, os.W_OK),
         _is_reparse_point(p),
@@ -155,17 +137,7 @@ def _is_readonly(path: Path) -> bool:
 
 @lru_cache(maxsize=2048)
 def normalize(path: PathLike) -> Path:
-    """
-    Normaliza una ruta a su forma absoluta y resuelta.
-    
-    Args:
-        path: Ruta a procesar.
-    Returns:
-        Path: Ruta resuelta.
-    Raises:
-        TypeError: Si el tipo de entrada no es compatible.
-        ValueError: Si la ruta está vacía.
-    """
+    """Normaliza una ruta a su forma absoluta y resuelta."""
     if path is None or not isinstance(path, (str, os.PathLike)):
         raise TypeError(f"Entrada inválida: tipo {type(path) if path is not None else 'None'} no soportado.")
     
@@ -180,7 +152,7 @@ def normalize(path: PathLike) -> Path:
 
 
 def is_drive_root(path: PathLike) -> bool:
-    """Verifica si la ruta provista representa la raíz de una unidad lógica (e.g., 'C:\')."""
+    """Verifica si la ruta provista representa la raíz de una unidad lógica."""
     try:
         p = normalize(path)
         return p == Path(p.anchor)
@@ -190,19 +162,12 @@ def is_drive_root(path: PathLike) -> bool:
 
 @lru_cache(maxsize=1024)
 def is_protected_path(path: PathLike) -> bool:
-    """
-    Determina si la ruta reside en un directorio crítico del sistema.
-    
-    Comprueba contra la lista de nombres protegidos y las rutas base del sistema (SystemRoot, etc).
-    """
+    """Determina si la ruta reside en un directorio crítico del sistema."""
     if not path:
         return True
     
     try:
         p = normalize(path)
-        if p in _cache_system_check:
-            return _cache_system_check[p]
-        
         is_protected = any(part.lower() in PROTECTED_DIR_NAMES for part in p.parts)
         if not is_protected:
             for sys_root in _SYSTEM_ROOTS:
@@ -213,7 +178,6 @@ def is_protected_path(path: PathLike) -> bool:
         if not is_protected:
             is_protected = p == Path(p.anchor) or (p.exists() and _is_reparse_point(p))
             
-        _cache_system_check[p] = is_protected
         return is_protected
     except (PermissionError, OSError, ValueError, TypeError):
         return True 
@@ -238,26 +202,11 @@ def is_sensitive_file(path: PathLike) -> bool:
 
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> Path:
-    """
-    Validador estricto para operaciones de escritura. 
-    
-    Args:
-        path: Ruta a validar.
-        allow_sensitive: Si es False, bloquea archivos con extensiones sensibles.
-    Raises:
-        UnsafePathError: Si la ruta no cumple las políticas de seguridad.
-    """
+    """Validador estricto para operaciones de escritura."""
     if path is None:
         raise UnsafePathError("Ruta nula recibida.")
 
-    try:
-        p = normalize(path)
-    except (TypeError, ValueError, OSError) as e:
-        raise UnsafePathError(f"Ruta mal formada: {e}")
-
-    if p in _cache_security_check and _cache_security_check[p]:
-        return p
-
+    p = normalize(path)
     str_val = str(p)
     if _has_invalid_chars(str_val) or len(str_val) > 260 or _is_reserved_device_name(p.stem):
         raise UnsafePathError("Ruta inválida, demasiado larga o formato bloqueado.")
@@ -265,12 +214,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
         raise UnsafePathError("Operación bloqueada: rutas de red no permitidas.")
     
     if p.exists():
-        try:
-            _check_file_integrity(p)
-        except UnsafePathError:
-            raise
-        except (OSError, PermissionError, ValueError):
-            raise UnsafePathError("Operación bloqueada: error de acceso al verificar estado.")
+        _check_file_integrity(p)
 
     if is_drive_root(p) or is_protected_path(p):
         raise UnsafePathError("Operación bloqueada: ruta de sistema protegida.")
@@ -278,7 +222,6 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
     if not allow_sensitive and is_sensitive_file(p):
         raise UnsafePathError("Operación bloqueada: extensión sensible.")
     
-    _cache_security_check[p] = True
     return p
 
 
@@ -293,17 +236,12 @@ def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> bool:
 
 def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = False) -> list[Path]:
     """Filtra una colección de rutas retornando solo aquellas seguras para modificar."""
-    seen: set[Path] = set()
     valid: list[Path] = []
     for p in paths:
         try:
             norm_p = normalize(p)
-            if norm_p not in seen:
-                if is_safe_to_modify(norm_p, allow_sensitive=allow_sensitive):
-                    seen.add(norm_p)
-                    valid.append(norm_p)
-                else:
-                    seen.add(norm_p)
+            if is_safe_to_modify(norm_p, allow_sensitive=allow_sensitive):
+                valid.append(norm_p)
         except (TypeError, ValueError, OSError):
             continue
     return valid

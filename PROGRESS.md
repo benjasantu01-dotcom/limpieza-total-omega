@@ -6,47 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **234** (46.4% de aceptación)
+- Mejoras aceptadas: **232** (46.0% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 26
+- Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 211
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-05 | 50 | 3 | 4 | 1 | 36 |
+| 2026-08-05 | 46 | 3 | 4 | 1 | 36 |
 | 2026-08-06 | 159 | 9 | 19 | 12 | 151 |
-| 2026-08-07 | 25 | 6 | 3 | 2 | 24 |
+| 2026-08-07 | 27 | 6 | 4 | 2 | 25 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
-- seguridad defensiva: **52**
-- rendimiento: **46**
+- seguridad defensiva: **48**
+- rendimiento: **48**
 - manejo de errores y validación de entradas: **45**
 - robustez ante casos límite: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **22**
-- `branding.py`: **21**
-- `diskreport.py`: **21**
-- `browser.py`: **20**
-- `assistant.py`: **19**
-- `scanner.py`: **19**
+- `scanner.py`: **20**
+- `branding.py`: **20**
+- `diskreport.py`: **20**
+- `browser.py`: **19**
 - `healthscore.py`: **18**
 - `settings.py`: **18**
+- `assistant.py`: **18**
 - `duplicates.py`: **17**
 - `main.py`: **15**
 - `memory.py`: **15**
 - `organizer.py`: **13**
-- `safety.py`: **10**
+- `safety.py`: **11**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-07T03:07:42` **scanner.py** (rendimiento): Optimizé la lógica de evaluación en `scan_file` reemplazando los chequeos redundantes de listas y múltiples llamadas a `is_safe_to_modify` por un flujo más directo que minimiza operaciones de E/S y llamadas a funciones innecesarias durante la iteración.
+- `2026-08-07T03:07:35` **safety.py** (rendimiento): Se implementó un mecanismo de caché TTL simple y eficiente en `is_protected_path` y `ensure_safe_to_modify`, reemplazando los diccionarios globales con una estructura que permite invalidación o simplemente mejorando el acceso mediante `lru_cache` para evitar el re-procesamiento costoso de rutas redundantes en operaciones de escaneo masivo.
 - `2026-08-07T02:58:23` **organizer.py** (rendimiento): Se optimizó el rendimiento de `scan_for_junk` moviendo la comprobación de `is_safe_to_modify` y la conversión a `Path` fuera del bloque interno mediante el uso de `os.scandir` para obtener metadatos de forma atómica, evitando lecturas redundantes del sistema de archivos y reduciendo la creación innecesaria de objetos `Path`.
 - `2026-08-07T02:58:15` **memory.py** (rendimiento): Optimizé la generación de la lista de procesos en `parse_windows_process_csv` reemplazando la creación de una lista intermedia por un generador eficiente, lo cual reduce el uso de memoria y mejora la velocidad al procesar listas largas.
 - `2026-08-07T02:57:46` **main.py** (rendimiento): Optimicé el redibujado de la interfaz y la gestión de métricas en `_update_health_visuals` reemplazando los bucles `try-except` repetitivos por un acceso directo y eficiente a los widgets, reduciendo el overhead en cada actualización de la UI.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-07T02:26:37` **quarantine.py** (legibilidad y documentación): He mejorado la documentación técnica agregando docstrings descriptivos con secciones de argumentos y excepciones en las funciones críticas de gestión de archivos, facilitando la comprensión del flujo de seguridad para futuros colaboradores.
 - `2026-08-07T02:26:08` **organizer.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `organizer.py` añadiendo type hints faltantes en los retornos de funciones (como en `_is_allowed_directory` y `_is_valid_candidate`) y clarificando mediante docstrings el propósito de las variables auxiliares `_LOWER_JUNK_EXTS` y `_JUNK_TUPLE` para evitar errores de mantenimiento futuro.
 - `2026-08-07T02:17:29` **memory.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `memory.py` mediante la refactorización de `_create_memstat_struct` hacia una clase de estructura más clara, la adición de Type Hints detallados en las funciones de procesamiento de datos y la mejora de la documentación en los métodos de diagnóstico, asegurando que las intenciones del código sean explícitas sin alterar la funcionalidad.
-- `2026-08-07T02:17:17` **main.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo `main.py` mediante la refactorización de `_build_tab_ajustes`, extrayendo la creación de etiquetas e interruptores en métodos internos con nombres descriptivos y type hints, eliminando la duplicación de código y facilitando la comprensión del flujo de construcción de la interfaz.
-- `2026-08-07T02:15:45` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `duplicates.py` mediante docstrings detallados en las funciones de procesamiento (`_collect_candidates`, `_refine_by_hash`) y refiné el tipado para mejorar la legibilidad del pipeline de comparación, facilitando el mantenimiento a futuro.

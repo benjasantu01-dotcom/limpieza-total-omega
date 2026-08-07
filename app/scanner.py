@@ -72,27 +72,20 @@ class Scanner:
 
     def process_entry(self, entry: os.DirEntry, stack: List[str]) -> None:
         try:
-            if entry is None or not entry.path:
+            if not entry or not entry.path or entry.is_symlink():
                 return
             
-            # Verificación de integridad: asegurar que la entrada no es un symlink/reparse y sigue existiendo
-            if entry.is_symlink():
-                return
-            
+            # Validar confinamiento y seguridad
             path_obj = Path(entry.path).resolve()
-            
-            # Validar confinamiento estricto
-            if self.base_root not in path_obj.parents and path_obj != self.base_root:
+            if not (self.base_root == path_obj or self.base_root in path_obj.parents):
                 return
-
             if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
                 return
 
             if entry.is_dir(follow_symlinks=False):
-                if not self._is_reparse_point(entry):
-                    if entry.path not in self.seen:
-                        self.seen.add(entry.path)
-                        stack.append(entry.path)
+                if not self._is_reparse_point(entry) and entry.path not in self.seen:
+                    self.seen.add(entry.path)
+                    stack.append(entry.path)
             elif entry.is_file(follow_symlinks=False):
                 name = entry.name
                 suffix = os.path.splitext(name)[1].lower()
@@ -102,10 +95,6 @@ class Scanner:
 
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None) -> Optional[Suspicion]:
-    """
-    Detecta archivos con doble extensión (ej. .pdf.exe) utilizando REGEX.
-    """
-    if path is None: return None
     target = name or path.name
     if target and DOUBLE_EXTENSION_RE.search(target):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
@@ -113,14 +102,9 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, name
 
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, hours: int = RECENT_FILE_THRESHOLD_HOURS) -> Optional[Suspicion]:
-    """
-    Evalúa la marca de tiempo de modificación de un ejecutable.
-    """
-    if path is None: return None
     try:
         st = entry.stat() if entry else path.lstat()
-        mtime = datetime.fromtimestamp(st.st_mtime)
-        if datetime.now() - mtime < timedelta(hours=hours):
+        if datetime.now() - datetime.fromtimestamp(st.st_mtime) < timedelta(hours=hours):
             return Suspicion(path, f"Ejecutable reciente detectado (modificado hace menos de {hours}h)", "info")
     except (OSError, AttributeError, FileNotFoundError):
         pass
@@ -128,10 +112,6 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None) -> Optional[Suspicion]:
-    """
-    Verifica si un ejecutable tiene nombre de proceso crítico pero reside fuera de System32.
-    """
-    if path is None or path.parent is None: return None
     try:
         if SYSTEM32_LOWER not in str(path.parent).lower():
             return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
@@ -145,64 +125,46 @@ def scan_file(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[st
     if not isinstance(path, Path):
         return []
     
-    if not prevalidated:
-        try:
-            if not path.exists() or path.is_symlink():
-                return []
-        except (OSError, PermissionError):
-            return []
-        
-        if not is_safe_to_modify(path) or is_protected_path(path):
-            return []
+    if not prevalidated and (not is_safe_to_modify(path) or is_protected_path(path)):
+        return []
     
     n = name or path.name
     s = suffix or (path.suffix.lower() if path.suffix else "")
     
     findings: ScanResult = []
-    
     is_executable = s in SUSPICIOUS_EXECUTABLE_EXT
-    is_lookalike = n.lower() in SYSTEM_LOOKALIKES
     
-    if is_lookalike:
-        if res := check_system_lookalike(path, entry, n, s): findings.append(res)
+    if n.lower() in SYSTEM_LOOKALIKES:
+        if res := check_system_lookalike(path, entry, n, s): 
+            findings.append(res)
     
     if is_executable:
-        if res := check_recent_executable_in_downloads(path, entry, n, s): findings.append(res)
+        if res := check_recent_executable_in_downloads(path, entry, n, s): 
+            findings.append(res)
         for check_func in CHECK_REGISTRY:
-            try:
-                if res := check_func(path, entry, n, s):
-                    findings.append(res)
-            except (OSError, AttributeError, TypeError):
-                continue
+            if res := check_func(path, entry, n, s):
+                findings.append(res)
             
     return findings
 
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
-    if directory is None:
+    if not directory:
         return []
         
     try:
-        path_input = Path(directory)
-        if not path_input.exists():
-            return []
-        root_path = path_input.resolve()
-        if not root_path.is_dir() or root_path.is_symlink() or is_protected_path(root_path) or not is_safe_to_modify(root_path):
+        path_input = Path(directory).resolve()
+        if not path_input.is_dir() or is_protected_path(path_input) or not is_safe_to_modify(path_input):
             return []
     except (OSError, RuntimeError):
         return []
 
-    scanner = Scanner(base_root=root_path)
-    stack: List[str] = [str(root_path)]
-    scanner.seen.add(str(root_path))
+    scanner = Scanner(base_root=path_input)
+    stack: List[str] = [str(path_input)]
+    scanner.seen.add(str(path_input))
     
     while stack:
-        current_dir_str = stack.pop()
-        current_dir = Path(current_dir_str)
-        
-        if not current_dir.is_dir() or is_protected_path(current_dir):
-            continue
-            
+        current_dir = stack.pop()
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:
