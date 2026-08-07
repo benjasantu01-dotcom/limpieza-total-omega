@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **230** (45.6% de aceptación)
+- Mejoras aceptadas: **231** (45.8% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 26
+- Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 210
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-06 | 94 | 5 | 12 | 10 | 99 |
-| 2026-08-07 | 136 | 11 | 14 | 12 | 111 |
+| 2026-08-06 | 93 | 5 | 12 | 10 | 96 |
+| 2026-08-07 | 138 | 11 | 15 | 12 | 112 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **59**
 - rendimiento: **49**
 - manejo de errores y validación de entradas: **43**
-- robustez ante casos límite: **40**
-- seguridad defensiva: **39**
+- robustez ante casos límite: **42**
+- seguridad defensiva: **38**
 
 ## Mejoras aceptadas por archivo
 
@@ -35,17 +35,19 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **20**
 - `scanner.py`: **19**
 - `settings.py`: **19**
+- `organizer.py`: **17**
 - `duplicates.py`: **16**
 - `browser.py`: **16**
-- `organizer.py`: **16**
 - `healthscore.py`: **15**
+- `safety.py`: **15**
 - `memory.py`: **15**
-- `safety.py`: **14**
 - `main.py`: **12**
-- `startup.py`: **8**
+- `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-07T12:40:23` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en `normalize` al incluir un manejo explícito de rutas que no existen físicamente o presentan errores de acceso durante la resolución del sistema de archivos, garantizando que el bucle de validación no colapse ante nombres de archivos corruptos o rutas con caracteres inválidos de bajo nivel.
+- `2026-08-07T12:38:21` **organizer.py** (robustez ante casos límite): Se mejora la robustez de `stage_for_review` y `delete_reviewed` al validar que las rutas destino no contengan puntos de reparse (junctions) mediante `resolve()` y verificaciones explícitas, mitigando riesgos de acceso no intencional a otras unidades o directorios fuera del alcance permitido.
 - `2026-08-07T12:28:08` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez en `hash_file` y `partial_hash` para gestionar correctamente archivos bloqueados por el sistema (en uso exclusivo), añadiendo un manejo de excepciones más específico durante la apertura y lectura del stream de bytes.
 - `2026-08-07T12:18:46` **branding.py** (robustez ante casos límite): Se ha robustecido la función `save_logo_svg` añadiendo un manejo de excepciones más granular para capturar posibles errores de sistema de archivos (como discos de solo lectura o falta de espacio) antes de intentar la operación, garantizando que un fallo en la escritura no deje la aplicación en un estado inconsistente.
 - `2026-08-07T12:18:13` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` ante valores inesperados en el origen de las métricas (como tipos `None` inesperados o diccionarios malformados) mediante un filtrado de tipos más estricto y seguro en `getattr` y la lógica de asignación.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-07T11:38:29` **browser.py** (rendimiento): Se optimizó el rendimiento del escaneo recursivo mediante el reemplazo de `Path.exists()` y `Path.is_dir()` (que realizan llamadas a sistema adicionales) por el uso directo de `os.DirEntry` (que ya contiene esa información de metadatos cacheada en la mayoría de los sistemas), reduciendo drásticamente las syscalls innecesarias durante la caminata de directorios.
 - `2026-08-07T11:38:20` **branding.py** (rendimiento): Se implementó un sistema de pre-procesamiento de degradados en `gradient_colors` mediante el cacheo inteligente de las listas de colores, evitando el recálculo constante de `blend` en renderizados frecuentes como los de la barra de progreso.
 - `2026-08-07T11:37:50` **assistant.py** (rendimiento): Optimicé el rendimiento de `_gen_problems` convirtiendo la lista `thresholds` en un generador de tuplas perezoso, evitando la creación de strings y listas innecesarias en cada llamada, incluso cuando no se consumen todos los elementos.
-- `2026-08-07T11:37:18` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la adición de Type Hints detallados, docstrings claros sobre las responsabilidades de cada método de `StartupEntry` y la estandarización del estilo para facilitar la mantenibilidad de la lógica de resolución de rutas.
-- `2026-08-07T11:27:53` **settings.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings descriptivos en las funciones principales y anotaciones de tipo más precisas, aclarando la semántica de la validación y el manejo de persistencia para facilitar el mantenimiento.

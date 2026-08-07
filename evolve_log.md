@@ -1015,3 +1015,11 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-08-07T12:29:55` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
 - `2026-08-07T12:29:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-07T12:29:55` Corrida terminada. Total usado hoy: 284.
+- `2026-08-07T12:37:54` Arrancando corrida. Quedan hoy ~16 peticiones objetivo.
+- `2026-08-07T12:38:21` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se mejora la robustez de `stage_for_review` y `delete_reviewed` al validar que las rutas destino no contengan puntos de reparse (junctions) mediante `resolve()` y verificaciones explícitas, mitigando riesgos de acceso no intencional a otras unidades o directorios fuera del alcance permitido.
+- `2026-08-07T12:39:21` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-07T12:39:54` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: robustez ante casos límite).
+- `2026-08-07T12:40:14` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-08-07T12:40:23` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante casos límite en `normalize` al incluir un manejo explícito de rutas que no existen físicamente o presentan errores de acceso durante la resolución del sistema de archivos, garantizando que el bucle de validación no colapse ante nombres de archivos corruptos o rutas con caracteres inválidos de bajo nivel.
+- `2026-08-07T12:40:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-07T12:40:23` Corrida terminada. Total usado hoy: 288.

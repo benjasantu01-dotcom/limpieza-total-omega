@@ -198,15 +198,7 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 
 
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Path:
-    """Mueve los archivos basura a un directorio de cuarentena para revisión humana.
-
-    Args:
-        files: Lista de JunkFile a procesar.
-        review_dir: Ruta destino.
-
-    Raises:
-        ValueError: Si la ruta de destino es inválida o no es segura.
-    """
+    """Mueve los archivos basura a un directorio de cuarentena para revisión humana."""
     if not files:
         raise ValueError("La lista de archivos a procesar no puede estar vacía.")
 
@@ -214,6 +206,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         dest: Path = Path(review_dir).expanduser().resolve()
         ensure_safe_to_modify(dest)
         dest.mkdir(parents=True, exist_ok=True)
+        # Verificación explícita contra reparse points post-resolución
         if dest.is_symlink() or not dest.is_dir():
             raise ValueError("Destino de revisión inválido o punto de reparse detectado.")
     except (OSError, RuntimeError, PermissionError) as e:
@@ -229,6 +222,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             if not is_safe_to_modify(current_abs):
                 continue
             
+            # Prevenir colisiones de jerarquía o recursión
             if current_abs == dest or dest in current_abs.parents or current_abs.parent == dest:
                 continue
             
@@ -245,20 +239,14 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 
 
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
-    """Elimina permanentemente archivos desde la carpeta de revisión.
-
-    Args:
-        review_dir: Ruta donde se encuentran los archivos ya revisados.
-
-    Returns:
-        int: Cantidad de archivos eliminados exitosamente.
-    """
+    """Elimina permanentemente archivos desde la carpeta de revisión."""
     if not isinstance(review_dir, str):
         return 0
 
     try:
         dest: Path = Path(review_dir).expanduser().resolve()
-        if not dest.exists() or not dest.is_dir() or not is_safe_to_modify(dest):
+        # Validación de integridad de la ruta destino
+        if not dest.exists() or not dest.is_dir() or dest.is_symlink() or not is_safe_to_modify(dest):
             return 0
     except (RuntimeError, OSError):
         return 0
@@ -266,6 +254,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     count: int = 0
     for f in dest.iterdir():
         try:
+            # Asegurar que solo borramos archivos no vinculados y permitidos por safety
             if f.is_file() and not f.is_symlink() and is_safe_to_modify(f):
                 f.unlink()
                 count += 1
