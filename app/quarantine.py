@@ -210,8 +210,11 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
         raise UnsafePathError(f"Operación denegada: el archivo está en otro dispositivo o partición.")
 
     if os.path.exists(dest_dir) and os.path.exists(source_path):
-        if os.path.samefile(source_path, dest_dir):
-            raise UnsafePathError(f"Ruta de origen y destino colisionan mediante alias: {source_path}")
+        try:
+            if os.path.samefile(source_path, dest_dir):
+                raise UnsafePathError(f"Ruta de origen y destino colisionan mediante alias: {source_path}")
+        except OSError:
+            pass
 
     ensure_safe_to_modify(source_path, allow_sensitive=True)
     
@@ -299,7 +302,6 @@ def quarantine_file(
     
     source_path = normalize(source).resolve()
     
-    # Validar que no sea una ruta de red o UNC
     if str(source_path).startswith(("\\\\", "//")):
         raise UnsafePathError("No se permite cuarentena en rutas de red (UNC).")
         
@@ -323,9 +325,6 @@ def quarantine_file(
     safe_name = "".join(c for c in source_path.name if c.isalnum() or c in "._-")
     stored_name = f"{item_id}__{safe_name}"[:250] 
     destination = dest_dir / stored_name
-
-    if is_protected_path(destination):
-        raise UnsafePathError(f"Ruta de cuarentena final insegura: {destination}")
 
     if destination.exists():
         raise FileExistsError(f"Colisión de nombre en destino: {destination}")
@@ -371,14 +370,6 @@ def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[Quaranti
 def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
     """
     Restaura un archivo de la cuarentena a su ruta original.
-    
-    Args:
-        item_id: ID del archivo a restaurar.
-        base: Directorio base de cuarentena.
-        
-    Raises:
-        KeyError: Si el ítem no existe en el manifiesto.
-        UnsafePathError: Si la ruta original es insegura o protegida.
     """
     if not item_id or not isinstance(item_id, str):
         raise ValueError("ID de ítem vacío o tipo incorrecto.")
@@ -404,7 +395,7 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
     if not match.verify_integrity(stored_file):
         raise RuntimeError("Integridad comprometida: el archivo en cuarentena fue alterado.")
 
-    destination = normalize(match.original_path).resolve()
+    destination = Path(match.original_path).resolve()
     
     if destination.is_symlink() or (hasattr(destination, 'is_junction') and destination.is_junction()):
         raise UnsafePathError(f"Restauración denegada: {destination} es un enlace simbólico o unión.")
@@ -446,7 +437,7 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
     quarantine_root = quarantine_dir(base)
     stored_file = quarantine_root / match.stored_name
     
-    if is_protected_path(stored_file) or not is_within_directory(stored_file, quarantine_root):
+    if not is_within_directory(stored_file, quarantine_root):
         raise UnsafePathError(f"Intento de borrado fuera de cuarentena: {stored_file}")
 
     if not stored_file.exists() or not match.verify_integrity(stored_file):
@@ -468,7 +459,6 @@ def _should_purge_file(entry: Path, quarantine_root: Path, item_map_by_name: Dic
         if entry.name == MANIFEST_NAME or not is_within_directory(abs_entry, quarantine_root):
             return False
         
-        # Solo purgar si el archivo es un ítem registrado en el manifiesto
         if entry.name not in item_map_by_name:
             return False
             
@@ -487,9 +477,6 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
         quarantine_root = quarantine_dir(base)
     except OSError:
         return 0
-        
-    if is_protected_path(quarantine_root):
-        raise UnsafePathError("Operación denegada en ruta protegida.")
         
     ensure_safe_to_modify(quarantine_root, allow_sensitive=False)
     

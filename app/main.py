@@ -1301,6 +1301,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def on_trim_process(self) -> None:
         """Intenta liberar el Working Set de un proceso dado."""
+        if not hasattr(self, 'pid_entry') or not self.pid_entry.winfo_exists():
+            return
+        
         raw = self.pid_entry.get().strip()
         if not raw:
             messagebox.showwarning("Entrada vacía", "Ingresá un PID.")
@@ -1316,18 +1319,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             messagebox.showwarning("PID inválido", "El PID debe ser positivo.")
             return
         
-        # Validación: procesos del sistema (PID < 100)
         if pid < 100:
             messagebox.showerror("Bloqueado", "Este PID corresponde a un proceso del sistema esencial y no puede ser modificado.")
-            return
-
-        # Pre-chequeo de existencia del proceso antes de intentar trim
-        try:
-            if not memory_mod.process_exists(pid):
-                messagebox.showerror("No encontrado", f"No se encontró un proceso activo con PID {pid}.")
-                return
-        except Exception as e:
-            self.log(f"Error al verificar proceso {pid}: {e}", "Memoria")
             return
 
         if not self._confirm("Liberar working set", memory_mod.TRIM_WARNING + "\n\n¿Seguimos?"):
@@ -1335,6 +1328,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
         def task():
             try:
+                if not memory_mod.process_exists(pid):
+                    self.log(f"Error: El proceso {pid} ya no está activo.", "Memoria")
+                    return
                 ok, mensaje = memory_mod.trim_working_set(pid)
                 self.log(("OK: " if ok else "Sin efecto: ") + mensaje, "Memoria")
             except Exception as e:

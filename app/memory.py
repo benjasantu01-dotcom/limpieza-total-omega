@@ -363,11 +363,14 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "Acceso denegado: permisos insuficientes o el proceso ya no existe."
     
     try:
-        # Pre-chequeo de seguridad: verificar ruta antes de cualquier manipulación
+        # Pre-chequeo de seguridad: verificar ruta del ejecutable antes de cualquier manipulación
         buf = ctypes.create_unicode_buffer(1024)
         if psapi.GetModuleFileNameExW(handle, 0, buf, 1024) > 0:
             if is_protected_path(buf.value):
                 return False, "Operación denegada: el ejecutable está en una ruta protegida."
+        else:
+            # Si no podemos obtener el nombre (permiso denegado), asumimos riesgo por seguridad
+            return False, "Operación denegada: no se pudo verificar la integridad del proceso."
 
         exit_code = ctypes.c_ulong()
         if not kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)) or exit_code.value != 259:
