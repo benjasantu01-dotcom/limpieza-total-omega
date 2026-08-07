@@ -157,8 +157,10 @@ def settings_path(path_or_base: PathLike | None = None) -> Path:
     if key in _path_cache: return _path_cache[key]
     try:
         candidate = Path(key).expanduser().resolve()
-        ensure_safe_to_modify(candidate)
-        res = candidate / SETTINGS_FILE
+        if is_safe_to_modify(str(candidate)):
+            res = candidate / SETTINGS_FILE
+        else:
+            res = SETTINGS_DIR.expanduser().resolve() / SETTINGS_FILE
     except (OSError, RuntimeError, ValueError, PermissionError):
         res = SETTINGS_DIR.expanduser().resolve() / SETTINGS_FILE
     _path_cache[key] = res

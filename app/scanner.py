@@ -127,6 +127,9 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, name
     pero se encuentra fuera de los directorios protegidos de System32.
     """
     try:
+        # Defensa adicional: nunca reportar archivos dentro de rutas protegidas
+        if is_protected_path(path):
+            return None
         if SYSTEM32_LOWER not in str(path.parent).lower():
             return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
     except (OSError, RuntimeError):
@@ -140,7 +143,11 @@ def scan_file(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[st
     Ejecuta el conjunto de chequeos heurísticos sobre un archivo individual.
     Si 'prevalidated' es True, omite las comprobaciones de seguridad de ruta.
     """
-    if not prevalidated and (is_protected_path(path) or not is_safe_to_modify(path)):
+    # Siempre verificar protección contra escritura, incluso si prevalidated es True
+    if is_protected_path(path):
+        return []
+        
+    if not prevalidated and not is_safe_to_modify(path):
         return []
     
     n = name or path.name

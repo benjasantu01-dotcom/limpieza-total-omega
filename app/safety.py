@@ -148,7 +148,6 @@ def normalize(path: PathLike) -> Path:
         raise ValueError("La ruta proporcionada está vacía.")
         
     try:
-        # resolve(strict=False) permite manejar rutas que aún no existen en el disco
         return Path(str_path).expanduser().resolve(strict=False)
     except (OSError, RuntimeError):
         return Path(os.path.abspath(os.path.expanduser(str_path)))
@@ -206,27 +205,32 @@ def is_sensitive_file(path: PathLike) -> bool:
         return True 
 
 
-def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> Path:
+def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: PathLike | None = None) -> Path:
     """
     Validador estricto para operaciones de escritura.
-    Lanza UnsafePathError si la ruta es insegura, de sistema o está bloqueada.
+    Lanza UnsafePathError si la ruta es insegura, de sistema, está bloqueada o escapa de base_dir.
     """
     if path is None:
         raise UnsafePathError("Ruta nula recibida.")
 
     p = normalize(path)
+    if base_dir and not is_within_directory(p, base_dir, allow_equal=True):
+        raise UnsafePathError("Operación bloqueada: intento de acceso fuera del directorio base.")
+
     str_val = str(p)
     if _has_invalid_chars(str_val) or len(str_val) > 260 or _is_reserved_device_name(p.stem):
         raise UnsafePathError("Ruta inválida, demasiado larga o formato bloqueado.")
     if str_val.startswith(("\\\\", "//")):
         raise UnsafePathError("Operación bloqueada: rutas de red no permitidas.")
     
-    # Chequeo de seguridad preventivo incluso si el archivo no existe
     if is_drive_root(p) or is_protected_path(p):
         raise UnsafePathError("Operación bloqueada: ruta de sistema protegida.")
         
     if p.exists():
         _check_file_integrity(p)
+        # Prevenir escalada mediante symlinks que apuntan fuera
+        if p.is_symlink() and not is_within_directory(p.resolve(), p.parent, allow_equal=True):
+             raise UnsafePathError("Operación bloqueada: symlink inseguro detectado.")
     
     if not allow_sensitive and is_sensitive_file(p):
         raise UnsafePathError("Operación bloqueada: extensión sensible.")
@@ -237,7 +241,6 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
 def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> bool:
     """
     Versión booleana de `ensure_safe_to_modify`.
-    Útil para filtrar listas o validaciones condicionales sin lanzar excepciones.
     """
     try:
         ensure_safe_to_modify(path, allow_sensitive=allow_sensitive)
