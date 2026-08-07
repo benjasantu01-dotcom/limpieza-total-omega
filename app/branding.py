@@ -33,7 +33,7 @@ SeverityStyle: TypeAlias = Tuple[HexColor, str]
 RGBTuple: TypeAlias = Tuple[int, int, int]
 
 class PaletteDict(TypedDict):
-    """Estructura de colores centralizada para la interfaz."""
+    """Mapeo estricto de las claves de color requeridas por la interfaz."""
     background: HexColor
     surface: HexColor
     surface_alt: HexColor
@@ -61,7 +61,7 @@ APP_SHORT_NAME: Final[str] = "Omega"
 APP_TAGLINE: Final[str] = "Limpieza y seguridad, en un solo lugar"
 APP_VERSION: Final[str] = "2.1.0"
 
-# Paleta de colores centralizada usando MappingProxyType para inmutabilidad forzada.
+# Paleta centralizada; el uso de MappingProxyType asegura inmutabilidad en tiempo de ejecución.
 PALETTE: Final[Mapping[str, HexColor]] = MappingProxyType({
     "background": "#0a0e17",
     "surface": "#141b2d",
@@ -111,6 +111,7 @@ GRADE_COLORS: Final[Mapping[str, HexColor]] = MappingProxyType({
     "F": "#ff4757",
 })
 
+# Mapeo de secciones funcionales a caracteres Unicode para visualización consistente.
 ICONS: Final[Mapping[str, str]] = MappingProxyType({
     "Salud": "\u25c9",        
     "Limpieza": "\u2726",     

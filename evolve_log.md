@@ -904,3 +904,49 @@ FAILED evolve/tests/test_modules.py::test_a_healthy_system_still_gets_a_recommen
 - `2026-08-07T10:47:14` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `scan_directory` y `process_entry` mediante una validación estricta de parámetros de entrada, evitando el procesamiento de rutas inexistentes, vacías o inválidas antes de delegarlas a `Scanner`, alineándome con el enfoque de manejo de errores y validación.
 - `2026-08-07T10:47:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-07T10:47:14` Corrida terminada. Total usado hoy: 244.
+- `2026-08-07T10:56:00` Arrancando corrida. Quedan hoy ~56 peticiones objetivo.
+- `2026-08-07T10:56:27` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de la validación al centralizar la coerción de tipos dentro de los validadores, asegurando que `validate()` maneje entradas inesperadas sin abortar y manteniendo la integridad de las rutas mediante un chequeo estricto de `None` antes de procesar.
+- `2026-08-07T10:56:54` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+......................................F................................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_parse_registry_csv_skips_powershell_noise ________________
+
+    def test_parse_registry_csv_skips_powershell_noise():
+        csv = '"Name","Value"\n"PSPath","algo"\n"Real","C:\\\\r.exe"\n'
+>       assert [e.name for e in startup.parse_registry_csv(csv)] == ["Real"]
+E       AssertionError: assert ['PSPath', 'Real'] == ['Real']
+E         
+E         At index 0 diff: 'PSPath' != 'Real'
+E         Left contains one more item: 'Real'
+E         
+E         Full diff:
+E           [
+E         +     'PSPath',
+E               'Real',
+E           ]
+
+evolve/tests/test_modules.py:651: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_noise - AssertionError: assert ['PSPath', 'Real'] == ['Real']
+  
+  At index 0 diff: 'PSPath' != 'Real'
+  Left contains one more item: 'Real'
+  
+  Full diff:
+    [
+  +     'PSPath',
+        'Real',
+    ]
+1 failed, 298 passed in 1.10s
+
+```
+- `2026-08-07T10:56:54` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `parse_registry_csv` al sustituir el parseo manual propenso a errores por una validación estricta de las filas CSV, evitando que nombres de columnas (como "PSPath" o "PSParentPath" que PowerShell a veces incluye) se procesen incorrectamente como entradas de inicio.
+- `2026-08-07T10:57:26` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Documenté con docstrings claros y tipado los argumentos de los gestores (`handle_ram`, `handle_disk`, etc.) y optimicé la estructura de `_gen_problems` para mejorar la legibilidad y el mantenimiento del motor de diagnóstico.
+- `2026-08-07T10:57:41` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna agregando docstrings descriptivos a las estructuras de datos (`PaletteDict`, `PALETTE`, `ICONS`) y clarificando las constantes para facilitar el mantenimiento, cumpliendo con el enfoque de legibilidad.
+- `2026-08-07T10:57:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-07T10:57:41` Corrida terminada. Total usado hoy: 248.

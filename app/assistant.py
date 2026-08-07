@@ -289,7 +289,7 @@ def _format_critical_warning(condition: bool, text: str) -> str:
     return text if condition else ""
 
 def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
-    """Genera respuesta contextual sobre el estado de la memoria RAM."""
+    """Genera respuesta contextual sobre la memoria RAM (estado y causas de lentitud)."""
     partes = [
         f"Tenés {ctx.memory_available_percent:.0f}% de RAM disponible"
         f"{f' de {ctx.memory_total_gb:.0f} GB' if ctx.memory_total_gb > 0 else ''}.",
@@ -310,7 +310,7 @@ def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
                     suggestions=["¿Conviene desactivar programas de inicio?"])
 
 def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
-    """Genera respuesta contextual sobre el almacenamiento y espacio recuperable."""
+    """Genera respuesta sobre almacenamiento, espacio recuperable y alertas críticas."""
     recuperable = ctx.junk_mb + ctx.duplicate_mb + ctx.browser_cache_mb
     
     mensaje = (
@@ -331,7 +331,7 @@ def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
     return Answer(mensaje + warning + sugerencia, notice=OFFLINE_NOTICE)
 
 def handle_security(ctx: SystemContext, user_query: str) -> Answer:
-    """Genera respuesta contextual sobre archivos identificados como sospechosos."""
+    """Genera respuesta sobre archivos sospechosos y el proceso de cuarentena."""
     if ctx.suspicious_count == 0:
         cuerpo = ("No hay archivos sospechosos en tus Descargas. Sobre borrar: la "
                     "app nunca borra sola. La limpieza mueve todo a una carpeta de "
@@ -345,7 +345,7 @@ def handle_security(ctx: SystemContext, user_query: str) -> Answer:
     return Answer(cuerpo, notice=OFFLINE_NOTICE)
 
 def handle_score(ctx: SystemContext, user_query: str) -> Answer:
-    """Genera explicación del puntaje de salud global según problemas detectados."""
+    """Genera explicación pedagógica del puntaje de salud global."""
     detalle = (f"Tu puntaje es {ctx.score if ctx.score is not None else 'N/A'}/100"
                 f"{f' (nota {ctx.grade})' if ctx.grade else ''}. ")
     problemas = list(islice(_gen_problems(ctx), 3))
@@ -414,20 +414,22 @@ def local_answer(question: str, context: SystemContext) -> Answer:
 def _gen_problems(ctx: SystemContext) -> Generator[str, None, None]:
     """
     Genera un flujo de descripciones de problemas detectados de forma perezosa.
+    Solo emite problemas que superan umbrales significativos.
     """
     if ctx is None: return
-    if ctx.disk_free_percent < 10.0:
-        yield f"queda solo {ctx.disk_free_percent:.0f}% de disco libre"
-    if ctx.suspicious_warnings > 0:
-        yield f"{ctx.suspicious_warnings} archivo(s) sospechosos"
-    if ctx.memory_available_percent < 15.0:
-        yield f"queda {ctx.memory_available_percent:.0f}% de RAM"
-    if ctx.junk_mb > 1000.0:
-        yield f"{ctx.junk_mb:.0f} MB de archivos basura"
-    if ctx.duplicate_mb > 500.0:
-        yield f"{ctx.duplicate_mb:.0f} MB en duplicados"
-    if ctx.startup_count > 15:
-        yield f"{ctx.startup_count} programas de inicio"
+    
+    thresholds = [
+        (ctx.disk_free_percent < 10.0, f"queda solo {ctx.disk_free_percent:.0f}% de disco libre"),
+        (ctx.suspicious_warnings > 0, f"{ctx.suspicious_warnings} archivo(s) sospechosos"),
+        (ctx.memory_available_percent < 15.0, f"queda {ctx.memory_available_percent:.0f}% de RAM"),
+        (ctx.junk_mb > 1000.0, f"{ctx.junk_mb:.0f} MB de archivos basura"),
+        (ctx.duplicate_mb > 500.0, f"{ctx.duplicate_mb:.0f} MB en duplicados"),
+        (ctx.startup_count > 15, f"{ctx.startup_count} programas de inicio")
+    ]
+    
+    for condition, message in thresholds:
+        if condition:
+            yield message
 
 
 def available(base: Union[str, Path, None] = None) -> bool:
