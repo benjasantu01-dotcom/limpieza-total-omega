@@ -152,7 +152,7 @@ def _sum_directory_recursive(root_dir: str, is_junction_fn) -> int:
                 try:
                     if entry.is_dir():
                         total += _sum_directory_recursive(entry.path, is_junction_fn)
-                    elif entry.name.lower() not in NEVER_TOUCH:
+                    elif entry.name and entry.name.lower() not in NEVER_TOUCH:
                         total += entry.stat().st_size
                 except (OSError, PermissionError):
                     continue
@@ -171,7 +171,7 @@ def directory_size(path: str | os.PathLike | None) -> int:
     
     try:
         root_path = Path(path).resolve(strict=True)
-        if not root_path.is_dir() or is_protected_path(root_path):
+        if not root_path.is_absolute() or not root_path.is_dir() or is_protected_path(root_path):
             return 0
     except (OSError, PermissionError):
         return 0
@@ -189,6 +189,7 @@ def _is_valid_cache_path(candidate: Optional[Path], base_path: Path) -> bool:
             candidate.exists() and 
             candidate.is_dir() and 
             _is_safe_path(candidate, base_path) and
+            candidate.name and
             candidate.name.lower() not in NEVER_TOUCH
         )
     except (OSError, PermissionError, RuntimeError):

@@ -473,3 +473,10 @@ assert not {'replace'}
 - `2026-08-07T05:52:27` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `save_logo_svg` y `draw_logo` mediante la captura explícita de errores de entrada, garantizando que el estado interno no se corrompa ante argumentos inválidos o rutas bloqueadas, siguiendo estrictamente el enfoque de manejo de errores y validación.
 - `2026-08-07T05:52:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-07T05:52:27` Corrida terminada. Total usado hoy: 128.
+- `2026-08-07T05:59:41` Arrancando corrida. Quedan hoy ~172 peticiones objetivo.
+- `2026-08-07T06:00:09` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `directory_size` y `_sum_directory_recursive` validando explícitamente que el `root_dir` sea una ruta absoluta antes de procesar y asegurando que las comparaciones de `NEVER_TOUCH` manejen correctamente posibles casos donde el nombre de archivo sea `None` o no tenga nombre, previniendo errores en sistemas de archivos atípicos o protegidos.
+- `2026-08-07T06:00:35` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-07T06:01:00` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-07T06:01:13` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Reforcé el manejo de errores en `summarize` y `compute_score` validando que los datos de entrada tengan el formato esperado antes de acceder a sus métodos o atributos, evitando posibles excepciones de tipo inesperadas.
+- `2026-08-07T06:01:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-07T06:01:13` Corrida terminada. Total usado hoy: 132.

@@ -161,7 +161,6 @@ def score_security(suspicious_count: int, warnings: int = 0) -> float:
     """Penaliza hallazgos: -0.05 por cada archivo sospechoso, -0.25 por advertencia crítica."""
     key = ("security", suspicious_count, warnings)
     if key in _SCORE_CACHE: return _SCORE_CACHE[key]
-    # Se asegura el uso de valores no negativos para evitar bonificaciones erróneas
     s_count = max(0, _to_int(suspicious_count))
     w_count = max(0, _to_int(warnings))
     res = _clamp(1.0 - ((float(s_count) * 0.05) + (float(w_count) * 0.25)), 0.0, 1.0)
@@ -257,7 +256,6 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     if not metrics.is_finite() or not _validate_weights():
         return HealthResult(0, "F", {}, ["Error: Datos de entrada o configuración no procesables."])
 
-    # Cálculo individual de ratios previo al bucle de ponderación
     scores: ScoreMap = {
         "seguridad": score_security(metrics.suspicious_count, metrics.suspicious_warnings),
         "disco": score_disk(metrics.disk_free_percent),
@@ -270,14 +268,12 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     breakdown: Dict[str, int] = {}
     total_weighted_score: float = 0.0
     
-    # Procesamiento robusto ante claves potencialmente ausentes o mal configuradas
     for area, weight in _WEIGHT_ITEMS:
         score_val = scores.get(area, 0.0) * float(weight) * _NORM_FACTOR
         breakdown[area] = int(score_val + 0.5)
         total_weighted_score += score_val
 
     final_score = int(_clamp(total_weighted_score, 0.0, 100.0))
-    # Corrección de redondeo si la suma difiere ligeramente del total calculado
     if not math.isclose(sum(breakdown.values()), final_score, abs_tol=1):
         final_score = sum(breakdown.values())
 
@@ -291,14 +287,13 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
 
 def summarize(result: HealthResult) -> List[str]:
     """Crea una representación textual legible de los resultados para UI."""
-    if not isinstance(result, HealthResult):
+    if not isinstance(result, HealthResult) or not isinstance(getattr(result, 'breakdown', None), dict):
         return ["Error: Resultado de salud no válido."]
 
     lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     
-    bd = result.breakdown if isinstance(result.breakdown, dict) else {}
     for area, maximo in _WEIGHT_ITEMS:
-        puntos_val = bd.get(area, 0)
+        puntos_val = result.breakdown.get(area, 0)
         visual = f"[{'#' * puntos_val}{'.' * (max(0, maximo - puntos_val))}]"
         lines.append(f"  {area.capitalize():<12} {puntos_val:>2}/{maximo:<2} {visual}")
     
