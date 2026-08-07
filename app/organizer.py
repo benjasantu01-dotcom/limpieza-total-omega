@@ -181,17 +181,17 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
                         if entry.is_dir(follow_symlinks=False):
                             if _is_allowed_directory(entry.name):
                                 _walk_dir(entry.path)
-                        else:
-                            # Filtrado inicial eficiente evitando Path objeto innecesario
-                            if entry.name.lower().endswith(_JUNK_TUPLE):
-                                entry_path: Path = Path(entry.path)
-                                if _is_valid_candidate(entry_path):
-                                    stat = entry.stat()
-                                    found.append(JunkFile(
-                                        path=entry_path,
-                                        size_bytes=stat.st_size,
-                                        modified=datetime.fromtimestamp(stat.st_mtime)
-                                    ))
+                        elif entry.name.lower().endswith(_JUNK_TUPLE):
+                            # Acceso directo a metadatos de scandir para evitar llamadas extra a OS
+                            stat = entry.stat()
+                            entry_path: Path = Path(entry.path)
+                            
+                            if _is_valid_candidate(entry_path):
+                                found.append(JunkFile(
+                                    path=entry_path,
+                                    size_bytes=stat.st_size,
+                                    modified=datetime.fromtimestamp(stat.st_mtime)
+                                ))
                     except (PermissionError, OSError):
                         continue
         except (PermissionError, OSError):

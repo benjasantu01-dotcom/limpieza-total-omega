@@ -974,36 +974,30 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         def actualizar():
             self._draw_gauge(resultado.score, resultado.grade)
 
-            valores: Dict[str, str] = {
+            valores = {
                 "basura": f"{junk_mb:.0f} MB",
                 "sospechosos": str(sospechosos),
                 "ram": f"{ram_libre:.0f}%",
                 "disco": f"{disco_libre:.0f}%",
             }
-            colores: Dict[str, str] = {
+            colores = {
                 "basura": branding.color("accent") if junk_mb < 1000 else branding.color("warning"),
                 "sospechosos": branding.color("accent") if sospechosos == 0 else branding.color("warning"),
                 "ram": branding.score_color(ram_libre * 3),
                 "disco": branding.score_color(disco_libre * 5),
             }
+            
             for clave, label in self.cards.items():
-                try:
-                    label.configure(text=valores.get(clave, "-"),
-                                    text_color=colores.get(clave, branding.color("accent")))
-                except Exception:
-                    pass
+                label.configure(text=valores[clave], text_color=colores[clave])
 
             for clave, (barra, label) in self.area_bars.items():
-                try:
-                    puntos = resultado.breakdown.get(clave, 0)
-                    maximo = healthscore.WEIGHTS.get(clave, 1)
-                    proporcion = puntos / maximo if maximo else 0
-                    barra.set(proporcion)
-                    barra.configure(progress_color=branding.score_color(proporcion * 100))
-                    label.configure(text=f"{puntos:.0f}/{maximo}",
-                                    text_color=branding.score_color(proporcion * 100))
-                except Exception:
-                    pass
+                puntos = resultado.breakdown.get(clave, 0)
+                maximo = healthscore.WEIGHTS.get(clave, 1)
+                proporcion = puntos / maximo if maximo else 0
+                c = branding.score_color(proporcion * 100)
+                barra.configure(progress_color=c)
+                barra.set(proporcion)
+                label.configure(text=f"{puntos:.0f}/{maximo}", text_color=c)
 
         self.after(0, actualizar)
 

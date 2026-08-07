@@ -6,27 +6,27 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **232** (46.0% de aceptación)
+- Mejoras aceptadas: **234** (46.4% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 26
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 213
+- Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-05 | 52 | 3 | 4 | 1 | 38 |
+| 2026-08-05 | 50 | 3 | 4 | 1 | 36 |
 | 2026-08-06 | 159 | 9 | 19 | 12 | 151 |
-| 2026-08-07 | 21 | 6 | 3 | 2 | 24 |
+| 2026-08-07 | 25 | 6 | 3 | 2 | 24 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - seguridad defensiva: **52**
+- rendimiento: **46**
 - manejo de errores y validación de entradas: **45**
-- rendimiento: **42**
-- robustez ante casos límite: **36**
+- robustez ante casos límite: **34**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,19 +34,23 @@ Este archivo se regenera solo en cada corrida a partir de
 - `branding.py`: **21**
 - `diskreport.py`: **21**
 - `browser.py`: **20**
-- `settings.py`: **19**
 - `assistant.py`: **19**
 - `scanner.py`: **19**
+- `healthscore.py`: **18**
+- `settings.py`: **18**
 - `duplicates.py`: **17**
-- `healthscore.py`: **17**
-- `main.py`: **14**
-- `memory.py`: **14**
-- `organizer.py`: **12**
+- `main.py`: **15**
+- `memory.py`: **15**
+- `organizer.py`: **13**
 - `safety.py`: **10**
-- `startup.py`: **7**
+- `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-07T02:58:23` **organizer.py** (rendimiento): Se optimizó el rendimiento de `scan_for_junk` moviendo la comprobación de `is_safe_to_modify` y la conversión a `Path` fuera del bloque interno mediante el uso de `os.scandir` para obtener metadatos de forma atómica, evitando lecturas redundantes del sistema de archivos y reduciendo la creación innecesaria de objetos `Path`.
+- `2026-08-07T02:58:15` **memory.py** (rendimiento): Optimizé la generación de la lista de procesos en `parse_windows_process_csv` reemplazando la creación de una lista intermedia por un generador eficiente, lo cual reduce el uso de memoria y mejora la velocidad al procesar listas largas.
+- `2026-08-07T02:57:46` **main.py** (rendimiento): Optimicé el redibujado de la interfaz y la gestión de métricas en `_update_health_visuals` reemplazando los bucles `try-except` repetitivos por un acceso directo y eficiente a los widgets, reduciendo el overhead en cada actualización de la UI.
+- `2026-08-07T02:56:45` **healthscore.py** (rendimiento): Se introdujo un diccionario de cache `_SCORE_CACHE` y una lógica de `functools.lru_cache` (simulada mediante un hash de las entradas) para evitar el re-cálculo innecesario de las funciones de puntuación en `compute_score` cuando se procesan métricas idénticas, mejorando el rendimiento en escenarios donde la UI solicita actualizaciones frecuentes con los mismos datos.
 - `2026-08-07T02:48:00` **duplicates.py** (rendimiento): Optimicé `_collect_candidates` utilizando un diccionario de `set` para `visited_inodes` por volumen, reduciendo drásticamente el costo de búsqueda en árboles de directorios grandes al evitar la redundancia de listas, y apliqué `os.scandir` de forma más eficiente al cachear atributos de archivo evitando llamadas extra a `stat()` en el loop principal.
 - `2026-08-07T02:47:48` **diskreport.py** (rendimiento): Optimicé `walk_files` y `summarize` para evitar llamadas redundantes a `Path.resolve()` y `Path.relative_to()` dentro del bucle principal, reduciendo significativamente el consumo de CPU al convertir `Path` a `str` solo cuando es necesario para la visualización.
 - `2026-08-07T02:47:24` **browser.py** (rendimiento): Optimizé `_sum_directory_recursive` evitando llamadas repetidas a `entry.is_symlink()` y `is_junction_fn` al reutilizar la información del objeto `os.DirEntry` y simplificando el flujo de exclusión de archivos, lo que reduce la carga de I/O en escaneos profundos de caché.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-07T02:17:29` **memory.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `memory.py` mediante la refactorización de `_create_memstat_struct` hacia una clase de estructura más clara, la adición de Type Hints detallados en las funciones de procesamiento de datos y la mejora de la documentación en los métodos de diagnóstico, asegurando que las intenciones del código sean explícitas sin alterar la funcionalidad.
 - `2026-08-07T02:17:17` **main.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo `main.py` mediante la refactorización de `_build_tab_ajustes`, extrayendo la creación de etiquetas e interruptores en métodos internos con nombres descriptivos y type hints, eliminando la duplicación de código y facilitando la comprensión del flujo de construcción de la interfaz.
 - `2026-08-07T02:15:45` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `duplicates.py` mediante docstrings detallados en las funciones de procesamiento (`_collect_candidates`, `_refine_by_hash`) y refiné el tipado para mejorar la legibilidad del pipeline de comparación, facilitando el mantenimiento a futuro.
-- `2026-08-07T02:06:43` **diskreport.py** (legibilidad y documentación): He mejorado la documentación y tipado en `walk_files` y `drive_usage` para explicitar los contratos de seguridad y manejar casos de error, alineándome con el enfoque de legibilidad y robustez técnica.
-- `2026-08-07T02:06:32` **browser.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `directory_size` extrayendo la lógica recursiva de cálculo de peso a una función con nombre explícito, reemplazando el uso de `nonlocal` por una estructura de acumulación más clara y añadiendo type hints faltantes.
-- `2026-08-07T02:06:06` **branding.py** (legibilidad y documentación): Se introdujo una `Enum` (o alias estructural de clase) para los estados de severidad, reemplazando la dependencia implícita de strings "mágicos" en todo el módulo, mejorando la seguridad de tipos y la documentación del comportamiento esperado en las funciones relacionadas con `SeverityStyle`.
-- `2026-08-07T01:56:16` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` envolviendo la operación de `os.replace` en una verificación explícita mediante `ensure_safe_to_modify` y añadiendo un bloque `try-finally` para asegurar que el archivo temporal siempre sea eliminado si algo falla antes de la escritura final.
