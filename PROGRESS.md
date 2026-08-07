@@ -7,8 +7,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **231** (45.8% de aceptación)
-- Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 26
+- Rechazadas por tests: 16
+- Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 16
 - Sin respuesta de la IA (error o límite): 214
 
@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-06 | 153 | 9 | 18 | 11 | 149 |
-| 2026-08-07 | 78 | 8 | 8 | 5 | 65 |
+| 2026-08-06 | 150 | 8 | 18 | 11 | 149 |
+| 2026-08-07 | 81 | 8 | 9 | 5 | 65 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
-- seguridad defensiva: **49**
+- rendimiento: **47**
+- seguridad defensiva: **46**
 - manejo de errores y validación de entradas: **44**
-- rendimiento: **44**
 - robustez ante casos límite: **37**
 
 ## Mejoras aceptadas por archivo
 
-- `branding.py`: **21**
-- `quarantine.py`: **21**
+- `quarantine.py`: **22**
 - `diskreport.py`: **20**
 - `scanner.py`: **20**
-- `assistant.py`: **19**
+- `branding.py`: **20**
 - `settings.py`: **19**
-- `browser.py`: **18**
+- `assistant.py`: **18**
 - `healthscore.py`: **17**
+- `browser.py`: **17**
 - `memory.py`: **16**
 - `duplicates.py`: **15**
 - `main.py`: **15**
-- `organizer.py`: **13**
-- `safety.py`: **9**
+- `organizer.py`: **14**
+- `safety.py`: **10**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-07T07:33:19` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` reemplazando la iteración secuencial sobre los componentes de la ruta por una verificación más eficiente mediante conjuntos (`set.isdisjoint`), reduciendo drásticamente la carga de CPU en bucles de escaneo extensos.
+- `2026-08-07T07:32:52` **quarantine.py** (rendimiento): Optimizé la función `list_items` y otras operaciones de carga del manifiesto eliminando la carga redundante y el ordenamiento repetitivo mediante la caché existente, reduciendo la complejidad algorítmica de O(N log N) a O(1) en las llamadas frecuentes de la interfaz.
+- `2026-08-07T07:32:16` **organizer.py** (rendimiento): Optimicé el escaneo de archivos utilizando un conjunto (`set`) para la búsqueda de extensiones en lugar de iterar sobre una tupla, y reduje las llamadas a `path.resolve()` (que es una operación costosa de I/O) moviéndola solo a los casos necesarios, mejorando la eficiencia del bucle principal.
 - `2026-08-07T07:23:30` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` reemplazando la ejecución recurrente de PowerShell por una lectura más eficiente, evitando la creación innecesaria de subprocesos cuando el caché es válido.
 - `2026-08-07T07:23:19` **main.py** (rendimiento): Se implementó un sistema de "debouncing" real para el redibujo del `gauge` en el panel de salud, evitando que se disparen múltiples llamadas al canvas durante eventos de redimensionamiento o actualizaciones rápidas, optimizando el uso de CPU y evitando parpadeos visuales innecesarios.
 - `2026-08-07T07:12:56` **diskreport.py** (rendimiento): Mejoré la eficiencia del método `largest_folders` al evitar el uso de `path.relative_to(base)` y el acceso repetitivo a `Path.parts` dentro del bucle, optimizando la identificación del directorio de primer nivel mediante un cálculo de prefijo directo.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-07T06:52:29` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación interna y mantenibilidad de `quarantine.py` mediante la adición de docstrings estructurados y la clarificación del propósito de las funciones auxiliares de bajo nivel (`_is_file_locked`, `_safe_unlink`, etc.), facilitando la auditoría del código conforme a los estándares de seguridad exigidos.
 - `2026-08-07T06:51:49` **organizer.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `organizer.py` añadiendo docstrings detallados en funciones clave y tipado más preciso, clarificando el propósito y el flujo de los mecanismos de seguridad sin alterar el comportamiento.
 - `2026-08-07T06:51:25` **memory.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos en las funciones críticas de parsing y gestión de memoria para mejorar la mantenibilidad y la claridad sobre las expectativas de datos de entrada.
-- `2026-08-07T06:42:54` **main.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `main.py` mediante la refactorización de `_build_health_metrics_row` y `_build_health_area_bars` hacia un diseño más declarativo, además de añadir tipos y docstrings en los métodos de construcción de UI para clarificar el propósito de cada componente.
-- `2026-08-07T06:42:05` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica mediante docstrings precisos y agregué anotaciones de tipo más estrictas en las funciones de cómputo, clarificando la lógica de normalización y los límites de cada área para facilitar el mantenimiento futuro.
-- `2026-08-07T06:41:38` **duplicates.py** (legibilidad y documentación): Mejoré la documentación y legibilidad del módulo mediante type hints más específicos, la adición de docstrings técnicos explicativos en funciones críticas y la clarificación de la lógica de filtrado en `_collect_candidates` para alinear el código con las reglas de seguridad exigidas.

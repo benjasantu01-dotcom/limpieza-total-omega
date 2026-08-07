@@ -170,17 +170,16 @@ def is_protected_path(path: PathLike) -> bool:
     
     try:
         p = normalize(path)
-        is_protected = any(part.lower() in PROTECTED_DIR_NAMES for part in p.parts)
-        if not is_protected:
-            for sys_root in _SYSTEM_ROOTS:
-                if os.path.commonpath([str(p), str(sys_root)]) == str(sys_root):
-                    is_protected = True
-                    break
+        path_parts = {part.lower() for part in p.parts}
         
-        if not is_protected:
-            is_protected = p == Path(p.anchor) or (p.exists() and _is_reparse_point(p))
+        if not PROTECTED_DIR_NAMES.isdisjoint(path_parts):
+            return True
             
-        return is_protected
+        for sys_root in _SYSTEM_ROOTS:
+            if os.path.commonpath([str(p), str(sys_root)]) == str(sys_root):
+                return True
+        
+        return p == Path(p.anchor) or (p.exists() and _is_reparse_point(p))
     except (PermissionError, OSError, ValueError, TypeError):
         return True 
 

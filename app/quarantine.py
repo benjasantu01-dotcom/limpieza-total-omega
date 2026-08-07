@@ -352,8 +352,10 @@ def quarantine_file(
 
 
 def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
-    """Retorna ítems en cuarentena, ordenados del más reciente al más antiguo."""
-    return sorted(load_manifest(base), key=lambda i: i.quarantined_at, reverse=True)
+    """Retorna ítems en cuarentena, usando el orden descendente de la caché."""
+    items = load_manifest(base)
+    # Ordenar por fecha usando el valor isoformat original que es lexicográficamente sortable
+    return sorted(items, key=lambda i: i.quarantined_at, reverse=True)
 
 
 def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
