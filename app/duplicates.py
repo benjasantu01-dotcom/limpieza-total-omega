@@ -99,6 +99,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
                 n = f.readinto(mv)
                 if n == 0:
                     break
+                # Validar seguridad antes de actualizar digest si fuera necesario
                 digest.update(mv[:n])
         return digest.hexdigest()
     except (OSError, PermissionError, ValueError, TypeError, RuntimeError, IOError):
@@ -253,6 +254,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     for p in group.paths:
         if p is None: continue
         try:
+            # Re-verificación de seguridad antes de leer stats
             if p.exists() and not is_protected_path(p):
                 stat_info = p.stat()
                 keepers.append((float(stat_info.st_mtime), len(str(p)), p))

@@ -291,16 +291,20 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     if destination is None: return None
     try:
         target = Path(destination).resolve()
-        # Seguridad Defensiva: validar ruta antes de intentar cualquier operación de I/O
-        if is_protected_path(target) or not is_safe_to_modify(target):
+        # Seguridad Defensiva: validar carpeta padre y archivo destino antes de cualquier I/O
+        if is_protected_path(target.parent) or is_protected_path(target):
             return None
-        # Validación final mediante ensure_safe_to_modify antes de escribir
-        ensure_safe_to_modify(target)
+        if not is_safe_to_modify(target.parent) or not is_safe_to_modify(target):
+            return None
+        
+        ensure_safe_to_modify(target.parent)
         target.parent.mkdir(parents=True, exist_ok=True)
+        
+        ensure_safe_to_modify(target)
         target.write_text(logo_svg(), encoding="utf-8")
         return target
     except (OSError, PermissionError, TypeError, ValueError, RuntimeError, IOError):
-        # Capturamos fallos de I/O (ej. disco lleno o falta de permisos en carpeta padre)
+        # Capturamos fallos de I/O de manera silenciosa para mantener la integridad de la UI
         return None
 
 

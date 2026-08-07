@@ -153,8 +153,9 @@ def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool
         with os.scandir(root_dir) as it:
             for entry in it:
                 try:
-                    # Filtro de seguridad: omite rutas protegidas y reparse points
-                    if is_protected_path(Path(entry.path)) or entry.is_symlink() or is_junction_fn(entry.path):
+                    entry_path = Path(entry.path)
+                    # Chequeo de seguridad: resolvemos para confirmar que no sea una ruta protegida
+                    if is_protected_path(entry_path.resolve()) or entry.is_symlink() or is_junction_fn(entry.path):
                         continue
                     
                     if entry.is_dir():

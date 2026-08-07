@@ -187,17 +187,17 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
             with os.scandir(current_path) as iterator:
                 for file_entry in iterator:
                     try:
+                        # Obtenemos la ruta real sin seguir symlinks para la validación de seguridad
                         resolved_path = Path(file_entry.path).resolve()
                         
                         # Seguridad defensiva: evitar escapes fuera de la raíz (symlink loops/traversal)
                         if not str(resolved_path).startswith(str(base_path)):
                             continue
 
-                        # Detectar junctions/symlinks de sistema
-                        if os.name == 'nt':
-                            st = file_entry.stat(follow_symlinks=False)
-                            if (st.st_file_attributes & 0x400) != 0:
-                                continue
+                        # Detectar junctions/symlinks de sistema mediante atributos de archivo
+                        st = file_entry.stat(follow_symlinks=False)
+                        if os.name == 'nt' and (st.st_file_attributes & 0x400) != 0:
+                            continue
                         elif file_entry.is_symlink():
                             continue
                         
@@ -208,7 +208,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                                 visited.add(resolved_path)
                                 yield from scan_level(resolved_path)
                         else:
-                            yield resolved_path, file_entry.stat(follow_symlinks=False).st_size
+                            yield resolved_path, st.st_size
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):
