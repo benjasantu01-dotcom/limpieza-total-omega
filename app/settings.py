@@ -187,7 +187,7 @@ def load(path_or_base: PathLike | None = None) -> AppSettings:
                 _cached_settings = validate(data)
                 _current_path = ruta
                 return _cached_settings.copy()
-        raise ValueError
+        raise ValueError("Archivo de configuración inválido o inexistente")
     except (OSError, PermissionError, json.JSONDecodeError, UnicodeDecodeError, ValueError):
         _cached_settings = DEFAULTS.copy()
         _current_path = ruta

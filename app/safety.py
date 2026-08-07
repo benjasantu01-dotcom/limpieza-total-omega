@@ -83,7 +83,7 @@ def _is_reserved_device_name(name: str) -> bool:
 
 def _is_system_or_hidden(path: Path) -> bool:
     """Consulta atributos Win32 para detectar si el archivo tiene flags de sistema o es oculto."""
-    if os.name != 'nt':
+    if os.name != 'nt' or not path.exists():
         return False
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
@@ -129,6 +129,8 @@ def _check_file_integrity(p: Path) -> None:
 @lru_cache(maxsize=1024)
 def _is_readonly(path: Path) -> bool:
     """Verifica si el atributo de solo lectura está activo en el sistema de archivos."""
+    if not path.exists():
+        return True
     try:
         return not bool(path.stat().st_mode & stat.S_IWRITE)
     except (OSError, PermissionError):

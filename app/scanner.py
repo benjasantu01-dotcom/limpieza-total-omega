@@ -72,11 +72,12 @@ class Scanner:
 
     def process_entry(self, entry: os.DirEntry, stack: List[str]) -> None:
         try:
-            if not entry or not entry.path or entry.is_symlink():
+            if not entry or not entry.path:
                 return
             
-            # Validar confinamiento y seguridad
+            # Resolvemos ruta ignorando errores por archivos inexistentes o bloqueados
             path_obj = Path(entry.path).resolve()
+            
             if not (self.base_root == path_obj or self.base_root in path_obj.parents):
                 return
             if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
@@ -90,7 +91,7 @@ class Scanner:
                 name = entry.name
                 suffix = os.path.splitext(name)[1].lower()
                 self.results.extend(scan_file(path_obj, entry=entry, name=name, suffix=suffix, prevalidated=True))
-        except (PermissionError, OSError, RuntimeError):
+        except (PermissionError, OSError, RuntimeError, FileNotFoundError):
             pass
 
 
