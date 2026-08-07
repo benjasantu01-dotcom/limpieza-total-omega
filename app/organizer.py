@@ -175,13 +175,9 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
 
 
 def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -> List[JunkFile]:
-    """Ordena los archivos encontrados por tamaño o fecha de modificación.
-
-    Args:
-        files: Lista de objetos JunkFile a ordenar.
-        by: Criterio ('size' o 'date').
-        ascending: Booleano para orden ascendente o descendente.
-    """
+    """Ordena los archivos encontrados por tamaño o fecha de modificación con validación de parámetros."""
+    if not isinstance(files, list):
+        return []
     if not files:
         return []
         
@@ -190,11 +186,11 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
         "date": lambda f: f.modified
     }
         
-    criterio = by.lower()
+    criterio = str(by).lower()
     if criterio not in configs:
         criterio = "size"
         
-    return sorted(files, key=configs[criterio], reverse=not ascending)
+    return sorted(files, key=configs[criterio], reverse=not bool(ascending))
 
 
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Path:
@@ -214,6 +210,8 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 
     for jf in files:
         try:
+            if not isinstance(jf, JunkFile):
+                continue
             current_abs: Path = jf.path.resolve()
             
             if not current_abs.exists() or not current_abs.is_file():
@@ -239,16 +237,16 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 
 
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
-    """Elimina permanentemente archivos desde la carpeta de revisión."""
-    if not isinstance(review_dir, str):
+    """Elimina permanentemente archivos desde la carpeta de revisión con validación robusta."""
+    if not isinstance(review_dir, str) or not review_dir.strip():
         return 0
 
     try:
         dest: Path = Path(review_dir).expanduser().resolve()
-        # Validación de integridad de la ruta destino
+        # Validación estricta de la ruta destino antes de iterar
         if not dest.exists() or not dest.is_dir() or dest.is_symlink() or not is_safe_to_modify(dest):
             return 0
-    except (RuntimeError, OSError):
+    except (RuntimeError, OSError, ValueError):
         return 0
 
     count: int = 0

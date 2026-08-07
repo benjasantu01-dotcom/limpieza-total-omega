@@ -74,7 +74,10 @@ class QuarantineItem:
 
     def __post_init__(self) -> None:
         """Asegura la coherencia de tipos tras la instanciación de la dataclass."""
-        self.size_bytes = int(self.size_bytes)
+        try:
+            self.size_bytes = int(self.size_bytes)
+        except (ValueError, TypeError):
+            self.size_bytes = 0
         if not self.item_id:
             raise ValueError("ID de ítem vacío o inválido")
 
@@ -177,7 +180,7 @@ def quarantine_dir(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
 
 def _manifest_path(base_dir: Path) -> Path:
     """Retorna la ruta absoluta al archivo de manifiesto en un directorio dado."""
-    return base_dir / MANIFEST_NAME
+    return (base_dir / MANIFEST_NAME).resolve()
 
 
 def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
@@ -448,7 +451,7 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
         return False
 
     quarantine_root = quarantine_dir(base)
-    stored_file = quarantine_root / match.stored_name
+    stored_file = (quarantine_root / match.stored_name).resolve()
     
     if not is_within_directory(stored_file, quarantine_root):
         raise UnsafePathError(f"Intento de borrado fuera de cuarentena: {stored_file}")
@@ -468,7 +471,7 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
 def _should_purge_file(entry: Path, quarantine_root: Path, item_map_by_name: Dict[str, QuarantineItem]) -> bool:
     """Verifica si una entrada del sistema de archivos dentro de cuarentena es apta para borrado."""
     try:
-        if not entry.exists():
+        if not entry.is_file():
             return False
         abs_entry = entry.resolve()
         if entry.name == MANIFEST_NAME or not is_within_directory(abs_entry, quarantine_root):

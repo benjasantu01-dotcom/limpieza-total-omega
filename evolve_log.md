@@ -1276,3 +1276,34 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-08-07T15:05:29` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `top_memory_processes` añadiendo validación de tipo y excepciones específicas al procesar la salida de PowerShell, asegurando que datos malformados no interrumpan la captura de métricas.
 - `2026-08-07T15:05:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-07T15:05:29` Corrida terminada. Total usado hoy: 344.
+- `2026-08-07T15:10:59` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-07T15:11:24` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Se mejora la robustez de `sort_junk` y `delete_reviewed` mediante la validación explícita de entradas (tipos de datos, nulidad y valores), reemplazando comportamientos implícitos por un manejo de errores defensivo alineado con el enfoque de seguridad actual.
+- `2026-08-07T15:11:58` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `purge_all` y la carga de manifiestos implementando una limpieza defensiva de rutas (resolución de `resolve()` y `expanduser()`) y validación de tipos ante entradas corruptas, reduciendo riesgos de excepciones no controladas al procesar archivos.
+- `2026-08-07T15:12:17` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
+- `2026-08-07T15:12:27` Tests FALLARON:
+```
+ from '/home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py'>.is_safe_to_modify
+
+evolve/tests/test_integrity.py:217: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:86: SyntaxWarning: invalid escape sequence '\P'
+    Analiza cadenas entrecomilladas (ej: "C:\Path\App.exe" /args)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_integrity.py::test_is_safe_returns_bool_and_never_raises - AssertionError: assert True is False
+ +  where True = <function is_safe_to_modify at 0x7f096ef339c0>(12345)
+ +    where <function is_safe_to_modify at 0x7f096ef339c0> = <module 'safety' from '/home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py'>.is_safe_to_modify
+1 failed, 298 passed, 7 warnings in 1.11s
+
+```
+- `2026-08-07T15:12:27` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de las validaciones en `ensure_safe_to_modify` y `normalize` mediante la validación temprana de tipos y la protección contra estados intermedios inválidos, asegurando que `_check_file_integrity` solo se ejecute con rutas absolutamente resueltas y no nulas, evitando excepciones no controladas durante el proceso de escaneo.
+- `2026-08-07T15:12:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-07T15:12:27` Corrida terminada. Total usado hoy: 348.
