@@ -83,7 +83,7 @@ class JunkFile:
     modified: datetime
 
     def __post_init__(self) -> None:
-        """Normaliza la ruta a absoluta tras la inicialización."""
+        """Normaliza la ruta a absoluta tras la inicialización para evitar ambigüedades."""
         if not isinstance(self.path, Path):
             self.path = Path(self.path)
         try:
@@ -98,7 +98,7 @@ class JunkFile:
 
     @property
     def is_junk_extension(self) -> bool:
-        """Valida si la extensión del archivo coincide con las permitidas."""
+        """Valida si la extensión del archivo coincide con las permitidas en _LOWER_JUNK_EXTS."""
         return self.path.suffix.lower() in _LOWER_JUNK_EXTS
 
 
@@ -106,6 +106,9 @@ def _generate_unique_target(target: Path) -> Path:
     """
     Resuelve colisiones de nombres añadiendo un sufijo numérico incremental.
     
+    Esta función es crítica para evitar la sobreescritura accidental al mover 
+    archivos de distintas ubicaciones al mismo directorio de cuarentena.
+
     Args:
         target: La ruta destino deseada.
 
@@ -134,6 +137,9 @@ def _is_file_accessible(path: Path) -> bool:
     """
     Intenta abrir el archivo en modo lectura binaria para verificar si está bloqueado.
     
+    Nota: Se utiliza solo para verificar accesibilidad (liveness check) sin 
+    alterar el contenido o el estado del archivo.
+
     Args:
         path: Ruta del archivo a testear.
         
@@ -148,7 +154,7 @@ def _is_file_accessible(path: Path) -> bool:
 
 
 def _is_valid_candidate(path: Path) -> bool:
-    """Valida si un archivo es seguro, accesible y tiene una extensión de basura."""
+    """Valida si un archivo es seguro (según política de seguridad) y accesible (sin bloqueos)."""
     return is_safe_to_modify(path) and _is_file_accessible(path)
 
 
@@ -182,7 +188,6 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
                             if _is_allowed_directory(entry.name):
                                 _walk_dir(entry.path)
                         elif entry.name.lower().endswith(_JUNK_TUPLE):
-                            # Acceso directo a metadatos de scandir para evitar llamadas extra a OS
                             stat = entry.stat()
                             entry_path: Path = Path(entry.path)
                             
@@ -228,7 +233,6 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
         "date": lambda f: f.modified
     }
         
-    # Validación explícita del criterio para evitar fallos silenciosos
     criterio = by.lower()
     if criterio not in configs:
         criterio = "size"
@@ -240,12 +244,11 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
     """
     Mueve archivos candidatos a un directorio de cuarentena (revisión).
     
-    Esta función implementa una arquitectura defensiva:
-    1. Verifica la seguridad del directorio destino mediante `ensure_safe_to_modify`.
-    2. Valida que el archivo fuente no sea un ancestro o igual al destino para evitar 
-       errores catastróficos de reescritura.
-    3. Utiliza `_generate_unique_target` para garantizar que no se pierdan datos 
-       por colisión de nombres (sobreescritura).
+    Esta función implementa una arquitectura defensiva siguiendo tres capas:
+    1. Verificación: Asegura que el destino es seguro mediante `ensure_safe_to_modify`.
+    2. Prevención: Evita colisiones de nombres y movimientos circulares.
+    3. Ejecución: Realiza el movimiento usando `shutil.move` tras validar que el 
+       archivo sigue cumpliendo los criterios de seguridad antes de cada operación.
     """
     if not files:
         raise ValueError("La lista de archivos a procesar no puede estar vacía.")
@@ -259,16 +262,16 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 
     for jf in files:
         try:
-            # Re-verificar existencia y accesibilidad antes de la operación (condición de carrera)
             current_abs: Path = jf.path.resolve()
             
+            # Verificación de pre-condiciones de seguridad
             if not current_abs.exists() or not current_abs.is_file():
                 continue
                 
             if not is_safe_to_modify(current_abs):
                 continue
             
-            # Evitar movimientos circulares
+            # Evitar movimientos circulares: el origen no puede ser el destino ni estar contenido en él
             if current_abs == dest or dest in current_abs.parents or current_abs.parent == dest:
                 continue
             
@@ -288,7 +291,10 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
     """
-    Elimina físicamente los archivos del directorio de revisión tras confirmación.
+    Elimina físicamente los archivos del directorio de revisión tras confirmación externa.
+    
+    Esta operación requiere que el directorio esté validado por `is_safe_to_modify`
+    y los archivos individuales sean confirmados como seguros antes de cada unlink().
     
     Returns:
         int: Cantidad total de archivos eliminados con éxito.
@@ -306,6 +312,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     count: int = 0
     for f in dest.iterdir():
         try:
+            # Solo se borran archivos, no carpetas, y se respeta la seguridad global
             if f.is_file() and not f.is_symlink() and is_safe_to_modify(f):
                 f.unlink()
                 count += 1
