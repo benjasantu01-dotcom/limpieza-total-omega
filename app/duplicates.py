@@ -101,7 +101,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
                     break
                 digest.update(mv[:n])
         return digest.hexdigest()
-    except (OSError, PermissionError, ValueError, TypeError, RuntimeError):
+    except (OSError, PermissionError, ValueError, TypeError, RuntimeError, IOError):
         return None
 
 
@@ -126,7 +126,7 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
             if not content:
                 return None
             return hashlib.sha256(content).hexdigest()
-    except (OSError, PermissionError, ValueError, TypeError, RuntimeError):
+    except (OSError, PermissionError, ValueError, TypeError, RuntimeError, IOError):
         return None
 
 

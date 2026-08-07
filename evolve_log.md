@@ -1008,3 +1008,10 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-08-07T12:19:18` ➖ Sin cambios en diskreport.py (enfoque: robustez ante casos límite). Motivo: Reforcé la robustez de `walk_files` ante errores de acceso (denegación de permisos o archivos bloqueados por el sistema) mediante el manejo explícito de `PermissionError` y `OSError` en el acceso a atributos, garantizando que el escaneo no se interrumpa ante un archivo ocupado.
 - `2026-08-07T12:19:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-07T12:19:18` Corrida terminada. Total usado hoy: 280.
+- `2026-08-07T12:27:42` Arrancando corrida. Quedan hoy ~20 peticiones objetivo.
+- `2026-08-07T12:28:08` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez en `hash_file` y `partial_hash` para gestionar correctamente archivos bloqueados por el sistema (en uso exclusivo), añadiendo un manejo de excepciones más específico durante la apertura y lectura del stream de bytes.
+- `2026-08-07T12:28:34` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: robustez ante casos límite).
+- `2026-08-07T12:29:38` ➖ Sin cambios en main.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `main.py` ante entradas de usuario corruptas o inexistentes en la pestaña de Ajustes, implementando una validación integral en `_collect_settings` y asegurando que `_validate_numeric_setting` recupere valores seguros sin interrumpir el flujo de la aplicación.
+- `2026-08-07T12:29:55` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-08-07T12:29:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-07T12:29:55` Corrida terminada. Total usado hoy: 284.

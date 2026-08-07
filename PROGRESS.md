@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **231** (45.8% de aceptación)
+- Mejoras aceptadas: **230** (45.6% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 27
-- Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 209
+- Rechazadas por guardia de seguridad: 26
+- Sin cambios (nada sustancial que mejorar): 22
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-06 | 96 | 5 | 13 | 10 | 100 |
-| 2026-08-07 | 135 | 11 | 14 | 11 | 109 |
+| 2026-08-06 | 94 | 5 | 12 | 10 | 99 |
+| 2026-08-07 | 136 | 11 | 14 | 12 | 111 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **59**
 - rendimiento: **49**
 - manejo de errores y validación de entradas: **43**
-- seguridad defensiva: **41**
-- robustez ante casos límite: **39**
+- robustez ante casos límite: **40**
+- seguridad defensiva: **39**
 
 ## Mejoras aceptadas por archivo
 
-- `scanner.py`: **20**
-- `settings.py`: **20**
 - `assistant.py`: **20**
 - `branding.py`: **20**
 - `diskreport.py`: **20**
 - `quarantine.py`: **20**
+- `scanner.py`: **19**
+- `settings.py`: **19**
+- `duplicates.py`: **16**
 - `browser.py`: **16**
 - `organizer.py`: **16**
-- `duplicates.py`: **15**
 - `healthscore.py`: **15**
 - `memory.py`: **15**
 - `safety.py`: **14**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-07T12:28:08` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez en `hash_file` y `partial_hash` para gestionar correctamente archivos bloqueados por el sistema (en uso exclusivo), añadiendo un manejo de excepciones más específico durante la apertura y lectura del stream de bytes.
 - `2026-08-07T12:18:46` **branding.py** (robustez ante casos límite): Se ha robustecido la función `save_logo_svg` añadiendo un manejo de excepciones más granular para capturar posibles errores de sistema de archivos (como discos de solo lectura o falta de espacio) antes de intentar la operación, garantizando que un fallo en la escritura no deje la aplicación en un estado inconsistente.
 - `2026-08-07T12:18:13` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` ante valores inesperados en el origen de las métricas (como tipos `None` inesperados o diccionarios malformados) mediante un filtrado de tipos más estricto y seguro en `getattr` y la lógica de asignación.
 - `2026-08-07T12:08:39` **settings.py** (rendimiento): Se optimizó el acceso a las configuraciones eliminando la carga redundante de archivos y validaciones repetidas en las funciones `assistant_api_key`, `assistant_enabled` y `get`, aprovechando el caché interno de `_cached_settings` de forma consistente.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-07T11:37:50` **assistant.py** (rendimiento): Optimicé el rendimiento de `_gen_problems` convirtiendo la lista `thresholds` en un generador de tuplas perezoso, evitando la creación de strings y listas innecesarias en cada llamada, incluso cuando no se consumen todos los elementos.
 - `2026-08-07T11:37:18` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la adición de Type Hints detallados, docstrings claros sobre las responsabilidades de cada método de `StartupEntry` y la estandarización del estilo para facilitar la mantenibilidad de la lógica de resolución de rutas.
 - `2026-08-07T11:27:53` **settings.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings descriptivos en las funciones principales y anotaciones de tipo más precisas, aclarando la semántica de la validación y el manejo de persistencia para facilitar el mantenimiento.
-- `2026-08-07T11:27:42` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento mediante la adición de docstrings técnicos detallados a los métodos de la clase `Scanner` y unifiqué el registro de comprobaciones (`CHECK_REGISTRY`) para asegurar que todos los chequeos heurísticos se ejecuten de forma consistente.
