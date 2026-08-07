@@ -8,44 +8,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **232** (46.0% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 27
-- Sin cambios (nada sustancial que mejorar): 19
+- Rechazadas por guardia de seguridad: 26
+- Sin cambios (nada sustancial que mejorar): 20
 - Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-06 | 106 | 5 | 14 | 11 | 104 |
-| 2026-08-07 | 126 | 11 | 13 | 8 | 106 |
+| 2026-08-06 | 104 | 5 | 13 | 11 | 103 |
+| 2026-08-07 | 128 | 11 | 13 | 9 | 107 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **59**
 - seguridad defensiva: **48**
+- rendimiento: **44**
 - manejo de errores y validación de entradas: **43**
-- rendimiento: **42**
-- robustez ante casos límite: **40**
+- robustez ante casos límite: **38**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **22**
 - `diskreport.py`: **21**
-- `scanner.py`: **20**
+- `quarantine.py`: **21**
 - `settings.py`: **20**
 - `assistant.py`: **20**
 - `branding.py`: **20**
+- `scanner.py`: **19**
 - `browser.py`: **17**
 - `healthscore.py`: **16**
 - `memory.py`: **15**
+- `duplicates.py`: **15**
 - `organizer.py`: **15**
-- `duplicates.py`: **14**
 - `safety.py`: **13**
-- `main.py`: **11**
+- `main.py`: **12**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-07T11:49:03` **main.py** (rendimiento): Optimicé el método `_compile_metrics` introduciendo un caché local de resultados de análisis en `self._cache` para evitar la redundancia de cálculos costosos al redibujar la pestaña de Salud, aplicando la técnica de invalidación selectiva para mantener la coherencia de los datos.
+- `2026-08-07T11:47:51` **duplicates.py** (rendimiento): Optimizé `_collect_candidates` utilizando un generador y evitando recrear objetos `Path` innecesarios, además de mejorar la eficiencia del `stat` al verificar el tamaño antes de realizar chequeos de seguridad adicionales.
 - `2026-08-07T11:38:29` **browser.py** (rendimiento): Se optimizó el rendimiento del escaneo recursivo mediante el reemplazo de `Path.exists()` y `Path.is_dir()` (que realizan llamadas a sistema adicionales) por el uso directo de `os.DirEntry` (que ya contiene esa información de metadatos cacheada en la mayoría de los sistemas), reduciendo drásticamente las syscalls innecesarias durante la caminata de directorios.
 - `2026-08-07T11:38:20` **branding.py** (rendimiento): Se implementó un sistema de pre-procesamiento de degradados en `gradient_colors` mediante el cacheo inteligente de las listas de colores, evitando el recálculo constante de `blend` en renderizados frecuentes como los de la barra de progreso.
 - `2026-08-07T11:37:50` **assistant.py** (rendimiento): Optimicé el rendimiento de `_gen_problems` convirtiendo la lista `thresholds` en un generador de tuplas perezoso, evitando la creación de strings y listas innecesarias en cada llamada, incluso cuando no se consumen todos los elementos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-07T11:07:43` **healthscore.py** (legibilidad y documentación): Documenté el propósito de cada función de normalización y el significado de los umbrales constantes para mejorar la mantenibilidad y claridad del modelo de cálculo, respetando el enfoque de documentación técnica.
 - `2026-08-07T11:07:31` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints detallados en las funciones de escaneo y el uso de docstrings más descriptivos que explican las restricciones de seguridad (nodos, symlinks y el filtrado por `is_protected_path`) para clarificar el flujo de ejecución.
 - `2026-08-07T11:07:07` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `walk_files` y `summarize` mediante la adición de Type Hints en retornos complejos, clarificación de variables (renombrando `entry` a `file_entry` en bucles) y documentación técnica detallada en los métodos clave para facilitar la auditoría del código.
-- `2026-08-07T11:06:42` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación y robustez de los tipos de datos mediante la adición de docstrings técnicos y type hints más precisos, asegurando que las funciones como `_is_safe_path` y `_sum_directory_recursive` sean explícitas sobre sus restricciones de seguridad.
-- `2026-08-07T10:57:41` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings descriptivos a las estructuras de datos (`PaletteDict`, `PALETTE`, `ICONS`) y clarificando las constantes para facilitar el mantenimiento, cumpliendo con el enfoque de legibilidad.

@@ -156,9 +156,6 @@ def _collect_candidates(
 ) -> Dict[int, List[Path]]:
     """
     Escaneo recursivo para indexar archivos por tamaño usando inodos para evitar ciclos.
-    
-    Ignora reparse points (Junctions) mediante chequeo de atributos de archivo y 
-    valida cada ruta contra `is_protected_path` si skip_protected está activo.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: Dict[int, set[int]] = defaultdict(set)
@@ -171,13 +168,10 @@ def _collect_candidates(
                 for entry in dir_iterator:
                     try:
                         entry_stat = entry.stat(follow_symlinks=False)
-                        
-                        # 0x400: FILE_ATTRIBUTE_REPARSE_POINT. No seguir junctions/links.
                         if getattr(entry_stat, 'st_file_attributes', 0) & 0x400:
                             continue
                             
                         if entry.is_dir(follow_symlinks=False):
-                            # Evitar ciclos de directorio mediante inodos.
                             if entry_stat.st_ino not in visited_inodes[entry_stat.st_dev]:
                                 visited_inodes[entry_stat.st_dev].add(entry_stat.st_ino)
                                 if not (skip_protected and is_protected_path(Path(entry.path))):
@@ -185,9 +179,8 @@ def _collect_candidates(
                         
                         elif entry.is_file(follow_symlinks=False):
                             if entry_stat.st_size >= min_size:
-                                path_obj = Path(entry.path)
-                                if not (skip_protected and is_protected_path(path_obj)):
-                                    temp_groups[entry_stat.st_size].append(path_obj)
+                                if not (skip_protected and is_protected_path(Path(entry.path))):
+                                    temp_groups[entry_stat.st_size].append(Path(entry.path))
                     except (OSError, PermissionError): continue
         except (OSError, PermissionError): pass
 
@@ -206,7 +199,6 @@ def _refine_by_hash(
 ) -> Dict[str, List[Path]]:
     """
     Refina un grupo de archivos candidatos aplicando una función de hash.
-    La función hash_func realiza sus propias verificaciones de seguridad internas.
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     if paths is None: return groups_by_digest
@@ -224,10 +216,7 @@ def find_duplicates(
     skip_protected: bool = True,
 ) -> List[DuplicateGroup]:
     """
-    Ejecuta el pipeline de detección de duplicados en tres etapas:
-    1. Agrupación por tamaño (collect_candidates).
-    2. Refinamiento por hash parcial (64KB).
-    3. Confirmación final por hash completo.
+    Ejecuta el pipeline de detección de duplicados en tres etapas.
     """
     if directories is None: return []
     

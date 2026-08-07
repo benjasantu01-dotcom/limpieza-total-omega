@@ -920,12 +920,13 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
         snapshot = memory_mod.read_snapshot()
         home = os.path.expanduser("~")
-        # Usamos un caché de sesión para el reporte de disco si la ruta no cambió
+        
         cache_key = f"disk_info_{home}"
         unidad = self._get_cached(cache_key)
         if not unidad and os.path.exists(home):
             unidad = diskreport.drive_usage(home)
-            self._cache[cache_key] = (unidad, time.time())
+            if unidad:
+                self._cache[cache_key] = (unidad, time.time())
         
         metrics = healthscore.SystemMetrics(
             junk_mb=sum(j.size_bytes for j in junk) / (1024 * 1024),

@@ -978,3 +978,10 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-08-07T11:38:29` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Se optimizó el rendimiento del escaneo recursivo mediante el reemplazo de `Path.exists()` y `Path.is_dir()` (que realizan llamadas a sistema adicionales) por el uso directo de `os.DirEntry` (que ya contiene esa información de metadatos cacheada en la mayoría de los sistemas), reduciendo drásticamente las syscalls innecesarias durante la caminata de directorios.
 - `2026-08-07T11:38:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-07T11:38:29` Corrida terminada. Total usado hoy: 264.
+- `2026-08-07T11:47:01` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-08-07T11:47:27` ➖ Sin cambios en diskreport.py (enfoque: rendimiento). Motivo: Optimicé `summarize` para evitar recorrer el disco múltiples veces y realizar cálculos redundantes, consolidando la lógica de conteo, tamaño total, top de archivos y agregados por extensión en una única iteración.
+- `2026-08-07T11:47:51` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé `_collect_candidates` utilizando un generador y evitando recrear objetos `Path` innecesarios, además de mejorar la eficiencia del `stat` al verificar el tamaño antes de realizar chequeos de seguridad adicionales.
+- `2026-08-07T11:48:16` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
+- `2026-08-07T11:49:03` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Optimicé el método `_compile_metrics` introduciendo un caché local de resultados de análisis en `self._cache` para evitar la redundancia de cálculos costosos al redibujar la pestaña de Salud, aplicando la técnica de invalidación selectiva para mantener la coherencia de los datos.
+- `2026-08-07T11:49:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-07T11:49:03` Corrida terminada. Total usado hoy: 268.
