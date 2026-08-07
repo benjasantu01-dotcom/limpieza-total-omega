@@ -141,7 +141,10 @@ _KEYWORD_MAP: Final[dict[str, str]] = {
 
 @dataclass
 class SystemContext:
-    """Las métricas agregadas que el asistente puede ver."""
+    """
+    Representa el estado actual del sistema mediante métricas agregadas.
+    Todas las métricas deben ser valores numéricos simples sin rastro de rutas.
+    """
     score: Optional[int] = None
     grade: str = ""
     junk_mb: float = 0.0
@@ -172,8 +175,8 @@ class Answer:
 
 def _ensure_safe_text(text: Any) -> bool:
     """
-    Valida la integridad del texto. Rechaza entradas con indicios de rutas,
-    caracteres no imprimibles (control) o secuencias de escape.
+    Verifica que el texto no contenga caracteres de control, secuencias de escape
+    o patrones que sugieran rutas de archivo, protegiendo contra inyección.
     """
     if not isinstance(text, str) or not text:
         return False
@@ -371,7 +374,7 @@ _HANDLERS: Final[dict[str, Callable[[SystemContext, str], Answer]]] = {
 }
 
 def _sanitize_query(question: str) -> str:
-    """Limpia la entrada del usuario para procesamiento de texto seguro."""
+    """Elimina caracteres de control y recorta la consulta para evitar desbordamiento."""
     return re.sub(r'[\x00-\x1f\x7f]', '', (question or "").strip())[:100].lower()
 
 def local_answer(question: str, context: SystemContext) -> Answer:
@@ -406,7 +409,10 @@ def local_answer(question: str, context: SystemContext) -> Answer:
 
 
 def _gen_problems(ctx: SystemContext) -> Generator[str, None, None]:
-    """Genera descripciones de problemas detectados de forma eficiente."""
+    """
+    Genera un flujo de descripciones de problemas detectados, 
+    filtrando aquellos que no alcanzan un umbral de relevancia.
+    """
     if ctx.disk_free_percent < 10.0:
         yield f"queda solo {ctx.disk_free_percent:.0f}% de disco libre"
     if ctx.suspicious_warnings > 0:

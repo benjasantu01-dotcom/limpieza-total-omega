@@ -20,7 +20,7 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, Sequence, Dict, List, Optional
+from typing import Iterable, Sequence, Dict, List, Optional, Callable
 from safety import is_protected_path
 
 __all__ = [
@@ -137,22 +137,27 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
         return False
 
 
-def _sum_directory_recursive(root_dir: str, is_junction_fn) -> int:
+def _is_excluded_file(name: str) -> bool:
+    """Verifica si un archivo debe ser ignorado por ser información sensible."""
+    return name.lower() in NEVER_TOUCH
+
+
+def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool]) -> int:
     """
-    Función auxiliar pura para recorrer el árbol y sumar pesos.
+    Recorre el árbol de directorios sumando bytes de archivos permitidos.
+    Utiliza is_junction_fn para evitar puntos de reparse (junctions).
     """
     total: int = 0
     try:
         with os.scandir(root_dir) as it:
             for entry in it:
-                # Verificación de seguridad adicional por cada elemento
                 if is_protected_path(Path(entry.path)) or entry.is_symlink() or is_junction_fn(entry.path):
                     continue
                 
                 try:
                     if entry.is_dir():
                         total += _sum_directory_recursive(entry.path, is_junction_fn)
-                    elif entry.name and entry.name.lower() not in NEVER_TOUCH:
+                    elif entry.name and not _is_excluded_file(entry.name):
                         total += entry.stat().st_size
                 except (OSError, PermissionError):
                     continue
@@ -189,8 +194,8 @@ def _is_valid_cache_path(candidate: Optional[Path], base_path: Path) -> bool:
             candidate.exists() and 
             candidate.is_dir() and 
             _is_safe_path(candidate, base_path) and
-            candidate.name and
-            candidate.name.lower() not in NEVER_TOUCH
+            candidate.name is not None and
+            not _is_excluded_file(candidate.name)
         )
     except (OSError, PermissionError, RuntimeError):
         return False

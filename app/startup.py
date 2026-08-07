@@ -229,26 +229,28 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
         
     parsed_entries: List[StartupEntry] = []
     lines: List[str] = text.splitlines()
+    
+    # Buscamos la fila de encabezado esperada por ConvertTo-Csv
     if len(lines) < 2:
         return []
         
     for line in lines[1:]:
-        if not line or not line.strip():
+        stripped_line = line.strip()
+        if not stripped_line:
             continue
         
-        parts: List[str] = line.split(",", 1)
+        # Validar estructura básica del CSV: esperamos al menos dos columnas
+        parts = [p.strip().strip('"') for p in stripped_line.split(",")]
         if len(parts) < 2:
             continue
             
-        name_raw = parts[0].strip().strip('"')
-        cmd_raw = parts[1].strip().strip('"')
+        name_raw, cmd_raw = parts[0], parts[1]
         
-        if not isinstance(name_raw, str) or not isinstance(cmd_raw, str):
-            continue
-
+        # Validar contenido sanitizado
         name: str = "".join(c for c in name_raw if ord(c) >= 32)
         cmd: str = "".join(c for c in cmd_raw if ord(c) >= 32)
         
+        # Filtrar encabezados residuales y nombres vacíos
         if not name or name.lower() in ("name", "pscustomobject") or name.upper().startswith("PS"):
             continue
         

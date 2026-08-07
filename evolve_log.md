@@ -494,3 +494,39 @@ assert not {'replace'}
 - `2026-08-07T06:21:37` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de la función `save` reemplazando la captura de excepciones genérica `Exception` por una más específica y añadiendo una validación explícita para evitar operaciones de escritura con rutas `None` o estados inconsistentes, reforzando la integridad del guardado atómico.
 - `2026-08-07T06:21:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-07T06:21:37` Corrida terminada. Total usado hoy: 140.
+- `2026-08-07T06:30:35` Arrancando corrida. Quedan hoy ~160 peticiones objetivo.
+- `2026-08-07T06:31:04` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `parse_registry_csv` al implementar una validación más estricta de las filas CSV, asegurando que la estructura de los datos sea la esperada antes de intentar procesarlos, evitando así posibles `IndexError` o inconsistencias en los datos de entrada.
+- `2026-08-07T06:31:08` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-07T06:31:43` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Documenté con docstrings claros las funciones de soporte (`_sanitize_query`, `_ensure_safe_text`, `_gen_problems`) y definí explícitamente los contratos de las métricas en `SystemContext` para mejorar la mantenibilidad y legibilidad técnica.
+- `2026-08-07T06:32:09` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-07T06:32:12` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-08-07T06:32:52` Tests FALLARON:
+```
+........................................................................ [ 24%]
+......................................F................................. [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+______________________ test_score_color_survives_garbage _______________________
+
+    def test_score_color_survives_garbage():
+>       assert branding.score_color(None) == branding.PALETTE["text_muted"]
+E       AssertionError: assert '#ff4757' == '#94a3b8'
+E         
+E         - #94a3b8
+E         + #ff4757
+
+evolve/tests/test_modules.py:167: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_score_color_survives_garbage - AssertionError: assert '#ff4757' == '#94a3b8'
+  
+  - #94a3b8
+  + #ff4757
+1 failed, 298 passed in 1.18s
+
+```
+- `2026-08-07T06:32:52` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la documentación de los tipos, se añadió una clase de configuración para centralizar la semántica visual (`VisualConfig`) que permite una validación más limpia, y se reemplazaron los `assert` implícitos por un control de flujo más robusto en las funciones gráficas, mejorando la mantenibilidad sin cambiar el comportamiento externo.
+- `2026-08-07T06:33:01` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y la claridad de tipos en las funciones de recorrido, separando explícitamente la lógica de filtrado de archivos (`_is_excluded_file`) para mejorar la legibilidad y mantenibilidad, manteniendo la integridad del comportamiento original.
+- `2026-08-07T06:33:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-07T06:33:01` Corrida terminada. Total usado hoy: 144.
