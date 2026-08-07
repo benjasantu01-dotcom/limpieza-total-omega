@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **230** (45.6% de aceptación)
-- Rechazadas por tests: 16
+- Mejoras aceptadas: **228** (45.2% de aceptación)
+- Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 26
-- Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 215
+- Sin cambios (nada sustancial que mejorar): 18
+- Sin respuesta de la IA (error o límite): 217
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-06 | 125 | 6 | 15 | 11 | 111 |
-| 2026-08-07 | 105 | 10 | 11 | 6 | 104 |
+| 2026-08-06 | 122 | 5 | 15 | 11 | 111 |
+| 2026-08-07 | 106 | 10 | 11 | 7 | 106 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **49**
 - rendimiento: **49**
 - seguridad defensiva: **48**
 - robustez ante casos límite: **46**
-- manejo de errores y validación de entradas: **38**
+- legibilidad y documentación: **46**
+- manejo de errores y validación de entradas: **39**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **21**
-- `scanner.py`: **20**
 - `assistant.py`: **20**
 - `branding.py`: **20**
 - `diskreport.py`: **20**
-- `settings.py`: **19**
+- `scanner.py`: **19**
+- `settings.py`: **18**
 - `browser.py`: **17**
 - `healthscore.py`: **16**
-- `memory.py`: **15**
+- `memory.py`: **16**
 - `organizer.py`: **15**
 - `duplicates.py`: **14**
 - `main.py`: **13**
-- `safety.py`: **12**
+- `safety.py`: **11**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-07T10:37:19` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` añadiendo una limpieza explícita de `handle` mediante `ctypes.windll.kernel32.CloseHandle(handle)` en un bloque `finally` para evitar fugas de recursos, y validé que el `handle` sea un valor positivo antes de operar, previniendo errores de acceso a memoria.
 - `2026-08-07T10:26:45` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `hash_file` y `partial_hash` ante errores de lectura de archivos bloqueados, asegurando que el uso de `memoryview` y `readinto` maneje correctamente buffers parciales y liberando el recurso de manera consistente incluso si fallan las operaciones de I/O.
 - `2026-08-07T10:26:36` **diskreport.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `summarize` y `largest_folders` validando la entrada `directory` antes de procesarla e integrando un chequeo de `is_protected_path` consistente para evitar recorridos innecesarios en directorios bloqueados.
 - `2026-08-07T10:26:11` **browser.py** (manejo de errores y validación de entradas): Reforcé la robustez de `directory_size` y `_sum_directory_recursive` mediante la validación explícita de `is_dir()` y capturas de excepciones más granulares, asegurando que el bucle de escaneo no falle silenciosamente ni procese rutas no tratadas adecuadamente por las reglas de seguridad.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-07T08:24:32` **branding.py** (seguridad defensiva): Mejoré la seguridad de la función `save_logo_svg` consolidando las verificaciones de seguridad antes de cualquier operación de I/O, asegurando que la ruta destino no sea una carpeta del sistema ni un punto de reparse mediante el uso estricto de `is_safe_to_modify`.
 - `2026-08-07T08:24:17` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_call_gemini` validando que la `api_key` no contenga caracteres potencialmente peligrosos (como inyección de comandos o salto de línea) antes de usarla en la construcción de la URL, evitando así una posible manipulación de la petición HTTP.
 - `2026-08-07T08:13:56` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la manipulación de rutas añadiendo una validación explícita para archivos que superan el límite máximo de profundidad de recursión o rutas relativas no resueltas mediante `path.resolve(strict=False)` en la normalización, y fortaleciendo `ensure_safe_to_modify` para detectar de forma temprana archivos inexistentes en directorios protegidos, evitando así operaciones de escritura en rutas prohibidas que aún no existen.
-- `2026-08-07T08:13:14` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de existencia física en `purge_all` para prevenir errores cuando un archivo listado en el manifiesto ya no existe en el sistema de archivos, mejorando la resiliencia ante estados inconsistentes y evitando intentos innecesarios de `unlink`.

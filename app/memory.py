@@ -356,7 +356,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     psapi = ctypes.windll.psapi
     
     handle = kernel32.OpenProcess(REQUIRED_ACCESS, False, target_pid)
-    if not handle or handle == -1:
+    if not handle or handle <= 0:
         return False, "Acceso denegado: permisos insuficientes o el proceso ya no existe."
     
     try:

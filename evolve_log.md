@@ -890,3 +890,10 @@ FAILED evolve/tests/test_modules.py::test_a_healthy_system_still_gets_a_recommen
 - `2026-08-07T10:26:45` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `hash_file` y `partial_hash` ante errores de lectura de archivos bloqueados, asegurando que el uso de `memoryview` y `readinto` maneje correctamente buffers parciales y liberando el recurso de manera consistente incluso si fallan las operaciones de I/O.
 - `2026-08-07T10:26:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-07T10:26:46` Corrida terminada. Total usado hoy: 236.
+- `2026-08-07T10:35:28` Arrancando corrida. Quedan hoy ~64 peticiones objetivo.
+- `2026-08-07T10:35:54` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-07T10:36:53` ➖ Sin cambios en main.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `on_restore_quarantine` validando de forma defensiva la existencia y estructura del manifiesto del archivo antes de intentar cualquier operación, evitando posibles fallos inesperados en el proceso de restauración.
+- `2026-08-07T10:37:19` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `trim_working_set` añadiendo una limpieza explícita de `handle` mediante `ctypes.windll.kernel32.CloseHandle(handle)` en un bloque `finally` para evitar fugas de recursos, y validé que el `handle` sea un valor positivo antes de operar, previniendo errores de acceso a memoria.
+- `2026-08-07T10:37:25` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-07T10:37:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-07T10:37:25` Corrida terminada. Total usado hoy: 240.
