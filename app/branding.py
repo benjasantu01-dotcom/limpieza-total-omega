@@ -291,7 +291,7 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     if destination is None: return None
     try:
         target = Path(destination).resolve()
-        # Seguridad Defensiva: validar carpeta padre y archivo destino antes de cualquier I/O
+        # Validación de seguridad defensiva
         if is_protected_path(target.parent) or is_protected_path(target):
             return None
         if not is_safe_to_modify(target.parent) or not is_safe_to_modify(target):
@@ -304,7 +304,6 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         target.write_text(logo_svg(), encoding="utf-8")
         return target
     except (OSError, PermissionError, TypeError, ValueError, RuntimeError, IOError):
-        # Capturamos fallos de I/O de manera silenciosa para mantener la integridad de la UI
         return None
 
 

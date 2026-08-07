@@ -1259,3 +1259,10 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-08-07T14:44:33` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-08-07T14:44:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-07T14:44:33` Corrida terminada. Total usado hoy: 336.
+- `2026-08-07T14:50:40` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-07T14:51:12` ➖ Sin cambios en assistant.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejora la robustez de `build_context` añadiendo validación explícita de tipos y rangos para todos los campos, evitando que valores inesperados o malformados (como `None` o strings vacíos) causen errores en tiempo de ejecución.
+- `2026-08-07T14:51:56` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez en `save_logo_svg` y `draw_logo` validando explícitamente los parámetros de entrada y mejorando el manejo de excepciones para evitar fallos silenciosos no deseados en la interfaz.
+- `2026-08-07T14:52:20` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `directory_size` y `_sum_directory_recursive` validando tipos y capturando excepciones de forma más específica ante rutas malformadas o permisos denegados, garantizando que el escaneo no se interrumpa ante errores inesperados del sistema de archivos.
+- `2026-08-07T14:52:31` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `summarize` implementando una validación exhaustiva de parámetros y manejando de forma preventiva posibles errores en las rutas (`None`, tipos incorrectos, fallos de resolución) mediante comprobaciones de tipo y capturas de excepciones específicas, evitando que el bucle de escaneo falle silenciosamente o con errores no controlados.
+- `2026-08-07T14:52:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-07T14:52:31` Corrida terminada. Total usado hoy: 340.

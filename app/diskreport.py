@@ -167,8 +167,6 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Generador recursivo que recorre archivos bajo `directory`.
-    Utiliza `os.scandir` para rendimiento eficiente y valida contra `is_protected_path`
-    en cada nivel de profundidad para cumplir con la política de seguridad.
     """
     if not directory:
         return
@@ -177,7 +175,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
         base_path = Path(directory).expanduser().resolve()
         if not base_path.exists() or not base_path.is_dir() or (skip_protected and is_protected_path(base_path)):
             return
-    except (OSError, RuntimeError):
+    except (OSError, RuntimeError, TypeError):
         return
 
     visited: set[Path] = {base_path}
@@ -187,20 +185,14 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
             with os.scandir(current_path) as iterator:
                 for file_entry in iterator:
                     try:
-                        # Obtenemos la ruta real sin seguir symlinks para la validación de seguridad
                         resolved_path = Path(file_entry.path).resolve()
-                        
-                        # Seguridad defensiva: evitar escapes fuera de la raíz (symlink loops/traversal)
                         if not str(resolved_path).startswith(str(base_path)):
                             continue
-
-                        # Detectar junctions/symlinks de sistema mediante atributos de archivo
                         st = file_entry.stat(follow_symlinks=False)
                         if os.name == 'nt' and (st.st_file_attributes & 0x400) != 0:
                             continue
                         elif file_entry.is_symlink():
                             continue
-                        
                         if file_entry.is_dir():
                             if resolved_path not in visited:
                                 if skip_protected and is_protected_path(resolved_path):
@@ -275,7 +267,7 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
                 continue
 
         return heapq.nlargest(limit, folder_map.values(), key=lambda f: f.size_bytes)
-    except (OSError, RuntimeError):
+    except (OSError, RuntimeError, TypeError):
         return []
 
 
@@ -305,7 +297,7 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
         if skip_protected and is_protected_path(path_obj):
             return [f"Error: La ruta '{path_obj}' está protegida."]
             
-    except (OSError, RuntimeError):
+    except (OSError, RuntimeError, TypeError):
         return ["Error: No se pudo acceder a la ruta especificada."]
         
     ext_size_map: Dict[str, int] = defaultdict(int)

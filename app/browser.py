@@ -149,6 +149,8 @@ def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool
     Usa os.DirEntry para evitar llamadas a sistema redundantes (stat).
     """
     total: int = 0
+    if not root_dir or not os.path.exists(root_dir):
+        return 0
     try:
         with os.scandir(root_dir) as it:
             for entry in it:
