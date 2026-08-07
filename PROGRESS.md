@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-06 | 101 | 5 | 13 | 11 | 102 |
-| 2026-08-07 | 130 | 11 | 14 | 9 | 108 |
+| 2026-08-06 | 98 | 5 | 13 | 11 | 101 |
+| 2026-08-07 | 133 | 11 | 14 | 9 | 109 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **59**
-- seguridad defensiva: **46**
-- rendimiento: **46**
+- rendimiento: **49**
+- seguridad defensiva: **43**
 - manejo de errores y validación de entradas: **43**
 - robustez ante casos límite: **37**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **21**
 - `quarantine.py`: **21**
-- `scanner.py`: **19**
-- `settings.py`: **19**
+- `scanner.py`: **20**
+- `settings.py`: **20**
+- `diskreport.py`: **20**
 - `assistant.py`: **19**
 - `branding.py`: **19**
-- `browser.py`: **17**
-- `healthscore.py`: **16**
 - `memory.py`: **16**
+- `browser.py`: **16**
 - `organizer.py`: **16**
 - `duplicates.py`: **15**
-- `safety.py`: **13**
+- `healthscore.py`: **15**
+- `safety.py`: **14**
 - `main.py`: **12**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-07T12:08:39` **settings.py** (rendimiento): Se optimizó el acceso a las configuraciones eliminando la carga redundante de archivos y validaciones repetidas en las funciones `assistant_api_key`, `assistant_enabled` y `get`, aprovechando el caché interno de `_cached_settings` de forma consistente.
+- `2026-08-07T12:08:11` **scanner.py** (rendimiento): Optimizé la ejecución de las heurísticas de archivo mediante el filtrado temprano del tipo de extensión (`s`) dentro de `scan_file`, evitando llamadas innecesarias a funciones de inspección (como `check_recent_executable_in_downloads`) para archivos que no son ejecutables, reduciendo significativamente la carga de I/O en escaneos masivos.
+- `2026-08-07T12:07:46` **safety.py** (rendimiento): Se implementó un cacheo más eficiente y directo en `is_protected_path` al evitar la conversión repetitiva de `_SYSTEM_ROOTS` a strings dentro de un loop, además de optimizar la validación de `PROTECTED_DIR_NAMES` mediante el uso directo del conjunto pre-procesado, reduciendo la carga de CPU en cada iteración durante escaneos masivos.
 - `2026-08-07T11:59:06` **organizer.py** (rendimiento): Optimicé el escaneo de archivos reemplazando las múltiples llamadas a `endswith` en el loop por una evaluación directa contra el set pre-calculado `_LOWER_JUNK_EXTS`, evitando la creación de tuplas temporales en cada iteración y mejorando el rendimiento en discos con alta densidad de archivos.
 - `2026-08-07T11:58:43` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` reemplazando la serialización a CSV de PowerShell por un formato más eficiente y directo, reduciendo la carga sobre el parser y disminuyendo el uso de memoria en el buffer de salida.
 - `2026-08-07T11:49:03` **main.py** (rendimiento): Optimicé el método `_compile_metrics` introduciendo un caché local de resultados de análisis en `self._cache` para evitar la redundancia de cálculos costosos al redibujar la pestaña de Salud, aplicando la técnica de invalidación selectiva para mantener la coherencia de los datos.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-07T11:27:42` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento mediante la adición de docstrings técnicos detallados a los métodos de la clase `Scanner` y unifiqué el registro de comprobaciones (`CHECK_REGISTRY`) para asegurar que todos los chequeos heurísticos se ejecuten de forma consistente.
 - `2026-08-07T11:27:20` **safety.py** (legibilidad y documentación): Documenté el propósito técnico de las funciones de bajo nivel con docstrings detallados y refiné la lógica de `_is_system_or_hidden` para evitar el uso innecesario de `ctypes` en entornos no Windows, mejorando la robustez y legibilidad del módulo.
 - `2026-08-07T11:18:37` **quarantine.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints faltantes, la estandarización de docstrings (siguiendo las convenciones de Google/Python) y la clarificación de las responsabilidades en las funciones de validación para asegurar que el flujo de trabajo sea auto-explicativo para futuros colaboradores.
-- `2026-08-07T11:18:22` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de docstrings estructurados (Google Style) en las funciones principales y se ha reforzado la tipografía de las colecciones globales con `Final` y anotaciones explícitas para facilitar la auditoría del código.
-- `2026-08-07T11:17:58` **memory.py** (legibilidad y documentación): Mejoré la documentación de `trim_working_set` añadiendo type hints faltantes y estructurando la lógica con docstrings más técnicos que expliquen la interacción con la API Win32 y los riesgos asociados al manejo de memoria.
-- `2026-08-07T11:07:43` **healthscore.py** (legibilidad y documentación): Documenté el propósito de cada función de normalización y el significado de los umbrales constantes para mejorar la mantenibilidad y claridad del modelo de cálculo, respetando el enfoque de documentación técnica.

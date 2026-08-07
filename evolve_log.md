@@ -994,3 +994,10 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-08-07T11:59:44` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
 - `2026-08-07T11:59:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-07T11:59:44` Corrida terminada. Total usado hoy: 272.
+- `2026-08-07T12:07:20` Arrancando corrida. Quedan hoy ~28 peticiones objetivo.
+- `2026-08-07T12:07:46` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se implementó un cacheo más eficiente y directo en `is_protected_path` al evitar la conversión repetitiva de `_SYSTEM_ROOTS` a strings dentro de un loop, además de optimizar la validación de `PROTECTED_DIR_NAMES` mediante el uso directo del conjunto pre-procesado, reduciendo la carga de CPU en cada iteración durante escaneos masivos.
+- `2026-08-07T12:08:11` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizé la ejecución de las heurísticas de archivo mediante el filtrado temprano del tipo de extensión (`s`) dentro de `scan_file`, evitando llamadas innecesarias a funciones de inspección (como `check_recent_executable_in_downloads`) para archivos que no son ejecutables, reduciendo significativamente la carga de I/O en escaneos masivos.
+- `2026-08-07T12:08:39` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se optimizó el acceso a las configuraciones eliminando la carga redundante de archivos y validaciones repetidas en las funciones `assistant_api_key`, `assistant_enabled` y `get`, aprovechando el caché interno de `_cached_settings` de forma consistente.
+- `2026-08-07T12:08:48` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-08-07T12:08:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-07T12:08:48` Corrida terminada. Total usado hoy: 276.

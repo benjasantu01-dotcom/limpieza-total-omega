@@ -56,7 +56,7 @@ SENSITIVE_EXTENSIONS: Final[frozenset[str]] = frozenset({
 })
 
 _SYSTEM_ROOTS: Final[list[Path]] = [
-    Path(os.environ[v]) for v in ("SystemRoot", "ProgramFiles", "ProgramFiles(x86)", "ProgramData")
+    Path(os.environ[v]).resolve() for v in ("SystemRoot", "ProgramFiles", "ProgramFiles(x86)", "ProgramData")
     if os.environ.get(v)
 ]
 
@@ -87,7 +87,6 @@ def _is_system_or_hidden(path: Path) -> bool:
         return False
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
-        # 0x02 = FILE_ATTRIBUTE_HIDDEN, 0x04 = FILE_ATTRIBUTE_SYSTEM
         return attrs != -1 and bool(attrs & (0x02 | 0x04))
     except (OSError, AttributeError, TypeError):
         return False
@@ -173,17 +172,12 @@ def is_protected_path(path: PathLike) -> bool:
     
     try:
         p = normalize(path)
-        path_parts = {part.lower() for part in p.parts}
-        
-        if not PROTECTED_DIR_NAMES.isdisjoint(path_parts):
+        if not PROTECTED_DIR_NAMES.isdisjoint(part.lower() for part in p.parts):
             return True
             
         for sys_root in _SYSTEM_ROOTS:
-            try:
-                if os.path.commonpath([str(p), str(sys_root)]) == str(sys_root):
-                    return True
-            except ValueError:
-                continue
+            if sys_root in p.parents or p == sys_root:
+                return True
         
         return p == Path(p.anchor) or (p.exists() and _is_reparse_point(p))
     except (PermissionError, OSError, ValueError, TypeError):

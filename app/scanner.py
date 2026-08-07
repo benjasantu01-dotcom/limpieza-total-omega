@@ -161,8 +161,14 @@ def scan_file(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[st
     s = suffix or (path.suffix.lower() if path.suffix else "")
     findings: ScanResult = []
     
+    is_exec = s in SUSPICIOUS_EXECUTABLE_EXT
+    
     # Aplicar todas las heurísticas registradas
     for check_func in CHECK_REGISTRY:
+        # Optimización: evitar ejecutar heurísticas de ejecutables en archivos no ejecutables
+        if check_func in (check_recent_executable_in_downloads, check_system_lookalike) and not is_exec:
+            continue
+            
         if res := check_func(path, entry, n, s):
             findings.append(res)
             

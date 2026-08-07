@@ -237,23 +237,17 @@ def reset(path_or_base: PathLike | None = None) -> AppSettings:
 
 def get(key: str, path_or_base: PathLike | None = None) -> Any:
     """Obtiene un valor individual de la configuración."""
-    ruta = settings_path(path_or_base)
-    if _cached_settings is not None and _current_path == ruta:
-        return _cached_settings.get(key, DEFAULTS.get(key))
     return load(path_or_base).get(key, DEFAULTS.get(key))
 
 def assistant_api_key(path_or_base: PathLike | None = None) -> str:
     """Resuelve la clave de API priorizando variables de entorno sobre el archivo."""
     desde_entorno = os.environ.get(API_KEY_ENV_VAR, "").strip()
     if desde_entorno: return desde_entorno
-    ruta = settings_path(path_or_base)
-    config = _cached_settings if (_cached_settings and _current_path == ruta) else load(path_or_base)
-    return config.get("asistente_clave_api", "").strip()
+    return load(path_or_base).get("asistente_clave_api", "").strip()
 
 def assistant_enabled(path_or_base: PathLike | None = None) -> bool:
     """Verifica si el asistente está activado y cuenta con una clave válida."""
-    ruta = settings_path(path_or_base)
-    config = _cached_settings if (_cached_settings and _current_path == ruta) else load(path_or_base)
+    config = load(path_or_base)
     if not config.get("asistente_activado"): return False
     return bool(assistant_api_key(path_or_base))
 
