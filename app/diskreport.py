@@ -166,9 +166,14 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Generador recursivo de archivos. 
-    Seguridad: Implementa detección de puntos de reparse (junctions/symlinks) y 
-    evita ciclos mediante `visited_directories`. Valida contención del directorio.
+    Generador recursivo que recorre archivos bajo `directory`.
+    
+    Args:
+        directory: Ruta base del escaneo.
+        skip_protected: Si es True, omite rutas marcadas como críticas por `safety.py`.
+
+    Yields:
+        Tuplas (Path, int) conteniendo la ruta al archivo y su tamaño en bytes.
     """
     if not directory:
         return
@@ -271,7 +276,12 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
 
 
 def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Tuple[int, int]:
-    """Retorna (bytes_totales, cantidad_archivos) de un directorio."""
+    """
+    Retorna el tamaño total y la cantidad de archivos encontrados en el directorio.
+    
+    Returns:
+        Tuple: (total_bytes, total_count).
+    """
     if not directory:
         return 0, 0
     total_bytes = 0
@@ -283,7 +293,7 @@ def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 
 
 def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -> List[str]:
-    """Genera un resumen en texto del análisis de uso de disco."""
+    """Genera un reporte de texto legible con el uso de disco del directorio indicado."""
     if not directory:
         return ["Error: Ruta no proporcionada."]
         

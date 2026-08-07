@@ -18,7 +18,6 @@ vacío:
 from __future__ import annotations
 import hashlib
 import os
-import stat
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
@@ -152,7 +151,8 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
 
 def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """
-    Realiza un escaneo recursivo para indexar archivos por tamaño con cache de inodos.
+    Escaneo recursivo para indexar archivos por tamaño usando inodos para evitar ciclos.
+    Implementa validaciones de seguridad para no seguir puntos de reparse (Junctions).
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: Dict[int, set[int]] = defaultdict(set)
@@ -164,14 +164,14 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
             with os.scandir(root_path) as dir_iterator:
                 for entry in dir_iterator:
                     try:
-                        # Seguridad: no seguir symlinks (evita bucles y escapes del root)
                         entry_stat = entry.stat(follow_symlinks=False)
                         
-                        # Detectar puntos de reparse (Windows junctions/reparse points)
+                        # 0x400: FILE_ATTRIBUTE_REPARSE_POINT. No seguir junctions/links.
                         if getattr(entry_stat, 'st_file_attributes', 0) & 0x400:
                             continue
                             
                         if entry.is_dir(follow_symlinks=False):
+                            # Evitar ciclos de directorio mediante inodos.
                             if entry_stat.st_ino not in visited_inodes[entry_stat.st_dev]:
                                 visited_inodes[entry_stat.st_dev].add(entry_stat.st_ino)
                                 if not (skip_protected and is_protected_path(Path(entry.path))):
@@ -197,6 +197,7 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
 def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
     """
     Refina un grupo de archivos candidatos aplicando una función de hash.
+    La función hash_func debe realizar sus propias verificaciones de seguridad.
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     if paths is None: return groups_by_digest
@@ -215,6 +216,9 @@ def find_duplicates(
 ) -> List[DuplicateGroup]:
     """
     Ejecuta el pipeline de detección de duplicados en tres etapas:
+    1. Agrupación por tamaño (collect_candidates).
+    2. Refinamiento por hash parcial (64KB).
+    3. Confirmación final por hash completo.
     """
     if directories is None: return []
     
@@ -241,7 +245,8 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     """
-    Selecciona el archivo candidato para conservar.
+    Selecciona el archivo candidato para conservar basado en la fecha de modificación
+    más antigua (o menor longitud de ruta en caso de empate).
     """
     if not group or not group.paths:
         return None

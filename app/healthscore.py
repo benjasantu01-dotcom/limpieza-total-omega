@@ -148,7 +148,7 @@ def _to_int(value: Any, default: int = 0) -> int:
 
 
 def score_junk(junk_mb: float) -> float:
-    """Normaliza basura: 0 MB es 1.0, JUNK_LIMIT_MB es 0.0 (escala lineal inversa)."""
+    """Calcula normalización de basura: 0 MB es 1.0, JUNK_LIMIT_MB es 0.0 (lineal inversa)."""
     key = ("junk", junk_mb)
     if key in _SCORE_CACHE: return _SCORE_CACHE[key]
     val = _to_float(junk_mb)
@@ -158,7 +158,7 @@ def score_junk(junk_mb: float) -> float:
 
 
 def score_security(suspicious_count: int, warnings: int = 0) -> float:
-    """Penaliza hallazgos: -0.05 por cada archivo sospechoso, -0.25 por advertencia crítica."""
+    """Penaliza hallazgos: -0.05 por archivo sospechoso, -0.25 por advertencia crítica."""
     key = ("security", suspicious_count, warnings)
     if key in _SCORE_CACHE: return _SCORE_CACHE[key]
     s_count = max(0, _to_int(suspicious_count))
@@ -169,7 +169,7 @@ def score_security(suspicious_count: int, warnings: int = 0) -> float:
 
 
 def score_memory(available_percent: float) -> float:
-    """Normaliza memoria: ratio de disponibilidad frente al objetivo ideal."""
+    """Normaliza memoria: ratio de disponibilidad frente al objetivo RAM_IDEAL_PERCENT."""
     key = ("mem", available_percent)
     if key in _SCORE_CACHE: return _SCORE_CACHE[key]
     val = _to_float(available_percent)
@@ -179,7 +179,7 @@ def score_memory(available_percent: float) -> float:
 
 
 def score_disk(free_percent: float) -> float:
-    """Normaliza disco: ratio de espacio libre frente al objetivo ideal."""
+    """Normaliza disco: ratio de espacio libre frente al objetivo DISK_IDEAL_PERCENT."""
     key = ("disk", free_percent)
     if key in _SCORE_CACHE: return _SCORE_CACHE[key]
     val = _to_float(free_percent)
@@ -189,7 +189,7 @@ def score_disk(free_percent: float) -> float:
 
 
 def score_duplicates(duplicate_mb: float) -> float:
-    """Normaliza duplicados: 0 MB es 1.0, DUPLICATE_LIMIT_MB es 0.0 (escala lineal inversa)."""
+    """Normaliza duplicados: 0 MB es 1.0, DUPLICATE_LIMIT_MB es 0.0 (lineal inversa)."""
     key = ("dup", duplicate_mb)
     if key in _SCORE_CACHE: return _SCORE_CACHE[key]
     val = _to_float(duplicate_mb)
@@ -209,7 +209,7 @@ def score_startup(startup_count: int) -> float:
 
 
 def grade_for_score(score: int) -> str:
-    """Asigna una calificación cualitativa (A-F) basada en el rango del puntaje [0, 100]."""
+    """Asigna una calificación cualitativa (A-F) según el rango [0, 100]."""
     score_int = int(_clamp(float(score), 0.0, 100.0))
     if score_int >= 90: return "A"
     if score_int >= 80: return "B"
@@ -247,7 +247,7 @@ def _generate_recommendations(m: SystemMetrics, ratios: ScoreMap) -> List[str]:
 def compute_score(metrics: SystemMetrics) -> HealthResult:
     """
     Función principal: toma métricas crudas, calcula el puntaje ponderado 
-    y genera un objeto HealthResult.
+    y genera un objeto HealthResult inmutable.
     """
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Instancia de métricas no válida."])
@@ -269,11 +269,11 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     total_weighted_score: float = 0.0
     
     for area, weight in _WEIGHT_ITEMS:
-        score_val = scores.get(area, 0.0) * float(weight) * _NORM_FACTOR
+        score_val: float = scores.get(area, 0.0) * float(weight) * _NORM_FACTOR
         breakdown[area] = int(score_val + 0.5)
         total_weighted_score += score_val
 
-    final_score = int(_clamp(total_weighted_score, 0.0, 100.0))
+    final_score: int = int(_clamp(total_weighted_score, 0.0, 100.0))
     if not math.isclose(sum(breakdown.values()), final_score, abs_tol=1):
         final_score = sum(breakdown.values())
 
@@ -286,19 +286,19 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
 
 
 def summarize(result: HealthResult) -> List[str]:
-    """Crea una representación textual legible de los resultados para UI."""
+    """Crea una representación textual legible de los resultados para la UI."""
     if not isinstance(result, HealthResult) or not isinstance(getattr(result, 'breakdown', None), dict):
         return ["Error: Resultado de salud no válido."]
 
     lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     
     for area, maximo in _WEIGHT_ITEMS:
-        puntos_val = result.breakdown.get(area, 0)
-        visual = f"[{'#' * puntos_val}{'.' * (max(0, maximo - puntos_val))}]"
+        puntos_val: int = result.breakdown.get(area, 0)
+        visual: str = f"[{'#' * puntos_val}{'.' * (max(0, maximo - puntos_val))}]"
         lines.append(f"  {area.capitalize():<12} {puntos_val:>2}/{maximo:<2} {visual}")
     
     lines.extend(["", "Recomendaciones:"])
-    recs = result.recommendations if isinstance(result.recommendations, list) else ["No hay recomendaciones disponibles."]
+    recs: List[str] = result.recommendations if isinstance(result.recommendations, list) else ["No hay recomendaciones disponibles."]
     for rec in recs:
         lines.append(f"  - {str(rec)}")
     return lines

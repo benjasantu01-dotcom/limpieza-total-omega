@@ -427,15 +427,15 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._make_output("Salud", tab)
 
     def _build_health_metrics_row(self, container: ctk.CTkFrame) -> None:
-        """Crea las tarjetas de métricas numéricas superiores."""
-        metrics = (("basura", "Basura"), ("sospechosos", "Sospechosos"),
-                   ("ram", "RAM libre"), ("disco", "Disco libre"))
-        for i, (clave, titulo) in enumerate(metrics):
+        """Crea las tarjetas de métricas numéricas superiores para el panel de salud."""
+        metrics_definitions = (("basura", "Basura"), ("sospechosos", "Sospechosos"),
+                               ("ram", "RAM libre"), ("disco", "Disco libre"))
+        for i, (clave, titulo) in enumerate(metrics_definitions):
             container.grid_columnconfigure(i, weight=1)
             self.cards[clave] = self._metric_card(container, titulo, i)
 
     def _build_health_area_bars(self, parent: ctk.CTk) -> None:
-        """Genera el desglose de barras para cada categoría de salud."""
+        """Genera el desglose visual de barras para cada categoría de salud."""
         area_container = ctk.CTkFrame(parent, fg_color="transparent")
         area_container.grid(row=0, column=1, sticky="ew")
         area_container.grid_columnconfigure(1, weight=1)
@@ -443,7 +443,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self._build_single_health_bar(area_container, clave, etiqueta, fila)
 
     def _build_single_health_bar(self, container: ctk.CTkFrame, clave: str, etiqueta: str, fila: int) -> None:
-        """Construye una fila individual de barra de progreso y su valor."""
+        """Crea una fila individual de barra de progreso y su etiqueta de valor asociado."""
         self._create_styled_label(container, etiqueta, "body", anchor="w", width=150).grid(row=fila, column=0, sticky="w", pady=4)
         
         barra = ctk.CTkProgressBar(
@@ -459,7 +459,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.area_bars[clave] = (barra, valor_label)
 
     def _metric_card(self, parent: ctk.CTk, title: str, column: int) -> ctk.CTkLabel:
-        """Crea una tarjeta decorativa de métrica."""
+        """Crea una tarjeta decorativa de métrica con su título y valor."""
         tarjeta = ctk.CTkFrame(
             parent, fg_color=branding.color("card"), corner_radius=12,
             border_width=1, border_color=branding.color("border"),
