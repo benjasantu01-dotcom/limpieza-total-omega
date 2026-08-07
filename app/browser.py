@@ -137,6 +137,29 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
         return False
 
 
+def _sum_directory_recursive(root_dir: str, is_junction_fn) -> int:
+    """
+    Función auxiliar pura para recorrer el árbol y sumar pesos.
+    """
+    total: int = 0
+    try:
+        with os.scandir(root_dir) as it:
+            for entry in it:
+                try:
+                    if entry.is_symlink() or is_junction_fn(entry.path):
+                        continue
+                    
+                    if entry.is_dir():
+                        total += _sum_directory_recursive(entry.path, is_junction_fn)
+                    elif entry.is_file() and entry.name.lower() not in NEVER_TOUCH:
+                        total += entry.stat().st_size
+                except (OSError, PermissionError):
+                    continue
+    except (OSError, PermissionError):
+        pass
+    return total
+
+
 def directory_size(path: str | os.PathLike | None) -> int:
     """
     Calcula el peso total en bytes mediante un recorrido recursivo con os.scandir.
@@ -152,30 +175,8 @@ def directory_size(path: str | os.PathLike | None) -> int:
     except (OSError, PermissionError):
         return 0
 
-    total_bytes: int = 0
     is_junction = getattr(os.path, 'isjunction', lambda _: False)
-    
-    def _walk_size(current_dir: str) -> None:
-        nonlocal total_bytes
-        try:
-            with os.scandir(current_dir) as it:
-                for entry in it:
-                    try:
-                        # Saltar enlaces para evitar recursión infinita o escapes
-                        if entry.is_symlink() or is_junction(entry.path):
-                            continue
-                        
-                        if entry.is_dir():
-                            _walk_size(entry.path)
-                        elif entry.is_file() and entry.name.lower() not in NEVER_TOUCH:
-                            total_bytes += entry.stat().st_size
-                    except (OSError, PermissionError):
-                        continue
-        except (OSError, PermissionError):
-            pass
-
-    _walk_size(str(root_path))
-    return total_bytes
+    return _sum_directory_recursive(str(root_path), is_junction)
 
 
 def _is_valid_cache_path(candidate: Optional[Path], base_path: Path) -> bool:

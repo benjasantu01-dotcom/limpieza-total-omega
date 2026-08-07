@@ -26,8 +26,9 @@ from safety import is_safe_to_modify, ensure_safe_to_modify, is_protected_path
 
 # Type Aliases para mejorar la legibilidad de la semántica de datos
 HexColor: TypeAlias = str
-SeverityKey: TypeAlias = Literal["ok", "info", "warning", "danger"]
+SeverityLevel: TypeAlias = Literal["ok", "info", "warning", "danger"]
 GradeKey: TypeAlias = Literal["A", "B", "C", "D", "F"]
+# Estructura de estilo para severidad: (color_hex, etiqueta_legible)
 SeverityStyle: TypeAlias = Tuple[HexColor, str]
 RGBTuple: TypeAlias = Tuple[int, int, int]
 
@@ -95,7 +96,7 @@ FONT_SIZES: Final[Mapping[str, int]] = MappingProxyType({
     "caption": 10,
 })
 
-SEVERITY_STYLES: Final[Mapping[str, SeverityStyle]] = MappingProxyType({
+SEVERITY_STYLES: Final[Mapping[SeverityLevel, SeverityStyle]] = MappingProxyType({
     "ok": ("#22e39a", "Correcto"),
     "info": ("#38bdf8", "Informativo"),
     "warning": ("#ffb020", "Advertencia"),
@@ -157,7 +158,7 @@ def tab_label(section: str) -> str:
 
 def severity_color(severity: Optional[str]) -> HexColor:
     """Resuelve el color hex asociado a una severidad (ok|info|warning|danger)."""
-    if isinstance(severity, str) and (style := SEVERITY_STYLES.get(severity.lower())):
+    if isinstance(severity, str) and (style := SEVERITY_STYLES.get(severity.lower())):  # type: ignore
         return style[0]
     return PALETTE["text_muted"]
 
@@ -165,7 +166,7 @@ def severity_color(severity: Optional[str]) -> HexColor:
 def severity_label(severity: Optional[str]) -> str:
     """Retorna la etiqueta legible de una severidad o el input en mayúsculas."""
     if isinstance(severity, str):
-        if style := SEVERITY_STYLES.get(severity.lower()):
+        if style := SEVERITY_STYLES.get(severity.lower()):  # type: ignore
             return style[1]
         if severity.strip():
             return severity.upper()

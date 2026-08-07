@@ -124,7 +124,8 @@ def format_size(num: Union[int, float, None]) -> str:
 
 def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     """
-    Obtiene el estado de almacenamiento de una unidad montada localmente.
+    Obtiene el estado de una unidad. Retorna None si la ruta es inválida, 
+    protegida o inaccesible (incluyendo rutas UNC por política de seguridad).
     """
     if not mount:
         return None
@@ -133,9 +134,11 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
         if path_str.startswith(("\\\\", "//")):
             return None
         p = Path(path_str).expanduser().resolve()
-        # Seguridad defensiva: verificar que no sea un punto de reparse fuera de la unidad
+        
+        # Filtro de seguridad: no analizar rutas protegidas o inexistentes
         if not p.exists() or not p.is_absolute() or is_protected_path(p):
             return None
+            
         usage = shutil.disk_usage(path_str)
         return DriveUsage(mount=str(mount), total=usage.total, used=usage.used, free=usage.free)
     except (OSError, ValueError, TypeError):
@@ -144,7 +147,7 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
 
 def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]:
     """
-    Lista el uso de todas las unidades detectadas o las especificadas en mounts.
+    Lista el uso de unidades. En Windows detecta letras de unidad, en Unix la raíz.
     """
     if mounts is None:
         if os.name == "nt":
@@ -164,7 +167,9 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Generador recursivo que recorre archivos ignorando enlaces, junctions y rutas protegidas.
+    Generador recursivo de archivos. 
+    Seguridad: Implementa detección de puntos de reparse (junctions/symlinks) y 
+    evita ciclos mediante `visited_directories`.
     """
     if not directory:
         return
@@ -183,16 +188,12 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
             with os.scandir(current_path) as iterator:
                 for entry in iterator:
                     try:
-                        # Seguridad defensiva: evitar puntos de reparse (junctions/symlinks)
+                        # Evitar seguir enlaces simbólicos y puntos de reparse de Windows
                         if entry.is_symlink():
                             continue
-                        # Verificar atributos específicos de Windows para junctions
                         if os.name == 'nt':
-                            try:
-                                attrs = entry.stat().st_file_attributes
-                                if attrs & 0x400: # FILE_ATTRIBUTE_REPARSE_POINT
-                                    continue
-                            except OSError:
+                            # 0x400 es FILE_ATTRIBUTE_REPARSE_POINT
+                            if entry.stat().st_file_attributes & 0x400:
                                 continue
                         
                         if entry.is_dir():
@@ -203,6 +204,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                                 visited_directories.add(full_path)
                                 yield from scan_level(full_path)
                         else:
+                            # Leer tamaño directamente sin seguir links para evitar errores de permisos
                             yield Path(entry.path), entry.stat(follow_symlinks=False).st_size
                     except (OSError, PermissionError):
                         continue
