@@ -168,7 +168,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     """
     Generador recursivo de archivos. 
     Seguridad: Implementa detección de puntos de reparse (junctions/symlinks) y 
-    evita ciclos mediante `visited_directories`.
+    evita ciclos mediante `visited_directories`. Valida contención del directorio.
     """
     if not directory:
         return
@@ -194,7 +194,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                         
                         if entry.is_dir():
                             full_path = Path(entry.path).resolve()
-                            if full_path not in visited_directories:
+                            if full_path not in visited_directories and base_path in full_path.parents:
                                 if skip_protected and is_protected_path(full_path):
                                     continue
                                 visited_directories.add(full_path)

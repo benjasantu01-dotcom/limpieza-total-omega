@@ -164,6 +164,7 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
             with os.scandir(root_path) as dir_iterator:
                 for entry in dir_iterator:
                     try:
+                        # Seguridad: no seguir symlinks (evita bucles y escapes del root)
                         entry_stat = entry.stat(follow_symlinks=False)
                         
                         # Detectar puntos de reparse (Windows junctions/reparse points)

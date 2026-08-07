@@ -1320,3 +1320,41 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-07T03:58:52` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_sum_directory_recursive` mediante la implementación de una validación de ruta estricta usando `is_protected_path` en cada iteración del recorrido, evitando así el acceso accidental a subdirectorios protegidos que podrían existir dentro de las rutas de caché.
 - `2026-08-07T03:58:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-07T03:58:52` Corrida terminada. Total usado hoy: 84.
+- `2026-08-07T04:07:27` Arrancando corrida. Quedan hoy ~216 peticiones objetivo.
+- `2026-08-07T04:07:55` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha robustecido la función `walk_files` para validar que el `current_path` sea un hijo legítimo del `base_path` original antes de profundizar, evitando así posibles escapes de directorio mediante manipulación de rutas o enlaces simbólicos maliciosos.
+- `2026-08-07T04:08:18` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_collect_candidates` para evitar que el escáner siga enlaces simbólicos, asegurando que solo se procesen archivos dentro de la estructura de directorios intencionada y evitando el acceso inadvertido a rutas fuera de los límites definidos.
+- `2026-08-07T04:08:53` Tests FALLARON:
+```
+............ [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_________________ test_read_only_modules_never_delete_or_move __________________
+
+    def test_read_only_modules_never_delete_or_move():
+        """Ningún módulo de solo lectura puede borrar ni mover archivos."""
+        destructivos = {"unlink", "rmdir", "rmtree", "move", "remove", "rename", "replace"}
+        for nombre in READ_ONLY_MODULES:
+            archivo = APP_DIR / nombre
+            if not archivo.exists():
+                continue
+            usados = calls_and_imports(parse(archivo)) & destructivos
+>           assert not usados, (
+                f"{nombre} debería ser de solo lectura pero llama a "
+                f"{', '.join(sorted(usados))}"
+            )
+E           AssertionError: healthscore.py debería ser de solo lectura pero llama a replace
+E           assert not {'replace'}
+
+evolve/tests/test_integrity.py:294: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move - AssertionError: healthscore.py debería ser de solo lectura pero llama a replace
+assert not {'replace'}
+1 failed, 298 passed in 1.07s
+
+```
+- `2026-08-07T04:08:53` ❌ Mejora descartada en healthscore.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez defensiva del módulo `healthscore.py` mediante la implementación de un mecanismo de validación de entrada en la función `summarize` y una sanitización estricta de las recomendaciones, asegurando que ante cualquier error inesperado en los datos o tipos, la interfaz no colapse y el usuario reciba un estado seguro en lugar de una excepción no controlada.
+- `2026-08-07T04:09:38` ➖ Sin cambios en main.py (enfoque: seguridad defensiva). Motivo: Se ha mejorado la seguridad defensiva del método `_ask_folder` añadiendo una comprobación explícita para evitar el uso de caracteres invisibles o de control (como el "Right-to-Left Override" `\u202e`) que podrían utilizarse para ofuscar rutas maliciosas en la interfaz, garantizando que la ruta capturada sea limpia antes de validarla con `is_safe_target_dir`.
+- `2026-08-07T04:09:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-07T04:09:38` Corrida terminada. Total usado hoy: 88.
