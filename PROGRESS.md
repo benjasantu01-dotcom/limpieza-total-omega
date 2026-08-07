@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **232** (46.0% de aceptación)
+- Mejoras aceptadas: **230** (45.6% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 212
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-06 | 131 | 6 | 16 | 11 | 112 |
-| 2026-08-07 | 101 | 10 | 11 | 6 | 100 |
+| 2026-08-06 | 128 | 6 | 16 | 11 | 111 |
+| 2026-08-07 | 102 | 10 | 11 | 6 | 103 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **55**
+- legibilidad y documentación: **52**
 - rendimiento: **49**
 - seguridad defensiva: **48**
 - robustez ante casos límite: **46**
-- manejo de errores y validación de entradas: **34**
+- manejo de errores y validación de entradas: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **22**
-- `diskreport.py`: **20**
 - `scanner.py`: **20**
+- `assistant.py`: **20**
 - `branding.py`: **20**
 - `settings.py`: **19**
-- `assistant.py`: **19**
+- `diskreport.py`: **19**
 - `memory.py`: **16**
 - `organizer.py`: **16**
 - `browser.py`: **16**
 - `healthscore.py`: **16**
-- `duplicates.py`: **14**
-- `main.py`: **14**
+- `duplicates.py`: **13**
+- `main.py`: **13**
 - `safety.py`: **12**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-07T10:18:43` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `build_context` validando explícitamente los tipos y rangos de entrada en `_val` para prevenir excepciones por tipos inesperados, además de añadir un guardado defensivo contra `None` en `_gen_problems` para asegurar estabilidad si las métricas están incompletas.
 - `2026-08-07T08:54:47` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `settings_path` mediante el uso de `is_safe_to_modify` antes de cualquier resolución de ruta, garantizando que el acceso al archivo de configuración no pueda ser manipulado para escalar a directorios fuera del entorno permitido, cumpliendo con la regla de no confiar en rutas sin validar.
 - `2026-08-07T08:54:36` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `check_system_lookalike` y `scan_file` añadiendo una validación explícita de `is_protected_path` antes de procesar archivos, asegurando que el escáner no realice inspecciones sobre rutas críticas del sistema incluso si la lógica de control de flujo principal fallara.
 - `2026-08-07T08:54:11` **safety.py** (seguridad defensiva): Se introdujo una validación estricta contra ataques de "Path Traversal" (evitando que una ruta normalizada escape de su base esperada) y se reforzó `ensure_safe_to_modify` para detectar si el archivo es un enlace simbólico que apunta fuera del directorio base, previniendo así la manipulación de archivos del sistema a través de alias.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-07T08:04:34` **organizer.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `stage_for_review` para evitar que el proceso intente mover archivos hacia sí mismos o dentro de la misma ubicación original, además de asegurar que la ruta destino no sea un punto de montaje o enlace simbólico antes de cualquier operación, fortaleciendo la robustez ante casos límite de rutas.
 - `2026-08-07T08:04:01` **main.py** (robustez ante casos límite): Se mejora la robustez de `on_trim_process` y `on_restore_quarantine` mediante el uso de una validación explícita de `path` y `PID` antes de cualquier interacción con el sistema operativo, previniendo errores de ejecución ante entradas malformadas o rutas inaccesibles.
 - `2026-08-07T08:02:59` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `score_security` y `score_junk` ante casos límite mediante la validación estricta de sus entradas, evitando divisiones por cero o cálculos con valores negativos inesperados que podrían derivar en resultados fuera de rango.
-- `2026-08-07T07:53:49` **duplicates.py** (robustez ante casos límite): Se ha robustecido el manejo de archivos en `duplicates.py` mediante una validación de estado de archivo previa a la apertura y una gestión defensiva ante archivos que cambian de tamaño o desaparecen durante el proceso de hashing, evitando errores en tiempo de ejecución.

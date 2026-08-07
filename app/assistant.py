@@ -199,6 +199,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     def _val(v: Any, default: float = 0.0, cast: Callable = float) -> Any:
         try:
             if v is None or isinstance(v, (list, dict)): return default
+            if not isinstance(v, (int, float, str)): return default
             val = float(v)
             if not math.isfinite(val): return default
             return cast(val)
@@ -414,6 +415,7 @@ def _gen_problems(ctx: SystemContext) -> Generator[str, None, None]:
     """
     Genera un flujo de descripciones de problemas detectados de forma perezosa.
     """
+    if ctx is None: return
     if ctx.disk_free_percent < 10.0:
         yield f"queda solo {ctx.disk_free_percent:.0f}% de disco libre"
     if ctx.suspicious_warnings > 0:
