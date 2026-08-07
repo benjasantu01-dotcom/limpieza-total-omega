@@ -199,30 +199,25 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
 
     for folder in folders:
         try:
-            for item in folder.iterdir():
-                # Validación de seguridad defensiva antes de cualquier operación
-                if is_protected_path(item):
-                    continue
+            # Usamos listdir en lugar de iterdir para capturar errores de permiso individualmente
+            items = os.listdir(folder)
+            for item_name in items:
+                item = folder / item_name
                 
-                # No seguir puntos de reparse (junctions/symlinks) para evitar saltos inesperados
-                if item.is_symlink():
+                # Validación de seguridad defensiva
+                if is_protected_path(item) or item.is_symlink():
                     continue
 
-                # Primero chequear extensión (es operación en memoria, la más rápida)
-                if item.suffix.lower() not in EXECUTABLE_EXTS:
-                    continue
-                
-                # Chequear tipo de archivo (I/O)
-                if item.is_file():
+                # Solo procesar si es un archivo con extensión ejecutable
+                if item.is_file() and item.suffix.lower() in EXECUTABLE_EXTS:
                     try:
-                        # Validar que el nombre del archivo sea una cadena no vacía
                         name = item.stem
-                        if not name:
-                            continue
-                        found_entries.append(StartupEntry(name=name, command=str(item), source="carpeta"))
+                        if name:
+                            found_entries.append(StartupEntry(name=name, command=str(item), source="carpeta"))
                     except OSError:
                         continue
-        except (OSError, PermissionError, RuntimeError):
+        except (OSError, PermissionError):
+            # Si no se puede listar la carpeta, se ignora silenciosamente
             continue
     return found_entries
 

@@ -462,7 +462,8 @@ def _call_gemini(
         
         with urllib.request.urlopen(req, timeout=_TIMEOUT_SECONDS) as res:
             if res.status != 200: return None
-            raw_res = res.read(10000) 
+            # Limitamos la lectura del stream a un máximo de 16KB para prevenir ataques de agotamiento de RAM
+            raw_res = res.read(16384)
             if not raw_res: return None
             data = json.loads(raw_res.decode("utf-8"))
         

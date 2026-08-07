@@ -145,7 +145,8 @@ def _sum_directory_recursive(root_dir: str, is_junction_fn) -> int:
     try:
         with os.scandir(root_dir) as it:
             for entry in it:
-                if entry.is_symlink() or is_junction_fn(entry.path):
+                # Verificación de seguridad adicional por cada elemento
+                if is_protected_path(Path(entry.path)) or entry.is_symlink() or is_junction_fn(entry.path):
                     continue
                 
                 try:
