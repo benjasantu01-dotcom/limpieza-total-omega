@@ -393,13 +393,11 @@ def local_answer(question: str, context: SystemContext) -> Answer:
         if handler_key := _KEYWORD_MAP.get(token):
             return _HANDLERS[handler_key](context, clean_text)
 
-    gen = _gen_problems(context)
-    primer_problema = next(gen, None)
-    
+    # Consumo directo del generador mediante islice para eficiencia
+    problemas = list(islice(_gen_problems(context), 3))
     puntaje_str = str(context.score) if context.score is not None else "N/A"
     
-    if primer_problema:
-        problemas = [primer_problema] + list(islice(gen, 2))
+    if problemas:
         cuerpo = (f"Con un puntaje de {puntaje_str}/100, por orden de prioridad: "
                   f"{', '.join(problemas)}.")
     else:
@@ -410,8 +408,7 @@ def local_answer(question: str, context: SystemContext) -> Answer:
 
 def _gen_problems(ctx: SystemContext) -> Generator[str, None, None]:
     """
-    Genera un flujo de descripciones de problemas detectados, 
-    filtrando aquellos que no alcanzan un umbral de relevancia.
+    Genera un flujo de descripciones de problemas detectados de forma perezosa.
     """
     if ctx.disk_free_percent < 10.0:
         yield f"queda solo {ctx.disk_free_percent:.0f}% de disco libre"

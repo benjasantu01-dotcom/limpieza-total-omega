@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **231** (45.8% de aceptación)
+- Mejoras aceptadas: **232** (46.0% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 27
-- Sin cambios (nada sustancial que mejorar): 17
+- Sin cambios (nada sustancial que mejorar): 16
 - Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-06 | 158 | 9 | 19 | 12 | 150 |
-| 2026-08-07 | 73 | 8 | 8 | 5 | 62 |
+| 2026-08-06 | 156 | 9 | 19 | 11 | 149 |
+| 2026-08-07 | 76 | 8 | 8 | 5 | 63 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - seguridad defensiva: **49**
 - manejo de errores y validación de entradas: **44**
-- robustez ante casos límite: **42**
-- rendimiento: **39**
+- rendimiento: **42**
+- robustez ante casos límite: **40**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **22**
 - `scanner.py`: **21**
+- `branding.py`: **21**
+- `quarantine.py`: **21**
 - `settings.py`: **20**
-- `branding.py`: **20**
-- `diskreport.py`: **19**
-- `assistant.py`: **18**
+- `diskreport.py`: **20**
+- `assistant.py`: **19**
 - `browser.py`: **18**
 - `healthscore.py`: **17**
 - `duplicates.py`: **15**
 - `memory.py`: **15**
-- `organizer.py`: **14**
 - `main.py`: **14**
+- `organizer.py`: **13**
 - `safety.py`: **10**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-07T07:12:56` **diskreport.py** (rendimiento): Mejoré la eficiencia del método `largest_folders` al evitar el uso de `path.relative_to(base)` y el acceso repetitivo a `Path.parts` dentro del bucle, optimizando la identificación del directorio de primer nivel mediante un cálculo de prefijo directo.
+- `2026-08-07T07:12:23` **branding.py** (rendimiento): Optimicé el cálculo del logo ASCII mediante la eliminación de una llamada innecesaria a `lru_cache`, dado que el valor es una constante estática que no requiere invocaciones repetidas ni lógica de caché.
+- `2026-08-07T07:11:52` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` y `_gen_problems` evitando la creación de listas intermedias y permitiendo que `islice` consuma el generador directamente de forma perezosa, reduciendo la presión sobre el recolector de basura en cada iteración de la interfaz.
 - `2026-08-07T07:02:37` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo `startup.py` incorporando Type Hints en todas las firmas de funciones faltantes y enriqueciendo los docstrings para explicar la lógica interna (especialmente la diferenciación entre el parseo de registros y las carpetas del sistema), facilitando el mantenimiento y la comprensión técnica para futuros colaboradores.
 - `2026-08-07T07:02:24` **settings.py** (legibilidad y documentación): Documenté con type hints más precisos y docstrings estructurados los métodos de validación en `_Validators` y el flujo de `load`/`save`, clarificando las precondiciones y el manejo de excepciones para futuros colaboradores.
 - `2026-08-07T07:01:57` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la inclusión de docstrings detallados en las funciones de inspección heurística, explicando el propósito, las condiciones de entrada y los motivos de cada chequeo para facilitar el mantenimiento y la auditoría.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-07T06:41:38` **duplicates.py** (legibilidad y documentación): Mejoré la documentación y legibilidad del módulo mediante type hints más específicos, la adición de docstrings técnicos explicativos en funciones críticas y la clarificación de la lógica de filtrado en `_collect_candidates` para alinear el código con las reglas de seguridad exigidas.
 - `2026-08-07T06:41:15` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings estructurados (con secciones de parámetros y retornos) en las funciones principales para clarificar el flujo de datos y las garantías de seguridad aplicadas.
 - `2026-08-07T06:33:01` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad de tipos en las funciones de recorrido, separando explícitamente la lógica de filtrado de archivos (`_is_excluded_file`) para mejorar la legibilidad y mantenibilidad, manteniendo la integridad del comportamiento original.
-- `2026-08-07T06:31:43` **assistant.py** (legibilidad y documentación): Documenté con docstrings claros las funciones de soporte (`_sanitize_query`, `_ensure_safe_text`, `_gen_problems`) y definí explícitamente los contratos de las métricas en `SystemContext` para mejorar la mantenibilidad y legibilidad técnica.
-- `2026-08-07T06:31:04` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` al implementar una validación más estricta de las filas CSV, asegurando que la estructura de los datos sea la esperada antes de intentar procesarlos, evitando así posibles `IndexError` o inconsistencias en los datos de entrada.
-- `2026-08-07T06:21:37` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de la función `save` reemplazando la captura de excepciones genérica `Exception` por una más específica y añadiendo una validación explícita para evitar operaciones de escritura con rutas `None` o estados inconsistentes, reforzando la integridad del guardado atómico.

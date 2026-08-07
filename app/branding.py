@@ -298,7 +298,6 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         return None
 
 
-@lru_cache(maxsize=1)
 def logo_ascii() -> str:
     """Retorna arte ASCII para la representación en registros de consola."""
     return r"""

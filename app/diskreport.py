@@ -254,12 +254,16 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
             return []
         
         folder_map: Dict[Path, FolderUsage] = {}
+        # Pre-caché para optimizar la comparación de padres
         for path, size in walk_files(base, skip_protected):
             try:
-                relative = path.relative_to(base)
-                if not relative.parts:
+                # Obtenemos la parte del path inmediatamente inferior a la base
+                parts = path.parts
+                base_len = len(base.parts)
+                if len(parts) <= base_len:
                     continue
-                top_level = base / relative.parts[0]
+                    
+                top_level = base / parts[base_len]
                 
                 if top_level not in folder_map:
                     folder_map[top_level] = FolderUsage(path=top_level, size_bytes=size, file_count=1)
@@ -267,7 +271,7 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
                     ref = folder_map[top_level]
                     ref.size_bytes += size
                     ref.file_count += 1
-            except (ValueError, IndexError, OSError):
+            except (OSError, IndexError):
                 continue
 
         return heapq.nlargest(limit, folder_map.values(), key=lambda f: f.size_bytes)
