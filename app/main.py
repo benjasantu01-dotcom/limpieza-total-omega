@@ -1221,20 +1221,18 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             
             try:
                 item = quarantine.get_item(raw_id)
-            except Exception:
-                self.log("Error: No se pudo acceder al manifiesto de este ID.", "Cuarentena")
-                return
-
-            if not item or not hasattr(item, 'original_path'):
-                self.log("Error: El manifiesto de este ID está corrupto.", "Cuarentena")
-                return
-
-            if not self._is_safe_path(item.original_path):
-                self.log(f"Error: La ruta original {item.original_path} está protegida o es inválida.", "Cuarentena")
-                return
-            
-            destino = quarantine.restore_item(raw_id)
-            self.log(f"Restaurado en: {destino}", "Cuarentena")
+                # Validar existencia de atributos clave antes de acceder
+                if not item or not hasattr(item, 'original_path'):
+                    raise AttributeError("Manifiesto de cuarentena corrupto o incompleto")
+                
+                if not self._is_safe_path(item.original_path):
+                    self.log(f"Error: La ruta original {item.original_path} está protegida.", "Cuarentena")
+                    return
+                
+                destino = quarantine.restore_item(raw_id)
+                self.log(f"Restaurado en: {destino}", "Cuarentena")
+            except Exception as e:
+                self.log(f"Error al intentar restaurar: {e}", "Cuarentena")
 
         self.run_async(task)
 
@@ -1285,7 +1283,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 self.log_lines(["No se pudo obtener la lista de procesos en este sistema."],
                                "Memoria")
                 return
-            tope = max(p.working_set_mb for p in procesos) or 1
+            tope = max([p.working_set_mb for p in procesos], default=1) or 1
             lineas = ["Procesos por consumo de memoria:", ""]
             for p in procesos:
                 relativo = p.working_set_mb / tope * 100
@@ -1301,26 +1299,15 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def on_trim_process(self) -> None:
         """Intenta liberar el Working Set de un proceso dado."""
-        if not hasattr(self, 'pid_entry') or not self.pid_entry.winfo_exists():
-            return
-        
         raw = self.pid_entry.get().strip()
-        if not raw:
-            messagebox.showwarning("Entrada vacía", "Ingresá un PID.")
-            return
-        
         try:
             pid = int(raw)
-        except ValueError:
-            messagebox.showwarning("Entrada inválida", "El PID debe ser un número entero.")
+        except (ValueError, TypeError):
+            messagebox.showwarning("Error", "Ingresá un PID numérico válido.")
             return
-            
-        if pid < 0:
-            messagebox.showwarning("PID inválido", "El PID debe ser positivo.")
-            return
-        
+
         if pid < 100:
-            messagebox.showerror("Bloqueado", "Este PID corresponde a un proceso del sistema esencial y no puede ser modificado.")
+            messagebox.showerror("Bloqueado", "PID de sistema protegido.")
             return
 
         if not self._confirm("Liberar working set", memory_mod.TRIM_WARNING + "\n\n¿Seguimos?"):
@@ -1329,12 +1316,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         def task():
             try:
                 if not memory_mod.process_exists(pid):
-                    self.log(f"Error: El proceso {pid} ya no está activo.", "Memoria")
+                    self.log(f"Error: El proceso {pid} no existe.", "Memoria")
                     return
                 ok, mensaje = memory_mod.trim_working_set(pid)
                 self.log(("OK: " if ok else "Sin efecto: ") + mensaje, "Memoria")
             except Exception as e:
-                self.log(f"Error crítico al intentar trim en PID {pid}: {e}", "Memoria")
+                self.log(f"Error al intentar trim en PID {pid}: {e}", "Memoria")
 
         self.run_async(task)
 

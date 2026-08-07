@@ -223,13 +223,17 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
     if not files:
         return []
         
-    configs: Dict[str, SortKey] = {
+    configs: Dict[str, Callable[[JunkFile], SortKey]] = {
         "size": lambda f: f.size_bytes,
         "date": lambda f: f.modified
     }
         
-    key_func = configs.get(by.lower(), configs["size"])
-    return sorted(files, key=key_func, reverse=not ascending)
+    # Validación explícita del criterio para evitar fallos silenciosos
+    criterio = by.lower()
+    if criterio not in configs:
+        criterio = "size"
+        
+    return sorted(files, key=configs[criterio], reverse=not ascending)
 
 
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Path:

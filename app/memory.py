@@ -338,10 +338,6 @@ def _is_system_process(pid: int) -> bool:
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
     Solicita al S.O. reducir el Working Set de un proceso llamando a EmptyWorkingSet.
-    
-    Riesgo operativo: El S.O. forzará al proceso a descartar páginas de memoria
-    física, lo que puede causar latencia inmediata al acceder a datos no cacheados.
-    Solo debe invocarse manualmente tras advertir al usuario.
     """
     if os.name != "nt":
         return False, "Solo disponible en Windows."
@@ -359,17 +355,15 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     psapi = ctypes.windll.psapi
     
     handle = kernel32.OpenProcess(REQUIRED_ACCESS, False, target_pid)
-    if not handle:
+    if not handle or handle == -1:
         return False, "Acceso denegado: permisos insuficientes o el proceso ya no existe."
     
     try:
-        # Pre-chequeo de seguridad: verificar ruta del ejecutable antes de cualquier manipulación
         buf = ctypes.create_unicode_buffer(1024)
         if psapi.GetModuleFileNameExW(handle, 0, buf, 1024) > 0:
             if is_protected_path(buf.value):
                 return False, "Operación denegada: el ejecutable está en una ruta protegida."
         else:
-            # Si no podemos obtener el nombre (permiso denegado), asumimos riesgo por seguridad
             return False, "Operación denegada: no se pudo verificar la integridad del proceso."
 
         exit_code = ctypes.c_ulong()
@@ -379,5 +373,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         if not psapi.EmptyWorkingSet(handle):
             return False, "Error al intentar liberar memoria del proceso."
         return True, f"Working set liberado. {TRIM_WARNING}"
+    except Exception:
+        return False, "Ocurrió un error inesperado al gestionar el proceso."
     finally:
         kernel32.CloseHandle(handle)
