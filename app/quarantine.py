@@ -475,10 +475,10 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     """Vacía la cuarentena, borrando solo archivos cuya integridad se puede verificar."""
     try:
         quarantine_root = quarantine_dir(base)
-    except OSError:
+        # Seguridad extra: verificar que la carpeta de cuarentena en sí no esté protegida
+        ensure_safe_to_modify(quarantine_root, allow_sensitive=False)
+    except (OSError, UnsafePathError):
         return 0
-        
-    ensure_safe_to_modify(quarantine_root, allow_sensitive=False)
     
     items = load_manifest(base)
     item_map_by_name: Dict[str, QuarantineItem] = {item.stored_name: item for item in items}

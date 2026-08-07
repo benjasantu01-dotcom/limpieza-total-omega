@@ -273,8 +273,8 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 
             target: Path = _generate_unique_target(dest / f"{current_abs.stem}_{int(jf.modified.timestamp())}{current_abs.suffix}")
             
-            if not is_safe_to_modify(target.parent):
-                continue
+            # Verificación de seguridad final del destino antes del movimiento físico
+            ensure_safe_to_modify(target)
 
             shutil.move(str(current_abs), str(target))
         except (PermissionError, OSError, shutil.Error, RuntimeError):

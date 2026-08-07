@@ -6,33 +6,33 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **243** (48.2% de aceptación)
+- Mejoras aceptadas: **245** (48.6% de aceptación)
 - Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 27
-- Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 199
+- Rechazadas por guardia de seguridad: 28
+- Sin cambios (nada sustancial que mejorar): 17
+- Sin respuesta de la IA (error o límite): 195
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-05 | 38 | 3 | 3 | 1 | 21 |
+| 2026-08-05 | 38 | 3 | 3 | 1 | 17 |
 | 2026-08-06 | 159 | 9 | 19 | 12 | 151 |
-| 2026-08-07 | 46 | 7 | 5 | 3 | 27 |
+| 2026-08-07 | 48 | 7 | 6 | 4 | 27 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - rendimiento: **49**
 - robustez ante casos límite: **47**
+- seguridad defensiva: **47**
 - manejo de errores y validación de entradas: **45**
-- seguridad defensiva: **45**
 
 ## Mejoras aceptadas por archivo
 
+- `quarantine.py`: **23**
 - `branding.py`: **22**
 - `diskreport.py`: **22**
-- `quarantine.py`: **22**
 - `assistant.py`: **20**
 - `browser.py`: **20**
 - `scanner.py`: **20**
@@ -41,12 +41,14 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **18**
 - `main.py`: **15**
 - `memory.py`: **15**
-- `organizer.py`: **13**
+- `organizer.py`: **14**
 - `safety.py`: **12**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-07T04:19:01` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad de `purge_all` implementando una validación de propiedad y estado de escritura (usando `ensure_safe_to_modify`) antes de iterar, evitando que una manipulación del sistema de archivos permita borrar fuera de la carpeta de cuarentena durante una purga masiva.
+- `2026-08-07T04:18:30` **organizer.py** (seguridad defensiva): Se ha implementado una validación de ruta estricta en `stage_for_review` para prevenir el movimiento de archivos hacia directorios de sistema o protegidos, utilizando `ensure_safe_to_modify` sobre el destino final calculado y bloqueando cualquier intento de movimiento si la ruta destino resultante no pasa los filtros de seguridad, garantizando que el `shutil.move` nunca opere en un entorno comprometido.
 - `2026-08-07T04:08:18` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` para evitar que el escáner siga enlaces simbólicos, asegurando que solo se procesen archivos dentro de la estructura de directorios intencionada y evitando el acceso inadvertido a rutas fuera de los límites definidos.
 - `2026-08-07T04:07:55` **diskreport.py** (seguridad defensiva): Se ha robustecido la función `walk_files` para validar que el `current_path` sea un hijo legítimo del `base_path` original antes de profundizar, evitando así posibles escapes de directorio mediante manipulación de rutas o enlaces simbólicos maliciosos.
 - `2026-08-07T03:58:52` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_sum_directory_recursive` mediante la implementación de una validación de ruta estricta usando `is_protected_path` en cada iteración del recorrido, evitando así el acceso accidental a subdirectorios protegidos que podrían existir dentro de las rutas de caché.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-07T03:38:46` **organizer.py** (robustez ante casos límite): Se reforzó la robustez de `stage_for_review` ante condiciones de carrera y archivos inaccesibles, asegurando que la operación de movimiento sea atómica respecto a la existencia del archivo en el momento de la ejecución.
 - `2026-08-07T03:38:23` **memory.py** (robustez ante casos límite): Se mejora la robustez de `trim_working_set` añadiendo una validación explícita sobre `is_protected_path` ante posibles casos de permisos denegados o rutas nulas reportadas por `psapi`, y se asegura el manejo correcto de la API `OpenProcess` para evitar handles huérfanos.
 - `2026-08-07T03:37:56` **main.py** (robustez ante casos límite): Se introdujo una gestión robusta de estados intermedios y una verificación de existencia de archivos en el método `on_trim_process` para evitar excepciones en caso de que el proceso termine mientras el usuario interactúa, además de validar la existencia de objetos GUI antes de acceder a ellos en callbacks asíncronos.
-- `2026-08-07T03:28:10` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `score_security` ante entradas negativas o no numéricas y optimicé `compute_score` para manejar el caso límite donde `_WEIGHT_ITEMS` contenga claves inexistentes en `scores`, evitando desbordamientos o valores nulos inesperados mediante el uso de `get` con un default seguro.
-- `2026-08-07T03:27:58` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `hash_file` y `partial_hash` ante errores de lectura de disco mediante el uso de `memoryview` para evitar copias innecesarias y un manejo más estricto de excepciones, asegurando que si un archivo se bloquea durante la lectura (por ejemplo, al ser movido o bloqueado por otro proceso), el sistema retorne `None` de forma limpia sin interrumpir el análisis global.
