@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **242** (48.0% de aceptación)
+- Mejoras aceptadas: **243** (48.2% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 28
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 196
+- Sin respuesta de la IA (error o límite): 195
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-06 | 93 | 5 | 12 | 10 | 80 |
-| 2026-08-07 | 149 | 11 | 16 | 12 | 116 |
+| 2026-08-06 | 93 | 5 | 12 | 10 | 76 |
+| 2026-08-07 | 150 | 11 | 16 | 12 | 119 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **59**
 - rendimiento: **49**
-- seguridad defensiva: **48**
+- seguridad defensiva: **49**
 - manejo de errores y validación de entradas: **43**
 - robustez ante casos límite: **43**
 
@@ -33,7 +33,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - `branding.py`: **21**
 - `diskreport.py`: **21**
 - `quarantine.py`: **21**
-- `settings.py`: **20**
+- `settings.py`: **21**
 - `scanner.py`: **19**
 - `duplicates.py`: **17**
 - `browser.py`: **17**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-07T13:29:26` **settings.py** (seguridad defensiva): Se endureció la validación de rutas en `settings.py` aplicando `is_safe_to_modify` antes de cualquier resolución de ruta o escritura en disco, evitando que configuraciones inyectadas intenten operar sobre directorios protegidos o rutas no seguras.
 - `2026-08-07T13:20:08` **safety.py** (seguridad defensiva): Se introdujo una validación de ruta absoluta en `ensure_safe_to_modify` para detectar y bloquear ataques de path traversal (`..`), asegurando que la ruta normalizada se mantenga dentro de los límites esperados mediante la comparación de las partes (`parts`) del objeto `Path`, evitando así que nombres de archivos engañosos intenten escapar de un directorio seguro.
 - `2026-08-07T13:19:24` **quarantine.py** (seguridad defensiva): Se reforzó `_validate_isolation_request` para impedir que archivos ocultos de sistema o con atributos inusuales (como ADS - Alternate Data Streams) sean procesados, previniendo así posibles ataques de "data hiding" en la cuarentena.
 - `2026-08-07T13:11:39` **memory.py** (seguridad defensiva): Se ha mejorado la robustez de `trim_working_set` añadiendo una comprobación explícita para evitar que `psapi.GetModuleFileNameExW` falle silenciosamente o maneje mal las rutas, asegurando que la validación de seguridad (`is_protected_path`) se aplique sobre una cadena de texto limpia y válida antes de cualquier interacción con el proceso.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-07T12:40:23` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en `normalize` al incluir un manejo explícito de rutas que no existen físicamente o presentan errores de acceso durante la resolución del sistema de archivos, garantizando que el bucle de validación no colapse ante nombres de archivos corruptos o rutas con caracteres inválidos de bajo nivel.
 - `2026-08-07T12:38:21` **organizer.py** (robustez ante casos límite): Se mejora la robustez de `stage_for_review` y `delete_reviewed` al validar que las rutas destino no contengan puntos de reparse (junctions) mediante `resolve()` y verificaciones explícitas, mitigando riesgos de acceso no intencional a otras unidades o directorios fuera del alcance permitido.
 - `2026-08-07T12:28:08` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez en `hash_file` y `partial_hash` para gestionar correctamente archivos bloqueados por el sistema (en uso exclusivo), añadiendo un manejo de excepciones más específico durante la apertura y lectura del stream de bytes.
-- `2026-08-07T12:18:46` **branding.py** (robustez ante casos límite): Se ha robustecido la función `save_logo_svg` añadiendo un manejo de excepciones más granular para capturar posibles errores de sistema de archivos (como discos de solo lectura o falta de espacio) antes de intentar la operación, garantizando que un fallo en la escritura no deje la aplicación en un estado inconsistente.

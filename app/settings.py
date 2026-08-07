@@ -151,13 +151,15 @@ _VALIDATOR_MAP: Final[dict[str, Callable[[str, Any], Any]]] = {
 
 def settings_path(path_or_base: PathLike | None = None) -> Path:
     """Resuelve la ruta absoluta del archivo de configuración, asegurando seguridad."""
-    key = str(path_or_base or SETTINGS_DIR)
+    base = Path(str(path_or_base or SETTINGS_DIR)).expanduser().resolve()
+    key = str(base)
     if key in _path_cache: return _path_cache[key]
-    try:
-        candidate = Path(key).expanduser().resolve()
-        res = candidate / SETTINGS_FILE if is_safe_to_modify(str(candidate)) else SETTINGS_DIR.expanduser().resolve() / SETTINGS_FILE
-    except (OSError, RuntimeError, ValueError, PermissionError):
+    
+    if is_safe_to_modify(str(base)):
+        res = base / SETTINGS_FILE
+    else:
         res = SETTINGS_DIR.expanduser().resolve() / SETTINGS_FILE
+        
     _path_cache[key] = res
     return res
 
@@ -196,6 +198,8 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     global _cached_settings, _current_path
     if not isinstance(values, dict): return None
     ruta = settings_path(path_or_base)
+    
+    # Verificación estricta de seguridad antes de cualquier operación de escritura
     if not is_safe_to_modify(str(ruta.parent)) or not is_safe_to_modify(str(ruta)): return None
         
     limpio = validate(values)
