@@ -101,9 +101,10 @@ _NUMERIC_LIMITS: Final[dict[str, tuple[int, int]]] = {
 }
 
 class _Validators:
-    """Namespace para funciones de validación de datos de entrada."""
+    """Namespace para funciones de validación de datos de entrada. Retornan None si el valor es inválido."""
     @staticmethod
     def bool(key: str, val: Any) -> bool | None:
+        """Coerción de tipos para valores booleanos desde strings o bools."""
         if isinstance(val, bool): return val
         if isinstance(val, str) and val.strip().lower() in ("1", "true", "si", "sí", "yes"): return True
         if isinstance(val, str) and val.strip().lower() in ("0", "false", "no", "none"): return False
@@ -111,6 +112,7 @@ class _Validators:
 
     @staticmethod
     def int(key: str, val: Any) -> int | None:
+        """Coerción a int con límites definidos en _NUMERIC_LIMITS."""
         if val is None or isinstance(val, bool): return None
         try:
             parsed = int(val)
@@ -120,6 +122,7 @@ class _Validators:
 
     @staticmethod
     def path(val: Any) -> str | None:
+        """Valida que la ruta sea segura según las reglas de safety.py."""
         if not val: return ""
         try:
             path = Path(str(val)).expanduser().resolve()
@@ -129,6 +132,7 @@ class _Validators:
 
     @staticmethod
     def str(key: str, val: Any) -> str | None:
+        """Validación de strings, incluyendo chequeo contra listas de valores permitidos."""
         if not isinstance(val, (str, Path)): return None
         text = str(val).strip()
         if not text: return "" if key in ("ultima_carpeta", "asistente_clave_api") else None

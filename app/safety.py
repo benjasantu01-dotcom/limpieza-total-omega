@@ -114,7 +114,7 @@ def _is_file_in_use(path: Path) -> bool:
 
 
 def _check_file_integrity(p: Path) -> None:
-    """Ejecuta una serie de validaciones sobre un archivo existente."""
+    """Ejecuta una serie de validaciones físicas sobre un archivo existente."""
     if any([
         not os.access(p, os.W_OK),
         _is_reparse_point(p),
@@ -139,7 +139,7 @@ def _is_readonly(path: Path) -> bool:
 
 @lru_cache(maxsize=2048)
 def normalize(path: PathLike) -> Path:
-    """Normaliza una ruta a su forma absoluta y resuelta."""
+    """Normaliza una ruta a su forma absoluta y resuelta, manejando errores de sistema."""
     if path is None or not isinstance(path, (str, os.PathLike)):
         raise TypeError(f"Entrada inválida: tipo {type(path) if path is not None else 'None'} no soportado.")
     
@@ -164,7 +164,7 @@ def is_drive_root(path: PathLike) -> bool:
 
 @lru_cache(maxsize=1024)
 def is_protected_path(path: PathLike) -> bool:
-    """Determina si la ruta reside en un directorio crítico del sistema."""
+    """Determina si la ruta reside en un directorio crítico del sistema o es protegida."""
     if not path:
         return True
     
@@ -204,7 +204,11 @@ def is_sensitive_file(path: PathLike) -> bool:
 
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> Path:
-    """Validador estricto para operaciones de escritura."""
+    """
+    Validador estricto para operaciones de escritura.
+    Lanza UnsafePathError si la ruta es insegura, de sistema o está bloqueada.
+    Retorna la ruta normalizada si es segura.
+    """
     if path is None:
         raise UnsafePathError("Ruta nula recibida.")
 
@@ -228,7 +232,10 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
 
 
 def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> bool:
-    """Versión booleana de `ensure_safe_to_modify` para chequeos de filtrado."""
+    """
+    Versión booleana de `ensure_safe_to_modify`.
+    Útil para filtrar listas o validaciones condicionales sin lanzar excepciones.
+    """
     try:
         ensure_safe_to_modify(path, allow_sensitive=allow_sensitive)
         return True

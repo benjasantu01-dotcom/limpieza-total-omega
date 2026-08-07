@@ -115,17 +115,14 @@ class StartupEntry:
         if not isinstance(path_str, str) or not path_str:
             return ""
         
-        # Filtro de caracteres prohibidos en rutas de sistema
         if any(c in path_str for c in '<>|?*'):
             return ""
         
-        # Retorno de caché: permite reutilizar chequeos previos de existencia
         if path_str in _EXISTS_CACHE:
             return path_str if _EXISTS_CACHE[path_str] else path_str
         
         try:
             p = Path(path_str)
-            # Validación de integridad antes de resolución costosa
             if not p.is_absolute():
                 _EXISTS_CACHE[path_str] = False
                 return path_str
@@ -151,7 +148,7 @@ class StartupEntry:
             return path_str
 
     def _resolve_path_from_command(self, cmd: str) -> str:
-        """Determina la estrategia de resolución (entrecomillada vs directa) según el formato del comando."""
+        """Determina la estrategia de resolución (entrecomillada vs directa)."""
         if cmd.startswith('"'):
             return self._extract_quoted_path(cmd)
         parts: List[str] = cmd.split()
@@ -191,7 +188,7 @@ def startup_folders() -> List[Path]:
 
 
 def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[StartupEntry]:
-    """Escanea carpetas de inicio en busca de ejecutables."""
+    """Escanea carpetas de inicio (Startup) y devuelve una lista de objetos StartupEntry."""
     if folders is None:
         folders = startup_folders()
     
@@ -199,16 +196,13 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
 
     for folder in folders:
         try:
-            # Usamos listdir en lugar de iterdir para capturar errores de permiso individualmente
             items = os.listdir(folder)
             for item_name in items:
                 item = folder / item_name
                 
-                # Validación de seguridad defensiva
                 if is_protected_path(item) or item.is_symlink():
                     continue
 
-                # Solo procesar si es un archivo con extensión ejecutable
                 if item.is_file() and item.suffix.lower() in EXECUTABLE_EXTS:
                     try:
                         name = item.stem
@@ -217,20 +211,21 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
                     except OSError:
                         continue
         except (OSError, PermissionError):
-            # Si no se puede listar la carpeta, se ignora silenciosamente
             continue
     return found_entries
 
 
 def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry]:
-    """Convierte salida CSV de PowerShell en objetos StartupEntry."""
+    """
+    Parsea una salida CSV (formato PowerShell) en una lista de StartupEntry.
+    El formato esperado debe tener al menos un nombre y un comando.
+    """
     if not isinstance(text, str) or not text.strip():
         return []
         
     parsed_entries: List[StartupEntry] = []
     lines: List[str] = text.splitlines()
     
-    # Buscamos la fila de encabezado esperada por ConvertTo-Csv
     if len(lines) < 2:
         return []
         
@@ -239,18 +234,15 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
         if not stripped_line:
             continue
         
-        # Validar estructura básica del CSV: esperamos al menos dos columnas
         parts = [p.strip().strip('"') for p in stripped_line.split(",")]
         if len(parts) < 2:
             continue
             
         name_raw, cmd_raw = parts[0], parts[1]
         
-        # Validar contenido sanitizado
         name: str = "".join(c for c in name_raw if ord(c) >= 32)
         cmd: str = "".join(c for c in cmd_raw if ord(c) >= 32)
         
-        # Filtrar encabezados residuales y nombres vacíos
         if not name or name.lower() in ("name", "pscustomobject") or name.upper().startswith("PS"):
             continue
         
@@ -258,9 +250,7 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
             continue
             
         try:
-            # Validar ruta básica antes de instanciar
             p = Path(cmd)
-            # Evitar rutas que no tienen sentido como ejecutables
             if not str(p).strip() or is_protected_path(p):
                 continue
             parsed_entries.append(StartupEntry(name=name, command=cmd, source=source))
@@ -271,7 +261,7 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
 
 
 def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[StartupEntry]:
-    """Ejecuta consulta de registro mediante PowerShell de forma síncrona."""
+    """Consulta el registro de Windows vía PowerShell para obtener programas de inicio."""
     if os.name != "nt":
         return []
     
@@ -291,11 +281,10 @@ def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[Start
 
 
 def list_startup_entries() -> List[StartupEntry]:
-    """Combina fuentes de inicio (registro + carpetas) deduplicando por nombre."""
+    """Agrega y deduplica entradas encontradas en carpetas y registro."""
     seen_names: Set[str] = set()
     unique_entries: List[StartupEntry] = []
     
-    # Recolectar todas las entradas disponibles
     all_raw_entries = entries_from_folders() + entries_from_registry()
     
     for entry in all_raw_entries:
@@ -308,7 +297,7 @@ def list_startup_entries() -> List[StartupEntry]:
 
 
 def estimate_impact(entries: Sequence[StartupEntry]) -> str:
-    """Clasifica la carga de inicio según conteo (0-ok, >18-danger)."""
+    """Retorna un nivel de criticidad según el conteo de programas de inicio."""
     count: int = len(entries)
     thresholds: List[Tuple[int, str]] = [(5, "ok"), (10, "info"), (18, "warning")]
     for limit, label in thresholds:
@@ -318,7 +307,7 @@ def estimate_impact(entries: Sequence[StartupEntry]) -> str:
 
 
 def summarize(entries: Optional[Sequence[StartupEntry]] = None) -> List[str]:
-    """Genera informe en texto plano legible sobre los programas encontrados."""
+    """Genera una descripción legible y estructurada del inventario encontrado."""
     entries_list: Sequence[StartupEntry] = entries if entries is not None else list_startup_entries()
     total_count: int = len(entries_list)
         

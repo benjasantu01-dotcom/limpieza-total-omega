@@ -97,6 +97,10 @@ class Scanner:
 
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None) -> Optional[Suspicion]:
+    """
+    Detecta archivos con doble extensión (ej: imagen.png.exe), una técnica clásica de engaño
+    para ocultar el ejecutable real detrás de una extensión de archivo de datos.
+    """
     target = name or path.name
     if target and DOUBLE_EXTENSION_RE.search(target):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
@@ -104,6 +108,10 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, name
 
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, hours: int = RECENT_FILE_THRESHOLD_HOURS) -> Optional[Suspicion]:
+    """
+    Identifica archivos ejecutables modificados recientemente, priorizando el monitoreo
+    de descargas o carpetas temporales donde suelen aterrizar amenazas nuevas.
+    """
     try:
         st = entry.stat() if entry else path.lstat()
         if datetime.now() - datetime.fromtimestamp(st.st_mtime) < timedelta(hours=hours):
@@ -114,6 +122,10 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None) -> Optional[Suspicion]:
+    """
+    Verifica si un ejecutable tiene nombre de proceso crítico del sistema (ej: svchost.exe)
+    pero se encuentra fuera de los directorios protegidos de System32.
+    """
     try:
         if SYSTEM32_LOWER not in str(path.parent).lower():
             return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
@@ -124,6 +136,10 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, name
 CHECK_REGISTRY: Final[List[SuspicionCheck]] = [check_double_extension]
 
 def scan_file(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, prevalidated: bool = False) -> ScanResult:
+    """
+    Ejecuta el conjunto de chequeos heurísticos sobre un archivo individual.
+    Si 'prevalidated' es True, omite las comprobaciones de seguridad de ruta.
+    """
     if not isinstance(path, Path):
         return []
     
@@ -151,6 +167,10 @@ def scan_file(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[st
 
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
+    """
+    Inicia un escaneo recursivo desde la raíz proporcionada.
+    Valida la integridad de la ruta antes de instanciar el proceso de escaneo.
+    """
     if directory is None:
         return []
         
