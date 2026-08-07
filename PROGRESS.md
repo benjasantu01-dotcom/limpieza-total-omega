@@ -5,8 +5,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **504**
-- Mejoras aceptadas: **229** (45.4% de aceptación)
+- Iteraciones totales: **502**
+- Mejoras aceptadas: **227** (45.2% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 26
 - Sin cambios (nada sustancial que mejorar): 22
@@ -16,36 +16,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-06 | 72 | 3 | 9 | 8 | 64 |
-| 2026-08-07 | 157 | 12 | 17 | 14 | 148 |
+| 2026-08-06 | 69 | 3 | 9 | 8 | 63 |
+| 2026-08-07 | 158 | 12 | 17 | 14 | 149 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **49**
-- rendimiento: **48**
 - legibilidad y documentación: **48**
+- rendimiento: **45**
 - robustez ante casos límite: **43**
-- manejo de errores y validación de entradas: **41**
+- manejo de errores y validación de entradas: **42**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **20**
+- `settings.py`: **21**
 - `quarantine.py`: **20**
-- `settings.py`: **20**
 - `branding.py`: **20**
+- `diskreport.py`: **19**
 - `assistant.py`: **19**
 - `scanner.py`: **18**
 - `organizer.py`: **17**
 - `browser.py`: **16**
 - `memory.py`: **16**
 - `duplicates.py`: **16**
-- `healthscore.py`: **14**
 - `safety.py`: **14**
-- `main.py`: **12**
+- `healthscore.py`: **13**
+- `main.py`: **11**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-07T15:32:17` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save` y `load` capturando posibles errores de serialización JSON y garantizando que los estados de error no dejen el sistema en inconsistencia, además de asegurar que `_Validators.path` maneje correctamente rutas inexistentes o inaccesibles sin lanzar excepciones hacia el resto del bucle.
 - `2026-08-07T15:11:58` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `purge_all` y la carga de manifiestos implementando una limpieza defensiva de rutas (resolución de `resolve()` y `expanduser()`) y validación de tipos ante entradas corruptas, reduciendo riesgos de excepciones no controladas al procesar archivos.
 - `2026-08-07T15:11:24` **organizer.py** (manejo de errores y validación de entradas): Se mejora la robustez de `sort_junk` y `delete_reviewed` mediante la validación explícita de entradas (tipos de datos, nulidad y valores), reemplazando comportamientos implícitos por un manejo de errores defensivo alineado con el enfoque de seguridad actual.
 - `2026-08-07T15:05:29` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez de `top_memory_processes` añadiendo validación de tipo y excepciones específicas al procesar la salida de PowerShell, asegurando que datos malformados no interrumpan la captura de métricas.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-07T13:11:12` **main.py** (seguridad defensiva): Se introdujo una comprobación explícita para evitar que `run_async` acepte funciones que modifiquen el disco de forma insegura, asegurando que cualquier operación asíncrona que toque rutas pase por el mismo chequeo de seguridad que el resto de la aplicación, evitando que tareas en segundo plano eludan `safety.py`.
 - `2026-08-07T13:09:05` **healthscore.py** (seguridad defensiva): Se ha robustecido la validación de `SystemMetrics` mediante la implementación de `math.isfinite` en cada campo numérico durante la validación interna, garantizando que el sistema no propague valores `NaN` o `inf` desde el origen (módulos externos) hacia el motor de puntuación.
 - `2026-08-07T12:59:48` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez defensiva al añadir una validación explícita mediante `is_protected_path` justo antes de realizar cualquier operación de I/O en `hash_file`, `partial_hash` y `suggest_keeper`, garantizando que incluso si un archivo fuera movido o alterado entre la etapa de recolección y la de análisis, la aplicación nunca acceda a rutas restringidas.
-- `2026-08-07T12:59:39` **diskreport.py** (seguridad defensiva): Reforcé la seguridad defensiva en `walk_files` evitando que la resolución de rutas simbólicas o accesos a archivos especiales mediante `os.scandir` permita escapar del directorio raíz o acceder a datos fuera del alcance permitido, asegurando que la validación de `is_protected_path` sea efectiva incluso ante enlaces simbólicos maliciosos.

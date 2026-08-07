@@ -124,8 +124,12 @@ class _Validators:
     def path(val: Any) -> str | None:
         if val is None or not isinstance(val, (str, Path)): return ""
         try:
-            path = Path(str(val)).expanduser().resolve()
-            return str(path) if is_safe_to_modify(str(path)) else None
+            path_str = str(val).strip()
+            if not path_str: return ""
+            path = Path(path_str).expanduser().resolve()
+            if is_safe_to_modify(str(path)):
+                return str(path)
+            return None
         except (OSError, RuntimeError, ValueError, TypeError, PermissionError):
             return None
 
@@ -187,11 +191,12 @@ def load(path_or_base: PathLike | None = None) -> AppSettings:
                 _cached_settings = validate(data)
                 _current_path = ruta
                 return _cached_settings.copy()
-        raise ValueError("Configuración inválida")
-    except (OSError, PermissionError, json.JSONDecodeError, UnicodeDecodeError, ValueError):
-        _cached_settings = DEFAULTS.copy()
-        _current_path = ruta
-        return _cached_settings.copy()
+    except (OSError, PermissionError, json.JSONDecodeError, UnicodeDecodeError):
+        pass
+    
+    _cached_settings = DEFAULTS.copy()
+    _current_path = ruta
+    return _cached_settings.copy()
 
 def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     """Valida y guarda de forma atómica la configuración en el sistema de archivos."""
@@ -199,7 +204,6 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     if not isinstance(values, dict): return None
     ruta = settings_path(path_or_base)
     
-    # Verificación estricta de seguridad antes de cualquier operación de escritura
     if not is_safe_to_modify(str(ruta.parent)) or not is_safe_to_modify(str(ruta)): return None
         
     limpio = validate(values)
@@ -220,7 +224,7 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
         os.replace(temp_path, ruta)
         _cached_settings, _current_path = limpio, ruta
         return ruta
-    except (OSError, PermissionError, RuntimeError, TypeError):
+    except (OSError, PermissionError, RuntimeError, TypeError, ValueError):
         return None
     finally:
         if temp_path and temp_path.exists():

@@ -1307,3 +1307,9 @@ FAILED evolve/tests/test_integrity.py::test_is_safe_returns_bool_and_never_raise
 - `2026-08-07T15:12:27` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de las validaciones en `ensure_safe_to_modify` y `normalize` mediante la validación temprana de tipos y la protección contra estados intermedios inválidos, asegurando que `_check_file_integrity` solo se ejecute con rutas absolutamente resueltas y no nulas, evitando excepciones no controladas durante el proceso de escaneo.
 - `2026-08-07T15:12:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-07T15:12:27` Corrida terminada. Total usado hoy: 348.
+- `2026-08-07T15:31:24` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-07T15:31:47` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-07T15:32:17` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save` y `load` capturando posibles errores de serialización JSON y garantizando que los estados de error no dejen el sistema en inconsistencia, además de asegurar que `_Validators.path` maneje correctamente rutas inexistentes o inaccesibles sin lanzar excepciones hacia el resto del bucle.
+- `2026-08-07T15:32:17` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-08-07T15:32:17` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-07T15:32:17` Corrida terminada. Total usado hoy: 350.
