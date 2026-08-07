@@ -140,7 +140,7 @@ def parse_linux_meminfo(text: str) -> MemorySnapshot:
     Parsea el contenido de /proc/meminfo. 
     Convierte unidades kB de Linux a bytes y retorna un MemorySnapshot.
     """
-    if not text:
+    if not isinstance(text, str) or not text:
         return MemorySnapshot(0, 0)
     values: Dict[str, int] = {}
     for line in text.splitlines():
@@ -148,19 +148,19 @@ def parse_linux_meminfo(text: str) -> MemorySnapshot:
         if match:
             try:
                 values[match.group(1)] = int(match.group(2)) * 1024
-            except (ValueError, OverflowError):
+            except (ValueError, OverflowError, TypeError):
                 continue
     
     total = values.get("MemTotal", 0)
     available = values.get("MemAvailable", values.get("MemFree", 0))
     
-    if total <= 0:
+    if not isinstance(total, int) or total <= 0:
         return MemorySnapshot(0, 0)
         
     return MemorySnapshot(
         total=total,
-        available=max(0, min(available, total)),
-        cached=values.get("Cached", 0)
+        available=max(0, min(available if isinstance(available, int) else 0, total)),
+        cached=values.get("Cached", 0) if isinstance(values.get("Cached"), int) else 0
     )
 
 

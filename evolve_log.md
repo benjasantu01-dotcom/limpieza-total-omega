@@ -1153,3 +1153,11 @@ assert not {'replace'}
 - `2026-08-07T01:36:50` ➖ Sin cambios en main.py (enfoque: manejo de errores y validación de entradas). Motivo: Se ha mejorado la robustez de `main.py` implementando validación de tipo y valor para las entradas críticas en `_collect_settings`, evitando posibles fallos de ejecución si el usuario ingresa texto no numérico en campos que requieren enteros.
 - `2026-08-07T01:36:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-07T01:36:50` Corrida terminada. Total usado hoy: 28.
+- `2026-08-07T01:44:46` Arrancando corrida. Quedan hoy ~272 peticiones objetivo.
+- `2026-08-07T01:45:04` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-07T01:45:33` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `parse_linux_meminfo` mediante la validación explícita de tipos y la captura de errores en la conversión de valores, evitando fallos ante entradas malformadas en `/proc/meminfo`.
+- `2026-08-07T01:45:56` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-07T01:46:30` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `quarantine_file` validando explícitamente que la ruta de origen no sea una ruta de red (UNC) o una unidad no local antes de intentar cualquier operación de I/O, previniendo errores de permisos en entornos de red.
+- `2026-08-07T01:46:35` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-07T01:46:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-07T01:46:35` Corrida terminada. Total usado hoy: 32.

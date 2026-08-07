@@ -278,6 +278,11 @@ def quarantine_file(
         raise ValueError("La ruta de origen no puede estar vacía.")
     
     source_path = normalize(source).resolve()
+    
+    # Validar que no sea una ruta de red o UNC
+    if str(source_path).startswith(("\\\\", "//")):
+        raise UnsafePathError("No se permite cuarentena en rutas de red (UNC).")
+        
     dest_dir = quarantine_dir(base)
     
     if not source_path.exists():
