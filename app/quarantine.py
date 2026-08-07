@@ -476,6 +476,8 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     
     try:
         for entry in quarantine_root.iterdir():
+            if not entry.exists():
+                continue
             if _should_purge_file(entry, quarantine_root, item_map_by_name):
                 if _safe_unlink(entry):
                     count += 1

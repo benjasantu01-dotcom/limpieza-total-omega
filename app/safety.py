@@ -139,7 +139,7 @@ def _is_readonly(path: Path) -> bool:
 
 @lru_cache(maxsize=2048)
 def normalize(path: PathLike) -> Path:
-    """Normaliza una ruta a su forma absoluta y resuelta, manejando errores de sistema."""
+    """Normaliza una ruta a su forma absoluta, manejando rutas inexistentes sin fallar."""
     if path is None or not isinstance(path, (str, os.PathLike)):
         raise TypeError(f"Entrada inválida: tipo {type(path) if path is not None else 'None'} no soportado.")
     
@@ -148,7 +148,8 @@ def normalize(path: PathLike) -> Path:
         raise ValueError("La ruta proporcionada está vacía.")
         
     try:
-        return Path(str_path).expanduser().resolve()
+        # resolve(strict=False) permite manejar rutas que aún no existen en el disco
+        return Path(str_path).expanduser().resolve(strict=False)
     except (OSError, RuntimeError):
         return Path(os.path.abspath(os.path.expanduser(str_path)))
 
@@ -176,8 +177,11 @@ def is_protected_path(path: PathLike) -> bool:
             return True
             
         for sys_root in _SYSTEM_ROOTS:
-            if os.path.commonpath([str(p), str(sys_root)]) == str(sys_root):
-                return True
+            try:
+                if os.path.commonpath([str(p), str(sys_root)]) == str(sys_root):
+                    return True
+            except ValueError:
+                continue
         
         return p == Path(p.anchor) or (p.exists() and _is_reparse_point(p))
     except (PermissionError, OSError, ValueError, TypeError):
@@ -206,7 +210,6 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
     """
     Validador estricto para operaciones de escritura.
     Lanza UnsafePathError si la ruta es insegura, de sistema o está bloqueada.
-    Retorna la ruta normalizada si es segura.
     """
     if path is None:
         raise UnsafePathError("Ruta nula recibida.")
@@ -218,11 +221,12 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
     if str_val.startswith(("\\\\", "//")):
         raise UnsafePathError("Operación bloqueada: rutas de red no permitidas.")
     
-    if p.exists():
-        _check_file_integrity(p)
-
+    # Chequeo de seguridad preventivo incluso si el archivo no existe
     if is_drive_root(p) or is_protected_path(p):
         raise UnsafePathError("Operación bloqueada: ruta de sistema protegida.")
+        
+    if p.exists():
+        _check_file_integrity(p)
     
     if not allow_sensitive and is_sensitive_file(p):
         raise UnsafePathError("Operación bloqueada: extensión sensible.")
