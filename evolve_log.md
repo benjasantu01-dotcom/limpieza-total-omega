@@ -1314,3 +1314,4 @@ FAILED evolve/tests/test_integrity.py::test_is_safe_returns_bool_and_never_raise
 - `2026-08-07T15:32:17` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-07T15:32:17` Corrida terminada. Total usado hoy: 350.
 - `2026-08-07T15:41:38` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-08-07T15:51:53` Presupuesto diario agotado (350 usados). Corte hasta mañana.
