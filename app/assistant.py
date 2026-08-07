@@ -475,7 +475,7 @@ def _call_gemini(
         
         final_text = text.strip()[:1500]
         return final_text if _ensure_safe_text(final_text) else None
-    except (json.JSONDecodeError, urllib.error.URLError, TypeError, KeyError, ValueError):
+    except (json.JSONDecodeError, urllib.error.URLError, TypeError, KeyError, ValueError, OSError):
         return None
 
 
@@ -489,7 +489,7 @@ def ask(question: str, context: Optional[SystemContext] = None,
         return respaldo
 
     try:
-        configuracion: Any = settings.load(base)
+        configuracion = settings.load(base)
         if not isinstance(configuracion, dict):
             return respaldo
             

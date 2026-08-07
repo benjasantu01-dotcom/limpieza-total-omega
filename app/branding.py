@@ -260,7 +260,8 @@ def _get_shield_coords(sx: float, sy: float, s: float) -> List[float]:
 @lru_cache(maxsize=4)
 def logo_svg(size: int = 128) -> str:
     """Serializa la identidad visual de la marca en formato SVG."""
-    return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{size}" height="{size}" viewBox="0 0 128 128">
+    s = max(1, int(size))
+    return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{s}" height="{s}" viewBox="0 0 128 128">
   <defs>
     <linearGradient id="omegaShield" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0%" stop-color="{GRADIENT_STOPS[0]}"/>
