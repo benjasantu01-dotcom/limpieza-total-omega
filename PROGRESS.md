@@ -6,8 +6,8 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **232** (46.0% de aceptación)
-- Rechazadas por tests: 16
+- Mejoras aceptadas: **233** (46.2% de aceptación)
+- Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 26
 - Sin cambios (nada sustancial que mejorar): 16
 - Sin respuesta de la IA (error o límite): 214
@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-06 | 145 | 8 | 17 | 11 | 147 |
-| 2026-08-07 | 87 | 8 | 9 | 5 | 67 |
+| 2026-08-06 | 143 | 7 | 17 | 11 | 146 |
+| 2026-08-07 | 90 | 8 | 9 | 5 | 68 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - rendimiento: **49**
 - manejo de errores y validación de entradas: **44**
-- seguridad defensiva: **41**
-- robustez ante casos límite: **41**
+- robustez ante casos límite: **44**
+- seguridad defensiva: **39**
 
 ## Mejoras aceptadas por archivo
 
-- `scanner.py`: **21**
 - `branding.py`: **21**
 - `quarantine.py`: **21**
-- `settings.py`: **20**
 - `diskreport.py`: **20**
+- `scanner.py`: **20**
 - `assistant.py`: **19**
+- `settings.py`: **19**
 - `browser.py`: **17**
-- `healthscore.py`: **16**
+- `healthscore.py`: **17**
 - `memory.py`: **16**
 - `duplicates.py`: **15**
-- `main.py`: **14**
-- `organizer.py`: **14**
+- `main.py`: **15**
+- `organizer.py`: **15**
 - `safety.py`: **10**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-07T08:04:34` **organizer.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `stage_for_review` para evitar que el proceso intente mover archivos hacia sí mismos o dentro de la misma ubicación original, además de asegurar que la ruta destino no sea un punto de montaje o enlace simbólico antes de cualquier operación, fortaleciendo la robustez ante casos límite de rutas.
+- `2026-08-07T08:04:01` **main.py** (robustez ante casos límite): Se mejora la robustez de `on_trim_process` y `on_restore_quarantine` mediante el uso de una validación explícita de `path` y `PID` antes de cualquier interacción con el sistema operativo, previniendo errores de ejecución ante entradas malformadas o rutas inaccesibles.
+- `2026-08-07T08:02:59` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `score_security` y `score_junk` ante casos límite mediante la validación estricta de sus entradas, evitando divisiones por cero o cálculos con valores negativos inesperados que podrían derivar en resultados fuera de rango.
 - `2026-08-07T07:53:49` **duplicates.py** (robustez ante casos límite): Se ha robustecido el manejo de archivos en `duplicates.py` mediante una validación de estado de archivo previa a la apertura y una gestión defensiva ante archivos que cambian de tamaño o desaparecen durante el proceso de hashing, evitando errores en tiempo de ejecución.
 - `2026-08-07T07:53:41` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `walk_files` ante puntos de reparse (reparse points) críticos en Windows, asegurando que no solo se detecten enlaces simbólicos, sino también carpetas de sistema especiales que podrían causar recursión infinita o accesos indebidos, mediante el chequeo explícito de atributos de archivo (`FILE_ATTRIBUTE_REPARSE_POINT`).
 - `2026-08-07T07:52:54` **branding.py** (robustez ante casos límite): Mejoré la resiliencia de la función `save_logo_svg` ante errores de entrada no controlados y añadí una validación de seguridad mediante `is_protected_path` antes de intentar operaciones de escritura en disco.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-07T07:23:30` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` reemplazando la ejecución recurrente de PowerShell por una lectura más eficiente, evitando la creación innecesaria de subprocesos cuando el caché es válido.
 - `2026-08-07T07:23:19` **main.py** (rendimiento): Se implementó un sistema de "debouncing" real para el redibujo del `gauge` en el panel de salud, evitando que se disparen múltiples llamadas al canvas durante eventos de redimensionamiento o actualizaciones rápidas, optimizando el uso de CPU y evitando parpadeos visuales innecesarios.
 - `2026-08-07T07:12:56` **diskreport.py** (rendimiento): Mejoré la eficiencia del método `largest_folders` al evitar el uso de `path.relative_to(base)` y el acceso repetitivo a `Path.parts` dentro del bucle, optimizando la identificación del directorio de primer nivel mediante un cálculo de prefijo directo.
-- `2026-08-07T07:12:23` **branding.py** (rendimiento): Optimicé el cálculo del logo ASCII mediante la eliminación de una llamada innecesaria a `lru_cache`, dado que el valor es una constante estática que no requiere invocaciones repetidas ni lógica de caché.
-- `2026-08-07T07:11:52` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` y `_gen_problems` evitando la creación de listas intermedias y permitiendo que `islice` consuma el generador directamente de forma perezosa, reduciendo la presión sobre el recolector de basura en cada iteración de la interfaz.
-- `2026-08-07T07:02:37` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo `startup.py` incorporando Type Hints en todas las firmas de funciones faltantes y enriqueciendo los docstrings para explicar la lógica interna (especialmente la diferenciación entre el parseo de registros y las carpetas del sistema), facilitando el mantenimiento y la comprensión técnica para futuros colaboradores.

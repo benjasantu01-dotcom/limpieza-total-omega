@@ -586,3 +586,10 @@ FAILED evolve/tests/test_modules.py::test_score_color_survives_garbage - Asserti
 - `2026-08-07T07:53:49` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se ha robustecido el manejo de archivos en `duplicates.py` mediante una validación de estado de archivo previa a la apertura y una gestión defensiva ante archivos que cambian de tamaño o desaparecen durante el proceso de hashing, evitando errores en tiempo de ejecución.
 - `2026-08-07T07:53:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-07T07:53:49` Corrida terminada. Total usado hoy: 176.
+- `2026-08-07T08:02:31` Arrancando corrida. Quedan hoy ~124 peticiones objetivo.
+- `2026-08-07T08:02:59` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `score_security` y `score_junk` ante casos límite mediante la validación estricta de sus entradas, evitando divisiones por cero o cálculos con valores negativos inesperados que podrían derivar en resultados fuera de rango.
+- `2026-08-07T08:04:01` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se mejora la robustez de `on_trim_process` y `on_restore_quarantine` mediante el uso de una validación explícita de `path` y `PID` antes de cualquier interacción con el sistema operativo, previniendo errores de ejecución ante entradas malformadas o rutas inaccesibles.
+- `2026-08-07T08:04:26` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-08-07T08:04:34` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de integridad en `stage_for_review` para evitar que el proceso intente mover archivos hacia sí mismos o dentro de la misma ubicación original, además de asegurar que la ruta destino no sea un punto de montaje o enlace simbólico antes de cualquier operación, fortaleciendo la robustez ante casos límite de rutas.
+- `2026-08-07T08:04:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-07T08:04:34` Corrida terminada. Total usado hoy: 180.

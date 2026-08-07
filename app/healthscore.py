@@ -152,7 +152,7 @@ def score_junk(junk_mb: float) -> float:
     key = ("junk", junk_mb)
     if key in _SCORE_CACHE: return _SCORE_CACHE[key]
     val = _to_float(junk_mb)
-    res = 0.0 if JUNK_LIMIT_MB <= 0 else _clamp(1.0 - (val / JUNK_LIMIT_MB))
+    res = 1.0 if JUNK_LIMIT_MB <= 0 else _clamp(1.0 - (val / JUNK_LIMIT_MB))
     _SCORE_CACHE[key] = res
     return res
 
@@ -193,7 +193,7 @@ def score_duplicates(duplicate_mb: float) -> float:
     key = ("dup", duplicate_mb)
     if key in _SCORE_CACHE: return _SCORE_CACHE[key]
     val = _to_float(duplicate_mb)
-    res = 0.0 if DUPLICATE_LIMIT_MB <= 0 else _clamp(1.0 - (val / DUPLICATE_LIMIT_MB))
+    res = 1.0 if DUPLICATE_LIMIT_MB <= 0 else _clamp(1.0 - (val / DUPLICATE_LIMIT_MB))
     _SCORE_CACHE[key] = res
     return res
 
@@ -203,7 +203,7 @@ def score_startup(startup_count: int) -> float:
     key = ("start", startup_count)
     if key in _SCORE_CACHE: return _SCORE_CACHE[key]
     val = max(0, _to_int(startup_count))
-    res = 0.0 if STARTUP_LIMIT_COUNT <= 0 else _clamp(1.0 - (float(val) / STARTUP_LIMIT_COUNT))
+    res = 1.0 if STARTUP_LIMIT_COUNT <= 0 else _clamp(1.0 - (float(val) / STARTUP_LIMIT_COUNT))
     _SCORE_CACHE[key] = res
     return res
 

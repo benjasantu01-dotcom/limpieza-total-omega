@@ -207,12 +207,14 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         dest: Path = Path(review_dir).expanduser().resolve()
         ensure_safe_to_modify(dest)
         dest.mkdir(parents=True, exist_ok=True)
+        if dest.is_symlink() or not dest.is_dir():
+            raise ValueError("Destino de revisión inválido o punto de reparse detectado.")
     except (OSError, RuntimeError, PermissionError) as e:
         raise ValueError(f"No se pudo preparar el directorio de revisión: {e}")
 
     for jf in files:
         try:
-            current_abs: Path = jf.path
+            current_abs: Path = jf.path.resolve()
             
             if not current_abs.exists() or not current_abs.is_file():
                 continue
@@ -220,6 +222,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             if not is_safe_to_modify(current_abs):
                 continue
             
+            # Impedir mover a sí mismo o bucles de jerarquía
             if current_abs == dest or dest in current_abs.parents or current_abs.parent == dest:
                 continue
             
