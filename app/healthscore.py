@@ -161,9 +161,10 @@ def score_security(suspicious_count: int, warnings: int = 0) -> float:
     """Penaliza hallazgos: -0.05 por cada archivo sospechoso, -0.25 por advertencia crítica."""
     key = ("security", suspicious_count, warnings)
     if key in _SCORE_CACHE: return _SCORE_CACHE[key]
-    s_count = _to_int(suspicious_count)
-    w_count = _to_int(warnings)
-    res = _clamp(1.0 - ((float(max(0, s_count)) * 0.05) + (float(max(0, w_count)) * 0.25)), 0.0, 1.0)
+    # Se asegura el uso de valores no negativos para evitar bonificaciones erróneas
+    s_count = max(0, _to_int(suspicious_count))
+    w_count = max(0, _to_int(warnings))
+    res = _clamp(1.0 - ((float(s_count) * 0.05) + (float(w_count) * 0.25)), 0.0, 1.0)
     _SCORE_CACHE[key] = res
     return res
 
@@ -202,8 +203,8 @@ def score_startup(startup_count: int) -> float:
     """Normaliza arranque: penalización lineal creciente según cantidad de entradas."""
     key = ("start", startup_count)
     if key in _SCORE_CACHE: return _SCORE_CACHE[key]
-    val = _to_int(startup_count)
-    res = 0.0 if STARTUP_LIMIT_COUNT <= 0 else _clamp(1.0 - (float(max(0, val)) / STARTUP_LIMIT_COUNT))
+    val = max(0, _to_int(startup_count))
+    res = 0.0 if STARTUP_LIMIT_COUNT <= 0 else _clamp(1.0 - (float(val) / STARTUP_LIMIT_COUNT))
     _SCORE_CACHE[key] = res
     return res
 
@@ -269,7 +270,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     breakdown: Dict[str, int] = {}
     total_weighted_score: float = 0.0
     
-    # Procesamiento robusto usando .get() para evitar errores si WEIGHTS tiene áreas no calculadas
+    # Procesamiento robusto ante claves potencialmente ausentes o mal configuradas
     for area, weight in _WEIGHT_ITEMS:
         score_val = scores.get(area, 0.0) * float(weight) * _NORM_FACTOR
         breakdown[area] = int(score_val + 0.5)

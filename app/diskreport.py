@@ -135,7 +135,6 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
             return None
         p = Path(path_str).expanduser().resolve()
         
-        # Filtro de seguridad: no analizar rutas protegidas o inexistentes
         if not p.exists() or not p.is_absolute() or is_protected_path(p):
             return None
             
@@ -194,7 +193,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                             continue
                         
                         if entry.is_dir():
-                            full_path = Path(entry.path)
+                            full_path = Path(entry.path).resolve()
                             if full_path not in visited_directories:
                                 if skip_protected and is_protected_path(full_path):
                                     continue
@@ -252,10 +251,10 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
         folder_map: Dict[Path, FolderUsage] = {}
         for path, size in walk_files(base, skip_protected):
             try:
-                parts = path.relative_to(base).parts
-                if not parts:
+                relative = path.relative_to(base)
+                if not relative.parts:
                     continue
-                top_level = base / parts[0]
+                top_level = base / relative.parts[0]
                 
                 if top_level not in folder_map:
                     folder_map[top_level] = FolderUsage(path=top_level, size_bytes=size, file_count=1)

@@ -93,12 +93,14 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
             return None
             
         digest = hashlib.sha256()
-        with open(file_path, "rb", buffering=chunk_size) as f:
+        with open(file_path, "rb", buffering=0) as f:
+            buffer = bytearray(chunk_size)
+            mv = memoryview(buffer)
             while True:
-                chunk = f.read(chunk_size)
-                if not chunk:
+                n = f.readinto(mv)
+                if n == 0:
                     break
-                digest.update(chunk)
+                digest.update(mv[:n])
         return digest.hexdigest()
     except (OSError, PermissionError, ValueError, TypeError, FileNotFoundError, IsADirectoryError, RuntimeError):
         return None
@@ -120,7 +122,7 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
         if st.st_size <= 0:
             return None
 
-        with open(file_path, "rb", buffering=read_bytes) as f:
+        with open(file_path, "rb") as f:
             content = f.read(read_bytes)
             if not content:
                 return None
