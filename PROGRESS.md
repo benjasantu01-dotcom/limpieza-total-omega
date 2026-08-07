@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **231** (45.8% de aceptación)
+- Mejoras aceptadas: **232** (46.0% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 211
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-06 | 109 | 5 | 14 | 11 | 105 |
-| 2026-08-07 | 122 | 11 | 13 | 8 | 106 |
+| 2026-08-06 | 106 | 5 | 14 | 11 | 104 |
+| 2026-08-07 | 126 | 11 | 13 | 8 | 106 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **58**
+- legibilidad y documentación: **59**
 - seguridad defensiva: **48**
-- robustez ante casos límite: **43**
 - manejo de errores y validación de entradas: **43**
-- rendimiento: **39**
+- rendimiento: **42**
+- robustez ante casos límite: **40**
 
 ## Mejoras aceptadas por archivo
 
@@ -33,19 +33,23 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **21**
 - `scanner.py`: **20**
 - `settings.py`: **20**
-- `assistant.py`: **19**
-- `branding.py`: **19**
-- `memory.py`: **16**
-- `organizer.py`: **16**
-- `browser.py`: **16**
+- `assistant.py`: **20**
+- `branding.py`: **20**
+- `browser.py`: **17**
 - `healthscore.py`: **16**
+- `memory.py`: **15**
+- `organizer.py`: **15**
 - `duplicates.py`: **14**
 - `safety.py`: **13**
-- `main.py`: **12**
-- `startup.py`: **7**
+- `main.py`: **11**
+- `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-07T11:38:29` **browser.py** (rendimiento): Se optimizó el rendimiento del escaneo recursivo mediante el reemplazo de `Path.exists()` y `Path.is_dir()` (que realizan llamadas a sistema adicionales) por el uso directo de `os.DirEntry` (que ya contiene esa información de metadatos cacheada en la mayoría de los sistemas), reduciendo drásticamente las syscalls innecesarias durante la caminata de directorios.
+- `2026-08-07T11:38:20` **branding.py** (rendimiento): Se implementó un sistema de pre-procesamiento de degradados en `gradient_colors` mediante el cacheo inteligente de las listas de colores, evitando el recálculo constante de `blend` en renderizados frecuentes como los de la barra de progreso.
+- `2026-08-07T11:37:50` **assistant.py** (rendimiento): Optimicé el rendimiento de `_gen_problems` convirtiendo la lista `thresholds` en un generador de tuplas perezoso, evitando la creación de strings y listas innecesarias en cada llamada, incluso cuando no se consumen todos los elementos.
+- `2026-08-07T11:37:18` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la adición de Type Hints detallados, docstrings claros sobre las responsabilidades de cada método de `StartupEntry` y la estandarización del estilo para facilitar la mantenibilidad de la lógica de resolución de rutas.
 - `2026-08-07T11:27:53` **settings.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings descriptivos en las funciones principales y anotaciones de tipo más precisas, aclarando la semántica de la validación y el manejo de persistencia para facilitar el mantenimiento.
 - `2026-08-07T11:27:42` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento mediante la adición de docstrings técnicos detallados a los métodos de la clase `Scanner` y unifiqué el registro de comprobaciones (`CHECK_REGISTRY`) para asegurar que todos los chequeos heurísticos se ejecuten de forma consistente.
 - `2026-08-07T11:27:20` **safety.py** (legibilidad y documentación): Documenté el propósito técnico de las funciones de bajo nivel con docstrings detallados y refiné la lógica de `_is_system_or_hidden` para evitar el uso innecesario de `ctypes` en entornos no Windows, mejorando la robustez y legibilidad del módulo.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-07T11:07:07` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `walk_files` y `summarize` mediante la adición de Type Hints en retornos complejos, clarificación de variables (renombrando `entry` a `file_entry` en bucles) y documentación técnica detallada en los métodos clave para facilitar la auditoría del código.
 - `2026-08-07T11:06:42` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación y robustez de los tipos de datos mediante la adición de docstrings técnicos y type hints más precisos, asegurando que las funciones como `_is_safe_path` y `_sum_directory_recursive` sean explícitas sobre sus restricciones de seguridad.
 - `2026-08-07T10:57:41` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings descriptivos a las estructuras de datos (`PaletteDict`, `PALETTE`, `ICONS`) y clarificando las constantes para facilitar el mantenimiento, cumpliendo con el enfoque de legibilidad.
-- `2026-08-07T10:57:26` **assistant.py** (legibilidad y documentación): Documenté con docstrings claros y tipado los argumentos de los gestores (`handle_ram`, `handle_disk`, etc.) y optimicé la estructura de `_gen_problems` para mejorar la legibilidad y el mantenimiento del motor de diagnóstico.
-- `2026-08-07T10:56:27` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de la validación al centralizar la coerción de tipos dentro de los validadores, asegurando que `validate()` maneje entradas inesperadas sin abortar y manteniendo la integridad de las rutas mediante un chequeo estricto de `None` antes de procesar.
-- `2026-08-07T10:47:14` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `scan_directory` y `process_entry` mediante una validación estricta de parámetros de entrada, evitando el procesamiento de rutas inexistentes, vacías o inválidas antes de delegarlas a `Scanner`, alineándome con el enfoque de manejo de errores y validación.
-- `2026-08-07T10:47:05` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_file_in_use` y `_check_file_integrity` mediante un manejo de excepciones más granular y específico para evitar falsos positivos que bloquean operaciones válidas, y se ha añadido una validación de `path.exists()` en `_is_file_in_use` para evitar llamadas a `os.open` sobre rutas inexistentes.

@@ -76,16 +76,15 @@ class StartupEntry:
             return False
 
     def _sanitize_command(self, raw_cmd: str) -> str:
-        """Limpia la cadena eliminando caracteres de control no imprimibles."""
+        """Filtra caracteres de control para evitar inyecciones o errores de lectura."""
         if not isinstance(raw_cmd, str):
             return ""
         return "".join(c for c in raw_cmd.strip() if ord(c) >= 32)
 
     def _extract_quoted_path(self, raw_cmd: str) -> str:
         """
-        Extrae la ruta contenida entre comillas dentro de un comando.
-        Valida que no contenga caracteres prohibidos del sistema y que
-        la ruta no sea una ubicación protegida mediante `is_protected_path`.
+        Analiza cadenas entrecomilladas (ej: "C:\Path\App.exe" /args) 
+        y extrae solo la ruta de archivo para su validación de seguridad.
         """
         if not isinstance(raw_cmd, str) or len(raw_cmd) < 2:
             return ""
@@ -107,10 +106,8 @@ class StartupEntry:
 
     def _resolve_and_cache_path(self, path_str: str) -> str:
         """
-        Normaliza rutas, resolviendo enlaces simbólicos y usando caché de existencia.
-        Aplica validaciones estrictas: las rutas protegidas, symlinks o archivos
-        inexistentes son marcados como no válidos. Retorna la ruta absoluta o
-        vacío si la validación falla.
+        Normaliza rutas y valida existencia real. 
+        Las rutas protegidas o symlinks no se resuelven para evitar escalada de privilegios.
         """
         if not isinstance(path_str, str) or not path_str:
             return ""
@@ -148,7 +145,7 @@ class StartupEntry:
             return path_str
 
     def _resolve_path_from_command(self, cmd: str) -> str:
-        """Determina la estrategia de resolución (entrecomillada vs directa)."""
+        """Determina la estrategia de análisis de ruta basada en el formato del comando."""
         if cmd.startswith('"'):
             return self._extract_quoted_path(cmd)
         parts: List[str] = cmd.split()
@@ -156,7 +153,10 @@ class StartupEntry:
         
     @property
     def executable(self) -> str:
-        """Devuelve el ejecutable resuelto y validado (calculado bajo demanda)."""
+        """
+        Obtiene la ruta absoluta del ejecutable si existe y es seguro. 
+        Usa caché interno para evitar penalización por múltiples llamadas.
+        """
         if self._checked_exists:
             return self._exec_cache or ""
             
@@ -217,8 +217,8 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
 
 def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry]:
     """
-    Parsea una salida CSV (formato PowerShell) en una lista de StartupEntry.
-    El formato esperado debe tener al menos un nombre y un comando.
+    Convierte el CSV generado por PowerShell a una lista de StartupEntry, 
+    validando que no contenga elementos maliciosos o protegidos.
     """
     if not isinstance(text, str) or not text.strip():
         return []
@@ -261,7 +261,7 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
 
 
 def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[StartupEntry]:
-    """Consulta el registro de Windows vía PowerShell para obtener programas de inicio."""
+    """Consulta el registro de Windows vía PowerShell de forma segura."""
     if os.name != "nt":
         return []
     
@@ -281,7 +281,7 @@ def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[Start
 
 
 def list_startup_entries() -> List[StartupEntry]:
-    """Agrega y deduplica entradas encontradas en carpetas y registro."""
+    """Agrega y deduplica entradas encontradas en el sistema."""
     seen_names: Set[str] = set()
     unique_entries: List[StartupEntry] = []
     
@@ -307,7 +307,7 @@ def estimate_impact(entries: Sequence[StartupEntry]) -> str:
 
 
 def summarize(entries: Optional[Sequence[StartupEntry]] = None) -> List[str]:
-    """Genera una descripción legible y estructurada del inventario encontrado."""
+    """Genera una descripción legible para el reporte final del inventario."""
     entries_list: Sequence[StartupEntry] = entries if entries is not None else list_startup_entries()
     total_count: int = len(entries_list)
         

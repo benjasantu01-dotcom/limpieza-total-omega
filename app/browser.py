@@ -146,7 +146,7 @@ def _is_excluded_file(name: str) -> bool:
 def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool]) -> int:
     """
     Calcula el peso total de un directorio mediante escaneo recursivo.
-    Se asegura de no seguir enlaces simbólicos ni junctions (puntos de reparse).
+    Usa os.DirEntry para evitar llamadas a sistema redundantes (stat).
     """
     total: int = 0
     try:
@@ -159,7 +159,7 @@ def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool
                     
                     if entry.is_dir():
                         total += _sum_directory_recursive(entry.path, is_junction_fn)
-                    elif entry.is_file() and entry.name and not _is_excluded_file(entry.name):
+                    elif entry.is_file() and not _is_excluded_file(entry.name):
                         total += entry.stat().st_size
                 except (OSError, PermissionError):
                     continue
@@ -195,7 +195,6 @@ def _is_valid_cache_path(candidate: Optional[Path], base_path: Path) -> bool:
             candidate.exists() and 
             candidate.is_dir() and 
             _is_safe_path(candidate, base_path) and
-            candidate.name is not None and
             not _is_excluded_file(candidate.name)
         )
     except (OSError, PermissionError, RuntimeError):

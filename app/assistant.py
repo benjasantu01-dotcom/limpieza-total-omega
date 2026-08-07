@@ -418,18 +418,15 @@ def _gen_problems(ctx: SystemContext) -> Generator[str, None, None]:
     """
     if ctx is None: return
     
-    thresholds = [
+    # Generador perezoso: evita evaluar todas las condiciones y crear strings si no hace falta
+    yield from (m for c, m in (
         (ctx.disk_free_percent < 10.0, f"queda solo {ctx.disk_free_percent:.0f}% de disco libre"),
         (ctx.suspicious_warnings > 0, f"{ctx.suspicious_warnings} archivo(s) sospechosos"),
         (ctx.memory_available_percent < 15.0, f"queda {ctx.memory_available_percent:.0f}% de RAM"),
         (ctx.junk_mb > 1000.0, f"{ctx.junk_mb:.0f} MB de archivos basura"),
         (ctx.duplicate_mb > 500.0, f"{ctx.duplicate_mb:.0f} MB en duplicados"),
         (ctx.startup_count > 15, f"{ctx.startup_count} programas de inicio")
-    ]
-    
-    for condition, message in thresholds:
-        if condition:
-            yield message
+    ) if c)
 
 
 def available(base: Union[str, Path, None] = None) -> bool:
