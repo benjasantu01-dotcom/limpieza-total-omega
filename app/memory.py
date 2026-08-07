@@ -198,28 +198,6 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
     return sorted(_gen_proc(), key=lambda p: p.working_set, reverse=True)[:limit]
 
 
-def _create_memstat_struct(ctypes_lib: "ctypes") -> "ctypes.Structure":
-    """
-    Define la estructura C `MEMORYSTATUSEX` requerida por la API de Windows.
-    Esta estructura mapea los estados de memoria física y virtual del sistema.
-    """
-    class MEMORYSTATUSEX(ctypes_lib.Structure):
-        _fields_ = [
-            ("dwLength", ctypes_lib.c_ulong),
-            ("dwMemoryLoad", ctypes_lib.c_ulong),
-            ("ullTotalPhys", ctypes_lib.c_ulonglong),
-            ("ullAvailPhys", ctypes_lib.c_ulonglong),
-            ("ullTotalPageFile", ctypes_lib.c_ulonglong),
-            ("ullAvailPageFile", ctypes_lib.c_ulonglong),
-            ("ullTotalVirtual", ctypes_lib.c_ulonglong),
-            ("ullAvailVirtual", ctypes_lib.c_ulonglong),
-            ("ullAvailExtendedVirtual", ctypes_lib.c_ulonglong),
-        ]
-    stat = MEMORYSTATUSEX()
-    stat.dwLength = ctypes_lib.sizeof(MEMORYSTATUSEX)
-    return stat
-
-
 def _read_windows_snapshot() -> MemorySnapshot:
     """
     Consulta la API Win32 `GlobalMemoryStatusEx` mediante ctypes para obtener
@@ -227,9 +205,23 @@ def _read_windows_snapshot() -> MemorySnapshot:
     """
     import ctypes
 
-    stat = _create_memstat_struct(ctypes)
-    kernel32 = ctypes.windll.kernel32
+    class MEMORYSTATUSEX(ctypes.Structure):
+        _fields_ = [
+            ("dwLength", ctypes.c_ulong),
+            ("dwMemoryLoad", ctypes.c_ulong),
+            ("ullTotalPhys", ctypes.c_ulonglong),
+            ("ullAvailPhys", ctypes.c_ulonglong),
+            ("ullTotalPageFile", ctypes.c_ulonglong),
+            ("ullAvailPageFile", ctypes.c_ulonglong),
+            ("ullTotalVirtual", ctypes.c_ulonglong),
+            ("ullAvailVirtual", ctypes.c_ulonglong),
+            ("ullAvailExtendedVirtual", ctypes.c_ulonglong),
+        ]
+
+    stat = MEMORYSTATUSEX()
+    stat.dwLength = ctypes.sizeof(MEMORYSTATUSEX)
     
+    kernel32 = ctypes.windll.kernel32
     if not hasattr(kernel32, "GlobalMemoryStatusEx") or not kernel32.GlobalMemoryStatusEx(ctypes.byref(stat)):
         return MemorySnapshot(total=0, available=0)
         
@@ -254,7 +246,7 @@ def read_snapshot() -> MemorySnapshot:
                 content = f.read()
                 if content:
                     return parse_linux_meminfo(content)
-        except (OSError, PermissionError, IOError) as e:
+        except (OSError, PermissionError, IOError):
             return MemorySnapshot(total=0, available=0)
             
     return MemorySnapshot(total=0, available=0)
@@ -305,7 +297,8 @@ def pressure_level(snapshot: MemorySnapshot) -> str:
 def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] = None) -> List[str]:
     """
     Genera un informe textual de salud de memoria para la interfaz.
-    Recibe un snapshot y una lista opcional de procesos para reportar el mayor consumo.
+    Retorna una lista de líneas descriptivas incluyendo diagnóstico global y
+    opcionalmente los procesos con mayor huella de memoria.
     """
     if not isinstance(snapshot, MemorySnapshot) or snapshot.total <= 0:
         return ["No se pudo leer el estado de la memoria en este sistema."]
@@ -337,7 +330,7 @@ def _is_system_process(pid: int) -> bool:
     """
     Verifica si un PID pertenece a procesos críticos (System, Idle) 
     o procesos de muy bajo número (servicios del kernel) para evitar 
-    intentar modificar su working set mediante APIs de usuario.
+    intervenir su gestión de memoria.
     """
     return pid in SYSTEM_CRITICAL_PIDS or pid <= 100
 

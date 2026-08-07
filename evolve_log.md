@@ -1199,3 +1199,29 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-07T02:06:43` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). He mejorado la documentación y tipado en `walk_files` y `drive_usage` para explicitar los contratos de seguridad y manejar casos de error, alineándome con el enfoque de legibilidad y robustez técnica.
 - `2026-08-07T02:06:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-07T02:06:43` Corrida terminada. Total usado hoy: 40.
+- `2026-08-07T02:15:19` Arrancando corrida. Quedan hoy ~260 peticiones objetivo.
+- `2026-08-07T02:15:45` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo `duplicates.py` mediante docstrings detallados en las funciones de procesamiento (`_collect_candidates`, `_refine_by_hash`) y refiné el tipado para mejorar la legibilidad del pipeline de comparación, facilitando el mantenimiento a futuro.
+- `2026-08-07T02:16:09` Tests FALLARON:
+```
+emMetrics())
+        assert resultado.recommendations
+>       assert "buen estado" in " ".join(resultado.recommendations)
+E       AssertionError: assert 'buen estado' in 'No hay nada urgente para hacer.'
+E        +  where 'No hay nada urgente para hacer.' = <built-in method join of str object at 0x7f892422bb40>(['No hay nada urgente para hacer.'])
+E        +    where <built-in method join of str object at 0x7f892422bb40> = ' '.join
+E        +    and   ['No hay nada urgente para hacer.'] = HealthResult(score=100, grade='A', breakdown={'seguridad': 30, 'disco': 20, 'memoria': 18, 'basura': 14, 'duplicados': 10, 'arranque': 8}, recommendations=['No hay nada urgente para hacer.']).recommendations
+
+evolve/tests/test_modules.py:899: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_a_healthy_system_still_gets_a_recommendation - AssertionError: assert 'buen estado' in 'No hay nada urgente para hacer.'
+ +  where 'No hay nada urgente para hacer.' = <built-in method join of str object at 0x7f892422bb40>(['No hay nada urgente para hacer.'])
+ +    where <built-in method join of str object at 0x7f892422bb40> = ' '.join
+ +    and   ['No hay nada urgente para hacer.'] = HealthResult(score=100, grade='A', breakdown={'seguridad': 30, 'disco': 20, 'memoria': 18, 'basura': 14, 'duplicados': 10, 'arranque': 8}, recommendations=['No hay nada urgente para hacer.']).recommendations
+1 failed, 298 passed in 1.06s
+
+```
+- `2026-08-07T02:16:09` ❌ Mejora descartada en healthscore.py (no pasó los tests), se revirtió. Intento: Documenté mediante docstrings estructurados los parámetros y retornos de las funciones de puntuación, y mejoré la legibilidad de las fórmulas de penalización convirtiendo literales numéricos a constantes con nombre para clarificar la lógica de negocio detrás de los umbrales de seguridad.
+- `2026-08-07T02:17:17` ✅ Mejora aceptada en main.py (enfoque: legibilidad y documentación). He mejorado la legibilidad y mantenibilidad del archivo `main.py` mediante la refactorización de `_build_tab_ajustes`, extrayendo la creación de etiquetas e interruptores en métodos internos con nombres descriptivos y type hints, eliminando la duplicación de código y facilitando la comprensión del flujo de construcción de la interfaz.
+- `2026-08-07T02:17:29` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenibilidad de `memory.py` mediante la refactorización de `_create_memstat_struct` hacia una clase de estructura más clara, la adición de Type Hints detallados en las funciones de procesamiento de datos y la mejora de la documentación en los métodos de diagnóstico, asegurando que las intenciones del código sean explícitas sin alterar la funcionalidad.
+- `2026-08-07T02:17:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-07T02:17:29` Corrida terminada. Total usado hoy: 44.

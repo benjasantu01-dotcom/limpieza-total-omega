@@ -150,7 +150,11 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
 
 def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """
-    Escaneo recursivo del sistema de archivos indexando archivos por tamaño.
+    Realiza un escaneo recursivo para indexar archivos por tamaño.
+    
+    Utiliza un conjunto 'visited_inodes' para evitar procesar recursivamente el mismo 
+    archivo o directorio a través de enlaces simbólicos o puntos de reparse, 
+    asegurando que solo se analicen archivos con tamaño >= min_size.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: set[Tuple[int, int]] = set()
@@ -162,7 +166,6 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
             with os.scandir(root_path) as dir_iterator:
                 for entry in dir_iterator:
                     try:
-                        # Obtenemos lstat para verificar reparse points y tipo
                         lstat = entry.stat(follow_symlinks=False)
                         
                         # Detectar y saltar puntos de reparse (Windows junctions/reparse points)
@@ -196,7 +199,10 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
 
 def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
     """
-    Aplica una función de hash a un listado de archivos y agrupa aquellos con colisiones.
+    Refina un grupo de archivos candidatos aplicando una función de hash.
+    
+    Agrupa los archivos por su digest resultante, descartando aquellos que son
+    únicos tras el cálculo (sin colisiones), optimizando la fase de confirmación.
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     if paths is None: return groups_by_digest

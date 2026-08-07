@@ -636,53 +636,53 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             ).grid(row=i // 3, column=i % 3, padx=4, pady=4, sticky="w")
         self._make_output("Asistente", tab)
 
+    def _add_setting_label(self, parent: ctk.CTkFrame, text: str, row: int, col: int = 0) -> None:
+        """Helper para agregar etiquetas en el panel de ajustes."""
+        self._create_styled_label(parent, text, "body", anchor="w").grid(
+            row=row, column=col, sticky="w", padx=(0, 10), pady=6
+        )
+
+    def _add_setting_switch(self, parent: ctk.CTkFrame, clave: str, texto: str, row: int, col: int) -> None:
+        """Helper para agregar interruptores en el panel de ajustes."""
+        variable = ctk.BooleanVar(value=bool(self.settings.get(clave)))
+        self.setting_vars[clave] = variable
+        ctk.CTkSwitch(
+            parent, text=texto, variable=variable,
+            progress_color=branding.color("accent"),
+            button_color=branding.color("text"),
+            text_color=branding.color("text"),
+            font=ctk.CTkFont(size=branding.font_size("body")),
+        ).grid(row=row, column=col, sticky="w", padx=(0, 24), pady=6)
+
     def _build_tab_ajustes(self) -> None:
         """Construye el formulario de configuración global."""
         tab = self.tabs["Ajustes"]
         row = self._button_row(tab)
         self._action(row, "Guardar ajustes", self.on_save_settings, column=0)
-        self._action(row, "Ver configuración", self.on_show_settings,
-                     secondary=True, column=1)
-        self._action(row, "Restaurar de fábrica", self.on_reset_settings,
-                     danger=True, column=2)
+        self._action(row, "Ver configuración", self.on_show_settings, secondary=True, column=1)
+        self._action(row, "Restaurar de fábrica", self.on_reset_settings, danger=True, column=2)
 
         grilla = ctk.CTkFrame(tab, fg_color="transparent")
         grilla.pack(fill="x", padx=12, pady=(14, 0))
 
-        def etiqueta(texto: str, fila: int, columna: int = 0):
-            self._create_styled_label(grilla, texto, "body", anchor="w").grid(row=fila, column=columna, sticky="w", padx=(0, 10), pady=6)
-
-        def interruptor(clave: str, texto: str, fila: int, columna: int):
-            variable = ctk.BooleanVar(value=bool(self.settings.get(clave)))
-            self.setting_vars[clave] = variable
-            ctk.CTkSwitch(
-                grilla, text=texto, variable=variable,
-                progress_color=branding.color("accent"),
-                button_color=branding.color("text"),
-                text_color=branding.color("text"),
-                font=ctk.CTkFont(size=branding.font_size("body")),
-            ).grid(row=fila, column=columna, sticky="w", padx=(0, 24), pady=6)
-
-        etiqueta("Tema:", 0)
+        self._add_setting_label(grilla, "Tema:", 0)
         self.setting_vars["tema"] = ctk.StringVar(value=self.settings.get("tema", "oscuro"))
-        self._menu(grilla, list(settings_mod.VALID_THEMES),
-                   self.setting_vars["tema"], width=150).grid(row=0, column=1, sticky="w")
+        self._menu(grilla, list(settings_mod.VALID_THEMES), self.setting_vars["tema"], width=150).grid(row=0, column=1, sticky="w")
 
-        etiqueta("Acento:", 0, 2)
+        self._add_setting_label(grilla, "Acento:", 0, 2)
         self.setting_vars["acento"] = ctk.StringVar(value=self.settings.get("acento", "menta"))
-        self._menu(grilla, list(settings_mod.VALID_ACCENTS),
-                   self.setting_vars["acento"], width=150).grid(row=0, column=3, sticky="w")
+        self._menu(grilla, list(settings_mod.VALID_ACCENTS), self.setting_vars["acento"], width=150).grid(row=0, column=3, sticky="w")
 
-        interruptor("mostrar_barras", "Barras visuales", 1, 0)
-        interruptor("analisis_en_paralelo", "Análisis en paralelo", 1, 1)
-        interruptor("recordar_ultima_carpeta", "Recordar última carpeta", 1, 2)
+        self._add_setting_switch(grilla, "mostrar_barras", "Barras visuales", 1, 0)
+        self._add_setting_switch(grilla, "analisis_en_paralelo", "Análisis en paralelo", 1, 1)
+        self._add_setting_switch(grilla, "recordar_ultima_carpeta", "Recordar última carpeta", 1, 2)
 
-        etiqueta("Duplicados desde (KB):", 2)
+        self._add_setting_label(grilla, "Duplicados desde (KB):", 2)
         self.min_dup_entry = self._entry(grilla, "64", 100)
         self.min_dup_entry.insert(0, str(self.settings.get("duplicados_tamano_minimo_kb", 64)))
         self.min_dup_entry.grid(row=2, column=1, sticky="w")
 
-        etiqueta("Top de archivos:", 2, 2)
+        self._add_setting_label(grilla, "Top de archivos:", 2, 2)
         self.top_files_entry = self._entry(grilla, "15", 100)
         self.top_files_entry.insert(0, str(self.settings.get("top_archivos", 15)))
         self.top_files_entry.grid(row=2, column=3, sticky="w")
@@ -695,8 +695,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         ia_container = ctk.CTkFrame(tab, fg_color="transparent")
         ia_container.pack(fill="x", padx=12, pady=(6, 0))
 
-        self.setting_vars["asistente_activado"] = ctk.BooleanVar(
-            value=bool(self.settings.get("asistente_activado")))
+        self.setting_vars["asistente_activado"] = ctk.BooleanVar(value=bool(self.settings.get("asistente_activado")))
         ctk.CTkSwitch(
             ia_container, text="Activar asistente en línea",
             variable=self.setting_vars["asistente_activado"],
