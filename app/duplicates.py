@@ -99,7 +99,6 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
                 n = f.readinto(mv)
                 if n == 0:
                     break
-                # Validar seguridad antes de actualizar digest si fuera necesario
                 digest.update(mv[:n])
         return digest.hexdigest()
     except (OSError, PermissionError, ValueError, TypeError, RuntimeError, IOError):
@@ -205,7 +204,8 @@ def _refine_by_hash(
     if paths is None: return groups_by_digest
     
     for path in paths:
-        if path is None or not path.exists() or is_protected_path(path): continue
+        if not isinstance(path, Path) or not path.exists() or is_protected_path(path): 
+            continue
         if digest := hash_func(path):
             groups_by_digest[digest].append(path)
     return {d: p for d, p in groups_by_digest.items() if len(p) > 1}
@@ -238,8 +238,8 @@ def find_duplicates(
 
 def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
     """Suma el total de espacio en bytes recuperable de todos los grupos."""
-    if not groups: return 0
-    return sum(g.wasted_bytes for g in groups)
+    if not isinstance(groups, (list, tuple)): return 0
+    return sum(g.wasted_bytes for g in groups if isinstance(g, DuplicateGroup))
 
 
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
@@ -247,14 +247,13 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     Selecciona el archivo candidato para conservar basado en la fecha de modificación
     más antigua (o menor longitud de ruta en caso de empate).
     """
-    if not group or not group.paths:
+    if not isinstance(group, DuplicateGroup) or not group.paths:
         return None
 
     keepers: List[Tuple[float, int, Path]] = []
     for p in group.paths:
-        if p is None: continue
+        if not isinstance(p, Path): continue
         try:
-            # Re-verificación de seguridad antes de leer stats
             if p.exists() and not is_protected_path(p):
                 stat_info = p.stat()
                 keepers.append((float(stat_info.st_mtime), len(str(p)), p))

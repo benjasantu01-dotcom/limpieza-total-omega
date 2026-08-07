@@ -265,7 +265,6 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     if now - ts < 5.0:
         return cached_processes[:limit]
 
-    # Command optimization: Access directly via calculated properties to avoid heavy CSV piping
     command: str = (
         "Get-Process | Sort-Object WorkingSet -Descending | Select-Object -First 20 "
         "| ForEach-Object { \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }"
@@ -281,7 +280,10 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
             for line in lines:
                 parts = line.split(",")
                 if len(parts) == 3:
-                    processes.append(ProcessMemory(name=parts[0], pid=int(parts[1]), working_set=int(parts[2])))
+                    try:
+                        processes.append(ProcessMemory(name=parts[0], pid=int(parts[1]), working_set=int(parts[2])))
+                    except (ValueError, TypeError):
+                        continue
             
             _PROCESS_CACHE["data"] = (now, processes)
             return processes[:limit]

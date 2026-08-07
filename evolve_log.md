@@ -1266,3 +1266,13 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-08-07T14:52:31` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `summarize` implementando una validación exhaustiva de parámetros y manejando de forma preventiva posibles errores en las rutas (`None`, tipos incorrectos, fallos de resolución) mediante comprobaciones de tipo y capturas de excepciones específicas, evitando que el bucle de escaneo falle silenciosamente o con errores no controlados.
 - `2026-08-07T14:52:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-07T14:52:31` Corrida terminada. Total usado hoy: 340.
+- `2026-08-07T15:00:47` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-07T15:01:13` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez y seguridad del módulo mediante validaciones de entrada (`isinstance` y chequeos contra `None`) en las funciones críticas de procesamiento de rutas y grupos, asegurando que el código no falle ante datos malformados o entornos inesperados.
+- `2026-08-07T15:01:39` ➖ Sin cambios en healthscore.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `_generate_recommendations` mediante la validación explícita de cada ratio en el diccionario antes de su acceso, evitando posibles errores de clave inexistente o valores `None` durante la evaluación de métricas.
+- `2026-08-07T15:02:39` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-07T15:03:28` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-08-07T15:04:32` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-08-07T15:05:01` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-08-07T15:05:29` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `top_memory_processes` añadiendo validación de tipo y excepciones específicas al procesar la salida de PowerShell, asegurando que datos malformados no interrumpan la captura de métricas.
+- `2026-08-07T15:05:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-07T15:05:29` Corrida terminada. Total usado hoy: 344.
