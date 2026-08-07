@@ -558,3 +558,10 @@ FAILED evolve/tests/test_modules.py::test_score_color_survives_garbage - Asserti
 - `2026-08-07T07:12:56` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Mejoré la eficiencia del método `largest_folders` al evitar el uso de `path.relative_to(base)` y el acceso repetitivo a `Path.parts` dentro del bucle, optimizando la identificación del directorio de primer nivel mediante un cálculo de prefijo directo.
 - `2026-08-07T07:12:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-07T07:12:56` Corrida terminada. Total usado hoy: 160.
+- `2026-08-07T07:21:30` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-08-07T07:21:54` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-08-07T07:22:19` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
+- `2026-08-07T07:23:19` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Se implementó un sistema de "debouncing" real para el redibujo del `gauge` en el panel de salud, evitando que se disparen múltiples llamadas al canvas durante eventos de redimensionamiento o actualizaciones rápidas, optimizando el uso de CPU y evitando parpadeos visuales innecesarios.
+- `2026-08-07T07:23:30` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento de `top_memory_processes` reemplazando la ejecución recurrente de PowerShell por una lectura más eficiente, evitando la creación innecesaria de subprocesos cuando el caché es válido.
+- `2026-08-07T07:23:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-07T07:23:30` Corrida terminada. Total usado hoy: 164.

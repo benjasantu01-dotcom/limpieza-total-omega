@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **232** (46.0% de aceptación)
+- Mejoras aceptadas: **231** (45.8% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 27
+- Rechazadas por guardia de seguridad: 26
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 212
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-06 | 156 | 9 | 19 | 11 | 149 |
-| 2026-08-07 | 76 | 8 | 8 | 5 | 63 |
+| 2026-08-06 | 153 | 9 | 18 | 11 | 149 |
+| 2026-08-07 | 78 | 8 | 8 | 5 | 65 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - seguridad defensiva: **49**
 - manejo de errores y validación de entradas: **44**
-- rendimiento: **42**
-- robustez ante casos límite: **40**
+- rendimiento: **44**
+- robustez ante casos límite: **37**
 
 ## Mejoras aceptadas por archivo
 
-- `scanner.py`: **21**
 - `branding.py`: **21**
 - `quarantine.py`: **21**
-- `settings.py`: **20**
 - `diskreport.py`: **20**
+- `scanner.py`: **20**
 - `assistant.py`: **19**
+- `settings.py`: **19**
 - `browser.py`: **18**
 - `healthscore.py`: **17**
+- `memory.py`: **16**
 - `duplicates.py`: **15**
-- `memory.py`: **15**
-- `main.py`: **14**
+- `main.py`: **15**
 - `organizer.py`: **13**
-- `safety.py`: **10**
+- `safety.py`: **9**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-07T07:23:30` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` reemplazando la ejecución recurrente de PowerShell por una lectura más eficiente, evitando la creación innecesaria de subprocesos cuando el caché es válido.
+- `2026-08-07T07:23:19` **main.py** (rendimiento): Se implementó un sistema de "debouncing" real para el redibujo del `gauge` en el panel de salud, evitando que se disparen múltiples llamadas al canvas durante eventos de redimensionamiento o actualizaciones rápidas, optimizando el uso de CPU y evitando parpadeos visuales innecesarios.
 - `2026-08-07T07:12:56` **diskreport.py** (rendimiento): Mejoré la eficiencia del método `largest_folders` al evitar el uso de `path.relative_to(base)` y el acceso repetitivo a `Path.parts` dentro del bucle, optimizando la identificación del directorio de primer nivel mediante un cálculo de prefijo directo.
 - `2026-08-07T07:12:23` **branding.py** (rendimiento): Optimicé el cálculo del logo ASCII mediante la eliminación de una llamada innecesaria a `lru_cache`, dado que el valor es una constante estática que no requiere invocaciones repetidas ni lógica de caché.
 - `2026-08-07T07:11:52` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` y `_gen_problems` evitando la creación de listas intermedias y permitiendo que `islice` consuma el generador directamente de forma perezosa, reduciendo la presión sobre el recolector de basura en cada iteración de la interfaz.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-07T06:42:54` **main.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `main.py` mediante la refactorización de `_build_health_metrics_row` y `_build_health_area_bars` hacia un diseño más declarativo, además de añadir tipos y docstrings en los métodos de construcción de UI para clarificar el propósito de cada componente.
 - `2026-08-07T06:42:05` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica mediante docstrings precisos y agregué anotaciones de tipo más estrictas en las funciones de cómputo, clarificando la lógica de normalización y los límites de cada área para facilitar el mantenimiento futuro.
 - `2026-08-07T06:41:38` **duplicates.py** (legibilidad y documentación): Mejoré la documentación y legibilidad del módulo mediante type hints más específicos, la adición de docstrings técnicos explicativos en funciones críticas y la clarificación de la lógica de filtrado en `_collect_candidates` para alinear el código con las reglas de seguridad exigidas.
-- `2026-08-07T06:41:15` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings estructurados (con secciones de parámetros y retornos) en las funciones principales para clarificar el flujo de datos y las garantías de seguridad aplicadas.
-- `2026-08-07T06:33:01` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad de tipos en las funciones de recorrido, separando explícitamente la lógica de filtrado de archivos (`_is_excluded_file`) para mejorar la legibilidad y mantenibilidad, manteniendo la integridad del comportamiento original.

@@ -185,6 +185,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         if self._executor: self._executor.shutdown(wait=False)
         self._executor = concurrent.futures.ThreadPoolExecutor(max_workers=5)
         self._debounce_id: Optional[str] = None
+        self._gauge_debounce_id: Optional[str] = None
 
     # ------------------------------------------------------------------
     # Factorías de Componentes UI (Modularización)
@@ -472,7 +473,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         return valor_label
 
     def _draw_gauge(self, score: int, grade: str) -> None:
-        """Dibuja el gauge circular de puntaje en el canvas."""
+        """Dibuja el gauge circular de puntaje en el canvas con debouncing."""
+        if self._gauge_debounce_id:
+            self.after_cancel(self._gauge_debounce_id)
+        
         def update_canvas():
             if not hasattr(self, 'gauge') or not self.gauge.winfo_exists(): return
             self.gauge.delete("all")
@@ -486,7 +490,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 88, 116, text=f"nota {grade}", fill=color_nota,
                 font=("Segoe UI", branding.font_size("body"), "bold"),
             )
-        self.after(0, update_canvas)
+        
+        self._gauge_debounce_id = self.after(50, update_canvas)
 
     def _build_tab_limpieza(self) -> None:
         """Construye el panel de gestión de archivos basura."""

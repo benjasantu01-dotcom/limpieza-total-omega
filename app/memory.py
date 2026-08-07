@@ -265,8 +265,10 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     if now - ts < 5.0:
         return cached_processes[:limit]
 
+    # Command optimization: filter only processes with memory to reduce CSV size/parsing
     command: str = (
-        "Get-Process | Select-Object -Property Name,Id,WorkingSet | "
+        "Get-Process | Where-Object {$_.WorkingSet -gt 0} | "
+        "Select-Object -Property Name,Id,WorkingSet -First 20 | "
         "ConvertTo-Csv -NoTypeInformation"
     )
     try:
