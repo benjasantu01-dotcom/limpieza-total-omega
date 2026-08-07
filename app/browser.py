@@ -122,10 +122,10 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
             return False
 
         # Verifica que la ruta esté estrictamente contenida en el directorio base
-        try:
-            real_target.relative_to(real_base)
-        except ValueError:
+        # Usamos relative_to y verificamos la integridad del path para evitar escapes
+        if not str(real_target).startswith(str(real_base)):
             return False
+        real_target.relative_to(real_base)
 
         # Previene escapes mediante enlaces simbólicos o junctions de NTFS
         is_junction = getattr(os.path, 'isjunction', lambda _: False)

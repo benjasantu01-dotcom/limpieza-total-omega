@@ -167,13 +167,6 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Generador recursivo que recorre archivos bajo `directory`.
-    
-    Args:
-        directory: Ruta base del escaneo.
-        skip_protected: Si es True, omite rutas marcadas como críticas por `safety.py`.
-
-    Yields:
-        Tuplas (Path, int) conteniendo la ruta al archivo y su tamaño en bytes.
     """
     if not directory:
         return
@@ -185,14 +178,20 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     except (OSError, RuntimeError):
         return
 
-    visited_directories: set[Path] = {base_path}
+    visited: set[Path] = {base_path}
 
     def scan_level(current_path: Path) -> Generator[Tuple[Path, int], None, None]:
         try:
             with os.scandir(current_path) as iterator:
                 for entry in iterator:
                     try:
-                        # Detectar junctions, puntos de montaje y symlinks en Windows
+                        resolved_path = Path(entry.path).resolve()
+                        
+                        # Seguridad defensiva: evitar escapes fuera de la raíz
+                        if not str(resolved_path).startswith(str(base_path)):
+                            continue
+
+                        # Detectar junctions/symlinks
                         if os.name == 'nt':
                             st = entry.stat(follow_symlinks=False)
                             if (st.st_file_attributes & 0x400) != 0:
@@ -201,14 +200,13 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                             continue
                         
                         if entry.is_dir():
-                            full_path = Path(entry.path).resolve()
-                            if full_path not in visited_directories and base_path in full_path.parents:
-                                if skip_protected and is_protected_path(full_path):
+                            if resolved_path not in visited:
+                                if skip_protected and is_protected_path(resolved_path):
                                     continue
-                                visited_directories.add(full_path)
-                                yield from scan_level(full_path)
+                                visited.add(resolved_path)
+                                yield from scan_level(resolved_path)
                         else:
-                            yield Path(entry.path), entry.stat(follow_symlinks=False).st_size
+                            yield resolved_path, entry.stat(follow_symlinks=False).st_size
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):
@@ -259,12 +257,10 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
         folder_map: Dict[Path, FolderUsage] = {}
         for path, size in walk_files(base, skip_protected):
             try:
-                parts = path.parts
-                base_len = len(base.parts)
-                if len(parts) <= base_len:
+                relative = path.relative_to(base)
+                if not relative.parts:
                     continue
-                    
-                top_level = base / parts[base_len]
+                top_level = base / relative.parts[0]
                 
                 if top_level not in folder_map:
                     folder_map[top_level] = FolderUsage(path=top_level, size_bytes=size, file_count=1)
@@ -272,7 +268,7 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
                     ref = folder_map[top_level]
                     ref.size_bytes += size
                     ref.file_count += 1
-            except (OSError, IndexError):
+            except (OSError, ValueError):
                 continue
 
         return heapq.nlargest(limit, folder_map.values(), key=lambda f: f.size_bytes)
@@ -283,9 +279,6 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
 def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Tuple[int, int]:
     """
     Retorna el tamaño total y la cantidad de archivos encontrados en el directorio.
-    
-    Returns:
-        Tuple: (total_bytes, total_count).
     """
     if not directory:
         return 0, 0

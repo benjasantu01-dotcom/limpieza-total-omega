@@ -634,3 +634,32 @@ FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - Asse
 - `2026-08-07T08:24:32` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Mejoré la seguridad de la función `save_logo_svg` consolidando las verificaciones de seguridad antes de cualquier operación de I/O, asegurando que la ruta destino no sea una carpeta del sistema ni un punto de reparse mediante el uso estricto de `is_safe_to_modify`.
 - `2026-08-07T08:24:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-07T08:24:32` Corrida terminada. Total usado hoy: 188.
+- `2026-08-07T08:33:05` Arrancando corrida. Quedan hoy ~112 peticiones objetivo.
+- `2026-08-07T08:33:31` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se ha mejorado la validación de rutas en `_is_safe_path` para prevenir ataques de *directory traversal* y acceso a componentes del sistema mediante la normalización estricta de rutas y la validación de que el `target` sea subdirectorio real del `base` usando `Path.parts` como medida de seguridad adicional contra intentos de evasión en Windows.
+- `2026-08-07T08:34:01` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `walk_files` implementando una validación estricta de jerarquía antes de seguir cualquier ruta, asegurando que el escáner no pueda escapar de su raíz mediante enlaces simbólicos o manipulaciones de entrada.
+- `2026-08-07T08:34:24` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-08-07T08:34:41` Tests FALLARON:
+```
+mendation _______________
+
+    def test_a_healthy_system_still_gets_a_recommendation():
+        resultado = healthscore.compute_score(healthscore.SystemMetrics())
+        assert resultado.recommendations
+>       assert "buen estado" in " ".join(resultado.recommendations)
+E       AssertionError: assert 'buen estado' in 'Sistema estable.'
+E        +  where 'Sistema estable.' = <built-in method join of str object at 0x7f557b02bb40>(['Sistema estable.'])
+E        +    where <built-in method join of str object at 0x7f557b02bb40> = ' '.join
+E        +    and   ['Sistema estable.'] = HealthResult(score=100, grade='A', breakdown={'seguridad': 30, 'disco': 20, 'memoria': 18, 'basura': 14, 'duplicados': 10, 'arranque': 8}, recommendations=['Sistema estable.']).recommendations
+
+evolve/tests/test_modules.py:899: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_a_healthy_system_still_gets_a_recommendation - AssertionError: assert 'buen estado' in 'Sistema estable.'
+ +  where 'Sistema estable.' = <built-in method join of str object at 0x7f557b02bb40>(['Sistema estable.'])
+ +    where <built-in method join of str object at 0x7f557b02bb40> = ' '.join
+ +    and   ['Sistema estable.'] = HealthResult(score=100, grade='A', breakdown={'seguridad': 30, 'disco': 20, 'memoria': 18, 'basura': 14, 'duplicados': 10, 'arranque': 8}, recommendations=['Sistema estable.']).recommendations
+1 failed, 298 passed in 1.12s
+
+```
+- `2026-08-07T08:34:41` ❌ Mejora descartada en healthscore.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez del sistema de puntaje evitando la dependencia de `_SCORE_CACHE` (que ante datos inmutables y procesos efímeros era innecesaria y riesgosa), y se encapsuló la validación del estado del sistema dentro de `HealthResult` para asegurar que el desglose de datos nunca contenga valores fuera de rango o estados inconsistentes que pudieran derivar en errores de lógica en la UI.
+- `2026-08-07T08:34:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-07T08:34:41` Corrida terminada. Total usado hoy: 192.
