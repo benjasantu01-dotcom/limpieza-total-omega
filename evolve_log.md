@@ -487,3 +487,10 @@ assert not {'replace'}
 - `2026-08-07T06:12:16` ➖ Sin cambios en quarantine.py (enfoque: manejo de errores y validación de entradas). Motivo: Se ha mejorado la robustez de las funciones de persistencia y restauración mediante el uso de excepciones específicas y validación proactiva de rutas para prevenir condiciones de carrera y errores de acceso inesperados.
 - `2026-08-07T06:12:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-07T06:12:16` Corrida terminada. Total usado hoy: 136.
+- `2026-08-07T06:20:15` Arrancando corrida. Quedan hoy ~164 peticiones objetivo.
+- `2026-08-07T06:20:36` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
+- `2026-08-07T06:20:59` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-07T06:21:26` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `scan_directory` y `scan_file` añadiendo validaciones preventivas de tipos y estados, asegurando que parámetros `None` o rutas inválidas no provoquen excepciones no controladas durante el procesamiento.
+- `2026-08-07T06:21:37` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de la función `save` reemplazando la captura de excepciones genérica `Exception` por una más específica y añadiendo una validación explícita para evitar operaciones de escritura con rutas `None` o estados inconsistentes, reforzando la integridad del guardado atómico.
+- `2026-08-07T06:21:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-07T06:21:37` Corrida terminada. Total usado hoy: 140.

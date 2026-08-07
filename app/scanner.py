@@ -151,13 +151,16 @@ def scan_file(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[st
 
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
-    if not directory:
+    if directory is None:
         return []
         
     try:
         path_input = Path(directory).resolve()
+        if not path_input.exists() or not path_input.is_dir():
+            return []
+            
         # Validación inicial de seguridad antes de comenzar el escaneo
-        if not path_input.is_dir() or is_protected_path(path_input) or not is_safe_to_modify(path_input):
+        if is_protected_path(path_input) or not is_safe_to_modify(path_input):
             return []
     except (OSError, RuntimeError):
         return []

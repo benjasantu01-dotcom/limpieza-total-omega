@@ -228,7 +228,7 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
         os.replace(temp_path, ruta)
         _cached_settings, _current_path = limpio, ruta
         return ruta
-    except (OSError, PermissionError, RuntimeError, Exception):
+    except (OSError, PermissionError, RuntimeError, json.JSONDecodeError, TypeError):
         return None
     finally:
         if temp_path and temp_path.exists():
