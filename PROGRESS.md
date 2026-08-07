@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **235** (46.6% de aceptación)
-- Rechazadas por tests: 15
+- Mejoras aceptadas: **237** (47.0% de aceptación)
+- Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 211
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-06 | 143 | 7 | 17 | 11 | 142 |
-| 2026-08-07 | 92 | 8 | 10 | 5 | 69 |
+| 2026-08-06 | 143 | 7 | 17 | 11 | 138 |
+| 2026-08-07 | 94 | 9 | 10 | 5 | 70 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,15 +25,15 @@ Este archivo se regenera solo en cada corrida a partir de
 - rendimiento: **49**
 - robustez ante casos límite: **46**
 - manejo de errores y validación de entradas: **44**
-- seguridad defensiva: **39**
+- seguridad defensiva: **41**
 
 ## Mejoras aceptadas por archivo
 
+- `branding.py`: **22**
 - `quarantine.py`: **22**
-- `branding.py`: **21**
+- `assistant.py`: **20**
 - `diskreport.py`: **20**
 - `scanner.py`: **20**
-- `assistant.py`: **19**
 - `settings.py`: **19**
 - `browser.py`: **17**
 - `healthscore.py`: **17**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-07T08:24:32` **branding.py** (seguridad defensiva): Mejoré la seguridad de la función `save_logo_svg` consolidando las verificaciones de seguridad antes de cualquier operación de I/O, asegurando que la ruta destino no sea una carpeta del sistema ni un punto de reparse mediante el uso estricto de `is_safe_to_modify`.
+- `2026-08-07T08:24:17` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_call_gemini` validando que la `api_key` no contenga caracteres potencialmente peligrosos (como inyección de comandos o salto de línea) antes de usarla en la construcción de la URL, evitando así una posible manipulación de la petición HTTP.
 - `2026-08-07T08:13:56` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la manipulación de rutas añadiendo una validación explícita para archivos que superan el límite máximo de profundidad de recursión o rutas relativas no resueltas mediante `path.resolve(strict=False)` en la normalización, y fortaleciendo `ensure_safe_to_modify` para detectar de forma temprana archivos inexistentes en directorios protegidos, evitando así operaciones de escritura en rutas prohibidas que aún no existen.
 - `2026-08-07T08:13:14` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de existencia física en `purge_all` para prevenir errores cuando un archivo listado en el manifiesto ya no existe en el sistema de archivos, mejorando la resiliencia ante estados inconsistentes y evitando intentos innecesarios de `unlink`.
 - `2026-08-07T08:04:34` **organizer.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `stage_for_review` para evitar que el proceso intente mover archivos hacia sí mismos o dentro de la misma ubicación original, además de asegurar que la ruta destino no sea un punto de montaje o enlace simbólico antes de cualquier operación, fortaleciendo la robustez ante casos límite de rutas.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-07T07:42:30` **scanner.py** (rendimiento): Optimizé la lógica de escaneo en `scan_file` para evitar la redundancia de `suffix` y `name`, eliminando llamadas innecesarias a `os.path.splitext` al reutilizar los valores ya calculados y consolidando las condiciones para reducir ciclos de CPU durante el recorrido de directorios.
 - `2026-08-07T07:33:19` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` reemplazando la iteración secuencial sobre los componentes de la ruta por una verificación más eficiente mediante conjuntos (`set.isdisjoint`), reduciendo drásticamente la carga de CPU en bucles de escaneo extensos.
 - `2026-08-07T07:32:52` **quarantine.py** (rendimiento): Optimizé la función `list_items` y otras operaciones de carga del manifiesto eliminando la carga redundante y el ordenamiento repetitivo mediante la caché existente, reduciendo la complejidad algorítmica de O(N log N) a O(1) en las llamadas frecuentes de la interfaz.
-- `2026-08-07T07:32:16` **organizer.py** (rendimiento): Optimicé el escaneo de archivos utilizando un conjunto (`set`) para la búsqueda de extensiones en lugar de iterar sobre una tupla, y reduje las llamadas a `path.resolve()` (que es una operación costosa de I/O) moviéndola solo a los casos necesarios, mejorando la eficiencia del bucle principal.
-- `2026-08-07T07:23:30` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` reemplazando la ejecución recurrente de PowerShell por una lectura más eficiente, evitando la creación innecesaria de subprocesos cuando el caché es válido.

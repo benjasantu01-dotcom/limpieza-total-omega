@@ -600,3 +600,37 @@ FAILED evolve/tests/test_modules.py::test_score_color_survives_garbage - Asserti
 - `2026-08-07T08:14:02` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
 - `2026-08-07T08:14:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-07T08:14:02` Corrida terminada. Total usado hoy: 184.
+- `2026-08-07T08:22:52` Arrancando corrida. Quedan hoy ~116 peticiones objetivo.
+- `2026-08-07T08:23:21` Tests FALLARON:
+```
+...............F........................................................ [ 24%]
+........................................................................ [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+______________________ test_a_normal_folder_is_remembered ______________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-1/test_a_normal_folder_is_rememb0')
+
+    def test_a_normal_folder_is_remembered(tmp_path):
+        segura = str(tmp_path / "Descargas")
+>       assert settings.validate({"ultima_carpeta": segura})["ultima_carpeta"] == segura
+E       AssertionError: assert '' == '/tmp/pytest-...mb0/Descargas'
+E         
+E         - /tmp/pytest-of-runner/pytest-1/test_a_normal_folder_is_rememb0/Descargas
+
+evolve/tests/test_assistant.py:124: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - AssertionError: assert '' == '/tmp/pytest-...mb0/Descargas'
+  
+  - /tmp/pytest-of-runner/pytest-1/test_a_normal_folder_is_rememb0/Descargas
+1 failed, 298 passed in 1.09s
+
+```
+- `2026-08-07T08:23:21` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Se añadió una validación defensiva en `_Validators.path` para manejar explícitamente rutas que resultan en errores de sistema (como accesos denegados o rutas inválidas) durante la expansión, evitando que excepciones no capturadas rompan la carga de la configuración.
+- `2026-08-07T08:23:45` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-08-07T08:24:17` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_call_gemini` validando que la `api_key` no contenga caracteres potencialmente peligrosos (como inyección de comandos o salto de línea) antes de usarla en la construcción de la URL, evitando así una posible manipulación de la petición HTTP.
+- `2026-08-07T08:24:32` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Mejoré la seguridad de la función `save_logo_svg` consolidando las verificaciones de seguridad antes de cualquier operación de I/O, asegurando que la ruta destino no sea una carpeta del sistema ni un punto de reparse mediante el uso estricto de `is_safe_to_modify`.
+- `2026-08-07T08:24:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-07T08:24:32` Corrida terminada. Total usado hoy: 188.

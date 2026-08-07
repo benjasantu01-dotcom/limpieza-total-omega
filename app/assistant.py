@@ -130,6 +130,7 @@ _PATH_REGEX: Final[re.Pattern] = re.compile(r"([a-zA-Z]:\\|/|\\|\.\.|\0|[\u202e\
 _CONTROL_CHARS_REGEX: Final[re.Pattern] = re.compile(r"[\x00-\x1f\x7f]")
 _TOKEN_REGEX: Final[re.Pattern] = re.compile(r"\w+")
 _MODEL_NAME_REGEX: Final[re.Pattern] = re.compile(r"^[a-zA-Z0-9\.\-_]+$")
+_API_KEY_REGEX: Final[re.Pattern] = re.compile(r"^[a-zA-Z0-9_\-\.]+$")
 
 _KEYWORD_MAP: Final[dict[str, str]] = {
     "ram": "ram", "memoria": "ram", "lenta": "ram", "lento": "ram", "acelerar": "ram",
@@ -443,7 +444,7 @@ def _call_gemini(
 ) -> Optional[str]:
     """Envía métricas agregadas a Gemini mediante la librería estándar urllib."""
     if not isinstance(api_key, str) or not api_key: return None
-    if _CONTROL_CHARS_REGEX.search(api_key) or len(api_key) > 256: return None
+    if not _API_KEY_REGEX.match(api_key): return None
     if not isinstance(model, str) or not _MODEL_NAME_REGEX.match(model): return None
     
     safe_q: str = _sanitize_query(question)
