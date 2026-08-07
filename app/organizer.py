@@ -37,8 +37,9 @@ class SortConfig(NamedTuple):
 JUNK_EXTENSIONS: Final = {
     ".tmp", ".temp", ".log", ".bak", ".old", ".dmp", ".chk", ".cache",
 }
-# Pre-calculado para eficiencia en loops
+# Pre-calculado para eficiencia en loops: contiene la versión minúscula para comparación insensible a mayúsculas
 _LOWER_JUNK_EXTS: Final = {ext.lower() for ext in JUNK_EXTENSIONS}
+# Convertido a tupla para ser utilizado directamente por el método str.endswith()
 _JUNK_TUPLE: Final = tuple(_LOWER_JUNK_EXTS)
 
 # Carpetas típicas donde se acumula basura

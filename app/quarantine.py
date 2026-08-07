@@ -177,7 +177,17 @@ def _manifest_path(base_dir: Path) -> Path:
 
 
 def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
-    """Valida que una ruta pueda ser movida a cuarentena sin violar políticas de seguridad."""
+    """
+    Verifica si una operación de cuarentena es segura.
+    
+    Args:
+        source_path: Ruta del archivo a aislar.
+        dest_dir: Carpeta destino de la cuarentena.
+        
+    Raises:
+        UnsafePathError: Si la ruta es inválida, de sistema, o punto de reparse.
+        IOError: Si el archivo está bloqueado por otro proceso.
+    """
     if ".." in source_path.parts or "\0" in str(source_path) or any(c in str(source_path.name) for c in "<>:\"|?*"):
         raise UnsafePathError(f"Ruta con caracteres maliciosos o navegación prohibida: {source_path.name}")
     
@@ -273,7 +283,17 @@ def quarantine_file(
     reason: str = "Marcado como sospechoso",
     base: Union[str, Path] = DEFAULT_QUARANTINE_DIR,
 ) -> QuarantineItem:
-    """Realiza la migración segura de un archivo a la carpeta de cuarentena."""
+    """
+    Mueve un archivo a cuarentena de forma segura.
+    
+    Args:
+        source: Ruta del archivo original.
+        reason: Descripción del motivo de cuarentena.
+        base: Directorio base de cuarentena.
+        
+    Returns:
+        Un objeto QuarantineItem con los metadatos generados.
+    """
     if not source:
         raise ValueError("La ruta de origen no puede estar vacía.")
     
@@ -349,7 +369,17 @@ def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[Quaranti
 
 
 def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
-    """Restaura un archivo de la cuarentena a su ruta original."""
+    """
+    Restaura un archivo de la cuarentena a su ruta original.
+    
+    Args:
+        item_id: ID del archivo a restaurar.
+        base: Directorio base de cuarentena.
+        
+    Raises:
+        KeyError: Si el ítem no existe en el manifiesto.
+        UnsafePathError: Si la ruta original es insegura o protegida.
+    """
     if not item_id or not isinstance(item_id, str):
         raise ValueError("ID de ítem vacío o tipo incorrecto.")
     

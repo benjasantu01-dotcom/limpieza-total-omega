@@ -6,47 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **228** (45.2% de aceptación)
+- Mejoras aceptadas: **226** (44.8% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 25
+- Rechazadas por guardia de seguridad: 26
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 216
+- Sin respuesta de la IA (error o límite): 217
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-05 | 56 | 3 | 5 | 4 | 42 |
+| 2026-08-05 | 52 | 3 | 5 | 4 | 42 |
 | 2026-08-06 | 159 | 9 | 19 | 12 | 151 |
-| 2026-08-07 | 13 | 5 | 1 | 2 | 23 |
+| 2026-08-07 | 15 | 5 | 2 | 2 | 24 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **54**
+- legibilidad y documentación: **56**
 - seguridad defensiva: **52**
 - manejo de errores y validación de entradas: **45**
-- robustez ante casos límite: **39**
-- rendimiento: **38**
+- rendimiento: **37**
+- robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
-- `branding.py`: **21**
-- `quarantine.py`: **21**
-- `browser.py`: **20**
+- `quarantine.py`: **22**
+- `branding.py`: **20**
 - `diskreport.py`: **20**
-- `assistant.py`: **19**
+- `browser.py`: **19**
 - `scanner.py`: **19**
 - `settings.py`: **18**
+- `assistant.py`: **18**
 - `healthscore.py`: **17**
 - `duplicates.py`: **16**
 - `main.py`: **14**
 - `memory.py`: **14**
-- `organizer.py`: **11**
+- `organizer.py`: **12**
 - `safety.py`: **10**
-- `startup.py`: **8**
+- `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-07T02:26:37` **quarantine.py** (legibilidad y documentación): He mejorado la documentación técnica agregando docstrings descriptivos con secciones de argumentos y excepciones en las funciones críticas de gestión de archivos, facilitando la comprensión del flujo de seguridad para futuros colaboradores.
+- `2026-08-07T02:26:08` **organizer.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `organizer.py` añadiendo type hints faltantes en los retornos de funciones (como en `_is_allowed_directory` y `_is_valid_candidate`) y clarificando mediante docstrings el propósito de las variables auxiliares `_LOWER_JUNK_EXTS` y `_JUNK_TUPLE` para evitar errores de mantenimiento futuro.
 - `2026-08-07T02:17:29` **memory.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `memory.py` mediante la refactorización de `_create_memstat_struct` hacia una clase de estructura más clara, la adición de Type Hints detallados en las funciones de procesamiento de datos y la mejora de la documentación en los métodos de diagnóstico, asegurando que las intenciones del código sean explícitas sin alterar la funcionalidad.
 - `2026-08-07T02:17:17` **main.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo `main.py` mediante la refactorización de `_build_tab_ajustes`, extrayendo la creación de etiquetas e interruptores en métodos internos con nombres descriptivos y type hints, eliminando la duplicación de código y facilitando la comprensión del flujo de construcción de la interfaz.
 - `2026-08-07T02:15:45` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `duplicates.py` mediante docstrings detallados en las funciones de procesamiento (`_collect_candidates`, `_refine_by_hash`) y refiné el tipado para mejorar la legibilidad del pipeline de comparación, facilitando el mantenimiento a futuro.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-07T01:45:33` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez de `parse_linux_meminfo` mediante la validación explícita de tipos y la captura de errores en la conversión de valores, evitando fallos ante entradas malformadas en `/proc/meminfo`.
 - `2026-08-07T01:35:27` **duplicates.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las funciones de hash (`hash_file` y `partial_hash`) centralizando la validación de parámetros, asegurando que los archivos sean legibles antes de abrirlos, y garantizando que los descriptores de archivo se cierren correctamente ante excepciones inesperadas mediante el uso de `try...finally` (a través del gestor de contexto `with`).
 - `2026-08-07T01:35:00` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `largest_folders` añadiendo validaciones preventivas de tipos y excepciones específicas para evitar que rutas malformadas o errores de permisos detengan prematuramente el análisis, asegurando que las funciones devuelvan resultados consistentes en lugar de fallar silenciosamente o lanzar excepciones no controladas.
-- `2026-08-06T14:32:01` **startup.py** (seguridad defensiva): Se ha mejorado `entries_from_folders` añadiendo una comprobación explícita para evitar seguir puntos de reparse (junctions o symlinks a directorios), reforzando la seguridad defensiva al evitar bucles infinitos o accesos fuera de la jerarquía esperada al listar el contenido de las carpetas de inicio.
-- `2026-08-06T14:23:02` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save()` añadiendo una verificación explícita mediante `ensure_safe_to_modify` sobre el directorio padre antes de intentar crear el archivo de configuración, asegurando que ninguna manipulación de la ruta pueda derivar en escrituras fuera de las zonas permitidas.
