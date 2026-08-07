@@ -1037,3 +1037,111 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-08-07T01:18:16` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-08-07T01:18:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-07T01:18:16` Corrida terminada. Total usado hoy: 20.
+- `2026-08-07T01:24:21` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-08-07T01:24:23` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-08-07T01:24:23` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-08-07T01:24:43` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-08-07T01:24:43` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-08-07T01:25:13` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-08-07T01:25:13` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-08-07T01:26:11` Tests FALLARON:
+```
+gemini
+E         + local
+
+evolve/tests/test_assistant.py:387: AssertionError
+_______________ test_metrics_are_withheld_when_the_user_says_no ________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-1/test_metrics_are_withheld_when0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fb5d1d35c10>
+
+    def test_metrics_are_withheld_when_the_user_says_no(tmp_path, monkeypatch):
+        """Se puede usar el asistente sin mandar ni una métrica."""
+        monkeypatch.setenv(settings.API_KEY_ENV_VAR, "clave")
+        settings.save({**settings.DEFAULTS, "asistente_activado": True,
+                       "asistente_enviar_metricas": False}, tmp_path)
+    
+        enviado = {}
+    
+        def espia(question, context_text, api_key, model):
+            enviado["texto"] = context_text
+            return "ok"
+    
+        monkeypatch.setattr(assistant, "_call_gemini", espia)
+        assistant.ask("¿qué hago?", _contexto_lleno(), tmp_path)
+>       assert "2400" not in enviado["texto"]
+                             ^^^^^^^^^^^^^^^^
+E       KeyError: 'texto'
+
+evolve/tests/test_assistant.py:418: KeyError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_ask_uses_the_online_engine_when_authorized - AssertionError: assert 'local' == 'gemini'
+  
+  - gemini
+  + local
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - KeyError: 'texto'
+2 failed, 297 passed in 1.06s
+
+```
+- `2026-08-07T01:26:11` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `_call_gemini` ante fallos de red o respuestas inesperadas, agregando validaciones para prevenir excepciones no capturadas al procesar la respuesta JSON y asegurando que las variables de configuración se verifiquen antes de su uso.
+- `2026-08-07T01:26:40` Tests FALLARON:
+```
+........................................................................ [ 24%]
+......................................F................................. [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+______________________ test_score_color_survives_garbage _______________________
+
+    def test_score_color_survives_garbage():
+>       assert branding.score_color(None) == branding.PALETTE["text_muted"]
+E       AssertionError: assert '#ff4757' == '#94a3b8'
+E         
+E         - #94a3b8
+E         + #ff4757
+
+evolve/tests/test_modules.py:167: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_score_color_survives_garbage - AssertionError: assert '#ff4757' == '#94a3b8'
+  
+  - #94a3b8
+  + #ff4757
+1 failed, 298 passed in 1.07s
+
+```
+- `2026-08-07T01:26:40` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `save_logo_svg` y las funciones de resolución de colores (`color`, `font_size`) mediante la validación explícita de entradas y el uso de excepciones específicas para evitar fallos silenciosos o comportamientos inesperados ante datos mal formados, alineándome con el enfoque de manejo de errores.
+- `2026-08-07T01:26:48` Tests FALLARON:
+```
+.................... [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_________________ test_read_only_modules_never_delete_or_move __________________
+
+    def test_read_only_modules_never_delete_or_move():
+        """Ningún módulo de solo lectura puede borrar ni mover archivos."""
+        destructivos = {"unlink", "rmdir", "rmtree", "move", "remove", "rename", "replace"}
+        for nombre in READ_ONLY_MODULES:
+            archivo = APP_DIR / nombre
+            if not archivo.exists():
+                continue
+            usados = calls_and_imports(parse(archivo)) & destructivos
+>           assert not usados, (
+                f"{nombre} debería ser de solo lectura pero llama a "
+                f"{', '.join(sorted(usados))}"
+            )
+E           AssertionError: browser.py debería ser de solo lectura pero llama a replace
+E           assert not {'replace'}
+
+evolve/tests/test_integrity.py:294: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move - AssertionError: browser.py debería ser de solo lectura pero llama a replace
+assert not {'replace'}
+1 failed, 298 passed in 1.06s
+
+```
+- `2026-08-07T01:26:48` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `detect_profiles` y `directory_size` validando explícitamente los parámetros de entrada y normalizando el manejo de errores para evitar fallos silenciosos o inesperados al tratar con rutas malformadas o permisos denegados.
+- `2026-08-07T01:26:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-07T01:26:48` Corrida terminada. Total usado hoy: 24.
