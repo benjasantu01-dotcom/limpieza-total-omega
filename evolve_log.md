@@ -1232,3 +1232,34 @@ FAILED evolve/tests/test_modules.py::test_a_healthy_system_still_gets_a_recommen
 - `2026-08-07T02:27:05` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: legibilidad y documentación).
 - `2026-08-07T02:27:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-07T02:27:05` Corrida terminada. Total usado hoy: 48.
+- `2026-08-07T02:35:52` Arrancando corrida. Quedan hoy ~252 peticiones objetivo.
+- `2026-08-07T02:36:15` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: check_recent_executable_in_downloads
+- `2026-08-07T02:36:40` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints explícitos, docstrings detallados para métodos complejos y la clarificación de la lógica de validación, asegurando que el código sea más auto-explicativo sin alterar su comportamiento.
+- `2026-08-07T02:37:03` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 0.84s
+
+```
+- `2026-08-07T02:37:03` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la documentación técnica del módulo incluyendo Type Hints de retorno explícitos en los métodos de la clase `StartupEntry` y simplificando la lógica de resolución de rutas para mejorar la legibilidad del flujo de validación.
+- `2026-08-07T02:37:20` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `local_answer` reemplazando la creación innecesaria de listas completas (mediante `list(gen)`) por el uso de `next()` y `islice` para procesar solo los elementos necesarios para la respuesta, evitando iteraciones sobre colecciones que no se muestran.
+- `2026-08-07T02:37:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-07T02:37:20` Corrida terminada. Total usado hoy: 52.

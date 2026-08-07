@@ -161,7 +161,10 @@ def settings_path(path_or_base: PathLike | None = None) -> Path:
     return res
 
 def validate(values: Any) -> AppSettings:
-    """Limpia y valida un diccionario de entrada contra el esquema DEFAULTS."""
+    """
+    Limpia y valida un diccionario de entrada contra el esquema DEFAULTS.
+    Ignora claves desconocidas y reemplaza valores inválidos por los de fábrica.
+    """
     config = DEFAULTS.copy()
     if not isinstance(values, dict): return config
     for clave, validador in _VALIDATOR_MAP.items():
@@ -191,7 +194,10 @@ def load(path_or_base: PathLike | None = None) -> AppSettings:
         return _cached_settings.copy()
 
 def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
-    """Persiste la configuración con reemplazo atómico tras validar cambios."""
+    """
+    Persiste la configuración con reemplazo atómico tras validar cambios.
+    Asegura que el asistente no se active si no hay una clave API disponible.
+    """
     global _cached_settings, _current_path
     if not isinstance(values, dict): return None
     ruta = settings_path(path_or_base)
@@ -199,6 +205,7 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     if not is_safe_to_modify(str(ruta.parent)): return None
         
     limpio = validate(values)
+    # Regla de integridad: no activar asistente sin credenciales
     if limpio.get("asistente_activado") and not (limpio.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)):
         limpio["asistente_activado"] = False
     

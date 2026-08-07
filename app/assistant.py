@@ -44,6 +44,7 @@ import urllib.error
 import urllib.request
 import re
 import math
+from itertools import islice
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Final, TypeAlias, Callable, Optional, Union, Generator
@@ -342,9 +343,9 @@ def handle_score(ctx: SystemContext, user_query: str) -> Answer:
     """Genera explicación del puntaje de salud global según problemas detectados."""
     detalle = (f"Tu puntaje es {ctx.score if ctx.score is not None else 'N/A'}/100"
                 f"{f' (nota {ctx.grade})' if ctx.grade else ''}. ")
-    problemas = list(_gen_problems(ctx))
+    problemas = list(islice(_gen_problems(ctx), 3))
     if problemas:
-        detalle += "Lo que más te está restando: " + ", ".join(problemas[:3]) + "."
+        detalle += "Lo que más te está restando: " + ", ".join(problemas) + "."
     else:
         detalle += "No hay nada urgente para arreglar."
     detalle += (" El puntaje combina basura, seguridad, memoria, disco, duplicados "
@@ -398,9 +399,10 @@ def local_answer(question: str, context: SystemContext) -> Answer:
     puntaje_str = str(context.score) if context.score is not None else "N/A"
     
     if primer_problema:
-        problemas = [primer_problema] + list(gen)
+        # Usamos islice para no procesar más de 3 problemas innecesariamente
+        problemas = [primer_problema] + list(islice(gen, 2))
         cuerpo = (f"Con un puntaje de {puntaje_str}/100, por orden de prioridad: "
-                  f"{', '.join(problemas[:3])}.")
+                  f"{', '.join(problemas)}.")
     else:
         cuerpo = f"Tu sistema está en buen estado ({puntaje_str}/100). No hay nada urgente."
         
