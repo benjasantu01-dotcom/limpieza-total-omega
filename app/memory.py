@@ -265,11 +265,10 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     if now - ts < 5.0:
         return cached_processes[:limit]
 
-    # Command optimization: filter only processes with memory to reduce CSV size/parsing
+    # Command optimization: Access directly via calculated properties to avoid heavy CSV piping
     command: str = (
-        "Get-Process | Where-Object {$_.WorkingSet -gt 0} | "
-        "Select-Object -Property Name,Id,WorkingSet -First 20 | "
-        "ConvertTo-Csv -NoTypeInformation"
+        "Get-Process | Sort-Object WorkingSet -Descending | Select-Object -First 20 "
+        "| ForEach-Object { \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }"
     )
     try:
         result = subprocess.run(
@@ -277,9 +276,15 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
             capture_output=True, text=True, timeout=5,
         )
         if result.returncode == 0 and result.stdout:
-            processes = parse_windows_process_csv(result.stdout, limit=limit)
+            lines = result.stdout.splitlines()
+            processes = []
+            for line in lines:
+                parts = line.split(",")
+                if len(parts) == 3:
+                    processes.append(ProcessMemory(name=parts[0], pid=int(parts[1]), working_set=int(parts[2])))
+            
             _PROCESS_CACHE["data"] = (now, processes)
-            return processes
+            return processes[:limit]
     except (OSError, subprocess.SubprocessError, Exception):
         pass
     return []

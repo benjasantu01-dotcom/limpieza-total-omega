@@ -152,7 +152,7 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
                             stat = entry.stat()
                             entry_path: Path = Path(entry.path)
                             
-                            if _is_valid_candidate(entry_path):
+                            if entry_path.suffix.lower() in _LOWER_JUNK_EXTS and _is_valid_candidate(entry_path):
                                 found.append(JunkFile(
                                     path=entry_path,
                                     size_bytes=stat.st_size,
