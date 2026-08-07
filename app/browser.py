@@ -98,8 +98,10 @@ def base_directories() -> List[Path]:
 
 def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> bool:
     """
-    Valida que la ruta sea segura contra directory traversal, no sea un 
-    punto de reparse (junction/symlink) y no contenga caracteres de control.
+    Valida que la ruta sea segura:
+    1. Verifica existencia y que esté contenida en base_path (previene escape).
+    2. Bloquea rutas UNC, puntos de reparse (junctions) y caracteres de control.
+    3. Confirma que la ruta no esté marcada como protegida por safety.py.
     """
     if not isinstance(target_path, Path) or not isinstance(base_path, Path):
         return False
@@ -111,7 +113,7 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
         if not target_path.exists():
             return False
             
-        # Bloquea caracteres de control o RTL potencialmente engañosos
+        # Bloquea caracteres de control o RTL potencialmente engañosos en el nombre de archivo
         if any(ord(char) < 32 or ord(char) in (0x200E, 0x200F, 0x202A, 0x202E) for char in str(target_path)):
             return False
 
@@ -137,20 +139,21 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
 
 
 def _is_excluded_file(name: str) -> bool:
-    """Verifica si un archivo debe ser ignorado por ser información sensible."""
+    """Verifica si un nombre de archivo está en la lista de exclusión global."""
     return name.lower() in NEVER_TOUCH
 
 
 def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool]) -> int:
     """
-    Recorre el árbol de directorios sumando bytes de archivos permitidos.
-    Utiliza is_junction_fn para evitar puntos de reparse (junctions).
+    Calcula el peso total de un directorio mediante escaneo recursivo.
+    Se asegura de no seguir enlaces simbólicos ni junctions (puntos de reparse).
     """
     total: int = 0
     try:
         with os.scandir(root_dir) as it:
             for entry in it:
                 try:
+                    # Filtro de seguridad: omite rutas protegidas y reparse points
                     if is_protected_path(Path(entry.path)) or entry.is_symlink() or is_junction_fn(entry.path):
                         continue
                     
@@ -167,8 +170,7 @@ def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool
 
 def directory_size(path: str | os.PathLike | None) -> int:
     """
-    Calcula el peso total en bytes mediante un recorrido recursivo con os.scandir.
-    Ignora automáticamente archivos en NEVER_TOUCH y rutas protegidas.
+    Wrapper para calcular tamaño. Valida la integridad de la ruta antes de recorrer.
     """
     if path is None:
         return 0
@@ -185,7 +187,7 @@ def directory_size(path: str | os.PathLike | None) -> int:
 
 
 def _is_valid_cache_path(candidate: Optional[Path], base_path: Path) -> bool:
-    """Valida si una ruta candidata es un objetivo legítimo de limpieza."""
+    """Valida que la ruta candidata al caché sea una carpeta real, segura y no protegida."""
     if not isinstance(candidate, Path) or not isinstance(base_path, Path):
         return False
     try:

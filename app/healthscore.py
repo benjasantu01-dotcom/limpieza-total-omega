@@ -148,7 +148,7 @@ def _to_int(value: Any, default: int = 0) -> int:
 
 
 def score_junk(junk_mb: float) -> float:
-    """Calcula normalización de basura: 0 MB es 1.0, JUNK_LIMIT_MB es 0.0 (lineal inversa)."""
+    """Normaliza volumen de basura: 0 MB = 1.0 (óptimo), > JUNK_LIMIT_MB = 0.0."""
     key = ("junk", junk_mb)
     if key in _SCORE_CACHE: return _SCORE_CACHE[key]
     val = _to_float(junk_mb)
@@ -158,7 +158,7 @@ def score_junk(junk_mb: float) -> float:
 
 
 def score_security(suspicious_count: int, warnings: int = 0) -> float:
-    """Penaliza hallazgos: -0.05 por archivo sospechoso, -0.25 por advertencia crítica."""
+    """Normaliza seguridad: penaliza hallazgos (-0.05 c/u) y advertencias críticas (-0.25 c/u)."""
     key = ("security", suspicious_count, warnings)
     if key in _SCORE_CACHE: return _SCORE_CACHE[key]
     s_count = max(0, _to_int(suspicious_count))
@@ -169,7 +169,7 @@ def score_security(suspicious_count: int, warnings: int = 0) -> float:
 
 
 def score_memory(available_percent: float) -> float:
-    """Normaliza memoria: ratio de disponibilidad frente al objetivo RAM_IDEAL_PERCENT."""
+    """Normaliza uso de RAM: puntaje basado en ratio de disponibilidad frente al objetivo ideal."""
     key = ("mem", available_percent)
     if key in _SCORE_CACHE: return _SCORE_CACHE[key]
     val = _to_float(available_percent)
@@ -179,7 +179,7 @@ def score_memory(available_percent: float) -> float:
 
 
 def score_disk(free_percent: float) -> float:
-    """Normaliza disco: ratio de espacio libre frente al objetivo DISK_IDEAL_PERCENT."""
+    """Normaliza espacio en disco: puntaje basado en ratio de espacio libre frente al objetivo ideal."""
     key = ("disk", free_percent)
     if key in _SCORE_CACHE: return _SCORE_CACHE[key]
     val = _to_float(free_percent)
@@ -189,7 +189,7 @@ def score_disk(free_percent: float) -> float:
 
 
 def score_duplicates(duplicate_mb: float) -> float:
-    """Normaliza duplicados: 0 MB es 1.0, DUPLICATE_LIMIT_MB es 0.0 (lineal inversa)."""
+    """Normaliza espacio ocupado por duplicados: 0 MB = 1.0, > DUPLICATE_LIMIT_MB = 0.0."""
     key = ("dup", duplicate_mb)
     if key in _SCORE_CACHE: return _SCORE_CACHE[key]
     val = _to_float(duplicate_mb)
@@ -199,7 +199,7 @@ def score_duplicates(duplicate_mb: float) -> float:
 
 
 def score_startup(startup_count: int) -> float:
-    """Normaliza arranque: penalización lineal creciente según cantidad de entradas."""
+    """Normaliza carga de inicio: penaliza linealmente por cada programa extra hasta el límite permitido."""
     key = ("start", startup_count)
     if key in _SCORE_CACHE: return _SCORE_CACHE[key]
     val = max(0, _to_int(startup_count))
@@ -209,7 +209,7 @@ def score_startup(startup_count: int) -> float:
 
 
 def grade_for_score(score: int) -> str:
-    """Asigna una calificación cualitativa (A-F) según el rango [0, 100]."""
+    """Mapea puntaje numérico [0, 100] a nivel de calificación cualitativa."""
     score_int = int(_clamp(float(score), 0.0, 100.0))
     if score_int >= 90: return "A"
     if score_int >= 80: return "B"

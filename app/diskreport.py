@@ -167,6 +167,8 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Generador recursivo que recorre archivos bajo `directory`.
+    Utiliza `os.scandir` para rendimiento eficiente y valida contra `is_protected_path`
+    en cada nivel de profundidad para cumplir con la política de seguridad.
     """
     if not directory:
         return
@@ -183,30 +185,30 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     def scan_level(current_path: Path) -> Generator[Tuple[Path, int], None, None]:
         try:
             with os.scandir(current_path) as iterator:
-                for entry in iterator:
+                for file_entry in iterator:
                     try:
-                        resolved_path = Path(entry.path).resolve()
+                        resolved_path = Path(file_entry.path).resolve()
                         
-                        # Seguridad defensiva: evitar escapes fuera de la raíz
+                        # Seguridad defensiva: evitar escapes fuera de la raíz (symlink loops/traversal)
                         if not str(resolved_path).startswith(str(base_path)):
                             continue
 
-                        # Detectar junctions/symlinks
+                        # Detectar junctions/symlinks de sistema
                         if os.name == 'nt':
-                            st = entry.stat(follow_symlinks=False)
+                            st = file_entry.stat(follow_symlinks=False)
                             if (st.st_file_attributes & 0x400) != 0:
                                 continue
-                        elif entry.is_symlink():
+                        elif file_entry.is_symlink():
                             continue
                         
-                        if entry.is_dir():
+                        if file_entry.is_dir():
                             if resolved_path not in visited:
                                 if skip_protected and is_protected_path(resolved_path):
                                     continue
                                 visited.add(resolved_path)
                                 yield from scan_level(resolved_path)
                         else:
-                            yield resolved_path, entry.stat(follow_symlinks=False).st_size
+                            yield resolved_path, file_entry.stat(follow_symlinks=False).st_size
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):
@@ -310,8 +312,8 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
     ext_count_map: Dict[str, int] = defaultdict(int)
     top_files_heap: List[Tuple[int, str]] = []
     
-    total_bytes = 0
-    total_files = 0
+    total_bytes: int = 0
+    total_files: int = 0
     
     for path, size in walk_files(path_obj, skip_protected):
         total_bytes += size

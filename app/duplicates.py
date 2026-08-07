@@ -149,10 +149,16 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     return groups
 
 
-def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
+def _collect_candidates(
+    directories: Iterable[Union[str, Path]], 
+    min_size: int, 
+    skip_protected: bool
+) -> Dict[int, List[Path]]:
     """
     Escaneo recursivo para indexar archivos por tamaño usando inodos para evitar ciclos.
-    Implementa validaciones de seguridad para no seguir puntos de reparse (Junctions).
+    
+    Ignora reparse points (Junctions) mediante chequeo de atributos de archivo y 
+    valida cada ruta contra `is_protected_path` si skip_protected está activo.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: Dict[int, set[int]] = defaultdict(set)
@@ -194,10 +200,13 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
     return {size: paths for size, paths in temp_groups.items() if len(paths) > 1}
 
 
-def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
+def _refine_by_hash(
+    paths: Iterable[Path], 
+    hash_func: Callable[[Path], Optional[str]]
+) -> Dict[str, List[Path]]:
     """
     Refina un grupo de archivos candidatos aplicando una función de hash.
-    La función hash_func debe realizar sus propias verificaciones de seguridad.
+    La función hash_func realiza sus propias verificaciones de seguridad internas.
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     if paths is None: return groups_by_digest
