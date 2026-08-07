@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **237** (47.0% de aceptación)
+- Mejoras aceptadas: **240** (47.6% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 202
+- Sin respuesta de la IA (error o límite): 199
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-06 | 93 | 5 | 12 | 10 | 88 |
-| 2026-08-07 | 144 | 11 | 15 | 12 | 114 |
+| 2026-08-06 | 93 | 5 | 12 | 10 | 84 |
+| 2026-08-07 | 147 | 11 | 15 | 12 | 115 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **59**
 - rendimiento: **49**
+- seguridad defensiva: **46**
 - manejo de errores y validación de entradas: **43**
 - robustez ante casos límite: **43**
-- seguridad defensiva: **43**
 
 ## Mejoras aceptadas por archivo
 
@@ -38,14 +38,17 @@ Este archivo se regenera solo en cada corrida a partir de
 - `duplicates.py`: **17**
 - `browser.py`: **17**
 - `organizer.py`: **17**
-- `healthscore.py`: **15**
+- `healthscore.py`: **16**
+- `memory.py`: **16**
 - `safety.py`: **15**
-- `memory.py`: **15**
-- `main.py`: **12**
+- `main.py`: **13**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-07T13:11:39` **memory.py** (seguridad defensiva): Se ha mejorado la robustez de `trim_working_set` añadiendo una comprobación explícita para evitar que `psapi.GetModuleFileNameExW` falle silenciosamente o maneje mal las rutas, asegurando que la validación de seguridad (`is_protected_path`) se aplique sobre una cadena de texto limpia y válida antes de cualquier interacción con el proceso.
+- `2026-08-07T13:11:12` **main.py** (seguridad defensiva): Se introdujo una comprobación explícita para evitar que `run_async` acepte funciones que modifiquen el disco de forma insegura, asegurando que cualquier operación asíncrona que toque rutas pase por el mismo chequeo de seguridad que el resto de la aplicación, evitando que tareas en segundo plano eludan `safety.py`.
+- `2026-08-07T13:09:05` **healthscore.py** (seguridad defensiva): Se ha robustecido la validación de `SystemMetrics` mediante la implementación de `math.isfinite` en cada campo numérico durante la validación interna, garantizando que el sistema no propague valores `NaN` o `inf` desde el origen (módulos externos) hacia el motor de puntuación.
 - `2026-08-07T12:59:48` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez defensiva al añadir una validación explícita mediante `is_protected_path` justo antes de realizar cualquier operación de I/O en `hash_file`, `partial_hash` y `suggest_keeper`, garantizando que incluso si un archivo fuera movido o alterado entre la etapa de recolección y la de análisis, la aplicación nunca acceda a rutas restringidas.
 - `2026-08-07T12:59:39` **diskreport.py** (seguridad defensiva): Reforcé la seguridad defensiva en `walk_files` evitando que la resolución de rutas simbólicas o accesos a archivos especiales mediante `os.scandir` permita escapar del directorio raíz o acceder a datos fuera del alcance permitido, asegurando que la validación de `is_protected_path` sea efectiva incluso ante enlaces simbólicos maliciosos.
 - `2026-08-07T12:59:14` **browser.py** (seguridad defensiva): Se ha robustecido la validación de seguridad en `_sum_directory_recursive` mediante el uso estricto de `Path.resolve()` antes de comparar con `is_protected_path`, garantizando que el escaneo no pueda desviarse a rutas protegidas incluso mediante manipulación de nombres o enlaces.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-07T12:18:46` **branding.py** (robustez ante casos límite): Se ha robustecido la función `save_logo_svg` añadiendo un manejo de excepciones más granular para capturar posibles errores de sistema de archivos (como discos de solo lectura o falta de espacio) antes de intentar la operación, garantizando que un fallo en la escritura no deje la aplicación en un estado inconsistente.
 - `2026-08-07T12:18:13` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` ante valores inesperados en el origen de las métricas (como tipos `None` inesperados o diccionarios malformados) mediante un filtrado de tipos más estricto y seguro en `getattr` y la lógica de asignación.
 - `2026-08-07T12:08:39` **settings.py** (rendimiento): Se optimizó el acceso a las configuraciones eliminando la carga redundante de archivos y validaciones repetidas en las funciones `assistant_api_key`, `assistant_enabled` y `get`, aprovechando el caché interno de `_cached_settings` de forma consistente.
-- `2026-08-07T12:08:11` **scanner.py** (rendimiento): Optimizé la ejecución de las heurísticas de archivo mediante el filtrado temprano del tipo de extensión (`s`) dentro de `scan_file`, evitando llamadas innecesarias a funciones de inspección (como `check_recent_executable_in_downloads`) para archivos que no son ejecutables, reduciendo significativamente la carga de I/O en escaneos masivos.
-- `2026-08-07T12:07:46` **safety.py** (rendimiento): Se implementó un cacheo más eficiente y directo en `is_protected_path` al evitar la conversión repetitiva de `_SYSTEM_ROOTS` a strings dentro de un loop, además de optimizar la validación de `PROTECTED_DIR_NAMES` mediante el uso directo del conjunto pre-procesado, reduciendo la carga de CPU en cada iteración durante escaneos masivos.
-- `2026-08-07T11:59:06` **organizer.py** (rendimiento): Optimicé el escaneo de archivos reemplazando las múltiples llamadas a `endswith` en el loop por una evaluación directa contra el set pre-calculado `_LOWER_JUNK_EXTS`, evitando la creación de tuplas temporales en cada iteración y mejorando el rendimiento en discos con alta densidad de archivos.

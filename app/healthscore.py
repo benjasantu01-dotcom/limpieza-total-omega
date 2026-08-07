@@ -104,8 +104,11 @@ class SystemMetrics:
 
     def is_finite(self) -> bool:
         """Verifica la integridad numérica de todos los campos mediante comprobación de finitud IEEE 754."""
-        return all(math.isfinite(getattr(self, field)) for field in self.__dataclass_fields__ 
-                   if isinstance(getattr(self, field), (int, float)))
+        for field_name in self.__dataclass_fields__:
+            val = getattr(self, field_name)
+            if isinstance(val, (int, float)) and not math.isfinite(val):
+                return False
+        return True
 
 
 @dataclass

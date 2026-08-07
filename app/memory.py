@@ -373,9 +373,11 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     
     try:
         # Validación: evita tocar procesos residentes en directorios protegidos del sistema
-        buf = ctypes.create_unicode_buffer(1024)
-        if psapi.GetModuleFileNameExW(handle, 0, buf, 1024) > 0:
-            if is_protected_path(buf.value):
+        buf = ctypes.create_unicode_buffer(2048)
+        bytes_copied = psapi.GetModuleFileNameExW(handle, 0, buf, 2048)
+        if bytes_copied > 0:
+            path_str = buf.value
+            if not path_str or is_protected_path(path_str):
                 return False, "Operación denegada: el ejecutable está en una ruta protegida."
         else:
             return False, "Operación denegada: no se pudo verificar la integridad del proceso."
