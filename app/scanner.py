@@ -65,12 +65,17 @@ class Scanner:
         self.base_root = base_root.resolve()
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
+        """Determina si una entrada es un punto de reanálisis (Junction o Symlink) para evitar bucles infinitos."""
         try:
             return bool(entry.stat(follow_symlinks=False).st_file_attributes & 0x400)
         except (OSError, AttributeError):
             return False
 
     def process_entry(self, entry: os.DirEntry, stack: List[str]) -> None:
+        """
+        Valida y procesa una entrada del sistema de archivos. 
+        Si es directorio, lo agrega al stack de recorrido; si es archivo, ejecuta las heurísticas.
+        """
         if not entry or not entry.path:
             return
         
@@ -134,7 +139,12 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, name
         pass
     return None
 
-CHECK_REGISTRY: Final[List[SuspicionCheck]] = [check_double_extension]
+# Registro consolidado de todas las heurísticas aplicables a archivos
+CHECK_REGISTRY: Final[List[SuspicionCheck]] = [
+    check_double_extension, 
+    check_recent_executable_in_downloads,
+    check_system_lookalike
+]
 
 def scan_file(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, prevalidated: bool = False) -> ScanResult:
     """
@@ -151,16 +161,10 @@ def scan_file(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[st
     s = suffix or (path.suffix.lower() if path.suffix else "")
     findings: ScanResult = []
     
-    if n.lower() in SYSTEM_LOOKALIKES:
-        if res := check_system_lookalike(path, entry, n, s): 
+    # Aplicar todas las heurísticas registradas
+    for check_func in CHECK_REGISTRY:
+        if res := check_func(path, entry, n, s):
             findings.append(res)
-    
-    if s in SUSPICIOUS_EXECUTABLE_EXT:
-        if res := check_recent_executable_in_downloads(path, entry, n, s): 
-            findings.append(res)
-        for check_func in CHECK_REGISTRY:
-            if res := check_func(path, entry, n, s):
-                findings.append(res)
             
     return findings
 
