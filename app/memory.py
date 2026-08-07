@@ -337,8 +337,14 @@ def _is_system_process(pid: int) -> bool:
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
-    Solicita al S.O. reducir el Working Set (RAM ocupada) de un proceso.
-    Valida permisos, integridad del ejecutable y PIDs críticos antes de ejecutar.
+    Solicita al S.O. reducir el Working Set (RAM asignada en memoria física) 
+    de un proceso, forzando la paginación de páginas inactivas al disco.
+
+    Args:
+        pid: Identificador del proceso objetivo (entero o cadena).
+
+    Returns:
+        Tupla (éxito: bool, mensaje: str) describiendo el resultado de la operación.
     """
     if os.name != "nt":
         return False, "Solo disponible en Windows."
@@ -355,11 +361,13 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     kernel32 = ctypes.windll.kernel32
     psapi = ctypes.windll.psapi
     
+    # Intenta obtener acceso de lectura y escritura al proceso
     handle = kernel32.OpenProcess(REQUIRED_ACCESS, False, target_pid)
     if not handle or handle <= 0:
         return False, "Acceso denegado: permisos insuficientes o el proceso ya no existe."
     
     try:
+        # Validación: evita tocar procesos residentes en directorios protegidos del sistema
         buf = ctypes.create_unicode_buffer(1024)
         if psapi.GetModuleFileNameExW(handle, 0, buf, 1024) > 0:
             if is_protected_path(buf.value):
@@ -367,10 +375,12 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         else:
             return False, "Operación denegada: no se pudo verificar la integridad del proceso."
 
+        # Validación: verifica que el proceso siga activo
         exit_code = ctypes.c_ulong()
         if not kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)) or exit_code.value != 259:
             return False, "El proceso seleccionado ya no está activo."
 
+        # Invocación de la API crítica: EmptyWorkingSet
         if not psapi.EmptyWorkingSet(handle):
             return False, "Error al intentar liberar memoria del proceso."
         return True, f"Working set liberado. {TRIM_WARNING}"

@@ -112,7 +112,11 @@ class QuarantineItem:
     def verify_integrity(self, stored_path: Path) -> bool:
         """
         Valida que el archivo en cuarentena no haya sido alterado.
-        Compara tamaño y hash SHA-256 contra los metadatos del manifiesto.
+        
+        Args:
+            stored_path: Ruta al archivo dentro de la cuarentena.
+        Returns:
+            bool: True si el tamaño y SHA-256 coinciden con el manifiesto.
         """
         if not stored_path or not stored_path.is_file():
             return False
