@@ -150,14 +150,10 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
 
 def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """
-    Realiza un escaneo recursivo para indexar archivos por tamaño.
-    
-    Utiliza un conjunto 'visited_inodes' para evitar procesar recursivamente el mismo 
-    archivo o directorio a través de enlaces simbólicos o puntos de reparse, 
-    asegurando que solo se analicen archivos con tamaño >= min_size.
+    Realiza un escaneo recursivo para indexar archivos por tamaño con cache de inodos.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
-    visited_inodes: set[Tuple[int, int]] = set()
+    visited_inodes: Dict[int, set[int]] = defaultdict(set)
     
     if directories is None: return temp_groups
     
@@ -166,25 +162,23 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
             with os.scandir(root_path) as dir_iterator:
                 for entry in dir_iterator:
                     try:
-                        lstat = entry.stat(follow_symlinks=False)
+                        entry_stat = entry.stat(follow_symlinks=False)
                         
-                        # Detectar y saltar puntos de reparse (Windows junctions/reparse points)
-                        if getattr(lstat, 'st_file_attributes', 0) & 0x400:
+                        # Detectar puntos de reparse (Windows junctions/reparse points)
+                        if getattr(entry_stat, 'st_file_attributes', 0) & 0x400:
                             continue
                             
-                        inode_key = (lstat.st_dev, lstat.st_ino)
-                        
                         if entry.is_dir(follow_symlinks=False):
-                            if inode_key not in visited_inodes:
-                                visited_inodes.add(inode_key)
+                            if entry_stat.st_ino not in visited_inodes[entry_stat.st_dev]:
+                                visited_inodes[entry_stat.st_dev].add(entry_stat.st_ino)
                                 if not (skip_protected and is_protected_path(Path(entry.path))):
                                     _scan(Path(entry.path))
                         
                         elif entry.is_file(follow_symlinks=False):
-                            if lstat.st_size >= min_size:
+                            if entry_stat.st_size >= min_size:
                                 path_obj = Path(entry.path)
                                 if not (skip_protected and is_protected_path(path_obj)):
-                                    temp_groups[lstat.st_size].append(path_obj)
+                                    temp_groups[entry_stat.st_size].append(path_obj)
                     except (OSError, PermissionError): continue
         except (OSError, PermissionError): pass
 
@@ -200,9 +194,6 @@ def _collect_candidates(directories: Iterable[Union[str, Path]], min_size: int, 
 def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
     """
     Refina un grupo de archivos candidatos aplicando una función de hash.
-    
-    Agrupa los archivos por su digest resultante, descartando aquellos que son
-    únicos tras el cálculo (sin colisiones), optimizando la fase de confirmación.
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     if paths is None: return groups_by_digest
@@ -221,12 +212,6 @@ def find_duplicates(
 ) -> List[DuplicateGroup]:
     """
     Ejecuta el pipeline de detección de duplicados en tres etapas:
-    
-    1. Fase de Metadatos (Size-based): Escaneo recursivo inicial filtrando por tamaño.
-    2. Fase de Muestreo (Partial-hash): Lectura de los primeros 64KB para descartar falsos positivos.
-    3. Fase de Confirmación (Full-hash): Lectura completa para verificar coincidencia absoluta.
-    
-    Retorna una lista de objetos DuplicateGroup ordenados por espacio desperdiciado descendente.
     """
     if directories is None: return []
     
@@ -234,11 +219,8 @@ def find_duplicates(
     
     groups: List[DuplicateGroup] = []
     for size, paths_in_size_group in size_map.items():
-        
-        # Etapa 2: Reducir candidatos mediante hash parcial de cabecera
         partial_groups = _refine_by_hash(paths_in_size_group, partial_hash)
         
-        # Etapa 3: Confirmar identidad mediante hash completo
         for partial_candidates in partial_groups.values():
             full_hash_groups = _refine_by_hash(partial_candidates, hash_file)
             for digest, confirmed_paths in full_hash_groups.items():
@@ -257,10 +239,6 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     """
     Selecciona el archivo candidato para conservar.
-    
-    Criterio de selección: 
-    1. Preferencia por la fecha de modificación más antigua (probablemente el archivo original).
-    2. Ante igual antigüedad, preferencia por la ruta más corta (menor complejidad en el sistema de archivos).
     """
     if not group or not group.paths:
         return None

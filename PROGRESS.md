@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **228** (45.2% de aceptación)
+- Mejoras aceptadas: **232** (46.0% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 27
-- Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 215
+- Rechazadas por guardia de seguridad: 26
+- Sin cambios (nada sustancial que mejorar): 15
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-05 | 52 | 3 | 5 | 2 | 40 |
+| 2026-08-05 | 52 | 3 | 4 | 1 | 38 |
 | 2026-08-06 | 159 | 9 | 19 | 12 | 151 |
-| 2026-08-07 | 17 | 6 | 3 | 2 | 24 |
+| 2026-08-07 | 21 | 6 | 3 | 2 | 24 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - seguridad defensiva: **52**
 - manejo de errores y validación de entradas: **45**
-- rendimiento: **38**
+- rendimiento: **42**
 - robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **22**
-- `branding.py`: **20**
-- `diskreport.py`: **20**
+- `branding.py`: **21**
+- `diskreport.py`: **21**
+- `browser.py`: **20**
 - `settings.py`: **19**
 - `assistant.py`: **19**
-- `browser.py`: **19**
 - `scanner.py`: **19**
+- `duplicates.py`: **17**
 - `healthscore.py`: **17**
-- `duplicates.py`: **16**
 - `main.py`: **14**
 - `memory.py`: **14**
 - `organizer.py`: **12**
@@ -47,6 +47,10 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-07T02:48:00` **duplicates.py** (rendimiento): Optimicé `_collect_candidates` utilizando un diccionario de `set` para `visited_inodes` por volumen, reduciendo drásticamente el costo de búsqueda en árboles de directorios grandes al evitar la redundancia de listas, y apliqué `os.scandir` de forma más eficiente al cachear atributos de archivo evitando llamadas extra a `stat()` en el loop principal.
+- `2026-08-07T02:47:48` **diskreport.py** (rendimiento): Optimicé `walk_files` y `summarize` para evitar llamadas redundantes a `Path.resolve()` y `Path.relative_to()` dentro del bucle principal, reduciendo significativamente el consumo de CPU al convertir `Path` a `str` solo cuando es necesario para la visualización.
+- `2026-08-07T02:47:24` **browser.py** (rendimiento): Optimizé `_sum_directory_recursive` evitando llamadas repetidas a `entry.is_symlink()` y `is_junction_fn` al reutilizar la información del objeto `os.DirEntry` y simplificando el flujo de exclusión de archivos, lo que reduce la carga de I/O en escaneos profundos de caché.
+- `2026-08-07T02:47:00` **branding.py** (rendimiento): Se optimizó la generación de degradados en `draw_gradient_bar` y `draw_logo` reemplazando la creación de líneas individuales por una pre-agrupación de segmentos contiguos del mismo color, reduciendo drásticamente las llamadas al método `create_line` en el canvas de Tkinter.
 - `2026-08-07T02:37:20` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` reemplazando la creación innecesaria de listas completas (mediante `list(gen)`) por el uso de `next()` y `islice` para procesar solo los elementos necesarios para la respuesta, evitando iteraciones sobre colecciones que no se muestran.
 - `2026-08-07T02:36:40` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints explícitos, docstrings detallados para métodos complejos y la clarificación de la lógica de validación, asegurando que el código sea más auto-explicativo sin alterar su comportamiento.
 - `2026-08-07T02:26:37` **quarantine.py** (legibilidad y documentación): He mejorado la documentación técnica agregando docstrings descriptivos con secciones de argumentos y excepciones en las funciones críticas de gestión de archivos, facilitando la comprensión del flujo de seguridad para futuros colaboradores.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-07T02:06:32` **browser.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `directory_size` extrayendo la lógica recursiva de cálculo de peso a una función con nombre explícito, reemplazando el uso de `nonlocal` por una estructura de acumulación más clara y añadiendo type hints faltantes.
 - `2026-08-07T02:06:06` **branding.py** (legibilidad y documentación): Se introdujo una `Enum` (o alias estructural de clase) para los estados de severidad, reemplazando la dependencia implícita de strings "mágicos" en todo el módulo, mejorando la seguridad de tipos y la documentación del comportamiento esperado en las funciones relacionadas con `SeverityStyle`.
 - `2026-08-07T01:56:16` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` envolviendo la operación de `os.replace` en una verificación explícita mediante `ensure_safe_to_modify` y añadiendo un bloque `try-finally` para asegurar que el archivo temporal siempre sea eliminado si algo falla antes de la escritura final.
-- `2026-08-07T01:55:51` **scanner.py** (manejo de errores y validación de entradas): Se mejoró la robustez de `check_system_lookalike` y `scan_file` validando explícitamente la integridad de los parámetros de entrada y normalizando comparaciones de ruta para evitar errores silenciosos en sistemas de archivos complejos.
-- `2026-08-07T01:55:28` **safety.py** (manejo de errores y validación de entradas): Mejora la robustez de `ensure_safe_to_modify` ante entradas potencialmente inválidas o inaccesibles, asegurando que se capturen errores de sistema inesperados durante la validación de integridad para evitar excepciones no controladas en el bucle principal.
-- `2026-08-07T01:46:30` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` validando explícitamente que la ruta de origen no sea una ruta de red (UNC) o una unidad no local antes de intentar cualquier operación de I/O, previniendo errores de permisos en entornos de red.
-- `2026-08-07T01:45:33` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez de `parse_linux_meminfo` mediante la validación explícita de tipos y la captura de errores en la conversión de valores, evitando fallos ante entradas malformadas en `/proc/meminfo`.

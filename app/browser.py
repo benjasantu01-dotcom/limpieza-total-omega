@@ -145,13 +145,13 @@ def _sum_directory_recursive(root_dir: str, is_junction_fn) -> int:
     try:
         with os.scandir(root_dir) as it:
             for entry in it:
+                if entry.is_symlink() or is_junction_fn(entry.path):
+                    continue
+                
                 try:
-                    if entry.is_symlink() or is_junction_fn(entry.path):
-                        continue
-                    
                     if entry.is_dir():
                         total += _sum_directory_recursive(entry.path, is_junction_fn)
-                    elif entry.is_file() and entry.name.lower() not in NEVER_TOUCH:
+                    elif entry.name.lower() not in NEVER_TOUCH:
                         total += entry.stat().st_size
                 except (OSError, PermissionError):
                     continue

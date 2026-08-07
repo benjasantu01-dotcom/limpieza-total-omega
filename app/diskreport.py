@@ -188,23 +188,19 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
             with os.scandir(current_path) as iterator:
                 for entry in iterator:
                     try:
-                        # Evitar seguir enlaces simbólicos y puntos de reparse de Windows
                         if entry.is_symlink():
                             continue
-                        if os.name == 'nt':
-                            # 0x400 es FILE_ATTRIBUTE_REPARSE_POINT
-                            if entry.stat().st_file_attributes & 0x400:
-                                continue
+                        if os.name == 'nt' and (entry.stat().st_file_attributes & 0x400):
+                            continue
                         
                         if entry.is_dir():
-                            full_path = Path(entry.path).resolve()
+                            full_path = Path(entry.path)
                             if full_path not in visited_directories:
                                 if skip_protected and is_protected_path(full_path):
                                     continue
                                 visited_directories.add(full_path)
                                 yield from scan_level(full_path)
                         else:
-                            # Leer tamaño directamente sin seguir links para evitar errores de permisos
                             yield Path(entry.path), entry.stat(follow_symlinks=False).st_size
                     except (OSError, PermissionError):
                         continue
@@ -256,16 +252,17 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
         folder_map: Dict[Path, FolderUsage] = {}
         for path, size in walk_files(base, skip_protected):
             try:
-                rel = path.relative_to(base)
-                if not rel.parts:
+                parts = path.relative_to(base).parts
+                if not parts:
                     continue
-                top_level = base / rel.parts[0]
+                top_level = base / parts[0]
                 
                 if top_level not in folder_map:
                     folder_map[top_level] = FolderUsage(path=top_level, size_bytes=size, file_count=1)
                 else:
-                    folder_map[top_level].size_bytes += size
-                    folder_map[top_level].file_count += 1
+                    ref = folder_map[top_level]
+                    ref.size_bytes += size
+                    ref.file_count += 1
             except (ValueError, IndexError, OSError):
                 continue
 

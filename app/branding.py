@@ -328,10 +328,13 @@ def draw_logo(canvas: Any, size: int = 56, canvas_x: int = 0, canvas_y: int = 0)
         franjas = max(6, int(28 * s))
         alto = max(0.1, 92 * s / franjas)
         colores = gradient_colors(franjas)
-        for i, tono in enumerate(colores):
-            w = 36 * s * (1.0 if i / (franjas - 1) < 0.55 else 1.0 - (i / (franjas - 1) - 0.55) * 1.9)
-            canvas.create_rectangle(x + 64*s - w, y + 18*s + i*alto, x + 64*s + w, y + 18*s + (i+1)*alto + 1, 
-                                    fill=tono, outline="")
+        
+        start_i = 0
+        for i in range(1, franjas + 1):
+            if i == franjas or colores[i] != colores[start_i]:
+                w = 36 * s * (1.0 if (start_i + i)/2 / (franjas - 1) < 0.55 else 1.0 - ((start_i + i)/2 / (franjas - 1) - 0.55) * 1.9)
+                canvas.create_rectangle(x + 64*s - w, y + 18*s + start_i*alto, x + 64*s + w, y + 18*s + i*alto + 1, fill=colores[start_i], outline="")
+                start_i = i
 
         canvas.create_line(x + 41*s, y + 75*s, x + 75*s, y + 41*s, fill=PALETTE["background"], width=max(2, int(8*s)), capstyle="round")
         canvas.create_polygon(x + 75*s, y + 41*s, x + 89*s, y + 38*s, x + 92*s, y + 52*s, fill=PALETTE["background"], outline="")
@@ -351,13 +354,10 @@ def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
         colores = gradient_colors(ancho, stops)
         
         start = 0
-        current_color = colores[0]
-        for i in range(1, ancho):
-            if colores[i] != current_color:
-                canvas.create_line(canvas_x + start, canvas_y, canvas_x + i, canvas_y, fill=current_color, width=alto)
+        for i in range(1, ancho + 1):
+            if i == ancho or colores[i] != colores[start]:
+                canvas.create_line(canvas_x + start, canvas_y, canvas_x + i, canvas_y, fill=colores[start], width=alto)
                 start = i
-                current_color = colores[i]
-        canvas.create_line(canvas_x + start, canvas_y, canvas_x + ancho, canvas_y, fill=current_color, width=alto)
     except (ValueError, TypeError, AttributeError): pass
 
 
