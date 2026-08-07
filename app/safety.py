@@ -250,7 +250,11 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
     if path is None:
         raise UnsafePathError("Ruta nula recibida.")
 
-    p = normalize(path)
+    try:
+        p = normalize(path)
+    except (TypeError, ValueError, OSError) as e:
+        raise UnsafePathError(f"Ruta mal formada: {e}")
+
     if p in _cache_security_check and _cache_security_check[p]:
         return p
 
@@ -263,7 +267,9 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> P
     if p.exists():
         try:
             _check_file_integrity(p)
-        except (OSError, PermissionError):
+        except UnsafePathError:
+            raise
+        except (OSError, PermissionError, ValueError):
             raise UnsafePathError("Operación bloqueada: error de acceso al verificar estado.")
 
     if is_drive_root(p) or is_protected_path(p):

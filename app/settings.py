@@ -222,10 +222,11 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
         _cached_settings, _current_path = limpio, ruta
         return ruta
     except (OSError, PermissionError, RuntimeError, Exception):
+        return None
+    finally:
         if temp_path and temp_path.exists():
             try: temp_path.unlink()
             except OSError: pass
-        return None
 
 def update(changes: dict[str, Any], path_or_base: PathLike | None = None) -> AppSettings:
     """Aplica cambios parciales a la configuración actual y guarda a disco."""

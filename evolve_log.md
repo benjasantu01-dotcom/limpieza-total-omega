@@ -1161,3 +1161,34 @@ assert not {'replace'}
 - `2026-08-07T01:46:35` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-08-07T01:46:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-07T01:46:35` Corrida terminada. Total usado hoy: 32.
+- `2026-08-07T01:55:00` Arrancando corrida. Quedan hoy ~268 peticiones objetivo.
+- `2026-08-07T01:55:28` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `ensure_safe_to_modify` ante entradas potencialmente inválidas o inaccesibles, asegurando que se capturen errores de sistema inesperados durante la validación de integridad para evitar excepciones no controladas en el bucle principal.
+- `2026-08-07T01:55:51` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se mejoró la robustez de `check_system_lookalike` y `scan_file` validando explícitamente la integridad de los parámetros de entrada y normalizando comparaciones de ruta para evitar errores silenciosos en sistemas de archivos complejos.
+- `2026-08-07T01:56:16` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save()` envolviendo la operación de `os.replace` en una verificación explícita mediante `ensure_safe_to_modify` y añadiendo un bloque `try-finally` para asegurar que el archivo temporal siempre sea eliminado si algo falla antes de la escritura final.
+- `2026-08-07T01:56:25` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 0.85s
+
+```
+- `2026-08-07T01:56:25` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `StartupEntry._resolve_and_cache_path` y `parse_registry_csv` añadiendo validaciones preventivas contra rutas inexistentes, vacías o mal formadas, evitando que métodos como `Path.resolve(strict=True)` lancen excepciones no capturadas durante la ejecución del bucle.
+- `2026-08-07T01:56:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-07T01:56:25` Corrida terminada. Total usado hoy: 36.
