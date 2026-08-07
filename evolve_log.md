@@ -1045,3 +1045,10 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-08-07T13:11:47` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
 - `2026-08-07T13:11:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-07T13:11:47` Corrida terminada. Total usado hoy: 300.
+- `2026-08-07T13:18:50` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-07T13:19:24` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó `_validate_isolation_request` para impedir que archivos ocultos de sistema o con atributos inusuales (como ADS - Alternate Data Streams) sean procesados, previniendo así posibles ataques de "data hiding" en la cuarentena.
+- `2026-08-07T13:19:43` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-07T13:20:08` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se introdujo una validación de ruta absoluta en `ensure_safe_to_modify` para detectar y bloquear ataques de path traversal (`..`), asegurando que la ruta normalizada se mantenga dentro de los límites esperados mediante la comparación de las partes (`parts`) del objeto `Path`, evitando así que nombres de archivos engañosos intenten escapar de un directorio seguro.
+- `2026-08-07T13:20:16` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-08-07T13:20:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-07T13:20:16` Corrida terminada. Total usado hoy: 304.

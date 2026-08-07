@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **240** (47.6% de aceptación)
+- Mejoras aceptadas: **242** (48.0% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 27
+- Rechazadas por guardia de seguridad: 28
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 199
+- Sin respuesta de la IA (error o límite): 196
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-06 | 93 | 5 | 12 | 10 | 84 |
-| 2026-08-07 | 147 | 11 | 15 | 12 | 115 |
+| 2026-08-06 | 93 | 5 | 12 | 10 | 80 |
+| 2026-08-07 | 149 | 11 | 16 | 12 | 116 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **59**
 - rendimiento: **49**
-- seguridad defensiva: **46**
+- seguridad defensiva: **48**
 - manejo de errores y validación de entradas: **43**
 - robustez ante casos límite: **43**
 
@@ -32,20 +32,22 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **21**
 - `branding.py`: **21**
 - `diskreport.py`: **21**
-- `quarantine.py`: **20**
+- `quarantine.py`: **21**
 - `settings.py`: **20**
 - `scanner.py`: **19**
 - `duplicates.py`: **17**
 - `browser.py`: **17**
 - `organizer.py`: **17**
 - `healthscore.py`: **16**
+- `safety.py`: **16**
 - `memory.py`: **16**
-- `safety.py`: **15**
 - `main.py`: **13**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-07T13:20:08` **safety.py** (seguridad defensiva): Se introdujo una validación de ruta absoluta en `ensure_safe_to_modify` para detectar y bloquear ataques de path traversal (`..`), asegurando que la ruta normalizada se mantenga dentro de los límites esperados mediante la comparación de las partes (`parts`) del objeto `Path`, evitando así que nombres de archivos engañosos intenten escapar de un directorio seguro.
+- `2026-08-07T13:19:24` **quarantine.py** (seguridad defensiva): Se reforzó `_validate_isolation_request` para impedir que archivos ocultos de sistema o con atributos inusuales (como ADS - Alternate Data Streams) sean procesados, previniendo así posibles ataques de "data hiding" en la cuarentena.
 - `2026-08-07T13:11:39` **memory.py** (seguridad defensiva): Se ha mejorado la robustez de `trim_working_set` añadiendo una comprobación explícita para evitar que `psapi.GetModuleFileNameExW` falle silenciosamente o maneje mal las rutas, asegurando que la validación de seguridad (`is_protected_path`) se aplique sobre una cadena de texto limpia y válida antes de cualquier interacción con el proceso.
 - `2026-08-07T13:11:12` **main.py** (seguridad defensiva): Se introdujo una comprobación explícita para evitar que `run_async` acepte funciones que modifiquen el disco de forma insegura, asegurando que cualquier operación asíncrona que toque rutas pase por el mismo chequeo de seguridad que el resto de la aplicación, evitando que tareas en segundo plano eludan `safety.py`.
 - `2026-08-07T13:09:05` **healthscore.py** (seguridad defensiva): Se ha robustecido la validación de `SystemMetrics` mediante la implementación de `math.isfinite` en cada campo numérico durante la validación interna, garantizando que el sistema no propague valores `NaN` o `inf` desde el origen (módulos externos) hacia el motor de puntuación.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-07T12:38:21` **organizer.py** (robustez ante casos límite): Se mejora la robustez de `stage_for_review` y `delete_reviewed` al validar que las rutas destino no contengan puntos de reparse (junctions) mediante `resolve()` y verificaciones explícitas, mitigando riesgos de acceso no intencional a otras unidades o directorios fuera del alcance permitido.
 - `2026-08-07T12:28:08` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez en `hash_file` y `partial_hash` para gestionar correctamente archivos bloqueados por el sistema (en uso exclusivo), añadiendo un manejo de excepciones más específico durante la apertura y lectura del stream de bytes.
 - `2026-08-07T12:18:46` **branding.py** (robustez ante casos límite): Se ha robustecido la función `save_logo_svg` añadiendo un manejo de excepciones más granular para capturar posibles errores de sistema de archivos (como discos de solo lectura o falta de espacio) antes de intentar la operación, garantizando que un fallo en la escritura no deje la aplicación en un estado inconsistente.
-- `2026-08-07T12:18:13` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` ante valores inesperados en el origen de las métricas (como tipos `None` inesperados o diccionarios malformados) mediante un filtrado de tipos más estricto y seguro en `getattr` y la lógica de asignación.
-- `2026-08-07T12:08:39` **settings.py** (rendimiento): Se optimizó el acceso a las configuraciones eliminando la carga redundante de archivos y validaciones repetidas en las funciones `assistant_api_key`, `assistant_enabled` y `get`, aprovechando el caché interno de `_cached_settings` de forma consistente.

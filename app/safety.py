@@ -150,10 +150,8 @@ def normalize(path: PathLike) -> Path:
         raise ValueError("La ruta proporcionada está vacía.")
         
     try:
-        # Intentamos resolver con strict=False para manejar rutas que no existen.
         return Path(str_path).expanduser().resolve(strict=False)
     except (OSError, RuntimeError):
-        # Fallback manual en caso de que el sistema de archivos impida la resolución.
         return Path(os.path.abspath(os.path.expanduser(str_path)))
 
 
@@ -213,6 +211,11 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
         raise UnsafePathError("Ruta nula recibida.")
 
     p = normalize(path)
+    
+    # Prevención de Path Traversal
+    if ".." in str(path) or ".." in p.parts:
+        raise UnsafePathError("Operación bloqueada: posible ataque de path traversal.")
+
     if base_dir and not is_within_directory(p, base_dir, allow_equal=True):
         raise UnsafePathError("Operación bloqueada: intento de acceso fuera del directorio base.")
 

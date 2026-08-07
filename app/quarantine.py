@@ -184,14 +184,28 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
     """
     Realiza validaciones de seguridad antes de mover un archivo a la cuarentena.
     
-    Verifica: puntos de reparse, rutas protegidas, colisiones y estado del archivo.
-    Lanza UnsafePathError ante cualquier violación de las políticas de seguridad.
+    Verifica: puntos de reparse, rutas protegidas, colisiones, estado del archivo
+    y prohíbe flujos de datos alternos (ADS) o atributos de sistema.
     """
-    if ".." in source_path.parts or "\0" in str(source_path) or any(c in str(source_path.name) for c in "<>:\"|?*"):
+    # Detectar Alternate Data Streams (Windows)
+    if ":" in source_path.name.replace(source_path.drive, ""):
+        raise UnsafePathError(f"Ruta con flujos de datos alternos no permitida: {source_path}")
+
+    if ".." in source_path.parts or "\0" in str(source_path) or any(c in str(source_path.name) for c in "<>\"|?*"):
         raise UnsafePathError(f"Ruta con caracteres maliciosos o navegación prohibida: {source_path.name}")
     
     if source_path.is_symlink() or (hasattr(source_path, 'is_junction') and source_path.is_junction()):
         raise UnsafePathError(f"Operación denegada en punto de reparse: {source_path}")
+
+    # No permitir archivos con atributos de oculto o sistema que intenten evadir análisis
+    try:
+        if os.name == 'nt':
+            import ctypes
+            attrs = ctypes.windll.kernel32.GetFileAttributesW(str(source_path))
+            if attrs != -1 and (attrs & 0x02 or attrs & 0x04): # FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM
+                raise UnsafePathError("Prohibido procesar archivos con atributos de sistema/ocultos.")
+    except Exception:
+        pass
 
     if not source_path.is_file():
         raise UnsafePathError(f"Solo se permiten archivos regulares: {source_path}")
