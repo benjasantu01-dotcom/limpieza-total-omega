@@ -122,7 +122,6 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
             return False
 
         # Verifica que la ruta esté estrictamente contenida en el directorio base
-        # Usamos relative_to y verificamos la integridad del path para evitar escapes
         if not str(real_target).startswith(str(real_base)):
             return False
         real_target.relative_to(real_base)
@@ -151,13 +150,13 @@ def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool
     try:
         with os.scandir(root_dir) as it:
             for entry in it:
-                if is_protected_path(Path(entry.path)) or entry.is_symlink() or is_junction_fn(entry.path):
-                    continue
-                
                 try:
+                    if is_protected_path(Path(entry.path)) or entry.is_symlink() or is_junction_fn(entry.path):
+                        continue
+                    
                     if entry.is_dir():
                         total += _sum_directory_recursive(entry.path, is_junction_fn)
-                    elif entry.name and not _is_excluded_file(entry.name):
+                    elif entry.is_file() and entry.name and not _is_excluded_file(entry.name):
                         total += entry.stat().st_size
                 except (OSError, PermissionError):
                     continue
@@ -178,7 +177,7 @@ def directory_size(path: str | os.PathLike | None) -> int:
         root_path = Path(path).resolve(strict=True)
         if not root_path.is_absolute() or not root_path.is_dir() or is_protected_path(root_path):
             return 0
-    except (OSError, PermissionError):
+    except (OSError, PermissionError, RuntimeError):
         return 0
 
     is_junction = getattr(os.path, 'isjunction', lambda _: False)

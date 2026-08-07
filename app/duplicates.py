@@ -101,7 +101,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
                     break
                 digest.update(mv[:n])
         return digest.hexdigest()
-    except (OSError, PermissionError, ValueError, TypeError, FileNotFoundError, IsADirectoryError, RuntimeError):
+    except (OSError, PermissionError, ValueError, TypeError, RuntimeError):
         return None
 
 
@@ -126,7 +126,7 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
             if not content:
                 return None
             return hashlib.sha256(content).hexdigest()
-    except (OSError, PermissionError, ValueError, TypeError, FileNotFoundError, IsADirectoryError, RuntimeError):
+    except (OSError, PermissionError, ValueError, TypeError, RuntimeError):
         return None
 
 
@@ -144,7 +144,7 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
             if p.is_file() and not is_protected_path(p):
                 st = p.stat()
                 groups[st.st_size].append(p)
-        except (OSError, PermissionError, FileNotFoundError, RuntimeError):
+        except (OSError, PermissionError, RuntimeError):
             continue
     return groups
 

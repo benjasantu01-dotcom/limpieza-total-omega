@@ -249,6 +249,7 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
     """Identifica las subcarpetas de primer nivel que consumen más espacio."""
     if not directory or limit <= 0:
         return []
+    
     try:
         base = Path(directory).expanduser().resolve()
         if not base.exists() or not base.is_dir() or (skip_protected and is_protected_path(base)):
@@ -299,6 +300,9 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
         path_obj = Path(directory).expanduser().resolve()
         if not path_obj.exists() or not path_obj.is_dir():
             return [f"Error: La ruta '{directory}' no es un directorio válido."]
+        if skip_protected and is_protected_path(path_obj):
+            return [f"Error: La ruta '{path_obj}' está protegida."]
+            
     except (OSError, RuntimeError):
         return ["Error: No se pudo acceder a la ruta especificada."]
         
