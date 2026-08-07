@@ -254,7 +254,11 @@ def context_as_text(context: SystemContext) -> str:
             f"Duplicados: {context.duplicate_mb:.0f} MB",
             f"Inicio: {context.startup_count} items",
         ]
-        return _CONTROL_CHARS_REGEX.sub(" ", _PATH_REGEX.sub(" ", "\n".join(lineas)))
+        texto_serializado = "\n".join(lineas)
+        # Validación de seguridad defensiva final: asegurar que no haya rutas
+        if not _ensure_safe_text(texto_serializado):
+            return "Error de seguridad en la serialización de contexto."
+        return _CONTROL_CHARS_REGEX.sub(" ", _PATH_REGEX.sub(" ", texto_serializado))
     except (ValueError, TypeError, AttributeError):
         return "Error al procesar métricas para el asistente."
 

@@ -1023,3 +1023,10 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-08-07T12:40:23` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante casos límite en `normalize` al incluir un manejo explícito de rutas que no existen físicamente o presentan errores de acceso durante la resolución del sistema de archivos, garantizando que el bucle de validación no colapse ante nombres de archivos corruptos o rutas con caracteres inválidos de bajo nivel.
 - `2026-08-07T12:40:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-07T12:40:23` Corrida terminada. Total usado hoy: 288.
+- `2026-08-07T12:48:05` Arrancando corrida. Quedan hoy ~12 peticiones objetivo.
+- `2026-08-07T12:48:29` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-08-07T12:48:53` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `save` ante fallos en el sistema de archivos al añadir una verificación explícita de `is_safe_to_modify` sobre el archivo de destino antes de intentar la creación de archivos temporales, protegiendo contra posibles cambios de permisos o bloqueos en la carpeta durante la ejecución.
+- `2026-08-07T12:49:18` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-08-07T12:49:40` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la seguridad defensiva al serializar las métricas en `context_as_text`, asegurando mediante una validación explícita que ninguna porción de texto procesada para el asistente contenga caracteres o secuencias que puedan interpretarse como rutas, incluso si se agregaran métricas nuevas en el futuro.
+- `2026-08-07T12:49:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-07T12:49:40` Corrida terminada. Total usado hoy: 292.
