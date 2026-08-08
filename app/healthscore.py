@@ -268,18 +268,21 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
 
 def summarize(result: HealthResult) -> List[str]:
     """Crea una representación textual legible de los resultados para la UI."""
-    if not isinstance(result, HealthResult) or not isinstance(getattr(result, 'breakdown', None), dict):
-        return ["Error: Resultado de salud no válido."]
+    if not isinstance(result, HealthResult) or not hasattr(result, 'breakdown'):
+        return ["Error: Formato de resultado inválido."]
 
     lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     
     for area, maximo in _WEIGHT_ITEMS:
-        puntos_val: int = result.breakdown.get(area, 0)
+        puntos_val = result.breakdown.get(area, 0)
         visual: str = f"[{'#' * puntos_val}{'.' * (max(0, maximo - puntos_val))}]"
         lines.append(f"  {area.capitalize():<12} {puntos_val:>2}/{maximo:<2} {visual}")
     
     lines.extend(["", "Recomendaciones:"])
-    recs: List[str] = result.recommendations if isinstance(result.recommendations, list) else ["No hay recomendaciones disponibles."]
-    for rec in recs:
-        lines.append(f"  - {str(rec)}")
+    recs = result.recommendations if isinstance(result.recommendations, list) else []
+    if not recs:
+        lines.append("  - No hay recomendaciones disponibles.")
+    else:
+        for rec in recs:
+            lines.append(f"  - {str(rec)}")
     return lines

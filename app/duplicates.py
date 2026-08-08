@@ -94,14 +94,12 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
             return None
             
         digest = hashlib.sha256()
-        with open(file_path, "rb", buffering=0) as f:
-            buffer = bytearray(chunk_size)
-            mv = memoryview(buffer)
+        with open(file_path, "rb") as f:
             while True:
-                n = f.readinto(mv)
-                if n == 0:
+                buffer = f.read(chunk_size)
+                if not buffer:
                     break
-                digest.update(mv[:n])
+                digest.update(buffer)
         return digest.hexdigest()
     except (OSError, PermissionError, ValueError, TypeError, RuntimeError, IOError):
         return None
@@ -175,6 +173,7 @@ def _collect_candidates(
                 for entry in dir_iterator:
                     try:
                         entry_stat = entry.stat(follow_symlinks=False)
+                        # Ignorar reparse points (0x400)
                         if getattr(entry_stat, 'st_file_attributes', 0) & 0x400:
                             continue
                         
@@ -193,9 +192,11 @@ def _collect_candidates(
 
     for directory in directories:
         if directory is None: continue
-        path_obj = Path(directory)
-        if path_obj.is_dir():
-            _scan(path_obj)
+        try:
+            path_obj = Path(directory)
+            if path_obj.is_dir():
+                _scan(path_obj)
+        except (OSError, PermissionError): continue
             
     return {size: paths for size, paths in temp_groups.items() if len(paths) > 1}
 
@@ -214,6 +215,7 @@ def _refine_by_hash(
     for path in paths:
         if not isinstance(path, Path) or not path.exists(): 
             continue
+        # Se asegura que la validación ocurra justo antes del hash para evitar race conditions
         if digest := hash_func(path):
             groups_by_digest[digest].append(path)
     return {d: p for d, p in groups_by_digest.items() if len(p) > 1}

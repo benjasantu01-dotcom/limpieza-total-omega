@@ -351,13 +351,17 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     kernel32 = ctypes.windll.kernel32
     psapi = ctypes.windll.psapi
     
-    # Intentar abrir el proceso con los permisos necesarios
     handle = kernel32.OpenProcess(REQUIRED_ACCESS, False, target_pid)
     if not handle:
         return False, "Acceso denegado: permisos insuficientes o el proceso ya no existe."
     
     try:
-        # Verificar integridad: el ejecutable no debe estar en una ruta protegida
+        # 1. Verificar si el proceso sigue activo y estable
+        exit_code = ctypes.c_ulong()
+        if not kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)) or exit_code.value != 259:
+            return False, "El proceso seleccionado ya no está activo."
+
+        # 2. Verificar integridad de la ruta antes de actuar
         buf = ctypes.create_unicode_buffer(2048)
         bytes_copied = psapi.GetModuleFileNameExW(handle, 0, buf, 2048)
         if bytes_copied > 0:
@@ -365,15 +369,11 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
             if not path_str or is_protected_path(path_str):
                 return False, "Operación denegada: ejecutable en ruta protegida."
         else:
-            return False, "Operación denegada: no se pudo verificar el ejecutable."
+            return False, "Operación denegada: no se pudo verificar la ubicación del ejecutable."
 
-        # Verificar si el proceso sigue activo antes de actuar
-        exit_code = ctypes.c_ulong()
-        if not kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)) or exit_code.value != 259:
-            return False, "El proceso seleccionado ya no está activo."
-
+        # 3. Ejecutar la liberación tras todas las verificaciones
         if not psapi.EmptyWorkingSet(handle):
-            return False, "Error al intentar liberar memoria del proceso."
+            return False, "Error al intentar liberar memoria del proceso (posible falta de privilegios)."
         return True, f"Working set liberado. {TRIM_WARNING}"
     except (ctypes.ArgumentError, MemoryError, OSError):
         return False, "Ocurrió un error técnico al gestionar el proceso."

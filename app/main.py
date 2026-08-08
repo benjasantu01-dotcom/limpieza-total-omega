@@ -802,13 +802,14 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.after_idle(self._flush_logs)
 
     def _flush_logs(self) -> None:
-        """Vuelca la cola de logs al componente UI de forma eficiente."""
+        """Vuelca la cola de logs al componente UI de forma eficiente y segura."""
         while self._log_queue:
             tab, text = self._log_queue.pop(0)
-            box = self._box(tab)
             try:
-                box.insert("end", f"{text}\n")
-                box.see("end")
+                box = self._box(tab)
+                if box and box.winfo_exists():
+                    box.insert("end", f"{text}\n")
+                    box.see("end")
             except Exception as e:
                 logging.error("No se pudo actualizar el log en %s: %s", tab, e)
 
