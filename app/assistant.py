@@ -418,7 +418,6 @@ def _gen_problems(ctx: SystemContext) -> Generator[str, None, None]:
     """
     if ctx is None: return
     
-    # Generador perezoso: evalúa condiciones y emite descripciones de problemas (msg)
     yield from (msg for condition, msg in (
         (ctx.disk_free_percent < 10.0, f"queda solo {ctx.disk_free_percent:.0f}% de disco libre"),
         (ctx.suspicious_warnings > 0, f"{ctx.suspicious_warnings} archivo(s) sospechosos"),

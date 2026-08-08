@@ -61,7 +61,13 @@ HOW_TO_DISABLE: str = (
 
 @dataclass
 class StartupEntry:
-    """Representa una entrada de inicio (programa) detectada en el sistema."""
+    """
+    Representa un elemento de inicio detectado.
+    
+    Gestiona la validación de rutas mediante un caché interno para minimizar
+    consultas de sistema de archivos (I/O). Implementa validaciones estrictas
+    contra rutas protegidas antes de exponer la ruta absoluta del ejecutable.
+    """
     name: str
     command: str
     source: str  # Indica si proviene de una carpeta o una ruta de registro específica
@@ -69,22 +75,23 @@ class StartupEntry:
     _checked_exists: bool = field(default=False, init=False)
 
     def _is_valid_executable(self, path: Path) -> bool:
-        """Verifica si la extensión del archivo es ejecutable y no es un enlace simbólico."""
+        """Verifica si la extensión coincide con EXECUTABLE_EXTS y no es un symlink (riesgo de escape)."""
         try:
             return path.suffix.lower() in EXECUTABLE_EXTS and not path.is_symlink()
         except (OSError, ValueError, RuntimeError, TypeError):
             return False
 
     def _sanitize_command(self, raw_cmd: str) -> str:
-        """Filtra caracteres de control para evitar inyecciones o errores de lectura."""
+        """Elimina caracteres de control y espacios en blanco extremos para limpiar el comando crudo."""
         if not isinstance(raw_cmd, str):
             return ""
         return "".join(c for c in raw_cmd.strip() if ord(c) >= 32)
 
     def _extract_quoted_path(self, raw_cmd: str) -> str:
         """
-        Analiza cadenas entrecomilladas (ej: "C:\Path\App.exe" /args) 
-        y extrae solo la ruta de archivo para su validación de seguridad.
+        Analiza comandos tipo 'C:\Path\App.exe' /args. 
+        Extrae el contenido de la primera pareja de comillas detectada y verifica
+        que no contenga caracteres prohibidos antes de tratarlo como Path.
         """
         if not isinstance(raw_cmd, str) or len(raw_cmd) < 2:
             return ""
@@ -106,8 +113,11 @@ class StartupEntry:
 
     def _resolve_and_cache_path(self, path_str: str) -> str:
         """
-        Normaliza rutas y valida existencia real. 
-        Las rutas protegidas o symlinks no se resuelven para evitar escalada de privilegios.
+        Normaliza rutas absolutas, verifica existencia y valida contra `is_protected_path`.
+        
+        Utiliza `_EXISTS_CACHE` para persistir resultados de I/O durante el ciclo de vida
+        de la app. Las rutas que fallan las pruebas de seguridad o existencia son
+        marcadas en el caché como inválidas.
         """
         if not isinstance(path_str, str) or not path_str:
             return ""
@@ -145,7 +155,7 @@ class StartupEntry:
             return path_str
 
     def _resolve_path_from_command(self, cmd: str) -> str:
-        """Determina la estrategia de análisis de ruta basada en el formato del comando."""
+        """Selecciona el método de resolución (quoted vs simple) según el formato inicial del comando."""
         if cmd.startswith('"'):
             return self._extract_quoted_path(cmd)
         parts: List[str] = cmd.split()
@@ -154,8 +164,9 @@ class StartupEntry:
     @property
     def executable(self) -> str:
         """
-        Obtiene la ruta absoluta del ejecutable si existe y es seguro. 
-        Usa caché interno para evitar penalización por múltiples llamadas.
+        Retorna la ruta absoluta validada del ejecutable.
+        La resolución solo ocurre una vez por instancia; resultados subsiguientes
+        se sirven desde `_exec_cache`.
         """
         if self._checked_exists:
             return self._exec_cache or ""
