@@ -138,10 +138,14 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
         
         if not p.exists() or not p.is_absolute() or is_protected_path(p):
             return None
+        
+        # Validar disponibilidad de lectura del sistema de archivos
+        if not os.access(p, os.R_OK):
+            return None
             
         usage = shutil.disk_usage(p)
         return DriveUsage(mount=str(mount), total=usage.total, used=usage.used, free=usage.free)
-    except (OSError, ValueError, TypeError):
+    except (OSError, ValueError, TypeError, PermissionError):
         return None
 
 

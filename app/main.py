@@ -1315,11 +1315,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def on_trim_process(self) -> None:
         """Intenta liberar Working Set de un PID específico."""
         raw = self.pid_entry.get().strip()
-        try:
-            pid = int(raw)
-        except (ValueError, TypeError):
+        if not raw.isdigit():
             messagebox.showwarning("Error", "Ingresá un PID numérico válido.")
             return
+        pid = int(raw)
 
         # Validación de PID protegidos
         if pid < 100:

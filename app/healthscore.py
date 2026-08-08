@@ -218,8 +218,12 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     total_weighted_score: float = 0.0
     
     for area, weight in _WEIGHT_ITEMS:
-        # Se usa .get() con 1.0 de default para evitar KeyError si falta un área en el mapa de ratios
-        score_val = ratios.get(area, 1.0) * float(weight) * _NORM_FACTOR
+        # Se asegura que la clave exista antes de operar
+        ratio_val = ratios.get(area, 1.0)
+        # Validación extra de finitud para el ratio
+        clean_ratio = float(ratio_val) if math.isfinite(ratio_val) else 1.0
+        
+        score_val = clean_ratio * float(weight) * _NORM_FACTOR
         score_int = int(score_val + 0.5)
         breakdown[area] = score_int
         total_weighted_score += score_val
