@@ -1418,3 +1418,38 @@ FAILED evolve/tests/test_integrity.py::test_is_safe_returns_bool_and_never_raise
 - `2026-08-08T01:15:58` ➖ Sin cambios en assistant.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `build_context` ante valores `NaN` o `inf` provenientes de fuentes externas mediante una validación explícita de finitud, evitando que métricas corruptas rompan los cálculos del asistente.
 - `2026-08-08T01:15:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-08T01:15:58` Corrida terminada. Total usado hoy: 32.
+- `2026-08-08T01:24:42` Arrancando corrida. Quedan hoy ~268 peticiones objetivo.
+- `2026-08-08T01:25:19` Tests FALLARON:
+```
+PosixPath('/tmp/pytest-of-runner/pytest-1/test_save_logo_svg_writes_the_0')
+
+    def test_save_logo_svg_writes_the_file(tmp_path):
+        destino = branding.save_logo_svg(tmp_path / "iconos" / "logo.svg")
+>       assert destino.is_file()
+               ^^^^^^^^^^^^^^^
+E       AttributeError: 'NoneType' object has no attribute 'is_file'
+
+evolve/tests/test_modules.py:92: AttributeError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:86: SyntaxWarning: invalid escape sequence '\P'
+    Analiza cadenas entrecomilladas (ej: "C:\Path\App.exe" /args)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - AttributeError: 'NoneType' object has no attribute 'is_file'
+1 failed, 298 passed, 7 warnings in 0.97s
+
+```
+- `2026-08-08T01:25:19` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Se ha robustecido la función `save_logo_svg` añadiendo una validación explícita para evitar errores al procesar rutas inexistentes o mal formadas, asegurando que `target.parent.resolve()` no lance excepciones imprevistas antes de llegar a los chequeos de seguridad.
+- `2026-08-08T01:25:41` ➖ Sin cambios en browser.py (enfoque: robustez ante casos límite). Motivo: Mejora la robustez ante errores de permiso y accesibilidad de archivos durante el escaneo recursivo mediante un manejo más granular de `OSError` en `_sum_directory_recursive`, evitando que un solo archivo bloqueado detenga el cálculo del tamaño de toda la carpeta de caché.
+- `2026-08-08T01:26:07` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la robustez de `walk_files` frente a fallos de acceso en directorios hijos y problemas de resolución de rutas, asegurando que la iteración continúe incluso si `os.scandir` o `path.resolve()` encuentran archivos con permisos denegados o nombres de ruta inválidos, evitando interrupciones inesperadas durante el análisis.
+- `2026-08-08T01:26:15` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `hash_file` ante archivos bloqueados o en uso por otros procesos mediante la adición de `try-except` sobre el acceso al buffer de lectura, asegurando que el proceso no se interrumpa ante errores de E/S dinámicos.
+- `2026-08-08T01:26:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-08T01:26:15` Corrida terminada. Total usado hoy: 36.

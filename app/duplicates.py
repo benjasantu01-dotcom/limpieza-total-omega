@@ -96,7 +96,10 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
             buffer = bytearray(chunk_size)
             mv = memoryview(buffer)
             while True:
-                n = f.readinto(mv)
+                try:
+                    n = f.readinto(mv)
+                except (OSError, IOError):
+                    return None
                 if n == 0:
                     break
                 digest.update(mv[:n])

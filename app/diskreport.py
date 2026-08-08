@@ -187,13 +187,11 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                 for file_entry in iterator:
                     try:
                         resolved_path = Path(file_entry.path).resolve()
-                        # Evitar escapar del directorio base
                         if not str(resolved_path).startswith(str(base_path)):
                             continue
                         
                         st = file_entry.stat(follow_symlinks=False)
                         
-                        # Windows: Saltear puntos de reparse (ej. junctions)
                         if os.name == 'nt' and (st.st_file_attributes & 0x400) != 0:
                             continue
                         elif file_entry.is_symlink():
@@ -207,9 +205,9 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                                 yield from scan_level(resolved_path)
                         else:
                             yield resolved_path, st.st_size
-                    except (OSError, PermissionError):
+                    except (OSError, PermissionError, RuntimeError):
                         continue
-        except (OSError, PermissionError):
+        except (OSError, PermissionError, RuntimeError):
             return
 
     yield from scan_level(base_path)
@@ -258,14 +256,12 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
         if not base.exists() or not base.is_dir() or (skip_protected and is_protected_path(base)):
             return []
         
-        # Mapea carpeta de primer nivel -> objeto FolderUsage
         folder_map: Dict[Path, FolderUsage] = {}
         for path, size in walk_files(base, skip_protected):
             try:
                 relative = path.relative_to(base)
                 if not relative.parts:
                     continue
-                # Identifica el nodo de primer nivel para agrupar
                 top_level = base / relative.parts[0]
                 
                 if top_level not in folder_map:
