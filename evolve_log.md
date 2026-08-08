@@ -1411,3 +1411,10 @@ FAILED evolve/tests/test_integrity.py::test_is_safe_returns_bool_and_never_raise
 - `2026-08-08T01:05:53` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se implementó un cacheo más eficiente en `is_protected_path` eliminando la re-normalización recursiva de componentes y optimizando el acceso a `PROTECTED_DIR_NAMES` mediante el uso de `frozenset.isdisjoint` directamente sobre las partes de la ruta, reduciendo drásticamente las llamadas a `path.parts` y operaciones de cadena innecesarias en cada iteración de escaneo.
 - `2026-08-08T01:05:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-08T01:05:53` Corrida terminada. Total usado hoy: 28.
+- `2026-08-08T01:14:29` Arrancando corrida. Quedan hoy ~272 peticiones objetivo.
+- `2026-08-08T01:14:54` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento de `scan_file` reemplazando la evaluación condicional dentro del bucle `for` por una estructura de datos `dict` que clasifica las funciones de escaneo según sean aplicables solo a ejecutables o a todos los archivos, eliminando chequeos innecesarios en cada iteración.
+- `2026-08-08T01:15:18` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: rendimiento).
+- `2026-08-08T01:15:41` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-08-08T01:15:58` ➖ Sin cambios en assistant.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `build_context` ante valores `NaN` o `inf` provenientes de fuentes externas mediante una validación explícita de finitud, evitando que métricas corruptas rompan los cálculos del asistente.
+- `2026-08-08T01:15:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-08T01:15:58` Corrida terminada. Total usado hoy: 32.

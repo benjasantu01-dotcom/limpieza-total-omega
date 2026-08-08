@@ -8,23 +8,23 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **233** (46.2% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 27
+- Rechazadas por guardia de seguridad: 26
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 208
+- Sin respuesta de la IA (error o límite): 209
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-06 | 54 | 3 | 7 | 6 | 56 |
+| 2026-08-06 | 53 | 3 | 6 | 5 | 55 |
 | 2026-08-07 | 158 | 12 | 17 | 14 | 149 |
-| 2026-08-08 | 21 | 0 | 3 | 1 | 3 |
+| 2026-08-08 | 22 | 0 | 3 | 2 | 5 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **60**
-- rendimiento: **50**
-- seguridad defensiva: **46**
+- rendimiento: **51**
+- seguridad defensiva: **45**
 - manejo de errores y validación de entradas: **42**
 - robustez ante casos límite: **35**
 
@@ -34,11 +34,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - `settings.py`: **20**
 - `assistant.py`: **20**
 - `branding.py`: **20**
-- `diskreport.py`: **19**
 - `memory.py`: **18**
+- `scanner.py`: **18**
+- `diskreport.py`: **18**
 - `duplicates.py`: **18**
 - `organizer.py`: **17**
-- `scanner.py`: **17**
 - `browser.py`: **16**
 - `safety.py`: **15**
 - `healthscore.py`: **14**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-08T01:14:54` **scanner.py** (rendimiento): Optimicé el rendimiento de `scan_file` reemplazando la evaluación condicional dentro del bucle `for` por una estructura de datos `dict` que clasifica las funciones de escaneo según sean aplicables solo a ejecutables o a todos los archivos, eliminando chequeos innecesarios en cada iteración.
 - `2026-08-08T01:05:53` **safety.py** (rendimiento): Se implementó un cacheo más eficiente en `is_protected_path` eliminando la re-normalización recursiva de componentes y optimizando el acceso a `PROTECTED_DIR_NAMES` mediante el uso de `frozenset.isdisjoint` directamente sobre las partes de la ruta, reduciendo drásticamente las llamadas a `path.parts` y operaciones de cadena innecesarias en cada iteración de escaneo.
 - `2026-08-08T01:05:25` **quarantine.py** (rendimiento): Optimicé el rendimiento de `purge_all` y la carga del manifiesto eliminando la reconstrucción redundante de diccionarios dentro de los bucles, usando una búsqueda eficiente y evitando llamadas innecesarias a `is_within_directory` y `ensure_safe_to_modify` para archivos que ya han sido validados previamente contra el manifiesto.
 - `2026-08-08T00:56:05` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` eliminando la duplicación de lógica al reutilizar internamente `parse_windows_process_csv`, reduciendo el acoplamiento y garantizando que el filtrado y ordenamiento ocurran de forma consistente.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-08T00:34:11` **safety.py** (legibilidad y documentación): He mejorado la documentación interna y la robustez de `safety.py` añadiendo type hints más precisos y docstrings técnicos detallados que explican el "porqué" de las validaciones, facilitando el mantenimiento futuro y cumpliendo con el enfoque de legibilidad exigido.
 - `2026-08-08T00:24:49` **quarantine.py** (legibilidad y documentación): Se introdujo un `TypeGuard` personalizado y se mejoró la documentación de los métodos de validación (`_validate_isolation_request` y `_should_purge_file`) para clarificar las asunciones de seguridad que protegen contra la manipulación del sistema de archivos.
 - `2026-08-08T00:24:19` **organizer.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en funciones críticas para mejorar la mantenibilidad y documentación del flujo de datos, siguiendo las guías de legibilidad del proyecto.
-- `2026-08-08T00:23:56` **memory.py** (legibilidad y documentación): Mejoré la documentación técnica y legibilidad de `memory.py` mediante la adición de docstrings detallados en las funciones de bajo nivel, la normalización de la nomenclatura de tipos y la clarificación de las restricciones de seguridad en las operaciones con procesos, garantizando que el código sea autodocumentado y resiliente a cambios futuros.
