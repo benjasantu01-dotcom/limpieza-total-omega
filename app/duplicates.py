@@ -168,18 +168,22 @@ def _collect_candidates(
     if directories is None: return temp_groups
     
     def _scan(root_path: Path) -> None:
-        if not root_path.exists() or (skip_protected and is_protected_path(root_path)):
+        if skip_protected and is_protected_path(root_path):
             return
+            
         try:
             with os.scandir(root_path) as dir_iterator:
                 for entry in dir_iterator:
+                    entry_path = Path(entry.path)
+                    if skip_protected and is_protected_path(entry_path):
+                        continue
+                        
                     try:
                         entry_stat = entry.stat(follow_symlinks=False)
                         # Ignora puntos de reparse (0x400 FILE_ATTRIBUTE_REPARSE_POINT)
                         if getattr(entry_stat, 'st_file_attributes', 0) & 0x400:
                             continue
                         
-                        entry_path = Path(entry.path)
                         if entry.is_dir(follow_symlinks=False):
                             if entry_stat.st_ino not in visited_inodes[entry_stat.st_dev]:
                                 visited_inodes[entry_stat.st_dev].add(entry_stat.st_ino)
@@ -187,8 +191,7 @@ def _collect_candidates(
                         
                         elif entry.is_file(follow_symlinks=False):
                             if entry_stat.st_size >= min_size:
-                                if not (skip_protected and is_protected_path(entry_path)):
-                                    temp_groups[entry_stat.st_size].append(entry_path)
+                                temp_groups[entry_stat.st_size].append(entry_path)
                     except (OSError, PermissionError, FileNotFoundError): continue
         except (OSError, PermissionError, FileNotFoundError): pass
 

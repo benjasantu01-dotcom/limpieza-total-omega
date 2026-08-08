@@ -1126,3 +1126,34 @@ FAILED evolve/tests/test_modules.py::test_summarize_mentions_the_folder_and_tota
 - `2026-08-08T10:58:22` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha robustecido la función `walk_files` para validar que el `current_path` sea un hijo legítimo de la ruta base, previniendo así posibles escapes de directorio causados por manipulaciones maliciosas de enlaces simbólicos o puntos de reparse que pudieran haber eludido los chequeos iniciales.
 - `2026-08-08T10:58:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-08T10:58:22` Corrida terminada. Total usado hoy: 260.
+- `2026-08-08T11:06:59` Arrancando corrida. Quedan hoy ~40 peticiones objetivo.
+- `2026-08-08T11:07:26` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva de `duplicates.py` mediante la validación explícita de `is_protected_path` antes de cualquier operación de I/O en `_scan`, garantizando que el escáner no acceda a rutas restringidas ni siquiera a nivel de metadatos (`stat`), alineándose estrictamente con las políticas de seguridad del proyecto.
+- `2026-08-08T11:07:50` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Mejoré la robustez de `SystemMetrics.validate` y la seguridad ante entradas maliciosas o corruptas añadiendo una validación explícita de `math.isfinite` para todos los campos críticos antes de procesarlos, previniendo errores de cálculo (`NaN`/`Inf`) que podrían comprometer la integridad del `HealthResult`.
+- `2026-08-08T11:08:51` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_ask_folder` añadiendo una sanitización estricta de caracteres prohibidos y validación de tipos, evitando que rutas malformadas o inyectadas puedan ser procesadas por el sistema de archivos, siguiendo el principio de que todo origen de datos externo debe ser validado antes de ser aceptado.
+- `2026-08-08T11:09:03` Tests FALLARON:
+```
+ Estos módulos son de solo lectura y usan el chequeo de escritura: memory.py. Para saber si algo es de sistema sin bloquear la lectura, usá `is_protected_path`.
+E       assert not ['memory.py']
+
+evolve/tests/test_integrity.py:279: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:93: SyntaxWarning: invalid escape sequence '\P'
+    Analiza comandos tipo 'C:\Path\App.exe' /args.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check - AssertionError: Estos módulos son de solo lectura y usan el chequeo de escritura: memory.py. Para saber si algo es de sistema sin bloquear la lectura, usá `is_protected_path`.
+assert not ['memory.py']
+1 failed, 298 passed, 7 warnings in 1.17s
+
+```
+- `2026-08-08T11:09:03` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva en `trim_working_set` añadiendo una validación explícita mediante `ensure_safe_to_modify` antes de aplicar cualquier operación sobre el proceso, asegurando que la ruta del ejecutable no sea manipulable, además de mantener la integridad del manejo de `handle`.
+- `2026-08-08T11:09:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-08T11:09:03` Corrida terminada. Total usado hoy: 264.

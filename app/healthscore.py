@@ -83,6 +83,7 @@ class SystemMetrics:
     quarantined_count: int = 0
 
     def validate(self) -> None:
+        # Aseguramos que cada entrada sea finita antes de procesar
         self.junk_mb = max(0.0, _to_float(self.junk_mb))
         self.suspicious_count = max(0, _to_int(self.suspicious_count))
         self.suspicious_warnings = max(0, _to_int(self.suspicious_warnings))
