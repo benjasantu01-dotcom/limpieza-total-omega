@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **241** (47.8% de aceptación)
+- Mejoras aceptadas: **240** (47.6% de aceptación)
 - Rechazadas por tests: 9
-- Rechazadas por guardia de seguridad: 25
+- Rechazadas por guardia de seguridad: 26
 - Sin cambios (nada sustancial que mejorar): 18
 - Sin respuesta de la IA (error o límite): 211
 
@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-07 | 87 | 4 | 9 | 9 | 87 |
-| 2026-08-08 | 154 | 5 | 16 | 9 | 124 |
+| 2026-08-07 | 83 | 4 | 9 | 9 | 87 |
+| 2026-08-08 | 157 | 5 | 17 | 9 | 124 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **52**
-- rendimiento: **51**
 - seguridad defensiva: **50**
-- manejo de errores y validación de entradas: **45**
+- legibilidad y documentación: **50**
+- rendimiento: **49**
+- manejo de errores y validación de entradas: **48**
 - robustez ante casos límite: **43**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **21**
-- `assistant.py`: **21**
-- `branding.py`: **20**
+- `settings.py`: **20**
+- `assistant.py`: **20**
 - `duplicates.py`: **20**
 - `diskreport.py`: **19**
-- `quarantine.py`: **18**
+- `quarantine.py`: **19**
+- `branding.py`: **19**
 - `scanner.py`: **18**
 - `healthscore.py`: **18**
+- `memory.py`: **17**
 - `browser.py`: **17**
 - `main.py`: **16**
-- `memory.py`: **16**
+- `organizer.py`: **16**
 - `safety.py`: **16**
-- `organizer.py`: **15**
-- `startup.py`: **6**
+- `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-08T13:10:56` **quarantine.py** (manejo de errores y validación de entradas): Reforcé la robustez de `quarantine_file` añadiendo una validación explícita de `None` para los argumentos críticos, evitando errores de ejecución en cascada si se llama incorrectamente a la función durante la inicialización o eventos asíncronos.
+- `2026-08-08T13:10:26` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `sort_junk` y `delete_reviewed` validando explícitamente los parámetros de entrada y manejando posibles valores nulos o tipos incorrectos, evitando que errores inesperados en los datos de entrada propaguen excepciones en el resto de la aplicación.
+- `2026-08-08T13:10:03` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` reemplazando la lógica de conversión de tipo y acceso a procesos por una validación más estricta, asegurando que `handle` se cierre correctamente incluso ante errores inesperados y tratando explícitamente el caso de procesos con privilegios elevados que fallan en `OpenProcess`.
 - `2026-08-08T13:01:20` **main.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez en la manipulación de las entradas de los campos de texto (`min_dup_entry`, `top_files_entry` y `pid_entry`) dentro de `main.py` mediante la implementación de validaciones explícitas antes de procesar los datos, evitando excepciones no controladas durante la ejecución de las tareas asíncronas.
 - `2026-08-08T13:00:36` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` agregando una validación explícita para asegurar que todas las áreas definidas en `WEIGHTS` estén presentes en `ratios` y procesando de forma segura los valores de las métricas durante el cálculo del desglose para evitar posibles desbordamientos o valores indefinidos.
 - `2026-08-08T12:59:49` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `drive_usage` capturando posibles errores de permisos al acceder a unidades externas o desconectadas y añadí una validación explícita para asegurar que el sistema operativo soporte `shutil.disk_usage`, evitando excepciones inesperadas en entornos restringidos.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-08T11:08:51` **main.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_ask_folder` añadiendo una sanitización estricta de caracteres prohibidos y validación de tipos, evitando que rutas malformadas o inyectadas puedan ser procesadas por el sistema de archivos, siguiendo el principio de que todo origen de datos externo debe ser validado antes de ser aceptado.
 - `2026-08-08T11:07:50` **healthscore.py** (seguridad defensiva): Mejoré la robustez de `SystemMetrics.validate` y la seguridad ante entradas maliciosas o corruptas añadiendo una validación explícita de `math.isfinite` para todos los campos críticos antes de procesarlos, previniendo errores de cálculo (`NaN`/`Inf`) que podrían comprometer la integridad del `HealthResult`.
 - `2026-08-08T11:07:26` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `duplicates.py` mediante la validación explícita de `is_protected_path` antes de cualquier operación de I/O en `_scan`, garantizando que el escáner no acceda a rutas restringidas ni siquiera a nivel de metadatos (`stat`), alineándose estrictamente con las políticas de seguridad del proyecto.
-- `2026-08-08T10:58:22` **diskreport.py** (seguridad defensiva): Se ha robustecido la función `walk_files` para validar que el `current_path` sea un hijo legítimo de la ruta base, previniendo así posibles escapes de directorio causados por manipulaciones maliciosas de enlaces simbólicos o puntos de reparse que pudieran haber eludido los chequeos iniciales.
-- `2026-08-08T10:57:49` **branding.py** (seguridad defensiva): Se ha mejorado la robustez de `save_logo_svg` reemplazando la verificación múltiple redundante por una validación única centralizada y fortaleciendo el manejo de errores para evitar escrituras parciales o inválidas.
-- `2026-08-08T10:57:20` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva al serializar el contexto mediante una sanitización explícita que elimina caracteres de control y secuencias de escape antes de cualquier procesamiento, garantizando que el motor local sea inmune a inyecciones de control incluso si las métricas sufrieran una mutación inesperada.

@@ -344,7 +344,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "Solo disponible en Windows."
     
     try:
-        target_pid: int = int(pid)
+        target_pid = int(pid)
     except (ValueError, TypeError):
         return False, "El PID debe ser un número entero válido."
 
@@ -354,16 +354,12 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     kernel32 = ctypes.windll.kernel32
     psapi = ctypes.windll.psapi
     
-    # Intentar abrir con permisos mínimos
     handle = kernel32.OpenProcess(SAFE_ACCESS, False, target_pid)
     if not handle:
-        # 5 = ERROR_ACCESS_DENIED, 87 = ERROR_INVALID_PARAMETER
-        err = kernel32.GetLastError()
-        return False, f"Acceso denegado (código {err}): el proceso es del sistema o no existe."
+        return False, f"Acceso denegado: el proceso tiene privilegios elevados o no existe."
     
     try:
         exit_code = ctypes.c_ulong()
-        # Verificar que el proceso sigue activo
         if not kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)) or exit_code.value != 259:
             return False, "El proceso seleccionado ya no está activo."
 
@@ -377,10 +373,9 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
             return False, "Operación denegada: no se pudo verificar la ubicación del ejecutable."
 
         if not psapi.EmptyWorkingSet(handle):
-            error_code = kernel32.GetLastError()
-            return False, f"Error al intentar liberar memoria (código {error_code})."
+            return False, f"Error al intentar liberar memoria (código {kernel32.GetLastError()})."
         return True, f"Working set liberado. {TRIM_WARNING}"
-    except (ctypes.ArgumentError, MemoryError, OSError) as e:
-        return False, f"Ocurrió un error técnico al gestionar el proceso: {str(e)}"
+    except (ctypes.ArgumentError, Exception):
+        return False, "Ocurrió un error técnico al gestionar el proceso."
     finally:
         kernel32.CloseHandle(handle)

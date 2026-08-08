@@ -202,7 +202,7 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
         "date": lambda f: f.modified
     }
         
-    criterio: str = str(by).lower() if by else "size"
+    criterio: str = str(by).lower() if isinstance(by, str) else "size"
     if criterio not in configs:
         criterio = "size"
         
@@ -277,11 +277,14 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         return 0
 
     count: int = 0
-    for f in dest.iterdir():
-        try:
-            if f.is_file() and not f.is_symlink() and is_safe_to_modify(f):
-                f.unlink()
-                count += 1
-        except (PermissionError, OSError):
-            continue
+    try:
+        for f in dest.iterdir():
+            try:
+                if f.is_file() and not f.is_symlink() and is_safe_to_modify(f):
+                    f.unlink()
+                    count += 1
+            except (PermissionError, OSError):
+                continue
+    except (PermissionError, OSError):
+        pass
     return count

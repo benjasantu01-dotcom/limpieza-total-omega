@@ -317,6 +317,8 @@ def quarantine_file(
     base: Union[str, Path] = DEFAULT_QUARANTINE_DIR,
 ) -> QuarantineItem:
     """Mueve un archivo a cuarentena de forma segura."""
+    if source is None:
+        raise ValueError("La ruta de origen no puede ser nula.")
     if not source:
         raise ValueError("La ruta de origen no puede estar vacía.")
     
