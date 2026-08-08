@@ -115,18 +115,19 @@ def _is_file_in_use(path: Path) -> bool:
 
 def _check_file_integrity(p: Path) -> None:
     """Valida la integridad del archivo antes de cualquier operación de modificación."""
-    try:
-        if any([
-            not os.access(p, os.W_OK),
-            _is_reparse_point(p),
-            _is_readonly(p),
-            _is_file_in_use(p),
-            _is_system_or_hidden(p),
-            (p.is_file() and p.stat().st_nlink > 1)
-        ]):
-            raise UnsafePathError(f"Operación bloqueada: archivo {p.name} inaccesible o protegido.")
-    except (OSError, PermissionError) as e:
-        raise UnsafePathError(f"Error al verificar integridad de {p.name}: {e}")
+    # Lista de condiciones de riesgo para el archivo
+    checks = [
+        (not os.access(p, os.W_OK), "inaccesible (sin permisos de escritura)"),
+        (_is_reparse_point(p), "punto de reparse detectado"),
+        (_is_readonly(p), "atributo de solo lectura"),
+        (_is_file_in_use(p), "archivo en uso por otro proceso"),
+        (_is_system_or_hidden(p), "atributo de sistema u oculto"),
+        (p.is_file() and p.stat().st_nlink > 1, "múltiples enlaces (hard link)")
+    ]
+    
+    for is_unsafe, reason in checks:
+        if is_unsafe:
+            raise UnsafePathError(f"Operación bloqueada para {p.name}: {reason}.")
 
 
 @lru_cache(maxsize=1024)
