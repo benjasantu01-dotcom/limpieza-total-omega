@@ -6,31 +6,31 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **253** (50.2% de aceptación)
+- Mejoras aceptadas: **254** (50.4% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 28
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 191
+- Sin respuesta de la IA (error o límite): 190
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-07 | 158 | 12 | 17 | 14 | 139 |
-| 2026-08-08 | 95 | 1 | 11 | 5 | 52 |
+| 2026-08-07 | 158 | 12 | 17 | 14 | 135 |
+| 2026-08-08 | 96 | 1 | 11 | 5 | 55 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **58**
 - rendimiento: **55**
-- seguridad defensiva: **48**
+- seguridad defensiva: **49**
 - robustez ante casos límite: **47**
 - manejo de errores y validación de entradas: **45**
 
 ## Mejoras aceptadas por archivo
 
 - `duplicates.py`: **22**
-- `settings.py`: **21**
+- `settings.py`: **22**
 - `assistant.py`: **21**
 - `diskreport.py`: **20**
 - `branding.py`: **20**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-08T07:02:33` **settings.py** (seguridad defensiva): Reforcé la seguridad defensiva en `settings.py` aplicando `is_safe_to_modify` antes de cualquier operación de escritura en el disco para garantizar que las rutas de configuración no apunten a ubicaciones protegidas por el sistema, manteniendo la consistencia con las reglas de seguridad del proyecto.
 - `2026-08-08T06:53:22` **scanner.py** (seguridad defensiva): Se ha restringido el ámbito de `scan_file` para evitar la validación redundante `is_safe_to_modify` en archivos que el escáner solo debe leer, garantizando que el escáner nunca intente "autorizar" una escritura sobre archivos de sistema y evitando los errores de diseño previos donde se bloqueaban archivos de solo lectura.
 - `2026-08-08T06:52:33` **quarantine.py** (seguridad defensiva): Se reforzó `quarantine_file` para evitar condiciones de carrera y ataques de suplantación mediante una verificación de existencias post-copia más estricta, asegurando que el archivo movido sea exactamente el que se procesó mediante el cálculo de hash previo a la actualización del manifiesto.
 - `2026-08-08T06:43:59` **organizer.py** (seguridad defensiva): Mejoré la seguridad defensiva en `stage_for_review` añadiendo una comprobación explícita para evitar mover archivos que ya residen dentro del directorio de destino, previniendo bucles de recursión o errores de lógica al procesar archivos ya movidos.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-08T06:02:55` **memory.py** (robustez ante casos límite): Se mejoró la robustez de `trim_working_set` ante condiciones de carrera y estados inconsistentes del sistema, asegurando explícitamente que el proceso objetivo mantenga una estructura de datos válida y esté en ejecución antes de cualquier operación de bajo nivel.
 - `2026-08-08T06:02:44` **main.py** (robustez ante casos límite): Mejoré la resiliencia del bucle de eventos UI agregando un bloque `try-except` robusto en `_flush_logs` y validando la existencia de los componentes `tkinter` antes de intentar actualizarlos, evitando que la aplicación se cierre inesperadamente si se solicita un log cuando la ventana ya no está disponible o el widget fue destruido.
 - `2026-08-08T06:01:46` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `summarize` y `_generate_recommendations` añadiendo protecciones explícitas contra `None` o estados de datos inconsistentes (casos límite) que podrían romper la renderización en la UI si un módulo entrega datos incompletos.
-- `2026-08-08T06:01:20` **duplicates.py** (robustez ante casos límite): Se introdujo una validación robusta contra race conditions (archivos desaparecidos entre el escaneo y el hash) y se añadieron chequeos de integridad en las funciones de acceso a disco para evitar errores en archivos que se bloquean o eliminan durante la ejecución del bucle.

@@ -203,7 +203,9 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     if not isinstance(values, dict): return None
     ruta = settings_path(path_or_base)
     
-    if not is_safe_to_modify(str(ruta.parent)) or not is_safe_to_modify(str(ruta)): return None
+    # Verificación de seguridad defensiva antes de proceder con escritura
+    if not is_safe_to_modify(str(ruta.parent)) or not is_safe_to_modify(str(ruta)):
+        return None
         
     limpio = validate(values)
     if limpio.get("asistente_activado") and not (limpio.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)):
