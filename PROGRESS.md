@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **233** (46.2% de aceptación)
+- Mejoras aceptadas: **235** (46.6% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 25
+- Rechazadas por guardia de seguridad: 26
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-06 | 48 | 2 | 5 | 5 | 54 |
+| 2026-08-06 | 48 | 2 | 5 | 5 | 50 |
 | 2026-08-07 | 158 | 12 | 17 | 14 | 149 |
-| 2026-08-08 | 27 | 1 | 3 | 3 | 6 |
+| 2026-08-08 | 29 | 1 | 4 | 3 | 7 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **60**
 - rendimiento: **51**
 - manejo de errores y validación de entradas: **42**
-- robustez ante casos límite: **40**
+- robustez ante casos límite: **42**
 - seguridad defensiva: **40**
 
 ## Mejoras aceptadas por archivo
@@ -36,17 +36,19 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **19**
 - `duplicates.py`: **19**
 - `settings.py`: **19**
+- `scanner.py`: **18**
 - `memory.py`: **17**
 - `organizer.py`: **17**
-- `scanner.py`: **17**
 - `browser.py`: **16**
+- `safety.py`: **16**
 - `healthscore.py`: **15**
-- `safety.py`: **15**
 - `main.py`: **13**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-08T01:46:32` **scanner.py** (robustez ante casos límite): Se implementó un manejo robusto de excepciones y validación de atributos en `check_system_lookalike` y `check_recent_executable_in_downloads` para evitar fallos durante el acceso a archivos bloqueados por el sistema o con metadatos inaccesibles, asegurando que la heurística no se interrumpa ante errores transitorios de E/S.
+- `2026-08-08T01:46:24` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez de `is_protected_path` ante errores de acceso (como `PermissionError` al intentar resolver una ruta inaccesible) y se ha añadido una validación explícita para la longitud máxima de caracteres (MAX_PATH) en la normalización inicial para evitar errores inesperados en el sistema de archivos de Windows.
 - `2026-08-08T01:38:19` **organizer.py** (robustez ante casos límite): Se reforzó la robustez de `scan_for_junk` añadiendo un filtro para descartar puntos de reparse (Junctions/Symlinks de sistema) durante la iteración recursiva, evitando así bucles infinitos en estructuras complejas de Windows y accesos indebidos a rutas fuera del alcance deseado.
 - `2026-08-08T01:37:46` **main.py** (robustez ante casos límite): Mejoré la robustez de `on_trim_process` y `on_restore_quarantine` mediante el uso de `is_safe_path` y validaciones previas de existencia del recurso para evitar excepciones no controladas al interactuar con rutas que podrían haber cambiado o desaparecido durante la ejecución asíncrona.
 - `2026-08-08T01:35:34` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `compute_score` frente a configuraciones inválidas introduciendo un chequeo de integridad en `_validate_weights` para evitar divisiones por cero y asegurando que las divisiones en las funciones de `score` siempre tengan un divisor mayor a cero mediante el uso de constantes de seguridad explícitas (guard guards).
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-08T00:54:55` **healthscore.py** (rendimiento): Se eliminó el uso de `_SCORE_CACHE` (una estructura de datos global que crecía indefinidamente sin control de memoria) y se reemplazó por la ejecución directa de los cálculos, aprovechando que el costo de las operaciones aritméticas simples es despreciable comparado con el riesgo de "memory leak" en una app que debe ser ligera y estable.
 - `2026-08-08T00:54:30` **duplicates.py** (rendimiento): Optimizé `_collect_candidates` para realizar una única llamada a `stat()` por archivo durante la iteración inicial, evitando llamadas redundantes a `is_file()` y `stat()` posteriores, lo cual reduce drásticamente el tiempo de I/O en volúmenes grandes.
 - `2026-08-08T00:45:25` **browser.py** (rendimiento): Optimicé el rendimiento de `_sum_directory_recursive` evitando llamadas repetidas a `is_protected_path` (que es costosa al resolver rutas constantemente) y consolidando la lógica de validación de exclusiones dentro de la recursión para minimizar el acceso al sistema de archivos mediante el uso eficiente de `os.scandir`.
-- `2026-08-08T00:45:02` **branding.py** (rendimiento): Optimicé el rendimiento de `draw_logo` y `draw_gradient_bar` sustituyendo el dibujo de múltiples rectángulos y líneas individuales por bloques agrupados cuando el color es idéntico, reduciendo drásticamente la carga sobre el canvas de Tkinter.
-- `2026-08-08T00:44:33` **assistant.py** (rendimiento): Optimicé el renderizado de `context_as_text` reemplazando la construcción de listas y el join por una cadena formateada única, reduciendo las asignaciones de memoria y el overhead de procesamiento en cada iteración de consulta.

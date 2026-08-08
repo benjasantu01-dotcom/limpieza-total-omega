@@ -154,14 +154,14 @@ def _is_readonly(path: Path) -> bool:
 @lru_cache(maxsize=2048)
 def normalize(path: PathLike) -> Path:
     """
-    Transforma y canoniza rutas.
+    Transforma y canoniza rutas, validando límites de longitud de sistema.
     """
     if path is None or not isinstance(path, (str, os.PathLike)):
         raise TypeError(f"Entrada inválida: tipo {type(path) if path is not None else 'None'} no soportado.")
     
     str_path = str(path).strip()
-    if not str_path:
-        raise ValueError("La ruta proporcionada está vacía.")
+    if not str_path or len(str_path) > 260:
+        raise ValueError("La ruta está vacía o excede el límite de longitud.")
         
     try:
         return Path(str_path).expanduser().resolve(strict=False)
@@ -181,7 +181,7 @@ def is_drive_root(path: PathLike) -> bool:
 @lru_cache(maxsize=1024)
 def is_protected_path(path: PathLike) -> bool:
     """
-    Heurística de seguridad optimizada.
+    Heurística de seguridad optimizada con manejo de errores de acceso.
     """
     if not path:
         return True
@@ -196,7 +196,7 @@ def is_protected_path(path: PathLike) -> bool:
                 return True
         
         return p == Path(p.anchor) or (p.exists() and _is_reparse_point(p))
-    except (PermissionError, OSError, ValueError, TypeError):
+    except (PermissionError, OSError, ValueError, TypeError, RuntimeError):
         return True 
 
 
@@ -234,8 +234,8 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
         raise UnsafePathError("Operación bloqueada: intento de acceso fuera del directorio base.")
 
     str_val = str(p)
-    if _has_invalid_chars(str_val) or len(str_val) > 260 or _is_reserved_device_name(p.stem):
-        raise UnsafePathError("Ruta inválida, demasiado larga o formato bloqueado.")
+    if _has_invalid_chars(str_val) or _is_reserved_device_name(p.stem):
+        raise UnsafePathError("Ruta inválida o formato bloqueado.")
     if str_val.startswith(("\\\\", "//")):
         raise UnsafePathError("Operación bloqueada: rutas de red no permitidas.")
     

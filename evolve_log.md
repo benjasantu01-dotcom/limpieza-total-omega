@@ -1463,3 +1463,10 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-08-08T01:38:19` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `scan_for_junk` añadiendo un filtro para descartar puntos de reparse (Junctions/Symlinks de sistema) durante la iteración recursiva, evitando así bucles infinitos en estructuras complejas de Windows y accesos indebidos a rutas fuera del alcance deseado.
 - `2026-08-08T01:38:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-08T01:38:19` Corrida terminada. Total usado hoy: 40.
+- `2026-08-08T01:45:09` Arrancando corrida. Quedan hoy ~260 peticiones objetivo.
+- `2026-08-08T01:45:40` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: robustez ante casos límite).
+- `2026-08-08T01:46:00` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 113): unterminated string literal (detected at line 113)
+- `2026-08-08T01:46:24` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `is_protected_path` ante errores de acceso (como `PermissionError` al intentar resolver una ruta inaccesible) y se ha añadido una validación explícita para la longitud máxima de caracteres (MAX_PATH) en la normalización inicial para evitar errores inesperados en el sistema de archivos de Windows.
+- `2026-08-08T01:46:32` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se implementó un manejo robusto de excepciones y validación de atributos en `check_system_lookalike` y `check_recent_executable_in_downloads` para evitar fallos durante el acceso a archivos bloqueados por el sistema o con metadatos inaccesibles, asegurando que la heurística no se interrumpa ante errores transitorios de E/S.
+- `2026-08-08T01:46:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-08T01:46:32` Corrida terminada. Total usado hoy: 44.

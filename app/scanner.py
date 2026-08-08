@@ -112,7 +112,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
         st = entry.stat() if entry else path.lstat()
         if datetime.now() - datetime.fromtimestamp(st.st_mtime) < timedelta(hours=hours):
             return Suspicion(path, f"Ejecutable reciente detectado (modificado hace menos de {hours}h)", "info")
-    except (OSError, AttributeError, FileNotFoundError):
+    except (OSError, AttributeError, FileNotFoundError, OverflowError):
         pass
     return None
 
@@ -121,9 +121,10 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, name
     try:
         if is_protected_path(path):
             return None
-        if SYSTEM32_LOWER not in str(path.parent).lower():
+        target = name or path.name
+        if target.lower() in SYSTEM_LOOKALIKES and SYSTEM32_LOWER not in str(path.parent).lower():
             return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
-    except (OSError, RuntimeError):
+    except (OSError, RuntimeError, AttributeError):
         pass
     return None
 
