@@ -203,7 +203,6 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     if not isinstance(values, dict): return None
     ruta = settings_path(path_or_base)
     
-    # Verificación de seguridad defensiva antes de proceder con escritura
     if not is_safe_to_modify(str(ruta.parent)) or not is_safe_to_modify(str(ruta)):
         return None
         
@@ -217,11 +216,15 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
         ruta.parent.mkdir(parents=True, exist_ok=True)
         fd, temp_name = tempfile.mkstemp(dir=ruta.parent, text=True)
         temp_path = Path(temp_name)
-        with os.fdopen(fd, "w", encoding="utf-8") as tf:
-            json.dump(limpio, tf, indent=2, ensure_ascii=False)
-            tf.flush()
-            os.fsync(tf.fileno())
-        os.replace(temp_path, ruta)
+        try:
+            with os.fdopen(fd, "w", encoding="utf-8") as tf:
+                json.dump(limpio, tf, indent=2, ensure_ascii=False)
+                tf.flush()
+                os.fsync(tf.fileno())
+            os.replace(temp_path, ruta)
+        except Exception:
+            if temp_path.exists(): temp_path.unlink()
+            raise
         _cached_settings, _current_path = limpio, ruta
         return ruta
     except (OSError, PermissionError, RuntimeError, TypeError, ValueError):

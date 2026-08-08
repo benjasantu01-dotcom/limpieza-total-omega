@@ -203,6 +203,11 @@ def _safe_assign(obj: SystemContext, attr: str, val: Any, cast: Callable = float
     except (ValueError, TypeError):
         pass
 
+def _fmt_metric(val: Any, unit: str = "", decimal: int = 0) -> str:
+    """Formatea una métrica para visualización, manejando casos N/A."""
+    if val is None: return "N/A"
+    return f"{val:.{decimal}f}{unit}"
+
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
     """
     Transforma fuentes de datos externas o parciales en una estructura SystemContext validada.
@@ -246,16 +251,16 @@ def context_as_text(context: SystemContext) -> str:
         return "No hay métricas disponibles todavía."
 
     try:
-        texto_serializado = (
-            f"Puntaje de salud: {context.score if context.score is not None else 'N/A'}"
-            f"{f' nota {context.grade}' if context.grade else ''}\n"
-            f"Basura: {context.junk_mb:.0f} MB\n"
-            f"Sospechosos: {context.suspicious_count}\n"
-            f"RAM disponible: {context.memory_available_percent:.0f} percent\n"
-            f"Disco libre: {context.disk_free_percent:.0f} percent\n"
-            f"Duplicados: {context.duplicate_mb:.0f} MB\n"
+        lines = [
+            f"Puntaje de salud: {_fmt_metric(context.score)}{f' nota {context.grade}' if context.grade else ''}",
+            f"Basura: {_fmt_metric(context.junk_mb, ' MB')}",
+            f"Sospechosos: {context.suspicious_count}",
+            f"RAM disponible: {_fmt_metric(context.memory_available_percent, ' percent')}",
+            f"Disco libre: {_fmt_metric(context.disk_free_percent, ' percent')}",
+            f"Duplicados: {_fmt_metric(context.duplicate_mb, ' MB')}",
             f"Inicio: {context.startup_count} items"
-        )
+        ]
+        texto_serializado = "\n".join(lines)
         
         if not _ensure_safe_text(texto_serializado):
             return "Error de seguridad en la serialización de contexto."

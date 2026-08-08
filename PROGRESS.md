@@ -16,36 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-07 | 139 | 6 | 14 | 12 | 125 |
-| 2026-08-08 | 105 | 1 | 12 | 6 | 84 |
+| 2026-08-07 | 135 | 6 | 14 | 12 | 125 |
+| 2026-08-08 | 109 | 1 | 12 | 6 | 84 |
 
 ## Mejoras aceptadas por enfoque
 
-- rendimiento: **52**
+- manejo de errores y validación de entradas: **50**
+- legibilidad y documentación: **50**
 - seguridad defensiva: **49**
-- legibilidad y documentación: **49**
+- rendimiento: **48**
 - robustez ante casos límite: **47**
-- manejo de errores y validación de entradas: **47**
 
 ## Mejoras aceptadas por archivo
 
-- `duplicates.py`: **21**
-- `assistant.py`: **21**
-- `settings.py`: **20**
-- `diskreport.py`: **19**
+- `assistant.py`: **22**
+- `settings.py`: **21**
+- `duplicates.py`: **20**
+- `scanner.py`: **19**
 - `branding.py`: **19**
 - `memory.py`: **18**
 - `organizer.py`: **18**
 - `safety.py`: **18**
-- `scanner.py`: **18**
+- `diskreport.py`: **18**
 - `quarantine.py`: **18**
-- `healthscore.py`: **17**
+- `healthscore.py`: **16**
 - `browser.py`: **16**
-- `main.py`: **15**
-- `startup.py`: **6**
+- `main.py`: **14**
+- `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-08T08:56:08` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la aplicación de docstrings detallados, type hints precisos, y la extracción de una lógica de serialización de contexto repetitiva en una función auxiliar.
+- `2026-08-08T08:55:49` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo validación de tipo y contenido antes de procesar cada fila, evitando errores de `AttributeError` o `ValueError` si el CSV de PowerShell llega incompleto o con campos vacíos.
+- `2026-08-08T08:55:23` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` capturando explícitamente excepciones de `tempfile` y `os.replace` para evitar estados inconsistentes en el sistema de archivos, asegurando que cualquier fallo durante la escritura atómica retorne `None` de forma segura.
+- `2026-08-08T08:54:58` **scanner.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de excepciones en `scan_directory` y `process_entry` al tipar y capturar específicamente errores de sistema (como accesos denegados o rutas inválidas), además de añadir validaciones para prevenir el uso de rutas nulas o vacías que podrían causar errores en tiempo de ejecución.
 - `2026-08-08T08:45:50` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `ensure_safe_to_modify` ante entradas maliciosas o mal formadas, añadiendo validaciones explícitas de tipo y sanitización en los chequeos de `path traversal` y rutas de red, además de asegurar que `_has_invalid_chars` reciba solo cadenas tratadas.
 - `2026-08-08T08:45:22` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` agregando una validación temprana de permisos de escritura y una verificación explícita de `OSError` al intentar manipular el archivo original, evitando dejar estados inconsistentes en caso de fallos del sistema de archivos.
 - `2026-08-08T08:44:43` **organizer.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `sort_junk` añadiendo validación de tipos y manejo de entradas nulas, garantizando que el módulo no falle ante datos inconsistentes y mantenga su integridad operativa.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-08T08:24:30` **assistant.py** (manejo de errores y validación de entradas): Mejora la robustez del manejo de errores en `build_context` y `context_as_text` mediante la validación explícita de tipos de datos en la deserialización de métricas, evitando fallos silenciosos o comportamiento inesperado ante entradas malformadas.
 - `2026-08-08T07:02:33` **settings.py** (seguridad defensiva): Reforcé la seguridad defensiva en `settings.py` aplicando `is_safe_to_modify` antes de cualquier operación de escritura en el disco para garantizar que las rutas de configuración no apunten a ubicaciones protegidas por el sistema, manteniendo la consistencia con las reglas de seguridad del proyecto.
 - `2026-08-08T06:53:22` **scanner.py** (seguridad defensiva): Se ha restringido el ámbito de `scan_file` para evitar la validación redundante `is_safe_to_modify` en archivos que el escáner solo debe leer, garantizando que el escáner nunca intente "autorizar" una escritura sobre archivos de sistema y evitando los errores de diseño previos donde se bloqueaban archivos de solo lectura.
-- `2026-08-08T06:52:33` **quarantine.py** (seguridad defensiva): Se reforzó `quarantine_file` para evitar condiciones de carrera y ataques de suplantación mediante una verificación de existencias post-copia más estricta, asegurando que el archivo movido sea exactamente el que se procesó mediante el cálculo de hash previo a la actualización del manifiesto.
-- `2026-08-08T06:43:59` **organizer.py** (seguridad defensiva): Mejoré la seguridad defensiva en `stage_for_review` añadiendo una comprobación explícita para evitar mover archivos que ya residen dentro del directorio de destino, previniendo bucles de recursión o errores de lógica al procesar archivos ya movidos.
-- `2026-08-08T06:43:51` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva en `trim_working_set` al asegurar que el manejo del proceso se realice exclusivamente con acceso de solo lectura y el permiso mínimo necesario (`PROCESS_QUERY_INFORMATION | PROCESS_SET_QUOTA`) para el trim, evitando el riesgo de `PROCESS_VM_WRITE` innecesario que viola el principio de menor privilegio.
-- `2026-08-08T06:43:25` **main.py** (seguridad defensiva): Se implementó una capa de validación en `run_async` para evitar que se ejecuten funciones de forma asíncrona si la ruta de origen o destino involucrada ha sido alterada o bloqueada por `safety.py` durante el tiempo de espera del hilo, protegiendo contra condiciones de carrera.

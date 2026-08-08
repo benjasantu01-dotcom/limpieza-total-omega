@@ -76,12 +76,13 @@ class Scanner:
         Valida y procesa una entrada del sistema de archivos. 
         Si es directorio, lo agrega al stack de recorrido; si es archivo, ejecuta las heurísticas.
         """
-        if not entry or not entry.path:
+        if entry is None or not entry.path:
             return
         
         try:
+            path_obj = Path(entry.path)
             # Validación de seguridad defensiva: no entrar en rutas protegidas
-            if is_protected_path(Path(entry.path)):
+            if is_protected_path(path_obj):
                 return
 
             if entry.is_dir(follow_symlinks=False):
@@ -89,12 +90,11 @@ class Scanner:
                     self.seen.add(entry.path)
                     stack.append(entry.path)
             elif entry.is_file(follow_symlinks=False):
-                path_obj = Path(entry.path)
                 name = entry.name
                 suffix = os.path.splitext(name)[1].lower()
                 self.results.extend(scan_file(path_obj, entry=entry, name=name, suffix=suffix))
-        except (PermissionError, OSError, RuntimeError, FileNotFoundError):
-            pass
+        except (PermissionError, OSError, RuntimeError):
+            logger.debug(f"Acceso denegado o error en entrada: {entry.path}")
 
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None) -> Optional[Suspicion]:
@@ -132,9 +132,7 @@ CHECK_REGISTRY: Final[dict[str, List[SuspicionCheck]]] = {
 }
 
 def scan_file(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None) -> ScanResult:
-    # El escáner es de solo lectura, por lo que no requiere is_safe_to_modify.
-    # Solo validamos que la ruta no sea protegida.
-    if is_protected_path(path):
+    if not path or is_protected_path(path):
         return []
     
     n = name or path.name
@@ -176,7 +174,8 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     scanner.process_entry(entry, stack)
-        except (PermissionError, OSError):
+        except (PermissionError, OSError) as e:
+            logger.warning(f"No se pudo acceder a {current_dir}: {e}")
             continue
             
     return scanner.results

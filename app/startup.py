@@ -247,7 +247,8 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
             continue
         
         parts = [p.strip().strip('"') for p in stripped_line.split(",")]
-        if len(parts) < 2:
+        # Validar existencia de datos mínimos antes de acceder a índices
+        if len(parts) < 2 or not parts[0] or not parts[1]:
             continue
             
         name_raw, cmd_raw = parts[0], parts[1]
@@ -263,6 +264,7 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
             
         try:
             p = Path(cmd)
+            # Validación adicional de seguridad sobre la ruta extraída del registro
             if not str(p).strip() or is_protected_path(p):
                 continue
             parsed_entries.append(StartupEntry(name=name, command=cmd, source=source))
