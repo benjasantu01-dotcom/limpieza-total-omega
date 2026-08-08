@@ -651,3 +651,10 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-08-08T04:51:37` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenibilidad del módulo `quarantine.py` mediante la refactorización de `_validate_isolation_request` (extraído a bloques lógicos documentados) y la adición de docstrings técnicos que clarifican las salvaguardas de seguridad en las operaciones de entrada/salida.
 - `2026-08-08T04:51:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-08T04:51:37` Corrida terminada. Total usado hoy: 116.
+- `2026-08-08T04:59:31` Arrancando corrida. Quedan hoy ~184 peticiones objetivo.
+- `2026-08-08T04:59:52` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 118): unterminated string literal (detected at line 118)
+- `2026-08-08T05:00:16` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: legibilidad y documentación).
+- `2026-08-08T05:00:37` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: legibilidad y documentación).
+- `2026-08-08T05:00:55` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad del archivo documentando mediante tipos y docstrings los parámetros de las funciones, y optimicé la lógica de `_Validators` para que sea más clara al manejar los tipos esperados y sus límites.
+- `2026-08-08T05:00:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-08T05:00:55` Corrida terminada. Total usado hoy: 120.

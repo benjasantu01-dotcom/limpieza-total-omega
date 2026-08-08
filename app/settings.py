@@ -131,9 +131,7 @@ class _Validators:
             path_str = str(val).strip()
             if not path_str: return ""
             path = Path(path_str).expanduser().resolve()
-            if is_safe_to_modify(str(path)):
-                return str(path)
-            return None
+            return str(path) if is_safe_to_modify(str(path)) else None
         except (OSError, RuntimeError, ValueError, TypeError, PermissionError):
             return None
 
@@ -164,11 +162,7 @@ def settings_path(path_or_base: PathLike | None = None) -> Path:
     key = str(base)
     if key in _path_cache: return _path_cache[key]
     
-    if is_safe_to_modify(str(base)):
-        res = base / SETTINGS_FILE
-    else:
-        res = SETTINGS_DIR.expanduser().resolve() / SETTINGS_FILE
-        
+    res = (base / SETTINGS_FILE) if is_safe_to_modify(str(base)) else (SETTINGS_DIR.expanduser().resolve() / SETTINGS_FILE)
     _path_cache[key] = res
     return res
 
