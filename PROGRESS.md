@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **247** (49.0% de aceptación)
+- Mejoras aceptadas: **244** (48.4% de aceptación)
 - Rechazadas por tests: 7
 - Rechazadas por guardia de seguridad: 25
-- Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 207
+- Sin cambios (nada sustancial que mejorar): 20
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-07 | 120 | 6 | 12 | 12 | 122 |
-| 2026-08-08 | 127 | 1 | 13 | 6 | 85 |
+| 2026-08-07 | 116 | 6 | 12 | 12 | 122 |
+| 2026-08-08 | 128 | 1 | 13 | 8 | 86 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **63**
 - manejo de errores y validación de entradas: **50**
-- seguridad defensiva: **49**
-- rendimiento: **48**
-- robustez ante casos límite: **37**
+- rendimiento: **49**
+- seguridad defensiva: **48**
+- robustez ante casos límite: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **22**
-- `settings.py`: **21**
+- `assistant.py`: **21**
 - `branding.py`: **20**
 - `duplicates.py`: **20**
-- `scanner.py`: **19**
+- `settings.py`: **20**
 - `diskreport.py`: **19**
 - `browser.py`: **18**
 - `quarantine.py`: **18**
+- `scanner.py`: **18**
 - `organizer.py`: **17**
 - `healthscore.py`: **17**
 - `memory.py`: **17**
 - `safety.py`: **17**
-- `main.py`: **14**
-- `startup.py`: **8**
+- `main.py`: **15**
+- `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-08T09:56:42` **main.py** (rendimiento): Optimicé el sistema de caché implementando un `OrderedDict` con `move_to_end` para asegurar un comportamiento LRU (Least Recently Used) real, evitando el crecimiento indefinido de la memoria y mejorando la eficiencia de las búsquedas en el `_get_cached` al descartar explícitamente el elemento más antiguo (`popitem(last=False)`) cuando se alcanza el límite.
 - `2026-08-08T09:46:58` **healthscore.py** (rendimiento): Optimicé el cálculo del `breakdown` en `compute_score` reemplazando la iteración sobre `_WEIGHT_ITEMS` (que requería búsquedas `.get()` en cada vuelta) por una estructura que aprovecha la relación directa entre áreas y métricas, reduciendo la complejidad de acceso en el hot-loop y eliminando operaciones redundantes de punto flotante.
 - `2026-08-08T09:46:27` **diskreport.py** (rendimiento): Optimizamos `summarize` para realizar una sola pasada por los datos, eliminando la redundancia de cálculos al procesar los archivos y mejorando la gestión de memoria al usar un min-heap de tamaño fijo para el top de archivos más grandes.
 - `2026-08-08T09:46:01` **browser.py** (rendimiento): Optimicé el rendimiento de `_sum_directory_recursive` mediante el uso de `os.scandir` de forma más eficiente y evitando la creación redundante de objetos `Path` y múltiples llamadas a `is_junction` dentro del bucle, reduciendo significativamente el overhead de llamadas al sistema.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-08T09:18:03` **memory.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings más precisos en las funciones de bajo nivel y corregí la ambigüedad en los tipos de los parámetros de `trim_working_set`, asegurando mayor claridad sobre las restricciones de seguridad y el manejo de recursos.
 - `2026-08-08T09:17:36` **main.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `main.py` mediante la adición de Type Hints detallados en los métodos de construcción de la UI, la clarificación de docstrings en los métodos de bajo nivel y la organización lógica del código, facilitando el mantenimiento sin alterar el comportamiento observable.
 - `2026-08-08T09:15:26` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad del código mediante la adición de docstrings técnicos explicativos sobre las constantes de umbral y la lógica de normalización, haciendo explícito el "porqué" de las decisiones de diseño para futuros colaboradores.
-- `2026-08-08T09:06:13` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo incluyendo Type Hints de retorno más precisos, docstrings detallados que explican la lógica de exclusión y estados de error, y la estandarización de las firmas de funciones para mayor claridad del contrato de datos.

@@ -1006,3 +1006,10 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-08-08T09:46:58` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del `breakdown` en `compute_score` reemplazando la iteración sobre `_WEIGHT_ITEMS` (que requería búsquedas `.get()` en cada vuelta) por una estructura que aprovecha la relación directa entre áreas y métricas, reduciendo la complejidad de acceso en el hot-loop y eliminando operaciones redundantes de punto flotante.
 - `2026-08-08T09:46:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-08T09:46:58` Corrida terminada. Total usado hoy: 232.
+- `2026-08-08T09:55:42` Arrancando corrida. Quedan hoy ~68 peticiones objetivo.
+- `2026-08-08T09:56:42` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Optimicé el sistema de caché implementando un `OrderedDict` con `move_to_end` para asegurar un comportamiento LRU (Least Recently Used) real, evitando el crecimiento indefinido de la memoria y mejorando la eficiencia de las búsquedas en el `_get_cached` al descartar explícitamente el elemento más antiguo (`popitem(last=False)`) cuando se alcanza el límite.
+- `2026-08-08T09:57:07` ➖ Sin cambios en memory.py (enfoque: rendimiento). Motivo: Se optimizó `parse_windows_process_csv` para usar un generador y evitar la creación de listas intermedias innecesarias antes de la ordenación, mejorando el rendimiento en sistemas con muchos procesos activos.
+- `2026-08-08T09:57:28` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-08-08T09:57:42` ➖ Sin cambios en quarantine.py (enfoque: rendimiento). Motivo: Optimicé el rendimiento de `purge_all` y `restore_item` reemplazando la búsqueda lineal O(N) por un diccionario de acceso O(1) para evitar iteraciones redundantes sobre el manifiesto durante operaciones frecuentes.
+- `2026-08-08T09:57:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-08T09:57:42` Corrida terminada. Total usado hoy: 236.

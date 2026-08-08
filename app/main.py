@@ -159,7 +159,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _init_state(self) -> None:
         """Inicializa caché, pool de hilos, configuración de usuario y estructuras UI."""
         self._cache: OrderedDict[str, Tuple[Any, float]] = OrderedDict()
-        self._cache_keys: Dict[str, List[str]] = {}
         self._cache_ttl = 300
         self._cache_max_size = 20
         
