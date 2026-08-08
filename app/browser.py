@@ -98,7 +98,10 @@ def base_directories() -> List[Path]:
 
 def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> bool:
     """
-    Valida la integridad de una ruta antes de realizar operaciones de lectura.
+    Valida la integridad de una ruta mediante técnicas de contención.
+    Verifica que la ruta resuelta no sea un vínculo simbólico, no escape
+    del directorio base (path traversal) y no contenga caracteres de
+    control ocultos que intenten engañar a la interfaz o al SO.
     """
     if not isinstance(target_path, Path) or not isinstance(base_path, Path):
         return False
@@ -110,7 +113,7 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
         if not target_path.exists():
             return False
             
-        # Bloquea caracteres de control o RTL potencialmente engañosos
+        # Bloquea caracteres RTL/control usados para obfuscación de nombres
         if any(ord(char) < 32 or ord(char) in (0x200E, 0x200F, 0x202A, 0x202E) for char in str(target_path)):
             return False
 
@@ -140,7 +143,10 @@ def _is_excluded_file(name: str) -> bool:
 
 def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool]) -> int:
     """
-    Calcula el peso total de un directorio mediante escaneo recursivo eficiente.
+    Calcula el peso total mediante recorrido recursivo. 
+    Aplica exclusión estricta de junctions/symlinks para evitar bucles infinitos 
+    y recursión fuera del volumen del perfil. Ignora archivos en NEVER_TOUCH 
+    para preservar datos sensibles del usuario.
     """
     total: int = 0
     try:

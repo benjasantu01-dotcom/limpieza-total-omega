@@ -77,7 +77,9 @@ class DuplicateGroup:
 def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
     Calcula el hash SHA256 completo del archivo mediante bloques de datos.
-    Retorna None si el archivo es inaccesible, protegido o inválido.
+    
+    Usa un buffer de memoria para procesar archivos grandes sin cargar todo el
+    contenido en RAM. Retorna None si el archivo es inaccesible o protegido.
     """
     if path is None or chunk_size <= 0: 
         return None
@@ -108,6 +110,9 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
 def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """
     Calcula un hash SHA256 sobre los primeros N bytes para comparación rápida.
+    
+    Eficaz para descartar archivos distintos que comparten tamaño pero no 
+    contenido inicial. Retorna None si el archivo es inaccesible.
     """
     if path is None or read_bytes <= 0: 
         return None
@@ -155,7 +160,10 @@ def _collect_candidates(
     skip_protected: bool
 ) -> Dict[int, List[Path]]:
     """
-    Escaneo recursivo para indexar archivos por tamaño usando inodos para evitar ciclos.
+    Realiza un escaneo recursivo del sistema de archivos para indexar por tamaño.
+    
+    Implementa prevención de ciclos mediante el seguimiento de inodos (st_ino) y 
+    evita el seguimiento de puntos de reparse (Junctions/Symlinks) en Windows.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: Dict[int, set[int]] = defaultdict(set)
@@ -167,7 +175,6 @@ def _collect_candidates(
             with os.scandir(root_path) as dir_iterator:
                 for entry in dir_iterator:
                     try:
-                        # Obtenemos stat una sola vez para determinar tipo y atributos
                         entry_stat = entry.stat(follow_symlinks=False)
                         
                         # Detectar puntos de reparse (Junctions/Symlinks)
@@ -182,7 +189,6 @@ def _collect_candidates(
                                     _scan(entry_path)
                         
                         elif entry.is_file(follow_symlinks=False):
-                            # Validar que sea archivo regular antes de leer tamaño
                             if entry_stat.st_size >= min_size:
                                 if not (skip_protected and is_protected_path(entry_path)):
                                     temp_groups[entry_stat.st_size].append(entry_path)
@@ -203,7 +209,8 @@ def _refine_by_hash(
     hash_func: Callable[[Path], Optional[str]]
 ) -> Dict[str, List[Path]]:
     """
-    Refina un grupo de archivos candidatos aplicando una función de hash.
+    Refina un grupo de candidatos aplicando una función de hash (parcial o total).
+    Solo retiene aquellos subgrupos donde los hashes coinciden (mínimo 2).
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     if paths is None: return groups_by_digest
@@ -222,7 +229,10 @@ def find_duplicates(
     skip_protected: bool = True,
 ) -> List[DuplicateGroup]:
     """
-    Ejecuta el pipeline de detección de duplicados en tres etapas.
+    Ejecuta el pipeline de detección de duplicados en tres etapas:
+    1. Agrupación por tamaño (Filtro base).
+    2. Filtrado por hash parcial (Optimización de lectura).
+    3. Verificación final mediante hash completo SHA256 (Determinista).
     """
     if directories is None: return []
     

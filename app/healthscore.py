@@ -1,7 +1,7 @@
 """
 healthscore.py — el panel que combina todos los módulos en un solo número.
 
-Toma las mediciones de limpieza, seguridad, memoria, disco, duplicados y
+Toma las métricas de limpieza, seguridad, memoria, disco, duplicados y
 arranque, y las convierte en un puntaje de 0 a 100 con una nota de A a F y
 recomendaciones concretas.
 
@@ -221,17 +221,19 @@ def _generate_recommendations(m: SystemMetrics, ratios: ScoreMap) -> List[str]:
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
     """
-    Función principal: toma métricas crudas, calcula el puntaje ponderado 
-    y genera un objeto HealthResult inmutable.
+    Toma métricas crudas, realiza el cálculo del puntaje ponderado 
+    y genera un objeto HealthResult inmutable tras validar la coherencia.
     """
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Instancia de métricas no válida."])
     
     metrics.validate()
+    
     # Verificación estricta de coherencia antes de operar
     if not metrics.is_finite() or not _validate_weights() or _NORM_FACTOR <= 0.0:
         return HealthResult(0, "F", {}, ["Error: Datos de entrada o configuración no procesables."])
 
+    # Normalización: convierte métricas a un valor 0.0-1.0
     scores: ScoreMap = {
         "seguridad": score_security(metrics.suspicious_count, metrics.suspicious_warnings),
         "disco": score_disk(metrics.disk_free_percent),
@@ -244,14 +246,15 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     breakdown: Dict[str, int] = {}
     total_weighted_score: float = 0.0
     
+    # Cálculo ponderado utilizando el factor de normalización precalculado
     for area, weight in _WEIGHT_ITEMS:
         w_val = float(weight)
         score_val: float = scores.get(area, 0.0) * w_val * _NORM_FACTOR
-        # Defensa contra valores no finitos que podrían corromper la acumulación
         if math.isfinite(score_val):
             breakdown[area] = int(score_val + 0.5)
             total_weighted_score += score_val
 
+    # Ajuste final: asegurar rango 0-100 y consistencia matemática
     final_score: int = int(_clamp(total_weighted_score, 0.0, 100.0))
     if not math.isclose(sum(breakdown.values()), final_score, abs_tol=1):
         final_score = int(_clamp(float(sum(breakdown.values())), 0.0, 100.0))

@@ -167,7 +167,13 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Generador recursivo que recorre archivos bajo `directory`.
-    Ignora puntos de reparse (reparse points) en Windows y symlinks para evitar bucles.
+    
+    Técnicas de seguridad aplicadas:
+      - Resuelve rutas a absolutas para evitar redundancia.
+      - Verifica `is_protected_path` en cada nivel para evitar rutas del sistema.
+      - Utiliza `os.path.commonpath` para asegurar que el recorrido no escape del directorio base.
+      - Filtra puntos de reparse (Windows) y symlinks para prevenir bucles infinitos.
+      - Gestiona silenciosamente errores de permisos (OSError/PermissionError) por acceso denegado.
     """
     if not directory:
         return
@@ -194,6 +200,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                         
                         st = file_entry.stat(follow_symlinks=False)
                         
+                        # Bloqueo de Reparse Points en Windows (Attribute 0x400)
                         if os.name == 'nt' and (st.st_file_attributes & 0x400) != 0:
                             continue
                         elif file_entry.is_symlink():
@@ -295,7 +302,13 @@ def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 
 
 def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -> List[str]:
-    """Genera un reporte de texto legible con el uso de disco del directorio indicado."""
+    """
+    Genera un reporte textual estructurado del uso de disco.
+    
+    La función agrega métricas en tiempo real mientras recorre el directorio,
+    manteniendo un heap de los archivos más pesados encontrados para evitar
+    re-procesar la lista completa al finalizar.
+    """
     if not directory:
         return ["Error: Ruta no proporcionada."]
         
@@ -324,6 +337,7 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
         ext_size_map[ext_name] += size
         ext_count_map[ext_name] += 1
         
+        # Mantener solo los 8 archivos más pesados en el heap
         if len(top_files_heap) < 8:
             heapq.heappush(top_files_heap, (size, str(path)))
         elif size > (top_files_heap[0][0] if top_files_heap else -1):
