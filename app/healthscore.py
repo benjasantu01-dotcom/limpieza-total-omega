@@ -35,21 +35,26 @@ __all__ = [
     "summarize",
 ]
 
-# Umbrales críticos para la normalización (puntos de saturación).
-# Un valor igual o superior a estos límites (en MB/cantidad) o igual a cero
-# (en porcentajes de disponibilidad) penaliza el puntaje al mínimo posible.
+# --- UMBRALES DE NORMALIZACIÓN ---
+# Definen el punto de saturación donde un aspecto alcanza su peor nota (0.0).
+# Todo valor superior a estos límites (o igual a cero para porcentajes) 
+# resulta en la penalización máxima.
+
 JUNK_LIMIT_MB: Final[float] = 5000.0          
 DUPLICATE_LIMIT_MB: Final[float] = 2000.0     
 STARTUP_LIMIT_COUNT: Final[int] = 20          
 RAM_IDEAL_PERCENT: Final[float] = 35.0        
 DISK_IDEAL_PERCENT: Final[float] = 25.0       
 
-# Umbrales para disparar recomendaciones (ratios de 0.0 a 1.0).
-# Determinan la severidad de la sugerencia presentada al usuario.
+# --- UMBRALES DE ADVERTENCIA (ratios de 0.0 a 1.0) ---
+# Determinan a partir de qué nivel de salud relativa (normalizada) se 
+# dispara una recomendación específica para el usuario.
+
 WARN_THRESHOLD_HIGH: Final[float] = 0.9
 WARN_THRESHOLD_MED: Final[float] = 0.8
 WARN_THRESHOLD_LOW: Final[float] = 0.6
 
+# --- PESOS DE CALIFICACIÓN ---
 # Peso relativo de cada área en el puntaje total (sumatoria debe ser 100).
 WEIGHTS: Final[Dict[str, int]] = {
     "seguridad": 30,

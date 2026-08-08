@@ -167,20 +167,24 @@ def _collect_candidates(
             with os.scandir(root_path) as dir_iterator:
                 for entry in dir_iterator:
                     try:
+                        # Obtenemos stat una sola vez por entrada para eficiencia
                         entry_stat = entry.stat(follow_symlinks=False)
+                        
+                        # Detectar puntos de reparse (Junctions/Symlinks)
                         if getattr(entry_stat, 'st_file_attributes', 0) & 0x400:
                             continue
                             
+                        entry_path = Path(entry.path)
                         if entry.is_dir(follow_symlinks=False):
                             if entry_stat.st_ino not in visited_inodes[entry_stat.st_dev]:
                                 visited_inodes[entry_stat.st_dev].add(entry_stat.st_ino)
-                                if not (skip_protected and is_protected_path(Path(entry.path))):
-                                    _scan(Path(entry.path))
+                                if not (skip_protected and is_protected_path(entry_path)):
+                                    _scan(entry_path)
                         
                         elif entry.is_file(follow_symlinks=False):
                             if entry_stat.st_size >= min_size:
-                                if not (skip_protected and is_protected_path(Path(entry.path))):
-                                    temp_groups[entry_stat.st_size].append(Path(entry.path))
+                                if not (skip_protected and is_protected_path(entry_path)):
+                                    temp_groups[entry_stat.st_size].append(entry_path)
                     except (OSError, PermissionError): continue
         except (OSError, PermissionError): pass
 

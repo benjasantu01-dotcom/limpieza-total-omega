@@ -167,6 +167,7 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Generador recursivo que recorre archivos bajo `directory`.
+    Ignora puntos de reparse (reparse points) en Windows y symlinks para evitar bucles.
     """
     if not directory:
         return
@@ -186,13 +187,18 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                 for file_entry in iterator:
                     try:
                         resolved_path = Path(file_entry.path).resolve()
+                        # Evitar escapar del directorio base
                         if not str(resolved_path).startswith(str(base_path)):
                             continue
+                        
                         st = file_entry.stat(follow_symlinks=False)
+                        
+                        # Windows: Saltear puntos de reparse (ej. junctions)
                         if os.name == 'nt' and (st.st_file_attributes & 0x400) != 0:
                             continue
                         elif file_entry.is_symlink():
                             continue
+                            
                         if file_entry.is_dir():
                             if resolved_path not in visited:
                                 if skip_protected and is_protected_path(resolved_path):
@@ -240,7 +246,10 @@ def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip
 
 
 def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
-    """Identifica las subcarpetas de primer nivel que consumen más espacio."""
+    """
+    Agrupa recursivamente el peso de todos los archivos dentro de las subcarpetas 
+    inmediatas al nivel superior del directorio base dado.
+    """
     if not directory or limit <= 0:
         return []
     
@@ -249,12 +258,14 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
         if not base.exists() or not base.is_dir() or (skip_protected and is_protected_path(base)):
             return []
         
+        # Mapea carpeta de primer nivel -> objeto FolderUsage
         folder_map: Dict[Path, FolderUsage] = {}
         for path, size in walk_files(base, skip_protected):
             try:
                 relative = path.relative_to(base)
                 if not relative.parts:
                     continue
+                # Identifica el nodo de primer nivel para agrupar
                 top_level = base / relative.parts[0]
                 
                 if top_level not in folder_map:

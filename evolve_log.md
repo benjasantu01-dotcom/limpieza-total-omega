@@ -1369,3 +1369,10 @@ FAILED evolve/tests/test_integrity.py::test_is_safe_returns_bool_and_never_raise
 - `2026-08-08T00:04:46` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Documenté con docstrings claros y tipado los helpers críticos de seguridad (`_is_safe_path`, `_is_excluded_file`) para clarificar el contrato de seguridad y evitar errores futuros de lógica durante el filtrado de directorios.
 - `2026-08-08T00:04:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-08T00:04:46` Corrida terminada. Total usado hoy: 4.
+- `2026-08-08T00:13:17` Arrancando corrida. Quedan hoy ~296 peticiones objetivo.
+- `2026-08-08T00:13:44` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `walk_files` y `largest_folders` añadiendo docstrings descriptivos, tipado explícito y documentando la lógica de filtrado de niveles, facilitando la comprensión del flujo de datos en el análisis de disco.
+- `2026-08-08T00:14:07` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Se introdujeron type hints más precisos y se reemplazó el uso de `stat()` redundante por llamadas únicas dentro de `_collect_candidates`, mejorando la legibilidad y eficiencia del bucle de escaneo.
+- `2026-08-08T00:14:32` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Documenté con docstrings claros y tipado explícito el propósito de los umbrales constantes y la lógica de normalización, eliminando la ambigüedad sobre cómo se penaliza cada métrica.
+- `2026-08-08T00:15:18` ➖ Sin cambios en main.py (enfoque: legibilidad y documentación). Motivo: Mejoré la legibilidad y la robustez técnica del método `_build_tab_salud` mediante la extracción de la lógica de construcción de las tarjetas de métricas en un método dedicado `_build_health_metrics_row`, permitiendo que el flujo de diseño del dashboard sea más declarativo y fácil de auditar.
+- `2026-08-08T00:15:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-08T00:15:18` Corrida terminada. Total usado hoy: 8.
