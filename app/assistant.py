@@ -251,7 +251,7 @@ def context_as_text(context: SystemContext) -> str:
         return "No hay métricas disponibles todavía."
 
     try:
-        lines = [
+        lines = (
             f"Puntaje de salud: {_fmt_metric(context.score)}{f' nota {context.grade}' if context.grade else ''}",
             f"Basura: {_fmt_metric(context.junk_mb, ' MB')}",
             f"Sospechosos: {context.suspicious_count}",
@@ -259,7 +259,7 @@ def context_as_text(context: SystemContext) -> str:
             f"Disco libre: {_fmt_metric(context.disk_free_percent, ' percent')}",
             f"Duplicados: {_fmt_metric(context.duplicate_mb, ' MB')}",
             f"Inicio: {context.startup_count} items"
-        ]
+        )
         texto_serializado = "\n".join(lines)
         
         if not _ensure_safe_text(texto_serializado):
@@ -402,11 +402,12 @@ def local_answer(question: str, context: SystemContext) -> Answer:
 
     clean_text = _sanitize_query(question)
     tokens = _TOKEN_REGEX.findall(clean_text)
+    
     for token in tokens:
         if handler_key := _KEYWORD_MAP.get(token):
             return _HANDLERS[handler_key](context, clean_text)
 
-    # Consumo directo del generador mediante islice para eficiencia
+    # Consumo perezoso de problemas prioritarios
     problemas = list(islice(_gen_problems(context), 3))
     puntaje_str = str(context.score) if context.score is not None else "N/A"
     

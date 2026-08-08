@@ -352,10 +352,11 @@ def draw_logo(canvas: Any, size: int = 56, canvas_x: float = 0.0, canvas_y: floa
         
         i = 0
         while i < franjas:
-            start_i, color_actual = i, colores[i]
-            while i < franjas and colores[i] == color_actual: i += 1
-            w = 36 * s * (1.0 if (start_i + i)/2 / (franjas - 1) < 0.55 else 1.0 - ((start_i + i)/2 / (franjas - 1) - 0.55) * 1.9)
-            canvas.create_rectangle(x + 64*s - w, y + 18*s + start_i*alto, x + 64*s + w, y + 18*s + i*alto + 1, fill=color_actual, outline="")
+            j = i
+            while j < franjas and colores[j] == colores[i]: j += 1
+            w = 36 * s * (1.0 if (i + j)/2 / (franjas - 1) < 0.55 else 1.0 - ((i + j)/2 / (franjas - 1) - 0.55) * 1.9)
+            canvas.create_rectangle(x + 64*s - w, y + 18*s + i*alto, x + 64*s + w, y + 18*s + j*alto + 1, fill=colores[i], outline="")
+            i = j
 
         canvas.create_line(x + 41*s, y + 75*s, x + 75*s, y + 41*s, fill=PALETTE["background"], width=max(2, int(8*s)), capstyle="round")
         canvas.create_polygon(x + 75*s, y + 41*s, x + 89*s, y + 38*s, x + 92*s, y + 52*s, fill=PALETTE["background"], outline="")
@@ -376,9 +377,10 @@ def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
         colores = gradient_colors(ancho, stops)
         i = 0
         while i < ancho:
-            start, color_actual = i, colores[i]
-            while i < ancho and colores[i] == color_actual: i += 1
-            canvas.create_line(canvas_x + start, canvas_y, canvas_x + i, canvas_y, fill=color_actual, width=max(1, int(height)))
+            j = i
+            while j < ancho and colores[j] == colores[i]: j += 1
+            canvas.create_line(canvas_x + i, canvas_y, canvas_x + j, canvas_y, fill=colores[i], width=max(1, int(height)))
+            i = j
     except (ValueError, TypeError, AttributeError): pass
 
 

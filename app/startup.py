@@ -229,8 +229,11 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
 
 def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry]:
     """
-    Convierte el CSV generado por PowerShell a una lista de StartupEntry, 
-    validando que no contenga elementos maliciosos o protegidos.
+    Convierte el CSV generado por PowerShell a una lista de StartupEntry.
+    
+    Aplica una limpieza rigurosa de caracteres no imprimibles y valida que
+    cada entrada no apunte a rutas protegidas del sistema ni contenga
+    inyecciones de caracteres ilegales.
     """
     if not isinstance(text, str) or not text.strip():
         return []
