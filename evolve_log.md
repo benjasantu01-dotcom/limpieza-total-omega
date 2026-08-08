@@ -469,3 +469,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-08T14:12:16` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
 - `2026-08-08T14:12:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-08T14:12:16` Corrida terminada. Total usado hoy: 336.
+- `2026-08-08T14:21:00` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-08T14:21:25` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimizé `SystemMetrics.is_finite` reemplazando la iteración completa sobre `__dataclass_fields__` (con `getattr` y `isinstance` por cada campo) por un chequeo directo de los atributos numéricos relevantes, eliminando la sobrecarga de reflexión en cada validación.
+- `2026-08-08T14:22:25` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Se implementó un método `_debounce_action` genérico para centralizar la lógica de retardos en eventos de UI (como redibujos o cambios en los inputs), eliminando la duplicidad de lógica de `after_cancel` y garantizando un mejor rendimiento al evitar disparos redundantes.
+- `2026-08-08T14:22:50` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento de `top_memory_processes` eliminando la sobrecarga innecesaria de obtener información de 20 procesos desde PowerShell para luego descartar la mitad, ajustando la consulta para solicitar exactamente el límite necesario y reducir el tiempo de ejecución del subproceso.
+- `2026-08-08T14:22:58` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-08-08T14:22:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-08T14:22:58` Corrida terminada. Total usado hoy: 340.

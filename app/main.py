@@ -179,8 +179,13 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._tasks_running = 0
         if self._executor: self._executor.shutdown(wait=False)
         self._executor = concurrent.futures.ThreadPoolExecutor(max_workers=5)
-        self._debounce_id: Optional[str] = None
-        self._gauge_debounce_id: Optional[str] = None
+        self._debounces: Dict[str, str] = {}
+        
+    def _debounce_action(self, key: str, delay: int, callback: Callable) -> None:
+        """Mecanismo genérico de debounce para evitar disparos múltiples."""
+        if key in self._debounces:
+            self.after_cancel(self._debounces[key])
+        self._debounces[key] = self.after(delay, callback)
 
     def _create_styled_label(self, parent: Any, text: str, style: str, **kwargs) -> ctk.CTkLabel:
         """Instancia una etiqueta utilizando la configuración tipográfica de branding.py."""
@@ -361,9 +366,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         franja.pack(fill="x", padx=18, pady=(12, 6))
 
         def on_resize(event):
-            if self._debounce_id:
-                self.after_cancel(self._debounce_id)
-            self._debounce_id = self.after(100, lambda: (franja.delete("all"), branding.draw_gradient_bar(franja, event.width, 3)))
+            self._debounce_action("resize", 100, lambda: (franja.delete("all"), branding.draw_gradient_bar(franja, event.width, 3)))
 
         franja.bind("<Configure>", on_resize)
 
@@ -458,25 +461,23 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         return valor_label
 
     def _draw_gauge(self, score: int, grade: str) -> None:
-        """Dibuja el medidor circular central en el canvas utilizando debouncing para evitar flicker."""
-        if self._gauge_debounce_id:
-            self.after_cancel(self._gauge_debounce_id)
-        
-        def update_canvas():
-            if not hasattr(self, 'gauge') or not self.gauge.winfo_exists(): return
-            self.gauge.delete("all")
-            branding.draw_ring(self.gauge, score, size=176, thickness=15)
-            color_nota = branding.grade_color(grade) if grade != "-" else branding.color("text_dim")
-            self.gauge.create_text(
-                88, 78, text=str(score), fill=branding.score_color(score),
-                font=("Segoe UI", branding.font_size("display"), "bold"),
-            )
-            self.gauge.create_text(
-                88, 116, text=f"nota {grade}", fill=color_nota,
-                font=("Segoe UI", branding.font_size("body"), "bold"),
-            )
-        
-        self._gauge_debounce_id = self.after(50, update_canvas)
+        """Dibuja el medidor circular central en el canvas utilizando debouncing."""
+        self._debounce_action("gauge", 50, lambda: self._render_gauge(score, grade))
+
+    def _render_gauge(self, score: int, grade: str) -> None:
+        """Ejecución real del dibujo del medidor."""
+        if not hasattr(self, 'gauge') or not self.gauge.winfo_exists(): return
+        self.gauge.delete("all")
+        branding.draw_ring(self.gauge, score, size=176, thickness=15)
+        color_nota = branding.grade_color(grade) if grade != "-" else branding.color("text_dim")
+        self.gauge.create_text(
+            88, 78, text=str(score), fill=branding.score_color(score),
+            font=("Segoe UI", branding.font_size("display"), "bold"),
+        )
+        self.gauge.create_text(
+            88, 116, text=f"nota {grade}", fill=color_nota,
+            font=("Segoe UI", branding.font_size("body"), "bold"),
+        )
 
     def _build_tab_limpieza(self) -> None:
         """Crea el layout para la sección de limpieza de archivos basura."""

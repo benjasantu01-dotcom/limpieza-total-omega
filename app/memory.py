@@ -269,8 +269,9 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     if now - ts < 5.0 and cached_processes:
         return cached_processes[:limit]
 
+    # Optimizamos: pedimos directamente el límite solicitado para reducir carga de red/procesamiento
     command: str = (
-        "Get-Process | Sort-Object WorkingSet -Descending | Select-Object -First 20 "
+        f"Get-Process | Sort-Object WorkingSet -Descending | Select-Object -First {limit} "
         "| ForEach-Object { \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }"
     )
     try:
@@ -279,9 +280,9 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
             capture_output=True, text=True, timeout=5,
         )
         if result.returncode == 0 and result.stdout:
-            processes = parse_windows_process_csv(result.stdout, limit=20)
+            processes = parse_windows_process_csv(result.stdout, limit=limit)
             _PROCESS_CACHE["data"] = (now, processes)
-            return processes[:limit]
+            return processes
     except (OSError, subprocess.SubprocessError, Exception):
         pass
     return []

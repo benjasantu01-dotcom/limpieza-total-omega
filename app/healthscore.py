@@ -91,11 +91,11 @@ class SystemMetrics:
 
     def is_finite(self) -> bool:
         """Verifica que todos los campos numéricos sean números reales finitos."""
-        for field_name in self.__dataclass_fields__:
-            val = getattr(self, field_name)
-            if isinstance(val, (int, float)) and not math.isfinite(val):
-                return False
-        return True
+        return all(math.isfinite(v) for v in (
+            self.junk_mb, self.suspicious_count, self.suspicious_warnings,
+            self.memory_available_percent, self.disk_free_percent, 
+            self.duplicate_mb, self.startup_count, self.quarantined_count
+        ))
 
 
 @dataclass
