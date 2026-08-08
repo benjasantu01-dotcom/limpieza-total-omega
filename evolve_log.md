@@ -1390,3 +1390,10 @@ FAILED evolve/tests/test_integrity.py::test_is_safe_returns_bool_and_never_raise
 - `2026-08-08T00:35:08` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._extract_quoted_path, StartupEntry._resolve_and_cache_path, StartupEntry._resolve_path_from_command, StartupEntry._sanitize_command
 - `2026-08-08T00:35:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-08T00:35:08` Corrida terminada. Total usado hoy: 16.
+- `2026-08-08T00:43:59` Arrancando corrida. Quedan hoy ~284 peticiones objetivo.
+- `2026-08-08T00:44:33` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el renderizado de `context_as_text` reemplazando la construcción de listas y el join por una cadena formateada única, reduciendo las asignaciones de memoria y el overhead de procesamiento en cada iteración de consulta.
+- `2026-08-08T00:45:02` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimicé el rendimiento de `draw_logo` y `draw_gradient_bar` sustituyendo el dibujo de múltiples rectángulos y líneas individuales por bloques agrupados cuando el color es idéntico, reduciendo drásticamente la carga sobre el canvas de Tkinter.
+- `2026-08-08T00:45:25` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el rendimiento de `_sum_directory_recursive` evitando llamadas repetidas a `is_protected_path` (que es costosa al resolver rutas constantemente) y consolidando la lógica de validación de exclusiones dentro de la recursión para minimizar el acceso al sistema de archivos mediante el uso eficiente de `os.scandir`.
+- `2026-08-08T00:45:33` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-08-08T00:45:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-08T00:45:33` Corrida terminada. Total usado hoy: 20.

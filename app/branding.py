@@ -327,14 +327,7 @@ def logo_ascii() -> str:
 
 
 def draw_logo(canvas: Any, size: int = 56, canvas_x: int = 0, canvas_y: int = 0) -> None:
-    """
-    Renderiza el logo vectorial en un canvas de Tkinter.
-    
-    Args:
-        canvas: Widget Tkinter donde dibujar.
-        size: Tamaño base en píxeles.
-        canvas_x, canvas_y: Coordenadas de origen.
-    """
+    """Renderiza el logo vectorial en un canvas de Tkinter."""
     if not hasattr(canvas, "create_polygon"): return
     try:
         s = max(0.1, float(size) / 128)
@@ -351,12 +344,14 @@ def draw_logo(canvas: Any, size: int = 56, canvas_x: int = 0, canvas_y: int = 0)
         alto = max(0.1, 92 * s / franjas)
         colores = gradient_colors(franjas)
         
-        start_i = 0
-        for i in range(1, franjas + 1):
-            if i == franjas or colores[i] != colores[start_i]:
-                w = 36 * s * (1.0 if (start_i + i)/2 / (franjas - 1) < 0.55 else 1.0 - ((start_i + i)/2 / (franjas - 1) - 0.55) * 1.9)
-                canvas.create_rectangle(x + 64*s - w, y + 18*s + start_i*alto, x + 64*s + w, y + 18*s + i*alto + 1, fill=colores[start_i], outline="")
-                start_i = i
+        i = 0
+        while i < franjas:
+            start_i = i
+            color_actual = colores[i]
+            while i < franjas and colores[i] == color_actual:
+                i += 1
+            w = 36 * s * (1.0 if (start_i + i)/2 / (franjas - 1) < 0.55 else 1.0 - ((start_i + i)/2 / (franjas - 1) - 0.55) * 1.9)
+            canvas.create_rectangle(x + 64*s - w, y + 18*s + start_i*alto, x + 64*s + w, y + 18*s + i*alto + 1, fill=color_actual, outline="")
 
         canvas.create_line(x + 41*s, y + 75*s, x + 75*s, y + 41*s, fill=PALETTE["background"], width=max(2, int(8*s)), capstyle="round")
         canvas.create_polygon(x + 75*s, y + 41*s, x + 89*s, y + 38*s, x + 92*s, y + 52*s, fill=PALETTE["background"], outline="")
@@ -368,25 +363,19 @@ def draw_logo(canvas: Any, size: int = 56, canvas_x: int = 0, canvas_y: int = 0)
 def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
                       canvas_x: int = 0, canvas_y: int = 0,
                       stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
-    """
-    Dibuja una franja horizontal con degradado optimizado mediante segmentos.
-    
-    Args:
-        canvas: Widget Tkinter destino.
-        width: Ancho total de la franja.
-        height: Grosor del trazo.
-    """
+    """Dibuja una franja horizontal con degradado optimizado mediante bloques."""
     if not hasattr(canvas, "create_line"): return
     try:
         ancho = max(1, int(width))
         alto = max(1, int(height))
         colores = gradient_colors(ancho, stops)
-        
-        start = 0
-        for i in range(1, ancho + 1):
-            if i == ancho or colores[i] != colores[start]:
-                canvas.create_line(canvas_x + start, canvas_y, canvas_x + i, canvas_y, fill=colores[start], width=alto)
-                start = i
+        i = 0
+        while i < ancho:
+            start = i
+            color_actual = colores[i]
+            while i < ancho and colores[i] == color_actual:
+                i += 1
+            canvas.create_line(canvas_x + start, canvas_y, canvas_x + i, canvas_y, fill=color_actual, width=alto)
     except (ValueError, TypeError, AttributeError): pass
 
 
@@ -394,15 +383,7 @@ def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
               canvas_x: int = 0, canvas_y: int = 0, thickness: int = 14,
               track: Optional[HexColor] = None,
               fill: Optional[HexColor] = None) -> None:
-    """
-    Renderiza un anillo circular dinámico indicando progreso.
-    
-    Args:
-        canvas: Widget Tkinter destino.
-        percent: Valor de progreso (0-100).
-        size: Diámetro del anillo.
-        thickness: Grosor del anillo.
-    """
+    """Renderiza un anillo circular dinámico indicando progreso."""
     if not hasattr(canvas, "create_arc"): return
     try:
         val_f = float(percent)

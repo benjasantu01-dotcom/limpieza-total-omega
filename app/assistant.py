@@ -244,17 +244,17 @@ def context_as_text(context: SystemContext) -> str:
         return "No hay métricas disponibles todavía."
 
     try:
-        lineas = [
+        texto_serializado = (
             f"Puntaje de salud: {context.score if context.score is not None else 'N/A'}"
-            f"{f' nota {context.grade}' if context.grade else ''}",
-            f"Basura: {context.junk_mb:.0f} MB",
-            f"Sospechosos: {context.suspicious_count}",
-            f"RAM disponible: {context.memory_available_percent:.0f} percent",
-            f"Disco libre: {context.disk_free_percent:.0f} percent",
-            f"Duplicados: {context.duplicate_mb:.0f} MB",
-            f"Inicio: {context.startup_count} items",
-        ]
-        texto_serializado = "\n".join(lineas)
+            f"{f' nota {context.grade}' if context.grade else ''}\n"
+            f"Basura: {context.junk_mb:.0f} MB\n"
+            f"Sospechosos: {context.suspicious_count}\n"
+            f"RAM disponible: {context.memory_available_percent:.0f} percent\n"
+            f"Disco libre: {context.disk_free_percent:.0f} percent\n"
+            f"Duplicados: {context.duplicate_mb:.0f} MB\n"
+            f"Inicio: {context.startup_count} items"
+        )
+        
         # Validación de seguridad defensiva final: asegurar que no haya rutas
         if not _ensure_safe_text(texto_serializado):
             return "Error de seguridad en la serialización de contexto."

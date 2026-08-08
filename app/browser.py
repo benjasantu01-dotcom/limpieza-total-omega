@@ -99,11 +99,6 @@ def base_directories() -> List[Path]:
 def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> bool:
     """
     Valida la integridad de una ruta antes de realizar operaciones de lectura.
-    
-    Comprueba:
-    - Que el path esté bajo base_path (evita Path Traversal).
-    - Que no sea un punto de reparse (junction/symlink) para evitar bucles.
-    - Que la ruta no contenga caracteres de control o nombres protegidos.
     """
     if not isinstance(target_path, Path) or not isinstance(base_path, Path):
         return False
@@ -115,7 +110,7 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
         if not target_path.exists():
             return False
             
-        # Bloquea caracteres de control o RTL potencialmente engañosos en el nombre de archivo
+        # Bloquea caracteres de control o RTL potencialmente engañosos
         if any(ord(char) < 32 or ord(char) in (0x200E, 0x200F, 0x202A, 0x202E) for char in str(target_path)):
             return False
 
@@ -125,12 +120,10 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
         if is_protected_path(real_target):
             return False
 
-        # Verifica que la ruta esté estrictamente contenida en el directorio base
         if not str(real_target).startswith(str(real_base)):
             return False
         real_target.relative_to(real_base)
 
-        # Previene escapes mediante enlaces simbólicos o junctions de NTFS
         is_junction = getattr(os.path, 'isjunction', lambda _: False)
         if real_target.is_symlink() or is_junction(str(real_target)):
             return False
@@ -147,19 +140,14 @@ def _is_excluded_file(name: str) -> bool:
 
 def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool]) -> int:
     """
-    Calcula el peso total de un directorio mediante escaneo recursivo.
-    Usa os.DirEntry para eficiencia y evita seguir enlaces simbólicos/junctions.
+    Calcula el peso total de un directorio mediante escaneo recursivo eficiente.
     """
     total: int = 0
-    if not root_dir or not os.path.exists(root_dir):
-        return 0
     try:
         with os.scandir(root_dir) as it:
             for entry in it:
                 try:
-                    entry_path = Path(entry.path)
-                    # Chequeo de seguridad: resolvemos para confirmar que no sea una ruta protegida
-                    if is_protected_path(entry_path.resolve()) or entry.is_symlink() or is_junction_fn(entry.path):
+                    if entry.is_symlink() or is_junction_fn(entry.path):
                         continue
                     
                     if entry.is_dir():
