@@ -91,6 +91,7 @@ class Scanner:
                     self.seen.add(entry.path)
                     stack.append(entry.path)
             elif entry.is_file(follow_symlinks=False):
+                # Pre-calculamos para evitar llamadas repetidas en las reglas
                 name = entry.name
                 suffix = os.path.splitext(name)[1].lower()
                 self.results.extend(scan_file(path_obj, entry=entry, name=name, suffix=suffix))
@@ -142,9 +143,6 @@ def _run_checks(checks: List[SuspicionCheck], *args) -> ScanResult:
 
 def scan_file(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None) -> ScanResult:
     """Aplica el set completo de heurísticas a un archivo según su tipo."""
-    if not path or is_protected_path(path):
-        return []
-    
     n = name or path.name
     s = suffix or path.suffix.lower()
     
