@@ -138,7 +138,7 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
         if not p.exists() or not p.is_absolute() or is_protected_path(p):
             return None
             
-        usage = shutil.disk_usage(path_str)
+        usage = shutil.disk_usage(p)
         return DriveUsage(mount=str(mount), total=usage.total, used=usage.used, free=usage.free)
     except (OSError, ValueError, TypeError):
         return None
@@ -187,7 +187,9 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                 for file_entry in iterator:
                     try:
                         resolved_path = Path(file_entry.path).resolve()
-                        if not str(resolved_path).startswith(str(base_path)):
+                        
+                        # Seguridad: verificar containment real mediante commonpath
+                        if os.path.commonpath([str(base_path), str(resolved_path)]) != str(base_path):
                             continue
                         
                         st = file_entry.stat(follow_symlinks=False)

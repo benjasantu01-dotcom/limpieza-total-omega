@@ -151,7 +151,8 @@ def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool
                         continue
                     
                     if entry.is_dir():
-                        total += _sum_directory_recursive(entry.path, is_junction_fn)
+                        if not is_protected_path(Path(entry.path)):
+                            total += _sum_directory_recursive(entry.path, is_junction_fn)
                     elif entry.is_file() and not _is_excluded_file(entry.name):
                         total += entry.stat().st_size
                 except (OSError, PermissionError):

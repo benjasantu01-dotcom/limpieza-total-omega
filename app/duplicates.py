@@ -185,7 +185,8 @@ def _collect_candidates(
                                     _scan(entry_path)
                         
                         elif entry.is_file(follow_symlinks=False):
-                            if entry_stat.st_size >= min_size:
+                            # Validar que sea archivo regular antes de leer tamaño
+                            if entry.is_file() and entry_stat.st_size >= min_size:
                                 if not (skip_protected and is_protected_path(entry_path)):
                                     temp_groups[entry_stat.st_size].append(entry_path)
                     except (OSError, PermissionError): continue
