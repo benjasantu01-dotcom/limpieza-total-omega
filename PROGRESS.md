@@ -9,44 +9,47 @@ Este archivo se regenera solo en cada corrida a partir de
 - Mejoras aceptadas: **236** (46.8% de aceptación)
 - Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 26
-- Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 209
+- Sin cambios (nada sustancial que mejorar): 20
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-06 | 20 | 1 | 2 | 2 | 17 |
+| 2026-08-06 | 17 | 1 | 2 | 2 | 16 |
 | 2026-08-07 | 158 | 12 | 17 | 14 | 149 |
-| 2026-08-08 | 58 | 1 | 7 | 3 | 43 |
+| 2026-08-08 | 61 | 1 | 7 | 4 | 43 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **53**
+- legibilidad y documentación: **56**
 - seguridad defensiva: **51**
 - manejo de errores y validación de entradas: **45**
-- rendimiento: **44**
-- robustez ante casos límite: **43**
+- robustez ante casos límite: **42**
+- rendimiento: **42**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **20**
-- `assistant.py`: **20**
 - `branding.py`: **20**
 - `duplicates.py`: **20**
-- `scanner.py`: **19**
+- `quarantine.py`: **19**
+- `assistant.py`: **19**
 - `diskreport.py`: **19**
-- `quarantine.py`: **18**
+- `settings.py`: **19**
+- `scanner.py`: **18**
 - `browser.py`: **17**
+- `memory.py`: **17**
+- `organizer.py`: **17**
 - `safety.py`: **17**
-- `memory.py`: **16**
-- `organizer.py`: **16**
 - `healthscore.py`: **15**
 - `main.py`: **14**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-08T04:51:37` **quarantine.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo `quarantine.py` mediante la refactorización de `_validate_isolation_request` (extraído a bloques lógicos documentados) y la adición de docstrings técnicos que clarifican las salvaguardas de seguridad en las operaciones de entrada/salida.
+- `2026-08-08T04:51:18` **organizer.py** (legibilidad y documentación): Se introdujeron type hints en funciones sin tipado explícito, se mejoró la claridad de los nombres de variables en el bucle de escaneo, y se añadieron docstrings detallados en funciones internas para documentar el comportamiento frente a casos límite (como `os.scandir` y la resolución de rutas), mejorando la mantenibilidad del código sin alterar su lógica funcional.
+- `2026-08-08T04:50:52` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación y robustez de `trim_working_set` añadiendo type hints faltantes, eliminando el uso de `import` interno innecesario, y clarificando la validación de estados del proceso para asegurar que solo se intente actuar sobre procesos activos y no protegidos.
 - `2026-08-08T04:41:38` **healthscore.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo mediante la adición de docstrings estructurados con tipado claro, la clarificación del propósito de los cálculos auxiliares y la estandarización de las interfaces de las funciones de normalización para asegurar una documentación técnica coherente con el enfoque exigido.
 - `2026-08-08T04:40:21` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del pipeline de procesamiento mediante docstrings enriquecidos con la complejidad algorítmica y el flujo lógico de las etapas de filtrado, facilitando el mantenimiento a futuro.
 - `2026-08-08T04:39:57` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `walk_files` y `summarize` mediante la adición de docstrings técnicos detallados, especificando el manejo de errores y la lógica de filtrado para que otros desarrolladores comprendan rápidamente las restricciones de seguridad y el comportamiento ante excepciones.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-08T04:10:18` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` capturando excepciones específicas de `ctypes` y validando la integridad del handle antes de proceder, reemplazando la captura genérica `Exception` para evitar efectos secundarios imprevistos durante la manipulación de procesos.
 - `2026-08-08T04:09:53` **main.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez en la gestión de excepciones de `main.py` mediante un bloque `try-except` más específico en el método `_flush_logs` y la implementación de una validación preventiva en `_tab_factory` para evitar errores de ejecución si un constructor de pestaña falla o está ausente, protegiendo así la estabilidad general de la interfaz gráfica.
 - `2026-08-08T04:08:53` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` implementando una validación de seguridad contra divisiones por cero en el cálculo del `_NORM_FACTOR` y asegurando que la suma de pesos sea válida antes de cualquier cálculo, evitando comportamientos indefinidos ante configuraciones corruptas.
-- `2026-08-08T03:59:40` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de hash (`hash_file` y `partial_hash`) centralizando la validación de acceso al archivo, asegurando que un error en la apertura o lectura no genere retornos inesperados y manteniendo la integridad mediante el chequeo de seguridad `is_protected_path` incluso si el archivo es modificado durante la ejecución.
-- `2026-08-08T03:59:32` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `summarize` capturando fallos en `Path.relative_to` y `Path.resolve` que podrían ocurrir ante accesos concurrentes o cambios en el sistema de archivos durante la iteración, además de validar que los resultados intermedios de los heaps no contengan entradas inválidas.
-- `2026-08-08T03:59:06` **browser.py** (manejo de errores y validación de entradas): Reforcé la robustez de `directory_size` y `_sum_directory_recursive` validando explícitamente los parámetros y capturando excepciones de sistema de forma más granular para evitar que rutas inválidas o errores de permisos detengan la ejecución del escáner.

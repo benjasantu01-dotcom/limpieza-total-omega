@@ -190,16 +190,20 @@ def _is_valid_quarantine_path(path: Path, root: Path) -> TypeGuard[Path]:
 def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
     """
     Realiza validaciones de seguridad estrictas antes de mover un archivo a la cuarentena.
+    Incluye comprobaciones de integridad de ruta, permisos de sistema y colisiones.
     """
+    # 1. Validación de formato de ruta
     if ":" in source_path.name.replace(source_path.drive, ""):
         raise UnsafePathError(f"Ruta con flujos de datos alternos no permitida: {source_path}")
 
     if ".." in source_path.parts or "\0" in str(source_path) or any(c in str(source_path.name) for c in "<>\"|?*"):
         raise UnsafePathError(f"Ruta con caracteres maliciosos o navegación prohibida: {source_path.name}")
     
+    # 2. Verificación de puntos de reparse (evitar recursión o acceso a rutas fuera del scope)
     if source_path.is_symlink() or (hasattr(source_path, 'is_junction') and source_path.is_junction()):
         raise UnsafePathError(f"Operación denegada en punto de reparse: {source_path}")
 
+    # 3. Check de atributos de sistema (Windows)
     try:
         if os.name == 'nt':
             import ctypes
@@ -209,6 +213,7 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
     except Exception:
         pass
 
+    # 4. Verificaciones de estado del archivo y rutas protegidas
     if not source_path.is_file():
         raise UnsafePathError(f"Solo se permiten archivos regulares: {source_path}")
         
@@ -218,6 +223,7 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
     if is_protected_path(dest_dir):
         raise UnsafePathError(f"Directorio de cuarentena protegido o inválido: {dest_dir}")
     
+    # 5. Prevención de colisiones en el sandbox
     if _is_valid_quarantine_path(source_path, dest_dir):
         raise UnsafePathError(f"El archivo ya reside en la carpeta de cuarentena: {source_path}")
     
@@ -231,6 +237,7 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
         except OSError:
             pass
 
+    # 6. Validaciones finales de seguridad de escritura y exclusividad
     ensure_safe_to_modify(source_path, allow_sensitive=True)
     
     if _is_file_locked(source_path):

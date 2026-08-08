@@ -17,7 +17,7 @@ import logging
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional, Final, Callable, Union, TypeAlias, NamedTuple, Dict
+from typing import List, Optional, Final, Callable, Union, TypeAlias, NamedTuple, Dict, Iterator
 
 from safety import is_safe_to_modify, ensure_safe_to_modify
 
@@ -144,11 +144,11 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     found: List[JunkFile] = []
 
     def _walk_dir(base_path: str) -> None:
+        """Recorre recursivamente directorios ignorando enlaces y rutas restringidas."""
         try:
-            with os.scandir(base_path) as it:
-                for entry in it:
+            with os.scandir(base_path) as iterator:
+                for entry in iterator:
                     try:
-                        # Ignorar enlaces simbólicos y puntos de reparse para evitar bucles
                         if entry.is_symlink():
                             continue
                         
@@ -159,7 +159,7 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
                             stat = entry.stat()
                             entry_path: Path = Path(entry.path)
                             
-                            if entry_path.suffix.lower() in _LOWER_JUNK_EXTS and _is_valid_candidate(entry_path):
+                            if _is_valid_candidate(entry_path):
                                 found.append(JunkFile(
                                     path=entry_path,
                                     size_bytes=stat.st_size,
@@ -173,9 +173,9 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     for d in dirs:
         if isinstance(d, str):
             try:
-                p: Path = Path(d).expanduser().resolve()
-                if p.exists() and p.is_dir() and is_safe_to_modify(p):
-                    _walk_dir(str(p))
+                resolved_path: Path = Path(d).expanduser().resolve()
+                if resolved_path.exists() and resolved_path.is_dir() and is_safe_to_modify(resolved_path):
+                    _walk_dir(str(resolved_path))
             except (RuntimeError, OSError, ValueError):
                 continue
     return found
@@ -220,7 +220,6 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         dest: Path = Path(review_dir).expanduser().resolve()
         ensure_safe_to_modify(dest)
         dest.mkdir(parents=True, exist_ok=True)
-        # Verificación explícita contra reparse points post-resolución
         if dest.is_symlink() or not dest.is_dir():
             raise ValueError("Destino de revisión inválido o punto de reparse detectado.")
     except (OSError, RuntimeError, PermissionError) as e:
@@ -238,7 +237,6 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             if not is_safe_to_modify(current_abs):
                 continue
             
-            # Prevenir colisiones de jerarquía o recursión
             if current_abs == dest or dest in current_abs.parents or current_abs.parent == dest:
                 continue
             
@@ -267,7 +265,6 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
 
     try:
         dest: Path = Path(review_dir).expanduser().resolve()
-        # Validación estricta de la ruta destino antes de iterar
         if not dest.exists() or not dest.is_dir() or dest.is_symlink() or not is_safe_to_modify(dest):
             return 0
     except (RuntimeError, OSError, ValueError):
@@ -276,7 +273,6 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     count: int = 0
     for f in dest.iterdir():
         try:
-            # Asegurar que solo borramos archivos no vinculados y permitidos por safety
             if f.is_file() and not f.is_symlink() and is_safe_to_modify(f):
                 f.unlink()
                 count += 1

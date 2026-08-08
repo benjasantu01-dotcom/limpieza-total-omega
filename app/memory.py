@@ -28,13 +28,14 @@ import re
 import subprocess
 import time
 import math
+import ctypes
 from functools import lru_cache
 from dataclasses import dataclass, field
 from typing import List, Tuple, Optional, Dict, TYPE_CHECKING, TypeVar, TypeAlias
 from safety import is_protected_path
 
 if TYPE_CHECKING:
-    import ctypes
+    from ctypes import wintypes
 
 _T = TypeVar("_T", int, float)
 BytesValue: TypeAlias = int
@@ -201,8 +202,6 @@ def _read_windows_snapshot() -> MemorySnapshot:
     Invoca la API Win32 'GlobalMemoryStatusEx' vía ctypes.
     Es la forma estándar y precisa de consultar memoria en Windows.
     """
-    import ctypes
-
     class MEMORYSTATUSEX(ctypes.Structure):
         _fields_ = [
             ("dwLength", ctypes.c_ulong),
@@ -334,6 +333,7 @@ def _is_system_process(pid: int) -> bool:
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
     Solicita al S.O. reducir el Working Set de un proceso.
+    Solo disponible en entornos Windows con privilegios suficientes.
     """
     if os.name != "nt":
         return False, "Solo disponible en Windows."
@@ -346,24 +346,26 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if target_pid == os.getpid() or _is_system_process(target_pid):
         return False, "Operación denegada: PID crítico o protegido."
     
-    import ctypes
     kernel32 = ctypes.windll.kernel32
     psapi = ctypes.windll.psapi
     
+    # Intentar abrir el proceso con los permisos necesarios
     handle = kernel32.OpenProcess(REQUIRED_ACCESS, False, target_pid)
-    if not handle or handle == 0:
+    if not handle:
         return False, "Acceso denegado: permisos insuficientes o el proceso ya no existe."
     
     try:
+        # Verificar integridad: el ejecutable no debe estar en una ruta protegida
         buf = ctypes.create_unicode_buffer(2048)
         bytes_copied = psapi.GetModuleFileNameExW(handle, 0, buf, 2048)
         if bytes_copied > 0:
             path_str = buf.value
             if not path_str or is_protected_path(path_str):
-                return False, "Operación denegada: el ejecutable está en una ruta protegida."
+                return False, "Operación denegada: ejecutable en ruta protegida."
         else:
-            return False, "Operación denegada: no se pudo verificar la integridad del proceso."
+            return False, "Operación denegada: no se pudo verificar el ejecutable."
 
+        # Verificar si el proceso sigue activo antes de actuar
         exit_code = ctypes.c_ulong()
         if not kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)) or exit_code.value != 259:
             return False, "El proceso seleccionado ya no está activo."
