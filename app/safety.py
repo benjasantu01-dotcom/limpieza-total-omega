@@ -11,6 +11,7 @@ import os
 import stat
 import re
 import ctypes
+import sys
 from pathlib import Path
 from typing import Union, Iterable, TypeAlias, Final
 from functools import lru_cache
@@ -232,6 +233,9 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
 
     if base_dir and not is_within_directory(p, base_dir, allow_equal=True):
         raise UnsafePathError("Operación bloqueada: intento de acceso fuera del directorio base.")
+    
+    if is_within_directory(p, Path.cwd(), allow_equal=True):
+        raise UnsafePathError("Operación bloqueada: el archivo pertenece al directorio de ejecución.")
 
     str_val = str(p)
     if _has_invalid_chars(str_val) or _is_reserved_device_name(p.stem):

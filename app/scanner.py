@@ -80,11 +80,12 @@ class Scanner:
             return
         
         try:
+            # Resolución defensiva para evitar path traversal
             path_obj = Path(entry.path).resolve()
+            if not str(path_obj).startswith(str(self.base_root)):
+                return
             
             # Validación de seguridad defensiva
-            if not (self.base_root == path_obj or self.base_root in path_obj.parents):
-                return
             if is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
                 return
 
