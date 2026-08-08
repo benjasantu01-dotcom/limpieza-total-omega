@@ -1237,13 +1237,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             
             try:
                 item = quarantine.get_item(raw_id)
-                # Validar existencia de atributos clave antes de acceder
                 if not item or not hasattr(item, 'original_path'):
-                    raise AttributeError("Manifiesto de cuarentena corrupto o incompleto")
+                    raise AttributeError("Manifiesto de cuarentena corrupto")
                 
-                # Validación de seguridad explícita antes de mover al destino original
                 if not self._is_safe_path(item.original_path):
-                    self.log(f"Error: La ruta original {item.original_path} está protegida.", "Cuarentena")
+                    self.log(f"Error: Ruta original {item.original_path} está protegida.", "Cuarentena")
                     return
                 
                 destino = quarantine.restore_item(raw_id)
@@ -1323,7 +1321,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             messagebox.showwarning("Error", "Ingresá un PID numérico válido.")
             return
 
-        # Protección básica contra procesos críticos del SO
         if pid < 100:
             messagebox.showerror("Bloqueado", "PID de sistema protegido.")
             return
@@ -1332,11 +1329,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         def task():
+            if not memory_mod.process_exists(pid):
+                self.log(f"Error: El proceso {pid} no existe.", "Memoria")
+                return
             try:
-                # Validar existencia del proceso antes de intentar operar
-                if not memory_mod.process_exists(pid):
-                    self.log(f"Error: El proceso {pid} no existe.", "Memoria")
-                    return
                 ok, mensaje = memory_mod.trim_working_set(pid)
                 self.log(("OK: " if ok else "Sin efecto: ") + mensaje, "Memoria")
             except Exception as e:
@@ -1480,7 +1476,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """Genera el reporte de elementos de inicio."""
         def task():
             self.set_status("Leyendo programas de inicio...")
-            # Limpiar caché viejo de inicio si existiera
             self._invalidate_cache("startup")
             self._get_cached("startup", startup_mod.list_startup_entries)
             self.log_lines(startup_mod.summarize(), "Inicio")
@@ -1574,7 +1569,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             except Exception:
                 continue
         
-        # Aplicar validación de entradas numéricas antes de guardar
         valores["duplicados_tamano_minimo_kb"] = self._validate_numeric_setting(
             self.min_dup_entry.get() if hasattr(self, 'min_dup_entry') else None, 64
         )

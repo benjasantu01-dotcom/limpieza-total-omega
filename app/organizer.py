@@ -148,6 +148,7 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
             with os.scandir(base_path) as it:
                 for entry in it:
                     try:
+                        # Ignorar enlaces simbólicos y puntos de reparse para evitar bucles
                         if entry.is_symlink():
                             continue
                         

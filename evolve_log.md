@@ -1453,3 +1453,13 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-08-08T01:26:15` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `hash_file` ante archivos bloqueados o en uso por otros procesos mediante la adición de `try-except` sobre el acceso al buffer de lectura, asegurando que el proceso no se interrumpa ante errores de E/S dinámicos.
 - `2026-08-08T01:26:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-08T01:26:15` Corrida terminada. Total usado hoy: 36.
+- `2026-08-08T01:35:00` Arrancando corrida. Quedan hoy ~264 peticiones objetivo.
+- `2026-08-08T01:35:02` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-08T01:35:34` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `compute_score` frente a configuraciones inválidas introduciendo un chequeo de integridad en `_validate_weights` para evitar divisiones por cero y asegurando que las divisiones en las funciones de `score` siempre tengan un divisor mayor a cero mediante el uso de constantes de seguridad explícitas (guard guards).
+- `2026-08-08T01:35:38` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-08T01:36:41` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-08-08T01:37:46` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Mejoré la robustez de `on_trim_process` y `on_restore_quarantine` mediante el uso de `is_safe_path` y validaciones previas de existencia del recurso para evitar excepciones no controladas al interactuar con rutas que podrían haber cambiado o desaparecido durante la ejecución asíncrona.
+- `2026-08-08T01:38:12` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-08-08T01:38:19` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `scan_for_junk` añadiendo un filtro para descartar puntos de reparse (Junctions/Symlinks de sistema) durante la iteración recursiva, evitando así bucles infinitos en estructuras complejas de Windows y accesos indebidos a rutas fuera del alcance deseado.
+- `2026-08-08T01:38:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-08T01:38:19` Corrida terminada. Total usado hoy: 40.
