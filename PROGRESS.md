@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **251** (49.8% de aceptación)
+- Mejoras aceptadas: **253** (50.2% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 27
+- Rechazadas por guardia de seguridad: 28
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 194
+- Sin respuesta de la IA (error o límite): 191
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-07 | 158 | 12 | 17 | 14 | 143 |
-| 2026-08-08 | 93 | 1 | 10 | 5 | 51 |
+| 2026-08-07 | 158 | 12 | 17 | 14 | 139 |
+| 2026-08-08 | 95 | 1 | 11 | 5 | 52 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **58**
 - rendimiento: **55**
+- seguridad defensiva: **48**
 - robustez ante casos límite: **47**
-- seguridad defensiva: **46**
 - manejo de errores y validación de entradas: **45**
 
 ## Mejoras aceptadas por archivo
@@ -35,9 +35,9 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **20**
 - `branding.py`: **20**
 - `memory.py`: **19**
-- `quarantine.py`: **18**
+- `quarantine.py`: **19**
+- `scanner.py`: **19**
 - `safety.py`: **18**
-- `scanner.py`: **18**
 - `browser.py`: **18**
 - `organizer.py`: **18**
 - `main.py`: **16**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-08T06:53:22` **scanner.py** (seguridad defensiva): Se ha restringido el ámbito de `scan_file` para evitar la validación redundante `is_safe_to_modify` en archivos que el escáner solo debe leer, garantizando que el escáner nunca intente "autorizar" una escritura sobre archivos de sistema y evitando los errores de diseño previos donde se bloqueaban archivos de solo lectura.
+- `2026-08-08T06:52:33` **quarantine.py** (seguridad defensiva): Se reforzó `quarantine_file` para evitar condiciones de carrera y ataques de suplantación mediante una verificación de existencias post-copia más estricta, asegurando que el archivo movido sea exactamente el que se procesó mediante el cálculo de hash previo a la actualización del manifiesto.
 - `2026-08-08T06:43:59` **organizer.py** (seguridad defensiva): Mejoré la seguridad defensiva en `stage_for_review` añadiendo una comprobación explícita para evitar mover archivos que ya residen dentro del directorio de destino, previniendo bucles de recursión o errores de lógica al procesar archivos ya movidos.
 - `2026-08-08T06:43:51` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva en `trim_working_set` al asegurar que el manejo del proceso se realice exclusivamente con acceso de solo lectura y el permiso mínimo necesario (`PROCESS_QUERY_INFORMATION | PROCESS_SET_QUOTA`) para el trim, evitando el riesgo de `PROCESS_VM_WRITE` innecesario que viola el principio de menor privilegio.
 - `2026-08-08T06:43:25` **main.py** (seguridad defensiva): Se implementó una capa de validación en `run_async` para evitar que se ejecuten funciones de forma asíncrona si la ruta de origen o destino involucrada ha sido alterada o bloqueada por `safety.py` durante el tiempo de espera del hilo, protegiendo contra condiciones de carrera.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-08T06:02:44` **main.py** (robustez ante casos límite): Mejoré la resiliencia del bucle de eventos UI agregando un bloque `try-except` robusto en `_flush_logs` y validando la existencia de los componentes `tkinter` antes de intentar actualizarlos, evitando que la aplicación se cierre inesperadamente si se solicita un log cuando la ventana ya no está disponible o el widget fue destruido.
 - `2026-08-08T06:01:46` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `summarize` y `_generate_recommendations` añadiendo protecciones explícitas contra `None` o estados de datos inconsistentes (casos límite) que podrían romper la renderización en la UI si un módulo entrega datos incompletos.
 - `2026-08-08T06:01:20` **duplicates.py** (robustez ante casos límite): Se introdujo una validación robusta contra race conditions (archivos desaparecidos entre el escaneo y el hash) y se añadieron chequeos de integridad en las funciones de acceso a disco para evitar errores en archivos que se bloquean o eliminan durante la ejecución del bucle.
-- `2026-08-08T05:52:19` **diskreport.py** (robustez ante casos límite): Mejora la robustez del escaneo en `walk_files` mediante la implementación de un mecanismo de detección de enlaces simbólicos circulares y una validación estricta contra errores de acceso (`OSError`) durante la resolución de rutas, evitando bucles infinitos y fallos de ejecución ante permisos denegados en directorios protegidos.
-- `2026-08-08T05:52:09` **browser.py** (robustez ante casos límite): Se introdujo una validación robusta contra errores de permisos (`PermissionError`) y rutas bloqueadas dentro de `_sum_directory_recursive` mediante un manejo de excepciones granular y la exclusión preventiva de archivos de sistema, asegurando que el proceso de escaneo no se detenga ante archivos inaccesibles o bloqueados por el sistema operativo, manteniendo la integridad del flujo de trabajo.

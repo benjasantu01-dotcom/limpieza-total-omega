@@ -358,9 +358,17 @@ def quarantine_file(
         if temp_dest.exists():
              _safe_unlink(temp_dest)
         shutil.copy2(source_path, temp_dest)
+        
+        # Validación post-copia obligatoria antes de reemplazar y borrar el original
         if temp_dest.stat().st_size != file_size:
             raise RuntimeError("La copia de seguridad no coincide en tamaño.")
+        
         os.replace(temp_dest, destination)
+        
+        # Verificar la presencia física antes de destruir el original
+        if not destination.exists():
+            raise RuntimeError("Error de escritura durante la puesta en cuarentena.")
+            
         _safe_unlink(source_path)
     except Exception as e:
         if temp_dest.exists():

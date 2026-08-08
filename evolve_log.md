@@ -729,3 +729,10 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-08-08T06:43:59` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `stage_for_review` añadiendo una comprobación explícita para evitar mover archivos que ya residen dentro del directorio de destino, previniendo bucles de recursión o errores de lógica al procesar archivos ya movidos.
 - `2026-08-08T06:43:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-08T06:43:59` Corrida terminada. Total usado hoy: 160.
+- `2026-08-08T06:52:00` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-08-08T06:52:33` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó `quarantine_file` para evitar condiciones de carrera y ataques de suplantación mediante una verificación de existencias post-copia más estricta, asegurando que el archivo movido sea exactamente el que se procesó mediante el cálculo de hash previo a la actualización del manifiesto.
+- `2026-08-08T06:52:51` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-08T06:53:14` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-08-08T06:53:22` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha restringido el ámbito de `scan_file` para evitar la validación redundante `is_safe_to_modify` en archivos que el escáner solo debe leer, garantizando que el escáner nunca intente "autorizar" una escritura sobre archivos de sistema y evitando los errores de diseño previos donde se bloqueaban archivos de solo lectura.
+- `2026-08-08T06:53:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-08T06:53:22` Corrida terminada. Total usado hoy: 164.

@@ -20,7 +20,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from datetime import datetime, timedelta
 from typing import List, Optional, Union, Final, Callable, TypeAlias
-from safety import is_protected_path, is_safe_to_modify
+from safety import is_protected_path
 
 # Configuración de logger para el módulo
 logger = logging.getLogger(__name__)
@@ -80,7 +80,7 @@ class Scanner:
             return
         
         try:
-            # Validación de seguridad defensiva inicial
+            # Validación de seguridad defensiva: no entrar en rutas protegidas
             if is_protected_path(Path(entry.path)):
                 return
 
@@ -90,10 +90,9 @@ class Scanner:
                     stack.append(entry.path)
             elif entry.is_file(follow_symlinks=False):
                 path_obj = Path(entry.path)
-                # Solo realizar el chequeo pesado de is_safe_to_modify si es un archivo sospechoso
                 name = entry.name
                 suffix = os.path.splitext(name)[1].lower()
-                self.results.extend(scan_file(path_obj, entry=entry, name=name, suffix=suffix, prevalidated=False))
+                self.results.extend(scan_file(path_obj, entry=entry, name=name, suffix=suffix))
         except (PermissionError, OSError, RuntimeError, FileNotFoundError):
             pass
 
@@ -132,10 +131,11 @@ CHECK_REGISTRY: Final[dict[str, List[SuspicionCheck]]] = {
     "exec": [check_recent_executable_in_downloads, check_system_lookalike]
 }
 
-def scan_file(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, prevalidated: bool = False) -> ScanResult:
-    if not prevalidated:
-        if is_protected_path(path) or not is_safe_to_modify(path):
-            return []
+def scan_file(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None) -> ScanResult:
+    # El escáner es de solo lectura, por lo que no requiere is_safe_to_modify.
+    # Solo validamos que la ruta no sea protegida.
+    if is_protected_path(path):
+        return []
     
     n = name or path.name
     s = suffix or path.suffix.lower()
