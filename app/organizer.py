@@ -17,7 +17,7 @@ import logging
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional, Final, Callable, Union, TypeAlias, NamedTuple, Dict, Iterator
+from typing import List, Optional, Final, Callable, Union, TypeAlias, NamedTuple, Dict
 
 from safety import is_safe_to_modify, ensure_safe_to_modify
 
@@ -88,7 +88,12 @@ class JunkFile:
     @property
     def is_junk_extension(self) -> bool:
         """Verifica si la extensión está dentro de la lista de candidatos JUNK_EXTENSIONS."""
-        return self.path.suffix.lower() in _LOWER_JUNK_EXTS
+        return _is_junk_path(self.path)
+
+
+def _is_junk_path(path: Path) -> bool:
+    """Valida si el archivo posee una extensión categorizada como 'basura'."""
+    return path.suffix.lower() in _LOWER_JUNK_EXTS
 
 
 def _generate_unique_target(target: Path) -> Path:
@@ -155,7 +160,7 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
                         if entry.is_dir(follow_symlinks=False):
                             if _is_allowed_directory(entry.name):
                                 _walk_dir(entry.path)
-                        elif Path(entry.name).suffix.lower() in _LOWER_JUNK_EXTS:
+                        elif _is_junk_path(Path(entry.name)):
                             stat = entry.stat()
                             entry_path: Path = Path(entry.path)
                             
@@ -234,7 +239,6 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             if not current_abs.exists() or not current_abs.is_file():
                 continue
             
-            # Evitar procesar archivos que ya están en la carpeta de destino o subdirectorios
             if dest in current_abs.parents:
                 continue
             

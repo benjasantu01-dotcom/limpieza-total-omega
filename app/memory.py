@@ -166,7 +166,7 @@ def parse_linux_meminfo(text: str) -> MemorySnapshot:
 
 
 def _is_valid_process_row(parts: List[str]) -> bool:
-    """Valida que una fila CSV de proceso tenga columnas Name, PID y WorkingSet (int)."""
+    """Valida formato CSV: Name, PID, WorkingSet. Verifica que PID/WorkingSet sean enteros positivos."""
     return (len(parts) >= 3 and 
             parts[1].strip().isdigit() and 
             parts[2].strip().isdigit() and 
@@ -175,8 +175,8 @@ def _is_valid_process_row(parts: List[str]) -> bool:
 
 def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]:
     """
-    Interpreta el output CSV crudo de 'Get-Process' (PowerShell).
-    Retorna una lista ordenada por consumo (descendente) de objetos ProcessMemory.
+    Parsea el output CSV generado por 'Get-Process' de PowerShell.
+    Retorna lista de objetos ProcessMemory ordenados descendentemente por consumo.
     """
     if not text:
         return []
@@ -199,8 +199,8 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
 
 def _read_windows_snapshot() -> MemorySnapshot:
     """
-    Invoca la API Win32 'GlobalMemoryStatusEx' vía ctypes.
-    Es la forma estándar y precisa de consultar memoria en Windows.
+    Consulta la memoria física del sistema usando la API Win32 GlobalMemoryStatusEx.
+    Devuelve un MemorySnapshot con los valores totales y disponibles en bytes.
     """
     class MEMORYSTATUSEX(ctypes.Structure):
         _fields_ = [
@@ -227,8 +227,8 @@ def _read_windows_snapshot() -> MemorySnapshot:
 
 def read_snapshot() -> MemorySnapshot:
     """
-    Punto de entrada unificado para obtener el estado de memoria actual.
-    Detecta OS y delega la lógica de lectura cruda a funciones específicas.
+    Orquestador para obtener el estado de memoria según la plataforma.
+    Delegado a métodos de lectura específicos (Win32 API o /proc/meminfo).
     """
     if os.name == "nt":
         try:
@@ -251,8 +251,8 @@ def read_snapshot() -> MemorySnapshot:
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     """
-    Retorna los procesos más pesados. Implementa una caché de 5s para evitar
-    la sobrecarga de lanzar procesos hijos de PowerShell constantemente.
+    Retorna los procesos con mayor consumo de RAM. Usa una caché de 5 segundos
+    para mitigar el costo de ejecución de comandos PowerShell externos.
     """
     if os.name != "nt":
         return []
@@ -260,7 +260,6 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     now = time.time()
     ts, cached_processes = _PROCESS_CACHE["data"]
     
-    # Si la caché tiene datos recientes, retornamos sin llamar al sistema
     if now - ts < 5.0 and cached_processes:
         return cached_processes[:limit]
 
@@ -284,8 +283,8 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
 
 def pressure_level(snapshot: MemorySnapshot) -> str:
     """
-    Clasifica el estado de presión basándose en el % de RAM libre.
-    Retorna un identificador (ok, info, warning, danger) para el reporte.
+    Categoriza la salud de la memoria según el porcentaje disponible.
+    Devuelve etiquetas: 'ok', 'info', 'warning', 'danger'.
     """
     if not isinstance(snapshot, MemorySnapshot) or snapshot.total <= 0:
         return "info"
@@ -298,8 +297,8 @@ def pressure_level(snapshot: MemorySnapshot) -> str:
 
 def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] = None) -> List[str]:
     """
-    Transforma un MemorySnapshot y una lista de procesos en líneas de texto
-    listas para ser renderizadas en la interfaz (UI).
+    Genera el informe de diagnóstico en texto para ser renderizado en la UI.
+    Recibe un snapshot de memoria y, opcionalmente, una lista de procesos críticos.
     """
     if not isinstance(snapshot, MemorySnapshot) or snapshot.total <= 0:
         return ["No se pudo leer el estado de la memoria en este sistema."]
@@ -328,14 +327,18 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
 
 
 def _is_system_process(pid: int) -> bool:
-    """Verifica si el PID es crítico (kernel/system) para prevenir manipulación."""
+    """Verifica si el PID corresponde a un proceso del sistema para evitar intervención."""
     return pid in SYSTEM_CRITICAL_PIDS or pid <= 100
 
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
-    Solicita al S.O. reducir el Working Set de un proceso.
-    Solo disponible en entornos Windows con privilegios suficientes.
+    Solicita al S.O. la reducción del Working Set de un proceso objetivo.
+    
+    Restricciones: 
+      - Solo disponible en Windows.
+      - Valida que el proceso no sea del sistema.
+      - Verifica que el ejecutable asociado no resida en rutas protegidas.
     """
     if os.name != "nt":
         return False, "Solo disponible en Windows."
@@ -351,18 +354,15 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     kernel32 = ctypes.windll.kernel32
     psapi = ctypes.windll.psapi
     
-    # Abrimos solo con los permisos estrictamente necesarios para consultar y trimar
     handle = kernel32.OpenProcess(SAFE_ACCESS, False, target_pid)
     if not handle:
         return False, "Acceso denegado: permisos insuficientes o el proceso ya no existe."
     
     try:
-        # 1. Verificar si el proceso sigue activo y estable
         exit_code = ctypes.c_ulong()
         if not kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)) or exit_code.value != 259:
             return False, "El proceso seleccionado ya no está activo."
 
-        # 2. Verificar integridad de la ruta antes de actuar
         buf = ctypes.create_unicode_buffer(2048)
         bytes_copied = psapi.GetModuleFileNameExW(handle, 0, buf, 2048)
         if bytes_copied > 0:
@@ -372,7 +372,6 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         else:
             return False, "Operación denegada: no se pudo verificar la ubicación del ejecutable."
 
-        # 3. Ejecutar la liberación tras todas las verificaciones
         if not psapi.EmptyWorkingSet(handle):
             error_code = kernel32.GetLastError()
             return False, f"Error al intentar liberar memoria (código {error_code})."

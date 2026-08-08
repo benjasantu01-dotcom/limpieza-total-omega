@@ -36,6 +36,8 @@ __all__ = [
 ]
 
 # --- UMBRALES DE NORMALIZACIÓN ---
+# Estos valores definen el punto de saturación (0 puntos) para cada métrica.
+# Son configuraciones de negocio que determinan qué consideramos "saturado".
 JUNK_LIMIT_MB: Final[float] = 5000.0          
 DUPLICATE_LIMIT_MB: Final[float] = 2000.0     
 STARTUP_LIMIT_COUNT: Final[int] = 20          
@@ -43,11 +45,14 @@ RAM_IDEAL_PERCENT: Final[float] = 35.0
 DISK_IDEAL_PERCENT: Final[float] = 25.0       
 
 # --- UMBRALES DE ADVERTENCIA (ratios de 0.0 a 1.0) ---
+# Determinan cuándo se genera una recomendación proactiva para el usuario.
 WARN_THRESHOLD_HIGH: Final[float] = 0.9
 WARN_THRESHOLD_MED: Final[float] = 0.8
 WARN_THRESHOLD_LOW: Final[float] = 0.6
 
 # --- PESOS DE CALIFICACIÓN ---
+# Define la importancia relativa de cada componente en el score final.
+# La suma debe permitir una distribución equilibrada hacia el 100%.
 WEIGHTS: Final[Dict[str, int]] = {
     "seguridad": 30,
     "disco": 20,
