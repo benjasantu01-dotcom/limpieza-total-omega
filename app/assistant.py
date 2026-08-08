@@ -232,8 +232,9 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
 
     # Integrar valores extra solo si son numéricos y existen en la estructura
     for k, v in extra.items():
-        if hasattr(ctx, k) and isinstance(v, (int, float)):
-            setattr(ctx, k, _val(v))
+        if hasattr(ctx, k) and isinstance(v, (int, float, bool)):
+            if not isinstance(v, bool):
+                setattr(ctx, k, _val(v))
 
     return ctx
 

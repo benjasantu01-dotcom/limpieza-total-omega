@@ -6,47 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **236** (46.8% de aceptación)
+- Mejoras aceptadas: **234** (46.4% de aceptación)
 - Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 26
-- Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 207
+- Sin cambios (nada sustancial que mejorar): 20
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-06 | 37 | 1 | 4 | 4 | 20 |
+| 2026-08-06 | 34 | 1 | 4 | 3 | 20 |
 | 2026-08-07 | 158 | 12 | 17 | 14 | 149 |
-| 2026-08-08 | 41 | 1 | 5 | 3 | 38 |
+| 2026-08-08 | 42 | 1 | 5 | 3 | 41 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **57**
+- legibilidad y documentación: **54**
 - rendimiento: **51**
 - seguridad defensiva: **51**
 - robustez ante casos límite: **43**
-- manejo de errores y validación de entradas: **34**
+- manejo de errores y validación de entradas: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **21**
-- `duplicates.py`: **20**
-- `diskreport.py`: **19**
+- `assistant.py`: **20**
 - `quarantine.py`: **19**
 - `scanner.py`: **19**
-- `assistant.py`: **19**
 - `branding.py`: **19**
+- `duplicates.py`: **19**
+- `diskreport.py`: **18**
 - `organizer.py`: **17**
 - `safety.py`: **17**
 - `memory.py`: **16**
-- `healthscore.py`: **15**
 - `browser.py`: **15**
+- `healthscore.py`: **14**
 - `main.py`: **14**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-08T03:51:30` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `build_context` al añadir validación explícita de tipos y rangos para todos los atributos del `SystemContext`, asegurando que valores `None` o tipos incorrectos no propaguen errores silenciosos a los motores de respuesta.
 - `2026-08-08T02:27:21` **settings.py** (seguridad defensiva): Reforcé la seguridad defensiva en `settings.py` añadiendo una validación explícita mediante `is_safe_to_modify` antes de intentar crear o manipular directorios en `save()`, evitando cualquier posibilidad de escritura en rutas protegidas por sistema.
 - `2026-08-08T02:27:11` **scanner.py** (seguridad defensiva): Se reforzó `process_entry` para prevenir ataques de trayectoria (path traversal) y desbordamiento de límites verificando que `entry.path` esté contenido dentro de `self.base_root` antes de cualquier operación de resolución de rutas, asegurando que el escáner no pueda escapar del directorio raíz mediante enlaces simbólicos o rutas maliciosas.
 - `2026-08-08T02:26:49` **safety.py** (seguridad defensiva): Mejoré la seguridad defensiva en `ensure_safe_to_modify` añadiendo una comprobación explícita para evitar que se manipulen archivos que se encuentran en el directorio de trabajo del proceso actual, previniendo así posibles ataques de "auto-modificación" o interferencia con el propio binario de la aplicación.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-08T01:55:54` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `save` frente a archivos de configuración bloqueados o en uso al añadir una verificación explícita de `ruta.exists()` antes de intentar la escritura atómica, evitando errores de `OSError` en entornos con permisos restrictivos o bloqueos de acceso a archivos.
 - `2026-08-08T01:46:32` **scanner.py** (robustez ante casos límite): Se implementó un manejo robusto de excepciones y validación de atributos en `check_system_lookalike` y `check_recent_executable_in_downloads` para evitar fallos durante el acceso a archivos bloqueados por el sistema o con metadatos inaccesibles, asegurando que la heurística no se interrumpa ante errores transitorios de E/S.
 - `2026-08-08T01:46:24` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez de `is_protected_path` ante errores de acceso (como `PermissionError` al intentar resolver una ruta inaccesible) y se ha añadido una validación explícita para la longitud máxima de caracteres (MAX_PATH) en la normalización inicial para evitar errores inesperados en el sistema de archivos de Windows.
-- `2026-08-08T01:38:19` **organizer.py** (robustez ante casos límite): Se reforzó la robustez de `scan_for_junk` añadiendo un filtro para descartar puntos de reparse (Junctions/Symlinks de sistema) durante la iteración recursiva, evitando así bucles infinitos en estructuras complejas de Windows y accesos indebidos a rutas fuera del alcance deseado.
