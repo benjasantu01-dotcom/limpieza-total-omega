@@ -708,3 +708,10 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-08-08T06:12:31` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
 - `2026-08-08T06:12:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-08T06:12:31` Corrida terminada. Total usado hoy: 148.
+- `2026-08-08T06:21:21` Arrancando corrida. Quedan hoy ~152 peticiones objetivo.
+- `2026-08-08T06:21:46` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha añadido un manejo robusto de excepciones y validación de atributos en `check_recent_executable_in_downloads` para prevenir el fallo del escáner ante archivos con fechas de modificación inválidas (posible corrupción en el sistema de archivos) o errores de acceso al metadata.
+- `2026-08-08T06:22:11` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se ha añadido un robusto manejo de excepciones y un filtro de seguridad adicional en `_Validators.path` y `_Validators.str` para evitar que rutas mal formadas, simbólicas o de longitud excesiva causen fallos en tiempo de ejecución, además de asegurar que `load` maneje archivos de configuración vacíos o inexistentes de manera resiliente.
+- `2026-08-08T06:22:35` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-08-08T06:22:52` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la protección de `_call_gemini` para asegurar que el contexto enviado sea tratado como texto plano y no pueda ser interpretado erróneamente como una ruta o comando, además de garantizar que `is_protected_path` actúe como un guardia preventivo ante cualquier posible fuga de datos sensibles en el contexto serializado.
+- `2026-08-08T06:22:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-08T06:22:52` Corrida terminada. Total usado hoy: 152.

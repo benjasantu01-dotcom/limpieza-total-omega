@@ -108,9 +108,11 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, name
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, hours: int = RECENT_FILE_THRESHOLD_HOURS) -> Optional[Suspicion]:
     try:
         st = entry.stat() if entry else path.lstat()
-        if datetime.now() - datetime.fromtimestamp(st.st_mtime) < timedelta(hours=hours):
+        mtime = st.st_mtime
+        if mtime <= 0: return None
+        if datetime.now() - datetime.fromtimestamp(mtime) < timedelta(hours=hours):
             return Suspicion(path, f"Ejecutable reciente detectado (modificado hace menos de {hours}h)", "info")
-    except (OSError, AttributeError, FileNotFoundError, OverflowError):
+    except (OSError, AttributeError, ValueError, OverflowError):
         pass
     return None
 

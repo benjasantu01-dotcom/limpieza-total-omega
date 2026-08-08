@@ -453,6 +453,7 @@ def _call_gemini(
     safe_q: str = _sanitize_query(question)
     safe_ctx: str = context_text[:_MAX_TEXT_LENGTH]
     
+    # Guardia de seguridad: prohibido enviar si el contexto contiene cualquier rastro de ruta
     if not _ensure_safe_text(safe_q) or not _ensure_safe_text(safe_ctx) or is_protected_path(safe_ctx):
         return None
         
@@ -466,7 +467,7 @@ def _call_gemini(
         req = urllib.request.Request(
             _ENDPOINT.format(model=model) + f"?key={api_key}", 
             data=payload, 
-            headers={"Content-Type": "application/json"}, 
+            headers={"Content-Type": "application/json; charset=utf-8"}, 
             method="POST"
         )
         
@@ -481,9 +482,10 @@ def _call_gemini(
         if not isinstance(candidates, list) or not candidates: return None
         
         parts = candidates[0].get("content", {}).get("parts", [])
-        text = "".join(p.get("text", "") for p in parts if isinstance(p, dict))
+        text = "".join(str(p.get("text", "")) for p in parts if isinstance(p, dict))
         
         final_text = text.strip()[:_MAX_TEXT_LENGTH]
+        # Validamos que la respuesta recibida no contenga estructuras sospechosas
         return final_text if _ensure_safe_text(final_text) else None
     except (json.JSONDecodeError, urllib.error.URLError, TypeError, KeyError, ValueError, OSError):
         return None

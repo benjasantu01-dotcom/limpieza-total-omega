@@ -128,6 +128,7 @@ class _Validators:
             path_str = str(val).strip()
             if not path_str: return ""
             path = Path(path_str).expanduser().resolve()
+            if path.is_symlink(): return None
             return str(path) if is_safe_to_modify(str(path)) else None
         except (OSError, RuntimeError, ValueError, TypeError, PermissionError):
             return None
@@ -141,7 +142,7 @@ class _Validators:
         if key == "tema": return text.lower() if text.lower() in VALID_THEMES else None
         if key == "acento": return text.lower() if text.lower() in VALID_ACCENTS else None
         if key == "ultima_carpeta": return _Validators.path(text)
-        return text if len(text) <= 256 else None
+        return text if len(text) <= 512 else None
 
 _VALIDATOR_MAP: Final[dict[str, Callable[[str, Any], Any]]] = {
     "tema": _Validators.str, "acento": _Validators.str, "ultima_carpeta": _Validators.str, 
@@ -158,8 +159,11 @@ def settings_path(path_or_base: PathLike | None = None) -> Path:
     
     key = str(path_or_base)
     if key not in _path_cache:
-        base = Path(key).expanduser().resolve()
-        _path_cache[key] = (base / SETTINGS_FILE) if is_safe_to_modify(str(base)) else (SETTINGS_DIR / SETTINGS_FILE)
+        try:
+            base = Path(key).expanduser().resolve()
+            _path_cache[key] = (base / SETTINGS_FILE) if is_safe_to_modify(str(base)) else (SETTINGS_DIR / SETTINGS_FILE)
+        except (OSError, RuntimeError):
+            _path_cache[key] = SETTINGS_DIR / SETTINGS_FILE
     return _path_cache[key]
 
 def validate(values: Any) -> AppSettings:
@@ -178,13 +182,15 @@ def load(path_or_base: PathLike | None = None) -> AppSettings:
         return _cached_settings.copy()
     
     try:
-        if ruta.exists() and 0 < ruta.stat().st_size <= MAX_SETTINGS_SIZE:
-            with open(ruta, "r", encoding="utf-8") as f:
-                data = json.load(f)
-            if isinstance(data, dict):
-                _cached_settings = validate(data)
-                _current_path = ruta
-                return _cached_settings.copy()
+        if ruta.exists():
+            size = ruta.stat().st_size
+            if 0 < size <= MAX_SETTINGS_SIZE:
+                with open(ruta, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                if isinstance(data, dict):
+                    _cached_settings = validate(data)
+                    _current_path = ruta
+                    return _cached_settings.copy()
     except (OSError, PermissionError, json.JSONDecodeError, UnicodeDecodeError):
         pass
     
