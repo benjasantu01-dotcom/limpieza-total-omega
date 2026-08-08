@@ -629,3 +629,10 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-08-08T04:20:08` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `scan_file` y `check_system_lookalike` validando estrictamente la presencia de `path.name` y evitando errores de tipo `TypeError` o `AttributeError` al manejar rutas que podrían estar incompletas o malformadas durante iteraciones críticas del escáner.
 - `2026-08-08T04:20:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-08T04:20:08` Corrida terminada. Total usado hoy: 104.
+- `2026-08-08T04:28:57` Arrancando corrida. Quedan hoy ~196 peticiones objetivo.
+- `2026-08-08T04:29:23` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: assistant_api_key, assistant_enabled, describe, get, reset, update
+- `2026-08-08T04:29:46` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-08T04:30:39` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `build_context`, extrayendo la lógica repetitiva de validación de métricas en un método privado `_safe_assign` que unifica el manejo de tipos, rangos y valores por defecto, eliminando redundancias.
+- `2026-08-08T04:30:53` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Se introdujeron docstrings descriptivos y type hints más precisos en las funciones de manipulación gráfica (`draw_logo`, `draw_gradient_bar`, `draw_ring`) para aclarar las expectativas de las coordenadas y las transformaciones geométricas, facilitando el mantenimiento técnico de la UI.
+- `2026-08-08T04:30:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-08T04:30:53` Corrida terminada. Total usado hoy: 108.

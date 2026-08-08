@@ -326,8 +326,16 @@ def logo_ascii() -> str:
 """
 
 
-def draw_logo(canvas: Any, size: int = 56, canvas_x: int = 0, canvas_y: int = 0) -> None:
-    """Renderiza el logo vectorial en un canvas de Tkinter."""
+def draw_logo(canvas: Any, size: int = 56, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
+    """
+    Renderiza el logo vectorial en un canvas de Tkinter.
+    
+    Args:
+        canvas: Widget canvas de tkinter.
+        size: Tamaño base en píxeles.
+        canvas_x: Coordenada X de origen superior.
+        canvas_y: Coordenada Y de origen superior.
+    """
     if not hasattr(canvas, "create_polygon"): return
     try:
         s = max(0.1, float(size) / 128)
@@ -361,9 +369,17 @@ def draw_logo(canvas: Any, size: int = 56, canvas_x: int = 0, canvas_y: int = 0)
 
 
 def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
-                      canvas_x: int = 0, canvas_y: int = 0,
+                      canvas_x: float = 0.0, canvas_y: float = 0.0,
                       stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
-    """Dibuja una franja horizontal con degradado optimizado mediante bloques."""
+    """
+    Dibuja una franja horizontal con degradado optimizado mediante bloques verticales.
+    
+    Args:
+        canvas: Objeto canvas.
+        width: Ancho total en píxeles.
+        height: Altura de la línea.
+        canvas_x/y: Offset de posición.
+    """
     if not hasattr(canvas, "create_line"): return
     try:
         ancho = max(1, int(width))
@@ -380,10 +396,18 @@ def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
 
 
 def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
-              canvas_x: int = 0, canvas_y: int = 0, thickness: int = 14,
+              canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14,
               track: Optional[HexColor] = None,
               fill: Optional[HexColor] = None) -> None:
-    """Renderiza un anillo circular dinámico indicando progreso."""
+    """
+    Renderiza un anillo circular dinámico indicando progreso.
+    
+    Args:
+        canvas: Widget canvas.
+        percent: Porcentaje (0.0 a 100.0).
+        size: Diámetro total.
+        thickness: Grosor de la línea del anillo.
+    """
     if not hasattr(canvas, "create_arc"): return
     try:
         val_f = float(percent)

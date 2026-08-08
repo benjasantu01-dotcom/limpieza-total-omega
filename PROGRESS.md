@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **234** (46.4% de aceptación)
+- Mejoras aceptadas: **233** (46.2% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 26
+- Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 19
 - Sin respuesta de la IA (error o límite): 211
 
@@ -16,37 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-06 | 24 | 1 | 3 | 2 | 20 |
+| 2026-08-06 | 21 | 1 | 3 | 2 | 19 |
 | 2026-08-07 | 158 | 12 | 17 | 14 | 149 |
-| 2026-08-08 | 52 | 1 | 6 | 3 | 42 |
+| 2026-08-08 | 54 | 1 | 7 | 3 | 43 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **51**
-- rendimiento: **48**
-- legibilidad y documentación: **47**
+- legibilidad y documentación: **49**
+- rendimiento: **45**
 - manejo de errores y validación de entradas: **45**
 - robustez ante casos límite: **43**
 
 ## Mejoras aceptadas por archivo
 
-- `duplicates.py`: **20**
 - `settings.py`: **20**
+- `assistant.py`: **20**
+- `branding.py`: **20**
 - `quarantine.py`: **19**
 - `scanner.py`: **19**
-- `assistant.py`: **19**
-- `branding.py`: **19**
+- `duplicates.py`: **19**
 - `diskreport.py`: **18**
 - `safety.py`: **17**
 - `browser.py`: **16**
 - `memory.py`: **16**
 - `organizer.py`: **16**
-- `healthscore.py`: **15**
-- `main.py`: **15**
+- `healthscore.py`: **14**
+- `main.py`: **14**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-08T04:30:53` **branding.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints más precisos en las funciones de manipulación gráfica (`draw_logo`, `draw_gradient_bar`, `draw_ring`) para aclarar las expectativas de las coordenadas y las transformaciones geométricas, facilitando el mantenimiento técnico de la UI.
+- `2026-08-08T04:30:39` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `build_context`, extrayendo la lógica repetitiva de validación de métricas en un método privado `_safe_assign` que unifica el manejo de tipos, rangos y valores por defecto, eliminando redundancias.
 - `2026-08-08T04:20:08` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `scan_file` y `check_system_lookalike` validando estrictamente la presencia de `path.name` y evitando errores de tipo `TypeError` o `AttributeError` al manejar rutas que podrían estar incompletas o malformadas durante iteraciones críticas del escáner.
 - `2026-08-08T04:20:00` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ensure_safe_to_modify` ante posibles fallos silenciosos al validar la integridad de archivos, reemplazando la captura genérica de excepciones por capturas específicas y asegurando que las comprobaciones de estado no se vean alteradas por permisos de solo lectura en directorios padres.
 - `2026-08-08T04:19:15` **quarantine.py** (manejo de errores y validación de entradas): Mejora la robustez del manejo de errores en `quarantine_file` añadiendo una validación explícita para evitar que `shutil.copy2` falle silenciosamente o deje estados inconsistentes, asegurando que el directorio de destino sea accesible y grabable antes de intentar cualquier operación de archivo.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-08T03:51:30` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `build_context` al añadir validación explícita de tipos y rangos para todos los atributos del `SystemContext`, asegurando que valores `None` o tipos incorrectos no propaguen errores silenciosos a los motores de respuesta.
 - `2026-08-08T02:27:21` **settings.py** (seguridad defensiva): Reforcé la seguridad defensiva en `settings.py` añadiendo una validación explícita mediante `is_safe_to_modify` antes de intentar crear o manipular directorios en `save()`, evitando cualquier posibilidad de escritura en rutas protegidas por sistema.
 - `2026-08-08T02:27:11` **scanner.py** (seguridad defensiva): Se reforzó `process_entry` para prevenir ataques de trayectoria (path traversal) y desbordamiento de límites verificando que `entry.path` esté contenido dentro de `self.base_root` antes de cualquier operación de resolución de rutas, asegurando que el escáner no pueda escapar del directorio raíz mediante enlaces simbólicos o rutas maliciosas.
-- `2026-08-08T02:26:49` **safety.py** (seguridad defensiva): Mejoré la seguridad defensiva en `ensure_safe_to_modify` añadiendo una comprobación explícita para evitar que se manipulen archivos que se encuentran en el directorio de trabajo del proceso actual, previniendo así posibles ataques de "auto-modificación" o interferencia con el propio binario de la aplicación.
-- `2026-08-08T02:17:57` **quarantine.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `quarantine.py` implementando una validación explícita para evitar que `shutil.copy2` sobreescriba accidentalmente archivos existentes durante el proceso de cuarentena, añadiendo una comprobación previa mediante `exists()` y `samefile()` en el destino.

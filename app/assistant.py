@@ -192,49 +192,45 @@ def _ensure_safe_text(text: Any) -> bool:
             return False
     return True
 
+def _safe_assign(obj: SystemContext, attr: str, val: Any, cast: Callable = float, min_val: float = 0.0, max_val: float = float('inf')) -> None:
+    """Asigna un valor a un atributo de SystemContext tras validar tipo, rango y finitud."""
+    try:
+        clean = cast(val)
+        if math.isfinite(clean):
+            setattr(obj, attr, max(min_val, min(clean, max_val)))
+    except (ValueError, TypeError):
+        pass
+
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
     """
     Transforma fuentes de datos externas o parciales en una estructura SystemContext validada.
     """
     ctx = SystemContext()
 
-    def _val(v: Any, default: float = 0.0, cast: Callable = float) -> Any:
-        try:
-            if v is None or isinstance(v, (list, dict)): return default
-            val = float(v)
-            if not math.isfinite(val): return default
-            return cast(val)
-        except (ValueError, TypeError):
-            return default
-
-    # Validar fuente de métricas si es un objeto con atributos
     if metrics is not None and isinstance(metrics, object) and not isinstance(metrics, (list, dict)):
-        ctx.junk_mb = max(0.0, _val(getattr(metrics, "junk_mb", 0.0)))
-        ctx.suspicious_count = int(max(0, _val(getattr(metrics, "suspicious_count", 0), 0, int)))
-        ctx.suspicious_warnings = int(max(0, _val(getattr(metrics, "suspicious_warnings", 0), 0, int)))
-        ctx.memory_available_percent = max(0.0, min(_val(getattr(metrics, "memory_available_percent", 0.0)), 100.0))
-        ctx.disk_free_percent = max(0.0, min(_val(getattr(metrics, "disk_free_percent", 0.0)), 100.0))
-        ctx.duplicate_mb = max(0.0, _val(getattr(metrics, "duplicate_mb", 0.0)))
-        ctx.startup_count = int(max(0, _val(getattr(metrics, "startup_count", 0), 0, int)))
-        ctx.quarantined_count = int(max(0, _val(getattr(metrics, "quarantined_count", 0), 0, int)))
-        ctx.browser_cache_mb = max(0.0, _val(getattr(metrics, "browser_cache_mb", 0.0)))
-        ctx.memory_total_gb = max(0.0, _val(getattr(metrics, "memory_total_gb", 0.0)))
+        _safe_assign(ctx, "junk_mb", getattr(metrics, "junk_mb", 0.0))
+        _safe_assign(ctx, "suspicious_count", getattr(metrics, "suspicious_count", 0), int)
+        _safe_assign(ctx, "suspicious_warnings", getattr(metrics, "suspicious_warnings", 0), int)
+        _safe_assign(ctx, "memory_available_percent", getattr(metrics, "memory_available_percent", 0.0), max_val=100.0)
+        _safe_assign(ctx, "disk_free_percent", getattr(metrics, "disk_free_percent", 0.0), max_val=100.0)
+        _safe_assign(ctx, "duplicate_mb", getattr(metrics, "duplicate_mb", 0.0))
+        _safe_assign(ctx, "startup_count", getattr(metrics, "startup_count", 0), int)
+        _safe_assign(ctx, "quarantined_count", getattr(metrics, "quarantined_count", 0), int)
+        _safe_assign(ctx, "browser_cache_mb", getattr(metrics, "browser_cache_mb", 0.0))
+        _safe_assign(ctx, "memory_total_gb", getattr(metrics, "memory_total_gb", 0.0))
         ctx.analyzed = True
 
-    # Validar fuente de salud si es un objeto con atributos
     if health is not None and isinstance(health, object) and not isinstance(health, (list, dict)):
         raw_score = getattr(health, "score", None)
         if raw_score is not None:
-            ctx.score = int(max(0, min(_val(raw_score, 0, int), 100)))
+            _safe_assign(ctx, "score", raw_score, int, max_val=100)
         grade = getattr(health, "grade", "")
         ctx.grade = str(grade) if isinstance(grade, (str, int, float)) else ""
         ctx.analyzed = True
 
-    # Integrar valores extra solo si son numéricos y existen en la estructura
     for k, v in extra.items():
-        if hasattr(ctx, k) and isinstance(v, (int, float, bool)):
-            if not isinstance(v, bool):
-                setattr(ctx, k, _val(v))
+        if hasattr(ctx, k) and isinstance(v, (int, float)):
+            _safe_assign(ctx, k, v)
 
     return ctx
 
@@ -258,7 +254,6 @@ def context_as_text(context: SystemContext) -> str:
             f"Inicio: {context.startup_count} items"
         )
         
-        # Validación de seguridad defensiva final: asegurar que no haya rutas
         if not _ensure_safe_text(texto_serializado):
             return "Error de seguridad en la serialización de contexto."
         return _CONTROL_CHARS_REGEX.sub(" ", _PATH_REGEX.sub(" ", texto_serializado))
