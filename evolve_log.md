@@ -622,3 +622,10 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-08-08T04:10:30` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
 - `2026-08-08T04:10:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-08T04:10:30` Corrida terminada. Total usado hoy: 100.
+- `2026-08-08T04:18:44` Arrancando corrida. Quedan hoy ~200 peticiones objetivo.
+- `2026-08-08T04:19:15` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez del manejo de errores en `quarantine_file` añadiendo una validación explícita para evitar que `shutil.copy2` falle silenciosamente o deje estados inconsistentes, asegurando que el directorio de destino sea accesible y grabable antes de intentar cualquier operación de archivo.
+- `2026-08-08T04:19:34` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-08-08T04:20:00` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `ensure_safe_to_modify` ante posibles fallos silenciosos al validar la integridad de archivos, reemplazando la captura genérica de excepciones por capturas específicas y asegurando que las comprobaciones de estado no se vean alteradas por permisos de solo lectura en directorios padres.
+- `2026-08-08T04:20:08` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `scan_file` y `check_system_lookalike` validando estrictamente la presencia de `path.name` y evitando errores de tipo `TypeError` o `AttributeError` al manejar rutas que podrían estar incompletas o malformadas durante iteraciones críticas del escáner.
+- `2026-08-08T04:20:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-08T04:20:08` Corrida terminada. Total usado hoy: 104.

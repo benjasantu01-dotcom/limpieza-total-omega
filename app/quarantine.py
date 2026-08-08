@@ -317,6 +317,9 @@ def quarantine_file(
     
     _validate_isolation_request(source_path, dest_dir)
     
+    if not os.access(dest_dir, os.W_OK):
+        raise PermissionError(f"Directorio de cuarentena no tiene permisos de escritura: {dest_dir}")
+    
     try:
         file_size = source_path.stat().st_size
     except OSError as e:

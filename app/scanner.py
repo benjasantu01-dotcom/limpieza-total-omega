@@ -122,7 +122,9 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, name
     try:
         if is_protected_path(path):
             return None
-        target = name or path.name
+        target = name or (path.name if path else None)
+        if not target:
+            return None
         if target.lower() in SYSTEM_LOOKALIKES and SYSTEM32_LOWER not in str(path.parent).lower():
             return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
     except (OSError, RuntimeError, AttributeError):
@@ -136,13 +138,16 @@ CHECK_REGISTRY: Final[dict[str, List[SuspicionCheck]]] = {
 }
 
 def scan_file(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, prevalidated: bool = False) -> ScanResult:
-    if is_protected_path(path):
+    if not path or is_protected_path(path):
         return []
         
     if not prevalidated and not is_safe_to_modify(path):
         return []
     
     n = name or path.name
+    if not n:
+        return []
+        
     s = suffix or (path.suffix.lower() if path.suffix else "")
     findings: ScanResult = []
     

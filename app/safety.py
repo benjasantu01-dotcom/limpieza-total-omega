@@ -130,22 +130,24 @@ def _check_file_integrity(p: Path) -> None:
     """
     Validación exhaustiva de integridad antes de escritura.
     """
-    if any([
-        not os.access(p, os.W_OK),
-        _is_reparse_point(p),
-        _is_readonly(p),
-        _is_file_in_use(p),
-        _is_system_or_hidden(p),
-        (p.is_file() and p.stat().st_nlink > 1)
-    ]):
-        raise UnsafePathError("Operación bloqueada: archivo inaccesible, protegido o sistema.")
+    # Verificamos acceso explícito al archivo, no solo al directorio padre
+    try:
+        if any([
+            not os.access(p, os.W_OK),
+            _is_reparse_point(p),
+            _is_readonly(p),
+            _is_file_in_use(p),
+            _is_system_or_hidden(p),
+            (p.is_file() and p.stat().st_nlink > 1)
+        ]):
+            raise UnsafePathError(f"Operación bloqueada: archivo {p.name} inaccesible o protegido.")
+    except (OSError, PermissionError) as e:
+        raise UnsafePathError(f"Error al verificar integridad de {p.name}: {e}")
 
 
 @lru_cache(maxsize=1024)
 def _is_readonly(path: Path) -> bool:
     """Verifica el bit S_IWRITE en el stat del sistema de archivos."""
-    if not path.exists():
-        return True
     try:
         return not bool(path.stat().st_mode & stat.S_IWRITE)
     except (OSError, PermissionError):
@@ -262,7 +264,9 @@ def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> bool:
     try:
         ensure_safe_to_modify(path, allow_sensitive=allow_sensitive)
         return True
-    except (UnsafePathError, TypeError, ValueError, OSError):
+    except UnsafePathError:
+        return False
+    except (TypeError, ValueError, OSError):
         return False
 
 
