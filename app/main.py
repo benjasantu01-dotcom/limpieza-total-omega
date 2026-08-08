@@ -1321,6 +1321,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             messagebox.showwarning("Error", "Ingresá un PID numérico válido.")
             return
 
+        # Defensa: No permitir tocar procesos de sistema (usualmente PID < 100 en Windows)
         if pid < 100:
             messagebox.showerror("Bloqueado", "PID de sistema protegido.")
             return

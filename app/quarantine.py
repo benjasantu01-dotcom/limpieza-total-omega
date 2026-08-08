@@ -190,12 +190,6 @@ def _is_valid_quarantine_path(path: Path, root: Path) -> TypeGuard[Path]:
 def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
     """
     Realiza validaciones de seguridad estrictas antes de mover un archivo a la cuarentena.
-    
-    Verifica:
-    1. Que la ruta no sea un flujo alterno (ADS) o ruta malformada.
-    2. Que no sea una unión o symlink (evitar escapes).
-    3. Que el archivo no sea de sistema/oculto según atributos de SO.
-    4. Que la operación ocurra dentro del mismo dispositivo físico.
     """
     if ":" in source_path.name.replace(source_path.drive, ""):
         raise UnsafePathError(f"Ruta con flujos de datos alternos no permitida: {source_path}")
@@ -226,7 +220,7 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
     
     if _is_valid_quarantine_path(source_path, dest_dir):
         raise UnsafePathError(f"El archivo ya reside en la carpeta de cuarentena: {source_path}")
-        
+    
     if source_path.drive != dest_dir.drive:
         raise UnsafePathError(f"Operación denegada: el archivo está en otro dispositivo o partición.")
 
@@ -307,11 +301,7 @@ def quarantine_file(
     reason: str = "Marcado como sospechoso",
     base: Union[str, Path] = DEFAULT_QUARANTINE_DIR,
 ) -> QuarantineItem:
-    """
-    Mueve un archivo a cuarentena de forma segura.
-    
-    Copia el archivo a una ruta protegida, verifica su integridad y actualiza el manifiesto.
-    """
+    """Mueve un archivo a cuarentena de forma segura."""
     if not source:
         raise ValueError("La ruta de origen no puede estar vacía.")
     
@@ -339,7 +329,6 @@ def quarantine_file(
     item_id = uuid.uuid4().hex[:12]
     safe_name = "".join(c for c in source_path.name if c.isalnum() or c in "._-")
     
-    # Prevenir nombres reservados de sistema (ej. CON, NUL) que cuelgan el OS
     name_no_ext = Path(safe_name).stem.upper()
     if name_no_ext in ("CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"):
         safe_name = f"q_{safe_name}"
@@ -352,6 +341,8 @@ def quarantine_file(
 
     temp_dest = destination.with_suffix(".tmp")
     try:
+        if temp_dest.exists():
+             _safe_unlink(temp_dest)
         shutil.copy2(source_path, temp_dest)
         if temp_dest.stat().st_size != file_size:
             raise RuntimeError("La copia de seguridad no coincide en tamaño.")
