@@ -22,14 +22,15 @@ from pathlib import Path
 from typing import Any, Final, TypeAlias, Literal, Mapping, Tuple, List, Optional, Union, TypedDict
 from types import MappingProxyType
 from functools import lru_cache
-from safety import is_safe_to_modify, ensure_safe_to_modify, is_protected_path
+from safety import is_safe_to_modify, ensure_safe_to_modify
 
 # Type Aliases para mejorar la legibilidad de la semántica de datos
 HexColor: TypeAlias = str
 SeverityLevel: TypeAlias = Literal["ok", "info", "warning", "danger"]
 GradeKey: TypeAlias = Literal["A", "B", "C", "D", "F"]
-# Estructura de estilo para severidad: (color_hex, etiqueta_legible)
+# Tupla que representa (color_hex, etiqueta_legible) para una severidad dada
 SeverityStyle: TypeAlias = Tuple[HexColor, str]
+# Tupla (R, G, B) con valores enteros de 0 a 255
 RGBTuple: TypeAlias = Tuple[int, int, int]
 
 class PaletteDict(TypedDict):
@@ -203,13 +204,13 @@ def score_color(score: Union[float, int, None]) -> HexColor:
 def bar(percent: Union[float, int, None], width: int = 24,
         filled: str = "\u2588", empty: str = "\u2591") -> str:
     """
-    Crea una representación visual de progreso en texto.
+    Crea una representación visual de barra de progreso en texto.
     
     Args:
         percent: Valor numérico (0-100).
-        width: Cantidad total de caracteres.
-        filled: Carácter para el relleno.
-        empty: Carácter para el vacío.
+        width: Cantidad total de caracteres de la barra.
+        filled: Carácter para representar el segmento completado.
+        empty: Carácter para representar el segmento pendiente.
     """
     try:
         valor = max(0.0, min(100.0, float(percent))) # type: ignore
@@ -222,7 +223,7 @@ def bar(percent: Union[float, int, None], width: int = 24,
 
 @lru_cache(maxsize=128)
 def _hex_to_rgb(value: HexColor) -> RGBTuple:
-    """Convierte un color hex (#RRGGBB) a una tupla de componentes (R, G, B)."""
+    """Convierte una cadena hexadecimal (#RRGGBB) a una tupla de componentes RGB."""
     if not isinstance(value, str) or len(value) != 7 or not value.startswith("#"):
         return (0, 0, 0)
     try:
@@ -233,7 +234,7 @@ def _hex_to_rgb(value: HexColor) -> RGBTuple:
 
 @lru_cache(maxsize=64)
 def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
-    """Interpola linealmente entre dos colores hex basado en una proporción (0.0 a 1.0)."""
+    """Realiza una interpolación lineal entre dos colores hex basado en un ratio (0.0 a 1.0)."""
     ratio = max(0.0, min(1.0, float(ratio)))
     r1, g1, b1 = _hex_to_rgb(start)
     r2, g2, b2 = _hex_to_rgb(end)
@@ -246,7 +247,7 @@ def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
 
 @lru_cache(maxsize=32)
 def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> List[HexColor]:
-    """Genera una secuencia de colores interpolados entre puntos de parada definidos."""
+    """Genera una secuencia de colores interpolados basada en múltiples puntos de parada."""
     cantidad = max(1, int(steps))
     if not stops: return [PALETTE["accent"]] * cantidad
     if len(stops) < 2: return [stops[0]] * cantidad
@@ -319,7 +320,7 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
 
 
 def logo_ascii() -> str:
-    """Retorna arte ASCII para la representación en registros de consola."""
+    """Retorna el logo en arte ASCII para registros de consola."""
     return r"""
    ___  __  __ ___ ___   _
   / _ \|  \/  | __/ __| /_\
@@ -386,7 +387,7 @@ def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
               track: Optional[HexColor] = None,
               fill: Optional[HexColor] = None) -> None:
     """
-    Renderiza un anillo circular dinámico indicando progreso.
+    Renderiza un anillo circular dinámico indicando progreso o estado numérico.
     """
     if not hasattr(canvas, "create_arc"): return
     try:

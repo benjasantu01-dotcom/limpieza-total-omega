@@ -143,10 +143,20 @@ def _is_excluded_file(name: str) -> bool:
 
 def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool]) -> int:
     """
-    Calcula el peso total mediante recorrido recursivo. 
-    Aplica exclusión estricta de junctions/symlinks para evitar bucles infinitos 
-    y recursión fuera del volumen del perfil. Ignora archivos en NEVER_TOUCH 
-    para preservar datos sensibles del usuario.
+    Calcula el tamaño acumulado de una carpeta de forma segura y recursiva.
+
+    Garantías de seguridad:
+    1. Salta enlaces simbólicos y junctions para prevenir bucles y escapes del volumen.
+    2. Excluye archivos definidos en `NEVER_TOUCH` (como cookies o login data).
+    3. Maneja excepciones de acceso (`OSError`, `PermissionError`) silenciosamente,
+       asegurando que el escáner continúe su ejecución sobre archivos legibles.
+
+    Args:
+        root_dir: Ruta absoluta del directorio raíz a analizar.
+        is_junction_fn: Callback para detectar puntos de reparse (junctions).
+
+    Returns:
+        Tamaño total en bytes de los archivos aptos para el cálculo.
     """
     total: int = 0
     try:
@@ -184,7 +194,7 @@ def directory_size(path: str | os.PathLike | None) -> int:
     except (OSError, PermissionError, RuntimeError):
         return 0
 
-    is_junction = getattr(os.path, 'isjunction', lambda _: False)
+    is_junction: Callable[[str], bool] = getattr(os.path, 'isjunction', lambda _: False)
     return _sum_directory_recursive(str(root_path), is_junction)
 
 

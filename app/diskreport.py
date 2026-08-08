@@ -105,6 +105,7 @@ class DriveUsage:
 def format_size(num: Union[int, float, None]) -> str:
     """
     Convierte bytes a una cadena legible (B, KB, MB, GB, TB).
+    Maneja entradas inválidas retornando "0 B".
     """
     if num is None:
         return "0 B"
@@ -167,6 +168,11 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Generador recursivo que recorre archivos bajo `directory`.
+    Implementa prevención de ciclos mediante inode tracking y omisión de carpetas 
+    protegidas o puntos de reparse (en Windows).
+    
+    Errores de acceso (PermissionError/OSError) son silenciados para permitir 
+    el escaneo parcial del árbol de directorios.
     """
     if not directory:
         return
@@ -196,6 +202,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                             
                         if os.name == 'nt':
                             st_attrs = file_entry.stat(follow_symlinks=False).st_file_attributes
+                            # 0x400: Reparse Point, 0x2: Hidden (opcional, criterio heurístico)
                             if (st_attrs & 0x400) or (st_attrs & 0x2): 
                                 continue
                             
@@ -220,7 +227,10 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 
 
 def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_protected: bool = True) -> List[FileEntry]:
-    """Retorna los archivos más grandes mediante un min-heap para eficiencia O(n log k)."""
+    """
+    Retorna los archivos más grandes mediante un min-heap para eficiencia O(n log k).
+    Ideal para mostrar rankings en la UI sin cargar todos los resultados en memoria.
+    """
     if not directory or limit <= 0:
         return []
     return heapq.nlargest(
@@ -231,7 +241,10 @@ def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_prot
 
 
 def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip_protected: bool = True) -> List[ExtensionUsage]:
-    """Calcula la ocupación total por extensión de archivo."""
+    """
+    Calcula la ocupación total por extensión de archivo.
+    Agrupa todos los archivos encontrados y retorna las N extensiones más pesadas.
+    """
     if not directory or limit <= 0:
         return []
     
@@ -250,7 +263,10 @@ def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip
 
 
 def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
-    """Agrupa recursivamente el peso de carpetas inmediatas usando contadores locales."""
+    """
+    Agrupa recursivamente el peso de carpetas inmediatas bajo el directorio base.
+    Utiliza un mapa de contadores local para sumarizar el peso de cada subdirectorio de primer nivel.
+    """
     if not directory or limit <= 0:
         return []
     
@@ -287,7 +303,7 @@ def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 
 
 def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -> List[str]:
-    """Genera reporte estructurado con agregación eficiente de datos."""
+    """Genera reporte estructurado con agregación eficiente de datos para texto/markdown."""
     if not directory: return ["Error: Ruta no proporcionada."]
     path_obj = Path(directory).expanduser().resolve()
     
