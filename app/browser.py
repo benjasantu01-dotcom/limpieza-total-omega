@@ -218,11 +218,16 @@ def detect_profiles(
         
     for base in bases:
         if not isinstance(base, Path): continue
+        real_base = base.resolve()
         for browser_name, relative_path_str in cache_paths.items():
             try:
-                candidate: Path = base.joinpath(*relative_path_str.split("\\")).resolve()
+                candidate: Path = real_base.joinpath(*relative_path_str.split("\\")).resolve()
                 
-                if _is_valid_cache_path(candidate, base):
+                # Verificación extra: asegurar que el candidato resuelto siga bajo el base original
+                if not str(candidate).startswith(str(real_base)):
+                    continue
+                
+                if _is_valid_cache_path(candidate, real_base):
                     size: int = _sum_directory_recursive(str(candidate), is_junction)
                     if size > 0:
                         found.append(BrowserCache(

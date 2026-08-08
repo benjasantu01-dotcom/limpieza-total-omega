@@ -192,6 +192,7 @@ def score_color(score: Union[float, int, None]) -> HexColor:
     """Asigna un color semántico basado en el valor numérico del puntaje (0-100)."""
     try:
         valor = float(score)  # type: ignore
+        if not (0 <= valor <= 100): raise ValueError
     except (TypeError, ValueError):
         return PALETTE["text_muted"]
     if valor >= 90: return PALETTE["success"]
@@ -397,7 +398,7 @@ def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
         valor = max(0.0, min(100.0, val_f))
         diametro = max(20, int(size))
         grosor = max(2, min(int(thickness), diametro // 2 - 1))
-    except (TypeError, ValueError): return
+    except (TypeError, ValueError, ZeroDivisionError): return
     
     color_fondo, color_avance = track or PALETTE["surface_alt"], fill or score_color(valor)
     borde = grosor / 2

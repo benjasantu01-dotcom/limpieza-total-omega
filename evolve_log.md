@@ -1020,3 +1020,65 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-08-08T10:07:06` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de `settings.py` evitando múltiples llamadas redundantes a `load()` y `settings_path()` en las funciones de acceso (`assistant_enabled`, `describe`) mediante la reutilización de la instancia ya cargada, y simplifiqué la lógica del validador de enteros mediante el uso de `dict.get` directo sin redundancias.
 - `2026-08-08T10:07:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-08T10:07:06` Corrida terminada. Total usado hoy: 240.
+- `2026-08-08T10:16:03` Arrancando corrida. Quedan hoy ~60 peticiones objetivo.
+- `2026-08-08T10:16:30` Tests FALLARON:
+```
+_____ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=============================== warnings summary ===============================
+app/startup.py:93
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:93: SyntaxWarning: invalid escape sequence '\P'
+    Analiza comandos tipo 'C:\Path\App.exe' /args.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed, 8 warnings in 0.95s
+
+```
+- `2026-08-08T10:16:30` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Optimizé la resolución de rutas en `_resolve_and_cache_path` usando `Path.exists()` solo cuando es estrictamente necesario, evitando múltiples llamadas a sistema de archivos (I/O) al reutilizar resultados del caché para rutas ya verificadas.
+- `2026-08-08T10:17:03` Tests FALLARON:
+```
+startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=True).junk_mb
+
+evolve/tests/test_assistant.py:234: AssertionError
+=============================== warnings summary ===============================
+app/startup.py:93
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:93: SyntaxWarning: invalid escape sequence '\P'
+    Analiza comandos tipo 'C:\Path\App.exe' /args.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_one - AssertionError: assert 0.0 == 100.0
+ +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0....0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=True).junk_mb
+1 failed, 298 passed, 8 warnings in 0.93s
+
+```
+- `2026-08-08T10:17:03` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `build_context` ante entradas malformadas o tipos inesperados mediante una validación explícita de `__dict__` y estructuras de datos, previniendo que atributos fuera de control del usuario o valores no numéricos corrompan el estado del `SystemContext`.
+- `2026-08-08T10:17:33` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se ha robustecido el manejo de rutas en `save_logo_svg` y el procesamiento de entradas en las funciones gráficas mediante una validación más estricta de tipos y condiciones de borde (como valores nulos o no finitos en `draw_ring` y `draw_logo`), asegurando que la app no falle ante valores inesperados en tiempo de ejecución.
+- `2026-08-08T10:17:42` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se reforzó la robustez ante casos límite en `detect_profiles` añadiendo una validación explícita para evitar que `candidate.joinpath` pueda generar rutas fuera del `base_path` mediante caracteres de escape (ej. rutas con `..`), asegurando que la resolución final se mantenga confinada en la jerarquía del perfil de usuario.
+- `2026-08-08T10:17:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-08T10:17:42` Corrida terminada. Total usado hoy: 244.

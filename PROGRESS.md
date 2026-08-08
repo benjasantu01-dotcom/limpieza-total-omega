@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **242** (48.0% de aceptación)
-- Rechazadas por tests: 7
+- Mejoras aceptadas: **243** (48.2% de aceptación)
+- Rechazadas por tests: 8
 - Rechazadas por guardia de seguridad: 26
-- Sin cambios (nada sustancial que mejorar): 20
+- Sin cambios (nada sustancial que mejorar): 18
 - Sin respuesta de la IA (error o límite): 209
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-07 | 112 | 6 | 12 | 12 | 122 |
-| 2026-08-08 | 130 | 1 | 14 | 8 | 87 |
+| 2026-08-07 | 111 | 5 | 12 | 10 | 122 |
+| 2026-08-08 | 132 | 3 | 14 | 8 | 87 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **63**
 - rendimiento: **51**
 - manejo de errores y validación de entradas: **50**
-- seguridad defensiva: **44**
-- robustez ante casos límite: **34**
+- seguridad defensiva: **43**
+- robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **21**
 - `assistant.py`: **21**
+- `branding.py`: **20**
 - `scanner.py`: **19**
-- `branding.py`: **19**
 - `duplicates.py`: **19**
 - `quarantine.py`: **18**
+- `browser.py`: **18**
 - `diskreport.py`: **18**
-- `organizer.py`: **17**
-- `browser.py`: **17**
 - `healthscore.py`: **17**
 - `memory.py`: **17**
 - `safety.py`: **17**
+- `organizer.py`: **16**
 - `main.py`: **15**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-08T10:17:42` **browser.py** (robustez ante casos límite): Se reforzó la robustez ante casos límite en `detect_profiles` añadiendo una validación explícita para evitar que `candidate.joinpath` pueda generar rutas fuera del `base_path` mediante caracteres de escape (ej. rutas con `..`), asegurando que la resolución final se mantenga confinada en la jerarquía del perfil de usuario.
+- `2026-08-08T10:17:33` **branding.py** (robustez ante casos límite): Se ha robustecido el manejo de rutas en `save_logo_svg` y el procesamiento de entradas en las funciones gráficas mediante una validación más estricta de tipos y condiciones de borde (como valores nulos o no finitos en `draw_ring` y `draw_logo`), asegurando que la app no falle ante valores inesperados en tiempo de ejecución.
 - `2026-08-08T10:07:06` **settings.py** (rendimiento): Optimicé el rendimiento de `settings.py` evitando múltiples llamadas redundantes a `load()` y `settings_path()` en las funciones de acceso (`assistant_enabled`, `describe`) mediante la reutilización de la instancia ya cargada, y simplifiqué la lógica del validador de enteros mediante el uso de `dict.get` directo sin redundancias.
 - `2026-08-08T10:06:58` **scanner.py** (rendimiento): Optimizé el rendimiento eliminando llamadas redundantes a `is_protected_path` y `path.suffix.lower()` dentro de `scan_file`, ya que `process_entry` ya filtra las rutas y prepara la información necesaria antes de invocar la lógica de escaneo.
 - `2026-08-08T09:56:42` **main.py** (rendimiento): Optimicé el sistema de caché implementando un `OrderedDict` con `move_to_end` para asegurar un comportamiento LRU (Least Recently Used) real, evitando el crecimiento indefinido de la memoria y mejorando la eficiencia de las búsquedas en el `_get_cached` al descartar explícitamente el elemento más antiguo (`popitem(last=False)`) cuando se alcanza el límite.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-08T09:26:33` **scanner.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `scan_file` mediante la refactorización de la lógica de aplicación de heurísticas, extrayendo el bucle de ejecución a una función privada dedicada y documentando explícitamente el contrato de los chequeos mediante Type Hints y un propósito claro.
 - `2026-08-08T09:26:26` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad de `safety.py` mediante la adición de docstrings estructuradas (siguiendo el estilo Google/NumPy para mayor legibilidad) y la clarificación de las responsabilidades de las funciones de chequeo mediante type hints adicionales, facilitando la auditoría de seguridad exigida.
 - `2026-08-08T09:25:42` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad del flujo en `quarantine.py` mediante la adición de docstrings estructurados, type hints explícitos en operaciones de retorno complejas y la estandarización de las descripciones de las validaciones de seguridad para mejorar la mantenibilidad técnica del módulo.
-- `2026-08-08T09:18:11` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación interna mediante docstrings más precisos en funciones críticas, se añadieron type hints para mejorar la claridad de las interfaces y se extrajo la lógica de filtrado de extensiones a una función dedicada para centralizar la validación de archivos "basura".
-- `2026-08-08T09:18:03` **memory.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings más precisos en las funciones de bajo nivel y corregí la ambigüedad en los tipos de los parámetros de `trim_working_set`, asegurando mayor claridad sobre las restricciones de seguridad y el manejo de recursos.
