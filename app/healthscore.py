@@ -201,23 +201,20 @@ def _generate_recommendations(m: SystemMetrics, ratios: ScoreMap) -> List[str]:
     recs: List[str] = []
     
     if ratios.get("seguridad", 1.0) < WARN_THRESHOLD_HIGH:
-        count = max(0, _to_int(m.suspicious_count))
-        recs.append(f"Revisá los {count} hallazgo(s) de seguridad; podés aislarlos en cuarentena sin borrarlos.")
+        recs.append(f"Revisá los {m.suspicious_count} hallazgo(s) de seguridad; podés aislarlos en cuarentena sin borrarlos.")
     if ratios.get("disco", 1.0) < WARN_THRESHOLD_LOW:
         recs.append(f"Queda {m.disk_free_percent:.1f}% de disco libre. Mirá el análisis de disco para ver qué ocupa más.")
     if ratios.get("memoria", 1.0) < WARN_THRESHOLD_LOW:
         recs.append("Memoria disponible baja: cerrá programas que no uses. Ojo, 'liberar RAM' no sirve, cerrar procesos sí.")
     if ratios.get("basura", 1.0) < WARN_THRESHOLD_MED:
-        recs.append(f"Hay unos {int(max(0.0, float(m.junk_mb)))} MB de archivos temporales para revisar.")
+        recs.append(f"Hay unos {int(m.junk_mb)} MB de archivos temporales para revisar.")
     if ratios.get("duplicados", 1.0) < WARN_THRESHOLD_MED:
-        recs.append(f"Podrías recuperar ~{int(max(0.0, float(m.duplicate_mb)))} MB eliminando copias duplicadas.")
+        recs.append(f"Podrías recuperar ~{int(m.duplicate_mb)} MB eliminando copias duplicadas.")
     if ratios.get("arranque", 1.0) < WARN_THRESHOLD_LOW:
-        count = max(0, _to_int(m.startup_count))
-        recs.append(f"{count} programas arrancan con Windows; desactivá los que no necesites desde el Administrador de tareas.")
+        recs.append(f"{m.startup_count} programas arrancan con Windows; desactivá los que no necesites desde el Administrador de tareas.")
     
     if m.quarantined_count > 0:
-        count = max(0, _to_int(m.quarantined_count))
-        recs.append(f"Tenés {count} archivo(s) en cuarentena esperando tu decisión.")
+        recs.append(f"Tenés {m.quarantined_count} archivo(s) en cuarentena esperando tu decisión.")
     
     return recs if recs else ["No hay nada urgente para hacer. El sistema está en buen estado."]
 
@@ -251,7 +248,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     
     # Cálculo ponderado utilizando el factor de normalización precalculado
     for area, weight in _WEIGHT_ITEMS:
-        score_val: float = raw_scores[area] * float(weight) * _NORM_FACTOR
+        score_val: float = raw_scores.get(area, 0.0) * float(weight) * _NORM_FACTOR
         if math.isfinite(score_val):
             breakdown[area] = int(score_val + 0.5)
             total_weighted_score += score_val
@@ -271,7 +268,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
 
 def summarize(result: HealthResult) -> List[str]:
     """Crea una representación textual legible de los resultados para la UI."""
-    if not isinstance(result, HealthResult) or not hasattr(result, 'breakdown'):
+    if not isinstance(result, HealthResult):
         return ["Error: Formato de resultado inválido."]
 
     lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]

@@ -374,9 +374,10 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
 
         # 3. Ejecutar la liberación tras todas las verificaciones
         if not psapi.EmptyWorkingSet(handle):
-            return False, "Error al intentar liberar memoria del proceso (posible falta de privilegios)."
+            error_code = kernel32.GetLastError()
+            return False, f"Error al intentar liberar memoria (código {error_code})."
         return True, f"Working set liberado. {TRIM_WARNING}"
-    except (ctypes.ArgumentError, MemoryError, OSError):
-        return False, "Ocurrió un error técnico al gestionar el proceso."
+    except (ctypes.ArgumentError, MemoryError, OSError) as e:
+        return False, f"Ocurrió un error técnico al gestionar el proceso: {str(e)}"
     finally:
         kernel32.CloseHandle(handle)

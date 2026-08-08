@@ -86,7 +86,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
         
     try:
         file_path = Path(path)
-        if not file_path.is_file() or is_protected_path(file_path):
+        if not file_path.exists() or not file_path.is_file() or is_protected_path(file_path):
             return None
         
         st = file_path.stat()
@@ -117,7 +117,7 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
         
     try:
         file_path = Path(path)
-        if not file_path.is_file() or is_protected_path(file_path):
+        if not file_path.exists() or not file_path.is_file() or is_protected_path(file_path):
             return None
 
         st = file_path.stat()
@@ -144,7 +144,7 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     for p in paths:
         if not isinstance(p, Path): continue
         try:
-            if p.is_file() and not is_protected_path(p):
+            if p.exists() and p.is_file() and not is_protected_path(p):
                 st = p.stat()
                 groups[st.st_size].append(p)
         except (OSError, PermissionError, RuntimeError):
@@ -166,7 +166,7 @@ def _collect_candidates(
     if directories is None: return temp_groups
     
     def _scan(root_path: Path) -> None:
-        if skip_protected and is_protected_path(root_path):
+        if not root_path.exists() or (skip_protected and is_protected_path(root_path)):
             return
         try:
             with os.scandir(root_path) as dir_iterator:
@@ -193,7 +193,7 @@ def _collect_candidates(
         if directory is None: continue
         try:
             path_obj = Path(directory)
-            if path_obj.is_dir():
+            if path_obj.exists() and path_obj.is_dir():
                 _scan(path_obj)
         except (OSError, PermissionError): continue
             
@@ -212,8 +212,8 @@ def _refine_by_hash(
     if paths is None: return groups_by_digest
     
     for path in paths:
-        if not isinstance(path, Path): continue
-        # Validación de seguridad defensiva previa al hash
+        if not isinstance(path, Path) or not path.exists(): continue
+        
         if path.is_file() and not is_protected_path(path):
             if digest := hash_func(path):
                 groups_by_digest[digest].append(path)
@@ -264,7 +264,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
 
     keepers: List[Tuple[float, int, Path]] = []
     for p in group.paths:
-        if not isinstance(p, Path): continue
+        if not isinstance(p, Path) or not p.exists(): continue
         try:
             if p.is_file() and not is_protected_path(p):
                 stat_info = p.stat()

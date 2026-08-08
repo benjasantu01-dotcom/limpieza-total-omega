@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **242** (48.0% de aceptación)
+- Mejoras aceptadas: **244** (48.4% de aceptación)
 - Rechazadas por tests: 8
-- Rechazadas por guardia de seguridad: 27
-- Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 210
+- Rechazadas por guardia de seguridad: 25
+- Sin cambios (nada sustancial que mejorar): 18
+- Sin respuesta de la IA (error o límite): 209
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-07 | 143 | 7 | 16 | 12 | 126 |
-| 2026-08-08 | 99 | 1 | 11 | 5 | 84 |
+| 2026-08-07 | 142 | 7 | 14 | 12 | 125 |
+| 2026-08-08 | 102 | 1 | 11 | 6 | 84 |
 
 ## Mejoras aceptadas por enfoque
 
 - rendimiento: **55**
-- legibilidad y documentación: **50**
 - seguridad defensiva: **49**
+- legibilidad y documentación: **49**
 - robustez ante casos límite: **47**
-- manejo de errores y validación de entradas: **41**
+- manejo de errores y validación de entradas: **44**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **22**
-- `settings.py`: **21**
+- `duplicates.py`: **21**
 - `branding.py`: **20**
-- `duplicates.py`: **20**
+- `settings.py`: **20**
 - `diskreport.py`: **19**
+- `memory.py`: **18**
 - `scanner.py`: **18**
 - `browser.py`: **17**
-- `memory.py`: **17**
+- `healthscore.py`: **17**
 - `organizer.py`: **17**
 - `safety.py`: **17**
 - `quarantine.py`: **17**
-- `healthscore.py`: **16**
 - `main.py`: **15**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-08T08:36:07` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez de `trim_working_set` validando el handle antes de usarlo y capturando errores de la API de Windows de forma explícita, siguiendo el enfoque de manejo de errores y validación de parámetros.
+- `2026-08-08T08:34:57` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` y `_generate_recommendations` validando explícitamente los datos de entrada contra `None` y tipos inesperados para evitar posibles `AttributeError` o comportamientos indeterminados en el flujo de cálculo.
+- `2026-08-08T08:34:31` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez y la seguridad defensiva mediante la validación estricta de tipos y la gestión explícita de estados en los procesos de IO y recolección, asegurando que `_collect_candidates` no procese valores nulos ni rutas inválidas antes de entrar en los bucles.
 - `2026-08-08T08:25:29` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `largest_folders` capturando errores específicos al intentar obtener metadatos de archivos (como `stat` fallando por bloqueos del sistema o permisos cambiantes), evitando que una excepción inesperada detenga el análisis completo de una carpeta.
 - `2026-08-08T08:24:58` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` utilizando una validación de rutas más precisa y añadiendo un manejo de excepciones exhaustivo para asegurar que el sistema no falle ante nombres de archivo inválidos o permisos denegados.
 - `2026-08-08T08:24:30` **assistant.py** (manejo de errores y validación de entradas): Mejora la robustez del manejo de errores en `build_context` y `context_as_text` mediante la validación explícita de tipos de datos en la deserialización de métricas, evitando fallos silenciosos o comportamiento inesperado ante entradas malformadas.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-08T06:42:20` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_generate_recommendations` validando la existencia de claves mediante `.get()` con valores predeterminados seguros y asegurando que las entradas de las métricas sean tratadas como números válidos antes de cualquier operación de formateo de strings.
 - `2026-08-08T06:33:39` **duplicates.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_collect_candidates` y `_refine_by_hash` mediante la validación redundante del estado de los archivos (`is_file()` y `is_protected_path`) antes de realizar operaciones de lectura, protegiendo contra condiciones de carrera y accesos indebidos a rutas que cambiaron de estado o permisos durante la ejecución del escaneo.
 - `2026-08-08T06:22:52` **assistant.py** (seguridad defensiva): Reforcé la protección de `_call_gemini` para asegurar que el contexto enviado sea tratado como texto plano y no pueda ser interpretado erróneamente como una ruta o comando, además de garantizar que `is_protected_path` actúe como un guardia preventivo ante cualquier posible fuga de datos sensibles en el contexto serializado.
-- `2026-08-08T06:22:11` **settings.py** (robustez ante casos límite): Se ha añadido un robusto manejo de excepciones y un filtro de seguridad adicional en `_Validators.path` y `_Validators.str` para evitar que rutas mal formadas, simbólicas o de longitud excesiva causen fallos en tiempo de ejecución, además de asegurar que `load` maneje archivos de configuración vacíos o inexistentes de manera resiliente.
-- `2026-08-08T06:21:46` **scanner.py** (robustez ante casos límite): Se ha añadido un manejo robusto de excepciones y validación de atributos en `check_recent_executable_in_downloads` para prevenir el fallo del escáner ante archivos con fechas de modificación inválidas (posible corrupción en el sistema de archivos) o errores de acceso al metadata.
-- `2026-08-08T06:12:04` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `quarantine_file` añadiendo una verificación de disponibilidad del sistema de archivos antes de la operación de copia, asegurando que el proceso pueda abortar limpiamente si la unidad de destino está en modo solo lectura o presenta fallos de E/S.
