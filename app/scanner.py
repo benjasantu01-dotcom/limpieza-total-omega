@@ -81,6 +81,7 @@ class Scanner:
             return
         
         try:
+            # Validar si el path es válido antes de resolver
             path_obj = Path(entry.path).resolve()
             
             # Validación de seguridad defensiva: no salir de la raíz base ni entrar en rutas protegidas
@@ -98,8 +99,8 @@ class Scanner:
                 name = entry.name
                 suffix = os.path.splitext(name)[1].lower()
                 self.results.extend(scan_file(path_obj, entry=entry, name=name, suffix=suffix))
-        except (PermissionError, OSError, RuntimeError):
-            logger.debug(f"Acceso denegado o error en entrada: {entry.path}")
+        except (PermissionError, OSError, RuntimeError) as e:
+            logger.debug(f"Acceso denegado o error en entrada {entry.path}: {e}")
 
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None) -> Optional[Suspicion]:
@@ -161,7 +162,7 @@ def scan_file(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[st
 
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
-    if not directory:
+    if directory is None:
         return []
         
     try:

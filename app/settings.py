@@ -222,8 +222,8 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
                 tf.flush()
                 os.fsync(tf.fileno())
             os.replace(temp_path, ruta)
-        except Exception:
-            if temp_path.exists(): temp_path.unlink()
+        except (OSError, IOError):
+            if temp_path.exists(): temp_path.unlink(missing_ok=True)
             raise
         _cached_settings, _current_path = limpio, ruta
         return ruta

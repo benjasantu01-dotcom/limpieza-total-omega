@@ -409,3 +409,10 @@ assert not ['memory.py']
 - `2026-08-08T13:11:00` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
 - `2026-08-08T13:11:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-08T13:11:00` Corrida terminada. Total usado hoy: 312.
+- `2026-08-08T13:19:47` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-08T13:20:12` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-08T13:20:35` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se mejoró la robustez de `scan_directory` validando explícitamente el tipo de entrada en la lógica de `process_entry` para evitar errores de tipo o excepciones inesperadas al procesar archivos con rutas inusuales o bloqueadas.
+- `2026-08-08T13:20:59` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save()` capturando explícitamente posibles errores durante `os.replace` y validando que el archivo temporal no permanezca en disco ante fallos inesperados de sistema, siguiendo las mejores prácticas de manejo de excepciones y limpieza de recursos.
+- `2026-08-08T13:21:10` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-08T13:21:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-08T13:21:10` Corrida terminada. Total usado hoy: 316.
