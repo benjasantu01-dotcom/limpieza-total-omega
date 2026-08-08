@@ -214,24 +214,30 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     """
     ctx = SystemContext()
 
-    if metrics is not None and hasattr(metrics, "__dict__"):
-        _safe_assign(ctx, "junk_mb", getattr(metrics, "junk_mb", 0.0))
-        _safe_assign(ctx, "suspicious_count", getattr(metrics, "suspicious_count", 0), int)
-        _safe_assign(ctx, "suspicious_warnings", getattr(metrics, "suspicious_warnings", 0), int)
-        _safe_assign(ctx, "memory_available_percent", getattr(metrics, "memory_available_percent", 0.0), max_val=100.0)
-        _safe_assign(ctx, "disk_free_percent", getattr(metrics, "disk_free_percent", 0.0), max_val=100.0)
-        _safe_assign(ctx, "duplicate_mb", getattr(metrics, "duplicate_mb", 0.0))
-        _safe_assign(ctx, "startup_count", getattr(metrics, "startup_count", 0), int)
-        _safe_assign(ctx, "quarantined_count", getattr(metrics, "quarantined_count", 0), int)
-        _safe_assign(ctx, "browser_cache_mb", getattr(metrics, "browser_cache_mb", 0.0))
-        _safe_assign(ctx, "memory_total_gb", getattr(metrics, "memory_total_gb", 0.0))
+    def get_attr(source: Any, attr: str, default: Any) -> Any:
+        try:
+            return getattr(source, attr, default)
+        except Exception:
+            return default
+
+    if metrics is not None:
+        _safe_assign(ctx, "junk_mb", get_attr(metrics, "junk_mb", 0.0))
+        _safe_assign(ctx, "suspicious_count", get_attr(metrics, "suspicious_count", 0), int)
+        _safe_assign(ctx, "suspicious_warnings", get_attr(metrics, "suspicious_warnings", 0), int)
+        _safe_assign(ctx, "memory_available_percent", get_attr(metrics, "memory_available_percent", 0.0), max_val=100.0)
+        _safe_assign(ctx, "disk_free_percent", get_attr(metrics, "disk_free_percent", 0.0), max_val=100.0)
+        _safe_assign(ctx, "duplicate_mb", get_attr(metrics, "duplicate_mb", 0.0))
+        _safe_assign(ctx, "startup_count", get_attr(metrics, "startup_count", 0), int)
+        _safe_assign(ctx, "quarantined_count", get_attr(metrics, "quarantined_count", 0), int)
+        _safe_assign(ctx, "browser_cache_mb", get_attr(metrics, "browser_cache_mb", 0.0))
+        _safe_assign(ctx, "memory_total_gb", get_attr(metrics, "memory_total_gb", 0.0))
         ctx.analyzed = True
 
-    if health is not None and hasattr(health, "__dict__"):
-        raw_score = getattr(health, "score", None)
+    if health is not None:
+        raw_score = get_attr(health, "score", None)
         if raw_score is not None:
             _safe_assign(ctx, "score", raw_score, int, max_val=100)
-        grade = getattr(health, "grade", "")
+        grade = get_attr(health, "grade", "")
         ctx.grade = str(grade) if isinstance(grade, (str, int, float)) else ""
         ctx.analyzed = True
 

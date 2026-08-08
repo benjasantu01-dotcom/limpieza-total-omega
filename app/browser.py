@@ -143,7 +143,8 @@ def _is_excluded_file(name: str) -> bool:
 
 def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool]) -> int:
     """
-    Calcula el tamaño acumulado de una carpeta de forma segura y recursiva.
+    Calcula el tamaño acumulado de una carpeta de forma segura y recursiva,
+    manejando errores de acceso a nivel de archivo individual.
     """
     total: int = 0
     try:
@@ -158,8 +159,10 @@ def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool
                     elif entry.is_file() and not _is_excluded_file(entry.name):
                         total += entry.stat().st_size
                 except (OSError, PermissionError):
+                    # Ignorar errores de acceso a archivos/carpetas individuales durante el recorrido
                     continue
     except (OSError, PermissionError):
+        # Ignorar errores de acceso al directorio base
         pass
     return total
 
