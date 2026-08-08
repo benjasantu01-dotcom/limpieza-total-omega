@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **244** (48.4% de aceptación)
+- Mejoras aceptadas: **245** (48.6% de aceptación)
 - Rechazadas por tests: 9
-- Rechazadas por guardia de seguridad: 25
-- Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 208
+- Rechazadas por guardia de seguridad: 26
+- Sin cambios (nada sustancial que mejorar): 19
+- Sin respuesta de la IA (error o límite): 205
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-07 | 109 | 5 | 11 | 10 | 121 |
-| 2026-08-08 | 135 | 4 | 14 | 8 | 87 |
+| 2026-08-07 | 108 | 5 | 11 | 10 | 118 |
+| 2026-08-08 | 137 | 4 | 15 | 9 | 87 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **63**
 - rendimiento: **51**
 - manejo de errores y validación de entradas: **50**
-- seguridad defensiva: **41**
-- robustez ante casos límite: **39**
+- robustez ante casos límite: **41**
+- seguridad defensiva: **40**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **21**
 - `assistant.py`: **21**
 - `branding.py`: **20**
+- `settings.py`: **20**
 - `duplicates.py`: **20**
 - `browser.py`: **18**
 - `healthscore.py`: **18**
+- `memory.py`: **18**
 - `scanner.py`: **18**
 - `diskreport.py`: **18**
-- `memory.py`: **17**
-- `quarantine.py`: **17**
+- `quarantine.py`: **18**
 - `safety.py`: **17**
 - `main.py`: **16**
 - `organizer.py`: **16**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-08T10:37:43` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` ante fallas de entrada/salida durante la fase de copia atómica y persistencia del manifiesto, asegurando que si ocurre una excepción tras mover el archivo al sandbox pero antes de actualizar el manifiesto, el sistema intente revertir el movimiento para evitar dejar archivos huérfanos o inconsistencias.
+- `2026-08-08T10:36:51` **memory.py** (robustez ante casos límite): Se mejora la robustez de `trim_working_set` añadiendo una validación explícita para evitar intentar manipular procesos que están en proceso de cierre o que el sistema operativo protege activamente, manejando el posible fallo de `OpenProcess` con más detalle ante errores de permisos.
 - `2026-08-08T10:28:12` **main.py** (robustez ante casos límite): Se ha mejorado la robustez de `on_trim_process` y `on_restore_quarantine` mediante el uso de `is_safe_path` y `is_valid_dir` antes de realizar operaciones potencialmente fallidas o peligrosas, asegurando que los inputs del usuario se validen contra las políticas de seguridad antes de intentar cualquier acción sobre el sistema.
 - `2026-08-08T10:27:28` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del módulo `healthscore.py` ante datos de entrada malformados o faltantes mediante la implementación de `defaults` seguros en el acceso al diccionario `ratios` dentro de `compute_score`, previniendo potenciales `KeyError` ante configuraciones de pesos desactualizadas o parciales.
 - `2026-08-08T10:27:04` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `suggest_keeper` y `hash_file`/`partial_hash` ante condiciones de carrera (archivos que desaparecen durante la ejecución) añadiendo un manejo de excepciones más granular y validando la existencia de la ruta justo antes de la lectura, evitando que un `None` inesperado se propague.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-08T09:46:01` **browser.py** (rendimiento): Optimicé el rendimiento de `_sum_directory_recursive` mediante el uso de `os.scandir` de forma más eficiente y evitando la creación redundante de objetos `Path` y múltiples llamadas a `is_junction` dentro del bucle, reduciendo significativamente el overhead de llamadas al sistema.
 - `2026-08-08T09:36:56` **branding.py** (rendimiento): Se optimizó el rendimiento de `draw_logo` y `draw_gradient_bar` reemplazando la creación individual de múltiples objetos geométricos por la creación de bloques agrupados mediante la detección de colores adyacentes idénticos, reduciendo drásticamente la carga sobre el canvas de Tkinter en cada redibujado.
 - `2026-08-08T09:36:42` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` y `_gen_problems` evitando la creación de listas intermedias innecesarias, delegando la serialización del contexto a un generador eficiente y utilizando `next()` con valor por defecto para búsquedas de primer elemento.
-- `2026-08-08T09:36:10` **startup.py** (legibilidad y documentación): Mejoré la documentación interna mediante la adición de Type Hints faltantes en los parámetros de los métodos de la clase `StartupEntry` y la implementación de docstrings detallados en las funciones de procesamiento del registro, clarificando el flujo de datos y las validaciones de seguridad aplicadas.
-- `2026-08-08T09:35:45` **settings.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en los validadores y métodos principales para documentar el comportamiento de las validaciones de seguridad y la lógica de respaldo de fábrica, mejorando la legibilidad técnica del módulo.

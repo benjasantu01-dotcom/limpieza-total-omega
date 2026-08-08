@@ -383,8 +383,11 @@ def quarantine_file(
             raise RuntimeError(f"Error al eliminar el original tras la copia: {e}")
             
     except Exception as e:
+        # Intento de limpieza de emergencia
         if temp_dest.exists():
             _safe_unlink(temp_dest)
+        if destination.exists():
+            _safe_unlink(destination)
         raise RuntimeError(f"Falla crítica al procesar archivo: {e}")
 
     try:
@@ -403,6 +406,7 @@ def quarantine_file(
         save_manifest(items, base)
         return item
     except Exception as e:
+        # Reversión de seguridad si el manifiesto falla
         if destination.exists():
             shutil.move(str(destination), str(source_path))
         raise RuntimeError(f"Error irrecuperable procesando metadatos: {e}")

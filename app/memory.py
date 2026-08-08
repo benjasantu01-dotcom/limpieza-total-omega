@@ -354,12 +354,16 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     kernel32 = ctypes.windll.kernel32
     psapi = ctypes.windll.psapi
     
+    # Intentar abrir con permisos mínimos
     handle = kernel32.OpenProcess(SAFE_ACCESS, False, target_pid)
     if not handle:
-        return False, "Acceso denegado: permisos insuficientes o el proceso ya no existe."
+        # 5 = ERROR_ACCESS_DENIED, 87 = ERROR_INVALID_PARAMETER
+        err = kernel32.GetLastError()
+        return False, f"Acceso denegado (código {err}): el proceso es del sistema o no existe."
     
     try:
         exit_code = ctypes.c_ulong()
+        # Verificar que el proceso sigue activo
         if not kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)) or exit_code.value != 259:
             return False, "El proceso seleccionado ya no está activo."
 
