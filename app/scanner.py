@@ -81,9 +81,10 @@ class Scanner:
             return
         
         try:
-            path_obj = Path(entry.path)
-            # Validación de seguridad defensiva: no entrar en rutas protegidas
-            if is_protected_path(path_obj):
+            path_obj = Path(entry.path).resolve()
+            
+            # Validación de seguridad defensiva: no salir de la raíz base ni entrar en rutas protegidas
+            if not str(path_obj).startswith(str(self.base_root)) or is_protected_path(path_obj):
                 return
 
             if entry.is_dir(follow_symlinks=False):

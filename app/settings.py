@@ -154,15 +154,17 @@ _VALIDATOR_MAP: Final[dict[str, Callable[[str, Any], Any]]] = {
 }
 
 def settings_path(path_or_base: PathLike | None = None) -> Path:
-    if path_or_base is None: return SETTINGS_DIR / SETTINGS_FILE
+    default_res = SETTINGS_DIR / SETTINGS_FILE
+    if path_or_base is None: return default_res
     
     key = str(path_or_base)
     if key not in _path_cache:
         try:
             base = Path(key).expanduser().resolve()
-            _path_cache[key] = (base / SETTINGS_FILE) if is_safe_to_modify(str(base)) else (SETTINGS_DIR / SETTINGS_FILE)
+            candidate = base / SETTINGS_FILE
+            _path_cache[key] = candidate if is_safe_to_modify(str(base)) and is_safe_to_modify(str(candidate)) else default_res
         except (OSError, RuntimeError):
-            _path_cache[key] = SETTINGS_DIR / SETTINGS_FILE
+            _path_cache[key] = default_res
     return _path_cache[key]
 
 def validate(values: Any) -> AppSettings:
@@ -181,7 +183,7 @@ def load(path_or_base: PathLike | None = None) -> AppSettings:
         return _cached_settings.copy()
     
     try:
-        if ruta.exists() and ruta.is_file():
+        if ruta.exists() and ruta.is_file() and is_safe_to_modify(str(ruta)):
             if 0 < ruta.stat().st_size <= MAX_SETTINGS_SIZE:
                 with open(ruta, "r", encoding="utf-8") as f:
                     data = json.load(f)
