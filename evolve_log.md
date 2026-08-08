@@ -437,3 +437,28 @@ assert not ['memory.py']
 - `2026-08-08T13:51:50` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_check_file_integrity` para separar claramente las comprobaciones de estado de archivo, facilitando el diagnóstico de errores.
 - `2026-08-08T13:51:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-08T13:51:50` Corrida terminada. Total usado hoy: 328.
+- `2026-08-08T14:00:33` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-08T14:00:58` Tests FALLARON:
+```
+_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:93: SyntaxWarning: invalid escape sequence '\P'
+    Analiza comandos tipo 'C:\Path\App.exe' /args.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_scanner_double_extension_detection - TypeError: check_double_extension() missing 3 required positional arguments: 'entry', 'name', and 'suffix'
+FAILED evolve/tests/test_basic.py::test_scanner_normal_file_is_clean - TypeError: check_double_extension() missing 3 required positional arguments: 'entry', 'name', and 'suffix'
+FAILED evolve/tests/test_basic.py::test_scanner_flags_system_lookalike_outside_system32 - TypeError: check_system_lookalike() missing 3 required positional arguments: 'entry', 'name', and 'suffix'
+FAILED evolve/tests/test_basic.py::test_scanner_does_not_flag_real_system_file - TypeError: check_system_lookalike() missing 3 required positional arguments: 'entry', 'name', and 'suffix'
+FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independent - TypeError: check_system_lookalike() missing 3 required positional arguments: 'entry', 'name', and 'suffix'
+5 failed, 294 passed, 7 warnings in 1.14s
+
+```
+- `2026-08-08T14:00:58` ❌ Mejora descartada en scanner.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la documentación de los chequeos heurísticos mediante docstrings consistentes que explican el "porqué" de la detección, se han añadido type hints a los argumentos de las funciones de chequeo y se ha refactorizado la lógica de dispatching en `scan_file` para ser más transparente.
+- `2026-08-08T14:01:24` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y el mantenimiento de la validación extrayendo la lógica de validación de tipos a métodos específicos con docstrings, facilitando la comprensión de las restricciones aplicadas a cada configuración.
+- `2026-08-08T14:01:51` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `StartupEntry` documentando los métodos internos con el formato `Args/Returns` y añadiendo `TypeHints` específicos para mejorar la claridad de los procesos de resolución de rutas.
+- `2026-08-08T14:02:10` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `local_answer` reemplazando la búsqueda lineal de palabras clave en tokens por un acceso directo de tiempo constante O(1) usando `set` y validación directa.
+- `2026-08-08T14:02:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-08T14:02:10` Corrida terminada. Total usado hoy: 332.

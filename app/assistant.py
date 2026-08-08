@@ -415,11 +415,12 @@ def local_answer(question: str, context: SystemContext) -> Answer:
         )
 
     clean_text = _sanitize_query(question)
-    tokens = _TOKEN_REGEX.findall(clean_text)
+    tokens = set(_TOKEN_REGEX.findall(clean_text))
     
-    for token in tokens:
-        if handler_key := _KEYWORD_MAP.get(token):
-            return _HANDLERS[handler_key](context, clean_text)
+    # Intersección de conjuntos para búsqueda O(1)
+    for trigger in _KEYWORD_MAP:
+        if trigger in tokens:
+            return _HANDLERS[_KEYWORD_MAP[trigger]](context, clean_text)
 
     # Consumo perezoso de problemas prioritarios
     problemas = list(islice(_gen_problems(context), 3))

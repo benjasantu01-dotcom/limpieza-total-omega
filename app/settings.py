@@ -105,6 +105,7 @@ class _Validators:
     
     @staticmethod
     def bool(key: str, val: Any) -> bool | None:
+        """Normaliza entradas de usuario a booleano, soportando strings comunes."""
         if isinstance(val, bool): return val
         if not isinstance(val, str): return None
         v = val.strip().lower()
@@ -114,6 +115,7 @@ class _Validators:
 
     @staticmethod
     def int(key: str, val: Any) -> int | None:
+        """Valida y ajusta enteros según límites definidos en _NUMERIC_LIMITS."""
         if val is None or isinstance(val, bool): return None
         try:
             parsed = int(val)
@@ -123,6 +125,7 @@ class _Validators:
 
     @staticmethod
     def path(val: Any) -> str | None:
+        """Valida una ruta, asegurando que existe, es segura y no es enlace simbólico."""
         if val is None or not isinstance(val, (str, Path)): return ""
         try:
             path_str = str(val).strip()
@@ -135,6 +138,7 @@ class _Validators:
 
     @staticmethod
     def str(key: str, val: Any) -> str | None:
+        """Valida strings asegurando pertenencia a conjuntos permitidos o longitud máxima."""
         if not isinstance(val, (str, Path)): return None
         text = str(val).strip()
         if not text: return "" if key in ("ultima_carpeta", "asistente_clave_api") else None

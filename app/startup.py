@@ -91,8 +91,10 @@ class StartupEntry:
     def _extract_quoted_path(self, raw_cmd: str) -> str:
         """
         Analiza comandos tipo 'C:\Path\App.exe' /args. 
-        Extrae el contenido de la primera pareja de comillas detectada y verifica
-        que no contenga caracteres prohibidos antes de tratarlo como Path.
+        Extrae la primera pareja de comillas, valida contra caracteres prohibidos y `is_protected_path`.
+        
+        Returns:
+            Ruta extraída como string si es segura, caso contrario string vacío.
         """
         if not isinstance(raw_cmd, str) or len(raw_cmd) < 2:
             return ""
@@ -114,11 +116,13 @@ class StartupEntry:
 
     def _resolve_and_cache_path(self, path_str: str) -> str:
         """
-        Normaliza rutas absolutas, verifica existencia y valida contra `is_protected_path`.
+        Normaliza rutas, verifica existencia física y valida contra `is_protected_path`.
         
-        Utiliza `_EXISTS_CACHE` para persistir resultados de I/O durante el ciclo de vida
-        de la app. Las rutas que fallan las pruebas de seguridad o existencia son
-        marcadas en el caché como inválidas.
+        Args:
+            path_str: La ruta cruda del ejecutable a normalizar.
+            
+        Returns:
+            Ruta absoluta normalizada si es segura y existe, o ruta original si falló validación.
         """
         if not isinstance(path_str, str) or not path_str:
             return ""
