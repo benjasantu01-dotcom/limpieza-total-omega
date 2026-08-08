@@ -67,11 +67,11 @@ TRIM_WARNING: str = (
 
 BYTE_UNITS: Tuple[str, ...] = ("B", "KB", "MB", "GB", "TB")
 
-# Constantes de acceso para Win32 API (Flags de permisos para OpenProcess)
+# Constantes de acceso para Win32 API
+# Usamos el mínimo permiso necesario: QUERER info y aplicar cuota de memoria
 PROCESS_QUERY_INFO: int = 0x0400
 PROCESS_SET_QUOTA: int = 0x0100
-PROCESS_VM_WRITE: int = 0x0020
-REQUIRED_ACCESS: int = PROCESS_QUERY_INFO | PROCESS_SET_QUOTA | PROCESS_VM_WRITE
+SAFE_ACCESS: int = PROCESS_QUERY_INFO | PROCESS_SET_QUOTA
 
 # Lista de PIDs críticos de Windows que nunca deben ser intervenidos
 SYSTEM_CRITICAL_PIDS: Tuple[int, ...] = (0, 4)
@@ -351,7 +351,8 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     kernel32 = ctypes.windll.kernel32
     psapi = ctypes.windll.psapi
     
-    handle = kernel32.OpenProcess(REQUIRED_ACCESS, False, target_pid)
+    # Abrimos solo con los permisos estrictamente necesarios para consultar y trimar
+    handle = kernel32.OpenProcess(SAFE_ACCESS, False, target_pid)
     if not handle:
         return False, "Acceso denegado: permisos insuficientes o el proceso ya no existe."
     

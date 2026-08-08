@@ -234,6 +234,10 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             if not current_abs.exists() or not current_abs.is_file():
                 continue
             
+            # Evitar procesar archivos que ya están en la carpeta de destino o subdirectorios
+            if dest in current_abs.parents:
+                continue
+            
             if not is_safe_to_modify(current_abs):
                 continue
             

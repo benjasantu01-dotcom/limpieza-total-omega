@@ -201,20 +201,23 @@ def _generate_recommendations(m: SystemMetrics, ratios: ScoreMap) -> List[str]:
     recs: List[str] = []
     
     if ratios.get("seguridad", 1.0) < WARN_THRESHOLD_HIGH:
-        recs.append(f"Revisá los {max(0, m.suspicious_count)} hallazgo(s) de seguridad; podés aislarlos en cuarentena sin borrarlos.")
+        count = max(0, _to_int(m.suspicious_count))
+        recs.append(f"Revisá los {count} hallazgo(s) de seguridad; podés aislarlos en cuarentena sin borrarlos.")
     if ratios.get("disco", 1.0) < WARN_THRESHOLD_LOW:
         recs.append(f"Queda {m.disk_free_percent:.1f}% de disco libre. Mirá el análisis de disco para ver qué ocupa más.")
     if ratios.get("memoria", 1.0) < WARN_THRESHOLD_LOW:
         recs.append("Memoria disponible baja: cerrá programas que no uses. Ojo, 'liberar RAM' no sirve, cerrar procesos sí.")
     if ratios.get("basura", 1.0) < WARN_THRESHOLD_MED:
-        recs.append(f"Hay unos {int(max(0.0, m.junk_mb))} MB de archivos temporales para revisar.")
+        recs.append(f"Hay unos {int(max(0.0, float(m.junk_mb)))} MB de archivos temporales para revisar.")
     if ratios.get("duplicados", 1.0) < WARN_THRESHOLD_MED:
-        recs.append(f"Podrías recuperar ~{int(max(0.0, m.duplicate_mb))} MB eliminando copias duplicadas.")
+        recs.append(f"Podrías recuperar ~{int(max(0.0, float(m.duplicate_mb)))} MB eliminando copias duplicadas.")
     if ratios.get("arranque", 1.0) < WARN_THRESHOLD_LOW:
-        recs.append(f"{max(0, m.startup_count)} programas arrancan con Windows; desactivá los que no necesites desde el Administrador de tareas.")
+        count = max(0, _to_int(m.startup_count))
+        recs.append(f"{count} programas arrancan con Windows; desactivá los que no necesites desde el Administrador de tareas.")
     
     if m.quarantined_count > 0:
-        recs.append(f"Tenés {max(0, m.quarantined_count)} archivo(s) en cuarentena esperando tu decisión.")
+        count = max(0, _to_int(m.quarantined_count))
+        recs.append(f"Tenés {count} archivo(s) en cuarentena esperando tu decisión.")
     
     return recs if recs else ["No hay nada urgente para hacer. El sistema está en buen estado."]
 

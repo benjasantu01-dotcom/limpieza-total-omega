@@ -868,9 +868,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self._validate_and_log_error(e, tab)
 
     def run_async(self, fn: Callable, check_safety: bool = False) -> None:
-        """Envía una tarea al pool de ejecución asíncrono."""
-        if check_safety and hasattr(fn, "__code__"):
-            pass
+        """Envía una tarea al pool de ejecución asíncrono con validación defensiva."""
+        if check_safety:
+            # Re-verificar que las rutas base sean seguras antes de arrancar
+            if self.scan_target and not self._is_safe_target_dir(self.scan_target):
+                self.log("Abortado: La ruta de destino no es segura.", self._current_tab())
+                return
             
         self._set_busy(True)
         tab = self._current_tab()
@@ -1063,7 +1066,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.log(f"Encontrados {len(junk)} candidatos ({total_mb} MB).", "Limpieza")
             self.refresh_list()
 
-        self.run_async(task)
+        self.run_async(task, check_safety=True)
 
     def refresh_list(self) -> None:
         """Refresca la vista de la lista de basura según el criterio seleccionado."""
@@ -1153,7 +1156,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.log("Recordá: son señales, no una condena. Usá 'Aislar hallazgos' "
                      "para moverlos a cuarentena sin borrarlos.", "Seguridad")
 
-        self.run_async(task)
+        self.run_async(task, check_safety=True)
 
     def on_heuristic_scan(self) -> None:
         """Inicia escaneo heurístico de Descargas."""
@@ -1167,6 +1170,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """Inicia escaneo heurístico en carpeta manual."""
         folder = self._ask_folder("Elegí una carpeta para escanear")
         if folder:
+            self.scan_target = folder
             self._run_heuristic_scan(folder)
 
     def on_quarantine_findings(self) -> None:
@@ -1384,7 +1388,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.log(f"Analizando {folder} (solo lectura, puede tardar)...", "Disco")
             self.log_lines(diskreport.summarize(folder), "Disco")
 
-        self.run_async(task)
+        self.run_async(task, check_safety=True)
 
     # ------------------------------------------------------------------
     # Lógica de Duplicados
@@ -1423,7 +1427,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 lineas.append("")
             self.log_lines(lineas, "Duplicados")
 
-        self.run_async(task)
+        self.run_async(task, check_safety=True)
 
     def on_quarantine_duplicates(self) -> None:
         """Aísla archivos duplicados redundantes."""
