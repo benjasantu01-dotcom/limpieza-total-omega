@@ -296,7 +296,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _tab_factory(self, name: str) -> None:
         """Mapea el nombre de la pestaña a su método de construcción UI."""
-        # Se agrupan los métodos de construcción por lógica de dominio
         constructors: Dict[str, Callable] = {
             "Salud": self._build_tab_salud,
             "Limpieza": self._build_tab_limpieza,
@@ -313,7 +312,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         }
         constructor = constructors.get(name)
         if constructor:
-            constructor()
+            try:
+                constructor()
+            except Exception as e:
+                logging.error("Fallo crítico en el constructor de la pestaña %s: %s", name, e)
 
     def _build_tabs_container(self) -> None:
         """Inicializa el contenedor de pestañas y sus paneles correspondientes."""
@@ -807,8 +809,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             try:
                 box.insert("end", f"{text}\n")
                 box.see("end")
-            except Exception:
-                pass
+            except Exception as e:
+                logging.error("No se pudo actualizar el log en %s: %s", tab, e)
 
     def clear(self, tab: str = "Limpieza") -> None:
         """Elimina todo el contenido actual del cuadro de log de una pestaña."""
@@ -867,8 +869,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def run_async(self, fn: Callable, check_safety: bool = False) -> None:
         """Envía una tarea al pool de ejecución asíncrono."""
         if check_safety and hasattr(fn, "__code__"):
-            # En un entorno real, esta inspección sería más robusta.
-            # Aquí prevenimos bypasses asegurando que no se llamen funciones prohibidas.
             pass
             
         self._set_busy(True)

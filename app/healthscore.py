@@ -228,7 +228,8 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         return HealthResult(0, "F", {}, ["Error: Instancia de métricas no válida."])
     
     metrics.validate()
-    if not metrics.is_finite() or not _validate_weights():
+    # Verificación estricta de coherencia antes de operar
+    if not metrics.is_finite() or not _validate_weights() or _NORM_FACTOR <= 0.0:
         return HealthResult(0, "F", {}, ["Error: Datos de entrada o configuración no procesables."])
 
     scores: ScoreMap = {
