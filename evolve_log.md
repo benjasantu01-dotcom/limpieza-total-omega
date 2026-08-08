@@ -1119,3 +1119,10 @@ FAILED evolve/tests/test_modules.py::test_summarize_mentions_the_folder_and_tota
 - `2026-08-08T10:47:54` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
 - `2026-08-08T10:47:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-08T10:47:54` Corrida terminada. Total usado hoy: 256.
+- `2026-08-08T10:56:46` Arrancando corrida. Quedan hoy ~44 peticiones objetivo.
+- `2026-08-08T10:57:20` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la seguridad defensiva al serializar el contexto mediante una sanitización explícita que elimina caracteres de control y secuencias de escape antes de cualquier procesamiento, garantizando que el motor local sea inmune a inyecciones de control incluso si las métricas sufrieran una mutación inesperada.
+- `2026-08-08T10:57:49` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `save_logo_svg` reemplazando la verificación múltiple redundante por una validación única centralizada y fortaleciendo el manejo de errores para evitar escrituras parciales o inválidas.
+- `2026-08-08T10:58:12` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
+- `2026-08-08T10:58:22` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha robustecido la función `walk_files` para validar que el `current_path` sea un hijo legítimo de la ruta base, previniendo así posibles escapes de directorio causados por manipulaciones maliciosas de enlaces simbólicos o puntos de reparse que pudieran haber eludido los chequeos iniciales.
+- `2026-08-08T10:58:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-08T10:58:22` Corrida terminada. Total usado hoy: 260.

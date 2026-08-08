@@ -301,19 +301,13 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     if not destination: return None
     try:
         target = Path(destination).resolve()
-        parent = target.parent
-        
-        # Validación: chequeo booleano preventivo para seguridad
-        if not is_safe_to_modify(parent) or not is_safe_to_modify(target):
-            return None
-            
-        # Creación de directorio si no existe, asegurando permisos antes
-        if not parent.exists():
-            ensure_safe_to_modify(parent)
-            parent.mkdir(parents=True, exist_ok=True)
-        
-        # Operación final tras validación estricta
+        # Validación: ensure_safe_to_modify lanza excepción si la ruta no es segura
         ensure_safe_to_modify(target)
+        
+        parent = target.parent
+        if not parent.exists():
+            parent.mkdir(parents=True, exist_ok=True)
+            
         target.write_text(logo_svg(), encoding="utf-8")
         return target
     except (OSError, PermissionError, TypeError, ValueError, RuntimeError, IOError, AttributeError):

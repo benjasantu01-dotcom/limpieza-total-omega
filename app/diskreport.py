@@ -170,9 +170,6 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     Generador recursivo que recorre archivos bajo `directory`.
     Implementa prevención de ciclos mediante inode tracking y omisión de carpetas 
     protegidas o puntos de reparse (en Windows).
-    
-    Errores de acceso (PermissionError/OSError) son silenciados para permitir 
-    el escaneo parcial del árbol de directorios.
     """
     if not directory:
         return
@@ -193,6 +190,10 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
         return
 
     def scan_level(current_path: Path) -> Generator[Tuple[Path, int], None, None]:
+        # Seguridad: verificar que no haya escape de directorio
+        if skip_protected and not str(current_path).startswith(str(base_path)):
+            return
+
         try:
             with os.scandir(current_path) as iterator:
                 for file_entry in iterator:
@@ -202,7 +203,6 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                             
                         if os.name == 'nt':
                             st_attrs = file_entry.stat(follow_symlinks=False).st_file_attributes
-                            # 0x400: Reparse Point, 0x2: Hidden (opcional, criterio heurístico)
                             if (st_attrs & 0x400) or (st_attrs & 0x2): 
                                 continue
                             
@@ -229,7 +229,6 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_protected: bool = True) -> List[FileEntry]:
     """
     Retorna los archivos más grandes mediante un min-heap para eficiencia O(n log k).
-    Ideal para mostrar rankings en la UI sin cargar todos los resultados en memoria.
     """
     if not directory or limit <= 0:
         return []
@@ -243,7 +242,6 @@ def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_prot
 def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip_protected: bool = True) -> List[ExtensionUsage]:
     """
     Calcula la ocupación total por extensión de archivo.
-    Agrupa todos los archivos encontrados y retorna las N extensiones más pesadas.
     """
     if not directory or limit <= 0:
         return []
@@ -265,7 +263,6 @@ def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip
 def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
     """
     Agrupa recursivamente el peso de carpetas inmediatas bajo el directorio base.
-    Utiliza un mapa de contadores local para sumarizar el peso de cada subdirectorio de primer nivel.
     """
     if not directory or limit <= 0:
         return []

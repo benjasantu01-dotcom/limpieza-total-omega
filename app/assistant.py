@@ -260,11 +260,14 @@ def context_as_text(context: SystemContext) -> str:
             f"Duplicados: {_fmt_metric(context.duplicate_mb, ' MB')}",
             f"Inicio: {context.startup_count} items"
         )
-        texto_serializado = "\n".join(lines)
+        # Sanitización defensiva: eliminar caracteres de control y asegurar formato plano
+        texto_crudo = "\n".join(lines)
+        texto_sanitizado = _CONTROL_CHARS_REGEX.sub(" ", texto_crudo)
+        texto_limpio = _PATH_REGEX.sub(" ", texto_sanitizado)
         
-        if not _ensure_safe_text(texto_serializado):
+        if not _ensure_safe_text(texto_limpio):
             return "Error de seguridad en la serialización de contexto."
-        return _CONTROL_CHARS_REGEX.sub(" ", _PATH_REGEX.sub(" ", texto_serializado))
+        return texto_limpio
     except (ValueError, TypeError, AttributeError):
         return "Error al procesar métricas para el asistente."
 
