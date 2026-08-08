@@ -68,8 +68,8 @@ SETTINGS_FILE: Final = "config.json"
 MAX_SETTINGS_SIZE: Final = 1024 * 64
 API_KEY_ENV_VAR: Final = "OMEGA_GEMINI_KEY"
 
-VALID_THEMES: Final = ("oscuro", "claro", "sistema")
-VALID_ACCENTS: Final = ("menta", "violeta", "magenta", "cian", "ambar")
+VALID_THEMES: Final[tuple[str, ...]] = ("oscuro", "claro", "sistema")
+VALID_ACCENTS: Final[tuple[str, ...]] = ("menta", "violeta", "magenta", "cian", "ambar")
 
 _cached_settings: AppSettings | None = None
 _current_path: Path | None = None
@@ -102,8 +102,10 @@ _NUMERIC_LIMITS: Final[dict[str, tuple[int, int]]] = {
 
 class _Validators:
     """Namespace para funciones de validación. Retornan None si el valor es inválido."""
+    
     @staticmethod
     def bool(key: str, val: Any) -> bool | None:
+        """Normaliza valores a booleano, aceptando strings comunes."""
         if isinstance(val, bool): return val
         if not isinstance(val, str): return None
         v = val.strip().lower()
@@ -113,6 +115,7 @@ class _Validators:
 
     @staticmethod
     def int(key: str, val: Any) -> int | None:
+        """Parsea enteros aplicando límites definidos en _NUMERIC_LIMITS."""
         if val is None or isinstance(val, bool): return None
         try:
             parsed = int(val)
@@ -122,6 +125,7 @@ class _Validators:
 
     @staticmethod
     def path(val: Any) -> str | None:
+        """Valida y normaliza rutas, verificando seguridad mediante is_safe_to_modify."""
         if val is None or not isinstance(val, (str, Path)): return ""
         try:
             path_str = str(val).strip()
@@ -135,6 +139,7 @@ class _Validators:
 
     @staticmethod
     def str(key: str, val: Any) -> str | None:
+        """Valida cadenas, aplicando listas de selección permitidas donde corresponda."""
         if not isinstance(val, (str, Path)): return None
         text = str(val).strip()
         if not text: return "" if key in ("ultima_carpeta", "asistente_clave_api") else None

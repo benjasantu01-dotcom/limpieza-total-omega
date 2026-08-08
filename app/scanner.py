@@ -104,6 +104,9 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, name
     """
     Detecta archivos con doble extensión (ej: imagen.png.exe), una técnica clásica de engaño
     para ocultar el ejecutable real detrás de una extensión de archivo de datos.
+    
+    Returns:
+        Objeto Suspicion si se detecta doble extensión, None en caso contrario.
     """
     target = name or path.name
     if target and DOUBLE_EXTENSION_RE.search(target):
@@ -115,6 +118,9 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     """
     Identifica archivos ejecutables modificados recientemente, priorizando el monitoreo
     de descargas o carpetas temporales donde suelen aterrizar amenazas nuevas.
+    
+    Returns:
+        Objeto Suspicion si el archivo es reciente, None en caso contrario.
     """
     try:
         st = entry.stat() if entry else path.lstat()
@@ -129,6 +135,9 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, name
     """
     Verifica si un ejecutable tiene nombre de proceso crítico del sistema (ej: svchost.exe)
     pero se encuentra fuera de los directorios protegidos de System32.
+    
+    Returns:
+        Objeto Suspicion si el nombre imita procesos del sistema en rutas inseguras, None en caso contrario.
     """
     try:
         if is_protected_path(path):

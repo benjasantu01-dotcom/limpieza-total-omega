@@ -1383,3 +1383,10 @@ FAILED evolve/tests/test_integrity.py::test_is_safe_returns_bool_and_never_raise
 - `2026-08-08T00:24:53` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
 - `2026-08-08T00:24:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-08T00:24:53` Corrida terminada. Total usado hoy: 12.
+- `2026-08-08T00:33:43` Arrancando corrida. Quedan hoy ~288 peticiones objetivo.
+- `2026-08-08T00:34:11` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). He mejorado la documentación interna y la robustez de `safety.py` añadiendo type hints más precisos y docstrings técnicos detallados que explican el "porqué" de las validaciones, facilitando el mantenimiento futuro y cumpliendo con el enfoque de legibilidad exigido.
+- `2026-08-08T00:34:34` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). He mejorado la documentación y la expresividad del código mediante la implementación de `Docstrings` detalladas y la adición de `Type Hints` en los retornos de las funciones de chequeo, facilitando la comprensión de las heurísticas aplicadas sin alterar su lógica funcional.
+- `2026-08-08T00:34:59` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad del módulo añadiendo docstrings descriptivos a los validadores y estructurando las constantes de validación mediante `Final` tipados, facilitando la comprensión del flujo de datos sin alterar la lógica de seguridad.
+- `2026-08-08T00:35:08` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._extract_quoted_path, StartupEntry._resolve_and_cache_path, StartupEntry._resolve_path_from_command, StartupEntry._sanitize_command
+- `2026-08-08T00:35:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-08T00:35:08` Corrida terminada. Total usado hoy: 16.
