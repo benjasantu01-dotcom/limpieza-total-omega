@@ -490,3 +490,9 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-08T14:43:03` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `save_logo_svg` ante errores de sistema de archivos (como discos de solo lectura, rutas no accesibles o permisos denegados) mediante el uso de `is_safe_to_modify` antes de cualquier operación y un manejo de excepciones más granular para evitar fallos silenciosos durante la creación del logo.
 - `2026-08-08T14:43:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-08T14:43:03` Corrida terminada. Total usado hoy: 348.
+- `2026-08-08T14:51:35` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-08T14:52:01` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_is_safe_path` y `_sum_directory_recursive` para manejar correctamente rutas que contienen caracteres no legibles o exceden la longitud máxima permitida en Windows (`MAX_PATH`), asegurando que las excepciones de tipo `OSError` (típicas en perfiles de navegador dañados o bloqueados) no interrumpan el flujo de escaneo.
+- `2026-08-08T14:52:24` ➖ Sin cambios en diskreport.py (enfoque: robustez ante casos límite). Motivo: Se reforzó `walk_files` para manejar de forma robusta los errores de acceso al sistema de archivos mediante un bloque `try-except` más específico en la obtención de metadatos, evitando que el escáner se detenga prematuramente ante archivos con permisos denegados o bloqueados.
+- `2026-08-08T14:52:24` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-08-08T14:52:24` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-08T14:52:24` Corrida terminada. Total usado hoy: 350.

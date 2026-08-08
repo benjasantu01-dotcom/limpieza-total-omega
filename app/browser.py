@@ -124,7 +124,6 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
 
         if not str(real_target).startswith(str(real_base)):
             return False
-        real_target.relative_to(real_base)
 
         is_junction = getattr(os.path, 'isjunction', lambda _: False)
         if real_target.is_symlink() or is_junction(str(real_target)):
@@ -219,7 +218,11 @@ def detect_profiles(
         
     for base in bases:
         if not isinstance(base, Path): continue
-        real_base = base.resolve()
+        try:
+            real_base = base.resolve()
+        except OSError:
+            continue
+            
         for browser_name, relative_path_str in cache_paths.items():
             try:
                 candidate: Path = real_base.joinpath(*relative_path_str.split("\\")).resolve()
