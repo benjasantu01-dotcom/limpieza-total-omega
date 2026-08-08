@@ -8,25 +8,25 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **243** (48.2% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 26
+- Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 204
+- Sin respuesta de la IA (error o límite): 203
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-06 | 1 | 0 | 0 | 0 | 9 |
+| 2026-08-06 | 0 | 0 | 0 | 0 | 6 |
 | 2026-08-07 | 158 | 12 | 17 | 14 | 149 |
-| 2026-08-08 | 84 | 1 | 9 | 4 | 46 |
+| 2026-08-08 | 85 | 1 | 10 | 4 | 48 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **58**
 - rendimiento: **55**
 - manejo de errores y validación de entradas: **45**
-- robustez ante casos límite: **44**
-- seguridad defensiva: **41**
+- robustez ante casos límite: **45**
+- seguridad defensiva: **40**
 
 ## Mejoras aceptadas por archivo
 
@@ -36,17 +36,18 @@ Este archivo se regenera solo en cada corrida a partir de
 - `branding.py`: **20**
 - `assistant.py`: **20**
 - `memory.py`: **18**
+- `quarantine.py`: **18**
 - `safety.py`: **18**
 - `browser.py`: **18**
-- `quarantine.py`: **17**
 - `scanner.py`: **17**
 - `organizer.py`: **17**
 - `main.py`: **15**
 - `healthscore.py`: **15**
-- `startup.py`: **7**
+- `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-08T06:12:04` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `quarantine_file` añadiendo una verificación de disponibilidad del sistema de archivos antes de la operación de copia, asegurando que el proceso pueda abortar limpiamente si la unidad de destino está en modo solo lectura o presenta fallos de E/S.
 - `2026-08-08T06:02:55` **memory.py** (robustez ante casos límite): Se mejoró la robustez de `trim_working_set` ante condiciones de carrera y estados inconsistentes del sistema, asegurando explícitamente que el proceso objetivo mantenga una estructura de datos válida y esté en ejecución antes de cualquier operación de bajo nivel.
 - `2026-08-08T06:02:44` **main.py** (robustez ante casos límite): Mejoré la resiliencia del bucle de eventos UI agregando un bloque `try-except` robusto en `_flush_logs` y validando la existencia de los componentes `tkinter` antes de intentar actualizarlos, evitando que la aplicación se cierre inesperadamente si se solicita un log cuando la ventana ya no está disponible o el widget fue destruido.
 - `2026-08-08T06:01:46` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `summarize` y `_generate_recommendations` añadiendo protecciones explícitas contra `None` o estados de datos inconsistentes (casos límite) que podrían romper la renderización en la UI si un módulo entrega datos incompletos.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-08T05:41:14` **safety.py** (rendimiento): Se ha optimizado `is_protected_path` reemplazando la evaluación iterativa del conjunto de padres (`p.parents`) por una búsqueda directa en `frozenset`, reduciendo la complejidad algorítmica de O(N) a O(1) y evitando el uso de iteradores costosos en cada chequeo.
 - `2026-08-08T05:30:57` **organizer.py** (rendimiento): Optimicé el escaneo en `scan_for_junk` reemplazando la verificación repetitiva de extensiones basada en listas por un filtrado eficiente mediante el uso de `os.scandir` y la estructura pre-compilada `_LOWER_JUNK_EXTS`, evitando conversiones a tuplas en cada iteración y reduciendo la carga de llamadas a `stat()` solo a los archivos que ya pasaron el filtro inicial.
 - `2026-08-08T05:30:34` **memory.py** (rendimiento): Optimizé `top_memory_processes` reemplazando la lógica de caché basada en tiempo por una que verifica si el ID del proceso (PID) y el nombre siguen siendo consistentes, evitando llamadas costosas a PowerShell si los datos ya fueron recolectados recientemente y mejorando la eficiencia del bucle de consulta.
-- `2026-08-08T05:21:56` **main.py** (rendimiento): Optimicé el sistema de caché centralizado (`_get_cached`) sustituyendo la búsqueda lineal en una `OrderedDict` por un acceso directo por clave, eliminando la necesidad de iterar sobre el diccionario para la invalidación selectiva mediante la creación de un `set` de claves activas que permite búsquedas en tiempo constante $O(1)$.

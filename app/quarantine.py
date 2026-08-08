@@ -332,7 +332,11 @@ def quarantine_file(
     except OSError as e:
         raise OSError(f"Error al acceder a metadatos de archivo: {e}")
 
-    usage = shutil.disk_usage(dest_dir)
+    try:
+        usage = shutil.disk_usage(dest_dir)
+    except OSError as e:
+        raise RuntimeError(f"No se pudo verificar el estado del disco: {e}")
+        
     if usage.free < (file_size * 1.05):
         raise RuntimeError("Espacio insuficiente en disco para mover a cuarentena.")
         
