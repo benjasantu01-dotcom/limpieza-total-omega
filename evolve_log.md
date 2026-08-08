@@ -483,3 +483,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-08T14:32:33` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: rendimiento).
 - `2026-08-08T14:32:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-08T14:32:33` Corrida terminada. Total usado hoy: 344.
+- `2026-08-08T14:41:26` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-08T14:41:51` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: rendimiento).
+- `2026-08-08T14:42:16` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-08-08T14:42:47` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Reforcé la robustez del asistente ante posibles errores de configuración y desbordamiento de memoria al añadir verificaciones explícitas de tipo y tamaño en las funciones de acceso a datos de configuración, asegurando que el bucle de consultas no falle ante un archivo `settings.json` corrupto o valores inesperadamente grandes.
+- `2026-08-08T14:43:03` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `save_logo_svg` ante errores de sistema de archivos (como discos de solo lectura, rutas no accesibles o permisos denegados) mediante el uso de `is_safe_to_modify` antes de cualquier operación y un manejo de excepciones más granular para evitar fallos silenciosos durante la creación del logo.
+- `2026-08-08T14:43:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-08T14:43:03` Corrida terminada. Total usado hoy: 348.

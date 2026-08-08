@@ -243,7 +243,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         if raw_score is not None:
             _safe_assign(ctx, "score", raw_score, int, max_val=100)
         grade = get_attr(health, "grade", "")
-        ctx.grade = str(grade) if isinstance(grade, (str, int, float)) else ""
+        ctx.grade = str(grade)[:10] if isinstance(grade, (str, int, float)) else ""
         ctx.analyzed = True
 
     for k, v in extra.items():
