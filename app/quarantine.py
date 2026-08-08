@@ -14,7 +14,7 @@ Garantías de seguridad que este módulo respeta siempre:
   - No se puede poner en cuarentena algo de una ruta protegida del sistema
     (se valida con `safety.ensure_safe_to_modify`).
   - Al restaurar, el destino se valida para que un manifiesto manipulado no
-    puela escribir en una ruta de sistema.
+    pueda escribir en una ruta de sistema.
   - Vaciar la cuarentena solo borra dentro de la carpeta de cuarentena, y
     se verifica con `safety.is_within_directory` antes de cada borrado.
 """
@@ -29,7 +29,7 @@ import tempfile
 from dataclasses import dataclass, asdict
 from datetime import datetime
 from pathlib import Path
-from typing import List, Union, Dict, Tuple, Optional, Any
+from typing import List, Union, Dict, Tuple, Optional, Any, TypeGuard
 
 from safety import (
     UnsafePathError,
@@ -116,10 +116,9 @@ class QuarantineItem:
         """
         Valida que el archivo en cuarentena no haya sido alterado.
         
+        Compara metadatos de archivo físico contra el registro en el manifiesto.
         Args:
             stored_path: Ruta al archivo dentro de la cuarentena.
-        Returns:
-            bool: True si el tamaño y SHA-256 coinciden con el manifiesto.
         """
         if not stored_path or not stored_path.is_file():
             return False
@@ -183,14 +182,21 @@ def _manifest_path(base_dir: Path) -> Path:
     return (base_dir / MANIFEST_NAME).resolve()
 
 
+def _is_valid_quarantine_path(path: Path, root: Path) -> TypeGuard[Path]:
+    """Validador interno para asegurar que una ruta resida dentro del sandbox."""
+    return is_within_directory(path, root)
+
+
 def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
     """
-    Realiza validaciones de seguridad antes de mover un archivo a la cuarentena.
+    Realiza validaciones de seguridad estrictas antes de mover un archivo a la cuarentena.
     
-    Verifica: puntos de reparse, rutas protegidas, colisiones, estado del archivo
-    y prohíbe flujos de datos alternos (ADS) o atributos de sistema.
+    Verifica:
+    1. Que la ruta no sea un flujo alterno (ADS) o ruta malformada.
+    2. Que no sea una unión o symlink (evitar escapes).
+    3. Que el archivo no sea de sistema/oculto según atributos de SO.
+    4. Que la operación ocurra dentro del mismo dispositivo físico.
     """
-    # Detectar Alternate Data Streams (Windows)
     if ":" in source_path.name.replace(source_path.drive, ""):
         raise UnsafePathError(f"Ruta con flujos de datos alternos no permitida: {source_path}")
 
@@ -200,12 +206,11 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
     if source_path.is_symlink() or (hasattr(source_path, 'is_junction') and source_path.is_junction()):
         raise UnsafePathError(f"Operación denegada en punto de reparse: {source_path}")
 
-    # No permitir archivos con atributos de oculto o sistema que intenten evadir análisis
     try:
         if os.name == 'nt':
             import ctypes
             attrs = ctypes.windll.kernel32.GetFileAttributesW(str(source_path))
-            if attrs != -1 and (attrs & 0x02 or attrs & 0x04): # FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM
+            if attrs != -1 and (attrs & 0x02 or attrs & 0x04): 
                 raise UnsafePathError("Prohibido procesar archivos con atributos de sistema/ocultos.")
     except Exception:
         pass
@@ -219,7 +224,7 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
     if is_protected_path(dest_dir):
         raise UnsafePathError(f"Directorio de cuarentena protegido o inválido: {dest_dir}")
     
-    if is_within_directory(source_path, dest_dir):
+    if _is_valid_quarantine_path(source_path, dest_dir):
         raise UnsafePathError(f"El archivo ya reside en la carpeta de cuarentena: {source_path}")
         
     if source_path.drive != dest_dir.drive:
@@ -381,7 +386,6 @@ def quarantine_file(
 def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
     """Retorna ítems en cuarentena, usando el orden descendente de la caché."""
     items = load_manifest(base)
-    # Ordenar por fecha usando el valor isoformat original que es lexicográficamente sortable
     return sorted(items, key=lambda i: i.quarantined_at, reverse=True)
 
 
@@ -453,7 +457,7 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
     quarantine_root = quarantine_dir(base)
     stored_file = (quarantine_root / match.stored_name).resolve()
     
-    if not is_within_directory(stored_file, quarantine_root):
+    if not _is_valid_quarantine_path(stored_file, quarantine_root):
         raise UnsafePathError(f"Intento de borrado fuera de cuarentena: {stored_file}")
 
     if not stored_file.exists() or not match.verify_integrity(stored_file):
@@ -469,12 +473,17 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
 
 
 def _should_purge_file(entry: Path, quarantine_root: Path, item_map_by_name: Dict[str, QuarantineItem]) -> bool:
-    """Verifica si una entrada del sistema de archivos dentro de cuarentena es apta para borrado."""
+    """
+    Verifica si una entrada del sistema de archivos es apta para borrado.
+    Valida contra: ruta base, existencia en manifiesto, integridad de archivo y seguridad del SO.
+    """
     try:
         if not entry.is_file():
             return False
         abs_entry = entry.resolve()
-        if entry.name == MANIFEST_NAME or not is_within_directory(abs_entry, quarantine_root):
+        
+        # Validar confinamiento y pertenencia al manifiesto
+        if entry.name == MANIFEST_NAME or not _is_valid_quarantine_path(abs_entry, quarantine_root):
             return False
         
         if entry.name not in item_map_by_name:

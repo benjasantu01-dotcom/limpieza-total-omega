@@ -92,7 +92,13 @@ class JunkFile:
 
 
 def _generate_unique_target(target: Path) -> Path:
-    """Resuelve colisiones de nombres mediante sufijos numéricos incrementales."""
+    """Resuelve colisiones de nombres mediante sufijos numéricos incrementales.
+    
+    Args:
+        target: La ruta destino deseada que podría existir previamente.
+    Returns:
+        Path: Una ruta garantizada única basada en el nombre original.
+    """
     if not target.exists():
         return target
         
@@ -175,10 +181,14 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
 
 
 def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -> List[JunkFile]:
-    """Ordena los archivos encontrados por tamaño o fecha de modificación con validación de parámetros."""
-    if not isinstance(files, list):
-        return []
-    if not files:
+    """Ordena los archivos encontrados por tamaño o fecha de modificación.
+    
+    Args:
+        files: Lista de JunkFile a ordenar.
+        by: Criterio de ordenamiento ('size' o 'date').
+        ascending: Dirección del ordenamiento.
+    """
+    if not isinstance(files, list) or not files:
         return []
         
     configs: Dict[str, Callable[[JunkFile], SortKey]] = {
@@ -186,7 +196,7 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
         "date": lambda f: f.modified
     }
         
-    criterio = str(by).lower()
+    criterio: str = str(by).lower()
     if criterio not in configs:
         criterio = "size"
         
@@ -194,7 +204,14 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 
 
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Path:
-    """Mueve los archivos basura a un directorio de cuarentena para revisión humana."""
+    """Mueve archivos basura a un directorio de cuarentena para revisión humana.
+    
+    Args:
+        files: Archivos identificados para mover.
+        review_dir: Ruta destino donde se almacenarán los archivos.
+    Returns:
+        Path: El directorio de revisión utilizado.
+    """
     if not files:
         raise ValueError("La lista de archivos a procesar no puede estar vacía.")
 
@@ -237,7 +254,13 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 
 
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
-    """Elimina permanentemente archivos desde la carpeta de revisión con validación robusta."""
+    """Elimina permanentemente archivos desde la carpeta de revisión con validación robusta.
+    
+    Args:
+        review_dir: Directorio origen donde se encuentran archivos aprobados para borrar.
+    Returns:
+        int: Cantidad de archivos borrados exitosamente.
+    """
     if not isinstance(review_dir, str) or not review_dir.strip():
         return 0
 

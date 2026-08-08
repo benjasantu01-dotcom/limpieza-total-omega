@@ -344,14 +344,19 @@ def _is_system_process(pid: int) -> bool:
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
-    Solicita al S.O. reducir el Working Set (RAM asignada en memoria física) 
-    de un proceso, forzando la paginación de páginas inactivas al disco.
+    Solicita al S.O. reducir el Working Set de un proceso.
+    
+    Esta función requiere privilegios de escritura y utiliza la API de Windows
+    psapi.EmptyWorkingSet. Aplica validaciones de seguridad estrictas:
+    - No permite tocar PIDs de sistema (ver _is_system_process).
+    - No permite tocar procesos en directorios protegidos (is_protected_path).
+    - Verifica el estado activo del proceso mediante GetExitCodeProcess.
 
     Args:
         pid: Identificador del proceso objetivo (entero o cadena).
 
     Returns:
-        Tupla (éxito: bool, mensaje: str) describiendo el resultado de la operación.
+        Tupla (éxito, mensaje explicativo).
     """
     if os.name != "nt":
         return False, "Solo disponible en Windows."
@@ -384,7 +389,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         else:
             return False, "Operación denegada: no se pudo verificar la integridad del proceso."
 
-        # Validación: verifica que el proceso siga activo
+        # Validación: verifica que el proceso siga activo (259 es STILL_ACTIVE en Windows)
         exit_code = ctypes.c_ulong()
         if not kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)) or exit_code.value != 259:
             return False, "El proceso seleccionado ya no está activo."
