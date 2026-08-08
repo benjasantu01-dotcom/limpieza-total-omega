@@ -8,37 +8,37 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **239** (47.4% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 26
+- Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 208
+- Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-06 | 11 | 0 | 1 | 0 | 14 |
+| 2026-08-06 | 9 | 0 | 1 | 0 | 12 |
 | 2026-08-07 | 158 | 12 | 17 | 14 | 149 |
-| 2026-08-08 | 70 | 1 | 8 | 4 | 45 |
+| 2026-08-08 | 72 | 1 | 9 | 4 | 46 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **58**
-- seguridad defensiva: **51**
-- rendimiento: **49**
+- rendimiento: **51**
+- seguridad defensiva: **49**
 - manejo de errores y validación de entradas: **45**
 - robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **20**
-- `branding.py`: **20**
 - `diskreport.py`: **20**
 - `settings.py`: **20**
 - `duplicates.py`: **20**
+- `branding.py`: **19**
+- `assistant.py`: **19**
 - `browser.py`: **18**
+- `memory.py`: **18**
+- `organizer.py`: **18**
 - `quarantine.py`: **18**
-- `memory.py`: **17**
-- `organizer.py`: **17**
 - `scanner.py`: **17**
 - `safety.py`: **17**
 - `healthscore.py`: **15**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-08T05:30:57` **organizer.py** (rendimiento): Optimicé el escaneo en `scan_for_junk` reemplazando la verificación repetitiva de extensiones basada en listas por un filtrado eficiente mediante el uso de `os.scandir` y la estructura pre-compilada `_LOWER_JUNK_EXTS`, evitando conversiones a tuplas en cada iteración y reduciendo la carga de llamadas a `stat()` solo a los archivos que ya pasaron el filtro inicial.
+- `2026-08-08T05:30:34` **memory.py** (rendimiento): Optimizé `top_memory_processes` reemplazando la lógica de caché basada en tiempo por una que verifica si el ID del proceso (PID) y el nombre siguen siendo consistentes, evitando llamadas costosas a PowerShell si los datos ya fueron recolectados recientemente y mejorando la eficiencia del bucle de consulta.
 - `2026-08-08T05:21:56` **main.py** (rendimiento): Optimicé el sistema de caché centralizado (`_get_cached`) sustituyendo la búsqueda lineal en una `OrderedDict` por un acceso directo por clave, eliminando la necesidad de iterar sobre el diccionario para la invalidación selectiva mediante la creación de un `set` de claves activas que permite búsquedas en tiempo constante $O(1)$.
 - `2026-08-08T05:21:12` **healthscore.py** (rendimiento): Optimicé el bucle principal de `compute_score` eliminando la creación de diccionarios intermedios y el acceso repetido a `scores.get` dentro del ciclo, reemplazándolo por una iteración directa sobre un nuevo diccionario `raw_scores` pre-mapeado para reducir el overhead de búsqueda en cada iteración del bucle ponderado.
 - `2026-08-08T05:20:47` **duplicates.py** (rendimiento): Se optimizó el proceso `_collect_candidates` utilizando un diccionario de `set` para evitar múltiples llamadas a `os.scandir` sobre el mismo directorio y añadiendo un chequeo preventivo de `is_protected_path` al inicio de `_scan`, reduciendo drásticamente las operaciones innecesarias de I/O en árboles de archivos grandes.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-08T04:51:18` **organizer.py** (legibilidad y documentación): Se introdujeron type hints en funciones sin tipado explícito, se mejoró la claridad de los nombres de variables en el bucle de escaneo, y se añadieron docstrings detallados en funciones internas para documentar el comportamiento frente a casos límite (como `os.scandir` y la resolución de rutas), mejorando la mantenibilidad del código sin alterar su lógica funcional.
 - `2026-08-08T04:50:52` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación y robustez de `trim_working_set` añadiendo type hints faltantes, eliminando el uso de `import` interno innecesario, y clarificando la validación de estados del proceso para asegurar que solo se intente actuar sobre procesos activos y no protegidos.
 - `2026-08-08T04:41:38` **healthscore.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo mediante la adición de docstrings estructurados con tipado claro, la clarificación del propósito de los cálculos auxiliares y la estandarización de las interfaces de las funciones de normalización para asegurar una documentación técnica coherente con el enfoque exigido.
-- `2026-08-08T04:40:21` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del pipeline de procesamiento mediante docstrings enriquecidos con la complejidad algorítmica y el flujo lógico de las etapas de filtrado, facilitando el mantenimiento a futuro.
-- `2026-08-08T04:39:57` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `walk_files` y `summarize` mediante la adición de docstrings técnicos detallados, especificando el manejo de errores y la lógica de filtrado para que otros desarrolladores comprendan rápidamente las restricciones de seguridad y el comportamiento ante excepciones.

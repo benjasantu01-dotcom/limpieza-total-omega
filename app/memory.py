@@ -259,7 +259,9 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
 
     now = time.time()
     ts, cached_processes = _PROCESS_CACHE["data"]
-    if now - ts < 5.0:
+    
+    # Si la caché tiene datos recientes, retornamos sin llamar al sistema
+    if now - ts < 5.0 and cached_processes:
         return cached_processes[:limit]
 
     command: str = (

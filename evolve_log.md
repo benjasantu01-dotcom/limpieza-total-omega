@@ -672,3 +672,10 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-08-08T05:21:56` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Optimicé el sistema de caché centralizado (`_get_cached`) sustituyendo la búsqueda lineal en una `OrderedDict` por un acceso directo por clave, eliminando la necesidad de iterar sobre el diccionario para la invalidación selectiva mediante la creación de un `set` de claves activas que permite búsquedas en tiempo constante $O(1)$.
 - `2026-08-08T05:21:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-08T05:21:56` Corrida terminada. Total usado hoy: 128.
+- `2026-08-08T05:30:07` Arrancando corrida. Quedan hoy ~172 peticiones objetivo.
+- `2026-08-08T05:30:34` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimizé `top_memory_processes` reemplazando la lógica de caché basada en tiempo por una que verifica si el ID del proceso (PID) y el nombre siguen siendo consistentes, evitando llamadas costosas a PowerShell si los datos ya fueron recolectados recientemente y mejorando la eficiencia del bucle de consulta.
+- `2026-08-08T05:30:57` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimicé el escaneo en `scan_for_junk` reemplazando la verificación repetitiva de extensiones basada en listas por un filtrado eficiente mediante el uso de `os.scandir` y la estructura pre-compilada `_LOWER_JUNK_EXTS`, evitando conversiones a tuplas en cada iteración y reduciendo la carga de llamadas a `stat()` solo a los archivos que ya pasaron el filtro inicial.
+- `2026-08-08T05:31:25` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: rendimiento).
+- `2026-08-08T05:31:28` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 100): unterminated string literal (detected at line 100)
+- `2026-08-08T05:31:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-08T05:31:28` Corrida terminada. Total usado hoy: 132.

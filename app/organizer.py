@@ -155,7 +155,7 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
                         if entry.is_dir(follow_symlinks=False):
                             if _is_allowed_directory(entry.name):
                                 _walk_dir(entry.path)
-                        elif entry.name.lower().endswith(tuple(_LOWER_JUNK_EXTS)):
+                        elif Path(entry.name).suffix.lower() in _LOWER_JUNK_EXTS:
                             stat = entry.stat()
                             entry_path: Path = Path(entry.path)
                             
