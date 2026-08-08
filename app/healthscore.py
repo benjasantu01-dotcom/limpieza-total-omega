@@ -204,7 +204,6 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     if not metrics.is_finite() or not _validate_weights() or _NORM_FACTOR <= 0.0:
         return HealthResult(0, "F", {}, ["Error: Datos de entrada o configuración no procesables."])
 
-    # Normalización directa: mapeo pre-cálculo
     ratios: ScoreMap = {
         "seguridad": score_security(metrics.suspicious_count, metrics.suspicious_warnings),
         "disco": score_disk(metrics.disk_free_percent),
@@ -217,9 +216,9 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     breakdown: Dict[str, int] = {}
     total_weighted_score: float = 0.0
     
-    # Cálculo optimizado: acceso directo a valores ya computados
     for area, weight in _WEIGHT_ITEMS:
-        score_val = ratios[area] * float(weight) * _NORM_FACTOR
+        # Se usa .get() con 1.0 de default para evitar KeyError si falta un área en el mapa de ratios
+        score_val = ratios.get(area, 1.0) * float(weight) * _NORM_FACTOR
         score_int = int(score_val + 0.5)
         breakdown[area] = score_int
         total_weighted_score += score_val

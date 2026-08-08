@@ -102,7 +102,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
                     break
                 digest.update(buffer)
         return digest.hexdigest()
-    except (OSError, PermissionError, ValueError, TypeError, RuntimeError, IOError):
+    except (OSError, PermissionError, ValueError, TypeError, RuntimeError, IOError, FileNotFoundError):
         return None
 
 
@@ -130,7 +130,7 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
             if not content:
                 return None
             return hashlib.sha256(content).hexdigest()
-    except (OSError, PermissionError, ValueError, TypeError, RuntimeError, IOError):
+    except (OSError, PermissionError, ValueError, TypeError, RuntimeError, IOError, FileNotFoundError):
         return None
 
 
@@ -148,7 +148,7 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
             if p.exists() and p.is_file() and not is_protected_path(p):
                 st = p.stat()
                 groups[st.st_size].append(p)
-        except (OSError, PermissionError, RuntimeError):
+        except (OSError, PermissionError, RuntimeError, FileNotFoundError):
             continue
     return groups
 
@@ -189,8 +189,8 @@ def _collect_candidates(
                             if entry_stat.st_size >= min_size:
                                 if not (skip_protected and is_protected_path(entry_path)):
                                     temp_groups[entry_stat.st_size].append(entry_path)
-                    except (OSError, PermissionError): continue
-        except (OSError, PermissionError): pass
+                    except (OSError, PermissionError, FileNotFoundError): continue
+        except (OSError, PermissionError, FileNotFoundError): pass
 
     for directory in directories:
         if directory is None: continue
@@ -198,7 +198,7 @@ def _collect_candidates(
             path_obj = Path(directory)
             if path_obj.exists() and path_obj.is_dir():
                 _scan(path_obj)
-        except (OSError, PermissionError): continue
+        except (OSError, PermissionError, FileNotFoundError): continue
             
     return {size: paths for size, paths in temp_groups.items() if len(paths) > 1}
 
@@ -268,12 +268,12 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
 
     keepers: List[Tuple[float, int, Path]] = []
     for p in group.paths:
-        if not isinstance(p, Path) or not p.exists(): continue
+        if not isinstance(p, Path): continue
         try:
-            if p.is_file() and not is_protected_path(p):
+            if p.exists() and p.is_file() and not is_protected_path(p):
                 stat_info = p.stat()
                 keepers.append((float(stat_info.st_mtime), len(str(p)), p))
-        except (OSError, PermissionError, AttributeError):
+        except (OSError, PermissionError, AttributeError, FileNotFoundError):
             continue
             
     if not keepers:

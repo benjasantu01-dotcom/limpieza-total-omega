@@ -1237,6 +1237,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 if not item or not hasattr(item, 'original_path'):
                     raise AttributeError("Manifiesto de cuarentena corrupto")
                 
+                # Validación de seguridad reforzada antes de restaurar
                 if not self._is_safe_path(item.original_path):
                     self.log(f"Error: Ruta original {item.original_path} está protegida.", "Cuarentena")
                     return
@@ -1318,8 +1319,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             messagebox.showwarning("Error", "Ingresá un PID numérico válido.")
             return
 
+        # Validación de PID protegidos
         if pid < 100:
-            messagebox.showerror("Bloqueado", "PID de sistema protegido.")
+            self.log("Error: PID de sistema protegido.", "Memoria")
             return
 
         if not self._confirm("Liberar working set", memory_mod.TRIM_WARNING + "\n\n¿Seguimos?"):

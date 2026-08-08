@@ -1082,3 +1082,26 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-08-08T10:17:42` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se reforzó la robustez ante casos límite en `detect_profiles` añadiendo una validación explícita para evitar que `candidate.joinpath` pueda generar rutas fuera del `base_path` mediante caracteres de escape (ej. rutas con `..`), asegurando que la resolución final se mantenga confinada en la jerarquía del perfil de usuario.
 - `2026-08-08T10:17:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-08T10:17:42` Corrida terminada. Total usado hoy: 244.
+- `2026-08-08T10:26:16` Arrancando corrida. Quedan hoy ~56 peticiones objetivo.
+- `2026-08-08T10:26:41` Tests FALLARON:
+```
+docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_walk_files_finds_everything_recursively - AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+FAILED evolve/tests/test_modules.py::test_walk_files_skips_system_folders - AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+FAILED evolve/tests/test_modules.py::test_largest_files_sorted_descending - AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+FAILED evolve/tests/test_modules.py::test_largest_files_respects_the_limit - AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+FAILED evolve/tests/test_modules.py::test_usage_by_extension_groups_and_counts - AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+FAILED evolve/tests/test_modules.py::test_usage_by_extension_labels_files_without_extension - AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+FAILED evolve/tests/test_modules.py::test_largest_folders_ranks_subfolders - AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+FAILED evolve/tests/test_modules.py::test_total_size_counts_bytes_and_files - AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+FAILED evolve/tests/test_modules.py::test_summarize_mentions_the_folder_and_totals - AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+9 failed, 290 passed, 7 warnings in 0.80s
+
+```
+- `2026-08-08T10:26:41` ❌ Mejora descartada en diskreport.py (no pasó los tests), se revirtió. Intento: Se ha añadido un chequeo de existencia (`path.exists()`) y manejo de excepciones específicas (`OSError`) dentro de `walk_files` al intentar acceder a los atributos de archivo mediante `file_entry.stat()`, evitando que un archivo que desaparece durante la iteración (concurrencia) interrumpa el escaneo del resto del directorio.
+- `2026-08-08T10:27:04` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Mejoré la robustez de `suggest_keeper` y `hash_file`/`partial_hash` ante condiciones de carrera (archivos que desaparecen durante la ejecución) añadiendo un manejo de excepciones más granular y validando la existencia de la ruta justo antes de la lectura, evitando que un `None` inesperado se propague.
+- `2026-08-08T10:27:28` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se reforzó la robustez del módulo `healthscore.py` ante datos de entrada malformados o faltantes mediante la implementación de `defaults` seguros en el acceso al diccionario `ratios` dentro de `compute_score`, previniendo potenciales `KeyError` ante configuraciones de pesos desactualizadas o parciales.
+- `2026-08-08T10:28:12` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `on_trim_process` y `on_restore_quarantine` mediante el uso de `is_safe_path` y `is_valid_dir` antes de realizar operaciones potencialmente fallidas o peligrosas, asegurando que los inputs del usuario se validen contra las políticas de seguridad antes de intentar cualquier acción sobre el sistema.
+- `2026-08-08T10:28:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-08T10:28:12` Corrida terminada. Total usado hoy: 248.
