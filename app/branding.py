@@ -296,17 +296,19 @@ def logo_svg(size: int = 128) -> str:
 
 def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     """Persiste el logo SVG en disco tras validar la seguridad de la ruta destino."""
-    if destination is None: return None
+    if not destination: return None
     try:
         target = Path(destination).resolve()
         parent = target.parent
         
-        # Validación atómica de seguridad
+        # Validación atómica de seguridad: usamos chequeo booleano preventivo
         if not is_safe_to_modify(parent) or not is_safe_to_modify(target):
             return None
             
-        ensure_safe_to_modify(parent)
-        parent.mkdir(parents=True, exist_ok=True)
+        # El directorio debe existir para ser validado o creado
+        if not parent.exists():
+            ensure_safe_to_modify(parent)
+            parent.mkdir(parents=True, exist_ok=True)
         
         ensure_safe_to_modify(target)
         target.write_text(logo_svg(), encoding="utf-8")

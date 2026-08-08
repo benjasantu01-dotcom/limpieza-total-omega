@@ -178,36 +178,44 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     except (OSError, RuntimeError, TypeError):
         return
 
-    visited: set[Path] = {base_path}
+    # Usamos resolve() para detectar puntos de montaje y ciclos en el sistema de archivos
+    visited_inodes: set[Tuple[int, int]] = set()
+    
+    try:
+        stat_root = base_path.stat()
+        visited_inodes.add((stat_root.st_dev, stat_root.st_ino))
+    except OSError:
+        return
 
     def scan_level(current_path: Path) -> Generator[Tuple[Path, int], None, None]:
         try:
             with os.scandir(current_path) as iterator:
                 for file_entry in iterator:
                     try:
-                        resolved_path = Path(file_entry.path).resolve()
-                        
-                        if os.path.commonpath([str(base_path), str(resolved_path)]) != str(base_path):
-                            continue
-                        
-                        st = file_entry.stat(follow_symlinks=False)
-                        
-                        if os.name == 'nt' and (st.st_file_attributes & 0x400) != 0:
-                            continue
-                        elif file_entry.is_symlink():
+                        if file_entry.is_symlink():
                             continue
                             
+                        # Verificar atributos de sistema en Windows
+                        if os.name == 'nt':
+                            st_attrs = file_entry.stat(follow_symlinks=False).st_file_attributes
+                            if (st_attrs & 0x400) or (st_attrs & 0x2): 
+                                continue
+                            
                         if file_entry.is_dir():
-                            if resolved_path not in visited:
-                                if skip_protected and is_protected_path(resolved_path):
-                                    continue
-                                visited.add(resolved_path)
-                                yield from scan_level(resolved_path)
+                            path_res = Path(file_entry.path).resolve()
+                            if skip_protected and is_protected_path(path_res):
+                                continue
+                            
+                            st = file_entry.stat()
+                            inode = (st.st_dev, st.st_ino)
+                            if inode not in visited_inodes:
+                                visited_inodes.add(inode)
+                                yield from scan_level(path_res)
                         else:
-                            yield resolved_path, st.st_size
-                    except (OSError, PermissionError, RuntimeError):
+                            yield Path(file_entry.path), file_entry.stat().st_size
+                    except (OSError, PermissionError):
                         continue
-        except (OSError, PermissionError, RuntimeError):
+        except (OSError, PermissionError):
             return
 
     yield from scan_level(base_path)
@@ -253,7 +261,6 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
         if not base.exists() or not base.is_dir() or (skip_protected and is_protected_path(base)):
             return []
         
-        # Usar dicts simples para acumulación antes de instanciar objetos
         sums: Dict[Path, int] = defaultdict(int)
         counts: Dict[Path, int] = defaultdict(int)
         

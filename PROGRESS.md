@@ -6,47 +6,51 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **240** (47.6% de aceptación)
+- Mejoras aceptadas: **241** (47.8% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 206
+- Sin respuesta de la IA (error o límite): 205
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-06 | 6 | 0 | 1 | 0 | 11 |
+| 2026-08-06 | 3 | 0 | 1 | 0 | 10 |
 | 2026-08-07 | 158 | 12 | 17 | 14 | 149 |
-| 2026-08-08 | 76 | 1 | 9 | 4 | 46 |
+| 2026-08-08 | 80 | 1 | 9 | 4 | 46 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **58**
 - rendimiento: **55**
-- seguridad defensiva: **46**
 - manejo de errores y validación de entradas: **45**
-- robustez ante casos límite: **36**
+- seguridad defensiva: **43**
+- robustez ante casos límite: **40**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **21**
+- `diskreport.py`: **20**
 - `duplicates.py`: **20**
-- `diskreport.py`: **19**
-- `branding.py`: **19**
-- `assistant.py`: **19**
-- `memory.py`: **18**
-- `organizer.py`: **18**
-- `quarantine.py`: **18**
+- `branding.py`: **20**
+- `assistant.py`: **20**
 - `scanner.py`: **18**
 - `safety.py`: **18**
-- `browser.py`: **17**
+- `browser.py`: **18**
+- `memory.py`: **17**
+- `quarantine.py`: **17**
+- `organizer.py`: **17**
 - `main.py`: **14**
 - `healthscore.py`: **14**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-08T05:52:19` **diskreport.py** (robustez ante casos límite): Mejora la robustez del escaneo en `walk_files` mediante la implementación de un mecanismo de detección de enlaces simbólicos circulares y una validación estricta contra errores de acceso (`OSError`) durante la resolución de rutas, evitando bucles infinitos y fallos de ejecución ante permisos denegados en directorios protegidos.
+- `2026-08-08T05:52:09` **browser.py** (robustez ante casos límite): Se introdujo una validación robusta contra errores de permisos (`PermissionError`) y rutas bloqueadas dentro de `_sum_directory_recursive` mediante un manejo de excepciones granular y la exclusión preventiva de archivos de sistema, asegurando que el proceso de escaneo no se detenga ante archivos inaccesibles o bloqueados por el sistema operativo, manteniendo la integridad del flujo de trabajo.
+- `2026-08-08T05:51:45` **branding.py** (robustez ante casos límite): Se ha añadido un robusto manejo de errores de entrada en `save_logo_svg` y una validación de seguridad preventiva para evitar posibles estados inconsistentes del sistema de archivos, asegurando que las rutas malformadas o permisos denegados no interrumpan la ejecución.
+- `2026-08-08T05:51:16` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` ante entradas mal formadas asegurando que `junk_mb` y otras métricas críticas reciban valores predeterminados seguros incluso cuando `getattr` falla o retorna tipos inesperados, evitando que el asistente procese estados inconsistentes.
 - `2026-08-08T05:42:11` **startup.py** (rendimiento): Se implementó un mecanismo de caché persistente para el escaneo del registro, evitando múltiples llamadas costosas a PowerShell (`subprocess.run`) cuando el inventario se solicita varias veces en la misma sesión.
 - `2026-08-08T05:42:01` **settings.py** (rendimiento): Optimicé el rendimiento de `settings.py` evitando múltiples lecturas de disco y llamadas innecesarias a `is_safe_to_modify` mediante la implementación de un caché de validación en `_path_cache` y la serialización eficiente del estado del archivo.
 - `2026-08-08T05:41:37` **scanner.py** (rendimiento): Optimicé el rendimiento de `scan_file` y `scan_directory` evitando llamadas redundantes a `is_protected_path` y `is_safe_to_modify`, además de centralizar la resolución de atributos de archivo para minimizar las operaciones de I/O al escanear.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-08T05:20:47` **duplicates.py** (rendimiento): Se optimizó el proceso `_collect_candidates` utilizando un diccionario de `set` para evitar múltiples llamadas a `os.scandir` sobre el mismo directorio y añadiendo un chequeo preventivo de `is_protected_path` al inicio de `_scan`, reduciendo drásticamente las operaciones innecesarias de I/O en árboles de archivos grandes.
 - `2026-08-08T05:20:24` **diskreport.py** (rendimiento): Optimizé la función `summarize` para reducir el número de llamadas a `path.suffix` y `format_size` mediante la agregación lógica, y mejoré el uso de memoria en `largest_folders` evitando la creación innecesaria de objetos `FolderUsage` intermedios mediante el uso de un diccionario de contadores base.
 - `2026-08-08T05:11:23` **browser.py** (rendimiento): Se optimizó el proceso de escaneo de archivos mediante el reemplazo de `is_protected_path` por una verificación de conjunto (`set`) en el bucle de recursión, evitando llamadas repetitivas a funciones costosas y reduciendo el overhead en directorios con muchos archivos.
-- `2026-08-08T05:11:15` **branding.py** (rendimiento): Se ha optimizado la generación de degradados en `draw_logo` y `draw_gradient_bar` mediante la precarga de colores y el uso de `lru_cache`, evitando el recálculo costoso de interpolaciones dentro de los bucles de renderizado.
-- `2026-08-08T05:10:45` **assistant.py** (rendimiento): Optimicé el rendimiento de `_gen_problems` convirtiéndolo en un generador eficiente que evita la creación de listas intermedias mediante `islice` y reduje la carga de memoria al no procesar datos que no se van a mostrar.
-- `2026-08-08T05:10:11` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación de la clase `StartupEntry` y sus métodos internos mediante la adición de docstrings técnicos detallados que explican la lógica de resolución, la política de caché y el manejo de seguridad, facilitando la comprensión del flujo de datos sin alterar la funcionalidad.
-- `2026-08-08T05:00:55` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo documentando mediante tipos y docstrings los parámetros de las funciones, y optimicé la lógica de `_Validators` para que sea más clara al manejar los tipos esperados y sus límites.

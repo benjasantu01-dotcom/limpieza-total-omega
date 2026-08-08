@@ -195,6 +195,8 @@ def _ensure_safe_text(text: Any) -> bool:
 def _safe_assign(obj: SystemContext, attr: str, val: Any, cast: Callable = float, min_val: float = 0.0, max_val: float = float('inf')) -> None:
     """Asigna un valor a un atributo de SystemContext tras validar tipo, rango y finitud."""
     try:
+        if val is None:
+            return
         clean = cast(val)
         if math.isfinite(clean):
             setattr(obj, attr, max(min_val, min(clean, max_val)))
@@ -229,8 +231,9 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         ctx.analyzed = True
 
     for k, v in extra.items():
-        if hasattr(ctx, k) and isinstance(v, (int, float)):
-            _safe_assign(ctx, k, v)
+        if hasattr(ctx, k):
+            attr_type = int if isinstance(getattr(ctx, k), int) else float
+            _safe_assign(ctx, k, v, cast=attr_type)
 
     return ctx
 
