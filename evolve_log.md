@@ -1112,3 +1112,10 @@ FAILED evolve/tests/test_modules.py::test_summarize_mentions_the_folder_and_tota
 - `2026-08-08T10:37:47` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-08-08T10:37:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-08T10:37:47` Corrida terminada. Total usado hoy: 252.
+- `2026-08-08T10:46:32` Arrancando corrida. Quedan hoy ~48 peticiones objetivo.
+- `2026-08-08T10:46:57` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
+- `2026-08-08T10:47:20` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Mejoré la robustez de `scanner.py` ante archivos corruptos o bloqueados capturando excepciones críticas durante el acceso a metadatos de archivos (vía `os.DirEntry.stat()`) y verificando la existencia del archivo antes de procesarlo, evitando así que el escaneo se interrumpa por errores de I/O impredecibles en archivos en uso o con permisos restringidos.
+- `2026-08-08T10:47:45` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se reforzó la robustez del cargador de configuración ante archivos truncados o con contenido malicioso (como un archivo vacío o un JSON masivo) añadiendo verificaciones explícitas de estado y tipo, evitando que `json.load` procese estructuras inesperadas que podrían causar excepciones no controladas.
+- `2026-08-08T10:47:54` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-08-08T10:47:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-08T10:47:54` Corrida terminada. Total usado hoy: 256.

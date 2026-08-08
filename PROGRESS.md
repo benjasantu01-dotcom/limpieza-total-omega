@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **245** (48.6% de aceptación)
+- Mejoras aceptadas: **247** (49.0% de aceptación)
 - Rechazadas por tests: 9
 - Rechazadas por guardia de seguridad: 26
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 205
+- Sin respuesta de la IA (error o límite): 203
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-07 | 108 | 5 | 11 | 10 | 118 |
-| 2026-08-08 | 137 | 4 | 15 | 9 | 87 |
+| 2026-08-07 | 108 | 5 | 11 | 10 | 114 |
+| 2026-08-08 | 139 | 4 | 15 | 9 | 89 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **63**
 - rendimiento: **51**
 - manejo de errores y validación de entradas: **50**
-- robustez ante casos límite: **41**
+- robustez ante casos límite: **43**
 - seguridad defensiva: **40**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **21**
+- `settings.py`: **21**
 - `branding.py`: **20**
-- `settings.py`: **20**
 - `duplicates.py`: **20**
+- `scanner.py`: **19**
 - `browser.py`: **18**
 - `healthscore.py`: **18**
 - `memory.py`: **18**
-- `scanner.py`: **18**
 - `diskreport.py`: **18**
 - `quarantine.py`: **18**
 - `safety.py`: **17**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-08T10:47:45` **settings.py** (robustez ante casos límite): Se reforzó la robustez del cargador de configuración ante archivos truncados o con contenido malicioso (como un archivo vacío o un JSON masivo) añadiendo verificaciones explícitas de estado y tipo, evitando que `json.load` procese estructuras inesperadas que podrían causar excepciones no controladas.
+- `2026-08-08T10:47:20` **scanner.py** (robustez ante casos límite): Mejoré la robustez de `scanner.py` ante archivos corruptos o bloqueados capturando excepciones críticas durante el acceso a metadatos de archivos (vía `os.DirEntry.stat()`) y verificando la existencia del archivo antes de procesarlo, evitando así que el escaneo se interrumpa por errores de I/O impredecibles en archivos en uso o con permisos restringidos.
 - `2026-08-08T10:37:43` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` ante fallas de entrada/salida durante la fase de copia atómica y persistencia del manifiesto, asegurando que si ocurre una excepción tras mover el archivo al sandbox pero antes de actualizar el manifiesto, el sistema intente revertir el movimiento para evitar dejar archivos huérfanos o inconsistencias.
 - `2026-08-08T10:36:51` **memory.py** (robustez ante casos límite): Se mejora la robustez de `trim_working_set` añadiendo una validación explícita para evitar intentar manipular procesos que están en proceso de cierre o que el sistema operativo protege activamente, manejando el posible fallo de `OpenProcess` con más detalle ante errores de permisos.
 - `2026-08-08T10:28:12` **main.py** (robustez ante casos límite): Se ha mejorado la robustez de `on_trim_process` y `on_restore_quarantine` mediante el uso de `is_safe_path` y `is_valid_dir` antes de realizar operaciones potencialmente fallidas o peligrosas, asegurando que los inputs del usuario se validen contra las políticas de seguridad antes de intentar cualquier acción sobre el sistema.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-08T09:46:58` **healthscore.py** (rendimiento): Optimicé el cálculo del `breakdown` en `compute_score` reemplazando la iteración sobre `_WEIGHT_ITEMS` (que requería búsquedas `.get()` en cada vuelta) por una estructura que aprovecha la relación directa entre áreas y métricas, reduciendo la complejidad de acceso en el hot-loop y eliminando operaciones redundantes de punto flotante.
 - `2026-08-08T09:46:27` **diskreport.py** (rendimiento): Optimizamos `summarize` para realizar una sola pasada por los datos, eliminando la redundancia de cálculos al procesar los archivos y mejorando la gestión de memoria al usar un min-heap de tamaño fijo para el top de archivos más grandes.
 - `2026-08-08T09:46:01` **browser.py** (rendimiento): Optimicé el rendimiento de `_sum_directory_recursive` mediante el uso de `os.scandir` de forma más eficiente y evitando la creación redundante de objetos `Path` y múltiples llamadas a `is_junction` dentro del bucle, reduciendo significativamente el overhead de llamadas al sistema.
-- `2026-08-08T09:36:56` **branding.py** (rendimiento): Se optimizó el rendimiento de `draw_logo` y `draw_gradient_bar` reemplazando la creación individual de múltiples objetos geométricos por la creación de bloques agrupados mediante la detección de colores adyacentes idénticos, reduciendo drásticamente la carga sobre el canvas de Tkinter en cada redibujado.
-- `2026-08-08T09:36:42` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` y `_gen_problems` evitando la creación de listas intermedias innecesarias, delegando la serialización del contexto a un generador eficiente y utilizando `next()` con valor por defecto para búsquedas de primer elemento.

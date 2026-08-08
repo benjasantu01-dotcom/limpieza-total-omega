@@ -91,7 +91,9 @@ class Scanner:
                     self.seen.add(entry.path)
                     stack.append(entry.path)
             elif entry.is_file(follow_symlinks=False):
-                # Pre-calculamos para evitar llamadas repetidas en las reglas
+                # Verificar existencia real antes de procesar para evitar I/O race conditions
+                if not path_obj.exists():
+                    return
                 name = entry.name
                 suffix = os.path.splitext(name)[1].lower()
                 self.results.extend(scan_file(path_obj, entry=entry, name=name, suffix=suffix))
@@ -108,7 +110,8 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, name
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, hours: int = RECENT_FILE_THRESHOLD_HOURS) -> Optional[Suspicion]:
     try:
-        st = entry.stat() if entry else path.lstat()
+        # Uso de entry.stat si está disponible, es más eficiente y seguro que path.lstat()
+        st = entry.stat() if entry else path.stat()
         mtime = st.st_mtime
         if mtime <= 0: return None
         if datetime.now() - datetime.fromtimestamp(mtime) < timedelta(hours=hours):

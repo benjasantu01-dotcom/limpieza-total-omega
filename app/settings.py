@@ -181,9 +181,8 @@ def load(path_or_base: PathLike | None = None) -> AppSettings:
         return _cached_settings.copy()
     
     try:
-        if ruta.exists():
-            size = ruta.stat().st_size
-            if 0 < size <= MAX_SETTINGS_SIZE:
+        if ruta.exists() and ruta.is_file():
+            if 0 < ruta.stat().st_size <= MAX_SETTINGS_SIZE:
                 with open(ruta, "r", encoding="utf-8") as f:
                     data = json.load(f)
                 if isinstance(data, dict):
