@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **237** (47.0% de aceptación)
-- Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 27
+- Mejoras aceptadas: **239** (47.4% de aceptación)
+- Rechazadas por tests: 13
+- Rechazadas por guardia de seguridad: 26
 - Sin cambios (nada sustancial que mejorar): 18
 - Sin respuesta de la IA (error o límite): 208
 
@@ -16,37 +16,41 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-06 | 13 | 1 | 2 | 0 | 14 |
+| 2026-08-06 | 11 | 0 | 1 | 0 | 14 |
 | 2026-08-07 | 158 | 12 | 17 | 14 | 149 |
-| 2026-08-08 | 66 | 1 | 8 | 4 | 45 |
+| 2026-08-08 | 70 | 1 | 8 | 4 | 45 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **58**
 - seguridad defensiva: **51**
+- rendimiento: **49**
 - manejo de errores y validación de entradas: **45**
-- rendimiento: **45**
-- robustez ante casos límite: **38**
+- robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **20**
 - `branding.py`: **20**
+- `diskreport.py`: **20**
 - `settings.py`: **20**
-- `quarantine.py`: **19**
-- `diskreport.py`: **19**
-- `duplicates.py`: **19**
-- `scanner.py`: **18**
+- `duplicates.py`: **20**
 - `browser.py`: **18**
+- `quarantine.py`: **18**
 - `memory.py`: **17**
 - `organizer.py`: **17**
+- `scanner.py`: **17**
 - `safety.py`: **17**
-- `healthscore.py`: **14**
-- `main.py`: **13**
+- `healthscore.py`: **15**
+- `main.py`: **14**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-08T05:21:56` **main.py** (rendimiento): Optimicé el sistema de caché centralizado (`_get_cached`) sustituyendo la búsqueda lineal en una `OrderedDict` por un acceso directo por clave, eliminando la necesidad de iterar sobre el diccionario para la invalidación selectiva mediante la creación de un `set` de claves activas que permite búsquedas en tiempo constante $O(1)$.
+- `2026-08-08T05:21:12` **healthscore.py** (rendimiento): Optimicé el bucle principal de `compute_score` eliminando la creación de diccionarios intermedios y el acceso repetido a `scores.get` dentro del ciclo, reemplazándolo por una iteración directa sobre un nuevo diccionario `raw_scores` pre-mapeado para reducir el overhead de búsqueda en cada iteración del bucle ponderado.
+- `2026-08-08T05:20:47` **duplicates.py** (rendimiento): Se optimizó el proceso `_collect_candidates` utilizando un diccionario de `set` para evitar múltiples llamadas a `os.scandir` sobre el mismo directorio y añadiendo un chequeo preventivo de `is_protected_path` al inicio de `_scan`, reduciendo drásticamente las operaciones innecesarias de I/O en árboles de archivos grandes.
+- `2026-08-08T05:20:24` **diskreport.py** (rendimiento): Optimizé la función `summarize` para reducir el número de llamadas a `path.suffix` y `format_size` mediante la agregación lógica, y mejoré el uso de memoria en `largest_folders` evitando la creación innecesaria de objetos `FolderUsage` intermedios mediante el uso de un diccionario de contadores base.
 - `2026-08-08T05:11:23` **browser.py** (rendimiento): Se optimizó el proceso de escaneo de archivos mediante el reemplazo de `is_protected_path` por una verificación de conjunto (`set`) en el bucle de recursión, evitando llamadas repetitivas a funciones costosas y reduciendo el overhead en directorios con muchos archivos.
 - `2026-08-08T05:11:15` **branding.py** (rendimiento): Se ha optimizado la generación de degradados en `draw_logo` y `draw_gradient_bar` mediante la precarga de colores y el uso de `lru_cache`, evitando el recálculo costoso de interpolaciones dentro de los bucles de renderizado.
 - `2026-08-08T05:10:45` **assistant.py** (rendimiento): Optimicé el rendimiento de `_gen_problems` convirtiéndolo en un generador eficiente que evita la creación de listas intermedias mediante `islice` y reduje la carga de memoria al no procesar datos que no se van a mostrar.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-08T04:41:38` **healthscore.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo mediante la adición de docstrings estructurados con tipado claro, la clarificación del propósito de los cálculos auxiliares y la estandarización de las interfaces de las funciones de normalización para asegurar una documentación técnica coherente con el enfoque exigido.
 - `2026-08-08T04:40:21` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del pipeline de procesamiento mediante docstrings enriquecidos con la complejidad algorítmica y el flujo lógico de las etapas de filtrado, facilitando el mantenimiento a futuro.
 - `2026-08-08T04:39:57` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `walk_files` y `summarize` mediante la adición de docstrings técnicos detallados, especificando el manejo de errores y la lógica de filtrado para que otros desarrolladores comprendan rápidamente las restricciones de seguridad y el comportamiento ante excepciones.
-- `2026-08-08T04:39:32` **browser.py** (legibilidad y documentación): Mejoré la documentación de `_is_safe_path` y `_sum_directory_recursive` mediante docstrings detallados que explican el "porqué" de las validaciones de seguridad, clarificando la intención técnica detrás de cada chequeo defensivo.
-- `2026-08-08T04:30:53` **branding.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints más precisos en las funciones de manipulación gráfica (`draw_logo`, `draw_gradient_bar`, `draw_ring`) para aclarar las expectativas de las coordenadas y las transformaciones geométricas, facilitando el mantenimiento técnico de la UI.
-- `2026-08-08T04:30:39` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `build_context`, extrayendo la lógica repetitiva de validación de métricas en un método privado `_safe_assign` que unifica el manejo de tipos, rangos y valores por defecto, eliminando redundancias.
-- `2026-08-08T04:20:08` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `scan_file` y `check_system_lookalike` validando estrictamente la presencia de `path.name` y evitando errores de tipo `TypeError` o `AttributeError` al manejar rutas que podrían estar incompletas o malformadas durante iteraciones críticas del escáner.

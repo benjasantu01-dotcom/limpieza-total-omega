@@ -167,13 +167,6 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Generador recursivo que recorre archivos bajo `directory`.
-    
-    Técnicas de seguridad aplicadas:
-      - Resuelve rutas a absolutas para evitar redundancia.
-      - Verifica `is_protected_path` en cada nivel para evitar rutas del sistema.
-      - Utiliza `os.path.commonpath` para asegurar que el recorrido no escape del directorio base.
-      - Filtra puntos de reparse (Windows) y symlinks para prevenir bucles infinitos.
-      - Gestiona silenciosamente errores de permisos (OSError/PermissionError) por acceso denegado.
     """
     if not directory:
         return
@@ -194,13 +187,11 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                     try:
                         resolved_path = Path(file_entry.path).resolve()
                         
-                        # Seguridad: verificar containment real mediante commonpath
                         if os.path.commonpath([str(base_path), str(resolved_path)]) != str(base_path):
                             continue
                         
                         st = file_entry.stat(follow_symlinks=False)
                         
-                        # Bloqueo de Reparse Points en Windows (Attribute 0x400)
                         if os.name == 'nt' and (st.st_file_attributes & 0x400) != 0:
                             continue
                         elif file_entry.is_symlink():
@@ -253,10 +244,7 @@ def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip
 
 
 def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
-    """
-    Agrupa recursivamente el peso de todos los archivos dentro de las subcarpetas 
-    inmediatas al nivel superior del directorio base dado.
-    """
+    """Agrupa recursivamente el peso de carpetas inmediatas usando contadores locales."""
     if not directory or limit <= 0:
         return []
     
@@ -265,36 +253,28 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
         if not base.exists() or not base.is_dir() or (skip_protected and is_protected_path(base)):
             return []
         
-        folder_map: Dict[Path, FolderUsage] = {}
+        # Usar dicts simples para acumulación antes de instanciar objetos
+        sums: Dict[Path, int] = defaultdict(int)
+        counts: Dict[Path, int] = defaultdict(int)
+        
         for path, size in walk_files(base, skip_protected):
             try:
                 relative = path.relative_to(base)
-                if not relative.parts:
-                    continue
+                if not relative.parts: continue
                 top_level = base / relative.parts[0]
-                
-                if top_level not in folder_map:
-                    folder_map[top_level] = FolderUsage(path=top_level, size_bytes=size, file_count=1)
-                else:
-                    ref = folder_map[top_level]
-                    ref.size_bytes += size
-                    ref.file_count += 1
-            except (OSError, ValueError):
-                continue
+                sums[top_level] += size
+                counts[top_level] += 1
+            except (OSError, ValueError): continue
 
-        return heapq.nlargest(limit, folder_map.values(), key=lambda f: f.size_bytes)
+        results = [FolderUsage(p, sums[p], counts[p]) for p in sums]
+        return heapq.nlargest(limit, results, key=lambda f: f.size_bytes)
     except (OSError, RuntimeError, TypeError):
         return []
 
 
 def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Tuple[int, int]:
-    """
-    Retorna el tamaño total y la cantidad de archivos encontrados en el directorio.
-    """
-    if not directory:
-        return 0, 0
-    total_bytes = 0
-    file_count = 0
+    """Retorna el tamaño total y la cantidad de archivos encontrados."""
+    total_bytes, file_count = 0, 0
     for _, size in walk_files(directory, skip_protected):
         total_bytes += size
         file_count += 1
@@ -302,59 +282,32 @@ def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 
 
 def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -> List[str]:
-    """
-    Genera un reporte textual estructurado del uso de disco.
+    """Genera reporte estructurado con agregación eficiente de datos."""
+    if not directory: return ["Error: Ruta no proporcionada."]
+    path_obj = Path(directory).expanduser().resolve()
     
-    La función agrega métricas en tiempo real mientras recorre el directorio,
-    manteniendo un heap de los archivos más pesados encontrados para evitar
-    re-procesar la lista completa al finalizar.
-    """
-    if not directory:
-        return ["Error: Ruta no proporcionada."]
-        
-    try:
-        path_obj = Path(directory).expanduser().resolve()
-        if not path_obj.exists() or not path_obj.is_dir():
-            return [f"Error: La ruta '{directory}' no es un directorio válido."]
-        if skip_protected and is_protected_path(path_obj):
-            return [f"Error: La ruta '{path_obj}' está protegida."]
-            
-    except (OSError, RuntimeError, TypeError):
-        return ["Error: No se pudo acceder a la ruta especificada."]
-        
-    ext_size_map: Dict[str, int] = defaultdict(int)
-    ext_count_map: Dict[str, int] = defaultdict(int)
+    ext_data: Dict[str, List[int]] = defaultdict(lambda: [0, 0]) # [size, count]
     top_files_heap: List[Tuple[int, str]] = []
-    
-    total_bytes: int = 0
-    total_files: int = 0
+    total_bytes, total_files = 0, 0
     
     for path, size in walk_files(path_obj, skip_protected):
         total_bytes += size
         total_files += 1
         
-        ext_name = path.suffix.lower() or "(sin extensión)"
-        ext_size_map[ext_name] += size
-        ext_count_map[ext_name] += 1
+        data = ext_data[path.suffix.lower() or "(sin extensión)"]
+        data[0] += size
+        data[1] += 1
         
-        # Mantener solo los 8 archivos más pesados en el heap
-        if len(top_files_heap) < 8:
-            heapq.heappush(top_files_heap, (size, str(path)))
-        elif size > (top_files_heap[0][0] if top_files_heap else -1):
-            heapq.heapreplace(top_files_heap, (size, str(path)))
+        if len(top_files_heap) < 8: heapq.heappush(top_files_heap, (size, str(path)))
+        elif size > top_files_heap[0][0]: heapq.heapreplace(top_files_heap, (size, str(path)))
 
-    lines = [
-        f"Carpeta analizada: {path_obj}",
-        f"Total: {format_size(total_bytes)} en {total_files} archivos",
-        "",
-        "Por tipo de archivo:",
-    ]
+    lines = [f"Carpeta analizada: {path_obj}", f"Total: {format_size(total_bytes)} en {total_files} archivos", "", "Por tipo de archivo:"]
     
-    for ext, size in heapq.nlargest(8, ext_size_map.items(), key=lambda item: item[1]):
-        lines.append(f"  {ext:<18} {format_size(size):>10}  ({ext_count_map[ext]} archivos)")
+    sorted_exts = heapq.nlargest(8, ext_data.items(), key=lambda item: item[1][0])
+    for ext, (size, count) in sorted_exts:
+        lines.append(f"  {ext:<18} {format_size(size):>10}  ({count} archivos)")
         
-    lines.append("")
-    lines.append("Archivos más grandes:")
+    lines.extend(["", "Archivos más grandes:"])
     for size, path in sorted(top_files_heap, key=lambda x: x[0], reverse=True):
         lines.append(f"  {format_size(size):>10}  {path}")
         

@@ -162,6 +162,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         ajustes y el pool de hilos para procesos asíncronos.
         """
         self._cache: OrderedDict[str, Tuple[Any, float]] = OrderedDict()
+        self._cache_keys: Dict[str, List[str]] = {}
         self._cache_ttl = 300
         self._cache_max_size = 20
         
@@ -770,7 +771,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 data = provider()
                 if data is not None:
                     if len(self._cache) >= self._cache_max_size:
-                        # Política FIFO (popitem(last=False)) para mantener el tamaño bajo control
                         self._cache.popitem(last=False)
                     self._cache[key] = (data, now)
                 return data
@@ -1055,7 +1055,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             directories = [self.scan_target] if self.scan_target else None
             junk = scan_for_junk(directories)
             
-            # Gestión de caché: invalidar caché previo de basura antes de insertar el nuevo
             self._invalidate_cache("junk")
             self._cache["junk"] = (junk, time.time())
             

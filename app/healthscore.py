@@ -233,8 +233,8 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     if not metrics.is_finite() or not _validate_weights() or _NORM_FACTOR <= 0.0:
         return HealthResult(0, "F", {}, ["Error: Datos de entrada o configuración no procesables."])
 
-    # Normalización: convierte métricas a un valor 0.0-1.0
-    scores: ScoreMap = {
+    # Normalización directa: mapeo pre-cálculo para evitar búsquedas en dicts en el hot-loop
+    raw_scores = {
         "seguridad": score_security(metrics.suspicious_count, metrics.suspicious_warnings),
         "disco": score_disk(metrics.disk_free_percent),
         "memoria": score_memory(metrics.memory_available_percent),
@@ -248,8 +248,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     
     # Cálculo ponderado utilizando el factor de normalización precalculado
     for area, weight in _WEIGHT_ITEMS:
-        w_val = float(weight)
-        score_val: float = scores.get(area, 0.0) * w_val * _NORM_FACTOR
+        score_val: float = raw_scores[area] * float(weight) * _NORM_FACTOR
         if math.isfinite(score_val):
             breakdown[area] = int(score_val + 0.5)
             total_weighted_score += score_val
@@ -263,7 +262,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         score=final_score,
         grade=grade_for_score(final_score),
         breakdown=breakdown,
-        recommendations=_generate_recommendations(metrics, scores),
+        recommendations=_generate_recommendations(metrics, raw_scores),
     )
 
 

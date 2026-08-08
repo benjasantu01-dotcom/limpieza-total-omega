@@ -161,9 +161,6 @@ def _collect_candidates(
 ) -> Dict[int, List[Path]]:
     """
     Realiza un escaneo recursivo del sistema de archivos para indexar por tamaño.
-    
-    Implementa prevención de ciclos mediante el seguimiento de inodos (st_ino) y 
-    evita el seguimiento de puntos de reparse (Junctions/Symlinks) en Windows.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: Dict[int, set[int]] = defaultdict(set)
@@ -171,13 +168,13 @@ def _collect_candidates(
     if directories is None: return temp_groups
     
     def _scan(root_path: Path) -> None:
+        if skip_protected and is_protected_path(root_path):
+            return
         try:
             with os.scandir(root_path) as dir_iterator:
                 for entry in dir_iterator:
                     try:
                         entry_stat = entry.stat(follow_symlinks=False)
-                        
-                        # Detectar puntos de reparse (Junctions/Symlinks)
                         if getattr(entry_stat, 'st_file_attributes', 0) & 0x400:
                             continue
                         
@@ -185,8 +182,7 @@ def _collect_candidates(
                         if entry.is_dir(follow_symlinks=False):
                             if entry_stat.st_ino not in visited_inodes[entry_stat.st_dev]:
                                 visited_inodes[entry_stat.st_dev].add(entry_stat.st_ino)
-                                if not (skip_protected and is_protected_path(entry_path)):
-                                    _scan(entry_path)
+                                _scan(entry_path)
                         
                         elif entry.is_file(follow_symlinks=False):
                             if entry_stat.st_size >= min_size:
@@ -198,7 +194,7 @@ def _collect_candidates(
     for directory in directories:
         if directory is None: continue
         path_obj = Path(directory)
-        if path_obj.is_dir() and not (skip_protected and is_protected_path(path_obj)):
+        if path_obj.is_dir():
             _scan(path_obj)
             
     return {size: paths for size, paths in temp_groups.items() if len(paths) > 1}
