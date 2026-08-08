@@ -202,7 +202,15 @@ def score_color(score: Union[float, int, None]) -> HexColor:
 
 def bar(percent: Union[float, int, None], width: int = 24,
         filled: str = "\u2588", empty: str = "\u2591") -> str:
-    """Crea una representación visual de progreso en texto usando caracteres unicode."""
+    """
+    Crea una representación visual de progreso en texto.
+    
+    Args:
+        percent: Valor numérico (0-100).
+        width: Cantidad total de caracteres.
+        filled: Carácter para el relleno.
+        empty: Carácter para el vacío.
+    """
     try:
         valor = max(0.0, min(100.0, float(percent))) # type: ignore
     except (TypeError, ValueError):
@@ -319,7 +327,14 @@ def logo_ascii() -> str:
 
 
 def draw_logo(canvas: Any, size: int = 56, canvas_x: int = 0, canvas_y: int = 0) -> None:
-    """Renderiza el logo vectorial en un canvas de Tkinter aplicando transformaciones."""
+    """
+    Renderiza el logo vectorial en un canvas de Tkinter.
+    
+    Args:
+        canvas: Widget Tkinter donde dibujar.
+        size: Tamaño base en píxeles.
+        canvas_x, canvas_y: Coordenadas de origen.
+    """
     if not hasattr(canvas, "create_polygon"): return
     try:
         s = max(0.1, float(size) / 128)
@@ -353,7 +368,14 @@ def draw_logo(canvas: Any, size: int = 56, canvas_x: int = 0, canvas_y: int = 0)
 def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
                       canvas_x: int = 0, canvas_y: int = 0,
                       stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
-    """Dibuja una franja horizontal con degradado optimizado mediante segmentos de color."""
+    """
+    Dibuja una franja horizontal con degradado optimizado mediante segmentos.
+    
+    Args:
+        canvas: Widget Tkinter destino.
+        width: Ancho total de la franja.
+        height: Grosor del trazo.
+    """
     if not hasattr(canvas, "create_line"): return
     try:
         ancho = max(1, int(width))
@@ -372,7 +394,15 @@ def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
               canvas_x: int = 0, canvas_y: int = 0, thickness: int = 14,
               track: Optional[HexColor] = None,
               fill: Optional[HexColor] = None) -> None:
-    """Renderiza un anillo circular dinámico indicando progreso o estado de salud."""
+    """
+    Renderiza un anillo circular dinámico indicando progreso.
+    
+    Args:
+        canvas: Widget Tkinter destino.
+        percent: Valor de progreso (0-100).
+        size: Diámetro del anillo.
+        thickness: Grosor del anillo.
+    """
     if not hasattr(canvas, "create_arc"): return
     try:
         val_f = float(percent)

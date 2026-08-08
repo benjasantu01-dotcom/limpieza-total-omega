@@ -98,10 +98,12 @@ def base_directories() -> List[Path]:
 
 def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> bool:
     """
-    Valida que la ruta sea segura:
-    1. Verifica existencia y que esté contenida en base_path (previene escape).
-    2. Bloquea rutas UNC, puntos de reparse (junctions) y caracteres de control.
-    3. Confirma que la ruta no esté marcada como protegida por safety.py.
+    Valida la integridad de una ruta antes de realizar operaciones de lectura.
+    
+    Comprueba:
+    - Que el path esté bajo base_path (evita Path Traversal).
+    - Que no sea un punto de reparse (junction/symlink) para evitar bucles.
+    - Que la ruta no contenga caracteres de control o nombres protegidos.
     """
     if not isinstance(target_path, Path) or not isinstance(base_path, Path):
         return False
@@ -139,14 +141,14 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
 
 
 def _is_excluded_file(name: str) -> bool:
-    """Verifica si un nombre de archivo está en la lista de exclusión global."""
+    """Verifica si el nombre de archivo (case-insensitive) figura en la lista de exclusión global NEVER_TOUCH."""
     return name.lower() in NEVER_TOUCH
 
 
 def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool]) -> int:
     """
     Calcula el peso total de un directorio mediante escaneo recursivo.
-    Usa os.DirEntry para evitar llamadas a sistema redundantes (stat).
+    Usa os.DirEntry para eficiencia y evita seguir enlaces simbólicos/junctions.
     """
     total: int = 0
     if not root_dir or not os.path.exists(root_dir):
@@ -190,7 +192,7 @@ def directory_size(path: str | os.PathLike | None) -> int:
 
 
 def _is_valid_cache_path(candidate: Optional[Path], base_path: Path) -> bool:
-    """Valida que la ruta candidata al caché sea una carpeta real, segura y no protegida."""
+    """Valida si un path candidato es una carpeta de caché legítima, segura y apta para escaneo."""
     if not isinstance(candidate, Path) or not isinstance(base_path, Path):
         return False
     try:
