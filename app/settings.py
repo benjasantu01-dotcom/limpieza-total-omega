@@ -220,6 +220,9 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     temp_path: Path | None = None
     try:
         if not ruta.parent.exists(): ruta.parent.mkdir(parents=True, exist_ok=True)
+        # Si el archivo existe pero no podemos escribir, evitamos fallos bloqueantes
+        if ruta.exists() and not os.access(ruta, os.W_OK): return None
+        
         fd, temp_name = tempfile.mkstemp(dir=ruta.parent, text=True)
         temp_path = Path(temp_name)
         with os.fdopen(fd, "w", encoding="utf-8") as tf:

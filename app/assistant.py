@@ -72,6 +72,8 @@ __all__ = [
 MetricSource: TypeAlias = Any
 ScoreSource: TypeAlias = Any
 
+_MAX_TEXT_LENGTH: Final[int] = 1000
+
 # Documentación ejecutable de lo que nunca sale del equipo. El test de
 # privacidad recorre esta lista, así que agregar algo acá lo protege de verdad.
 SENSITIVE_KEYS_NEVER_SENT: Final[tuple[str, ...]] = (
@@ -181,7 +183,7 @@ def _ensure_safe_text(text: Any) -> bool:
     """
     if not isinstance(text, str) or not text:
         return False
-    if len(text) > 2000:
+    if len(text) > _MAX_TEXT_LENGTH:
         return False
     if _CONTROL_CHARS_REGEX.search(text):
         return False
@@ -451,7 +453,7 @@ def _call_gemini(
     if not isinstance(model, str) or not _MODEL_NAME_REGEX.match(model): return None
     
     safe_q: str = _sanitize_query(question)
-    safe_ctx: str = context_text[:1000]
+    safe_ctx: str = context_text[:_MAX_TEXT_LENGTH]
     
     if not _ensure_safe_text(safe_q) or not _ensure_safe_text(safe_ctx) or is_protected_path(safe_ctx):
         return None
@@ -483,7 +485,7 @@ def _call_gemini(
         parts = candidates[0].get("content", {}).get("parts", [])
         text = "".join(p.get("text", "") for p in parts if isinstance(p, dict))
         
-        final_text = text.strip()[:1500]
+        final_text = text.strip()[:_MAX_TEXT_LENGTH]
         return final_text if _ensure_safe_text(final_text) else None
     except (json.JSONDecodeError, urllib.error.URLError, TypeError, KeyError, ValueError, OSError):
         return None
