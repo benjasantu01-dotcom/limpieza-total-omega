@@ -209,7 +209,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     """
     ctx = SystemContext()
 
-    if metrics is not None and isinstance(metrics, object) and not isinstance(metrics, (list, dict)):
+    if metrics is not None and hasattr(metrics, "__dict__"):
         _safe_assign(ctx, "junk_mb", getattr(metrics, "junk_mb", 0.0))
         _safe_assign(ctx, "suspicious_count", getattr(metrics, "suspicious_count", 0), int)
         _safe_assign(ctx, "suspicious_warnings", getattr(metrics, "suspicious_warnings", 0), int)
@@ -222,7 +222,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         _safe_assign(ctx, "memory_total_gb", getattr(metrics, "memory_total_gb", 0.0))
         ctx.analyzed = True
 
-    if health is not None and isinstance(health, object) and not isinstance(health, (list, dict)):
+    if health is not None and hasattr(health, "__dict__"):
         raw_score = getattr(health, "score", None)
         if raw_score is not None:
             _safe_assign(ctx, "score", raw_score, int, max_val=100)

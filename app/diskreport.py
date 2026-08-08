@@ -178,7 +178,6 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     except (OSError, RuntimeError, TypeError):
         return
 
-    # Usamos resolve() para detectar puntos de montaje y ciclos en el sistema de archivos
     visited_inodes: set[Tuple[int, int]] = set()
     
     try:
@@ -195,7 +194,6 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                         if file_entry.is_symlink():
                             continue
                             
-                        # Verificar atributos de sistema en Windows
                         if os.name == 'nt':
                             st_attrs = file_entry.stat(follow_symlinks=False).st_file_attributes
                             if (st_attrs & 0x400) or (st_attrs & 0x2): 
@@ -293,7 +291,7 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
     if not directory: return ["Error: Ruta no proporcionada."]
     path_obj = Path(directory).expanduser().resolve()
     
-    ext_data: Dict[str, List[int]] = defaultdict(lambda: [0, 0]) # [size, count]
+    ext_data: Dict[str, List[int]] = defaultdict(lambda: [0, 0])
     top_files_heap: List[Tuple[int, str]] = []
     total_bytes, total_files = 0, 0
     

@@ -942,3 +942,10 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-08-08T08:17:51` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-08-08T08:17:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-08T08:17:51` Corrida terminada. Total usado hoy: 196.
+- `2026-08-08T08:23:51` Arrancando corrida. Quedan hoy ~104 peticiones objetivo.
+- `2026-08-08T08:24:30` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez del manejo de errores en `build_context` y `context_as_text` mediante la validación explícita de tipos de datos en la deserialización de métricas, evitando fallos silenciosos o comportamiento inesperado ante entradas malformadas.
+- `2026-08-08T08:24:58` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save_logo_svg` utilizando una validación de rutas más precisa y añadiendo un manejo de excepciones exhaustivo para asegurar que el sistema no falle ante nombres de archivo inválidos o permisos denegados.
+- `2026-08-08T08:25:20` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-08T08:25:29` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `largest_folders` capturando errores específicos al intentar obtener metadatos de archivos (como `stat` fallando por bloqueos del sistema o permisos cambiantes), evitando que una excepción inesperada detenga el análisis completo de una carpeta.
+- `2026-08-08T08:25:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-08T08:25:29` Corrida terminada. Total usado hoy: 200.
