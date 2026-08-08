@@ -40,6 +40,7 @@ class Suspicion:
     severity: str
 
 # Alias de tipos para mejorar la legibilidad y mantenibilidad de la lógica de escaneo
+# Los chequeos deben ser funciones puras que retornan un objeto Suspicion si hay hallazgo, o None.
 SuspicionCheck: TypeAlias = Callable[[Path, Optional[os.DirEntry], Optional[str], Optional[str]], Optional[Suspicion]]
 ScanResult: TypeAlias = List[Suspicion]
 
@@ -131,24 +132,28 @@ CHECK_REGISTRY: Final[dict[str, List[SuspicionCheck]]] = {
     "exec": [check_recent_executable_in_downloads, check_system_lookalike]
 }
 
+def _run_checks(checks: List[SuspicionCheck], *args) -> ScanResult:
+    """Ejecuta una lista de funciones de chequeo y recolecta las sospechas encontradas."""
+    findings: ScanResult = []
+    for check_func in checks:
+        if res := check_func(*args):
+            findings.append(res)
+    return findings
+
 def scan_file(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None) -> ScanResult:
+    """Aplica el set completo de heurísticas a un archivo según su tipo."""
     if not path or is_protected_path(path):
         return []
     
     n = name or path.name
     s = suffix or path.suffix.lower()
-    findings: ScanResult = []
     
     # Aplicar heurísticas universales
-    for check_func in CHECK_REGISTRY["all"]:
-        if res := check_func(path, entry, n, s):
-            findings.append(res)
+    findings = _run_checks(CHECK_REGISTRY["all"], path, entry, n, s)
     
-    # Aplicar heurísticas de ejecutables solo si corresponde
+    # Aplicar heurísticas de ejecutables si el archivo es potencialmente ejecutable
     if s in SUSPICIOUS_EXECUTABLE_EXT:
-        for check_func in CHECK_REGISTRY["exec"]:
-            if res := check_func(path, entry, n, s):
-                findings.append(res)
+        findings.extend(_run_checks(CHECK_REGISTRY["exec"], path, entry, n, s))
             
     return findings
 

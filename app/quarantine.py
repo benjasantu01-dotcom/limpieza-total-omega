@@ -114,11 +114,12 @@ class QuarantineItem:
 
     def verify_integrity(self, stored_path: Path) -> bool:
         """
-        Valida que el archivo en cuarentena no haya sido alterado.
+        Verifica que el archivo físico en el sandbox coincide con sus metadatos.
         
-        Compara metadatos de archivo físico contra el registro en el manifiesto.
         Args:
             stored_path: Ruta al archivo dentro de la cuarentena.
+        Returns:
+            True si el tamaño y hash SHA256 coinciden con el registro.
         """
         if not stored_path or not stored_path.is_file():
             return False
@@ -189,8 +190,15 @@ def _is_valid_quarantine_path(path: Path, root: Path) -> TypeGuard[Path]:
 
 def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
     """
-    Realiza validaciones de seguridad estrictas antes de mover un archivo a la cuarentena.
-    Incluye comprobaciones de integridad de ruta, permisos de sistema y colisiones.
+    Ejecuta una serie de chequeos preventivos antes de mover un archivo a cuarentena.
+    
+    Validaciones:
+      1. Formato de ruta y caracteres prohibidos.
+      2. Detección de puntos de reparse (symlinks/junctions).
+      3. Atributos de sistema en Windows.
+      4. Verificaciones cruzadas con `safety` (protegidas).
+      5. Prevención de colisiones y disparidad de unidades físicas.
+      6. Exclusividad de acceso.
     """
     # 1. Validación de formato de ruta
     if ":" in source_path.name.replace(source_path.drive, ""):
@@ -199,7 +207,7 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
     if ".." in source_path.parts or "\0" in str(source_path) or any(c in str(source_path.name) for c in "<>\"|?*"):
         raise UnsafePathError(f"Ruta con caracteres maliciosos o navegación prohibida: {source_path.name}")
     
-    # 2. Verificación de puntos de reparse (evitar recursión o acceso a rutas fuera del scope)
+    # 2. Verificación de puntos de reparse
     if source_path.is_symlink() or (hasattr(source_path, 'is_junction') and source_path.is_junction()):
         raise UnsafePathError(f"Operación denegada en punto de reparse: {source_path}")
 
