@@ -11,7 +11,6 @@ import os
 import stat
 import re
 import ctypes
-import sys
 from pathlib import Path
 from typing import Union, Iterable, TypeAlias, Final
 from functools import lru_cache
@@ -73,8 +72,6 @@ def _has_invalid_chars(path_str: str) -> bool:
     Evita que rutas maliciosas (como 'NUL' o caracteres de control) 
     interfieran con las llamadas de bajo nivel del sistema operativo.
     """
-    if not isinstance(path_str, str):
-        return True
     norm = os.path.normpath(path_str)
     return bool("\0" in path_str or re.search(r'[\u0000-\u001F\u007F-\u009F\u200E\u200F\u202A-\u202E]', path_str) or
                 norm.startswith(r"\\?") or norm.startswith(r"\\."))
@@ -158,8 +155,8 @@ def normalize(path: PathLike) -> Path:
     """
     Transforma y canoniza rutas, validando límites de longitud de sistema.
     """
-    if path is None or not isinstance(path, (str, os.PathLike)):
-        raise TypeError(f"Entrada inválida: tipo {type(path) if path is not None else 'None'} no soportado.")
+    if not isinstance(path, (str, os.PathLike)):
+        raise TypeError(f"Entrada inválida: tipo {type(path)} no soportado.")
     
     str_path = str(path).strip()
     if not str_path or len(str_path) > 260:
@@ -226,9 +223,10 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     if path is None:
         raise UnsafePathError("Ruta nula recibida.")
 
+    raw_path_str = str(path)
     p = normalize(path)
     
-    if ".." in str(path) or ".." in p.parts:
+    if ".." in raw_path_str.split(os.sep):
         raise UnsafePathError("Operación bloqueada: posible ataque de path traversal.")
 
     if base_dir and not is_within_directory(p, base_dir, allow_equal=True):
@@ -237,10 +235,10 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     if is_within_directory(p, Path.cwd(), allow_equal=True):
         raise UnsafePathError("Operación bloqueada: el archivo pertenece al directorio de ejecución.")
 
-    str_val = str(p)
-    if _has_invalid_chars(str_val) or _is_reserved_device_name(p.stem):
+    if _has_invalid_chars(raw_path_str) or _is_reserved_device_name(p.stem):
         raise UnsafePathError("Ruta inválida o formato bloqueado.")
-    if str_val.startswith(("\\\\", "//")):
+    
+    if raw_path_str.startswith(("\\\\", "//")):
         raise UnsafePathError("Operación bloqueada: rutas de red no permitidas.")
     
     if is_drive_root(p) or is_protected_path(p):
@@ -262,9 +260,7 @@ def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> bool:
     try:
         ensure_safe_to_modify(path, allow_sensitive=allow_sensitive)
         return True
-    except UnsafePathError:
-        return False
-    except (TypeError, ValueError, OSError):
+    except (UnsafePathError, TypeError, ValueError, OSError):
         return False
 
 
@@ -285,10 +281,11 @@ def describe_protection(path: PathLike) -> str:
     """Genera una explicación amigable sobre el motivo del bloqueo."""
     try:
         p = normalize(path)
+        raw_str = str(path)
     except (TypeError, ValueError):
         return "Ruta mal formada."
-    if str(p).startswith(("\\\\", "//")):
-        return f"'{p}' es una ruta de red."
+    if raw_str.startswith(("\\\\", "//")):
+        return f"'{raw_str}' es una ruta de red."
     if is_drive_root(p):
         return f"'{p}' es la raíz de una unidad."
     if is_protected_path(p):

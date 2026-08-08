@@ -197,7 +197,7 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
         "date": lambda f: f.modified
     }
         
-    criterio: str = str(by).lower()
+    criterio: str = str(by).lower() if by else "size"
     if criterio not in configs:
         criterio = "size"
         

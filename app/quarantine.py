@@ -325,7 +325,7 @@ def quarantine_file(
     _validate_isolation_request(source_path, dest_dir)
     
     if not os.access(dest_dir, os.W_OK):
-        raise PermissionError(f"Directorio de cuarentena no tiene permisos de escritura: {dest_dir}")
+        raise PermissionError(f"Directorio de cuarentena sin permisos de escritura: {dest_dir}")
     
     try:
         file_size = source_path.stat().st_size
@@ -369,7 +369,11 @@ def quarantine_file(
         if not destination.exists():
             raise RuntimeError("Error de escritura durante la puesta en cuarentena.")
             
-        _safe_unlink(source_path)
+        try:
+            os.remove(source_path)
+        except OSError as e:
+            raise RuntimeError(f"Error al eliminar el original tras la copia: {e}")
+            
     except Exception as e:
         if temp_dest.exists():
             _safe_unlink(temp_dest)
