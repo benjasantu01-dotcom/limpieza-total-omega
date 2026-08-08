@@ -212,6 +212,9 @@ def bar(percent: Union[float, int, None], width: int = 24,
         width: Cantidad total de caracteres de la barra.
         filled: Carácter para representar el segmento completado.
         empty: Carácter para representar el segmento pendiente.
+        
+    Returns:
+        Cadena con la representación visual de la barra.
     """
     try:
         valor = max(0.0, min(100.0, float(percent))) # type: ignore
@@ -328,6 +331,12 @@ def logo_ascii() -> str:
 def draw_logo(canvas: Any, size: int = 56, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
     """
     Renderiza el logo vectorial en un canvas de Tkinter.
+    
+    Args:
+        canvas: Widget de canvas de Tkinter donde dibujar.
+        size: Tamaño base en píxeles.
+        canvas_x: Offset horizontal en el canvas.
+        canvas_y: Offset vertical en el canvas.
     """
     if not hasattr(canvas, "create_polygon"): return
     try:
@@ -365,6 +374,14 @@ def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
                       stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
     """
     Dibuja una franja horizontal con degradado optimizado mediante bloques verticales.
+    
+    Args:
+        canvas: Widget de canvas de Tkinter.
+        width: Ancho total de la barra.
+        height: Altura de la barra en píxeles.
+        canvas_x: Offset horizontal.
+        canvas_y: Offset vertical.
+        stops: Colores para el degradado.
     """
     if not hasattr(canvas, "create_line"): return
     try:
@@ -385,6 +402,16 @@ def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
               fill: Optional[HexColor] = None) -> None:
     """
     Renderiza un anillo circular dinámico indicando progreso o estado numérico.
+    
+    Args:
+        canvas: Widget de canvas de Tkinter.
+        percent: Valor actual (0-100).
+        size: Diámetro del anillo.
+        canvas_x: Posición X.
+        canvas_y: Posición Y.
+        thickness: Grosor de la línea del anillo.
+        track: Color de fondo del anillo (track).
+        fill: Color del segmento de progreso (fill).
     """
     if not hasattr(canvas, "create_arc"): return
     try:

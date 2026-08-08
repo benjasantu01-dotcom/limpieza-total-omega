@@ -98,10 +98,9 @@ def base_directories() -> List[Path]:
 
 def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> bool:
     """
-    Valida la integridad de una ruta mediante técnicas de contención.
-    Verifica que la ruta resuelta no sea un vínculo simbólico, no escape
-    del directorio base (path traversal) y no contenga caracteres de
-    control ocultos que intenten engañar a la interfaz o al SO.
+    Valida que la ruta sea segura contra path traversal y manipulación maliciosa.
+    Verifica: existencia, límites de base, protección por safety.py, ausencia de 
+    vínculos simbólicos/junctions y caracteres Unicode de control/RTL.
     """
     if not isinstance(target_path, Path) or not isinstance(base_path, Path):
         return False
@@ -137,14 +136,15 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
 
 
 def _is_excluded_file(name: str) -> bool:
-    """Verifica si el nombre de archivo (case-insensitive) figura en la lista de exclusión global NEVER_TOUCH."""
+    """Valida si el nombre del archivo está en la lista negra de archivos sensibles."""
     return name.lower() in NEVER_TOUCH
 
 
 def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool]) -> int:
     """
-    Calcula el tamaño acumulado de una carpeta de forma segura y recursiva,
-    manejando errores de acceso a nivel de archivo individual.
+    Realiza un recorrido recursivo en profundidad (DFS) para sumar bytes.
+    Captura excepciones de acceso a nivel de archivo para evitar interrupciones 
+    en carpetas con permisos restringidos o archivos en uso.
     """
     total: int = 0
     try:
@@ -159,10 +159,8 @@ def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool
                     elif entry.is_file() and not _is_excluded_file(entry.name):
                         total += entry.stat().st_size
                 except (OSError, PermissionError):
-                    # Ignorar errores de acceso a archivos/carpetas individuales durante el recorrido
                     continue
     except (OSError, PermissionError):
-        # Ignorar errores de acceso al directorio base
         pass
     return total
 

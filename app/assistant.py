@@ -221,16 +221,21 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
             return default
 
     if metrics is not None:
-        _safe_assign(ctx, "junk_mb", get_attr(metrics, "junk_mb", 0.0))
-        _safe_assign(ctx, "suspicious_count", get_attr(metrics, "suspicious_count", 0), int)
-        _safe_assign(ctx, "suspicious_warnings", get_attr(metrics, "suspicious_warnings", 0), int)
-        _safe_assign(ctx, "memory_available_percent", get_attr(metrics, "memory_available_percent", 0.0), max_val=100.0)
-        _safe_assign(ctx, "disk_free_percent", get_attr(metrics, "disk_free_percent", 0.0), max_val=100.0)
-        _safe_assign(ctx, "duplicate_mb", get_attr(metrics, "duplicate_mb", 0.0))
-        _safe_assign(ctx, "startup_count", get_attr(metrics, "startup_count", 0), int)
-        _safe_assign(ctx, "quarantined_count", get_attr(metrics, "quarantined_count", 0), int)
-        _safe_assign(ctx, "browser_cache_mb", get_attr(metrics, "browser_cache_mb", 0.0))
-        _safe_assign(ctx, "memory_total_gb", get_attr(metrics, "memory_total_gb", 0.0))
+        # Mapeo de métricas: (atributo, tipo de cast, máximo opcional)
+        mappings = [
+            ("junk_mb", float, float('inf')),
+            ("suspicious_count", int, float('inf')),
+            ("suspicious_warnings", int, float('inf')),
+            ("memory_available_percent", float, 100.0),
+            ("disk_free_percent", float, 100.0),
+            ("duplicate_mb", float, float('inf')),
+            ("startup_count", int, float('inf')),
+            ("quarantined_count", int, float('inf')),
+            ("browser_cache_mb", float, float('inf')),
+            ("memory_total_gb", float, float('inf')),
+        ]
+        for attr, cast_func, max_v in mappings:
+            _safe_assign(ctx, attr, get_attr(metrics, attr, 0), cast=cast_func, max_val=max_v)
         ctx.analyzed = True
 
     if health is not None:
