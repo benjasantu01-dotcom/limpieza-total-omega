@@ -472,32 +472,6 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
     return success
 
 
-def _should_purge_file(entry: Path, quarantine_root: Path, item_map_by_name: Dict[str, QuarantineItem]) -> bool:
-    """
-    Verifica si una entrada del sistema de archivos es apta para borrado.
-    Valida contra: ruta base, existencia en manifiesto, integridad de archivo y seguridad del SO.
-    """
-    try:
-        if not entry.is_file():
-            return False
-        abs_entry = entry.resolve()
-        
-        # Validar confinamiento y pertenencia al manifiesto
-        if entry.name == MANIFEST_NAME or not _is_valid_quarantine_path(abs_entry, quarantine_root):
-            return False
-        
-        if entry.name not in item_map_by_name:
-            return False
-            
-        if not item_map_by_name[entry.name].verify_integrity(abs_entry):
-            return False
-        
-        ensure_safe_to_modify(abs_entry, allow_sensitive=False)
-        return True
-    except (UnsafePathError, OSError):
-        return False
-
-
 def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     """Vacía la carpeta de cuarentena procesando solo los archivos validados por el manifiesto."""
     try:
@@ -510,23 +484,26 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     item_map_by_name: Dict[str, QuarantineItem] = {item.stored_name: item for item in items}
     
     count = 0
-    remaining_items: List[QuarantineItem] = []
+    to_keep: List[QuarantineItem] = []
     
     for entry in quarantine_root.iterdir():
+        if entry.name == MANIFEST_NAME or entry.name not in item_map_by_name:
+            continue
+            
+        item = item_map_by_name[entry.name]
         try:
-            if _should_purge_file(entry, quarantine_root, item_map_by_name):
+            if item.verify_integrity(entry):
                 if _safe_unlink(entry):
                     count += 1
                 else:
-                    remaining_items.append(item_map_by_name[entry.name])
-            elif entry.name in item_map_by_name:
-                remaining_items.append(item_map_by_name[entry.name])
-        except (OSError, PermissionError):
-            if entry.name in item_map_by_name:
-                remaining_items.append(item_map_by_name[entry.name])
+                    to_keep.append(item)
+            else:
+                to_keep.append(item)
+        except OSError:
+            to_keep.append(item)
             
     if count > 0:
-        save_manifest(remaining_items, base)
+        save_manifest(to_keep, base)
     return count
 
 
