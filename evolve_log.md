@@ -715,3 +715,10 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-08-08T06:22:52` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la protección de `_call_gemini` para asegurar que el contexto enviado sea tratado como texto plano y no pueda ser interpretado erróneamente como una ruta o comando, además de garantizar que `is_protected_path` actúe como un guardia preventivo ante cualquier posible fuga de datos sensibles en el contexto serializado.
 - `2026-08-08T06:22:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-08T06:22:52` Corrida terminada. Total usado hoy: 152.
+- `2026-08-08T06:31:32` Arrancando corrida. Quedan hoy ~148 peticiones objetivo.
+- `2026-08-08T06:32:01` ➖ Sin cambios en branding.py (enfoque: seguridad defensiva). Motivo: He endurecido `save_logo_svg` utilizando `ensure_safe_to_modify` antes de cualquier operación de escritura, asegurando que la ruta destino sea validada explícitamente mediante el protocolo de seguridad antes de intentar crear directorios o archivos.
+- `2026-08-08T06:32:28` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
+- `2026-08-08T06:33:30` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: seguridad defensiva).
+- `2026-08-08T06:33:39` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `_collect_candidates` y `_refine_by_hash` mediante la validación redundante del estado de los archivos (`is_file()` y `is_protected_path`) antes de realizar operaciones de lectura, protegiendo contra condiciones de carrera y accesos indebidos a rutas que cambiaron de estado o permisos durante la ejecución del escaneo.
+- `2026-08-08T06:33:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-08T06:33:39` Corrida terminada. Total usado hoy: 156.

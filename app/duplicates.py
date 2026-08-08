@@ -173,7 +173,6 @@ def _collect_candidates(
                 for entry in dir_iterator:
                     try:
                         entry_stat = entry.stat(follow_symlinks=False)
-                        # Ignorar reparse points (0x400)
                         if getattr(entry_stat, 'st_file_attributes', 0) & 0x400:
                             continue
                         
@@ -206,18 +205,18 @@ def _refine_by_hash(
     hash_func: Callable[[Path], Optional[str]]
 ) -> Dict[str, List[Path]]:
     """
-    Refina un grupo de candidatos aplicando una función de hash (parcial o total).
-    Solo retiene aquellos subgrupos donde los hashes coinciden (mínimo 2).
+    Refina un grupo de candidatos aplicando una función de hash.
+    Valida la integridad de la ruta antes de aplicar la función de hash.
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     if paths is None: return groups_by_digest
     
     for path in paths:
-        if not isinstance(path, Path) or not path.exists(): 
-            continue
-        # Se asegura que la validación ocurra justo antes del hash para evitar race conditions
-        if digest := hash_func(path):
-            groups_by_digest[digest].append(path)
+        if not isinstance(path, Path): continue
+        # Validación de seguridad defensiva previa al hash
+        if path.is_file() and not is_protected_path(path):
+            if digest := hash_func(path):
+                groups_by_digest[digest].append(path)
     return {d: p for d, p in groups_by_digest.items() if len(p) > 1}
 
 
@@ -267,7 +266,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     for p in group.paths:
         if not isinstance(p, Path): continue
         try:
-            if p.exists() and not is_protected_path(p):
+            if p.is_file() and not is_protected_path(p):
                 stat_info = p.stat()
                 keepers.append((float(stat_info.st_mtime), len(str(p)), p))
         except (OSError, PermissionError, AttributeError):
