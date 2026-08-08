@@ -80,13 +80,8 @@ class Scanner:
             return
         
         try:
-            # Resolución defensiva para evitar path traversal
-            path_obj = Path(entry.path).resolve()
-            if not str(path_obj).startswith(str(self.base_root)):
-                return
-            
-            # Validación de seguridad defensiva
-            if is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
+            # Validación de seguridad defensiva inicial
+            if is_protected_path(Path(entry.path)):
                 return
 
             if entry.is_dir(follow_symlinks=False):
@@ -94,9 +89,11 @@ class Scanner:
                     self.seen.add(entry.path)
                     stack.append(entry.path)
             elif entry.is_file(follow_symlinks=False):
+                path_obj = Path(entry.path)
+                # Solo realizar el chequeo pesado de is_safe_to_modify si es un archivo sospechoso
                 name = entry.name
                 suffix = os.path.splitext(name)[1].lower()
-                self.results.extend(scan_file(path_obj, entry=entry, name=name, suffix=suffix, prevalidated=True))
+                self.results.extend(scan_file(path_obj, entry=entry, name=name, suffix=suffix, prevalidated=False))
         except (PermissionError, OSError, RuntimeError, FileNotFoundError):
             pass
 
@@ -120,11 +117,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None) -> Optional[Suspicion]:
     try:
-        if is_protected_path(path):
-            return None
-        target = name or (path.name if path else None)
-        if not target:
-            return None
+        target = name or path.name
         if target.lower() in SYSTEM_LOOKALIKES and SYSTEM32_LOWER not in str(path.parent).lower():
             return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
     except (OSError, RuntimeError, AttributeError):
@@ -138,17 +131,12 @@ CHECK_REGISTRY: Final[dict[str, List[SuspicionCheck]]] = {
 }
 
 def scan_file(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, prevalidated: bool = False) -> ScanResult:
-    if not path or is_protected_path(path):
-        return []
-        
-    if not prevalidated and not is_safe_to_modify(path):
-        return []
+    if not prevalidated:
+        if is_protected_path(path) or not is_safe_to_modify(path):
+            return []
     
     n = name or path.name
-    if not n:
-        return []
-        
-    s = suffix or (path.suffix.lower() if path.suffix else "")
+    s = suffix or path.suffix.lower()
     findings: ScanResult = []
     
     # Aplicar heurísticas universales
@@ -171,10 +159,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         
     try:
         path_input = Path(directory).resolve()
-        if not path_input.exists() or not path_input.is_dir():
-            return []
-            
-        if is_protected_path(path_input) or not is_safe_to_modify(path_input):
+        if not path_input.exists() or not path_input.is_dir() or is_protected_path(path_input):
             return []
     except (OSError, RuntimeError, TypeError):
         return []

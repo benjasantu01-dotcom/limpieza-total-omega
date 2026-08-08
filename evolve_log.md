@@ -679,3 +679,11 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-08-08T05:31:28` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 100): unterminated string literal (detected at line 100)
 - `2026-08-08T05:31:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-08T05:31:28` Corrida terminada. Total usado hoy: 132.
+- `2026-08-08T05:40:25` Arrancando corrida. Quedan hoy ~168 peticiones objetivo.
+- `2026-08-08T05:40:34` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-08T05:41:14` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se ha optimizado `is_protected_path` reemplazando la evaluación iterativa del conjunto de padres (`p.parents`) por una búsqueda directa en `frozenset`, reduciendo la complejidad algorítmica de O(N) a O(1) y evitando el uso de iteradores costosos en cada chequeo.
+- `2026-08-08T05:41:37` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento de `scan_file` y `scan_directory` evitando llamadas redundantes a `is_protected_path` y `is_safe_to_modify`, además de centralizar la resolución de atributos de archivo para minimizar las operaciones de I/O al escanear.
+- `2026-08-08T05:42:01` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de `settings.py` evitando múltiples lecturas de disco y llamadas innecesarias a `is_safe_to_modify` mediante la implementación de un caché de validación en `_path_cache` y la serialización eficiente del estado del archivo.
+- `2026-08-08T05:42:11` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Se implementó un mecanismo de caché persistente para el escaneo del registro, evitando múltiples llamadas costosas a PowerShell (`subprocess.run`) cuando el inventario se solicita varias veces en la misma sesión.
+- `2026-08-08T05:42:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-08T05:42:11` Corrida terminada. Total usado hoy: 136.

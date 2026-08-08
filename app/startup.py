@@ -46,8 +46,9 @@ REGISTRY_RUN_KEYS: Tuple[str, ...] = (
 # Extensiones que consideramos ejecutables para el escaneo de carpetas.
 EXECUTABLE_EXTS: Tuple[str, ...] = ('.exe', '.bat', '.cmd', '.scr', '.lnk')
 
-# Caché global de archivos validados para evitar I/O repetitivo.
+# Caché global de archivos validados y resultados de registro para evitar I/O repetitivo.
 _EXISTS_CACHE: Dict[str, bool] = {}
+_REGISTRY_CACHE: Optional[List[StartupEntry]] = None
 
 # Se le muestra al usuario en vez de ofrecer un botón que toque el registro.
 HOW_TO_DISABLE: str = (
@@ -272,9 +273,13 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
 
 
 def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[StartupEntry]:
-    """Consulta el registro de Windows vía PowerShell de forma segura."""
+    """Consulta el registro de Windows vía PowerShell de forma segura usando caché."""
+    global _REGISTRY_CACHE
     if os.name != "nt":
         return []
+    
+    if _REGISTRY_CACHE is not None:
+        return _REGISTRY_CACHE
     
     ps_cmd: str = "; ".join(f"Get-ItemProperty '{k}' -ErrorAction SilentlyContinue | Select-Object * -ExcludeProperty PS*" for k in keys)
     ps_cmd = f"$data = {ps_cmd}; $data | ConvertTo-Csv -NoTypeInformation"
@@ -285,7 +290,8 @@ def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[Start
             capture_output=True, text=True, timeout=30,
         )
         if result.returncode == 0 and result.stdout:
-            return parse_registry_csv(result.stdout)
+            _REGISTRY_CACHE = parse_registry_csv(result.stdout)
+            return _REGISTRY_CACHE
     except (OSError, subprocess.SubprocessError):
         pass
     return []

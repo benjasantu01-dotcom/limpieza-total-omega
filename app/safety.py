@@ -56,10 +56,10 @@ SENSITIVE_EXTENSIONS: Final[frozenset[str]] = frozenset({
     ".reg", ".pol", ".key", ".pem", ".pfx", ".p12", ".crt", ".cer",
 })
 
-_SYSTEM_ROOTS: Final[list[Path]] = [
+_SYSTEM_ROOTS: Final[frozenset[Path]] = frozenset(
     Path(os.environ[v]).resolve() for v in ("SystemRoot", "ProgramFiles", "ProgramFiles(x86)", "ProgramData")
     if os.environ.get(v)
-]
+)
 
 _RESERVED_NAMES: Final[frozenset[str]] = frozenset({
     "con", "prn", "aux", "nul", "com1", "com2", "com3", "com4", "com5", "com6", 
@@ -130,7 +130,6 @@ def _check_file_integrity(p: Path) -> None:
     """
     Validación exhaustiva de integridad antes de escritura.
     """
-    # Verificamos acceso explícito al archivo, no solo al directorio padre
     try:
         if any([
             not os.access(p, os.W_OK),
@@ -194,9 +193,8 @@ def is_protected_path(path: PathLike) -> bool:
         if not PROTECTED_DIR_NAMES.isdisjoint(part.lower() for part in p.parts):
             return True
             
-        for sys_root in _SYSTEM_ROOTS:
-            if sys_root in p.parents or p == sys_root:
-                return True
+        if not _SYSTEM_ROOTS.isdisjoint(p.parents) or p in _SYSTEM_ROOTS:
+            return True
         
         return p == Path(p.anchor) or (p.exists() and _is_reparse_point(p))
     except (PermissionError, OSError, ValueError, TypeError, RuntimeError):
