@@ -516,7 +516,12 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     to_keep: List[QuarantineItem] = []
     
     for entry in quarantine_root.iterdir():
-        if entry.name == MANIFEST_NAME or entry.name not in item_map_by_name:
+        # Regla de seguridad: SOLO borrar si está explícitamente en el manifiesto
+        if entry.name == MANIFEST_NAME:
+            continue
+        
+        if entry.name not in item_map_by_name:
+            # Archivo no registrado: se ignora para no borrar archivos de usuario por error
             continue
             
         item = item_map_by_name[entry.name]

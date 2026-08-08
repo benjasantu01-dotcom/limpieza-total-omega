@@ -1157,3 +1157,10 @@ assert not ['memory.py']
 - `2026-08-08T11:09:03` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva en `trim_working_set` añadiendo una validación explícita mediante `ensure_safe_to_modify` antes de aplicar cualquier operación sobre el proceso, asegurando que la ruta del ejecutable no sea manipulable, además de mantener la integridad del manejo de `handle`.
 - `2026-08-08T11:09:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-08T11:09:03` Corrida terminada. Total usado hoy: 264.
+- `2026-08-08T11:17:09` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-08-08T11:17:34` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se reforzó `stage_for_review` para prevenir explícitamente el "path traversal" o movimientos accidentales hacia rutas fuera de la base permitida, utilizando `resolve()` para comparar rutas absolutas de forma segura antes de realizar cualquier operación de movimiento.
+- `2026-08-08T11:18:15` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `purge_all` y `purge_item` al asegurar que solo se eliminen archivos que coincidan estrictamente con el registro del manifiesto, evitando la posible eliminación de archivos "huérfanos" (no registrados) presentes en el directorio de cuarentena, lo cual es una medida defensiva ante corrupción de datos.
+- `2026-08-08T11:18:34` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-08T11:18:43` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-08-08T11:18:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-08T11:18:43` Corrida terminada. Total usado hoy: 268.
