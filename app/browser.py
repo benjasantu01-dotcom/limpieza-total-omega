@@ -144,19 +144,6 @@ def _is_excluded_file(name: str) -> bool:
 def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool]) -> int:
     """
     Calcula el tamaño acumulado de una carpeta de forma segura y recursiva.
-
-    Garantías de seguridad:
-    1. Salta enlaces simbólicos y junctions para prevenir bucles y escapes del volumen.
-    2. Excluye archivos definidos en `NEVER_TOUCH` (como cookies o login data).
-    3. Maneja excepciones de acceso (`OSError`, `PermissionError`) silenciosamente,
-       asegurando que el escáner continúe su ejecución sobre archivos legibles.
-
-    Args:
-        root_dir: Ruta absoluta del directorio raíz a analizar.
-        is_junction_fn: Callback para detectar puntos de reparse (junctions).
-
-    Returns:
-        Tamaño total en bytes de los archivos aptos para el cálculo.
     """
     total: int = 0
     try:
@@ -223,6 +210,7 @@ def detect_profiles(
     """
     bases = bases if bases is not None else base_directories()
     cache_paths = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
+    is_junction: Callable[[str], bool] = getattr(os.path, 'isjunction', lambda _: False)
 
     found: List[BrowserCache] = []
     if not isinstance(bases, (list, tuple)) or not isinstance(cache_paths, dict):
@@ -231,14 +219,11 @@ def detect_profiles(
     for base in bases:
         if not isinstance(base, Path): continue
         for browser_name, relative_path_str in cache_paths.items():
-            if not isinstance(relative_path_str, str) or not isinstance(browser_name, str):
-                continue
             try:
-                parts: List[str] = relative_path_str.split("\\")
-                candidate: Path = base.joinpath(*parts).resolve()
+                candidate: Path = base.joinpath(*relative_path_str.split("\\")).resolve()
                 
                 if _is_valid_cache_path(candidate, base):
-                    size: int = directory_size(candidate)
+                    size: int = _sum_directory_recursive(str(candidate), is_junction)
                     if size > 0:
                         found.append(BrowserCache(
                             browser=browser_name,

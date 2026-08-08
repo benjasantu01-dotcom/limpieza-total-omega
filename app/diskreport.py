@@ -307,7 +307,8 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
     if not directory: return ["Error: Ruta no proporcionada."]
     path_obj = Path(directory).expanduser().resolve()
     
-    ext_data: Dict[str, List[int]] = defaultdict(lambda: [0, 0])
+    ext_size: Dict[str, int] = defaultdict(int)
+    ext_count: Dict[str, int] = defaultdict(int)
     top_files_heap: List[Tuple[int, str]] = []
     total_bytes, total_files = 0, 0
     
@@ -315,18 +316,20 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
         total_bytes += size
         total_files += 1
         
-        data = ext_data[path.suffix.lower() or "(sin extensión)"]
-        data[0] += size
-        data[1] += 1
+        ext = path.suffix.lower() or "(sin extensión)"
+        ext_size[ext] += size
+        ext_count[ext] += 1
         
-        if len(top_files_heap) < 8: heapq.heappush(top_files_heap, (size, str(path)))
-        elif size > top_files_heap[0][0]: heapq.heapreplace(top_files_heap, (size, str(path)))
+        if len(top_files_heap) < 8:
+            heapq.heappush(top_files_heap, (size, str(path)))
+        elif size > top_files_heap[0][0]:
+            heapq.heapreplace(top_files_heap, (size, str(path)))
 
     lines = [f"Carpeta analizada: {path_obj}", f"Total: {format_size(total_bytes)} en {total_files} archivos", "", "Por tipo de archivo:"]
     
-    sorted_exts = heapq.nlargest(8, ext_data.items(), key=lambda item: item[1][0])
-    for ext, (size, count) in sorted_exts:
-        lines.append(f"  {ext:<18} {format_size(size):>10}  ({count} archivos)")
+    sorted_exts = heapq.nlargest(8, ext_size.items(), key=lambda item: item[1])
+    for ext, size in sorted_exts:
+        lines.append(f"  {ext:<18} {format_size(size):>10}  ({ext_count[ext]} archivos)")
         
     lines.extend(["", "Archivos más grandes:"])
     for size, path in sorted(top_files_heap, key=lambda x: x[0], reverse=True):
