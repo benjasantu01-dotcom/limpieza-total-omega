@@ -32,7 +32,8 @@ para minimizar el overhead de hilos y garantizar la coherencia de los datos
 que consume el asistente. El estado de análisis pesados se cachea por sesión.
 Se emplea invalidación selectiva para evitar procesado redundante en disco.
 Se implementa TTL (Time-To-Live) y política LRU para gestión eficiente de memoria.
-Se optimizan eventos de redibujo UI para evitar cálculos innecesarios.
+Se optimizan eventos de redibujo UI y se utiliza gestión de colas de eventos 
+para evitar saturación del hilo principal durante el logueo masivo.
 
 Instalar dependencias:
     pip install customtkinter
@@ -121,6 +122,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.tabs: Dict[str, ctk.CTkFrame] = {}
         # Asegurar estado limpio antes de intentar inicializar la GUI
         self._executor: Optional[concurrent.futures.ThreadPoolExecutor] = None
+        self._log_queue: List[Tuple[str, str]] = []
         try:
             self._validate_environment()
             self._init_window_properties()
@@ -794,16 +796,19 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def log(self, text: str, tab: str = "Limpieza") -> None:
         """Escribe una cadena de texto en el log de la pestaña especificada."""
-        box = self._box(tab)
+        self._log_queue.append((tab, text))
+        self.after_idle(self._flush_logs)
 
-        def append():
+    def _flush_logs(self) -> None:
+        """Vuelca la cola de logs al componente UI de forma eficiente."""
+        while self._log_queue:
+            tab, text = self._log_queue.pop(0)
+            box = self._box(tab)
             try:
                 box.insert("end", f"{text}\n")
                 box.see("end")
             except Exception:
                 pass
-
-        self.after(0, append)
 
     def clear(self, tab: str = "Limpieza") -> None:
         """Elimina todo el contenido actual del cuadro de log de una pestaña."""
@@ -812,7 +817,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def set_status(self, text: str) -> None:
         """Actualiza el mensaje mostrado en la barra de estado inferior."""
-        self.after(0, lambda: self.status.configure(text=text))
+        self.after_idle(lambda: self.status.configure(text=text))
 
     def log_lines(self, lines: List[str], tab: str) -> None:
         """Escribe una lista de líneas en el log y almacena los resultados."""

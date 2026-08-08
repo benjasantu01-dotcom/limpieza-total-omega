@@ -36,10 +36,6 @@ __all__ = [
 ]
 
 # --- UMBRALES DE NORMALIZACIÓN ---
-# Definen el punto de saturación donde un aspecto alcanza su peor nota (0.0).
-# Todo valor superior a estos límites (o igual a cero para porcentajes) 
-# resulta en la penalización máxima.
-
 JUNK_LIMIT_MB: Final[float] = 5000.0          
 DUPLICATE_LIMIT_MB: Final[float] = 2000.0     
 STARTUP_LIMIT_COUNT: Final[int] = 20          
@@ -47,15 +43,11 @@ RAM_IDEAL_PERCENT: Final[float] = 35.0
 DISK_IDEAL_PERCENT: Final[float] = 25.0       
 
 # --- UMBRALES DE ADVERTENCIA (ratios de 0.0 a 1.0) ---
-# Determinan a partir de qué nivel de salud relativa (normalizada) se 
-# dispara una recomendación específica para el usuario.
-
 WARN_THRESHOLD_HIGH: Final[float] = 0.9
 WARN_THRESHOLD_MED: Final[float] = 0.8
 WARN_THRESHOLD_LOW: Final[float] = 0.6
 
 # --- PESOS DE CALIFICACIÓN ---
-# Peso relativo de cada área en el puntaje total (sumatoria debe ser 100).
 WEIGHTS: Final[Dict[str, int]] = {
     "seguridad": 30,
     "disco": 20,
@@ -69,7 +61,6 @@ WEIGHTS: Final[Dict[str, int]] = {
 _TOTAL_WEIGHTS: Final[int] = sum(WEIGHTS.values())
 _NORM_FACTOR: Final[float] = 100.0 / _TOTAL_WEIGHTS if _TOTAL_WEIGHTS > 0 else 0.0
 _WEIGHT_ITEMS: Final[List[Tuple[str, int]]] = list(WEIGHTS.items())
-_SCORE_CACHE: Dict[tuple, float] = {}
 
 
 def _validate_weights() -> bool:
@@ -157,63 +148,39 @@ def _to_int(value: Any, default: int = 0) -> int:
 
 def score_junk(junk_mb: float) -> float:
     """Normaliza volumen de basura: 0 MB = 1.0 (óptimo), > JUNK_LIMIT_MB = 0.0."""
-    key = ("junk", junk_mb)
-    if key in _SCORE_CACHE: return _SCORE_CACHE[key]
     val = _to_float(junk_mb)
-    res = 1.0 if JUNK_LIMIT_MB <= 0 else _clamp(1.0 - (val / JUNK_LIMIT_MB))
-    _SCORE_CACHE[key] = res
-    return res
+    return 1.0 if JUNK_LIMIT_MB <= 0 else _clamp(1.0 - (val / JUNK_LIMIT_MB))
 
 
 def score_security(suspicious_count: int, warnings: int = 0) -> float:
     """Normaliza seguridad: penaliza hallazgos (-0.05 c/u) y advertencias críticas (-0.25 c/u)."""
-    key = ("security", suspicious_count, warnings)
-    if key in _SCORE_CACHE: return _SCORE_CACHE[key]
     s_count = max(0, _to_int(suspicious_count))
     w_count = max(0, _to_int(warnings))
-    res = _clamp(1.0 - ((float(s_count) * 0.05) + (float(w_count) * 0.25)), 0.0, 1.0)
-    _SCORE_CACHE[key] = res
-    return res
+    return _clamp(1.0 - ((float(s_count) * 0.05) + (float(w_count) * 0.25)), 0.0, 1.0)
 
 
 def score_memory(available_percent: float) -> float:
     """Normaliza uso de RAM: puntaje basado en ratio de disponibilidad frente al objetivo ideal."""
-    key = ("mem", available_percent)
-    if key in _SCORE_CACHE: return _SCORE_CACHE[key]
     val = _to_float(available_percent)
-    res = 0.0 if RAM_IDEAL_PERCENT <= 0 else _clamp(val / RAM_IDEAL_PERCENT)
-    _SCORE_CACHE[key] = res
-    return res
+    return 0.0 if RAM_IDEAL_PERCENT <= 0 else _clamp(val / RAM_IDEAL_PERCENT)
 
 
 def score_disk(free_percent: float) -> float:
     """Normaliza espacio en disco: puntaje basado en ratio de espacio libre frente al objetivo ideal."""
-    key = ("disk", free_percent)
-    if key in _SCORE_CACHE: return _SCORE_CACHE[key]
     val = _to_float(free_percent)
-    res = 0.0 if DISK_IDEAL_PERCENT <= 0 else _clamp(val / DISK_IDEAL_PERCENT)
-    _SCORE_CACHE[key] = res
-    return res
+    return 0.0 if DISK_IDEAL_PERCENT <= 0 else _clamp(val / DISK_IDEAL_PERCENT)
 
 
 def score_duplicates(duplicate_mb: float) -> float:
     """Normaliza espacio ocupado por duplicados: 0 MB = 1.0, > DUPLICATE_LIMIT_MB = 0.0."""
-    key = ("dup", duplicate_mb)
-    if key in _SCORE_CACHE: return _SCORE_CACHE[key]
     val = _to_float(duplicate_mb)
-    res = 1.0 if DUPLICATE_LIMIT_MB <= 0 else _clamp(1.0 - (val / DUPLICATE_LIMIT_MB))
-    _SCORE_CACHE[key] = res
-    return res
+    return 1.0 if DUPLICATE_LIMIT_MB <= 0 else _clamp(1.0 - (val / DUPLICATE_LIMIT_MB))
 
 
 def score_startup(startup_count: int) -> float:
     """Normaliza carga de inicio: penaliza linealmente por cada programa extra hasta el límite permitido."""
-    key = ("start", startup_count)
-    if key in _SCORE_CACHE: return _SCORE_CACHE[key]
     val = max(0, _to_int(startup_count))
-    res = 1.0 if STARTUP_LIMIT_COUNT <= 0 else _clamp(1.0 - (float(val) / STARTUP_LIMIT_COUNT))
-    _SCORE_CACHE[key] = res
-    return res
+    return 1.0 if STARTUP_LIMIT_COUNT <= 0 else _clamp(1.0 - (float(val) / STARTUP_LIMIT_COUNT))
 
 
 def grade_for_score(score: int) -> str:

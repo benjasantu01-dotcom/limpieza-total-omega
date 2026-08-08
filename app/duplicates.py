@@ -167,13 +167,13 @@ def _collect_candidates(
             with os.scandir(root_path) as dir_iterator:
                 for entry in dir_iterator:
                     try:
-                        # Obtenemos stat una sola vez por entrada para eficiencia
+                        # Obtenemos stat una sola vez para determinar tipo y atributos
                         entry_stat = entry.stat(follow_symlinks=False)
                         
                         # Detectar puntos de reparse (Junctions/Symlinks)
                         if getattr(entry_stat, 'st_file_attributes', 0) & 0x400:
                             continue
-                            
+                        
                         entry_path = Path(entry.path)
                         if entry.is_dir(follow_symlinks=False):
                             if entry_stat.st_ino not in visited_inodes[entry_stat.st_dev]:

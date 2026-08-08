@@ -1397,3 +1397,10 @@ FAILED evolve/tests/test_integrity.py::test_is_safe_returns_bool_and_never_raise
 - `2026-08-08T00:45:33` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
 - `2026-08-08T00:45:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-08T00:45:33` Corrida terminada. Total usado hoy: 20.
+- `2026-08-08T00:54:05` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-08-08T00:54:30` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé `_collect_candidates` para realizar una única llamada a `stat()` por archivo durante la iteración inicial, evitando llamadas redundantes a `is_file()` y `stat()` posteriores, lo cual reduce drásticamente el tiempo de I/O en volúmenes grandes.
+- `2026-08-08T00:54:55` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Se eliminó el uso de `_SCORE_CACHE` (una estructura de datos global que crecía indefinidamente sin control de memoria) y se reemplazó por la ejecución directa de los cálculos, aprovechando que el costo de las operaciones aritméticas simples es despreciable comparado con el riesgo de "memory leak" en una app que debe ser ligera y estable.
+- `2026-08-08T00:55:54` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Se implementó un sistema de "Throttling" (limitación de frecuencia) mediante `after_idle` para las actualizaciones de la interfaz en `log` y `set_status`, reduciendo el consumo de CPU durante escaneos rápidos donde se bombardeaba el hilo principal con eventos de redibujo excesivos.
+- `2026-08-08T00:56:05` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento de `top_memory_processes` eliminando la duplicación de lógica al reutilizar internamente `parse_windows_process_csv`, reduciendo el acoplamiento y garantizando que el filtrado y ordenamiento ocurran de forma consistente.
+- `2026-08-08T00:56:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-08T00:56:05` Corrida terminada. Total usado hoy: 24.

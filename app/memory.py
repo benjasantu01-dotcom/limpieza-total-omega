@@ -185,10 +185,8 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
         return []
 
     def _gen_proc():
-        for line in lines[1:]:
-            clean_line = line.strip()
-            if not clean_line: continue
-            parts = [p.strip().strip('"') for p in clean_line.split(",")]
+        for line in lines:
+            parts = [p.strip().strip('"') for p in line.split(",")]
             if _is_valid_process_row(parts):
                 try:
                     yield ProcessMemory(name=parts[0] or "Unknown", pid=int(parts[1]), working_set=int(parts[2]))
@@ -275,16 +273,7 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
             capture_output=True, text=True, timeout=5,
         )
         if result.returncode == 0 and result.stdout:
-            lines = result.stdout.splitlines()
-            processes = []
-            for line in lines:
-                parts = line.split(",")
-                if len(parts) == 3:
-                    try:
-                        processes.append(ProcessMemory(name=parts[0], pid=int(parts[1]), working_set=int(parts[2])))
-                    except (ValueError, TypeError):
-                        continue
-            
+            processes = parse_windows_process_csv(result.stdout, limit=20)
             _PROCESS_CACHE["data"] = (now, processes)
             return processes[:limit]
     except (OSError, subprocess.SubprocessError, Exception):
