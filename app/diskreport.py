@@ -139,7 +139,6 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
         if not p.exists() or not p.is_absolute() or is_protected_path(p):
             return None
         
-        # Validar disponibilidad de lectura del sistema de archivos
         if not os.access(p, os.R_OK):
             return None
             
@@ -171,67 +170,51 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Generador recursivo que recorre archivos bajo `directory`.
-    
-    Prevención de duplicados: Usa `visited_inodes` (dev, ino) para evitar ciclos 
-    en sistemas de archivos con enlaces simbólicos a directorios.
-    Seguridad: Filtra rutas protegidas y detecta reparse points en Windows
-    mediante el chequeo de atributos de archivo (0x400 para puntos de montaje).
+    Generador iterativo que recorre archivos bajo `directory`.
+    Usa pila explícita y evita llamadas redundantes para mejorar rendimiento.
     """
     if not directory:
         return
 
     try:
-        base_path = Path(directory).expanduser().resolve()
-        if not base_path.exists() or not base_path.is_dir() or (skip_protected and is_protected_path(base_path)):
+        root = Path(directory).expanduser().resolve()
+        if not root.is_dir() or (skip_protected and is_protected_path(root)):
             return
     except (OSError, RuntimeError, TypeError):
         return
 
     visited_inodes: set[Tuple[int, int]] = set()
-    
-    try:
-        stat_root = base_path.stat()
-        visited_inodes.add((stat_root.st_dev, stat_root.st_ino))
-    except OSError:
-        return
+    stack: List[Path] = [root]
 
-    def scan_level(current_path: Path) -> Generator[Tuple[Path, int], None, None]:
-        # Seguridad: verificar que no haya escape de directorio base
-        if skip_protected and not str(current_path).startswith(str(base_path)):
-            return
-
+    while stack:
+        current_dir = stack.pop()
         try:
-            with os.scandir(current_path) as iterator:
-                for file_entry in iterator:
+            with os.scandir(current_dir) as iterator:
+                for entry in iterator:
                     try:
-                        if file_entry.is_symlink():
+                        if entry.is_symlink():
                             continue
-                            
+                        
                         if os.name == 'nt':
-                            # 0x400: Reparse point (junction/symlink), 0x2: Hidden
-                            st_attrs = file_entry.stat(follow_symlinks=False).st_file_attributes
-                            if (st_attrs & 0x400) or (st_attrs & 0x2): 
+                            attrs = entry.stat(follow_symlinks=False).st_file_attributes
+                            if (attrs & 0x400) or (attrs & 0x2):
                                 continue
-                            
-                        if file_entry.is_dir():
-                            path_res = Path(file_entry.path).resolve()
-                            if skip_protected and is_protected_path(path_res):
-                                continue
-                            
-                            st = file_entry.stat()
+
+                        if entry.is_dir():
+                            st = entry.stat()
                             inode = (st.st_dev, st.st_ino)
                             if inode not in visited_inodes:
+                                path_obj = Path(entry.path)
+                                if skip_protected and is_protected_path(path_obj):
+                                    continue
                                 visited_inodes.add(inode)
-                                yield from scan_level(path_res)
+                                stack.append(path_obj)
                         else:
-                            yield Path(file_entry.path), file_entry.stat().st_size
+                            yield Path(entry.path), entry.stat().st_size
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):
-            return
-
-    yield from scan_level(base_path)
+            continue
 
 
 def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_protected: bool = True) -> List[FileEntry]:
@@ -312,17 +295,12 @@ def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -> List[str]:
     """
     Genera un reporte estructurado unificado.
-    
-    Utiliza una estructura de datos `top_files_heap` que mantiene dinámicamente
-    los 8 archivos más grandes encontrados durante la iteración única,
-    optimizando el rendimiento al evitar múltiples recorridos de disco.
     """
     if not directory: return ["Error: Ruta no proporcionada."]
     path_obj = Path(directory).expanduser().resolve()
     
     ext_size: Dict[str, int] = defaultdict(int)
     ext_count: Dict[str, int] = defaultdict(int)
-    # Heap de tuplas (size, path_string) para trackear los 8 mayores encontrados
     top_files_heap: List[Tuple[int, str]] = []
     total_bytes, total_files = 0, 0
     

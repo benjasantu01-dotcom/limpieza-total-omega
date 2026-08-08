@@ -329,15 +329,7 @@ def logo_ascii() -> str:
 
 
 def draw_logo(canvas: Any, size: int = 56, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
-    """
-    Renderiza el logo vectorial en un canvas de Tkinter.
-    
-    Args:
-        canvas: Widget de canvas de Tkinter donde dibujar.
-        size: Tamaño base en píxeles.
-        canvas_x: Offset horizontal en el canvas.
-        canvas_y: Offset vertical en el canvas.
-    """
+    """Renderiza el logo vectorial en un canvas de Tkinter."""
     if not hasattr(canvas, "create_polygon"): return
     try:
         s = max(0.1, float(size) / 128)
@@ -351,7 +343,6 @@ def draw_logo(canvas: Any, size: int = 56, canvas_x: float = 0.0, canvas_y: floa
 
         canvas.create_polygon(contorno, fill=GRADIENT_STOPS[1], outline="")
         franjas = max(6, int(28 * s))
-        alto = max(0.1, 92 * s / franjas)
         colores = gradient_colors(franjas)
         
         i = 0
@@ -359,7 +350,7 @@ def draw_logo(canvas: Any, size: int = 56, canvas_x: float = 0.0, canvas_y: floa
             j = i
             while j < franjas and colores[j] == colores[i]: j += 1
             w = 36 * s * (1.0 if (i + j)/2 / (franjas - 1) < 0.55 else 1.0 - ((i + j)/2 / (franjas - 1) - 0.55) * 1.9)
-            canvas.create_rectangle(x + 64*s - w, y + 18*s + i*alto, x + 64*s + w, y + 18*s + j*alto + 1, fill=colores[i], outline="")
+            canvas.create_rectangle(x + 64*s - w, y + 18*s + i*(92*s/franjas), x + 64*s + w, y + 18*s + j*(92*s/franjas) + 1, fill=colores[i], outline="")
             i = j
 
         canvas.create_line(x + 41*s, y + 75*s, x + 75*s, y + 41*s, fill=PALETTE["background"], width=max(2, int(8*s)), capstyle="round")
@@ -372,17 +363,7 @@ def draw_logo(canvas: Any, size: int = 56, canvas_x: float = 0.0, canvas_y: floa
 def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
                       canvas_x: float = 0.0, canvas_y: float = 0.0,
                       stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
-    """
-    Dibuja una franja horizontal con degradado optimizado mediante bloques verticales.
-    
-    Args:
-        canvas: Widget de canvas de Tkinter.
-        width: Ancho total de la barra.
-        height: Altura de la barra en píxeles.
-        canvas_x: Offset horizontal.
-        canvas_y: Offset vertical.
-        stops: Colores para el degradado.
-    """
+    """Dibuja una franja horizontal con degradado optimizado mediante bloques verticales."""
     if not hasattr(canvas, "create_line"): return
     try:
         ancho = max(1, int(width))
@@ -400,19 +381,7 @@ def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
               canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14,
               track: Optional[HexColor] = None,
               fill: Optional[HexColor] = None) -> None:
-    """
-    Renderiza un anillo circular dinámico indicando progreso o estado numérico.
-    
-    Args:
-        canvas: Widget de canvas de Tkinter.
-        percent: Valor actual (0-100).
-        size: Diámetro del anillo.
-        canvas_x: Posición X.
-        canvas_y: Posición Y.
-        thickness: Grosor de la línea del anillo.
-        track: Color de fondo del anillo (track).
-        fill: Color del segmento de progreso (fill).
-    """
+    """Renderiza un anillo circular dinámico indicando progreso o estado numérico."""
     if not hasattr(canvas, "create_arc"): return
     try:
         val_f = float(percent)

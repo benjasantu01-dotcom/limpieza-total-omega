@@ -462,3 +462,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-08T14:02:10` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `local_answer` reemplazando la búsqueda lineal de palabras clave en tokens por un acceso directo de tiempo constante O(1) usando `set` y validación directa.
 - `2026-08-08T14:02:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-08T14:02:10` Corrida terminada. Total usado hoy: 332.
+- `2026-08-08T14:10:51` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-08T14:11:22` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimicé el cálculo del degradado en `draw_gradient_bar` y `draw_logo` reemplazando llamadas redundantes a `gradient_colors` por una búsqueda de rangos contiguos, y eliminé el uso de listas temporales grandes en el bucle de renderizado mediante la reutilización eficiente de índices de color.
+- `2026-08-08T14:11:44` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
+- `2026-08-08T14:12:08` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé `walk_files` reemplazando la recursión manual con una pila explícita y eliminando `path.resolve()` redundante dentro del bucle, reduciendo significativamente las llamadas al sistema y mejorando el rendimiento en estructuras de directorios profundas.
+- `2026-08-08T14:12:16` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-08-08T14:12:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-08T14:12:16` Corrida terminada. Total usado hoy: 336.

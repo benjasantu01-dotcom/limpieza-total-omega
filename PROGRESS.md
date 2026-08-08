@@ -8,44 +8,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **241** (47.8% de aceptación)
 - Rechazadas por tests: 10
-- Rechazadas por guardia de seguridad: 26
+- Rechazadas por guardia de seguridad: 25
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-07 | 69 | 4 | 8 | 9 | 82 |
-| 2026-08-08 | 172 | 6 | 18 | 9 | 127 |
+| 2026-08-07 | 67 | 4 | 7 | 9 | 81 |
+| 2026-08-08 | 174 | 6 | 18 | 9 | 129 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **62**
 - seguridad defensiva: **50**
 - manejo de errores y validación de entradas: **50**
-- rendimiento: **42**
-- robustez ante casos límite: **37**
+- rendimiento: **44**
+- robustez ante casos límite: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **21**
 - `settings.py`: **21**
+- `branding.py`: **20**
 - `duplicates.py`: **20**
-- `quarantine.py`: **19**
-- `branding.py`: **19**
+- `diskreport.py`: **19**
 - `browser.py`: **18**
-- `diskreport.py`: **18**
+- `quarantine.py`: **18**
 - `scanner.py`: **18**
 - `healthscore.py`: **18**
 - `memory.py`: **17**
 - `safety.py`: **16**
-- `organizer.py`: **15**
 - `main.py`: **15**
+- `organizer.py`: **14**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-08T14:12:08` **diskreport.py** (rendimiento): Optimicé `walk_files` reemplazando la recursión manual con una pila explícita y eliminando `path.resolve()` redundante dentro del bucle, reduciendo significativamente las llamadas al sistema y mejorando el rendimiento en estructuras de directorios profundas.
+- `2026-08-08T14:11:22` **branding.py** (rendimiento): Optimicé el cálculo del degradado en `draw_gradient_bar` y `draw_logo` reemplazando llamadas redundantes a `gradient_colors` por una búsqueda de rangos contiguos, y eliminé el uso de listas temporales grandes en el bucle de renderizado mediante la reutilización eficiente de índices de color.
 - `2026-08-08T14:02:10` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` reemplazando la búsqueda lineal de palabras clave en tokens por un acceso directo de tiempo constante O(1) usando `set` y validación directa.
 - `2026-08-08T14:01:51` **startup.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `StartupEntry` documentando los métodos internos con el formato `Args/Returns` y añadiendo `TypeHints` específicos para mejorar la claridad de los procesos de resolución de rutas.
 - `2026-08-08T14:01:24` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de la validación extrayendo la lógica de validación de tipos a métodos específicos con docstrings, facilitando la comprensión de las restricciones aplicadas a cada configuración.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-08T13:31:25` **browser.py** (legibilidad y documentación): Se agregaron docstrings detallados a las funciones internas `_is_safe_path`, `_is_excluded_file` y `_sum_directory_recursive` para documentar la lógica de seguridad y el manejo de excepciones, alineándose con el enfoque de legibilidad.
 - `2026-08-08T13:31:01` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `branding.py` mediante la adición de docstrings detallados en todas las funciones y clases que carecían de ellos, especificando tipos de retorno, posibles excepciones controladas y el propósito lógico de los parámetros, facilitando así la auditoría y el mantenimiento del código.
 - `2026-08-08T13:30:31` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de la lógica de negocio en `assistant.py` mediante la refactorización de `build_context` para usar un enfoque más compacto y robusto mediante una lista de asignación, reduciendo la repetición y clarificando las reglas de validación.
-- `2026-08-08T13:20:59` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` capturando explícitamente posibles errores durante `os.replace` y validando que el archivo temporal no permanezca en disco ante fallos inesperados de sistema, siguiendo las mejores prácticas de manejo de excepciones y limpieza de recursos.
-- `2026-08-08T13:20:35` **scanner.py** (manejo de errores y validación de entradas): Se mejoró la robustez de `scan_directory` validando explícitamente el tipo de entrada en la lógica de `process_entry` para evitar errores de tipo o excepciones inesperadas al procesar archivos con rutas inusuales o bloqueadas.
