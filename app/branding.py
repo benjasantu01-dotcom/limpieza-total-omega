@@ -299,15 +299,14 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     if destination is None: return None
     try:
         target = Path(destination).resolve()
+        parent = target.parent
         
-        # Validar de forma atómica: no debe ser protegida y debe ser segura de modificar.
-        if is_protected_path(target.parent) or is_protected_path(target) or \
-           not is_safe_to_modify(target.parent) or not is_safe_to_modify(target):
+        # Validación atómica de seguridad
+        if not is_safe_to_modify(parent) or not is_safe_to_modify(target):
             return None
-        
-        # Garantizar seguridad durante la creación de estructura y escritura.
-        ensure_safe_to_modify(target.parent)
-        target.parent.mkdir(parents=True, exist_ok=True)
+            
+        ensure_safe_to_modify(parent)
+        parent.mkdir(parents=True, exist_ok=True)
         
         ensure_safe_to_modify(target)
         target.write_text(logo_svg(), encoding="utf-8")

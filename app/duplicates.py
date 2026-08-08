@@ -96,10 +96,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
             buffer = bytearray(chunk_size)
             mv = memoryview(buffer)
             while True:
-                try:
-                    n = f.readinto(mv)
-                except (OSError, IOError):
-                    return None
+                n = f.readinto(mv)
                 if n == 0:
                     break
                 digest.update(mv[:n])
@@ -186,7 +183,7 @@ def _collect_candidates(
                         
                         elif entry.is_file(follow_symlinks=False):
                             # Validar que sea archivo regular antes de leer tamaño
-                            if entry.is_file() and entry_stat.st_size >= min_size:
+                            if entry_stat.st_size >= min_size:
                                 if not (skip_protected and is_protected_path(entry_path)):
                                     temp_groups[entry_stat.st_size].append(entry_path)
                     except (OSError, PermissionError): continue
@@ -212,7 +209,7 @@ def _refine_by_hash(
     if paths is None: return groups_by_digest
     
     for path in paths:
-        if not isinstance(path, Path) or not path.exists() or is_protected_path(path): 
+        if not isinstance(path, Path) or not path.exists(): 
             continue
         if digest := hash_func(path):
             groups_by_digest[digest].append(path)

@@ -170,7 +170,10 @@ def directory_size(path: str | os.PathLike | None) -> int:
         return 0
     
     try:
-        root_path = Path(path).resolve(strict=True)
+        p_path = Path(path)
+        if not p_path.exists():
+            return 0
+        root_path = p_path.resolve(strict=True)
         if not root_path.is_absolute() or not root_path.is_dir() or is_protected_path(root_path):
             return 0
     except (OSError, PermissionError, RuntimeError):

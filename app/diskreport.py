@@ -326,7 +326,7 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
         
         if len(top_files_heap) < 8:
             heapq.heappush(top_files_heap, (size, str(path)))
-        elif size > top_files_heap[0][0]:
+        elif size > (top_files_heap[0][0] if top_files_heap else -1):
             heapq.heapreplace(top_files_heap, (size, str(path)))
 
     lines = [
