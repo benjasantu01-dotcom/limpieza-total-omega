@@ -215,14 +215,18 @@ def _refine_by_hash(
     Solo retorna grupos que mantienen al menos dos archivos colisionando.
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
-    if paths is None: return groups_by_digest
     
     for path in paths:
-        if not isinstance(path, Path) or not path.exists(): continue
+        # Validación de integridad de entrada
+        if not isinstance(path, Path) or not path.exists(): 
+            continue
         
+        # Filtro de seguridad y tipo antes de calcular hash
         if path.is_file() and not is_protected_path(path):
-            if digest := hash_func(path):
+            digest = hash_func(path)
+            if digest:
                 groups_by_digest[digest].append(path)
+                
     return {d: p for d, p in groups_by_digest.items() if len(p) > 1}
 
 

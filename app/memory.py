@@ -140,6 +140,12 @@ def parse_linux_meminfo(text: str) -> MemorySnapshot:
     """
     Procesa un archivo tipo /proc/meminfo. 
     Busca métricas clave (kB), las convierte a bytes y genera un MemorySnapshot.
+    
+    Args:
+        text: Contenido completo de /proc/meminfo.
+        
+    Returns:
+        Un objeto MemorySnapshot con los datos extraídos o valores en 0 si falla.
     """
     if not isinstance(text, str) or not text:
         return MemorySnapshot(0, 0)
@@ -298,7 +304,13 @@ def pressure_level(snapshot: MemorySnapshot) -> str:
 def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] = None) -> List[str]:
     """
     Genera el informe de diagnóstico en texto para ser renderizado en la UI.
-    Recibe un snapshot de memoria y, opcionalmente, una lista de procesos críticos.
+    
+    Args:
+        snapshot: Instancia de MemorySnapshot con los datos de RAM actual.
+        processes: Lista opcional de procesos de mayor consumo para el informe.
+        
+    Returns:
+        Lista de strings formateados para visualización directa en interfaz.
     """
     if not isinstance(snapshot, MemorySnapshot) or snapshot.total <= 0:
         return ["No se pudo leer el estado de la memoria en este sistema."]
@@ -339,6 +351,9 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
       - Solo disponible en Windows.
       - Valida que el proceso no sea del sistema.
       - Verifica que el ejecutable asociado no resida en rutas protegidas.
+    
+    Returns:
+        Tuple (éxito: bool, mensaje: str) describiendo el resultado de la operación.
     """
     if os.name != "nt":
         return False, "Solo disponible en Windows."

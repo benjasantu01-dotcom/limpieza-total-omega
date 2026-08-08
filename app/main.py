@@ -131,18 +131,14 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             logging.critical("Error fatal al inicializar la aplicación: %s", e)
             raise
 
-    # ------------------------------------------------------------------
-    # Inicialización
-    # ------------------------------------------------------------------
-
     def _validate_environment(self) -> None:
-        """Verifica que el entorno de ejecución sea apto antes de iniciar la GUI."""
+        """Verifica que el directorio home del usuario sea accesible para lectura."""
         home = os.path.expanduser("~")
         if not os.path.exists(home) or not os.access(home, os.R_OK):
             raise OSError(f"Directorio de usuario inaccesible: {home}")
 
     def _init_window_properties(self) -> None:
-        """Establece geometría, título y colores globales definidos en branding.py."""
+        """Configura los atributos de la ventana principal y aplica la identidad de marca."""
         self.title(branding.app_title())
         try:
             self.geometry("1120x780")
@@ -157,7 +153,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             logging.error("Fallo al aplicar colores de branding: %s", e)
 
     def _init_state(self) -> None:
-        """Inicializa caché, pool de hilos, configuración de usuario y estructuras UI."""
+        """Inicializa estructuras de datos, caché de resultados y el pool de hilos."""
         self._cache: OrderedDict[str, Tuple[Any, float]] = OrderedDict()
         self._cache_ttl = 300
         self._cache_max_size = 20
@@ -186,12 +182,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._debounce_id: Optional[str] = None
         self._gauge_debounce_id: Optional[str] = None
 
-    # ------------------------------------------------------------------
-    # Factorías de Componentes UI (Modularización)
-    # ------------------------------------------------------------------
-
     def _create_styled_label(self, parent: Any, text: str, style: str, **kwargs) -> ctk.CTkLabel:
-        """Crea una etiqueta con tipografía y color extraídos de la marca."""
+        """Instancia una etiqueta utilizando la configuración tipográfica de branding.py."""
         font_config = {"size": branding.font_size(style)}
         if style == "title": font_config["weight"] = "bold"
         if style == "caption": font_config["weight"] = "bold"
@@ -208,7 +200,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         )
 
     def _make_output(self, tab_name: str, parent: ctk.CTk) -> ctk.CTkTextbox:
-        """Crea y registra un área de texto (log) para una pestaña específica."""
+        """Crea y registra un área de texto para loguear la salida de cada pestaña."""
         box = ctk.CTkTextbox(
             parent,
             fg_color=branding.color("card"),
@@ -223,14 +215,14 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         return box
 
     def _button_row(self, parent: ctk.CTk) -> ctk.CTkFrame:
-        """Retorna un contenedor horizontal para alinear los botones de acción."""
+        """Retorna un contenedor para alinear horizontalmente botones de acción."""
         row = ctk.CTkFrame(parent, fg_color="transparent")
         row.pack(fill="x", padx=12, pady=(12, 0))
         return row
 
     def _action(self, parent: ctk.CTk, text: str, command: Callable, 
                 danger: bool = False, column: int = 0, secondary: bool = False) -> ctk.CTkButton:
-        """Crea un botón estilizado configurado para una tarea específica."""
+        """Genera un botón de acción con los colores correspondientes al nivel de riesgo."""
         if danger:
             fondo, hover, texto = ("danger", "danger_hover", "text")
         elif secondary:
@@ -250,7 +242,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         return button
 
     def _hint(self, parent: ctk.CTk, text: str) -> None:
-        """Agrega una etiqueta de texto informativo (ayuda) al layout."""
+        """Agrega un texto de ayuda sutil al layout de una pestaña."""
         self._create_styled_label(
             parent, text, "caption",
             wraplength=1010, justify="left"
@@ -258,7 +250,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _menu(self, parent: ctk.CTk, values: List[str], variable: tk.StringVar, 
               command: Optional[Callable] = None, width: int = 190) -> ctk.CTkOptionMenu:
-        """Crea un menú desplegable (OptionMenu) usando colores de marca."""
+        """Crea un menú desplegable estandarizado con la paleta de colores de branding."""
         return ctk.CTkOptionMenu(
             parent, values=values, variable=variable, command=command, width=width,
             fg_color=branding.color("surface_alt"),
@@ -272,7 +264,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         )
 
     def _entry(self, parent: ctk.CTk, placeholder: str, width: int = 200) -> ctk.CTkEntry:
-        """Crea un campo de entrada de texto estandarizado."""
+        """Instancia un campo de entrada de texto para la configuración o inputs del usuario."""
         return ctk.CTkEntry(
             parent, width=width, placeholder_text=placeholder,
             fg_color=branding.color("card"),
@@ -281,18 +273,14 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             corner_radius=9,
         )
 
-    # ------------------------------------------------------------------
-    # Métodos de Construcción de Layout Principal
-    # ------------------------------------------------------------------
-
     def _build_layout(self) -> None:
-        """Estructura las tres áreas maestras de la aplicación."""
+        """Estructura las tres áreas maestras de la interfaz (header, pestañas, footer)."""
         self._build_header()
         self._build_tabs_container()
         self._build_footer()
 
     def _tab_factory(self, name: str) -> None:
-        """Invoca el constructor correspondiente según el nombre de la pestaña."""
+        """Despachador que ejecuta el método constructor específico para una pestaña dada."""
         constructors: Dict[str, Callable] = {
             "Salud": self._build_tab_salud,
             "Limpieza": self._build_tab_limpieza,
@@ -315,7 +303,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 logging.error("Fallo crítico en el constructor de la pestaña %s: %s", name, e)
 
     def _build_tabs_container(self) -> None:
-        """Crea el componente de pestañas (tabview) y popula las secciones."""
+        """Construye el contenedor principal tipo tabview que alberga todas las secciones."""
         self.tabview = ctk.CTkTabview(
             self,
             fg_color=branding.color("surface"),
@@ -344,7 +332,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 logging.error("Error al construir la pestaña %s: %s", name, e)
 
     def _build_header(self) -> None:
-        """Dibuja encabezado con logo, título, versión y línea divisoria decorativa."""
+        """Dibuja el encabezado de la aplicación incluyendo logo, nombre y versión."""
         header = ctk.CTkFrame(self, fg_color="transparent")
         header.pack(fill="x", padx=18, pady=(16, 0))
 
@@ -380,7 +368,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         franja.bind("<Configure>", on_resize)
 
     def _build_footer(self) -> None:
-        """Crea barra de estado inferior y el indicador de actividad global."""
+        """Crea la barra de estado inferior que muestra notificaciones de actividad."""
         pie = ctk.CTkFrame(self, fg_color="transparent")
         pie.pack(fill="x", padx=18, pady=(0, 12))
 
@@ -395,12 +383,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.activity.pack(side="right")
         self.activity.pack_forget()
 
-    # ------------------------------------------------------------------
-    # Construcción de Pestañas Específicas
-    # ------------------------------------------------------------------
-
     def _build_tab_salud(self) -> None:
-        """Construye el dashboard de salud centralizado."""
+        """Construye la vista de dashboard con las métricas de salud general."""
         tab = self.tabs["Salud"]
         row = self._button_row(tab)
         self._action(row, "Analizar el sistema", self.on_full_analysis, column=0)
@@ -429,7 +413,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._make_output("Salud", tab)
 
     def _build_health_metrics_row(self, container: ctk.CTkFrame) -> None:
-        """Crea tarjetas de métricas numéricas superiores para el panel de salud."""
+        """Crea las tarjetas numéricas superiores para el resumen de salud."""
         metrics_definitions = (("basura", "Basura"), ("sospechosos", "Sospechosos"),
                                ("ram", "RAM libre"), ("disco", "Disco libre"))
         for i, (clave, titulo) in enumerate(metrics_definitions):
@@ -437,7 +421,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.cards[clave] = self._metric_card(container, titulo, i)
 
     def _build_health_area_bars(self, parent: ctk.CTk) -> None:
-        """Crea desglose visual de barras por categoría."""
+        """Construye las barras de progreso que detallan el puntaje por categoría."""
         area_container = ctk.CTkFrame(parent, fg_color="transparent")
         area_container.grid(row=0, column=1, sticky="ew")
         area_container.grid_columnconfigure(1, weight=1)
@@ -445,7 +429,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self._build_single_health_bar(area_container, clave, etiqueta, fila)
 
     def _build_single_health_bar(self, container: ctk.CTkFrame, clave: str, etiqueta: str, fila: int) -> None:
-        """Genera una barra de progreso de salud individual."""
+        """Crea una barra de progreso individual para una categoría específica de salud."""
         self._create_styled_label(container, etiqueta, "body", anchor="w", width=150).grid(row=fila, column=0, sticky="w", pady=4)
         
         barra = ctk.CTkProgressBar(
@@ -461,7 +445,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.area_bars[clave] = (barra, valor_label)
 
     def _metric_card(self, parent: ctk.CTk, title: str, column: int) -> ctk.CTkLabel:
-        """Crea tarjeta decorativa para una métrica numérica."""
+        """Crea una tarjeta UI decorativa para mostrar un valor numérico."""
         tarjeta = ctk.CTkFrame(
             parent, fg_color=branding.color("card"), corner_radius=12,
             border_width=1, border_color=branding.color("border"),
@@ -474,7 +458,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         return valor_label
 
     def _draw_gauge(self, score: int, grade: str) -> None:
-        """Dibuja el gauge (anillo circular) de puntaje en el canvas con debouncing."""
+        """Dibuja el medidor circular central en el canvas utilizando debouncing para evitar flicker."""
         if self._gauge_debounce_id:
             self.after_cancel(self._gauge_debounce_id)
         
@@ -495,7 +479,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._gauge_debounce_id = self.after(50, update_canvas)
 
     def _build_tab_limpieza(self) -> None:
-        """Construye interfaz de gestión de archivos basura."""
+        """Crea el layout para la sección de limpieza de archivos basura."""
         tab = self.tabs["Limpieza"]
         row = self._button_row(tab)
         self._action(row, "Buscar basura", self.on_scan_junk, column=0)
@@ -522,7 +506,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._make_output("Limpieza", tab)
 
     def _build_tab_seguridad(self) -> None:
-        """Construye interfaz de escaneo heurístico de seguridad."""
+        """Crea el layout para el escáner heurístico de seguridad."""
         tab = self.tabs["Seguridad"]
         row = self._button_row(tab)
         self._action(row, "Escaneo heurístico", self.on_heuristic_scan, column=0)
@@ -535,7 +519,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._make_output("Seguridad", tab)
 
     def _build_tab_cuarentena(self) -> None:
-        """Construye gestión de archivos en aislamiento."""
+        """Crea el layout para la gestión de archivos aislados."""
         tab = self.tabs["Cuarentena"]
         row = self._button_row(tab)
         self._action(row, "Ver cuarentena", self.on_list_quarantine, column=0)
@@ -552,7 +536,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._make_output("Cuarentena", tab)
 
     def _build_tab_memoria(self) -> None:
-        """Construye interfaz de diagnóstico de procesos y memoria RAM."""
+        """Crea el layout para herramientas de diagnóstico de memoria y procesos."""
         tab = self.tabs["Memoria"]
         row = self._button_row(tab)
         self._action(row, "Diagnóstico de RAM", self.on_memory_report, column=0)
@@ -569,7 +553,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._make_output("Memoria", tab)
 
     def _build_tab_disco(self) -> None:
-        """Construye herramientas de análisis de uso de disco."""
+        """Crea el layout para el análisis de uso de espacio en disco."""
         tab = self.tabs["Disco"]
         row = self._button_row(tab)
         self._action(row, "Espacio por unidad", self.on_drives_report, column=0)
@@ -578,7 +562,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._make_output("Disco", tab)
 
     def _build_tab_duplicados(self) -> None:
-        """Construye gestión de archivos duplicados."""
+        """Crea el layout para la búsqueda y gestión de archivos duplicados."""
         tab = self.tabs["Duplicados"]
         row = self._button_row(tab)
         self._action(row, "Buscar duplicados", self.on_find_duplicates, column=0)
@@ -587,21 +571,21 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._make_output("Duplicados", tab)
 
     def _build_tab_navegadores(self) -> None:
-        """Construye reporte de cachés de navegadores."""
+        """Crea el layout para visualizar el estado de cachés de navegadores."""
         tab = self.tabs["Navegadores"]
         row = self._button_row(tab)
         self._action(row, "Detectar caché", self.on_browser_report, column=0)
         self._make_output("Navegadores", tab)
 
     def _build_tab_inicio(self) -> None:
-        """Construye reporte de programas de inicio."""
+        """Crea el layout para el listado de programas de inicio del sistema."""
         tab = self.tabs["Inicio"]
         row = self._button_row(tab)
         self._action(row, "Ver programas de inicio", self.on_startup_report, column=0)
         self._make_output("Inicio", tab)
 
     def _build_tab_informe(self) -> None:
-        """Construye generador de reportes de sesión."""
+        """Crea el layout para la generación y exportación de reportes de sesión."""
         tab = self.tabs["Informe"]
         row = self._button_row(tab)
         self._action(row, "Armar informe", self.on_build_report, column=0)
@@ -612,7 +596,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._make_output("Informe", tab)
 
     def _build_tab_asistente(self) -> None:
-        """Construye chat interactivo con el asistente IA."""
+        """Crea el layout para la interacción con el motor del asistente IA."""
         tab = self.tabs["Asistente"]
         row = self._button_row(tab)
         self._action(row, "Preguntar", self.on_ask_assistant, column=0)
@@ -643,13 +627,13 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._make_output("Asistente", tab)
 
     def _add_setting_label(self, parent: ctk.CTkFrame, text: str, row: int, col: int = 0) -> None:
-        """Agrega etiqueta descriptiva en el formulario de ajustes."""
+        """Agrega un label descriptivo a un formulario de ajustes."""
         self._create_styled_label(parent, text, "body", anchor="w").grid(
             row=row, column=col, sticky="w", padx=(0, 10), pady=6
         )
 
     def _add_setting_switch(self, parent: ctk.CTkFrame, clave: str, texto: str, row: int, col: int) -> None:
-        """Agrega interruptor lógico en el formulario de ajustes."""
+        """Agrega un switch lógico a un formulario de ajustes."""
         variable = ctk.BooleanVar(value=bool(self.settings.get(clave)))
         self.setting_vars[clave] = variable
         ctk.CTkSwitch(
@@ -661,7 +645,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         ).grid(row=row, column=col, sticky="w", padx=(0, 24), pady=6)
 
     def _build_tab_ajustes(self) -> None:
-        """Construye panel de configuración global del usuario."""
+        """Construye la interfaz de configuración del usuario."""
         tab = self.tabs["Ajustes"]
         row = self._button_row(tab)
         self._action(row, "Guardar ajustes", self.on_save_settings, column=0)
@@ -716,12 +700,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.api_key_entry.grid(row=0, column=2, sticky="w")
         self._make_output("Ajustes", tab)
 
-    # ------------------------------------------------------------------
-    # Utilidades generales y helpers
-    # ------------------------------------------------------------------
-
     def _is_safe_path(self, path: Union[str, Path]) -> bool:
-        """Valida si una ruta no está protegida y no es un enlace simbólico."""
+        """Valida que una ruta no sea un enlace simbólico y no esté en la lista protegida."""
         try:
             p = Path(path).resolve(strict=True)
             if p.is_symlink():
@@ -731,7 +711,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return False
 
     def _is_safe_target_dir(self, path: Union[str, Path]) -> bool:
-        """Valida que un directorio sea apto para análisis del sistema."""
+        """Valida que una ruta de directorio sea apta para el análisis del sistema."""
         try:
             p = Path(path).resolve(strict=True)
             return p.is_dir() and not safety.is_protected_path(p)
@@ -739,7 +719,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return False
 
     def _is_valid_dir(self, path: Optional[Union[str, Path]]) -> bool:
-        """Valida existencia y permisos de lectura de un directorio."""
+        """Verifica la existencia y los permisos de lectura de un directorio."""
         if not path:
             return False
         try:
@@ -749,11 +729,14 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return False
 
     def _get_cached_data(self, key: str) -> Any:
-        """Wrapper para recuperar datos del caché centralizado."""
+        """Wrapper de conveniencia para recuperar datos del caché."""
         return self._get_cached(key)
 
     def _get_cached(self, key: str, provider: Optional[Callable] = None, force: bool = False) -> Any:
-        """Retorna valor de caché si está vigente; ejecuta provider si es necesario."""
+        """
+        Retorna datos cacheados si son válidos o ejecuta el proveedor especificado.
+        Gestiona la expiración (TTL) y el tamaño máximo (LRU) del caché.
+        """
         now = time.time()
         if not force and key in self._cache:
             data, timestamp = self._cache[key]
@@ -775,7 +758,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         return None
 
     def _get_cached_or_run(self, key: str, provider: Callable, on_complete: Callable) -> None:
-        """Obtiene datos de caché o dispara ejecución asíncrona."""
+        """Obtiene datos del caché o ejecuta la operación en un hilo separado."""
         cached = self._get_cached(key)
         if cached is not None:
             on_complete(cached)
@@ -783,22 +766,22 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.run_async(lambda: on_complete(provider()))
 
     def _invalidate_cache(self, key_prefix: str) -> None:
-        """Elimina entradas de caché que inicien con el prefijo especificado."""
+        """Elimina entradas de caché que coincidan con un prefijo."""
         keys_to_del = [k for k in self._cache if k.startswith(key_prefix)]
         for k in keys_to_del:
             del self._cache[k]
 
     def _box(self, tab: str) -> ctk.CTkTextbox:
-        """Retorna la caja de log asociada a una pestaña."""
+        """Obtiene el componente de texto log para una pestaña dada."""
         return self.outputs.get(tab) or self.outputs["Limpieza"]
 
     def log(self, text: str, tab: str = "Limpieza") -> None:
-        """Encola un mensaje de texto para el log de la pestaña indicada."""
+        """Encola un mensaje para ser renderizado en la UI."""
         self._log_queue.append((tab, text))
         self.after_idle(self._flush_logs)
 
     def _flush_logs(self) -> None:
-        """Vuelca cola de logs a la UI de forma asíncrona."""
+        """Vuelca los logs pendientes a la interfaz gráfica."""
         while self._log_queue:
             tab, text = self._log_queue.pop(0)
             try:
@@ -810,23 +793,23 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 logging.error("No se pudo actualizar el log en %s: %s", tab, e)
 
     def clear(self, tab: str = "Limpieza") -> None:
-        """Limpia el contenido del log en una pestaña."""
+        """Limpia el contenido del log de una pestaña específica."""
         box = self._box(tab)
         self.after(0, lambda: box.delete("1.0", "end"))
 
     def set_status(self, text: str) -> None:
-        """Actualiza la barra de estado."""
+        """Actualiza el texto en la barra de estado inferior."""
         self.after_idle(lambda: self.status.configure(text=text))
 
     def log_lines(self, lines: List[str], tab: str) -> None:
-        """Vuelca una lista de strings al log y actualiza el reporte de sesión."""
+        """Limpia y vuelca una lista de líneas al log de una pestaña."""
         self.clear(tab)
         box = self._box(tab)
         self.after(0, lambda: (box.insert("1.0", "\n".join(lines)), box.see("1.0")))
         self.report_data[tab.lower()] = list(lines)
 
     def _set_busy(self, busy: bool) -> None:
-        """Gestiona el indicador visual de carga."""
+        """Activa o desactiva el indicador visual de carga."""
         def actualizar():
             if busy:
                 self._tasks_running += 1
@@ -843,7 +826,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.after(0, actualizar)
 
     def _validate_and_log_error(self, e: Exception, tab: str) -> None:
-        """Manejo centralizado de excepciones (traducción al usuario)."""
+        """Maneja excepciones y traduce los errores técnicos a mensajes de usuario."""
         if isinstance(e, safety.UnsafePathError):
             self.log(f"Bloqueado por seguridad: {e}", tab)
         elif isinstance(e, PermissionError):
@@ -857,14 +840,14 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.log(f"Error inesperado: {type(e).__name__}", tab)
 
     def _safe_run(self, fn: Callable, tab: str) -> None:
-        """Envuelve ejecución para captura centralizada de errores."""
+        """Ejecuta una función envolviéndola en bloques de control de errores."""
         try:
             fn()
         except Exception as e:
             self._validate_and_log_error(e, tab)
 
     def run_async(self, fn: Callable, check_safety: bool = False) -> None:
-        """Envía tarea a pool de hilos con validación de seguridad opcional."""
+        """Envía una tarea al pool de hilos y gestiona su ciclo de vida en la UI."""
         if check_safety:
             if self.scan_target and not self._is_safe_target_dir(self.scan_target):
                 self.log("Abortado: La ruta de destino no es segura.", self._current_tab())
@@ -883,7 +866,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._executor.submit(wrapper)
 
     def _current_tab(self) -> str:
-        """Determina cuál es la pestaña activa."""
+        """Obtiene el nombre de la pestaña activa en la interfaz."""
         try:
             etiqueta = self.tabview.get()
             if not isinstance(etiqueta, str): return "Limpieza"
@@ -895,17 +878,15 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         return "Limpieza"
 
     def _ask_folder(self, title: str) -> Optional[str]:
-        """Abre explorador de carpetas con validación anti-inyección y de sistema."""
+        """Abre un diálogo de selección de carpeta con filtros de seguridad anti-inyección."""
         folder = filedialog.askdirectory(title=title)
         if not folder or not isinstance(folder, str):
             return None
         
-        # Sanitización estricta para prevenir inyecciones de ruta o caracteres ilegales
         if any(ord(c) < 32 for c in folder) or "\u202e" in folder:
             messagebox.showerror("Ruta sospechosa", "La ruta seleccionada contiene caracteres ilegales.")
             return None
         
-        # Verificación final contra el motor de seguridad antes de procesar
         if not self._is_safe_target_dir(folder):
             messagebox.showwarning("Ruta no segura", "Esa ruta está protegida o es inválida.")
             return None
@@ -913,15 +894,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         return folder
 
     def _confirm(self, title: str, message: str) -> bool:
-        """Diálogo de confirmación del usuario."""
+        """Muestra un cuadro de confirmación para acciones destructivas."""
         return messagebox.askyesno(title, message, icon="warning")
 
-    # ------------------------------------------------------------------
-    # Lógica de Salud
-    # ------------------------------------------------------------------
-
     def _compile_metrics(self) -> Tuple[healthscore.SystemMetrics, memory_mod.Snapshot, diskreport.DriveInfo]:
-        """Agrega los datos de todos los módulos para calcular salud."""
+        """Agrega datos de diversos módulos para consolidar el reporte de salud."""
         hallazgos = self._get_cached_data("suspicions") or []
         arranque = self._get_cached_data("startup") or []
         junk = self._get_cached_data("junk") or []
@@ -950,7 +927,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         return metrics, snapshot or memory_mod.Snapshot(0, 0, 0), unidad or diskreport.DriveInfo(0, 0, 0, "")
 
     def on_full_analysis(self) -> None:
-        """Inicia análisis completo del sistema."""
+        """Inicia el análisis completo de todos los módulos de salud."""
         def task():
             self.set_status("Analizando el sistema...")
             self.clear("Salud")
@@ -980,7 +957,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _update_health_visuals(self, resultado: healthscore.ScoreResult, junk_mb: float, 
                                sospechosos: int, ram_libre: float, disco_libre: float) -> None:
-        """Actualiza la vista del dashboard tras obtener resultados."""
+        """Actualiza los componentes visuales del dashboard con los resultados obtenidos."""
         state_key = (resultado.score, junk_mb, sospechosos, ram_libre, disco_libre)
         if self._last_health_state == state_key:
             return
@@ -1016,12 +993,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
         self.after(0, actualizar)
 
-    # ------------------------------------------------------------------
-    # Lógica de Limpieza
-    # ------------------------------------------------------------------
-
     def on_target_choice_changed(self, choice: str) -> None:
-        """Maneja el selector de destino para limpieza."""
+        """Gestiona el selector de directorios para las tareas de limpieza."""
         if choice == "Elegir carpeta...":
             folder = self._ask_folder("Elegí una carpeta para escanear")
             if folder:
@@ -1045,7 +1018,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 self.target_label.configure(text="")
 
     def on_scan_junk(self) -> None:
-        """Inicia escaneo de archivos basura."""
+        """Dispara el proceso de escaneo de basura."""
         def task():
             destino = self.scan_target or "carpetas por defecto (Temp/Descargas)"
             self.set_status(f"Buscando basura en {destino}...")
@@ -1064,7 +1037,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.run_async(task, check_safety=True)
 
     def refresh_list(self) -> None:
-        """Actualiza la visualización de la lista de archivos encontrados."""
+        """Actualiza la lista visual de archivos basura según el criterio de ordenamiento."""
         junk = self._get_cached_data("junk") or []
         ordered = sort_junk(junk, by=self.sort_by.get())
         lines = [f"{jf.size_mb:>8} MB  |  {jf.modified:%Y-%m-%d}  |  {jf.path}" for jf in ordered]
@@ -1073,7 +1046,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.after(0, lambda: (box.delete("1.0", "end"), box.insert("1.0", "\n".join(lines))))
 
     def on_stage(self) -> None:
-        """Mueve candidatos a zona de revisión."""
+        """Mueve candidatos a archivos basura a la carpeta de revisión."""
         junk = self._get_cached_data("junk") or []
         if not junk:
             messagebox.showinfo("Sin candidatos", "Primero usá 'Buscar basura'.")
@@ -1101,7 +1074,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.run_async(task)
 
     def on_delete_reviewed(self) -> None:
-        """Borrado final de archivos en revisión."""
+        """Ejecuta el borrado final de los archivos que han sido marcados para eliminar."""
         if not self._confirm(
             "Vaciar carpeta de revisión",
             "Esto BORRA de forma permanente los archivos que están en la carpeta "
@@ -1116,12 +1089,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
         self.run_async(task)
 
-    # ------------------------------------------------------------------
-    # Lógica de Seguridad
-    # ------------------------------------------------------------------
-
     def _run_heuristic_scan(self, folder: str) -> None:
-        """Ejecuta escaneo heurístico de seguridad."""
+        """Lógica interna para ejecutar el escaneo heurístico de seguridad."""
         def task():
             if not self._is_valid_dir(folder):
                 self.log(f"Error: La carpeta {folder} no es accesible.", "Seguridad")
@@ -1154,7 +1123,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.run_async(task, check_safety=True)
 
     def on_heuristic_scan(self) -> None:
-        """Escaneo heurístico estándar (Descargas)."""
+        """Escaneo heurístico de la carpeta de descargas."""
         downloads_path = os.path.expanduser("~/Downloads")
         if not os.path.isdir(downloads_path):
             self.log("No se encontró la carpeta de Descargas.", "Seguridad")
@@ -1162,14 +1131,14 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._run_heuristic_scan(downloads_path)
 
     def on_heuristic_scan_folder(self) -> None:
-        """Escaneo heurístico en carpeta elegida manualmente."""
+        """Escaneo heurístico de una carpeta personalizada."""
         folder = self._ask_folder("Elegí una carpeta para escanear")
         if folder:
             self.scan_target = folder
             self._run_heuristic_scan(folder)
 
     def on_quarantine_findings(self) -> None:
-        """Aísla resultados del escaneo en cuarentena."""
+        """Aísla en cuarentena los elementos sospechosos detectados."""
         suspicions = self._get_cached_data("suspicions") or []
         if not suspicions:
             messagebox.showinfo("Sin hallazgos", "Primero corré un escaneo heurístico.")
@@ -1202,7 +1171,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.run_async(task)
 
     def on_defender_scan(self) -> None:
-        """Dispara escaneo rápido nativo de Windows Defender."""
+        """Invoca el escaneo rápido de Windows Defender."""
         def task():
             self.set_status("Windows Defender en curso...")
             self.log("Iniciando escaneo rápido de Windows Defender (puede tardar)...", "Seguridad")
@@ -1211,19 +1180,15 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
         self.run_async(task)
 
-    # ------------------------------------------------------------------
-    # Lógica de Cuarentena
-    # ------------------------------------------------------------------
-
     def on_list_quarantine(self) -> None:
-        """Lista elementos en cuarentena."""
+        """Lista el contenido de la cuarentena."""
         def task():
             self.log_lines(quarantine.summarize(), "Cuarentena")
 
         self.run_async(task)
 
     def on_restore_quarantine(self) -> None:
-        """Restaura un archivo mediante ID."""
+        """Restaura un ítem específico desde la cuarentena mediante su ID."""
         raw_id = self.quarantine_id.get().strip()
         if not raw_id:
             messagebox.showinfo("Falta el ID", "Pegá el ID del archivo que querés restaurar.")
@@ -1239,7 +1204,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 if not item or not hasattr(item, 'original_path'):
                     raise AttributeError("Manifiesto de cuarentena corrupto")
                 
-                # Validación de seguridad reforzada antes de restaurar
                 if not self._is_safe_path(item.original_path):
                     self.log(f"Error: Ruta original {item.original_path} está protegida.", "Cuarentena")
                     return
@@ -1252,7 +1216,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.run_async(task)
 
     def on_purge_quarantine(self) -> None:
-        """Purgado completo de cuarentena."""
+        """Elimina permanentemente todo el contenido de la cuarentena."""
         items = quarantine.list_items()
         if not items:
             messagebox.showinfo("Cuarentena vacía", "No hay nada para borrar.")
@@ -1270,12 +1234,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
         self.run_async(task)
 
-    # ------------------------------------------------------------------
-    # Lógica de Memoria
-    # ------------------------------------------------------------------
-
     def on_memory_report(self) -> None:
-        """Genera reporte de uso de memoria RAM."""
+        """Genera y muestra un reporte sobre el estado de la memoria RAM."""
         def task():
             snapshot = memory_mod.read_snapshot()
             procesos = memory_mod.top_memory_processes(limit=5)
@@ -1291,7 +1251,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.run_async(task)
 
     def on_memory_processes(self) -> None:
-        """Reporta procesos de alto consumo."""
+        """Reporta una lista de procesos ordenados por consumo de memoria."""
         def task():
             procesos = memory_mod.top_memory_processes(limit=15)
             if not procesos:
@@ -1313,14 +1273,13 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.run_async(task)
 
     def on_trim_process(self) -> None:
-        """Intenta liberar Working Set de un PID específico."""
+        """Intenta liberar memoria de trabajo de un proceso específico."""
         raw = self.pid_entry.get().strip()
         if not raw.isdigit():
             messagebox.showwarning("Error", "Ingresá un PID numérico válido.")
             return
         pid = int(raw)
 
-        # Validación de PID protegidos
         if pid < 100:
             self.log("Error: PID de sistema protegido.", "Memoria")
             return
@@ -1340,12 +1299,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
         self.run_async(task)
 
-    # ------------------------------------------------------------------
-    # Lógica de Disco
-    # ------------------------------------------------------------------
-
     def on_drives_report(self) -> None:
-        """Reporte de uso de unidades de disco."""
+        """Reporta el uso de espacio por unidad de disco."""
         def task():
             unidades = diskreport.all_drives_usage()
             if not unidades:
@@ -1368,7 +1323,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.run_async(task)
 
     def on_disk_analysis(self) -> None:
-        """Análisis de espacio de una carpeta específica."""
+        """Ejecuta el análisis de uso de disco en una carpeta elegida."""
         folder = self._ask_folder("Elegí una carpeta para analizar")
         if not folder:
             return
@@ -1385,12 +1340,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
         self.run_async(task, check_safety=True)
 
-    # ------------------------------------------------------------------
-    # Lógica de Duplicados
-    # ------------------------------------------------------------------
-
     def on_find_duplicates(self) -> None:
-        """Búsqueda y listado de archivos duplicados."""
+        """Inicia el proceso de búsqueda y listado de archivos duplicados."""
         folder = self._ask_folder("Elegí una carpeta donde buscar duplicados")
         if not folder:
             return
@@ -1425,7 +1376,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.run_async(task, check_safety=True)
 
     def on_quarantine_duplicates(self) -> None:
-        """Aísla archivos redundantes detectados como duplicados."""
+        """Mueve archivos duplicados excedentes a la cuarentena."""
         dups = self._get_cached_data("dups") or []
         if not dups:
             messagebox.showinfo("Sin duplicados", "Primero usá 'Buscar duplicados'.")
@@ -1460,12 +1411,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
         self.run_async(task)
 
-    # ------------------------------------------------------------------
-    # Lógica de Navegadores y arranque
-    # ------------------------------------------------------------------
-
     def on_browser_report(self) -> None:
-        """Reporte de caché de navegadores."""
+        """Genera reporte sobre el estado de la caché de navegadores."""
         def task():
             self.set_status("Midiendo caché de navegadores...")
             self.log_lines(browser.summarize(), "Navegadores")
@@ -1473,7 +1420,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.run_async(task)
 
     def on_startup_report(self) -> None:
-        """Reporte de programas de inicio."""
+        """Reporta las entradas encontradas en el inicio del sistema."""
         def task():
             self.set_status("Leyendo programas de inicio...")
             self._invalidate_cache("startup")
@@ -1482,12 +1429,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
         self.run_async(task)
 
-    # ------------------------------------------------------------------
-    # Lógica de Informe
-    # ------------------------------------------------------------------
-
     def on_build_report(self) -> None:
-        """Generación final del reporte de sesión."""
+        """Construye el reporte unificado con los datos recopilados durante la sesión."""
         def task():
             if not self.report_data:
                 self.log_lines(["Todavía no corriste ningún análisis. "
@@ -1501,7 +1444,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.run_async(task)
 
     def on_save_report(self, as_markdown: bool) -> None:
-        """Guarda reporte en disco (formato txt o md)."""
+        """Guarda el reporte generado en el sistema de archivos."""
         if not self.report_data:
             messagebox.showinfo("Sin datos", "Primero corré algún análisis.")
             return
@@ -1521,12 +1464,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
         self.run_async(task)
 
-    # ------------------------------------------------------------------
-    # Lógica de Asistente
-    # ------------------------------------------------------------------
-
     def on_ask_assistant(self, question: Optional[str] = None) -> None:
-        """Consultas al motor del asistente."""
+        """Envía una consulta al asistente IA local."""
         texto = (question or self.question_entry.get()).strip()
         if not texto:
             self.log("Escribí una pregunta o elegí una sugerida.", "Asistente")
@@ -1546,12 +1485,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
         self.run_async(task)
 
-    # ------------------------------------------------------------------
-    # Lógica de Ajustes
-    # ------------------------------------------------------------------
-
     def _validate_numeric_setting(self, value: Optional[str], default: int) -> int:
-        """Valida que un campo numérico sea entero positivo."""
+        """Valida que la configuración numérica ingresada sea un entero positivo."""
         if not value or not isinstance(value, str):
             return default
         try:
@@ -1561,7 +1496,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return default
 
     def _collect_settings(self) -> Dict[str, Any]:
-        """Sincroniza inputs de la interfaz con el estado interno."""
+        """Recopila los valores de todos los campos del formulario de ajustes."""
         valores = dict(self.settings)
         for clave, variable in self.setting_vars.items():
             try:
@@ -1582,7 +1517,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         return valores
 
     def on_save_settings(self) -> None:
-        """Guarda preferencias del usuario."""
+        """Guarda las preferencias del usuario en el archivo de configuración."""
         propuestos = self._collect_settings()
         if propuestos.get("asistente_activado") and not self.settings.get("asistente_activado"):
             if not self._confirm(
@@ -1604,14 +1539,14 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.run_async(task)
 
     def on_show_settings(self) -> None:
-        """Muestra configuración vigente en pantalla."""
+        """Muestra la configuración actual cargada en la aplicación."""
         def task():
             self.log_lines(settings_mod.describe(), "Ajustes")
 
         self.run_async(task)
 
     def on_reset_settings(self) -> None:
-        """Reseteo de ajustes a valores de fábrica."""
+        """Restaura los valores de fábrica de la configuración."""
         if not self._confirm(
             "Restaurar de fábrica",
             "Se van a descartar todos tus ajustes, incluida la clave del "

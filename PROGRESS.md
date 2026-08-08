@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **241** (47.8% de aceptación)
+- Mejoras aceptadas: **242** (48.0% de aceptación)
 - Rechazadas por tests: 9
-- Rechazadas por guardia de seguridad: 26
+- Rechazadas por guardia de seguridad: 25
 - Sin cambios (nada sustancial que mejorar): 18
 - Sin respuesta de la IA (error o límite): 210
 
@@ -16,36 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-07 | 78 | 4 | 9 | 9 | 84 |
-| 2026-08-08 | 163 | 5 | 17 | 9 | 126 |
+| 2026-08-07 | 75 | 4 | 8 | 9 | 84 |
+| 2026-08-08 | 167 | 5 | 17 | 9 | 126 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **54**
+- legibilidad y documentación: **58**
 - seguridad defensiva: **50**
 - manejo de errores y validación de entradas: **50**
-- rendimiento: **44**
 - robustez ante casos límite: **43**
+- rendimiento: **41**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **21**
 - `assistant.py`: **21**
+- `duplicates.py`: **21**
 - `branding.py`: **20**
-- `duplicates.py`: **20**
-- `scanner.py`: **19**
+- `settings.py`: **20**
 - `diskreport.py`: **19**
-- `healthscore.py`: **18**
+- `healthscore.py`: **19**
 - `quarantine.py`: **18**
 - `browser.py`: **18**
-- `safety.py`: **16**
-- `memory.py`: **16**
-- `main.py`: **15**
+- `scanner.py`: **18**
+- `memory.py`: **17**
+- `main.py`: **16**
 - `organizer.py`: **15**
+- `safety.py`: **15**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-08T13:42:13` **memory.py** (legibilidad y documentación): Mejora de la legibilidad y mantenimiento mediante la adición de docstrings técnicos detallados en funciones críticas y la sustitución de retornos crípticos por tipos de retorno claros y documentados, facilitando el entendimiento del flujo de datos en el diagnóstico de memoria.
+- `2026-08-08T13:42:00` **main.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `main.py` mediante la adición de docstrings detallados en los métodos de la clase `LimpiezaTotalOmegaApp` y la conversión de los comentarios de bloque en docstrings formales, facilitando el mantenimiento y la comprensión de la lógica de flujo de eventos y gestión de hilos.
+- `2026-08-08T13:40:56` **healthscore.py** (legibilidad y documentación): Mejore la claridad y mantenibilidad del módulo añadiendo type hints faltantes, eliminando redundancias en la lógica de cálculo y estructurando las constantes de peso para evitar errores de redondeo en el proceso de normalización.
+- `2026-08-08T13:40:34` **duplicates.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del código mediante la aplicación de Type Hints más precisos, documentación clara del propósito de las funciones (docstrings) y la simplificación de la lógica de control en `_refine_by_hash`, asegurando que las intenciones del diseño sean evidentes para futuros mantenimientos.
 - `2026-08-08T13:31:37` **diskreport.py** (legibilidad y documentación): Mejoré la documentación de `walk_files` y `summarize` para clarificar la lógica de filtrado y el manejo de tipos, además de añadir type hints explícitos en variables internas complejas para facilitar la lectura del código.
 - `2026-08-08T13:31:25` **browser.py** (legibilidad y documentación): Se agregaron docstrings detallados a las funciones internas `_is_safe_path`, `_is_excluded_file` y `_sum_directory_recursive` para documentar la lógica de seguridad y el manejo de excepciones, alineándose con el enfoque de legibilidad.
 - `2026-08-08T13:31:01` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `branding.py` mediante la adición de docstrings detallados en todas las funciones y clases que carecían de ellos, especificando tipos de retorno, posibles excepciones controladas y el propósito lógico de los parámetros, facilitando así la auditoría y el mantenimiento del código.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-08T13:10:03` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` reemplazando la lógica de conversión de tipo y acceso a procesos por una validación más estricta, asegurando que `handle` se cierre correctamente incluso ante errores inesperados y tratando explícitamente el caso de procesos con privilegios elevados que fallan en `OpenProcess`.
 - `2026-08-08T13:01:20` **main.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez en la manipulación de las entradas de los campos de texto (`min_dup_entry`, `top_files_entry` y `pid_entry`) dentro de `main.py` mediante la implementación de validaciones explícitas antes de procesar los datos, evitando excepciones no controladas durante la ejecución de las tareas asíncronas.
 - `2026-08-08T13:00:36` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` agregando una validación explícita para asegurar que todas las áreas definidas en `WEIGHTS` estén presentes en `ratios` y procesando de forma segura los valores de las métricas durante el cálculo del desglose para evitar posibles desbordamientos o valores indefinidos.
-- `2026-08-08T12:59:49` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `drive_usage` capturando posibles errores de permisos al acceder a unidades externas o desconectadas y añadí una validación explícita para asegurar que el sistema operativo soporte `shutil.disk_usage`, evitando excepciones inesperadas en entornos restringidos.
-- `2026-08-08T12:51:27` **browser.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de errores en `directory_size` y `_sum_directory_recursive` para prevenir que fallos de acceso a archivos individuales (por permisos o archivos bloqueados por el SO) interrumpan el cálculo total, asegurando que la recolección de datos sea resiliente y silenciosa ante excepciones de sistema.
-- `2026-08-08T12:50:44` **assistant.py** (manejo de errores y validación de entradas): Se mejoró la robustez de `build_context` implementando validaciones defensivas ante datos de entrada mal formados (objetos con tipos de datos inesperados en sus atributos), asegurando que el sistema no falle si los módulos que proporcionan las métricas entregan valores nulos o tipos erróneos.
-- `2026-08-08T11:28:14` **settings.py** (seguridad defensiva): Se endureció la seguridad de `settings.py` implementando una validación estricta de rutas de archivos antes de cualquier operación de lectura o escritura, asegurando que `SETTINGS_FILE` no sea manipulado como una ruta absoluta maliciosa y que los directorios destino sean verificados por `safety.is_safe_to_modify`.
