@@ -534,31 +534,28 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     items = load_manifest(base)
     item_map_by_name: Dict[str, QuarantineItem] = {item.stored_name: item for item in items}
     
-    count = 0
     to_keep: List[QuarantineItem] = []
+    purged_count = 0
     
     for entry in quarantine_root.iterdir():
         if entry.name == MANIFEST_NAME:
             continue
         
-        if entry.name not in item_map_by_name:
-            continue
-            
-        item = item_map_by_name[entry.name]
-        try:
-            if item.verify_integrity(entry):
-                if _safe_unlink(entry):
-                    count += 1
-                else:
-                    to_keep.append(item)
-            else:
-                to_keep.append(item)
-        except OSError:
+        # Solo procesamos si está en el manifiesto, caso contrario ignoramos por seguridad
+        item = item_map_by_name.get(entry.name)
+        
+        if item and item.verify_integrity(entry):
+            if _safe_unlink(entry):
+                purged_count += 1
+                continue
+        
+        # Si no se pudo borrar o no coincide, lo mantenemos en el manifiesto
+        if item:
             to_keep.append(item)
             
-    if count > 0:
+    if purged_count > 0:
         save_manifest(to_keep, base)
-    return count
+    return purged_count
 
 
 def total_quarantined_bytes(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:

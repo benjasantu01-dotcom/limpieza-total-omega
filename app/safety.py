@@ -79,6 +79,7 @@ def _is_reserved_device_name(name: str) -> bool:
     return base.lower() in _RESERVED_NAMES
 
 
+@lru_cache(maxsize=1024)
 def _is_system_or_hidden(path: Path) -> bool:
     """Verifica atributos de sistema u oculto mediante la API Win32."""
     if os.name != 'nt':
@@ -90,6 +91,7 @@ def _is_system_or_hidden(path: Path) -> bool:
         return False
 
 
+@lru_cache(maxsize=1024)
 def _is_reparse_point(path: Path) -> bool:
     """Determina si la ruta es un punto de reparse (Junction/Symlink)."""
     try:
@@ -115,7 +117,6 @@ def _is_file_in_use(path: Path) -> bool:
 
 def _check_file_integrity(p: Path) -> None:
     """Valida la integridad del archivo antes de cualquier operación de modificación."""
-    # Lista de condiciones de riesgo para el archivo
     checks = [
         (not os.access(p, os.W_OK), "inaccesible (sin permisos de escritura)"),
         (_is_reparse_point(p), "punto de reparse detectado"),

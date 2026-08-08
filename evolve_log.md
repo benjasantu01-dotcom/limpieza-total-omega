@@ -476,3 +476,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-08T14:22:58` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
 - `2026-08-08T14:22:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-08T14:22:58` Corrida terminada. Total usado hoy: 340.
+- `2026-08-08T14:31:10` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-08T14:31:43` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimizé `purge_all` para evitar el costo de iterar y verificar dos veces el manifiesto, utilizando el mapeo en memoria para acceso O(1) y garantizando que solo se procesen archivos que tienen un registro válido.
+- `2026-08-08T14:32:02` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 100): unterminated string literal (detected at line 100)
+- `2026-08-08T14:32:27` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se optimizó el rendimiento del módulo implementando `lru_cache` en `_is_system_or_hidden` y `_is_reparse_point`, evitando llamadas costosas a la API de Windows y a `lstat` durante los escaneos recursivos frecuentes en bucles de organización.
+- `2026-08-08T14:32:33` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: rendimiento).
+- `2026-08-08T14:32:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-08T14:32:33` Corrida terminada. Total usado hoy: 344.
