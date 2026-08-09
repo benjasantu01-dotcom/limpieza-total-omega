@@ -39,8 +39,8 @@ class Suspicion:
     reason: str
     severity: str
 
-# Alias de tipos para mejorar la legibilidad y mantenibilidad de la lógica de escaneo
-# Los chequeos deben ser funciones puras que retornan un objeto Suspicion si hay hallazgo, o None.
+# Alias de tipos para mejorar la legibilidad y mantenibilidad de la lógica de escaneo.
+# Las funciones de chequeo deben ser puras: reciben contexto y devuelven una Suspicion si detectan algo.
 SuspicionCheck: TypeAlias = Callable[[Path, Optional[os.DirEntry], Optional[str], Optional[str]], Optional[Suspicion]]
 ScanResult: TypeAlias = List[Suspicion]
 
@@ -117,7 +117,7 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, name
 
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, hours: int = RECENT_FILE_THRESHOLD_HOURS) -> Optional[Suspicion]:
-    """Detecta ejecutables creados recientemente para alertar sobre posibles descargas no deseadas."""
+    """Detecta ejecutables modificados recientemente según el umbral configurado."""
     try:
         if not path: return None
         st = entry.stat() if entry else path.stat()
@@ -131,7 +131,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None) -> Optional[Suspicion]:
-    """Verifica si un archivo adopta un nombre de sistema crítico, lo cual es indicativo de suplantación."""
+    """Verifica si un archivo adopta un nombre de sistema crítico fuera de su ubicación legítima."""
     try:
         if not path: return None
         target = name or path.name
@@ -156,7 +156,7 @@ def _run_checks(checks: List[SuspicionCheck], path: Path, entry: Optional[os.Dir
     return findings
 
 def scan_file(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None) -> ScanResult:
-    """Aplica el set completo de heurísticas a un archivo según su tipo."""
+    """Aplica el conjunto completo de heurísticas a un archivo basándose en su extensión y atributos."""
     if not path:
         return []
         
@@ -164,10 +164,10 @@ def scan_file(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[st
         n = name or path.name
         s = suffix or path.suffix.lower()
         
-        # Aplicar heurísticas universales
+        # Aplicar heurísticas universales a todo archivo
         findings = _run_checks(CHECK_REGISTRY["all"], path, entry, n, s)
         
-        # Aplicar heurísticas de ejecutables si el archivo es potencialmente ejecutable
+        # Aplicar heurísticas específicas para ejecutables si el archivo es potencialmente ejecutable
         if s in SUSPICIOUS_EXECUTABLE_EXT:
             findings.extend(_run_checks(CHECK_REGISTRY["exec"], path, entry, n, s))
                 
@@ -177,6 +177,7 @@ def scan_file(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[st
 
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
+    """Inicia el escaneo recursivo desde un directorio base dado."""
     if directory is None:
         return []
         
@@ -206,6 +207,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
 
 
 def run_windows_defender_quick_scan() -> str:
+    """Ejecuta una inspección rápida de Windows Defender mediante PowerShell."""
     try:
         status = subprocess.run(
             ["powershell", "-Command", "Get-MpComputerStatus | Select-Object -ExpandProperty RealTimeProtectionEnabled"],

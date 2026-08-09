@@ -94,6 +94,7 @@ DEFAULTS: Final[AppSettings] = {
     "asistente_modelo": "gemini-3.1-flash-lite",
 }
 
+# Define los límites (min, max) para valores numéricos para prevenir inyecciones inválidas
 _NUMERIC_LIMITS: Final[dict[str, tuple[int, int]]] = {
     "duplicados_tamano_minimo_kb": (0, 1024 * 1024),
     "top_archivos": (1, 500),
@@ -124,6 +125,7 @@ class _Validators:
 
     @staticmethod
     def path(val: Any) -> str | None:
+        """Valida si una ruta es absoluta, no es un symlink y es segura para modificar."""
         if val is None: return ""
         if not isinstance(val, (str, Path)): return None
         try:
@@ -131,11 +133,13 @@ class _Validators:
             if not path_string: return ""
             path_obj = Path(path_string).expanduser()
             if not path_obj.is_absolute(): return None
-            resolved_path = path_obj.resolve(strict=False)
-            if resolved_path.is_symlink(): return None
             
-            check_target = resolved_path if resolved_path.exists() else resolved_path.parent
-            return str(resolved_path) if is_safe_to_modify(str(check_target)) else None
+            resolved = path_obj.resolve(strict=False)
+            if resolved.is_symlink(): return None
+            
+            # Si el archivo no existe, validamos su carpeta padre como destino potencial
+            target = resolved if resolved.exists() else resolved.parent
+            return str(resolved) if is_safe_to_modify(str(target)) else None
         except (OSError, RuntimeError, ValueError, TypeError, PermissionError):
             return None
 

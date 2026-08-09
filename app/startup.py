@@ -65,9 +65,11 @@ class StartupEntry:
     """
     Representa un elemento de inicio detectado.
     
-    Gestiona la validación de rutas mediante un caché interno para minimizar
-    consultas de sistema de archivos (I/O). Implementa validaciones estrictas
-    contra rutas protegidas antes de exponer la ruta absoluta del ejecutable.
+    El flujo de resolución es:
+    1. `command` (raw): cadena de registro o ruta de archivo sin procesar.
+    2. `_sanitize_command`: elimina caracteres de control corruptos.
+    3. `_resolve_path_from_command`: extrae la ruta del ejecutable principal.
+    4. `executable` (property): ruta absoluta validada y verificada contra `safety.py`.
     """
     name: str
     command: str
@@ -92,11 +94,8 @@ class StartupEntry:
         """
         Analiza comandos tipo 'C:\Path\App.exe' /args. 
         
-        Args:
-            raw_cmd: Comando crudo obtenido del registro o sistema.
-            
-        Returns:
-            La ruta extraída como string si es válida y segura, caso contrario string vacío.
+        Extrae exclusivamente la parte contenida entre las primeras comillas 
+        detectadas, validando contra inyección de caracteres especiales.
         """
         if not isinstance(raw_cmd, str) or len(raw_cmd) < 2:
             return ""
@@ -120,8 +119,8 @@ class StartupEntry:
         """
         Normaliza, valida existencia física y comprueba restricciones de seguridad.
         
-        La resolución es costosa, por lo que utiliza `_EXISTS_CACHE` para persistir
-        el estado de validación durante el ciclo de vida del proceso.
+        La resolución implica I/O y comprobaciones de seguridad (`is_protected_path`),
+        por lo que el resultado final se memoiza en `_EXISTS_CACHE`.
         """
         if not isinstance(path_str, str) or not path_str:
             return ""
