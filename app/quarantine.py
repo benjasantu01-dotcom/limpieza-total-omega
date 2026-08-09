@@ -496,27 +496,27 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
         return 0
     
     items = load_manifest(base)
-    valid_names = {item.stored_name for item in items}
+    # Indexamos ítems por nombre para búsqueda O(1) en vez de O(n) dentro del bucle
+    item_map = {item.stored_name: item for item in items}
     
-    to_keep: List[QuarantineItem] = []
     purged_count = 0
+    items_to_keep = []
     
     for entry in quarantine_root.iterdir():
         if entry.name == MANIFEST_NAME or not entry.is_file():
             continue
         
-        # Solo purgar si está explícitamente en el manifiesto
-        if entry.name in valid_names:
-            item = next((i for i in items if i.stored_name == entry.name), None)
-            if item and item.verify_integrity(entry):
-                if _safe_unlink(entry):
-                    purged_count += 1
-                    continue
-            if item:
-                to_keep.append(item)
+        item = item_map.get(entry.name)
+        if item and item.verify_integrity(entry):
+            if _safe_unlink(entry):
+                purged_count += 1
+            else:
+                items_to_keep.append(item)
+        elif item:
+            items_to_keep.append(item)
             
     if purged_count > 0:
-        save_manifest(to_keep, base)
+        save_manifest(items_to_keep, base)
     return purged_count
 
 

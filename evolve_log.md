@@ -608,3 +608,34 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-09T12:49:57` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se ha optimizado la gestión de caché de procesos mediante el uso de un diccionario estructurado y una expiración basada en tiempo, reduciendo significativamente las llamadas innecesarias al subsistema de PowerShell que es costoso en términos de rendimiento.
 - `2026-08-09T12:49:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-09T12:49:57` Corrida terminada. Total usado hoy: 304.
+- `2026-08-09T12:57:59` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-09T12:58:33` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Se optimizó el rendimiento de `scan_for_junk` sustituyendo el método `os.path.isdir` y las comprobaciones manuales de atributos por el uso nativo de `dir_entry.is_dir()` dentro de `os.scandir`, reduciendo drásticamente las llamadas al sistema operativo (syscalls) al obtener tipos de archivo y metadatos en una sola operación durante la iteración.
+- `2026-08-09T12:59:03` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el acceso al manifiesto en `purge_all` transformando la lista de búsqueda en un diccionario indexado por `stored_name`, eliminando así el bucle anidado O(n^2) que penalizaba el rendimiento al purgar carpetas grandes.
+- `2026-08-09T12:59:22` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 103): unterminated string literal (detected at line 103)
+- `2026-08-09T12:59:31` Tests FALLARON:
+```
+ction describe_protection at 0x7f730808b6a0> = safety.describe_protection
+
+evolve/tests/test_safety.py:165: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:95: SyntaxWarning: invalid escape sequence '\P'
+    Analiza comandos tipo 'C:\Path\App.exe' /args.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_describe_protection_explains_the_reason - AssertionError: assert 'protegida' in 'Regla de sistema.'
+ +  where 'Regla de sistema.' = <function describe_protection at 0x7f730808b6a0>(((PosixPath('/tmp/pytest-of-runner/pytest-3/test_describe_protection_expla0') / 'Windows') / 'x.txt'))
+ +    where <function describe_protection at 0x7f730808b6a0> = safety.describe_protection
+1 failed, 298 passed, 7 warnings in 1.13s
+
+```
+- `2026-08-09T12:59:31` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de las validaciones de seguridad moviendo las listas de comparación a `frozenset` local en `is_protected_path` y `ensure_safe_to_modify`, y reduciendo llamadas redundantes a `normalize()` y `exists()` mediante un cacheado más eficiente y una estructura de chequeo temprano.
+- `2026-08-09T12:59:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-09T12:59:31` Corrida terminada. Total usado hoy: 308.

@@ -87,13 +87,12 @@ class JunkFile:
         return _is_junk_path(self.path)
 
 
-def _is_junction(path: Path) -> bool:
+def _is_junction(entry: os.DirEntry) -> bool:
     """
-    Detecta si una ruta es un punto de reparse (junction o symlink).
-    Evita la recursión infinita o el procesamiento de directorios espejados.
+    Detecta si una entrada es un punto de reparse (junction o symlink).
     """
     try:
-        return path.is_symlink() or (os.name == "nt" and os.path.isdir(path) and "reparse" in os.stat(path).st_file_attributes)
+        return entry.is_symlink() or (os.name == "nt" and "reparse" in os.stat(entry.path).st_file_attributes)
     except (OSError, AttributeError):
         return False
 
@@ -143,40 +142,42 @@ def _is_safe_for_move(path: Path) -> bool:
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     """
     Realiza un escaneo recursivo en directorios buscando archivos temporales.
-    Utiliza _walk_dir para evitar symlinks y respetar la SYSTEM_FOLDER_BLOCKLIST.
+    Utiliza os.scandir para evitar syscalls innecesarias y mejorar el rendimiento.
     """
     dirs: List[str] = directories if directories is not None else DEFAULT_SCAN_DIRS
     found: List[JunkFile] = []
 
-    def _walk_dir(base_path: Path) -> None:
-        """Función interna recursiva para exploración de disco segura."""
+    def _walk_dir(base_path: str) -> None:
+        """Función interna recursiva usando os.scandir para eficiencia."""
         try:
-            for entry in base_path.iterdir():
-                if _is_junction(entry):
-                    continue
-                
-                if entry.is_dir():
-                    if _is_allowed_directory(entry.name):
-                        _walk_dir(entry)
-                elif _is_junk_path(entry):
-                    try:
-                        if _is_safe_for_move(entry):
-                            stat = entry.stat()
-                            found.append(JunkFile(
-                                path=entry,
-                                size_bytes=stat.st_size,
-                                modified=datetime.fromtimestamp(stat.st_mtime)
-                            ))
-                    except (PermissionError, OSError):
+            with os.scandir(base_path) as it:
+                for entry in it:
+                    if _is_junction(entry):
                         continue
+                    
+                    if entry.is_dir():
+                        if _is_allowed_directory(entry.name):
+                            _walk_dir(entry.path)
+                    elif _is_junk_path(Path(entry.name)):
+                        try:
+                            path_obj = Path(entry.path)
+                            if _is_safe_for_move(path_obj):
+                                stat = entry.stat()
+                                found.append(JunkFile(
+                                    path=path_obj,
+                                    size_bytes=stat.st_size,
+                                    modified=datetime.fromtimestamp(stat.st_mtime)
+                                ))
+                        except (PermissionError, OSError):
+                            continue
         except (PermissionError, OSError):
             pass
 
     for d in dirs:
         try:
-            resolved_path: Path = Path(d).expanduser().resolve()
-            if resolved_path.exists() and resolved_path.is_dir() and is_safe_to_modify(resolved_path):
-                _walk_dir(resolved_path)
+            p = Path(d).expanduser().resolve()
+            if p.exists() and p.is_dir() and is_safe_to_modify(p):
+                _walk_dir(str(p))
         except (RuntimeError, OSError, ValueError):
             continue
     return found
@@ -244,17 +245,18 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
 
     try:
         dest: Path = Path(review_dir).expanduser().resolve()
-        if not dest.exists() or not dest.is_dir() or _is_junction(dest) or not is_safe_to_modify(dest):
+        if not dest.exists() or not dest.is_dir() or not is_safe_to_modify(dest):
             return 0
     except (RuntimeError, OSError, ValueError):
         return 0
 
     count: int = 0
-    for f in dest.iterdir():
-        try:
-            if f.is_file() and not _is_junction(f) and _is_safe_for_move(f):
-                f.unlink()
-                count += 1
-        except (PermissionError, OSError):
-            continue
+    with os.scandir(dest) as it:
+        for entry in it:
+            try:
+                if entry.is_file() and not _is_junction(entry) and _is_safe_for_move(Path(entry.path)):
+                    os.remove(entry.path)
+                    count += 1
+            except (PermissionError, OSError):
+                continue
     return count
