@@ -336,6 +336,10 @@ def quarantine_file(
     if not os.access(dest_dir, os.W_OK):
         raise PermissionError(f"Directorio de cuarentena sin permisos de escritura: {dest_dir}")
     
+    # Validar existencia de nuevo tras validaciones previas para evitar TOCTOU
+    if not source_path.exists():
+        raise FileNotFoundError(f"El archivo fue eliminado antes de la cuarentena: {source_path}")
+
     try:
         file_size = source_path.stat().st_size
     except OSError as e:

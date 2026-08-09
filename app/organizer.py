@@ -87,6 +87,14 @@ class JunkFile:
         return _is_junk_path(self.path)
 
 
+def _is_junction(path: Path) -> bool:
+    """Detecta si una ruta es un punto de reparse (junction o symlink)."""
+    try:
+        return path.is_symlink() or (os.name == "nt" and os.path.isdir(path) and "reparse" in os.stat(path).st_file_attributes)
+    except (OSError, AttributeError):
+        return False
+
+
 def _is_junk_path(path: Path) -> bool:
     """Valida si el archivo posee una extensión categorizada como 'basura'."""
     return path.suffix.lower() in _LOWER_JUNK_EXTS
@@ -127,26 +135,21 @@ def _is_valid_candidate(path: Path) -> bool:
 
 
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
-    """Realiza un escaneo recursivo en directorios buscando archivos temporales o basura.
-    
-    La estrategia de escaneo utiliza Path.iterdir para asegurar compatibilidad con 
-    objetos Path y maneja excepciones de sistema para evitar detenciones inesperadas.
-    """
+    """Realiza un escaneo recursivo en directorios buscando archivos temporales o basura."""
     dirs: List[str] = directories if directories is not None else DEFAULT_SCAN_DIRS
     found: List[JunkFile] = []
 
     def _walk_dir(base_path: Path) -> None:
-        """Recorre directorios de forma recursiva ignorando enlaces simbólicos."""
+        """Recorre directorios de forma recursiva ignorando enlaces simbólicos y junctions."""
         try:
             for entry in base_path.iterdir():
-                if entry.is_symlink():
+                if _is_junction(entry):
                     continue
                 
                 if entry.is_dir():
                     if _is_allowed_directory(entry.name):
                         _walk_dir(entry)
                 elif _is_junk_path(entry):
-                    # Filtrado rápido por extensión antes de realizar operaciones pesadas de E/S
                     try:
                         if _is_valid_candidate(entry):
                             stat = entry.stat()
@@ -205,7 +208,6 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             if not current_abs.exists() or not current_abs.is_file():
                 continue
             
-            # Evitar Path Traversal: asegurar que el destino no sea padre del origen
             if dest == current_abs or dest in current_abs.parents:
                 continue
             
@@ -228,7 +230,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
 
     try:
         dest: Path = Path(review_dir).expanduser().resolve()
-        if not dest.exists() or not dest.is_dir() or dest.is_symlink() or not is_safe_to_modify(dest):
+        if not dest.exists() or not dest.is_dir() or _is_junction(dest) or not is_safe_to_modify(dest):
             return 0
     except (RuntimeError, OSError, ValueError):
         return 0
@@ -236,7 +238,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     count: int = 0
     for f in dest.iterdir():
         try:
-            if f.is_file() and not f.is_symlink() and is_safe_to_modify(f) and _is_file_accessible(f):
+            if f.is_file() and not _is_junction(f) and is_safe_to_modify(f) and _is_file_accessible(f):
                 f.unlink()
                 count += 1
         except (PermissionError, OSError):

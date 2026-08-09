@@ -9,43 +9,45 @@ Este archivo se regenera solo en cada corrida a partir de
 - Mejoras aceptadas: **245** (48.6% de aceptación)
 - Rechazadas por tests: 10
 - Rechazadas por guardia de seguridad: 25
-- Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 212
+- Sin cambios (nada sustancial que mejorar): 14
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-08 | 143 | 5 | 14 | 7 | 123 |
-| 2026-08-09 | 102 | 5 | 11 | 5 | 89 |
+| 2026-08-08 | 141 | 5 | 14 | 7 | 121 |
+| 2026-08-09 | 104 | 5 | 11 | 7 | 89 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **63**
 - manejo de errores y validación de entradas: **55**
+- robustez ante casos límite: **45**
 - rendimiento: **44**
-- robustez ante casos límite: **43**
-- seguridad defensiva: **40**
+- seguridad defensiva: **38**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **22**
 - `healthscore.py`: **22**
+- `quarantine.py`: **22**
 - `main.py`: **21**
-- `quarantine.py`: **21**
-- `scanner.py`: **20**
-- `settings.py`: **20**
 - `branding.py`: **19**
+- `scanner.py`: **19**
+- `settings.py`: **19**
 - `browser.py`: **18**
 - `diskreport.py`: **18**
 - `memory.py`: **16**
 - `duplicates.py`: **15**
-- `organizer.py`: **12**
+- `organizer.py`: **13**
 - `safety.py`: **11**
 - `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-09T09:06:24` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de existencia previa en `quarantine_file` antes de intentar cualquier operación de E/S, protegiendo la integridad frente a condiciones de carrera (TOCTOU) y garantizando que las rutas no sean alteradas o eliminadas por procesos externos durante la fase de validación inicial.
+- `2026-08-09T09:06:08` **organizer.py** (robustez ante casos límite): Se introdujo una validación robusta contra puntos de reparse (junctions y enlaces simbólicos a directorios) en `_walk_dir` mediante `is_junction()` para evitar bucles infinitos o escaneos accidentales de unidades montadas fuera del alcance previsto, fortaleciendo la seguridad ante casos límite.
 - `2026-08-09T08:54:39` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez de `score_security` y `score_memory` contra valores negativos o inesperados de entrada, asegurando que la lógica aritmética siempre devuelva rangos válidos (0.0 a 1.0) incluso ante datos corruptos.
 - `2026-08-09T08:54:08` **diskreport.py** (robustez ante casos límite): Se mejora la resiliencia ante errores de sistema de archivos en `walk_files` y `largest_folders` añadiendo bloques `try-except` granulares que previenen la interrupción del escaneo ante archivos bloqueados o con rutas excepcionalmente largas (muy común en Windows), asegurando que el proceso continúe a pesar de fallos en accesos individuales.
 - `2026-08-09T08:53:44` **browser.py** (robustez ante casos límite): Se introdujo una validación robusta contra `OSError` y `PermissionError` en `detect_profiles` y se fortaleció `_is_safe_path` para prevenir ataques de *path traversal* mediante el uso de `commonpath` en lugar de comparaciones de cadenas, asegurando que las rutas de caché siempre residan estrictamente dentro de la jerarquía de `LOCALAPPDATA`.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-09T08:03:51` **assistant.py** (rendimiento): Optimicé el rendimiento de `build_context` reemplazando la creación dinámica de listas y el uso de `getattr` en bucle por una asignación directa, evitando el overhead de introspección innecesaria en cada iteración del análisis.
 - `2026-08-09T08:03:34` **startup.py** (legibilidad y documentación): Documenté con precisión técnica el flujo de resolución de rutas en `StartupEntry` para aclarar la distinción entre comandos crudos (potencialmente malformados) y ejecutables normalizados, mejorando la legibilidad del modelo mental del código.
 - `2026-08-09T08:03:09` **settings.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo documentando la estructura de `_NUMERIC_LIMITS` y extrayendo la lógica compleja de validación de rutas en `_Validators.path` para clarificar la distinción entre rutas existentes y destinos potenciales.
-- `2026-08-09T08:02:45` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de los `docstrings` y se ha aplicado una mayor especificidad en el tipado de los retornos de las funciones de chequeo, facilitando la comprensión del flujo de datos en el motor de escaneo heurístico.
-- `2026-08-09T07:53:33` **safety.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings estructurados (estilo Google/NumPy) y añadí tipado explícito en funciones internas para clarificar las expectativas de datos, cumpliendo con el enfoque de legibilidad.
