@@ -184,10 +184,9 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
     }
         
     criterio: str = str(by).lower() if isinstance(by, str) else "size"
-    if criterio not in configs:
-        criterio = "size"
+    key_func = configs.get(criterio, configs["size"])
         
-    return sorted(files, key=configs[criterio], reverse=not bool(ascending))
+    return sorted(files, key=key_func, reverse=not bool(ascending))
 
 
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Path:

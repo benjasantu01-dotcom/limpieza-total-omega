@@ -1496,7 +1496,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def on_ask_assistant(self, question: Optional[str] = None) -> None:
         """Consulta asistente IA local con validación de entrada."""
         texto = (question or self.question_entry.get()).strip()
-        # Seguridad defensiva: Sanitizar entrada para evitar inyección y limitar tamaño
+        # Sanitizar entrada para prevenir inyección y limitar tamaño
         texto = "".join(c for c in texto if c.isprintable())[:500]
         
         if not texto:

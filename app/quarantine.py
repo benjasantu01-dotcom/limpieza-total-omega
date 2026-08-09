@@ -336,10 +336,6 @@ def quarantine_file(
     if not os.access(dest_dir, os.W_OK):
         raise PermissionError(f"Directorio de cuarentena sin permisos de escritura: {dest_dir}")
     
-    # Validar existencia de nuevo tras validaciones previas para evitar TOCTOU
-    if not source_path.exists():
-        raise FileNotFoundError(f"El archivo fue eliminado antes de la cuarentena: {source_path}")
-
     try:
         file_size = source_path.stat().st_size
     except OSError as e:
@@ -372,7 +368,7 @@ def quarantine_file(
         shutil.copy2(source_path, temp_dest)
         
         if temp_dest.stat().st_size != file_size:
-            raise RuntimeError("Integridad fallida: el tamaño del archivo copiado no coincide.")
+            raise RuntimeError("Integridad fallida: el archivo fuente cambió durante la copia.")
         
         os.replace(temp_dest, destination)
         
@@ -408,7 +404,9 @@ def quarantine_file(
         return item
     except Exception as e:
         if destination.exists():
-            shutil.move(str(destination), str(source_path))
+            # Intento de recuperación si los metadatos fallan, pero es una situación grave
+            try: shutil.move(str(destination), str(source_path))
+            except Exception: pass
         raise RuntimeError(f"Error irrecuperable procesando metadatos: {e}")
 
 

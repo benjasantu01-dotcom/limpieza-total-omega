@@ -158,10 +158,10 @@ def _is_valid_process_row(parts: List[str]) -> bool:
 
 
 def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]:
-    if not text:
+    if not isinstance(text, str) or not text:
         return []
     lines = text.splitlines()
-    if len(lines) < 2:
+    if len(lines) < 1:
         return []
     processes = []
     for line in lines:
@@ -172,7 +172,7 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
             except (ValueError, IndexError):
                 continue
     processes.sort(key=lambda p: p.working_set, reverse=True)
-    return processes[:limit]
+    return processes[:max(0, limit)]
 
 
 def _read_windows_snapshot() -> MemorySnapshot:
@@ -216,8 +216,11 @@ def read_snapshot() -> MemorySnapshot:
 
 @lru_cache(maxsize=1)
 def _run_ps_command(cmd: str) -> str:
-    result = subprocess.run(["powershell", "-NoProfile", "-Command", cmd], capture_output=True, text=True, timeout=5)
-    return result.stdout if result.returncode == 0 else ""
+    try:
+        result = subprocess.run(["powershell", "-NoProfile", "-Command", cmd], capture_output=True, text=True, timeout=5)
+        return result.stdout if result.returncode == 0 else ""
+    except (subprocess.SubprocessError, OSError):
+        return ""
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     if os.name != "nt":
@@ -264,7 +267,7 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
         "danger": "Estado: crítico. El sistema recurre al archivo de paginación."
     }
     lines.append(diagnosticos.get(level, ""))
-    if processes:
+    if processes and isinstance(processes, list):
         for proc in processes[:3]:
             lines.append(f"  Mayor consumo: {proc.name} (PID {proc.pid}) — {proc.working_set_mb} MB")
     return lines
