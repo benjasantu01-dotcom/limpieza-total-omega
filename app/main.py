@@ -891,8 +891,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             messagebox.showerror("Ruta sospechosa", "La ruta seleccionada contiene caracteres ilegales.")
             return None
         
-        if not self._is_safe_target_dir(folder):
-            messagebox.showwarning("Ruta no segura", "Esa ruta está protegida o es inválida.")
+        try:
+            # Validación estricta antes de aceptar la ruta
+            safety.ensure_safe_to_modify(folder)
+        except safety.UnsafePathError:
+            messagebox.showwarning("Ruta no segura", "Esa ruta está protegida por el sistema.")
             return None
             
         return folder

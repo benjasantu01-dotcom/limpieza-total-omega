@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **249** (49.4% de aceptación)
+- Mejoras aceptadas: **251** (49.8% de aceptación)
 - Rechazadas por tests: 8
-- Rechazadas por guardia de seguridad: 26
+- Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 203
+- Sin respuesta de la IA (error o límite): 200
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-07 | 57 | 2 | 6 | 8 | 65 |
+| 2026-08-07 | 57 | 2 | 6 | 8 | 61 |
 | 2026-08-08 | 182 | 6 | 19 | 10 | 133 |
-| 2026-08-09 | 10 | 0 | 1 | 0 | 5 |
+| 2026-08-09 | 12 | 0 | 2 | 0 | 6 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **62**
 - manejo de errores y validación de entradas: **50**
 - rendimiento: **49**
-- seguridad defensiva: **45**
+- seguridad defensiva: **47**
 - robustez ante casos límite: **43**
 
 ## Mejoras aceptadas por archivo
@@ -34,19 +34,21 @@ Este archivo se regenera solo en cada corrida a partir de
 - `settings.py`: **21**
 - `branding.py`: **21**
 - `duplicates.py`: **20**
+- `healthscore.py`: **20**
 - `browser.py`: **19**
 - `diskreport.py`: **19**
 - `memory.py`: **19**
 - `quarantine.py`: **19**
-- `healthscore.py`: **19**
 - `scanner.py`: **18**
-- `main.py`: **17**
+- `main.py`: **18**
 - `safety.py`: **16**
 - `organizer.py`: **13**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-09T00:45:17` **main.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_ask_folder` al incorporar la validación de rutas usando `ensure_safe_to_modify` antes de aceptar cualquier selección del usuario, asegurando que la app no opere sobre directorios bloqueados por `safety.py` incluso antes de iniciar un análisis.
+- `2026-08-09T00:44:14` **healthscore.py** (seguridad defensiva): Se reforzó la robustez de `score_security` y `compute_score` validando que los parámetros de entrada no solo sean finitos, sino también coherentes antes de realizar cálculos matemáticos, asegurando que un valor inesperado (como un conteo negativo por error de sensor externo) no sesgue el puntaje de salud del sistema.
 - `2026-08-09T00:35:00` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `walk_files` implementando una validación explícita mediante `is_protected_path` al procesar cada directorio y archivo encontrado, previniendo la posible resolución de rutas que, aunque no sigan enlaces simbólicos, podrían haberse vuelto protegidas durante la ejecución o representar cambios en la estructura del sistema no previstos inicialmente.
 - `2026-08-09T00:34:36` **browser.py** (seguridad defensiva): Mejoré `_is_safe_path` para incluir una validación estricta de nombres de archivo mediante `is_protected_path` incluso después de la resolución de enlaces, y agregué una verificación de "prohibición de archivos ocultos del sistema" en `_sum_directory_recursive` para asegurar que el escáner no intente procesar inadvertidamente archivos con atributos de sistema en Windows.
 - `2026-08-09T00:34:12` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad en `save_logo_svg` consolidando las validaciones de acceso al sistema de archivos para evitar condiciones de carrera (TOCTOU) y asegurando que las creaciones de directorios se realicen solo sobre rutas validadas.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-08T14:52:01` **browser.py** (robustez ante casos límite): Mejoré la robustez de `_is_safe_path` y `_sum_directory_recursive` para manejar correctamente rutas que contienen caracteres no legibles o exceden la longitud máxima permitida en Windows (`MAX_PATH`), asegurando que las excepciones de tipo `OSError` (típicas en perfiles de navegador dañados o bloqueados) no interrumpan el flujo de escaneo.
 - `2026-08-08T14:43:03` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de sistema de archivos (como discos de solo lectura, rutas no accesibles o permisos denegados) mediante el uso de `is_safe_to_modify` antes de cualquier operación y un manejo de excepciones más granular para evitar fallos silenciosos durante la creación del logo.
 - `2026-08-08T14:42:47` **assistant.py** (robustez ante casos límite): Reforcé la robustez del asistente ante posibles errores de configuración y desbordamiento de memoria al añadir verificaciones explícitas de tipo y tamaño en las funciones de acceso a datos de configuración, asegurando que el bucle de consultas no falle ante un archivo `settings.json` corrupto o valores inesperadamente grandes.
-- `2026-08-08T14:32:27` **safety.py** (rendimiento): Se optimizó el rendimiento del módulo implementando `lru_cache` en `_is_system_or_hidden` y `_is_reparse_point`, evitando llamadas costosas a la API de Windows y a `lstat` durante los escaneos recursivos frecuentes en bucles de organización.
-- `2026-08-08T14:31:43` **quarantine.py** (rendimiento): Optimizé `purge_all` para evitar el costo de iterar y verificar dos veces el manifiesto, utilizando el mapeo en memoria para acceso O(1) y garantizando que solo se procesen archivos que tienen un registro válido.

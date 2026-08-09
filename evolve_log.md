@@ -578,3 +578,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-09T00:35:09` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
 - `2026-08-09T00:35:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-09T00:35:09` Corrida terminada. Total usado hoy: 16.
+- `2026-08-09T00:43:49` Arrancando corrida. Quedan hoy ~284 peticiones objetivo.
+- `2026-08-09T00:44:14` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la robustez de `score_security` y `compute_score` validando que los parámetros de entrada no solo sean finitos, sino también coherentes antes de realizar cálculos matemáticos, asegurando que un valor inesperado (como un conteo negativo por error de sensor externo) no sesgue el puntaje de salud del sistema.
+- `2026-08-09T00:45:17` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_ask_folder` al incorporar la validación de rutas usando `ensure_safe_to_modify` antes de aceptar cualquier selección del usuario, asegurando que la app no opere sobre directorios bloqueados por `safety.py` incluso antes de iniciar un análisis.
+- `2026-08-09T00:45:42` 🛑 Propuesta bloqueada por la guardia en memory.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 254): positional argument follows keyword argument
+- `2026-08-09T00:45:49` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-08-09T00:45:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-09T00:45:49` Corrida terminada. Total usado hoy: 20.

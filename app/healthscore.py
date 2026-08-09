@@ -133,7 +133,10 @@ def score_junk(junk_mb: float) -> float:
 
 def score_security(suspicious_count: int, warnings: int = 0) -> float:
     # Penalización mayor por advertencias que por hallazgos menores
-    return _clamp(1.0 - ((_to_int(suspicious_count) * 0.05) + (_to_int(warnings) * 0.25)), 0.0, 1.0)
+    # Se asegura que las entradas sean procesadas como enteros no negativos
+    count = max(0, _to_int(suspicious_count))
+    warn = max(0, _to_int(warnings))
+    return _clamp(1.0 - ((count * 0.05) + (warn * 0.25)), 0.0, 1.0)
 
 
 def score_memory(available_percent: float) -> float:
@@ -149,7 +152,7 @@ def score_duplicates(duplicate_mb: float) -> float:
 
 
 def score_startup(startup_count: int) -> float:
-    val = float(_to_int(startup_count))
+    val = float(max(0, _to_int(startup_count)))
     return 1.0 if STARTUP_LIMIT_COUNT <= 0 else _clamp(1.0 - (val / STARTUP_LIMIT_COUNT))
 
 
@@ -191,6 +194,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     if not metrics.is_finite() or not _validate_weights():
         return HealthResult(0, "F", {}, ["Error: Datos o configuración inválida."])
 
+    # El cálculo de ratios se hace con los valores ya validados por metrics.validate()
     ratios: ScoreMap = {
         "seguridad": score_security(metrics.suspicious_count, metrics.suspicious_warnings),
         "disco": score_disk(metrics.disk_free_percent),
