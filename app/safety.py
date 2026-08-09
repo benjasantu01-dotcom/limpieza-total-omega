@@ -203,18 +203,14 @@ def is_sensitive_file(path: PathLike) -> bool:
 
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: PathLike | None = None) -> Path:
-    """
-    Validador principal de seguridad para operaciones de escritura.
-    
-    Lanza UnsafePathError si la ruta es riesgosa, está en uso o fuera de límites.
-    """
+    """Validador principal de seguridad para operaciones de escritura."""
     if path is None:
         raise UnsafePathError("Ruta nula recibida.")
 
-    raw_path_str = str(path)
     p = normalize(path)
     
-    if ".." in raw_path_str.split(os.sep):
+    # Detección de path traversal post-normalización
+    if ".." in str(path).replace("/", os.sep).split(os.sep):
         raise UnsafePathError("Operación bloqueada: posible ataque de path traversal.")
 
     if base_dir and not is_within_directory(p, base_dir, allow_equal=True):
@@ -223,10 +219,10 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     if is_within_directory(p, Path.cwd(), allow_equal=True):
         raise UnsafePathError("Operación bloqueada: el archivo pertenece al directorio de ejecución.")
 
-    if _has_invalid_chars(raw_path_str) or _is_reserved_device_name(p.stem):
+    if _has_invalid_chars(str(path)) or _is_reserved_device_name(p.stem):
         raise UnsafePathError("Ruta inválida o formato bloqueado.")
     
-    if raw_path_str.startswith(("\\\\", "//")):
+    if str(path).startswith(("\\\\", "//")):
         raise UnsafePathError("Operación bloqueada: rutas de red no permitidas.")
     
     if is_drive_root(p) or is_protected_path(p):
@@ -234,8 +230,11 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
         
     if p.exists():
         _check_file_integrity(p)
-        if p.is_symlink() and not is_within_directory(p.resolve(), p.parent, allow_equal=True):
-             raise UnsafePathError("Operación bloqueada: symlink inseguro detectado.")
+        try:
+            if p.is_symlink() and not is_within_directory(p.resolve(), p.parent, allow_equal=True):
+                raise UnsafePathError("Operación bloqueada: symlink inseguro detectado.")
+        except (OSError, RuntimeError):
+            raise UnsafePathError("Operación bloqueada: error al resolver symlink.")
     
     if not allow_sensitive and is_sensitive_file(p):
         raise UnsafePathError("Operación bloqueada: extensión sensible.")

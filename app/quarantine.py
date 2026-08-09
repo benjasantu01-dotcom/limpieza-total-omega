@@ -538,18 +538,19 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     purged_count = 0
     
     for entry in quarantine_root.iterdir():
-        if entry.name == MANIFEST_NAME:
+        if entry.name == MANIFEST_NAME or not entry.is_file():
             continue
         
-        # Solo procesamos si está en el manifiesto, caso contrario ignoramos por seguridad
         item = item_map_by_name.get(entry.name)
         
         if item and item.verify_integrity(entry):
-            if _safe_unlink(entry):
-                purged_count += 1
-                continue
+            try:
+                if _safe_unlink(entry):
+                    purged_count += 1
+                    continue
+            except Exception:
+                pass 
         
-        # Si no se pudo borrar o no coincide, lo mantenemos en el manifiesto
         if item:
             to_keep.append(item)
             

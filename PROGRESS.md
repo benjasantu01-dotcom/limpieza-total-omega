@@ -6,27 +6,27 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **241** (47.8% de aceptación)
+- Mejoras aceptadas: **243** (48.2% de aceptación)
 - Rechazadas por tests: 8
-- Rechazadas por guardia de seguridad: 25
+- Rechazadas por guardia de seguridad: 26
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 212
+- Sin respuesta de la IA (error o límite): 209
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-07 | 57 | 2 | 6 | 8 | 77 |
+| 2026-08-07 | 57 | 2 | 6 | 8 | 73 |
 | 2026-08-08 | 182 | 6 | 19 | 10 | 133 |
-| 2026-08-09 | 2 | 0 | 0 | 0 | 2 |
+| 2026-08-09 | 4 | 0 | 1 | 0 | 3 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **62**
 - manejo de errores y validación de entradas: **50**
 - rendimiento: **49**
+- robustez ante casos límite: **41**
 - seguridad defensiva: **41**
-- robustez ante casos límite: **39**
 
 ## Mejoras aceptadas por archivo
 
@@ -35,18 +35,20 @@ Este archivo se regenera solo en cada corrida a partir de
 - `settings.py`: **20**
 - `branding.py`: **20**
 - `memory.py`: **19**
+- `quarantine.py`: **19**
 - `healthscore.py`: **19**
 - `browser.py`: **18**
 - `diskreport.py`: **18**
-- `quarantine.py`: **18**
 - `scanner.py`: **17**
 - `main.py`: **17**
-- `safety.py`: **15**
+- `safety.py`: **16**
 - `organizer.py`: **13**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-09T00:14:30` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez de `ensure_safe_to_modify` implementando una validación explícita de rutas relativas maliciosas ("..") tras la normalización, evitando errores de evaluación en sistemas de archivos con particiones case-insensitive o caracteres Unicode, además de consolidar la protección contra symlinks fuera de los límites permitidos al utilizar `resolve()` de forma segura.
+- `2026-08-09T00:14:01` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine.py` ante errores de concurrencia y fallos de E/S en `purge_all` mediante el uso de un manejo de excepciones más granular y un chequeo explícito de la existencia del archivo antes de intentar su borrado, evitando así operaciones fallidas sobre archivos huérfanos o bloqueados.
 - `2026-08-09T00:05:01` **memory.py** (robustez ante casos límite): Se mejora la robustez de `trim_working_set` añadiendo una validación explícita para evitar intentar manipular procesos que han finalizado durante la espera entre la obtención del PID y la apertura del handle, garantizando que `OpenProcess` no quede en un estado ambiguo.
 - `2026-08-09T00:04:50` **main.py** (robustez ante casos límite): Se ha mejorado la robustez de `main.py` implementando un control de exclusión mutua en las tareas asíncronas para evitar que múltiples hilos intenten modificar o analizar el disco simultáneamente, lo cual podría provocar errores de concurrencia en los caches de estado.
 - `2026-08-08T14:52:01` **browser.py** (robustez ante casos límite): Mejoré la robustez de `_is_safe_path` y `_sum_directory_recursive` para manejar correctamente rutas que contienen caracteres no legibles o exceden la longitud máxima permitida en Windows (`MAX_PATH`), asegurando que las excepciones de tipo `OSError` (típicas en perfiles de navegador dañados o bloqueados) no interrumpan el flujo de escaneo.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-08T14:12:08` **diskreport.py** (rendimiento): Optimicé `walk_files` reemplazando la recursión manual con una pila explícita y eliminando `path.resolve()` redundante dentro del bucle, reduciendo significativamente las llamadas al sistema y mejorando el rendimiento en estructuras de directorios profundas.
 - `2026-08-08T14:11:22` **branding.py** (rendimiento): Optimicé el cálculo del degradado en `draw_gradient_bar` y `draw_logo` reemplazando llamadas redundantes a `gradient_colors` por una búsqueda de rangos contiguos, y eliminé el uso de listas temporales grandes en el bucle de renderizado mediante la reutilización eficiente de índices de color.
 - `2026-08-08T14:02:10` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` reemplazando la búsqueda lineal de palabras clave en tokens por un acceso directo de tiempo constante O(1) usando `set` y validación directa.
-- `2026-08-08T14:01:51` **startup.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `StartupEntry` documentando los métodos internos con el formato `Args/Returns` y añadiendo `TypeHints` específicos para mejorar la claridad de los procesos de resolución de rutas.
-- `2026-08-08T14:01:24` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de la validación extrayendo la lógica de validación de tipos a métodos específicos con docstrings, facilitando la comprensión de las restricciones aplicadas a cada configuración.

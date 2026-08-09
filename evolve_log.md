@@ -556,3 +556,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-09T00:05:01` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se mejora la robustez de `trim_working_set` añadiendo una validación explícita para evitar intentar manipular procesos que han finalizado durante la espera entre la obtención del PID y la apertura del handle, garantizando que `OpenProcess` no quede en un estado ambiguo.
 - `2026-08-09T00:05:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-09T00:05:01` Corrida terminada. Total usado hoy: 4.
+- `2026-08-09T00:13:07` Arrancando corrida. Quedan hoy ~296 peticiones objetivo.
+- `2026-08-09T00:13:31` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-08-09T00:14:01` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Mejoré la robustez de `quarantine.py` ante errores de concurrencia y fallos de E/S en `purge_all` mediante el uso de un manejo de excepciones más granular y un chequeo explícito de la existencia del archivo antes de intentar su borrado, evitando así operaciones fallidas sobre archivos huérfanos o bloqueados.
+- `2026-08-09T00:14:20` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-09T00:14:30` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `ensure_safe_to_modify` implementando una validación explícita de rutas relativas maliciosas ("..") tras la normalización, evitando errores de evaluación en sistemas de archivos con particiones case-insensitive o caracteres Unicode, además de consolidar la protección contra symlinks fuera de los límites permitidos al utilizar `resolve()` de forma segura.
+- `2026-08-09T00:14:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-09T00:14:30` Corrida terminada. Total usado hoy: 8.
