@@ -1277,3 +1277,39 @@ FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quara
 - `2026-08-09T08:34:14` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: rendimiento).
 - `2026-08-09T08:34:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-09T08:34:14` Corrida terminada. Total usado hoy: 204.
+- `2026-08-09T08:43:08` Arrancando corrida. Quedan hoy ~96 peticiones objetivo.
+- `2026-08-09T08:43:36` Tests FALLARON:
+```
+ror: attribute name must be string, not 'function'
+FAILED evolve/tests/test_assistant.py::test_get_reads_a_single_value - TypeError: attribute name must be string, not 'function'
+FAILED evolve/tests/test_assistant.py::test_env_var_wins_over_the_config_file - TypeError: attribute name must be string, not 'function'
+FAILED evolve/tests/test_assistant.py::test_config_key_is_used_when_there_is_no_env_var - TypeError: attribute name must be string, not 'function'
+FAILED evolve/tests/test_assistant.py::test_enabled_requires_both_the_switch_and_a_key - TypeError: attribute name must be string, not 'function'
+FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - TypeError: attribute name must be string, not 'function'
+FAILED evolve/tests/test_assistant.py::test_ask_stays_local_when_the_assistant_is_off - TypeError: attribute name must be string, not 'function'
+FAILED evolve/tests/test_assistant.py::test_ask_uses_the_online_engine_when_authorized - TypeError: attribute name must be string, not 'function'
+FAILED evolve/tests/test_assistant.py::test_online_failure_falls_back_to_local - TypeError: attribute name must be string, not 'function'
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - TypeError: attribute name must be string, not 'function'
+FAILED evolve/tests/test_assistant.py::test_available_reflects_the_configuration - TypeError: attribute name must be string, not 'function'
+23 failed, 276 passed, 7 warnings in 1.40s
+
+```
+- `2026-08-09T08:43:36` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Optimizé la carga de configuración eliminando lecturas redundantes del sistema de archivos mediante una caché más inteligente y pre-compilando los validadores para evitar búsquedas en diccionarios durante iteraciones intensivas.
+- `2026-08-09T08:44:00` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-08-09T08:44:31` Tests FALLARON:
+```
+ Salud y apretá 'Analizar'.", source='local', notic...lo más urgente que debería arreglar?', '¿Por qué mi PC está lenta?', '¿Es seguro borrar lo que encontró la limpieza?']).text
+FAILED evolve/tests/test_assistant.py::test_a_healthy_system_gets_a_calm_answer - AssertionError: assert 'buen estado' in 'puntaje: 98/100. sistema estable.'
+ +  where 'puntaje: 98/100. sistema estable.' = <built-in method lower of str object at 0x7f9fd1753be0>()
+ +    where <built-in method lower of str object at 0x7f9fd1753be0> = 'Puntaje: 98/100. Sistema estable.'.lower
+ +      where 'Puntaje: 98/100. Sistema estable.' = Answer(text='Puntaje: 98/100. Sistema estable.', source='local', notice='Respondido por el motor local, sin conexión n...lo más urgente que debería arreglar?', '¿Por qué mi PC está lenta?', '¿Es seguro borrar lo que encontró la limpieza?']).text
+FAILED evolve/tests/test_assistant.py::test_online_failure_falls_back_to_local - AssertionError: assert 'motor local' in 'No se pudo consultar al motor en línea.'
+ +  where 'No se pudo consultar al motor en línea.' = Answer(text='Puntaje: 61/100. Prioridades: queda solo 6% de disco libre, 1 archivo(s) sospechosos, queda 11% de RAM.',...lo más urgente que debería arreglar?', '¿Por qué mi PC está lenta?', '¿Es seguro borrar lo que encontró la limpieza?']).notice
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - AssertionError: assert 'no autorizó' in 'Privado.'
+4 failed, 295 passed, 7 warnings in 1.15s
+
+```
+- `2026-08-09T08:44:31` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Mejora la robustez del motor local al añadir una validación de estado en `_gen_problems` y `context_as_text`, evitando que el asistente falle o devuelva datos inconsistentes si el `SystemContext` está parcialmente poblado o corrupto.
+- `2026-08-09T08:44:47` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de seguridad robusto (`ensure_safe_to_modify`) en `save_logo_svg` antes de cualquier operación de escritura, asegurando que la ruta destino no sea un punto de reparse ni una ruta del sistema antes de proceder con el manejo de archivos.
+- `2026-08-09T08:44:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-09T08:44:47` Corrida terminada. Total usado hoy: 208.

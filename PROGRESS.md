@@ -6,8 +6,8 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **246** (48.8% de aceptación)
-- Rechazadas por tests: 8
+- Mejoras aceptadas: **244** (48.4% de aceptación)
+- Rechazadas por tests: 10
 - Rechazadas por guardia de seguridad: 26
 - Sin cambios (nada sustancial que mejorar): 12
 - Sin respuesta de la IA (error o límite): 212
@@ -16,36 +16,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-08 | 148 | 5 | 15 | 7 | 125 |
-| 2026-08-09 | 98 | 3 | 11 | 5 | 87 |
+| 2026-08-08 | 145 | 5 | 15 | 7 | 124 |
+| 2026-08-09 | 99 | 5 | 11 | 5 | 88 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **63**
 - manejo de errores y validación de entradas: **55**
-- seguridad defensiva: **45**
 - rendimiento: **44**
-- robustez ante casos límite: **39**
+- seguridad defensiva: **42**
+- robustez ante casos límite: **40**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **22**
-- `main.py`: **22**
 - `quarantine.py`: **22**
 - `assistant.py`: **22**
+- `healthscore.py`: **21**
+- `main.py`: **21**
 - `scanner.py`: **20**
 - `settings.py`: **20**
-- `branding.py`: **18**
+- `branding.py`: **19**
 - `browser.py`: **17**
 - `diskreport.py`: **17**
-- `duplicates.py`: **16**
 - `memory.py`: **16**
+- `duplicates.py`: **15**
 - `safety.py`: **12**
 - `organizer.py`: **12**
 - `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-09T08:44:47` **branding.py** (robustez ante casos límite): Se ha añadido un chequeo de seguridad robusto (`ensure_safe_to_modify`) en `save_logo_svg` antes de cualquier operación de escritura, asegurando que la ruta destino no sea un punto de reparse ni una ruta del sistema antes de proceder con el manejo de archivos.
 - `2026-08-09T08:33:25` **quarantine.py** (rendimiento): Optimicé el cálculo del tamaño total y la carga del manifiesto mediante la persistencia de propiedades calculadas y el uso de un diccionario en `list_items` para evitar redundancias de O(N).
 - `2026-08-09T08:24:47` **organizer.py** (rendimiento): Optimizé `scan_for_junk` moviendo la lógica de filtrado de extensiones antes de la llamada a `os.stat` y `_is_file_accessible`, reduciendo drásticamente las operaciones de E/S innecesarias en archivos que de todos modos serían ignorados.
 - `2026-08-09T08:24:40` **memory.py** (rendimiento): Se implementó un `lru_cache(maxsize=1)` para la ejecución del comando PowerShell en `top_memory_processes` y se optimizó la lógica de limpieza de memoria para evitar realizar la llamada costosa a `GetModuleFileNameExW` si el proceso ya fue validado en el caché, reduciendo drásticamente las llamadas redundantes a la API de Windows en iteraciones rápidas de la UI.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-09T07:53:05` **quarantine.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints consistentes en las funciones de utilidad internas para clarificar su propósito y contrato, mejorando la mantenibilidad sin alterar la lógica de ejecución.
 - `2026-08-09T07:52:32` **organizer.py** (legibilidad y documentación): Se introdujo documentación técnica (docstrings) para aclarar la lógica de las funciones de escaneo y procesamiento, y se reemplazó el uso de `os.scandir` por `pathlib.Path.iterdir` para mejorar la legibilidad y consistencia con el uso de `Path` en todo el módulo.
 - `2026-08-09T07:44:01` **memory.py** (legibilidad y documentación): Documenté con mayor precisión el funcionamiento del diagnóstico de memoria y mejoré la legibilidad de la lógica de `trim_working_set` mediante un comentario que aclara explícitamente el uso de la API de Windows, facilitando el mantenimiento a futuros colaboradores.
-- `2026-08-09T07:43:48` **main.py** (legibilidad y documentación): Documenté el propósito de los métodos de gestión de caché (`_get_cached`, `_get_cached_or_run`, `_invalidate_cache`) mediante docstrings detallados, explicando la lógica de TTL y la política LRU, para facilitar el mantenimiento técnico al trabajar con el bucle de datos asíncronos.

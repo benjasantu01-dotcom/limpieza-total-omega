@@ -345,9 +345,8 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     if not destination: return None
     try:
         target = Path(destination).resolve()
-        # Verificación explícita de seguridad antes de modificar el sistema
-        if not is_safe_to_modify(target):
-            return None
+        # Verificación estricta de seguridad usando la interfaz de lanzamiento de excepción
+        ensure_safe_to_modify(target)
         
         parent = target.parent
         if not parent.exists():
