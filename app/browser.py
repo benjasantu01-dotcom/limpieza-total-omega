@@ -99,8 +99,11 @@ def base_directories() -> List[Path]:
 
 def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> bool:
     """
-    Realiza validaciones de seguridad para evitar acceso fuera del directorio base 
-    usando resolución absoluta y comprobación de sub-ruta.
+    Valida la seguridad de la ruta mediante:
+    1. Resolución de paths reales para evitar Directory Traversal.
+    2. Verificación de permisos de sistema (`is_protected_path`).
+    3. Detección de caracteres sospechosos (RTL/ocultos).
+    4. Bloqueo de enlaces simbólicos o junctions para evitar bucles.
     """
     if not isinstance(target_path, Path) or not isinstance(base_path, Path):
         return False
@@ -136,7 +139,11 @@ def _is_excluded_file(name: str) -> bool:
 
 def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool]) -> int:
     """
-    DFS recursivo optimizado para sumar el tamaño de archivos.
+    Realiza un DFS sobre el árbol de directorios para calcular el peso total.
+    
+    Utiliza `os.scandir` para mayor eficiencia. Omite archivos protegidos por
+    el sistema (GetFileAttributesW) y respeta las exclusiones definidas en 
+    `NEVER_TOUCH`. No sigue enlaces simbólicos ni junctions.
     """
     if not root_dir or not os.path.exists(root_dir):
         return 0
@@ -150,6 +157,7 @@ def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool
                 try:
                     if os.name == 'nt' and kernel32:
                         attrs = kernel32.GetFileAttributesW(entry.path)
+                        # Omitir archivos ocultos o de sistema (0x04, 0x02)
                         if attrs != -1 and (attrs & 0x04 or attrs & 0x02):
                             continue
 
@@ -168,7 +176,10 @@ def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool
 
 
 def directory_size(path: str | os.PathLike | None) -> int:
-    """Calcula el peso total de una carpeta, validando seguridad previamente."""
+    """
+    Calcula el peso total de una carpeta tras validar que la ruta sea segura.
+    Retorna 0 ante cualquier error de acceso o si la ruta viola las políticas de seguridad.
+    """
     if path is None:
         return 0
     

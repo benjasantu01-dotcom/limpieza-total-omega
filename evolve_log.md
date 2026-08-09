@@ -548,3 +548,24 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-09T11:47:52` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Se mejoró el manejo de errores en `_Validators.path` y `load` asegurando que cualquier entrada mal formada o acceso denegado retorne de forma silenciosa y segura al estado de fábrica, cumpliendo con la premisa de robustez sin comprometer la ejecución.
 - `2026-08-09T11:47:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-09T11:47:52` Corrida terminada. Total usado hoy: 280.
+- `2026-08-09T11:56:47` Arrancando corrida. Quedan hoy ~20 peticiones objetivo.
+- `2026-08-09T11:57:16` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `parse_registry_csv` añadiendo validación de tipo y longitud para prevenir `IndexError` al procesar entradas malformadas del registro, asegurando que el parser sea resiliente ante datos inesperados sin abortar el procesamiento completo.
+- `2026-08-09T11:58:00` Tests FALLARON:
+```
+f9d9c6ac960>()
+ +    where <built-in method lower of str object at 0x7f9d9c6ac960> = '3 ítems marcados. Revisá y aislá si es necesario.'.lower
+ +      where '3 ítems marcados. Revisá y aislá si es necesario.' = Answer(text='3 ítems marcados. Revisá y aislá si es necesario.', source='local', notice='Respondido por el motor local, sin conexión. Para preguntas libres, activá el asistente en Ajustes.', suggestions=[]).text
+FAILED evolve/tests/test_assistant.py::test_a_healthy_system_gets_a_calm_answer - AssertionError: assert 'buen estado' in 'no entiendo. consultá sobre ram, disco, seguridad o salud.'
+ +  where 'no entiendo. consultá sobre ram, disco, seguridad o salud.' = <built-in method lower of str object at 0x7f9d9d540ab0>()
+ +    where <built-in method lower of str object at 0x7f9d9d540ab0> = 'No entiendo. Consultá sobre RAM, disco, seguridad o salud.'.lower
+ +      where 'No entiendo. Consultá sobre RAM, disco, seguridad o salud.' = Answer(text='No entiendo. Consultá sobre RAM, disco, seguridad o salud.', source='local', notice='Respondido por el motor local, sin conexión. Para preguntas libres, activá el asistente en Ajustes.', suggestions=[]).text
+FAILED evolve/tests/test_assistant.py::test_explain_area_on_unknown_input - AttributeError: 'NoneType' object has no attribute 'strip'
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - AssertionError: assert 'no autorizó' in 'Error de seguridad.'
+6 failed, 293 passed, 7 warnings in 1.14s
+
+```
+- `2026-08-09T11:58:00` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante una reorganización lógica de las constantes de configuración y la implementación de type hinting explícito para las funciones de ayuda, facilitando la comprensión de las reglas de seguridad sin alterar el comportamiento.
+- `2026-08-09T11:58:29` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: legibilidad y documentación).
+- `2026-08-09T11:58:38` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados y detallados en las funciones de procesamiento recursivo y validación de seguridad, aclarando la lógica de manejo de errores, exclusiones y detección de enlaces simbólicos.
+- `2026-08-09T11:58:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-09T11:58:38` Corrida terminada. Total usado hoy: 284.

@@ -246,19 +246,18 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
         if not stripped_line:
             continue
         
-        try:
-            # Validamos que el split genere al menos 2 elementos
-            parts = [p.strip().strip('"') for p in stripped_line.split(",")]
-            if len(parts) < 2:
-                continue
-        except (ValueError, AttributeError):
+        # Split básico, esperando al menos 2 columnas significativas
+        parts = [p.strip().strip('"') for p in stripped_line.split(",")]
+        if len(parts) < 2:
             continue
             
-        if not parts[0] or not parts[1]:
+        name_raw, cmd_raw = parts[0], parts[1]
+        
+        # Validación estricta de contenido antes de instanciar
+        if not name_raw or not cmd_raw:
             continue
             
         try:
-            name_raw, cmd_raw = parts[0], parts[1]
             name: str = "".join(c for c in name_raw if ord(c) >= 32)
             cmd: str = "".join(c for c in cmd_raw if ord(c) >= 32)
             
