@@ -813,3 +813,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-09T02:39:14` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: manejo de errores y validación de entradas).
 - `2026-08-09T02:39:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-09T02:39:14` Corrida terminada. Total usado hoy: 64.
+- `2026-08-09T02:46:14` Arrancando corrida. Quedan hoy ~236 peticiones objetivo.
+- `2026-08-09T02:46:37` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-09T02:47:21` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de la deserialización en `QuarantineItem.from_dict` y el manejo de errores en `save_manifest` para prevenir estados inconsistentes o corrupción silenciosa del manifiesto ante valores inesperados.
+- `2026-08-09T02:47:40` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
+- `2026-08-09T02:47:50` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `ensure_safe_to_modify` ante entradas maliciosas o inesperadas validando la presencia de caracteres de control, rutas relativas con intentos de escalada de privilegios y tipos de datos en parámetros críticos antes de procesarlos.
+- `2026-08-09T02:47:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-09T02:47:50` Corrida terminada. Total usado hoy: 68.

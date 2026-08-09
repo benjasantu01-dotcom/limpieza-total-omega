@@ -207,11 +207,16 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     if path is None:
         raise UnsafePathError("Ruta nula recibida.")
 
+    # Validación preventiva de tipos y estructura
+    if not isinstance(path, (str, Path)):
+        raise UnsafePathError(f"Tipo de entrada no soportado: {type(path)}")
+
     p = normalize(path)
+    path_str = str(path)
     
-    # Detección de path traversal post-normalización
-    if ".." in str(path).replace("/", os.sep).split(os.sep):
-        raise UnsafePathError("Operación bloqueada: posible ataque de path traversal.")
+    # Detección de path traversal y bypass de normalización
+    if any(part in ("..", "...") for part in path_str.replace("/", os.sep).split(os.sep)):
+        raise UnsafePathError("Operación bloqueada: posible intento de path traversal.")
 
     if base_dir and not is_within_directory(p, base_dir, allow_equal=True):
         raise UnsafePathError("Operación bloqueada: intento de acceso fuera del directorio base.")
@@ -219,11 +224,11 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     if is_within_directory(p, Path.cwd(), allow_equal=True):
         raise UnsafePathError("Operación bloqueada: el archivo pertenece al directorio de ejecución.")
 
-    if _has_invalid_chars(str(path)) or _is_reserved_device_name(p.stem):
-        raise UnsafePathError("Ruta inválida o formato bloqueado.")
+    if _has_invalid_chars(path_str) or _is_reserved_device_name(p.stem):
+        raise UnsafePathError("Ruta inválida o formato de dispositivo bloqueado.")
     
-    if str(path).startswith(("\\\\", "//")):
-        raise UnsafePathError("Operación bloqueada: rutas de red no permitidas.")
+    if path_str.startswith(("\\\\", "//")):
+        raise UnsafePathError("Operación bloqueada: rutas UNC/red no permitidas.")
     
     if is_drive_root(p) or is_protected_path(p):
         raise UnsafePathError("Operación bloqueada: ruta de sistema protegida.")
@@ -256,9 +261,8 @@ def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = Fals
     valid: list[Path] = []
     for p in paths:
         try:
-            norm_p = normalize(p)
-            if is_safe_to_modify(norm_p, allow_sensitive=allow_sensitive):
-                valid.append(norm_p)
+            if is_safe_to_modify(p, allow_sensitive=allow_sensitive):
+                valid.append(normalize(p))
         except (TypeError, ValueError, OSError):
             continue
     return valid

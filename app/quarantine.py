@@ -304,13 +304,17 @@ def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_
     base_path = quarantine_dir(base)
     target_path = _manifest_path(base_path)
     
-    fd, temp_path = tempfile.mkstemp(dir=base_path, text=True)
+    try:
+        fd, temp_path = tempfile.mkstemp(dir=base_path, text=True)
+    except OSError as e:
+        raise RuntimeError(f"No se pudo crear archivo temporal para manifiesto: {e}")
+
     try:
         with os.fdopen(fd, 'w', encoding='utf-8') as f:
             json.dump([item.to_dict() for item in items], f, indent=2, ensure_ascii=False)
         os.replace(temp_path, target_path)
         _manifest_cache[str(base_path)] = (target_path.stat().st_mtime, items)
-    except (OSError, PermissionError) as e:
+    except (OSError, PermissionError, TypeError) as e:
         if os.path.exists(temp_path):
             try: os.remove(temp_path)
             except OSError: pass
