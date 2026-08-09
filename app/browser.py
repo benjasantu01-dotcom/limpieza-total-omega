@@ -144,6 +144,8 @@ def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool
     Filtra archivos de sistema ocultos y asegura no seguir enlaces inseguros.
     """
     total: int = 0
+    if not root_dir:
+        return 0
     try:
         with os.scandir(root_dir) as it:
             for entry in it:
@@ -173,7 +175,7 @@ def directory_size(path: str | os.PathLike | None) -> int:
     """
     Wrapper para calcular tamaño. Valida la integridad de la ruta antes de recorrer.
     """
-    if path is None:
+    if path is None or not isinstance((str(path)), str):
         return 0
     
     try:
@@ -183,11 +185,11 @@ def directory_size(path: str | os.PathLike | None) -> int:
         root_path = p_path.resolve(strict=True)
         if not root_path.is_absolute() or not root_path.is_dir() or is_protected_path(root_path):
             return 0
+        
+        is_junction: Callable[[str], bool] = getattr(os.path, 'isjunction', lambda _: False)
+        return _sum_directory_recursive(str(root_path), is_junction)
     except (OSError, PermissionError, RuntimeError):
         return 0
-
-    is_junction: Callable[[str], bool] = getattr(os.path, 'isjunction', lambda _: False)
-    return _sum_directory_recursive(str(root_path), is_junction)
 
 
 def _is_valid_cache_path(candidate: Optional[Path], base_path: Path) -> bool:

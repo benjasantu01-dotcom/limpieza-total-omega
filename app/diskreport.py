@@ -298,8 +298,11 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
     Genera un reporte estructurado unificado.
     """
     if not directory: return ["Error: Ruta no proporcionada."]
-    path_obj = Path(directory).expanduser().resolve()
-    
+    try:
+        path_obj = Path(directory).expanduser().resolve()
+    except (OSError, RuntimeError):
+        return ["Error: Ruta inválida o inaccesible."]
+        
     ext_size: Dict[str, int] = defaultdict(int)
     ext_count: Dict[str, int] = defaultdict(int)
     top_files_heap: List[Tuple[int, str]] = []

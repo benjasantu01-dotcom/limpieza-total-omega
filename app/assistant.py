@@ -221,7 +221,6 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
             return default
 
     if metrics is not None:
-        # Mapeo de métricas: (atributo, tipo de cast, máximo opcional)
         mappings = [
             ("junk_mb", float, float('inf')),
             ("suspicious_count", int, float('inf')),
@@ -235,12 +234,14 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
             ("memory_total_gb", float, float('inf')),
         ]
         for attr, cast_func, max_v in mappings:
-            _safe_assign(ctx, attr, get_attr(metrics, attr, 0), cast=cast_func, max_val=max_v)
+            val = get_attr(metrics, attr, 0)
+            if isinstance(val, (int, float)):
+                _safe_assign(ctx, attr, val, cast=cast_func, max_val=max_v)
         ctx.analyzed = True
 
     if health is not None:
         raw_score = get_attr(health, "score", None)
-        if raw_score is not None:
+        if isinstance(raw_score, (int, float)):
             _safe_assign(ctx, "score", raw_score, int, max_val=100)
         grade = get_attr(health, "grade", "")
         ctx.grade = str(grade)[:10] if isinstance(grade, (str, int, float)) else ""
@@ -249,7 +250,8 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     for k, v in extra.items():
         if hasattr(ctx, k):
             attr_type = int if isinstance(getattr(ctx, k), int) else float
-            _safe_assign(ctx, k, v, cast=attr_type)
+            if isinstance(v, (int, float)):
+                _safe_assign(ctx, k, v, cast=attr_type)
 
     return ctx
 
@@ -271,7 +273,6 @@ def context_as_text(context: SystemContext) -> str:
             f"Duplicados: {_fmt_metric(context.duplicate_mb, ' MB')}",
             f"Inicio: {context.startup_count} items"
         )
-        # Sanitización defensiva: eliminar caracteres de control y asegurar formato plano
         texto_crudo = "\n".join(lines)
         texto_sanitizado = _CONTROL_CHARS_REGEX.sub(" ", texto_crudo)
         texto_limpio = _PATH_REGEX.sub(" ", texto_sanitizado)
@@ -417,12 +418,10 @@ def local_answer(question: str, context: SystemContext) -> Answer:
     clean_text = _sanitize_query(question)
     tokens = set(_TOKEN_REGEX.findall(clean_text))
     
-    # Intersección de conjuntos para búsqueda O(1)
     for trigger in _KEYWORD_MAP:
         if trigger in tokens:
             return _HANDLERS[_KEYWORD_MAP[trigger]](context, clean_text)
 
-    # Consumo perezoso de problemas prioritarios
     problemas = list(islice(_gen_problems(context), 3))
     puntaje_str = str(context.score) if context.score is not None else "N/A"
     
@@ -474,7 +473,6 @@ def _call_gemini(
     safe_q: str = _sanitize_query(question)
     safe_ctx: str = context_text[:_MAX_TEXT_LENGTH]
     
-    # Guardia de seguridad: prohibido enviar si el contexto contiene cualquier rastro de ruta
     if not _ensure_safe_text(safe_q) or not _ensure_safe_text(safe_ctx) or is_protected_path(safe_ctx):
         return None
         
@@ -494,10 +492,8 @@ def _call_gemini(
         
         with urllib.request.urlopen(req, timeout=_TIMEOUT_SECONDS) as res:
             if res.status != 200: return None
-            # Limitamos la lectura del stream a un máximo de 16KB para prevenir ataques de agotamiento de RAM
             raw_res = res.read(16384)
             if not raw_res: return None
-            # Validamos seguridad sobre el contenido crudo decodificado antes de parsear
             content_decoded = raw_res.decode("utf-8")
             if not _ensure_safe_text(content_decoded): return None
             data = json.loads(content_decoded)
@@ -509,7 +505,6 @@ def _call_gemini(
         text = "".join(str(p.get("text", "")) for p in parts if isinstance(p, dict))
         
         final_text = text.strip()[:_MAX_TEXT_LENGTH]
-        # Validamos que la respuesta recibida no contenga estructuras sospechosas
         return final_text if _ensure_safe_text(final_text) else None
     except (json.JSONDecodeError, urllib.error.URLError, TypeError, KeyError, ValueError, OSError):
         return None
