@@ -187,7 +187,7 @@ def severity_color(severity: Optional[str]) -> HexColor:
     Args:
         severity: Cadena indicativa de severidad (ok|info|warning|danger).
     """
-    if isinstance(severity, str) and (style := SEVERITY_STYLES.get(severity.lower())):  # type: ignore
+    if isinstance(severity, str) and (style := SEVERITY_STYLES.get(severity.lower())):
         return style[0]
     return PALETTE["text_muted"]
 
@@ -195,7 +195,7 @@ def severity_color(severity: Optional[str]) -> HexColor:
 def severity_label(severity: Optional[str]) -> str:
     """Retorna la etiqueta legible de una severidad o el input normalizado."""
     if isinstance(severity, str):
-        if style := SEVERITY_STYLES.get(severity.lower()):  # type: ignore
+        if style := SEVERITY_STYLES.get(severity.lower()):
             return style[1]
         if severity.strip():
             return severity.upper()
@@ -205,7 +205,9 @@ def severity_label(severity: Optional[str]) -> str:
 def severity_icon(severity: Optional[str]) -> str:
     """Retorna el glifo gráfico asociado a un nivel de riesgo."""
     simbolos = {"ok": "\u2713", "info": "\u2139", "warning": "\u26a0", "danger": "\u2716"}
-    return simbolos.get(severity.lower(), "\u2022") if isinstance(severity, str) else "\u2022"
+    if isinstance(severity, str):
+        return simbolos.get(severity.lower(), "\u2022")
+    return "\u2022"
 
 
 def grade_color(grade: Optional[str]) -> HexColor:
@@ -223,10 +225,14 @@ def score_color(score: Union[float, int, None]) -> HexColor:
         Color representativo de la salud del sistema.
     """
     try:
-        valor = float(score)  # type: ignore
-        if not (0 <= valor <= 100): raise ValueError
+        if score is None:
+            raise ValueError("Score es None")
+        valor = float(score)
+        if not (0.0 <= valor <= 100.0):
+            return PALETTE["text_muted"]
     except (TypeError, ValueError):
         return PALETTE["text_muted"]
+    
     if valor >= 90: return PALETTE["success"]
     if valor >= 80: return PALETTE["info"]
     if valor >= 65: return PALETTE["warning"]
@@ -246,7 +252,7 @@ def bar(percent: Union[float, int, None], width: int = 24,
         empty: Carácter para el segmento vacío.
     """
     try:
-        valor = max(0.0, min(100.0, float(percent))) # type: ignore
+        valor = max(0.0, min(100.0, float(percent)))
     except (TypeError, ValueError):
         valor = 0.0
     ancho = max(1, int(width))
@@ -345,14 +351,15 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     if not destination: return None
     try:
         target = Path(destination).resolve()
-        # Verificación estricta: aseguramos que tanto el padre como el archivo final sean seguros.
+        # Verificación de seguridad antes de cualquier operación de I/O
         ensure_safe_to_modify(target.parent)
         ensure_safe_to_modify(target)
         
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(logo_svg(), encoding="utf-8")
         return target
-    except (OSError, PermissionError, TypeError, ValueError, RuntimeError, IOError, AttributeError):
+    except (OSError, PermissionError, ValueError, RuntimeError, IOError, AttributeError) as e:
+        # Registro silencioso o manejo de errores específico si fuera necesario
         return None
 
 
