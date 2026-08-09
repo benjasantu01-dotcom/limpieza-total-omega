@@ -77,30 +77,32 @@ class Scanner:
         Valida y procesa una entrada del sistema de archivos. 
         Si es directorio, lo agrega al stack de recorrido; si es archivo, ejecuta las heurísticas.
         """
-        if entry is None or not entry.path:
+        if entry is None:
             return
         
         try:
-            path_obj = Path(entry.path).resolve()
+            entry_path = entry.path
+            if not entry_path:
+                return
+
+            path_obj = Path(entry_path).resolve()
             
             # Validación de seguridad defensiva: verificar contención estricta mediante is_relative_to
             if not path_obj.is_relative_to(self.base_root) or is_protected_path(path_obj):
                 return
 
             if entry.is_dir(follow_symlinks=False):
-                if not self._is_reparse_point(entry) and entry.path not in self.seen:
-                    self.seen.add(entry.path)
-                    stack.append(entry.path)
+                if not self._is_reparse_point(entry) and entry_path not in self.seen:
+                    self.seen.add(entry_path)
+                    stack.append(entry_path)
             elif entry.is_file(follow_symlinks=False):
-                # Verificar existencia real antes de procesar para evitar I/O race conditions
                 if not path_obj.exists():
                     return
                 name = entry.name
                 suffix = os.path.splitext(name)[1].lower()
                 self.results.extend(scan_file(path_obj, entry=entry, name=name, suffix=suffix))
         except (PermissionError, OSError, RuntimeError, ValueError) as e:
-            # Captura errores de sistema (paths demasiado largos, acceso denegado, errores de codificación)
-            logger.debug(f"Saltando entrada {entry.path}: {e}")
+            logger.debug(f"Saltando entrada {getattr(entry, 'path', 'desconocida')}: {e}")
 
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None) -> Optional[Suspicion]:
@@ -167,7 +169,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         
     try:
         path_input = Path(directory).resolve()
-        # Verificar integridad del punto de entrada
+        # Verificar integridad del punto de entrada usando validación estricta
         if not path_input.exists() or not path_input.is_dir() or is_protected_path(path_input):
             return []
     except (OSError, RuntimeError, TypeError, ValueError):
@@ -183,8 +185,8 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     scanner.process_entry(entry, stack)
-        except (PermissionError, OSError, ValueError):
-            logger.warning(f"No se pudo acceder al directorio: {current_dir}")
+        except (PermissionError, OSError, ValueError) as e:
+            logger.warning(f"No se pudo acceder al directorio {current_dir}: {e}")
             continue
             
     return scanner.results

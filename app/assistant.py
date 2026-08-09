@@ -210,7 +210,10 @@ def _fmt_metric(val: Any, unit: str = "", decimal: int = 0) -> str:
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
     """
-    Transforma fuentes de datos externas o parciales en una estructura SystemContext validada.
+    Transforma fuentes de datos crudas (objetos genéricos) en un SystemContext validado.
+    
+    Esta función actúa como una capa de saneamiento: ignora cualquier dato no numérico
+    o fuera de rango antes de pasarlo al motor de inferencia.
     """
     ctx = SystemContext()
 
@@ -221,7 +224,8 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
             return default
 
     if metrics is not None:
-        mappings = [
+        # Define: (nombre_atributo, constructor_tipo, valor_maximo_permitido)
+        mappings: list[tuple[str, Callable, float]] = [
             ("junk_mb", float, float('inf')),
             ("suspicious_count", int, float('inf')),
             ("suspicious_warnings", int, float('inf')),

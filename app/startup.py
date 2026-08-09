@@ -198,7 +198,7 @@ def startup_folders() -> List[Path]:
             candidates.append(Path(appdata) / r"Microsoft\Windows\Start Menu\Programs\Startup")
         if programdata:
             candidates.append(Path(programdata) / r"Microsoft\Windows\Start Menu\Programs\Startup")
-    except (ValueError, TypeError):
+    except (ValueError, TypeError, OSError):
         pass
     return [c for c in candidates if c.is_dir() and not is_protected_path(c)]
 
@@ -253,8 +253,11 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
         if not stripped_line:
             continue
         
-        parts = [p.strip().strip('"') for p in stripped_line.split(",")]
-        # Validar existencia de datos mínimos antes de acceder a índices
+        try:
+            parts = [p.strip().strip('"') for p in stripped_line.split(",")]
+        except (ValueError, AttributeError):
+            continue
+            
         if len(parts) < 2 or not parts[0] or not parts[1]:
             continue
             

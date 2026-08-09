@@ -126,19 +126,23 @@ class _Validators:
     @staticmethod
     def path(val: Any) -> str | None:
         """Valida una ruta, asegurando que existe, es segura y no es enlace simbólico."""
-        if val is None or not isinstance(val, (str, Path)): return ""
+        if val is None: return ""
+        if not isinstance(val, (str, Path)): return None
         try:
             path_str = str(val).strip()
             if not path_str: return ""
-            path = Path(path_str).expanduser().resolve()
-            if path.is_symlink(): return None
-            return str(path) if is_safe_to_modify(str(path)) else None
+            p = Path(path_str).expanduser()
+            if not p.is_absolute(): return None
+            resolved = p.resolve()
+            if resolved.is_symlink(): return None
+            return str(resolved) if is_safe_to_modify(str(resolved)) else None
         except (OSError, RuntimeError, ValueError, TypeError, PermissionError):
             return None
 
     @staticmethod
     def str(key: str, val: Any) -> str | None:
         """Valida strings asegurando pertenencia a conjuntos permitidos o longitud máxima."""
+        if val is None: return None
         if not isinstance(val, (str, Path)): return None
         text = str(val).strip()
         if not text: return "" if key in ("ultima_carpeta", "asistente_clave_api") else None
