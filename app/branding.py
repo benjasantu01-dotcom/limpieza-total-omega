@@ -278,7 +278,7 @@ def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
 
 @lru_cache(maxsize=32)
 def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> List[HexColor]:
-    """Crea una secuencia de colores interpolados a través de múltiples stops."""
+    """Crea una secuencia de colores interpolados y los agrupa por identidad para eficiencia."""
     cantidad = max(1, int(steps))
     if not stops: return [PALETTE["accent"]] * cantidad
     if len(stops) < 2: return [stops[0]] * cantidad
@@ -290,6 +290,18 @@ def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) ->
         idx = min(tramos - 1, int(posicion))
         res.append(blend(stops[idx], stops[idx + 1], posicion - idx))
     return res
+
+def _get_grouped_segments(colors: List[HexColor]) -> List[Tuple[HexColor, int, int]]:
+    """Agrupa colores contiguos idénticos para reducir llamadas a la API de dibujo."""
+    segments = []
+    if not colors: return segments
+    start = 0
+    for i in range(1, len(colors)):
+        if colors[i] != colors[start]:
+            segments.append((colors[start], start, i))
+            start = i
+    segments.append((colors[start], start, len(colors)))
+    return segments
 
 
 def _get_shield_coords(sx: float, sy: float, s: float) -> List[float]:
@@ -366,16 +378,15 @@ def draw_logo(canvas: Any, size: int = 56, canvas_x: float = 0.0, canvas_y: floa
                                fill=blend(PALETTE["surface"], PALETTE["glow"], 0.04 * paso), outline="")
 
         canvas.create_polygon(contorno, fill=GRADIENT_STOPS[1], outline="")
-        franjas = max(6, int(28 * s))
-        colores = gradient_colors(franjas)
+        franjas_count = max(6, int(28 * s))
+        colores = gradient_colors(franjas_count)
         
-        i = 0
-        while i < franjas:
-            j = i
-            while j < franjas and colores[j] == colores[i]: j += 1
-            w = 36 * s * (1.0 if (i + j)/2 / (franjas - 1) < 0.55 else 1.0 - ((i + j)/2 / (franjas - 1) - 0.55) * 1.9)
-            canvas.create_rectangle(x + 64*s - w, y + 18*s + i*(92*s/franjas), x + 64*s + w, y + 18*s + j*(92*s/franjas) + 1, fill=colores[i], outline="")
-            i = j
+        for color_hex, start, end in _get_grouped_segments(colores):
+            mid = (start + end) / 2
+            w = 36 * s * (1.0 if mid / (franjas_count - 1) < 0.55 else 1.0 - (mid / (franjas_count - 1) - 0.55) * 1.9)
+            canvas.create_rectangle(x + 64*s - w, y + 18*s + start*(92*s/franjas_count), 
+                                    x + 64*s + w, y + 18*s + end*(92*s/franjas_count) + 1, 
+                                    fill=color_hex, outline="")
 
         canvas.create_line(x + 41*s, y + 75*s, x + 75*s, y + 41*s, fill=PALETTE["background"], width=max(2, int(8*s)), capstyle="round")
         canvas.create_polygon(x + 75*s, y + 41*s, x + 89*s, y + 38*s, x + 92*s, y + 52*s, fill=PALETTE["background"], outline="")
@@ -387,17 +398,13 @@ def draw_logo(canvas: Any, size: int = 56, canvas_x: float = 0.0, canvas_y: floa
 def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
                       canvas_x: float = 0.0, canvas_y: float = 0.0,
                       stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
-    """Dibuja una franja horizontal degradada utilizando múltiples líneas como bloques."""
+    """Dibuja una franja horizontal degradada utilizando segmentos optimizados."""
     if not hasattr(canvas, "create_line"): return
     try:
         ancho = max(1, int(width))
         colores = gradient_colors(ancho, stops)
-        i = 0
-        while i < ancho:
-            j = i
-            while j < ancho and colores[j] == colores[i]: j += 1
-            canvas.create_line(canvas_x + i, canvas_y, canvas_x + j, canvas_y, fill=colores[i], width=max(1, int(height)))
-            i = j
+        for color_hex, start, end in _get_grouped_segments(colores):
+            canvas.create_line(canvas_x + start, canvas_y, canvas_x + end, canvas_y, fill=color_hex, width=max(1, int(height)))
     except (ValueError, TypeError, AttributeError): pass
 
 

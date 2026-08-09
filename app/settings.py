@@ -108,34 +108,35 @@ class _Validators:
         """Normaliza entradas de usuario a booleano, soportando strings comunes."""
         if isinstance(val, bool): return val
         if not isinstance(val, str): return None
-        v = val.strip().lower()
-        if v in ("1", "true", "si", "sí", "yes"): return True
-        if v in ("0", "false", "no", "none"): return False
+        normalized = val.strip().lower()
+        if normalized in ("1", "true", "si", "sí", "yes"): return True
+        if normalized in ("0", "false", "no", "none"): return False
         return None
 
     @staticmethod
     def int(key: str, val: Any) -> int | None:
-        """Valida y ajusta enteros según límites definidos en _NUMERIC_LIMITS."""
+        """Valida y restringe enteros según los límites definidos en _NUMERIC_LIMITS."""
         if val is None or isinstance(val, bool): return None
         try:
-            parsed = int(val)
-            low, high = _NUMERIC_LIMITS.get(key, (0, 10**9))
-            return max(low, min(high, parsed))
-        except (TypeError, ValueError): return None
+            parsed_value = int(val)
+            min_limit, max_limit = _NUMERIC_LIMITS.get(key, (0, 10**9))
+            return max(min_limit, min(max_limit, parsed_value))
+        except (TypeError, ValueError): 
+            return None
 
     @staticmethod
     def path(val: Any) -> str | None:
-        """Valida una ruta, asegurando que existe, es segura y no es enlace simbólico."""
+        """Valida que una ruta sea absoluta, segura y no sea un enlace simbólico."""
         if val is None: return ""
         if not isinstance(val, (str, Path)): return None
         try:
-            path_str = str(val).strip()
-            if not path_str: return ""
-            p = Path(path_str).expanduser()
-            if not p.is_absolute(): return None
-            resolved = p.resolve()
-            if resolved.is_symlink(): return None
-            return str(resolved) if is_safe_to_modify(str(resolved)) else None
+            path_string = str(val).strip()
+            if not path_string: return ""
+            path_obj = Path(path_string).expanduser()
+            if not path_obj.is_absolute(): return None
+            resolved_path = path_obj.resolve()
+            if resolved_path.is_symlink(): return None
+            return str(resolved_path) if is_safe_to_modify(str(resolved_path)) else None
         except (OSError, RuntimeError, ValueError, TypeError, PermissionError):
             return None
 
@@ -162,6 +163,7 @@ _VALIDATOR_MAP: Final[dict[str, Callable[[str, Any], Any]]] = {
 }
 
 def settings_path(path_or_base: PathLike | None = None) -> Path:
+    """Resuelve la ruta absoluta del archivo de configuración, validando permisos."""
     default_res = SETTINGS_DIR / SETTINGS_FILE
     if path_or_base is None: return default_res
     
@@ -170,21 +172,25 @@ def settings_path(path_or_base: PathLike | None = None) -> Path:
         try:
             base = Path(key).expanduser().resolve()
             candidate = base / SETTINGS_FILE
-            _path_cache[key] = candidate if is_safe_to_modify(str(base)) and is_safe_to_modify(str(candidate)) else default_res
+            is_valid = is_safe_to_modify(str(base)) and is_safe_to_modify(str(candidate))
+            _path_cache[key] = candidate if is_valid else default_res
         except (OSError, RuntimeError):
             _path_cache[key] = default_res
     return _path_cache[key]
 
 def validate(values: Any) -> AppSettings:
+    """Aplica validaciones sobre un diccionario, rellenando con DEFAULTS si falta algo."""
     config = DEFAULTS.copy()
     if not isinstance(values, dict): return config
-    for clave, validador in _VALIDATOR_MAP.items():
-        if clave in values:
-            resultado = validador(clave, values.get(clave))
-            if resultado is not None: config[clave] = resultado
+    for key, validator in _VALIDATOR_MAP.items():
+        if key in values:
+            validated_value = validator(key, values.get(key))
+            if validated_value is not None: 
+                config[key] = validated_value
     return config
 
 def load(path_or_base: PathLike | None = None) -> AppSettings:
+    """Carga configuración desde disco con caché en memoria y validación estricta."""
     global _cached_settings, _current_path
     ruta = settings_path(path_or_base)
     if _cached_settings is not None and _current_path == ruta:
@@ -207,6 +213,7 @@ def load(path_or_base: PathLike | None = None) -> AppSettings:
     return _cached_settings.copy()
 
 def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
+    """Guarda configuración validada a disco usando un archivo temporal atómico."""
     global _cached_settings, _current_path
     if not isinstance(values, dict): return None
     ruta = settings_path(path_or_base)
@@ -214,21 +221,23 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     if not is_safe_to_modify(str(ruta.parent)) or not is_safe_to_modify(str(ruta)):
         return None
         
-    limpio = validate(values)
-    if limpio.get("asistente_activado") and not (limpio.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)):
-        limpio["asistente_activado"] = False
+    cleaned_settings = validate(values)
+    # Seguridad: desactivar IA si no hay clave disponible
+    if cleaned_settings.get("asistente_activado") and not (cleaned_settings.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)):
+        cleaned_settings["asistente_activado"] = False
     
-    if _cached_settings == limpio and _current_path == ruta: return ruta
+    if _cached_settings == cleaned_settings and _current_path == ruta: 
+        return ruta
 
     try:
         ruta.parent.mkdir(parents=True, exist_ok=True)
-        with tempfile.NamedTemporaryFile("w", dir=ruta.parent, delete=False, encoding="utf-8") as tf:
-            temp_path = Path(tf.name)
-            json.dump(limpio, tf, indent=2, ensure_ascii=False)
-            tf.flush()
-            os.fsync(tf.fileno())
+        with tempfile.NamedTemporaryFile("w", dir=ruta.parent, delete=False, encoding="utf-8") as temp_file:
+            temp_path = Path(temp_file.name)
+            json.dump(cleaned_settings, temp_file, indent=2, ensure_ascii=False)
+            temp_file.flush()
+            os.fsync(temp_file.fileno())
         os.replace(temp_path, ruta)
-        _cached_settings, _current_path = limpio, ruta
+        _cached_settings, _current_path = cleaned_settings, ruta
         return ruta
     except (OSError, IOError, PermissionError, RuntimeError):
         if 'temp_path' in locals() and temp_path.exists(): 
@@ -236,38 +245,44 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
         return None
 
 def update(changes: dict[str, Any], path_or_base: PathLike | None = None) -> AppSettings:
-    actual = load(path_or_base)
-    actual.update(changes)
-    save(actual, path_or_base)
-    return actual
+    """Aplica cambios parciales sobre la configuración existente."""
+    current_settings = load(path_or_base)
+    current_settings.update(changes)
+    save(current_settings, path_or_base)
+    return current_settings
 
 def reset(path_or_base: PathLike | None = None) -> AppSettings:
+    """Reestablece la configuración a sus valores de fábrica."""
     save(DEFAULTS, path_or_base)
     return DEFAULTS.copy()
 
 def get(key: str, path_or_base: PathLike | None = None) -> Any:
+    """Obtiene un valor específico de la configuración."""
     return load(path_or_base).get(key, DEFAULTS.get(key))
 
 def assistant_api_key(path_or_base: PathLike | None = None) -> str:
-    desde_entorno = os.environ.get(API_KEY_ENV_VAR, "").strip()
-    return desde_entorno if desde_entorno else load(path_or_base).get("asistente_clave_api", "").strip()
+    """Obtiene la clave de API priorizando variables de entorno."""
+    env_key = os.environ.get(API_KEY_ENV_VAR, "").strip()
+    return env_key if env_key else load(path_or_base).get("asistente_clave_api", "").strip()
 
 def assistant_enabled(path_or_base: PathLike | None = None) -> bool:
-    config = load(path_or_base)
-    return bool(config.get("asistente_activado") and assistant_api_key(path_or_base))
+    """Verifica si el asistente está activado y posee una clave de API válida."""
+    settings = load(path_or_base)
+    return bool(settings.get("asistente_activado") and assistant_api_key(path_or_base))
 
 def describe(path_or_base: PathLike | None = None) -> list[str]:
-    actual = load(path_or_base)
-    clave = assistant_api_key(path_or_base)
-    origen = f"variable de entorno {API_KEY_ENV_VAR}" if os.environ.get(API_KEY_ENV_VAR) else ("archivo de configuración" if clave else "no configurada")
+    """Genera una descripción legible de la configuración actual."""
+    current = load(path_or_base)
+    key = assistant_api_key(path_or_base)
+    origin = f"variable de entorno {API_KEY_ENV_VAR}" if os.environ.get(API_KEY_ENV_VAR) else ("archivo de configuración" if key else "no configurada")
     return [
         "Configuración actual", "", f"  Archivo: {settings_path(path_or_base)}", "",
-        "  Apariencia", f"    Tema: {actual['tema']}", f"    Acento: {actual['acento']}",
-        f"    Barras visuales: {'sí' if actual['mostrar_barras'] else 'no'}", "",
-        "  Comportamiento", f"    Confirmar siempre: {'sí' if actual['confirmar_siempre'] else 'no'}",
-        f"    Pestaña inicial: {actual['abrir_en']}", f"    Recordar carpeta: {'sí' if actual['recordar_ultima_carpeta'] else 'no'}", "",
-        "  Rendimiento", f"    Duplicados desde: {actual['duplicados_tamano_minimo_kb']} KB",
-        f"    Top de archivos: {actual['top_archivos']}", f"    Análisis en paralelo: {'sí' if actual['analisis_en_paralelo'] else 'no'}", "",
-        "  Asistente IA", f"    Activado: {'sí' if actual['asistente_activado'] else 'no'}",
-        f"    Clave: {origen}", f"    Modelo: {actual['asistente_modelo']}", ""
+        "  Apariencia", f"    Tema: {current['tema']}", f"    Acento: {current['acento']}",
+        f"    Barras visuales: {'sí' if current['mostrar_barras'] else 'no'}", "",
+        "  Comportamiento", f"    Confirmar siempre: {'sí' if current['confirmar_siempre'] else 'no'}",
+        f"    Pestaña inicial: {current['abrir_en']}", f"    Recordar carpeta: {'sí' if current['recordar_ultima_carpeta'] else 'no'}", "",
+        "  Rendimiento", f"    Duplicados desde: {current['duplicados_tamano_minimo_kb']} KB",
+        f"    Top de archivos: {current['top_archivos']}", f"    Análisis en paralelo: {'sí' if current['analisis_en_paralelo'] else 'no'}", "",
+        "  Asistente IA", f"    Activado: {'sí' if current['asistente_activado'] else 'no'}",
+        f"    Clave: {origin}", f"    Modelo: {current['asistente_modelo']}", ""
     ]

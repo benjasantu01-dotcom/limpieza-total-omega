@@ -422,9 +422,12 @@ def local_answer(question: str, context: SystemContext) -> Answer:
     clean_text = _sanitize_query(question)
     tokens = set(_TOKEN_REGEX.findall(clean_text))
     
-    for trigger in _KEYWORD_MAP:
-        if trigger in tokens:
-            return _HANDLERS[_KEYWORD_MAP[trigger]](context, clean_text)
+    # Optimizamos: buscamos intersección rápida
+    match = tokens.intersection(_KEYWORD_MAP.keys())
+    if match:
+        # Usamos el primer match encontrado para determinar el handler
+        handler_key = _KEYWORD_MAP[next(iter(match))]
+        return _HANDLERS[handler_key](context, clean_text)
 
     problemas = list(islice(_gen_problems(context), 3))
     puntaje_str = str(context.score) if context.score is not None else "N/A"
