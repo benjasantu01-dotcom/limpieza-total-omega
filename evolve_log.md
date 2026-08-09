@@ -869,3 +869,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-09T03:59:56` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimizé `purge_all` para evitar la sobrecarga de consultas al sistema de archivos mediante el uso de un conjunto (set) de nombres de archivos válidos según el manifiesto, permitiendo una validación O(1) en lugar de O(n) por cada entrada del directorio.
 - `2026-08-09T03:59:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-09T03:59:56` Corrida terminada. Total usado hoy: 96.
+- `2026-08-09T04:07:57` Arrancando corrida. Quedan hoy ~204 peticiones objetivo.
+- `2026-08-09T04:08:17` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-08-09T04:08:44` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
+- `2026-08-09T04:09:07` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se optimizó el rendimiento al evitar el uso de `path_obj.resolve()` (operación costosa de I/O) dentro del bucle de procesamiento, utilizando en su lugar la información de ruta ya disponible en `entry` para las validaciones iniciales.
+- `2026-08-09T04:09:17` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimizé `load` y `save` eliminando llamadas redundantes a `validate` y `is_safe_to_modify` mediante la reutilización de estados ya verificados, reduciendo las operaciones de disco y el costo computacional de las validaciones.
+- `2026-08-09T04:09:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-09T04:09:17` Corrida terminada. Total usado hoy: 100.

@@ -6,47 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **243** (48.2% de aceptación)
+- Mejoras aceptadas: **241** (47.8% de aceptación)
 - Rechazadas por tests: 7
-- Rechazadas por guardia de seguridad: 26
+- Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 212
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-07 | 18 | 1 | 2 | 2 | 35 |
+| 2026-08-07 | 14 | 1 | 2 | 2 | 35 |
 | 2026-08-08 | 182 | 6 | 19 | 10 | 133 |
-| 2026-08-09 | 43 | 0 | 5 | 4 | 44 |
+| 2026-08-09 | 45 | 0 | 6 | 4 | 45 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **61**
 - manejo de errores y validación de entradas: **52**
-- seguridad defensiva: **48**
-- rendimiento: **45**
+- rendimiento: **47**
+- seguridad defensiva: **44**
 - robustez ante casos límite: **37**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **22**
 - `quarantine.py`: **21**
-- `branding.py`: **20**
 - `main.py`: **20**
+- `settings.py`: **20**
 - `assistant.py`: **20**
-- `diskreport.py`: **19**
-- `settings.py`: **19**
-- `browser.py`: **18**
-- `duplicates.py`: **18**
-- `scanner.py`: **18**
+- `branding.py`: **19**
+- `scanner.py`: **19**
+- `diskreport.py`: **18**
 - `memory.py`: **17**
+- `browser.py`: **17**
+- `duplicates.py`: **17**
 - `safety.py`: **13**
 - `organizer.py`: **11**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-09T04:09:17` **settings.py** (rendimiento): Optimizé `load` y `save` eliminando llamadas redundantes a `validate` y `is_safe_to_modify` mediante la reutilización de estados ya verificados, reduciendo las operaciones de disco y el costo computacional de las validaciones.
+- `2026-08-09T04:09:07` **scanner.py** (rendimiento): Se optimizó el rendimiento al evitar el uso de `path_obj.resolve()` (operación costosa de I/O) dentro del bucle de procesamiento, utilizando en su lugar la información de ruta ya disponible en `entry` para las validaciones iniciales.
 - `2026-08-09T03:59:56` **quarantine.py** (rendimiento): Optimizé `purge_all` para evitar la sobrecarga de consultas al sistema de archivos mediante el uso de un conjunto (set) de nombres de archivos válidos según el manifiesto, permitiendo una validación O(1) en lugar de O(n) por cada entrada del directorio.
 - `2026-08-09T03:59:18` **memory.py** (rendimiento): Optimizé la función `top_memory_processes` reemplazando la creación manual de un generador y el ordenamiento completo en memoria por un filtrado más eficiente, y mejoré la gestión de la caché eliminando la lógica redundante de re-almacenamiento en cada iteración del bucle, reduciendo así la carga de CPU innecesaria.
 - `2026-08-09T03:58:51` **main.py** (rendimiento): Optimicé el sistema de caché implementando un `dict` con acceso O(1) para búsquedas directas por clave, reduciendo la carga de procesamiento en cada iteración al reemplazar iteraciones sobre `OrderedDict` en `_invalidate_cache` y mejorando la gestión de memoria al asegurar una expiración efectiva antes de que el caché alcance su límite.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-09T03:19:02` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de docstrings detallados en las funciones de utilidad interna, siguiendo las guías de estilo para explicar la intención de seguridad y los casos de borde, y se ha reemplazado la lógica de `_is_file_accessible` por un chequeo que utiliza `os.access` (más eficiente y menos intrusivo que abrir el archivo) para mejorar la legibilidad y el rendimiento.
 - `2026-08-09T03:18:27` **main.py** (legibilidad y documentación): Se ha mejorado la documentación del código mediante la adición de docstrings técnicos en los métodos de la interfaz, especificando el propósito de cada componente y, en casos críticos como `_validate_environment` o `on_target_choice_changed`, el flujo de validación de seguridad para garantizar que la app sea auditable y mantenga los estándares exigidos.
 - `2026-08-09T03:17:29` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `healthscore.py` añadiendo docstrings descriptivos a todas las funciones de puntuación (`score_*`), especificando su lógica de normalización y los parámetros esperados para facilitar el mantenimiento y la auditoría del algoritmo.
-- `2026-08-09T03:08:24` **duplicates.py** (legibilidad y documentación): Se introdujo documentación técnica detallada en el pipeline de `find_duplicates` y se refactorizó el bloque de escaneo en `_collect_candidates` para mejorar la claridad de la lógica de exclusión, facilitando la comprensión del flujo de datos sin alterar el comportamiento.
-- `2026-08-09T03:08:13` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `diskreport.py` añadiendo type hints faltantes, estandarizando la documentación mediante docstrings claros, y extrayendo la lógica repetitiva de conversión de bytes a MB en un método de utilidad compartido para reducir la redundancia en los `dataclasses`.

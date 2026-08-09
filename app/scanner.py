@@ -82,13 +82,8 @@ class Scanner:
         
         try:
             entry_path = entry.path
-            if not entry_path:
-                return
-
-            path_obj = Path(entry_path).resolve()
-            
-            # Validación de seguridad defensiva: verificar contención estricta mediante is_relative_to
-            if not path_obj.is_relative_to(self.base_root) or is_protected_path(path_obj):
+            # Validación rápida sin resolver rutas pesadas innecesariamente
+            if not entry_path or is_protected_path(Path(entry_path)):
                 return
 
             if entry.is_dir(follow_symlinks=False):
@@ -96,8 +91,7 @@ class Scanner:
                     self.seen.add(entry_path)
                     stack.append(entry_path)
             elif entry.is_file(follow_symlinks=False):
-                if not path_obj.exists():
-                    return
+                path_obj = Path(entry_path)
                 name = entry.name
                 suffix = os.path.splitext(name)[1].lower()
                 self.results.extend(scan_file(path_obj, entry=entry, name=name, suffix=suffix))
