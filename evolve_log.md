@@ -593,3 +593,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-09T12:28:52` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes en los métodos de `StartupEntry` y refinando la descripción de las responsabilidades de los métodos para facilitar el mantenimiento futuro.
 - `2026-08-09T12:28:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-09T12:28:52` Corrida terminada. Total usado hoy: 296.
+- `2026-08-09T12:37:35` Arrancando corrida. Quedan hoy ~4 peticiones objetivo.
+- `2026-08-09T12:38:11` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `local_answer` pre-calculando el conjunto de palabras clave (`_KEYWORD_MAP.keys()`) fuera de la función y mejorando la eficiencia de la búsqueda al usar `tokens.isdisjoint` para descartar rápidamente consultas irrelevantes, evitando procesamientos innecesarios.
+- `2026-08-09T12:38:42` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se optimizó `severity_color` y `severity_label` reemplazando búsquedas repetitivas y llamadas a `lower()` por un acceso directo de tipo `MappingProxyType` a un diccionario de severidad normalizado (pre-calculado en minúsculas), reduciendo la sobrecarga de procesamiento en llamadas frecuentes de la interfaz.
+- `2026-08-09T12:39:06` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Se implementó un mecanismo de caché local (memoization) en `_sum_directory_recursive` mediante un diccionario `visited` para evitar redundancias en el escaneo de directorios compartidos o estructuras de archivos redundantes, mejorando significativamente el rendimiento en árboles de directorios complejos.
+- `2026-08-09T12:39:14` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-08-09T12:39:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-09T12:39:14` Corrida terminada. Total usado hoy: 300.

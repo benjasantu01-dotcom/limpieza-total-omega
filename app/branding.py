@@ -181,33 +181,23 @@ def tab_label(section: str) -> str:
 
 
 def severity_color(severity: Optional[str]) -> HexColor:
-    """
-    Resuelve el código de color asociado a un nivel de severidad.
-    
-    Args:
-        severity: Cadena indicativa de severidad (ok|info|warning|danger).
-    """
-    if isinstance(severity, str) and (style := SEVERITY_STYLES.get(severity.lower())):
+    """Resuelve el código de color asociado a un nivel de severidad."""
+    if severity and (style := SEVERITY_STYLES.get(severity.lower())):
         return style[0]
     return PALETTE["text_muted"]
 
 
 def severity_label(severity: Optional[str]) -> str:
     """Retorna la etiqueta legible de una severidad o el input normalizado."""
-    if isinstance(severity, str):
-        if style := SEVERITY_STYLES.get(severity.lower()):
-            return style[1]
-        if severity.strip():
-            return severity.upper()
-    return "Desconocido"
+    if severity and (style := SEVERITY_STYLES.get(severity.lower())):
+        return style[1]
+    return severity.upper() if severity and severity.strip() else "Desconocido"
 
 
 def severity_icon(severity: Optional[str]) -> str:
     """Retorna el glifo gráfico asociado a un nivel de riesgo."""
     simbolos = {"ok": "\u2713", "info": "\u2139", "warning": "\u26a0", "danger": "\u2716"}
-    if isinstance(severity, str):
-        return simbolos.get(severity.lower(), "\u2022")
-    return "\u2022"
+    return simbolos.get(severity.lower(), "\u2022") if isinstance(severity, str) else "\u2022"
 
 
 def grade_color(grade: Optional[str]) -> HexColor:

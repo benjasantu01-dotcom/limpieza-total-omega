@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-08 | 100 | 5 | 10 | 6 | 87 |
-| 2026-08-09 | 136 | 6 | 15 | 9 | 130 |
+| 2026-08-08 | 97 | 5 | 10 | 6 | 86 |
+| 2026-08-09 | 139 | 6 | 15 | 9 | 131 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **63**
 - manejo de errores y validación de entradas: **55**
 - seguridad defensiva: **47**
-- robustez ante casos límite: **40**
-- rendimiento: **31**
+- robustez ante casos límite: **37**
+- rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **23**
-- `main.py`: **22**
+- `quarantine.py`: **22**
 - `settings.py`: **21**
 - `healthscore.py`: **21**
-- `assistant.py`: **19**
+- `main.py`: **21**
+- `assistant.py`: **20**
 - `scanner.py`: **18**
-- `branding.py`: **17**
+- `branding.py`: **18**
 - `diskreport.py`: **17**
-- `browser.py`: **16**
-- `memory.py`: **15**
+- `browser.py`: **17**
 - `duplicates.py`: **14**
+- `memory.py`: **14**
 - `organizer.py`: **14**
 - `startup.py`: **10**
 - `safety.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-09T12:39:06` **browser.py** (rendimiento): Se implementó un mecanismo de caché local (memoization) en `_sum_directory_recursive` mediante un diccionario `visited` para evitar redundancias en el escaneo de directorios compartidos o estructuras de archivos redundantes, mejorando significativamente el rendimiento en árboles de directorios complejos.
+- `2026-08-09T12:38:42` **branding.py** (rendimiento): Se optimizó `severity_color` y `severity_label` reemplazando búsquedas repetitivas y llamadas a `lower()` por un acceso directo de tipo `MappingProxyType` a un diccionario de severidad normalizado (pre-calculado en minúsculas), reduciendo la sobrecarga de procesamiento en llamadas frecuentes de la interfaz.
+- `2026-08-09T12:38:11` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` pre-calculando el conjunto de palabras clave (`_KEYWORD_MAP.keys()`) fuera de la función y mejorando la eficiencia de la búsqueda al usar `tokens.isdisjoint` para descartar rápidamente consultas irrelevantes, evitando procesamientos innecesarios.
 - `2026-08-09T12:28:52` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes en los métodos de `StartupEntry` y refinando la descripción de las responsabilidades de los métodos para facilitar el mantenimiento futuro.
 - `2026-08-09T12:28:40` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenimiento del módulo documentando exhaustivamente `_Validators` y `_VALIDATOR_MAP`, y estructuré la validación de claves con un enfoque funcional más explícito para facilitar futuras extensiones.
 - `2026-08-09T12:28:15` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones de escaneo, aclarando sus parámetros, posibles excepciones y el propósito de cada heurística para facilitar el mantenimiento del equipo de desarrollo.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-09T12:07:25` **diskreport.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos en las funciones críticas de `diskreport.py` para mejorar la mantenibilidad, aclarando explícitamente qué sucede cuando los archivos fallan o son inaccesibles, alineándose con el enfoque de legibilidad.
 - `2026-08-09T11:58:38` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados y detallados en las funciones de procesamiento recursivo y validación de seguridad, aclarando la lógica de manejo de errores, exclusiones y detección de enlaces simbólicos.
 - `2026-08-09T11:57:16` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo validación de tipo y longitud para prevenir `IndexError` al procesar entradas malformadas del registro, asegurando que el parser sea resiliente ante datos inesperados sin abortar el procesamiento completo.
-- `2026-08-09T11:47:52` **settings.py** (manejo de errores y validación de entradas): Se mejoró el manejo de errores en `_Validators.path` y `load` asegurando que cualquier entrada mal formada o acceso denegado retorne de forma silenciosa y segura al estado de fábrica, cumpliendo con la premisa de robustez sin comprometer la ejecución.
-- `2026-08-09T11:38:45` **quarantine.py** (manejo de errores y validación de entradas): Mejora la robustez del proceso `quarantine_file` al introducir un chequeo explícito de disponibilidad de disco antes de la operación y validar que el archivo fuente no haya cambiado de tamaño durante el cálculo del hash, reforzando la integridad y manejo de errores.
-- `2026-08-09T11:38:28` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `sort_junk` y `delete_reviewed` mediante la validación explícita de entradas (tipos y valores) para prevenir excepciones innecesarias antes de operar, cumpliendo con el enfoque de manejo de errores.

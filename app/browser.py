@@ -21,7 +21,7 @@ import os
 import ctypes
 from dataclasses import dataclass
 from pathlib import Path, PurePath
-from typing import Iterable, Sequence, Dict, List, Optional, Callable
+from typing import Iterable, Sequence, Dict, List, Optional, Callable, Set
 from safety import is_protected_path
 
 __all__ = [
@@ -137,16 +137,23 @@ def _is_excluded_file(name: str) -> bool:
     return name.lower() in NEVER_TOUCH
 
 
-def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool]) -> int:
+def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool], visited: Optional[Set[str]] = None) -> int:
     """
     Realiza un DFS sobre el árbol de directorios para calcular el peso total.
     
-    Utiliza `os.scandir` para mayor eficiencia. Omite archivos protegidos por
-    el sistema (GetFileAttributesW) y respeta las exclusiones definidas en 
-    `NEVER_TOUCH`. No sigue enlaces simbólicos ni junctions.
+    Utiliza `os.scandir` para mayor eficiencia y evita el procesamiento redundante
+    mediante un set de rutas ya visitadas.
     """
     if not root_dir or not os.path.exists(root_dir):
         return 0
+        
+    if visited is None:
+        visited = set()
+    
+    real_path = os.path.realpath(root_dir)
+    if real_path in visited:
+        return 0
+    visited.add(real_path)
         
     total: int = 0
     kernel32 = ctypes.windll.kernel32 if os.name == 'nt' else None
@@ -157,7 +164,6 @@ def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool
                 try:
                     if os.name == 'nt' and kernel32:
                         attrs = kernel32.GetFileAttributesW(entry.path)
-                        # Omitir archivos ocultos o de sistema (0x04, 0x02)
                         if attrs != -1 and (attrs & 0x04 or attrs & 0x02):
                             continue
 
@@ -165,7 +171,7 @@ def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool
                         continue
                     
                     if entry.is_dir():
-                        total += _sum_directory_recursive(entry.path, is_junction_fn)
+                        total += _sum_directory_recursive(entry.path, is_junction_fn, visited)
                     elif entry.is_file() and not _is_excluded_file(entry.name):
                         total += entry.stat().st_size
                 except (OSError, PermissionError):
