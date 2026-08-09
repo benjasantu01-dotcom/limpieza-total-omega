@@ -135,15 +135,16 @@ def app_title() -> str:
 @lru_cache(maxsize=32)
 def color(name: str) -> HexColor:
     """
-    Obtiene el código hexadecimal de un color definido en la paleta.
+    Obtiene el código hexadecimal de un color definido en la paleta PALETTE.
     
     Args:
-        name: Identificador del color en PALETTE.
+        name: Clave identificadora en PALETTE (ej. 'surface', 'accent').
         
     Returns:
-        Cadena hexadecimal del color o gris por defecto si no existe.
+        Valor hex si existe, de lo contrario '#808080' (gris neutro) para 
+        evitar excepciones visuales.
     """
-    return PALETTE.get(name, "#808080") if isinstance(name, str) else "#808080"
+    return PALETTE.get(name, "#808080")
 
 
 @lru_cache(maxsize=16)
@@ -155,9 +156,10 @@ def font_size(name: str) -> int:
         name: Clave del tamaño (ej. 'title', 'body').
         
     Returns:
-        Tamaño en puntos; usa 'body' como valor de respaldo.
+        Tamaño en puntos definido; retorna el tamaño 'body' como fallback 
+        seguro si la clave no es encontrada.
     """
-    return FONT_SIZES.get(name, FONT_SIZES["body"]) if isinstance(name, str) else FONT_SIZES["body"]
+    return FONT_SIZES.get(name, FONT_SIZES["body"])
 
 
 def icon(section: Optional[str]) -> str:

@@ -43,7 +43,7 @@ __all__ = [
 ]
 
 
-def _bytes_to_mb(size_bytes: int) -> float:
+def _bytes_to_mb(size_bytes: int | float) -> float:
     """Utilidad interna para convertir bytes a Megabytes con precisión de 2 decimales."""
     return round(size_bytes / (1024 * 1024), 2) if isinstance(size_bytes, (int, float)) and size_bytes > 0 else 0.0
 
@@ -320,10 +320,8 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
         ext_size[ext] += size
         ext_count[ext] += 1
         
-        if len(top_files_heap) < 8:
-            heapq.heappush(top_files_heap, (size, str(path)))
-        elif size > top_files_heap[0][0]:
-            heapq.heapreplace(top_files_heap, (size, str(path)))
+        # Mantenemos un min-heap de los 8 archivos más grandes vistos
+        heapq.heappushpop(top_files_heap, (size, str(path))) if len(top_files_heap) >= 8 else heapq.heappush(top_files_heap, (size, str(path)))
 
     lines = [f"Carpeta analizada: {path_obj}", f"Total: {format_size(total_bytes)} en {total_files} archivos", "", "Por tipo de archivo:"]
     

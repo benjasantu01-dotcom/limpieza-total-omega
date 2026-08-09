@@ -98,12 +98,11 @@ def base_directories() -> List[Path]:
 
 def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> bool:
     """
-    Valida que la ruta sea segura contra path traversal y manipulación maliciosa.
-    Verifica: existencia, límites de base, protección por safety.py, ausencia de 
-    vínculos simbólicos/junctions y caracteres Unicode de control/RTL.
+    Realiza validaciones de seguridad para evitar acceso fuera del directorio base 
+    o procesamiento de rutas maliciosas (RTL/control chars, symlinks).
     
-    Returns:
-        bool: True si la ruta es segura para ser listada por el escáner.
+    Esta función NO valida si el archivo es caché, solo asegura que la ruta 
+    sea un candidato seguro para ser escaneado sin riesgos de escape.
     """
     if not isinstance(target_path, Path) or not isinstance(base_path, Path):
         return False
@@ -115,21 +114,22 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
         if not target_path.exists():
             return False
             
-        # Detectar caracteres RTL o de control que ocultan extensiones
+        # Detectar caracteres de control o RTL (usados en ataques de spoofing de extensiones)
         if any(ord(char) < 32 or ord(char) in (0x200E, 0x200F, 0x202A, 0x202E) for char in str(target_path)):
             return False
 
         real_base = base_path.resolve(strict=True)
         real_target = target_path.resolve(strict=True)
         
-        # Integración con el módulo central de seguridad
+        # Verificar que la ruta no esté marcada como crítica por la política central
         if is_protected_path(real_target):
             return False
 
+        # Asegurar contención dentro del directorio base (Path Traversal protection)
         if not str(real_target).startswith(str(real_base)):
             return False
 
-        # Impedir el seguimiento de enlaces simbólicos o junctions para evitar bucles o salidas de raíz
+        # Impedir el seguimiento de enlaces simbólicos o junctions para evitar bucles o escapes
         is_junction = getattr(os.path, 'isjunction', lambda _: False)
         if real_target.is_symlink() or is_junction(str(real_target)):
             return False
@@ -140,21 +140,20 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
 
 
 def _is_excluded_file(name: str) -> bool:
-    """Valida si el nombre del archivo está en la lista negra de archivos sensibles."""
+    """Retorna True si el nombre del archivo es un archivo de configuración crítico."""
     return name.lower() in NEVER_TOUCH
 
 
 def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool]) -> int:
     """
-    Realiza un recorrido recursivo en profundidad (DFS) para sumar bytes.
-    Filtra archivos de sistema ocultos y asegura no seguir enlaces inseguros.
+    DFS recursivo para sumar el tamaño de archivos en caché.
+    Ignora archivos del sistema, ocultos, enlaces simbólicos y configuraciones del usuario.
     """
     total: int = 0
     root_path = Path(root_dir)
     if not root_path.exists():
         return 0
     
-    # Seguridad defensiva: no entrar en rutas protegidas aunque se haya validado el padre
     if is_protected_path(root_path):
         return 0
 
@@ -162,7 +161,7 @@ def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool
         with os.scandir(root_dir) as it:
             for entry in it:
                 try:
-                    # En Windows, saltar archivos con atributos de sistema u ocultos
+                    # En Windows, omitir archivos de sistema u ocultos por atributo nativo
                     if os.name == 'nt':
                         import ctypes
                         attrs = ctypes.windll.kernel32.GetFileAttributesW(entry.path)
@@ -185,10 +184,10 @@ def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool
 
 def directory_size(path: str | os.PathLike | None) -> int:
     """
-    Calcula el peso total de un directorio, ignorando enlaces y protegidos.
+    Calcula el peso total de una carpeta, validando seguridad previamente.
     
     Returns:
-        int: Total en bytes, o 0 si la ruta es inválida o está protegida.
+        int: bytes totales, o 0 si el directorio es inseguro o inaccesible.
     """
     if path is None:
         return 0
@@ -208,7 +207,7 @@ def directory_size(path: str | os.PathLike | None) -> int:
 
 
 def _is_valid_cache_path(candidate: Optional[Path], base_path: Path) -> bool:
-    """Valida si un path candidato es una carpeta de caché legítima, segura y apta para escaneo."""
+    """Valida si un path es una carpeta de caché, siendo segura y no configurada."""
     if not isinstance(candidate, Path) or not isinstance(base_path, Path):
         return False
     try:
@@ -227,8 +226,8 @@ def detect_profiles(
     cache_paths: Optional[Dict[str, str]] = None
 ) -> List[BrowserCache]:
     """
-    Mapea rutas de caché sobre directorios base y retorna una lista de
-    instancias BrowserCache. Los resultados se ordenan por tamaño descendente.
+    Detecta cachés instaladas combinando rutas base y subrutas conocidas.
+    Ordena los resultados por tamaño (bytes) de mayor a menor.
     """
     bases = bases if bases is not None else base_directories()
     cache_paths = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
@@ -249,6 +248,7 @@ def detect_profiles(
             try:
                 candidate: Path = real_base.joinpath(*relative_path_str.split("\\")).resolve()
                 
+                # Check de integridad: la resolución no debe escapar del base directory
                 if not str(candidate).startswith(str(real_base)):
                     continue
                 
@@ -273,7 +273,7 @@ def total_cache_bytes(caches: Iterable[BrowserCache] | None = None) -> int:
 
 
 def summarize(caches: Optional[List[BrowserCache]] = None) -> List[str]:
-    """Genera un informe textual legible con el resumen de cachés detectados."""
+    """Genera un informe textual del estado de las cachés encontradas."""
     current_caches: List[BrowserCache] = caches if caches is not None else detect_profiles()
     
     if not current_caches:

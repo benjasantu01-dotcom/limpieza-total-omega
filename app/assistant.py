@@ -225,20 +225,22 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         except (AttributeError, TypeError):
             return default
 
+    # Mapeo de atributos con sus conversores y límites permitidos
+    METRIC_MAPPING: Final[list[tuple[str, Callable, float]]] = [
+        ("junk_mb", float, float('inf')),
+        ("suspicious_count", int, float('inf')),
+        ("suspicious_warnings", int, float('inf')),
+        ("memory_available_percent", float, 100.0),
+        ("disk_free_percent", float, 100.0),
+        ("duplicate_mb", float, float('inf')),
+        ("startup_count", int, float('inf')),
+        ("quarantined_count", int, float('inf')),
+        ("browser_cache_mb", float, float('inf')),
+        ("memory_total_gb", float, float('inf')),
+    ]
+
     if metrics is not None:
-        mappings: list[tuple[str, Callable, float]] = [
-            ("junk_mb", float, float('inf')),
-            ("suspicious_count", int, float('inf')),
-            ("suspicious_warnings", int, float('inf')),
-            ("memory_available_percent", float, 100.0),
-            ("disk_free_percent", float, 100.0),
-            ("duplicate_mb", float, float('inf')),
-            ("startup_count", int, float('inf')),
-            ("quarantined_count", int, float('inf')),
-            ("browser_cache_mb", float, float('inf')),
-            ("memory_total_gb", float, float('inf')),
-        ]
-        for attr, cast_func, max_v in mappings:
+        for attr, cast_func, max_v in METRIC_MAPPING:
             val = get_attr(metrics, attr, None)
             if val is not None:
                 _safe_assign(ctx, attr, val, cast=cast_func, max_val=max_v)
