@@ -410,8 +410,7 @@ def quarantine_file(
 
 def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
     """Retorna ítems en cuarentena, ordenados cronológicamente descendente."""
-    items = load_manifest(base)
-    return sorted(items, key=lambda i: i.quarantined_at, reverse=True)
+    return sorted(load_manifest(base), key=lambda i: i.quarantined_at, reverse=True)
 
 
 def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
@@ -420,8 +419,7 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
         raise ValueError("ID de ítem vacío o tipo incorrecto.")
     
     items = load_manifest(base)
-    item_map = {i.item_id: i for i in items}
-    match = item_map.get(item_id)
+    match = next((i for i in items if i.item_id == item_id), None)
     
     if not match:
         raise KeyError(f"No se encontró ítem con ID: {item_id}")
@@ -473,8 +471,7 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
         return False
         
     items = load_manifest(base)
-    item_map = {i.item_id: i for i in items}
-    match = item_map.get(item_id)
+    match = next((i for i in items if i.item_id == item_id), None)
     
     if not match:
         return False

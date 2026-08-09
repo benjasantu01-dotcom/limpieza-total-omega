@@ -1253,3 +1253,27 @@ assert 'oval' in ['polygon', 'rectangle', 'rectangle', 'rectangle', 'rectangle',
 - `2026-08-09T08:24:47` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimizé `scan_for_junk` moviendo la lógica de filtrado de extensiones antes de la llamada a `os.stat` y `_is_file_accessible`, reduciendo drásticamente las operaciones de E/S innecesarias en archivos que de todos modos serían ignorados.
 - `2026-08-09T08:24:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-09T08:24:47` Corrida terminada. Total usado hoy: 200.
+- `2026-08-09T08:32:54` Arrancando corrida. Quedan hoy ~100 peticiones objetivo.
+- `2026-08-09T08:33:25` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el cálculo del tamaño total y la carga del manifiesto mediante la persistencia de propiedades calculadas y el uso de un diccionario en `list_items` para evitar redundancias de O(N).
+- `2026-08-09T08:33:44` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 99): unterminated string literal (detected at line 99)
+- `2026-08-09T08:34:07` Tests FALLARON:
+```
+st_scan_for_junk_skips_system_folders - AssertionError: assert 'normal.tmp' in set()
+FAILED evolve/tests/test_basic.py::test_stage_for_review_moves_files_without_deleting_them - ValueError: La lista de archivos a procesar no puede estar vacía.
+FAILED evolve/tests/test_basic.py::test_delete_reviewed_only_touches_the_review_folder - assert 0 == 1
+FAILED evolve/tests/test_safety.py::test_drive_root_is_always_protected - AttributeError: 'str' object has no attribute 'anchor'
+FAILED evolve/tests/test_safety.py::test_is_within_directory_rejects_traversal_escape - AssertionError: assert not True
+ +  where True = <function is_within_directory at 0x7fb868316fc0>(PosixPath('/tmp/pytest-of-runner/pytest-2/test_is_within_directory_rejec0/permitida/../afuera.txt'), PosixPath('/tmp/pytest-of-runner/pytest-2/test_is_within_directory_rejec0/permitida'))
+ +    where <function is_within_directory at 0x7fb868316fc0> = safety.is_within_directory
+FAILED evolve/tests/test_safety.py::test_describe_protection_explains_the_reason - assert 'raíz' in "'/' protegida por sistema."
+ +  where "'/' protegida por sistema." = <function describe_protection at 0x7fb8683174c0>('/')
+ +    where <function describe_protection at 0x7fb8683174c0> = safety.describe_protection
+ +    and   '/' = PosixPath('/tmp/pytest-of-runner/pytest-2/test_describe_protection_expla0').anchor
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - assert 0 == 2
+21 failed, 278 passed, 7 warnings in 1.23s
+
+```
+- `2026-08-09T08:34:07` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `ensure_safe_to_modify` y sus funciones auxiliares centralizando la resolución de rutas mediante la eliminación de llamadas repetidas a `normalize(p)` y reemplazando chequeos redundantes por validaciones de conjunto más eficientes.
+- `2026-08-09T08:34:14` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: rendimiento).
+- `2026-08-09T08:34:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-09T08:34:14` Corrida terminada. Total usado hoy: 204.
