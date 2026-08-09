@@ -308,7 +308,7 @@ def quarantine_file(
     base: Union[str, Path] = DEFAULT_QUARANTINE_DIR,
 ) -> QuarantineItem:
     """Mueve un archivo a cuarentena de forma segura tras validar requisitos."""
-    if source is None or not source:
+    if not source:
         raise ValueError("La ruta de origen no puede estar vacía.")
     
     source_path = Path(source).resolve()
@@ -329,15 +329,14 @@ def quarantine_file(
     try:
         file_size = source_path.stat().st_size
     except OSError as e:
-        raise OSError(f"Error al acceder a metadatos de archivo: {e}")
+        raise RuntimeError(f"Error al acceder a metadatos de origen: {e}")
 
     try:
         usage = shutil.disk_usage(dest_dir)
+        if usage.free < (file_size * 1.05):
+            raise RuntimeError("Espacio insuficiente en disco para cuarentena.")
     except OSError as e:
-        raise RuntimeError(f"No se pudo verificar el estado del disco: {e}")
-        
-    if usage.free < (file_size * 1.05):
-        raise RuntimeError("Espacio insuficiente en disco para mover a cuarentena.")
+        raise RuntimeError(f"Falla al verificar estado de disco: {e}")
         
     item_id = uuid.uuid4().hex[:12]
     safe_name = "".join(c for c in source_path.name if c.isalnum() or c in "._-")
@@ -359,29 +358,26 @@ def quarantine_file(
         shutil.copy2(source_path, temp_dest)
         
         if temp_dest.stat().st_size != file_size:
-            raise RuntimeError("La copia de seguridad no coincide en tamaño.")
+            raise RuntimeError("Integridad fallida: el tamaño del archivo copiado no coincide.")
         
         os.replace(temp_dest, destination)
         
-        if not destination.exists():
-            raise RuntimeError("Error de escritura durante la puesta en cuarentena.")
-            
         try:
             os.remove(source_path)
         except OSError as e:
-            raise RuntimeError(f"Error al eliminar el original tras la copia: {e}")
+            raise RuntimeError(f"Error al eliminar origen tras la copia exitosa: {e}")
             
-    except Exception as e:
+    except (OSError, PermissionError) as e:
         if temp_dest.exists():
             _safe_unlink(temp_dest)
         if destination.exists():
             _safe_unlink(destination)
-        raise RuntimeError(f"Falla crítica al procesar archivo: {e}")
+        raise RuntimeError(f"Falla crítica al mover archivo: {e}")
 
     try:
         file_hash = _get_sha256(destination)
         if not file_hash:
-            raise RuntimeError("No se pudo calcular la integridad del archivo en cuarentena.")
+            raise RuntimeError("Fallo al calcular integridad del archivo aislado.")
 
         item = QuarantineItem(
             item_id=item_id,

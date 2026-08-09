@@ -228,13 +228,14 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         dest.mkdir(parents=True, exist_ok=True)
         if dest.is_symlink() or not dest.is_dir():
             raise ValueError("Destino de revisión inválido o punto de reparse detectado.")
-    except (OSError, RuntimeError, PermissionError) as e:
+    except (OSError, RuntimeError, PermissionError, TypeError) as e:
         raise ValueError(f"No se pudo preparar el directorio de revisión: {e}")
 
     for jf in files:
         try:
-            if not isinstance(jf, JunkFile):
+            if not isinstance(jf, JunkFile) or not isinstance(jf.path, Path):
                 continue
+                
             current_abs: Path = jf.path.resolve()
             
             if not current_abs.exists() or not current_abs.is_file():
@@ -244,10 +245,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             if dest == current_abs or dest in current_abs.parents:
                 continue
             
-            if not is_safe_to_modify(current_abs):
-                continue
-            
-            if not _is_file_accessible(current_abs):
+            if not is_safe_to_modify(current_abs) or not _is_file_accessible(current_abs):
                 continue
 
             target: Path = _generate_unique_target(dest / f"{current_abs.stem}_{int(jf.modified.timestamp())}{current_abs.suffix}")

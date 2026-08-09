@@ -73,6 +73,7 @@ PROCESS_QUERY_INFO: int = 0x0400
 PROCESS_SET_QUOTA: int = 0x0100
 SAFE_ACCESS: int = PROCESS_QUERY_INFO | PROCESS_SET_QUOTA
 STILL_ACTIVE: int = 259
+ERROR_ACCESS_DENIED: int = 5
 
 # Lista de PIDs críticos de Windows que nunca deben ser intervenidos
 SYSTEM_CRITICAL_PIDS: Tuple[int, ...] = (0, 4)
@@ -373,10 +374,11 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     
     handle = kernel32.OpenProcess(SAFE_ACCESS, False, target_pid)
     if not handle:
-        return False, f"Acceso denegado: el proceso tiene privilegios elevados o no existe."
+        error_code = kernel32.GetLastError()
+        msg = "Acceso denegado: requiere privilegios elevados." if error_code == ERROR_ACCESS_DENIED else "No se pudo abrir el proceso."
+        return False, msg
     
     try:
-        # Validación de estado: asegurar que el proceso no haya finalizado
         exit_code = ctypes.c_ulong()
         if not kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)) or exit_code.value != STILL_ACTIVE:
             return False, "El proceso seleccionado ya no está activo."
