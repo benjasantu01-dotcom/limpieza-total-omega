@@ -131,7 +131,8 @@ class _Validators:
             if not path_string: return ""
             path_obj = Path(path_string).expanduser()
             if not path_obj.is_absolute(): return None
-            resolved_path = path_obj.resolve()
+            # resolve() puede fallar si la ruta tiene caracteres inválidos o restricciones de SO
+            resolved_path = path_obj.resolve(strict=False)
             if resolved_path.is_symlink(): return None
             return str(resolved_path) if is_safe_to_modify(str(resolved_path)) else None
         except (OSError, RuntimeError, ValueError, TypeError, PermissionError):
@@ -165,11 +166,11 @@ def settings_path(path_or_base: PathLike | None = None) -> Path:
     key = str(path_or_base)
     if key not in _path_cache:
         try:
-            base = Path(key).expanduser().resolve()
+            base = Path(key).expanduser().resolve(strict=False)
             candidate = base / SETTINGS_FILE
             is_valid = is_safe_to_modify(str(base)) and is_safe_to_modify(str(candidate))
             _path_cache[key] = candidate if is_valid else default_res
-        except (OSError, RuntimeError):
+        except (OSError, RuntimeError, PermissionError):
             _path_cache[key] = default_res
     return _path_cache[key]
 
@@ -229,7 +230,9 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
         _cached_settings, _current_path = cleaned_settings, ruta
         return ruta
     except (OSError, IOError, PermissionError, RuntimeError):
-        if 'temp_path' in locals(): Path(temp_path).unlink(missing_ok=True)
+        if 'temp_path' in locals(): 
+            try: Path(temp_path).unlink(missing_ok=True)
+            except OSError: pass
         return None
 
 def update(changes: dict[str, Any], path_or_base: PathLike | None = None) -> AppSettings:

@@ -897,3 +897,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-09T04:39:53` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
 - `2026-08-09T04:39:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-09T04:39:53` Corrida terminada. Total usado hoy: 112.
+- `2026-08-09T04:48:44` Arrancando corrida. Quedan hoy ~188 peticiones objetivo.
+- `2026-08-09T04:49:15` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
+- `2026-08-09T04:49:39` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Mejoré la resiliencia ante errores de sistema de archivos en `scan_file` y `check_recent_executable_in_downloads` capturando `OSError` y `FileNotFoundError` específicos al interactuar con atributos de archivos que pueden desaparecer durante un escaneo concurrente.
+- `2026-08-09T04:50:04` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Reforcé la robustez del manejo de rutas en `_Validators.path` y `settings_path` para evitar errores en casos donde el sistema de archivos reporta errores al acceder a metadatos, garantizando que una ruta mal formada o con permisos denegados no propague excepciones.
+- `2026-08-09T04:50:14` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Se mejoró la robustez de `parse_registry_csv` añadiendo un manejo de excepciones más granular durante el parseo de CSV y validación de rutas para evitar que caracteres inesperados o entradas malformadas interrumpan la lectura completa del registro.
+- `2026-08-09T04:50:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-09T04:50:14` Corrida terminada. Total usado hoy: 116.

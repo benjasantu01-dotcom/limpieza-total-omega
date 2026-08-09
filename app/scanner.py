@@ -115,7 +115,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
         if mtime <= 0: return None
         if datetime.now() - datetime.fromtimestamp(mtime) < timedelta(hours=hours):
             return Suspicion(path, f"Ejecutable reciente detectado (modificado hace menos de {hours}h)", "info")
-    except (OSError, AttributeError, ValueError, OverflowError):
+    except (OSError, AttributeError, ValueError, OverflowError, FileNotFoundError):
         pass
     return None
 
@@ -146,17 +146,20 @@ def _run_checks(checks: List[SuspicionCheck], path: Path, entry: Optional[os.Dir
 
 def scan_file(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None) -> ScanResult:
     """Aplica el set completo de heurísticas a un archivo según su tipo."""
-    n = name or path.name
-    s = suffix or path.suffix.lower()
-    
-    # Aplicar heurísticas universales
-    findings = _run_checks(CHECK_REGISTRY["all"], path, entry, n, s)
-    
-    # Aplicar heurísticas de ejecutables si el archivo es potencialmente ejecutable
-    if s in SUSPICIOUS_EXECUTABLE_EXT:
-        findings.extend(_run_checks(CHECK_REGISTRY["exec"], path, entry, n, s))
-            
-    return findings
+    try:
+        n = name or path.name
+        s = suffix or path.suffix.lower()
+        
+        # Aplicar heurísticas universales
+        findings = _run_checks(CHECK_REGISTRY["all"], path, entry, n, s)
+        
+        # Aplicar heurísticas de ejecutables si el archivo es potencialmente ejecutable
+        if s in SUSPICIOUS_EXECUTABLE_EXT:
+            findings.extend(_run_checks(CHECK_REGISTRY["exec"], path, entry, n, s))
+                
+        return findings
+    except (OSError, RuntimeError):
+        return []
 
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:

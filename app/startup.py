@@ -232,13 +232,6 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
 def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry]:
     """
     Convierte el CSV generado por PowerShell a una lista de StartupEntry.
-    
-    Args:
-        text: Salida cruda de PowerShell (ConvertTo-Csv).
-        source: Identificador de origen para fines de reporte.
-        
-    Returns:
-        Lista de objetos StartupEntry validados.
     """
     if not isinstance(text, str) or not text.strip():
         return []
@@ -262,18 +255,17 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
         if len(parts) < 2 or not parts[0] or not parts[1]:
             continue
             
-        name_raw, cmd_raw = parts[0], parts[1]
-        
-        name: str = "".join(c for c in name_raw if ord(c) >= 32)
-        cmd: str = "".join(c for c in cmd_raw if ord(c) >= 32)
-        
-        if not name or name.lower() in ("name", "pscustomobject") or name.upper().startswith("PS"):
-            continue
-        
-        if not cmd or any(c in cmd for c in '<>|?*'):
-            continue
-            
         try:
+            name_raw, cmd_raw = parts[0], parts[1]
+            name: str = "".join(c for c in name_raw if ord(c) >= 32)
+            cmd: str = "".join(c for c in cmd_raw if ord(c) >= 32)
+            
+            if not name or name.lower() in ("name", "pscustomobject") or name.upper().startswith("PS"):
+                continue
+            
+            if not cmd or any(c in cmd for c in '<>|?*'):
+                continue
+                
             p = Path(cmd)
             if not str(p).strip() or is_protected_path(p):
                 continue
