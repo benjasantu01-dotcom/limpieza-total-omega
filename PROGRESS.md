@@ -16,37 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-07 | 28 | 1 | 3 | 5 | 41 |
+| 2026-08-07 | 25 | 1 | 3 | 5 | 40 |
 | 2026-08-08 | 182 | 6 | 19 | 10 | 133 |
-| 2026-08-09 | 30 | 0 | 4 | 2 | 40 |
+| 2026-08-09 | 33 | 0 | 4 | 2 | 41 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **54**
+- legibilidad y documentación: **57**
 - manejo de errores y validación de entradas: **52**
 - seguridad defensiva: **49**
 - robustez ante casos límite: **43**
-- rendimiento: **42**
+- rendimiento: **39**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **21**
-- `settings.py`: **20**
+- `healthscore.py`: **21**
 - `branding.py`: **20**
-- `healthscore.py`: **20**
 - `duplicates.py`: **19**
+- `settings.py`: **19**
 - `diskreport.py`: **19**
+- `main.py`: **19**
 - `quarantine.py`: **19**
-- `scanner.py`: **18**
 - `browser.py`: **18**
-- `main.py`: **18**
+- `scanner.py`: **17**
 - `memory.py`: **16**
-- `safety.py`: **15**
-- `organizer.py`: **11**
+- `safety.py`: **14**
+- `organizer.py`: **12**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-09T03:19:02` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de docstrings detallados en las funciones de utilidad interna, siguiendo las guías de estilo para explicar la intención de seguridad y los casos de borde, y se ha reemplazado la lógica de `_is_file_accessible` por un chequeo que utiliza `os.access` (más eficiente y menos intrusivo que abrir el archivo) para mejorar la legibilidad y el rendimiento.
+- `2026-08-09T03:18:27` **main.py** (legibilidad y documentación): Se ha mejorado la documentación del código mediante la adición de docstrings técnicos en los métodos de la interfaz, especificando el propósito de cada componente y, en casos críticos como `_validate_environment` o `on_target_choice_changed`, el flujo de validación de seguridad para garantizar que la app sea auditable y mantenga los estándares exigidos.
+- `2026-08-09T03:17:29` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `healthscore.py` añadiendo docstrings descriptivos a todas las funciones de puntuación (`score_*`), especificando su lógica de normalización y los parámetros esperados para facilitar el mantenimiento y la auditoría del algoritmo.
 - `2026-08-09T03:08:24` **duplicates.py** (legibilidad y documentación): Se introdujo documentación técnica detallada en el pipeline de `find_duplicates` y se refactorizó el bloque de escaneo en `_collect_candidates` para mejorar la claridad de la lógica de exclusión, facilitando la comprensión del flujo de datos sin alterar el comportamiento.
 - `2026-08-09T03:08:13` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `diskreport.py` añadiendo type hints faltantes, estandarizando la documentación mediante docstrings claros, y extrayendo la lógica repetitiva de conversión de bytes a MB en un método de utilidad compartido para reducir la redundancia en los `dataclasses`.
 - `2026-08-09T03:07:48` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la adición de Type Hints detallados y docstrings que explican el contrato de seguridad (especialmente el manejo de `is_junction` y `protected_path`), facilitando la auditoría del código conforme a las reglas de seguridad.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-09T02:47:21` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de la deserialización en `QuarantineItem.from_dict` y el manejo de errores en `save_manifest` para prevenir estados inconsistentes o corrupción silenciosa del manifiesto ante valores inesperados.
 - `2026-08-09T02:39:04` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_collect_settings` y `_validate_numeric_setting` para manejar entradas de usuario nulas o malformadas de forma defensiva, evitando posibles errores de excepción al guardar ajustes.
 - `2026-08-09T02:36:55` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` asegurando que el cálculo de `total_score` y los `breakdown` manejen correctamente divisiones por cero potenciales y valores inesperados, reforzando la validación de los datos antes de operar.
-- `2026-08-09T02:36:31` **duplicates.py** (manejo de errores y validación de entradas): Mejora la robustez de `hash_file` y `partial_hash` ante errores inesperados durante la lectura de archivos (como bloqueos de E/S o cambios de estado súbitos) mediante la validación estricta y el manejo de excepciones, y optimiza `_refine_by_hash` asegurando que no se procesen rutas inválidas, siguiendo el enfoque de manejo de errores y validación.
-- `2026-08-09T02:27:32` **diskreport.py** (manejo de errores y validación de entradas): He mejorado la robustez de `walk_files` y las funciones de consulta integrando validación temprana y manejo explícito de errores en la resolución de rutas, evitando que excepciones en el sistema de archivos (como `OSError` al acceder a enlaces simbólicos o rutas malformadas) aborten el análisis silenciosamente.
-- `2026-08-09T02:27:21` **browser.py** (manejo de errores y validación de entradas): Reforcé la robustez de `directory_size` y `_sum_directory_recursive` mediante la validación estricta de tipos en la entrada de la ruta y la captura explícita de errores de sistema al iterar, asegurando que un fallo en un acceso a archivo no interrumpa el escaneo completo ni silencie errores críticos.

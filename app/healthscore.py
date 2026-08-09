@@ -128,33 +128,40 @@ def _to_int(value: Any, default: int = 0) -> int:
 
 
 def score_junk(junk_mb: float) -> float:
+    """Calcula ratio (0-1) basado en MB de basura. 1 es óptimo (cero basura)."""
     return 1.0 if JUNK_LIMIT_MB <= 0.0 else _clamp(1.0 - (_to_float(junk_mb) / JUNK_LIMIT_MB))
 
 
 def score_security(suspicious_count: int, warnings: int = 0) -> float:
+    """Calcula ratio (0-1) basado en amenazas. Cada hallazgo resta score."""
     count = max(0, _to_int(suspicious_count))
     warn = max(0, _to_int(warnings))
     return _clamp(1.0 - ((count * 0.05) + (warn * 0.25)), 0.0, 1.0)
 
 
 def score_memory(available_percent: float) -> float:
+    """Calcula ratio (0-1) basado en porcentaje de RAM libre disponible."""
     return 0.0 if RAM_IDEAL_PERCENT <= 0.0 else _clamp(_to_float(available_percent) / RAM_IDEAL_PERCENT)
 
 
 def score_disk(free_percent: float) -> float:
+    """Calcula ratio (0-1) basado en porcentaje de disco libre disponible."""
     return 0.0 if DISK_IDEAL_PERCENT <= 0.0 else _clamp(_to_float(free_percent) / DISK_IDEAL_PERCENT)
 
 
 def score_duplicates(duplicate_mb: float) -> float:
+    """Calcula ratio (0-1) basado en MB de archivos duplicados encontrados."""
     return 1.0 if DUPLICATE_LIMIT_MB <= 0.0 else _clamp(1.0 - (_to_float(duplicate_mb) / DUPLICATE_LIMIT_MB))
 
 
 def score_startup(startup_count: int) -> float:
+    """Calcula ratio (0-1) según cantidad de apps en inicio: menos es mejor."""
     val = float(max(0, _to_int(startup_count)))
     return 1.0 if STARTUP_LIMIT_COUNT <= 0 else _clamp(1.0 - (val / STARTUP_LIMIT_COUNT))
 
 
 def grade_for_score(score: int) -> str:
+    """Asigna una letra de calificación según el puntaje final (0-100)."""
     s = int(_clamp(float(score), 0.0, 100.0))
     if s >= 90: return "A"
     if s >= 80: return "B"

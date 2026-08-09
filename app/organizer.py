@@ -123,12 +123,12 @@ def _is_allowed_directory(name: str) -> bool:
 
 
 def _is_file_accessible(path: Path) -> bool:
-    """Verifica acceso de lectura exclusivo sin bloquear permanentemente el archivo."""
-    try:
-        with open(path, 'rb'):
-            return True
-    except (OSError, PermissionError):
-        return False
+    """Verifica si el proceso actual tiene permisos de lectura sobre el archivo.
+    
+    Utiliza os.access en lugar de abrir el archivo para evitar bloqueos por 
+    procesos concurrentes y reducir la sobrecarga de I/O innecesaria.
+    """
+    return os.access(path, os.R_OK)
 
 
 def _is_valid_candidate(path: Path) -> bool:
