@@ -230,10 +230,16 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     total_score: float = 0.0
     
     for area, weight in _WEIGHT_ITEMS:
-        # Ponderación: (ratio * peso_de_area * escala) / suma_total_de_pesos
-        score_val = (ratios.get(area, 0.0) * weight * 100.0) / _TOTAL_WEIGHTS
+        ratio = ratios.get(area, 0.0)
+        # Ponderación defensiva: asegurar que el valor intermedio sea numérico
+        score_val = (ratio * weight * 100.0) / _TOTAL_WEIGHTS
+        if not math.isfinite(score_val):
+            score_val = 0.0
         breakdown[area] = round(score_val)
         total_score += score_val
+
+    if not math.isfinite(total_score):
+        total_score = 0.0
 
     final_score = int(_clamp(round(total_score), 0.0, 100.0))
     return HealthResult(

@@ -80,8 +80,8 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
     
     Utiliza un buffer de memoria de tamaño 'chunk_size' para manejar archivos
     grandes de manera eficiente. Retorna None si el archivo es inaccesible,
-    protegido por 'safety.py' o si el tamaño cambia durante la lectura 
-    (indicando posible modificación concurrente).
+    protegido por 'safety.py', si es un enlace/reparse point, o si el tamaño 
+    cambia durante la lectura.
     """
     if path is None or chunk_size <= 0: 
         return None
@@ -91,8 +91,9 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
         if is_protected_path(file_path):
             return None
 
-        stat_initial = file_path.stat()
-        if stat_initial.st_size <= 0:
+        # Evitar procesar archivos que sean symlinks o reparse points
+        stat_initial = file_path.lstat()
+        if stat_initial.st_size <= 0 or (getattr(stat_initial, 'st_file_attributes', 0) & 0x400):
             return None
             
         digest = hashlib.sha256()
@@ -114,10 +115,8 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
 
 def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """
-    Calcula un hash SHA256 sobre un prefijo del archivo (definido por PARTIAL_READ_BYTES).
-    
-    Utilizado como optimización para descartar archivos distintos rápidamente sin
-    leer su totalidad.
+    Calcula un hash SHA256 sobre un prefijo del archivo.
+    Verifica que el archivo no sea un enlace o punto de reparse antes de leer.
     """
     if path is None or read_bytes <= 0: 
         return None
@@ -125,6 +124,9 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
     try:
         file_path = Path(path)
         if is_protected_path(file_path):
+            return None
+            
+        if getattr(file_path.lstat(), 'st_file_attributes', 0) & 0x400:
             return None
             
         with open(file_path, "rb") as f:
@@ -255,7 +257,6 @@ def find_duplicates(
         partial_groups = _refine_by_hash(paths_in_size_group, partial_hash)
         
         for partial_candidates in partial_groups.values():
-            # Si el grupo ya quedó reducido a 1 tras el hash parcial, no tiene sentido verificar hash completo.
             if len(partial_candidates) < 2:
                 continue
 

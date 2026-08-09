@@ -199,7 +199,9 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                             continue
                         
                         path_obj = Path(entry.path).resolve()
-                        if not str(path_obj).startswith(str(root)):
+                        
+                        # Seguridad: validar que la ruta resuelta permanezca bajo el directorio raíz
+                        if root not in path_obj.parents and path_obj != root:
                             continue
 
                         if skip_protected and is_protected_path(path_obj):

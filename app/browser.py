@@ -140,11 +140,12 @@ def _is_excluded_file(name: str) -> bool:
 def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool], visited: Optional[Set[str]] = None) -> int:
     """
     Realiza un DFS sobre el árbol de directorios para calcular el peso total.
-    
-    Utiliza `os.scandir` para mayor eficiencia y evita el procesamiento redundante
-    mediante un set de rutas ya visitadas.
     """
     if not root_dir or not os.path.exists(root_dir):
+        return 0
+    
+    # Seguridad defensiva: verificar que la carpeta no sea crítica antes de entrar
+    if is_protected_path(Path(root_dir)):
         return 0
         
     if visited is None:
@@ -184,7 +185,6 @@ def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool
 def directory_size(path: str | os.PathLike | None) -> int:
     """
     Calcula el peso total de una carpeta tras validar que la ruta sea segura.
-    Retorna 0 ante cualquier error de acceso o si la ruta viola las políticas de seguridad.
     """
     if path is None:
         return 0
