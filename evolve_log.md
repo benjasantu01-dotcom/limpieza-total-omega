@@ -586,3 +586,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-09T12:19:21` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
 - `2026-08-09T12:19:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-09T12:19:21` Corrida terminada. Total usado hoy: 292.
+- `2026-08-09T12:27:25` Arrancando corrida. Quedan hoy ~8 peticiones objetivo.
+- `2026-08-09T12:27:51` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: legibilidad y documentación).
+- `2026-08-09T12:28:15` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones de escaneo, aclarando sus parámetros, posibles excepciones y el propósito de cada heurística para facilitar el mantenimiento del equipo de desarrollo.
+- `2026-08-09T12:28:40` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenimiento del módulo documentando exhaustivamente `_Validators` y `_VALIDATOR_MAP`, y estructuré la validación de claves con un enfoque funcional más explícito para facilitar futuras extensiones.
+- `2026-08-09T12:28:52` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes en los métodos de `StartupEntry` y refinando la descripción de las responsabilidades de los métodos para facilitar el mantenimiento futuro.
+- `2026-08-09T12:28:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-09T12:28:52` Corrida terminada. Total usado hoy: 296.

@@ -132,7 +132,7 @@ class StartupEntry:
             return path_str if _EXISTS_CACHE[path_str] else path_str
         
         try:
-            p = Path(path_str)
+            p: Path = Path(path_str)
             if not p.is_absolute():
                 _EXISTS_CACHE[path_str] = False
                 return path_str
@@ -145,12 +145,12 @@ class StartupEntry:
                 _EXISTS_CACHE[path_str] = False
                 return path_str
                 
-            p_abs = p.resolve(strict=True)
+            p_abs: Path = p.resolve(strict=True)
             if is_protected_path(p_abs):
                 _EXISTS_CACHE[path_str] = False
                 return ""
                 
-            p_str = str(p_abs)
+            p_str: str = str(p_abs)
             _EXISTS_CACHE[p_str] = p_abs.is_file()
             return p_str if _EXISTS_CACHE[p_str] else path_str
         except (OSError, ValueError, RuntimeError, TypeError):
@@ -209,16 +209,16 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
 
     for folder in folders:
         try:
-            items = os.listdir(folder)
+            items: Iterable[str] = os.listdir(folder)
             for item_name in items:
-                item = folder / item_name
+                item: Path = folder / item_name
                 
                 if is_protected_path(item) or item.is_symlink():
                     continue
 
                 if item.is_file() and item.suffix.lower() in EXECUTABLE_EXTS:
                     try:
-                        name = item.stem
+                        name: str = item.stem
                         if name:
                             found_entries.append(StartupEntry(name=name, command=str(item), source="carpeta"))
                     except OSError:
@@ -242,16 +242,17 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
         return []
         
     for line in lines[1:]:
-        stripped_line = line.strip()
+        stripped_line: str = line.strip()
         if not stripped_line:
             continue
         
         # Split básico, esperando al menos 2 columnas significativas
-        parts = [p.strip().strip('"') for p in stripped_line.split(",")]
+        parts: List[str] = [p.strip().strip('"') for p in stripped_line.split(",")]
         if len(parts) < 2:
             continue
             
-        name_raw, cmd_raw = parts[0], parts[1]
+        name_raw: str = parts[0]
+        cmd_raw: str = parts[1]
         
         # Validación estricta de contenido antes de instanciar
         if not name_raw or not cmd_raw:
@@ -267,7 +268,7 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
             if not cmd or any(c in cmd for c in '<>|?*'):
                 continue
                 
-            p = Path(cmd)
+            p: Path = Path(cmd)
             if not str(p).strip() or is_protected_path(p):
                 continue
             parsed_entries.append(StartupEntry(name=name, command=cmd, source=source))
@@ -307,10 +308,10 @@ def list_startup_entries() -> List[StartupEntry]:
     seen_names: Set[str] = set()
     unique_entries: List[StartupEntry] = []
     
-    all_raw_entries = entries_from_folders() + entries_from_registry()
+    all_raw_entries: List[StartupEntry] = entries_from_folders() + entries_from_registry()
     
     for entry in all_raw_entries:
-        name_normalized = entry.name.lower()
+        name_normalized: str = entry.name.lower()
         if name_normalized not in seen_names:
             seen_names.add(name_normalized)
             unique_entries.append(entry)
