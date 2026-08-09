@@ -219,10 +219,10 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
 
     def get_attr(source: Any, attr: str, default: Any) -> Any:
         try:
-            if not hasattr(source, "__dict__") and not isinstance(source, dict):
-                return default
+            if isinstance(source, dict):
+                return source.get(attr, default)
             return getattr(source, attr, default)
-        except Exception:
+        except (AttributeError, TypeError):
             return default
 
     if metrics is not None:
@@ -239,24 +239,23 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
             ("memory_total_gb", float, float('inf')),
         ]
         for attr, cast_func, max_v in mappings:
-            val = get_attr(metrics, attr, 0)
-            if isinstance(val, (int, float)):
+            val = get_attr(metrics, attr, None)
+            if val is not None:
                 _safe_assign(ctx, attr, val, cast=cast_func, max_val=max_v)
         ctx.analyzed = True
 
     if health is not None:
         raw_score = get_attr(health, "score", None)
-        if isinstance(raw_score, (int, float)):
+        if raw_score is not None and isinstance(raw_score, (int, float)):
             _safe_assign(ctx, "score", raw_score, int, max_val=100)
         grade = get_attr(health, "grade", "")
         ctx.grade = str(grade)[:10] if isinstance(grade, (str, int, float)) else ""
         ctx.analyzed = True
 
     for k, v in extra.items():
-        if hasattr(ctx, k):
+        if hasattr(ctx, k) and isinstance(v, (int, float)):
             attr_type = int if isinstance(getattr(ctx, k), int) else float
-            if isinstance(v, (int, float)):
-                _safe_assign(ctx, k, v, cast=attr_type)
+            _safe_assign(ctx, k, v, cast=attr_type)
 
     return ctx
 

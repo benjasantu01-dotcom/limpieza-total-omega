@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **243** (48.2% de aceptación)
+- Mejoras aceptadas: **241** (47.8% de aceptación)
 - Rechazadas por tests: 7
 - Rechazadas por guardia de seguridad: 27
-- Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 212
+- Sin cambios (nada sustancial que mejorar): 14
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-08 | 177 | 6 | 19 | 10 | 132 |
-| 2026-08-09 | 66 | 1 | 8 | 5 | 80 |
+| 2026-08-08 | 174 | 6 | 19 | 9 | 132 |
+| 2026-08-09 | 67 | 1 | 8 | 5 | 83 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **56**
+- legibilidad y documentación: **53**
 - seguridad defensiva: **49**
 - rendimiento: **47**
 - robustez ante casos límite: **47**
-- manejo de errores y validación de entradas: **44**
+- manejo de errores y validación de entradas: **45**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **23**
+- `assistant.py`: **22**
+- `healthscore.py`: **22**
 - `quarantine.py`: **21**
 - `scanner.py`: **21**
-- `assistant.py`: **21**
 - `main.py`: **21**
 - `settings.py`: **20**
 - `branding.py`: **19**
 - `browser.py`: **17**
 - `diskreport.py`: **17**
 - `duplicates.py`: **16**
-- `memory.py`: **15**
+- `memory.py`: **14**
 - `safety.py`: **13**
-- `organizer.py`: **11**
+- `organizer.py`: **10**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-09T06:52:38` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `build_context` implementando una validación exhaustiva de los tipos de datos recibidos y un manejo de errores más específico, asegurando que las métricas mal formadas no se propaguen al estado interno y evitando comportamientos imprevistos ante entradas inválidas.
 - `2026-08-09T05:30:15` **settings.py** (seguridad defensiva): Se endureció la seguridad de `_Validators.path` y `save` eliminando la dependencia implícita de `is_safe_to_modify` sobre rutas inexistentes y reforzando la integridad del guardado atómico mediante la verificación explícita de `ruta.parent` antes de cualquier operación de escritura.
 - `2026-08-09T05:29:50` **scanner.py** (seguridad defensiva): Se implementó un control de seguridad para asegurar que la resolución de rutas mediante `resolve()` no escape de la carpeta base del escaneo, previniendo ataques de escalada de privilegios mediante enlaces simbólicos o rutas relativas maliciosas.
 - `2026-08-09T05:21:08` **safety.py** (seguridad defensiva): Mejoré la seguridad defensiva implementando una validación estricta de nombres de dispositivos reservados mediante `re.fullmatch` para evitar bypasses de extensión (ej. `CON.txt`), y corregí la lógica en `is_within_directory` para asegurar que las comparaciones de `parents` sean robustas incluso ante casos de bordes con rutas idénticas o vacías.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-09T04:50:14` **startup.py** (robustez ante casos límite): Se mejoró la robustez de `parse_registry_csv` añadiendo un manejo de excepciones más granular durante el parseo de CSV y validación de rutas para evitar que caracteres inesperados o entradas malformadas interrumpan la lectura completa del registro.
 - `2026-08-09T04:50:04` **settings.py** (robustez ante casos límite): Reforcé la robustez del manejo de rutas en `_Validators.path` y `settings_path` para evitar errores en casos donde el sistema de archivos reporta errores al acceder a metadatos, garantizando que una ruta mal formada o con permisos denegados no propague excepciones.
 - `2026-08-09T04:49:39` **scanner.py** (robustez ante casos límite): Mejoré la resiliencia ante errores de sistema de archivos en `scan_file` y `check_recent_executable_in_downloads` capturando `OSError` y `FileNotFoundError` específicos al interactuar con atributos de archivos que pueden desaparecer durante un escaneo concurrente.
-- `2026-08-09T04:39:49` **quarantine.py** (robustez ante casos límite): Se añadió una verificación de disponibilidad de lectura en `_get_sha256` y `quarantine_file` para evitar fallos catastróficos si el archivo es bloqueado o eliminado por un proceso externo justo después de la validación inicial, mejorando la robustez ante condiciones de carrera.
