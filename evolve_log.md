@@ -646,3 +646,10 @@ FAILED evolve/tests/test_safety.py::test_describe_protection_explains_the_reason
 - `2026-08-09T13:10:03` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `build_context` ante errores de entrada y valores atípicos mediante el uso de un filtro de validación más estricto y seguro en `_safe_assign`, asegurando que `math.isfinite` y `float` se apliquen consistentemente antes de cualquier asignación al contexto.
 - `2026-08-09T13:10:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-09T13:10:03` Corrida terminada. Total usado hoy: 312.
+- `2026-08-09T13:18:27` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-09T13:18:58` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-08-09T13:19:21` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-08-09T13:19:44` ➖ Sin cambios en diskreport.py (enfoque: robustez ante casos límite). Motivo: Reforcé la robustez de `walk_files` ante rutas que se vuelven inaccesibles o desaparecen durante el recorrido, asegurando que la excepción `FileNotFoundError` (común en entornos con archivos temporales o procesos concurrentes) sea capturada explícitamente en el `scandir` para no interrumpir el análisis completo.
+- `2026-08-09T13:19:53` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-08-09T13:19:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-09T13:19:53` Corrida terminada. Total usado hoy: 316.
