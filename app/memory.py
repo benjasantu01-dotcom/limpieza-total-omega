@@ -308,7 +308,9 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
             
         buf = ctypes.create_unicode_buffer(2048)
         if psapi.GetModuleFileNameExW(handle, 0, buf, 2048) > 0:
-            if is_protected_path(buf.value):
+            # Normalizar ruta antes de validar protección
+            exe_path = os.path.normpath(buf.value)
+            if is_protected_path(exe_path):
                 return False, "Operación denegada: ejecutable en ruta protegida."
         else:
             return False, "Operación denegada: no se pudo verificar la ubicación del ejecutable."

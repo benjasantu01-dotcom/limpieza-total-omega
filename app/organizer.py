@@ -126,9 +126,9 @@ def _is_allowed_directory(name: str) -> bool:
 
 
 def _is_file_accessible(path: Path) -> bool:
-    """Verifica si el archivo es legible y no está bloqueado por otro proceso abriéndolo brevemente."""
+    """Verifica si el archivo es legible sin bloquearlo para escritura."""
     try:
-        with open(path, "ab", buffering=0) as f:
+        with open(path, "rb") as f:
             return True
     except (OSError, PermissionError):
         return False
