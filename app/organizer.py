@@ -54,11 +54,7 @@ SYSTEM_FOLDER_BLOCKLIST: Final[set[str]] = {
 
 
 def list_available_drives() -> List[str]:
-    """Detecta unidades montadas en sistemas Windows.
-
-    Returns:
-        List[str]: Lista de rutas raíz (ej. ['C:\\', 'D:\\']). Retorna lista vacía en no-Windows.
-    """
+    """Detecta unidades montadas en sistemas Windows."""
     if os.name != "nt":
         return []
     drives: List[str] = []
@@ -97,13 +93,7 @@ def _is_junk_path(path: Path) -> bool:
 
 
 def _generate_unique_target(target: Path) -> Path:
-    """Resuelve colisiones de nombres mediante sufijos numéricos incrementales.
-    
-    Args:
-        target: La ruta destino deseada que podría existir previamente.
-    Returns:
-        Path: Una ruta garantizada única basada en el nombre original.
-    """
+    """Resuelve colisiones de nombres mediante sufijos numéricos incrementales."""
     if not target.exists():
         return target
         
@@ -125,7 +115,6 @@ def _is_allowed_directory(name: str) -> bool:
 def _is_file_accessible(path: Path) -> bool:
     """Verifica si el archivo es legible y no está bloqueado por otro proceso."""
     try:
-        # Intenta abrir en modo append binario. Si está bloqueado, lanza OSError/PermissionError.
         with open(path, "ab", buffering=0) as f:
             return True
     except (OSError, PermissionError):
@@ -139,62 +128,49 @@ def _is_valid_candidate(path: Path) -> bool:
 
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     """Realiza un escaneo recursivo en directorios buscando archivos temporales o basura.
-
-    Args:
-        directories: Lista de rutas a escanear. Usa DEFAULT_SCAN_DIRS si es None.
     
-    Returns:
-        List[JunkFile]: Lista de objetos encontrados que cumplen el criterio de basura.
+    La estrategia de escaneo utiliza Path.iterdir para asegurar compatibilidad con 
+    objetos Path y maneja excepciones de sistema para evitar detenciones inesperadas.
     """
     dirs: List[str] = directories if directories is not None else DEFAULT_SCAN_DIRS
     found: List[JunkFile] = []
 
-    def _walk_dir(base_path: str) -> None:
-        """Recorre recursivamente directorios ignorando enlaces y rutas restringidas."""
+    def _walk_dir(base_path: Path) -> None:
+        """Recorre directorios de forma recursiva ignorando enlaces simbólicos."""
         try:
-            with os.scandir(base_path) as iterator:
-                for entry in iterator:
+            for entry in base_path.iterdir():
+                if entry.is_symlink():
+                    continue
+                
+                if entry.is_dir():
+                    if _is_allowed_directory(entry.name):
+                        _walk_dir(entry)
+                elif _is_junk_path(entry):
                     try:
-                        if entry.is_symlink():
-                            continue
-                        
-                        if entry.is_dir(follow_symlinks=False):
-                            if _is_allowed_directory(entry.name):
-                                _walk_dir(entry.path)
-                        elif _is_junk_path(Path(entry.name)):
-                            stat = entry.stat()
-                            entry_path: Path = Path(entry.path)
-                            
-                            if _is_valid_candidate(entry_path):
-                                found.append(JunkFile(
-                                    path=entry_path,
-                                    size_bytes=stat.st_size,
-                                    modified=datetime.fromtimestamp(stat.st_mtime)
-                                ))
+                        stat = entry.stat()
+                        if _is_valid_candidate(entry):
+                            found.append(JunkFile(
+                                path=entry,
+                                size_bytes=stat.st_size,
+                                modified=datetime.fromtimestamp(stat.st_mtime)
+                            ))
                     except (PermissionError, OSError):
                         continue
         except (PermissionError, OSError):
             pass
 
     for d in dirs:
-        if isinstance(d, str):
-            try:
-                resolved_path: Path = Path(d).expanduser().resolve()
-                if resolved_path.exists() and resolved_path.is_dir() and is_safe_to_modify(resolved_path):
-                    _walk_dir(str(resolved_path))
-            except (RuntimeError, OSError, ValueError):
-                continue
+        try:
+            resolved_path: Path = Path(d).expanduser().resolve()
+            if resolved_path.exists() and resolved_path.is_dir() and is_safe_to_modify(resolved_path):
+                _walk_dir(resolved_path)
+        except (RuntimeError, OSError, ValueError):
+            continue
     return found
 
 
 def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -> List[JunkFile]:
-    """Ordena los archivos encontrados por tamaño o fecha de modificación.
-    
-    Args:
-        files: Lista de JunkFile a ordenar.
-        by: Criterio de ordenamiento ('size' o 'date').
-        ascending: Dirección del ordenamiento.
-    """
+    """Ordena los archivos encontrados por tamaño o fecha de modificación."""
     if not isinstance(files, list) or not files:
         return []
         
@@ -211,14 +187,7 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 
 
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Path:
-    """Mueve archivos basura a un directorio de cuarentena para revisión humana.
-    
-    Args:
-        files: Archivos identificados para mover.
-        review_dir: Ruta destino donde se almacenarán los archivos.
-    Returns:
-        Path: El directorio de revisión utilizado.
-    """
+    """Mueve archivos basura a un directorio de cuarentena para revisión humana."""
     if not files:
         raise ValueError("La lista de archivos a procesar no puede estar vacía.")
 
@@ -226,22 +195,16 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         dest: Path = Path(review_dir).expanduser().resolve()
         ensure_safe_to_modify(dest)
         dest.mkdir(parents=True, exist_ok=True)
-        if dest.is_symlink() or not dest.is_dir():
-            raise ValueError("Destino de revisión inválido o punto de reparse detectado.")
     except (OSError, RuntimeError, PermissionError, TypeError) as e:
         raise ValueError(f"No se pudo preparar el directorio de revisión: {e}")
 
     for jf in files:
         try:
-            if not isinstance(jf, JunkFile) or not isinstance(jf.path, Path):
-                continue
-                
             current_abs: Path = jf.path.resolve()
-            
             if not current_abs.exists() or not current_abs.is_file():
                 continue
             
-            # Verificación estricta de seguridad: evitar path traversal
+            # Evitar Path Traversal: asegurar que el destino no sea padre del origen
             if dest == current_abs or dest in current_abs.parents:
                 continue
             
@@ -258,13 +221,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 
 
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
-    """Elimina permanentemente archivos desde la carpeta de revisión con validación robusta.
-    
-    Args:
-        review_dir: Directorio origen donde se encuentran archivos aprobados para borrar.
-    Returns:
-        int: Cantidad de archivos borrados exitosamente.
-    """
+    """Elimina permanentemente archivos desde la carpeta de revisión."""
     if not isinstance(review_dir, str) or not review_dir.strip():
         return 0
 
@@ -276,14 +233,11 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         return 0
 
     count: int = 0
-    try:
-        for f in dest.iterdir():
-            try:
-                if f.is_file() and not f.is_symlink() and is_safe_to_modify(f) and _is_file_accessible(f):
-                    f.unlink()
-                    count += 1
-            except (PermissionError, OSError):
-                continue
-    except (PermissionError, OSError):
-        pass
+    for f in dest.iterdir():
+        try:
+            if f.is_file() and not f.is_symlink() and is_safe_to_modify(f) and _is_file_accessible(f):
+                f.unlink()
+                count += 1
+        except (PermissionError, OSError):
+            continue
     return count

@@ -79,7 +79,14 @@ def _is_reserved_device_name(name: str) -> bool:
 
 @lru_cache(maxsize=1024)
 def _is_system_or_hidden(path: Path) -> bool:
-    """Verifica atributos de sistema u oculto mediante la API Win32."""
+    """
+    Verifica atributos de sistema u oculto mediante la API Win32.
+    
+    Args:
+        path: Objeto Path del archivo a inspeccionar.
+    Returns:
+        True si el archivo tiene atributos de sistema u oculto (solo Windows).
+    """
     if os.name != 'nt':
         return False
     try:
@@ -100,7 +107,14 @@ def _is_reparse_point(path: Path) -> bool:
 
 
 def _is_file_in_use(path: Path) -> bool:
-    """Intenta abrir el archivo en modo exclusivo para testear bloqueos."""
+    """
+    Intenta abrir el archivo en modo exclusivo para testear bloqueos de SO.
+    
+    Args:
+        path: Objeto Path a verificar.
+    Returns:
+        True si el archivo está siendo bloqueado por otro proceso.
+    """
     if not path.exists() or not path.is_file():
         return False
     try:
@@ -206,7 +220,12 @@ def is_sensitive_file(path: PathLike) -> bool:
 
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: PathLike | None = None) -> Path:
-    """Validador principal de seguridad para operaciones de escritura."""
+    """
+    Validador principal de seguridad para operaciones de escritura.
+    
+    Raises:
+        UnsafePathError: Si la ruta infringe reglas de seguridad o acceso.
+    """
     if path is None:
         raise UnsafePathError("Ruta nula recibida.")
 

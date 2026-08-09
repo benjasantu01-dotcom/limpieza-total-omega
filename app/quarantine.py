@@ -148,7 +148,10 @@ def _get_sha256(path: Path) -> str:
 
 
 def _is_file_locked(path: Path) -> bool:
-    """Determina si un archivo está bloqueado intentando abrirlo en modo exclusivo."""
+    """
+    Verifica si un archivo está bloqueado intentando abrirlo en modo exclusivo.
+    Útil para prevenir condiciones de carrera al mover archivos activos.
+    """
     try:
         with open(path, "rb+") as f:
             return False
@@ -157,7 +160,10 @@ def _is_file_locked(path: Path) -> bool:
 
 
 def _safe_unlink(path: Path) -> bool:
-    """Intenta eliminar un archivo de forma segura; retorna éxito como booleano."""
+    """
+    Intenta eliminar un archivo del sistema de archivos de forma controlada.
+    Retorna True si el archivo ya no existe o fue borrado exitosamente.
+    """
     try:
         if path.is_file():
             path.unlink()
@@ -192,6 +198,7 @@ def _is_valid_quarantine_path(path: Path, root: Path) -> TypeGuard[Path]:
 def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
     """
     Ejecuta una serie de chequeos preventivos antes de mover un archivo a cuarentena.
+    Verifica seguridad de rutas, atributos y bloqueos de sistema operativo.
     """
     if ":" in source_path.name.replace(source_path.drive, ""):
         raise UnsafePathError(f"Ruta con flujos de datos alternos no permitida: {source_path}")
@@ -240,7 +247,7 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
 
 
 def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload: bool = False) -> List[QuarantineItem]:
-    """Carga el manifiesto desde JSON."""
+    """Carga el manifiesto desde JSON, implementando caché para reducir E/S."""
     try:
         base_path = quarantine_dir(base)
         path = _manifest_path(base_path)
@@ -277,7 +284,10 @@ def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload:
 
 
 def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
-    """Persiste la lista de ítems mediante una técnica de escritura atómica."""
+    """
+    Persiste la lista de ítems mediante una técnica de escritura atómica.
+    Utiliza archivos temporales para evitar la corrupción del manifiesto.
+    """
     if not isinstance(items, list):
         raise ValueError("El manifiesto debe ser una lista de ítems.")
         
