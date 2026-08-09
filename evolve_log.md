@@ -890,3 +890,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-09T04:30:24` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se introdujo una verificación de seguridad al iniciar hilos asíncronos (`run_async`) para evitar que tareas de E/S se ejecuten si el directorio objetivo no es seguro, mitigando el riesgo de procesar rutas maliciosas incluso si el usuario seleccionó un directorio incorrecto previamente.
 - `2026-08-09T04:30:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-09T04:30:24` Corrida terminada. Total usado hoy: 108.
+- `2026-08-09T04:38:28` Arrancando corrida. Quedan hoy ~192 peticiones objetivo.
+- `2026-08-09T04:38:56` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-08-09T04:39:20` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-08-09T04:39:49` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se añadió una verificación de disponibilidad de lectura en `_get_sha256` y `quarantine_file` para evitar fallos catastróficos si el archivo es bloqueado o eliminado por un proceso externo justo después de la validación inicial, mejorando la robustez ante condiciones de carrera.
+- `2026-08-09T04:39:53` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-08-09T04:39:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-09T04:39:53` Corrida terminada. Total usado hoy: 112.

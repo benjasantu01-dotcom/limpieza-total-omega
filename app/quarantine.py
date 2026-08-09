@@ -127,9 +127,10 @@ class QuarantineItem:
             stats = stored_path.stat()
             if stats.st_size != self.size_bytes:
                 return False
-            if self.sha256 and _get_sha256(stored_path) != self.sha256:
+            actual_hash = _get_sha256(stored_path)
+            if self.sha256 and actual_hash != self.sha256:
                 return False
-            return True
+            return actual_hash != ""
         except (OSError, PermissionError):
             return False
 
@@ -418,6 +419,9 @@ def quarantine_file(
 
     try:
         file_hash = _get_sha256(destination)
+        if not file_hash:
+            raise RuntimeError("No se pudo calcular la integridad del archivo en cuarentena.")
+
         item = QuarantineItem(
             item_id=item_id,
             original_path=str(source_path),
