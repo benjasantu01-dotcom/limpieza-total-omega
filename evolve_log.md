@@ -541,3 +541,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-09T11:38:45` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez del proceso `quarantine_file` al introducir un chequeo explícito de disponibilidad de disco antes de la operación y validar que el archivo fuente no haya cambiado de tamaño durante el cálculo del hash, reforzando la integridad y manejo de errores.
 - `2026-08-09T11:38:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-09T11:38:45` Corrida terminada. Total usado hoy: 276.
+- `2026-08-09T11:46:36` Arrancando corrida. Quedan hoy ~24 peticiones objetivo.
+- `2026-08-09T11:46:59` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-08-09T11:47:21` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-09T11:47:43` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-09T11:47:52` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Se mejoró el manejo de errores en `_Validators.path` y `load` asegurando que cualquier entrada mal formada o acceso denegado retorne de forma silenciosa y segura al estado de fábrica, cumpliendo con la premisa de robustez sin comprometer la ejecución.
+- `2026-08-09T11:47:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-09T11:47:52` Corrida terminada. Total usado hoy: 280.

@@ -132,7 +132,6 @@ class _Validators:
             if not path_string: return ""
             path_obj = Path(path_string).expanduser()
             
-            # Prevenir componentes sospechosos en la ruta
             if any(part in ('.', '..', '..\\', '../') for part in path_obj.parts): return None
             if not path_obj.is_absolute(): return None
             
@@ -142,9 +141,9 @@ class _Validators:
             target = resolved if resolved.exists() else resolved.parent
             if is_safe_to_modify(str(target)):
                 return str(resolved)
-            return None
         except (OSError, RuntimeError, ValueError, TypeError, PermissionError):
-            return None
+            pass
+        return None
 
     @staticmethod
     def str(key: str, val: Any) -> str | None:
