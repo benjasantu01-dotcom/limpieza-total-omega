@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **246** (48.8% de aceptación)
+- Mejoras aceptadas: **249** (49.4% de aceptación)
 - Rechazadas por tests: 8
 - Rechazadas por guardia de seguridad: 26
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 206
+- Sin respuesta de la IA (error o límite): 203
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-07 | 57 | 2 | 6 | 8 | 69 |
+| 2026-08-07 | 57 | 2 | 6 | 8 | 65 |
 | 2026-08-08 | 182 | 6 | 19 | 10 | 133 |
-| 2026-08-09 | 7 | 0 | 1 | 0 | 4 |
+| 2026-08-09 | 10 | 0 | 1 | 0 | 5 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **62**
 - manejo de errores y validación de entradas: **50**
 - rendimiento: **49**
+- seguridad defensiva: **45**
 - robustez ante casos límite: **43**
-- seguridad defensiva: **42**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **22**
 - `settings.py`: **21**
+- `branding.py`: **21**
 - `duplicates.py`: **20**
-- `branding.py`: **20**
+- `browser.py`: **19**
+- `diskreport.py`: **19**
 - `memory.py`: **19**
 - `quarantine.py`: **19**
 - `healthscore.py`: **19**
-- `browser.py`: **18**
-- `diskreport.py`: **18**
 - `scanner.py`: **18**
 - `main.py`: **17**
 - `safety.py`: **16**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-09T00:35:00` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `walk_files` implementando una validación explícita mediante `is_protected_path` al procesar cada directorio y archivo encontrado, previniendo la posible resolución de rutas que, aunque no sigan enlaces simbólicos, podrían haberse vuelto protegidas durante la ejecución o representar cambios en la estructura del sistema no previstos inicialmente.
+- `2026-08-09T00:34:36` **browser.py** (seguridad defensiva): Mejoré `_is_safe_path` para incluir una validación estricta de nombres de archivo mediante `is_protected_path` incluso después de la resolución de enlaces, y agregué una verificación de "prohibición de archivos ocultos del sistema" en `_sum_directory_recursive` para asegurar que el escáner no intente procesar inadvertidamente archivos con atributos de sistema en Windows.
+- `2026-08-09T00:34:12` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad en `save_logo_svg` consolidando las validaciones de acceso al sistema de archivos para evitar condiciones de carrera (TOCTOU) y asegurando que las creaciones de directorios se realicen solo sobre rutas validadas.
 - `2026-08-09T00:25:52` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_call_gemini` integrando un chequeo explícito de la longitud de la respuesta antes de procesarla y garantizando que las validaciones de seguridad se apliquen sobre el contenido decodificado antes de cualquier parseo JSON, evitando inyecciones o procesamiento de buffers maliciosos.
 - `2026-08-09T00:25:10` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `save` ante fallos de escritura y estados de archivo inconsistentes mediante el uso de `os.replace` (atómico) y un manejo más estricto de los descriptores de archivo, asegurando que la configuración nunca quede corrupta aunque ocurra un error de sistema durante el guardado.
 - `2026-08-09T00:23:43` **scanner.py** (robustez ante casos límite): Se introdujo una comprobación robusta contra rutas de longitud excesiva (`MAX_PATH`) y errores de codificación en `process_entry` y `scan_directory` para evitar que la aplicación aborte ante archivos con nombres inválidos, caracteres especiales o rutas que exceden los límites del sistema operativo.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-08T14:42:47` **assistant.py** (robustez ante casos límite): Reforcé la robustez del asistente ante posibles errores de configuración y desbordamiento de memoria al añadir verificaciones explícitas de tipo y tamaño en las funciones de acceso a datos de configuración, asegurando que el bucle de consultas no falle ante un archivo `settings.json` corrupto o valores inesperadamente grandes.
 - `2026-08-08T14:32:27` **safety.py** (rendimiento): Se optimizó el rendimiento del módulo implementando `lru_cache` en `_is_system_or_hidden` y `_is_reparse_point`, evitando llamadas costosas a la API de Windows y a `lstat` durante los escaneos recursivos frecuentes en bucles de organización.
 - `2026-08-08T14:31:43` **quarantine.py** (rendimiento): Optimizé `purge_all` para evitar el costo de iterar y verificar dos veces el manifiesto, utilizando el mapeo en memoria para acceso O(1) y garantizando que solo se procesen archivos que tienen un registro válido.
-- `2026-08-08T14:22:50` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` eliminando la sobrecarga innecesaria de obtener información de 20 procesos desde PowerShell para luego descartar la mitad, ajustando la consulta para solicitar exactamente el límite necesario y reducir el tiempo de ejecución del subproceso.
-- `2026-08-08T14:22:25` **main.py** (rendimiento): Se implementó un método `_debounce_action` genérico para centralizar la lógica de retardos en eventos de UI (como redibujos o cambios en los inputs), eliminando la duplicidad de lógica de `after_cancel` y garantizando un mejor rendimiento al evitar disparos redundantes.
-- `2026-08-08T14:21:25` **healthscore.py** (rendimiento): Optimizé `SystemMetrics.is_finite` reemplazando la iteración completa sobre `__dataclass_fields__` (con `getattr` y `isinstance` por cada campo) por un chequeo directo de los atributos numéricos relevantes, eliminando la sobrecarga de reflexión en cada validación.

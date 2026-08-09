@@ -195,6 +195,10 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                         if entry.is_symlink():
                             continue
                         
+                        path_obj = Path(entry.path)
+                        if skip_protected and is_protected_path(path_obj):
+                            continue
+
                         if os.name == 'nt':
                             attrs = entry.stat(follow_symlinks=False).st_file_attributes
                             if (attrs & 0x400) or (attrs & 0x2):
@@ -204,13 +208,10 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                             st = entry.stat()
                             inode = (st.st_dev, st.st_ino)
                             if inode not in visited_inodes:
-                                path_obj = Path(entry.path)
-                                if skip_protected and is_protected_path(path_obj):
-                                    continue
                                 visited_inodes.add(inode)
                                 stack.append(path_obj)
                         else:
-                            yield Path(entry.path), entry.stat().st_size
+                            yield path_obj, entry.stat().st_size
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):

@@ -112,7 +112,6 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
         if not target_path.exists():
             return False
             
-        # Bloquea caracteres RTL/control usados para obfuscación de nombres
         if any(ord(char) < 32 or ord(char) in (0x200E, 0x200F, 0x202A, 0x202E) for char in str(target_path)):
             return False
 
@@ -142,14 +141,20 @@ def _is_excluded_file(name: str) -> bool:
 def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool]) -> int:
     """
     Realiza un recorrido recursivo en profundidad (DFS) para sumar bytes.
-    Captura excepciones de acceso a nivel de archivo para evitar interrupciones 
-    en carpetas con permisos restringidos o archivos en uso.
+    Filtra archivos de sistema ocultos y asegura no seguir enlaces inseguros.
     """
     total: int = 0
     try:
         with os.scandir(root_dir) as it:
             for entry in it:
                 try:
+                    # Evitar procesar archivos con atributos de sistema/ocultos en Windows
+                    if os.name == 'nt':
+                        import ctypes
+                        attrs = ctypes.windll.kernel32.GetFileAttributesW(entry.path)
+                        if attrs != -1 and (attrs & 0x04 or attrs & 0x02):
+                            continue
+
                     if entry.is_symlink() or is_junction_fn(entry.path):
                         continue
                     
@@ -227,7 +232,6 @@ def detect_profiles(
             try:
                 candidate: Path = real_base.joinpath(*relative_path_str.split("\\")).resolve()
                 
-                # Verificación extra: asegurar que el candidato resuelto siga bajo el base original
                 if not str(candidate).startswith(str(real_base)):
                     continue
                 
