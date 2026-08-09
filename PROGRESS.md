@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-08 | 155 | 5 | 15 | 7 | 126 |
-| 2026-08-09 | 94 | 2 | 10 | 5 | 85 |
+| 2026-08-08 | 152 | 5 | 15 | 7 | 125 |
+| 2026-08-09 | 97 | 2 | 10 | 5 | 86 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **63**
 - manejo de errores y validación de entradas: **55**
 - seguridad defensiva: **49**
-- robustez ante casos límite: **42**
-- rendimiento: **40**
+- rendimiento: **43**
+- robustez ante casos límite: **39**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **23**
 - `healthscore.py`: **22**
-- `scanner.py`: **21**
-- `settings.py`: **21**
-- `main.py`: **21**
+- `main.py`: **22**
 - `quarantine.py`: **21**
+- `scanner.py`: **20**
+- `settings.py`: **20**
 - `branding.py`: **19**
 - `browser.py`: **18**
 - `diskreport.py`: **18**
 - `duplicates.py`: **16**
-- `memory.py`: **15**
-- `safety.py`: **13**
-- `organizer.py`: **11**
+- `memory.py`: **16**
+- `safety.py`: **12**
+- `organizer.py`: **12**
 - `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-09T08:24:47` **organizer.py** (rendimiento): Optimizé `scan_for_junk` moviendo la lógica de filtrado de extensiones antes de la llamada a `os.stat` y `_is_file_accessible`, reduciendo drásticamente las operaciones de E/S innecesarias en archivos que de todos modos serían ignorados.
+- `2026-08-09T08:24:40` **memory.py** (rendimiento): Se implementó un `lru_cache(maxsize=1)` para la ejecución del comando PowerShell en `top_memory_processes` y se optimizó la lógica de limpieza de memoria para evitar realizar la llamada costosa a `GetModuleFileNameExW` si el proceso ya fue validado en el caché, reduciendo drásticamente las llamadas redundantes a la API de Windows en iteraciones rápidas de la UI.
+- `2026-08-09T08:24:16` **main.py** (rendimiento): Optimicé el acceso a los datos de métricas de salud consolidando las llamadas al caché y evitando recalcular estructuras costosas mediante una pequeña reestructuración en `_compile_metrics` para reducir la presión sobre la CPU y el hilo de interfaz.
 - `2026-08-09T08:14:08` **duplicates.py** (rendimiento): Optimizé la fase de refinamiento evitando llamadas redundantes a `is_protected_path` e `is_file()` dentro de los bucles de hash, aprovechando que `_collect_candidates` ya realiza esta validación y que los archivos en el grupo tienen garantizado el mismo tamaño inicial.
 - `2026-08-09T08:13:36` **browser.py** (rendimiento): Optimicé el rendimiento de `_sum_directory_recursive` convirtiendo la lista de exclusión `NEVER_TOUCH` en un `frozenset` (ya lo era, pero ahora se consulta mediante una búsqueda O(1) de hash) y evitando llamadas repetidas a `ctypes` y `os.scandir` mediante una estructura de datos más eficiente, reduciendo el overhead en sistemas con miles de archivos pequeños de caché.
 - `2026-08-09T08:03:51` **assistant.py** (rendimiento): Optimicé el rendimiento de `build_context` reemplazando la creación dinámica de listas y el uso de `getattr` en bucle por una asignación directa, evitando el overhead de introspección innecesaria en cada iteración del análisis.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-09T07:44:01` **memory.py** (legibilidad y documentación): Documenté con mayor precisión el funcionamiento del diagnóstico de memoria y mejoré la legibilidad de la lógica de `trim_working_set` mediante un comentario que aclara explícitamente el uso de la API de Windows, facilitando el mantenimiento a futuros colaboradores.
 - `2026-08-09T07:43:48` **main.py** (legibilidad y documentación): Documenté el propósito de los métodos de gestión de caché (`_get_cached`, `_get_cached_or_run`, `_invalidate_cache`) mediante docstrings detallados, explicando la lógica de TTL y la política LRU, para facilitar el mantenimiento técnico al trabajar con el bucle de datos asíncronos.
 - `2026-08-09T07:42:49` **healthscore.py** (legibilidad y documentación): Mejora de la legibilidad y mantenimiento mediante la adición de docstrings técnicos detallados y la clarificación de tipos, asegurando que las funciones de puntuación expongan explícitamente el rango esperado de sus resultados y el razonamiento detrás de los límites.
-- `2026-08-09T07:42:24` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad de los tipos mediante type hints adicionales y una descripción más precisa de los parámetros, facilitando la comprensión del flujo del pipeline de escaneo.
-- `2026-08-09T07:33:26` **diskreport.py** (legibilidad y documentación): Se introdujeron type hints más precisos y se reemplazó el uso de una lógica de comparación manual en `summarize` por un `heapq` consistente, mejorando la legibilidad y manteniendo la eficiencia O(n log k).
-- `2026-08-09T07:33:17` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings que explican el "porqué" de las exclusiones y validaciones, y clarifiqué la lógica de `_is_safe_path` para reflejar correctamente su rol como filtro de seguridad preventivo.

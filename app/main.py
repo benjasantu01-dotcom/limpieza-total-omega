@@ -931,25 +931,24 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         snapshot = memory_mod.read_snapshot()
         home = os.path.expanduser("~")
         
-        cache_key = f"disk_info_{home}"
-        unidad = self._get_cached(cache_key)
-        if not unidad and os.path.exists(home):
-            unidad = diskreport.drive_usage(home)
-            if unidad:
-                self._cache[cache_key] = (unidad, time.time())
-                self._cache_access_order[cache_key] = None
+        disk_info = self._get_cached(f"disk_info_{home}")
+        if not disk_info and os.path.exists(home):
+            disk_info = diskreport.drive_usage(home)
+            if disk_info:
+                self._cache[f"disk_info_{home}"] = (disk_info, time.time())
+                self._cache_access_order[f"disk_info_{home}"] = None
         
         metrics = healthscore.SystemMetrics(
             junk_mb=sum(j.size_bytes for j in junk) / (1024 * 1024),
             suspicious_count=len(hallazgos),
             suspicious_warnings=sum(1 for h in hallazgos if h.severity == "warning"),
             memory_available_percent=snapshot.available_percent if snapshot else 100.0,
-            disk_free_percent=(unidad.free / unidad.total * 100) if (unidad and unidad.total > 0) else 100.0,
+            disk_free_percent=(disk_info.free / disk_info.total * 100) if (disk_info and disk_info.total > 0) else 100.0,
             duplicate_mb=duplicates_mod.reclaimable_bytes(dups) / (1024 * 1024),
             startup_count=len(arranque),
             quarantined_count=len(quarantine.list_items()),
         )
-        return metrics, snapshot or memory_mod.Snapshot(0, 0, 0), unidad or diskreport.DriveInfo(0, 0, 0, "")
+        return metrics, snapshot or memory_mod.Snapshot(0, 0, 0), disk_info or diskreport.DriveInfo(0, 0, 0, "")
 
     def on_full_analysis(self) -> None:
         """Inicia ciclo completo de análisis y cálculo de puntaje de salud."""

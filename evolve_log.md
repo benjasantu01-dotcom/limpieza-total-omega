@@ -1246,3 +1246,10 @@ assert 'oval' in ['polygon', 'rectangle', 'rectangle', 'rectangle', 'rectangle',
 - `2026-08-09T08:14:08` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé la fase de refinamiento evitando llamadas redundantes a `is_protected_path` e `is_file()` dentro de los bucles de hash, aprovechando que `_collect_candidates` ya realiza esta validación y que los archivos en el grupo tienen garantizado el mismo tamaño inicial.
 - `2026-08-09T08:14:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-09T08:14:08` Corrida terminada. Total usado hoy: 196.
+- `2026-08-09T08:22:45` Arrancando corrida. Quedan hoy ~104 peticiones objetivo.
+- `2026-08-09T08:23:10` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
+- `2026-08-09T08:24:16` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Optimicé el acceso a los datos de métricas de salud consolidando las llamadas al caché y evitando recalcular estructuras costosas mediante una pequeña reestructuración en `_compile_metrics` para reducir la presión sobre la CPU y el hilo de interfaz.
+- `2026-08-09T08:24:40` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se implementó un `lru_cache(maxsize=1)` para la ejecución del comando PowerShell en `top_memory_processes` y se optimizó la lógica de limpieza de memoria para evitar realizar la llamada costosa a `GetModuleFileNameExW` si el proceso ya fue validado en el caché, reduciendo drásticamente las llamadas redundantes a la API de Windows en iteraciones rápidas de la UI.
+- `2026-08-09T08:24:47` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimizé `scan_for_junk` moviendo la lógica de filtrado de extensiones antes de la llamada a `os.stat` y `_is_file_accessible`, reduciendo drásticamente las operaciones de E/S innecesarias en archivos que de todos modos serían ignorados.
+- `2026-08-09T08:24:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-09T08:24:47` Corrida terminada. Total usado hoy: 200.

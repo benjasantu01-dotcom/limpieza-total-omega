@@ -146,9 +146,10 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
                     if _is_allowed_directory(entry.name):
                         _walk_dir(entry)
                 elif _is_junk_path(entry):
+                    # Filtrado rápido por extensión antes de realizar operaciones pesadas de E/S
                     try:
-                        stat = entry.stat()
                         if _is_valid_candidate(entry):
+                            stat = entry.stat()
                             found.append(JunkFile(
                                 path=entry,
                                 size_bytes=stat.st_size,
