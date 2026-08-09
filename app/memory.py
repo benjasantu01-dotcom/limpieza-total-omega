@@ -349,6 +349,8 @@ def _is_system_process(pid: int) -> bool:
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
     Solicita al S.O. la reducción del Working Set de un proceso objetivo.
+    Usa la API de Windows 'EmptyWorkingSet' para mover páginas de memoria
+    del proceso hacia la lista de páginas libres o en espera.
     
     Restricciones: 
       - Solo disponible en Windows.

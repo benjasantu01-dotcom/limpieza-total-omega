@@ -740,7 +740,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         return self._get_cached(key)
 
     def _get_cached(self, key: str, provider: Optional[Callable] = None, force: bool = False) -> Any:
-        """Retorna datos cacheados con TTL, validando antigüedad y refrescando si es necesario."""
+        """Retorna datos cacheados verificando su validez según TTL.
+        Si la entrada expiró o no existe, usa un provider opcional para regenerar el dato.
+        Implementa política LRU (Least Recently Used) eliminando elementos antiguos
+        cuando el tamaño máximo (`_cache_max_size`) se alcanza.
+        """
         now = time.time()
         if not force and key in self._cache:
             data, timestamp = self._cache[key]
@@ -767,7 +771,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         return None
 
     def _get_cached_or_run(self, key: str, provider: Callable, on_complete: Callable) -> None:
-        """Obtiene datos de caché o ejecuta el proveedor en background."""
+        """Busca en caché o dispara la ejecución asíncrona del provider.
+        Al finalizar, ejecuta `on_complete` con el resultado obtenido.
+        """
         cached = self._get_cached(key)
         if cached is not None:
             on_complete(cached)
@@ -775,7 +781,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.run_async(lambda: on_complete(provider()))
 
     def _invalidate_cache(self, key_prefix: str) -> None:
-        """Limpia entradas del caché que coincidan con un prefijo."""
+        """Elimina del caché todas las entradas cuyo identificador comience con key_prefix.
+        Esencial para asegurar frescura tras operaciones de modificación o escaneo.
+        """
         keys_to_del = [k for k in self._cache if k.startswith(key_prefix)]
         for k in keys_to_del:
             del self._cache[k]

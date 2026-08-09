@@ -107,15 +107,18 @@ class HealthResult:
 
     @property
     def is_healthy(self) -> bool:
+        """Determina si el estado general del sistema es satisfactorio (>= 80)."""
         return math.isfinite(self.score) and self.score >= 80
 
 
 def _clamp(value: float, low: float = 0.0, high: float = 1.0) -> float:
+    """Asegura que un valor numérico se encuentre dentro de un rango cerrado [low, high]."""
     if not math.isfinite(value): return low
     return max(low, min(high, value))
 
 
 def _to_float(value: Any, default: float = 0.0) -> float:
+    """Conversión segura a float, garantizando que el resultado sea finito."""
     try:
         val = float(value)
         return val if math.isfinite(val) else default
@@ -123,45 +126,49 @@ def _to_float(value: Any, default: float = 0.0) -> float:
 
 
 def _to_int(value: Any, default: int = 0) -> int:
+    """Conversión segura a int, evitando errores en caso de tipos inesperados."""
     try: return int(float(value))
     except (TypeError, ValueError): return default
 
 
 def score_junk(junk_mb: float) -> float:
-    """Calcula ratio (0-1) basado en MB de basura. 1 es óptimo (cero basura)."""
+    """Calcula ratio (0.0-1.0) normalizado: 1.0 es ausencia total de basura."""
     return 1.0 if JUNK_LIMIT_MB <= 0.0 else _clamp(1.0 - (_to_float(junk_mb) / JUNK_LIMIT_MB))
 
 
 def score_security(suspicious_count: int, warnings: int = 0) -> float:
-    """Calcula ratio (0-1) basado en amenazas. Cada hallazgo resta score."""
+    """
+    Calcula ratio (0.0-1.0) penalizando hallazgos de seguridad.
+    Cada hallazgo resta 5%, cada advertencia resta 25% del puntaje base.
+    """
     count = max(0, _to_int(suspicious_count))
     warn = max(0, _to_int(warnings))
     return _clamp(1.0 - ((count * 0.05) + (warn * 0.25)), 0.0, 1.0)
 
 
 def score_memory(available_percent: float) -> float:
-    """Calcula ratio (0-1) basado en porcentaje de RAM libre disponible."""
+    """Calcula ratio (0.0-1.0) donde 1.0 significa disponibilidad óptima (>= RAM_IDEAL)."""
     return 0.0 if RAM_IDEAL_PERCENT <= 0.0 else _clamp(_to_float(available_percent) / RAM_IDEAL_PERCENT)
 
 
 def score_disk(free_percent: float) -> float:
-    """Calcula ratio (0-1) basado en porcentaje de disco libre disponible."""
+    """Calcula ratio (0.0-1.0) donde 1.0 significa espacio libre ideal (>= DISK_IDEAL)."""
     return 0.0 if DISK_IDEAL_PERCENT <= 0.0 else _clamp(_to_float(free_percent) / DISK_IDEAL_PERCENT)
 
 
 def score_duplicates(duplicate_mb: float) -> float:
-    """Calcula ratio (0-1) basado en MB de archivos duplicados encontrados."""
+    """Calcula ratio (0.0-1.0) normalizando el volumen de archivos duplicados."""
     return 1.0 if DUPLICATE_LIMIT_MB <= 0.0 else _clamp(1.0 - (_to_float(duplicate_mb) / DUPLICATE_LIMIT_MB))
 
 
 def score_startup(startup_count: int) -> float:
-    """Calcula ratio (0-1) según cantidad de apps en inicio: menos es mejor."""
+    """Calcula ratio (0.0-1.0) basado en la carga del inicio: menos es mejor."""
     val = float(max(0, _to_int(startup_count)))
     return 1.0 if STARTUP_LIMIT_COUNT <= 0 else _clamp(1.0 - (val / STARTUP_LIMIT_COUNT))
 
 
 def grade_for_score(score: int) -> str:
-    """Asigna una letra de calificación según el puntaje final (0-100)."""
+    """Mapea un puntaje entero (0-100) a una calificación cualitativa (A-F)."""
     s = int(_clamp(float(score), 0.0, 100.0))
     if s >= 90: return "A"
     if s >= 80: return "B"
@@ -171,6 +178,7 @@ def grade_for_score(score: int) -> str:
 
 
 def _generate_recommendations(m: SystemMetrics, ratios: ScoreMap) -> List[str]:
+    """Genera recomendaciones basadas en los ratios de cada área evaluada."""
     recs: List[str] = []
     if ratios.get("seguridad", 1.0) < WARN_THRESHOLD_HIGH:
         recs.append(f"Revisá los {m.suspicious_count} hallazgo(s) de seguridad; podés aislarlos en cuarentena.")
@@ -192,6 +200,7 @@ def _generate_recommendations(m: SystemMetrics, ratios: ScoreMap) -> List[str]:
 
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
+    """Ejecuta el cálculo ponderado de salud integral del sistema."""
     if metrics is None or not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Instancia de métricas nula o inválida."])
     
@@ -226,6 +235,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
 
 
 def summarize(result: HealthResult) -> List[str]:
+    """Genera una representación textual formateada de los resultados del análisis."""
     if not isinstance(result, HealthResult): return ["Error: Formato inválido."]
 
     lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]

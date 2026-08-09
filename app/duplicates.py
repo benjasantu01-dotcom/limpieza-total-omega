@@ -80,7 +80,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
     
     Usa un buffer de memoria para procesar archivos grandes sin cargarlos 
     íntegramente en RAM. Retorna None si el archivo es inaccesible, protegido
-    o cambió de tamaño durante la lectura.
+    o cambió de tamaño durante la lectura (condición de carrera).
     """
     if path is None or chunk_size <= 0: 
         return None
@@ -143,6 +143,9 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
 def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     """
     Agrupa rutas de archivos por su tamaño, excluyendo rutas protegidas o inaccesibles.
+    
+    Returns:
+        Diccionario donde la clave es el tamaño en bytes y el valor la lista de rutas Path.
     """
     groups: Dict[int, List[Path]] = defaultdict(list)
     if paths is None: 
@@ -185,6 +188,7 @@ def _collect_candidates(
                         
                     try:
                         entry_stat = entry.stat(follow_symlinks=False)
+                        # 0x400 es FILE_ATTRIBUTE_REPARSE_POINT en Windows
                         is_reparse = getattr(entry_stat, 'st_file_attributes', 0) & 0x400
                         
                         if is_reparse:
@@ -219,7 +223,7 @@ def _refine_by_hash(
     hash_func: Callable[[Path], Optional[str]]
 ) -> Dict[str, List[Path]]:
     """
-    Refina un grupo de candidatos aplicando una función de hash determinista.
+    Refina un grupo de candidatos aplicando una función de hash (parcial o completo).
     Solo retorna grupos que mantienen al menos dos archivos colisionando.
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
@@ -251,7 +255,7 @@ def find_duplicates(
     3. Fase de Verificación: Aplica hash completo SHA256 a los sobrevivientes.
     
     Returns:
-        Lista de objetos DuplicateGroup ordenados por espacio desperdiciado.
+        Lista de objetos DuplicateGroup ordenados por espacio desperdiciado (desc).
     """
     if directories is None: return []
     
@@ -279,8 +283,8 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     """
-    Selecciona la ruta del archivo preferido (conservar) usando como heurística:
-    1. Menor fecha de modificación (el original).
+    Selecciona la ruta del archivo preferido (el original) usando:
+    1. Menor fecha de modificación (cronológico).
     2. Menor longitud de ruta (desempate para legibilidad).
     """
     if not isinstance(group, DuplicateGroup) or not group.paths:
