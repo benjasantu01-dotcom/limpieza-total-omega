@@ -499,16 +499,14 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
 
 
 def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
-    """Vacía la carpeta de cuarentena procesando solo los archivos validados."""
+    """Vacía la carpeta de cuarentena procesando solo los archivos validados por manifiesto."""
     try:
         quarantine_root = quarantine_dir(base)
-        ensure_safe_to_modify(quarantine_root, allow_sensitive=False)
-    except (OSError, UnsafePathError):
+    except (OSError, ValueError):
         return 0
     
     items = load_manifest(base)
     valid_names = {item.stored_name for item in items}
-    item_map_by_name = {item.stored_name: item for item in items}
     
     to_keep: List[QuarantineItem] = []
     purged_count = 0
@@ -517,13 +515,15 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
         if entry.name == MANIFEST_NAME or not entry.is_file():
             continue
         
+        # Solo purgar si está explícitamente en el manifiesto
         if entry.name in valid_names:
-            item = item_map_by_name[entry.name]
-            if item.verify_integrity(entry):
+            item = next((i for i in items if i.stored_name == entry.name), None)
+            if item and item.verify_integrity(entry):
                 if _safe_unlink(entry):
                     purged_count += 1
                     continue
-            to_keep.append(item)
+            if item:
+                to_keep.append(item)
             
     if purged_count > 0:
         save_manifest(to_keep, base)

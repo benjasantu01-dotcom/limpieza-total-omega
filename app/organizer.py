@@ -211,6 +211,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             if dest == current_abs or dest in current_abs.parents:
                 continue
             
+            # Verificación explícita de seguridad antes de mover
             if not is_safe_to_modify(current_abs) or not _is_file_accessible(current_abs):
                 continue
 
