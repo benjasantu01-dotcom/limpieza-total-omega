@@ -600,3 +600,11 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-09T12:39:14` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
 - `2026-08-09T12:39:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-09T12:39:14` Corrida terminada. Total usado hoy: 300.
+- `2026-08-09T12:47:46` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-09T12:48:11` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé la fase de verificación en `find_duplicates` evitando realizar lecturas de hash completo cuando un grupo resultante del hash parcial ya contiene un solo archivo, lo cual ocurría si el hash parcial era único, eliminando cálculos innecesarios de I/O.
+- `2026-08-09T12:48:35` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
+- `2026-08-09T12:48:42` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-09T12:49:45` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Se ha optimizado la gestión de caché eliminando el uso de `OrderedDict` (que es pesado) y reemplazándolo por una gestión de TTL más eficiente basada únicamente en el diccionario `_cache` y una lista de claves para el orden LRU, reduciendo el consumo de memoria y el overhead de procesamiento en cada acceso.
+- `2026-08-09T12:49:57` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se ha optimizado la gestión de caché de procesos mediante el uso de un diccionario estructurado y una expiración basada en tiempo, reduciendo significativamente las llamadas innecesarias al subsistema de PowerShell que es costoso en términos de rendimiento.
+- `2026-08-09T12:49:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-09T12:49:57` Corrida terminada. Total usado hoy: 304.

@@ -255,6 +255,10 @@ def find_duplicates(
         partial_groups = _refine_by_hash(paths_in_size_group, partial_hash)
         
         for partial_candidates in partial_groups.values():
+            # Si el grupo ya quedó reducido a 1 tras el hash parcial, no tiene sentido verificar hash completo.
+            if len(partial_candidates) < 2:
+                continue
+
             full_hash_groups = _refine_by_hash(partial_candidates, hash_file)
             for digest, confirmed_paths in full_hash_groups.items():
                 groups.append(DuplicateGroup(digest, size, sorted(confirmed_paths)))

@@ -222,31 +222,24 @@ def read_snapshot() -> MemorySnapshot:
     return MemorySnapshot(total=0, available=0)
 
 
-@lru_cache(maxsize=1)
-def _run_ps_command(cmd: str) -> str:
-    """Ejecuta un comando de PowerShell con timeout."""
-    try:
-        result = subprocess.run(["powershell", "-NoProfile", "-Command", cmd], capture_output=True, text=True, timeout=5)
-        return result.stdout if result.returncode == 0 else ""
-    except (subprocess.SubprocessError, OSError):
-        return ""
-
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
-    """Obtiene una lista ordenada de procesos según su consumo de memoria."""
+    """Obtiene una lista ordenada de procesos según su consumo de memoria con caché temporal."""
     if os.name != "nt":
         return []
+    
     now = time.time()
     ts, cached_processes = _PROCESS_CACHE["data"]
     if now - ts < 5.0 and cached_processes:
         return cached_processes[:limit]
-    command = f"Get-Process | Sort-Object WorkingSet -Descending | Select-Object -First {limit} | ForEach-Object {{ \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }}"
+    
+    command = "Get-Process | Sort-Object WorkingSet -Descending | Select-Object -First 20 | ForEach-Object { \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }"
     try:
-        stdout = _run_ps_command(command)
-        if stdout:
-            processes = parse_windows_process_csv(stdout, limit=limit)
+        proc = subprocess.run(["powershell", "-NoProfile", "-Command", command], capture_output=True, text=True, timeout=5)
+        if proc.returncode == 0:
+            processes = parse_windows_process_csv(proc.stdout, limit=20)
             _PROCESS_CACHE["data"] = (now, processes)
-            return processes
-    except (OSError, Exception):
+            return processes[:limit]
+    except (OSError, subprocess.SubprocessError):
         pass
     return []
 
