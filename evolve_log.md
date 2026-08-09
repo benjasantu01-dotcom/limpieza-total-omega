@@ -790,3 +790,4 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-09T14:52:29` Corrida terminada. Total usado hoy: 350.
 - `2026-08-09T15:00:26` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-08-09T15:10:37` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-08-09T15:20:44` Presupuesto diario agotado (350 usados). Corte hasta mañana.
