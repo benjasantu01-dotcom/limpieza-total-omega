@@ -549,3 +549,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-08T23:32:27` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-08-08T23:42:36` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-08-08T23:52:45` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-08-09T00:02:57` Arrancando corrida. Quedan hoy ~300 peticiones objetivo.
+- `2026-08-09T00:03:22` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-08-09T00:03:44` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: robustez ante casos límite).
+- `2026-08-09T00:04:50` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `main.py` implementando un control de exclusión mutua en las tareas asíncronas para evitar que múltiples hilos intenten modificar o analizar el disco simultáneamente, lo cual podría provocar errores de concurrencia en los caches de estado.
+- `2026-08-09T00:05:01` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se mejora la robustez de `trim_working_set` añadiendo una validación explícita para evitar intentar manipular procesos que han finalizado durante la espera entre la obtención del PID y la apertura del handle, garantizando que `OpenProcess` no quede en un estado ambiguo.
+- `2026-08-09T00:05:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-09T00:05:01` Corrida terminada. Total usado hoy: 4.

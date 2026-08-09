@@ -47,6 +47,7 @@ import logging
 import os
 import time
 import tkinter as tk
+import threading
 from collections import OrderedDict
 from tkinter import filedialog, messagebox
 from pathlib import Path
@@ -122,6 +123,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.tabs: Dict[str, ctk.CTkFrame] = {}
         self._executor: Optional[concurrent.futures.ThreadPoolExecutor] = None
         self._log_queue: List[Tuple[str, str]] = []
+        self._task_lock = threading.Lock()
         try:
             self._validate_environment()
             self._init_window_properties()
@@ -858,11 +860,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         tab = self._current_tab()
         
         def wrapper():
-            try:
-                self._safe_run(fn, tab)
-            finally:
-                self._set_busy(False)
-                self.set_status("Listo.")
+            with self._task_lock:
+                try:
+                    self._safe_run(fn, tab)
+                finally:
+                    self._set_busy(False)
+                    self.set_status("Listo.")
 
         self._executor.submit(wrapper)
 
