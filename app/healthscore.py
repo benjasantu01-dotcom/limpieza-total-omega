@@ -132,8 +132,6 @@ def score_junk(junk_mb: float) -> float:
 
 
 def score_security(suspicious_count: int, warnings: int = 0) -> float:
-    # Penalización mayor por advertencias que por hallazgos menores
-    # Se asegura que las entradas sean procesadas como enteros no negativos
     count = max(0, _to_int(suspicious_count))
     warn = max(0, _to_int(warnings))
     return _clamp(1.0 - ((count * 0.05) + (warn * 0.25)), 0.0, 1.0)
@@ -191,10 +189,9 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         return HealthResult(0, "F", {}, ["Error: Instancia de métricas no válida."])
     
     metrics.validate()
-    if not metrics.is_finite() or not _validate_weights():
+    if not metrics.is_finite() or not _validate_weights() or _TOTAL_WEIGHTS == 0:
         return HealthResult(0, "F", {}, ["Error: Datos o configuración inválida."])
 
-    # El cálculo de ratios se hace con los valores ya validados por metrics.validate()
     ratios: ScoreMap = {
         "seguridad": score_security(metrics.suspicious_count, metrics.suspicious_warnings),
         "disco": score_disk(metrics.disk_free_percent),
@@ -208,11 +205,13 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     total_score: float = 0.0
     
     for area, weight in _WEIGHT_ITEMS:
-        score_val = (ratios.get(area, 1.0) * weight * 100.0) / _TOTAL_WEIGHTS
+        # Uso de get() con default 0.0 para evitar errores si la clave falta
+        ratio = ratios.get(area, 0.0)
+        score_val = (ratio * weight * 100.0) / _TOTAL_WEIGHTS
         breakdown[area] = round(score_val)
         total_score += score_val
 
-    final_score = int(round(total_score))
+    final_score = int(_clamp(round(total_score), 0.0, 100.0))
     return HealthResult(
         score=final_score,
         grade=grade_for_score(final_score),

@@ -8,45 +8,48 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **238** (47.2% de aceptación)
 - Rechazadas por tests: 7
-- Rechazadas por guardia de seguridad: 27
+- Rechazadas por guardia de seguridad: 26
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 214
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-07 | 39 | 1 | 5 | 6 | 43 |
+| 2026-08-07 | 36 | 1 | 4 | 6 | 43 |
 | 2026-08-08 | 182 | 6 | 19 | 10 | 133 |
-| 2026-08-09 | 17 | 0 | 3 | 2 | 38 |
+| 2026-08-09 | 20 | 0 | 3 | 2 | 39 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **53**
+- legibilidad y documentación: **50**
 - rendimiento: **49**
 - seguridad defensiva: **49**
-- manejo de errores y validación de entradas: **44**
+- manejo de errores y validación de entradas: **47**
 - robustez ante casos límite: **43**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **21**
-- `settings.py`: **20**
 - `branding.py`: **20**
-- `healthscore.py`: **19**
-- `scanner.py`: **18**
+- `healthscore.py`: **20**
+- `duplicates.py`: **19**
+- `main.py`: **19**
+- `settings.py`: **19**
 - `browser.py`: **18**
-- `duplicates.py`: **18**
-- `main.py`: **18**
 - `diskreport.py`: **18**
 - `quarantine.py`: **18**
 - `memory.py`: **17**
-- `safety.py`: **15**
+- `scanner.py`: **17**
+- `safety.py`: **14**
 - `organizer.py`: **12**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-09T02:39:04` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_collect_settings` y `_validate_numeric_setting` para manejar entradas de usuario nulas o malformadas de forma defensiva, evitando posibles errores de excepción al guardar ajustes.
+- `2026-08-09T02:36:55` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` asegurando que el cálculo de `total_score` y los `breakdown` manejen correctamente divisiones por cero potenciales y valores inesperados, reforzando la validación de los datos antes de operar.
+- `2026-08-09T02:36:31` **duplicates.py** (manejo de errores y validación de entradas): Mejora la robustez de `hash_file` y `partial_hash` ante errores inesperados durante la lectura de archivos (como bloqueos de E/S o cambios de estado súbitos) mediante la validación estricta y el manejo de excepciones, y optimiza `_refine_by_hash` asegurando que no se procesen rutas inválidas, siguiendo el enfoque de manejo de errores y validación.
 - `2026-08-09T02:27:32` **diskreport.py** (manejo de errores y validación de entradas): He mejorado la robustez de `walk_files` y las funciones de consulta integrando validación temprana y manejo explícito de errores en la resolución de rutas, evitando que excepciones en el sistema de archivos (como `OSError` al acceder a enlaces simbólicos o rutas malformadas) aborten el análisis silenciosamente.
 - `2026-08-09T02:27:21` **browser.py** (manejo de errores y validación de entradas): Reforcé la robustez de `directory_size` y `_sum_directory_recursive` mediante la validación estricta de tipos en la entrada de la ruta y la captura explícita de errores de sistema al iterar, asegurando que un fallo en un acceso a archivo no interrumpa el escaneo completo ni silencie errores críticos.
 - `2026-08-09T02:26:26` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `build_context` al añadir un chequeo de tipos explícito en el bucle de mapeo, evitando que valores inesperados (como `None` o tipos incompatibles) propaguen errores silenciosos o corrompan la integridad del objeto `SystemContext`.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-09T00:34:12` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad en `save_logo_svg` consolidando las validaciones de acceso al sistema de archivos para evitar condiciones de carrera (TOCTOU) y asegurando que las creaciones de directorios se realicen solo sobre rutas validadas.
 - `2026-08-09T00:25:52` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_call_gemini` integrando un chequeo explícito de la longitud de la respuesta antes de procesarla y garantizando que las validaciones de seguridad se apliquen sobre el contenido decodificado antes de cualquier parseo JSON, evitando inyecciones o procesamiento de buffers maliciosos.
 - `2026-08-09T00:25:10` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `save` ante fallos de escritura y estados de archivo inconsistentes mediante el uso de `os.replace` (atómico) y un manejo más estricto de los descriptores de archivo, asegurando que la configuración nunca quede corrupta aunque ocurra un error de sistema durante el guardado.
-- `2026-08-09T00:23:43` **scanner.py** (robustez ante casos límite): Se introdujo una comprobación robusta contra rutas de longitud excesiva (`MAX_PATH`) y errores de codificación en `process_entry` y `scan_directory` para evitar que la aplicación aborte ante archivos con nombres inválidos, caracteres especiales o rutas que exceden los límites del sistema operativo.
-- `2026-08-09T00:14:30` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez de `ensure_safe_to_modify` implementando una validación explícita de rutas relativas maliciosas ("..") tras la normalización, evitando errores de evaluación en sistemas de archivos con particiones case-insensitive o caracteres Unicode, además de consolidar la protección contra symlinks fuera de los límites permitidos al utilizar `resolve()` de forma segura.
-- `2026-08-09T00:14:01` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine.py` ante errores de concurrencia y fallos de E/S en `purge_all` mediante el uso de un manejo de excepciones más granular y un chequeo explícito de la existencia del archivo antes de intentar su borrado, evitando así operaciones fallidas sobre archivos huérfanos o bloqueados.

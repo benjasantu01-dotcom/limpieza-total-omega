@@ -1511,16 +1511,21 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             except Exception:
                 continue
         
-        valores["duplicados_tamano_minimo_kb"] = self._validate_numeric_setting(
-            self.min_dup_entry.get() if hasattr(self, 'min_dup_entry') else None, 64
-        )
-        valores["top_archivos"] = self._validate_numeric_setting(
-            self.top_files_entry.get() if hasattr(self, 'top_files_entry') else None, 15
-        )
+        # Validación defensiva de entradas de usuario usando el helper
+        if hasattr(self, 'min_dup_entry'):
+            valores["duplicados_tamano_minimo_kb"] = self._validate_numeric_setting(
+                self.min_dup_entry.get(), 64
+            )
+        
+        if hasattr(self, 'top_files_entry'):
+            valores["top_archivos"] = self._validate_numeric_setting(
+                self.top_files_entry.get(), 15
+            )
             
-        clave_api = self.api_key_entry.get().strip() if hasattr(self, 'api_key_entry') else ""
-        if clave_api:
-            valores["asistente_clave_api"] = clave_api
+        if hasattr(self, 'api_key_entry'):
+            clave_api = self.api_key_entry.get().strip()
+            if clave_api:
+                valores["asistente_clave_api"] = clave_api
         return valores
 
     def on_save_settings(self) -> None:

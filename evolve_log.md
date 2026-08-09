@@ -805,3 +805,11 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-09T02:27:32` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). He mejorado la robustez de `walk_files` y las funciones de consulta integrando validación temprana y manejo explícito de errores en la resolución de rutas, evitando que excepciones en el sistema de archivos (como `OSError` al acceder a enlaces simbólicos o rutas malformadas) aborten el análisis silenciosamente.
 - `2026-08-09T02:27:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-09T02:27:32` Corrida terminada. Total usado hoy: 60.
+- `2026-08-09T02:36:03` Arrancando corrida. Quedan hoy ~240 peticiones objetivo.
+- `2026-08-09T02:36:31` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `hash_file` y `partial_hash` ante errores inesperados durante la lectura de archivos (como bloqueos de E/S o cambios de estado súbitos) mediante la validación estricta y el manejo de excepciones, y optimiza `_refine_by_hash` asegurando que no se procesen rutas inválidas, siguiendo el enfoque de manejo de errores y validación.
+- `2026-08-09T02:36:55` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `compute_score` asegurando que el cálculo de `total_score` y los `breakdown` manejen correctamente divisiones por cero potenciales y valores inesperados, reforzando la validación de los datos antes de operar.
+- `2026-08-09T02:37:55` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-09T02:39:04` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_collect_settings` y `_validate_numeric_setting` para manejar entradas de usuario nulas o malformadas de forma defensiva, evitando posibles errores de excepción al guardar ajustes.
+- `2026-08-09T02:39:14` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-09T02:39:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-09T02:39:14` Corrida terminada. Total usado hoy: 64.
