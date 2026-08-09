@@ -111,12 +111,8 @@ class Scanner:
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None) -> Optional[Suspicion]:
     """
     Identifica archivos con extensiones dobles engañosas (ej: foto.jpg.exe).
-    
-    Args:
-        path: Path del archivo.
-        name: Nombre explícito del archivo si está disponible para evitar llamadas innecesarias.
     """
-    target = name or (path.name if path else None)
+    target = name or path.name
     if target and DOUBLE_EXTENSION_RE.search(target):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
     return None
@@ -124,17 +120,11 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, name
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, hours: int = RECENT_FILE_THRESHOLD_HOURS) -> Optional[Suspicion]:
     """
-    Detecta ejecutables creados o modificados recientemente en el árbol de directorios.
-    
-    Args:
-        hours: Límite temporal para considerar un archivo como 'reciente'.
+    Detecta ejecutables creados o modificados recientemente.
     """
     try:
-        if not path: return None
         st = entry.stat() if entry else path.stat()
-        mtime = st.st_mtime
-        if mtime <= 0: return None
-        if datetime.now() - datetime.fromtimestamp(mtime) < timedelta(hours=hours):
+        if st.st_mtime > 0 and (datetime.now() - datetime.fromtimestamp(st.st_mtime)) < timedelta(hours=hours):
             return Suspicion(path, f"Ejecutable reciente detectado (modificado hace menos de {hours}h)", "info")
     except (OSError, AttributeError, ValueError, OverflowError, FileNotFoundError):
         pass
@@ -143,11 +133,9 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None) -> Optional[Suspicion]:
     """
-    Busca ejecutables que usurpan nombres de procesos críticos del sistema de Windows
-    ubicados fuera de las rutas protegidas (System32).
+    Busca ejecutables que usurpan nombres de procesos críticos del sistema.
     """
     try:
-        if not path: return None
         target = name or path.name
         if target and target.lower() in SYSTEM_LOOKALIKES and SYSTEM32_LOWER not in str(path.parent).lower():
             return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
@@ -155,42 +143,29 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, name
         pass
     return None
 
-# Registro clasificado para optimización de rendimiento
-CHECK_REGISTRY: Final[dict[str, List[SuspicionCheck]]] = {
-    "all": [check_double_extension],
-    "exec": [check_recent_executable_in_downloads, check_system_lookalike]
-}
-
-def _run_checks(checks: List[SuspicionCheck], path: Path, entry: Optional[os.DirEntry], name: str, suffix: str) -> ScanResult:
-    """Ejecuta una lista de funciones de chequeo y recolecta las sospechas encontradas."""
-    findings: ScanResult = []
-    for check_func in checks:
-        if res := check_func(path, entry, name, suffix):
-            findings.append(res)
-    return findings
-
 def scan_file(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None) -> ScanResult:
     """
-    Punto central para el análisis de archivos. 
-    Distribuye la lógica entre chequeos genéricos y específicos según la extensión.
+    Punto central para el análisis de archivos. Optimizado para evitar cómputo innecesario.
     """
     if not path:
         return []
         
-    try:
-        n = name or path.name
-        s = suffix or path.suffix.lower()
-        
-        # Aplicar heurísticas universales a todo archivo
-        findings = _run_checks(CHECK_REGISTRY["all"], path, entry, n, s)
-        
-        # Aplicar heurísticas específicas para ejecutables si el archivo es potencialmente ejecutable
-        if s in SUSPICIOUS_EXECUTABLE_EXT:
-            findings.extend(_run_checks(CHECK_REGISTRY["exec"], path, entry, n, s))
+    findings: ScanResult = []
+    n = name or path.name
+    s = suffix or path.suffix.lower()
+    
+    # Heurística universal
+    if (res := check_double_extension(path, entry, n, s)):
+        findings.append(res)
+    
+    # Heurísticas específicas para ejecutables
+    if s in SUSPICIOUS_EXECUTABLE_EXT:
+        if (res := check_recent_executable_in_downloads(path, entry, n, s)):
+            findings.append(res)
+        if (res := check_system_lookalike(path, entry, n, s)):
+            findings.append(res)
                 
-        return findings
-    except (OSError, RuntimeError, TypeError):
-        return []
+    return findings
 
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
@@ -203,7 +178,6 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         
     try:
         path_input = Path(directory).resolve()
-        # Verificar integridad del punto de entrada usando validación estricta
         if not path_input.exists() or not path_input.is_dir() or is_protected_path(path_input):
             return []
     except (OSError, RuntimeError, TypeError, ValueError):

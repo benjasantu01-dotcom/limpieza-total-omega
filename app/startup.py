@@ -209,14 +209,11 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
 
     for folder in folders:
         try:
-            items: Iterable[str] = os.listdir(folder)
-            for item_name in items:
-                item: Path = folder / item_name
-                
-                if is_protected_path(item) or item.is_symlink():
-                    continue
-
-                if item.is_file() and item.suffix.lower() in EXECUTABLE_EXTS:
+            for item in folder.iterdir():
+                # Primero filtramos por tipo y extensión para minimizar llamadas costosas a is_protected_path
+                if item.is_file() and item.suffix.lower() in EXECUTABLE_EXTS and not item.is_symlink():
+                    if is_protected_path(item):
+                        continue
                     try:
                         name: str = item.stem
                         if name:

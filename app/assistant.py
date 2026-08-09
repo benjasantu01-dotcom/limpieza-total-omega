@@ -199,8 +199,9 @@ def _safe_assign(obj: SystemContext, attr: str, val: Any, cast: Callable = float
     try:
         if val is None:
             return
+        # Pre-convertir y filtrar finitud antes de evaluar rangos
         clean = cast(val)
-        if math.isfinite(clean):
+        if isinstance(clean, (int, float)) and math.isfinite(clean):
             setattr(obj, attr, max(min_val, min(clean, max_val)))
     except (ValueError, TypeError):
         pass
@@ -240,7 +241,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
 
     if health is not None:
         raw_score = get_attr(health, "score", None)
-        if isinstance(raw_score, (int, float)):
+        if raw_score is not None:
             _safe_assign(ctx, "score", raw_score, int, max_val=100)
         grade = get_attr(health, "grade", "")
         ctx.grade = str(grade)[:10] if isinstance(grade, (str, int, float)) else ""
@@ -248,7 +249,8 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
 
     for k, v in extra.items():
         if hasattr(ctx, k) and isinstance(v, (int, float)):
-            _safe_assign(ctx, k, v, cast=int if isinstance(getattr(ctx, k), int) else float)
+            target_type = type(getattr(ctx, k))
+            _safe_assign(ctx, k, v, cast=target_type)
 
     return ctx
 
