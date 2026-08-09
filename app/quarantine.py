@@ -192,23 +192,27 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
     """
     Ejecuta una serie de chequeos preventivos antes de mover un archivo a cuarentena.
     
-    Validaciones:
-      1. Formato de ruta y caracteres prohibidos.
-      2. Detección de puntos de reparse (symlinks/junctions).
-      3. Atributos de sistema en Windows.
-      4. Verificaciones cruzadas con `safety` (protegidas).
-      5. Prevención de colisiones y disparidad de unidades físicas.
-      6. Exclusividad de acceso.
+    Validaciones de seguridad:
+      1. Impedir flujos de datos alternos (NTFS streams).
+      2. Detectar caracteres prohibidos o intentos de directorio transversal.
+      3. Prohibir enlaces simbólicos o junctions para evitar bucles.
+      4. Bloquear archivos con atributos de sistema en Windows.
+      5. Verificar que la ruta no sea una carpeta protegida o una unidad distinta.
+      6. Validar que el archivo no esté siendo utilizado por otro proceso.
     """
+    # 1. Chequeo de flujos alternos
     if ":" in source_path.name.replace(source_path.drive, ""):
         raise UnsafePathError(f"Ruta con flujos de datos alternos no permitida: {source_path}")
 
+    # 2. Sanitización de caracteres
     if ".." in source_path.parts or "\0" in str(source_path) or any(c in str(source_path.name) for c in "<>\"|?*"):
         raise UnsafePathError(f"Ruta con caracteres maliciosos o navegación prohibida: {source_path.name}")
     
+    # 3. Puntos de reparse
     if source_path.is_symlink() or (hasattr(source_path, 'is_junction') and source_path.is_junction()):
         raise UnsafePathError(f"Operación denegada en punto de reparse: {source_path}")
 
+    # 4. Atributos de sistema (Win32)
     try:
         if os.name == 'nt':
             import ctypes
@@ -218,6 +222,7 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
     except Exception:
         pass
 
+    # 5. Integridad de rutas y volúmenes
     if not source_path.is_file():
         raise UnsafePathError(f"Solo se permiten archivos regulares: {source_path}")
         
@@ -240,6 +245,7 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
         except OSError:
             pass
 
+    # 6. Validaciones finales contra políticas y bloqueos activos
     ensure_safe_to_modify(source_path, allow_sensitive=True)
     
     if _is_file_locked(source_path):

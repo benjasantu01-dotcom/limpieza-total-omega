@@ -841,3 +841,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-09T03:19:02` ✅ Mejora aceptada en organizer.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante la adición de docstrings detallados en las funciones de utilidad interna, siguiendo las guías de estilo para explicar la intención de seguridad y los casos de borde, y se ha reemplazado la lógica de `_is_file_accessible` por un chequeo que utiliza `os.access` (más eficiente y menos intrusivo que abrir el archivo) para mejorar la legibilidad y el rendimiento.
 - `2026-08-09T03:19:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-09T03:19:02` Corrida terminada. Total usado hoy: 80.
+- `2026-08-09T03:27:14` Arrancando corrida. Quedan hoy ~220 peticiones objetivo.
+- `2026-08-09T03:27:46` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `quarantine.py` documentando los contratos de las funciones críticas con Type Hints completos, Docstrings explicativos y mejorando la estructuración de la validación de seguridad en `_validate_isolation_request` para clarificar la intención de cada chequeo defensivo.
+- `2026-08-09T03:28:06` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 116): unterminated string literal (detected at line 116)
+- `2026-08-09T03:28:29` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: legibilidad y documentación).
+- `2026-08-09T03:28:37` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante la estandarización de los `docstrings` en las funciones de chequeo heurístico y se han añadido `type hints` explícitos en las firmas de funciones para clarificar los parámetros opcionales.
+- `2026-08-09T03:28:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-09T03:28:37` Corrida terminada. Total usado hoy: 84.

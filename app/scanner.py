@@ -106,6 +106,7 @@ class Scanner:
 
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None) -> Optional[Suspicion]:
+    """Identifica archivos que utilizan doble extensión para ocultar un ejecutable malicioso."""
     target = name or path.name
     if target and DOUBLE_EXTENSION_RE.search(target):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
@@ -113,8 +114,8 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, name
 
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, hours: int = RECENT_FILE_THRESHOLD_HOURS) -> Optional[Suspicion]:
+    """Detecta ejecutables creados recientemente para alertar sobre posibles descargas no deseadas."""
     try:
-        # Uso de entry.stat si está disponible, es más eficiente y seguro que path.lstat()
         st = entry.stat() if entry else path.stat()
         mtime = st.st_mtime
         if mtime <= 0: return None
@@ -126,6 +127,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None) -> Optional[Suspicion]:
+    """Verifica si un archivo adopta un nombre de sistema crítico, lo cual es indicativo de suplantación."""
     try:
         target = name or path.name
         if target.lower() in SYSTEM_LOOKALIKES and SYSTEM32_LOWER not in str(path.parent).lower():
@@ -140,11 +142,11 @@ CHECK_REGISTRY: Final[dict[str, List[SuspicionCheck]]] = {
     "exec": [check_recent_executable_in_downloads, check_system_lookalike]
 }
 
-def _run_checks(checks: List[SuspicionCheck], *args) -> ScanResult:
+def _run_checks(checks: List[SuspicionCheck], path: Path, entry: Optional[os.DirEntry], name: str, suffix: str) -> ScanResult:
     """Ejecuta una lista de funciones de chequeo y recolecta las sospechas encontradas."""
     findings: ScanResult = []
     for check_func in checks:
-        if res := check_func(*args):
+        if res := check_func(path, entry, name, suffix):
             findings.append(res)
     return findings
 
