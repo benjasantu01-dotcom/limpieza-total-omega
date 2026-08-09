@@ -345,12 +345,11 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     if not destination: return None
     try:
         target = Path(destination).resolve()
-        # Verificación estricta de seguridad usando la interfaz de lanzamiento de excepción
+        # Verificación estricta: aseguramos que tanto el padre como el archivo final sean seguros.
+        ensure_safe_to_modify(target.parent)
         ensure_safe_to_modify(target)
         
-        parent = target.parent
-        if not parent.exists():
-            parent.mkdir(parents=True, exist_ok=True)
+        target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(logo_svg(), encoding="utf-8")
         return target
     except (OSError, PermissionError, TypeError, ValueError, RuntimeError, IOError, AttributeError):

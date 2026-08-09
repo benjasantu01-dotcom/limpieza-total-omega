@@ -1334,3 +1334,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-09T09:15:02` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se mejoró la robustez de `save` ante fallos de escritura en el sistema de archivos añadiendo un manejo de excepciones más granular al intentar crear directorios y al reemplazar el archivo atómico, asegurando que el estado interno no se corrompa si ocurre un error parcial.
 - `2026-08-09T09:15:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-09T09:15:02` Corrida terminada. Total usado hoy: 220.
+- `2026-08-09T09:23:53` Arrancando corrida. Quedan hoy ~80 peticiones objetivo.
+- `2026-08-09T09:24:19` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-08-09T09:24:50` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la seguridad en `_call_gemini` validando que la `api_key` y el `model` sean strings explícitos antes de realizar cualquier operación de red, evitando posibles inyecciones o comportamientos indefinidos al manipular datos de configuración externa.
+- `2026-08-09T09:25:21` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Mejoré la robustez de `save_logo_svg` reemplazando la creación de directorios silenciosa y potencialmente riesgosa por una validación explícita mediante `ensure_safe_to_modify`, garantizando que la operación de escritura respete las políticas de seguridad del proyecto incluso al crear rutas.
+- `2026-08-09T09:25:30` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
+- `2026-08-09T09:25:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-09T09:25:30` Corrida terminada. Total usado hoy: 224.
