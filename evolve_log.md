@@ -1169,3 +1169,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-09T06:53:14` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
 - `2026-08-09T06:53:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-09T06:53:14` Corrida terminada. Total usado hoy: 164.
+- `2026-08-09T07:01:08` Arrancando corrida. Quedan hoy ~136 peticiones objetivo.
+- `2026-08-09T07:01:34` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Reforcé la robustez de `walk_files` y `summarize` implementando capturas de excepciones más granulares y validaciones de tipo explícitas, asegurando que fallos en la resolución de nombres de archivo o estados de directorios durante el escaneo no aborten la operación global.
+- `2026-08-09T07:01:57` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-09T07:02:21` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Reforcé la robustez de `compute_score` implementando una validación explícita de `None` para el objeto `metrics` y asegurando que las divisiones por cero en los cálculos internos devuelvan valores seguros, evitando así errores de ejecución ante métricas incompletas.
+- `2026-08-09T07:03:07` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez del manejo de errores en `_flush_logs` y `_set_busy` agregando validaciones de existencia de los widgets, evitando que la aplicación crashee o lance errores en consola si un hilo intenta actualizar un componente de la UI mientras la ventana se está cerrando o redibujando.
+- `2026-08-09T07:03:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-09T07:03:07` Corrida terminada. Total usado hoy: 168.

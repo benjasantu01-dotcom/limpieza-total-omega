@@ -187,7 +187,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _debounce_action(self, key: str, delay: int, callback: Callable) -> None:
         """Cancela y reprograma una tarea para evitar ejecuciones redundantes."""
         if key in self._debounces:
-            self.after_cancel(self._debounces[key])
+            try:
+                self.after_cancel(self._debounces[key])
+            except Exception:
+                pass
         self._debounces[key] = self.after(delay, callback)
 
     def _create_styled_label(self, parent: Any, text: str, style: str, **kwargs) -> ctk.CTkLabel:
@@ -779,9 +782,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             if k in self._cache_access_order:
                 del self._cache_access_order[k]
 
-    def _box(self, tab: str) -> ctk.CTkTextbox:
+    def _box(self, tab: str) -> Optional[ctk.CTkTextbox]:
         """Retorna el widget log de una pestaña específica."""
-        return self.outputs.get(tab) or self.outputs["Limpieza"]
+        return self.outputs.get(tab)
 
     def log(self, text: str, tab: str = "Limpieza") -> None:
         """Agrega un mensaje a la cola de logs para su renderizado."""
@@ -792,33 +795,33 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """Vuelca la cola de logs en el widget de texto correspondiente."""
         while self._log_queue:
             tab, text = self._log_queue.pop(0)
-            try:
-                box = self._box(tab)
-                if box and box.winfo_exists():
-                    box.insert("end", f"{text}\n")
-                    box.see("end")
-            except Exception as e:
-                logging.error("No se pudo actualizar el log en %s: %s", tab, e)
+            box = self._box(tab)
+            if box and box.winfo_exists():
+                box.insert("end", f"{text}\n")
+                box.see("end")
 
     def clear(self, tab: str = "Limpieza") -> None:
         """Elimina el contenido visual del log de la pestaña dada."""
         box = self._box(tab)
-        self.after(0, lambda: box.delete("1.0", "end"))
+        if box and box.winfo_exists():
+            self.after(0, lambda: box.delete("1.0", "end"))
 
     def set_status(self, text: str) -> None:
         """Actualiza la barra inferior con texto descriptivo."""
-        self.after_idle(lambda: self.status.configure(text=text))
+        self.after_idle(lambda: self.status.configure(text=text) if self.status.winfo_exists() else None)
 
     def log_lines(self, lines: List[str], tab: str) -> None:
         """Limpia y vuelca una lista de strings en la interfaz."""
         self.clear(tab)
         box = self._box(tab)
-        self.after(0, lambda: (box.insert("1.0", "\n".join(lines)), box.see("1.0")))
+        if box and box.winfo_exists():
+            self.after(0, lambda: (box.insert("1.0", "\n".join(lines)), box.see("1.0")))
         self.report_data[tab.lower()] = list(lines)
 
     def _set_busy(self, busy: bool) -> None:
         """Gestiona visualmente el estado de carga (busy indicator)."""
         def actualizar():
+            if not self.activity.winfo_exists(): return
             if busy:
                 self._tasks_running += 1
             else:
@@ -1058,7 +1061,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         lines = [f"{jf.size_mb:>8} MB  |  {jf.modified:%Y-%m-%d}  |  {jf.path}" for jf in ordered]
         self.report_data["limpieza"] = lines
         box = self._box("Limpieza")
-        self.after(0, lambda: (box.delete("1.0", "end"), box.insert("1.0", "\n".join(lines))))
+        if box and box.winfo_exists():
+            self.after(0, lambda: (box.delete("1.0", "end"), box.insert("1.0", "\n".join(lines))))
 
     def on_stage(self) -> None:
         """Mueve candidatos de basura a la zona de espera para revisión."""

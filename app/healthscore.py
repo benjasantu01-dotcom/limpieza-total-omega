@@ -192,12 +192,12 @@ def _generate_recommendations(m: SystemMetrics, ratios: ScoreMap) -> List[str]:
 
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
-    if not isinstance(metrics, SystemMetrics):
-        return HealthResult(0, "F", {}, ["Error: Instancia de métricas no válida."])
+    if metrics is None or not isinstance(metrics, SystemMetrics):
+        return HealthResult(0, "F", {}, ["Error: Instancia de métricas nula o inválida."])
     
     # Defensa: asegurar integridad absoluta de los datos antes de operar
     metrics.validate()
-    if not metrics.is_finite() or not _validate_weights() or _TOTAL_WEIGHTS == 0:
+    if not metrics.is_finite() or not _validate_weights() or _TOTAL_WEIGHTS <= 0:
         return HealthResult(0, "F", {}, ["Error: Datos o configuración inválida."])
 
     sec = score_security(metrics.suspicious_count, metrics.suspicious_warnings)

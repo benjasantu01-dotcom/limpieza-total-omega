@@ -45,7 +45,7 @@ __all__ = [
 
 def _bytes_to_mb(size_bytes: int) -> float:
     """Utilidad interna para convertir bytes a Megabytes con precisión de 2 decimales."""
-    return round(size_bytes / (1024 * 1024), 2) if size_bytes > 0 else 0.0
+    return round(size_bytes / (1024 * 1024), 2) if isinstance(size_bytes, (int, float)) and size_bytes > 0 else 0.0
 
 
 @dataclass
@@ -214,7 +214,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                                 stack.append(path_obj)
                         else:
                             yield path_obj, entry.stat().st_size
-                    except (OSError, PermissionError):
+                    except (OSError, PermissionError, ValueError):
                         continue
         except (OSError, PermissionError):
             continue
@@ -303,6 +303,7 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
     if not directory: return ["Error: Ruta no proporcionada."]
     try:
         path_obj = Path(directory).expanduser().resolve()
+        if not path_obj.exists(): return [f"Error: Ruta no encontrada: {path_obj}"]
     except (OSError, RuntimeError):
         return ["Error: Ruta inválida o inaccesible."]
         
