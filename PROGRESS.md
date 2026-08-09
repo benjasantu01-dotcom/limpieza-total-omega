@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **247** (49.0% de aceptación)
-- Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 25
+- Mejoras aceptadas: **248** (49.2% de aceptación)
+- Rechazadas por tests: 13
+- Rechazadas por guardia de seguridad: 26
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 204
+- Sin respuesta de la IA (error o límite): 201
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-08 | 86 | 5 | 8 | 5 | 64 |
-| 2026-08-09 | 161 | 7 | 17 | 11 | 140 |
+| 2026-08-08 | 86 | 5 | 8 | 5 | 60 |
+| 2026-08-09 | 162 | 8 | 18 | 11 | 141 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **63**
 - manejo de errores y validación de entradas: **55**
-- seguridad defensiva: **47**
+- seguridad defensiva: **48**
 - rendimiento: **42**
 - robustez ante casos límite: **40**
 
@@ -31,9 +31,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `quarantine.py`: **23**
 - `healthscore.py`: **22**
+- `settings.py`: **22**
 - `main.py`: **22**
 - `assistant.py`: **21**
-- `settings.py`: **21**
 - `branding.py`: **19**
 - `diskreport.py`: **18**
 - `scanner.py`: **18**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-09T14:20:57` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_Validators.path` y `save` mediante la verificación explícita de puntos de reparse (junctions/symlinks) y restricciones de escritura en el directorio padre, asegurando que la configuración nunca apunte a ubicaciones peligrosas o rutas manipuladas fuera del entorno controlado.
 - `2026-08-09T14:11:33` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva en `quarantine_file` validando que la ruta de origen no sea una ruta de sistema ni un punto de montaje antes de realizar cualquier operación, además de asegurar que `shutil.move` no sea necesario para el paso crítico de "mover a cuarentena", utilizando `os.replace` para una operación atómica y más segura en sistemas Windows.
 - `2026-08-09T14:11:18` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_file_accessible` para que utilice el modo de lectura `rb` en lugar de `ab` (append), evitando así cualquier riesgo de modificación accidental del puntero del archivo, y se ha encapsulado el acceso dentro de un bloque que asegura el cierre inmediato del recurso.
 - `2026-08-09T14:10:54` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `trim_working_set` asegurando que la ruta del ejecutable se normalice y valide mediante `is_protected_path` antes de realizar cualquier operación sobre el proceso, previniendo así la manipulación de procesos cuyos ejecutables residan en directorios críticos, aun si el PID no está en la lista de bloqueados.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-09T13:30:08` **main.py** (robustez ante casos límite): Se ha añadido un robusto manejo de errores en el método `_tab_factory` y en la inicialización de los componentes visuales de las pestañas para garantizar que un fallo en la construcción de una pestaña individual (por ejemplo, una entrada corrupta en `branding` o error de IO) no bloquee la inicialización completa de la aplicación, mejorando la resiliencia ante entornos inesperados.
 - `2026-08-09T13:29:10` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `compute_score` frente a configuraciones externas inválidas o pesos inexistentes, garantizando que el desglose de puntajes siempre coincida con la estructura esperada y evitando posibles errores de clave o cálculos desequilibrados si el mapa `WEIGHTS` llegara a ser inconsistente.
 - `2026-08-09T13:10:03` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` ante errores de entrada y valores atípicos mediante el uso de un filtro de validación más estricto y seguro en `_safe_assign`, asegurando que `math.isfinite` y `float` se apliquen consistentemente antes de cualquier asignación al contexto.
-- `2026-08-09T13:09:26` **startup.py** (rendimiento): Optimicé el rendimiento de `entries_from_folders` evitando la llamada a `is_protected_path` (que involucra normalización de rutas y comparaciones) para cada archivo, moviendo el chequeo a una fase donde solo se procesan candidatos válidos una vez que se confirma que son archivos ejecutables.

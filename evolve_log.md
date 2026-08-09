@@ -690,3 +690,36 @@ FAILED evolve/tests/test_safety.py::test_describe_protection_explains_the_reason
 - `2026-08-09T14:11:33` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `quarantine_file` validando que la ruta de origen no sea una ruta de sistema ni un punto de montaje antes de realizar cualquier operación, además de asegurar que `shutil.move` no sea necesario para el paso crítico de "mover a cuarentena", utilizando `os.replace` para una operación atómica y más segura en sistemas Windows.
 - `2026-08-09T14:11:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-09T14:11:33` Corrida terminada. Total usado hoy: 336.
+- `2026-08-09T14:19:39` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-09T14:19:59` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-08-09T14:20:23` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-08-09T14:20:46` Tests FALLARON:
+```
+    # resultado no dependa de en qué sistema corran los tests.
+        flagged = scanner.check_system_lookalike(PurePosixPath("/home/user/Downloads/svchost.exe"))
+>       assert flagged is not None and flagged.severity == "warning"
+E       assert (None is not None)
+
+evolve/tests/test_basic.py:213: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:95: SyntaxWarning: invalid escape sequence '\P'
+    Analiza comandos tipo 'C:\Path\App.exe' /args.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_scanner_flags_system_lookalike_outside_system32 - assert None is not None
+FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independent - assert (None is not None)
+2 failed, 297 passed, 7 warnings in 1.14s
+
+```
+- `2026-08-09T14:20:46` ❌ Mejora descartada en scanner.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez defensiva de `check_system_lookalike` y `scan_file` asegurando que el acceso a metadatos de archivos no resuelva enlaces simbólicos malintencionados ni cruce límites fuera del `base_root` del escáner, manteniendo la integridad del análisis heurístico.
+- `2026-08-09T14:20:57` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_Validators.path` y `save` mediante la verificación explícita de puntos de reparse (junctions/symlinks) y restricciones de escritura en el directorio padre, asegurando que la configuración nunca apunte a ubicaciones peligrosas o rutas manipuladas fuera del entorno controlado.
+- `2026-08-09T14:20:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-09T14:20:57` Corrida terminada. Total usado hoy: 340.

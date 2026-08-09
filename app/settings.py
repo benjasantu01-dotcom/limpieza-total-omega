@@ -131,10 +131,15 @@ class _Validators:
             path_string = str(val).strip()
             if not path_string: return ""
             path_obj = Path(path_string).expanduser()
+            # Bloqueo de travesía de directorios
             if any(part in ('.', '..', '..\\', '../') for part in path_obj.parts): return None
             if not path_obj.is_absolute(): return None
+            
             resolved = path_obj.resolve(strict=False)
-            if resolved.is_symlink(): return None
+            # Detección explícita de puntos de reparse o symlinks
+            if resolved.is_symlink() or (resolved.exists() and resolved.is_junction() if hasattr(resolved, 'is_junction') else False):
+                return None
+            
             target = resolved if resolved.exists() else resolved.parent
             return str(resolved) if is_safe_to_modify(str(target)) else None
         except (OSError, RuntimeError, ValueError, TypeError, PermissionError):
@@ -212,8 +217,9 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     if not isinstance(values, dict): return None
     ruta = settings_path(path_or_base)
     
-    # Validar seguridad del padre antes de intentar escribir
-    if not is_safe_to_modify(str(ruta.parent)):
+    # Validar seguridad del padre antes de intentar escribir, incluyendo symlink check
+    parent = ruta.parent
+    if parent.is_symlink() or not is_safe_to_modify(str(parent)):
         return None
     
     cleaned_settings = validate(values)
@@ -223,7 +229,6 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     if _cached_settings == cleaned_settings and _current_path == ruta: 
         return ruta
 
-    parent = ruta.parent
     if not parent.exists():
         try: parent.mkdir(parents=True, exist_ok=True)
         except OSError: return None
