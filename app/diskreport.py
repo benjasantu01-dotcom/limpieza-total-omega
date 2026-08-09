@@ -43,6 +43,11 @@ __all__ = [
 ]
 
 
+def _bytes_to_mb(size_bytes: int) -> float:
+    """Utilidad interna para convertir bytes a Megabytes con precisión de 2 decimales."""
+    return round(size_bytes / (1024 * 1024), 2) if size_bytes > 0 else 0.0
+
+
 @dataclass
 class FileEntry:
     """Representa un archivo individual, su ubicación y peso en bytes."""
@@ -51,8 +56,7 @@ class FileEntry:
 
     @property
     def size_mb(self) -> float:
-        """Calcula el tamaño del archivo convertido a Megabytes (MB)."""
-        return round(self.size_bytes / (1024 * 1024), 2) if self.size_bytes > 0 else 0.0
+        return _bytes_to_mb(self.size_bytes)
 
 
 @dataclass
@@ -64,8 +68,7 @@ class ExtensionUsage:
 
     @property
     def size_mb(self) -> float:
-        """Calcula el espacio total ocupado por esta extensión en Megabytes (MB)."""
-        return round(self.size_bytes / (1024 * 1024), 2) if self.size_bytes > 0 else 0.0
+        return _bytes_to_mb(self.size_bytes)
 
 
 @dataclass
@@ -77,8 +80,7 @@ class FolderUsage:
 
     @property
     def size_mb(self) -> float:
-        """Calcula el espacio total de la carpeta en Megabytes (MB)."""
-        return round(self.size_bytes / (1024 * 1024), 2) if self.size_bytes > 0 else 0.0
+        return _bytes_to_mb(self.size_bytes)
 
 
 @dataclass
@@ -295,7 +297,7 @@ def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 
 def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -> List[str]:
     """
-    Genera un reporte estructurado unificado.
+    Genera un reporte estructurado unificado del uso de disco en el directorio dado.
     """
     if not directory: return ["Error: Ruta no proporcionada."]
     try:

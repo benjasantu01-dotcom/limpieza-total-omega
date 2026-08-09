@@ -101,6 +101,9 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
     Valida que la ruta sea segura contra path traversal y manipulación maliciosa.
     Verifica: existencia, límites de base, protección por safety.py, ausencia de 
     vínculos simbólicos/junctions y caracteres Unicode de control/RTL.
+    
+    Returns:
+        bool: True si la ruta es segura para ser listada por el escáner.
     """
     if not isinstance(target_path, Path) or not isinstance(base_path, Path):
         return False
@@ -112,18 +115,21 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
         if not target_path.exists():
             return False
             
+        # Detectar caracteres RTL o de control que ocultan extensiones
         if any(ord(char) < 32 or ord(char) in (0x200E, 0x200F, 0x202A, 0x202E) for char in str(target_path)):
             return False
 
         real_base = base_path.resolve(strict=True)
         real_target = target_path.resolve(strict=True)
         
+        # Integración con el módulo central de seguridad
         if is_protected_path(real_target):
             return False
 
         if not str(real_target).startswith(str(real_base)):
             return False
 
+        # Impedir el seguimiento de enlaces simbólicos o junctions para evitar bucles o salidas de raíz
         is_junction = getattr(os.path, 'isjunction', lambda _: False)
         if real_target.is_symlink() or is_junction(str(real_target)):
             return False
@@ -142,6 +148,10 @@ def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool
     """
     Realiza un recorrido recursivo en profundidad (DFS) para sumar bytes.
     Filtra archivos de sistema ocultos y asegura no seguir enlaces inseguros.
+    
+    Args:
+        root_dir: Ruta absoluta del directorio a sumar.
+        is_junction_fn: Función inyectada para detectar junctions (OS dependiente).
     """
     total: int = 0
     if not root_dir:
@@ -150,7 +160,7 @@ def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool
         with os.scandir(root_dir) as it:
             for entry in it:
                 try:
-                    # Evitar procesar archivos con atributos de sistema/ocultos en Windows
+                    # En Windows, saltar archivos con atributos de sistema u ocultos
                     if os.name == 'nt':
                         import ctypes
                         attrs = ctypes.windll.kernel32.GetFileAttributesW(entry.path)
@@ -173,7 +183,10 @@ def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool
 
 def directory_size(path: str | os.PathLike | None) -> int:
     """
-    Wrapper para calcular tamaño. Valida la integridad de la ruta antes de recorrer.
+    Calcula el peso total de un directorio, ignorando enlaces y protegidos.
+    
+    Returns:
+        int: Total en bytes, o 0 si la ruta es inválida o está protegida.
     """
     if path is None or not isinstance((str(path)), str):
         return 0

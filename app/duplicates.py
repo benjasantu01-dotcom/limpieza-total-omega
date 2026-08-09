@@ -174,26 +174,30 @@ def _collect_candidates(
         try:
             with os.scandir(root_path) as dir_iterator:
                 for entry in dir_iterator:
-                    entry_path = Path(entry.path)
-                    if skip_protected and is_protected_path(entry_path):
+                    # Validar seguridad de la entrada antes de intentar estadisticas
+                    if skip_protected and is_protected_path(Path(entry.path)):
                         continue
                         
                     try:
                         entry_stat = entry.stat(follow_symlinks=False)
-                        # Ignora puntos de reparse (0x400 FILE_ATTRIBUTE_REPARSE_POINT)
-                        if getattr(entry_stat, 'st_file_attributes', 0) & 0x400:
+                        is_reparse = getattr(entry_stat, 'st_file_attributes', 0) & 0x400
+                        
+                        if is_reparse:
                             continue
                         
                         if entry.is_dir(follow_symlinks=False):
+                            # Evitar bucles circulares de sistema de archivos mediante inodos
                             if entry_stat.st_ino not in visited_inodes[entry_stat.st_dev]:
                                 visited_inodes[entry_stat.st_dev].add(entry_stat.st_ino)
-                                _scan(entry_path)
+                                _scan(Path(entry.path))
                         
                         elif entry.is_file(follow_symlinks=False):
                             if entry_stat.st_size >= min_size:
-                                temp_groups[entry_stat.st_size].append(entry_path)
-                    except (OSError, PermissionError): continue
-        except (OSError, PermissionError): pass
+                                temp_groups[entry_stat.st_size].append(Path(entry.path))
+                    except (OSError, PermissionError): 
+                        continue
+        except (OSError, PermissionError): 
+            pass
 
     for directory in directories:
         if directory is None: continue
@@ -217,11 +221,9 @@ def _refine_by_hash(
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     
     for path in paths:
-        # Validación estricta antes de procesar
         if not isinstance(path, Path): 
             continue
         
-        # Filtro de seguridad: verificamos acceso solo si la ruta aún existe
         try:
             if path.is_file() and not is_protected_path(path):
                 digest = hash_func(path)
@@ -239,24 +241,33 @@ def find_duplicates(
     skip_protected: bool = True,
 ) -> List[DuplicateGroup]:
     """
-    Pipeline principal: 
-    1. Agrupación por tamaño (Filtro base).
-    2. Filtrado por hash parcial (Optimización de E/S).
-    3. Verificación final SHA256 (Confirmación exacta).
+    Pipeline principal de detección de duplicados:
+    1. Fase de Indexación: Recorre directorios indexando archivos por tamaño.
+    2. Fase de Hash Parcial: Reduce el conjunto comparando solo los primeros 64KB.
+    3. Fase de Verificación: Aplica hash completo SHA256 a los sobrevivientes.
+    
+    Returns:
+        Lista de objetos DuplicateGroup ordenados por espacio desperdiciado.
     """
     if directories is None: return []
     
+    # Paso 1: Agrupación física por tamaño (Filtro base)
     size_map = _collect_candidates(directories, min_size, skip_protected)
     
     groups: List[DuplicateGroup] = []
+    
+    # Paso 2 y 3: Refinamiento por contenido
     for size, paths_in_size_group in size_map.items():
+        # Filtro de hash parcial para descartar archivos con mismo tamaño pero contenido distinto
         partial_groups = _refine_by_hash(paths_in_size_group, partial_hash)
         
         for partial_candidates in partial_groups.values():
+            # Confirmación final con hash completo de todo el contenido
             full_hash_groups = _refine_by_hash(partial_candidates, hash_file)
             for digest, confirmed_paths in full_hash_groups.items():
                 groups.append(DuplicateGroup(digest, size, sorted(confirmed_paths)))
 
+    # Ordenar resultados: primero los grupos que liberan más espacio al usuario
     groups.sort(key=lambda g: g.wasted_bytes, reverse=True)
     return groups
 
