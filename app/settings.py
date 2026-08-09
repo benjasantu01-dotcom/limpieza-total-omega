@@ -131,10 +131,12 @@ class _Validators:
             if not path_string: return ""
             path_obj = Path(path_string).expanduser()
             if not path_obj.is_absolute(): return None
-            # resolve() puede fallar si la ruta tiene caracteres inválidos o restricciones de SO
             resolved_path = path_obj.resolve(strict=False)
             if resolved_path.is_symlink(): return None
-            return str(resolved_path) if is_safe_to_modify(str(resolved_path)) else None
+            
+            # Verificación defensiva: si existe debe ser seguro, si no, su padre debe serlo
+            check_target = resolved_path if resolved_path.exists() else resolved_path.parent
+            return str(resolved_path) if is_safe_to_modify(str(check_target)) else None
         except (OSError, RuntimeError, ValueError, TypeError, PermissionError):
             return None
 
@@ -168,7 +170,7 @@ def settings_path(path_or_base: PathLike | None = None) -> Path:
         try:
             base = Path(key).expanduser().resolve(strict=False)
             candidate = base / SETTINGS_FILE
-            is_valid = is_safe_to_modify(str(base)) and is_safe_to_modify(str(candidate))
+            is_valid = is_safe_to_modify(str(base))
             _path_cache[key] = candidate if is_valid else default_res
         except (OSError, RuntimeError, PermissionError):
             _path_cache[key] = default_res
@@ -210,7 +212,12 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     if not isinstance(values, dict): return None
     ruta = settings_path(path_or_base)
     
-    if not is_safe_to_modify(str(ruta.parent)): return None
+    parent = ruta.parent
+    if not parent.exists():
+        try: parent.mkdir(parents=True, exist_ok=True)
+        except OSError: return None
+        
+    if not is_safe_to_modify(str(parent)): return None
         
     cleaned_settings = validate(values)
     if cleaned_settings.get("asistente_activado") and not (cleaned_settings.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)):
@@ -220,8 +227,7 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
         return ruta
 
     try:
-        ruta.parent.mkdir(parents=True, exist_ok=True)
-        with tempfile.NamedTemporaryFile("w", dir=ruta.parent, delete=False, encoding="utf-8") as temp_file:
+        with tempfile.NamedTemporaryFile("w", dir=parent, delete=False, encoding="utf-8") as temp_file:
             temp_path = Path(temp_file.name)
             json.dump(cleaned_settings, temp_file, indent=2, ensure_ascii=False)
             temp_file.flush()

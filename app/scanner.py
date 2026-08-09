@@ -65,6 +65,11 @@ class Scanner:
         self.seen: set[str] = set()
         self.base_root = base_root.resolve()
 
+    def _is_safe_entry(self, entry_path: str) -> bool:
+        """Verifica que la entrada esté dentro del base_root definido."""
+        full_path = Path(entry_path).resolve()
+        return self.base_root in full_path.parents or full_path == self.base_root
+
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         """Determina si una entrada es un punto de reanálisis (Junction o Symlink) para evitar bucles infinitos."""
         try:
@@ -82,8 +87,7 @@ class Scanner:
         
         try:
             entry_path = entry.path
-            # Validación rápida sin resolver rutas pesadas innecesariamente
-            if not entry_path or is_protected_path(Path(entry_path)):
+            if not entry_path or is_protected_path(Path(entry_path)) or not self._is_safe_entry(entry_path):
                 return
 
             if entry.is_dir(follow_symlinks=False):

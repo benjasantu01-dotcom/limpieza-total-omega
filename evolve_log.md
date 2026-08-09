@@ -925,3 +925,46 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-09T05:21:08` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva implementando una validación estricta de nombres de dispositivos reservados mediante `re.fullmatch` para evitar bypasses de extensión (ej. `CON.txt`), y corregí la lógica en `is_within_directory` para asegurar que las comparaciones de `parents` sean robustas incluso ante casos de bordes con rutas idénticas o vacías.
 - `2026-08-09T05:21:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-09T05:21:08` Corrida terminada. Total usado hoy: 128.
+- `2026-08-09T05:29:24` Arrancando corrida. Quedan hoy ~172 peticiones objetivo.
+- `2026-08-09T05:29:50` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se implementó un control de seguridad para asegurar que la resolución de rutas mediante `resolve()` no escape de la carpeta base del escaneo, previniendo ataques de escalada de privilegios mediante enlaces simbólicos o rutas relativas maliciosas.
+- `2026-08-09T05:30:15` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se endureció la seguridad de `_Validators.path` y `save` eliminando la dependencia implícita de `is_safe_to_modify` sobre rutas inexistentes y reforzando la integridad del guardado atómico mediante la verificación explícita de `ruta.parent` antes de cualquier operación de escritura.
+- `2026-08-09T05:30:39` Tests FALLARON:
+```
+_____ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=============================== warnings summary ===============================
+app/startup.py:93
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:93: SyntaxWarning: invalid escape sequence '\P'
+    Analiza comandos tipo 'C:\Path\App.exe' /args.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed, 8 warnings in 1.12s
+
+```
+- `2026-08-09T05:30:39` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva en `_resolve_and_cache_path` mediante la verificación de puntos de reparse/junctions antes de resolver la ruta, previniendo que el escaneo siga enlaces simbólicos o puntos de montaje que apunten fuera de los volúmenes esperados, mejorando la robustez ante rutas maliciosas.
+- `2026-08-09T05:30:39` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-08-09T05:30:39` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-08-09T05:31:00` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-08-09T05:31:00` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-08-09T05:31:30` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-08-09T05:31:30` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-08-09T05:31:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-09T05:31:30` Corrida terminada. Total usado hoy: 132.
