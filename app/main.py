@@ -1220,8 +1220,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 if not item or not hasattr(item, 'original_path'):
                     raise AttributeError("Manifiesto de cuarentena corrupto")
                 
+                # Seguridad defensiva: verificar que la ruta de destino sigue siendo segura
                 if not self._is_safe_path(item.original_path):
-                    self.log(f"Error: Ruta original {item.original_path} está protegida.", "Cuarentena")
+                    self.log(f"Error: La ruta original {item.original_path} ahora es insegura.", "Cuarentena")
                     return
                 
                 destino = quarantine.restore_item(raw_id)

@@ -911,3 +911,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-09T05:00:29` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `walk_files` y `largest_folders` añadiendo una validación explícita mediante `is_protected_path` sobre el resultado de `resolve()` y `expanduser()` para asegurar que ninguna ruta se escape de la restricción, incluso en entornos con enlaces simbólicos o rutas mal formadas.
 - `2026-08-09T05:00:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-09T05:00:29` Corrida terminada. Total usado hoy: 120.
+- `2026-08-09T05:09:02` Arrancando corrida. Quedan hoy ~180 peticiones objetivo.
+- `2026-08-09T05:09:27` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-08-09T05:09:51` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la robustez defensiva de `compute_score` validando explícitamente los datos de entrada en `SystemMetrics` antes de procesarlos, asegurando que las métricas provengan de un estado sano y evitando que valores atípicos (out-of-bounds o NaN) comprometan la integridad del cálculo del puntaje.
+- `2026-08-09T05:10:48` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `on_restore_quarantine` mediante el uso de una validación explícita de `is_safe_path` antes de proceder con la restauración, asegurando que un ítem de cuarentena no pueda ser reubicado en una ruta que haya pasado a ser protegida o insegura.
+- `2026-08-09T05:10:58` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
+- `2026-08-09T05:10:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-09T05:10:58` Corrida terminada. Total usado hoy: 124.
