@@ -199,22 +199,21 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     if not metrics.is_finite() or not _validate_weights() or _TOTAL_WEIGHTS == 0:
         return HealthResult(0, "F", {}, ["Error: Datos o configuración inválida."])
 
-    ratios: ScoreMap = {
-        "seguridad": score_security(metrics.suspicious_count, metrics.suspicious_warnings),
-        "disco": score_disk(metrics.disk_free_percent),
-        "memoria": score_memory(metrics.memory_available_percent),
-        "basura": score_junk(metrics.junk_mb),
-        "duplicados": score_duplicates(metrics.duplicate_mb),
-        "arranque": score_startup(metrics.startup_count)
-    }
-
+    # Cálculo directo usando la estructura constante para evitar lookups en tiempo de ejecución
+    sec = score_security(metrics.suspicious_count, metrics.suspicious_warnings)
+    disk = score_disk(metrics.disk_free_percent)
+    mem = score_memory(metrics.memory_available_percent)
+    junk = score_junk(metrics.junk_mb)
+    dup = score_duplicates(metrics.duplicate_mb)
+    start = score_startup(metrics.startup_count)
+    
+    ratios: ScoreMap = {"seguridad": sec, "disco": disk, "memoria": mem, "basura": junk, "duplicados": dup, "arranque": start}
     breakdown: Dict[str, int] = {}
     total_score: float = 0.0
     
+    # Iteración sobre pesos pre-calculados
     for area, weight in _WEIGHT_ITEMS:
-        # Uso de get() con default 0.0 para evitar errores si la clave falta
-        ratio = ratios.get(area, 0.0)
-        score_val = (ratio * weight * 100.0) / _TOTAL_WEIGHTS
+        score_val = (ratios[area] * weight * 100.0) / _TOTAL_WEIGHTS
         breakdown[area] = round(score_val)
         total_score += score_val
 
