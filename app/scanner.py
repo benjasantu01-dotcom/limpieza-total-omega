@@ -81,11 +81,10 @@ class Scanner:
             return
         
         try:
-            # Validar si el path es válido antes de resolver (evita errores por chars inválidos)
             path_obj = Path(entry.path).resolve()
             
-            # Validación de seguridad defensiva: no salir de la raíz base ni entrar en rutas protegidas
-            if not str(path_obj).startswith(str(self.base_root)) or is_protected_path(path_obj):
+            # Validación de seguridad defensiva: verificar contención estricta mediante is_relative_to
+            if not path_obj.is_relative_to(self.base_root) or is_protected_path(path_obj):
                 return
 
             if entry.is_dir(follow_symlinks=False):

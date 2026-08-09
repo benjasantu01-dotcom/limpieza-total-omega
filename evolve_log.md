@@ -585,3 +585,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-09T00:45:49` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
 - `2026-08-09T00:45:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-09T00:45:49` Corrida terminada. Total usado hoy: 20.
+- `2026-08-09T00:54:03` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-08-09T00:54:36` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `quarantine_file` añadiendo una validación explícita para evitar que se pongan en cuarentena archivos que ya están en el directorio de destino o que tengan rutas con colisiones de nombre, fortaleciendo la integridad del sandbox.
+- `2026-08-09T00:54:55` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-08-09T00:55:20` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-08-09T00:55:28` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `process_entry` mediante el uso de `path_obj.is_relative_to(self.base_root)` (disponible en Python 3.9+), lo cual es más robusto y legible que comparar strings para prevenir ataques de *path traversal* fuera del directorio base definido.
+- `2026-08-09T00:55:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-09T00:55:28` Corrida terminada. Total usado hoy: 24.

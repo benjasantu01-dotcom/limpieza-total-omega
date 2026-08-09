@@ -375,7 +375,10 @@ def quarantine_file(
     destination = dest_dir / stored_name
 
     if destination.exists():
-        raise FileExistsError(f"Colisión de nombre en destino: {destination}")
+        raise UnsafePathError(f"Colisión de nombre en destino: {destination}")
+    
+    if is_within_directory(destination, dest_dir) and destination.parent != dest_dir:
+        raise UnsafePathError("La ruta resultante intenta escapar del directorio raíz.")
 
     temp_dest = destination.with_suffix(".tmp")
     try:
