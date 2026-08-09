@@ -198,6 +198,10 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                             continue
                         
                         path_obj = Path(entry.path).resolve()
+                        # Defensa adicional: verificar que la ruta resuelta esté dentro del root
+                        if not str(path_obj).startswith(str(root)):
+                            continue
+
                         if skip_protected and is_protected_path(path_obj):
                             continue
 
@@ -273,6 +277,8 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
         
         for path, size in walk_files(base, skip_protected):
             try:
+                # Verificación de contención: debe estar bajo base
+                if not str(path).startswith(str(base)): continue
                 relative = path.relative_to(base)
                 if not relative.parts: continue
                 top_level = base / relative.parts[0]

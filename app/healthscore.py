@@ -204,13 +204,13 @@ def _generate_recommendations(m: SystemMetrics, ratios: ScoreMap) -> List[str]:
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
     """Ejecuta el cálculo ponderado de salud integral del sistema."""
-    if metrics is None or not isinstance(metrics, SystemMetrics):
-        return HealthResult(0, "F", {}, ["Error: Instancia de métricas nula o inválida."])
+    # Validación defensiva contra objetos nulos, tipos incorrectos o datos corrompidos.
+    if not isinstance(metrics, SystemMetrics):
+        return HealthResult(0, "F", {}, ["Error: Instancia de métricas inválida."])
     
-    # Defensa: asegurar integridad absoluta de los datos antes de operar
     metrics.validate()
-    if not metrics.is_finite() or not _validate_weights() or _TOTAL_WEIGHTS <= 0:
-        return HealthResult(0, "F", {}, ["Error: Datos o configuración inválida."])
+    if not metrics.is_finite() or not _validate_weights():
+        return HealthResult(0, "F", {}, ["Error: Datos o configuración inestables."])
 
     sec = score_security(metrics.suspicious_count, metrics.suspicious_warnings)
     disk = score_disk(metrics.disk_free_percent)

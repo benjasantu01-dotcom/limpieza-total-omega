@@ -87,7 +87,9 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
         
     try:
         file_path = Path(path)
-        # Nota: Se asume validación de seguridad previa en llamadas de alto nivel
+        if is_protected_path(file_path):
+            return None
+
         stat_initial = file_path.stat()
         if stat_initial.st_size <= 0:
             return None
@@ -117,7 +119,11 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
         return None
         
     try:
-        with open(path, "rb") as f:
+        file_path = Path(path)
+        if is_protected_path(file_path):
+            return None
+            
+        with open(file_path, "rb") as f:
             content = f.read(read_bytes)
             return hashlib.sha256(content).hexdigest() if content else None
     except (OSError, PermissionError, ValueError, TypeError, RuntimeError, IOError):

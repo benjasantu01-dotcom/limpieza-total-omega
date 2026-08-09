@@ -1494,10 +1494,13 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.run_async(task)
 
     def on_ask_assistant(self, question: Optional[str] = None) -> None:
-        """Consulta asistente IA local."""
+        """Consulta asistente IA local con validación de entrada."""
         texto = (question or self.question_entry.get()).strip()
+        # Seguridad defensiva: Sanitizar entrada para evitar inyección y limitar tamaño
+        texto = "".join(c for c in texto if c.isprintable())[:500]
+        
         if not texto:
-            self.log("Escribí una pregunta o elegí una sugerida.", "Asistente")
+            self.log("Escribí una pregunta válida.", "Asistente")
             return
         
         if question is None:
@@ -1544,7 +1547,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             )
             
         if hasattr(self, 'api_key_entry'):
-            clave_api = self.api_key_entry.get().strip()
+            # Seguridad: no permitir claves de API que contengan caracteres de control
+            clave_api = "".join(c for c in self.api_key_entry.get().strip() if c.isprintable())
             if clave_api:
                 valores["asistente_clave_api"] = clave_api
         return valores
