@@ -115,6 +115,9 @@ def _is_file_in_use(path: Path) -> bool:
 
 def _check_file_integrity(p: Path) -> None:
     """Valida la integridad del archivo antes de cualquier operación de modificación."""
+    if not p.exists():
+        raise UnsafePathError(f"El archivo {p.name} ya no existe.")
+
     checks = [
         (not os.access(p, os.W_OK), "inaccesible (sin permisos de escritura)"),
         (_is_reparse_point(p), "punto de reparse detectado"),

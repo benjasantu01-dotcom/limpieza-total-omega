@@ -134,7 +134,6 @@ class _Validators:
             resolved_path = path_obj.resolve(strict=False)
             if resolved_path.is_symlink(): return None
             
-            # Verificación defensiva: si existe debe ser seguro, si no, su padre debe serlo
             check_target = resolved_path if resolved_path.exists() else resolved_path.parent
             return str(resolved_path) if is_safe_to_modify(str(check_target)) else None
         except (OSError, RuntimeError, ValueError, TypeError, PermissionError):
@@ -226,6 +225,7 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     if _cached_settings == cleaned_settings and _current_path == ruta: 
         return ruta
 
+    temp_path = None
     try:
         with tempfile.NamedTemporaryFile("w", dir=parent, delete=False, encoding="utf-8") as temp_file:
             temp_path = Path(temp_file.name)
@@ -236,8 +236,8 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
         _cached_settings, _current_path = cleaned_settings, ruta
         return ruta
     except (OSError, IOError, PermissionError, RuntimeError):
-        if 'temp_path' in locals(): 
-            try: Path(temp_path).unlink(missing_ok=True)
+        if temp_path and temp_path.exists(): 
+            try: temp_path.unlink()
             except OSError: pass
         return None
 

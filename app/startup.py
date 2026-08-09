@@ -248,11 +248,14 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
             continue
         
         try:
+            # Validamos que el split genere al menos 2 elementos
             parts = [p.strip().strip('"') for p in stripped_line.split(",")]
+            if len(parts) < 2:
+                continue
         except (ValueError, AttributeError):
             continue
             
-        if len(parts) < 2 or not parts[0] or not parts[1]:
+        if not parts[0] or not parts[1]:
             continue
             
         try:

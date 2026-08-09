@@ -67,8 +67,13 @@ class Scanner:
 
     def _is_safe_entry(self, entry_path: str) -> bool:
         """Verifica que la entrada esté dentro del base_root definido."""
-        full_path = Path(entry_path).resolve()
-        return self.base_root in full_path.parents or full_path == self.base_root
+        if not entry_path:
+            return False
+        try:
+            full_path = Path(entry_path).resolve()
+            return self.base_root in full_path.parents or full_path == self.base_root
+        except (RuntimeError, ValueError):
+            return False
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         """Determina si una entrada es un punto de reanálisis (Junction o Symlink) para evitar bucles infinitos."""
@@ -82,7 +87,7 @@ class Scanner:
         Valida y procesa una entrada del sistema de archivos. 
         Si es directorio, lo agrega al stack de recorrido; si es archivo, ejecuta las heurísticas.
         """
-        if entry is None:
+        if entry is None or stack is None:
             return
         
         try:
@@ -99,13 +104,13 @@ class Scanner:
                 name = entry.name
                 suffix = os.path.splitext(name)[1].lower()
                 self.results.extend(scan_file(path_obj, entry=entry, name=name, suffix=suffix))
-        except (PermissionError, OSError, RuntimeError, ValueError) as e:
+        except (PermissionError, OSError, ValueError, RuntimeError) as e:
             logger.debug(f"Saltando entrada {getattr(entry, 'path', 'desconocida')}: {e}")
 
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None) -> Optional[Suspicion]:
     """Identifica archivos que utilizan doble extensión para ocultar un ejecutable malicioso."""
-    target = name or path.name
+    target = name or (path.name if path else None)
     if target and DOUBLE_EXTENSION_RE.search(target):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
     return None
@@ -114,6 +119,7 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, name
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, hours: int = RECENT_FILE_THRESHOLD_HOURS) -> Optional[Suspicion]:
     """Detecta ejecutables creados recientemente para alertar sobre posibles descargas no deseadas."""
     try:
+        if not path: return None
         st = entry.stat() if entry else path.stat()
         mtime = st.st_mtime
         if mtime <= 0: return None
@@ -127,8 +133,9 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None) -> Optional[Suspicion]:
     """Verifica si un archivo adopta un nombre de sistema crítico, lo cual es indicativo de suplantación."""
     try:
+        if not path: return None
         target = name or path.name
-        if target.lower() in SYSTEM_LOOKALIKES and SYSTEM32_LOWER not in str(path.parent).lower():
+        if target and target.lower() in SYSTEM_LOOKALIKES and SYSTEM32_LOWER not in str(path.parent).lower():
             return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
     except (OSError, RuntimeError, AttributeError):
         pass
@@ -150,6 +157,9 @@ def _run_checks(checks: List[SuspicionCheck], path: Path, entry: Optional[os.Dir
 
 def scan_file(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None) -> ScanResult:
     """Aplica el set completo de heurísticas a un archivo según su tipo."""
+    if not path:
+        return []
+        
     try:
         n = name or path.name
         s = suffix or path.suffix.lower()
@@ -162,7 +172,7 @@ def scan_file(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[st
             findings.extend(_run_checks(CHECK_REGISTRY["exec"], path, entry, n, s))
                 
         return findings
-    except (OSError, RuntimeError):
+    except (OSError, RuntimeError, TypeError):
         return []
 
 
@@ -188,7 +198,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     scanner.process_entry(entry, stack)
-        except (PermissionError, OSError, ValueError) as e:
+        except (PermissionError, OSError, ValueError, RuntimeError) as e:
             logger.warning(f"No se pudo acceder al directorio {current_dir}: {e}")
             continue
             
