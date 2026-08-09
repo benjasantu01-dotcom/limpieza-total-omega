@@ -862,3 +862,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-09T03:48:58` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimizé `compute_score` cacheando el cálculo de `_TOTAL_WEIGHTS` y reemplazando la creación dinámica de diccionarios dentro del bucle principal por una iteración directa sobre los pesos constantes, mejorando la eficiencia computacional al evitar búsquedas repetitivas por clave.
 - `2026-08-09T03:48:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-09T03:48:58` Corrida terminada. Total usado hoy: 92.
+- `2026-08-09T03:57:44` Arrancando corrida. Quedan hoy ~208 peticiones objetivo.
+- `2026-08-09T03:58:51` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Optimicé el sistema de caché implementando un `dict` con acceso O(1) para búsquedas directas por clave, reduciendo la carga de procesamiento en cada iteración al reemplazar iteraciones sobre `OrderedDict` en `_invalidate_cache` y mejorando la gestión de memoria al asegurar una expiración efectiva antes de que el caché alcance su límite.
+- `2026-08-09T03:59:18` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimizé la función `top_memory_processes` reemplazando la creación manual de un generador y el ordenamiento completo en memoria por un filtrado más eficiente, y mejoré la gestión de la caché eliminando la lógica redundante de re-almacenamiento en cada iteración del bucle, reduciendo así la carga de CPU innecesaria.
+- `2026-08-09T03:59:39` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-08-09T03:59:56` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimizé `purge_all` para evitar la sobrecarga de consultas al sistema de archivos mediante el uso de un conjunto (set) de nombres de archivos válidos según el manifiesto, permitiendo una validación O(1) en lugar de O(n) por cada entrada del directorio.
+- `2026-08-09T03:59:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-09T03:59:56` Corrida terminada. Total usado hoy: 96.

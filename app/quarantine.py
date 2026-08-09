@@ -545,7 +545,8 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
         return 0
     
     items = load_manifest(base)
-    item_map_by_name: Dict[str, QuarantineItem] = {item.stored_name: item for item in items}
+    valid_names = {item.stored_name for item in items}
+    item_map_by_name = {item.stored_name: item for item in items}
     
     to_keep: List[QuarantineItem] = []
     purged_count = 0
@@ -554,17 +555,13 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
         if entry.name == MANIFEST_NAME or not entry.is_file():
             continue
         
-        item = item_map_by_name.get(entry.name)
-        
-        if item and item.verify_integrity(entry):
-            try:
+        # Solo procesamos si el archivo está en el manifiesto
+        if entry.name in valid_names:
+            item = item_map_by_name[entry.name]
+            if item.verify_integrity(entry):
                 if _safe_unlink(entry):
                     purged_count += 1
                     continue
-            except Exception:
-                pass 
-        
-        if item:
             to_keep.append(item)
             
     if purged_count > 0:

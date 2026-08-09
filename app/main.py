@@ -156,7 +156,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _init_state(self) -> None:
         """Prepara el pool de hilos, el caché LRU y la configuración persistida."""
-        self._cache: OrderedDict[str, Tuple[Any, float]] = OrderedDict()
+        self._cache: Dict[str, Tuple[Any, float]] = {}
+        self._cache_access_order: OrderedDict[str, None] = OrderedDict()
         self._cache_ttl = 300
         self._cache_max_size = 20
         
@@ -741,17 +742,22 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         if not force and key in self._cache:
             data, timestamp = self._cache[key]
             if now - timestamp < self._cache_ttl:
-                self._cache.move_to_end(key)
+                self._cache_access_order.move_to_end(key)
                 return data
             del self._cache[key]
+            if key in self._cache_access_order:
+                del self._cache_access_order[key]
         
         if provider:
             try:
                 data = provider()
                 if data is not None:
                     if len(self._cache) >= self._cache_max_size:
-                        self._cache.popitem(last=False)
+                        oldest = next(iter(self._cache_access_order))
+                        del self._cache[oldest]
+                        del self._cache_access_order[oldest]
                     self._cache[key] = (data, now)
+                    self._cache_access_order[key] = None
                 return data
             except Exception as e:
                 logging.error("Error al obtener datos para caché %s: %s", key, e)
@@ -770,6 +776,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         keys_to_del = [k for k in self._cache if k.startswith(key_prefix)]
         for k in keys_to_del:
             del self._cache[k]
+            if k in self._cache_access_order:
+                del self._cache_access_order[k]
 
     def _box(self, tab: str) -> ctk.CTkTextbox:
         """Retorna el widget log de una pestaña específica."""
@@ -917,6 +925,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             unidad = diskreport.drive_usage(home)
             if unidad:
                 self._cache[cache_key] = (unidad, time.time())
+                self._cache_access_order[cache_key] = None
         
         metrics = healthscore.SystemMetrics(
             junk_mb=sum(j.size_bytes for j in junk) / (1024 * 1024),
@@ -1033,6 +1042,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             
             self._invalidate_cache("junk")
             self._cache["junk"] = (junk, time.time())
+            self._cache_access_order["junk"] = None
             
             total_mb = round(sum(j.size_bytes for j in junk) / (1024 * 1024), 2)
             self.log(f"Encontrados {len(junk)} candidatos ({total_mb} MB).", "Limpieza")
@@ -1108,6 +1118,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             
             self._invalidate_cache("suspicions")
             self._cache["suspicions"] = (results, time.time())
+            self._cache_access_order["suspicions"] = None
 
             if not results:
                 self.log("Sin hallazgos sospechosos.", "Seguridad")
@@ -1362,6 +1373,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             
             self._invalidate_cache("dups")
             self._cache["dups"] = (dups, time.time())
+            self._cache_access_order["dups"] = None
             
             if not dups:
                 self.log_lines(["No se encontraron duplicados."], "Duplicados")

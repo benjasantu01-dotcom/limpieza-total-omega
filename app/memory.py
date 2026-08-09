@@ -192,16 +192,17 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
     if len(lines) < 2:
         return []
 
-    def _gen_proc():
-        for line in lines:
-            parts = [p.strip().strip('"') for p in line.split(",")]
-            if _is_valid_process_row(parts):
-                try:
-                    yield ProcessMemory(name=parts[0] or "Unknown", pid=int(parts[1]), working_set=int(parts[2]))
-                except (ValueError, IndexError):
-                    continue
+    processes = []
+    for line in lines:
+        parts = [p.strip().strip('"') for p in line.split(",")]
+        if _is_valid_process_row(parts):
+            try:
+                processes.append(ProcessMemory(name=parts[0] or "Unknown", pid=int(parts[1]), working_set=int(parts[2])))
+            except (ValueError, IndexError):
+                continue
 
-    return sorted(_gen_proc(), key=lambda p: p.working_set, reverse=True)[:limit]
+    processes.sort(key=lambda p: p.working_set, reverse=True)
+    return processes[:limit]
 
 
 def _read_windows_snapshot() -> MemorySnapshot:
@@ -270,7 +271,6 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     if now - ts < 5.0 and cached_processes:
         return cached_processes[:limit]
 
-    # Optimizamos: pedimos directamente el límite solicitado para reducir carga de red/procesamiento
     command: str = (
         f"Get-Process | Sort-Object WorkingSet -Descending | Select-Object -First {limit} "
         "| ForEach-Object { \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }"
