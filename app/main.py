@@ -857,8 +857,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def run_async(self, fn: Callable, check_safety: bool = False) -> None:
         """Envía tarea al pool de hilos y garantiza el manejo de bloqueos."""
         if check_safety:
+            # Validación pre-ejecución: si la ruta de escaneo es inválida/insegura, aborta.
             if self.scan_target and not self._is_safe_target_dir(self.scan_target):
-                self.log("Abortado: La ruta de destino no es segura.", self._current_tab())
+                self.log(f"Abortado: La ruta de destino {self.scan_target} no es segura.", self._current_tab())
                 return
             
         self._set_busy(True)

@@ -199,7 +199,6 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     if not metrics.is_finite() or not _validate_weights() or _TOTAL_WEIGHTS == 0:
         return HealthResult(0, "F", {}, ["Error: Datos o configuración inválida."])
 
-    # Cálculo directo usando la estructura constante para evitar lookups en tiempo de ejecución
     sec = score_security(metrics.suspicious_count, metrics.suspicious_warnings)
     disk = score_disk(metrics.disk_free_percent)
     mem = score_memory(metrics.memory_available_percent)
@@ -211,9 +210,8 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     breakdown: Dict[str, int] = {}
     total_score: float = 0.0
     
-    # Iteración sobre pesos pre-calculados
     for area, weight in _WEIGHT_ITEMS:
-        score_val = (ratios[area] * weight * 100.0) / _TOTAL_WEIGHTS
+        score_val = (ratios.get(area, 0.0) * weight * 100.0) / _TOTAL_WEIGHTS
         breakdown[area] = round(score_val)
         total_score += score_val
 

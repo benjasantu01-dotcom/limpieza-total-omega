@@ -80,7 +80,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
     
     Usa un buffer de memoria para procesar archivos grandes sin cargarlos 
     íntegramente en RAM. Retorna None si el archivo es inaccesible, protegido
-    o un directorio.
+    o cambió de tamaño durante la lectura.
     """
     if path is None or chunk_size <= 0: 
         return None
@@ -90,8 +90,8 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
         if not file_path.exists() or not file_path.is_file() or is_protected_path(file_path):
             return None
         
-        st = file_path.stat()
-        if st.st_size <= 0:
+        stat_initial = file_path.stat()
+        if stat_initial.st_size <= 0:
             return None
             
         digest = hashlib.sha256()
@@ -101,6 +101,11 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
                 if not buffer:
                     break
                 digest.update(buffer)
+        
+        # Validar consistencia post-lectura: si cambió, el hash no es fiable
+        if file_path.stat().st_size != stat_initial.st_size:
+            return None
+            
         return digest.hexdigest()
     except (OSError, PermissionError, ValueError, TypeError, RuntimeError, IOError):
         return None
@@ -121,8 +126,9 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
         if not file_path.exists() or not file_path.is_file() or is_protected_path(file_path):
             return None
 
-        st = file_path.stat()
-        if st.st_size <= 0:
+        # Verificar integridad mínima
+        stat_info = file_path.stat()
+        if stat_info.st_size <= 0:
             return None
 
         with open(file_path, "rb") as f:
@@ -174,7 +180,6 @@ def _collect_candidates(
         try:
             with os.scandir(root_path) as dir_iterator:
                 for entry in dir_iterator:
-                    # Validar seguridad de la entrada antes de intentar estadisticas
                     if skip_protected and is_protected_path(Path(entry.path)):
                         continue
                         
@@ -186,7 +191,6 @@ def _collect_candidates(
                             continue
                         
                         if entry.is_dir(follow_symlinks=False):
-                            # Evitar bucles circulares de sistema de archivos mediante inodos
                             if entry_stat.st_ino not in visited_inodes[entry_stat.st_dev]:
                                 visited_inodes[entry_stat.st_dev].add(entry_stat.st_ino)
                                 _scan(Path(entry.path))
@@ -251,23 +255,18 @@ def find_duplicates(
     """
     if directories is None: return []
     
-    # Paso 1: Agrupación física por tamaño (Filtro base)
     size_map = _collect_candidates(directories, min_size, skip_protected)
     
     groups: List[DuplicateGroup] = []
     
-    # Paso 2 y 3: Refinamiento por contenido
     for size, paths_in_size_group in size_map.items():
-        # Filtro de hash parcial para descartar archivos con mismo tamaño pero contenido distinto
         partial_groups = _refine_by_hash(paths_in_size_group, partial_hash)
         
         for partial_candidates in partial_groups.values():
-            # Confirmación final con hash completo de todo el contenido
             full_hash_groups = _refine_by_hash(partial_candidates, hash_file)
             for digest, confirmed_paths in full_hash_groups.items():
                 groups.append(DuplicateGroup(digest, size, sorted(confirmed_paths)))
 
-    # Ordenar resultados: primero los grupos que liberan más espacio al usuario
     groups.sort(key=lambda g: g.wasted_bytes, reverse=True)
     return groups
 
