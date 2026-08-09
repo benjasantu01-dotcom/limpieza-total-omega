@@ -124,8 +124,11 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     """
     try:
         st = entry.stat() if entry else path.stat()
-        if st.st_mtime > 0 and (datetime.now() - datetime.fromtimestamp(st.st_mtime)) < timedelta(hours=hours):
-            return Suspicion(path, f"Ejecutable reciente detectado (modificado hace menos de {hours}h)", "info")
+        mtime = getattr(st, 'st_mtime', 0)
+        if mtime > 0:
+            file_date = datetime.fromtimestamp(mtime)
+            if (datetime.now() - file_date) < timedelta(hours=hours):
+                return Suspicion(path, f"Ejecutable reciente detectado (modificado hace menos de {hours}h)", "info")
     except (OSError, AttributeError, ValueError, OverflowError, FileNotFoundError):
         pass
     return None
@@ -136,9 +139,14 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, name
     Busca ejecutables que usurpan nombres de procesos críticos del sistema.
     """
     try:
-        target = name or path.name
-        if target and target.lower() in SYSTEM_LOOKALIKES and SYSTEM32_LOWER not in str(path.parent).lower():
-            return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
+        target = (name or path.name or "").lower()
+        if target in SYSTEM_LOOKALIKES:
+            # Validar padre para confirmar que no está en system32 (prevenir error si path no tiene padre)
+            try:
+                if SYSTEM32_LOWER not in str(path.parent).lower():
+                    return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
+            except (RuntimeError, ValueError):
+                return Suspicion(path, "Nombre de proceso de sistema (origen desconocido)", "warning")
     except (OSError, RuntimeError, AttributeError):
         pass
     return None

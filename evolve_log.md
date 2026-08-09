@@ -660,3 +660,10 @@ FAILED evolve/tests/test_safety.py::test_describe_protection_explains_the_reason
 - `2026-08-09T13:30:40` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
 - `2026-08-09T13:30:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-09T13:30:40` Corrida terminada. Total usado hoy: 320.
+- `2026-08-09T13:38:53` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-09T13:39:33` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: robustez ante casos límite).
+- `2026-08-09T13:39:52` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-08-09T13:40:16` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
+- `2026-08-09T13:40:34` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha añadido un robusto manejo de excepciones y validación de tipos en `check_recent_executable_in_downloads` y `check_system_lookalike` para prevenir fallos silenciosos o errores fatales al procesar archivos con metadatos corrompidos, fechas inválidas o permisos restringidos durante la lectura de atributos.
+- `2026-08-09T13:40:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-09T13:40:34` Corrida terminada. Total usado hoy: 324.
