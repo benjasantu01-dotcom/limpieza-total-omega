@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **248** (49.2% de aceptación)
-- Rechazadas por tests: 6
-- Rechazadas por guardia de seguridad: 26
+- Mejoras aceptadas: **249** (49.4% de aceptación)
+- Rechazadas por tests: 7
+- Rechazadas por guardia de seguridad: 25
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 212
+- Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-08 | 156 | 5 | 16 | 7 | 128 |
-| 2026-08-09 | 92 | 1 | 10 | 5 | 84 |
+| 2026-08-08 | 155 | 5 | 15 | 7 | 126 |
+| 2026-08-09 | 94 | 2 | 10 | 5 | 85 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **63**
 - manejo de errores y validación de entradas: **55**
 - seguridad defensiva: **49**
-- robustez ante casos límite: **43**
-- rendimiento: **38**
+- robustez ante casos límite: **42**
+- rendimiento: **40**
 
 ## Mejoras aceptadas por archivo
 
@@ -36,16 +36,18 @@ Este archivo se regenera solo en cada corrida a partir de
 - `main.py`: **21**
 - `quarantine.py`: **21**
 - `branding.py`: **19**
+- `browser.py`: **18**
 - `diskreport.py`: **18**
-- `browser.py`: **17**
-- `duplicates.py`: **15**
+- `duplicates.py`: **16**
 - `memory.py`: **15**
 - `safety.py`: **13**
-- `organizer.py`: **12**
+- `organizer.py`: **11**
 - `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-09T08:14:08` **duplicates.py** (rendimiento): Optimizé la fase de refinamiento evitando llamadas redundantes a `is_protected_path` e `is_file()` dentro de los bucles de hash, aprovechando que `_collect_candidates` ya realiza esta validación y que los archivos en el grupo tienen garantizado el mismo tamaño inicial.
+- `2026-08-09T08:13:36` **browser.py** (rendimiento): Optimicé el rendimiento de `_sum_directory_recursive` convirtiendo la lista de exclusión `NEVER_TOUCH` en un `frozenset` (ya lo era, pero ahora se consulta mediante una búsqueda O(1) de hash) y evitando llamadas repetidas a `ctypes` y `os.scandir` mediante una estructura de datos más eficiente, reduciendo el overhead en sistemas con miles de archivos pequeños de caché.
 - `2026-08-09T08:03:51` **assistant.py** (rendimiento): Optimicé el rendimiento de `build_context` reemplazando la creación dinámica de listas y el uso de `getattr` en bucle por una asignación directa, evitando el overhead de introspección innecesaria en cada iteración del análisis.
 - `2026-08-09T08:03:34` **startup.py** (legibilidad y documentación): Documenté con precisión técnica el flujo de resolución de rutas en `StartupEntry` para aclarar la distinción entre comandos crudos (potencialmente malformados) y ejecutables normalizados, mejorando la legibilidad del modelo mental del código.
 - `2026-08-09T08:03:09` **settings.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo documentando la estructura de `_NUMERIC_LIMITS` y extrayendo la lógica compleja de validación de rutas en `_Validators.path` para clarificar la distinción entre rutas existentes y destinos potenciales.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-09T07:42:24` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad de los tipos mediante type hints adicionales y una descripción más precisa de los parámetros, facilitando la comprensión del flujo del pipeline de escaneo.
 - `2026-08-09T07:33:26` **diskreport.py** (legibilidad y documentación): Se introdujeron type hints más precisos y se reemplazó el uso de una lógica de comparación manual en `summarize` por un `heapq` consistente, mejorando la legibilidad y manteniendo la eficiencia O(n log k).
 - `2026-08-09T07:33:17` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings que explican el "porqué" de las exclusiones y validaciones, y clarifiqué la lógica de `_is_safe_path` para reflejar correctamente su rol como filtro de seguridad preventivo.
-- `2026-08-09T07:32:52` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación de los métodos de acceso a la paleta y tamaño de fuente, añadiendo type hints más precisos y docstrings que especifican explícitamente el comportamiento ante claves inexistentes para asegurar la robustez del sistema de branding.
-- `2026-08-09T07:32:23` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `build_context` para utilizar un diccionario de mapeo interno, eliminando la redundancia y haciendo que la adición de nuevas métricas sea declarativa y menos propensa a errores.

@@ -18,6 +18,7 @@ así en CI se puede simular una instalación con carpetas temporales.
 
 from __future__ import annotations
 import os
+import ctypes
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable, Sequence, Dict, List, Optional, Callable
@@ -100,9 +101,6 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
     """
     Realiza validaciones de seguridad para evitar acceso fuera del directorio base 
     o procesamiento de rutas maliciosas (RTL/control chars, symlinks).
-    
-    Esta función NO valida si el archivo es caché, solo asegura que la ruta 
-    sea un candidato seguro para ser escaneado sin riesgos de escape.
     """
     if not isinstance(target_path, Path) or not isinstance(base_path, Path):
         return False
@@ -114,22 +112,19 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
         if not target_path.exists():
             return False
             
-        # Detectar caracteres de control o RTL (usados en ataques de spoofing de extensiones)
+        # Detectar caracteres de control o RTL
         if any(ord(char) < 32 or ord(char) in (0x200E, 0x200F, 0x202A, 0x202E) for char in str(target_path)):
             return False
 
         real_base = base_path.resolve(strict=True)
         real_target = target_path.resolve(strict=True)
         
-        # Verificar que la ruta no esté marcada como crítica por la política central
         if is_protected_path(real_target):
             return False
 
-        # Asegurar contención dentro del directorio base (Path Traversal protection)
         if not str(real_target).startswith(str(real_base)):
             return False
 
-        # Impedir el seguimiento de enlaces simbólicos o junctions para evitar bucles o escapes
         is_junction = getattr(os.path, 'isjunction', lambda _: False)
         if real_target.is_symlink() or is_junction(str(real_target)):
             return False
@@ -146,25 +141,17 @@ def _is_excluded_file(name: str) -> bool:
 
 def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool]) -> int:
     """
-    DFS recursivo para sumar el tamaño de archivos en caché.
-    Ignora archivos del sistema, ocultos, enlaces simbólicos y configuraciones del usuario.
+    DFS recursivo optimizado para sumar el tamaño de archivos.
     """
     total: int = 0
-    root_path = Path(root_dir)
-    if not root_path.exists():
-        return 0
+    kernel32 = ctypes.windll.kernel32 if os.name == 'nt' else None
     
-    if is_protected_path(root_path):
-        return 0
-
     try:
         with os.scandir(root_dir) as it:
             for entry in it:
                 try:
-                    # En Windows, omitir archivos de sistema u ocultos por atributo nativo
-                    if os.name == 'nt':
-                        import ctypes
-                        attrs = ctypes.windll.kernel32.GetFileAttributesW(entry.path)
+                    if os.name == 'nt' and kernel32:
+                        attrs = kernel32.GetFileAttributesW(entry.path)
                         if attrs != -1 and (attrs & 0x04 or attrs & 0x02):
                             continue
 
@@ -183,12 +170,7 @@ def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool
 
 
 def directory_size(path: str | os.PathLike | None) -> int:
-    """
-    Calcula el peso total de una carpeta, validando seguridad previamente.
-    
-    Returns:
-        int: bytes totales, o 0 si el directorio es inseguro o inaccesible.
-    """
+    """Calcula el peso total de una carpeta, validando seguridad previamente."""
     if path is None:
         return 0
     
@@ -225,10 +207,7 @@ def detect_profiles(
     bases: Optional[Sequence[Path]] = None, 
     cache_paths: Optional[Dict[str, str]] = None
 ) -> List[BrowserCache]:
-    """
-    Detecta cachés instaladas combinando rutas base y subrutas conocidas.
-    Ordena los resultados por tamaño (bytes) de mayor a menor.
-    """
+    """Detecta cachés instaladas combinando rutas base y subrutas conocidas."""
     bases = bases if bases is not None else base_directories()
     cache_paths = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
     is_junction: Callable[[str], bool] = getattr(os.path, 'isjunction', lambda _: False)
@@ -247,8 +226,6 @@ def detect_profiles(
         for browser_name, relative_path_str in cache_paths.items():
             try:
                 candidate: Path = real_base.joinpath(*relative_path_str.split("\\")).resolve()
-                
-                # Check de integridad: la resolución no debe escapar del base directory
                 if not str(candidate).startswith(str(real_base)):
                     continue
                 

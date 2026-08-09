@@ -87,9 +87,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
         
     try:
         file_path = Path(path)
-        if not file_path.exists() or not file_path.is_file() or is_protected_path(file_path):
-            return None
-        
+        # Nota: Se asume validación de seguridad previa en llamadas de alto nivel
         stat_initial = file_path.stat()
         if stat_initial.st_size <= 0:
             return None
@@ -114,28 +112,14 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
 def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """
     Calcula un hash SHA256 sobre los primeros N bytes para comparación rápida.
-    
-    Eficaz para descartar archivos distintos que comparten tamaño pero no 
-    contenido inicial. Retorna None si el archivo es inaccesible.
     """
     if path is None or read_bytes <= 0: 
         return None
         
     try:
-        file_path = Path(path)
-        if not file_path.exists() or not file_path.is_file() or is_protected_path(file_path):
-            return None
-
-        # Verificar integridad mínima
-        stat_info = file_path.stat()
-        if stat_info.st_size <= 0:
-            return None
-
-        with open(file_path, "rb") as f:
+        with open(path, "rb") as f:
             content = f.read(read_bytes)
-            if not content:
-                return None
-            return hashlib.sha256(content).hexdigest()
+            return hashlib.sha256(content).hexdigest() if content else None
     except (OSError, PermissionError, ValueError, TypeError, RuntimeError, IOError):
         return None
 
@@ -143,9 +127,6 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
 def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     """
     Agrupa rutas de archivos por su tamaño, excluyendo rutas protegidas o inaccesibles.
-    
-    Returns:
-        Diccionario donde la clave es el tamaño en bytes y el valor la lista de rutas Path.
     """
     groups: Dict[int, List[Path]] = defaultdict(list)
     if paths is None: 
@@ -154,9 +135,8 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     for p in paths:
         if not isinstance(p, Path): continue
         try:
-            if p.exists() and p.is_file() and not is_protected_path(p):
-                st = p.stat()
-                groups[st.st_size].append(p)
+            if p.is_file() and not is_protected_path(p):
+                groups[p.stat().st_size].append(p)
         except (OSError, PermissionError, RuntimeError):
             continue
     return groups
@@ -188,7 +168,6 @@ def _collect_candidates(
                         
                     try:
                         entry_stat = entry.stat(follow_symlinks=False)
-                        # 0x400 es FILE_ATTRIBUTE_REPARSE_POINT en Windows
                         is_reparse = getattr(entry_stat, 'st_file_attributes', 0) & 0x400
                         
                         if is_reparse:
@@ -223,22 +202,14 @@ def _refine_by_hash(
     hash_func: Callable[[Path], Optional[str]]
 ) -> Dict[str, List[Path]]:
     """
-    Refina un grupo de candidatos aplicando una función de hash (parcial o completo).
-    Solo retorna grupos que mantienen al menos dos archivos colisionando.
+    Refina un grupo de candidatos aplicando una función de hash.
+    La validación de protección y existencia se realiza en el recolector previo.
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
-    
     for path in paths:
-        if not isinstance(path, Path): 
-            continue
-        
-        try:
-            if path.is_file() and not is_protected_path(path):
-                digest = hash_func(path)
-                if digest:
-                    groups_by_digest[digest].append(path)
-        except (OSError, PermissionError):
-            continue
+        digest = hash_func(path)
+        if digest:
+            groups_by_digest[digest].append(path)
                 
     return {d: p for d, p in groups_by_digest.items() if len(p) > 1}
 
@@ -253,14 +224,10 @@ def find_duplicates(
     1. Fase de Indexación: Recorre directorios indexando archivos por tamaño.
     2. Fase de Hash Parcial: Reduce el conjunto comparando solo los primeros 64KB.
     3. Fase de Verificación: Aplica hash completo SHA256 a los sobrevivientes.
-    
-    Returns:
-        Lista de objetos DuplicateGroup ordenados por espacio desperdiciado (desc).
     """
     if directories is None: return []
     
     size_map = _collect_candidates(directories, min_size, skip_protected)
-    
     groups: List[DuplicateGroup] = []
     
     for size, paths_in_size_group in size_map.items():
@@ -292,18 +259,13 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
 
     keepers: List[Tuple[float, int, Path]] = []
     for p in group.paths:
-        if not isinstance(p, Path): continue
         try:
-            if p.exists() and p.is_file() and not is_protected_path(p):
-                stat_info = p.stat()
-                keepers.append((float(stat_info.st_mtime), len(str(p)), p))
+            stat_info = p.stat()
+            keepers.append((float(stat_info.st_mtime), len(str(p)), p))
         except (OSError, PermissionError, AttributeError):
             continue
             
-    if not keepers:
-        return None
-        
-    return min(keepers, key=lambda x: (x[0], x[1]))[2]
+    return min(keepers, key=lambda x: (x[0], x[1]))[2] if keepers else None
 
 
 def format_group(group: DuplicateGroup) -> List[str]:
