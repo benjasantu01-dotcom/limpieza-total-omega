@@ -6,40 +6,40 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **243** (48.2% de aceptación)
+- Mejoras aceptadas: **246** (48.8% de aceptación)
 - Rechazadas por tests: 8
 - Rechazadas por guardia de seguridad: 26
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-07 | 57 | 2 | 6 | 8 | 73 |
+| 2026-08-07 | 57 | 2 | 6 | 8 | 69 |
 | 2026-08-08 | 182 | 6 | 19 | 10 | 133 |
-| 2026-08-09 | 4 | 0 | 1 | 0 | 3 |
+| 2026-08-09 | 7 | 0 | 1 | 0 | 4 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **62**
 - manejo de errores y validación de entradas: **50**
 - rendimiento: **49**
-- robustez ante casos límite: **41**
-- seguridad defensiva: **41**
+- robustez ante casos límite: **43**
+- seguridad defensiva: **42**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **21**
+- `assistant.py`: **22**
+- `settings.py`: **21**
 - `duplicates.py`: **20**
-- `settings.py`: **20**
 - `branding.py`: **20**
 - `memory.py`: **19**
 - `quarantine.py`: **19**
 - `healthscore.py`: **19**
 - `browser.py`: **18**
 - `diskreport.py`: **18**
-- `scanner.py`: **17**
+- `scanner.py`: **18**
 - `main.py`: **17**
 - `safety.py`: **16**
 - `organizer.py`: **13**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-09T00:25:52` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_call_gemini` integrando un chequeo explícito de la longitud de la respuesta antes de procesarla y garantizando que las validaciones de seguridad se apliquen sobre el contenido decodificado antes de cualquier parseo JSON, evitando inyecciones o procesamiento de buffers maliciosos.
+- `2026-08-09T00:25:10` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `save` ante fallos de escritura y estados de archivo inconsistentes mediante el uso de `os.replace` (atómico) y un manejo más estricto de los descriptores de archivo, asegurando que la configuración nunca quede corrupta aunque ocurra un error de sistema durante el guardado.
+- `2026-08-09T00:23:43` **scanner.py** (robustez ante casos límite): Se introdujo una comprobación robusta contra rutas de longitud excesiva (`MAX_PATH`) y errores de codificación en `process_entry` y `scan_directory` para evitar que la aplicación aborte ante archivos con nombres inválidos, caracteres especiales o rutas que exceden los límites del sistema operativo.
 - `2026-08-09T00:14:30` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez de `ensure_safe_to_modify` implementando una validación explícita de rutas relativas maliciosas ("..") tras la normalización, evitando errores de evaluación en sistemas de archivos con particiones case-insensitive o caracteres Unicode, además de consolidar la protección contra symlinks fuera de los límites permitidos al utilizar `resolve()` de forma segura.
 - `2026-08-09T00:14:01` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine.py` ante errores de concurrencia y fallos de E/S en `purge_all` mediante el uso de un manejo de excepciones más granular y un chequeo explícito de la existencia del archivo antes de intentar su borrado, evitando así operaciones fallidas sobre archivos huérfanos o bloqueados.
 - `2026-08-09T00:05:01` **memory.py** (robustez ante casos límite): Se mejora la robustez de `trim_working_set` añadiendo una validación explícita para evitar intentar manipular procesos que han finalizado durante la espera entre la obtención del PID y la apertura del handle, garantizando que `OpenProcess` no quede en un estado ambiguo.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-08T14:22:50` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` eliminando la sobrecarga innecesaria de obtener información de 20 procesos desde PowerShell para luego descartar la mitad, ajustando la consulta para solicitar exactamente el límite necesario y reducir el tiempo de ejecución del subproceso.
 - `2026-08-08T14:22:25` **main.py** (rendimiento): Se implementó un método `_debounce_action` genérico para centralizar la lógica de retardos en eventos de UI (como redibujos o cambios en los inputs), eliminando la duplicidad de lógica de `after_cancel` y garantizando un mejor rendimiento al evitar disparos redundantes.
 - `2026-08-08T14:21:25` **healthscore.py** (rendimiento): Optimizé `SystemMetrics.is_finite` reemplazando la iteración completa sobre `__dataclass_fields__` (con `getattr` y `isinstance` por cada campo) por un chequeo directo de los atributos numéricos relevantes, eliminando la sobrecarga de reflexión en cada validación.
-- `2026-08-08T14:12:08` **diskreport.py** (rendimiento): Optimicé `walk_files` reemplazando la recursión manual con una pila explícita y eliminando `path.resolve()` redundante dentro del bucle, reduciendo significativamente las llamadas al sistema y mejorando el rendimiento en estructuras de directorios profundas.
-- `2026-08-08T14:11:22` **branding.py** (rendimiento): Optimicé el cálculo del degradado en `draw_gradient_bar` y `draw_logo` reemplazando llamadas redundantes a `gradient_colors` por una búsqueda de rangos contiguos, y eliminé el uso de listas temporales grandes en el bucle de renderizado mediante la reutilización eficiente de índices de color.
-- `2026-08-08T14:02:10` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` reemplazando la búsqueda lineal de palabras clave en tokens por un acceso directo de tiempo constante O(1) usando `set` y validación directa.

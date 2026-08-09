@@ -497,7 +497,10 @@ def _call_gemini(
             # Limitamos la lectura del stream a un máximo de 16KB para prevenir ataques de agotamiento de RAM
             raw_res = res.read(16384)
             if not raw_res: return None
-            data = json.loads(raw_res.decode("utf-8"))
+            # Validamos seguridad sobre el contenido crudo decodificado antes de parsear
+            content_decoded = raw_res.decode("utf-8")
+            if not _ensure_safe_text(content_decoded): return None
+            data = json.loads(content_decoded)
         
         candidates = data.get("candidates", [])
         if not isinstance(candidates, list) or not candidates: return None

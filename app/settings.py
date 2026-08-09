@@ -218,20 +218,17 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
 
     try:
         ruta.parent.mkdir(parents=True, exist_ok=True)
-        fd, temp_name = tempfile.mkstemp(dir=ruta.parent, text=True)
-        temp_path = Path(temp_name)
-        try:
-            with os.fdopen(fd, "w", encoding="utf-8") as tf:
-                json.dump(limpio, tf, indent=2, ensure_ascii=False)
-                tf.flush()
-                os.fsync(tf.fileno())
-            os.replace(temp_path, ruta)
-        except (OSError, IOError):
-            if temp_path.exists(): temp_path.unlink(missing_ok=True)
-            raise
+        with tempfile.NamedTemporaryFile("w", dir=ruta.parent, delete=False, encoding="utf-8") as tf:
+            temp_path = Path(tf.name)
+            json.dump(limpio, tf, indent=2, ensure_ascii=False)
+            tf.flush()
+            os.fsync(tf.fileno())
+        os.replace(temp_path, ruta)
         _cached_settings, _current_path = limpio, ruta
         return ruta
-    except (OSError, PermissionError, RuntimeError, TypeError, ValueError):
+    except (OSError, IOError, PermissionError, RuntimeError):
+        if 'temp_path' in locals() and temp_path.exists(): 
+            temp_path.unlink(missing_ok=True)
         return None
 
 def update(changes: dict[str, Any], path_or_base: PathLike | None = None) -> AppSettings:

@@ -81,7 +81,7 @@ class Scanner:
             return
         
         try:
-            # Validar si el path es válido antes de resolver
+            # Validar si el path es válido antes de resolver (evita errores por chars inválidos)
             path_obj = Path(entry.path).resolve()
             
             # Validación de seguridad defensiva: no salir de la raíz base ni entrar en rutas protegidas
@@ -99,8 +99,9 @@ class Scanner:
                 name = entry.name
                 suffix = os.path.splitext(name)[1].lower()
                 self.results.extend(scan_file(path_obj, entry=entry, name=name, suffix=suffix))
-        except (PermissionError, OSError, RuntimeError) as e:
-            logger.debug(f"Acceso denegado o error en entrada {entry.path}: {e}")
+        except (PermissionError, OSError, RuntimeError, ValueError) as e:
+            # Captura errores de sistema (paths demasiado largos, acceso denegado, errores de codificación)
+            logger.debug(f"Saltando entrada {entry.path}: {e}")
 
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None) -> Optional[Suspicion]:
@@ -167,9 +168,10 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         
     try:
         path_input = Path(directory).resolve()
+        # Verificar integridad del punto de entrada
         if not path_input.exists() or not path_input.is_dir() or is_protected_path(path_input):
             return []
-    except (OSError, RuntimeError, TypeError):
+    except (OSError, RuntimeError, TypeError, ValueError):
         return []
 
     scanner = Scanner(base_root=path_input)
@@ -182,8 +184,8 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     scanner.process_entry(entry, stack)
-        except (PermissionError, OSError) as e:
-            logger.warning(f"No se pudo acceder a {current_dir}: {e}")
+        except (PermissionError, OSError, ValueError):
+            logger.warning(f"No se pudo acceder al directorio: {current_dir}")
             continue
             
     return scanner.results
