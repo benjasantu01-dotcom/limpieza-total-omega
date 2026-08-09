@@ -1355,3 +1355,11 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-09T09:45:38` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
 - `2026-08-09T09:45:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-09T09:45:38` Corrida terminada. Total usado hoy: 232.
+- `2026-08-09T09:54:28` Arrancando corrida. Quedan hoy ~68 peticiones objetivo.
+- `2026-08-09T09:54:53` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-08-09T09:55:53` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-09T09:56:19` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-08-09T09:56:43` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se endureció la validación de `ultima_carpeta` en `_Validators.path` para rechazar explícitamente rutas que contengan componentes sospechosos o simbólicos antes de su resolución, asegurando que `is_safe_to_modify` siempre reciba una ruta normalizada y validada.
+- `2026-08-09T09:56:53` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: seguridad defensiva).
+- `2026-08-09T09:56:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-09T09:56:53` Corrida terminada. Total usado hoy: 236.
