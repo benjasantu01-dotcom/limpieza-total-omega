@@ -20,7 +20,7 @@ from __future__ import annotations
 import os
 import ctypes
 from dataclasses import dataclass
-from pathlib import Path
+from pathlib import Path, PurePath
 from typing import Iterable, Sequence, Dict, List, Optional, Callable
 from safety import is_protected_path
 
@@ -100,29 +100,24 @@ def base_directories() -> List[Path]:
 def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> bool:
     """
     Realiza validaciones de seguridad para evitar acceso fuera del directorio base 
-    o procesamiento de rutas maliciosas (RTL/control chars, symlinks).
+    usando resolución absoluta y comprobación de sub-ruta.
     """
     if not isinstance(target_path, Path) or not isinstance(base_path, Path):
         return False
         
     try:
-        if str(target_path).startswith(r"\\"):
-            return False
-
-        if not target_path.exists():
-            return False
-            
-        # Detectar caracteres de control o RTL
-        if any(ord(char) < 32 or ord(char) in (0x200E, 0x200F, 0x202A, 0x202E) for char in str(target_path)):
-            return False
-
         real_base = base_path.resolve(strict=True)
         real_target = target_path.resolve(strict=True)
         
+        # Verificar que target esté bajo base_path evitando ataques de traversal
+        if os.path.commonpath([real_base, real_target]) != str(real_base):
+            return False
+
         if is_protected_path(real_target):
             return False
 
-        if not str(real_target).startswith(str(real_base)):
+        # Detectar caracteres no imprimibles o RTL en el path
+        if any(ord(char) < 32 or ord(char) in (0x200E, 0x200F, 0x202A, 0x202E) for char in str(target_path)):
             return False
 
         is_junction = getattr(os.path, 'isjunction', lambda _: False)
@@ -130,7 +125,7 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
             return False
 
         return True
-    except (OSError, ValueError, RuntimeError, PermissionError, AttributeError):
+    except (OSError, ValueError, RuntimeError, PermissionError):
         return False
 
 
@@ -220,15 +215,12 @@ def detect_profiles(
         if not isinstance(base, Path): continue
         try:
             real_base = base.resolve(strict=True)
-        except OSError:
+        except (OSError, PermissionError):
             continue
             
         for browser_name, relative_path_str in cache_paths.items():
             try:
-                candidate: Path = real_base.joinpath(*relative_path_str.split("\\")).resolve()
-                if not str(candidate).startswith(str(real_base)):
-                    continue
-                
+                candidate = real_base.joinpath(*relative_path_str.split("\\")).resolve()
                 if _is_valid_cache_path(candidate, real_base):
                     size: int = _sum_directory_recursive(str(candidate), is_junction)
                     if size > 0:
@@ -237,7 +229,7 @@ def detect_profiles(
                             path=candidate,
                             size_bytes=size,
                         ))
-            except (OSError, ValueError, TypeError, AttributeError):
+            except (OSError, ValueError, TypeError, AttributeError, PermissionError):
                 continue
                 
     found.sort(key=lambda c: c.size_bytes, reverse=True)

@@ -143,28 +143,31 @@ def score_security(suspicious_count: int, warnings: int = 0) -> float:
     """
     count = max(0, _to_int(suspicious_count))
     warn = max(0, _to_int(warnings))
-    return _clamp(1.0 - ((count * 0.05) + (warn * 0.25)), 0.0, 1.0)
+    penalty = (count * 0.05) + (warn * 0.25)
+    return _clamp(1.0 - penalty, 0.0, 1.0)
 
 
 def score_memory(available_percent: float) -> float:
     """Calcula ratio (0.0-1.0) donde 1.0 significa disponibilidad óptima (>= RAM_IDEAL)."""
-    return 0.0 if RAM_IDEAL_PERCENT <= 0.0 else _clamp(_to_float(available_percent) / RAM_IDEAL_PERCENT)
+    if RAM_IDEAL_PERCENT <= 0.0: return 0.0
+    val = _to_float(available_percent)
+    return _clamp(val / RAM_IDEAL_PERCENT, 0.0, 1.0)
 
 
 def score_disk(free_percent: float) -> float:
     """Calcula ratio (0.0-1.0) donde 1.0 significa espacio libre ideal (>= DISK_IDEAL)."""
-    return 0.0 if DISK_IDEAL_PERCENT <= 0.0 else _clamp(_to_float(free_percent) / DISK_IDEAL_PERCENT)
+    return 0.0 if DISK_IDEAL_PERCENT <= 0.0 else _clamp(_to_float(free_percent) / DISK_IDEAL_PERCENT, 0.0, 1.0)
 
 
 def score_duplicates(duplicate_mb: float) -> float:
     """Calcula ratio (0.0-1.0) normalizando el volumen de archivos duplicados."""
-    return 1.0 if DUPLICATE_LIMIT_MB <= 0.0 else _clamp(1.0 - (_to_float(duplicate_mb) / DUPLICATE_LIMIT_MB))
+    return 1.0 if DUPLICATE_LIMIT_MB <= 0.0 else _clamp(1.0 - (_to_float(duplicate_mb) / DUPLICATE_LIMIT_MB), 0.0, 1.0)
 
 
 def score_startup(startup_count: int) -> float:
     """Calcula ratio (0.0-1.0) basado en la carga del inicio: menos es mejor."""
     val = float(max(0, _to_int(startup_count)))
-    return 1.0 if STARTUP_LIMIT_COUNT <= 0 else _clamp(1.0 - (val / STARTUP_LIMIT_COUNT))
+    return 1.0 if STARTUP_LIMIT_COUNT <= 0 else _clamp(1.0 - (val / STARTUP_LIMIT_COUNT), 0.0, 1.0)
 
 
 def grade_for_score(score: int) -> str:

@@ -214,9 +214,9 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                                 stack.append(path_obj)
                         else:
                             yield path_obj, entry.stat().st_size
-                    except (OSError, PermissionError, ValueError):
+                    except (OSError, PermissionError, ValueError, FileNotFoundError):
                         continue
-        except (OSError, PermissionError):
+        except (OSError, PermissionError, FileNotFoundError):
             continue
 
 
@@ -279,7 +279,7 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
                 if skip_protected and is_protected_path(top_level): continue
                 sums[top_level] += size
                 counts[top_level] += 1
-            except (OSError, ValueError): continue
+            except (OSError, ValueError, RuntimeError): continue
 
         results: List[FolderUsage] = [FolderUsage(p, sums[p], counts[p]) for p in sums]
         return heapq.nlargest(limit, results, key=lambda f: f.size_bytes)
