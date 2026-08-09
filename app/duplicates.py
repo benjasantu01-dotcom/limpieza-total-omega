@@ -143,7 +143,7 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
         try:
             if p.is_file() and not is_protected_path(p):
                 groups[p.stat().st_size].append(p)
-        except (OSError, PermissionError, RuntimeError):
+        except (OSError, PermissionError, FileNotFoundError):
             continue
     return groups
 
@@ -169,6 +169,8 @@ def _collect_candidates(
         try:
             with os.scandir(root_path) as dir_iterator:
                 for entry in dir_iterator:
+                    if entry is None: continue
+                    
                     if skip_protected and is_protected_path(Path(entry.path)):
                         continue
                         
@@ -187,9 +189,9 @@ def _collect_candidates(
                         elif entry.is_file(follow_symlinks=False):
                             if entry_stat.st_size >= min_size:
                                 temp_groups[entry_stat.st_size].append(Path(entry.path))
-                    except (OSError, PermissionError): 
+                    except (OSError, PermissionError, FileNotFoundError): 
                         continue
-        except (OSError, PermissionError): 
+        except (OSError, PermissionError, FileNotFoundError): 
             pass
 
     for directory in directories:
@@ -198,7 +200,7 @@ def _collect_candidates(
             path_obj = Path(directory)
             if path_obj.exists() and path_obj.is_dir():
                 _scan(path_obj)
-        except (OSError, PermissionError): continue
+        except (OSError, PermissionError, ValueError): continue
             
     return {size: paths for size, paths in temp_groups.items() if len(paths) > 1}
 
@@ -211,8 +213,10 @@ def _refine_by_hash(
     Refina un grupo de candidatos aplicando una función de hash.
     La validación de protección y existencia se realiza en el recolector previo.
     """
+    if paths is None: return {}
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
+        if path is None: continue
         digest = hash_func(path)
         if digest:
             groups_by_digest[digest].append(path)
@@ -268,7 +272,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
         try:
             stat_info = p.stat()
             keepers.append((float(stat_info.st_mtime), len(str(p)), p))
-        except (OSError, PermissionError, AttributeError):
+        except (OSError, PermissionError, AttributeError, FileNotFoundError):
             continue
             
     return min(keepers, key=lambda x: (x[0], x[1]))[2] if keepers else None

@@ -212,14 +212,19 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     if not metrics.is_finite() or not _validate_weights():
         return HealthResult(0, "F", {}, ["Error: Datos o configuración inestables."])
 
-    sec = score_security(metrics.suspicious_count, metrics.suspicious_warnings)
-    disk = score_disk(metrics.disk_free_percent)
-    mem = score_memory(metrics.memory_available_percent)
-    junk = score_junk(metrics.junk_mb)
-    dup = score_duplicates(metrics.duplicate_mb)
-    start = score_startup(metrics.startup_count)
+    ratios: ScoreMap = {
+        "seguridad": score_security(metrics.suspicious_count, metrics.suspicious_warnings),
+        "disco": score_disk(metrics.disk_free_percent),
+        "memoria": score_memory(metrics.memory_available_percent),
+        "basura": score_junk(metrics.junk_mb),
+        "duplicados": score_duplicates(metrics.duplicate_mb),
+        "arranque": score_startup(metrics.startup_count)
+    }
     
-    ratios: ScoreMap = {"seguridad": sec, "disco": disk, "memoria": mem, "basura": junk, "duplicados": dup, "arranque": start}
+    # Validar integridad de ratios antes de ponderar
+    if not all(math.isfinite(v) for v in ratios.values()):
+        return HealthResult(0, "F", {}, ["Error: Cálculo de salud fallido."])
+
     breakdown: Dict[str, int] = {}
     total_score: float = 0.0
     

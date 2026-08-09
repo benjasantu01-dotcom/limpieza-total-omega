@@ -179,8 +179,9 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
         return
 
     try:
-        root = Path(directory).expanduser().resolve()
-        if not root.is_dir() or (skip_protected and is_protected_path(root)):
+        path_input = os.fspath(directory)
+        root = Path(path_input).expanduser().resolve()
+        if not root.exists() or not root.is_dir() or (skip_protected and is_protected_path(root)):
             return
     except (OSError, RuntimeError, TypeError):
         return
@@ -198,7 +199,6 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                             continue
                         
                         path_obj = Path(entry.path).resolve()
-                        # Defensa adicional: verificar que la ruta resuelta esté dentro del root
                         if not str(path_obj).startswith(str(root)):
                             continue
 
@@ -268,7 +268,7 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
         return []
     
     try:
-        base = Path(directory).expanduser().resolve()
+        base = Path(os.fspath(directory)).expanduser().resolve()
         if not base.exists() or not base.is_dir() or (skip_protected and is_protected_path(base)):
             return []
         
@@ -277,8 +277,6 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
         
         for path, size in walk_files(base, skip_protected):
             try:
-                # Verificación de contención: debe estar bajo base
-                if not str(path).startswith(str(base)): continue
                 relative = path.relative_to(base)
                 if not relative.parts: continue
                 top_level = base / relative.parts[0]
@@ -308,7 +306,7 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
     """
     if not directory: return ["Error: Ruta no proporcionada."]
     try:
-        path_obj = Path(directory).expanduser().resolve()
+        path_obj = Path(os.fspath(directory)).expanduser().resolve()
         if not path_obj.exists(): return [f"Error: Ruta no encontrada: {path_obj}"]
     except (OSError, RuntimeError):
         return ["Error: Ruta inválida o inaccesible."]
@@ -326,8 +324,10 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
         ext_size[ext] += size
         ext_count[ext] += 1
         
-        # Mantenemos un min-heap de los 8 archivos más grandes vistos
-        heapq.heappushpop(top_files_heap, (size, str(path))) if len(top_files_heap) >= 8 else heapq.heappush(top_files_heap, (size, str(path)))
+        if len(top_files_heap) >= 8:
+            heapq.heappushpop(top_files_heap, (size, str(path)))
+        else:
+            heapq.heappush(top_files_heap, (size, str(path)))
 
     lines = [f"Carpeta analizada: {path_obj}", f"Total: {format_size(total_bytes)} en {total_files} archivos", "", "Por tipo de archivo:"]
     

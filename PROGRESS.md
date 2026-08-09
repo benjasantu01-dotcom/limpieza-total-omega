@@ -6,46 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **238** (47.2% de aceptación)
+- Mejoras aceptadas: **240** (47.6% de aceptación)
 - Rechazadas por tests: 10
-- Rechazadas por guardia de seguridad: 25
+- Rechazadas por guardia de seguridad: 24
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 216
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-08 | 123 | 5 | 12 | 6 | 90 |
-| 2026-08-09 | 115 | 5 | 13 | 9 | 126 |
+| 2026-08-08 | 121 | 5 | 11 | 6 | 89 |
+| 2026-08-09 | 119 | 5 | 13 | 9 | 126 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **56**
+- legibilidad y documentación: **54**
+- manejo de errores y validación de entradas: **49**
 - seguridad defensiva: **47**
 - robustez ante casos límite: **46**
-- manejo de errores y validación de entradas: **45**
 - rendimiento: **44**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **22**
+- `healthscore.py`: **22**
 - `settings.py`: **21**
 - `assistant.py`: **21**
-- `healthscore.py`: **21**
 - `main.py`: **21**
+- `quarantine.py`: **21**
 - `branding.py`: **19**
+- `diskreport.py`: **18**
 - `scanner.py`: **18**
-- `diskreport.py`: **17**
-- `browser.py`: **16**
-- `organizer.py`: **14**
-- `duplicates.py`: **14**
+- `browser.py`: **17**
+- `duplicates.py`: **15**
 - `memory.py`: **14**
+- `organizer.py`: **13**
 - `startup.py`: **10**
 - `safety.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-09T11:27:37` **healthscore.py** (manejo de errores y validación de entradas): Reforcé la robustez de `compute_score` implementando una validación previa de los ratios calculados, asegurando que cualquier error aritmético inesperado durante la ponderación no propague valores nulos o infinitos al resultado final.
+- `2026-08-09T11:27:27` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez del manejo de errores en `_collect_candidates` y `_refine_by_hash` reemplazando los bloques `try-except` genéricos por capturas específicas, y añadiendo validaciones de tipo `None` explícitas para evitar excepciones de tiempo de ejecución al iterar sobre entradas inválidas.
+- `2026-08-09T11:27:04` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `largest_folders` añadiendo validaciones explícitas de parámetros de entrada (`directory` como tipo) y capturando excepciones específicas (`PermissionError`, `OSError`) al resolver rutas para evitar que una ruta inválida detenga el análisis silenciosamente.
+- `2026-08-09T11:26:40` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `directory_size` y `_sum_directory_recursive` validando tipos y estados (None/vacíos) de manera más explícita y capturando excepciones de sistema de forma granular para evitar el colapso ante rutas inaccesibles o bloqueadas.
 - `2026-08-09T11:19:01` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y `score_color` encapsulando conversiones propensas a errores en bloques `try-except` más específicos, y reemplacé chequeos condicionales débiles por validaciones de tipo explícitas para prevenir propagación de valores inválidos.
 - `2026-08-09T09:56:43` **settings.py** (seguridad defensiva): Se endureció la validación de `ultima_carpeta` en `_Validators.path` para rechazar explícitamente rutas que contengan componentes sospechosos o simbólicos antes de su resolución, asegurando que `is_safe_to_modify` siempre reciba una ruta normalizada y validada.
 - `2026-08-09T09:45:34` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad en `purge_all` y `purge_item` para garantizar que solo se eliminen archivos que formen parte del manifiesto válido, evitando la eliminación accidental de archivos ajenos o basura en el directorio de cuarentena, y se ha añadido una validación de ruta explícita antes de cualquier operación destructiva.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-09T09:25:21` **branding.py** (seguridad defensiva): Mejoré la robustez de `save_logo_svg` reemplazando la creación de directorios silenciosa y potencialmente riesgosa por una validación explícita mediante `ensure_safe_to_modify`, garantizando que la operación de escritura respete las políticas de seguridad del proyecto incluso al crear rutas.
 - `2026-08-09T09:24:50` **assistant.py** (seguridad defensiva): Reforcé la seguridad en `_call_gemini` validando que la `api_key` y el `model` sean strings explícitos antes de realizar cualquier operación de red, evitando posibles inyecciones o comportamientos indefinidos al manipular datos de configuración externa.
 - `2026-08-09T09:15:02` **settings.py** (robustez ante casos límite): Se mejoró la robustez de `save` ante fallos de escritura en el sistema de archivos añadiendo un manejo de excepciones más granular al intentar crear directorios y al reemplazar el archivo atómico, asegurando que el estado interno no se corrompa si ocurre un error parcial.
-- `2026-08-09T09:06:24` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de existencia previa en `quarantine_file` antes de intentar cualquier operación de E/S, protegiendo la integridad frente a condiciones de carrera (TOCTOU) y garantizando que las rutas no sean alteradas o eliminadas por procesos externos durante la fase de validación inicial.
-- `2026-08-09T09:06:08` **organizer.py** (robustez ante casos límite): Se introdujo una validación robusta contra puntos de reparse (junctions y enlaces simbólicos a directorios) en `_walk_dir` mediante `is_junction()` para evitar bucles infinitos o escaneos accidentales de unidades montadas fuera del alcance previsto, fortaleciendo la seguridad ante casos límite.
-- `2026-08-09T08:54:39` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez de `score_security` y `score_memory` contra valores negativos o inesperados de entrada, asegurando que la lógica aritmética siempre devuelva rangos válidos (0.0 a 1.0) incluso ante datos corruptos.
-- `2026-08-09T08:54:08` **diskreport.py** (robustez ante casos límite): Se mejora la resiliencia ante errores de sistema de archivos en `walk_files` y `largest_folders` añadiendo bloques `try-except` granulares que previenen la interrupción del escaneo ante archivos bloqueados o con rutas excepcionalmente largas (muy común en Windows), asegurando que el proceso continúe a pesar de fallos en accesos individuales.

@@ -138,6 +138,9 @@ def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool
     """
     DFS recursivo optimizado para sumar el tamaño de archivos.
     """
+    if not root_dir or not os.path.exists(root_dir):
+        return 0
+        
     total: int = 0
     kernel32 = ctypes.windll.kernel32 if os.name == 'nt' else None
     
@@ -179,7 +182,7 @@ def directory_size(path: str | os.PathLike | None) -> int:
         
         is_junction: Callable[[str], bool] = getattr(os.path, 'isjunction', lambda _: False)
         return _sum_directory_recursive(str(root_path), is_junction)
-    except (OSError, PermissionError, RuntimeError):
+    except (OSError, PermissionError, RuntimeError, ValueError):
         return 0
 
 
