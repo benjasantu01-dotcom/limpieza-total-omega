@@ -123,12 +123,13 @@ def _is_allowed_directory(name: str) -> bool:
 
 
 def _is_file_accessible(path: Path) -> bool:
-    """Verifica si el proceso actual tiene permisos de lectura sobre el archivo.
-    
-    Utiliza os.access en lugar de abrir el archivo para evitar bloqueos por 
-    procesos concurrentes y reducir la sobrecarga de I/O innecesaria.
-    """
-    return os.access(path, os.R_OK)
+    """Verifica si el archivo es legible y no está bloqueado por otro proceso."""
+    try:
+        # Intenta abrir en modo append binario. Si está bloqueado, lanza OSError/PermissionError.
+        with open(path, "ab", buffering=0) as f:
+            return True
+    except (OSError, PermissionError):
+        return False
 
 
 def _is_valid_candidate(path: Path) -> bool:
@@ -280,7 +281,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     try:
         for f in dest.iterdir():
             try:
-                if f.is_file() and not f.is_symlink() and is_safe_to_modify(f):
+                if f.is_file() and not f.is_symlink() and is_safe_to_modify(f) and _is_file_accessible(f):
                     f.unlink()
                     count += 1
             except (PermissionError, OSError):

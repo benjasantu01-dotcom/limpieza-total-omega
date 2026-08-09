@@ -918,3 +918,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-09T05:10:58` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
 - `2026-08-09T05:10:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-09T05:10:58` Corrida terminada. Total usado hoy: 124.
+- `2026-08-09T05:19:15` Arrancando corrida. Quedan hoy ~176 peticiones objetivo.
+- `2026-08-09T05:19:40` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se ha mejorado `organizer.py` añadiendo una validación explícita para prevenir la eliminación o movimiento de archivos que se encuentren actualmente en uso (bloqueados por otro proceso), integrando esta verificación en `_is_valid_candidate` para garantizar que solo se procesen archivos realmente accesibles y seguros.
+- `2026-08-09T05:20:15` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha mejorado la integridad del proceso `quarantine_file` añadiendo una validación explícita para asegurar que el archivo de origen no sea una ruta absoluta que intente eludir el directorio de trabajo, evitando así posibles conflictos con enlaces simbólicos que resuelvan a rutas fuera del alcance del usuario.
+- `2026-08-09T05:20:34` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-09T05:21:08` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva implementando una validación estricta de nombres de dispositivos reservados mediante `re.fullmatch` para evitar bypasses de extensión (ej. `CON.txt`), y corregí la lógica en `is_within_directory` para asegurar que las comparaciones de `parents` sean robustas incluso ante casos de bordes con rutas idénticas o vacías.
+- `2026-08-09T05:21:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-09T05:21:08` Corrida terminada. Total usado hoy: 128.

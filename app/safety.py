@@ -60,10 +60,9 @@ _SYSTEM_ROOTS: Final[frozenset[Path]] = frozenset(
     if os.environ.get(v)
 )
 
-_RESERVED_NAMES: Final[frozenset[str]] = frozenset({
-    "con", "prn", "aux", "nul", "com1", "com2", "com3", "com4", "com5", "com6", 
-    "com7", "com8", "com9", "lpt1", "lpt2", "lpt3", "lpt4", "lpt5", "lpt6", "lpt7", "lpt8", "lpt9"
-})
+_RESERVED_NAMES_PATTERN: Final[re.Pattern] = re.compile(
+    r'^(con|prn|aux|nul|com[1-9]|lpt[1-9])(\..*)?$', re.IGNORECASE
+)
 
 
 def _has_invalid_chars(path_str: str) -> bool:
@@ -75,8 +74,7 @@ def _has_invalid_chars(path_str: str) -> bool:
 
 def _is_reserved_device_name(name: str) -> bool:
     """Valida si el nombre base del archivo coincide con dispositivos reservados del sistema."""
-    base = name.split('.')[0]
-    return base.lower() in _RESERVED_NAMES
+    return bool(_RESERVED_NAMES_PATTERN.fullmatch(name))
 
 
 @lru_cache(maxsize=1024)
@@ -188,7 +186,9 @@ def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = F
     """Verifica si la ruta 'child' está contenida lógicamente dentro de 'parent'."""
     try:
         c, p = normalize(child), normalize(parent)
-        return p in c.parents or (allow_equal and c == p)
+        if allow_equal and c == p:
+            return True
+        return p in c.parents
     except (ValueError, TypeError, OSError, RuntimeError):
         return False
 
@@ -207,14 +207,12 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     if path is None:
         raise UnsafePathError("Ruta nula recibida.")
 
-    # Validación preventiva de tipos y estructura
     if not isinstance(path, (str, Path)):
         raise UnsafePathError(f"Tipo de entrada no soportado: {type(path)}")
 
     p = normalize(path)
     path_str = str(path)
     
-    # Detección de path traversal y bypass de normalización
     if any(part in ("..", "...") for part in path_str.replace("/", os.sep).split(os.sep)):
         raise UnsafePathError("Operación bloqueada: posible intento de path traversal.")
 
@@ -224,7 +222,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     if is_within_directory(p, Path.cwd(), allow_equal=True):
         raise UnsafePathError("Operación bloqueada: el archivo pertenece al directorio de ejecución.")
 
-    if _has_invalid_chars(path_str) or _is_reserved_device_name(p.stem):
+    if _has_invalid_chars(path_str) or _is_reserved_device_name(p.name):
         raise UnsafePathError("Ruta inválida o formato de dispositivo bloqueado.")
     
     if path_str.startswith(("\\\\", "//")):

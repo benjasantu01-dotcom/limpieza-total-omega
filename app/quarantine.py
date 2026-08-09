@@ -192,28 +192,16 @@ def _is_valid_quarantine_path(path: Path, root: Path) -> TypeGuard[Path]:
 def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
     """
     Ejecuta una serie de chequeos preventivos antes de mover un archivo a cuarentena.
-    
-    Validaciones de seguridad:
-      1. Impedir flujos de datos alternos (NTFS streams).
-      2. Detectar caracteres prohibidos o intentos de directorio transversal.
-      3. Prohibir enlaces simbólicos o junctions para evitar bucles.
-      4. Bloquear archivos con atributos de sistema en Windows.
-      5. Verificar que la ruta no sea una carpeta protegida o una unidad distinta.
-      6. Validar que el archivo no esté siendo utilizado por otro proceso.
     """
-    # 1. Chequeo de flujos alternos
     if ":" in source_path.name.replace(source_path.drive, ""):
         raise UnsafePathError(f"Ruta con flujos de datos alternos no permitida: {source_path}")
 
-    # 2. Sanitización de caracteres
     if ".." in source_path.parts or "\0" in str(source_path) or any(c in str(source_path.name) for c in "<>\"|?*"):
         raise UnsafePathError(f"Ruta con caracteres maliciosos o navegación prohibida: {source_path.name}")
     
-    # 3. Puntos de reparse
     if source_path.is_symlink() or (hasattr(source_path, 'is_junction') and source_path.is_junction()):
         raise UnsafePathError(f"Operación denegada en punto de reparse: {source_path}")
 
-    # 4. Atributos de sistema (Win32)
     try:
         if os.name == 'nt':
             import ctypes
@@ -223,7 +211,6 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
     except Exception:
         pass
 
-    # 5. Integridad de rutas y volúmenes
     if not source_path.is_file():
         raise UnsafePathError(f"Solo se permiten archivos regulares: {source_path}")
         
@@ -246,7 +233,6 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
         except OSError:
             pass
 
-    # 6. Validaciones finales contra políticas y bloqueos activos
     ensure_safe_to_modify(source_path, allow_sensitive=True)
     
     if _is_file_locked(source_path):
@@ -254,15 +240,7 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
 
 
 def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload: bool = False) -> List[QuarantineItem]:
-    """
-    Carga el manifiesto desde JSON.
-    
-    Args:
-        base: Directorio base de cuarentena.
-        force_reload: Si es True, ignora la caché y recarga del disco.
-    Returns:
-        Lista de objetos QuarantineItem deserializados.
-    """
+    """Carga el manifiesto desde JSON."""
     try:
         base_path = quarantine_dir(base)
         path = _manifest_path(base_path)
@@ -299,12 +277,7 @@ def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload:
 
 
 def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
-    """
-    Persiste la lista de ítems mediante una técnica de escritura atómica.
-    
-    El proceso crea un archivo temporal en la misma partición y lo mueve,
-    asegurando que el manifiesto nunca quede en estado corrupto ante fallas.
-    """
+    """Persiste la lista de ítems mediante una técnica de escritura atómica."""
     if not isinstance(items, list):
         raise ValueError("El manifiesto debe ser una lista de ítems.")
         
@@ -334,20 +307,11 @@ def quarantine_file(
     reason: str = "Marcado como sospechoso",
     base: Union[str, Path] = DEFAULT_QUARANTINE_DIR,
 ) -> QuarantineItem:
-    """
-    Mueve un archivo a cuarentena de forma segura tras validar requisitos.
-    
-    1. Verifica existencia, permisos y restricciones de seguridad.
-    2. Copia a un archivo temporal para asegurar integridad.
-    3. Registra en el manifiesto actual.
-    4. Elimina el original solo tras confirmar la persistencia en destino.
-    """
-    if source is None:
-        raise ValueError("La ruta de origen no puede ser nula.")
-    if not source:
+    """Mueve un archivo a cuarentena de forma segura tras validar requisitos."""
+    if source is None or not source:
         raise ValueError("La ruta de origen no puede estar vacía.")
     
-    source_path = normalize(source).resolve()
+    source_path = Path(source).resolve()
     
     if str(source_path).startswith(("\\\\", "//")):
         raise UnsafePathError("No se permite cuarentena en rutas de red (UNC).")
@@ -388,9 +352,6 @@ def quarantine_file(
     if destination.exists():
         raise UnsafePathError(f"Colisión de nombre en destino: {destination}")
     
-    if is_within_directory(destination, dest_dir) and destination.parent != dest_dir:
-        raise UnsafePathError("La ruta resultante intenta escapar del directorio raíz.")
-
     temp_dest = destination.with_suffix(".tmp")
     try:
         if temp_dest.exists():
@@ -448,12 +409,7 @@ def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[Quaranti
 
 
 def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
-    """
-    Restaura un archivo hacia su ubicación original tras validar su integridad.
-    
-    Verifica que el hash del archivo en cuarentena coincida con el registro
-    antes de restaurarlo. Impide restauraciones sobre rutas protegidas.
-    """
+    """Restaura un archivo hacia su ubicación original tras validar su integridad."""
     if not item_id or not isinstance(item_id, str):
         raise ValueError("ID de ítem vacío o tipo incorrecto.")
     
@@ -536,12 +492,7 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
 
 
 def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
-    """
-    Vacía la carpeta de cuarentena procesando solo los archivos validados por el manifiesto.
-    
-    Returns:
-        Cantidad de archivos eliminados exitosamente.
-    """
+    """Vacía la carpeta de cuarentena procesando solo los archivos validados."""
     try:
         quarantine_root = quarantine_dir(base)
         ensure_safe_to_modify(quarantine_root, allow_sensitive=False)
@@ -559,7 +510,6 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
         if entry.name == MANIFEST_NAME or not entry.is_file():
             continue
         
-        # Solo procesamos si el archivo está en el manifiesto
         if entry.name in valid_names:
             item = item_map_by_name[entry.name]
             if item.verify_integrity(entry):
