@@ -219,12 +219,13 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
 
     def get_attr(source: Any, attr: str, default: Any) -> Any:
         try:
+            if not hasattr(source, "__dict__") and not isinstance(source, dict):
+                return default
             return getattr(source, attr, default)
         except Exception:
             return default
 
     if metrics is not None:
-        # Define: (nombre_atributo, constructor_tipo, valor_maximo_permitido)
         mappings: list[tuple[str, Callable, float]] = [
             ("junk_mb", float, float('inf')),
             ("suspicious_count", int, float('inf')),

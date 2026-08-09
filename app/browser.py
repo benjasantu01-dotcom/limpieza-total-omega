@@ -148,13 +148,9 @@ def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool
     """
     Realiza un recorrido recursivo en profundidad (DFS) para sumar bytes.
     Filtra archivos de sistema ocultos y asegura no seguir enlaces inseguros.
-    
-    Args:
-        root_dir: Ruta absoluta del directorio a sumar.
-        is_junction_fn: Función inyectada para detectar junctions (OS dependiente).
     """
     total: int = 0
-    if not root_dir:
+    if not root_dir or not os.path.exists(root_dir):
         return 0
     try:
         with os.scandir(root_dir) as it:
@@ -188,7 +184,7 @@ def directory_size(path: str | os.PathLike | None) -> int:
     Returns:
         int: Total en bytes, o 0 si la ruta es inválida o está protegida.
     """
-    if path is None or not isinstance((str(path)), str):
+    if path is None:
         return 0
     
     try:
@@ -239,7 +235,7 @@ def detect_profiles(
     for base in bases:
         if not isinstance(base, Path): continue
         try:
-            real_base = base.resolve()
+            real_base = base.resolve(strict=True)
         except OSError:
             continue
             

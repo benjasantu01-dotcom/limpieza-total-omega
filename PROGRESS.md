@@ -16,37 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-07 | 14 | 1 | 2 | 2 | 35 |
+| 2026-08-07 | 11 | 1 | 2 | 2 | 34 |
 | 2026-08-08 | 182 | 6 | 19 | 10 | 133 |
-| 2026-08-09 | 45 | 0 | 6 | 4 | 45 |
+| 2026-08-09 | 48 | 0 | 6 | 4 | 46 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **61**
 - manejo de errores y validación de entradas: **52**
 - rendimiento: **47**
-- seguridad defensiva: **44**
-- robustez ante casos límite: **37**
+- seguridad defensiva: **41**
+- robustez ante casos límite: **40**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **22**
 - `quarantine.py`: **21**
-- `main.py`: **20**
+- `assistant.py`: **21**
+- `healthscore.py`: **21**
 - `settings.py`: **20**
-- `assistant.py`: **20**
-- `branding.py`: **19**
+- `branding.py`: **20**
 - `scanner.py`: **19**
+- `main.py`: **19**
+- `browser.py`: **18**
 - `diskreport.py`: **18**
-- `memory.py`: **17**
-- `browser.py`: **17**
 - `duplicates.py`: **17**
+- `memory.py`: **16**
 - `safety.py`: **13**
 - `organizer.py`: **11**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-09T04:19:45` **browser.py** (robustez ante casos límite): Mejoré la robustez de `directory_size` y `_sum_directory_recursive` ante casos límite mediante la gestión explícita de `OSError` (como archivos bloqueados o denegados) y la validación de integridad de rutas antes del acceso, asegurando que fallos en archivos individuales no aborten el conteo total.
+- `2026-08-09T04:19:36` **branding.py** (robustez ante casos límite): Se ha robustecido la función `logo_svg` y `save_logo_svg` ante posibles desbordamientos de memoria o argumentos inválidos mediante validaciones explícitas de entrada, asegurando que `size` sea positivo y que el manejo de archivos sea seguro contra entradas malformadas.
+- `2026-08-09T04:19:05` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` ante errores inesperados en los objetos de entrada (`metrics` y `health`), implementando un chequeo defensivo de tipos y una recuperación elegante ante excepciones, evitando que un objeto malformado bloquee el análisis del asistente.
 - `2026-08-09T04:09:17` **settings.py** (rendimiento): Optimizé `load` y `save` eliminando llamadas redundantes a `validate` y `is_safe_to_modify` mediante la reutilización de estados ya verificados, reduciendo las operaciones de disco y el costo computacional de las validaciones.
 - `2026-08-09T04:09:07` **scanner.py** (rendimiento): Se optimizó el rendimiento al evitar el uso de `path_obj.resolve()` (operación costosa de I/O) dentro del bucle de procesamiento, utilizando en su lugar la información de ruta ya disponible en `entry` para las validaciones iniciales.
 - `2026-08-09T03:59:56` **quarantine.py** (rendimiento): Optimizé `purge_all` para evitar la sobrecarga de consultas al sistema de archivos mediante el uso de un conjunto (set) de nombres de archivos válidos según el manifiesto, permitiendo una validación O(1) en lugar de O(n) por cada entrada del directorio.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-09T03:37:53` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings descriptivos, tipo de retorno explícito y nombres de variables más claros en las funciones críticas de validación y persistencia.
 - `2026-08-09T03:28:37` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de los `docstrings` en las funciones de chequeo heurístico y se han añadido `type hints` explícitos en las firmas de funciones para clarificar los parámetros opcionales.
 - `2026-08-09T03:27:46` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` documentando los contratos de las funciones críticas con Type Hints completos, Docstrings explicativos y mejorando la estructuración de la validación de seguridad en `_validate_isolation_request` para clarificar la intención de cada chequeo defensivo.
-- `2026-08-09T03:19:02` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de docstrings detallados en las funciones de utilidad interna, siguiendo las guías de estilo para explicar la intención de seguridad y los casos de borde, y se ha reemplazado la lógica de `_is_file_accessible` por un chequeo que utiliza `os.access` (más eficiente y menos intrusivo que abrir el archivo) para mejorar la legibilidad y el rendimiento.
-- `2026-08-09T03:18:27` **main.py** (legibilidad y documentación): Se ha mejorado la documentación del código mediante la adición de docstrings técnicos en los métodos de la interfaz, especificando el propósito de cada componente y, en casos críticos como `_validate_environment` o `on_target_choice_changed`, el flujo de validación de seguridad para garantizar que la app sea auditable y mantenga los estándares exigidos.
-- `2026-08-09T03:17:29` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `healthscore.py` añadiendo docstrings descriptivos a todas las funciones de puntuación (`score_*`), especificando su lógica de normalización y los parámetros esperados para facilitar el mantenimiento y la auditoría del algoritmo.

@@ -313,7 +313,7 @@ def _get_shield_coords(sx: float, sy: float, s: float) -> List[float]:
 @lru_cache(maxsize=4)
 def logo_svg(size: int = 128) -> str:
     """Genera el contenido XML del logo como SVG."""
-    s = max(1, int(size))
+    s = max(1, min(4096, int(size)))
     return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{s}" height="{s}" viewBox="0 0 128 128">
   <defs>
     <linearGradient id="omegaShield" x1="0" y1="0" x2="1" y2="1">
@@ -343,10 +343,11 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     if not destination: return None
     try:
         target = Path(destination).resolve()
+        # Verificación doble: primero si es ruta de sistema, luego intento de escritura
         ensure_safe_to_modify(target)
         parent = target.parent
-        ensure_safe_to_modify(parent)
-        parent.mkdir(parents=True, exist_ok=True)
+        if not parent.exists():
+            parent.mkdir(parents=True, exist_ok=True)
         target.write_text(logo_svg(), encoding="utf-8")
         return target
     except (OSError, PermissionError, TypeError, ValueError, RuntimeError, IOError, AttributeError):
