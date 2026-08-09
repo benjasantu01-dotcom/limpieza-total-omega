@@ -79,6 +79,20 @@ SYSTEM_CRITICAL_PIDS: Tuple[int, ...] = (0, 4)
 
 _PROCESS_CACHE: Dict[str, Tuple[float, List[ProcessMemory]]] = {"data": (0.0, [])}
 
+class MEMORYSTATUSEX(ctypes.Structure):
+    """Estructura de la API Win32 para GlobalMemoryStatusEx."""
+    _fields_ = [
+        ("dwLength", ctypes.c_ulong),
+        ("dwMemoryLoad", ctypes.c_ulong),
+        ("ullTotalPhys", ctypes.c_ulonglong),
+        ("ullAvailPhys", ctypes.c_ulonglong),
+        ("ullTotalPageFile", ctypes.c_ulonglong),
+        ("ullAvailPageFile", ctypes.c_ulonglong),
+        ("ullTotalVirtual", ctypes.c_ulonglong),
+        ("ullAvailVirtual", ctypes.c_ulonglong),
+        ("ullAvailExtendedVirtual", ctypes.c_ulonglong),
+    ]
+
 @dataclass
 class MemorySnapshot:
     """
@@ -120,6 +134,7 @@ class ProcessMemory:
 
 
 def format_bytes(num: Optional[_T]) -> str:
+    """Convierte bytes crudos a una representación legible por humanos."""
     if not isinstance(num, (int, float)) or num <= 0:
         return "0 B"
     idx = min(int(math.log(num, 1024)), len(BYTE_UNITS) - 1)
@@ -129,6 +144,7 @@ def format_bytes(num: Optional[_T]) -> str:
 
 @lru_cache(maxsize=4)
 def parse_linux_meminfo(text: str) -> MemorySnapshot:
+    """Parsea el contenido de /proc/meminfo en una estructura de datos."""
     if not isinstance(text, str) or not text:
         return MemorySnapshot(0, 0)
     values: Dict[str, int] = {}
@@ -151,6 +167,7 @@ def parse_linux_meminfo(text: str) -> MemorySnapshot:
 
 
 def _is_valid_process_row(parts: List[str]) -> bool:
+    """Verifica si una fila de datos de proceso CSV tiene un formato válido."""
     return (len(parts) >= 3 and 
             parts[1].strip().isdigit() and 
             parts[2].strip().isdigit() and 
@@ -158,6 +175,7 @@ def _is_valid_process_row(parts: List[str]) -> bool:
 
 
 def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]:
+    """Convierte la salida de PowerShell Get-Process en objetos ProcessMemory."""
     if not isinstance(text, str) or not text:
         return []
     lines = text.splitlines()
@@ -176,18 +194,7 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
 
 
 def _read_windows_snapshot() -> MemorySnapshot:
-    class MEMORYSTATUSEX(ctypes.Structure):
-        _fields_ = [
-            ("dwLength", ctypes.c_ulong),
-            ("dwMemoryLoad", ctypes.c_ulong),
-            ("ullTotalPhys", ctypes.c_ulonglong),
-            ("ullAvailPhys", ctypes.c_ulonglong),
-            ("ullTotalPageFile", ctypes.c_ulonglong),
-            ("ullAvailPageFile", ctypes.c_ulonglong),
-            ("ullTotalVirtual", ctypes.c_ulonglong),
-            ("ullAvailVirtual", ctypes.c_ulonglong),
-            ("ullAvailExtendedVirtual", ctypes.c_ulonglong),
-        ]
+    """Obtiene el estado de la RAM desde la API Win32."""
     stat = MEMORYSTATUSEX()
     stat.dwLength = ctypes.sizeof(MEMORYSTATUSEX)
     kernel32 = ctypes.windll.kernel32
@@ -197,6 +204,7 @@ def _read_windows_snapshot() -> MemorySnapshot:
 
 
 def read_snapshot() -> MemorySnapshot:
+    """Lee el snapshot de memoria actual según el SO."""
     if os.name == "nt":
         try:
             return _read_windows_snapshot()
@@ -216,6 +224,7 @@ def read_snapshot() -> MemorySnapshot:
 
 @lru_cache(maxsize=1)
 def _run_ps_command(cmd: str) -> str:
+    """Ejecuta un comando de PowerShell con timeout."""
     try:
         result = subprocess.run(["powershell", "-NoProfile", "-Command", cmd], capture_output=True, text=True, timeout=5)
         return result.stdout if result.returncode == 0 else ""
@@ -223,6 +232,7 @@ def _run_ps_command(cmd: str) -> str:
         return ""
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
+    """Obtiene una lista ordenada de procesos según su consumo de memoria."""
     if os.name != "nt":
         return []
     now = time.time()
@@ -242,6 +252,7 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
 
 
 def pressure_level(snapshot: MemorySnapshot) -> str:
+    """Determina el nivel de severidad de la carga de memoria."""
     if not isinstance(snapshot, MemorySnapshot) or snapshot.total <= 0:
         return "info"
     available: float = snapshot.available_percent
@@ -252,6 +263,7 @@ def pressure_level(snapshot: MemorySnapshot) -> str:
 
 
 def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] = None) -> List[str]:
+    """Genera un reporte textual descriptivo del estado de memoria."""
     if not isinstance(snapshot, MemorySnapshot) or snapshot.total <= 0:
         return ["No se pudo leer el estado de la memoria en este sistema."]
     level: str = pressure_level(snapshot)
@@ -274,10 +286,12 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
 
 
 def _is_system_process(pid: int) -> bool:
+    """Determina si un PID pertenece a procesos críticos del sistema."""
     return pid in SYSTEM_CRITICAL_PIDS or pid <= 100
 
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
+    """Solicita a Windows liberar memoria de trabajo de un proceso."""
     if os.name != "nt":
         return False, "Solo disponible en Windows."
     try:
@@ -286,22 +300,29 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "El PID debe ser un número entero válido."
     if target_pid == os.getpid() or _is_system_process(target_pid):
         return False, "Operación denegada: PID crítico o protegido."
+    
     kernel32, psapi = ctypes.windll.kernel32, ctypes.windll.psapi
     handle = kernel32.OpenProcess(SAFE_ACCESS, False, target_pid)
+    
     if not handle:
-        return False, "Acceso denegado: requiere privilegios elevados." if kernel32.GetLastError() == ERROR_ACCESS_DENIED else "No se pudo abrir el proceso."
+        reason = "Acceso denegado: requiere privilegios elevados." if kernel32.GetLastError() == ERROR_ACCESS_DENIED else "No se pudo abrir el proceso."
+        return False, reason
+        
     try:
         exit_code = ctypes.c_ulong()
         if not kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)) or exit_code.value != STILL_ACTIVE:
             return False, "El proceso seleccionado ya no está activo."
+            
         buf = ctypes.create_unicode_buffer(2048)
         if psapi.GetModuleFileNameExW(handle, 0, buf, 2048) > 0:
             if is_protected_path(buf.value):
                 return False, "Operación denegada: ejecutable en ruta protegida."
         else:
             return False, "Operación denegada: no se pudo verificar la ubicación del ejecutable."
+            
         if not psapi.EmptyWorkingSet(handle):
             return False, f"Error al intentar liberar memoria (código {kernel32.GetLastError()})."
+            
         return True, f"Working set liberado. {TRIM_WARNING}"
     except (ctypes.ArgumentError, Exception):
         return False, "Ocurrió un error técnico al gestionar el proceso."

@@ -578,3 +578,11 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-09T12:10:45` ✅ Mejora aceptada en main.py (enfoque: legibilidad y documentación). Se introdujeron docstrings descriptivos y type hints faltantes en los métodos de `main.py` para mejorar la legibilidad del flujo de control y la arquitectura de la interfaz, facilitando el mantenimiento y la auditoría de seguridad del código.
 - `2026-08-09T12:10:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-09T12:10:45` Corrida terminada. Total usado hoy: 288.
+- `2026-08-09T12:17:09` Arrancando corrida. Quedan hoy ~12 peticiones objetivo.
+- `2026-08-09T12:17:36` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenibilidad de `memory.py` mediante la refactorización de `_read_windows_snapshot` y `trim_working_set` para extraer la lógica de carga de la API de Windows en funciones de utilidad tipadas, y añade type hints faltantes en funciones clave.
+- `2026-08-09T12:18:23` Gemini devolvió 500 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-09T12:18:49` ✅ Mejora aceptada en organizer.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación de las funciones críticas mediante la adición de docstrings técnicos detallados y se han extraído las validaciones de seguridad de `stage_for_review` a una función auxiliar `_is_safe_for_move` para mejorar la legibilidad y asegurar que el flujo de control sea transparente.
+- `2026-08-09T12:19:17` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación de la clase `QuarantineItem` y sus métodos mediante *type hints* explícitos y *docstrings* que clarifican la lógica de validación e integridad, facilitando el mantenimiento y la auditoría del ciclo de vida de los ítems en cuarentena.
+- `2026-08-09T12:19:21` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-08-09T12:19:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-09T12:19:21` Corrida terminada. Total usado hoy: 292.
