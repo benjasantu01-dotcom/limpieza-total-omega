@@ -223,7 +223,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         "arranque": score_startup(metrics.startup_count)
     }
     
-    if not all(math.isfinite(v) for v in ratios.values()):
+    if not all(math.isfinite(ratios.get(k, float('nan'))) for k in WEIGHTS):
         return HealthResult(0, "F", {}, ["Error: Cálculo de salud fallido."])
 
     breakdown: Dict[str, int] = {}

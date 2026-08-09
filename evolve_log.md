@@ -653,3 +653,10 @@ FAILED evolve/tests/test_safety.py::test_describe_protection_explains_the_reason
 - `2026-08-09T13:19:53` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
 - `2026-08-09T13:19:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-09T13:19:53` Corrida terminada. Total usado hoy: 316.
+- `2026-08-09T13:28:42` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-09T13:29:10` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `compute_score` frente a configuraciones externas inválidas o pesos inexistentes, garantizando que el desglose de puntajes siempre coincida con la estructura esperada y evitando posibles errores de clave o cálculos desequilibrados si el mapa `WEIGHTS` llegara a ser inconsistente.
+- `2026-08-09T13:30:08` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se ha añadido un robusto manejo de errores en el método `_tab_factory` y en la inicialización de los componentes visuales de las pestañas para garantizar que un fallo en la construcción de una pestaña individual (por ejemplo, una entrada corrupta en `branding` o error de IO) no bloquee la inicialización completa de la aplicación, mejorando la resiliencia ante entornos inesperados.
+- `2026-08-09T13:30:33` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-08-09T13:30:40` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-08-09T13:30:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-09T13:30:40` Corrida terminada. Total usado hoy: 320.

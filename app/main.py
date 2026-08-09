@@ -31,7 +31,6 @@ Los análisis del panel de Salud se consolidan en una única ejecución asíncro
 para minimizar el overhead de hilos y garantizar la coherencia de los datos
 que consume el asistente. El estado de análisis pesados se cachea por sesión.
 Se emplea invalidación selectiva para evitar procesado redundante en disco.
-Se implementa TTL (Time-To-Live) y política LRU para gestión eficiente de memoria.
 Se optimizan eventos de redibujo UI y se utiliza gestión de colas de eventos 
 para evitar saturación del hilo principal durante el logueo masivo.
 
@@ -311,6 +310,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 constructor()
             except Exception as e:
                 logging.error("Fallo crítico en el constructor de la pestaña %s: %s", name, e)
+                if name in self.tabs:
+                    self._create_styled_label(self.tabs[name], f"Error al cargar módulo: {e}", "caption").pack()
 
     def _build_tabs_container(self) -> None:
         """Configura el widget de pestañas y recorre la factoría para construir cada una."""

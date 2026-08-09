@@ -16,27 +16,27 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-08 | 88 | 5 | 8 | 5 | 82 |
-| 2026-08-09 | 148 | 7 | 16 | 10 | 135 |
+| 2026-08-08 | 86 | 5 | 8 | 5 | 80 |
+| 2026-08-09 | 150 | 7 | 16 | 10 | 137 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **63**
 - manejo de errores y validación de entradas: **55**
 - rendimiento: **42**
-- seguridad defensiva: **40**
-- robustez ante casos límite: **36**
+- robustez ante casos límite: **38**
+- seguridad defensiva: **38**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **22**
-- `settings.py`: **21**
-- `main.py`: **21**
+- `main.py`: **22**
+- `healthscore.py`: **21**
 - `assistant.py`: **20**
-- `healthscore.py`: **20**
-- `scanner.py`: **18**
+- `settings.py`: **20**
 - `branding.py`: **18**
 - `diskreport.py`: **17**
+- `scanner.py`: **17**
 - `browser.py`: **17**
 - `duplicates.py`: **14**
 - `memory.py`: **14**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-09T13:30:08` **main.py** (robustez ante casos límite): Se ha añadido un robusto manejo de errores en el método `_tab_factory` y en la inicialización de los componentes visuales de las pestañas para garantizar que un fallo en la construcción de una pestaña individual (por ejemplo, una entrada corrupta en `branding` o error de IO) no bloquee la inicialización completa de la aplicación, mejorando la resiliencia ante entornos inesperados.
+- `2026-08-09T13:29:10` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `compute_score` frente a configuraciones externas inválidas o pesos inexistentes, garantizando que el desglose de puntajes siempre coincida con la estructura esperada y evitando posibles errores de clave o cálculos desequilibrados si el mapa `WEIGHTS` llegara a ser inconsistente.
 - `2026-08-09T13:10:03` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` ante errores de entrada y valores atípicos mediante el uso de un filtro de validación más estricto y seguro en `_safe_assign`, asegurando que `math.isfinite` y `float` se apliquen consistentemente antes de cualquier asignación al contexto.
 - `2026-08-09T13:09:26` **startup.py** (rendimiento): Optimicé el rendimiento de `entries_from_folders` evitando la llamada a `is_protected_path` (que involucra normalización de rutas y comparaciones) para cada archivo, moviendo el chequeo a una fase donde solo se procesan candidatos válidos una vez que se confirma que son archivos ejecutables.
 - `2026-08-09T13:09:01` **settings.py** (rendimiento): Optimicé el rendimiento de `load` y `save` eliminando llamadas redundantes a `is_safe_to_modify` y evitando relecturas de disco al utilizar un `_last_mtime` para verificar si el archivo de configuración cambió externamente, reduciendo así la E/S innecesaria.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-09T12:38:42` **branding.py** (rendimiento): Se optimizó `severity_color` y `severity_label` reemplazando búsquedas repetitivas y llamadas a `lower()` por un acceso directo de tipo `MappingProxyType` a un diccionario de severidad normalizado (pre-calculado en minúsculas), reduciendo la sobrecarga de procesamiento en llamadas frecuentes de la interfaz.
 - `2026-08-09T12:38:11` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` pre-calculando el conjunto de palabras clave (`_KEYWORD_MAP.keys()`) fuera de la función y mejorando la eficiencia de la búsqueda al usar `tokens.isdisjoint` para descartar rápidamente consultas irrelevantes, evitando procesamientos innecesarios.
 - `2026-08-09T12:28:52` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes en los métodos de `StartupEntry` y refinando la descripción de las responsabilidades de los métodos para facilitar el mantenimiento futuro.
-- `2026-08-09T12:28:40` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenimiento del módulo documentando exhaustivamente `_Validators` y `_VALIDATOR_MAP`, y estructuré la validación de claves con un enfoque funcional más explícito para facilitar futuras extensiones.
-- `2026-08-09T12:28:15` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones de escaneo, aclarando sus parámetros, posibles excepciones y el propósito de cada heurística para facilitar el mantenimiento del equipo de desarrollo.
