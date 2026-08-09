@@ -173,7 +173,7 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Generador iterativo que recorre archivos bajo `directory`.
-    Usa pila explícita y evita llamadas redundantes para mejorar rendimiento.
+    Evita seguir enlaces simbólicos y carpetas protegidas para seguridad.
     """
     if not directory:
         return
@@ -226,7 +226,8 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 
 def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_protected: bool = True) -> List[FileEntry]:
     """
-    Retorna los archivos más grandes mediante un min-heap para eficiencia O(n log k).
+    Retorna los archivos más grandes usando un min-heap para eficiencia O(n log k).
+    Ignora archivos inaccesibles durante la iteración.
     """
     if not directory or limit <= 0:
         return []
@@ -239,7 +240,7 @@ def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_prot
 
 def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip_protected: bool = True) -> List[ExtensionUsage]:
     """
-    Calcula la ocupación total por extensión de archivo.
+    Calcula el peso total ocupado por cada extensión de archivo encontrada.
     """
     if not directory or limit <= 0:
         return []
@@ -262,7 +263,7 @@ def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip
 
 def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
     """
-    Agrupa recursivamente el peso de carpetas inmediatas bajo el directorio base.
+    Agrupa recursivamente el peso de carpetas de primer nivel bajo el directorio base.
     """
     if not directory or limit <= 0:
         return []
@@ -292,7 +293,7 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
 
 
 def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Tuple[int, int]:
-    """Retorna el tamaño total y la cantidad de archivos encontrados."""
+    """Retorna el tamaño total en bytes y la cantidad total de archivos accesibles."""
     total_bytes, file_count = 0, 0
     for _, size in walk_files(directory, skip_protected):
         total_bytes += size
@@ -302,7 +303,7 @@ def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 
 def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -> List[str]:
     """
-    Genera un reporte estructurado unificado del uso de disco en el directorio dado.
+    Genera un informe textual unificado del uso de disco con las estadísticas principales.
     """
     if not directory: return ["Error: Ruta no proporcionada."]
     try:

@@ -48,6 +48,7 @@ WARN_THRESHOLD_MED: Final[float] = 0.8
 WARN_THRESHOLD_LOW: Final[float] = 0.6
 
 # --- PESOS DE CALIFICACIÓN ---
+# Define la importancia relativa de cada módulo en el puntaje global (suma 100).
 WEIGHTS: Final[Dict[str, int]] = {
     "seguridad": 30,
     "disco": 20,
@@ -132,14 +133,13 @@ def _to_int(value: Any, default: int = 0) -> int:
 
 
 def score_junk(junk_mb: float) -> float:
-    """Calcula ratio (0.0-1.0) normalizado: 1.0 es ausencia total de basura."""
+    """Ratio (0.0-1.0): 1.0 implica limpieza total; disminuye a medida que la basura aumenta."""
     return 1.0 if JUNK_LIMIT_MB <= 0.0 else _clamp(1.0 - (_to_float(junk_mb) / JUNK_LIMIT_MB))
 
 
 def score_security(suspicious_count: int, warnings: int = 0) -> float:
     """
-    Calcula ratio (0.0-1.0) penalizando hallazgos de seguridad.
-    Cada hallazgo resta 5%, cada advertencia resta 25% del puntaje base.
+    Ratio (0.0-1.0): Penaliza hallazgos (5%) y advertencias (25%) acumulados.
     """
     count = max(0, _to_int(suspicious_count))
     warn = max(0, _to_int(warnings))
@@ -148,24 +148,24 @@ def score_security(suspicious_count: int, warnings: int = 0) -> float:
 
 
 def score_memory(available_percent: float) -> float:
-    """Calcula ratio (0.0-1.0) donde 1.0 significa disponibilidad óptima (>= RAM_IDEAL)."""
+    """Ratio (0.0-1.0): 1.0 si la memoria disponible es >= RAM_IDEAL_PERCENT."""
     if RAM_IDEAL_PERCENT <= 0.0: return 0.0
     val = _to_float(available_percent)
     return _clamp(val / RAM_IDEAL_PERCENT, 0.0, 1.0)
 
 
 def score_disk(free_percent: float) -> float:
-    """Calcula ratio (0.0-1.0) donde 1.0 significa espacio libre ideal (>= DISK_IDEAL)."""
+    """Ratio (0.0-1.0): 1.0 si el espacio libre es >= DISK_IDEAL_PERCENT."""
     return 0.0 if DISK_IDEAL_PERCENT <= 0.0 else _clamp(_to_float(free_percent) / DISK_IDEAL_PERCENT, 0.0, 1.0)
 
 
 def score_duplicates(duplicate_mb: float) -> float:
-    """Calcula ratio (0.0-1.0) normalizando el volumen de archivos duplicados."""
+    """Ratio (0.0-1.0): 1.0 si no existen duplicados según el límite definido."""
     return 1.0 if DUPLICATE_LIMIT_MB <= 0.0 else _clamp(1.0 - (_to_float(duplicate_mb) / DUPLICATE_LIMIT_MB), 0.0, 1.0)
 
 
 def score_startup(startup_count: int) -> float:
-    """Calcula ratio (0.0-1.0) basado en la carga del inicio: menos es mejor."""
+    """Ratio (0.0-1.0): 1.0 si el número de programas al inicio es cero."""
     val = float(max(0, _to_int(startup_count)))
     return 1.0 if STARTUP_LIMIT_COUNT <= 0 else _clamp(1.0 - (val / STARTUP_LIMIT_COUNT), 0.0, 1.0)
 
@@ -203,8 +203,10 @@ def _generate_recommendations(m: SystemMetrics, ratios: ScoreMap) -> List[str]:
 
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
-    """Ejecuta el cálculo ponderado de salud integral del sistema."""
-    # Validación defensiva contra objetos nulos, tipos incorrectos o datos corrompidos.
+    """
+    Ejecuta el cálculo ponderado de salud integral del sistema.
+    Normaliza métricas, aplica pesos definidos en `WEIGHTS` y clasifica el estado.
+    """
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Instancia de métricas inválida."])
     
@@ -221,7 +223,6 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         "arranque": score_startup(metrics.startup_count)
     }
     
-    # Validar integridad de ratios antes de ponderar
     if not all(math.isfinite(v) for v in ratios.values()):
         return HealthResult(0, "F", {}, ["Error: Cálculo de salud fallido."])
 
@@ -229,6 +230,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     total_score: float = 0.0
     
     for area, weight in _WEIGHT_ITEMS:
+        # Ponderación: (ratio * peso_de_area * escala) / suma_total_de_pesos
         score_val = (ratios.get(area, 0.0) * weight * 100.0) / _TOTAL_WEIGHTS
         breakdown[area] = round(score_val)
         total_score += score_val
