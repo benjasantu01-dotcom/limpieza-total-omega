@@ -197,7 +197,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                         if entry.is_symlink():
                             continue
                         
-                        path_obj = Path(entry.path)
+                        path_obj = Path(entry.path).resolve()
                         if skip_protected and is_protected_path(path_obj):
                             continue
 
@@ -276,6 +276,7 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
                 relative = path.relative_to(base)
                 if not relative.parts: continue
                 top_level = base / relative.parts[0]
+                if skip_protected and is_protected_path(top_level): continue
                 sums[top_level] += size
                 counts[top_level] += 1
             except (OSError, ValueError): continue

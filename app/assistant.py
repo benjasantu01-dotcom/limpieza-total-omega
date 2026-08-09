@@ -537,6 +537,11 @@ def ask(question: str, context: Optional[SystemContext] = None,
         enviar = bool(configuracion.get("asistente_enviar_metricas", True))
         
         texto_contexto = context_as_text(ctx) if enviar else "El usuario no autorizó enviar métricas."
+        
+        # Validar el texto antes de pasarlo al motor remoto
+        if not _ensure_safe_text(texto_contexto):
+            return respaldo
+            
         remoto = _call_gemini(question, texto_contexto, clave, modelo)
 
         if not remoto:

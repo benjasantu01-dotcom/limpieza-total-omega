@@ -150,8 +150,14 @@ def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool
     Filtra archivos de sistema ocultos y asegura no seguir enlaces inseguros.
     """
     total: int = 0
-    if not root_dir or not os.path.exists(root_dir):
+    root_path = Path(root_dir)
+    if not root_path.exists():
         return 0
+    
+    # Seguridad defensiva: no entrar en rutas protegidas aunque se haya validado el padre
+    if is_protected_path(root_path):
+        return 0
+
     try:
         with os.scandir(root_dir) as it:
             for entry in it:
