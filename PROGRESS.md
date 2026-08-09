@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **245** (48.6% de aceptación)
+- Mejoras aceptadas: **246** (48.8% de aceptación)
 - Rechazadas por tests: 10
-- Rechazadas por guardia de seguridad: 25
+- Rechazadas por guardia de seguridad: 26
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 210
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-08 | 141 | 5 | 14 | 7 | 121 |
-| 2026-08-09 | 104 | 5 | 11 | 7 | 89 |
+| 2026-08-08 | 141 | 5 | 14 | 7 | 117 |
+| 2026-08-09 | 105 | 5 | 12 | 7 | 91 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **63**
 - manejo de errores y validación de entradas: **55**
-- robustez ante casos límite: **45**
+- robustez ante casos límite: **46**
 - rendimiento: **44**
 - seguridad defensiva: **38**
 
@@ -33,9 +33,9 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **22**
 - `quarantine.py`: **22**
 - `main.py`: **21**
+- `settings.py`: **20**
 - `branding.py`: **19**
 - `scanner.py`: **19**
-- `settings.py`: **19**
 - `browser.py`: **18**
 - `diskreport.py`: **18**
 - `memory.py`: **16**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-09T09:15:02` **settings.py** (robustez ante casos límite): Se mejoró la robustez de `save` ante fallos de escritura en el sistema de archivos añadiendo un manejo de excepciones más granular al intentar crear directorios y al reemplazar el archivo atómico, asegurando que el estado interno no se corrompa si ocurre un error parcial.
 - `2026-08-09T09:06:24` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de existencia previa en `quarantine_file` antes de intentar cualquier operación de E/S, protegiendo la integridad frente a condiciones de carrera (TOCTOU) y garantizando que las rutas no sean alteradas o eliminadas por procesos externos durante la fase de validación inicial.
 - `2026-08-09T09:06:08` **organizer.py** (robustez ante casos límite): Se introdujo una validación robusta contra puntos de reparse (junctions y enlaces simbólicos a directorios) en `_walk_dir` mediante `is_junction()` para evitar bucles infinitos o escaneos accidentales de unidades montadas fuera del alcance previsto, fortaleciendo la seguridad ante casos límite.
 - `2026-08-09T08:54:39` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez de `score_security` y `score_memory` contra valores negativos o inesperados de entrada, asegurando que la lógica aritmética siempre devuelva rangos válidos (0.0 a 1.0) incluso ante datos corruptos.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-09T08:13:36` **browser.py** (rendimiento): Optimicé el rendimiento de `_sum_directory_recursive` convirtiendo la lista de exclusión `NEVER_TOUCH` en un `frozenset` (ya lo era, pero ahora se consulta mediante una búsqueda O(1) de hash) y evitando llamadas repetidas a `ctypes` y `os.scandir` mediante una estructura de datos más eficiente, reduciendo el overhead en sistemas con miles de archivos pequeños de caché.
 - `2026-08-09T08:03:51` **assistant.py** (rendimiento): Optimicé el rendimiento de `build_context` reemplazando la creación dinámica de listas y el uso de `getattr` en bucle por una asignación directa, evitando el overhead de introspección innecesaria en cada iteración del análisis.
 - `2026-08-09T08:03:34` **startup.py** (legibilidad y documentación): Documenté con precisión técnica el flujo de resolución de rutas en `StartupEntry` para aclarar la distinción entre comandos crudos (potencialmente malformados) y ejecutables normalizados, mejorando la legibilidad del modelo mental del código.
-- `2026-08-09T08:03:09` **settings.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo documentando la estructura de `_NUMERIC_LIMITS` y extrayendo la lógica compleja de validación de rutas en `_Validators.path` para clarificar la distinción entre rutas existentes y destinos potenciales.

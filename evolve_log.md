@@ -1327,3 +1327,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-09T09:06:24` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se introdujo una validación de existencia previa en `quarantine_file` antes de intentar cualquier operación de E/S, protegiendo la integridad frente a condiciones de carrera (TOCTOU) y garantizando que las rutas no sean alteradas o eliminadas por procesos externos durante la fase de validación inicial.
 - `2026-08-09T09:06:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-09T09:06:24` Corrida terminada. Total usado hoy: 216.
+- `2026-08-09T09:13:41` Arrancando corrida. Quedan hoy ~84 peticiones objetivo.
+- `2026-08-09T09:14:06` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 112): unterminated string literal (detected at line 112)
+- `2026-08-09T09:14:29` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
+- `2026-08-09T09:14:51` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-08-09T09:15:02` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se mejoró la robustez de `save` ante fallos de escritura en el sistema de archivos añadiendo un manejo de excepciones más granular al intentar crear directorios y al reemplazar el archivo atómico, asegurando que el estado interno no se corrompa si ocurre un error parcial.
+- `2026-08-09T09:15:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-09T09:15:02` Corrida terminada. Total usado hoy: 220.
