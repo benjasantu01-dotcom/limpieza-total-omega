@@ -212,6 +212,10 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     if not isinstance(values, dict): return None
     ruta = settings_path(path_or_base)
     
+    # Validar seguridad del padre antes de intentar escribir
+    if not is_safe_to_modify(str(ruta.parent)):
+        return None
+    
     cleaned_settings = validate(values)
     if cleaned_settings.get("asistente_activado") and not (cleaned_settings.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)):
         cleaned_settings["asistente_activado"] = False

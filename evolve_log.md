@@ -667,3 +667,12 @@ FAILED evolve/tests/test_safety.py::test_describe_protection_explains_the_reason
 - `2026-08-09T13:40:34` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha añadido un robusto manejo de excepciones y validación de tipos en `check_recent_executable_in_downloads` y `check_system_lookalike` para prevenir fallos silenciosos o errores fatales al procesar archivos con metadatos corrompidos, fechas inválidas o permisos restringidos durante la lectura de atributos.
 - `2026-08-09T13:40:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-09T13:40:34` Corrida terminada. Total usado hoy: 324.
+- `2026-08-09T13:49:05` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-09T13:49:31` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `save()` ante posibles fallos en el sistema de archivos (como discos llenos o falta de permisos durante la escritura) asegurando que el directorio de configuración sea verificado por `is_safe_to_modify` antes de intentar cualquier operación de escritura, previniendo errores en entornos donde la ruta base podría haber sido invalidada dinámicamente.
+- `2026-08-09T13:49:56` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-08-09T13:50:07` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-09T13:50:34` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-08-09T13:51:16` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la seguridad en `_call_gemini` añadiendo una validación explícita mediante `is_protected_path` sobre la respuesta cruda del modelo antes de procesarla, garantizando que el asistente no pueda devolver rutas o contenido sensible aunque sea inyectado desde el exterior.
+- `2026-08-09T13:51:32` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `save_logo_svg` reemplazando la creación recursiva de directorios `mkdir` por una operación encapsulada que valida la integridad de cada ruta involucrada antes de realizar la escritura.
+- `2026-08-09T13:51:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-09T13:51:32` Corrida terminada. Total usado hoy: 328.

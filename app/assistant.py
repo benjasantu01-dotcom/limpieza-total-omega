@@ -496,7 +496,7 @@ def _call_gemini(
             raw_res = res.read(16384)
             if not raw_res: return None
             content_decoded = raw_res.decode("utf-8")
-            if not _ensure_safe_text(content_decoded): return None
+            
             data = json.loads(content_decoded)
         
         candidates = data.get("candidates", [])
@@ -506,7 +506,10 @@ def _call_gemini(
         text = "".join(str(p.get("text", "")) for p in parts if isinstance(p, dict))
         
         final_text = text.strip()[:_MAX_TEXT_LENGTH]
-        return final_text if _ensure_safe_text(final_text) else None
+        # Defensiva final: bloquear si el modelo intenta retornar una ruta
+        if not _ensure_safe_text(final_text) or is_protected_path(final_text):
+            return None
+        return final_text
     except (json.JSONDecodeError, urllib.error.URLError, TypeError, KeyError, ValueError, OSError):
         return None
 
