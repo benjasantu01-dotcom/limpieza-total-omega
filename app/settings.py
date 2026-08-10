@@ -125,21 +125,16 @@ class _Validators:
 
     @staticmethod
     def path(val: Any) -> str | None:
-        if val is None: return ""
-        if not isinstance(val, (str, Path)): return None
+        if val is None or not isinstance(val, (str, Path)): return None
+        path_string = str(val).strip()
+        if not path_string: return ""
         try:
-            path_string = str(val).strip()
-            if not path_string: return ""
             path_obj = Path(path_string).expanduser()
-            
             if any(part in ('.', '..', '..\\', '../') for part in path_obj.parts): return None
-            
             resolved = path_obj.resolve(strict=False)
             if resolved.is_symlink() or (resolved.exists() and hasattr(resolved, 'is_junction') and resolved.is_junction()):
                 return None
-            
             if is_protected_path(str(resolved)): return None
-            
             target = resolved if resolved.exists() else resolved.parent
             return str(resolved) if is_safe_to_modify(str(target)) else None
         except (OSError, RuntimeError, ValueError, TypeError, PermissionError, AttributeError):
@@ -150,10 +145,10 @@ class _Validators:
         if val is None: return None
         if not isinstance(val, (str, Path)): return None
         text = str(val).strip()
-        if not text: return "" if key in ("ultima_carpeta", "asistente_clave_api") else None
+        if key == "ultima_carpeta": return _Validators.path(text)
+        if not text: return "" if key == "asistente_clave_api" else None
         if key == "tema": return text.lower() if text.lower() in VALID_THEMES else None
         if key == "acento": return text.lower() if text.lower() in VALID_ACCENTS else None
-        if key == "ultima_carpeta": return _Validators.path(text)
         return text if len(text) <= 512 else None
 
 _VALIDATOR_MAP: Final[dict[str, Callable[[str, Any], Any]]] = {

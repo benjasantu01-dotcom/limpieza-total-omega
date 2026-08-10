@@ -232,7 +232,7 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
 
 def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry]:
     """
-    Convierte el CSV generado por PowerShell a una lista de StartupEntry.
+    Convierte el CSV generado por PowerShell a una lista de StartupEntry con validación de integridad.
     """
     if not isinstance(text, str) or not text.strip():
         return []
@@ -248,31 +248,30 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
         if not stripped_line:
             continue
         
-        # Split básico, esperando al menos 2 columnas significativas
         parts: List[str] = [p.strip().strip('"') for p in stripped_line.split(",")]
         if len(parts) < 2:
             continue
             
-        name_raw: str = parts[0]
-        cmd_raw: str = parts[1]
-        
-        # Validación estricta de contenido antes de instanciar
-        if not name_raw or not cmd_raw:
-            continue
-            
         try:
+            name_raw: str = parts[0]
+            cmd_raw: str = parts[1]
+            
+            # Validación estricta de contenido
+            if not name_raw or not cmd_raw:
+                continue
+                
             name: str = "".join(c for c in name_raw if ord(c) >= 32)
             cmd: str = "".join(c for c in cmd_raw if ord(c) >= 32)
             
+            # Filtrar metadatos de PowerShell y comandos malformados
             if not name or name.lower() in ("name", "pscustomobject") or name.upper().startswith("PS"):
                 continue
             
-            if not cmd or any(c in cmd for c in '<>|?*'):
+            # Comprobar seguridad de la ruta antes de intentar instanciar
+            p = Path(cmd)
+            if is_protected_path(p):
                 continue
                 
-            p: Path = Path(cmd)
-            if not str(p).strip() or is_protected_path(p):
-                continue
             parsed_entries.append(StartupEntry(name=name, command=cmd, source=source))
         except (OSError, ValueError, TypeError):
             continue

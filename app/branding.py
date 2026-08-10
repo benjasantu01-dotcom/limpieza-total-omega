@@ -221,7 +221,15 @@ def bar(percent: Union[float, int, None], width: int = 24,
 
 @lru_cache(maxsize=128)
 def _hex_to_rgb(value: HexColor) -> RGBTuple:
-    """Convierte un color hex #RRGGBB a una tupla RGB (r, g, b)."""
+    """
+    Decodifica un color hexadecimal de formato '#RRGGBB' a una tupla RGB.
+    
+    Args:
+        value: Cadena hexadecimal (ej: '#FF5733').
+        
+    Returns:
+        Tupla de enteros (r, g, b). Retorna (0,0,0) ante formatos inválidos.
+    """
     if not isinstance(value, str) or len(value) != 7 or not value.startswith("#"):
         return (0, 0, 0)
     try:
@@ -235,7 +243,17 @@ def _hex_to_rgb(value: HexColor) -> RGBTuple:
 
 @lru_cache(maxsize=64)
 def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
-    """Interpola linealmente dos colores en un factor de ratio (0.0 a 1.0)."""
+    """
+    Realiza una interpolación lineal entre dos colores hexadecimales.
+    
+    Args:
+        start: Color de origen.
+        end: Color de destino.
+        ratio: Factor de mezcla entre 0.0 y 1.0.
+        
+    Returns:
+        Cadena hexadecimal resultante del blend.
+    """
     ratio = max(0.0, min(1.0, float(ratio)))
     r1, g1, b1 = _hex_to_rgb(start)
     r2, g2, b2 = _hex_to_rgb(end)
@@ -248,7 +266,7 @@ def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
 
 @lru_cache(maxsize=32)
 def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> List[HexColor]:
-    """Crea una secuencia de colores interpolados."""
+    """Genera una secuencia de colores interpolados basada en puntos de control (stops)."""
     cantidad = max(1, int(steps))
     if not stops: return [PALETTE["accent"]] * cantidad
     if len(stops) < 2: return [stops[0]] * cantidad
@@ -262,7 +280,12 @@ def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) ->
     return res
 
 def _get_grouped_segments(colors: List[HexColor]) -> List[Tuple[HexColor, int, int]]:
-    """Agrupa colores contiguos idénticos para reducir llamadas a la API de dibujo."""
+    """
+    Optimiza una lista de colores consecutivos en segmentos de colores idénticos.
+    
+    Utilizado para reducir la cantidad de llamadas a APIs gráficas que renderizan 
+    cada segmento de color individualmente en el canvas.
+    """
     segments = []
     if not colors: return segments
     start = 0
@@ -275,7 +298,7 @@ def _get_grouped_segments(colors: List[HexColor]) -> List[Tuple[HexColor, int, i
 
 
 def _get_shield_coords(sx: float, sy: float, s: float) -> PointCoords:
-    """Calcula coordenadas de los vértices del escudo según escala (s) y offset (sx, sy)."""
+    """Calcula las coordenadas de los vértices base del escudo escalados y desplazados."""
     base = [64, 18, 100, 31, 100, 67, 90, 90, 64, 110, 38, 90, 28, 67, 28, 31]
     return [sx + v * s if i % 2 == 0 else sy + v * s for i, v in enumerate(base)]
 
@@ -337,7 +360,7 @@ def logo_ascii() -> str:
 
 
 def _draw_shield_stripes(canvas: Any, canvas_x: float, canvas_y: float, scale: float) -> None:
-    """Helper interno para renderizar las franjas degradadas del cuerpo del escudo."""
+    """Renderiza las franjas degradadas del cuerpo del escudo en el canvas."""
     franjas_count = max(6, int(28 * scale))
     colores = gradient_colors(franjas_count)
     for color_hex, start, end in _get_grouped_segments(colores):
