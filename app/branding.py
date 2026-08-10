@@ -338,7 +338,7 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         return None
     try:
         target = Path(destination).resolve()
-        # Validar la ruta completa para evitar escritura en destinos fuera de alcance
+        # Se asegura que la ruta final esté dentro de los directorios permitidos antes de tocar disco.
         if not is_safe_to_modify(target):
             return None
             
@@ -346,7 +346,6 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         target.write_text(logo_svg(), encoding="utf-8")
         return target
     except (OSError, PermissionError, ValueError, RuntimeError, IOError, AttributeError):
-        # Fallo silencioso ante problemas de sistema de archivos o permisos denegados
         return None
 
 

@@ -172,6 +172,7 @@ def _collect_candidates(
                         continue
                             
                     try:
+                        # 0x400 (FILE_ATTRIBUTE_REPARSE_POINT) detecta junctions/symlinks
                         entry_stat = entry.stat(follow_symlinks=False)
                         if getattr(entry_stat, 'st_file_attributes', 0) & 0x400:
                             continue

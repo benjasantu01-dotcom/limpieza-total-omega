@@ -109,11 +109,12 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
         real_base = base_path.resolve(strict=True)
         real_target = target_path.resolve(strict=True)
         
-        # Prevenir Path Traversal: asegurar que real_target sea subdirectorio de real_base
-        if os.path.commonpath([real_base, real_target]) != str(real_base):
+        # Validar contra lista negra de seguridad antes de cualquier otra comprobación
+        if is_protected_path(real_target) or is_protected_path(real_base):
             return False
 
-        if is_protected_path(real_target):
+        # Prevenir Path Traversal: asegurar que real_target sea subdirectorio de real_base
+        if os.path.commonpath([real_base, real_target]) != str(real_base):
             return False
 
         # Detectar caracteres no imprimibles o RTL en el path (evita ocultamiento visual)
