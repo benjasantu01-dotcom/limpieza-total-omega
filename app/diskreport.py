@@ -203,13 +203,6 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Generador iterativo que recorre archivos bajo un directorio usando una pila (stack).
-    
-    Args:
-        directory: Directorio base a recorrer.
-        skip_protected: Si True, evita rutas protegidas mediante `is_protected_path`.
-        
-    Yields:
-        Tuplas (Path del archivo, tamaño en bytes).
     """
     if not directory:
         return

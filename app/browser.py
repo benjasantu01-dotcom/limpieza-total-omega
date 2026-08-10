@@ -163,8 +163,12 @@ def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool
     
     try:
         with os.scandir(root_dir) as it:
-            for entry in it:
+            while True:
                 try:
+                    entry = next(it, None)
+                    if entry is None:
+                        break
+                    
                     # Windows: Omitir archivos del sistema o temporales marcados
                     if os.name == 'nt' and kernel32:
                         attrs = kernel32.GetFileAttributesW(entry.path)

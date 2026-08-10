@@ -95,7 +95,6 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
         if is_protected_path(file_path):
             return None
 
-        # Evitar procesar archivos que sean symlinks o reparse points
         stat_initial = file_path.lstat()
         if stat_initial.st_size <= 0 or (getattr(stat_initial, 'st_file_attributes', 0) & 0x400):
             return None
@@ -108,7 +107,6 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
                     break
                 digest.update(buffer)
         
-        # Validar consistencia post-lectura: si cambió, el hash no es fiable
         if file_path.stat().st_size != stat_initial.st_size:
             return None
             
@@ -171,10 +169,6 @@ def _collect_candidates(
 ) -> Dict[int, List[Path]]:
     """
     Realiza un escaneo recursivo del sistema de archivos filtrando por tamaño.
-    
-    Utiliza `os.scandir` para eficiencia de I/O y detecta puntos de reparse 
-    mediante atributos del sistema para evitar bucles infinitos o cruces de 
-    volumen, retornando solo grupos donde existen colisiones de tamaño.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: Dict[int, set[int]] = defaultdict(set)
@@ -190,11 +184,10 @@ def _collect_candidates(
                 for entry in dir_iterator:
                     if entry is None: continue
                     
-                    target_path = Path(entry.path)
-                    if skip_protected and is_protected_path(target_path):
-                        continue
-                        
                     try:
+                        if skip_protected and is_protected_path(Path(entry.path)):
+                            continue
+                            
                         entry_stat = entry.stat(follow_symlinks=False)
                         is_reparse = getattr(entry_stat, 'st_file_attributes', 0) & 0x400
                         
@@ -204,14 +197,14 @@ def _collect_candidates(
                         if entry.is_dir(follow_symlinks=False):
                             if entry_stat.st_ino not in visited_inodes[entry_stat.st_dev]:
                                 visited_inodes[entry_stat.st_dev].add(entry_stat.st_ino)
-                                _scan(target_path)
+                                _scan(Path(entry.path))
                         
                         elif entry.is_file(follow_symlinks=False):
                             if entry_stat.st_size >= min_size:
-                                temp_groups[entry_stat.st_size].append(target_path)
-                    except (OSError, PermissionError, FileNotFoundError): 
+                                temp_groups[entry_stat.st_size].append(Path(entry.path))
+                    except (OSError, PermissionError):
                         continue
-        except (OSError, PermissionError, FileNotFoundError): 
+        except (OSError, PermissionError):
             pass
 
     for directory in directories:
@@ -231,16 +224,16 @@ def _refine_by_hash(
 ) -> Dict[str, List[Path]]:
     """
     Reduce un conjunto de rutas agrupándolas por el resultado de una función de hash.
-    
-    Filtra los resultados devolviendo exclusivamente aquellos grupos que 
-    contienen 2 o más archivos (colisiones).
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
         if path is None: continue
-        digest = hash_func(path)
-        if digest:
-            groups_by_digest[digest].append(path)
+        try:
+            digest = hash_func(path)
+            if digest:
+                groups_by_digest[digest].append(path)
+        except (OSError, PermissionError):
+            continue
                 
     return {d: p for d, p in groups_by_digest.items() if len(p) > 1}
 
