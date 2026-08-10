@@ -1065,3 +1065,10 @@ FAILED evolve/tests/test_assistant.py::test_booleans_accept_the_usual_strings - 
 - `2026-08-10T02:05:05` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `build_context` evitando llamadas repetitivas a `getattr` y `isinstance` dentro de los bucles, y pre-calculando la validación del estado del sistema, reduciendo así la carga computacional en cada iteración del bucle principal.
 - `2026-08-10T02:05:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-10T02:05:05` Corrida terminada. Total usado hoy: 52.
+- `2026-08-10T02:13:43` Arrancando corrida. Quedan hoy ~248 peticiones objetivo.
+- `2026-08-10T02:14:20` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-08-10T02:14:43` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Se ha optimizado la función `_sum_directory_recursive` para evitar llamadas redundantes a `os.path.realpath` y consultas repetidas al sistema de archivos mediante el uso de `entry.stat()` durante el escaneo, reduciendo significativamente la sobrecarga en el sistema de archivos durante el cálculo de tamaños.
+- `2026-08-10T02:15:08` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el método `summarize` eliminando el recorrido redundante y calculando todas las métricas en una única pasada, utilizando `heapq` para los archivos más grandes y acumuladores para extensiones y totales, mejorando significativamente el rendimiento en carpetas con muchos archivos.
+- `2026-08-10T02:15:24` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el rendimiento de `_refine_by_hash` utilizando una estructura de datos `list` pre-filtrada para evitar iterar sobre grupos innecesarios, y eliminé la re-verificación redundante en `find_duplicates` que procesaba listas de longitud menor a 2, acelerando significativamente el pipeline.
+- `2026-08-10T02:15:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-10T02:15:24` Corrida terminada. Total usado hoy: 56.

@@ -140,14 +140,9 @@ def _is_excluded_file(name: str) -> bool:
 
 def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool], visited: Optional[Set[str]] = None) -> int:
     """
-    Realiza un recorrido DFS para calcular el peso total de una carpeta.
-    
-    Seguridad: 
-    1. Evita recursión infinita mediante el set 'visited' (vía realpath).
-    2. Ignora archivos ocultos o de sistema usando GetFileAttributesW.
-    3. Respeta exclusiones definidas en NEVER_TOUCH.
+    Realiza un recorrido DFS eficiente para calcular el peso total de una carpeta.
     """
-    if not root_dir or not isinstance(root_dir, str) or not os.path.exists(root_dir):
+    if not root_dir or not os.path.exists(root_dir):
         return 0
     
     if is_protected_path(Path(root_dir)):
@@ -173,7 +168,6 @@ def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool
                 try:
                     if os.name == 'nt' and kernel32:
                         attrs = kernel32.GetFileAttributesW(entry.path)
-                        # Ignora archivos ocultos (0x02) o de sistema (0x04)
                         if attrs != -1 and (attrs & 0x04 or attrs & 0x02):
                             continue
 

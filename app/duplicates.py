@@ -171,9 +171,6 @@ def _collect_candidates(
 ) -> Dict[int, List[Path]]:
     """
     Escaneo recursivo del sistema de archivos para agrupar candidatos por tamaño.
-    
-    Utiliza un mapa de inodos (st_ino + st_dev) para prevenir el seguimiento de 
-    ciclos en enlaces simbólicos a directorios.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: Dict[int, set[int]] = defaultdict(set)
@@ -228,13 +225,8 @@ def _refine_by_hash(
     hash_func: Callable[[Path], Optional[str]]
 ) -> Dict[str, List[Path]]:
     """
-    Filtra grupos usando una función de hash, reteniendo solo colisiones.
-    
-    Args:
-        paths: Lista de rutas con tamaño idéntico.
-        hash_func: Función para generar la huella (parcial o completa).
+    Filtra grupos reteniendo solo colisiones, usando hash_func para clasificar.
     """
-    if paths is None: return {}
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
         if path is None: continue
@@ -251,10 +243,7 @@ def find_duplicates(
     skip_protected: bool = True,
 ) -> List[DuplicateGroup]:
     """
-    Ejecuta el pipeline de detección de duplicados en tres fases:
-    1. Indexación por tamaño (collect_candidates).
-    2. Filtrado por hash parcial (64KB).
-    3. Verificación definitiva por hash SHA256 completo.
+    Ejecuta el pipeline de detección de duplicados en tres fases.
     """
     if directories is None: return []
     
@@ -265,9 +254,6 @@ def find_duplicates(
         partial_groups = _refine_by_hash(paths_in_size_group, partial_hash)
         
         for partial_candidates in partial_groups.values():
-            if len(partial_candidates) < 2:
-                continue
-
             full_hash_groups = _refine_by_hash(partial_candidates, hash_file)
             for digest, confirmed_paths in full_hash_groups.items():
                 groups.append(DuplicateGroup(digest, size, sorted(confirmed_paths)))
@@ -285,10 +271,6 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     """
     Determina el archivo 'original' basándose en cronología y longitud de ruta.
-    
-    Prioridades:
-    1. Fecha de modificación más antigua (evita borrar versiones recientes).
-    2. Longitud de la ruta (desempate: rutas cortas suelen ser menos profundas).
     """
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None

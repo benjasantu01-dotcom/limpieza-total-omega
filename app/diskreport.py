@@ -331,10 +331,10 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
         ext_size[ext] += size
         ext_count[ext] += 1
         
-        if len(top_files_heap) >= 8:
-            heapq.heappushpop(top_files_heap, (size, str(path)))
-        else:
+        if len(top_files_heap) < 8:
             heapq.heappush(top_files_heap, (size, str(path)))
+        else:
+            heapq.heappushpop(top_files_heap, (size, str(path)))
 
     lines = [f"Carpeta analizada: {path_obj}", f"Total: {format_size(total_bytes)} en {total_files} archivos", "", "Por tipo de archivo:"]
     
