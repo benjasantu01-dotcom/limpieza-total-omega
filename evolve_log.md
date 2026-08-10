@@ -995,3 +995,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-10T01:04:30` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `on_target_choice_changed` añadiendo una validación explícita mediante `is_safe_target_dir` antes de asignar la ruta del escáner, previniendo que rutas potencialmente inseguras o bloqueadas se propaguen al estado de la aplicación.
 - `2026-08-10T01:04:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-10T01:04:30` Corrida terminada. Total usado hoy: 28.
+- `2026-08-10T01:12:30` Arrancando corrida. Quedan hoy ~272 peticiones objetivo.
+- `2026-08-10T01:12:57` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-10T01:13:20` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `sort_junk` y `delete_reviewed` mediante validaciones de tipo y estructura para evitar errores en tiempo de ejecución ante entradas inesperadas, manteniendo la integridad del flujo de datos.
+- `2026-08-10T01:13:50` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `quarantine.py` implementando una validación estricta y explícita de `base` en todas las funciones de acceso a disco, previniendo errores de ejecución por rutas mal formadas o None antes de que lleguen a `quarantine_dir`.
+- `2026-08-10T01:13:54` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-08-10T01:13:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-10T01:13:54` Corrida terminada. Total usado hoy: 32.

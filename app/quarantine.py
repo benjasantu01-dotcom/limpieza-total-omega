@@ -119,9 +119,6 @@ class QuarantineItem:
     def verify_integrity(self, stored_path: Path) -> bool:
         """
         Realiza una validación de seguridad contra el archivo físico en el sandbox.
-        
-        Compara el tamaño actual en disco y el hash SHA256 contra los registros 
-        almacenados en el momento de la cuarentena para detectar manipulación externa.
         """
         if not stored_path or not stored_path.is_file():
             return False
@@ -192,10 +189,7 @@ def _is_valid_quarantine_path(path: Path, root: Path) -> TypeGuard[Path]:
 
 
 def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
-    """
-    Ejecuta una serie de chequeos preventivos antes de mover un archivo a cuarentena.
-    Verifica seguridad de rutas, atributos y bloqueos de sistema operativo.
-    """
+    """Ejecuta una serie de chequeos preventivos antes de mover un archivo a cuarentena."""
     if ":" in source_path.name.replace(source_path.drive, ""):
         raise UnsafePathError(f"Ruta con flujos de datos alternos no permitida: {source_path}")
 

@@ -193,7 +193,7 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
         "date": lambda f: f.modified
     }
         
-    criterio: str = str(by).lower() if isinstance(by, str) else "size"
+    criterio = by.lower() if isinstance(by, str) else "size"
     key_func = configs.get(criterio, configs["size"])
         
     return sorted(files, key=key_func, reverse=not bool(ascending))
@@ -216,6 +216,8 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 
     for jf in files:
         try:
+            if not isinstance(jf, JunkFile) or not jf.path:
+                continue
             current_abs: Path = jf.path.resolve()
             if not current_abs.exists() or not current_abs.is_file():
                 continue
@@ -251,12 +253,17 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         return 0
 
     count: int = 0
-    with os.scandir(dest) as it:
-        for entry in it:
-            try:
-                if entry.is_file() and not _is_junction(entry) and _is_safe_for_move(Path(entry.path)):
-                    os.remove(entry.path)
-                    count += 1
-            except (PermissionError, OSError):
-                continue
+    try:
+        with os.scandir(dest) as it:
+            for entry in it:
+                try:
+                    if entry.is_file() and not _is_junction(entry):
+                        path_to_delete = Path(entry.path)
+                        if _is_safe_for_move(path_to_delete):
+                            os.remove(path_to_delete)
+                            count += 1
+                except (PermissionError, OSError):
+                    continue
+    except (PermissionError, OSError):
+        pass
     return count
