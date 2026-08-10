@@ -199,6 +199,7 @@ def _generate_recommendations(m: SystemMetrics, ratios: ScoreMap) -> List[str]:
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
     """Ejecuta el cálculo ponderado de salud integral del sistema."""
+    # Validación estricta de tipo y estado de entrada antes de operar
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Instancia de métricas inválida."])
     

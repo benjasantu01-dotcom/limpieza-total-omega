@@ -186,7 +186,8 @@ def _collect_candidates(
                 for entry in dir_iterator:
                     if entry is None: continue
                     
-                    if skip_protected and is_protected_path(Path(entry.path)):
+                    target_path = Path(entry.path)
+                    if skip_protected and is_protected_path(target_path):
                         continue
                         
                     try:
@@ -199,11 +200,11 @@ def _collect_candidates(
                         if entry.is_dir(follow_symlinks=False):
                             if entry_stat.st_ino not in visited_inodes[entry_stat.st_dev]:
                                 visited_inodes[entry_stat.st_dev].add(entry_stat.st_ino)
-                                _scan(Path(entry.path))
+                                _scan(target_path)
                         
                         elif entry.is_file(follow_symlinks=False):
                             if entry_stat.st_size >= min_size:
-                                temp_groups[entry_stat.st_size].append(Path(entry.path))
+                                temp_groups[entry_stat.st_size].append(target_path)
                     except (OSError, PermissionError, FileNotFoundError): 
                         continue
         except (OSError, PermissionError, FileNotFoundError): 
