@@ -376,18 +376,21 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
     top_files_heap: List[Tuple[int, str]] = []
     total_bytes, total_files = 0, 0
     
-    for path, size in walk_files(path_obj, skip_protected):
-        total_bytes += size
-        total_files += 1
-        
-        ext = path.suffix.lower() or "(sin extensión)"
-        ext_size[ext] += size
-        ext_count[ext] += 1
-        
-        if len(top_files_heap) < 8:
-            heapq.heappush(top_files_heap, (size, str(path)))
-        else:
-            heapq.heappushpop(top_files_heap, (size, str(path)))
+    try:
+        for path, size in walk_files(path_obj, skip_protected):
+            total_bytes += size
+            total_files += 1
+            
+            ext = path.suffix.lower() or "(sin extensión)"
+            ext_size[ext] += size
+            ext_count[ext] += 1
+            
+            if len(top_files_heap) < 8:
+                heapq.heappush(top_files_heap, (size, str(path)))
+            else:
+                heapq.heappushpop(top_files_heap, (size, str(path)))
+    except Exception:
+        return ["Error durante el análisis del directorio."]
 
     lines = [f"Carpeta analizada: {path_obj}", f"Total: {format_size(total_bytes)} en {total_files} archivos", "", "Por tipo de archivo:"]
     

@@ -176,7 +176,7 @@ def _collect_candidates(
     if directories is None: return temp_groups
     
     def _scan(root_path: Path) -> None:
-        if skip_protected and is_protected_path(root_path):
+        if not isinstance(root_path, Path) or (skip_protected and is_protected_path(root_path)):
             return
             
         try:
@@ -185,7 +185,8 @@ def _collect_candidates(
                     if entry is None: continue
                     
                     try:
-                        if skip_protected and is_protected_path(Path(entry.path)):
+                        entry_path = Path(entry.path)
+                        if skip_protected and is_protected_path(entry_path):
                             continue
                             
                         entry_stat = entry.stat(follow_symlinks=False)
@@ -197,11 +198,11 @@ def _collect_candidates(
                         if entry.is_dir(follow_symlinks=False):
                             if entry_stat.st_ino not in visited_inodes[entry_stat.st_dev]:
                                 visited_inodes[entry_stat.st_dev].add(entry_stat.st_ino)
-                                _scan(Path(entry.path))
+                                _scan(entry_path)
                         
                         elif entry.is_file(follow_symlinks=False):
                             if entry_stat.st_size >= min_size:
-                                temp_groups[entry_stat.st_size].append(Path(entry.path))
+                                temp_groups[entry_stat.st_size].append(entry_path)
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):
@@ -213,7 +214,7 @@ def _collect_candidates(
             path_obj = Path(directory)
             if path_obj.exists() and path_obj.is_dir():
                 _scan(path_obj)
-        except (OSError, PermissionError, ValueError): continue
+        except (OSError, PermissionError, ValueError, TypeError): continue
             
     return {size: paths for size, paths in temp_groups.items() if len(paths) > 1}
 
@@ -226,8 +227,10 @@ def _refine_by_hash(
     Reduce un conjunto de rutas agrupándolas por el resultado de una función de hash.
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
+    if paths is None: return groups_by_digest
+    
     for path in paths:
-        if path is None: continue
+        if not isinstance(path, Path): continue
         try:
             digest = hash_func(path)
             if digest:
@@ -246,15 +249,17 @@ def find_duplicates(
     """
     Ejecuta el pipeline de detección de duplicados en tres fases.
     """
-    if directories is None: return []
+    if directories is None or min_size < 0: return []
     
     size_map = _collect_candidates(directories, min_size, skip_protected)
     groups: List[DuplicateGroup] = []
     
     for size, paths_in_size_group in size_map.items():
+        if not isinstance(paths_in_size_group, list): continue
         partial_groups = _refine_by_hash(paths_in_size_group, partial_hash)
         
         for partial_candidates in partial_groups.values():
+            if not isinstance(partial_candidates, list): continue
             full_hash_groups = _refine_by_hash(partial_candidates, hash_file)
             for digest, confirmed_paths in full_hash_groups.items():
                 groups.append(DuplicateGroup(digest, size, sorted(confirmed_paths)))
@@ -299,6 +304,7 @@ def format_group(group: DuplicateGroup) -> List[str]:
     
     lines = [f"{group.count} copias de {mb_total} MB (recuperable: {mb_wasted} MB)"]
     for path in group.paths:
+        if not isinstance(path, Path): continue
         marca = "conservar" if (keeper and path == keeper) else "duplicado"
         lines.append(f"   [{marca}] {path}")
     return lines

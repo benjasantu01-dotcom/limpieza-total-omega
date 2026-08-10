@@ -734,3 +734,10 @@ FAILED evolve/tests/test_modules.py::test_never_scans_system_folders - Attribute
 - `2026-08-10T09:46:38` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `build_context` y sus subfunciones mediante validaciones explícitas de entrada, asegurando que `_safe_assign` y el procesamiento de métricas sean tolerantes a tipos inesperados o valores corruptos sin comprometer la integridad del `SystemContext`.
 - `2026-08-10T09:46:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-10T09:46:38` Corrida terminada. Total usado hoy: 232.
+- `2026-08-10T09:53:12` Arrancando corrida. Quedan hoy ~68 peticiones objetivo.
+- `2026-08-10T09:53:44` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-10T09:54:07` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-10T09:54:32` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las funciones de análisis al encapsular el manejo de rutas y accesos en bloques `try...except` específicos en los puntos de entrada, evitando que errores de sistema al resolver rutas inexistentes o inaccesibles provoquen fallos silenciosos o retornos inesperados.
+- `2026-08-10T09:54:41` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Se ha robustecido el manejo de errores en `find_duplicates` y sus funciones auxiliares, asegurando que las validaciones de entrada (`isinstance` y chequeos de `None`) se realicen de manera consistente y preventiva para evitar excepciones no controladas durante la iteración sobre directorios.
+- `2026-08-10T09:54:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-10T09:54:41` Corrida terminada. Total usado hoy: 236.
