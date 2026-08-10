@@ -102,8 +102,8 @@ class Scanner:
             elif entry.is_file(follow_symlinks=False):
                 path_obj = Path(entry_path)
                 name = entry.name
-                suffix = os.path.splitext(name)[1].lower()
-                self.results.extend(scan_file(path_obj, entry=entry, name=name, suffix=suffix))
+                _, ext = os.path.splitext(name)
+                self.results.extend(scan_file(path_obj, entry=entry, name=name, suffix=ext.lower()))
         except (PermissionError, OSError, ValueError, RuntimeError) as e:
             logger.debug(f"Saltando entrada {getattr(entry, 'path', 'desconocida')}: {e}")
 
@@ -142,7 +142,6 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, name
     target = (name or path.name or "").lower()
     if target in SYSTEM_LOOKALIKES:
         try:
-            # path.parent es seguro porque Path inicializado con cadena no es None
             if SYSTEM32_LOWER not in str(path.parent).lower():
                 return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
         except (RuntimeError, ValueError) as e:
@@ -160,11 +159,9 @@ def scan_file(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[st
     n = name or path.name
     s = suffix or path.suffix.lower()
     
-    # Heurística universal
     if (res := check_double_extension(path, entry, n, s)):
         findings.append(res)
     
-    # Heurísticas específicas para ejecutables
     if s in SUSPICIOUS_EXECUTABLE_EXT:
         if (res := check_recent_executable_in_downloads(path, entry, n, s)):
             findings.append(res)

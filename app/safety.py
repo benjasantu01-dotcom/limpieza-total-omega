@@ -197,7 +197,8 @@ def is_protected_path(path: PathLike) -> bool:
     
     try:
         p = normalize(path)
-        if not PROTECTED_DIR_NAMES.isdisjoint(part.lower() for part in p.parts):
+        # Optimización: evitar crear nuevas estructuras de datos innecesarias
+        if any(part.lower() in PROTECTED_DIR_NAMES for part in p.parts):
             return True
             
         if not _SYSTEM_ROOTS.isdisjoint(p.parents) or p in _SYSTEM_ROOTS:

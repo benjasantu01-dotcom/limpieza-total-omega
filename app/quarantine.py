@@ -411,7 +411,9 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
         raise ValueError("ID de ítem vacío o tipo incorrecto.")
     
     items = load_manifest(base)
-    match = next((i for i in items if i.item_id == item_id), None)
+    # Optimización: Mapeo O(1) para búsqueda rápida
+    item_map = {i.item_id: i for i in items}
+    match = item_map.get(item_id)
     
     if not match:
         raise KeyError(f"No se encontró ítem con ID: {item_id}")
@@ -463,7 +465,8 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
         return False
         
     items = load_manifest(base)
-    match = next((i for i in items if i.item_id == item_id), None)
+    item_map = {i.item_id: i for i in items}
+    match = item_map.get(item_id)
     
     if not match:
         return False
