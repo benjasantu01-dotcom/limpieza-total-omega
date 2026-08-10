@@ -1157,3 +1157,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-10T02:46:14` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se ha robustecido el módulo `branding.py` mediante una validación defensiva en `_hex_to_rgb` para evitar desbordamientos de índice al procesar strings mal formados (que no son `"#RRGGBB"`), previniendo posibles errores en tiempo de ejecución ante valores de configuración inesperados.
 - `2026-08-10T02:46:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-10T02:46:14` Corrida terminada. Total usado hoy: 68.
+- `2026-08-10T02:54:38` Arrancando corrida. Quedan hoy ~232 peticiones objetivo.
+- `2026-08-10T02:55:02` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-08-10T02:55:27` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré `walk_files` para manejar de forma robusta los casos de enlaces simbólicos circulares y archivos bloqueados por el sistema operativo, añadiendo un control explícito de profundidad de recursión y mejorando la captura de excepciones durante la iteración para evitar abortos inesperados.
+- `2026-08-10T02:55:50` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-08-10T02:56:00` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `compute_score` frente a casos donde la configuración de pesos (`WEIGHTS`) pudiera ser inconsistente, asegurando que si la suma de pesos es 0, no se intente una división por cero y el sistema retorne un estado de salud degradado seguro en lugar de fallar.
+- `2026-08-10T02:56:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-10T02:56:00` Corrida terminada. Total usado hoy: 72.

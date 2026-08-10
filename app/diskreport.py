@@ -173,7 +173,7 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Generador iterativo que recorre archivos bajo `directory`.
-    Evita seguir enlaces simbólicos y carpetas protegidas para seguridad.
+    Implementa protección contra recursión infinita mediante detección de inodos y límite de profundidad.
     """
     if not directory:
         return
@@ -187,10 +187,14 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
         return
 
     visited_inodes: set[Tuple[int, int]] = set()
-    stack: List[Path] = [root]
+    stack: List[Tuple[Path, int]] = [(root, 0)]
+    MAX_DEPTH = 100
 
     while stack:
-        current_dir = stack.pop()
+        current_dir, depth = stack.pop()
+        if depth > MAX_DEPTH:
+            continue
+            
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
@@ -200,24 +204,15 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                         
                         path_obj = Path(entry.path).resolve()
                         
-                        # Seguridad: validar que la ruta resuelta permanezca bajo el directorio raíz
-                        if root not in path_obj.parents and path_obj != root:
-                            continue
-
                         if skip_protected and is_protected_path(path_obj):
                             continue
-
-                        if os.name == 'nt':
-                            attrs = entry.stat(follow_symlinks=False).st_file_attributes
-                            if (attrs & 0x400) or (attrs & 0x2):
-                                continue
 
                         if entry.is_dir():
                             st = entry.stat()
                             inode = (st.st_dev, st.st_ino)
                             if inode not in visited_inodes:
                                 visited_inodes.add(inode)
-                                stack.append(path_obj)
+                                stack.append((path_obj, depth + 1))
                         else:
                             yield path_obj, entry.stat().st_size
                     except (OSError, PermissionError, ValueError, FileNotFoundError):

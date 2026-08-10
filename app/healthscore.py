@@ -58,7 +58,10 @@ WEIGHTS: Final[Dict[str, int]] = {
 }
 
 _TOTAL_WEIGHTS: Final[float] = float(sum(WEIGHTS.values()))
-_WEIGHT_FACTORS: Final[Dict[str, float]] = {k: (w * 100.0 / _TOTAL_WEIGHTS) for k, w in WEIGHTS.items()}
+_WEIGHT_FACTORS: Final[Dict[str, float]] = {
+    k: (w * 100.0 / _TOTAL_WEIGHTS) if _TOTAL_WEIGHTS > 0 else 0.0 
+    for k, w in WEIGHTS.items()
+}
 _WEIGHT_ITEMS: Final[List[Tuple[str, int]]] = list(WEIGHTS.items())
 
 

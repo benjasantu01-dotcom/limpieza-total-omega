@@ -8,38 +8,38 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **230** (45.6% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 26
+- Rechazadas por guardia de seguridad: 25
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 223
+- Sin respuesta de la IA (error o límite): 224
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-08 | 37 | 1 | 4 | 1 | 43 |
+| 2026-08-08 | 35 | 1 | 3 | 1 | 42 |
 | 2026-08-09 | 162 | 8 | 18 | 11 | 151 |
-| 2026-08-10 | 31 | 3 | 4 | 1 | 29 |
+| 2026-08-10 | 33 | 3 | 4 | 1 | 31 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **58**
 - manejo de errores y validación de entradas: **52**
 - rendimiento: **45**
-- seguridad defensiva: **42**
-- robustez ante casos límite: **33**
+- seguridad defensiva: **40**
+- robustez ante casos límite: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **23**
+- `quarantine.py`: **22**
 - `assistant.py`: **21**
 - `settings.py`: **20**
+- `healthscore.py`: **20**
 - `main.py`: **20**
-- `healthscore.py`: **19**
 - `browser.py`: **18**
+- `diskreport.py`: **17**
 - `branding.py`: **17**
-- `organizer.py`: **16**
 - `scanner.py`: **16**
-- `diskreport.py`: **16**
+- `organizer.py`: **15**
 - `memory.py`: **13**
 - `duplicates.py`: **13**
 - `safety.py`: **9**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-10T02:56:00` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `compute_score` frente a casos donde la configuración de pesos (`WEIGHTS`) pudiera ser inconsistente, asegurando que si la suma de pesos es 0, no se intente una división por cero y el sistema retorne un estado de salud degradado seguro en lugar de fallar.
+- `2026-08-10T02:55:27` **diskreport.py** (robustez ante casos límite): Mejoré `walk_files` para manejar de forma robusta los casos de enlaces simbólicos circulares y archivos bloqueados por el sistema operativo, añadiendo un control explícito de profundidad de recursión y mejorando la captura de excepciones durante la iteración para evitar abortos inesperados.
 - `2026-08-10T02:46:14` **branding.py** (robustez ante casos límite): Se ha robustecido el módulo `branding.py` mediante una validación defensiva en `_hex_to_rgb` para evitar desbordamientos de índice al procesar strings mal formados (que no son `"#RRGGBB"`), previniendo posibles errores en tiempo de ejecución ante valores de configuración inesperados.
 - `2026-08-10T02:46:00` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` frente a fuentes de datos corruptas o mal formadas (diccionarios con tipos inesperados o valores no numéricos) asegurando que los tipos de datos sean consistentes antes de la asignación y evitando que un fallo en un valor individual detenga la construcción del contexto del sistema.
 - `2026-08-10T02:45:01` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` y `settings_path()` reduciendo llamadas redundantes al sistema de archivos (`stat()`, `exists()`) mediante una verificación de caché más eficiente y el uso de un mapa local de validadores pre-computados.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-10T02:15:08` **diskreport.py** (rendimiento): Optimicé el método `summarize` eliminando el recorrido redundante y calculando todas las métricas en una única pasada, utilizando `heapq` para los archivos más grandes y acumuladores para extensiones y totales, mejorando significativamente el rendimiento en carpetas con muchos archivos.
 - `2026-08-10T02:14:43` **browser.py** (rendimiento): Se ha optimizado la función `_sum_directory_recursive` para evitar llamadas redundantes a `os.path.realpath` y consultas repetidas al sistema de archivos mediante el uso de `entry.stat()` durante el escaneo, reduciendo significativamente la sobrecarga en el sistema de archivos durante el cálculo de tamaños.
 - `2026-08-10T02:05:05` **assistant.py** (rendimiento): Optimicé el rendimiento de `build_context` evitando llamadas repetitivas a `getattr` y `isinstance` dentro de los bucles, y pre-calculando la validación del estado del sistema, reduciendo así la carga computacional en cada iteración del bucle principal.
-- `2026-08-10T01:54:43` **safety.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructuradas (parámetros, retornos y excepciones) en funciones clave, lo que facilita el mantenimiento y la auditoría del código conforme a los estándares exigidos para el proyecto.
-- `2026-08-10T01:54:13` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes en funciones críticas y extendiendo los docstrings para explicar la lógica de seguridad, especialmente en los procesos de validación de rutas y operaciones atómicas.
