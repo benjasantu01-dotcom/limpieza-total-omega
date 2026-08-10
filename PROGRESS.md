@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **236** (46.8% de aceptación)
+- Mejoras aceptadas: **237** (47.0% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 24
+- Rechazadas por guardia de seguridad: 25
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 218
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-09 | 148 | 8 | 15 | 10 | 143 |
-| 2026-08-10 | 88 | 4 | 9 | 4 | 75 |
+| 2026-08-09 | 148 | 8 | 15 | 10 | 139 |
+| 2026-08-10 | 89 | 4 | 10 | 4 | 77 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,11 +25,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **52**
 - rendimiento: **44**
 - seguridad defensiva: **43**
-- robustez ante casos límite: **38**
+- robustez ante casos límite: **39**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **22**
+- `quarantine.py`: **23**
 - `main.py`: **21**
 - `settings.py`: **21**
 - `assistant.py`: **20**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-10T07:41:04` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `purge_all` ante archivos huérfanos o basura residual en el directorio de cuarentena, asegurando que la limpieza solo afecte archivos validados explícitamente por el manifiesto y evitando errores de coincidencia con archivos temporales o directorios inesperados.
 - `2026-08-10T07:32:19` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de `stage_for_review` implementando una verificación de bloqueo mediante el intento de apertura en modo escritura exclusiva antes de mover el archivo, previniendo errores de sistema al intentar operar con archivos en uso por otros procesos.
 - `2026-08-10T07:32:10` **memory.py** (robustez ante casos límite): Se introdujo una validación robusta contra la inyección de comandos y errores de sintaxis en `top_memory_processes` al normalizar y verificar estrictamente el formato del CSV recibido desde PowerShell antes de procesarlo.
 - `2026-08-10T07:31:44` **main.py** (robustez ante casos límite): He mejorado la robustez de `main.py` ante errores de entrada del usuario en el formulario de ajustes, específicamente en `on_save_settings`, añadiendo un bloque `try-except` para capturar excepciones al recuperar valores de las variables de la UI, previniendo que una entrada malformada o un estado de widget inconsistente detenga el proceso de guardado o bloquee la aplicación.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-10T07:01:05` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` al convertir `_SYSTEM_ROOTS` en un conjunto pre-calculado de `Path` que evita resoluciones redundantes en cada iteración y utilicé un `any()` más eficiente que aprovecha el `frozenset` existente para validar los componentes de la ruta sin iteraciones costosas.
 - `2026-08-10T07:00:34` **quarantine.py** (rendimiento): Optimicé el rendimiento de `purge_all` y la carga del manifiesto evitando el uso de `load_manifest` repetidamente dentro de bucles y reduciendo la complejidad algorítmica de $O(N^2)$ a $O(N)$ mediante el uso de conjuntos (`set`) para las verificaciones de integridad.
 - `2026-08-10T06:51:30` **memory.py** (rendimiento): Se implementó un filtrado preventivo en `parse_windows_process_csv` y se optimizó la lógica de caché en `top_memory_processes` para evitar ejecuciones innecesarias de PowerShell y procesado redundante de strings, mejorando significativamente la eficiencia en cada iteración del bucle.
-- `2026-08-10T06:51:19` **main.py** (rendimiento): Optimicé el método `_flush_logs` para procesar la cola de mensajes en un solo lote de inserción, reduciendo drásticamente la frecuencia de llamadas a `box.insert` y `box.see`, lo cual mejora notablemente el rendimiento de la UI cuando hay un logueo masivo de archivos (ej. escaneos de disco).

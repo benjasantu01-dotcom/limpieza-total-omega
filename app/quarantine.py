@@ -518,7 +518,6 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
         return 0
     
     items = load_manifest(base)
-    # Creamos un mapa de búsqueda para acceso O(1) y un set de nombres esperados
     item_map: Dict[str, QuarantineItem] = {item.stored_name: item for item in items}
     
     purged_count = 0
@@ -529,15 +528,17 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
             if entry.name == MANIFEST_NAME or not entry.is_file():
                 continue
             
-            item = item_map.get(entry.name)
-            if item and item.verify_integrity(entry):
-                if _safe_unlink(entry):
-                    purged_count += 1
-                else:
-                    items_to_keep.append(item)
-            elif item:
-                # El archivo existe pero falló integridad o no es el del manifiesto
+            # Solo procesamos si el archivo está en el manifiesto
+            if entry.name in item_map:
+                item = item_map[entry.name]
+                if item.verify_integrity(entry):
+                    if _safe_unlink(entry):
+                        purged_count += 1
+                        continue # Ya fue purgado
                 items_to_keep.append(item)
+            else:
+                # Archivo huérfano (no en manifiesto), no debe ser borrado automáticamente
+                pass
                 
         if purged_count > 0:
             save_manifest(items_to_keep, base)

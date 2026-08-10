@@ -472,3 +472,10 @@ FAILED evolve/tests/test_basic.py::test_delete_reviewed_only_touches_the_review_
 - `2026-08-10T07:32:19` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `stage_for_review` implementando una verificación de bloqueo mediante el intento de apertura en modo escritura exclusiva antes de mover el archivo, previniendo errores de sistema al intentar operar con archivos en uso por otros procesos.
 - `2026-08-10T07:32:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-10T07:32:19` Corrida terminada. Total usado hoy: 180.
+- `2026-08-10T07:40:31` Arrancando corrida. Quedan hoy ~120 peticiones objetivo.
+- `2026-08-10T07:41:04` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Mejoré la robustez de `purge_all` ante archivos huérfanos o basura residual en el directorio de cuarentena, asegurando que la limpieza solo afecte archivos validados explícitamente por el manifiesto y evitando errores de coincidencia con archivos temporales o directorios inesperados.
+- `2026-08-10T07:41:22` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-10T07:41:46` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
+- `2026-08-10T07:41:53` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-08-10T07:41:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-10T07:41:53` Corrida terminada. Total usado hoy: 184.
