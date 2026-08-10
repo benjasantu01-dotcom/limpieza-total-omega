@@ -479,3 +479,10 @@ FAILED evolve/tests/test_basic.py::test_delete_reviewed_only_touches_the_review_
 - `2026-08-10T07:41:53` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
 - `2026-08-10T07:41:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-10T07:41:53` Corrida terminada. Total usado hoy: 184.
+- `2026-08-10T07:50:40` Arrancando corrida. Quedan hoy ~116 peticiones objetivo.
+- `2026-08-10T07:51:06` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se añadió una capa de protección en `load` para manejar archivos de configuración con permisos denegados o bloqueos de acceso durante la lectura, asegurando que la aplicación siempre retorne valores por defecto en lugar de colapsar ante errores de E/S.
+- `2026-08-10T07:51:30` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-08-10T07:52:00` ➖ Sin cambios en assistant.py (enfoque: seguridad defensiva). Motivo: Mejoré la seguridad defensiva en `_call_gemini` añadiendo una validación explícita con `is_protected_path` al texto de la respuesta antes de devolverla, garantizando que, aunque la API externa intentara inyectar rutas de sistema, la aplicación las filtre preventivamente.
+- `2026-08-10T07:52:14` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Mejoré la seguridad en `save_logo_svg` al reemplazar el uso de `Path.write_text` (que sobreescribe ciegamente) por una comprobación explícita de `is_safe_to_modify` sobre el archivo resultante final, asegurando que no se pueda manipular una ruta fuera del control de la app incluso si la ruta destino fuera maliciosa.
+- `2026-08-10T07:52:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-10T07:52:14` Corrida terminada. Total usado hoy: 188.

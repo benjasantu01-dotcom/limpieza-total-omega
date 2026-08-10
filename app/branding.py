@@ -309,16 +309,13 @@ def logo_svg(size: int = 128) -> str:
 
 
 def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
-    """Guarda el logo SVG en una ruta segura, validando que el directorio sea seguro."""
+    """Guarda el logo SVG en una ruta segura, validando que el archivo final sea seguro."""
     if not destination: 
         return None
     try:
         target = Path(destination).resolve()
-        if not is_safe_to_modify(target.parent):
-            return None
-        
-        # Validar si existe y es un archivo antes de escribir
-        if target.exists() and not target.is_file():
+        # Validar la ruta completa para evitar escritura en destinos fuera de alcance
+        if not is_safe_to_modify(target):
             return None
             
         target.parent.mkdir(parents=True, exist_ok=True)

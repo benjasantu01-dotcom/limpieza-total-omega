@@ -211,7 +211,8 @@ def load(path_or_base: PathLike | None = None) -> AppSettings:
                     _current_path, _last_mtime = ruta, stats.st_mtime
                     return _cached_settings.copy()
     except (OSError, PermissionError, json.JSONDecodeError, UnicodeDecodeError, KeyError):
-        pass
+        # Ante cualquier error de acceso o corrupción, forzamos a DEFAULTS
+        _cached_settings = None
     
     _cached_settings = DEFAULTS.copy()
     _current_path = ruta
