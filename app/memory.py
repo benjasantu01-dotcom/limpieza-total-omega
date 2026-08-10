@@ -298,8 +298,7 @@ def _is_system_process(pid: int) -> bool:
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
-    Intenta liberar el Working Set de un proceso.
-    NOTA: Ver advertencia TRIM_WARNING antes de usar.
+    Intenta liberar el Working Set de un proceso tras validar rutas y seguridad.
     """
     if os.name != "nt":
         return False, "Solo disponible en Windows."
@@ -307,8 +306,9 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         target_pid = int(pid)
     except (ValueError, TypeError):
         return False, "El PID debe ser un número entero válido."
-    if target_pid == os.getpid() or _is_system_process(target_pid):
-        return False, "Operación denegada: PID crítico o protegido."
+    
+    if target_pid <= 0 or target_pid == os.getpid() or _is_system_process(target_pid):
+        return False, "Operación denegada: PID fuera de rango o protegido."
     
     kernel32, psapi = ctypes.windll.kernel32, ctypes.windll.psapi
     handle = kernel32.OpenProcess(SAFE_ACCESS, False, target_pid)
@@ -323,10 +323,11 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
             return False, "El proceso seleccionado ya no está activo."
             
         buf = ctypes.create_unicode_buffer(2048)
+        # Validación de ruta absoluta e integridad del ejecutable
         if psapi.GetModuleFileNameExW(handle, 0, buf, 2048) > 0:
             exe_path = os.path.normpath(buf.value)
-            if is_protected_path(exe_path):
-                return False, "Operación denegada: ejecutable en ruta protegida."
+            if is_protected_path(exe_path) or not os.path.isabs(exe_path):
+                return False, "Operación denegada: ruta de ejecutable no segura."
         else:
             return False, "Operación denegada: no se pudo verificar la ubicación del ejecutable."
             

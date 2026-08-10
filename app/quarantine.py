@@ -373,8 +373,12 @@ def quarantine_file(
     temp_dest = dest_dir / f"{item_id}.tmp"
     try:
         shutil.copy2(source_path, temp_dest)
-        if temp_dest.stat().st_size != file_size:
-            raise RuntimeError("Integridad fallida: el archivo fuente cambió durante la copia.")
+        
+        # Validación de integridad post-copia antes de eliminar el original
+        file_hash = _get_sha256(temp_dest)
+        if not file_hash or temp_dest.stat().st_size != file_size:
+            raise RuntimeError("Integridad fallida: el archivo en sandbox no coincide con el origen.")
+            
         os.replace(temp_dest, destination)
         os.remove(source_path)
     except (OSError, PermissionError) as e:
@@ -388,10 +392,6 @@ def quarantine_file(
             _safe_unlink(temp_dest)
 
     try:
-        file_hash = _get_sha256(destination)
-        if not file_hash:
-            raise RuntimeError("Fallo al calcular integridad del archivo aislado.")
-
         item = QuarantineItem(
             item_id=item_id,
             original_path=str(source_path),

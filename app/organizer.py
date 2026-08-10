@@ -233,31 +233,30 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
     if not files:
         raise ValueError("La lista de archivos a procesar no puede estar vacía.")
 
-    try:
-        dest: Path = Path(review_dir).expanduser().resolve()
-        ensure_safe_to_modify(dest)
-        dest.mkdir(parents=True, exist_ok=True)
-    except (OSError, RuntimeError, PermissionError, TypeError) as e:
-        raise ValueError(f"No se pudo preparar el directorio de revisión: {e}")
+    dest: Path = Path(review_dir).expanduser().resolve()
+    ensure_safe_to_modify(dest)
+    dest.mkdir(parents=True, exist_ok=True)
 
     for jf in files:
         try:
             if not isinstance(jf, JunkFile) or not jf.path:
                 continue
             current_abs: Path = jf.path.resolve()
+            
             if not current_abs.exists() or not current_abs.is_file():
                 continue
             
+            # Verificación de que no estamos moviendo la carpeta raíz de revisión a sí misma
             if dest == current_abs or dest in current_abs.parents:
                 continue
             
-            # Verificación de seguridad y estado de bloqueo previo al movimiento
-            if not _is_safe_for_move(current_abs) or _is_file_locked(current_abs):
+            # Verificación defensiva contra rutas fuera del ámbito de seguridad
+            ensure_safe_to_modify(current_abs)
+            
+            if _is_file_locked(current_abs):
                 continue
 
             target: Path = _generate_unique_target(dest / f"{current_abs.stem}_{int(jf.modified.timestamp())}{current_abs.suffix}")
-            
-            ensure_safe_to_modify(target)
             shutil.move(str(current_abs), str(target))
         except (PermissionError, OSError, shutil.Error, RuntimeError):
             continue
@@ -274,12 +273,9 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     if not isinstance(review_dir, str) or not review_dir.strip():
         return 0
 
-    try:
-        dest: Path = Path(review_dir).expanduser().resolve()
-        if not dest.exists() or not dest.is_dir() or not is_safe_to_modify(dest):
-            return 0
-    except (RuntimeError, OSError, ValueError):
-        return 0
+    dest: Path = Path(review_dir).expanduser().resolve()
+    # ensure_safe_to_modify verifica recursivamente la validez de la ruta de revisión
+    ensure_safe_to_modify(dest)
 
     count: int = 0
     try:
@@ -288,8 +284,8 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
                 try:
                     if entry.is_file() and not _is_junction(entry):
                         path_to_delete = Path(entry.path).resolve()
-                        # Validación defensiva: asegurar que el archivo a borrar esté contenido en dest
-                        if dest in path_to_delete.parents:
+                        # Validación defensiva: asegurar que el archivo a borrar esté contenido estrictamente en dest
+                        if dest == path_to_delete.parent:
                             os.remove(path_to_delete)
                             count += 1
                 except (PermissionError, OSError):

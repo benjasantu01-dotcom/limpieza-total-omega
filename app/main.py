@@ -1325,8 +1325,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         def task():
+            # Seguridad: volver a verificar existencia en el hilo de ejecución (evitar carrera)
             if not memory_mod.process_exists(pid):
-                self.log(f"Error: El proceso {pid} no existe.", "Memoria")
+                self.log(f"Error: El proceso {pid} ya no está activo.", "Memoria")
                 return
             try:
                 ok, mensaje = memory_mod.trim_working_set(pid)
