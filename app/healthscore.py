@@ -113,13 +113,13 @@ class HealthResult:
 
 
 def _clamp(value: float, low: float = 0.0, high: float = 1.0) -> float:
-    """Asegura que un valor numérico se encuentre dentro de un rango cerrado [low, high]."""
+    """Restringe un valor al intervalo cerrado [low, high]. Retorna 'low' en caso de NaN/inf."""
     if not math.isfinite(value): return low
     return max(low, min(high, value))
 
 
 def _to_float(value: Any, default: float = 0.0) -> float:
-    """Conversión segura a float, garantizando que el resultado sea finito."""
+    """Intenta convertir un valor arbitrario a float. Retorna 'default' si falla o no es finito."""
     try:
         val = float(value)
         return val if math.isfinite(val) else default
@@ -127,7 +127,7 @@ def _to_float(value: Any, default: float = 0.0) -> float:
 
 
 def _to_int(value: Any, default: int = 0) -> int:
-    """Conversión segura a int, evitando errores en caso de tipos inesperados."""
+    """Intenta convertir un valor arbitrario a int. Retorna 'default' ante excepciones de tipo."""
     try: return int(float(value))
     except (TypeError, ValueError): return default
 
@@ -139,7 +139,7 @@ def score_junk(junk_mb: float) -> float:
 
 def score_security(suspicious_count: int, warnings: int = 0) -> float:
     """
-    Ratio (0.0-1.0): Penaliza hallazgos (5%) y advertencias (25%) acumulados.
+    Ratio (0.0-1.0): Calcula penalización basada en hallazgos (5% c/u) y advertencias (25% c/u).
     """
     count = max(0, _to_int(suspicious_count))
     warn = max(0, _to_int(warnings))
@@ -148,24 +148,24 @@ def score_security(suspicious_count: int, warnings: int = 0) -> float:
 
 
 def score_memory(available_percent: float) -> float:
-    """Ratio (0.0-1.0): 1.0 si la memoria disponible es >= RAM_IDEAL_PERCENT."""
+    """Ratio (0.0-1.0): 1.0 si la memoria disponible alcanza o supera el umbral ideal."""
     if RAM_IDEAL_PERCENT <= 0.0: return 0.0
     val = _to_float(available_percent)
     return _clamp(val / RAM_IDEAL_PERCENT, 0.0, 1.0)
 
 
 def score_disk(free_percent: float) -> float:
-    """Ratio (0.0-1.0): 1.0 si el espacio libre es >= DISK_IDEAL_PERCENT."""
+    """Ratio (0.0-1.0): 1.0 si el espacio libre alcanza o supera el umbral ideal."""
     return 0.0 if DISK_IDEAL_PERCENT <= 0.0 else _clamp(_to_float(free_percent) / DISK_IDEAL_PERCENT, 0.0, 1.0)
 
 
 def score_duplicates(duplicate_mb: float) -> float:
-    """Ratio (0.0-1.0): 1.0 si no existen duplicados según el límite definido."""
+    """Ratio (0.0-1.0): 1.0 si no existen duplicados significativos según el límite definido."""
     return 1.0 if DUPLICATE_LIMIT_MB <= 0.0 else _clamp(1.0 - (_to_float(duplicate_mb) / DUPLICATE_LIMIT_MB), 0.0, 1.0)
 
 
 def score_startup(startup_count: int) -> float:
-    """Ratio (0.0-1.0): 1.0 si el número de programas al inicio es cero."""
+    """Ratio (0.0-1.0): 1.0 si no hay programas al inicio, penaliza linealmente hasta el límite."""
     val = float(max(0, _to_int(startup_count)))
     return 1.0 if STARTUP_LIMIT_COUNT <= 0 else _clamp(1.0 - (val / STARTUP_LIMIT_COUNT), 0.0, 1.0)
 
