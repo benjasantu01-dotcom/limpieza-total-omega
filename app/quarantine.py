@@ -276,12 +276,19 @@ def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload:
             raw_data = json.load(f)
             
         if not isinstance(raw_data, list):
+            _manifest_cache[base_str] = (current_mtime, [])
             return []
 
-        items = [item for entry in raw_data if (item := QuarantineItem.from_dict(entry))]
+        items = []
+        for entry in raw_data:
+            item = QuarantineItem.from_dict(entry)
+            if item:
+                items.append(item)
+        
         _manifest_cache[base_str] = (current_mtime, items)
         return items
     except (json.JSONDecodeError, OSError, PermissionError, ValueError):
+        _manifest_cache[base_str] = (current_mtime, [])
         return []
 
 

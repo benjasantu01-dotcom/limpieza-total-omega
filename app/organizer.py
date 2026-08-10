@@ -199,6 +199,8 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
             pass
 
     for d in dirs:
+        if d is None or not isinstance(d, str):
+            continue
         try:
             p = Path(d).expanduser().resolve()
             if p.exists() and p.is_dir() and is_safe_to_modify(p):
@@ -210,7 +212,7 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
 
 def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -> List[JunkFile]:
     """Ordena los archivos encontrados por tamaño o fecha mediante funciones de clave."""
-    if not isinstance(files, list) or not files:
+    if not isinstance(files, list):
         return []
         
     configs: Dict[str, SortConfig] = {

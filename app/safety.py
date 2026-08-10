@@ -151,7 +151,7 @@ def _is_readonly(path: Path) -> bool:
 @lru_cache(maxsize=2048)
 def normalize(path: PathLike) -> Path:
     """Normaliza y resuelve una ruta, validando límites del sistema."""
-    if not isinstance(path, (str, os.PathLike)) or not str(path).strip():
+    if not path or not isinstance(path, (str, os.PathLike)) or not str(path).strip():
         raise ValueError("Entrada de ruta vacía o tipo inválido.")
     
     str_path = str(path).strip()
@@ -160,8 +160,8 @@ def normalize(path: PathLike) -> Path:
         
     try:
         return Path(str_path).expanduser().resolve()
-    except (OSError, RuntimeError):
-        return Path(os.path.abspath(os.path.expanduser(str_path)))
+    except (OSError, RuntimeError) as e:
+        raise ValueError(f"Error al normalizar ruta: {e}")
 
 
 def is_drive_root(path: PathLike) -> bool:
@@ -198,7 +198,6 @@ def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = F
         c, p = normalize(child), normalize(parent)
         if allow_equal and c == p:
             return True
-        # Seguridad extra: asegurar que 'c' sea un sub-hijo directo o indirecto
         return p in c.parents
     except (ValueError, TypeError, OSError, RuntimeError):
         return False
@@ -224,6 +223,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     except (ValueError, TypeError) as e:
         raise UnsafePathError(f"Ruta mal formada: {e}")
 
+    # Chequeo preventivo de traversal y validación de formato
     if any(part in ("..", "...") for part in path_str.replace("/", os.sep).split(os.sep)):
         raise UnsafePathError("Operación bloqueada: posible intento de path traversal.")
 
