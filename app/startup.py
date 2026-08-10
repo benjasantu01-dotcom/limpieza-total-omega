@@ -63,13 +63,11 @@ HOW_TO_DISABLE: str = (
 @dataclass
 class StartupEntry:
     """
-    Representa un elemento de inicio detectado.
+    Representa un elemento de inicio detectado y provee mecanismos de resolución segura.
     
-    El flujo de resolución es:
-    1. `command` (raw): cadena de registro o ruta de archivo sin procesar.
-    2. `_sanitize_command`: elimina caracteres de control corruptos.
-    3. `_resolve_path_from_command`: extrae la ruta del ejecutable principal.
-    4. `executable` (property): ruta absoluta validada y verificada contra `safety.py`.
+    Esta clase implementa una estrategia de resolución perezosa (lazy evaluation) para 
+    la propiedad `executable`, asegurando que las validaciones de sistema (`safety.py`) 
+    y el acceso al disco ocurran solo cuando sea necesario y una única vez por instancia.
     """
     name: str
     command: str
@@ -78,24 +76,22 @@ class StartupEntry:
     _checked_exists: bool = field(default=False, init=False)
 
     def _is_valid_executable(self, path: Path) -> bool:
-        """Verifica si la extensión coincide con EXECUTABLE_EXTS y no es un symlink (riesgo de escape)."""
+        """Verifica la extensión contra EXECUTABLE_EXTS y asegura que no sea un enlace simbólico."""
         try:
             return path.suffix.lower() in EXECUTABLE_EXTS and not path.is_symlink()
         except (OSError, ValueError, RuntimeError, TypeError):
             return False
 
     def _sanitize_command(self, raw_cmd: str) -> str:
-        """Limpia la cadena de comando eliminando caracteres de control no imprimibles."""
+        """Elimina caracteres de control y espacios en blanco extremos de la cadena de comando."""
         if not isinstance(raw_cmd, str):
             return ""
         return "".join(c for c in raw_cmd.strip() if ord(c) >= 32)
 
     def _extract_quoted_path(self, raw_cmd: str) -> str:
         """
-        Analiza comandos tipo 'C:\Path\App.exe' /args. 
-        
-        Extrae exclusivamente la parte contenida entre las primeras comillas 
-        detectadas, validando contra inyección de caracteres especiales.
+        Extrae la ruta de un comando entrecomillado.
+        Valida que no contenga caracteres prohibidos en rutas de Windows (<>|?*).
         """
         if not isinstance(raw_cmd, str) or len(raw_cmd) < 2:
             return ""
@@ -117,10 +113,10 @@ class StartupEntry:
 
     def _resolve_and_cache_path(self, path_str: str) -> str:
         """
-        Normaliza, valida existencia física y comprueba restricciones de seguridad.
+        Normaliza, valida existencia física y comprueba seguridad mediante `safety.py`.
         
-        La resolución implica I/O y comprobaciones de seguridad (`is_protected_path`),
-        por lo que el resultado final se memoiza en `_EXISTS_CACHE`.
+        Utiliza `_EXISTS_CACHE` para reducir latencia en llamadas redundantes.
+        Devuelve la ruta absoluta si es un archivo válido, o la cadena original si falla.
         """
         if not isinstance(path_str, str) or not path_str:
             return ""
@@ -158,8 +154,7 @@ class StartupEntry:
             return path_str
 
     def _resolve_path_from_command(self, cmd: str) -> str:
-        """Selecciona la estrategia de resolución de ruta base, evitando inyección de argumentos."""
-        # Si el comando contiene indicadores de ejecución de shell adicionales, lo descartamos
+        """Determina la ruta del binario basándose en el formato del comando (citas vs espacio)."""
         if any(char in cmd for char in ('&', '|', ';', '>', '<')):
             return ""
 
@@ -172,8 +167,8 @@ class StartupEntry:
     @property
     def executable(self) -> str:
         """
-        Retorna la ruta absoluta validada del ejecutable.
-        La resolución ocurre una vez por instancia; el resultado se cachea en `_exec_cache`.
+        Ruta absoluta del ejecutable.
+        La resolución se realiza bajo demanda y el resultado se almacena en `_exec_cache`.
         """
         if self._checked_exists:
             return self._exec_cache or ""
@@ -232,7 +227,8 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
 
 def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry]:
     """
-    Convierte el CSV generado por PowerShell a una lista de StartupEntry con validación de integridad.
+    Parsea la salida CSV de PowerShell.
+    Limpia caracteres de control, filtra metadatos del sistema y valida integridad.
     """
     if not isinstance(text, str) or not text.strip():
         return []
@@ -256,18 +252,15 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
             name_raw: str = parts[0]
             cmd_raw: str = parts[1]
             
-            # Validación estricta de contenido
             if not name_raw or not cmd_raw:
                 continue
                 
             name: str = "".join(c for c in name_raw if ord(c) >= 32)
             cmd: str = "".join(c for c in cmd_raw if ord(c) >= 32)
             
-            # Filtrar metadatos de PowerShell y comandos malformados
             if not name or name.lower() in ("name", "pscustomobject") or name.upper().startswith("PS"):
                 continue
             
-            # Comprobar seguridad de la ruta antes de intentar instanciar
             p = Path(cmd)
             if is_protected_path(p):
                 continue

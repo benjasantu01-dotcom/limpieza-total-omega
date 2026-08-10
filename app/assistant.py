@@ -148,8 +148,6 @@ _KEYWORD_MAP: Final[dict[str, str]] = {
     "inicio": "startup", "arranque": "startup", "arranca": "startup", "encender": "startup"
 }
 
-_KEYWORD_KEYS: Final[set[str]] = set(_KEYWORD_MAP.keys())
-
 @dataclass
 class SystemContext:
     """
@@ -421,10 +419,12 @@ def local_answer(question: str, context: SystemContext) -> Answer:
     clean_text = _sanitize_query(question)
     tokens = set(_TOKEN_REGEX.findall(clean_text))
     
-    if not tokens.isdisjoint(_KEYWORD_KEYS):
-        for token in tokens:
-            if token in _KEYWORD_MAP:
-                return _HANDLERS[_KEYWORD_MAP[token]](context, clean_text)
+    # Intersección de conjuntos es O(min(len(tokens), len(keys)))
+    matches = tokens.intersection(_KEYWORD_MAP.keys())
+    if matches:
+        # Resolvemos el primer match relevante encontrado
+        target_key = _KEYWORD_MAP[next(iter(matches))]
+        return _HANDLERS[target_key](context, clean_text)
 
     problemas = list(islice(_gen_problems(context), 3))
     puntaje_str = str(context.score) if context.score is not None else "N/A"

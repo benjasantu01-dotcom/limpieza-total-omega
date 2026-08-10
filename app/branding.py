@@ -267,16 +267,17 @@ def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
 @lru_cache(maxsize=32)
 def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> List[HexColor]:
     """Genera una secuencia de colores interpolados basada en puntos de control (stops)."""
-    cantidad = max(1, int(steps))
-    if not stops: return [PALETTE["accent"]] * cantidad
-    if len(stops) < 2: return [stops[0]] * cantidad
+    steps = max(1, int(steps))
+    if not stops: return [PALETTE["accent"]] * steps
+    if len(stops) < 2: return [stops[0]] * steps
     
     tramos = len(stops) - 1
     res: List[HexColor] = []
-    for i in range(cantidad):
-        posicion = i / max(1, cantidad - 1) * tramos
-        idx = min(tramos - 1, int(posicion))
-        res.append(blend(stops[idx], stops[idx + 1], posicion - idx))
+    # Usamos pre-cálculo de índices para reducir overhead en el loop
+    for i in range(steps):
+        pos = (i / max(1, steps - 1)) * tramos
+        idx = min(tramos - 1, int(pos))
+        res.append(blend(stops[idx], stops[idx + 1], pos - idx))
     return res
 
 def _get_grouped_segments(colors: List[HexColor]) -> List[Tuple[HexColor, int, int]]:

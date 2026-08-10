@@ -145,10 +145,10 @@ def _is_system_hidden(entry_path: str, kernel32: ctypes.WinDLL | None) -> bool:
     return attrs != -1 and bool(attrs & 0x04 or attrs & 0x02)
 
 
-def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool], visited: Optional[Set[str]] = None, depth: int = 0) -> int:
+def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool], visited: Optional[Set[str]] = None, cache: Optional[Dict[str, int]] = None, depth: int = 0) -> int:
     """
     Realiza un recorrido DFS para calcular el peso total (bytes) de una carpeta.
-    Implementa control de ciclos mediante 'visited' y límite de profundidad (10 niveles).
+    Implementa control de ciclos mediante 'visited' y caché de resultados.
     """
     if depth > 10 or not root_dir or not os.path.exists(root_dir):
         return 0
@@ -158,11 +158,15 @@ def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool
         
     if visited is None:
         visited = set()
+    if cache is None:
+        cache = {}
     
     try:
         real_path = os.path.realpath(root_dir)
         if real_path in visited:
             return 0
+        if real_path in cache:
+            return cache[real_path]
         visited.add(real_path)
     except (OSError, PermissionError):
         return 0
@@ -174,18 +178,19 @@ def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool
         with os.scandir(root_dir) as it:
             for entry in it:
                 try:
-                    # Saltar archivos ocultos/sistema en Windows y cualquier symlink/junction
                     if _is_system_hidden(entry.path, kernel32) or entry.is_symlink() or is_junction_fn(entry.path):
                         continue
                     
                     if entry.is_dir():
-                        total_size += _sum_directory_recursive(entry.path, is_junction_fn, visited, depth + 1)
+                        total_size += _sum_directory_recursive(entry.path, is_junction_fn, visited, cache, depth + 1)
                     elif entry.is_file() and not _is_excluded_file(entry.name):
                         total_size += entry.stat().st_size
                 except (OSError, PermissionError):
                     continue
     except (OSError, PermissionError):
         pass
+    
+    cache[real_path] = total_size
     return total_size
 
 
@@ -234,6 +239,7 @@ def detect_profiles(
     raw_bases = bases if bases is not None else base_directories()
     cache_paths = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
     is_junction: Callable[[str], bool] = getattr(os.path, 'isjunction', lambda _: False)
+    perf_cache: Dict[str, int] = {}
 
     found: List[BrowserCache] = []
     if not isinstance(raw_bases, (list, tuple)) or not isinstance(cache_paths, dict):
@@ -249,11 +255,9 @@ def detect_profiles(
         for browser_name, relative_path_str in cache_paths.items():
             if not isinstance(relative_path_str, str): continue
             try:
-                # Construcción segura evitando traversal y symlinks
                 candidate = real_base.joinpath(*relative_path_str.split("\\"))
-                # Validar seguridad antes de forzar resolución de path para evitar seguir enlaces maliciosos
                 if _is_valid_cache_path(candidate, real_base):
-                    size: int = _sum_directory_recursive(str(candidate.resolve()), is_junction)
+                    size: int = _sum_directory_recursive(str(candidate.resolve()), is_junction, cache=perf_cache)
                     if size > 0:
                         found.append(BrowserCache(
                             browser=browser_name,

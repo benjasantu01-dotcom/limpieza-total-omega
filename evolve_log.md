@@ -802,3 +802,11 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-10T10:55:47` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se ha extraído la lógica de validación de rutas dentro de `_Validators.path` a un método privado más específico, `_is_safe_path`, para mejorar la legibilidad y separar la verificación de seguridad de la lógica de normalización de cadenas, facilitando el mantenimiento.
 - `2026-08-10T10:55:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-10T10:55:47` Corrida terminada. Total usado hoy: 260.
+- `2026-08-10T11:04:31` Arrancando corrida. Quedan hoy ~40 peticiones objetivo.
+- `2026-08-10T11:05:00` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). He mejorado la documentación de la clase `StartupEntry` y sus métodos privados mediante docstrings más técnicos y precisos, aclarando la lógica de resolución de rutas y el uso de caché para cumplir con el estándar de calidad requerido.
+- `2026-08-10T11:05:07` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-10T11:05:43` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `local_answer` convirtiendo el mapeo de palabras clave y la validación de tokens en operaciones de conjuntos, eliminando iteraciones innecesarias sobre diccionarios y listas dentro del bucle de resolución.
+- `2026-08-10T11:06:15` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se optimizó `gradient_colors` eliminando el bucle manual y las llamadas repetitivas a `blend` mediante una estrategia de pre-cálculo y caché, mejorando significativamente la velocidad de renderizado de la UI en situaciones de alta carga.
+- `2026-08-10T11:06:24` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el cálculo del peso de los directorios añadiendo una caché de resultados en `_sum_directory_recursive` para evitar procesar repetidamente subcarpetas comunes o jerarquías ya analizadas durante la misma iteración.
+- `2026-08-10T11:06:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-10T11:06:24` Corrida terminada. Total usado hoy: 264.

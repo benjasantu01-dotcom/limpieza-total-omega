@@ -6,46 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **234** (46.4% de aceptación)
+- Mejoras aceptadas: **236** (46.8% de aceptación)
 - Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 218
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-09 | 113 | 8 | 12 | 6 | 105 |
-| 2026-08-10 | 121 | 6 | 15 | 5 | 113 |
+| 2026-08-09 | 111 | 8 | 12 | 6 | 103 |
+| 2026-08-10 | 125 | 6 | 15 | 5 | 113 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **58**
+- legibilidad y documentación: **59**
 - seguridad defensiva: **53**
 - manejo de errores y validación de entradas: **51**
-- robustez ante casos límite: **36**
-- rendimiento: **36**
+- rendimiento: **39**
+- robustez ante casos límite: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **23**
 - `settings.py`: **22**
-- `healthscore.py`: **20**
-- `main.py`: **20**
-- `assistant.py`: **18**
+- `assistant.py`: **19**
+- `healthscore.py`: **19**
+- `main.py`: **19**
+- `branding.py`: **18**
 - `diskreport.py`: **18**
 - `organizer.py`: **18**
-- `branding.py`: **17**
-- `browser.py`: **16**
+- `browser.py`: **17**
 - `duplicates.py`: **15**
 - `scanner.py`: **14**
 - `memory.py`: **14**
 - `safety.py`: **11**
-- `startup.py`: **8**
+- `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-10T11:06:24` **browser.py** (rendimiento): Optimicé el cálculo del peso de los directorios añadiendo una caché de resultados en `_sum_directory_recursive` para evitar procesar repetidamente subcarpetas comunes o jerarquías ya analizadas durante la misma iteración.
+- `2026-08-10T11:06:15` **branding.py** (rendimiento): Se optimizó `gradient_colors` eliminando el bucle manual y las llamadas repetitivas a `blend` mediante una estrategia de pre-cálculo y caché, mejorando significativamente la velocidad de renderizado de la UI en situaciones de alta carga.
+- `2026-08-10T11:05:43` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` convirtiendo el mapeo de palabras clave y la validación de tokens en operaciones de conjuntos, eliminando iteraciones innecesarias sobre diccionarios y listas dentro del bucle de resolución.
+- `2026-08-10T11:05:00` **startup.py** (legibilidad y documentación): He mejorado la documentación de la clase `StartupEntry` y sus métodos privados mediante docstrings más técnicos y precisos, aclarando la lógica de resolución de rutas y el uso de caché para cumplir con el estándar de calidad requerido.
 - `2026-08-10T10:55:47` **settings.py** (legibilidad y documentación): Se ha extraído la lógica de validación de rutas dentro de `_Validators.path` a un método privado más específico, `_is_safe_path`, para mejorar la legibilidad y separar la verificación de seguridad de la lógica de normalización de cadenas, facilitando el mantenimiento.
 - `2026-08-10T10:55:03` **safety.py** (legibilidad y documentación): Se ha refactorizado `_check_file_integrity` para utilizar un dictado de validadores con mensajes explicativos asociados, mejorando drásticamente la legibilidad y facilitando futuras extensiones de reglas de seguridad sin comprometer la lógica de control.
 - `2026-08-10T10:46:17` **quarantine.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `quarantine.py` mediante docstrings enriquecidos, la adición de tipos claros en las firmas de funciones complejas y la estandarización de los mensajes de error para reflejar mejor las garantías de seguridad del sistema.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-10T10:34:22` **browser.py** (legibilidad y documentación): Mejora la legibilidad del módulo `browser.py` mediante la refactorización de `_sum_directory_recursive` para separar la lógica de filtrado (atributos de Windows y exclusiones) de la lógica de recorrido, utilizando nombres de variables más precisos y docstrings aclaratorios sobre el manejo de errores.
 - `2026-08-10T10:25:34` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructuradas en las funciones privadas de apoyo matemático y gráfico, aclarando los parámetros y el comportamiento esperado para facilitar el mantenimiento.
 - `2026-08-10T10:25:16` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la aplicación de docstrings descriptivos, la adición de Type Hints en funciones críticas y la reestructuración de `_gen_problems` para hacer explícita su lógica de priorización.
-- `2026-08-10T10:24:38` **startup.py** (manejo de errores y validación de entradas): Mejora la robustez del parseo del registro añadiendo validaciones específicas de integridad antes de instanciar `StartupEntry`, capturando explícitamente errores en la manipulación de rutas y evitando la propagación de datos corruptos desde el CSV.
-- `2026-08-10T10:24:12` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de los validadores integrando `_Validators.path` dentro de `_Validators.str` para evitar duplicidad y aseguré que `save` no realice operaciones de escritura si la configuración está vacía o es inválida, fortaleciendo la integridad de los datos persistidos.
-- `2026-08-10T10:14:59` **scanner.py** (manejo de errores y validación de entradas): Reforcé la robustez de `Scanner` encapsulando la lógica de resolución de rutas y validación de `path_input` dentro de un bloque `try-except` más estricto, asegurando que cualquier entrada `None` o ruta malformada no propague excepciones inesperadas durante la inicialización, cumpliendo con el enfoque de validación de entradas.
-- `2026-08-10T10:14:07` **quarantine.py** (manejo de errores y validación de entradas): Se reforzó `_validate_isolation_request` para capturar errores de acceso a disco con `OSError` específico, evitando que excepciones genéricas interrumpan el flujo de validación y garantizando que las rutas sean consistentes antes de iniciar cualquier operación de movimiento.
