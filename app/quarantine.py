@@ -318,16 +318,17 @@ def quarantine_file(
     if not source:
         raise ValueError("La ruta de origen no puede estar vacía.")
     
+    # Resolvemos y verificamos tipo antes de cualquier operación
     source_path = Path(source).resolve()
+    if not source_path.is_file():
+        raise FileNotFoundError(f"Archivo no encontrado o inválido: {source_path}")
+        
     ensure_safe_to_modify(source_path, allow_sensitive=True)
     
     if str(source_path).startswith(("\\\\", "//")):
         raise UnsafePathError("No se permite cuarentena en recursos compartidos de red.")
         
     dest_dir = quarantine_dir(base)
-    
-    if not source_path.exists():
-        raise FileNotFoundError(f"Archivo no encontrado: {source_path}")
     
     _validate_isolation_request(source_path, dest_dir)
     

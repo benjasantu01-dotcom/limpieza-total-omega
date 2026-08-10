@@ -874,3 +874,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-10T12:38:52` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `scan_for_junk` añadiendo una comprobación de existencia y legibilidad antes de procesar el archivo, garantizando que `ensure_safe_to_modify` se invoque solo sobre rutas que han superado las validaciones de acceso, evitando excepciones innecesarias durante el escaneo recursivo.
 - `2026-08-10T12:38:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-10T12:38:52` Corrida terminada. Total usado hoy: 300.
+- `2026-08-10T12:47:09` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-10T12:47:42` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `quarantine_file` añadiendo una comprobación de existencia y tipos para evitar el seguimiento de enlaces simbólicos mediante `resolve()` y `is_file()` antes de cualquier operación, protegiendo contra posibles condiciones de carrera o ataques de tipo TOCTOU (Time-of-check to time-of-use).
+- `2026-08-10T12:48:01` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-10T12:48:25` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-08-10T12:48:32` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `scanner.py` asegurando que el acceso al sistema de archivos mediante `entry.stat()` esté protegido contra errores de acceso (como archivos en uso o bloqueados por el sistema) mediante un bloque `try-except` más robusto, previniendo interrupciones del proceso de escaneo.
+- `2026-08-10T12:48:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-10T12:48:32` Corrida terminada. Total usado hoy: 304.

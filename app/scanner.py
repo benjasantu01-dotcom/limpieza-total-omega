@@ -127,6 +127,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
         if (now_ts - entry.stat().st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
             return Suspicion(path, f"Ejecutable reciente detectado (modificado hace menos de {RECENT_FILE_THRESHOLD_HOURS}h)", "info")
     except (OSError, AttributeError, OverflowError):
+        # Fallo de acceso a metadatos ignorado para mantener la estabilidad del bucle
         pass
     return None
 
