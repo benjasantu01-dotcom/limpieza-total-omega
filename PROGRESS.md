@@ -6,27 +6,27 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **230** (45.6% de aceptación)
-- Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 25
+- Mejoras aceptadas: **231** (45.8% de aceptación)
+- Rechazadas por tests: 13
+- Rechazadas por guardia de seguridad: 26
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 224
+- Sin respuesta de la IA (error o límite): 221
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-08 | 33 | 1 | 3 | 1 | 40 |
+| 2026-08-08 | 33 | 1 | 3 | 1 | 36 |
 | 2026-08-09 | 162 | 8 | 18 | 11 | 151 |
-| 2026-08-10 | 35 | 3 | 4 | 1 | 33 |
+| 2026-08-10 | 36 | 4 | 5 | 1 | 34 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **58**
 - manejo de errores y validación de entradas: **52**
 - rendimiento: **45**
+- robustez ante casos límite: **38**
 - seguridad defensiva: **38**
-- robustez ante casos límite: **37**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,7 +34,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **21**
 - `main.py`: **21**
 - `healthscore.py`: **20**
-- `settings.py`: **19**
+- `settings.py`: **20**
 - `browser.py`: **18**
 - `diskreport.py`: **17**
 - `branding.py`: **17**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-10T03:16:19` **settings.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `load` para capturar errores de `KeyError` ante configuraciones parciales o corruptas, garantizando que si el archivo JSON no contiene todas las claves requeridas, la aplicación aplique los valores de fábrica de forma segura sin abortar.
 - `2026-08-10T03:06:54` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `quarantine_file` para evitar condiciones de carrera y fallos silenciosos, implementando una comprobación de existencia previa a la copia y un bloque `try-finally` para asegurar que el archivo temporal (si llega a crearse en una interrupción) no deje residuos en el sistema de archivos.
 - `2026-08-10T03:05:49` **main.py** (robustez ante casos límite): Se ha mejorado la robustez de `main.py` frente a casos límite de concurrencia y fallos en la interfaz mediante la implementación de `after_idle` en las actualizaciones visuales asíncronas, asegurando que las actualizaciones de estado (como la barra de progreso y el texto de estado) no intenten acceder a widgets que fueron destruidos si el usuario cierra pestañas rápidamente o cierra la app durante un proceso largo.
 - `2026-08-10T02:56:00` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `compute_score` frente a casos donde la configuración de pesos (`WEIGHTS`) pudiera ser inconsistente, asegurando que si la suma de pesos es 0, no se intente una división por cero y el sistema retorne un estado de salud degradado seguro en lugar de fallar.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-10T02:25:24` **main.py** (rendimiento): Se optimizó el caché LRU implementando una estructura de acceso O(1) combinando un `dict` para los datos con un `collections.deque` para el seguimiento del orden de uso (evitando `list.remove` que es O(n)), reduciendo la latencia en la gestión de métricas durante los análisis masivos.
 - `2026-08-10T02:24:22` **healthscore.py** (rendimiento): Optimicé el cálculo del score reemplazando operaciones repetitivas en el bucle principal por una pre-multiplicación de los pesos, evitando divisiones innecesarias y reduciendo la complejidad de las conversiones de tipo en tiempo de ejecución.
 - `2026-08-10T02:15:24` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_refine_by_hash` utilizando una estructura de datos `list` pre-filtrada para evitar iterar sobre grupos innecesarios, y eliminé la re-verificación redundante en `find_duplicates` que procesaba listas de longitud menor a 2, acelerando significativamente el pipeline.
-- `2026-08-10T02:15:08` **diskreport.py** (rendimiento): Optimicé el método `summarize` eliminando el recorrido redundante y calculando todas las métricas en una única pasada, utilizando `heapq` para los archivos más grandes y acumuladores para extensiones y totales, mejorando significativamente el rendimiento en carpetas con muchos archivos.

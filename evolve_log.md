@@ -1171,3 +1171,30 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-10T03:06:54` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `quarantine_file` para evitar condiciones de carrera y fallos silenciosos, implementando una comprobación de existencia previa a la copia y un bloque `try-finally` para asegurar que el archivo temporal (si llega a crearse en una interrupción) no deje residuos en el sistema de archivos.
 - `2026-08-10T03:06:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-10T03:06:54` Corrida terminada. Total usado hoy: 76.
+- `2026-08-10T03:14:59` Arrancando corrida. Quedan hoy ~224 peticiones objetivo.
+- `2026-08-10T03:15:21` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-08-10T03:15:47` Tests FALLARON:
+```
+o\n    ...is en paralelo: sí\n\n  Asistente IA\n    Activado: no\n    Clave: no configurada\n    Modelo: gemini-3.1-flash-lite\n'
+FAILED evolve/tests/test_assistant.py::test_ask_uses_the_online_engine_when_authorized - AssertionError: assert 'local' == 'gemini'
+  
+  - gemini
+  + local
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - KeyError: 'texto'
+FAILED evolve/tests/test_assistant.py::test_available_reflects_the_configuration - AssertionError: assert False is True
+ +  where False = <function available at 0x7fc606f351c0>(PosixPath('/tmp/pytest-of-runner/pytest-1/test_available_reflects_the_co0'))
+ +    where <function available at 0x7fc606f351c0> = assistant.available
+FAILED evolve/tests/test_basic.py::test_scan_for_junk_finds_junk_and_ignores_other_files - AssertionError: assert 'basura.tmp' in set()
+FAILED evolve/tests/test_basic.py::test_scan_for_junk_recurses_into_subfolders - assert False
+ +  where False = any(<generator object test_scan_for_junk_recurses_into_subfolders.<locals>.<genexpr> at 0x7fc606b1f2a0>)
+FAILED evolve/tests/test_basic.py::test_scan_for_junk_skips_system_folders - AssertionError: assert 'normal.tmp' in set()
+FAILED evolve/tests/test_basic.py::test_stage_for_review_moves_files_without_deleting_them - ValueError: La lista de archivos a procesar no puede estar vacía.
+FAILED evolve/tests/test_basic.py::test_delete_reviewed_only_touches_the_review_folder - assert 0 == 1
+15 failed, 284 passed, 7 warnings in 0.91s
+
+```
+- `2026-08-10T03:15:47` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se añadió un mecanismo de protección contra "Race Conditions" (TOCTOU - Time of Check to Time of Use) al verificar que el archivo no haya cambiado su inodo o estado entre el inicio de la validación y el punto de acceso, además de mejorar la resiliencia ante rutas inexistentes durante la inspección de atributos.
+- `2026-08-10T03:16:09` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-08-10T03:16:19` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de integridad en `load` para capturar errores de `KeyError` ante configuraciones parciales o corruptas, garantizando que si el archivo JSON no contiene todas las claves requeridas, la aplicación aplique los valores de fábrica de forma segura sin abortar.
+- `2026-08-10T03:16:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-10T03:16:19` Corrida terminada. Total usado hoy: 80.
