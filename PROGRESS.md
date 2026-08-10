@@ -6,47 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **230** (45.6% de aceptación)
+- Mejoras aceptadas: **228** (45.2% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 26
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 221
+- Sin respuesta de la IA (error o límite): 223
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-08 | 19 | 1 | 2 | 1 | 7 |
+| 2026-08-08 | 15 | 1 | 2 | 1 | 7 |
 | 2026-08-09 | 162 | 8 | 18 | 11 | 151 |
-| 2026-08-10 | 49 | 4 | 6 | 2 | 63 |
+| 2026-08-10 | 51 | 4 | 6 | 2 | 65 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **54**
 - seguridad defensiva: **51**
+- legibilidad y documentación: **50**
 - rendimiento: **45**
-- manejo de errores y validación de entradas: **42**
+- manejo de errores y validación de entradas: **44**
 - robustez ante casos límite: **38**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **23**
-- `main.py`: **21**
-- `healthscore.py`: **20**
+- `assistant.py`: **21**
 - `settings.py`: **20**
-- `assistant.py`: **20**
-- `branding.py`: **17**
+- `main.py`: **20**
+- `healthscore.py`: **19**
+- `branding.py`: **18**
 - `browser.py`: **17**
 - `diskreport.py`: **16**
 - `scanner.py`: **15**
 - `organizer.py`: **15**
-- `duplicates.py`: **14**
-- `memory.py`: **12**
+- `duplicates.py`: **13**
+- `memory.py`: **11**
 - `safety.py`: **10**
 - `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-10T05:20:25` **branding.py** (manejo de errores y validación de entradas): Mejora la robustez de `save_logo_svg` y `_hex_to_rgb` implementando una validación explícita de tipos y estados, evitando excepciones innecesarias y asegurando que las operaciones críticas de I/O operen sobre rutas validadas.
+- `2026-08-10T05:20:06` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `build_context` agregando validaciones de tipo explícitas para evitar que tipos inesperados (como `None` o `dict` mal formados) causen comportamientos impredecibles al procesar métricas, aplicando el principio de fail-safe.
 - `2026-08-10T03:57:36` **startup.py** (seguridad defensiva): Reforcé la seguridad defensiva al evitar el procesamiento de comandos que contengan secuencias de escape de shell o argumentos maliciosos en `_resolve_path_from_command`, asegurando que `_resolve_and_cache_path` solo opere sobre rutas limpias sin dependencias de parámetros adicionales.
 - `2026-08-10T03:57:25` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save()` aplicando `is_safe_to_modify` sobre el archivo destino antes de cualquier operación de escritura, evitando así ataques de "Time-of-Check Time-of-Use" (TOCTOU) y garantizando que el archivo final permanezca bajo control seguro.
 - `2026-08-10T03:56:39` **scanner.py** (seguridad defensiva): Se reforzó la seguridad del proceso de escaneo validando explícitamente que la entrada no sea un punto de unión (junction) o enlace simbólico antes de procesar su contenido, previniendo el escape de la carpeta base (traversal attacks) y el seguimiento de estructuras cíclicas o externas.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-10T03:27:51` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva al evitar el seguimiento de enlaces simbólicos y puntos de reparse durante la resolución de rutas en `detect_profiles`, garantizando que el `candidate` sea validado contra `is_protected_path` de forma estricta y evitando la expansión accidental fuera del directorio base del usuario.
 - `2026-08-10T03:27:43` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad en `save_logo_svg` implementando `is_safe_to_modify` para realizar una validación preventiva antes de intentar la creación de directorios o la escritura, alineándose con el patrón de seguridad defensiva que evita excepciones innecesarias durante operaciones de I/O.
 - `2026-08-10T03:27:14` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_call_gemini` validando que la `api_key` no contenga caracteres de control o inyección antes de usarla en la URL, previniendo posibles ataques de inyección de parámetros.
-- `2026-08-10T03:16:19` **settings.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `load` para capturar errores de `KeyError` ante configuraciones parciales o corruptas, garantizando que si el archivo JSON no contiene todas las claves requeridas, la aplicación aplique los valores de fábrica de forma segura sin abortar.
-- `2026-08-10T03:06:54` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `quarantine_file` para evitar condiciones de carrera y fallos silenciosos, implementando una comprobación de existencia previa a la copia y un bloque `try-finally` para asegurar que el archivo temporal (si llega a crearse en una interrupción) no deje residuos en el sistema de archivos.

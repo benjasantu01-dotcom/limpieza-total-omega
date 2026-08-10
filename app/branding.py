@@ -22,7 +22,7 @@ from pathlib import Path
 from typing import Any, Final, TypeAlias, Literal, Mapping, Tuple, List, Optional, Union, TypedDict
 from types import MappingProxyType
 from functools import lru_cache
-from safety import is_safe_to_modify, ensure_safe_to_modify
+from safety import is_safe_to_modify
 
 # Type Aliases para mejorar la legibilidad de la semántica de datos
 HexColor: TypeAlias = str
@@ -135,43 +135,21 @@ def app_title() -> str:
 
 @lru_cache(maxsize=32)
 def color(name: str) -> HexColor:
-    """
-    Obtiene el código hexadecimal de un color definido en la paleta PALETTE.
-    
-    Args:
-        name: Clave identificadora en PALETTE (ej. 'surface', 'accent').
-        
-    Returns:
-        Valor hex si existe, de lo contrario '#808080' (gris neutro).
-    """
+    """Obtiene el código hexadecimal de un color definido en la paleta PALETTE."""
     return PALETTE.get(name, "#808080")
 
 
 @lru_cache(maxsize=16)
 def font_size(name: str) -> int:
-    """
-    Obtiene el tamaño tipográfico numérico según clave.
-    
-    Args:
-        name: Clave del tamaño (ej. 'title', 'body').
-        
-    Returns:
-        Tamaño en puntos definido; retorna el tamaño 'body' como fallback.
-    """
+    """Obtiene el tamaño tipográfico numérico según clave."""
     return FONT_SIZES.get(name, FONT_SIZES["body"])
 
 
 def icon(section: Optional[str]) -> str:
-    """
-    Resuelve el glifo Unicode para una sección funcional.
-    
-    Args:
-        section: Nombre de la sección para buscar su ícono.
-        
-    Returns:
-        Carácter Unicode correspondiente o viñeta central como fallback.
-    """
-    return ICONS.get(section.strip(), "\u2022") if isinstance(section, str) else "\u2022"
+    """Resuelve el glifo Unicode para una sección funcional."""
+    if not isinstance(section, str):
+        return "\u2022"
+    return ICONS.get(section.strip(), "\u2022")
 
 
 def tab_label(section: str) -> str:
@@ -190,13 +168,15 @@ def severity_label(severity: Optional[str]) -> str:
     """Retorna la etiqueta legible de una severidad o el input normalizado."""
     if severity and (style := SEVERITY_STYLES.get(severity.lower())):
         return style[1]
-    return severity.upper() if severity and severity.strip() else "Desconocido"
+    return severity.upper() if (severity and severity.strip()) else "Desconocido"
 
 
 def severity_icon(severity: Optional[str]) -> str:
     """Retorna el glifo gráfico asociado a un nivel de riesgo."""
     simbolos = {"ok": "\u2713", "info": "\u2139", "warning": "\u26a0", "danger": "\u2716"}
-    return simbolos.get(severity.lower(), "\u2022") if isinstance(severity, str) else "\u2022"
+    if not isinstance(severity, str):
+        return "\u2022"
+    return simbolos.get(severity.lower(), "\u2022")
 
 
 def grade_color(grade: Optional[str]) -> HexColor:
@@ -208,9 +188,9 @@ def grade_color(grade: Optional[str]) -> HexColor:
 
 def score_color(score: Union[float, int, None]) -> HexColor:
     """Determina el color semántico según el puntaje numérico (0-100)."""
+    if score is None:
+        return PALETTE["text_muted"]
     try:
-        if score is None:
-            raise ValueError("Score es None")
         valor = float(score)
         if not (0.0 <= valor <= 100.0):
             return PALETTE["text_muted"]
@@ -228,7 +208,7 @@ def bar(percent: Union[float, int, None], width: int = 24,
         filled: str = "\u2588", empty: str = "\u2591") -> str:
     """Genera una representación visual de barra de progreso en texto."""
     try:
-        valor = max(0.0, min(100.0, float(percent)))
+        valor = max(0.0, min(100.0, float(percent) if percent is not None else 0.0))
     except (TypeError, ValueError):
         valor = 0.0
     ancho = max(1, int(width))
@@ -242,10 +222,11 @@ def _hex_to_rgb(value: HexColor) -> RGBTuple:
     if not isinstance(value, str) or len(value) != 7 or not value.startswith("#"):
         return (0, 0, 0)
     try:
-        # Validación extra: asegurarse de que los segmentos contengan solo caracteres hex
         hex_data = value[1:]
-        int(hex_data, 16)
-        return (int(hex_data[0:2], 16), int(hex_data[2:4], 16), int(hex_data[4:6], 16))
+        # Verificar longitud y base 16 antes de convertir
+        if all(c in "0123456789abcdefABCDEF" for c in hex_data):
+            return (int(hex_data[0:2], 16), int(hex_data[2:4], 16), int(hex_data[4:6], 16))
+        return (0, 0, 0)
     except ValueError:
         return (0, 0, 0)
 
@@ -327,9 +308,11 @@ def logo_svg(size: int = 128) -> str:
 
 def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     """Guarda el logo SVG en una ruta segura, validando que el directorio sea seguro."""
-    if not destination: return None
+    if not destination: 
+        return None
     try:
         target = Path(destination).resolve()
+        # Validación de seguridad: el padre debe existir o ser seguro de crear
         if not is_safe_to_modify(target.parent):
             return None
         
@@ -352,20 +335,12 @@ def logo_ascii() -> str:
 
 
 def draw_logo(canvas: Any, size: int = 56, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
-    """
-    Renderiza el logo vectorial en un canvas de Tkinter usando coordenadas transformadas.
-    
-    Args:
-        canvas: Widget Tkinter donde dibujar.
-        size: Tamaño base del icono.
-        canvas_x, canvas_y: Posición de origen (offset).
-    """
+    """Renderiza el logo vectorial en un canvas de Tkinter usando coordenadas transformadas."""
     if not hasattr(canvas, "create_polygon"): return
     try:
         scale = float(size) / 128
         contorno = _get_shield_coords(canvas_x, canvas_y, scale)
         
-        # Efecto de resplandor mediante capas superpuestas
         for paso in range(4, 0, -1):
             r = 56 * scale * (0.6 + paso * 0.12)
             canvas.create_oval(canvas_x + 64*scale - r, canvas_y + 58*scale - r, 
@@ -374,7 +349,6 @@ def draw_logo(canvas: Any, size: int = 56, canvas_x: float = 0.0, canvas_y: floa
 
         canvas.create_polygon(contorno, fill=GRADIENT_STOPS[1], outline="")
         
-        # Renderizado de franjas decorativas
         franjas_count = max(6, int(28 * scale))
         colores = gradient_colors(franjas_count)
         

@@ -226,7 +226,11 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
 
     def get_val(source: Any, is_dict: bool, attr: str, default: Any) -> Any:
         try:
-            return source.get(attr, default) if is_dict else getattr(source, attr, default)
+            if is_dict and isinstance(source, dict):
+                return source.get(attr, default)
+            elif not is_dict and hasattr(source, attr):
+                return getattr(source, attr)
+            return default
         except (AttributeError, TypeError):
             return default
 
