@@ -853,3 +853,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-10T12:07:23` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
 - `2026-08-10T12:07:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-10T12:07:23` Corrida terminada. Total usado hoy: 288.
+- `2026-08-10T12:16:20` Arrancando corrida. Quedan hoy ~12 peticiones objetivo.
+- `2026-08-10T12:16:45` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `process_entry` ante archivos cuyo acceso arroja errores de metadatos o atributos, envolviendo la obtención de `name` y `suffix` en un bloque de manejo de errores local para evitar que una entrada corrupta o con metadatos inaccesibles detenga el escaneo completo.
+- `2026-08-10T12:17:14` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez ante la concurrencia y errores de sistema mediante la implementación de un bloqueo exclusivo (fencing) al guardar y verificaciones más estrictas sobre la integridad del archivo de configuración cargado.
+- `2026-08-10T12:17:37` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-08-10T12:17:56` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_call_gemini` añadiendo un límite estricto de tamaño a la respuesta recibida y validando el contenido JSON antes de procesarlo, evitando posibles ataques de desbordamiento o manipulación de memoria mediante payloads maliciosamente grandes.
+- `2026-08-10T12:17:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-10T12:17:56` Corrida terminada. Total usado hoy: 292.

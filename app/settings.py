@@ -30,6 +30,7 @@ from __future__ import annotations
 import json
 import os
 import tempfile
+import time
 from pathlib import Path
 from typing import Any, Final, TypeAlias, Callable, TypedDict
 
@@ -216,9 +217,12 @@ def load(path_or_base: PathLike | None = None) -> AppSettings:
                 with open(ruta, "r", encoding="utf-8") as f:
                     data = json.load(f)
                 if isinstance(data, dict):
-                    _cached_settings = validate(data)
-                    _current_path, _last_mtime = ruta, stats.st_mtime
-                    return _cached_settings.copy()
+                    validated = validate(data)
+                    # Verificar integridad mínima: dict clave-valor
+                    if all(k in validated for k in DEFAULTS):
+                        _cached_settings = validated
+                        _current_path, _last_mtime = ruta, stats.st_mtime
+                        return _cached_settings.copy()
     except (OSError, PermissionError, json.JSONDecodeError, UnicodeDecodeError, KeyError):
         pass
     
@@ -244,15 +248,21 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
 
     try:
         ruta.parent.mkdir(parents=True, exist_ok=True)
-        with tempfile.NamedTemporaryFile("w", dir=ruta.parent, delete=False, encoding="utf-8") as temp_file:
-            json.dump(cleaned_settings, temp_file, indent=2, ensure_ascii=False)
-            temp_file.flush()
-            os.fsync(temp_file.fileno())
-            temp_name = temp_file.name
-        os.replace(temp_name, ruta)
-        _cached_settings, _current_path = cleaned_settings, ruta
-        _last_mtime = ruta.stat().st_mtime
-        return ruta
+        # Implementación con backoff para evitar conflictos de acceso en escritura rápida
+        for attempt in range(3):
+            try:
+                with tempfile.NamedTemporaryFile("w", dir=ruta.parent, delete=False, encoding="utf-8") as temp_file:
+                    json.dump(cleaned_settings, temp_file, indent=2, ensure_ascii=False)
+                    temp_file.flush()
+                    os.fsync(temp_file.fileno())
+                    temp_name = temp_file.name
+                os.replace(temp_name, ruta)
+                _cached_settings, _current_path = cleaned_settings, ruta
+                _last_mtime = ruta.stat().st_mtime
+                return ruta
+            except OSError:
+                if attempt == 2: raise
+                time.sleep(0.1)
     except (OSError, IOError, PermissionError, RuntimeError):
         return None
 

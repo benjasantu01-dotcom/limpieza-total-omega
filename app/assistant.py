@@ -79,6 +79,7 @@ MetricSource: TypeAlias = Any
 ScoreSource: TypeAlias = Any
 
 _MAX_TEXT_LENGTH: Final[int] = 1000
+_MAX_RESPONSE_BYTES: Final[int] = 32768
 
 # Documentación ejecutable de lo que nunca sale del equipo. El test de
 # privacidad recorre esta lista, así que agregar algo acá lo protege de verdad.
@@ -502,11 +503,12 @@ def _call_gemini(
         
         with urllib.request.urlopen(req, timeout=_TIMEOUT_SECONDS) as res:
             if res.status != 200: return None
-            raw_res = res.read(16384)
+            # Limitamos la lectura de bytes para evitar desbordamiento de memoria
+            raw_res = res.read(_MAX_RESPONSE_BYTES)
             if not raw_res: return None
-            content_decoded = raw_res.decode("utf-8")
             
-            data = json.loads(content_decoded)
+            data = json.loads(raw_res.decode("utf-8"))
+            if not isinstance(data, dict): return None
         
         candidates = data.get("candidates", [])
         if not isinstance(candidates, list) or not candidates: return None

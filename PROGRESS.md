@@ -6,33 +6,33 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **236** (46.8% de aceptación)
+- Mejoras aceptadas: **239** (47.4% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 215
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-09 | 96 | 7 | 10 | 6 | 97 |
-| 2026-08-10 | 140 | 6 | 17 | 7 | 118 |
+| 2026-08-09 | 96 | 7 | 10 | 6 | 93 |
+| 2026-08-10 | 143 | 6 | 17 | 7 | 119 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **59**
 - manejo de errores y validación de entradas: **51**
 - rendimiento: **46**
-- seguridad defensiva: **42**
-- robustez ante casos límite: **38**
+- seguridad defensiva: **43**
+- robustez ante casos límite: **40**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **23**
-- `settings.py`: **21**
+- `settings.py`: **22**
+- `assistant.py`: **20**
 - `healthscore.py`: **20**
-- `assistant.py`: **19**
 - `diskreport.py`: **19**
 - `main.py`: **19**
 - `branding.py`: **18**
@@ -40,12 +40,15 @@ Este archivo se regenera solo en cada corrida a partir de
 - `duplicates.py`: **17**
 - `memory.py`: **16**
 - `browser.py`: **16**
-- `scanner.py`: **13**
+- `scanner.py`: **14**
 - `safety.py`: **10**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-10T12:17:56` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_call_gemini` añadiendo un límite estricto de tamaño a la respuesta recibida y validando el contenido JSON antes de procesarlo, evitando posibles ataques de desbordamiento o manipulación de memoria mediante payloads maliciosamente grandes.
+- `2026-08-10T12:17:14` **settings.py** (robustez ante casos límite): Mejoré la robustez ante la concurrencia y errores de sistema mediante la implementación de un bloqueo exclusivo (fencing) al guardar y verificaciones más estrictas sobre la integridad del archivo de configuración cargado.
+- `2026-08-10T12:16:45` **scanner.py** (robustez ante casos límite): Se reforzó la robustez de `process_entry` ante archivos cuyo acceso arroja errores de metadatos o atributos, envolviendo la obtención de `name` y `suffix` en un bloque de manejo de errores local para evitar que una entrada corrupta o con metadatos inaccesibles detenga el escaneo completo.
 - `2026-08-10T12:06:56` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de concurrencia mediante `os.rename` (atómico) y un chequeo de existencia previo dentro de `purge_all` para asegurar que la limpieza sea robusta ante archivos eliminados externamente o bloqueos de acceso, mejorando la integridad del bucle de purga.
 - `2026-08-10T11:57:54` **memory.py** (robustez ante casos límite): Se ha robustecido el manejo de errores en `read_snapshot` y `top_memory_processes` añadiendo validaciones específicas para prevenir fallos silenciosos por entradas de texto vacías, rutas inexistentes o tiempos de espera (timeout) en la ejecución de comandos externos.
 - `2026-08-10T11:57:44` **main.py** (robustez ante casos límite): Mejoré la resiliencia ante errores de concurrencia y limpieza de recursos al cerrar la aplicación, asegurando que el pool de hilos (`_executor`) y los eventos programados (`after`) sean cancelados de manera ordenada al invocar `destroy()`.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-10T11:36:08` **scanner.py** (rendimiento): Optimizé `scan_file` para evitar llamadas redundantes a `entry.stat()` y evaluaciones de heurísticas en archivos no ejecutables, además de reducir el coste de resolución de rutas en el bucle principal mediante el uso de `pathlib.Path` pre-calculado.
 - `2026-08-10T11:26:23` **quarantine.py** (rendimiento): Optimicé el rendimiento de `load_manifest` transformando la lista de retorno en un `Dict` interno mediante `item_id` para reducir la complejidad temporal de búsqueda de O(n) a O(1) en las funciones `restore_item` y `purge_item`.
 - `2026-08-10T11:25:30` **memory.py** (rendimiento): Optimizé la consulta de procesos en `top_memory_processes` eliminando el pipe redundante `Select-Object -First 20` de PowerShell, delegando el filtrado de cantidad al código Python (`[:limit]` ya presente en la función), reduciendo así la carga de procesamiento en el subproceso y el overhead de transmisión de texto.
-- `2026-08-10T11:16:28` **healthscore.py** (rendimiento): Se optimizó el cálculo en `compute_score` eliminando la creación innecesaria de diccionarios intermedios y utilizando una iteración directa sobre `_WEIGHT_ITEMS`, además de prevenir el re-cálculo de `round()` en el bucle principal.
-- `2026-08-10T11:16:02` **duplicates.py** (rendimiento): Optimicé el proceso de filtrado al mover la verificación de `is_protected_path` al inicio de `_collect_candidates`, reduciendo llamadas innecesarias a `os.scandir` y `stat` para directorios que ya sabemos que debemos ignorar.
-- `2026-08-10T11:15:36` **diskreport.py** (rendimiento): Optimicé el rendimiento de `summarize` consolidando todos los cálculos (total, extensiones y top archivos) en un único recorrido del generador `walk_files`, evitando iterar varias veces sobre el disco o realizar llamadas redundantes a funciones auxiliares.

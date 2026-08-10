@@ -101,9 +101,12 @@ class Scanner:
                     self.seen.add(entry.path)
                     stack.append(entry.path)
             elif entry.is_file(follow_symlinks=False):
-                name = entry.name
-                ext = path_obj.suffix.lower()
-                self.results.extend(scan_file(path_obj, self.now_ts, entry=entry, name=name, suffix=ext))
+                try:
+                    name = entry.name
+                    ext = path_obj.suffix.lower()
+                    self.results.extend(scan_file(path_obj, self.now_ts, entry=entry, name=name, suffix=ext))
+                except OSError:
+                    logger.debug(f"Metadatos inaccesibles para: {entry.path}")
         except (PermissionError, OSError, ValueError, RuntimeError) as e:
             logger.debug(f"Saltando entrada {getattr(entry, 'path', 'desconocida')}: {e}")
 
