@@ -810,3 +810,11 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-10T11:06:24` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el cálculo del peso de los directorios añadiendo una caché de resultados en `_sum_directory_recursive` para evitar procesar repetidamente subcarpetas comunes o jerarquías ya analizadas durante la misma iteración.
 - `2026-08-10T11:06:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-10T11:06:24` Corrida terminada. Total usado hoy: 264.
+- `2026-08-10T11:14:49` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-08-10T11:15:07` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-10T11:15:36` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el rendimiento de `summarize` consolidando todos los cálculos (total, extensiones y top archivos) en un único recorrido del generador `walk_files`, evitando iterar varias veces sobre el disco o realizar llamadas redundantes a funciones auxiliares.
+- `2026-08-10T11:16:02` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el proceso de filtrado al mover la verificación de `is_protected_path` al inicio de `_collect_candidates`, reduciendo llamadas innecesarias a `os.scandir` y `stat` para directorios que ya sabemos que debemos ignorar.
+- `2026-08-10T11:16:28` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Se optimizó el cálculo en `compute_score` eliminando la creación innecesaria de diccionarios intermedios y utilizando una iteración directa sobre `_WEIGHT_ITEMS`, además de prevenir el re-cálculo de `round()` en el bucle principal.
+- `2026-08-10T11:17:25` ➖ Sin cambios en main.py (enfoque: rendimiento). Motivo: Se optimizó el proceso de refresco de logs mediante la implementación de `after_idle` y una cola de mensajes (`_log_queue`) para reducir la carga en el hilo principal y evitar redibujos innecesarios durante operaciones intensivas de escaneo.
+- `2026-08-10T11:17:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-10T11:17:25` Corrida terminada. Total usado hoy: 268.

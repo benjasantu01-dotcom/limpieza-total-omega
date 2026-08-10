@@ -354,7 +354,7 @@ def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 
 def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -> List[str]:
     """
-    Genera un informe textual unificado del uso de disco.
+    Genera un informe textual unificado del uso de disco con un solo recorrido.
     """
     if not directory: 
         return ["Error: Ruta no proporcionada."]
@@ -371,7 +371,6 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
     top_files_heap: List[Tuple[int, str]] = []
     total_bytes, total_files = 0, 0
     
-    # Procesamiento centralizado de archivos
     for path, size in walk_files(path_obj, skip_protected):
         total_bytes += size
         total_files += 1
@@ -380,7 +379,6 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
         ext_size[ext] += size
         ext_count[ext] += 1
         
-        # Mantenimiento de heap para archivos más grandes (top 8)
         if len(top_files_heap) < 8:
             heapq.heappush(top_files_heap, (size, str(path)))
         else:
