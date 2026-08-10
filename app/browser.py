@@ -134,6 +134,8 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
 
 def _is_excluded_file(name: str) -> bool:
     """Retorna True si el nombre del archivo es un archivo de configuración crítico."""
+    if not isinstance(name, str):
+        return True
     return name.lower() in NEVER_TOUCH
 
 
@@ -141,7 +143,7 @@ def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool
     """
     Realiza un DFS sobre el árbol de directorios para calcular el peso total.
     """
-    if not root_dir or not os.path.exists(root_dir):
+    if not root_dir or not isinstance(root_dir, str) or not os.path.exists(root_dir):
         return 0
     
     # Seguridad defensiva: verificar que la carpeta no sea crítica antes de entrar
@@ -151,10 +153,13 @@ def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool
     if visited is None:
         visited = set()
     
-    real_path = os.path.realpath(root_dir)
-    if real_path in visited:
+    try:
+        real_path = os.path.realpath(root_dir)
+        if real_path in visited:
+            return 0
+        visited.add(real_path)
+    except (OSError, PermissionError):
         return 0
-    visited.add(real_path)
         
     total: int = 0
     kernel32 = ctypes.windll.kernel32 if os.name == 'nt' else None
@@ -223,15 +228,15 @@ def detect_profiles(
     cache_paths: Optional[Dict[str, str]] = None
 ) -> List[BrowserCache]:
     """Detecta cachés instaladas combinando rutas base y subrutas conocidas."""
-    bases = bases if bases is not None else base_directories()
+    raw_bases = bases if bases is not None else base_directories()
     cache_paths = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
     is_junction: Callable[[str], bool] = getattr(os.path, 'isjunction', lambda _: False)
 
     found: List[BrowserCache] = []
-    if not isinstance(bases, (list, tuple)) or not isinstance(cache_paths, dict):
+    if not isinstance(raw_bases, (list, tuple)) or not isinstance(cache_paths, dict):
         return found
         
-    for base in bases:
+    for base in raw_bases:
         if not isinstance(base, Path): continue
         try:
             real_base = base.resolve(strict=True)
@@ -239,6 +244,7 @@ def detect_profiles(
             continue
             
         for browser_name, relative_path_str in cache_paths.items():
+            if not isinstance(relative_path_str, str): continue
             try:
                 candidate = real_base.joinpath(*relative_path_str.split("\\")).resolve()
                 if _is_valid_cache_path(candidate, real_base):

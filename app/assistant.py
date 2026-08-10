@@ -250,7 +250,9 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     for k, v in extra.items():
         if hasattr(ctx, k) and isinstance(v, (int, float)):
             target_type = type(getattr(ctx, k))
-            _safe_assign(ctx, k, v, cast=target_type)
+            # Validar antes de asignar desde kwargs dinámicos
+            if isinstance(v, (int, float)) and math.isfinite(v):
+                _safe_assign(ctx, k, v, cast=target_type)
 
     return ctx
 
