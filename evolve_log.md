@@ -1164,3 +1164,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-10T02:56:00` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `compute_score` frente a casos donde la configuración de pesos (`WEIGHTS`) pudiera ser inconsistente, asegurando que si la suma de pesos es 0, no se intente una división por cero y el sistema retorne un estado de salud degradado seguro en lugar de fallar.
 - `2026-08-10T02:56:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-10T02:56:00` Corrida terminada. Total usado hoy: 72.
+- `2026-08-10T03:04:46` Arrancando corrida. Quedan hoy ~228 peticiones objetivo.
+- `2026-08-10T03:05:49` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `main.py` frente a casos límite de concurrencia y fallos en la interfaz mediante la implementación de `after_idle` en las actualizaciones visuales asíncronas, asegurando que las actualizaciones de estado (como la barra de progreso y el texto de estado) no intenten acceder a widgets que fueron destruidos si el usuario cierra pestañas rápidamente o cierra la app durante un proceso largo.
+- `2026-08-10T03:06:12` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-08-10T03:06:35` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-08-10T03:06:54` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `quarantine_file` para evitar condiciones de carrera y fallos silenciosos, implementando una comprobación de existencia previa a la copia y un bloque `try-finally` para asegurar que el archivo temporal (si llega a crearse en una interrupción) no deje residuos en el sistema de archivos.
+- `2026-08-10T03:06:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-10T03:06:54` Corrida terminada. Total usado hoy: 76.

@@ -352,10 +352,8 @@ def quarantine_file(
     if destination.exists():
         raise UnsafePathError(f"Colisión de nombre en destino: {destination}")
     
-    temp_dest = destination.with_suffix(".tmp")
+    temp_dest = dest_dir / f"{item_id}.tmp"
     try:
-        if temp_dest.exists():
-             _safe_unlink(temp_dest)
         shutil.copy2(source_path, temp_dest)
         
         if temp_dest.stat().st_size != file_size:
@@ -374,6 +372,9 @@ def quarantine_file(
         if destination.exists():
             _safe_unlink(destination)
         raise RuntimeError(f"Falla crítica al mover archivo: {e}")
+    finally:
+        if temp_dest.exists():
+            _safe_unlink(temp_dest)
 
     try:
         file_hash = _get_sha256(destination)

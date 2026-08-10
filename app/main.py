@@ -836,7 +836,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 self.activity.stop()
                 self.activity.pack_forget()
 
-        self.after(0, actualizar)
+        self.after_idle(actualizar)
 
     def _validate_and_log_error(self, e: Exception, tab: str) -> None:
         """Traducción de excepciones técnicas a mensajes amigables."""
@@ -1009,7 +1009,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 barra.set(proporcion)
                 label.configure(text=f"{puntos:.0f}/{maximo}", text_color=c)
 
-        self.after(0, actualizar)
+        self.after_idle(actualizar)
 
     def on_target_choice_changed(self, choice: str) -> None:
         """Maneja el selector de destinos para el escaneo de basura."""
@@ -1063,7 +1063,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.report_data["limpieza"] = lines
         box = self._box("Limpieza")
         if box and box.winfo_exists():
-            self.after(0, lambda: (box.delete("1.0", "end"), box.insert("1.0", "\n".join(lines))))
+            self.after_idle(lambda: (box.delete("1.0", "end"), box.insert("1.0", "\n".join(lines))))
 
     def on_stage(self) -> None:
         """Mueve candidatos de basura a la zona de revisión."""
