@@ -1528,7 +1528,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _validate_numeric_setting(self, value: Optional[str], default: int) -> int:
         """Valida que un campo de configuración sea numérico y positivo."""
-        if not value or not isinstance(value, str):
+        if not isinstance(value, str):
             return default
         try:
             val = int(value.strip())
@@ -1545,18 +1545,19 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             except Exception:
                 continue
         
+        # Procesamiento seguro de entradas de la UI con respaldo de defaults
         try:
-            if hasattr(self, 'min_dup_entry'):
+            if hasattr(self, 'min_dup_entry') and self.min_dup_entry.winfo_exists():
                 valores["duplicados_tamano_minimo_kb"] = self._validate_numeric_setting(
                     self.min_dup_entry.get(), 64
                 )
             
-            if hasattr(self, 'top_files_entry'):
+            if hasattr(self, 'top_files_entry') and self.top_files_entry.winfo_exists():
                 valores["top_archivos"] = self._validate_numeric_setting(
                     self.top_files_entry.get(), 15
                 )
                 
-            if hasattr(self, 'api_key_entry'):
+            if hasattr(self, 'api_key_entry') and self.api_key_entry.winfo_exists():
                 clave_api = "".join(c for c in self.api_key_entry.get().strip() if c.isprintable())
                 if clave_api:
                     valores["asistente_clave_api"] = clave_api

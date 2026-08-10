@@ -741,3 +741,11 @@ FAILED evolve/tests/test_modules.py::test_never_scans_system_folders - Attribute
 - `2026-08-10T09:54:41` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Se ha robustecido el manejo de errores en `find_duplicates` y sus funciones auxiliares, asegurando que las validaciones de entrada (`isinstance` y chequeos de `None`) se realicen de manera consistente y preventiva para evitar excepciones no controladas durante la iteración sobre directorios.
 - `2026-08-10T09:54:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-10T09:54:41` Corrida terminada. Total usado hoy: 236.
+- `2026-08-10T10:03:22` Arrancando corrida. Quedan hoy ~64 peticiones objetivo.
+- `2026-08-10T10:03:53` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Reforcé la robustez del módulo `healthscore.py` mediante la validación proactiva de tipos y valores en las funciones de cálculo (`score_*`), garantizando que la app no colapse ante entradas inesperadas o mal formadas, y encapsulé la lógica de cálculo dentro de `compute_score` para manejar de forma segura los valores nulos o fuera de rango.
+- `2026-08-10T10:04:53` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-10T10:05:59` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez del manejo de entradas en los formularios de ajustes, asegurando que `_collect_settings` no aborte ante cambios parciales en la UI y que las validaciones de configuración sean resistentes a entradas no numéricas inesperadas.
+- `2026-08-10T10:06:27` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `parse_windows_process_csv` implementando validaciones más estrictas contra entradas malformadas, evitando posibles `IndexError` y asegurando que las conversiones a entero se manejen de forma segura antes de crear el objeto `ProcessMemory`.
+- `2026-08-10T10:06:35` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-10T10:06:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-10T10:06:35` Corrida terminada. Total usado hoy: 240.

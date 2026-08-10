@@ -118,13 +118,14 @@ class HealthResult:
 
 def _clamp(value: float, low: float = 0.0, high: float = 1.0) -> float:
     """Asegura que un valor se mantenga dentro del rango [low, high]."""
-    if not math.isfinite(value): return low
+    if not isinstance(value, (int, float)) or not math.isfinite(value): return low
     return max(low, min(high, value))
 
 
 def _to_float(value: Any, default: float = 0.0) -> float:
     """Convierte un valor a float o retorna default si no es representable."""
     try:
+        if value is None: return default
         val = float(value)
         return val if math.isfinite(val) else default
     except (TypeError, ValueError): return default
@@ -132,46 +133,51 @@ def _to_float(value: Any, default: float = 0.0) -> float:
 
 def _to_int(value: Any, default: int = 0) -> int:
     """Convierte un valor a int o retorna default ante error de tipo/valor."""
-    try: return int(float(value))
+    try:
+        if value is None: return default
+        return int(float(value))
     except (TypeError, ValueError): return default
 
 
-def score_junk(junk_mb: float) -> float:
+def score_junk(junk_mb: Any) -> float:
     """Calcula score (0.0-1.0) basado en la cantidad de archivos temporales detectados."""
-    return 1.0 if _LIMIT_JUNK_MB <= 0.0 else _clamp(1.0 - (_to_float(junk_mb) / _LIMIT_JUNK_MB))
+    val = _to_float(junk_mb)
+    return 1.0 if _LIMIT_JUNK_MB <= 0.0 else _clamp(1.0 - (val / _LIMIT_JUNK_MB))
 
 
-def score_security(suspicious_count: int, warnings: int = 0) -> float:
+def score_security(suspicious_count: Any, warnings: Any = 0) -> float:
     """Calcula score (0.0-1.0) penalizando archivos sospechosos y advertencias de seguridad."""
     penalty = (_to_int(suspicious_count) * 0.05) + (_to_int(warnings) * 0.25)
     return _clamp(1.0 - penalty, 0.0, 1.0)
 
 
-def score_memory(available_percent: float) -> float:
+def score_memory(available_percent: Any) -> float:
     """Calcula score (0.0-1.0) respecto a la disponibilidad de memoria ram ideal."""
     val = _to_float(available_percent)
     return 0.0 if _LIMIT_RAM_PERCENT <= 0.0 else _clamp(val / _LIMIT_RAM_PERCENT, 0.0, 1.0)
 
 
-def score_disk(free_percent: float) -> float:
+def score_disk(free_percent: Any) -> float:
     """Calcula score (0.0-1.0) respecto al espacio libre ideal en disco."""
     val = _to_float(free_percent)
     return 0.0 if _LIMIT_DISK_PERCENT <= 0.0 else _clamp(val / _LIMIT_DISK_PERCENT, 0.0, 1.0)
 
 
-def score_duplicates(duplicate_mb: float) -> float:
+def score_duplicates(duplicate_mb: Any) -> float:
     """Calcula score (0.0-1.0) basado en el volumen de archivos duplicados hallados."""
-    return 1.0 if _LIMIT_DUPLICATE_MB <= 0.0 else _clamp(1.0 - (_to_float(duplicate_mb) / _LIMIT_DUPLICATE_MB))
+    val = _to_float(duplicate_mb)
+    return 1.0 if _LIMIT_DUPLICATE_MB <= 0.0 else _clamp(1.0 - (val / _LIMIT_DUPLICATE_MB))
 
 
-def score_startup(startup_count: int) -> float:
+def score_startup(startup_count: Any) -> float:
     """Calcula score (0.0-1.0) inversamente proporcional a la cantidad de elementos en inicio."""
-    return 1.0 if _LIMIT_STARTUP_COUNT <= 0 else _clamp(1.0 - (_to_int(startup_count) / _LIMIT_STARTUP_COUNT))
+    val = _to_int(startup_count)
+    return 1.0 if _LIMIT_STARTUP_COUNT <= 0 else _clamp(1.0 - (val / _LIMIT_STARTUP_COUNT))
 
 
-def grade_for_score(score: int) -> str:
+def grade_for_score(score: Any) -> str:
     """Mapea un puntaje numérico (0-100) a una categoría cualitativa (A-F)."""
-    s = _clamp(float(score), 0.0, 100.0)
+    s = _clamp(_to_float(score), 0.0, 100.0)
     if s >= 90: return "A"
     if s >= 80: return "B"
     if s >= 65: return "C"
