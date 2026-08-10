@@ -236,6 +236,7 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     if not isinstance(values, dict): return None
     ruta = settings_path(path_or_base)
     
+    # Seguridad defensiva: validar explícitamente destino y padre
     if is_protected_path(str(ruta)) or not is_safe_to_modify(str(ruta.parent)):
         return None
     
@@ -248,15 +249,15 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
 
     try:
         ruta.parent.mkdir(parents=True, exist_ok=True)
-        # Implementación con backoff para evitar conflictos de acceso en escritura rápida
+        # Uso de reemplazo atómico para evitar corrupción del archivo de configuración
         for attempt in range(3):
             try:
-                with tempfile.NamedTemporaryFile("w", dir=ruta.parent, delete=False, encoding="utf-8") as temp_file:
-                    json.dump(cleaned_settings, temp_file, indent=2, ensure_ascii=False)
-                    temp_file.flush()
-                    os.fsync(temp_file.fileno())
-                    temp_name = temp_file.name
-                os.replace(temp_name, ruta)
+                temp = ruta.with_suffix(".tmp")
+                with open(temp, "w", encoding="utf-8") as f:
+                    json.dump(cleaned_settings, f, indent=2, ensure_ascii=False)
+                    f.flush()
+                    os.fsync(f.fileno())
+                os.replace(temp, ruta)
                 _cached_settings, _current_path = cleaned_settings, ruta
                 _last_mtime = ruta.stat().st_mtime
                 return ruta

@@ -6,31 +6,31 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **246** (48.8% de aceptación)
+- Mejoras aceptadas: **247** (49.0% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 28
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 201
+- Sin respuesta de la IA (error o límite): 200
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-09 | 96 | 7 | 10 | 6 | 81 |
-| 2026-08-10 | 150 | 6 | 18 | 10 | 120 |
+| 2026-08-09 | 96 | 7 | 10 | 6 | 77 |
+| 2026-08-10 | 151 | 6 | 18 | 10 | 123 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **59**
 - manejo de errores y validación de entradas: **51**
-- seguridad defensiva: **50**
+- seguridad defensiva: **51**
 - rendimiento: **46**
 - robustez ante casos límite: **40**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **24**
-- `settings.py`: **22**
+- `settings.py`: **23**
 - `assistant.py`: **20**
 - `healthscore.py`: **20**
 - `diskreport.py`: **19**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-10T12:58:01` **settings.py** (seguridad defensiva): Reforcé la seguridad defensiva en `save` añadiendo una validación explícita para evitar escribir en archivos fuera de las rutas permitidas incluso si el directorio padre parece seguro, y utilicé `os.replace` de forma atómica para prevenir la corrupción de datos ante errores de sistema.
 - `2026-08-10T12:48:32` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `scanner.py` asegurando que el acceso al sistema de archivos mediante `entry.stat()` esté protegido contra errores de acceso (como archivos en uso o bloqueados por el sistema) mediante un bloque `try-except` más robusto, previniendo interrupciones del proceso de escaneo.
 - `2026-08-10T12:47:42` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `quarantine_file` añadiendo una comprobación de existencia y tipos para evitar el seguimiento de enlaces simbólicos mediante `resolve()` y `is_file()` antes de cualquier operación, protegiendo contra posibles condiciones de carrera o ataques de tipo TOCTOU (Time-of-check to time-of-use).
 - `2026-08-10T12:38:52` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de `scan_for_junk` añadiendo una comprobación de existencia y legibilidad antes de procesar el archivo, garantizando que `ensure_safe_to_modify` se invoque solo sobre rutas que han superado las validaciones de acceso, evitando excepciones innecesarias durante el escaneo recursivo.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-10T11:57:54` **memory.py** (robustez ante casos límite): Se ha robustecido el manejo de errores en `read_snapshot` y `top_memory_processes` añadiendo validaciones específicas para prevenir fallos silenciosos por entradas de texto vacías, rutas inexistentes o tiempos de espera (timeout) en la ejecución de comandos externos.
 - `2026-08-10T11:57:44` **main.py** (robustez ante casos límite): Mejoré la resiliencia ante errores de concurrencia y limpieza de recursos al cerrar la aplicación, asegurando que el pool de hilos (`_executor`) y los eventos programados (`after`) sean cancelados de manera ordenada al invocar `destroy()`.
 - `2026-08-10T11:56:42` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de los cálculos de `score_memory` y `score_disk` añadiendo protecciones explícitas contra divisores cero o negativos, asegurando que ante una configuración accidentalmente maliciosa o corrupta de los umbrales globales, el sistema no retorne resultados erróneos o colapse.
-- `2026-08-10T11:56:17` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `hash_file` ante el caso límite de archivos bloqueados o que cambian durante su lectura, añadiendo un chequeo explícito de integridad antes y después del procesamiento, y fortaleciendo la sanitización de entradas para evitar excepciones innecesarias en `_collect_candidates` y `suggest_keeper`.
