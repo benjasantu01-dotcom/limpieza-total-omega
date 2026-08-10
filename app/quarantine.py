@@ -191,6 +191,9 @@ def _is_valid_quarantine_path(path: Path, root: Path) -> TypeGuard[Path]:
 
 def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
     """Ejecuta una serie de chequeos preventivos antes de mover un archivo a cuarentena."""
+    if len(source_path.parts) > 32:
+        raise UnsafePathError("Profundidad de ruta excesiva: riesgo de desbordamiento.")
+
     if ":" in source_path.name.replace(source_path.drive, ""):
         raise UnsafePathError(f"Ruta con flujos de datos alternos no permitida: {source_path}")
 
@@ -313,6 +316,9 @@ def quarantine_file(
         raise ValueError("La ruta de origen no puede estar vacía.")
     
     source_path = Path(source).resolve()
+    
+    # Validar integridad contra ruta de sistema y normalización
+    ensure_safe_to_modify(source_path, allow_sensitive=True)
     
     if str(source_path).startswith(("\\\\", "//")):
         raise UnsafePathError("No se permite cuarentena en rutas de red (UNC).")
