@@ -33,7 +33,7 @@ import tempfile
 from pathlib import Path
 from typing import Any, Final, TypeAlias, Callable, TypedDict
 
-from safety import is_safe_to_modify
+from safety import is_safe_to_modify, is_protected_path
 
 PathLike: TypeAlias = str | Path
 
@@ -138,6 +138,8 @@ class _Validators:
             if resolved.is_symlink() or (resolved.exists() and hasattr(resolved, 'is_junction') and resolved.is_junction()):
                 return None
             
+            if is_protected_path(str(resolved)): return None
+            
             target = resolved if resolved.exists() else resolved.parent
             return str(resolved) if is_safe_to_modify(str(target)) else None
         except (OSError, RuntimeError, ValueError, TypeError, PermissionError, AttributeError):
@@ -211,7 +213,6 @@ def load(path_or_base: PathLike | None = None) -> AppSettings:
                     _current_path, _last_mtime = ruta, stats.st_mtime
                     return _cached_settings.copy()
     except (OSError, PermissionError, json.JSONDecodeError, UnicodeDecodeError, KeyError):
-        # Ante cualquier error de acceso o corrupción, forzamos a DEFAULTS
         _cached_settings = None
     
     _cached_settings = DEFAULTS.copy()
@@ -224,7 +225,7 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     if not isinstance(values, dict): return None
     ruta = settings_path(path_or_base)
     
-    if not is_safe_to_modify(str(ruta.parent)) or not is_safe_to_modify(str(ruta)):
+    if is_protected_path(str(ruta)) or not is_safe_to_modify(str(ruta.parent)):
         return None
     
     cleaned_settings = validate(values)

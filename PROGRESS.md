@@ -6,32 +6,32 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **246** (48.8% de aceptación)
+- Mejoras aceptadas: **248** (49.2% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 25
+- Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 205
+- Sin respuesta de la IA (error o límite): 201
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-09 | 148 | 8 | 15 | 10 | 127 |
-| 2026-08-10 | 98 | 5 | 10 | 5 | 78 |
+| 2026-08-09 | 148 | 8 | 15 | 10 | 123 |
+| 2026-08-10 | 100 | 5 | 12 | 5 | 78 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **59**
+- seguridad defensiva: **53**
 - manejo de errores y validación de entradas: **52**
-- seguridad defensiva: **51**
 - rendimiento: **44**
 - robustez ante casos límite: **40**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **24**
+- `settings.py`: **23**
 - `main.py`: **22**
-- `settings.py`: **22**
 - `healthscore.py`: **21**
 - `assistant.py`: **20**
 - `branding.py`: **19**
@@ -41,11 +41,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - `duplicates.py`: **16**
 - `scanner.py`: **16**
 - `memory.py`: **13**
-- `safety.py`: **10**
+- `safety.py`: **11**
 - `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-10T08:22:33` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_Validators.path` al añadir una verificación explícita de `is_protected_path` para prevenir la configuración de rutas críticas del sistema incluso si `is_safe_to_modify` diera un falso positivo, y aseguré que `save` valide la integridad de `ruta` antes de cualquier operación de escritura.
+- `2026-08-10T08:22:02` **safety.py** (seguridad defensiva): Se añadió una validación de profundidad máxima de recursión y un chequeo explícito de jerarquía de archivos para prevenir ataques de "Symlink Race" y ataques de manipulación de rutas profundas antes de que lleguen a `ensure_safe_to_modify`.
 - `2026-08-10T08:13:10` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva en `quarantine_file` al realizar la validación de integridad (`_get_sha256`) antes de borrar el archivo de origen, garantizando que el archivo se haya copiado y verificado correctamente en el sandbox antes de destruir el original, evitando la pérdida de datos ante fallos de E/S.
 - `2026-08-10T08:12:56` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `delete_reviewed` y `stage_for_review` para prevenir el uso de rutas externas maliciosas mediante la validación estricta de la relación de parentesco, asegurando que `ensure_safe_to_modify` (que es la protección maestra) sea siempre el guardián previo a cualquier operación de escritura.
 - `2026-08-10T08:12:32` **memory.py** (seguridad defensiva): Se reforzó la seguridad de `trim_working_set` validando que la ruta del ejecutable no sea solo protegida, sino también que su resolución sea segura frente a posibles intentos de evasión, y se añadieron chequeos de límites en el PID para evitar manipulaciones erróneas.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-10T07:32:19` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de `stage_for_review` implementando una verificación de bloqueo mediante el intento de apertura en modo escritura exclusiva antes de mover el archivo, previniendo errores de sistema al intentar operar con archivos en uso por otros procesos.
 - `2026-08-10T07:32:10` **memory.py** (robustez ante casos límite): Se introdujo una validación robusta contra la inyección de comandos y errores de sintaxis en `top_memory_processes` al normalizar y verificar estrictamente el formato del CSV recibido desde PowerShell antes de procesarlo.
 - `2026-08-10T07:31:44` **main.py** (robustez ante casos límite): He mejorado la robustez de `main.py` ante errores de entrada del usuario en el formulario de ajustes, específicamente en `on_save_settings`, añadiendo un bloque `try-except` para capturar excepciones al recuperar valores de las variables de la UI, previniendo que una entrada malformada o un estado de widget inconsistente detenga el proceso de guardado o bloquee la aplicación.
-- `2026-08-10T07:30:43` **healthscore.py** (robustez ante casos límite): Reforcé la robustez del módulo `healthscore.py` ante casos límite en `_generate_recommendations` y `compute_score`, asegurando que el sistema sea capaz de manejar métricas donde el denominador es cero o los valores son atípicos sin interrumpir el flujo de la aplicación.
-- `2026-08-10T07:21:34` **duplicates.py** (robustez ante casos límite): Se mejora la robustez frente a errores de I/O en `_collect_candidates` y `_refine_by_hash` mediante el manejo explícito de archivos bloqueados o inaccesibles, evitando que una excepción en un solo archivo rompa la iteración completa de búsqueda de duplicados.

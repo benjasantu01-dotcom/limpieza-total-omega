@@ -79,14 +79,7 @@ def _is_reserved_device_name(name: str) -> bool:
 
 @lru_cache(maxsize=1024)
 def _is_system_or_hidden(path: Path) -> bool:
-    """
-    Verifica atributos de sistema u oculto mediante la API Win32.
-    
-    Args:
-        path: Objeto Path del archivo a inspeccionar.
-    Returns:
-        True si el archivo tiene atributos de sistema u oculto (solo Windows).
-    """
+    """Verifica atributos de sistema u oculto mediante la API Win32."""
     if os.name != 'nt':
         return False
     try:
@@ -110,14 +103,7 @@ def _is_reparse_point(path: Path) -> bool:
 
 
 def _is_file_in_use(path: Path) -> bool:
-    """
-    Intenta abrir el archivo en modo exclusivo para testear bloqueos de SO.
-    
-    Args:
-        path: Objeto Path a verificar.
-    Returns:
-        True si el archivo está siendo bloqueado por otro proceso.
-    """
+    """Intenta abrir el archivo en modo exclusivo para testear bloqueos de SO."""
     if not path.exists() or not path.is_file():
         return False
     try:
@@ -131,13 +117,13 @@ def _is_file_in_use(path: Path) -> bool:
 
 
 def _check_file_integrity(p: Path) -> None:
-    """
-    Valida la integridad del archivo antes de cualquier operación de modificación.
-    
-    Lanza UnsafePathError si alguna heurística de seguridad falla.
-    """
+    """Valida la integridad del archivo antes de cualquier operación de modificación."""
     if not p.exists():
         raise UnsafePathError(f"El archivo {p.name} ya no existe.")
+
+    # Verificar profundidad de la ruta para prevenir ataques de trayectoria profunda
+    if len(p.parts) > 32:
+        raise UnsafePathError("Ruta demasiado profunda: posible ataque de evasión.")
 
     checks = [
         (not os.access(p, os.W_OK), "inaccesible (sin permisos de escritura)"),
@@ -164,16 +150,7 @@ def _is_readonly(path: Path) -> bool:
 
 @lru_cache(maxsize=2048)
 def normalize(path: PathLike) -> Path:
-    """
-    Normaliza y resuelve una ruta, validando límites del sistema.
-    
-    Args:
-        path: Ruta a normalizar.
-    Returns:
-        Path resuelto absoluto.
-    Raises:
-        ValueError: Si la ruta excede límites de longitud o es inválida.
-    """
+    """Normaliza y resuelve una ruta, validando límites del sistema."""
     if not isinstance(path, (str, os.PathLike)) or not str(path).strip():
         raise ValueError("Entrada de ruta vacía o tipo inválido.")
     
@@ -198,17 +175,12 @@ def is_drive_root(path: PathLike) -> bool:
 
 @lru_cache(maxsize=1024)
 def is_protected_path(path: PathLike) -> bool:
-    """
-    Determina si la ruta reside en una ubicación protegida.
-    
-    Utiliza heurísticas basadas en nombres de carpetas estándar y variables de entorno del sistema.
-    """
+    """Determina si la ruta reside en una ubicación protegida."""
     if not path:
         return True
     
     try:
         p = normalize(path)
-        # Eficiencia: comprobación de conjuntos antes de iterar partes
         if not _SYSTEM_ROOTS.isdisjoint(p.parents) or p in _SYSTEM_ROOTS:
             return True
             
@@ -221,18 +193,12 @@ def is_protected_path(path: PathLike) -> bool:
 
 
 def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = False) -> bool:
-    """
-    Verifica si la ruta 'child' está contenida lógicamente dentro de 'parent'.
-    
-    Args:
-        child: Ruta candidata a estar contenida.
-        parent: Directorio padre esperado.
-        allow_equal: Si es True, permite que ambas rutas sean idénticas.
-    """
+    """Verifica si la ruta 'child' está contenida lógicamente dentro de 'parent'."""
     try:
         c, p = normalize(child), normalize(parent)
         if allow_equal and c == p:
             return True
+        # Seguridad extra: asegurar que 'c' sea un sub-hijo directo o indirecto
         return p in c.parents
     except (ValueError, TypeError, OSError, RuntimeError):
         return False
@@ -248,11 +214,7 @@ def is_sensitive_file(path: PathLike) -> bool:
 
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: PathLike | None = None) -> Path:
-    """
-    Validador principal para operaciones de escritura/modificación destructiva.
-    
-    Lanza UnsafePathError si la ruta es insegura. Retorna la ruta normalizada si es segura.
-    """
+    """Validador principal para operaciones de escritura/modificación destructiva."""
     if path is None:
         raise UnsafePathError("Ruta nula recibida.")
 

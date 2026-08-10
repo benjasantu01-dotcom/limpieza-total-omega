@@ -521,3 +521,10 @@ FAILED evolve/tests/test_modules.py::test_never_scans_system_folders - Attribute
 - `2026-08-10T08:13:10` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `quarantine_file` al realizar la validación de integridad (`_get_sha256`) antes de borrar el archivo de origen, garantizando que el archivo se haya copiado y verificado correctamente en el sandbox antes de destruir el original, evitando la pérdida de datos ante fallos de E/S.
 - `2026-08-10T08:13:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-10T08:13:10` Corrida terminada. Total usado hoy: 196.
+- `2026-08-10T08:21:17` Arrancando corrida. Quedan hoy ~104 peticiones objetivo.
+- `2026-08-10T08:21:38` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-08-10T08:22:02` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se añadió una validación de profundidad máxima de recursión y un chequeo explícito de jerarquía de archivos para prevenir ataques de "Symlink Race" y ataques de manipulación de rutas profundas antes de que lleguen a `ensure_safe_to_modify`.
+- `2026-08-10T08:22:23` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: Scanner._is_safe_entry
+- `2026-08-10T08:22:33` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_Validators.path` al añadir una verificación explícita de `is_protected_path` para prevenir la configuración de rutas críticas del sistema incluso si `is_safe_to_modify` diera un falso positivo, y aseguré que `save` valide la integridad de `ruta` antes de cualquier operación de escritura.
+- `2026-08-10T08:22:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-10T08:22:33` Corrida terminada. Total usado hoy: 200.
