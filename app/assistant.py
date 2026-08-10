@@ -47,7 +47,7 @@ import math
 from itertools import islice
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Final, TypeAlias, Callable, Optional, Union, Generator
+from typing import Any, Final, TypeAlias, Callable, Optional, Union, Generator, TypedDict
 
 import settings
 from safety import is_protected_path
@@ -67,6 +67,12 @@ __all__ = [
     "available",
     "explain_area",
 ]
+
+# Definición de esquema para la configuración cargada desde settings
+class AssistantConfig(TypedDict):
+    asistente_api_key: str
+    asistente_modelo: str
+    asistente_enviar_metricas: bool
 
 # Aliases de tipos para facilitar la lectura del flujo de datos
 MetricSource: TypeAlias = Any
@@ -529,18 +535,21 @@ def ask(question: str, context: Optional[SystemContext] = None,
         configuracion = settings.load(base)
         if not isinstance(configuracion, dict):
             return respaldo
-            
-        clave = str(configuracion.get("asistente_api_key", ""))
-        modelo = str(configuracion.get("asistente_modelo", "gemini-3.1-flash-lite"))
-        enviar = bool(configuracion.get("asistente_enviar_metricas", True))
         
-        texto_contexto = context_as_text(ctx) if enviar else "El usuario no autorizó enviar métricas."
+        # Casting explícito para asegurar cumplimiento del esquema de configuración
+        cfg: AssistantConfig = {
+            "asistente_api_key": str(configuracion.get("asistente_api_key", "")),
+            "asistente_modelo": str(configuracion.get("asistente_modelo", "gemini-3.1-flash-lite")),
+            "asistente_enviar_metricas": bool(configuracion.get("asistente_enviar_metricas", True))
+        }
+            
+        texto_contexto = context_as_text(ctx) if cfg["asistente_enviar_metricas"] else "El usuario no autorizó enviar métricas."
         
         # Validar el texto antes de pasarlo al motor remoto
         if not _ensure_safe_text(texto_contexto):
             return respaldo
             
-        remoto = _call_gemini(question, texto_contexto, clave, modelo)
+        remoto = _call_gemini(question, texto_contexto, cfg["asistente_api_key"], cfg["asistente_modelo"])
 
         if not remoto:
             respaldo.notice = "No se pudo consultar al asistente en línea, respondí con el motor local."

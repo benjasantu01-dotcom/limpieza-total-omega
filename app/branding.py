@@ -30,6 +30,7 @@ SeverityLevel: TypeAlias = Literal["ok", "info", "warning", "danger"]
 GradeKey: TypeAlias = Literal["A", "B", "C", "D", "F"]
 SeverityStyle: TypeAlias = Tuple[HexColor, str]
 RGBTuple: TypeAlias = Tuple[int, int, int]
+PointCoords: TypeAlias = List[float]
 
 class PaletteDict(TypedDict):
     """Mapeo estricto de las claves de color requeridas por la interfaz."""
@@ -141,8 +142,7 @@ def color(name: str) -> HexColor:
         name: Clave identificadora en PALETTE (ej. 'surface', 'accent').
         
     Returns:
-        Valor hex si existe, de lo contrario '#808080' (gris neutro) para 
-        evitar excepciones visuales.
+        Valor hex si existe, de lo contrario '#808080' (gris neutro).
     """
     return PALETTE.get(name, "#808080")
 
@@ -156,8 +156,7 @@ def font_size(name: str) -> int:
         name: Clave del tamaño (ej. 'title', 'body').
         
     Returns:
-        Tamaño en puntos definido; retorna el tamaño 'body' como fallback 
-        seguro si la clave no es encontrada.
+        Tamaño en puntos definido; retorna el tamaño 'body' como fallback.
     """
     return FONT_SIZES.get(name, FONT_SIZES["body"])
 
@@ -208,12 +207,7 @@ def grade_color(grade: Optional[str]) -> HexColor:
 
 
 def score_color(score: Union[float, int, None]) -> HexColor:
-    """
-    Determina el color semántico según el puntaje numérico (0-100).
-    
-    Returns:
-        Color representativo de la salud del sistema.
-    """
+    """Determina el color semántico según el puntaje numérico (0-100)."""
     try:
         if score is None:
             raise ValueError("Score es None")
@@ -232,15 +226,7 @@ def score_color(score: Union[float, int, None]) -> HexColor:
 
 def bar(percent: Union[float, int, None], width: int = 24,
         filled: str = "\u2588", empty: str = "\u2591") -> str:
-    """
-    Genera una representación visual de barra de progreso en texto.
-    
-    Args:
-        percent: Valor porcentual (0-100).
-        width: Número total de caracteres de la barra.
-        filled: Carácter para el segmento completado.
-        empty: Carácter para el segmento vacío.
-    """
+    """Genera una representación visual de barra de progreso en texto."""
     try:
         valor = max(0.0, min(100.0, float(percent)))
     except (TypeError, ValueError):
@@ -276,7 +262,7 @@ def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
 
 @lru_cache(maxsize=32)
 def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> List[HexColor]:
-    """Crea una secuencia de colores interpolados y los agrupa por identidad para eficiencia."""
+    """Crea una secuencia de colores interpolados."""
     cantidad = max(1, int(steps))
     if not stops: return [PALETTE["accent"]] * cantidad
     if len(stops) < 2: return [stops[0]] * cantidad
@@ -302,15 +288,15 @@ def _get_grouped_segments(colors: List[HexColor]) -> List[Tuple[HexColor, int, i
     return segments
 
 
-def _get_shield_coords(sx: float, sy: float, s: float) -> List[float]:
-    """Calcula coordenadas de los vértices del escudo según escala y offset."""
+def _get_shield_coords(sx: float, sy: float, s: float) -> PointCoords:
+    """Calcula coordenadas de los vértices del escudo según escala (s) y offset (sx, sy)."""
     base = [64, 18, 100, 31, 100, 67, 90, 90, 64, 110, 38, 90, 28, 67, 28, 31]
     return [sx + v * s if i % 2 == 0 else sy + v * s for i, v in enumerate(base)]
 
 
 @lru_cache(maxsize=4)
 def logo_svg(size: int = 128) -> str:
-    """Genera el contenido XML del logo como SVG."""
+    """Genera el contenido XML del logo como SVG escalable."""
     s = max(1, min(4096, int(size)))
     return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{s}" height="{s}" viewBox="0 0 128 128">
   <defs>
@@ -341,7 +327,6 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     if not destination: return None
     try:
         target = Path(destination).resolve()
-        # Aseguramos que la carpeta contenedora (o el archivo si existe) sea segura
         ensure_safe_to_modify(target.parent)
         
         target.parent.mkdir(parents=True, exist_ok=True)
@@ -363,32 +348,45 @@ def logo_ascii() -> str:
 
 
 def draw_logo(canvas: Any, size: int = 56, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
-    """Renderiza el logo vectorial en un canvas de Tkinter."""
+    """
+    Renderiza el logo vectorial en un canvas de Tkinter usando coordenadas transformadas.
+    
+    Args:
+        canvas: Widget Tkinter donde dibujar.
+        size: Tamaño base del icono.
+        canvas_x, canvas_y: Posición de origen (offset).
+    """
     if not hasattr(canvas, "create_polygon"): return
     try:
-        s = max(0.1, float(size) / 128)
-        x, y = float(canvas_x), float(canvas_y)
-        contorno = _get_shield_coords(x, y, s)
+        scale = float(size) / 128
+        contorno = _get_shield_coords(canvas_x, canvas_y, scale)
         
+        # Efecto de resplandor mediante capas superpuestas
         for paso in range(4, 0, -1):
-            r = 56 * s * (0.6 + paso * 0.12)
-            canvas.create_oval(x + 64*s - r, y + 58*s - r, x + 64*s + r, y + 58*s + r, 
+            r = 56 * scale * (0.6 + paso * 0.12)
+            canvas.create_oval(canvas_x + 64*scale - r, canvas_y + 58*scale - r, 
+                               canvas_x + 64*scale + r, canvas_y + 58*scale + r, 
                                fill=blend(PALETTE["surface"], PALETTE["glow"], 0.04 * paso), outline="")
 
         canvas.create_polygon(contorno, fill=GRADIENT_STOPS[1], outline="")
-        franjas_count = max(6, int(28 * s))
+        
+        # Renderizado de franjas decorativas
+        franjas_count = max(6, int(28 * scale))
         colores = gradient_colors(franjas_count)
         
         for color_hex, start, end in _get_grouped_segments(colores):
             mid = (start + end) / 2
-            w = 36 * s * (1.0 if mid / (franjas_count - 1) < 0.55 else 1.0 - (mid / (franjas_count - 1) - 0.55) * 1.9)
-            canvas.create_rectangle(x + 64*s - w, y + 18*s + start*(92*s/franjas_count), 
-                                    x + 64*s + w, y + 18*s + end*(92*s/franjas_count) + 1, 
+            w = 36 * scale * (1.0 if mid / (franjas_count - 1) < 0.55 else 1.0 - (mid / (franjas_count - 1) - 0.55) * 1.9)
+            canvas.create_rectangle(canvas_x + 64*scale - w, canvas_y + 18*scale + start*(92*scale/franjas_count), 
+                                    canvas_x + 64*scale + w, canvas_y + 18*scale + end*(92*scale/franjas_count) + 1, 
                                     fill=color_hex, outline="")
 
-        canvas.create_line(x + 41*s, y + 75*s, x + 75*s, y + 41*s, fill=PALETTE["background"], width=max(2, int(8*s)), capstyle="round")
-        canvas.create_polygon(x + 75*s, y + 41*s, x + 89*s, y + 38*s, x + 92*s, y + 52*s, fill=PALETTE["background"], outline="")
-        canvas.create_text(x + 64*s, y + 96*s, text="\u03a9", fill=PALETTE["background"], font=("Segoe UI", max(8, int(23*s)), "bold"))
+        canvas.create_line(canvas_x + 41*scale, canvas_y + 75*scale, canvas_x + 75*scale, canvas_y + 41*scale, 
+                           fill=PALETTE["background"], width=max(2, int(8*scale)), capstyle="round")
+        canvas.create_polygon(canvas_x + 75*scale, canvas_y + 41*scale, canvas_x + 89*scale, canvas_y + 38*scale, 
+                              canvas_x + 92*scale, canvas_y + 52*scale, fill=PALETTE["background"], outline="")
+        canvas.create_text(canvas_x + 64*scale, canvas_y + 96*scale, text="\u03a9", 
+                           fill=PALETTE["background"], font=("Segoe UI", max(8, int(23*scale)), "bold"))
     except (ValueError, TypeError, AttributeError, ZeroDivisionError, OverflowError):
         pass
 

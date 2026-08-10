@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **226** (44.8% de aceptación)
+- Mejoras aceptadas: **228** (45.2% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 25
-- Sin cambios (nada sustancial que mejorar): 15
+- Sin cambios (nada sustancial que mejorar): 13
 - Sin respuesta de la IA (error o límite): 225
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-08 | 55 | 5 | 6 | 4 | 48 |
+| 2026-08-08 | 54 | 5 | 6 | 2 | 47 |
 | 2026-08-09 | 162 | 8 | 18 | 11 | 151 |
-| 2026-08-10 | 9 | 0 | 1 | 0 | 26 |
+| 2026-08-10 | 12 | 0 | 1 | 0 | 27 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **52**
-- legibilidad y documentación: **49**
+- legibilidad y documentación: **52**
 - seguridad defensiva: **48**
 - robustez ante casos límite: **40**
-- rendimiento: **37**
+- rendimiento: **36**
 
 ## Mejoras aceptadas por archivo
 
-- `main.py`: **22**
 - `quarantine.py`: **22**
 - `settings.py`: **21**
+- `main.py`: **21**
+- `assistant.py`: **20**
 - `healthscore.py`: **19**
-- `assistant.py`: **19**
+- `branding.py`: **18**
+- `browser.py`: **18**
 - `scanner.py`: **17**
-- `branding.py`: **17**
-- `browser.py`: **17**
 - `diskreport.py`: **16**
 - `organizer.py`: **14**
 - `duplicates.py`: **13**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-10T01:34:24` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados con tipado explícito y aclaración de las responsabilidades de las funciones `_is_safe_path` y `_sum_directory_recursive`, garantizando que se entienda el propósito de cada chequeo de seguridad frente a los errores del pasado.
+- `2026-08-10T01:33:59` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica y la mantenibilidad de `branding.py` mediante docstrings de parámetros y retornos más detallados, tipos definidos para las coordenadas del escudo, y la extracción de la lógica de escalado de la función `draw_logo` para evitar la redundancia en los cálculos geométricos.
+- `2026-08-10T01:33:30` **assistant.py** (legibilidad y documentación): Documenté con type hints más claros y docstrings explicativos la estructura de los diccionarios de configuración en `ask`, mejorando la legibilidad del flujo de datos sin alterar la lógica de ejecución.
 - `2026-08-10T01:23:56` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_Validators.path` y `save` añadiendo una comprobación explícita para evitar que `Path.resolve()` sea llamado sobre rutas inexistentes con `strict=True`, y asegurando que las validaciones de seguridad se apliquen antes de cualquier operación de I/O, evitando excepciones innecesarias ante estructuras de directorios inusuales.
 - `2026-08-10T01:23:30` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las heurísticas (`check_recent_executable_in_downloads` y `check_system_lookalike`) reemplazando el uso de `path.stat()` (que puede fallar si el archivo es bloqueado o eliminado entre el `scandir` y la inspección) por el uso consistente del objeto `entry` ya disponible, garantizando además que la captura de excepciones sea específica para evitar silenciamientos accidentales de errores críticos.
 - `2026-08-10T01:13:50` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine.py` implementando una validación estricta y explícita de `base` en todas las funciones de acceso a disco, previniendo errores de ejecución por rutas mal formadas o None antes de que lleguen a `quarantine_dir`.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-09T14:20:57` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_Validators.path` y `save` mediante la verificación explícita de puntos de reparse (junctions/symlinks) y restricciones de escritura en el directorio padre, asegurando que la configuración nunca apunte a ubicaciones peligrosas o rutas manipuladas fuera del entorno controlado.
 - `2026-08-09T14:11:33` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva en `quarantine_file` validando que la ruta de origen no sea una ruta de sistema ni un punto de montaje antes de realizar cualquier operación, además de asegurar que `shutil.move` no sea necesario para el paso crítico de "mover a cuarentena", utilizando `os.replace` para una operación atómica y más segura en sistemas Windows.
 - `2026-08-09T14:11:18` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_file_accessible` para que utilice el modo de lectura `rb` en lugar de `ab` (append), evitando así cualquier riesgo de modificación accidental del puntero del archivo, y se ha encapsulado el acceso dentro de un bloque que asegura el cierre inmediato del recurso.
-- `2026-08-09T14:10:54` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `trim_working_set` asegurando que la ruta del ejecutable se normalice y valide mediante `is_protected_path` antes de realizar cualquier operación sobre el proceso, previniendo así la manipulación de procesos cuyos ejecutables residan en directorios críticos, aun si el PID no está en la lista de bloqueados.
-- `2026-08-09T14:00:58` **healthscore.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `compute_score` implementando una validación explícita de `ratios` y `total_score` contra valores `NaN` o `inf`, asegurando que el cálculo final sea siempre determinista incluso ante métricas malformadas, evitando propagar estados inválidos hacia la UI.
-- `2026-08-09T14:00:47` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez de `hash_file` y `partial_hash` para evitar el seguimiento de enlaces simbólicos o puntos de reparse durante la lectura, alineándolos con la estrategia de seguridad defensiva implementada en `_collect_candidates`.
