@@ -221,7 +221,6 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     except (OSError, RuntimeError, TypeError):
         return
 
-    # Evitar ciclos de directorios usando inodos (dev, ino)
     visited_inodes: set[Tuple[int, int]] = set()
     stack: List[Tuple[Path, int]] = [(root, 0)]
     MAX_DEPTH = 100
@@ -251,7 +250,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                                 stack.append((path_obj, depth + 1))
                         else:
                             yield path_obj, entry.stat().st_size
-                    except (OSError, PermissionError, ValueError, FileNotFoundError):
+                    except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError, FileNotFoundError):
             continue

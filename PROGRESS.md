@@ -9,34 +9,34 @@ Este archivo se regenera solo en cada corrida a partir de
 - Mejoras aceptadas: **234** (46.4% de aceptación)
 - Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 27
-- Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 217
+- Sin cambios (nada sustancial que mejorar): 13
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-09 | 102 | 8 | 11 | 6 | 101 |
-| 2026-08-10 | 132 | 6 | 16 | 6 | 116 |
+| 2026-08-09 | 99 | 8 | 11 | 6 | 100 |
+| 2026-08-10 | 135 | 6 | 16 | 7 | 116 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **59**
 - manejo de errores y validación de entradas: **51**
-- seguridad defensiva: **48**
 - rendimiento: **46**
-- robustez ante casos límite: **30**
+- seguridad defensiva: **45**
+- robustez ante casos límite: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **23**
 - `settings.py`: **22**
-- `main.py`: **19**
+- `quarantine.py`: **22**
+- `assistant.py`: **19**
+- `diskreport.py`: **19**
 - `healthscore.py`: **19**
-- `organizer.py`: **18**
-- `assistant.py`: **18**
-- `diskreport.py`: **18**
-- `branding.py`: **17**
+- `main.py`: **18**
+- `branding.py`: **18**
+- `organizer.py`: **17**
 - `browser.py`: **16**
 - `duplicates.py`: **16**
 - `memory.py`: **15**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-10T11:47:22` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `walk_files` ante archivos bloqueados o inaccesibles añadiendo un manejo de excepciones más granular dentro del bucle de `os.scandir`, garantizando que un solo error de acceso (común en sistemas con permisos restrictivos) no interrumpa el recorrido completo del árbol de directorios.
+- `2026-08-10T11:46:42` **branding.py** (robustez ante casos límite): Se añadió una validación defensiva en `save_logo_svg` para prevenir el uso de rutas que, aunque pasen el chequeo de seguridad, podrían ser destinos inválidos (como directorios inexistentes sin permisos de creación) mediante el manejo explícito de `OSError` y `PermissionError` sobre el objeto `Path`, asegurando que la interfaz no aborte en entornos con restricciones de escritura inesperadas.
+- `2026-08-10T11:46:12` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` y `_safe_assign` ante valores `NaN` o infinitos, y añadí validación estricta contra entradas corruptas en las fuentes de datos, previniendo estados inconsistentes en el asistente al recibir métricas malformadas o inesperadas.
 - `2026-08-10T11:36:33` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` evitando la redundancia en la validación y el acceso a disco mediante el uso del caché ya existente, eliminando la doble llamada a `validate()` y reduciendo la creación de objetos `Path` innecesarios.
 - `2026-08-10T11:36:08` **scanner.py** (rendimiento): Optimizé `scan_file` para evitar llamadas redundantes a `entry.stat()` y evaluaciones de heurísticas en archivos no ejecutables, además de reducir el coste de resolución de rutas en el bucle principal mediante el uso de `pathlib.Path` pre-calculado.
 - `2026-08-10T11:26:23` **quarantine.py** (rendimiento): Optimicé el rendimiento de `load_manifest` transformando la lista de retorno en un `Dict` interno mediante `item_id` para reducir la complejidad temporal de búsqueda de O(n) a O(1) en las funciones `restore_item` y `purge_item`.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-10T11:05:43` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` convirtiendo el mapeo de palabras clave y la validación de tokens en operaciones de conjuntos, eliminando iteraciones innecesarias sobre diccionarios y listas dentro del bucle de resolución.
 - `2026-08-10T11:05:00` **startup.py** (legibilidad y documentación): He mejorado la documentación de la clase `StartupEntry` y sus métodos privados mediante docstrings más técnicos y precisos, aclarando la lógica de resolución de rutas y el uso de caché para cumplir con el estándar de calidad requerido.
 - `2026-08-10T10:55:47` **settings.py** (legibilidad y documentación): Se ha extraído la lógica de validación de rutas dentro de `_Validators.path` a un método privado más específico, `_is_safe_path`, para mejorar la legibilidad y separar la verificación de seguridad de la lógica de normalización de cadenas, facilitando el mantenimiento.
-- `2026-08-10T10:55:03` **safety.py** (legibilidad y documentación): Se ha refactorizado `_check_file_integrity` para utilizar un dictado de validadores con mensajes explicativos asociados, mejorando drásticamente la legibilidad y facilitando futuras extensiones de reglas de seguridad sin comprometer la lógica de control.
-- `2026-08-10T10:46:17` **quarantine.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `quarantine.py` mediante docstrings enriquecidos, la adición de tipos claros en las firmas de funciones complejas y la estandarización de los mensajes de error para reflejar mejor las garantías de seguridad del sistema.
-- `2026-08-10T10:46:00` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de `organizer.py` mediante la adición de Type Hints en retornos implícitos, la clarificación de `SortConfig` para tipado estricto y la mejora de la documentación en las funciones de escaneo, haciendo explícitas las restricciones de seguridad.

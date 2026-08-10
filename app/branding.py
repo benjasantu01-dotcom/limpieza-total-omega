@@ -346,6 +346,7 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         target.write_text(logo_svg(), encoding="utf-8")
         return target
     except (OSError, PermissionError, ValueError, RuntimeError, IOError, AttributeError):
+        # Fallo silencioso ante problemas de sistema de archivos o permisos denegados
         return None
 
 

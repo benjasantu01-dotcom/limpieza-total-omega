@@ -211,7 +211,7 @@ def _safe_assign(obj: SystemContext, attr: str, val: Any, cast: Callable = float
 
 def _fmt_metric(val: Any, unit: str = "", decimal: int = 0) -> str:
     """Formatea una métrica para visualización, manejando casos N/A."""
-    if val is None or not isinstance(val, (int, float)): return "N/A"
+    if val is None or not isinstance(val, (int, float)) or not math.isfinite(val): return "N/A"
     return f"{val:.{decimal}f}{unit}"
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
@@ -223,9 +223,10 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     def _get_val_from_source(source: Any, attr: str, default: Any) -> Any:
         if source is None: return default
         try:
-            if isinstance(source, dict):
-                return source.get(attr, default)
-            return getattr(source, attr, default)
+            # Validar que si es un objeto tenga __dict__ para evitar acceso inseguro
+            if hasattr(source, "__dict__") or isinstance(source, dict):
+                return source.get(attr, default) if isinstance(source, dict) else getattr(source, attr, default)
+            return default
         except (AttributeError, TypeError):
             return default
 
