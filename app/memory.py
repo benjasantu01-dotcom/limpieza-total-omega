@@ -172,10 +172,9 @@ def parse_linux_meminfo(text: str) -> MemorySnapshot:
 
 def _is_valid_process_row(parts: List[str]) -> bool:
     """Verifica si una fila CSV procesada contiene datos numéricos válidos."""
-    return (len(parts) >= 3 and 
-            parts[1].strip().isdigit() and 
-            parts[2].strip().isdigit() and 
-            int(parts[2].strip()) >= 0)
+    return (len(parts) == 3 and 
+            parts[1].isdigit() and 
+            parts[2].isdigit())
 
 
 def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]:
@@ -184,9 +183,8 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
         return []
     
     processes = []
-    # Usar generador para procesar líneas solo una vez
-    for line in (l for l in text.splitlines() if l.strip()):
-        parts = [p.strip().strip('"') for p in line.split(",")]
+    for line in text.splitlines():
+        parts = [p.strip().strip("'\"") for p in line.split(",")]
         if _is_valid_process_row(parts):
             try:
                 processes.append(ProcessMemory(
@@ -197,7 +195,6 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
             except (ValueError, IndexError):
                 continue
     
-    # Ordenar solo una vez antes de retornar el slice
     processes.sort(key=lambda p: p.working_set, reverse=True)
     return processes[:limit]
 
@@ -239,18 +236,17 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     now = time.time()
     ts, cached_processes = _PROCESS_CACHE["data"]
     
-    # Retornar desde caché si es reciente
     if now - ts < 5.0 and cached_processes:
         return cached_processes[:limit]
     
-    # PowerShell optimizado: limitar el procesamiento en origen para no cargar memoria de más
-    command = "Get-Process | Select-Object -Property Name, Id, WorkingSet | Sort-Object WorkingSet -Descending | Select-Object -First 20 | ForEach-Object { \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }"
+    # PowerShell restringido a salida CSV simple, evitando expansión de variables complejas
+    command = "Get-Process | Sort-Object WorkingSet -Descending | Select-Object -First 20 | ForEach-Object { \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }"
     try:
         proc = subprocess.run(["powershell", "-NoProfile", "-Command", command], capture_output=True, text=True, timeout=5)
         if proc.returncode == 0:
-            new_processes = parse_windows_process_csv(proc.stdout, limit=20)
+            new_processes = parse_windows_process_csv(proc.stdout, limit=limit)
             _PROCESS_CACHE["data"] = (now, new_processes)
-            return new_processes[:limit]
+            return new_processes
     except (OSError, subprocess.SubprocessError):
         pass
     return []

@@ -1544,20 +1544,23 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             except Exception:
                 continue
         
-        if hasattr(self, 'min_dup_entry'):
-            valores["duplicados_tamano_minimo_kb"] = self._validate_numeric_setting(
-                self.min_dup_entry.get(), 64
-            )
-        
-        if hasattr(self, 'top_files_entry'):
-            valores["top_archivos"] = self._validate_numeric_setting(
-                self.top_files_entry.get(), 15
-            )
+        try:
+            if hasattr(self, 'min_dup_entry'):
+                valores["duplicados_tamano_minimo_kb"] = self._validate_numeric_setting(
+                    self.min_dup_entry.get(), 64
+                )
             
-        if hasattr(self, 'api_key_entry'):
-            clave_api = "".join(c for c in self.api_key_entry.get().strip() if c.isprintable())
-            if clave_api:
-                valores["asistente_clave_api"] = clave_api
+            if hasattr(self, 'top_files_entry'):
+                valores["top_archivos"] = self._validate_numeric_setting(
+                    self.top_files_entry.get(), 15
+                )
+                
+            if hasattr(self, 'api_key_entry'):
+                clave_api = "".join(c for c in self.api_key_entry.get().strip() if c.isprintable())
+                if clave_api:
+                    valores["asistente_clave_api"] = clave_api
+        except Exception as e:
+            logging.error("Error al recopilar ajustes de la UI: %s", e)
         return valores
 
     def on_save_settings(self) -> None:

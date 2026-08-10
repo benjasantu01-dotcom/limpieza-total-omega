@@ -145,6 +145,15 @@ def _is_file_accessible(path: Path) -> bool:
         return False
 
 
+def _is_file_locked(path: Path) -> bool:
+    """Verifica si un archivo está bloqueado por otro proceso intentando abrirlo en modo append."""
+    try:
+        with open(path, "a+b"):
+            return False
+    except (OSError, PermissionError):
+        return True
+
+
 def _is_safe_for_move(path: Path) -> bool:
     """
     Validación de seguridad compuesta: verifica que la ruta esté permitida por los 
@@ -242,7 +251,8 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             if dest == current_abs or dest in current_abs.parents:
                 continue
             
-            if not _is_safe_for_move(current_abs):
+            # Verificación de seguridad y estado de bloqueo previo al movimiento
+            if not _is_safe_for_move(current_abs) or _is_file_locked(current_abs):
                 continue
 
             target: Path = _generate_unique_target(dest / f"{current_abs.stem}_{int(jf.modified.timestamp())}{current_abs.suffix}")

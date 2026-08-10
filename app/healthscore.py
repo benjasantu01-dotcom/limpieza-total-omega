@@ -198,7 +198,7 @@ def _generate_recommendations(m: SystemMetrics, ratios: ScoreMap) -> List[str]:
     if m.quarantined_count > 0:
         recs.append(f"Tenés {int(m.quarantined_count)} archivo(s) en cuarentena.")
     
-    return recs or ["No hay nada urgente para hacer. El sistema está en buen estado."]
+    return recs if recs else ["No hay nada urgente para hacer. El sistema está en buen estado."]
 
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
