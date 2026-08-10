@@ -202,9 +202,9 @@ def _ensure_safe_text(text: Any) -> bool:
 
 def _safe_assign(obj: SystemContext, attr: str, val: Any, cast: Callable = float, min_val: float = 0.0, max_val: float = float('inf')) -> None:
     """Asigna un valor a un atributo de SystemContext tras validar tipo, rango y finitud."""
+    if val is None:
+        return
     try:
-        if val is None:
-            return
         clean = cast(val)
         if isinstance(clean, (int, float)) and math.isfinite(clean):
             setattr(obj, attr, max(min_val, min(clean, max_val)))
@@ -213,7 +213,7 @@ def _safe_assign(obj: SystemContext, attr: str, val: Any, cast: Callable = float
 
 def _fmt_metric(val: Any, unit: str = "", decimal: int = 0) -> str:
     """Formatea una métrica para visualización, manejando casos N/A."""
-    if val is None: return "N/A"
+    if val is None or not isinstance(val, (int, float)): return "N/A"
     return f"{val:.{decimal}f}{unit}"
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
@@ -223,6 +223,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     ctx = SystemContext()
     
     def _get_val_from_source(source: Any, attr: str, default: Any) -> Any:
+        if source is None: return default
         try:
             if isinstance(source, dict):
                 return source.get(attr, default)
