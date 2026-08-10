@@ -486,3 +486,31 @@ FAILED evolve/tests/test_basic.py::test_delete_reviewed_only_touches_the_review_
 - `2026-08-10T07:52:14` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Mejoré la seguridad en `save_logo_svg` al reemplazar el uso de `Path.write_text` (que sobreescribe ciegamente) por una comprobación explícita de `is_safe_to_modify` sobre el archivo resultante final, asegurando que no se pueda manipular una ruta fuera del control de la app incluso si la ruta destino fuera maliciosa.
 - `2026-08-10T07:52:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-10T07:52:14` Corrida terminada. Total usado hoy: 188.
+- `2026-08-10T08:00:54` Arrancando corrida. Quedan hoy ~112 peticiones objetivo.
+- `2026-08-10T08:01:20` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Mejoré la seguridad en `_sum_directory_recursive` implementando un límite de profundidad de recursión (`max_depth=10`) para prevenir ataques de desbordamiento de pila mediante estructuras de directorios profundamente anidadas o ciclos de enlaces simbólicos artificiales.
+- `2026-08-10T08:01:46` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha añadido una validación estricta en `walk_files` para detectar y evitar la entrada en puntos de reparse (junctions o symlinks a directorios), mejorando la seguridad defensiva al evitar que el escaneo de disco siga rutas circulares o salte fuera del árbol de directorios esperado.
+- `2026-08-10T08:02:10` Tests FALLARON:
+```
+_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:95: SyntaxWarning: invalid escape sequence '\P'
+    Analiza comandos tipo 'C:\Path\App.exe' /args.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_finds_identical_files - AttributeError: 'posix.DirEntry' object has no attribute 'is_block_device'
+FAILED evolve/tests/test_modules.py::test_ignores_files_with_different_content - AttributeError: 'posix.DirEntry' object has no attribute 'is_block_device'
+FAILED evolve/tests/test_modules.py::test_finds_duplicates_across_subfolders - AttributeError: 'posix.DirEntry' object has no attribute 'is_block_device'
+FAILED evolve/tests/test_modules.py::test_min_size_filters_out_tiny_files - AttributeError: 'posix.DirEntry' object has no attribute 'is_block_device'
+FAILED evolve/tests/test_modules.py::test_never_scans_system_folders - AttributeError: 'posix.DirEntry' object has no attribute 'is_block_device'
+5 failed, 294 passed, 7 warnings in 0.95s
+
+```
+- `2026-08-10T08:02:10` ❌ Mejora descartada en duplicates.py (no pasó los tests), se revirtió. Intento: Se ha robustecido la detección de archivos inaccesibles y enlaces simbólicos añadiendo `p.is_symlink()` y `p.is_block_device()` en `group_by_size` y `_collect_candidates`, garantizando que el escáner no intente abrir dispositivos especiales ni seguir punteros que violarían la integridad defensiva.
+- `2026-08-10T08:02:19` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la integridad del cálculo de salud mediante la validación estricta de las métricas de entrada y la imposición de límites seguros en los resultados intermedios, evitando la propagación de datos corruptos o valores fuera de rango que podrían desestabilizar el sistema de reporte.
+- `2026-08-10T08:02:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-10T08:02:19` Corrida terminada. Total usado hoy: 192.

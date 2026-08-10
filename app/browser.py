@@ -136,11 +136,12 @@ def _is_excluded_file(name: str) -> bool:
     return name.lower() in NEVER_TOUCH
 
 
-def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool], visited: Optional[Set[str]] = None) -> int:
+def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool], visited: Optional[Set[str]] = None, depth: int = 0) -> int:
     """
     Realiza un recorrido DFS para calcular el peso total (bytes) de una carpeta.
-    Implementa control de ciclos mediante 'visited' y chequeo de atributos Windows.
+    Implementa control de ciclos mediante 'visited' y límite de profundidad.
     """
+    if depth > 10: return 0
     if not root_dir or not os.path.exists(root_dir):
         return 0
     
@@ -179,7 +180,7 @@ def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool
                         continue
                     
                     if entry.is_dir():
-                        total += _sum_directory_recursive(entry.path, is_junction_fn, visited)
+                        total += _sum_directory_recursive(entry.path, is_junction_fn, visited, depth + 1)
                     elif entry.is_file() and not _is_excluded_file(entry.name):
                         total += entry.stat().st_size
                 except (OSError, PermissionError):

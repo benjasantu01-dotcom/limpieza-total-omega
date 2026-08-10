@@ -113,7 +113,7 @@ class HealthResult:
     @property
     def is_healthy(self) -> bool:
         """Indica si el sistema se considera saludable (puntaje mayor o igual a 80)."""
-        return math.isfinite(self.score) and self.score >= 80
+        return 0 <= self.score <= 100 and self.score >= 80
 
 
 def _clamp(value: float, low: float = 0.0, high: float = 1.0) -> float:
@@ -138,41 +138,44 @@ def _to_int(value: Any, default: int = 0) -> int:
 
 def score_junk(junk_mb: float) -> float:
     """Calcula score (0.0-1.0) basado en la cantidad de archivos temporales detectados."""
-    return 1.0 if _LIMIT_JUNK_MB <= 0.0 else _clamp(1.0 - (junk_mb / _LIMIT_JUNK_MB))
+    return 1.0 if _LIMIT_JUNK_MB <= 0.0 else _clamp(1.0 - (_to_float(junk_mb) / _LIMIT_JUNK_MB))
 
 
 def score_security(suspicious_count: int, warnings: int = 0) -> float:
     """Calcula score (0.0-1.0) penalizando archivos sospechosos y advertencias de seguridad."""
-    penalty = (suspicious_count * 0.05) + (warnings * 0.25)
+    penalty = (_to_int(suspicious_count) * 0.05) + (_to_int(warnings) * 0.25)
     return _clamp(1.0 - penalty, 0.0, 1.0)
 
 
 def score_memory(available_percent: float) -> float:
     """Calcula score (0.0-1.0) respecto a la disponibilidad de memoria ram ideal."""
-    return 0.0 if _LIMIT_RAM_PERCENT <= 0.0 else _clamp(available_percent / _LIMIT_RAM_PERCENT, 0.0, 1.0)
+    val = _to_float(available_percent)
+    return 0.0 if _LIMIT_RAM_PERCENT <= 0.0 else _clamp(val / _LIMIT_RAM_PERCENT, 0.0, 1.0)
 
 
 def score_disk(free_percent: float) -> float:
     """Calcula score (0.0-1.0) respecto al espacio libre ideal en disco."""
-    return 0.0 if _LIMIT_DISK_PERCENT <= 0.0 else _clamp(free_percent / _LIMIT_DISK_PERCENT, 0.0, 1.0)
+    val = _to_float(free_percent)
+    return 0.0 if _LIMIT_DISK_PERCENT <= 0.0 else _clamp(val / _LIMIT_DISK_PERCENT, 0.0, 1.0)
 
 
 def score_duplicates(duplicate_mb: float) -> float:
     """Calcula score (0.0-1.0) basado en el volumen de archivos duplicados hallados."""
-    return 1.0 if _LIMIT_DUPLICATE_MB <= 0.0 else _clamp(1.0 - (duplicate_mb / _LIMIT_DUPLICATE_MB), 0.0, 1.0)
+    return 1.0 if _LIMIT_DUPLICATE_MB <= 0.0 else _clamp(1.0 - (_to_float(duplicate_mb) / _LIMIT_DUPLICATE_MB))
 
 
 def score_startup(startup_count: int) -> float:
     """Calcula score (0.0-1.0) inversamente proporcional a la cantidad de elementos en inicio."""
-    return 1.0 if _LIMIT_STARTUP_COUNT <= 0 else _clamp(1.0 - (startup_count / _LIMIT_STARTUP_COUNT), 0.0, 1.0)
+    return 1.0 if _LIMIT_STARTUP_COUNT <= 0 else _clamp(1.0 - (_to_int(startup_count) / _LIMIT_STARTUP_COUNT))
 
 
 def grade_for_score(score: int) -> str:
     """Mapea un puntaje numérico (0-100) a una categoría cualitativa (A-F)."""
-    if score >= 90: return "A"
-    if score >= 80: return "B"
-    if score >= 65: return "C"
-    if score >= 50: return "D"
+    s = _clamp(float(score), 0.0, 100.0)
+    if s >= 90: return "A"
+    if s >= 80: return "B"
+    if s >= 65: return "C"
+    if s >= 50: return "D"
     return "F"
 
 
@@ -224,7 +227,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     
     for area, factor in _WEIGHT_FACTORS.items():
         score_val = ratios.get(area, 0.0) * factor
-        breakdown[area] = int(round(score_val))
+        breakdown[area] = int(round(_clamp(score_val, 0.0, 100.0)))
         total_score += score_val
 
     final_score = int(_clamp(round(total_score), 0.0, 100.0))

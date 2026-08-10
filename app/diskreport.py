@@ -203,6 +203,7 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Generador iterativo que recorre archivos bajo un directorio usando una pila (stack).
+    Evita seguir puntos de reparse (junctions/symlinks) por seguridad.
     """
     if not directory:
         return
@@ -230,6 +231,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
+                        # Si es un enlace simbólico o junction, no seguirlo (seguridad)
                         if entry.is_symlink():
                             continue
                         
