@@ -166,8 +166,8 @@ def _is_safe_for_move(path: Path) -> bool:
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     """
     Realiza un escaneo recursivo en directorios buscando archivos temporales.
-    Usa una función interna recursiva para gestionar el recorrido evitando entrar 
-    en junctions o rutas protegidas.
+    Utiliza el motor de seguridad `is_safe_to_modify` para filtrar rutas antes de 
+    acceder a ellas, garantizando que el escáner no toque áreas críticas.
     """
     dirs: List[str] = directories if directories is not None else DEFAULT_SCAN_DIRS
     found: List[JunkFile] = []
@@ -209,26 +209,26 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
 
 
 def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -> List[JunkFile]:
-    """Ordena los archivos encontrados por tamaño o fecha mediante funciones lambda de extracción."""
+    """Ordena los archivos encontrados por tamaño o fecha mediante funciones de clave."""
     if not isinstance(files, list) or not files:
         return []
         
-    configs: Dict[str, Callable[[JunkFile], SortKey]] = {
-        "size": lambda f: f.size_bytes,
-        "date": lambda f: f.modified
+    configs: Dict[str, SortConfig] = {
+        "size": SortConfig("size", lambda f: f.size_bytes),
+        "date": SortConfig("date", lambda f: f.modified)
     }
         
     criterio = by.lower() if isinstance(by, str) else "size"
-    key_func = configs.get(criterio, configs["size"])
+    config = configs.get(criterio, configs["size"])
         
-    return sorted(files, key=key_func, reverse=not bool(ascending))
+    return sorted(files, key=config.key_func, reverse=not bool(ascending))
 
 
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Path:
     """
     Mueve archivos candidatos a una carpeta de revisión segura.
-    Valida cada archivo contra los permisos de seguridad antes de cada movimiento 
-    (ensure_safe_to_modify), garantizando que nada protegido sea manipulado accidentalmente.
+    Usa `ensure_safe_to_modify` para validar la integridad de cada ruta antes de 
+    ejecutar cualquier operación de movimiento en el sistema de archivos.
     """
     if not files:
         raise ValueError("La lista de archivos a procesar no puede estar vacía.")
@@ -265,10 +265,9 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
     """
-    Elimina archivos de la carpeta de revisión.
-    Realiza una comprobación de seguridad doble para asegurar que la carpeta destino 
-    esté dentro del ámbito permitido y que el archivo pertenezca a la estructura 
-    de revisión para prevenir borrados accidentales fuera del área controlada.
+    Elimina archivos de la carpeta de revisión tras validación de seguridad.
+    Verifica que la carpeta destino sea segura y que el archivo esté estrictamente 
+    dentro de la ruta de revisión antes de proceder a la eliminación.
     """
     if not isinstance(review_dir, str) or not review_dir.strip():
         return 0
