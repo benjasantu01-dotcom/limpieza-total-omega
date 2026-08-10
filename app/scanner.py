@@ -120,16 +120,17 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, name
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, hours: int = RECENT_FILE_THRESHOLD_HOURS) -> Optional[Suspicion]:
     """
-    Detecta ejecutables creados o modificados recientemente.
+    Detecta ejecutables creados o modificados recientemente usando metadatos del DirEntry.
     """
+    if entry is None:
+        return None
     try:
-        st = entry.stat() if entry else path.stat()
-        mtime = getattr(st, 'st_mtime', 0)
+        mtime = entry.stat(follow_symlinks=False).st_mtime
         if mtime > 0:
             file_date = datetime.fromtimestamp(mtime)
             if (datetime.now() - file_date) < timedelta(hours=hours):
                 return Suspicion(path, f"Ejecutable reciente detectado (modificado hace menos de {hours}h)", "info")
-    except (OSError, AttributeError, ValueError, OverflowError, FileNotFoundError):
+    except (OSError, AttributeError, OverflowError):
         pass
     return None
 
@@ -138,24 +139,21 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, name
     """
     Busca ejecutables que usurpan nombres de procesos críticos del sistema.
     """
-    try:
-        target = (name or path.name or "").lower()
-        if target in SYSTEM_LOOKALIKES:
-            # Validar padre para confirmar que no está en system32 (prevenir error si path no tiene padre)
-            try:
-                if SYSTEM32_LOWER not in str(path.parent).lower():
-                    return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
-            except (RuntimeError, ValueError):
-                return Suspicion(path, "Nombre de proceso de sistema (origen desconocido)", "warning")
-    except (OSError, RuntimeError, AttributeError):
-        pass
+    target = (name or path.name or "").lower()
+    if target in SYSTEM_LOOKALIKES:
+        try:
+            # path.parent es seguro porque Path inicializado con cadena no es None
+            if SYSTEM32_LOWER not in str(path.parent).lower():
+                return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
+        except (RuntimeError, ValueError) as e:
+            logger.debug(f"Error analizando ruta de padre para {path}: {e}")
     return None
 
 def scan_file(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None) -> ScanResult:
     """
     Punto central para el análisis de archivos. Optimizado para evitar cómputo innecesario.
     """
-    if not path:
+    if path is None:
         return []
         
     findings: ScanResult = []

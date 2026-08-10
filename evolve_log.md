@@ -1002,3 +1002,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-10T01:13:54` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
 - `2026-08-10T01:13:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-10T01:13:54` Corrida terminada. Total usado hoy: 32.
+- `2026-08-10T01:22:42` Arrancando corrida. Quedan hoy ~268 peticiones objetivo.
+- `2026-08-10T01:23:07` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-10T01:23:30` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de las heurísticas (`check_recent_executable_in_downloads` y `check_system_lookalike`) reemplazando el uso de `path.stat()` (que puede fallar si el archivo es bloqueado o eliminado entre el `scandir` y la inspección) por el uso consistente del objeto `entry` ya disponible, garantizando además que la captura de excepciones sea específica para evitar silenciamientos accidentales de errores críticos.
+- `2026-08-10T01:23:56` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_Validators.path` y `save` añadiendo una comprobación explícita para evitar que `Path.resolve()` sea llamado sobre rutas inexistentes con `strict=True`, y asegurando que las validaciones de seguridad se apliquen antes de cualquier operación de I/O, evitando excepciones innecesarias ante estructuras de directorios inusuales.
+- `2026-08-10T01:24:05` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-10T01:24:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-10T01:24:05` Corrida terminada. Total usado hoy: 36.

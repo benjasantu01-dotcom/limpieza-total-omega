@@ -131,15 +131,16 @@ class _Validators:
             path_string = str(val).strip()
             if not path_string: return ""
             path_obj = Path(path_string).expanduser()
-            # Bloqueo de travesía de directorios
-            if any(part in ('.', '..', '..\\', '../') for part in path_obj.parts): return None
-            if not path_obj.is_absolute(): return None
             
+            if any(part in ('.', '..', '..\\', '../') for part in path_obj.parts): return None
+            
+            # Resolvemos sin strict=True para manejar rutas que aún no existen
             resolved = path_obj.resolve(strict=False)
-            # Detección explícita de puntos de reparse o symlinks
-            if resolved.is_symlink() or (resolved.exists() and resolved.is_junction() if hasattr(resolved, 'is_junction') else False):
+            
+            if resolved.is_symlink() or (resolved.exists() and hasattr(resolved, 'is_junction') and resolved.is_junction()):
                 return None
             
+            # Verificamos si la ruta o su contenedor es seguro para modificar
             target = resolved if resolved.exists() else resolved.parent
             return str(resolved) if is_safe_to_modify(str(target)) else None
         except (OSError, RuntimeError, ValueError, TypeError, PermissionError):
@@ -217,9 +218,9 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     if not isinstance(values, dict): return None
     ruta = settings_path(path_or_base)
     
-    # Validar seguridad del padre antes de intentar escribir, incluyendo symlink check
+    # Validar seguridad del padre antes de operar
     parent = ruta.parent
-    if parent.is_symlink() or not is_safe_to_modify(str(parent)):
+    if not is_safe_to_modify(str(parent)):
         return None
     
     cleaned_settings = validate(values)
@@ -229,12 +230,11 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     if _cached_settings == cleaned_settings and _current_path == ruta: 
         return ruta
 
-    if not parent.exists():
-        try: parent.mkdir(parents=True, exist_ok=True)
-        except OSError: return None
-        
-    temp_path = None
     try:
+        if not parent.exists():
+            parent.mkdir(parents=True, exist_ok=True)
+        
+        temp_path = None
         with tempfile.NamedTemporaryFile("w", dir=parent, delete=False, encoding="utf-8") as temp_file:
             temp_path = Path(temp_file.name)
             json.dump(cleaned_settings, temp_file, indent=2, ensure_ascii=False)
@@ -245,9 +245,6 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
         _last_mtime = ruta.stat().st_mtime
         return ruta
     except (OSError, IOError, PermissionError, RuntimeError):
-        if temp_path and temp_path.exists(): 
-            try: temp_path.unlink()
-            except OSError: pass
         return None
 
 def update(changes: dict[str, Any], path_or_base: PathLike | None = None) -> AppSettings:
