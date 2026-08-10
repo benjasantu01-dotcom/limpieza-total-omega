@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **231** (45.8% de aceptación)
+- Mejoras aceptadas: **230** (45.6% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 25
+- Rechazadas por guardia de seguridad: 26
 - Sin cambios (nada sustancial que mejorar): 15
 - Sin respuesta de la IA (error o límite): 221
 
@@ -16,36 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-09 | 156 | 8 | 17 | 11 | 148 |
-| 2026-08-10 | 75 | 4 | 8 | 4 | 73 |
+| 2026-08-09 | 153 | 8 | 17 | 11 | 147 |
+| 2026-08-10 | 77 | 4 | 9 | 4 | 74 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **59**
 - manejo de errores y validación de entradas: **52**
-- seguridad defensiva: **51**
-- rendimiento: **40**
+- seguridad defensiva: **48**
+- rendimiento: **42**
 - robustez ante casos límite: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **22**
+- `quarantine.py`: **23**
 - `main.py`: **21**
-- `assistant.py`: **20**
 - `healthscore.py`: **20**
 - `settings.py`: **20**
-- `branding.py`: **18**
-- `browser.py`: **17**
+- `assistant.py`: **19**
 - `diskreport.py`: **17**
+- `branding.py`: **17**
 - `scanner.py`: **16**
+- `browser.py`: **16**
 - `organizer.py`: **16**
 - `duplicates.py`: **15**
 - `memory.py`: **11**
-- `safety.py`: **9**
+- `safety.py`: **10**
 - `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-10T07:01:05` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` al convertir `_SYSTEM_ROOTS` en un conjunto pre-calculado de `Path` que evita resoluciones redundantes en cada iteración y utilicé un `any()` más eficiente que aprovecha el `frozenset` existente para validar los componentes de la ruta sin iteraciones costosas.
+- `2026-08-10T07:00:34` **quarantine.py** (rendimiento): Optimicé el rendimiento de `purge_all` y la carga del manifiesto evitando el uso de `load_manifest` repetidamente dentro de bucles y reduciendo la complejidad algorítmica de $O(N^2)$ a $O(N)$ mediante el uso de conjuntos (`set`) para las verificaciones de integridad.
 - `2026-08-10T06:51:30` **memory.py** (rendimiento): Se implementó un filtrado preventivo en `parse_windows_process_csv` y se optimizó la lógica de caché en `top_memory_processes` para evitar ejecuciones innecesarias de PowerShell y procesado redundante de strings, mejorando significativamente la eficiencia en cada iteración del bucle.
 - `2026-08-10T06:51:19` **main.py** (rendimiento): Optimicé el método `_flush_logs` para procesar la cola de mensajes en un solo lote de inserción, reduciendo drásticamente la frecuencia de llamadas a `box.insert` y `box.see`, lo cual mejora notablemente el rendimiento de la UI cuando hay un logueo masivo de archivos (ej. escaneos de disco).
 - `2026-08-10T06:40:25` **branding.py** (rendimiento): Optimicé el rendimiento de `branding.py` mediante la aplicación de `lru_cache` en funciones de resolución de colores (`severity_color`, `grade_color`, `score_color`), reduciendo la sobrecarga de cálculo y acceso a diccionarios en los bucles de renderizado de la UI.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-10T06:09:47` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica mediante docstrings más precisos, añadí type hints de retorno explícitos en funciones auxiliares y renombré constantes internas para reflejar mejor su naturaleza de cálculo (factor vs límite) y su visibilidad (privada).
 - `2026-08-10T06:09:23` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `duplicates.py` mediante docstrings detallados en las funciones internas (`_collect_candidates`, `_refine_by_hash`) y la normalización de los contratos de tipo para clarificar la lógica del pipeline de tres fases.
 - `2026-08-10T06:08:59` **diskreport.py** (legibilidad y documentación): Mejora la legibilidad y mantenimiento añadiendo Type Hints faltantes y documentación detallada (docstrings) en las funciones auxiliares de `diskreport.py` para cumplir con las exigencias del proyecto.
-- `2026-08-10T05:59:50` **browser.py** (legibilidad y documentación): Documenté con type hints más precisos y docstrings explicativos las funciones de bajo nivel en `browser.py`, clarificando los contratos de datos y las intenciones de seguridad para mejorar la mantenibilidad del código.
-- `2026-08-10T05:59:41` **branding.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `branding.py` mediante la refactorización de `draw_logo` para delegar la lógica de renderizado de las franjas (el degradado del escudo) en una función privada dedicada, facilitando la comprensión del flujo de dibujo vectorial.

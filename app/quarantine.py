@@ -518,6 +518,7 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
         return 0
     
     items = load_manifest(base)
+    # Creamos un mapa de búsqueda para acceso O(1) y un set de nombres esperados
     item_map: Dict[str, QuarantineItem] = {item.stored_name: item for item in items}
     
     purged_count = 0
@@ -535,6 +536,7 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
                 else:
                     items_to_keep.append(item)
             elif item:
+                # El archivo existe pero falló integridad o no es el del manifiesto
                 items_to_keep.append(item)
                 
         if purged_count > 0:

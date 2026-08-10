@@ -208,10 +208,11 @@ def is_protected_path(path: PathLike) -> bool:
     
     try:
         p = normalize(path)
-        if any(part.lower() in PROTECTED_DIR_NAMES for part in p.parts):
+        # Eficiencia: comprobación de conjuntos antes de iterar partes
+        if not _SYSTEM_ROOTS.isdisjoint(p.parents) or p in _SYSTEM_ROOTS:
             return True
             
-        if not _SYSTEM_ROOTS.isdisjoint(p.parents) or p in _SYSTEM_ROOTS:
+        if any(part.lower() in PROTECTED_DIR_NAMES for part in p.parts):
             return True
         
         return p == Path(p.anchor) or (p.exists() and _is_reparse_point(p))
