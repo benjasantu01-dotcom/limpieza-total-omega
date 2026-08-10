@@ -825,3 +825,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-10T11:26:26` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 102): unterminated string literal (detected at line 102)
 - `2026-08-10T11:26:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-10T11:26:26` Corrida terminada. Total usado hoy: 272.
+- `2026-08-10T11:35:20` Arrancando corrida. Quedan hoy ~28 peticiones objetivo.
+- `2026-08-10T11:35:45` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
+- `2026-08-10T11:36:08` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizé `scan_file` para evitar llamadas redundantes a `entry.stat()` y evaluaciones de heurísticas en archivos no ejecutables, además de reducir el coste de resolución de rutas en el bucle principal mediante el uso de `pathlib.Path` pre-calculado.
+- `2026-08-10T11:36:33` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de `load()` evitando la redundancia en la validación y el acceso a disco mediante el uso del caché ya existente, eliminando la doble llamada a `validate()` y reduciendo la creación de objetos `Path` innecesarios.
+- `2026-08-10T11:36:41` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-08-10T11:36:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-10T11:36:41` Corrida terminada. Total usado hoy: 276.

@@ -63,19 +63,13 @@ class Scanner:
     def __init__(self, base_root: Path) -> None:
         self.results: ScanResult = []
         self.seen: set[str] = set()
-        try:
-            self.base_root = base_root.resolve()
-        except (OSError, RuntimeError):
-            self.base_root = Path("/")
+        self.base_root = base_root
         self.now_ts = datetime.now().timestamp()
 
-    def _is_safe_entry(self, entry_path: str) -> bool:
+    def _is_safe_entry(self, entry_path: Path) -> bool:
         """Verifica que la entrada esté dentro del base_root definido."""
-        if not entry_path:
-            return False
         try:
-            full_path = Path(entry_path).resolve()
-            return self.base_root in full_path.parents or full_path == self.base_root
+            return self.base_root in entry_path.resolve().parents or entry_path.resolve() == self.base_root
         except (RuntimeError, ValueError, OSError):
             return False
 
@@ -98,26 +92,25 @@ class Scanner:
             if self._is_reparse_point(entry):
                 return
 
-            entry_path = entry.path
-            if not entry_path or is_protected_path(Path(entry_path)) or not self._is_safe_entry(entry_path):
+            path_obj = Path(entry.path)
+            if is_protected_path(path_obj) or not self._is_safe_entry(path_obj):
                 return
 
             if entry.is_dir(follow_symlinks=False):
-                if entry_path not in self.seen:
-                    self.seen.add(entry_path)
-                    stack.append(entry_path)
+                if entry.path not in self.seen:
+                    self.seen.add(entry.path)
+                    stack.append(entry.path)
             elif entry.is_file(follow_symlinks=False):
-                path_obj = Path(entry_path)
                 name = entry.name
-                _, ext = os.path.splitext(name)
-                self.results.extend(scan_file(path_obj, self.now_ts, entry=entry, name=name, suffix=ext.lower()))
+                ext = path_obj.suffix.lower()
+                self.results.extend(scan_file(path_obj, self.now_ts, entry=entry, name=name, suffix=ext))
         except (PermissionError, OSError, ValueError, RuntimeError) as e:
             logger.debug(f"Saltando entrada {getattr(entry, 'path', 'desconocida')}: {e}")
 
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Identifica archivos con extensiones dobles engañosas."""
-    target = name or (path.name if path else None)
+    target = name or path.name
     if target and DOUBLE_EXTENSION_RE.search(target):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
     return None
@@ -125,11 +118,10 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, name
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Detecta ejecutables modificados recientemente según umbral de tiempo."""
-    if entry is None or path is None:
+    if entry is None:
         return None
     try:
-        mtime = entry.stat(follow_symlinks=False).st_mtime
-        if (now_ts - mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
+        if (now_ts - entry.stat().st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
             return Suspicion(path, f"Ejecutable reciente detectado (modificado hace menos de {RECENT_FILE_THRESHOLD_HOURS}h)", "info")
     except (OSError, AttributeError, OverflowError):
         pass
@@ -138,33 +130,25 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Busca ejecutables que usurpan nombres de procesos críticos del sistema."""
-    if path is None:
-        return None
-    target = (name or path.name or "").lower()
+    target = (name or path.name).lower()
     if target in SYSTEM_LOOKALIKES:
-        try:
-            if SYSTEM32_LOWER not in str(path.parent).lower():
-                return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
-        except (RuntimeError, ValueError) as e:
-            logger.debug(f"Error analizando ruta de padre para {path}: {e}")
+        if SYSTEM32_LOWER not in str(path.parent).lower():
+            return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
     return None
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None) -> ScanResult:
     """Ejecuta el conjunto de heurísticas sobre un archivo."""
-    if path is None:
-        return []
-        
     findings: ScanResult = []
-    n = name or path.name
-    s = suffix or path.suffix.lower()
     
-    if (res := check_double_extension(path, entry, n, s, now_ts)):
+    # 1. Chequeos universales
+    if (res := check_double_extension(path, entry, name, suffix, now_ts)):
         findings.append(res)
     
-    if s in SUSPICIOUS_EXECUTABLE_EXT:
-        if (res := check_recent_executable_in_downloads(path, entry, n, s, now_ts)):
+    # 2. Chequeos solo para ejecutables (evita llamadas costosas de stat si no es ejecutable)
+    if suffix in SUSPICIOUS_EXECUTABLE_EXT:
+        if (res := check_recent_executable_in_downloads(path, entry, name, suffix, now_ts)):
             findings.append(res)
-        if (res := check_system_lookalike(path, entry, n, s, now_ts)):
+        if (res := check_system_lookalike(path, entry, name, suffix, now_ts)):
             findings.append(res)
                 
     return findings
@@ -176,19 +160,15 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         return []
         
     try:
-        path_input = Path(directory)
-        if not path_input.exists() or not path_input.is_dir():
-            return []
-        
-        resolved_path = path_input.resolve()
-        if is_protected_path(resolved_path):
+        path_input = Path(directory).resolve()
+        if not path_input.exists() or not path_input.is_dir() or is_protected_path(path_input):
             return []
     except (OSError, RuntimeError, TypeError, ValueError):
         return []
 
-    scanner = Scanner(base_root=resolved_path)
-    stack: List[str] = [str(resolved_path)]
-    scanner.seen.add(str(resolved_path))
+    scanner = Scanner(base_root=path_input)
+    stack: List[str] = [str(path_input)]
+    scanner.seen.add(str(path_input))
     
     while stack:
         current_dir = stack.pop()
