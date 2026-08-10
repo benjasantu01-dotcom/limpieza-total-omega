@@ -185,9 +185,9 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
                             _walk_dir(entry.path)
                     elif _is_junk_path(Path(entry.name)):
                         try:
-                            stat = entry.stat()
                             path_obj = Path(entry.path)
-                            if _is_safe_for_move(path_obj):
+                            if path_obj.exists() and _is_safe_for_move(path_obj):
+                                stat = path_obj.stat()
                                 found.append(JunkFile(
                                     path=path_obj,
                                     size_bytes=stat.st_size,

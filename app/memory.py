@@ -342,7 +342,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         if not kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)) or exit_code.value != STILL_ACTIVE:
             return False, "El proceso seleccionado ya no está activo."
             
-        # Validación de integridad: aseguramos que el ejecutable es un archivo real en disco.
+        # Validación de integridad: aseguramos que el ejecutable es un archivo real en disco y no protegido.
         buf = ctypes.create_unicode_buffer(2048)
         if psapi.GetModuleFileNameExW(handle, 0, buf, 2048) > 0:
             exe_path = os.path.normpath(buf.value)
