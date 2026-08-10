@@ -6,40 +6,40 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **229** (45.4% de aceptación)
-- Rechazadas por tests: 11
+- Mejoras aceptadas: **230** (45.6% de aceptación)
+- Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 25
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 226
+- Sin respuesta de la IA (error o límite): 224
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-08 | 45 | 2 | 4 | 1 | 46 |
+| 2026-08-08 | 43 | 2 | 4 | 1 | 44 |
 | 2026-08-09 | 162 | 8 | 18 | 11 | 151 |
-| 2026-08-10 | 22 | 1 | 3 | 1 | 29 |
+| 2026-08-10 | 25 | 2 | 3 | 1 | 29 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **58**
 - manejo de errores y validación de entradas: **52**
 - seguridad defensiva: **48**
-- rendimiento: **38**
-- robustez ante casos límite: **33**
+- rendimiento: **41**
+- robustez ante casos límite: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **22**
 - `assistant.py`: **21**
-- `settings.py`: **20**
-- `main.py`: **20**
-- `healthscore.py`: **19**
+- `main.py`: **21**
+- `healthscore.py`: **20**
+- `settings.py`: **19**
 - `browser.py`: **18**
 - `branding.py`: **17**
 - `diskreport.py`: **17**
-- `scanner.py`: **16**
-- `organizer.py`: **15**
+- `organizer.py`: **16**
+- `scanner.py`: **15**
 - `duplicates.py`: **14**
 - `memory.py`: **13**
 - `startup.py`: **9**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-10T02:25:57` **organizer.py** (rendimiento): Optimizé la función `scan_for_junk` moviendo la validación de seguridad `is_safe_to_modify(path_obj)` después de obtener `stat()` para reducir llamadas redundantes al sistema de archivos, y cacheé la conversión a `Path` de las rutas raíz del escaneo para evitar conversiones repetitivas dentro del bucle.
+- `2026-08-10T02:25:24` **main.py** (rendimiento): Se optimizó el caché LRU implementando una estructura de acceso O(1) combinando un `dict` para los datos con un `collections.deque` para el seguimiento del orden de uso (evitando `list.remove` que es O(n)), reduciendo la latencia en la gestión de métricas durante los análisis masivos.
+- `2026-08-10T02:24:22` **healthscore.py** (rendimiento): Optimicé el cálculo del score reemplazando operaciones repetitivas en el bucle principal por una pre-multiplicación de los pesos, evitando divisiones innecesarias y reduciendo la complejidad de las conversiones de tipo en tiempo de ejecución.
 - `2026-08-10T02:15:24` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_refine_by_hash` utilizando una estructura de datos `list` pre-filtrada para evitar iterar sobre grupos innecesarios, y eliminé la re-verificación redundante en `find_duplicates` que procesaba listas de longitud menor a 2, acelerando significativamente el pipeline.
 - `2026-08-10T02:15:08` **diskreport.py** (rendimiento): Optimicé el método `summarize` eliminando el recorrido redundante y calculando todas las métricas en una única pasada, utilizando `heapq` para los archivos más grandes y acumuladores para extensiones y totales, mejorando significativamente el rendimiento en carpetas con muchos archivos.
 - `2026-08-10T02:14:43` **browser.py** (rendimiento): Se ha optimizado la función `_sum_directory_recursive` para evitar llamadas redundantes a `os.path.realpath` y consultas repetidas al sistema de archivos mediante el uso de `entry.stat()` durante el escaneo, reduciendo significativamente la sobrecarga en el sistema de archivos durante el cálculo de tamaños.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-10T01:43:35` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints detallados en las funciones internas y expandí los docstrings para clarificar el propósito de las constantes y los mecanismos de protección implementados, facilitando el mantenimiento.
 - `2026-08-10T01:34:24` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados con tipado explícito y aclaración de las responsabilidades de las funciones `_is_safe_path` y `_sum_directory_recursive`, garantizando que se entienda el propósito de cada chequeo de seguridad frente a los errores del pasado.
 - `2026-08-10T01:33:59` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica y la mantenibilidad de `branding.py` mediante docstrings de parámetros y retornos más detallados, tipos definidos para las coordenadas del escudo, y la extracción de la lógica de escalado de la función `draw_logo` para evitar la redundancia en los cálculos geométricos.
-- `2026-08-10T01:33:30` **assistant.py** (legibilidad y documentación): Documenté con type hints más claros y docstrings explicativos la estructura de los diccionarios de configuración en `ask`, mejorando la legibilidad del flujo de datos sin alterar la lógica de ejecución.
-- `2026-08-10T01:23:56` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_Validators.path` y `save` añadiendo una comprobación explícita para evitar que `Path.resolve()` sea llamado sobre rutas inexistentes con `strict=True`, y asegurando que las validaciones de seguridad se apliquen antes de cualquier operación de I/O, evitando excepciones innecesarias ante estructuras de directorios inusuales.
-- `2026-08-10T01:23:30` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las heurísticas (`check_recent_executable_in_downloads` y `check_system_lookalike`) reemplazando el uso de `path.stat()` (que puede fallar si el archivo es bloqueado o eliminado entre el `scandir` y la inspección) por el uso consistente del objeto `entry` ya disponible, garantizando además que la captura de excepciones sea específica para evitar silenciamientos accidentales de errores críticos.

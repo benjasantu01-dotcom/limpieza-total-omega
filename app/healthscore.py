@@ -48,7 +48,6 @@ WARN_THRESHOLD_MED: Final[float] = 0.8
 WARN_THRESHOLD_LOW: Final[float] = 0.6
 
 # --- PESOS DE CALIFICACIÓN ---
-# Define la importancia relativa de cada módulo en el puntaje global (suma 100).
 WEIGHTS: Final[Dict[str, int]] = {
     "seguridad": 30,
     "disco": 20,
@@ -58,7 +57,8 @@ WEIGHTS: Final[Dict[str, int]] = {
     "arranque": 8,
 }
 
-_TOTAL_WEIGHTS: Final[int] = sum(WEIGHTS.values())
+_TOTAL_WEIGHTS: Final[float] = float(sum(WEIGHTS.values()))
+_WEIGHT_FACTORS: Final[Dict[str, float]] = {k: (w * 100.0 / _TOTAL_WEIGHTS) for k, w in WEIGHTS.items()}
 _WEIGHT_ITEMS: Final[List[Tuple[str, int]]] = list(WEIGHTS.items())
 
 
@@ -134,49 +134,41 @@ def _to_int(value: Any, default: int = 0) -> int:
 
 def score_junk(junk_mb: float) -> float:
     """Ratio (0.0-1.0): 1.0 implica limpieza total; disminuye a medida que la basura aumenta."""
-    return 1.0 if JUNK_LIMIT_MB <= 0.0 else _clamp(1.0 - (_to_float(junk_mb) / JUNK_LIMIT_MB))
+    return 1.0 if JUNK_LIMIT_MB <= 0.0 else _clamp(1.0 - (junk_mb / JUNK_LIMIT_MB))
 
 
 def score_security(suspicious_count: int, warnings: int = 0) -> float:
-    """
-    Ratio (0.0-1.0): Calcula penalización basada en hallazgos (5% c/u) y advertencias (25% c/u).
-    """
-    count = max(0, _to_int(suspicious_count))
-    warn = max(0, _to_int(warnings))
-    penalty = (count * 0.05) + (warn * 0.25)
+    """Ratio (0.0-1.0): Calcula penalización basada en hallazgos (5% c/u) y advertencias (25% c/u)."""
+    penalty = (suspicious_count * 0.05) + (warnings * 0.25)
     return _clamp(1.0 - penalty, 0.0, 1.0)
 
 
 def score_memory(available_percent: float) -> float:
     """Ratio (0.0-1.0): 1.0 si la memoria disponible alcanza o supera el umbral ideal."""
-    if RAM_IDEAL_PERCENT <= 0.0: return 0.0
-    val = _to_float(available_percent)
-    return _clamp(val / RAM_IDEAL_PERCENT, 0.0, 1.0)
+    return 0.0 if RAM_IDEAL_PERCENT <= 0.0 else _clamp(available_percent / RAM_IDEAL_PERCENT, 0.0, 1.0)
 
 
 def score_disk(free_percent: float) -> float:
     """Ratio (0.0-1.0): 1.0 si el espacio libre alcanza o supera el umbral ideal."""
-    return 0.0 if DISK_IDEAL_PERCENT <= 0.0 else _clamp(_to_float(free_percent) / DISK_IDEAL_PERCENT, 0.0, 1.0)
+    return 0.0 if DISK_IDEAL_PERCENT <= 0.0 else _clamp(free_percent / DISK_IDEAL_PERCENT, 0.0, 1.0)
 
 
 def score_duplicates(duplicate_mb: float) -> float:
     """Ratio (0.0-1.0): 1.0 si no existen duplicados significativos según el límite definido."""
-    return 1.0 if DUPLICATE_LIMIT_MB <= 0.0 else _clamp(1.0 - (_to_float(duplicate_mb) / DUPLICATE_LIMIT_MB), 0.0, 1.0)
+    return 1.0 if DUPLICATE_LIMIT_MB <= 0.0 else _clamp(1.0 - (duplicate_mb / DUPLICATE_LIMIT_MB), 0.0, 1.0)
 
 
 def score_startup(startup_count: int) -> float:
     """Ratio (0.0-1.0): 1.0 si no hay programas al inicio, penaliza linealmente hasta el límite."""
-    val = float(max(0, _to_int(startup_count)))
-    return 1.0 if STARTUP_LIMIT_COUNT <= 0 else _clamp(1.0 - (val / STARTUP_LIMIT_COUNT), 0.0, 1.0)
+    return 1.0 if STARTUP_LIMIT_COUNT <= 0 else _clamp(1.0 - (startup_count / STARTUP_LIMIT_COUNT), 0.0, 1.0)
 
 
 def grade_for_score(score: int) -> str:
     """Mapea un puntaje entero (0-100) a una calificación cualitativa (A-F)."""
-    s = int(_clamp(float(score), 0.0, 100.0))
-    if s >= 90: return "A"
-    if s >= 80: return "B"
-    if s >= 65: return "C"
-    if s >= 50: return "D"
+    if score >= 90: return "A"
+    if score >= 80: return "B"
+    if score >= 65: return "C"
+    if score >= 50: return "D"
     return "F"
 
 
@@ -203,10 +195,7 @@ def _generate_recommendations(m: SystemMetrics, ratios: ScoreMap) -> List[str]:
 
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
-    """
-    Ejecuta el cálculo ponderado de salud integral del sistema.
-    Normaliza métricas, aplica pesos definidos en `WEIGHTS` y clasifica el estado.
-    """
+    """Ejecuta el cálculo ponderado de salud integral del sistema."""
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Instancia de métricas inválida."])
     
@@ -223,23 +212,13 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         "arranque": score_startup(metrics.startup_count)
     }
     
-    if not all(math.isfinite(ratios.get(k, float('nan'))) for k in WEIGHTS):
-        return HealthResult(0, "F", {}, ["Error: Cálculo de salud fallido."])
-
     breakdown: Dict[str, int] = {}
     total_score: float = 0.0
     
-    for area, weight in _WEIGHT_ITEMS:
-        ratio = ratios.get(area, 0.0)
-        # Ponderación defensiva: asegurar que el valor intermedio sea numérico
-        score_val = (ratio * weight * 100.0) / _TOTAL_WEIGHTS
-        if not math.isfinite(score_val):
-            score_val = 0.0
-        breakdown[area] = round(score_val)
+    for area, factor in _WEIGHT_FACTORS.items():
+        score_val = ratios.get(area, 0.0) * factor
+        breakdown[area] = int(round(score_val))
         total_score += score_val
-
-    if not math.isfinite(total_score):
-        total_score = 0.0
 
     final_score = int(_clamp(round(total_score), 0.0, 100.0))
     return HealthResult(

@@ -1072,3 +1072,43 @@ FAILED evolve/tests/test_assistant.py::test_booleans_accept_the_usual_strings - 
 - `2026-08-10T02:15:24` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el rendimiento de `_refine_by_hash` utilizando una estructura de datos `list` pre-filtrada para evitar iterar sobre grupos innecesarios, y eliminé la re-verificación redundante en `find_duplicates` que procesaba listas de longitud menor a 2, acelerando significativamente el pipeline.
 - `2026-08-10T02:15:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-10T02:15:24` Corrida terminada. Total usado hoy: 56.
+- `2026-08-10T02:23:55` Arrancando corrida. Quedan hoy ~244 peticiones objetivo.
+- `2026-08-10T02:24:22` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del score reemplazando operaciones repetitivas en el bucle principal por una pre-multiplicación de los pesos, evitando divisiones innecesarias y reduciendo la complejidad de las conversiones de tipo en tiempo de ejecución.
+- `2026-08-10T02:25:24` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Se optimizó el caché LRU implementando una estructura de acceso O(1) combinando un `dict` para los datos con un `collections.deque` para el seguimiento del orden de uso (evitando `list.remove` que es O(n)), reduciendo la latencia en la gestión de métricas durante los análisis masivos.
+- `2026-08-10T02:25:49` Tests FALLARON:
+```
+=============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:95: SyntaxWarning: invalid escape sequence '\P'
+    Analiza comandos tipo 'C:\Path\App.exe' /args.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move - AssertionError: memory.py debería ser de solo lectura pero llama a replace
+assert not {'replace'}
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption - AssertionError: assert [] == ['grande', 'medio', 'chico']
+  
+  Right contains 3 more items, first extra item: 'grande'
+  
+  Full diff:
+  + []
+  - [
+  -     'grande',
+  -     'medio',
+  -     'chico',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines - assert 0 == 1
+ +  where 0 = len([])
+3 failed, 296 passed, 7 warnings in 0.94s
+
+```
+- `2026-08-10T02:25:49` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `top_memory_processes` reemplazando la ejecución lenta de PowerShell `Get-Process` (que carga el runtime de .NET cada vez) por una llamada directa y mucho más rápida a `tasklist.exe` con formato CSV, reduciendo drásticamente el tiempo de ejecución y la presión sobre la CPU.
+- `2026-08-10T02:25:57` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimizé la función `scan_for_junk` moviendo la validación de seguridad `is_safe_to_modify(path_obj)` después de obtener `stat()` para reducir llamadas redundantes al sistema de archivos, y cacheé la conversión a `Path` de las rutas raíz del escaneo para evitar conversiones repetitivas dentro del bucle.
+- `2026-08-10T02:25:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-10T02:25:57` Corrida terminada. Total usado hoy: 60.

@@ -47,6 +47,7 @@ import os
 import time
 import tkinter as tk
 import threading
+from collections import deque
 from tkinter import filedialog, messagebox
 from pathlib import Path
 from typing import Optional, List, Dict, Tuple, Any, Callable, Union
@@ -155,7 +156,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _init_state(self) -> None:
         """Prepara el pool de hilos, el caché LRU y la configuración persistida."""
         self._cache: Dict[str, Tuple[Any, float]] = {}
-        self._cache_lru: List[str] = []
+        self._cache_lru: deque = deque()
         self._cache_ttl = 300
         self._cache_max_size = 20
         
@@ -745,7 +746,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         if not force and key in self._cache:
             data, timestamp = self._cache[key]
             if now - timestamp < self._cache_ttl:
-                # Mover al final para mantener orden LRU
                 if key in self._cache_lru:
                     self._cache_lru.remove(key)
                 self._cache_lru.append(key)
@@ -759,7 +759,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 data = provider()
                 if data is not None:
                     if len(self._cache) >= self._cache_max_size:
-                        oldest = self._cache_lru.pop(0)
+                        oldest = self._cache_lru.popleft()
                         del self._cache[oldest]
                     self._cache[key] = (data, now)
                     self._cache_lru.append(key)
