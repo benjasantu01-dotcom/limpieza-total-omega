@@ -988,3 +988,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-10T00:54:28` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). He robustecido la validación de parámetros y el manejo de errores en `detect_profiles` y `_sum_directory_recursive` para evitar que tipos inesperados o rutas inexistentes interrumpan el escaneo, asegurando que el módulo sea resiliente frente a entradas corruptas o inaccesibles del sistema.
 - `2026-08-10T00:54:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-10T00:54:28` Corrida terminada. Total usado hoy: 24.
+- `2026-08-10T01:02:19` Arrancando corrida. Quedan hoy ~276 peticiones objetivo.
+- `2026-08-10T01:02:49` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de las funciones de entrada en `diskreport.py` mediante la validación proactiva de rutas y el manejo explícito de errores en los puntos de entrada principales, asegurando que `summarize` y `walk_files` no se interrumpan ante rutas malformadas o tipos de datos inesperados.
+- `2026-08-10T01:03:12` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-10T01:03:37` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-10T01:04:30` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `on_target_choice_changed` añadiendo una validación explícita mediante `is_safe_target_dir` antes de asignar la ruta del escáner, previniendo que rutas potencialmente inseguras o bloqueadas se propaguen al estado de la aplicación.
+- `2026-08-10T01:04:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-10T01:04:30` Corrida terminada. Total usado hoy: 28.

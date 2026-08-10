@@ -1026,11 +1026,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.scan_target = None
             self.target_label.configure(text="")
         else:
-            if self._is_valid_dir(choice):
+            if self._is_safe_target_dir(choice):
                 self.scan_target = choice
                 self.target_label.configure(text=f"Unidad completa: {choice}")
             else:
-                self.log(f"Error: La unidad {choice} ya no es accesible.", "Limpieza")
+                self.log(f"Error: La ruta {choice} no es válida o es insegura.", "Limpieza")
                 self.target_choice.set("Por defecto (Temp + Descargas)")
                 self.scan_target = None
                 self.target_label.configure(text="")

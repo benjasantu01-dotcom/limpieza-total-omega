@@ -307,11 +307,15 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
     """
     Genera un informe textual unificado del uso de disco con las estadísticas principales.
     """
-    if not directory: return ["Error: Ruta no proporcionada."]
+    if not directory: 
+        return ["Error: Ruta no proporcionada."]
+    
     try:
-        path_obj = Path(os.fspath(directory)).expanduser().resolve()
-        if not path_obj.exists(): return [f"Error: Ruta no encontrada: {path_obj}"]
-    except (OSError, RuntimeError):
+        path_input = os.fspath(directory)
+        path_obj = Path(path_input).expanduser().resolve()
+        if not path_obj.exists(): 
+            return [f"Error: Ruta no encontrada: {path_obj}"]
+    except (OSError, TypeError, RuntimeError):
         return ["Error: Ruta inválida o inaccesible."]
         
     ext_size: Dict[str, int] = defaultdict(int)
