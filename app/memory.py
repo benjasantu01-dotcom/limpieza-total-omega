@@ -322,6 +322,9 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if os.name != "nt":
         return False, "Solo disponible en Windows."
     
+    if pid is None:
+        return False, "PID no definido."
+    
     try:
         target_pid = int(pid)
     except (ValueError, TypeError):
@@ -344,12 +347,15 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
             
         # Validación de integridad: aseguramos que el ejecutable es un archivo real en disco y no protegido.
         buf = ctypes.create_unicode_buffer(2048)
-        if psapi.GetModuleFileNameExW(handle, 0, buf, 2048) > 0:
-            exe_path = os.path.normpath(buf.value)
-            if is_protected_path(exe_path) or not os.path.isabs(exe_path):
-                return False, "Operación denegada: ruta de ejecutable no segura."
-        else:
-            return False, "Operación denegada: no se pudo verificar la ubicación del ejecutable."
+        try:
+            if psapi.GetModuleFileNameExW(handle, 0, buf, 2048) > 0:
+                exe_path = os.path.normpath(buf.value)
+                if is_protected_path(exe_path) or not os.path.isabs(exe_path):
+                    return False, "Operación denegada: ruta de ejecutable no segura."
+            else:
+                return False, "Operación denegada: no se pudo verificar la ubicación del ejecutable."
+        except Exception:
+            return False, "Error al validar la ruta del proceso."
             
         if not psapi.EmptyWorkingSet(handle):
             return False, f"Error al intentar liberar memoria (código {kernel32.GetLastError()})."

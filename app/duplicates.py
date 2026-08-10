@@ -83,7 +83,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
         
     try:
         file_path = Path(path)
-        if is_protected_path(file_path):
+        if not file_path.is_file() or is_protected_path(file_path):
             return None
 
         stat_initial = file_path.stat()
@@ -116,7 +116,7 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
         
     try:
         file_path = Path(path)
-        if is_protected_path(file_path):
+        if not file_path.is_file() or is_protected_path(file_path):
             return None
             
         stat = file_path.stat()

@@ -147,7 +147,9 @@ def score_junk(junk_mb: Any) -> float:
 
 def score_security(suspicious_count: Any, warnings: Any = 0) -> float:
     """Calcula score (0.0-1.0) mediante penalizaciones directas."""
-    penalty = (_to_int(suspicious_count) * 0.05) + (_to_int(warnings) * 0.25)
+    count = _to_int(suspicious_count)
+    warns = _to_int(warnings)
+    penalty = (count * 0.05) + (warns * 0.25)
     return _clamp(1.0 - penalty, 0.0, 1.0)
 
 
@@ -194,7 +196,8 @@ def _generate_recommendations(m: SystemMetrics, ratios: ScoreMap) -> List[str]:
     if ratios.get("seguridad", 1.0) < WARN_THRESHOLD_HIGH:
         recs.append(f"Revisá los {int(m.suspicious_count)} hallazgo(s) de seguridad; podés aislarlos en cuarentena.")
     if ratios.get("disco", 1.0) < WARN_THRESHOLD_LOW:
-        recs.append(f"Queda {m.disk_free_percent:.1f}% de disco libre.")
+        val = _to_float(m.disk_free_percent)
+        recs.append(f"Queda {val:.1f}% de disco libre.")
     if ratios.get("memoria", 1.0) < WARN_THRESHOLD_LOW:
         recs.append("Memoria disponible baja: cerrá procesos innecesarios.")
     if ratios.get("basura", 1.0) < WARN_THRESHOLD_MED:
