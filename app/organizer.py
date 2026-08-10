@@ -73,6 +73,7 @@ class JunkFile:
     modified: datetime
 
     def __post_init__(self) -> None:
+        """Asegura la normalización de la ruta tras la instanciación."""
         if not isinstance(self.path, Path):
             self.path = Path(self.path)
 
@@ -88,9 +89,7 @@ class JunkFile:
 
 
 def _is_junction(entry: os.DirEntry) -> bool:
-    """
-    Detecta si una entrada es un punto de reparse (junction o symlink).
-    """
+    """Detecta si una entrada de directorio es un punto de reparse (junction o symlink)."""
     try:
         return entry.is_symlink() or (os.name == "nt" and "reparse" in os.stat(entry.path).st_file_attributes)
     except (OSError, AttributeError):
@@ -105,7 +104,7 @@ def _is_junk_path(path: Path) -> bool:
 def _generate_unique_target(target: Path) -> Path:
     """
     Resuelve colisiones de nombres mediante sufijos numéricos incrementales.
-    Asegura que no se sobrescriban archivos en la carpeta de revisión.
+    Previene la sobreescritura accidental en la carpeta de revisión.
     """
     if not target.exists():
         return target
@@ -121,12 +120,12 @@ def _generate_unique_target(target: Path) -> Path:
 
 
 def _is_allowed_directory(name: str) -> bool:
-    """Determina si un nombre de carpeta no es un directorio crítico del sistema."""
+    """Determina si un nombre de carpeta no figura en la lista de bloqueo de sistema."""
     return name.lower() not in SYSTEM_FOLDER_BLOCKLIST
 
 
 def _is_file_accessible(path: Path) -> bool:
-    """Verifica si el archivo es legible sin bloquearlo para escritura."""
+    """Verifica si el archivo es legible sin abrirlo para acceso exclusivo (modo solo lectura)."""
     try:
         with open(path, "rb") as f:
             return True
@@ -135,20 +134,23 @@ def _is_file_accessible(path: Path) -> bool:
 
 
 def _is_safe_for_move(path: Path) -> bool:
-    """Valida si el archivo pasa los filtros de seguridad y es accesible para su manipulación."""
+    """
+    Validación de seguridad compuesta: verifica que la ruta esté permitida y el
+    archivo sea accesible para lectura antes de cualquier operación de movimiento.
+    """
     return is_safe_to_modify(path) and _is_file_accessible(path)
 
 
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     """
     Realiza un escaneo recursivo en directorios buscando archivos temporales.
-    Utiliza os.scandir para evitar syscalls innecesarias y mejorar el rendimiento.
+    Utiliza os.scandir para optimizar el rendimiento al evitar llamadas a sistema redundantes.
     """
     dirs: List[str] = directories if directories is not None else DEFAULT_SCAN_DIRS
     found: List[JunkFile] = []
 
     def _walk_dir(base_path: str) -> None:
-        """Función interna recursiva usando os.scandir para eficiencia."""
+        """Recorrido en profundidad que respeta los bloqueos de directorios y symlinks."""
         try:
             with os.scandir(base_path) as it:
                 for entry in it:
@@ -184,7 +186,7 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
 
 
 def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -> List[JunkFile]:
-    """Ordena los archivos encontrados por tamaño o fecha de modificación usando configuraciones predefinidas."""
+    """Ordena los archivos encontrados por tamaño o fecha mediante funciones lambda de extracción."""
     if not isinstance(files, list) or not files:
         return []
         
@@ -201,8 +203,8 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Path:
     """
-    Mueve archivos basura a un directorio de cuarentena tras validar seguridad.
-    Utiliza _generate_unique_target para evitar conflictos de nombres.
+    Mueve archivos candidatos a una carpeta de revisión segura.
+    Cada operación de escritura es validada individualmente contra el módulo de seguridad.
     """
     if not files:
         raise ValueError("La lista de archivos a procesar no puede estar vacía.")
@@ -239,8 +241,8 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
     """
-    Elimina permanentemente archivos desde la carpeta de revisión tras validaciones de seguridad.
-    Retorna el conteo total de archivos eliminados exitosamente.
+    Elimina archivos de la carpeta de revisión tras confirmar seguridad.
+    Retorna el número de archivos eliminados exitosamente.
     """
     if not isinstance(review_dir, str) or not review_dir.strip():
         return 0

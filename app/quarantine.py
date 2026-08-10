@@ -119,6 +119,7 @@ class QuarantineItem:
     def verify_integrity(self, stored_path: Path) -> bool:
         """
         Realiza una validación de seguridad contra el archivo físico en el sandbox.
+        Compara tamaño y hash SHA-256 almacenado contra el archivo actual en disco.
         """
         if not stored_path or not stored_path.is_file():
             return False
@@ -304,7 +305,10 @@ def quarantine_file(
     reason: str = "Marcado como sospechoso",
     base: Union[str, Path] = DEFAULT_QUARANTINE_DIR,
 ) -> QuarantineItem:
-    """Realiza el movimiento de un archivo a la carpeta de cuarentena tras las validaciones pertinentes."""
+    """
+    Realiza el movimiento de un archivo a la carpeta de cuarentena.
+    Implementa una estrategia de copia de seguridad seguida de verificación de integridad (hash).
+    """
     if not source:
         raise ValueError("La ruta de origen no puede estar vacía.")
     
@@ -491,10 +495,10 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     
     items = load_manifest(base)
     # Indexamos ítems por nombre para búsqueda O(1) en vez de O(n) dentro del bucle
-    item_map = {item.stored_name: item for item in items}
+    item_map: Dict[str, QuarantineItem] = {item.stored_name: item for item in items}
     
     purged_count = 0
-    items_to_keep = []
+    items_to_keep: List[QuarantineItem] = []
     
     for entry in quarantine_root.iterdir():
         if entry.name == MANIFEST_NAME or not entry.is_file():

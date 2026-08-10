@@ -157,7 +157,16 @@ def _is_readonly(path: Path) -> bool:
 
 @lru_cache(maxsize=2048)
 def normalize(path: PathLike) -> Path:
-    """Normaliza, expande y resuelve una ruta a formato absoluto, validando longitud."""
+    """
+    Normaliza y resuelve una ruta, validando límites del sistema.
+    
+    Args:
+        path: Ruta a normalizar.
+    Returns:
+        Path resuelto absoluto.
+    Raises:
+        ValueError: Si la ruta excede límites de longitud o es inválida.
+    """
     if not isinstance(path, (str, os.PathLike)):
         raise TypeError(f"Entrada inválida: tipo {type(path)} no soportado.")
     
@@ -200,7 +209,14 @@ def is_protected_path(path: PathLike) -> bool:
 
 
 def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = False) -> bool:
-    """Verifica si la ruta 'child' está contenida lógicamente dentro de 'parent'."""
+    """
+    Verifica si la ruta 'child' está contenida lógicamente dentro de 'parent'.
+    
+    Args:
+        child: Ruta candidata a estar contenida.
+        parent: Directorio padre esperado.
+        allow_equal: Si es True, permite que ambas rutas sean idénticas.
+    """
     try:
         c, p = normalize(child), normalize(parent)
         if allow_equal and c == p:
@@ -223,8 +239,14 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     """
     Validador principal de seguridad para operaciones de escritura.
     
+    Args:
+        path: Ruta a validar.
+        allow_sensitive: Si es True, ignora la restricción de extensiones sensibles.
+        base_dir: Directorio raíz permitido (opcional).
+    Returns:
+        Path validado si la operación es segura.
     Raises:
-        UnsafePathError: Si la ruta infringe reglas de seguridad o acceso.
+        UnsafePathError: Si la ruta infringe reglas de seguridad.
     """
     if path is None:
         raise UnsafePathError("Ruta nula recibida.")
