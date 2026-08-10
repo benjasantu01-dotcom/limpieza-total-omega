@@ -105,6 +105,17 @@ class _Validators:
     """Namespace de validadores de tipo."""
     
     @staticmethod
+    def _is_safe_path(path_obj: Path) -> bool:
+        """Verifica que la ruta no sea sospechosa o protegida."""
+        if any(part in ('.', '..', '..\\', '../') for part in path_obj.parts): return False
+        resolved = path_obj.resolve(strict=False)
+        if resolved.is_symlink() or (resolved.exists() and hasattr(resolved, 'is_junction') and resolved.is_junction()):
+            return False
+        if is_protected_path(str(resolved)): return False
+        target = resolved if resolved.exists() else resolved.parent
+        return is_safe_to_modify(str(target))
+
+    @staticmethod
     def bool(key: str, val: Any) -> bool | None:
         if isinstance(val, bool): return val
         if not isinstance(val, str): return None
@@ -130,13 +141,9 @@ class _Validators:
         if not path_string: return ""
         try:
             path_obj = Path(path_string).expanduser()
-            if any(part in ('.', '..', '..\\', '../') for part in path_obj.parts): return None
-            resolved = path_obj.resolve(strict=False)
-            if resolved.is_symlink() or (resolved.exists() and hasattr(resolved, 'is_junction') and resolved.is_junction()):
-                return None
-            if is_protected_path(str(resolved)): return None
-            target = resolved if resolved.exists() else resolved.parent
-            return str(resolved) if is_safe_to_modify(str(target)) else None
+            if _Validators._is_safe_path(path_obj):
+                return str(path_obj.resolve(strict=False))
+            return None
         except (OSError, RuntimeError, ValueError, TypeError, PermissionError, AttributeError):
             return None
 

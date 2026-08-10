@@ -121,22 +121,22 @@ def _check_file_integrity(p: Path) -> None:
     if not p.exists():
         raise UnsafePathError(f"El archivo {p.name} ya no existe.")
 
-    # Verificar profundidad de la ruta para prevenir ataques de trayectoria profunda
     if len(p.parts) > 32:
         raise UnsafePathError("Ruta demasiado profunda: posible ataque de evasión.")
 
-    checks = [
-        (not os.access(p, os.W_OK), "inaccesible (sin permisos de escritura)"),
-        (_is_reparse_point(p), "punto de reparse detectado"),
-        (_is_readonly(p), "atributo de solo lectura"),
-        (_is_file_in_use(p), "archivo en uso por otro proceso"),
-        (_is_system_or_hidden(p), "atributo de sistema u oculto"),
-        (p.is_file() and p.stat().st_nlink > 1, "múltiples enlaces (hard link)")
-    ]
-    
-    for is_unsafe, reason in checks:
-        if is_unsafe:
-            raise UnsafePathError(f"Operación bloqueada para {p.name}: {reason}.")
+    # Diccionario de validadores: función predicado -> mensaje de error
+    validation_rules = {
+        lambda: not os.access(p, os.W_OK): "inaccesible (sin permisos de escritura)",
+        lambda: _is_reparse_point(p): "punto de reparse detectado",
+        lambda: _is_readonly(p): "atributo de solo lectura",
+        lambda: _is_file_in_use(p): "archivo en uso por otro proceso",
+        lambda: _is_system_or_hidden(p): "atributo de sistema u oculto",
+        lambda: p.is_file() and p.stat().st_nlink > 1: "múltiples enlaces (hard link)"
+    }
+
+    for is_unsafe, error_msg in validation_rules.items():
+        if is_unsafe():
+            raise UnsafePathError(f"Operación bloqueada para {p.name}: {error_msg}.")
 
 
 @lru_cache(maxsize=1024)

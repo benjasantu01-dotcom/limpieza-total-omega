@@ -777,3 +777,28 @@ FAILED evolve/tests/test_modules.py::test_never_scans_system_folders - Attribute
 - `2026-08-10T10:46:17` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo `quarantine.py` mediante docstrings enriquecidos, la adición de tipos claros en las firmas de funciones complejas y la estandarización de los mensajes de error para reflejar mejor las garantías de seguridad del sistema.
 - `2026-08-10T10:46:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-10T10:46:17` Corrida terminada. Total usado hoy: 256.
+- `2026-08-10T10:54:19` Arrancando corrida. Quedan hoy ~44 peticiones objetivo.
+- `2026-08-10T10:54:40` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 116): unterminated string literal (detected at line 116)
+- `2026-08-10T10:55:03` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se ha refactorizado `_check_file_integrity` para utilizar un dictado de validadores con mensajes explicativos asociados, mejorando drásticamente la legibilidad y facilitando futuras extensiones de reglas de seguridad sin comprometer la lógica de control.
+- `2026-08-10T10:55:37` Tests FALLARON:
+```
+_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:95: SyntaxWarning: invalid escape sequence '\P'
+    Analiza comandos tipo 'C:\Path\App.exe' /args.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_scanner_double_extension_detection - TypeError: check_double_extension() missing 4 required positional arguments: 'entry', 'name', 'suffix', and 'now_ts'
+FAILED evolve/tests/test_basic.py::test_scanner_normal_file_is_clean - TypeError: check_double_extension() missing 4 required positional arguments: 'entry', 'name', 'suffix', and 'now_ts'
+FAILED evolve/tests/test_basic.py::test_scanner_flags_system_lookalike_outside_system32 - TypeError: check_system_lookalike() missing 4 required positional arguments: 'entry', 'name', 'suffix', and 'now_ts'
+FAILED evolve/tests/test_basic.py::test_scanner_does_not_flag_real_system_file - TypeError: check_system_lookalike() missing 4 required positional arguments: 'entry', 'name', 'suffix', and 'now_ts'
+FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independent - TypeError: check_system_lookalike() missing 4 required positional arguments: 'entry', 'name', 'suffix', and 'now_ts'
+5 failed, 294 passed, 7 warnings in 1.16s
+
+```
+- `2026-08-10T10:55:37` ❌ Mejora descartada en scanner.py (no pasó los tests), se revirtió. Intento: He mejorado la legibilidad y mantenibilidad del archivo añadiendo docstrings descriptivos a las funciones de chequeo y estandarizando la firma de las mismas para que reciban explícitamente los parámetros necesarios, evitando redundancias en la lógica de `scan_file`.
+- `2026-08-10T10:55:47` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se ha extraído la lógica de validación de rutas dentro de `_Validators.path` a un método privado más específico, `_is_safe_path`, para mejorar la legibilidad y separar la verificación de seguridad de la lógica de normalización de cadenas, facilitando el mantenimiento.
+- `2026-08-10T10:55:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-10T10:55:47` Corrida terminada. Total usado hoy: 260.
