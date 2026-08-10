@@ -818,3 +818,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-10T11:17:25` ➖ Sin cambios en main.py (enfoque: rendimiento). Motivo: Se optimizó el proceso de refresco de logs mediante la implementación de `after_idle` y una cola de mensajes (`_log_queue`) para reducir la carga en el hilo principal y evitar redibujos innecesarios durante operaciones intensivas de escaneo.
 - `2026-08-10T11:17:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-10T11:17:25` Corrida terminada. Total usado hoy: 268.
+- `2026-08-10T11:25:03` Arrancando corrida. Quedan hoy ~32 peticiones objetivo.
+- `2026-08-10T11:25:30` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimizé la consulta de procesos en `top_memory_processes` eliminando el pipe redundante `Select-Object -First 20` de PowerShell, delegando el filtrado de cantidad al código Python (`[:limit]` ya presente en la función), reduciendo así la carga de procesamiento en el subproceso y el overhead de transmisión de texto.
+- `2026-08-10T11:25:52` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-08-10T11:26:23` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el rendimiento de `load_manifest` transformando la lista de retorno en un `Dict` interno mediante `item_id` para reducir la complejidad temporal de búsqueda de O(n) a O(1) en las funciones `restore_item` y `purge_item`.
+- `2026-08-10T11:26:26` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 102): unterminated string literal (detected at line 102)
+- `2026-08-10T11:26:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-10T11:26:26` Corrida terminada. Total usado hoy: 272.

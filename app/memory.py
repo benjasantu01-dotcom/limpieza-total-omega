@@ -255,7 +255,7 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     # Comandos restringidos para evitar inyección o ejecución arbitraria
     command: str = (
         "Get-Process | Sort-Object WorkingSet -Descending | "
-        "Select-Object -First 20 | ForEach-Object { \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }"
+        "ForEach-Object { \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }"
     )
     try:
         proc = subprocess.run(["powershell", "-NoProfile", "-Command", command], capture_output=True, text=True, timeout=5)
