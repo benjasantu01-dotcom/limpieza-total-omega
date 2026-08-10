@@ -44,8 +44,18 @@ __all__ = [
 
 
 def _bytes_to_mb(size_bytes: int | float) -> float:
-    """Utilidad interna para convertir bytes a Megabytes con precisión de 2 decimales."""
-    return round(size_bytes / (1024 * 1024), 2) if isinstance(size_bytes, (int, float)) and size_bytes > 0 else 0.0
+    """
+    Convierte bytes a Megabytes.
+    
+    Args:
+        size_bytes: Cantidad de bytes (entero o flotante).
+        
+    Returns:
+        Valor convertido a MB con 2 decimales. Retorna 0.0 si el valor es negativo o inválido.
+    """
+    if isinstance(size_bytes, (int, float)) and size_bytes > 0:
+        return round(size_bytes / (1024 * 1024), 2)
+    return 0.0
 
 
 @dataclass
@@ -56,6 +66,7 @@ class FileEntry:
 
     @property
     def size_mb(self) -> float:
+        """Retorna el peso del archivo en MB."""
         return _bytes_to_mb(self.size_bytes)
 
 
@@ -68,6 +79,7 @@ class ExtensionUsage:
 
     @property
     def size_mb(self) -> float:
+        """Retorna el peso total del grupo en MB."""
         return _bytes_to_mb(self.size_bytes)
 
 
@@ -80,6 +92,7 @@ class FolderUsage:
 
     @property
     def size_mb(self) -> float:
+        """Retorna el peso total del directorio en MB."""
         return _bytes_to_mb(self.size_bytes)
 
 
@@ -106,8 +119,13 @@ class DriveUsage:
 
 def format_size(num: Union[int, float, None]) -> str:
     """
-    Convierte bytes a una cadena legible (B, KB, MB, GB, TB).
-    Maneja entradas inválidas retornando "0 B".
+    Convierte bytes a una cadena legible usando prefijos binarios (B, KB, MB, GB, TB).
+    
+    Args:
+        num: Cantidad de bytes a formatear.
+        
+    Returns:
+        Cadena formateada ej: '1.2 GB'. Retorna '0 B' ante errores.
     """
     if num is None:
         return "0 B"
@@ -127,8 +145,14 @@ def format_size(num: Union[int, float, None]) -> str:
 
 def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     """
-    Obtiene el estado de una unidad. Retorna None si la ruta es inválida, 
-    protegida o inaccesible (incluyendo rutas UNC por política de seguridad).
+    Obtiene el estado de uso de una unidad de disco.
+    
+    Args:
+        mount: Ruta de la unidad (ej: 'C:\\').
+        
+    Returns:
+        Objeto DriveUsage si la ruta es válida y accesible, None en caso contrario.
+        Filtra rutas UNC y rutas protegidas por seguridad.
     """
     if not mount:
         return None
@@ -152,7 +176,13 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
 
 def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]:
     """
-    Lista el uso de unidades. En Windows detecta letras de unidad, en Unix la raíz.
+    Lista el uso de las unidades detectadas.
+    
+    Args:
+        mounts: Opcional, iterable con rutas de montaje. Si es None, detecta automáticamente.
+        
+    Returns:
+        Lista de objetos DriveUsage.
     """
     if mounts is None:
         if os.name == "nt":
@@ -172,8 +202,14 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Generador iterativo que recorre archivos bajo `directory`.
-    Implementa protección contra recursión infinita mediante detección de inodos y límite de profundidad.
+    Generador iterativo que recorre archivos bajo un directorio usando una pila (stack).
+    
+    Args:
+        directory: Directorio base a recorrer.
+        skip_protected: Si True, evita rutas protegidas mediante `is_protected_path`.
+        
+    Yields:
+        Tuplas (Path del archivo, tamaño en bytes).
     """
     if not directory:
         return
@@ -225,8 +261,12 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 
 def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_protected: bool = True) -> List[FileEntry]:
     """
-    Retorna los archivos más grandes usando un min-heap para eficiencia O(n log k).
-    Ignora archivos inaccesibles durante la iteración.
+    Retorna los N archivos más grandes encontrados en el directorio.
+    
+    Args:
+        directory: Directorio base.
+        limit: Cantidad de archivos a retornar.
+        skip_protected: Saltar rutas de sistema.
     """
     if not directory or limit <= 0:
         return []
@@ -240,6 +280,9 @@ def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_prot
 def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip_protected: bool = True) -> List[ExtensionUsage]:
     """
     Calcula el peso total ocupado por cada extensión de archivo encontrada.
+    
+    Returns:
+        Lista de ExtensionUsage ordenada por peso descendente.
     """
     if not directory or limit <= 0:
         return []
@@ -262,7 +305,10 @@ def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip
 
 def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
     """
-    Agrupa recursivamente el peso de carpetas de primer nivel bajo el directorio base.
+    Agrupa recursivamente el peso de subcarpetas de primer nivel bajo el directorio base.
+    
+    Returns:
+        Lista de FolderUsage ordenada por peso descendente.
     """
     if not directory or limit <= 0:
         return []
@@ -295,7 +341,12 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
 
 
 def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Tuple[int, int]:
-    """Retorna el tamaño total en bytes y la cantidad total de archivos accesibles."""
+    """
+    Calcula el tamaño total en bytes y la cantidad total de archivos accesibles.
+    
+    Returns:
+        Tupla (bytes totales, conteo de archivos).
+    """
     total_bytes, file_count = 0, 0
     for _, size in walk_files(directory, skip_protected):
         total_bytes += size
@@ -305,7 +356,14 @@ def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 
 def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -> List[str]:
     """
-    Genera un informe textual unificado del uso de disco con las estadísticas principales.
+    Genera un informe textual unificado del uso de disco.
+    
+    Args:
+        directory: Carpeta a analizar.
+        skip_protected: Saltar rutas protegidas.
+        
+    Returns:
+        Lista de líneas de texto con el informe.
     """
     if not directory: 
         return ["Error: Ruta no proporcionada."]

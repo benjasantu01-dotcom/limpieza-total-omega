@@ -435,32 +435,32 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         area_container = ctk.CTkFrame(parent, fg_color="transparent")
         area_container.grid(row=0, column=1, sticky="ew")
         area_container.grid_columnconfigure(1, weight=1)
-        for fila, (clave, etiqueta) in enumerate(HEALTH_AREAS):
-            self._build_single_health_bar(area_container, clave, etiqueta, fila)
+        for row_idx, (clave, etiqueta) in enumerate(HEALTH_AREAS):
+            self._build_single_health_bar(area_container, clave, etiqueta, row_idx)
 
-    def _build_single_health_bar(self, container: ctk.CTkFrame, clave: str, etiqueta: str, fila: int) -> None:
+    def _build_single_health_bar(self, container: ctk.CTkFrame, clave: str, etiqueta: str, row_idx: int) -> None:
         """Renderiza una barra de salud individual con su etiqueta y valor."""
-        self._create_styled_label(container, etiqueta, "body", anchor="w", width=150).grid(row=fila, column=0, sticky="w", pady=4)
+        self._create_styled_label(container, etiqueta, "body", anchor="w", width=150).grid(row=row_idx, column=0, sticky="w", pady=4)
         
         barra = ctk.CTkProgressBar(
             container, height=9, corner_radius=5,
             fg_color=branding.color("surface_alt"),
             progress_color=branding.color("accent"),
         )
-        barra.grid(row=fila, column=1, sticky="ew", padx=10, pady=4)
+        barra.grid(row=row_idx, column=1, sticky="ew", padx=10, pady=4)
         barra.set(0)
         
         valor_label = self._create_styled_label(container, "-", "caption", width=64, anchor="e")
-        valor_label.grid(row=fila, column=2, sticky="e", pady=4)
+        valor_label.grid(row=row_idx, column=2, sticky="e", pady=4)
         self.area_bars[clave] = (barra, valor_label)
 
-    def _metric_card(self, parent: ctk.CTk, title: str, column: int) -> ctk.CTkLabel:
+    def _metric_card(self, parent: ctk.CTk, title: str, column_idx: int) -> ctk.CTkLabel:
         """Genera un componente de tarjeta visual para métricas destacadas."""
         tarjeta = ctk.CTkFrame(
             parent, fg_color=branding.color("card"), corner_radius=12,
             border_width=1, border_color=branding.color("border"),
         )
-        tarjeta.grid(row=0, column=column, padx=6, sticky="ew")
+        tarjeta.grid(row=0, column=column_idx, padx=6, sticky="ew")
 
         valor_label = self._create_styled_label(tarjeta, "-", "accent")
         valor_label.pack(pady=(14, 0))
@@ -634,13 +634,13 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             ).grid(row=i // 3, column=i % 3, padx=4, pady=4, sticky="w")
         self._make_output("Asistente", tab)
 
-    def _add_setting_label(self, parent: ctk.CTkFrame, text: str, row: int, col: int = 0) -> None:
+    def _add_setting_label(self, parent: ctk.CTkFrame, text: str, row: int, column: int = 0) -> None:
         """Agrega etiqueta descriptiva para el formulario de ajustes."""
         self._create_styled_label(parent, text, "body", anchor="w").grid(
-            row=row, column=col, sticky="w", padx=(0, 10), pady=6
+            row=row, column=column, sticky="w", padx=(0, 10), pady=6
         )
 
-    def _add_setting_switch(self, parent: ctk.CTkFrame, clave: str, texto: str, row: int, col: int) -> None:
+    def _add_setting_switch(self, parent: ctk.CTkFrame, clave: str, texto: str, row: int, column: int) -> None:
         """Agrega un switch lógico para la configuración de usuario."""
         variable = ctk.BooleanVar(value=bool(self.settings.get(clave)))
         self.setting_vars[clave] = variable
@@ -650,7 +650,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             button_color=branding.color("text"),
             text_color=branding.color("text"),
             font=ctk.CTkFont(size=branding.font_size("body")),
-        ).grid(row=row, column=col, sticky="w", padx=(0, 24), pady=6)
+        ).grid(row=row, column=column, sticky="w", padx=(0, 24), pady=6)
 
     def _build_tab_ajustes(self) -> None:
         """Construye el formulario de ajustes de la aplicación."""
@@ -663,7 +663,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         grilla = ctk.CTkFrame(tab, fg_color="transparent")
         grilla.pack(fill="x", padx=12, pady=(14, 0))
 
-        self._add_setting_label(grilla, "Tema:", 0)
+        self._add_setting_label(grilla, "Tema:", 0, 0)
         self.setting_vars["tema"] = ctk.StringVar(value=self.settings.get("tema", "oscuro"))
         self._menu(grilla, list(settings_mod.VALID_THEMES), self.setting_vars["tema"], width=150).grid(row=0, column=1, sticky="w")
 
@@ -675,7 +675,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._add_setting_switch(grilla, "analisis_en_paralelo", "Análisis en paralelo", 1, 1)
         self._add_setting_switch(grilla, "recordar_ultima_carpeta", "Recordar última carpeta", 1, 2)
 
-        self._add_setting_label(grilla, "Duplicados desde (KB):", 2)
+        self._add_setting_label(grilla, "Duplicados desde (KB):", 2, 0)
         self.min_dup_entry = self._entry(grilla, "64", 100)
         self.min_dup_entry.insert(0, str(self.settings.get("duplicados_tamano_minimo_kb", 64)))
         self.min_dup_entry.grid(row=2, column=1, sticky="w")

@@ -170,7 +170,11 @@ def _collect_candidates(
     skip_protected: bool
 ) -> Dict[int, List[Path]]:
     """
-    Escaneo recursivo del sistema de archivos para agrupar candidatos por tamaño.
+    Realiza un escaneo recursivo del sistema de archivos filtrando por tamaño.
+    
+    Utiliza `os.scandir` para eficiencia de I/O y detecta puntos de reparse 
+    mediante atributos del sistema para evitar bucles infinitos o cruces de 
+    volumen, retornando solo grupos donde existen colisiones de tamaño.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: Dict[int, set[int]] = defaultdict(set)
@@ -226,7 +230,10 @@ def _refine_by_hash(
     hash_func: Callable[[Path], Optional[str]]
 ) -> Dict[str, List[Path]]:
     """
-    Filtra grupos reteniendo solo colisiones, usando hash_func para clasificar.
+    Reduce un conjunto de rutas agrupándolas por el resultado de una función de hash.
+    
+    Filtra los resultados devolviendo exclusivamente aquellos grupos que 
+    contienen 2 o más archivos (colisiones).
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
