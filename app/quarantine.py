@@ -219,7 +219,7 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
             attrs = ctypes.windll.kernel32.GetFileAttributesW(str(source_path))
             if attrs != -1 and (attrs & 0x02 or attrs & 0x04): 
                 raise UnsafePathError("Prohibido procesar archivos con atributos de sistema/ocultos.")
-    except Exception:
+    except (OSError, AttributeError):
         pass
 
     if not source_path.is_file():
@@ -234,15 +234,18 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
     if _is_valid_quarantine_path(source_path, dest_dir):
         raise UnsafePathError(f"El archivo ya reside en la carpeta de cuarentena: {source_path}")
     
-    if source_path.drive != dest_dir.drive:
-        raise UnsafePathError(f"Operación denegada: el archivo está en otro dispositivo o partición.")
+    try:
+        if source_path.drive != dest_dir.drive:
+            raise UnsafePathError(f"Operación denegada: el archivo está en otro dispositivo o partición.")
+    except (OSError, AttributeError):
+        pass
 
-    if os.path.exists(dest_dir) and os.path.exists(source_path):
-        try:
+    try:
+        if os.path.exists(dest_dir) and os.path.exists(source_path):
             if os.path.samefile(source_path, dest_dir):
                 raise UnsafePathError(f"Ruta de origen y destino colisionan mediante alias: {source_path}")
-        except OSError:
-            pass
+    except OSError:
+        pass
 
     ensure_safe_to_modify(source_path, allow_sensitive=True)
     

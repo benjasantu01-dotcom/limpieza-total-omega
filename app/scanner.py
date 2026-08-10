@@ -63,7 +63,10 @@ class Scanner:
     def __init__(self, base_root: Path) -> None:
         self.results: ScanResult = []
         self.seen: set[str] = set()
-        self.base_root = base_root.resolve()
+        try:
+            self.base_root = base_root.resolve()
+        except (OSError, RuntimeError):
+            self.base_root = Path("/")
         self.now_ts = datetime.now().timestamp()
 
     def _is_safe_entry(self, entry_path: str) -> bool:
@@ -73,7 +76,7 @@ class Scanner:
         try:
             full_path = Path(entry_path).resolve()
             return self.base_root in full_path.parents or full_path == self.base_root
-        except (RuntimeError, ValueError):
+        except (RuntimeError, ValueError, OSError):
             return False
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
@@ -173,15 +176,19 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         return []
         
     try:
-        path_input = Path(directory).resolve()
-        if not path_input.exists() or not path_input.is_dir() or is_protected_path(path_input):
+        path_input = Path(directory)
+        if not path_input.exists() or not path_input.is_dir():
+            return []
+        
+        resolved_path = path_input.resolve()
+        if is_protected_path(resolved_path):
             return []
     except (OSError, RuntimeError, TypeError, ValueError):
         return []
 
-    scanner = Scanner(base_root=path_input)
-    stack: List[str] = [str(path_input)]
-    scanner.seen.add(str(path_input))
+    scanner = Scanner(base_root=resolved_path)
+    stack: List[str] = [str(resolved_path)]
+    scanner.seen.add(str(resolved_path))
     
     while stack:
         current_dir = stack.pop()

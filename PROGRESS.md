@@ -8,44 +8,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **231** (45.8% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 25
-- Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 221
+- Rechazadas por guardia de seguridad: 26
+- Sin cambios (nada sustancial que mejorar): 12
+- Sin respuesta de la IA (error o límite): 222
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-09 | 125 | 8 | 13 | 9 | 109 |
-| 2026-08-10 | 106 | 5 | 12 | 5 | 112 |
+| 2026-08-09 | 123 | 8 | 13 | 7 | 109 |
+| 2026-08-10 | 108 | 5 | 13 | 5 | 113 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **53**
-- manejo de errores y validación de entradas: **47**
+- manejo de errores y validación de entradas: **49**
 - legibilidad y documentación: **47**
-- rendimiento: **44**
+- rendimiento: **42**
 - robustez ante casos límite: **40**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **22**
+- `quarantine.py`: **23**
 - `main.py`: **21**
 - `settings.py`: **21**
 - `healthscore.py`: **20**
-- `assistant.py`: **19**
-- `branding.py`: **18**
+- `assistant.py`: **18**
+- `branding.py`: **17**
 - `diskreport.py`: **17**
 - `organizer.py`: **17**
 - `browser.py`: **16**
+- `scanner.py`: **15**
 - `duplicates.py`: **15**
 - `memory.py`: **14**
-- `scanner.py`: **14**
 - `safety.py`: **10**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-10T10:14:59` **scanner.py** (manejo de errores y validación de entradas): Reforcé la robustez de `Scanner` encapsulando la lógica de resolución de rutas y validación de `path_input` dentro de un bloque `try-except` más estricto, asegurando que cualquier entrada `None` o ruta malformada no propague excepciones inesperadas durante la inicialización, cumpliendo con el enfoque de validación de entradas.
+- `2026-08-10T10:14:07` **quarantine.py** (manejo de errores y validación de entradas): Se reforzó `_validate_isolation_request` para capturar errores de acceso a disco con `OSError` específico, evitando que excepciones genéricas interrumpan el flujo de validación y garantizando que las rutas sean consistentes antes de iniciar cualquier operación de movimiento.
 - `2026-08-10T10:06:27` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_windows_process_csv` implementando validaciones más estrictas contra entradas malformadas, evitando posibles `IndexError` y asegurando que las conversiones a entero se manejen de forma segura antes de crear el objeto `ProcessMemory`.
 - `2026-08-10T10:05:59` **main.py** (manejo de errores y validación de entradas): Se reforzó la robustez del manejo de entradas en los formularios de ajustes, asegurando que `_collect_settings` no aborte ante cambios parciales en la UI y que las validaciones de configuración sean resistentes a entradas no numéricas inesperadas.
 - `2026-08-10T10:03:53` **healthscore.py** (manejo de errores y validación de entradas): Reforcé la robustez del módulo `healthscore.py` mediante la validación proactiva de tipos y valores en las funciones de cálculo (`score_*`), garantizando que la app no colapse ante entradas inesperadas o mal formadas, y encapsulé la lógica de cálculo dentro de `compute_score` para manejar de forma segura los valores nulos o fuera de rango.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-10T08:12:32` **memory.py** (seguridad defensiva): Se reforzó la seguridad de `trim_working_set` validando que la ruta del ejecutable no sea solo protegida, sino también que su resolución sea segura frente a posibles intentos de evasión, y se añadieron chequeos de límites en el PID para evitar manipulaciones erróneas.
 - `2026-08-10T08:12:07` **main.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `on_trim_process` y `on_purge_quarantine` asegurando que las acciones críticas verifiquen el estado de los recursos antes de proceder y limitando el alcance de las operaciones a IDs o PIDs verificados, minimizando riesgos por condiciones de carrera o datos de entrada maliciosos.
 - `2026-08-10T08:02:19` **healthscore.py** (seguridad defensiva): Se reforzó la integridad del cálculo de salud mediante la validación estricta de las métricas de entrada y la imposición de límites seguros en los resultados intermedios, evitando la propagación de datos corruptos o valores fuera de rango que podrían desestabilizar el sistema de reporte.
-- `2026-08-10T08:01:46` **diskreport.py** (seguridad defensiva): Se ha añadido una validación estricta en `walk_files` para detectar y evitar la entrada en puntos de reparse (junctions o symlinks a directorios), mejorando la seguridad defensiva al evitar que el escaneo de disco siga rutas circulares o salte fuera del árbol de directorios esperado.
-- `2026-08-10T08:01:20` **browser.py** (seguridad defensiva): Mejoré la seguridad en `_sum_directory_recursive` implementando un límite de profundidad de recursión (`max_depth=10`) para prevenir ataques de desbordamiento de pila mediante estructuras de directorios profundamente anidadas o ciclos de enlaces simbólicos artificiales.

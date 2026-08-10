@@ -749,3 +749,10 @@ FAILED evolve/tests/test_modules.py::test_never_scans_system_folders - Attribute
 - `2026-08-10T10:06:35` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
 - `2026-08-10T10:06:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-10T10:06:35` Corrida terminada. Total usado hoy: 240.
+- `2026-08-10T10:13:35` Arrancando corrida. Quedan hoy ~60 peticiones objetivo.
+- `2026-08-10T10:14:07` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se reforzó `_validate_isolation_request` para capturar errores de acceso a disco con `OSError` específico, evitando que excepciones genéricas interrumpan el flujo de validación y garantizando que las rutas sean consistentes antes de iniciar cualquier operación de movimiento.
+- `2026-08-10T10:14:26` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-08-10T10:14:50` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-10T10:14:59` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Reforcé la robustez de `Scanner` encapsulando la lógica de resolución de rutas y validación de `path_input` dentro de un bloque `try-except` más estricto, asegurando que cualquier entrada `None` o ruta malformada no propague excepciones inesperadas durante la inicialización, cumpliendo con el enfoque de validación de entradas.
+- `2026-08-10T10:14:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-10T10:14:59` Corrida terminada. Total usado hoy: 244.
