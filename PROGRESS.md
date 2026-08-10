@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **235** (46.6% de aceptación)
-- Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 26
+- Mejoras aceptadas: **236** (46.8% de aceptación)
+- Rechazadas por tests: 13
+- Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 216
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-09 | 96 | 8 | 10 | 6 | 100 |
-| 2026-08-10 | 139 | 6 | 16 | 7 | 116 |
+| 2026-08-09 | 96 | 7 | 10 | 6 | 97 |
+| 2026-08-10 | 140 | 6 | 17 | 7 | 118 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,11 +25,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **51**
 - rendimiento: **46**
 - seguridad defensiva: **42**
-- robustez ante casos límite: **37**
+- robustez ante casos límite: **38**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **22**
+- `quarantine.py`: **23**
 - `settings.py`: **21**
 - `healthscore.py`: **20**
 - `assistant.py`: **19**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-10T12:06:56` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de concurrencia mediante `os.rename` (atómico) y un chequeo de existencia previo dentro de `purge_all` para asegurar que la limpieza sea robusta ante archivos eliminados externamente o bloqueos de acceso, mejorando la integridad del bucle de purga.
 - `2026-08-10T11:57:54` **memory.py** (robustez ante casos límite): Se ha robustecido el manejo de errores en `read_snapshot` y `top_memory_processes` añadiendo validaciones específicas para prevenir fallos silenciosos por entradas de texto vacías, rutas inexistentes o tiempos de espera (timeout) en la ejecución de comandos externos.
 - `2026-08-10T11:57:44` **main.py** (robustez ante casos límite): Mejoré la resiliencia ante errores de concurrencia y limpieza de recursos al cerrar la aplicación, asegurando que el pool de hilos (`_executor`) y los eventos programados (`after`) sean cancelados de manera ordenada al invocar `destroy()`.
 - `2026-08-10T11:56:42` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de los cálculos de `score_memory` y `score_disk` añadiendo protecciones explícitas contra divisores cero o negativos, asegurando que ante una configuración accidentalmente maliciosa o corrupta de los umbrales globales, el sistema no retorne resultados erróneos o colapse.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-10T11:16:28` **healthscore.py** (rendimiento): Se optimizó el cálculo en `compute_score` eliminando la creación innecesaria de diccionarios intermedios y utilizando una iteración directa sobre `_WEIGHT_ITEMS`, además de prevenir el re-cálculo de `round()` en el bucle principal.
 - `2026-08-10T11:16:02` **duplicates.py** (rendimiento): Optimicé el proceso de filtrado al mover la verificación de `is_protected_path` al inicio de `_collect_candidates`, reduciendo llamadas innecesarias a `os.scandir` y `stat` para directorios que ya sabemos que debemos ignorar.
 - `2026-08-10T11:15:36` **diskreport.py** (rendimiento): Optimicé el rendimiento de `summarize` consolidando todos los cálculos (total, extensiones y top archivos) en un único recorrido del generador `walk_files`, evitando iterar varias veces sobre el disco o realizar llamadas redundantes a funciones auxiliares.
-- `2026-08-10T11:06:24` **browser.py** (rendimiento): Optimicé el cálculo del peso de los directorios añadiendo una caché de resultados en `_sum_directory_recursive` para evitar procesar repetidamente subcarpetas comunes o jerarquías ya analizadas durante la misma iteración.

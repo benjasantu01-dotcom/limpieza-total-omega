@@ -511,7 +511,7 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
             
             if entry.name in item_map:
                 item = item_map[entry.name]
-                if item.verify_integrity(entry):
+                if entry.exists() and item.verify_integrity(entry):
                     if _safe_unlink(entry):
                         purged_count += 1
                         continue

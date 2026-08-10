@@ -846,3 +846,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-10T11:57:54` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se ha robustecido el manejo de errores en `read_snapshot` y `top_memory_processes` añadiendo validaciones específicas para prevenir fallos silenciosos por entradas de texto vacías, rutas inexistentes o tiempos de espera (timeout) en la ejecución de comandos externos.
 - `2026-08-10T11:57:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-10T11:57:54` Corrida terminada. Total usado hoy: 284.
+- `2026-08-10T12:06:00` Arrancando corrida. Quedan hoy ~16 peticiones objetivo.
+- `2026-08-10T12:06:25` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-08-10T12:06:56` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se introdujo una validación de concurrencia mediante `os.rename` (atómico) y un chequeo de existencia previo dentro de `purge_all` para asegurar que la limpieza sea robusta ante archivos eliminados externamente o bloqueos de acceso, mejorando la integridad del bucle de purga.
+- `2026-08-10T12:07:14` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-10T12:07:23` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
+- `2026-08-10T12:07:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-10T12:07:23` Corrida terminada. Total usado hoy: 288.
