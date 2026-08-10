@@ -212,8 +212,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
         return
 
     try:
-        path_input = os.fspath(directory)
-        root = Path(path_input).expanduser().resolve()
+        root = Path(directory).expanduser().resolve()
         if not root.exists() or not root.is_dir():
             return
         if skip_protected and is_protected_path(root):
@@ -311,10 +310,8 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
         return []
     
     try:
-        base = Path(os.fspath(directory)).expanduser().resolve()
+        base = Path(directory).expanduser().resolve()
         if not base.exists() or not base.is_dir():
-            return []
-        if skip_protected and is_protected_path(base):
             return []
         
         sums: Dict[Path, int] = defaultdict(int)
@@ -359,9 +356,9 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
         return ["Error: Ruta no proporcionada."]
     
     try:
-        path_obj = Path(os.fspath(directory)).expanduser().resolve()
-        if not path_obj.exists(): 
-            return [f"Error: Ruta no encontrada: {path_obj}"]
+        path_obj = Path(directory).expanduser().resolve()
+        if not path_obj.exists() or not path_obj.is_dir(): 
+            return [f"Error: Ruta no encontrada o no es directorio: {path_obj}"]
     except (OSError, TypeError, RuntimeError):
         return ["Error: Ruta inválida o inaccesible."]
         

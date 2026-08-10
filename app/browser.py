@@ -139,11 +139,14 @@ def _is_excluded_file(name: str) -> bool:
 
 def _is_system_hidden(entry_path: str, kernel32: ctypes.WinDLL | None) -> bool:
     """Usa la API de Windows para verificar si un archivo tiene atributos de sistema u oculto."""
-    if not kernel32:
+    if not kernel32 or not isinstance(entry_path, str):
         return False
-    attrs = kernel32.GetFileAttributesW(entry_path)
-    # 0x04: SYSTEM, 0x02: HIDDEN
-    return attrs != -1 and bool(attrs & 0x04 or attrs & 0x02)
+    try:
+        attrs = kernel32.GetFileAttributesW(entry_path)
+        # 0x04: SYSTEM, 0x02: HIDDEN, 0xFFFFFFFF (-1): error
+        return attrs != -1 and bool(attrs & 0x04 or attrs & 0x02)
+    except (OSError, AttributeError, TypeError):
+        return False
 
 
 def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool], visited: Optional[Set[str]] = None, cache: Optional[Dict[str, int]] = None, depth: int = 0) -> int:

@@ -1087,3 +1087,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-10T14:13:29` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-08-10T14:13:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-10T14:13:29` Corrida terminada. Total usado hoy: 336.
+- `2026-08-10T14:19:37` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-10T14:20:13` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `build_context` añadiendo validaciones explícitas contra entradas malformadas o tipos inesperados que podrían causar errores durante la construcción del contexto de datos, previniendo así un estado inconsistente en el sistema de reportes del asistente.
+- `2026-08-10T14:20:46` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-10T14:21:11` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_is_system_hidden` añadiendo validaciones de tipo y manejo de errores para evitar fallos inesperados al invocar la API de Windows, asegurando que el acceso a atributos no detenga el escaneo completo.
+- `2026-08-10T14:21:22` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `largest_folders` añadiendo validaciones preventivas sobre la existencia y legibilidad de los directorios, y asegurando que las excepciones durante el recorrido no silencien errores críticos de forma indiscriminada.
+- `2026-08-10T14:21:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-10T14:21:22` Corrida terminada. Total usado hoy: 340.
