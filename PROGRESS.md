@@ -16,28 +16,28 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-09 | 153 | 8 | 17 | 11 | 147 |
-| 2026-08-10 | 77 | 4 | 9 | 4 | 74 |
+| 2026-08-09 | 150 | 8 | 17 | 11 | 146 |
+| 2026-08-10 | 80 | 4 | 9 | 4 | 75 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **59**
 - manejo de errores y validación de entradas: **52**
-- seguridad defensiva: **48**
-- rendimiento: **42**
-- robustez ante casos límite: **29**
+- seguridad defensiva: **45**
+- rendimiento: **44**
+- robustez ante casos límite: **30**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **23**
-- `main.py`: **21**
-- `healthscore.py`: **20**
-- `settings.py`: **20**
-- `assistant.py`: **19**
-- `diskreport.py`: **17**
+- `settings.py`: **21**
+- `assistant.py`: **20**
+- `main.py`: **20**
+- `healthscore.py`: **19**
+- `scanner.py`: **17**
 - `branding.py`: **17**
-- `scanner.py`: **16**
 - `browser.py`: **16**
+- `diskreport.py`: **16**
 - `organizer.py`: **16**
 - `duplicates.py`: **15**
 - `memory.py`: **11**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-10T07:11:23` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` añadiendo validación explícita para evitar que valores `NaN` o `Inf` (que pueden surgir en cálculos de disco o memoria) corrompan el estado del sistema, además de asegurar que la asignación de tipos sea consistente.
+- `2026-08-10T07:10:42` **settings.py** (rendimiento): Optimizé la carga de configuraciones y la resolución de rutas mediante la implementación de un mecanismo de caché más eficiente y la consolidación de las llamadas a `load()` en funciones derivadas, reduciendo drásticamente las operaciones de E/S innecesarias y el recalculo de rutas.
+- `2026-08-10T07:10:16` **scanner.py** (rendimiento): Optimizé la lógica de escaneo en `scan_file` moviendo la validación de extensiones sospechosas a un chequeo temprano ("early return") y pre-calculando el tiempo actual fuera del ciclo de archivos, evitando llamadas repetitivas a `datetime.now()` durante el recorrido del disco.
 - `2026-08-10T07:01:05` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` al convertir `_SYSTEM_ROOTS` en un conjunto pre-calculado de `Path` que evita resoluciones redundantes en cada iteración y utilicé un `any()` más eficiente que aprovecha el `frozenset` existente para validar los componentes de la ruta sin iteraciones costosas.
 - `2026-08-10T07:00:34` **quarantine.py** (rendimiento): Optimicé el rendimiento de `purge_all` y la carga del manifiesto evitando el uso de `load_manifest` repetidamente dentro de bucles y reduciendo la complejidad algorítmica de $O(N^2)$ a $O(N)$ mediante el uso de conjuntos (`set`) para las verificaciones de integridad.
 - `2026-08-10T06:51:30` **memory.py** (rendimiento): Se implementó un filtrado preventivo en `parse_windows_process_csv` y se optimizó la lógica de caché en `top_memory_processes` para evitar ejecuciones innecesarias de PowerShell y procesado redundante de strings, mejorando significativamente la eficiencia en cada iteración del bucle.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-10T06:19:34` **organizer.py** (legibilidad y documentación): Documenté con docstrings detallados la lógica de las funciones internas y utilitarias de `organizer.py`, explicitando el "porqué" de las validaciones de seguridad y las restricciones de recorrido para mejorar la mantenibilidad del código.
 - `2026-08-10T06:19:10` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo docstrings descriptivos a los métodos de `MemorySnapshot` y `ProcessMemory`, clarificando las unidades y el comportamiento de cálculo, además de estandarizar los type hints faltantes en las funciones de diagnóstico.
 - `2026-08-10T06:10:37` **main.py** (legibilidad y documentación): Se introdujeron type hints en los métodos de construcción de la interfaz y se renombraron parámetros críticos (como `fila` a `row` y `columna` a `column` en métodos auxiliares) para estandarizar la nomenclatura y mejorar la legibilidad del código.
-- `2026-08-10T06:09:47` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica mediante docstrings más precisos, añadí type hints de retorno explícitos en funciones auxiliares y renombré constantes internas para reflejar mejor su naturaleza de cálculo (factor vs límite) y su visibilidad (privada).
-- `2026-08-10T06:09:23` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `duplicates.py` mediante docstrings detallados en las funciones internas (`_collect_candidates`, `_refine_by_hash`) y la normalización de los contratos de tipo para clarificar la lógica del pipeline de tres fases.
-- `2026-08-10T06:08:59` **diskreport.py** (legibilidad y documentación): Mejora la legibilidad y mantenimiento añadiendo Type Hints faltantes y documentación detallada (docstrings) en las funciones auxiliares de `diskreport.py` para cumplir con las exigencias del proyecto.

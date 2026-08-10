@@ -41,7 +41,7 @@ class Suspicion:
 
 # Alias de tipos para mejorar la legibilidad y mantenibilidad de la lógica de escaneo.
 # Las funciones de chequeo deben ser puras: reciben contexto y devuelven una Suspicion si detectan algo.
-SuspicionCheck: TypeAlias = Callable[[Path, Optional[os.DirEntry], Optional[str], Optional[str]], Optional[Suspicion]]
+SuspicionCheck: TypeAlias = Callable[[Path, Optional[os.DirEntry], Optional[str], Optional[str], float], Optional[Suspicion]]
 ScanResult: TypeAlias = List[Suspicion]
 
 # REGEX para detectar extensiones dobles donde la última es ejecutable
@@ -64,6 +64,7 @@ class Scanner:
         self.results: ScanResult = []
         self.seen: set[str] = set()
         self.base_root = base_root.resolve()
+        self.now_ts = datetime.now().timestamp()
 
     def _is_safe_entry(self, entry_path: str) -> bool:
         """Verifica que la entrada esté dentro del base_root definido."""
@@ -86,10 +87,6 @@ class Scanner:
     def process_entry(self, entry: os.DirEntry, stack: List[str]) -> None:
         """
         Valida y procesa una entrada del sistema de archivos.
-        
-        Args:
-            entry: Entrada del sistema de archivos proporcionada por os.scandir.
-            stack: Lista mutable que actúa como pila para el recorrido DFS.
         """
         if entry is None or stack is None:
             return
@@ -110,45 +107,34 @@ class Scanner:
                 path_obj = Path(entry_path)
                 name = entry.name
                 _, ext = os.path.splitext(name)
-                self.results.extend(scan_file(path_obj, entry=entry, name=name, suffix=ext.lower()))
+                self.results.extend(scan_file(path_obj, self.now_ts, entry=entry, name=name, suffix=ext.lower()))
         except (PermissionError, OSError, ValueError, RuntimeError) as e:
             logger.debug(f"Saltando entrada {getattr(entry, 'path', 'desconocida')}: {e}")
 
 
-def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None) -> Optional[Suspicion]:
-    """
-    Identifica archivos con extensiones dobles engañosas.
-    
-    Returns:
-        Un objeto Suspicion si se detecta una extensión doble, None en caso contrario.
-    """
+def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
+    """Identifica archivos con extensiones dobles engañosas."""
     target = name or (path.name if path else None)
     if target and DOUBLE_EXTENSION_RE.search(target):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
     return None
 
 
-def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, hours: int = RECENT_FILE_THRESHOLD_HOURS) -> Optional[Suspicion]:
-    """
-    Detecta ejecutables modificados recientemente según umbral de tiempo.
-    """
+def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
+    """Detecta ejecutables modificados recientemente según umbral de tiempo."""
     if entry is None or path is None:
         return None
     try:
         mtime = entry.stat(follow_symlinks=False).st_mtime
-        if mtime > 0:
-            file_date = datetime.fromtimestamp(mtime)
-            if (datetime.now() - file_date) < timedelta(hours=hours):
-                return Suspicion(path, f"Ejecutable reciente detectado (modificado hace menos de {hours}h)", "info")
+        if (now_ts - mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
+            return Suspicion(path, f"Ejecutable reciente detectado (modificado hace menos de {RECENT_FILE_THRESHOLD_HOURS}h)", "info")
     except (OSError, AttributeError, OverflowError):
         pass
     return None
 
 
-def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None) -> Optional[Suspicion]:
-    """
-    Busca ejecutables que usurpan nombres de procesos críticos del sistema fuera de System32.
-    """
+def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
+    """Busca ejecutables que usurpan nombres de procesos críticos del sistema."""
     if path is None:
         return None
     target = (name or path.name or "").lower()
@@ -160,13 +146,8 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, name
             logger.debug(f"Error analizando ruta de padre para {path}: {e}")
     return None
 
-def scan_file(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None) -> ScanResult:
-    """
-    Ejecuta el conjunto de heurísticas sobre un archivo.
-    
-    Returns:
-        Una lista de objetos Suspicion encontrados durante el análisis.
-    """
+def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None) -> ScanResult:
+    """Ejecuta el conjunto de heurísticas sobre un archivo."""
     if path is None:
         return []
         
@@ -174,27 +155,20 @@ def scan_file(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[st
     n = name or path.name
     s = suffix or path.suffix.lower()
     
-    if (res := check_double_extension(path, entry, n, s)):
+    if (res := check_double_extension(path, entry, n, s, now_ts)):
         findings.append(res)
     
     if s in SUSPICIOUS_EXECUTABLE_EXT:
-        if (res := check_recent_executable_in_downloads(path, entry, n, s)):
+        if (res := check_recent_executable_in_downloads(path, entry, n, s, now_ts)):
             findings.append(res)
-        if (res := check_system_lookalike(path, entry, n, s)):
+        if (res := check_system_lookalike(path, entry, n, s, now_ts)):
             findings.append(res)
                 
     return findings
 
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
-    """
-    Inicia el escaneo recursivo de directorios.
-    
-    Args:
-        directory: Ruta raíz donde comenzar el escaneo.
-    Returns:
-        Lista consolidada de todas las sospechas encontradas en el árbol.
-    """
+    """Inicia el escaneo recursivo de directorios."""
     if directory is None:
         return []
         
@@ -223,10 +197,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
 
 
 def run_windows_defender_quick_scan() -> str:
-    """
-    Interfaz con las herramientas de seguridad nativas de Windows (Defender).
-    Requiere que PowerShell esté en el PATH.
-    """
+    """Interfaz con las herramientas de seguridad nativas de Windows (Defender)."""
     try:
         status = subprocess.run(
             ["powershell", "-Command", "Get-MpComputerStatus | Select-Object -ExpandProperty RealTimeProtectionEnabled"],

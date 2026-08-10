@@ -451,3 +451,10 @@ FAILED evolve/tests/test_basic.py::test_delete_reviewed_only_touches_the_review_
 - `2026-08-10T07:01:05` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimicé el rendimiento de `is_protected_path` al convertir `_SYSTEM_ROOTS` en un conjunto pre-calculado de `Path` que evita resoluciones redundantes en cada iteración y utilicé un `any()` más eficiente que aprovecha el `frozenset` existente para validar los componentes de la ruta sin iteraciones costosas.
 - `2026-08-10T07:01:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-10T07:01:05` Corrida terminada. Total usado hoy: 168.
+- `2026-08-10T07:09:52` Arrancando corrida. Quedan hoy ~132 peticiones objetivo.
+- `2026-08-10T07:10:16` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizé la lógica de escaneo en `scan_file` moviendo la validación de extensiones sospechosas a un chequeo temprano ("early return") y pre-calculando el tiempo actual fuera del ciclo de archivos, evitando llamadas repetitivas a `datetime.now()` durante el recorrido del disco.
+- `2026-08-10T07:10:42` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimizé la carga de configuraciones y la resolución de rutas mediante la implementación de un mecanismo de caché más eficiente y la consolidación de las llamadas a `load()` en funciones derivadas, reduciendo drásticamente las operaciones de E/S innecesarias y el recalculo de rutas.
+- `2026-08-10T07:11:05` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-08-10T07:11:23` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `build_context` añadiendo validación explícita para evitar que valores `NaN` o `Inf` (que pueden surgir en cálculos de disco o memoria) corrompan el estado del sistema, además de asegurar que la asignación de tipos sea consistente.
+- `2026-08-10T07:11:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-10T07:11:23` Corrida terminada. Total usado hoy: 172.

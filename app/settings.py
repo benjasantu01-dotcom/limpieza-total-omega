@@ -154,7 +154,6 @@ class _Validators:
         if key == "ultima_carpeta": return _Validators.path(text)
         return text if len(text) <= 512 else None
 
-# Definición explícita de validadores por campo para facilitar el mantenimiento
 _VALIDATOR_MAP: Final[dict[str, Callable[[str, Any], Any]]] = {
     "tema": _Validators.str,
     "acento": _Validators.str,
@@ -175,15 +174,14 @@ _VALIDATOR_MAP: Final[dict[str, Callable[[str, Any], Any]]] = {
 }
 
 def settings_path(path_or_base: PathLike | None = None) -> Path:
-    default_res = SETTINGS_DIR / SETTINGS_FILE
-    if path_or_base is None: return default_res
+    if path_or_base is None: return SETTINGS_DIR / SETTINGS_FILE
     key = str(path_or_base)
     if key not in _path_cache:
         try:
             base = Path(key).expanduser().resolve(strict=False)
-            _path_cache[key] = (base / SETTINGS_FILE) if is_safe_to_modify(str(base)) else default_res
+            _path_cache[key] = (base / SETTINGS_FILE) if is_safe_to_modify(str(base)) else (SETTINGS_DIR / SETTINGS_FILE)
         except (OSError, RuntimeError, PermissionError):
-            _path_cache[key] = default_res
+            return SETTINGS_DIR / SETTINGS_FILE
     return _path_cache[key]
 
 def validate(values: Any) -> AppSettings:
@@ -268,7 +266,7 @@ def assistant_api_key(path_or_base: PathLike | None = None) -> str:
 
 def assistant_enabled(path_or_base: PathLike | None = None) -> bool:
     settings = load(path_or_base)
-    return bool(settings.get("asistente_activado") and assistant_api_key(path_or_base))
+    return bool(settings.get("asistente_activado") and (os.environ.get(API_KEY_ENV_VAR) or settings.get("asistente_clave_api")))
 
 def describe(path_or_base: PathLike | None = None) -> list[str]:
     current = load(path_or_base)

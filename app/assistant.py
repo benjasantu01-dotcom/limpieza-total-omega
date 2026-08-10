@@ -223,7 +223,6 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     ctx = SystemContext()
     
     def _get_val_from_source(source: Any, attr: str, default: Any) -> Any:
-        """Extrae valor de dict o atributo de objeto genérico de forma segura."""
         try:
             if isinstance(source, dict):
                 return source.get(attr, default)
@@ -470,7 +469,6 @@ def _call_gemini(
 ) -> Optional[str]:
     """Envía métricas agregadas a Gemini mediante la librería estándar urllib."""
     if not isinstance(api_key, str) or not isinstance(model, str): return None
-    # Defensa: evitar inyección de comandos o caracteres de control en la URL
     if not api_key or not _API_KEY_REGEX.match(api_key) or _CONTROL_CHARS_REGEX.search(api_key): return None
     if not model or not _MODEL_NAME_REGEX.match(model): return None
     
