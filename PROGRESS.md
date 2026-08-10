@@ -16,37 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-08 | 8 | 0 | 1 | 1 | 4 |
+| 2026-08-08 | 5 | 0 | 1 | 1 | 3 |
 | 2026-08-09 | 162 | 8 | 18 | 11 | 151 |
-| 2026-08-10 | 59 | 4 | 7 | 3 | 67 |
+| 2026-08-10 | 62 | 4 | 7 | 3 | 68 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **52**
 - seguridad defensiva: **51**
-- legibilidad y documentación: **46**
-- rendimiento: **42**
+- legibilidad y documentación: **49**
+- rendimiento: **39**
 - robustez ante casos límite: **38**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **23**
-- `main.py`: **21**
-- `healthscore.py`: **20**
-- `assistant.py`: **20**
+- `assistant.py`: **21**
+- `main.py`: **20**
 - `settings.py`: **20**
-- `branding.py`: **17**
-- `browser.py`: **17**
+- `healthscore.py`: **19**
+- `branding.py`: **18**
+- `browser.py`: **18**
 - `scanner.py`: **16**
 - `diskreport.py`: **16**
 - `organizer.py`: **15**
 - `duplicates.py`: **14**
-- `memory.py`: **11**
 - `safety.py`: **10**
+- `memory.py`: **10**
 - `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-10T05:59:50` **browser.py** (legibilidad y documentación): Documenté con type hints más precisos y docstrings explicativos las funciones de bajo nivel en `browser.py`, clarificando los contratos de datos y las intenciones de seguridad para mejorar la mantenibilidad del código.
+- `2026-08-10T05:59:41` **branding.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `branding.py` mediante la refactorización de `draw_logo` para delegar la lógica de renderizado de las franjas (el degradado del escudo) en una función privada dedicada, facilitando la comprensión del flujo de dibujo vectorial.
+- `2026-08-10T05:59:12` **assistant.py** (legibilidad y documentación): Se mejoró la legibilidad de `build_context` mediante la extracción de la lógica de asignación y validación de tipos a una función interna `_get_val_from_source`, haciendo el flujo principal más declarativo y eliminando la repetición de lógica de acceso a atributos.
 - `2026-08-10T05:49:17` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_Validators.path` capturando errores adicionales de acceso a archivos y asegurando que las rutas vacías o inválidas devuelvan `None` de forma consistente, evitando que rutas erróneas se filtren como válidas al cargar la configuración.
 - `2026-08-10T05:49:06` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las funciones de chequeo (`check_recent_executable_in_downloads` y `check_system_lookalike`) agregando validaciones preventivas de valores nulos o vacíos (`name`, `path`), asegurando que las operaciones de comparación y manipulación de rutas no fallen inesperadamente ante estados de entrada inesperados.
 - `2026-08-10T05:48:43` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ensure_safe_to_modify` ante entradas no válidas y condiciones de carrera, añadiendo una validación explícita de tipos, control de rutas vacías y garantizando la integridad de `is_within_directory` mediante el uso de `Path.resolve()` en un entorno seguro antes de operar.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-10T05:20:06` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `build_context` agregando validaciones de tipo explícitas para evitar que tipos inesperados (como `None` o `dict` mal formados) causen comportamientos impredecibles al procesar métricas, aplicando el principio de fail-safe.
 - `2026-08-10T03:57:36` **startup.py** (seguridad defensiva): Reforcé la seguridad defensiva al evitar el procesamiento de comandos que contengan secuencias de escape de shell o argumentos maliciosos en `_resolve_path_from_command`, asegurando que `_resolve_and_cache_path` solo opere sobre rutas limpias sin dependencias de parámetros adicionales.
 - `2026-08-10T03:57:25` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save()` aplicando `is_safe_to_modify` sobre el archivo destino antes de cualquier operación de escritura, evitando así ataques de "Time-of-Check Time-of-Use" (TOCTOU) y garantizando que el archivo final permanezca bajo control seguro.
-- `2026-08-10T03:56:39` **scanner.py** (seguridad defensiva): Se reforzó la seguridad del proceso de escaneo validando explícitamente que la entrada no sea un punto de unión (junction) o enlace simbólico antes de procesar su contenido, previniendo el escape de la carpeta base (traversal attacks) y el seguimiento de estructuras cíclicas o externas.
-- `2026-08-10T03:56:17` **safety.py** (seguridad defensiva): Se ha mejorado `ensure_safe_to_modify` para detectar de forma preventiva si una ruta es un punto de reparse (Junction/Symlink) mediante una comprobación de atributos de archivo más robusta antes de que la operación de escritura pueda ser redirigida fuera del alcance esperado, reforzando la seguridad defensiva contra escalada de privilegios o daños fuera de los directorios permitidos.
-- `2026-08-10T03:46:59` **quarantine.py** (seguridad defensiva): Se añadió una validación de profundidad en `_validate_isolation_request` para impedir la cuarentena de archivos ubicados en rutas de profundidad excesiva (posibles intentos de evasión de límites del sistema de archivos o ataques de tipo Path Traversal mediante rutas extremadamente largas) y se reforzó la verificación de integridad de la ruta de origen en `quarantine_file` para asegurar que el `source_path` no sea una ruta absoluta que intente eludir el control de `ensure_safe_to_modify`.

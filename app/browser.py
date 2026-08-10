@@ -99,27 +99,24 @@ def base_directories() -> List[Path]:
 
 def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> bool:
     """
-    Valida que la ruta sea segura contra traversal, no sea protegida, 
-    no contenga caracteres de ofuscación y no sea un enlace simbólico/junction.
-    
-    Uso: Filtro booleano previo a operaciones de lectura/escrutinio.
+    Verificación de seguridad para prevenir Path Traversal y ataques de enlace.
+    Valida que 'target_path' pertenezca físicamente a 'base_path'.
     """
     if not isinstance(target_path, Path) or not isinstance(base_path, Path):
         return False
         
     try:
         real_base = base_path.resolve(strict=True)
-        # Usamos resolve() para normalizar, pero comprobamos existencia tras resolución
         real_target = target_path.resolve(strict=True)
         
-        # Verificar que target esté bajo base_path evitando ataques de traversal
+        # Prevenir Path Traversal: asegurar que real_target sea subdirectorio de real_base
         if os.path.commonpath([real_base, real_target]) != str(real_base):
             return False
 
         if is_protected_path(real_target):
             return False
 
-        # Detectar caracteres no imprimibles o RTL en el path (evita ocultamiento)
+        # Detectar caracteres no imprimibles o RTL en el path (evita ocultamiento visual)
         if any(ord(char) < 32 or ord(char) in (0x200E, 0x200F, 0x202A, 0x202E) for char in str(target_path)):
             return False
 
@@ -133,7 +130,7 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
 
 
 def _is_excluded_file(name: str) -> bool:
-    """Retorna True si el nombre del archivo es un archivo de configuración crítico."""
+    """Filtro de nombres de archivo protegidos (sesiones, cookies, etc)."""
     if not isinstance(name, str):
         return True
     return name.lower() in NEVER_TOUCH
@@ -141,7 +138,8 @@ def _is_excluded_file(name: str) -> bool:
 
 def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool], visited: Optional[Set[str]] = None) -> int:
     """
-    Realiza un recorrido DFS eficiente para calcular el peso total de una carpeta.
+    Realiza un recorrido DFS para calcular el peso total (bytes) de una carpeta.
+    Implementa control de ciclos mediante 'visited' y chequeo de atributos Windows.
     """
     if not root_dir or not os.path.exists(root_dir):
         return 0
@@ -167,6 +165,7 @@ def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool
         with os.scandir(root_dir) as it:
             for entry in it:
                 try:
+                    # Windows: Omitir archivos del sistema o temporales marcados
                     if os.name == 'nt' and kernel32:
                         attrs = kernel32.GetFileAttributesW(entry.path)
                         if attrs != -1 and (attrs & 0x04 or attrs & 0x02):
@@ -188,7 +187,8 @@ def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool
 
 def directory_size(path: str | os.PathLike | None) -> int:
     """
-    Calcula el peso total de una carpeta tras validar que la ruta sea segura.
+    Calcula el peso total en bytes de una carpeta tras validar que sea segura.
+    Retorna 0 en caso de error, acceso denegado o ruta protegida.
     """
     if path is None:
         return 0
@@ -208,7 +208,7 @@ def directory_size(path: str | os.PathLike | None) -> int:
 
 
 def _is_valid_cache_path(candidate: Optional[Path], base_path: Path) -> bool:
-    """Valida si un path es una carpeta de caché, siendo segura y no configurada."""
+    """Verifica si la ruta candidata existe, es segura y no contiene archivos críticos."""
     if not isinstance(candidate, Path) or not isinstance(base_path, Path):
         return False
     try:

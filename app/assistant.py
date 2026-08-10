@@ -221,44 +221,40 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     Transforma fuentes de datos crudas (objetos genéricos) en un SystemContext validado.
     """
     ctx = SystemContext()
-    is_dict_m = isinstance(metrics, dict)
-    is_dict_h = isinstance(health, dict)
-
-    def get_val(source: Any, is_dict: bool, attr: str, default: Any) -> Any:
+    
+    def _get_val_from_source(source: Any, attr: str, default: Any) -> Any:
+        """Extrae valor de dict o atributo de objeto genérico de forma segura."""
         try:
-            if is_dict and isinstance(source, dict):
+            if isinstance(source, dict):
                 return source.get(attr, default)
-            elif not is_dict and hasattr(source, attr):
-                return getattr(source, attr)
-            return default
+            return getattr(source, attr, default)
         except (AttributeError, TypeError):
             return default
 
     if metrics is not None:
-        _safe_assign(ctx, "junk_mb", get_val(metrics, is_dict_m, "junk_mb", 0.0))
-        _safe_assign(ctx, "suspicious_count", get_val(metrics, is_dict_m, "suspicious_count", 0), int)
-        _safe_assign(ctx, "suspicious_warnings", get_val(metrics, is_dict_m, "suspicious_warnings", 0), int)
-        _safe_assign(ctx, "memory_available_percent", get_val(metrics, is_dict_m, "memory_available_percent", 0.0), max_val=100.0)
-        _safe_assign(ctx, "memory_total_gb", get_val(metrics, is_dict_m, "memory_total_gb", 0.0))
-        _safe_assign(ctx, "disk_free_percent", get_val(metrics, is_dict_m, "disk_free_percent", 0.0), max_val=100.0)
-        _safe_assign(ctx, "duplicate_mb", get_val(metrics, is_dict_m, "duplicate_mb", 0.0))
-        _safe_assign(ctx, "startup_count", get_val(metrics, is_dict_m, "startup_count", 0), int)
-        _safe_assign(ctx, "quarantined_count", get_val(metrics, is_dict_m, "quarantined_count", 0), int)
-        _safe_assign(ctx, "browser_cache_mb", get_val(metrics, is_dict_m, "browser_cache_mb", 0.0))
+        _safe_assign(ctx, "junk_mb", _get_val_from_source(metrics, "junk_mb", 0.0))
+        _safe_assign(ctx, "suspicious_count", _get_val_from_source(metrics, "suspicious_count", 0), int)
+        _safe_assign(ctx, "suspicious_warnings", _get_val_from_source(metrics, "suspicious_warnings", 0), int)
+        _safe_assign(ctx, "memory_available_percent", _get_val_from_source(metrics, "memory_available_percent", 0.0), max_val=100.0)
+        _safe_assign(ctx, "memory_total_gb", _get_val_from_source(metrics, "memory_total_gb", 0.0))
+        _safe_assign(ctx, "disk_free_percent", _get_val_from_source(metrics, "disk_free_percent", 0.0), max_val=100.0)
+        _safe_assign(ctx, "duplicate_mb", _get_val_from_source(metrics, "duplicate_mb", 0.0))
+        _safe_assign(ctx, "startup_count", _get_val_from_source(metrics, "startup_count", 0), int)
+        _safe_assign(ctx, "quarantined_count", _get_val_from_source(metrics, "quarantined_count", 0), int)
+        _safe_assign(ctx, "browser_cache_mb", _get_val_from_source(metrics, "browser_cache_mb", 0.0))
         ctx.analyzed = True
 
     if health is not None:
-        raw_score = get_val(health, is_dict_h, "score", None)
+        raw_score = _get_val_from_source(health, "score", None)
         if raw_score is not None:
             _safe_assign(ctx, "score", raw_score, int, max_val=100)
-        grade = get_val(health, is_dict_h, "grade", "")
+        grade = _get_val_from_source(health, "grade", "")
         ctx.grade = str(grade)[:10] if isinstance(grade, (str, int, float)) else ""
         ctx.analyzed = True
 
     for k, v in extra.items():
         if hasattr(ctx, k) and isinstance(v, (int, float)) and math.isfinite(v):
-            target_type = type(getattr(ctx, k))
-            _safe_assign(ctx, k, v, cast=target_type)
+            _safe_assign(ctx, k, v, cast=type(getattr(ctx, k)))
 
     return ctx
 

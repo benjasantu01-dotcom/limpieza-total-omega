@@ -223,7 +223,6 @@ def _hex_to_rgb(value: HexColor) -> RGBTuple:
         return (0, 0, 0)
     try:
         hex_data = value[1:]
-        # Verificar longitud y base 16 antes de convertir
         if all(c in "0123456789abcdefABCDEF" for c in hex_data):
             return (int(hex_data[0:2], 16), int(hex_data[2:4], 16), int(hex_data[4:6], 16))
         return (0, 0, 0)
@@ -312,7 +311,6 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         return None
     try:
         target = Path(destination).resolve()
-        # Validación de seguridad: el padre debe existir o ser seguro de crear
         if not is_safe_to_modify(target.parent):
             return None
         
@@ -334,6 +332,18 @@ def logo_ascii() -> str:
 """
 
 
+def _draw_shield_stripes(canvas: Any, canvas_x: float, canvas_y: float, scale: float) -> None:
+    """Helper interno para renderizar las franjas degradadas del cuerpo del escudo."""
+    franjas_count = max(6, int(28 * scale))
+    colores = gradient_colors(franjas_count)
+    for color_hex, start, end in _get_grouped_segments(colores):
+        mid = (start + end) / 2
+        w = 36 * scale * (1.0 if mid / (franjas_count - 1) < 0.55 else 1.0 - (mid / (franjas_count - 1) - 0.55) * 1.9)
+        canvas.create_rectangle(canvas_x + 64*scale - w, canvas_y + 18*scale + start*(92*scale/franjas_count), 
+                                canvas_x + 64*scale + w, canvas_y + 18*scale + end*(92*scale/franjas_count) + 1, 
+                                fill=color_hex, outline="")
+
+
 def draw_logo(canvas: Any, size: int = 56, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
     """Renderiza el logo vectorial en un canvas de Tkinter usando coordenadas transformadas."""
     if not hasattr(canvas, "create_polygon"): return
@@ -348,16 +358,7 @@ def draw_logo(canvas: Any, size: int = 56, canvas_x: float = 0.0, canvas_y: floa
                                fill=blend(PALETTE["surface"], PALETTE["glow"], 0.04 * paso), outline="")
 
         canvas.create_polygon(contorno, fill=GRADIENT_STOPS[1], outline="")
-        
-        franjas_count = max(6, int(28 * scale))
-        colores = gradient_colors(franjas_count)
-        
-        for color_hex, start, end in _get_grouped_segments(colores):
-            mid = (start + end) / 2
-            w = 36 * scale * (1.0 if mid / (franjas_count - 1) < 0.55 else 1.0 - (mid / (franjas_count - 1) - 0.55) * 1.9)
-            canvas.create_rectangle(canvas_x + 64*scale - w, canvas_y + 18*scale + start*(92*scale/franjas_count), 
-                                    canvas_x + 64*scale + w, canvas_y + 18*scale + end*(92*scale/franjas_count) + 1, 
-                                    fill=color_hex, outline="")
+        _draw_shield_stripes(canvas, canvas_x, canvas_y, scale)
 
         canvas.create_line(canvas_x + 41*scale, canvas_y + 75*scale, canvas_x + 75*scale, canvas_y + 41*scale, 
                            fill=PALETTE["background"], width=max(2, int(8*scale)), capstyle="round")
