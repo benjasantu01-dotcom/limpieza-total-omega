@@ -78,6 +78,7 @@ class Scanner:
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         """Determina si una entrada es un punto de reanálisis (Junction o Symlink) para evitar bucles infinitos."""
         try:
+            # 0x400 es FILE_ATTRIBUTE_REPARSE_POINT
             return bool(entry.stat(follow_symlinks=False).st_file_attributes & 0x400)
         except (OSError, AttributeError):
             return False
@@ -91,12 +92,16 @@ class Scanner:
             return
         
         try:
+            # Validación defensiva de seguridad antes de procesar
+            if self._is_reparse_point(entry):
+                return
+
             entry_path = entry.path
             if not entry_path or is_protected_path(Path(entry_path)) or not self._is_safe_entry(entry_path):
                 return
 
             if entry.is_dir(follow_symlinks=False):
-                if not self._is_reparse_point(entry) and entry_path not in self.seen:
+                if entry_path not in self.seen:
                     self.seen.add(entry_path)
                     stack.append(entry_path)
             elif entry.is_file(follow_symlinks=False):

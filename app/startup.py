@@ -158,9 +158,14 @@ class StartupEntry:
             return path_str
 
     def _resolve_path_from_command(self, cmd: str) -> str:
-        """Selecciona la estrategia de resolución de ruta basada en el formato del comando."""
+        """Selecciona la estrategia de resolución de ruta base, evitando inyección de argumentos."""
+        # Si el comando contiene indicadores de ejecución de shell adicionales, lo descartamos
+        if any(char in cmd for char in ('&', '|', ';', '>', '<')):
+            return ""
+
         if cmd.startswith('"'):
             return self._extract_quoted_path(cmd)
+            
         parts: List[str] = cmd.split()
         return self._resolve_and_cache_path(parts[0]) if parts else ""
         

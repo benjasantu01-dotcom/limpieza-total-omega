@@ -199,8 +199,6 @@ def load(path_or_base: PathLike | None = None) -> AppSettings:
                 with open(ruta, "r", encoding="utf-8") as f:
                     data = json.load(f)
                 if isinstance(data, dict):
-                    # Forzamos la validación contra el esquema, capturando posibles KeyErrors 
-                    # si faltan campos en archivos corruptos o versiones antiguas.
                     _cached_settings = validate(data)
                     _current_path, _last_mtime = ruta, stats.st_mtime
                     return _cached_settings.copy()
@@ -217,7 +215,8 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     if not isinstance(values, dict): return None
     ruta = settings_path(path_or_base)
     
-    if not is_safe_to_modify(str(ruta.parent)):
+    # Validación defensiva final antes de escribir
+    if not is_safe_to_modify(str(ruta.parent)) or not is_safe_to_modify(str(ruta)):
         return None
     
     cleaned_settings = validate(values)

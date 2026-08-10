@@ -98,12 +98,15 @@ def _is_system_or_hidden(path: Path) -> bool:
 
 @lru_cache(maxsize=1024)
 def _is_reparse_point(path: Path) -> bool:
-    """Determina si la ruta es un punto de reparse (Junction/Symlink)."""
+    """Determina si la ruta es un punto de reparse (Junction/Symlink) mediante atributos de archivo."""
+    if os.name != 'nt':
+        return path.is_symlink()
     try:
-        stats = path.lstat()
-        return bool(getattr(stats, "st_file_attributes", 0) & 0x400) or path.is_symlink()
-    except (OSError, PermissionError):
-        return True 
+        attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
+        # 0x400 = FILE_ATTRIBUTE_REPARSE_POINT
+        return attrs != -1 and bool(attrs & 0x400)
+    except (OSError, AttributeError, TypeError):
+        return False
 
 
 def _is_file_in_use(path: Path) -> bool:
@@ -278,11 +281,9 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
         
     if p.exists():
         _check_file_integrity(p)
-        try:
-            if p.is_symlink() and not is_within_directory(p.resolve(), p.parent, allow_equal=True):
-                raise UnsafePathError("Operación bloqueada: symlink inseguro detectado.")
-        except (OSError, RuntimeError):
-            raise UnsafePathError("Operación bloqueada: error al resolver symlink.")
+        # Validar reparse point nuevamente tras resolución para evitar ataques de redirección
+        if _is_reparse_point(p):
+            raise UnsafePathError("Operación bloqueada: el archivo es un punto de reparse inseguro.")
     
     if not allow_sensitive and is_sensitive_file(p):
         raise UnsafePathError("Operación bloqueada: extensión sensible.")
