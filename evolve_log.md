@@ -1109,3 +1109,9 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-10T14:41:34` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `ensure_safe_to_modify` implementando validación de entrada temprana y manejo explícito de errores, evitando que la función opere sobre rutas ambiguas, nulas o mal formadas antes de procesarlas.
 - `2026-08-10T14:41:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-10T14:41:34` Corrida terminada. Total usado hoy: 348.
+- `2026-08-10T14:50:23` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-10T14:50:47` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Reforcé la robustez de `scan_directory` y `process_entry` mediante la validación proactiva de rutas y manejo explícito de `None` en parámetros de entrada, evitando excepciones imprevistas durante la iteración sobre el sistema de archivos.
+- `2026-08-10T14:51:14` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `load` y `validate` al añadir un chequeo explícito de tipos y límites para asegurar que el contenido cargado del JSON sea un diccionario válido antes de procesarlo, evitando que valores inesperados causen fallos silenciosos o estructuras de datos inconsistentes.
+- `2026-08-10T14:51:14` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-08-10T14:51:14` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-10T14:51:14` Corrida terminada. Total usado hoy: 350.

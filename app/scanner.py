@@ -69,7 +69,8 @@ class Scanner:
     def _is_safe_entry(self, entry_path: Path) -> bool:
         """Verifica que la entrada esté dentro del base_root definido."""
         try:
-            return self.base_root in entry_path.resolve().parents or entry_path.resolve() == self.base_root
+            resolved = entry_path.resolve()
+            return self.base_root in resolved.parents or resolved == self.base_root
         except (RuntimeError, ValueError, OSError):
             return False
 
@@ -85,7 +86,7 @@ class Scanner:
         """
         Valida y procesa una entrada del sistema de archivos.
         """
-        if entry is None or stack is None:
+        if entry is None or stack is None or not hasattr(entry, 'path'):
             return
         
         try:
@@ -127,7 +128,6 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
         if (now_ts - entry.stat().st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
             return Suspicion(path, f"Ejecutable reciente detectado (modificado hace menos de {RECENT_FILE_THRESHOLD_HOURS}h)", "info")
     except (OSError, AttributeError, OverflowError):
-        # Fallo de acceso a metadatos ignorado para mantener la estabilidad del bucle
         pass
     return None
 
@@ -148,7 +148,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, na
     if (res := check_double_extension(path, entry, name, suffix, now_ts)):
         findings.append(res)
     
-    # 2. Chequeos solo para ejecutables (evita llamadas costosas de stat si no es ejecutable)
+    # 2. Chequeos solo para ejecutables
     if suffix in SUSPICIOUS_EXECUTABLE_EXT:
         if (res := check_recent_executable_in_downloads(path, entry, name, suffix, now_ts)):
             findings.append(res)
@@ -160,7 +160,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, na
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     """Inicia el escaneo recursivo de directorios."""
-    if directory is None:
+    if not directory:
         return []
         
     try:
