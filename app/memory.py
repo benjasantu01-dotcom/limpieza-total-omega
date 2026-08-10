@@ -235,7 +235,8 @@ def read_snapshot() -> MemorySnapshot:
     if os.path.exists(meminfo_path):
         try:
             with open(meminfo_path, encoding="utf-8", errors="replace") as f:
-                return parse_linux_meminfo(f.read())
+                content = f.read()
+                return parse_linux_meminfo(content) if content else MemorySnapshot(0, 0)
         except (OSError, PermissionError):
             return MemorySnapshot(total=0, available=0)
     return MemorySnapshot(total=0, available=0)
@@ -259,11 +260,11 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     )
     try:
         proc = subprocess.run(["powershell", "-NoProfile", "-Command", command], capture_output=True, text=True, timeout=5)
-        if proc.returncode == 0:
+        if proc.returncode == 0 and proc.stdout:
             new_processes = parse_windows_process_csv(proc.stdout, limit=limit)
             _PROCESS_CACHE["data"] = (now, new_processes)
             return new_processes
-    except (OSError, subprocess.SubprocessError):
+    except (OSError, subprocess.SubprocessError, subprocess.TimeoutExpired):
         pass
     return []
 

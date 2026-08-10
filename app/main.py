@@ -123,14 +123,23 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._executor: Optional[concurrent.futures.ThreadPoolExecutor] = None
         self._log_queue: List[Tuple[str, str]] = []
         self._task_lock = threading.Lock()
+        self._closing = False
         try:
             self._validate_environment()
             self._init_window_properties()
             self._init_state()
             self._build_layout()
+            self.protocol("WM_DELETE_WINDOW", self._on_closing)
         except Exception as e:
             logging.critical("Error fatal al inicializar la aplicación: %s", e)
             raise
+
+    def _on_closing(self) -> None:
+        """Cierra la aplicación cancelando tareas pendientes y liberando hilos."""
+        self._closing = True
+        if self._executor:
+            self._executor.shutdown(wait=False)
+        self.destroy()
 
     def _validate_environment(self) -> None:
         """Comprueba permisos de lectura en el home del usuario como requisito base."""
@@ -190,7 +199,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 self.after_cancel(self._debounces[key])
             except Exception:
                 pass
-        self._debounces[key] = self.after(delay, callback)
+        if not self._closing:
+            self._debounces[key] = self.after(delay, callback)
 
     def _create_styled_label(self, parent: Any, text: str, style: str, **kwargs) -> ctk.CTkLabel:
         """Crea etiquetas con fuentes y colores normalizados según branding.py."""
@@ -473,7 +483,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _render_gauge(self, score: int, grade: str) -> None:
         """Dibuja la geometría del medidor circular de salud en el Canvas."""
-        if not hasattr(self, 'gauge') or not self.gauge.winfo_exists(): return
+        if not hasattr(self, 'gauge') or not self.gauge.winfo_exists() or self._closing: return
         self.gauge.delete("all")
         branding.draw_ring(self.gauge, score, size=176, thickness=15)
         color_nota = branding.grade_color(grade) if grade != "-" else branding.color("text_dim")
@@ -795,7 +805,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _flush_logs(self) -> None:
         """Vuelca la cola acumulada de mensajes al componente visual de texto."""
-        if not self._log_queue:
+        if not self._log_queue or self._closing:
             return
         
         # Agrupamos por pestaña para reducir operaciones de inserción y redibujo
@@ -820,7 +830,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def set_status(self, text: str) -> None:
         """Actualiza el texto descriptivo del pie de página."""
-        self.after_idle(lambda: self.status.configure(text=text) if self.status.winfo_exists() else None)
+        if not self._closing:
+            self.after_idle(lambda: self.status.configure(text=text) if self.status.winfo_exists() else None)
 
     def log_lines(self, lines: List[str], tab: str) -> None:
         """Renderiza una lista de líneas en el log de la pestaña dada."""
@@ -833,7 +844,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _set_busy(self, busy: bool) -> None:
         """Gestiona la visibilidad y estado de la barra de progreso."""
         def actualizar():
-            if not self.activity.winfo_exists(): return
+            if self._closing or not self.activity.winfo_exists(): return
             if busy:
                 self._tasks_running += 1
             else:
@@ -888,7 +899,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                     self._set_busy(False)
                     self.set_status("Listo.")
 
-        self._executor.submit(wrapper)
+        if not self._closing and self._executor:
+            self._executor.submit(wrapper)
 
     def _current_tab(self) -> str:
         """Determina qué pestaña está activa para el contexto de logs."""
@@ -997,6 +1009,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._last_health_state = state_key
 
         def actualizar():
+            if self._closing: return
             self._draw_gauge(resultado.score, resultado.grade)
 
             valores = {

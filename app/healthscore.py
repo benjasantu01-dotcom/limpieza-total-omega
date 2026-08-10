@@ -154,13 +154,13 @@ def score_security(suspicious_count: Any, warnings: Any = 0) -> float:
 def score_memory(available_percent: Any) -> float:
     """Calcula score (0.0-1.0) basándose en la disponibilidad porcentual."""
     val = _to_float(available_percent)
-    return 0.0 if _LIMIT_RAM_PERCENT <= 0.0 else _clamp(val / _LIMIT_RAM_PERCENT, 0.0, 1.0)
+    return 1.0 if _LIMIT_RAM_PERCENT <= 0.0 else _clamp(val / _LIMIT_RAM_PERCENT, 0.0, 1.0)
 
 
 def score_disk(free_percent: Any) -> float:
     """Calcula score (0.0-1.0) basándose en el espacio libre."""
     val = _to_float(free_percent)
-    return 0.0 if _LIMIT_DISK_PERCENT <= 0.0 else _clamp(val / _LIMIT_DISK_PERCENT, 0.0, 1.0)
+    return 1.0 if _LIMIT_DISK_PERCENT <= 0.0 else _clamp(val / _LIMIT_DISK_PERCENT, 0.0, 1.0)
 
 
 def score_duplicates(duplicate_mb: Any) -> float:
