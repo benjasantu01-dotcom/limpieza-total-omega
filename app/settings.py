@@ -132,16 +132,20 @@ class _Validators:
             if not path_string: return ""
             path_obj = Path(path_string).expanduser()
             
+            # Bloquear travesuras de directorio
             if any(part in ('.', '..', '..\\', '../') for part in path_obj.parts): return None
             
+            # Resolver sin forzar existencia para validar seguridad de la base
             resolved = path_obj.resolve(strict=False)
             
+            # Detectar enlaces simbólicos o junctions que podrían saltar seguridad
             if resolved.is_symlink() or (resolved.exists() and hasattr(resolved, 'is_junction') and resolved.is_junction()):
                 return None
             
+            # Validar si el segmento base (existente o a crear) es seguro
             target = resolved if resolved.exists() else resolved.parent
             return str(resolved) if is_safe_to_modify(str(target)) else None
-        except (OSError, RuntimeError, ValueError, TypeError, PermissionError):
+        except (OSError, RuntimeError, ValueError, TypeError, PermissionError, AttributeError):
             return None
 
     @staticmethod

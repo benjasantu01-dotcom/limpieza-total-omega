@@ -170,15 +170,15 @@ def normalize(path: PathLike) -> Path:
     Raises:
         ValueError: Si la ruta excede límites de longitud o es inválida.
     """
-    if not isinstance(path, (str, os.PathLike)):
-        raise TypeError(f"Entrada inválida: tipo {type(path)} no soportado.")
+    if not isinstance(path, (str, os.PathLike)) or not str(path).strip():
+        raise ValueError("Entrada de ruta vacía o tipo inválido.")
     
     str_path = str(path).strip()
-    if not str_path or len(str_path) > 260:
-        raise ValueError("La ruta está vacía o excede el límite de longitud.")
+    if len(str_path) > 260:
+        raise ValueError("La ruta excede el límite de longitud del sistema.")
         
     try:
-        return Path(str_path).expanduser().resolve(strict=False)
+        return Path(str_path).expanduser().resolve()
     except (OSError, RuntimeError):
         return Path(os.path.abspath(os.path.expanduser(str_path)))
 
@@ -200,7 +200,6 @@ def is_protected_path(path: PathLike) -> bool:
     
     try:
         p = normalize(path)
-        # Optimización: evitar crear nuevas estructuras de datos innecesarias
         if any(part.lower() in PROTECTED_DIR_NAMES for part in p.parts):
             return True
             
@@ -242,33 +241,25 @@ def is_sensitive_file(path: PathLike) -> bool:
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: PathLike | None = None) -> Path:
     """
     Validador principal de seguridad para operaciones de escritura.
-    
-    Args:
-        path: Ruta a validar.
-        allow_sensitive: Si es True, ignora la restricción de extensiones sensibles.
-        base_dir: Directorio raíz permitido (opcional).
-    Returns:
-        Path validado si la operación es segura.
-    Raises:
-        UnsafePathError: Si la ruta infringe reglas de seguridad.
     """
     if path is None:
         raise UnsafePathError("Ruta nula recibida.")
 
-    if not isinstance(path, (str, Path)):
-        raise UnsafePathError(f"Tipo de entrada no soportado: {type(path)}")
+    try:
+        p = normalize(path)
+        path_str = str(path)
+    except (ValueError, TypeError) as e:
+        raise UnsafePathError(f"Ruta mal formada: {e}")
 
-    p = normalize(path)
-    path_str = str(path)
-    
     if any(part in ("..", "...") for part in path_str.replace("/", os.sep).split(os.sep)):
         raise UnsafePathError("Operación bloqueada: posible intento de path traversal.")
 
-    if base_dir and not is_within_directory(p, base_dir, allow_equal=True):
-        raise UnsafePathError("Operación bloqueada: intento de acceso fuera del directorio base.")
+    if base_dir:
+        if not is_within_directory(p, base_dir, allow_equal=True):
+            raise UnsafePathError("Operación bloqueada: fuera del directorio base permitido.")
     
     if is_within_directory(p, Path.cwd(), allow_equal=True):
-        raise UnsafePathError("Operación bloqueada: el archivo pertenece al directorio de ejecución.")
+        raise UnsafePathError("Operación bloqueada: el archivo reside en el directorio de ejecución.")
 
     if _has_invalid_chars(path_str) or _is_reserved_device_name(p.name):
         raise UnsafePathError("Ruta inválida o formato de dispositivo bloqueado.")
@@ -281,9 +272,8 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
         
     if p.exists():
         _check_file_integrity(p)
-        # Validar reparse point nuevamente tras resolución para evitar ataques de redirección
         if _is_reparse_point(p):
-            raise UnsafePathError("Operación bloqueada: el archivo es un punto de reparse inseguro.")
+            raise UnsafePathError("Operación bloqueada: punto de reparse inseguro.")
     
     if not allow_sensitive and is_sensitive_file(p):
         raise UnsafePathError("Operación bloqueada: extensión sensible.")

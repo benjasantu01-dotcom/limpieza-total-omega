@@ -117,7 +117,7 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, name
     """
     Identifica archivos con extensiones dobles engañosas (ej: foto.jpg.exe).
     """
-    target = name or path.name
+    target = name or (path.name if path else None)
     if target and DOUBLE_EXTENSION_RE.search(target):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
     return None
@@ -127,7 +127,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     """
     Detecta ejecutables creados o modificados recientemente usando metadatos del DirEntry.
     """
-    if entry is None:
+    if entry is None or path is None:
         return None
     try:
         mtime = entry.stat(follow_symlinks=False).st_mtime
@@ -144,6 +144,8 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, name
     """
     Busca ejecutables que usurpan nombres de procesos críticos del sistema.
     """
+    if path is None:
+        return None
     target = (name or path.name or "").lower()
     if target in SYSTEM_LOOKALIKES:
         try:
