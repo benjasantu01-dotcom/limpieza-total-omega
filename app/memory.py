@@ -182,19 +182,24 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
     """Convierte la salida de PowerShell Get-Process en una lista de ProcessMemory."""
     if not isinstance(text, str) or not text:
         return []
-    lines = text.splitlines()
-    if len(lines) < 1:
-        return []
+    
     processes = []
-    for line in lines:
+    # Usar generador para procesar líneas solo una vez
+    for line in (l for l in text.splitlines() if l.strip()):
         parts = [p.strip().strip('"') for p in line.split(",")]
         if _is_valid_process_row(parts):
             try:
-                processes.append(ProcessMemory(name=parts[0] or "Unknown", pid=int(parts[1]), working_set=int(parts[2])))
+                processes.append(ProcessMemory(
+                    name=parts[0] or "Unknown", 
+                    pid=int(parts[1]), 
+                    working_set=int(parts[2])
+                ))
             except (ValueError, IndexError):
                 continue
+    
+    # Ordenar solo una vez antes de retornar el slice
     processes.sort(key=lambda p: p.working_set, reverse=True)
-    return processes[:max(0, limit)]
+    return processes[:limit]
 
 
 def _read_windows_snapshot() -> MemorySnapshot:
@@ -233,17 +238,19 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     
     now = time.time()
     ts, cached_processes = _PROCESS_CACHE["data"]
+    
+    # Retornar desde caché si es reciente
     if now - ts < 5.0 and cached_processes:
         return cached_processes[:limit]
     
-    # PowerShell: extrae nombre, PID y WorkingSet (Bytes)
-    command = "Get-Process | Sort-Object WorkingSet -Descending | Select-Object -First 20 | ForEach-Object { \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }"
+    # PowerShell optimizado: limitar el procesamiento en origen para no cargar memoria de más
+    command = "Get-Process | Select-Object -Property Name, Id, WorkingSet | Sort-Object WorkingSet -Descending | Select-Object -First 20 | ForEach-Object { \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }"
     try:
         proc = subprocess.run(["powershell", "-NoProfile", "-Command", command], capture_output=True, text=True, timeout=5)
         if proc.returncode == 0:
-            processes = parse_windows_process_csv(proc.stdout, limit=20)
-            _PROCESS_CACHE["data"] = (now, processes)
-            return processes[:limit]
+            new_processes = parse_windows_process_csv(proc.stdout, limit=20)
+            _PROCESS_CACHE["data"] = (now, new_processes)
+            return new_processes[:limit]
     except (OSError, subprocess.SubprocessError):
         pass
     return []
@@ -281,7 +288,7 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
     
     lines.append(diagnosticos.get(level, ""))
     
-    if processes and isinstance(processes, list):
+    if processes:
         for proc in processes[:3]:
             lines.append(f"  Mayor consumo: {proc.name} (PID {proc.pid}) — {proc.working_set_mb} MB")
             

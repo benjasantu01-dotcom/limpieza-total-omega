@@ -795,11 +795,21 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _flush_logs(self) -> None:
         """Vuelca la cola acumulada de mensajes al componente visual de texto."""
-        while self._log_queue:
-            tab, text = self._log_queue.pop(0)
+        if not self._log_queue:
+            return
+        
+        # Agrupamos por pestaña para reducir operaciones de inserción y redibujo
+        pendientes = list(self._log_queue)
+        self._log_queue.clear()
+        
+        tab_messages = {}
+        for tab, text in pendientes:
+            tab_messages.setdefault(tab, []).append(text)
+            
+        for tab, msgs in tab_messages.items():
             box = self._box(tab)
             if box and box.winfo_exists():
-                box.insert("end", f"{text}\n")
+                box.insert("end", "\n".join(msgs) + "\n")
                 box.see("end")
 
     def clear(self, tab: str = "Limpieza") -> None:

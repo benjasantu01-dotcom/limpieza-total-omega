@@ -437,3 +437,10 @@ FAILED evolve/tests/test_basic.py::test_delete_reviewed_only_touches_the_review_
 - `2026-08-10T06:40:57` ➖ Sin cambios en diskreport.py (enfoque: rendimiento). Motivo: Optimicé el bucle principal de `summarize` eliminando la re-recolección redundante de datos (usando las funciones de conveniencia `walk_files` y consolidando el procesamiento) para evitar el uso excesivo de memoria y CPU en escaneos largos, mejorando la eficiencia algorítmica al calcular todo en una sola pasada.
 - `2026-08-10T06:40:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-10T06:40:57` Corrida terminada. Total usado hoy: 160.
+- `2026-08-10T06:49:29` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-08-10T06:49:53` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-08-10T06:50:16` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
+- `2026-08-10T06:51:19` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Optimicé el método `_flush_logs` para procesar la cola de mensajes en un solo lote de inserción, reduciendo drásticamente la frecuencia de llamadas a `box.insert` y `box.see`, lo cual mejora notablemente el rendimiento de la UI cuando hay un logueo masivo de archivos (ej. escaneos de disco).
+- `2026-08-10T06:51:30` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se implementó un filtrado preventivo en `parse_windows_process_csv` y se optimizó la lógica de caché en `top_memory_processes` para evitar ejecuciones innecesarias de PowerShell y procesado redundante de strings, mejorando significativamente la eficiencia en cada iteración del bucle.
+- `2026-08-10T06:51:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-10T06:51:30` Corrida terminada. Total usado hoy: 164.
