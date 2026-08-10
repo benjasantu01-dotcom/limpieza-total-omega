@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **234** (46.4% de aceptación)
+- Mejoras aceptadas: **232** (46.0% de aceptación)
 - Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 26
-- Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 218
+- Sin cambios (nada sustancial que mejorar): 15
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-09 | 162 | 8 | 18 | 11 | 149 |
-| 2026-08-10 | 72 | 4 | 8 | 3 | 69 |
+| 2026-08-09 | 159 | 8 | 18 | 11 | 148 |
+| 2026-08-10 | 73 | 4 | 8 | 4 | 71 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **59**
 - manejo de errores y validación de entradas: **52**
 - seguridad defensiva: **51**
-- rendimiento: **37**
-- robustez ante casos límite: **35**
+- rendimiento: **38**
+- robustez ante casos límite: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **23**
-- `main.py`: **21**
+- `quarantine.py`: **22**
 - `settings.py`: **21**
 - `assistant.py`: **20**
 - `healthscore.py`: **20**
+- `main.py`: **20**
+- `branding.py`: **18**
 - `scanner.py`: **17**
-- `branding.py`: **17**
 - `browser.py`: **17**
 - `diskreport.py`: **17**
 - `organizer.py`: **16**
 - `duplicates.py`: **15**
-- `memory.py`: **11**
 - `safety.py`: **10**
+- `memory.py`: **10**
 - `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-10T06:40:25` **branding.py** (rendimiento): Optimicé el rendimiento de `branding.py` mediante la aplicación de `lru_cache` en funciones de resolución de colores (`severity_color`, `grade_color`, `score_color`), reduciendo la sobrecarga de cálculo y acceso a diccionarios en los bucles de renderizado de la UI.
 - `2026-08-10T06:30:09` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo `settings.py` al reemplazar el diccionario `_VALIDATOR_MAP` por una estructura de delegación más explícita y documentada, facilitando la comprensión del flujo de validación.
 - `2026-08-10T06:29:44` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de docstrings estructurados (con secciones Args/Returns) y type hints más precisos, asegurando que las funciones de análisis cumplan con el estándar requerido para un proyecto de grado profesional, facilitando la comprensión del flujo de datos en las heurísticas.
 - `2026-08-10T06:29:21` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación y la robustez de las funciones de seguridad mediante la adición de docstrings técnicos detallados y type hints explícitos, facilitando la comprensión de las restricciones de seguridad y el comportamiento ante errores.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-10T05:59:41` **branding.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `branding.py` mediante la refactorización de `draw_logo` para delegar la lógica de renderizado de las franjas (el degradado del escudo) en una función privada dedicada, facilitando la comprensión del flujo de dibujo vectorial.
 - `2026-08-10T05:59:12` **assistant.py** (legibilidad y documentación): Se mejoró la legibilidad de `build_context` mediante la extracción de la lógica de asignación y validación de tipos a una función interna `_get_val_from_source`, haciendo el flujo principal más declarativo y eliminando la repetición de lógica de acceso a atributos.
 - `2026-08-10T05:49:17` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_Validators.path` capturando errores adicionales de acceso a archivos y asegurando que las rutas vacías o inválidas devuelvan `None` de forma consistente, evitando que rutas erróneas se filtren como válidas al cargar la configuración.
-- `2026-08-10T05:49:06` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las funciones de chequeo (`check_recent_executable_in_downloads` y `check_system_lookalike`) agregando validaciones preventivas de valores nulos o vacíos (`name`, `path`), asegurando que las operaciones de comparación y manipulación de rutas no fallen inesperadamente ante estados de entrada inesperados.

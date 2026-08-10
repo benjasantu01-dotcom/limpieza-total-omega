@@ -157,6 +157,7 @@ def tab_label(section: str) -> str:
     return f"{icon(section)}  {section}"
 
 
+@lru_cache(maxsize=16)
 def severity_color(severity: Optional[str]) -> HexColor:
     """Resuelve el código de color asociado a un nivel de severidad."""
     if severity and (style := SEVERITY_STYLES.get(severity.lower())):
@@ -179,6 +180,7 @@ def severity_icon(severity: Optional[str]) -> str:
     return simbolos.get(severity.lower(), "\u2022")
 
 
+@lru_cache(maxsize=16)
 def grade_color(grade: Optional[str]) -> HexColor:
     """Asigna un color hex basado en una calificación alfabética (A-F)."""
     if isinstance(grade, str) and grade.strip():
@@ -186,6 +188,7 @@ def grade_color(grade: Optional[str]) -> HexColor:
     return PALETTE["text_muted"]
 
 
+@lru_cache(maxsize=128)
 def score_color(score: Union[float, int, None]) -> HexColor:
     """Determina el color semántico según el puntaje numérico (0-100)."""
     if score is None:
