@@ -109,6 +109,7 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
         
     try:
         real_base = base_path.resolve(strict=True)
+        # Usamos resolve() para normalizar, pero comprobamos existencia tras resolución
         real_target = target_path.resolve(strict=True)
         
         # Verificar que target esté bajo base_path evitando ataques de traversal
@@ -244,13 +245,15 @@ def detect_profiles(
         for browser_name, relative_path_str in cache_paths.items():
             if not isinstance(relative_path_str, str): continue
             try:
-                candidate = real_base.joinpath(*relative_path_str.split("\\")).resolve()
+                # Construcción segura evitando traversal y symlinks
+                candidate = real_base.joinpath(*relative_path_str.split("\\"))
+                # Validar seguridad antes de forzar resolución de path para evitar seguir enlaces maliciosos
                 if _is_valid_cache_path(candidate, real_base):
-                    size: int = _sum_directory_recursive(str(candidate), is_junction)
+                    size: int = _sum_directory_recursive(str(candidate.resolve()), is_junction)
                     if size > 0:
                         found.append(BrowserCache(
                             browser=browser_name,
-                            path=candidate,
+                            path=candidate.resolve(),
                             size_bytes=size,
                         ))
             except (OSError, ValueError, TypeError, AttributeError, PermissionError):

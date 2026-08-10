@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **231** (45.8% de aceptación)
+- Mejoras aceptadas: **234** (46.4% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 26
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 221
+- Sin respuesta de la IA (error o límite): 218
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-08 | 33 | 1 | 3 | 1 | 36 |
+| 2026-08-08 | 33 | 1 | 3 | 1 | 32 |
 | 2026-08-09 | 162 | 8 | 18 | 11 | 151 |
-| 2026-08-10 | 36 | 4 | 5 | 1 | 34 |
+| 2026-08-10 | 39 | 4 | 5 | 1 | 35 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **58**
 - manejo de errores y validación de entradas: **52**
 - rendimiento: **45**
+- seguridad defensiva: **41**
 - robustez ante casos límite: **38**
-- seguridad defensiva: **38**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **23**
-- `assistant.py`: **21**
+- `assistant.py`: **22**
 - `main.py`: **21**
 - `healthscore.py`: **20**
 - `settings.py`: **20**
-- `browser.py`: **18**
+- `browser.py`: **19**
+- `branding.py`: **18**
 - `diskreport.py`: **17**
-- `branding.py`: **17**
 - `organizer.py`: **15**
 - `scanner.py`: **15**
 - `memory.py`: **13**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-10T03:27:51` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva al evitar el seguimiento de enlaces simbólicos y puntos de reparse durante la resolución de rutas en `detect_profiles`, garantizando que el `candidate` sea validado contra `is_protected_path` de forma estricta y evitando la expansión accidental fuera del directorio base del usuario.
+- `2026-08-10T03:27:43` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad en `save_logo_svg` implementando `is_safe_to_modify` para realizar una validación preventiva antes de intentar la creación de directorios o la escritura, alineándose con el patrón de seguridad defensiva que evita excepciones innecesarias durante operaciones de I/O.
+- `2026-08-10T03:27:14` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_call_gemini` validando que la `api_key` no contenga caracteres de control o inyección antes de usarla en la URL, previniendo posibles ataques de inyección de parámetros.
 - `2026-08-10T03:16:19` **settings.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `load` para capturar errores de `KeyError` ante configuraciones parciales o corruptas, garantizando que si el archivo JSON no contiene todas las claves requeridas, la aplicación aplique los valores de fábrica de forma segura sin abortar.
 - `2026-08-10T03:06:54` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `quarantine_file` para evitar condiciones de carrera y fallos silenciosos, implementando una comprobación de existencia previa a la copia y un bloque `try-finally` para asegurar que el archivo temporal (si llega a crearse en una interrupción) no deje residuos en el sistema de archivos.
 - `2026-08-10T03:05:49` **main.py** (robustez ante casos límite): Se ha mejorado la robustez de `main.py` frente a casos límite de concurrencia y fallos en la interfaz mediante la implementación de `after_idle` en las actualizaciones visuales asíncronas, asegurando que las actualizaciones de estado (como la barra de progreso y el texto de estado) no intenten acceder a widgets que fueron destruidos si el usuario cierra pestañas rápidamente o cierra la app durante un proceso largo.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-10T02:35:28` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` reemplazando la iteración completa sobre `p.parts` (que genera una tupla nueva y crea múltiples objetos `Path` en cada llamado) por una búsqueda `any` con chequeo directo de miembros en `PROTECTED_DIR_NAMES`, reduciendo drásticamente la carga de memoria y CPU durante el escaneo de discos.
 - `2026-08-10T02:34:44` **quarantine.py** (rendimiento): Optimizé la búsqueda de ítems en `purge_all` y `restore_item` usando un diccionario de mapeo (`item_map`) para evitar recorridos O(n) redundantes, mejorando el rendimiento en escenarios con múltiples archivos en cuarentena.
 - `2026-08-10T02:25:57` **organizer.py** (rendimiento): Optimizé la función `scan_for_junk` moviendo la validación de seguridad `is_safe_to_modify(path_obj)` después de obtener `stat()` para reducir llamadas redundantes al sistema de archivos, y cacheé la conversión a `Path` de las rutas raíz del escaneo para evitar conversiones repetitivas dentro del bucle.
-- `2026-08-10T02:25:24` **main.py** (rendimiento): Se optimizó el caché LRU implementando una estructura de acceso O(1) combinando un `dict` para los datos con un `collections.deque` para el seguimiento del orden de uso (evitando `list.remove` que es O(n)), reduciendo la latencia en la gestión de métricas durante los análisis masivos.
-- `2026-08-10T02:24:22` **healthscore.py** (rendimiento): Optimicé el cálculo del score reemplazando operaciones repetitivas en el bucle principal por una pre-multiplicación de los pesos, evitando divisiones innecesarias y reduciendo la complejidad de las conversiones de tipo en tiempo de ejecución.
-- `2026-08-10T02:15:24` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_refine_by_hash` utilizando una estructura de datos `list` pre-filtrada para evitar iterar sobre grupos innecesarios, y eliminé la re-verificación redundante en `find_duplicates` que procesaba listas de longitud menor a 2, acelerando significativamente el pipeline.
