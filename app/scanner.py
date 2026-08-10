@@ -76,7 +76,7 @@ class Scanner:
             return False
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
-        """Determina si una entrada es un punto de reanálisis (Junction o Symlink) para evitar bucles infinitos."""
+        """Determina si una entrada es un punto de reanálisis (Junction o Symlink)."""
         try:
             # 0x400 es FILE_ATTRIBUTE_REPARSE_POINT
             return bool(entry.stat(follow_symlinks=False).st_file_attributes & 0x400)
@@ -85,14 +85,16 @@ class Scanner:
 
     def process_entry(self, entry: os.DirEntry, stack: List[str]) -> None:
         """
-        Valida y procesa una entrada del sistema de archivos. 
-        Si es directorio, lo agrega al stack de recorrido; si es archivo, ejecuta las heurísticas.
+        Valida y procesa una entrada del sistema de archivos.
+        
+        Args:
+            entry: Entrada del sistema de archivos proporcionada por os.scandir.
+            stack: Lista mutable que actúa como pila para el recorrido DFS.
         """
         if entry is None or stack is None:
             return
         
         try:
-            # Validación defensiva de seguridad antes de procesar
             if self._is_reparse_point(entry):
                 return
 
@@ -115,7 +117,10 @@ class Scanner:
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None) -> Optional[Suspicion]:
     """
-    Identifica archivos con extensiones dobles engañosas (ej: foto.jpg.exe).
+    Identifica archivos con extensiones dobles engañosas.
+    
+    Returns:
+        Un objeto Suspicion si se detecta una extensión doble, None en caso contrario.
     """
     target = name or (path.name if path else None)
     if target and DOUBLE_EXTENSION_RE.search(target):
@@ -125,7 +130,7 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, name
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, hours: int = RECENT_FILE_THRESHOLD_HOURS) -> Optional[Suspicion]:
     """
-    Detecta ejecutables creados o modificados recientemente usando metadatos del DirEntry.
+    Detecta ejecutables modificados recientemente según umbral de tiempo.
     """
     if entry is None or path is None:
         return None
@@ -142,7 +147,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None) -> Optional[Suspicion]:
     """
-    Busca ejecutables que usurpan nombres de procesos críticos del sistema.
+    Busca ejecutables que usurpan nombres de procesos críticos del sistema fuera de System32.
     """
     if path is None:
         return None
@@ -157,7 +162,10 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, name
 
 def scan_file(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None) -> ScanResult:
     """
-    Punto central para el análisis de archivos. Optimizado para evitar cómputo innecesario.
+    Ejecuta el conjunto de heurísticas sobre un archivo.
+    
+    Returns:
+        Una lista de objetos Suspicion encontrados durante el análisis.
     """
     if path is None:
         return []
@@ -180,8 +188,12 @@ def scan_file(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[st
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     """
-    Inicializa el escaneo recursivo mediante un stack. 
-    Maneja la lógica de control de flujo para evitar duplicidad y proteger rutas sensibles.
+    Inicia el escaneo recursivo de directorios.
+    
+    Args:
+        directory: Ruta raíz donde comenzar el escaneo.
+    Returns:
+        Lista consolidada de todas las sospechas encontradas en el árbol.
     """
     if directory is None:
         return []

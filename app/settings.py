@@ -132,17 +132,12 @@ class _Validators:
             if not path_string: return ""
             path_obj = Path(path_string).expanduser()
             
-            # Bloquear travesuras de directorio
             if any(part in ('.', '..', '..\\', '../') for part in path_obj.parts): return None
             
-            # Resolver sin forzar existencia para validar seguridad de la base
             resolved = path_obj.resolve(strict=False)
-            
-            # Detectar enlaces simbólicos o junctions que podrían saltar seguridad
             if resolved.is_symlink() or (resolved.exists() and hasattr(resolved, 'is_junction') and resolved.is_junction()):
                 return None
             
-            # Validar si el segmento base (existente o a crear) es seguro
             target = resolved if resolved.exists() else resolved.parent
             return str(resolved) if is_safe_to_modify(str(target)) else None
         except (OSError, RuntimeError, ValueError, TypeError, PermissionError, AttributeError):
@@ -159,13 +154,24 @@ class _Validators:
         if key == "ultima_carpeta": return _Validators.path(text)
         return text if len(text) <= 512 else None
 
+# Definición explícita de validadores por campo para facilitar el mantenimiento
 _VALIDATOR_MAP: Final[dict[str, Callable[[str, Any], Any]]] = {
-    "tema": _Validators.str, "acento": _Validators.str, "ultima_carpeta": _Validators.str, 
-    "asistente_clave_api": _Validators.str, "asistente_modelo": _Validators.str, "abrir_en": _Validators.str,
-    "mostrar_barras": _Validators.bool, "animaciones": _Validators.bool, "confirmar_siempre": _Validators.bool, 
-    "recordar_ultima_carpeta": _Validators.bool, "analisis_en_paralelo": _Validators.bool, 
-    "asistente_activado": _Validators.bool, "asistente_enviar_metricas": _Validators.bool,
-    "duplicados_tamano_minimo_kb": _Validators.int, "top_archivos": _Validators.int, "top_procesos": _Validators.int
+    "tema": _Validators.str,
+    "acento": _Validators.str,
+    "abrir_en": _Validators.str,
+    "ultima_carpeta": _Validators.str,
+    "asistente_clave_api": _Validators.str,
+    "asistente_modelo": _Validators.str,
+    "mostrar_barras": _Validators.bool,
+    "animaciones": _Validators.bool,
+    "confirmar_siempre": _Validators.bool,
+    "recordar_ultima_carpeta": _Validators.bool,
+    "analisis_en_paralelo": _Validators.bool,
+    "asistente_activado": _Validators.bool,
+    "asistente_enviar_metricas": _Validators.bool,
+    "duplicados_tamano_minimo_kb": _Validators.int,
+    "top_archivos": _Validators.int,
+    "top_procesos": _Validators.int
 }
 
 def settings_path(path_or_base: PathLike | None = None) -> Path:
@@ -219,7 +225,6 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     if not isinstance(values, dict): return None
     ruta = settings_path(path_or_base)
     
-    # Validación defensiva final antes de escribir
     if not is_safe_to_modify(str(ruta.parent)) or not is_safe_to_modify(str(ruta)):
         return None
     

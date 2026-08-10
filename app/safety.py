@@ -131,7 +131,11 @@ def _is_file_in_use(path: Path) -> bool:
 
 
 def _check_file_integrity(p: Path) -> None:
-    """Valida la integridad del archivo antes de cualquier operación de modificación."""
+    """
+    Valida la integridad del archivo antes de cualquier operación de modificación.
+    
+    Lanza UnsafePathError si alguna heurística de seguridad falla.
+    """
     if not p.exists():
         raise UnsafePathError(f"El archivo {p.name} ya no existe.")
 
@@ -194,7 +198,11 @@ def is_drive_root(path: PathLike) -> bool:
 
 @lru_cache(maxsize=1024)
 def is_protected_path(path: PathLike) -> bool:
-    """Determina si la ruta reside en una ubicación protegida mediante heurísticas."""
+    """
+    Determina si la ruta reside en una ubicación protegida.
+    
+    Utiliza heurísticas basadas en nombres de carpetas estándar y variables de entorno del sistema.
+    """
     if not path:
         return True
     
@@ -240,7 +248,9 @@ def is_sensitive_file(path: PathLike) -> bool:
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: PathLike | None = None) -> Path:
     """
-    Validador principal de seguridad para operaciones de escritura.
+    Validador principal para operaciones de escritura/modificación destructiva.
+    
+    Lanza UnsafePathError si la ruta es insegura. Retorna la ruta normalizada si es segura.
     """
     if path is None:
         raise UnsafePathError("Ruta nula recibida.")
