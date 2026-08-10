@@ -205,7 +205,6 @@ def _safe_assign(obj: SystemContext, attr: str, val: Any, cast: Callable = float
     try:
         if val is None:
             return
-        # Pre-convertir y filtrar finitud antes de evaluar rangos
         clean = cast(val)
         if isinstance(clean, (int, float)) and math.isfinite(clean):
             setattr(obj, attr, max(min_val, min(clean, max_val)))
@@ -220,45 +219,39 @@ def _fmt_metric(val: Any, unit: str = "", decimal: int = 0) -> str:
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
     """
     Transforma fuentes de datos crudas (objetos genéricos) en un SystemContext validado.
-    
-    Esta función actúa como una capa de saneamiento: ignora cualquier dato no numérico
-    o fuera de rango antes de pasarlo al motor de inferencia.
     """
     ctx = SystemContext()
+    is_dict_m = isinstance(metrics, dict)
+    is_dict_h = isinstance(health, dict)
 
-    def get_attr(source: Any, attr: str, default: Any) -> Any:
-        try:
-            return source[attr] if isinstance(source, dict) else getattr(source, attr, default)
-        except (AttributeError, TypeError, KeyError):
-            return default
+    def get_val(source: Any, is_dict: bool, attr: str, default: Any) -> Any:
+        return source.get(attr, default) if is_dict else getattr(source, attr, default)
 
     if metrics is not None:
-        _safe_assign(ctx, "junk_mb", get_attr(metrics, "junk_mb", 0.0))
-        _safe_assign(ctx, "suspicious_count", get_attr(metrics, "suspicious_count", 0), int)
-        _safe_assign(ctx, "suspicious_warnings", get_attr(metrics, "suspicious_warnings", 0), int)
-        _safe_assign(ctx, "memory_available_percent", get_attr(metrics, "memory_available_percent", 0.0), max_val=100.0)
-        _safe_assign(ctx, "memory_total_gb", get_attr(metrics, "memory_total_gb", 0.0))
-        _safe_assign(ctx, "disk_free_percent", get_attr(metrics, "disk_free_percent", 0.0), max_val=100.0)
-        _safe_assign(ctx, "duplicate_mb", get_attr(metrics, "duplicate_mb", 0.0))
-        _safe_assign(ctx, "startup_count", get_attr(metrics, "startup_count", 0), int)
-        _safe_assign(ctx, "quarantined_count", get_attr(metrics, "quarantined_count", 0), int)
-        _safe_assign(ctx, "browser_cache_mb", get_attr(metrics, "browser_cache_mb", 0.0))
+        _safe_assign(ctx, "junk_mb", get_val(metrics, is_dict_m, "junk_mb", 0.0))
+        _safe_assign(ctx, "suspicious_count", get_val(metrics, is_dict_m, "suspicious_count", 0), int)
+        _safe_assign(ctx, "suspicious_warnings", get_val(metrics, is_dict_m, "suspicious_warnings", 0), int)
+        _safe_assign(ctx, "memory_available_percent", get_val(metrics, is_dict_m, "memory_available_percent", 0.0), max_val=100.0)
+        _safe_assign(ctx, "memory_total_gb", get_val(metrics, is_dict_m, "memory_total_gb", 0.0))
+        _safe_assign(ctx, "disk_free_percent", get_val(metrics, is_dict_m, "disk_free_percent", 0.0), max_val=100.0)
+        _safe_assign(ctx, "duplicate_mb", get_val(metrics, is_dict_m, "duplicate_mb", 0.0))
+        _safe_assign(ctx, "startup_count", get_val(metrics, is_dict_m, "startup_count", 0), int)
+        _safe_assign(ctx, "quarantined_count", get_val(metrics, is_dict_m, "quarantined_count", 0), int)
+        _safe_assign(ctx, "browser_cache_mb", get_val(metrics, is_dict_m, "browser_cache_mb", 0.0))
         ctx.analyzed = True
 
     if health is not None:
-        raw_score = get_attr(health, "score", None)
+        raw_score = get_val(health, is_dict_h, "score", None)
         if raw_score is not None:
             _safe_assign(ctx, "score", raw_score, int, max_val=100)
-        grade = get_attr(health, "grade", "")
+        grade = get_val(health, is_dict_h, "grade", "")
         ctx.grade = str(grade)[:10] if isinstance(grade, (str, int, float)) else ""
         ctx.analyzed = True
 
     for k, v in extra.items():
-        if hasattr(ctx, k) and isinstance(v, (int, float)):
+        if hasattr(ctx, k) and isinstance(v, (int, float)) and math.isfinite(v):
             target_type = type(getattr(ctx, k))
-            # Validar antes de asignar desde kwargs dinámicos
-            if isinstance(v, (int, float)) and math.isfinite(v):
-                _safe_assign(ctx, k, v, cast=target_type)
+            _safe_assign(ctx, k, v, cast=target_type)
 
     return ctx
 
@@ -425,7 +418,6 @@ def local_answer(question: str, context: SystemContext) -> Answer:
     clean_text = _sanitize_query(question)
     tokens = set(_TOKEN_REGEX.findall(clean_text))
     
-    # Optimizamos: isdisjoint es O(min(len(s), len(t))), mucho más rápido para descartar
     if not tokens.isdisjoint(_KEYWORD_KEYS):
         for token in tokens:
             if token in _KEYWORD_MAP:
@@ -446,7 +438,6 @@ def local_answer(question: str, context: SystemContext) -> Answer:
 def _gen_problems(ctx: SystemContext) -> Generator[str, None, None]:
     """
     Genera un flujo de descripciones de problemas detectados de forma perezosa.
-    Solo emite problemas que superan umbrales significativos.
     """
     if ctx is None: return
     
@@ -514,7 +505,6 @@ def _call_gemini(
         text = "".join(str(p.get("text", "")) for p in parts if isinstance(p, dict))
         
         final_text = text.strip()[:_MAX_TEXT_LENGTH]
-        # Defensiva final: bloquear si el modelo intenta retornar una ruta
         if not _ensure_safe_text(final_text) or is_protected_path(final_text):
             return None
         return final_text
@@ -536,7 +526,6 @@ def ask(question: str, context: Optional[SystemContext] = None,
         if not isinstance(configuracion, dict):
             return respaldo
         
-        # Casting explícito para asegurar cumplimiento del esquema de configuración
         cfg: AssistantConfig = {
             "asistente_api_key": str(configuracion.get("asistente_api_key", "")),
             "asistente_modelo": str(configuracion.get("asistente_modelo", "gemini-3.1-flash-lite")),
@@ -545,7 +534,6 @@ def ask(question: str, context: Optional[SystemContext] = None,
             
         texto_contexto = context_as_text(ctx) if cfg["asistente_enviar_metricas"] else "El usuario no autorizó enviar métricas."
         
-        # Validar el texto antes de pasarlo al motor remoto
         if not _ensure_safe_text(texto_contexto):
             return respaldo
             

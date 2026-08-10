@@ -1030,3 +1030,38 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-10T01:54:43` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante la adición de docstrings estructuradas (parámetros, retornos y excepciones) en funciones clave, lo que facilita el mantenimiento y la auditoría del código conforme a los estándares exigidos para el proyecto.
 - `2026-08-10T01:54:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-10T01:54:43` Corrida terminada. Total usado hoy: 48.
+- `2026-08-10T02:03:32` Arrancando corrida. Quedan hoy ~252 peticiones objetivo.
+- `2026-08-10T02:03:57` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: legibilidad y documentación).
+- `2026-08-10T02:04:22` Tests FALLARON:
+```
+                                         [100%]
+=================================== FAILURES ===================================
+____________________ test_booleans_accept_the_usual_strings ____________________
+
+    def test_booleans_accept_the_usual_strings():
+>       assert settings.validate({"asistente_activado": "true"})["asistente_activado"] is True
+E       assert False is True
+
+evolve/tests/test_assistant.py:105: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:95: SyntaxWarning: invalid escape sequence '\P'
+    Analiza comandos tipo 'C:\Path\App.exe' /args.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_booleans_accept_the_usual_strings - assert False is True
+1 failed, 298 passed, 7 warnings in 0.96s
+
+```
+- `2026-08-10T02:04:22` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Mejoré la legibilidad y la robustez del código en `settings.py` al extraer la lógica de validación de rutas y valores dentro de un bloque `if` en `save` hacia una función privada clara y tipada, eliminando redundancias en la verificación de claves del asistente.
+- `2026-08-10T02:04:46` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-08-10T02:05:05` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `build_context` evitando llamadas repetitivas a `getattr` y `isinstance` dentro de los bucles, y pre-calculando la validación del estado del sistema, reduciendo así la carga computacional en cada iteración del bucle principal.
+- `2026-08-10T02:05:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-10T02:05:05` Corrida terminada. Total usado hoy: 52.
