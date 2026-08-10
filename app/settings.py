@@ -134,13 +134,11 @@ class _Validators:
             
             if any(part in ('.', '..', '..\\', '../') for part in path_obj.parts): return None
             
-            # Resolvemos sin strict=True para manejar rutas que aún no existen
             resolved = path_obj.resolve(strict=False)
             
             if resolved.is_symlink() or (resolved.exists() and hasattr(resolved, 'is_junction') and resolved.is_junction()):
                 return None
             
-            # Verificamos si la ruta o su contenedor es seguro para modificar
             target = resolved if resolved.exists() else resolved.parent
             return str(resolved) if is_safe_to_modify(str(target)) else None
         except (OSError, RuntimeError, ValueError, TypeError, PermissionError):
@@ -173,8 +171,7 @@ def settings_path(path_or_base: PathLike | None = None) -> Path:
     if key not in _path_cache:
         try:
             base = Path(key).expanduser().resolve(strict=False)
-            candidate = base / SETTINGS_FILE
-            _path_cache[key] = candidate if is_safe_to_modify(str(base)) else default_res
+            _path_cache[key] = (base / SETTINGS_FILE) if is_safe_to_modify(str(base)) else default_res
         except (OSError, RuntimeError, PermissionError):
             _path_cache[key] = default_res
     return _path_cache[key]
@@ -194,16 +191,16 @@ def load(path_or_base: PathLike | None = None) -> AppSettings:
     
     try:
         if ruta.exists():
-            mtime = ruta.stat().st_mtime
-            if _cached_settings is not None and _current_path == ruta and _last_mtime == mtime:
+            stats = ruta.stat()
+            if _cached_settings is not None and _current_path == ruta and _last_mtime == stats.st_mtime:
                 return _cached_settings.copy()
             
-            if ruta.is_file() and 0 < ruta.stat().st_size <= MAX_SETTINGS_SIZE:
+            if 0 < stats.st_size <= MAX_SETTINGS_SIZE:
                 with open(ruta, "r", encoding="utf-8") as f:
                     data = json.load(f)
                 if isinstance(data, dict):
                     _cached_settings = validate(data)
-                    _current_path, _last_mtime = ruta, mtime
+                    _current_path, _last_mtime = ruta, stats.st_mtime
                     return _cached_settings.copy()
     except (OSError, PermissionError, json.JSONDecodeError, UnicodeDecodeError):
         pass
@@ -218,9 +215,7 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     if not isinstance(values, dict): return None
     ruta = settings_path(path_or_base)
     
-    # Validar seguridad del padre antes de operar
-    parent = ruta.parent
-    if not is_safe_to_modify(str(parent)):
+    if not is_safe_to_modify(str(ruta.parent)):
         return None
     
     cleaned_settings = validate(values)
@@ -231,16 +226,13 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
         return ruta
 
     try:
-        if not parent.exists():
-            parent.mkdir(parents=True, exist_ok=True)
-        
-        temp_path = None
-        with tempfile.NamedTemporaryFile("w", dir=parent, delete=False, encoding="utf-8") as temp_file:
-            temp_path = Path(temp_file.name)
+        ruta.parent.mkdir(parents=True, exist_ok=True)
+        with tempfile.NamedTemporaryFile("w", dir=ruta.parent, delete=False, encoding="utf-8") as temp_file:
             json.dump(cleaned_settings, temp_file, indent=2, ensure_ascii=False)
             temp_file.flush()
             os.fsync(temp_file.fileno())
-        os.replace(temp_path, ruta)
+            temp_name = temp_file.name
+        os.replace(temp_name, ruta)
         _cached_settings, _current_path = cleaned_settings, ruta
         _last_mtime = ruta.stat().st_mtime
         return ruta

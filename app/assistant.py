@@ -225,7 +225,10 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     is_dict_h = isinstance(health, dict)
 
     def get_val(source: Any, is_dict: bool, attr: str, default: Any) -> Any:
-        return source.get(attr, default) if is_dict else getattr(source, attr, default)
+        try:
+            return source.get(attr, default) if is_dict else getattr(source, attr, default)
+        except (AttributeError, TypeError):
+            return default
 
     if metrics is not None:
         _safe_assign(ctx, "junk_mb", get_val(metrics, is_dict_m, "junk_mb", 0.0))

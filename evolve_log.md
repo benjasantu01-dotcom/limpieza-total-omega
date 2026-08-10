@@ -1119,3 +1119,41 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-08-10T02:35:36` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento de `scan_directory` reemplazando el uso de `os.path.splitext` dentro del bucle principal por el acceso directo a `entry.name`, evitando llamadas redundantes a funciones de cadena y mejorando la eficiencia de la iteración mediante el uso de `Path.parent` cacheado en `Scanner`.
 - `2026-08-10T02:35:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-10T02:35:36` Corrida terminada. Total usado hoy: 64.
+- `2026-08-10T02:44:31` Arrancando corrida. Quedan hoy ~236 peticiones objetivo.
+- `2026-08-10T02:45:01` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de `load()` y `settings_path()` reduciendo llamadas redundantes al sistema de archivos (`stat()`, `exists()`) mediante una verificación de caché más eficiente y el uso de un mapa local de validadores pre-computados.
+- `2026-08-10T02:45:26` Tests FALLARON:
+```
+_____ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=============================== warnings summary ===============================
+app/startup.py:95
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:95: SyntaxWarning: invalid escape sequence '\P'
+    Analiza comandos tipo 'C:\Path\App.exe' /args.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed, 8 warnings in 0.78s
+
+```
+- `2026-08-10T02:45:26` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `_resolve_and_cache_path` mediante una verificación previa de existencia (`os.path.exists`) que evita llamadas costosas a `Path.resolve()` y `Path.exists()` cuando el archivo ya ha sido procesado o es una ruta inválida.
+- `2026-08-10T02:46:00` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `build_context` frente a fuentes de datos corruptas o mal formadas (diccionarios con tipos inesperados o valores no numéricos) asegurando que los tipos de datos sean consistentes antes de la asignación y evitando que un fallo en un valor individual detenga la construcción del contexto del sistema.
+- `2026-08-10T02:46:14` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se ha robustecido el módulo `branding.py` mediante una validación defensiva en `_hex_to_rgb` para evitar desbordamientos de índice al procesar strings mal formados (que no son `"#RRGGBB"`), previniendo posibles errores en tiempo de ejecución ante valores de configuración inesperados.
+- `2026-08-10T02:46:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-10T02:46:14` Corrida terminada. Total usado hoy: 68.

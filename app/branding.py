@@ -242,7 +242,10 @@ def _hex_to_rgb(value: HexColor) -> RGBTuple:
     if not isinstance(value, str) or len(value) != 7 or not value.startswith("#"):
         return (0, 0, 0)
     try:
-        return (int(value[1:3], 16), int(value[3:5], 16), int(value[5:7], 16))
+        # Validación extra: asegurarse de que los segmentos contengan solo caracteres hex
+        hex_data = value[1:]
+        int(hex_data, 16)
+        return (int(hex_data[0:2], 16), int(hex_data[2:4], 16), int(hex_data[4:6], 16))
     except ValueError:
         return (0, 0, 0)
 
