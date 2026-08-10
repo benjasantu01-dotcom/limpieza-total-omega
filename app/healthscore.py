@@ -140,37 +140,55 @@ def _to_int(value: Any, default: int = 0) -> int:
 
 
 def score_junk(junk_mb: Any) -> float:
-    """Calcula score (0.0-1.0) basado en la cantidad de archivos temporales detectados."""
+    """
+    Calcula score (0.0-1.0) normalizando la basura contra _LIMIT_JUNK_MB.
+    Un valor de 0 MB resulta en 1.0; valores >= _LIMIT_JUNK_MB resultan en 0.0.
+    """
     val = _to_float(junk_mb)
     return 1.0 if _LIMIT_JUNK_MB <= 0.0 else _clamp(1.0 - (val / _LIMIT_JUNK_MB))
 
 
 def score_security(suspicious_count: Any, warnings: Any = 0) -> float:
-    """Calcula score (0.0-1.0) penalizando archivos sospechosos y advertencias de seguridad."""
+    """
+    Calcula score (0.0-1.0) mediante penalizaciones directas.
+    Cada hallazgo resta 0.05 y cada advertencia resta 0.25 del score base.
+    """
     penalty = (_to_int(suspicious_count) * 0.05) + (_to_int(warnings) * 0.25)
     return _clamp(1.0 - penalty, 0.0, 1.0)
 
 
 def score_memory(available_percent: Any) -> float:
-    """Calcula score (0.0-1.0) respecto a la disponibilidad de memoria ram ideal."""
+    """
+    Calcula score (0.0-1.0) basándose en la disponibilidad porcentual.
+    El score es 1.0 si la disponibilidad alcanza o supera _LIMIT_RAM_PERCENT.
+    """
     val = _to_float(available_percent)
     return 0.0 if _LIMIT_RAM_PERCENT <= 0.0 else _clamp(val / _LIMIT_RAM_PERCENT, 0.0, 1.0)
 
 
 def score_disk(free_percent: Any) -> float:
-    """Calcula score (0.0-1.0) respecto al espacio libre ideal en disco."""
+    """
+    Calcula score (0.0-1.0) basándose en el espacio libre.
+    El score es 1.0 si el espacio libre alcanza o supera _LIMIT_DISK_PERCENT.
+    """
     val = _to_float(free_percent)
     return 0.0 if _LIMIT_DISK_PERCENT <= 0.0 else _clamp(val / _LIMIT_DISK_PERCENT, 0.0, 1.0)
 
 
 def score_duplicates(duplicate_mb: Any) -> float:
-    """Calcula score (0.0-1.0) basado en el volumen de archivos duplicados hallados."""
+    """
+    Calcula score (0.0-1.0) normalizando duplicados contra _LIMIT_DUPLICATE_MB.
+    A mayor volumen de duplicados, menor es el score obtenido.
+    """
     val = _to_float(duplicate_mb)
     return 1.0 if _LIMIT_DUPLICATE_MB <= 0.0 else _clamp(1.0 - (val / _LIMIT_DUPLICATE_MB))
 
 
 def score_startup(startup_count: Any) -> float:
-    """Calcula score (0.0-1.0) inversamente proporcional a la cantidad de elementos en inicio."""
+    """
+    Calcula score (0.0-1.0) inversamente a la cantidad de apps en inicio.
+    El score cae linealmente hasta 0 cuando se alcanza _LIMIT_STARTUP_COUNT.
+    """
     val = _to_int(startup_count)
     return 1.0 if _LIMIT_STARTUP_COUNT <= 0 else _clamp(1.0 - (val / _LIMIT_STARTUP_COUNT))
 

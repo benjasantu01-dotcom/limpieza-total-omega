@@ -136,13 +136,21 @@ def _is_excluded_file(name: str) -> bool:
     return name.lower() in NEVER_TOUCH
 
 
+def _is_system_hidden(entry_path: str, kernel32: ctypes.WinDLL | None) -> bool:
+    """Usa la API de Windows para verificar si un archivo tiene atributos de sistema u oculto."""
+    if not kernel32:
+        return False
+    attrs = kernel32.GetFileAttributesW(entry_path)
+    # 0x04: SYSTEM, 0x02: HIDDEN
+    return attrs != -1 and bool(attrs & 0x04 or attrs & 0x02)
+
+
 def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool], visited: Optional[Set[str]] = None, depth: int = 0) -> int:
     """
     Realiza un recorrido DFS para calcular el peso total (bytes) de una carpeta.
-    Implementa control de ciclos mediante 'visited' y límite de profundidad.
+    Implementa control de ciclos mediante 'visited' y límite de profundidad (10 niveles).
     """
-    if depth > 10: return 0
-    if not root_dir or not os.path.exists(root_dir):
+    if depth > 10 or not root_dir or not os.path.exists(root_dir):
         return 0
     
     if is_protected_path(Path(root_dir)):
@@ -159,35 +167,26 @@ def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool
     except (OSError, PermissionError):
         return 0
         
-    total: int = 0
+    total_size: int = 0
     kernel32 = ctypes.windll.kernel32 if os.name == 'nt' else None
     
     try:
         with os.scandir(root_dir) as it:
-            while True:
+            for entry in it:
                 try:
-                    entry = next(it, None)
-                    if entry is None:
-                        break
-                    
-                    # Windows: Omitir archivos del sistema o temporales marcados
-                    if os.name == 'nt' and kernel32:
-                        attrs = kernel32.GetFileAttributesW(entry.path)
-                        if attrs != -1 and (attrs & 0x04 or attrs & 0x02):
-                            continue
-
-                    if entry.is_symlink() or is_junction_fn(entry.path):
+                    # Saltar archivos ocultos/sistema en Windows y cualquier symlink/junction
+                    if _is_system_hidden(entry.path, kernel32) or entry.is_symlink() or is_junction_fn(entry.path):
                         continue
                     
                     if entry.is_dir():
-                        total += _sum_directory_recursive(entry.path, is_junction_fn, visited, depth + 1)
+                        total_size += _sum_directory_recursive(entry.path, is_junction_fn, visited, depth + 1)
                     elif entry.is_file() and not _is_excluded_file(entry.name):
-                        total += entry.stat().st_size
+                        total_size += entry.stat().st_size
                 except (OSError, PermissionError):
                     continue
     except (OSError, PermissionError):
         pass
-    return total
+    return total_size
 
 
 def directory_size(path: str | os.PathLike | None) -> int:

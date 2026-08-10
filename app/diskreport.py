@@ -202,8 +202,11 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Generador iterativo que recorre archivos bajo un directorio usando una pila (stack).
-    Evita seguir puntos de reparse (junctions/symlinks) por seguridad.
+    Generador que recorre archivos bajo un directorio usando una pila (stack) para evitar recursión.
+    
+    Args:
+        directory: Directorio base de inicio.
+        skip_protected: Si es True, ignora rutas marcadas por safety.py.
     """
     if not directory:
         return
@@ -218,6 +221,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     except (OSError, RuntimeError, TypeError):
         return
 
+    # Evitar ciclos de directorios usando inodos (dev, ino)
     visited_inodes: set[Tuple[int, int]] = set()
     stack: List[Tuple[Path, int]] = [(root, 0)]
     MAX_DEPTH = 100
@@ -231,7 +235,6 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        # Si es un enlace simbólico o junction, no seguirlo (seguridad)
                         if entry.is_symlink():
                             continue
                         
@@ -352,20 +355,12 @@ def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -> List[str]:
     """
     Genera un informe textual unificado del uso de disco.
-    
-    Args:
-        directory: Carpeta a analizar.
-        skip_protected: Saltar rutas protegidas.
-        
-    Returns:
-        Lista de líneas de texto con el informe.
     """
     if not directory: 
         return ["Error: Ruta no proporcionada."]
     
     try:
-        path_input = os.fspath(directory)
-        path_obj = Path(path_input).expanduser().resolve()
+        path_obj = Path(os.fspath(directory)).expanduser().resolve()
         if not path_obj.exists(): 
             return [f"Error: Ruta no encontrada: {path_obj}"]
     except (OSError, TypeError, RuntimeError):
@@ -376,21 +371,20 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
     top_files_heap: List[Tuple[int, str]] = []
     total_bytes, total_files = 0, 0
     
-    try:
-        for path, size in walk_files(path_obj, skip_protected):
-            total_bytes += size
-            total_files += 1
-            
-            ext = path.suffix.lower() or "(sin extensión)"
-            ext_size[ext] += size
-            ext_count[ext] += 1
-            
-            if len(top_files_heap) < 8:
-                heapq.heappush(top_files_heap, (size, str(path)))
-            else:
-                heapq.heappushpop(top_files_heap, (size, str(path)))
-    except Exception:
-        return ["Error durante el análisis del directorio."]
+    # Procesamiento centralizado de archivos
+    for path, size in walk_files(path_obj, skip_protected):
+        total_bytes += size
+        total_files += 1
+        
+        ext = path.suffix.lower() or "(sin extensión)"
+        ext_size[ext] += size
+        ext_count[ext] += 1
+        
+        # Mantenimiento de heap para archivos más grandes (top 8)
+        if len(top_files_heap) < 8:
+            heapq.heappush(top_files_heap, (size, str(path)))
+        else:
+            heapq.heappushpop(top_files_heap, (size, str(path)))
 
     lines = [f"Carpeta analizada: {path_obj}", f"Total: {format_size(total_bytes)} en {total_files} archivos", "", "Por tipo de archivo:"]
     
