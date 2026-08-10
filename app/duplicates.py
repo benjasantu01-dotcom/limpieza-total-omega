@@ -69,9 +69,9 @@ class DuplicateGroup:
         Returns:
             Total de bytes redundantes o 0 si el grupo es inválido o unitario.
         """
-        if not self.paths or self.count <= 1:
+        if not self.paths or self.count <= 1 or self.size_bytes < 0:
             return 0
-        return (self.count - 1) * max(0, self.size_bytes)
+        return (self.count - 1) * self.size_bytes
 
 
 def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional[str]:
@@ -278,6 +278,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
 
     keepers: List[Tuple[float, int, Path]] = []
     for p in group.paths:
+        if not isinstance(p, Path): continue
         try:
             stat_info = p.stat()
             keepers.append((float(stat_info.st_mtime), len(str(p)), p))

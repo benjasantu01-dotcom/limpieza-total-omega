@@ -177,9 +177,12 @@ def grade_for_score(score: int) -> str:
 
 def _generate_recommendations(m: SystemMetrics, ratios: ScoreMap) -> List[str]:
     """Genera recomendaciones basadas en los ratios de cada área evaluada."""
+    if not isinstance(m, SystemMetrics) or not isinstance(ratios, dict):
+        return ["No es posible generar recomendaciones debido a datos incompletos."]
+        
     recs: List[str] = []
     if ratios.get("seguridad", 1.0) < WARN_THRESHOLD_HIGH:
-        recs.append(f"Revisá los {m.suspicious_count} hallazgo(s) de seguridad; podés aislarlos en cuarentena.")
+        recs.append(f"Revisá los {int(m.suspicious_count)} hallazgo(s) de seguridad; podés aislarlos en cuarentena.")
     if ratios.get("disco", 1.0) < WARN_THRESHOLD_LOW:
         recs.append(f"Queda {m.disk_free_percent:.1f}% de disco libre.")
     if ratios.get("memoria", 1.0) < WARN_THRESHOLD_LOW:
@@ -189,10 +192,10 @@ def _generate_recommendations(m: SystemMetrics, ratios: ScoreMap) -> List[str]:
     if ratios.get("duplicados", 1.0) < WARN_THRESHOLD_MED:
         recs.append(f"Podrías recuperar {int(m.duplicate_mb)} MB eliminando duplicados.")
     if ratios.get("arranque", 1.0) < WARN_THRESHOLD_LOW:
-        recs.append(f"{m.startup_count} programas arrancan con Windows.")
+        recs.append(f"{int(m.startup_count)} programas arrancan con Windows.")
     
     if m.quarantined_count > 0:
-        recs.append(f"Tenés {m.quarantined_count} archivo(s) en cuarentena.")
+        recs.append(f"Tenés {int(m.quarantined_count)} archivo(s) en cuarentena.")
     
     return recs or ["No hay nada urgente para hacer. El sistema está en buen estado."]
 
