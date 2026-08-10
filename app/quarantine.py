@@ -285,17 +285,13 @@ def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_
     base_path = quarantine_dir(base)
     target_path = _manifest_path(base_path)
     
+    temp_fd, temp_path = tempfile.mkstemp(dir=base_path, text=True)
     try:
-        fd, temp_path = tempfile.mkstemp(dir=base_path, text=True)
-    except OSError as e:
-        raise RuntimeError(f"No se pudo crear archivo temporal para manifiesto: {e}")
-
-    try:
-        with os.fdopen(fd, 'w', encoding='utf-8') as f:
+        with os.fdopen(temp_fd, 'w', encoding='utf-8') as f:
             json.dump([item.to_dict() for item in items], f, indent=2, ensure_ascii=False)
         os.replace(temp_path, target_path)
         _manifest_cache[str(base_path)] = (target_path.stat().st_mtime, items)
-    except (OSError, PermissionError, TypeError) as e:
+    except (OSError, PermissionError, TypeError, IOError) as e:
         if os.path.exists(temp_path):
             try: os.remove(temp_path)
             except OSError: pass
@@ -317,7 +313,6 @@ def quarantine_file(
     
     source_path = Path(source).resolve()
     
-    # Validar integridad contra ruta de sistema y normalización
     ensure_safe_to_modify(source_path, allow_sensitive=True)
     
     if str(source_path).startswith(("\\\\", "//")):
@@ -361,17 +356,10 @@ def quarantine_file(
     temp_dest = dest_dir / f"{item_id}.tmp"
     try:
         shutil.copy2(source_path, temp_dest)
-        
         if temp_dest.stat().st_size != file_size:
             raise RuntimeError("Integridad fallida: el archivo fuente cambió durante la copia.")
-        
         os.replace(temp_dest, destination)
-        
-        try:
-            os.remove(source_path)
-        except OSError as e:
-            raise RuntimeError(f"Error al eliminar origen tras la copia exitosa: {e}")
-            
+        os.remove(source_path)
     except (OSError, PermissionError) as e:
         if temp_dest.exists():
             _safe_unlink(temp_dest)
@@ -418,7 +406,6 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
         raise ValueError("ID de ítem vacío o tipo incorrecto.")
     
     items = load_manifest(base)
-    # Optimización: Mapeo O(1) para búsqueda rápida
     item_map = {i.item_id: i for i in items}
     match = item_map.get(item_id)
     
@@ -456,7 +443,6 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
         parent_dir = destination.parent
         if not parent_dir.exists():
             parent_dir.mkdir(parents=True, exist_ok=True)
-            
         os.replace(str(stored_file), str(destination))
     except (OSError, PermissionError) as e:
         raise RuntimeError(f"Fallo durante la operación de restauración: {e}")
@@ -504,27 +490,30 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
         return 0
     
     items = load_manifest(base)
-    # Indexamos ítems por nombre para búsqueda O(1) en vez de O(n) dentro del bucle
     item_map: Dict[str, QuarantineItem] = {item.stored_name: item for item in items}
     
     purged_count = 0
     items_to_keep: List[QuarantineItem] = []
     
-    for entry in quarantine_root.iterdir():
-        if entry.name == MANIFEST_NAME or not entry.is_file():
-            continue
-        
-        item = item_map.get(entry.name)
-        if item and item.verify_integrity(entry):
-            if _safe_unlink(entry):
-                purged_count += 1
-            else:
-                items_to_keep.append(item)
-        elif item:
-            items_to_keep.append(item)
+    try:
+        for entry in quarantine_root.iterdir():
+            if entry.name == MANIFEST_NAME or not entry.is_file():
+                continue
             
-    if purged_count > 0:
-        save_manifest(items_to_keep, base)
+            item = item_map.get(entry.name)
+            if item and item.verify_integrity(entry):
+                if _safe_unlink(entry):
+                    purged_count += 1
+                else:
+                    items_to_keep.append(item)
+            elif item:
+                items_to_keep.append(item)
+                
+        if purged_count > 0:
+            save_manifest(items_to_keep, base)
+    except (OSError, PermissionError):
+        pass
+        
     return purged_count
 
 

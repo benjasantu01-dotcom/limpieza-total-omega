@@ -145,7 +145,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.geometry("1120x780")
             self.minsize(980, 680)
         except Exception as e:
-            logging.warning("No se pudo configurar la geometría inicial: %s", e)
+            logging.warning("Configuración de geometría ignorada: %s", e)
         try:
             bg_color = branding.color("background")
             if bg_color:
@@ -170,7 +170,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             raw_settings = settings_mod.load()
             self.settings = raw_settings if isinstance(raw_settings, dict) else settings_mod.reset()
         except Exception as e:
-            logging.error("Fallo al cargar ajustes, reseteando a valores por defecto: %s", e)
+            logging.error("Fallo al cargar ajustes, reseteando: %s", e)
             self.settings = settings_mod.reset()
             
         self.setting_vars: Dict[str, Any] = {}
@@ -312,7 +312,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             except Exception as e:
                 logging.error("Fallo crítico en el constructor de la pestaña %s: %s", name, e)
                 if name in self.tabs:
-                    self._create_styled_label(self.tabs[name], f"Error al cargar módulo: {e}", "caption").pack()
+                    self._create_styled_label(self.tabs[name], f"Error al cargar módulo: {type(e).__name__}", "caption").pack()
 
     def _build_tabs_container(self) -> None:
         """Configura el widget de pestañas y recorre la factoría para construir cada una."""
@@ -339,7 +339,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                     self.tabs[name] = frame
                     self._tab_factory(name)
                 else:
-                    logging.warning("No se pudo obtener frame para la pestaña: %s", name)
+                    logging.warning("Frame no disponible para pestaña: %s", name)
             except Exception as e:
                 logging.error("Error al construir la pestaña %s: %s", name, e)
 
@@ -357,7 +357,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         try:
             branding.draw_logo(canvas, size=72)
         except Exception as e:
-            logging.error("Error al dibujar logo: %s", e)
+            logging.error("Fallo al renderizar logo: %s", e)
 
         self._create_styled_label(header, branding.APP_NAME, "title").grid(row=0, column=1, sticky="sw")
         self._create_styled_label(header, branding.APP_TAGLINE, "body").grid(row=1, column=1, sticky="nw")

@@ -6,35 +6,35 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **229** (45.4% de aceptación)
-- Rechazadas por tests: 13
+- Mejoras aceptadas: **228** (45.2% de aceptación)
+- Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 25
-- Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 223
+- Sin cambios (nada sustancial que mejorar): 15
+- Sin respuesta de la IA (error o límite): 224
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-08 | 13 | 1 | 1 | 1 | 6 |
+| 2026-08-08 | 10 | 0 | 1 | 1 | 6 |
 | 2026-08-09 | 162 | 8 | 18 | 11 | 151 |
-| 2026-08-10 | 54 | 4 | 6 | 2 | 66 |
+| 2026-08-10 | 56 | 4 | 6 | 3 | 67 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **51**
-- legibilidad y documentación: **48**
-- manejo de errores y validación de entradas: **47**
-- rendimiento: **45**
+- manejo de errores y validación de entradas: **49**
+- legibilidad y documentación: **46**
+- rendimiento: **44**
 - robustez ante casos límite: **38**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **22**
-- `assistant.py`: **21**
-- `settings.py`: **20**
+- `quarantine.py`: **23**
+- `main.py`: **21**
 - `healthscore.py`: **20**
-- `main.py`: **20**
+- `assistant.py`: **20**
+- `settings.py`: **19**
 - `branding.py`: **18**
 - `diskreport.py`: **17**
 - `browser.py`: **17**
@@ -42,11 +42,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - `organizer.py`: **15**
 - `duplicates.py`: **14**
 - `memory.py`: **11**
-- `startup.py`: **10**
 - `safety.py`: **9**
+- `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-10T05:40:11` **quarantine.py** (manejo de errores y validación de entradas): Se introdujo un manejo robusto de errores en `save_manifest` y `purge_all` para evitar estados inconsistentes (manifiestos corruptos o huérfanos) mediante la validación del estado del disco y el uso de bloques `finally`, garantizando que la app no quede inutilizable ante fallos de E/S.
+- `2026-08-10T05:38:55` **main.py** (manejo de errores y validación de entradas): Se reforzó la robustez del manejo de errores en el proceso de inicialización y en la factoría de pestañas, asegurando que cualquier fallo al construir un componente individual no detenga la ejecución completa de la app ni deje la interfaz en un estado inconsistente, implementando además la captura de excepciones específicas durante la carga de dependencias visuales.
 - `2026-08-10T05:28:52` **healthscore.py** (manejo de errores y validación de entradas): Mejora la robustez del manejo de datos al agregar validación de tipo y valor en `_generate_recommendations` para prevenir errores si `SystemMetrics` llega con valores inesperados o si `ratios` está incompleto, garantizando que el asistente de salud no colapse ante datos parcialmente corruptos.
 - `2026-08-10T05:28:43` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `suggest_keeper` y `reclaimable_bytes` ante tipos de datos inesperados y estados de archivo inválidos mediante validaciones de tipo explícitas y manejo de errores defensivo, evitando que la app colapse ante entradas mal formadas o archivos que desaparecen durante la ejecución.
 - `2026-08-10T05:28:19` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `largest_folders` capturando excepciones específicas (`PermissionError`, `OSError`) al acceder a metadatos de archivos y directorios, evitando que errores de acceso puntual silencien o interrumpan inesperadamente el escaneo de grandes volúmenes de disco.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-10T03:46:28` **organizer.py** (seguridad defensiva): Mejoré la seguridad defensiva en `delete_reviewed` reemplazando `is_safe_to_modify` (que verifica si se puede modificar/mover un archivo de usuario) por una lógica que valide estrictamente que el archivo esté contenido dentro del directorio de cuarentena/revisión, evitando así cualquier posible borrado fuera del área de sandbox designada.
 - `2026-08-10T03:37:24` **main.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_ask_folder` añadiendo una normalización de ruta previa a la validación, asegurando que la comparación contra el sistema sea robusta ante inconsistencias de `Path.resolve()`, y agregué un chequeo de `is_protected_path` antes de permitir la selección de una carpeta, evitando que el usuario pueda intentar operar sobre directorios del sistema incluso antes de iniciar un escaneo.
 - `2026-08-10T03:36:38` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva de `healthscore.py` validando la integridad del tipo y estado de los datos en `compute_score` antes de procesarlos, asegurando que `metrics` sea una instancia válida y que los cálculos no se vean afectados por inyecciones de objetos mal formados.
-- `2026-08-10T03:36:13` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez del escaneo de duplicados añadiendo una validación explícita mediante `is_protected_path` dentro de `_scan` para cada archivo procesado, asegurando que incluso si el iterador encuentra un archivo en un sistema de archivos complejo, este sea filtrado antes de cualquier intento de apertura, cumpliendo con el enfoque de seguridad defensiva.
-- `2026-08-10T03:35:49` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `walk_files` y `largest_folders` validando que las rutas base estén contenidas dentro de las carpetas permitidas mediante `is_protected_path` antes de iniciar la recursión, previniendo el procesamiento accidental de estructuras prohibidas en niveles superiores.
