@@ -168,7 +168,12 @@ def _safe_unlink(path: Path) -> bool:
 
 
 def quarantine_dir(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
-    """Resuelve la ruta de cuarentena y garantiza su creación, lanzando OSError si falla."""
+    """
+    Resuelve la ruta de cuarentena y garantiza su creación.
+    Raises:
+        OSError: Si no se puede acceder o crear el directorio.
+        ValueError: Si la ruta base está vacía.
+    """
     if not base:
         raise ValueError("El directorio base no puede estar vacío.")
     try:
@@ -190,7 +195,12 @@ def _is_valid_quarantine_path(path: Path, root: Path) -> TypeGuard[Path]:
 
 
 def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
-    """Ejecuta una serie de chequeos preventivos antes de mover un archivo a cuarentena."""
+    """
+    Ejecuta una serie de chequeos preventivos antes de mover un archivo a cuarentena.
+    Raises:
+        UnsafePathError: Si la ruta no cumple los requisitos de seguridad.
+        IOError: Si el archivo está bloqueado por otro proceso.
+    """
     if len(source_path.parts) > 32:
         raise UnsafePathError("Profundidad de ruta excesiva: riesgo de desbordamiento.")
 
@@ -278,7 +288,11 @@ def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload:
 
 
 def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
-    """Persiste la lista de ítems mediante una técnica de escritura atómica (temp file + replace)."""
+    """
+    Persiste la lista de ítems mediante escritura atómica.
+    Raises:
+        RuntimeError: Si la escritura o la persistencia fallan.
+    """
     if not isinstance(items, list):
         raise ValueError("El manifiesto debe ser una lista de ítems.")
         
@@ -305,8 +319,11 @@ def quarantine_file(
     base: Union[str, Path] = DEFAULT_QUARANTINE_DIR,
 ) -> QuarantineItem:
     """
-    Realiza el movimiento de un archivo a la carpeta de cuarentena.
-    Implementa una estrategia de copia de seguridad seguida de verificación de integridad (hash).
+    Mueve un archivo a la carpeta de cuarentena y registra sus metadatos.
+    Raises:
+        FileNotFoundError: Si el archivo origen no existe.
+        UnsafePathError: Si la ruta infringe políticas de seguridad.
+        RuntimeError: Si fallan las operaciones de disco o integridad.
     """
     if not source:
         raise ValueError("La ruta de origen no puede estar vacía.")
@@ -401,7 +418,14 @@ def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[Quaranti
 
 
 def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
-    """Restaura un archivo hacia su ubicación original tras validar su integridad absoluta."""
+    """
+    Restaura un archivo hacia su ubicación original tras validar su integridad.
+    Raises:
+        KeyError: Si no existe el ítem.
+        FileNotFoundError: Si no se localiza el archivo físico.
+        RuntimeError: Si fallan los chequeos de integridad o restauración.
+        UnsafePathError: Si la ruta de destino no es segura.
+    """
     if not item_id or not isinstance(item_id, str):
         raise ValueError("ID de ítem vacío o tipo incorrecto.")
     
@@ -453,7 +477,11 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
 
 
 def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> bool:
-    """Elimina permanentemente un archivo de la cuarentena previa validación de seguridad."""
+    """
+    Elimina permanentemente un archivo de la cuarentena previa validación de seguridad.
+    Raises:
+        UnsafePathError: Si la integridad o las rutas de seguridad fallan.
+    """
     if not item_id or not isinstance(item_id, str):
         return False
         

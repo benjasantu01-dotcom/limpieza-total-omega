@@ -105,19 +105,19 @@ class MemorySnapshot:
 
     @property
     def used(self) -> BytesValue:
-        """Retorna bytes ocupados (Total - Disponible)."""
+        """Calcula los bytes ocupados restando la memoria disponible al total."""
         return max(0, self.total - self.available)
 
     @property
     def used_percent(self) -> float:
-        """Porcentaje de memoria en uso."""
+        """Calcula el porcentaje de memoria en uso respecto al total."""
         if self.total <= 0:
             return 0.0
         return round((self.used / self.total) * 100, 1)
 
     @property
     def available_percent(self) -> float:
-        """Porcentaje de memoria disponible."""
+        """Calcula el porcentaje de memoria disponible respecto al total."""
         if self.total <= 0:
             return 0.0
         return round((self.available / self.total) * 100, 1)
@@ -133,7 +133,7 @@ class ProcessMemory:
 
     @property
     def working_set_mb(self) -> MegabytesValue:
-        """Convierte bytes a MB para visualización."""
+        """Convierte el valor de Working Set (bytes) a Megabytes (float)."""
         return round(self.working_set / BYTES_IN_MB, 1)
 
 
@@ -264,22 +264,27 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
     """Genera una lista de strings legibles describiendo el estado de memoria."""
     if not isinstance(snapshot, MemorySnapshot) or snapshot.total <= 0:
         return ["No se pudo leer el estado de la memoria en este sistema."]
+    
     level: str = pressure_level(snapshot)
     lines: List[str] = [
         f"Memoria total: {format_bytes(snapshot.total)}",
         f"En uso: {format_bytes(snapshot.used)} ({snapshot.used_percent}%)",
         f"Disponible: {format_bytes(snapshot.available)} ({snapshot.available_percent}%)",
     ]
+    
     diagnosticos: Dict[str, str] = {
         "ok": "Estado: holgado. La memoria ocupada por caché mejora la velocidad.",
         "info": "Estado: normal. Windows gestiona la memoria de forma eficiente.",
         "warning": "Estado: ajustado. Conviene cerrar aplicaciones innecesarias.",
         "danger": "Estado: crítico. El sistema recurre al archivo de paginación."
     }
+    
     lines.append(diagnosticos.get(level, ""))
+    
     if processes and isinstance(processes, list):
         for proc in processes[:3]:
             lines.append(f"  Mayor consumo: {proc.name} (PID {proc.pid}) — {proc.working_set_mb} MB")
+            
     return lines
 
 
