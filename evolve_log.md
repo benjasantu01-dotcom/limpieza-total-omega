@@ -743,3 +743,34 @@ assert not {'replace'}
 - `2026-08-11T06:22:08` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la seguridad defensiva al serializar el contexto mediante una validación más estricta de los caracteres de entrada y salida, asegurando que la función `context_as_text` no pueda procesar ni retornar contenido que contenga rutas o secuencias de control, incluso si el objeto `SystemContext` llegara a ser manipulado externamente.
 - `2026-08-11T06:22:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-11T06:22:08` Corrida terminada. Total usado hoy: 152.
+- `2026-08-11T06:30:50` Arrancando corrida. Quedan hoy ~148 peticiones objetivo.
+- `2026-08-11T06:31:24` Tests FALLARON:
+```
+........................................................................ [ 24%]
+.........................F.............................................. [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+______________________ test_save_logo_svg_writes_the_file ______________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-1/test_save_logo_svg_writes_the_0')
+
+    def test_save_logo_svg_writes_the_file(tmp_path):
+        destino = branding.save_logo_svg(tmp_path / "iconos" / "logo.svg")
+>       assert destino.is_file()
+               ^^^^^^^^^^^^^^^
+E       AttributeError: 'NoneType' object has no attribute 'is_file'
+
+evolve/tests/test_modules.py:92: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - AttributeError: 'NoneType' object has no attribute 'is_file'
+1 failed, 298 passed in 1.28s
+
+```
+- `2026-08-11T06:31:24` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad de `save_logo_svg` reemplazando la creación de directorios recursiva (`mkdir(parents=True)`) por una lógica de validación previa más estricta, asegurando que ni la ruta ni los padres existan fuera de un entorno controlado, cumpliendo con el enfoque defensivo.
+- `2026-08-11T06:31:48` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
+- `2026-08-11T06:32:22` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `drive_usage` y `walk_files` implementando una validación estricta de rutas mediante `is_protected_path` antes de cualquier resolución de sistema, previniendo el seguimiento accidental de puntos de reparse (reparse points/junctions) mediante `os.path.isjunction` (vía `path.is_junction()` en Python 3.12+ o `stat` en versiones anteriores).
+- `2026-08-11T06:32:33` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_collect_candidates` y `group_by_size` asegurando que las rutas se resuelvan (con `resolve()`) antes de cualquier validación de seguridad, previniendo así posibles ataques por rutas relativas o "path traversal" al inspeccionar el sistema de archivos.
+- `2026-08-11T06:32:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-11T06:32:33` Corrida terminada. Total usado hoy: 156.

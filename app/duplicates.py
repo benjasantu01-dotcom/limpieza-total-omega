@@ -142,7 +142,7 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     for p in paths:
         if not isinstance(p, Path): continue
         try:
-            p_res = p.resolve()
+            p_res = p.resolve(strict=True)
             if p_res.is_file() and not is_protected_path(p_res):
                 groups[p_res.stat().st_size].append(p_res)
         except (OSError, PermissionError, FileNotFoundError):
@@ -180,7 +180,7 @@ def _collect_candidates(
                         if getattr(entry_stat, 'st_file_attributes', 0) & 0x400:
                             continue
                         
-                        path_obj = Path(entry.path)
+                        path_obj = Path(entry.path).resolve()
                         if skip_protected and is_protected_path(path_obj):
                             continue
                         
@@ -201,7 +201,7 @@ def _collect_candidates(
     for directory in directories:
         if directory is None: continue
         try:
-            p = Path(directory)
+            p = Path(directory).resolve()
             if p.is_dir():
                 _scan(p)
         except (OSError, PermissionError, ValueError, TypeError): continue

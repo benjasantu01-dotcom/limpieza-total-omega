@@ -215,7 +215,8 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        if entry.is_symlink():
+                        # Evitar symlinks y junctions/reparse points por seguridad
+                        if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
                             continue
                         
                         entry_path = Path(entry.path)
