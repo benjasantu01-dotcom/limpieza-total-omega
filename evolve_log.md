@@ -1267,3 +1267,10 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-08-11T00:55:31` 🛑 Propuesta bloqueada por la guardia en memory.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: parse_windows_process_csv
 - `2026-08-11T00:55:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-11T00:55:31` Corrida terminada. Total usado hoy: 24.
+- `2026-08-11T01:03:34` Arrancando corrida. Quedan hoy ~276 peticiones objetivo.
+- `2026-08-11T01:03:57` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-08-11T01:04:28` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Se optimizó la carga y manipulación del manifiesto mediante el uso de un diccionario (hash map) en lugar de listas para búsquedas por `item_id`, evitando búsquedas lineales `O(N)` en funciones críticas como `restore_item` y `purge_item`.
+- `2026-08-11T01:04:46` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-11T01:04:56` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
+- `2026-08-11T01:04:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-11T01:04:56` Corrida terminada. Total usado hoy: 28.
