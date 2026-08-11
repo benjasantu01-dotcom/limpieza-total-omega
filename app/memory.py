@@ -81,7 +81,7 @@ SYSTEM_CRITICAL_PIDS: Tuple[int, ...] = (0, 4)
 _PROCESS_CACHE: Dict[str, Tuple[float, List[ProcessMemory]]] = {"data": (0.0, [])}
 
 class MEMORYSTATUSEX(ctypes.Structure):
-    """Estructura interna para el mapeo de la función GlobalMemoryStatusEx de la API de Windows."""
+    """Estructura para el mapeo de la función GlobalMemoryStatusEx de la API Win32."""
     _fields_ = [
         ("dwLength", ctypes.c_ulong),
         ("dwMemoryLoad", ctypes.c_ulong),
@@ -155,7 +155,7 @@ def parse_linux_meminfo(text: str) -> MemorySnapshot:
         match = re.match(r"^(\w+):\s+(\d+)", line)
         if match:
             try:
-                # MemTotal y otros están en kB en /proc/meminfo
+                # Los valores en /proc/meminfo están en kB
                 values[match.group(1)] = int(match.group(2)) * 1024
             except (ValueError, OverflowError):
                 continue
@@ -174,13 +174,14 @@ def parse_linux_meminfo(text: str) -> MemorySnapshot:
     )
 
 
-def _is_valid_process_row(parts: List[str]) -> bool:
-    """Valida la integridad de una línea CSV proveniente de PowerShell."""
+def _is_csv_row_format_valid(parts: List[str]) -> bool:
+    """Verifica si los campos de una fila CSV de proceso tienen el formato esperado."""
+    # Espera: [Nombre, PID, WorkingSet]
     return len(parts) == 3 and parts[1].isdigit() and parts[2].isdigit()
 
 
 def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]:
-    """Transforma la salida de Get-Process en una lista de objetos tipados."""
+    """Transforma la salida de Get-Process en una lista de objetos ProcessMemory."""
     if not isinstance(text, str) or not text:
         return []
     
@@ -189,7 +190,7 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
         if not line.strip():
             continue
         parts: List[str] = [p.strip().strip("'\"") for p in line.split(",")]
-        if _is_valid_process_row(parts):
+        if _is_csv_row_format_valid(parts):
             try:
                 processes.append(ProcessMemory(
                     name=parts[0] if parts[0] else "Unknown", 
@@ -214,7 +215,7 @@ def _read_windows_snapshot() -> MemorySnapshot:
 
 
 def read_snapshot() -> MemorySnapshot:
-    """Punto de entrada unificado para leer el estado de RAM según la plataforma detectada."""
+    """Punto de entrada unificado para leer el estado de RAM según la plataforma."""
     if os.name == "nt":
         try:
             return _read_windows_snapshot()
@@ -233,7 +234,7 @@ def read_snapshot() -> MemorySnapshot:
 
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
-    """Obtiene los procesos más pesados mediante una caché temporal de 5 segundos."""
+    """Obtiene los procesos más pesados usando una caché temporal de 5 segundos."""
     if os.name != "nt":
         return []
     

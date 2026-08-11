@@ -141,13 +141,13 @@ def _to_int(value: Any, default: int = 0) -> int:
 
 
 def score_junk(junk_mb: float | int) -> float:
-    """Calcula score [0.0, 1.0] penalizando linealmente el tamaño de basura contra el límite."""
+    """Calcula score [0.0, 1.0] penalizando linealmente el tamaño de basura."""
     val = _to_float(junk_mb)
     return 1.0 if _LIMIT_JUNK_MB <= 0.0 else _clamp(1.0 - (val / _LIMIT_JUNK_MB))
 
 
 def score_security(suspicious_count: int, warnings: int = 0) -> float:
-    """Calcula score [0.0, 1.0] basado en penalizaciones fijas por cada amenaza o advertencia."""
+    """Calcula score [0.0, 1.0] basado en penalizaciones por amenazas detectadas."""
     count = max(0, _to_int(suspicious_count))
     warns = max(0, _to_int(warnings))
     penalty = (count * 0.05) + (warns * 0.25)
@@ -155,27 +155,27 @@ def score_security(suspicious_count: int, warnings: int = 0) -> float:
 
 
 def score_memory(available_percent: float | int) -> float:
-    """Calcula score [0.0, 1.0] evaluando el % de memoria libre frente al umbral crítico."""
+    """Calcula score [0.0, 1.0] evaluando el % de memoria libre."""
     val = _clamp(_to_float(available_percent), 0.0, 100.0)
     if _LIMIT_RAM_PERCENT <= 0.0: return 1.0
     return _clamp(val / _LIMIT_RAM_PERCENT, 0.0, 1.0)
 
 
 def score_disk(free_percent: float | int) -> float:
-    """Calcula score [0.0, 1.0] evaluando el % de espacio libre frente al umbral crítico."""
+    """Calcula score [0.0, 1.0] evaluando el % de espacio libre."""
     val = _clamp(_to_float(free_percent), 0.0, 100.0)
     if _LIMIT_DISK_PERCENT <= 0.0: return 1.0
     return _clamp(val / _LIMIT_DISK_PERCENT, 0.0, 1.0)
 
 
 def score_duplicates(duplicate_mb: float | int) -> float:
-    """Calcula score [0.0, 1.0] penalizando linealmente el tamaño de duplicados contra el límite."""
+    """Calcula score [0.0, 1.0] penalizando linealmente el tamaño de duplicados."""
     val = _to_float(duplicate_mb)
     return 1.0 if _LIMIT_DUPLICATE_MB <= 0.0 else _clamp(1.0 - (val / _LIMIT_DUPLICATE_MB))
 
 
 def score_startup(startup_count: int) -> float:
-    """Calcula score [0.0, 1.0] penalizando linealmente el exceso de aplicaciones configuradas para iniciar."""
+    """Calcula score [0.0, 1.0] penalizando programas en arranque."""
     val = max(0, _to_int(startup_count))
     return 1.0 if _LIMIT_STARTUP_COUNT <= 0 else _clamp(1.0 - (val / _LIMIT_STARTUP_COUNT))
 
@@ -190,30 +190,38 @@ def grade_for_score(score: float | int) -> str:
     return "F"
 
 
-def _generate_recommendations(m: SystemMetrics, ratios: ScoreMap) -> List[str]:
-    """Genera una lista de textos explicativos según las métricas con bajo rendimiento."""
-    if not isinstance(m, SystemMetrics) or not isinstance(ratios, dict):
+def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[str]:
+    """
+    Genera lista de textos de remediación según métricas deficientes.
+    Args:
+        metrics: Objeto con datos crudos del sistema.
+        ratios: Diccionario de puntajes normalizados (0.0 a 1.0) por área.
+    Returns:
+        Lista de strings con consejos accionables.
+    """
+    if not isinstance(metrics, SystemMetrics) or not isinstance(ratios, dict):
         return ["No es posible generar recomendaciones debido a datos incompletos."]
         
-    recs: List[str] = []
-    checks = (
-        ("seguridad", WARN_THRESHOLD_HIGH, f"Revisá los {int(m.suspicious_count)} hallazgo(s) de seguridad; podés aislarlos en cuarentena."),
-        ("disco", WARN_THRESHOLD_LOW, f"Queda {float(m.disk_free_percent):.1f}% de disco libre."),
+    recommendations: List[str] = []
+    # Definición de reglas: (área, umbral_crítico, mensaje_alerta)
+    check_rules = (
+        ("seguridad", WARN_THRESHOLD_HIGH, f"Revisá los {int(metrics.suspicious_count)} hallazgo(s) de seguridad."),
+        ("disco", WARN_THRESHOLD_LOW, f"Queda {float(metrics.disk_free_percent):.1f}% de disco libre."),
         ("memoria", WARN_THRESHOLD_LOW, "Memoria disponible baja: cerrá procesos innecesarios."),
-        ("basura", WARN_THRESHOLD_MED, f"Hay {int(m.junk_mb)} MB de archivos temporales."),
-        ("duplicados", WARN_THRESHOLD_MED, f"Podrías recuperar {int(m.duplicate_mb)} MB eliminando duplicados."),
-        ("arranque", WARN_THRESHOLD_LOW, f"{int(m.startup_count)} programas arrancan con Windows."),
+        ("basura", WARN_THRESHOLD_MED, f"Hay {int(metrics.junk_mb)} MB de archivos temporales."),
+        ("duplicados", WARN_THRESHOLD_MED, f"Podrías recuperar {int(metrics.duplicate_mb)} MB eliminando duplicados."),
+        ("arranque", WARN_THRESHOLD_LOW, f"{int(metrics.startup_count)} programas arrancan con Windows."),
     )
 
-    for key, threshold, msg in checks:
-        ratio = ratios.get(key, 0.0)
-        if math.isfinite(ratio) and ratio < threshold:
-            recs.append(msg)
+    for area_key, threshold, message in check_rules:
+        current_ratio = ratios.get(area_key, 0.0)
+        if math.isfinite(current_ratio) and current_ratio < threshold:
+            recommendations.append(message)
     
-    if m.quarantined_count > 0:
-        recs.append(f"Tenés {int(m.quarantined_count)} archivo(s) en cuarentena.")
+    if metrics.quarantined_count > 0:
+        recommendations.append(f"Tenés {int(metrics.quarantined_count)} archivo(s) en cuarentena.")
     
-    return recs if recs else ["No hay nada urgente para hacer. El sistema está en buen estado."]
+    return recommendations if recommendations else ["No hay nada urgente para hacer. El sistema está en buen estado."]
 
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
