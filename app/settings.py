@@ -123,6 +123,7 @@ class _Validators:
     @staticmethod
     def bool(key: str, val: Any) -> bool | None:
         """Normaliza entradas de texto o booleano a un valor booleano puro."""
+        if val is None: return None
         if isinstance(val, bool): return val
         if not isinstance(val, str): return None
         normalized = val.strip().lower()
@@ -158,8 +159,7 @@ class _Validators:
     @staticmethod
     def str(key: str, val: Any) -> str | None:
         """Valida cadenas, aplicando reglas específicas de esquema y límites de tamaño."""
-        if val is None: return None
-        if not isinstance(val, (str, Path)): return None
+        if val is None or not isinstance(val, (str, Path)): return None
         text = str(val).strip()
         
         # Prevenir inyección de rutas y caracteres de control

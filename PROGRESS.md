@@ -16,36 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-10 | 142 | 5 | 16 | 10 | 123 |
-| 2026-08-11 | 92 | 7 | 15 | 7 | 87 |
+| 2026-08-10 | 138 | 5 | 16 | 10 | 123 |
+| 2026-08-11 | 96 | 7 | 15 | 7 | 87 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **49**
+- manejo de errores y validación de entradas: **51**
+- legibilidad y documentación: **50**
 - robustez ante casos límite: **48**
 - seguridad defensiva: **48**
-- manejo de errores y validación de entradas: **48**
-- rendimiento: **41**
+- rendimiento: **37**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **22**
-- `diskreport.py`: **20**
-- `duplicates.py`: **20**
-- `settings.py`: **20**
-- `healthscore.py`: **19**
-- `assistant.py`: **19**
+- `settings.py`: **21**
+- `assistant.py`: **20**
 - `branding.py`: **19**
+- `diskreport.py`: **19**
+- `duplicates.py`: **19**
+- `healthscore.py`: **18**
+- `scanner.py`: **17**
 - `memory.py`: **17**
-- `main.py`: **16**
-- `scanner.py`: **16**
+- `main.py`: **15**
 - `browser.py`: **15**
 - `organizer.py`: **11**
+- `startup.py`: **11**
 - `safety.py`: **10**
-- `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-11T09:05:31` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y mantenimiento mediante la adición de Type Hints detallados en las funciones de manejo (`handle_ram`, `handle_disk`, etc.) y la estandarización de los `docstrings`, facilitando la comprensión del flujo de datos en el asistente local.
+- `2026-08-11T09:05:14` **startup.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `parse_registry_csv` añadiendo una validación explícita para evitar errores al intentar instanciar `Path` con valores de comandos inválidos o mal formateados, protegiendo así el bucle de procesamiento de excepciones imprevistas.
+- `2026-08-11T09:04:47` **settings.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las validaciones en `_Validators` añadiendo chequeos de tipo explícitos y condiciones de contorno para los valores `None`, evitando así que `None` se filtre accidentalmente a través de las funciones de normalización.
+- `2026-08-11T09:04:21` **scanner.py** (manejo de errores y validación de entradas): Reforcé la robustez de `scan_directory` validando la existencia y naturaleza de la entrada mediante `Path.exists()` antes de procesarla, y encapsulé los chequeos en `process_entry` con una captura de errores más granular, asegurando que fallos en una sola subcarpeta no interrumpan el escaneo completo ni dejen el estado en inconsistencia.
 - `2026-08-11T08:54:40` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` agregando una validación explícita de `dest_dir` para evitar el uso accidental de rutas relativas o mal formadas, y encapsulé la lógica de creación del nombre seguro en un bloque más limpio, asegurando que los nombres reservados de Windows se manejen antes de cualquier operación de sistema, evitando colisiones innecesarias.
 - `2026-08-11T08:45:50` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` añadiendo una validación explícita mediante `ctypes.wintypes` y un chequeo de `None` para `psapi`, asegurando que la función no falle ante errores de carga de librerías del sistema y validando el tipo de retorno antes de operar.
 - `2026-08-11T08:44:23` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` asegurando que el desglose siempre contenga todas las claves definidas en `WEIGHTS`, incluso si ocurriera un error inesperado al calcular un ratio individual, y añadí una validación explícita para prevenir una división por cero si la lista de pesos estuviera vacía.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-11T07:02:01` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_Validators.str` para prevenir la inyección de rutas en campos de texto generales mediante la validación explícita de `ultima_carpeta` y una restricción de caracteres peligrosos (`..`, `NUL`, o caracteres de control) en todas las cadenas.
 - `2026-08-11T06:52:44` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_safe_entry` añadiendo una normalización explícita de rutas mediante `resolve()` a la comparación del `base_root`, asegurando que los enlaces simbólicos o rutas relativas no permitan escapar del directorio base, reforzando la seguridad defensiva contra ataques de salto de directorio (directory traversal).
 - `2026-08-11T06:42:55` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `trim_working_set` añadiendo una validación explícita de la ruta del ejecutable mediante `is_protected_path` combinada con una normalización de ruta más estricta, asegurando que la operación solo se realice sobre procesos cuyos ejecutables no residan en ubicaciones críticas del sistema o rutas relativas sospechosas.
-- `2026-08-11T06:32:33` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` y `group_by_size` asegurando que las rutas se resuelvan (con `resolve()`) antes de cualquier validación de seguridad, previniendo así posibles ataques por rutas relativas o "path traversal" al inspeccionar el sistema de archivos.
-- `2026-08-11T06:32:22` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `drive_usage` y `walk_files` implementando una validación estricta de rutas mediante `is_protected_path` antes de cualquier resolución de sistema, previniendo el seguimiento accidental de puntos de reparse (reparse points/junctions) mediante `os.path.isjunction` (vía `path.is_junction()` en Python 3.12+ o `stat` en versiones anteriores).
-- `2026-08-11T06:22:08` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva al serializar el contexto mediante una validación más estricta de los caracteres de entrada y salida, asegurando que la función `context_as_text` no pueda procesar ni retornar contenido que contenga rutas o secuencias de control, incluso si el objeto `SystemContext` llegara a ser manipulado externamente.
-- `2026-08-11T06:21:00` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en `process_entry` al envolver la llamada `entry.is_dir` y `entry.is_file` en un bloque `try-except` adicional, evitando que archivos bloqueados por el sistema operativo o archivos en estado inconsistente interrumpan el flujo de escaneo completo.

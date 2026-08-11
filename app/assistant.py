@@ -300,7 +300,7 @@ def _format_critical_warning(condition: bool, text: str) -> str:
     return text if condition else ""
 
 def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
-    """Genera respuesta sobre el estado de la RAM."""
+    """Responde preguntas sobre el estado actual de la memoria RAM."""
     partes = [
         f"Tenés {ctx.memory_available_percent:.0f}% de RAM disponible"
         f"{f' de {ctx.memory_total_gb:.0f} GB' if ctx.memory_total_gb > 0 else ''}.",
@@ -321,7 +321,7 @@ def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
                     suggestions=["¿Conviene desactivar programas de inicio?"])
 
 def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
-    """Genera respuesta sobre el almacenamiento y espacio recuperable."""
+    """Responde preguntas sobre el uso del almacenamiento y espacio recuperable."""
     recuperable = ctx.junk_mb + ctx.duplicate_mb + ctx.browser_cache_mb
     mensaje = (
         f"Tenés {ctx.disk_free_percent:.0f}% libre en disco. "
@@ -338,7 +338,7 @@ def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
     return Answer(mensaje + warning + sugerencia, notice=OFFLINE_NOTICE)
 
 def handle_security(ctx: SystemContext, user_query: str) -> Answer:
-    """Genera respuesta sobre hallazgos de seguridad."""
+    """Responde preguntas sobre archivos sospechosos encontrados."""
     if ctx.suspicious_count == 0:
         cuerpo = ("No hay archivos sospechosos en tus Descargas. Sobre borrar: la "
                     "app nunca borra sola. La limpieza mueve todo a una carpeta de "
@@ -352,7 +352,7 @@ def handle_security(ctx: SystemContext, user_query: str) -> Answer:
     return Answer(cuerpo, notice=OFFLINE_NOTICE)
 
 def handle_score(ctx: SystemContext, user_query: str) -> Answer:
-    """Genera explicación pedagógica del score de salud."""
+    """Responde preguntas sobre el puntaje de salud del sistema."""
     detalle = (f"Tu puntaje es {ctx.score if ctx.score is not None else 'N/A'}/100"
                 f"{f' (nota {ctx.grade})' if ctx.grade else ''}. ")
     problemas = list(islice(_gen_problems(ctx), 3))
@@ -365,7 +365,7 @@ def handle_score(ctx: SystemContext, user_query: str) -> Answer:
     return Answer(detalle, notice=OFFLINE_NOTICE)
 
 def handle_startup(ctx: SystemContext, user_query: str) -> Answer:
-    """Genera respuesta sobre el impacto en el inicio del sistema."""
+    """Responde preguntas sobre programas que arrancan con el sistema."""
     cuerpo = f"Tenés {ctx.startup_count} programas que arrancan con Windows. "
     if ctx.startup_count > 15:
         cuerpo += "Son bastantes, y cada uno suma tiempo de encendido. Vale la pena revisarlos. "

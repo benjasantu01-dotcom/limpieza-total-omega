@@ -267,11 +267,15 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
             if not name or name.lower() in ("name", "pscustomobject") or name.upper().startswith("PS"):
                 continue
             
+            # Validación robusta de ruta antes de instanciar o usar Path
+            if not cmd or any(c in cmd for c in '<>|?*'):
+                continue
+            
             try:
                 p: Path = Path(cmd)
                 if is_protected_path(p):
                     continue
-            except (ValueError, TypeError):
+            except (ValueError, TypeError, OSError):
                 continue
                 
             parsed_entries.append(StartupEntry(name=name, command=cmd, source=source))

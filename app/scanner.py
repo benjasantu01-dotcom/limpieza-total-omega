@@ -86,11 +86,16 @@ class Scanner:
         """
         Valida y procesa una entrada del sistema de archivos, decidiendo si continuar la recursión o analizar el archivo.
         """
-        if entry is None or stack is None or not hasattr(entry, 'path'):
+        if entry is None or stack is None:
             return
         
         try:
+            # Verificar existencia antes de cualquier operación
+            if not entry.exists():
+                return
+
             path_obj = Path(entry.path)
+            
             # Defensa en profundidad: bloqueo estricto de rutas protegidas
             if is_protected_path(path_obj) or not self._is_safe_entry(path_obj):
                 return
@@ -98,20 +103,19 @@ class Scanner:
             if self._is_reparse_point(entry):
                 return
 
-            try:
-                if entry.is_dir(follow_symlinks=False):
-                    if entry.path not in self.seen:
-                        self.seen.add(entry.path)
-                        stack.append(entry.path)
-                elif entry.is_file(follow_symlinks=False):
-                    name = entry.name
-                    ext = path_obj.suffix.lower()
-                    self.results.extend(scan_file(path_obj, self.now_ts, entry=entry, name=name, suffix=ext))
-            except (OSError, PermissionError):
-                logger.debug(f"Acceso denegado o entrada volátil: {entry.path}")
-
-        except (PermissionError, OSError, ValueError, RuntimeError) as e:
-            logger.debug(f"Saltando entrada {getattr(entry, 'path', 'desconocida')}: {e}")
+            if entry.is_dir(follow_symlinks=False):
+                if entry.path not in self.seen:
+                    self.seen.add(entry.path)
+                    stack.append(entry.path)
+            elif entry.is_file(follow_symlinks=False):
+                name = entry.name
+                ext = path_obj.suffix.lower()
+                self.results.extend(scan_file(path_obj, self.now_ts, entry=entry, name=name, suffix=ext))
+                
+        except (PermissionError, OSError) as e:
+            logger.debug(f"Acceso denegado o entrada volátil: {getattr(entry, 'path', 'desconocida')} - {e}")
+        except Exception as e:
+            logger.error(f"Error inesperado procesando {getattr(entry, 'path', 'desconocida')}: {e}")
 
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
