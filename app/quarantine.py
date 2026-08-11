@@ -192,22 +192,25 @@ def _is_valid_quarantine_path(path: Path, root: Path) -> TypeGuard[Path]:
 def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
     """
     Realiza validaciones de seguridad antes de mover archivos fuera de su ubicación original.
-    Raises:
-        UnsafePathError: Si la ruta infringe políticas o riesgos de seguridad.
-        IOError: Si el archivo está en uso.
+    Establece controles contra desbordamientos, flujos alternos y fugas de contexto.
     """
+    # 1. Prevenir rutas que excedan límites del sistema operativo (desbordamientos)
     if len(source_path.parts) > 32:
         raise UnsafePathError("Profundidad de ruta excesiva: riesgo de desbordamiento.")
 
+    # 2. Bloquear ADS (Alternate Data Streams) comunes en ataques NTFS
     if ":" in source_path.name.replace(source_path.drive, ""):
-        raise UnsafePathError(f"Ruta con flujos de datos alternos no permitida: {source_path}")
+        raise UnsafePathError(f"Ruta con flujos de datos alternos no permitida.")
 
+    # 3. Validar sanitización de caracteres de control y navegación
     if ".." in source_path.parts or "\0" in str(source_path) or any(c in str(source_path.name) for c in "<>\"|?*"):
         raise UnsafePathError(f"Ruta con caracteres prohibidos o navegación no permitida.")
     
+    # 4. Evitar seguir enlaces simbólicos o junctions para prevenir bucles o saltos fuera del objetivo
     if source_path.is_symlink() or (hasattr(source_path, 'is_junction') and source_path.is_junction()):
-        raise UnsafePathError(f"Operación denegada en enlace o punto de reparse: {source_path}")
+        raise UnsafePathError(f"Operación denegada en enlace o punto de reparse.")
 
+    # 5. Filtrar archivos de sistema crítico a nivel de atributos (Windows-specific)
     try:
         if os.name == 'nt':
             import ctypes
@@ -217,24 +220,29 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
     except (OSError, AttributeError):
         pass
 
+    # 6. Validar que la operación sea sobre archivo regular y no un contenedor (directorio)
     if not source_path.is_file():
-        raise UnsafePathError(f"Solo se aceptan archivos regulares: {source_path}")
+        raise UnsafePathError(f"Solo se aceptan archivos regulares.")
         
+    # 7. Validar contra el whitelist/blacklist centralizado de seguridad
     if is_protected_path(source_path):
         raise UnsafePathError(f"Operación prohibida: la ruta está protegida por el sistema.")
         
     if is_protected_path(dest_dir):
         raise UnsafePathError(f"Destino inválido: directorio de cuarentena protegido.")
     
+    # 8. Evitar mover algo que ya está bajo control de la cuarentena
     if _is_valid_quarantine_path(source_path, dest_dir):
         raise UnsafePathError(f"El archivo ya reside en el sandbox de cuarentena.")
     
+    # 9. Prevenir movimientos entre volúmenes distintos (causa de errores de I/O)
     try:
         if source_path.drive != dest_dir.drive:
             raise UnsafePathError(f"Operación prohibida entre dispositivos distintos.")
     except (OSError, AttributeError):
         pass
 
+    # 10. Detección de colisiones físicas (alias de rutas)
     try:
         if os.path.exists(dest_dir) and os.path.exists(source_path):
             if os.path.samefile(source_path, dest_dir):
@@ -242,8 +250,10 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
     except OSError:
         pass
 
+    # 11. Validación de privilegios de escritura
     ensure_safe_to_modify(source_path, allow_sensitive=True)
     
+    # 12. Verificación de exclusividad para evitar corrupción del archivo en tránsito
     if _is_file_locked(source_path):
         raise IOError(f"El archivo está en uso por otro proceso y no puede moverse.")
 
@@ -325,7 +335,6 @@ def quarantine_file(
     if not source:
         raise ValueError("La ruta de origen no puede estar vacía.")
     
-    # Resolvemos y verificamos tipo antes de cualquier operación
     source_path = Path(source).resolve()
     if not source_path.is_file():
         raise FileNotFoundError(f"Archivo no encontrado o inválido: {source_path}")
