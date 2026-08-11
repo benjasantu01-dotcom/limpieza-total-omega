@@ -334,7 +334,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         buf = ctypes.create_unicode_buffer(2048)
         size = psapi.GetModuleFileNameExW(handle, 0, buf, 2048)
         if size > 0:
-            exe_path = os.path.normpath(buf.value)
+            exe_path = os.path.abspath(os.path.normpath(buf.value))
             if is_protected_path(exe_path) or not os.path.isabs(exe_path):
                 return False, "Operación denegada: ruta de ejecutable no segura."
             try:

@@ -774,3 +774,10 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-08-11T06:32:33` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_collect_candidates` y `group_by_size` asegurando que las rutas se resuelvan (con `resolve()`) antes de cualquier validación de seguridad, previniendo así posibles ataques por rutas relativas o "path traversal" al inspeccionar el sistema de archivos.
 - `2026-08-11T06:32:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-11T06:32:33` Corrida terminada. Total usado hoy: 156.
+- `2026-08-11T06:41:03` Arrancando corrida. Quedan hoy ~144 peticiones objetivo.
+- `2026-08-11T06:41:28` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: HealthResult, HealthResult.is_healthy
+- `2026-08-11T06:42:28` ➖ Sin cambios en main.py (enfoque: seguridad defensiva). Motivo: Se ha mejorado la seguridad defensiva en `on_trim_process` y `on_restore_quarantine` mediante el uso de `is_safe_path` para prevenir la manipulación de rutas externas a la cuarentena o procesos del sistema, y se ha introducido un control de sanidad en el input del PID para evitar inyecciones de comandos o selección errónea de procesos críticos.
+- `2026-08-11T06:42:55` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `trim_working_set` añadiendo una validación explícita de la ruta del ejecutable mediante `is_protected_path` combinada con una normalización de ruta más estricta, asegurando que la operación solo se realice sobre procesos cuyos ejecutables no residan en ubicaciones críticas del sistema o rutas relativas sospechosas.
+- `2026-08-11T06:43:02` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-08-11T06:43:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-11T06:43:02` Corrida terminada. Total usado hoy: 160.
