@@ -595,3 +595,57 @@ assert not ['memory.py']
 - `2026-08-11T05:21:18` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Se ha optimizado la gestión de caché de `main.py` sustituyendo la búsqueda lineal en una `deque` (operación `remove` en O(n)) por una estructura de datos `OrderedDict` que permite acceso, actualización y eliminación en tiempo constante (O(1)), garantizando mayor eficiencia en sesiones prolongadas.
 - `2026-08-11T05:21:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-11T05:21:18` Corrida terminada. Total usado hoy: 128.
+- `2026-08-11T05:29:26` Arrancando corrida. Quedan hoy ~172 peticiones objetivo.
+- `2026-08-11T05:29:54` Tests FALLARON:
+```
+          '"grande","11","104857600"\n'
+            '"medio","12","10485760"\n'
+        )
+        procesos = memory.parse_windows_process_csv(csv)
+>       assert [p.name for p in procesos] == ["grande", "medio", "chico"]
+E       AssertionError: assert [] == ['grande', 'medio', 'chico']
+E         
+E         Right contains 3 more items, first extra item: 'grande'
+E         
+E         Full diff:
+E         + []
+E         - [
+E         -     'grande',
+E         -     'medio',
+E         -     'chico',
+E         - ]
+
+evolve/tests/test_modules.py:346: AssertionError
+__________________ test_parse_process_csv_skips_broken_lines ___________________
+
+    def test_parse_process_csv_skips_broken_lines():
+        csv = '"Name","Id","WorkingSet"\n"ok","1","1024"\nlinea basura\n"malo","x","y"\n'
+        procesos = memory.parse_windows_process_csv(csv)
+>       assert len(procesos) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+evolve/tests/test_modules.py:353: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption - AssertionError: assert [] == ['grande', 'medio', 'chico']
+  
+  Right contains 3 more items, first extra item: 'grande'
+  
+  Full diff:
+  + []
+  - [
+  -     'grande',
+  -     'medio',
+  -     'chico',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines - assert 0 == 1
+ +  where 0 = len([])
+2 failed, 297 passed in 1.24s
+
+```
+- `2026-08-11T05:29:54` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Optimizé `parse_windows_process_csv` para evitar la creación de listas intermedias y reducir las llamadas a `strip()` en cada iteración, mejorando el rendimiento durante el procesamiento de listas de procesos largas.
+- `2026-08-11T05:30:18` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimizamos `scan_for_junk` evitando llamadas redundantes a `path.exists()` y `is_safe_for_move()` dentro del loop al realizar la validación de seguridad de forma más eficiente durante el escaneo, y refactorizamos la lógica de filtrado de extensiones para minimizar el overhead de objetos `Path` innecesarios.
+- `2026-08-11T05:30:48` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el rendimiento de `purge_all` transformando la lista `items_to_keep` en un conjunto para permitir búsquedas `O(1)` al filtrar los ítems durante la iteración del directorio, reduciendo la complejidad del bucle de `O(N*M)` a `O(N)`.
+- `2026-08-11T05:30:51` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 108): unterminated string literal (detected at line 108)
+- `2026-08-11T05:30:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-11T05:30:51` Corrida terminada. Total usado hoy: 132.

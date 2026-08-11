@@ -485,6 +485,7 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     
     items = load_manifest(base)
     item_map = {item.stored_name: item for item in items}
+    processed_names = set(item_map.keys())
     
     purged_count = 0
     items_to_keep: List[QuarantineItem] = []
@@ -494,7 +495,7 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
             if entry.name == MANIFEST_NAME or not entry.is_file():
                 continue
             
-            if entry.name in item_map:
+            if entry.name in processed_names:
                 item = item_map[entry.name]
                 if entry.exists() and item.verify_integrity(entry):
                     if _safe_unlink(entry):

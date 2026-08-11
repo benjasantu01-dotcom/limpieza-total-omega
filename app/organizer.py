@@ -189,18 +189,21 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
                     if entry.is_dir():
                         if _is_allowed_directory(entry.name):
                             _walk_dir(entry.path)
-                    elif _is_junk_path(Path(entry.name)):
-                        try:
+                    else:
+                        # Extraer nombre y extensión de la entrada sin crear Path innecesarios
+                        _, ext = os.path.splitext(entry.name)
+                        if ext.lower() in _LOWER_JUNK_EXTS:
                             path_obj = Path(entry.path)
-                            if path_obj.exists() and _is_safe_for_move(path_obj):
-                                stat = path_obj.stat()
-                                found.append(JunkFile(
-                                    path=path_obj,
-                                    size_bytes=stat.st_size,
-                                    modified=datetime.fromtimestamp(stat.st_mtime)
-                                ))
-                        except (PermissionError, OSError):
-                            continue
+                            if is_safe_to_modify(path_obj) and _is_file_accessible(path_obj):
+                                try:
+                                    stat = path_obj.stat()
+                                    found.append(JunkFile(
+                                        path=path_obj,
+                                        size_bytes=stat.st_size,
+                                        modified=datetime.fromtimestamp(stat.st_mtime)
+                                    ))
+                                except (PermissionError, OSError):
+                                    continue
         except (PermissionError, OSError):
             pass
 
