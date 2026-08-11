@@ -368,7 +368,6 @@ def quarantine_file(
         os.remove(source_path)
     except (OSError, PermissionError) as e:
         if temp_dest.exists(): _safe_unlink(temp_dest)
-        if destination.exists(): _safe_unlink(destination)
         raise RuntimeError(f"Error crítico durante el aislamiento: {e}")
     finally:
         if temp_dest.exists(): _safe_unlink(temp_dest)

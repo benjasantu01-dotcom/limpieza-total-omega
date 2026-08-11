@@ -698,3 +698,10 @@ FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked -
 - `2026-08-11T06:03:39` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Mejoré la robustez de `trim_working_set` añadiendo una comprobación de privilegios `OpenProcess` para evitar fallos por "acceso denegado" en procesos de usuario con privilegios elevados, y aseguré que `GetModuleFileNameExW` no falle ante rutas inválidas o inaccesibles, protegiendo contra excepciones inesperadas al tratar con hilos concurrentes.
 - `2026-08-11T06:03:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-11T06:03:39` Corrida terminada. Total usado hoy: 144.
+- `2026-08-11T06:10:18` Arrancando corrida. Quedan hoy ~156 peticiones objetivo.
+- `2026-08-11T06:10:44` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Mejoré la robustez de `scan_for_junk` añadiendo un manejo explícito de rutas con caracteres Unicode o inválidos en el sistema de archivos (mediante `UnicodeEncodeError` y `OSError`), y actualicé `stage_for_review` para prevenir el movimiento de archivos si el sistema de archivos de origen y destino no permiten la operación (cross-device move), evitando así fallos silenciosos o parciales.
+- `2026-08-11T06:11:15` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Mejoré la robustez de `quarantine_file` ante situaciones de concurrencia y fallos parciales, implementando una limpieza más estricta del archivo temporal y asegurando que la integridad sea validada antes de cualquier operación de `os.replace`.
+- `2026-08-11T06:11:33` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-08-11T06:11:42` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
+- `2026-08-11T06:11:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-11T06:11:42` Corrida terminada. Total usado hoy: 148.

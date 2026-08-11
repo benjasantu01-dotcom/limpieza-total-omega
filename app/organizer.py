@@ -168,12 +168,6 @@ def _is_safe_for_move(path: Path) -> bool:
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     """
     Escaneo recursivo buscando archivos temporales.
-    
-    Args:
-        directories: Lista de rutas base a escanear. Si es None, usa DEFAULT_SCAN_DIRS.
-    
-    Returns:
-        Lista de objetos JunkFile hallados y verificados.
     """
     dirs: List[str] = directories if directories is not None else DEFAULT_SCAN_DIRS
     found: List[JunkFile] = []
@@ -190,20 +184,19 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
                         if _is_allowed_directory(entry.name):
                             _walk_dir(entry.path)
                     else:
-                        # Extraer nombre y extensión de la entrada sin crear Path innecesarios
                         _, ext = os.path.splitext(entry.name)
                         if ext.lower() in _LOWER_JUNK_EXTS:
-                            path_obj = Path(entry.path)
-                            if is_safe_to_modify(path_obj) and _is_file_accessible(path_obj):
-                                try:
+                            try:
+                                path_obj = Path(entry.path)
+                                if is_safe_to_modify(path_obj) and _is_file_accessible(path_obj):
                                     stat = path_obj.stat()
                                     found.append(JunkFile(
                                         path=path_obj,
                                         size_bytes=stat.st_size,
                                         modified=datetime.fromtimestamp(stat.st_mtime)
                                     ))
-                                except (PermissionError, OSError):
-                                    continue
+                            except (PermissionError, OSError, UnicodeEncodeError):
+                                continue
         except (PermissionError, OSError):
             pass
 
@@ -238,14 +231,6 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Path:
     """
     Mueve archivos candidatos a una carpeta de revisión segura.
-    
-    Args:
-        files: Lista de JunkFile a procesar.
-        review_dir: Ruta donde se moverán los archivos.
-        
-    Raises:
-        ValueError: Si la lista de archivos está vacía.
-        UnsafePathError: Si el destino no pasa la validación de safety.py.
     """
     if not files:
         raise ValueError("La lista de archivos a procesar no puede estar vacía.")
@@ -263,14 +248,16 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             if not current_abs.exists() or not current_abs.is_file():
                 continue
             
-            # Evitar colisión lógica: no mover sobre sí mismo o sus padres
             if dest == current_abs or dest in current_abs.parents:
                 continue
             
-            # Verificación estricta mediante ensure_safe_to_modify (lanza excepción si es inseguro)
             ensure_safe_to_modify(current_abs)
             
             if _is_file_locked(current_abs):
+                continue
+            
+            # Prevenir error de 'Cross-device link' moviendo solo si están en misma partición
+            if current_abs.anchor != dest.anchor:
                 continue
 
             target: Path = _generate_unique_target(dest / f"{current_abs.stem}_{int(jf.modified.timestamp())}{current_abs.suffix}")
@@ -283,9 +270,6 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
     """
     Elimina archivos de la carpeta de revisión tras validación.
-    
-    Returns:
-        Número de archivos eliminados exitosamente.
     """
     if not isinstance(review_dir, str) or not review_dir.strip():
         return 0
@@ -300,7 +284,6 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
                 try:
                     if entry.is_file() and not _is_junction(entry):
                         path_to_delete = Path(entry.path).resolve()
-                        # Validación defensiva: asegurar que el archivo a borrar sea hijo directo de dest
                         if dest == path_to_delete.parent:
                             os.remove(path_to_delete)
                             count += 1
