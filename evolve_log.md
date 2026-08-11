@@ -1374,3 +1374,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_ex
 - `2026-08-11T13:23:14` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
 - `2026-08-11T13:23:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-11T13:23:14` Corrida terminada. Total usado hoy: 312.
+- `2026-08-11T13:29:37` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-11T13:30:03` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado `ensure_safe_to_modify` para incluir una validación estricta de la existencia y tipo del padre de la ruta antes de operar, evitando posibles errores de resolución en rutas inexistentes o malformadas, además de asegurar que los errores en las comprobaciones de integridad no queden silenciados.
+- `2026-08-11T13:30:26` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-11T13:30:59` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Se ha robustecido el manejo de errores en `_Validators.path` y `_Validators.int` para evitar excepciones no capturadas al procesar entradas malformadas o tipos inesperados, garantizando la estabilidad del bucle de configuración ante datos corruptos.
+- `2026-08-11T13:31:09` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `parse_registry_csv` añadiendo una validación explícita para la estructura de la fila antes de procesarla, asegurando que `DictReader` devuelva los campos esperados y evitando posibles errores de acceso por índices o claves inexistentes ante datos mal formados del registro.
+- `2026-08-11T13:31:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-11T13:31:09` Corrida terminada. Total usado hoy: 316.

@@ -225,14 +225,13 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
     try:
         reader: csv.DictReader = csv.DictReader(io.StringIO(text))
         for row in reader:
-            if not isinstance(row, dict):
+            if not isinstance(row, dict) or len(row) < 2:
                 continue
-            keys: List[str] = list(row.keys())
-            if len(keys) < 2:
-                continue
-                
-            name_raw: Optional[str] = row.get(keys[0])
-            cmd_raw: Optional[str] = row.get(keys[1])
+            
+            # Obtiene los valores usando las claves reales detectadas por DictReader
+            values = list(row.values())
+            name_raw = values[0]
+            cmd_raw = values[1]
             
             if not isinstance(name_raw, str) or not isinstance(cmd_raw, str):
                 continue

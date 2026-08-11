@@ -142,8 +142,13 @@ def _check_file_integrity(p: Path) -> None:
     }
 
     for reason, is_unsafe in integrity_rules.items():
-        if is_unsafe():
-            raise UnsafePathError(f"Operación bloqueada para {p.name}: {reason}.")
+        try:
+            if is_unsafe():
+                raise UnsafePathError(f"Operación bloqueada para {p.name}: {reason}.")
+        except Exception as e:
+            if isinstance(e, UnsafePathError):
+                raise
+            raise UnsafePathError(f"Error verificando integridad de {p.name}: {e}")
 
 
 @lru_cache(maxsize=1024)
@@ -231,6 +236,10 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
         path_str = str(path)
     except (ValueError, TypeError) as e:
         raise UnsafePathError(f"Ruta mal formada: {e}")
+
+    # Verificar existencia del padre si es una ruta existente
+    if p.exists() and p.parent and not p.parent.exists():
+        raise UnsafePathError("El directorio padre de la ruta no es accesible o no existe.")
 
     if any(part in ("..", "...") for part in path_str.replace("/", os.sep).split(os.sep)):
         raise UnsafePathError("Operación bloqueada: posible intento de path traversal.")

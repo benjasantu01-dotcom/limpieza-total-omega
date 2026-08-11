@@ -111,14 +111,13 @@ class _Validators:
         if len(path_obj.parts) < 2: return False
         if any(part in ('.', '..', '..\\', '../') for part in path_obj.parts): return False
         try:
-            # Forzar resolución estricta solo para validar existencia física y evitar trampas de symlink
             resolved = path_obj.resolve() if path_obj.exists() else path_obj.absolute()
             if resolved.is_symlink() or (hasattr(resolved, 'is_junction') and resolved.is_junction()):
                 return False
             if is_protected_path(str(resolved)): return False
             target = resolved if resolved.exists() else resolved.parent
             return is_safe_to_modify(str(target))
-        except (OSError, RuntimeError):
+        except (OSError, RuntimeError, PermissionError):
             return False
 
     @staticmethod
@@ -140,7 +139,7 @@ class _Validators:
             parsed_value = int(val)
             min_limit, max_limit = _NUMERIC_LIMITS.get(key, (0, 10**9))
             return max(min_limit, min(max_limit, parsed_value))
-        except (TypeError, ValueError): 
+        except (TypeError, ValueError, OverflowError): 
             return None
 
     @staticmethod
