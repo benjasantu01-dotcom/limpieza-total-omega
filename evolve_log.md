@@ -1354,3 +1354,10 @@ assert not ['memory.py']
 - `2026-08-11T02:17:23` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `quarantine_file` añadiendo una comprobación explícita para evitar que archivos con el bit de solo lectura (`stat.st_file_attributes` en Windows) o permisos restrictivos sean movidos, evitando errores de acceso denegado a mitad de la operación (TOCTOU/Fallas parciales).
 - `2026-08-11T02:17:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-11T02:17:23` Corrida terminada. Total usado hoy: 56.
+- `2026-08-11T02:25:29` Arrancando corrida. Quedan hoy ~244 peticiones objetivo.
+- `2026-08-11T02:25:49` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-08-11T02:26:13` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-08-11T02:26:36` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha robustecido `Scanner.process_entry` añadiendo un filtro explícito mediante `is_protected_path` al inicio de cada iteración, garantizando que el escaneo no pueda acceder a rutas críticas incluso si la lógica de navegación (stack) llegara a corromperse, siguiendo estrictamente el principio de defensa en profundidad.
+- `2026-08-11T02:26:47` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_is_safe_path` al incluir una verificación explícita de `path_obj.is_absolute()` y una restricción de profundidad mediante `len(path_obj.parts)` para prevenir ataques de traversal o configuraciones en rutas raíz críticas.
+- `2026-08-11T02:26:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-11T02:26:47` Corrida terminada. Total usado hoy: 60.

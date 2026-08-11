@@ -106,7 +106,9 @@ class _Validators:
     
     @staticmethod
     def _is_safe_path(path_obj: Path) -> bool:
-        """Valida que una ruta no sea sistema, símbolo o reparse point."""
+        """Valida que una ruta no sea sistema, símbolo o reparse point y sea válida."""
+        if not path_obj.is_absolute(): return False
+        if len(path_obj.parts) < 2: return False
         if any(part in ('.', '..', '..\\', '../') for part in path_obj.parts): return False
         resolved = path_obj.resolve(strict=False)
         if resolved.is_symlink() or (resolved.exists() and hasattr(resolved, 'is_junction') and resolved.is_junction()):

@@ -90,11 +90,12 @@ class Scanner:
             return
         
         try:
-            if self._is_reparse_point(entry):
+            path_obj = Path(entry.path)
+            # Defensa en profundidad: bloqueo estricto de rutas protegidas
+            if is_protected_path(path_obj) or not self._is_safe_entry(path_obj):
                 return
 
-            path_obj = Path(entry.path)
-            if is_protected_path(path_obj) or not self._is_safe_entry(path_obj):
+            if self._is_reparse_point(entry):
                 return
 
             if entry.is_dir(follow_symlinks=False):
