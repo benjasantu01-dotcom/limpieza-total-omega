@@ -5,47 +5,48 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **504**
-- Mejoras aceptadas: **235** (46.6% de aceptación)
+- Iteraciones totales: **502**
+- Mejoras aceptadas: **233** (46.4% de aceptación)
 - Rechazadas por tests: 9
-- Rechazadas por guardia de seguridad: 33
+- Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 211
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-10 | 66 | 1 | 9 | 6 | 74 |
-| 2026-08-11 | 169 | 8 | 24 | 10 | 137 |
+| 2026-08-10 | 63 | 1 | 8 | 6 | 74 |
+| 2026-08-11 | 170 | 8 | 24 | 10 | 138 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **60**
 - manejo de errores y validación de entradas: **51**
 - rendimiento: **45**
-- robustez ante casos límite: **40**
-- seguridad defensiva: **39**
+- robustez ante casos límite: **41**
+- seguridad defensiva: **36**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **21**
 - `settings.py`: **20**
 - `assistant.py`: **20**
+- `diskreport.py`: **20**
+- `quarantine.py`: **20**
 - `branding.py`: **20**
-- `diskreport.py`: **19**
 - `duplicates.py`: **19**
 - `healthscore.py`: **18**
 - `memory.py`: **18**
 - `scanner.py`: **17**
 - `browser.py`: **16**
 - `startup.py`: **14**
-- `organizer.py`: **12**
 - `main.py`: **12**
-- `safety.py`: **9**
+- `organizer.py`: **11**
+- `safety.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-11T15:13:28` **diskreport.py** (robustez ante casos límite): Se fortalece la robustez ante errores de acceso a disco en `walk_files` y `summarize` capturando excepciones específicas (`OSError`, `PermissionError`, `FileNotFoundError`) de forma más granular para evitar que un solo archivo inaccesible o un enlace simbólico roto aborten un escaneo completo.
 - `2026-08-11T15:03:56` **branding.py** (robustez ante casos límite): Se ha robustecido el método `save_logo_svg` añadiendo una verificación de escritura mediante `os.access` y `os.W_OK` antes de intentar realizar la operación, asegurando que el proceso pueda fallar de forma controlada si el directorio de destino es de solo lectura o inaccesible, evitando excepciones no manejadas durante la escritura.
 - `2026-08-11T15:03:40` **assistant.py** (robustez ante casos límite): Se reforzó la robustez de `build_context` ante la posible recepción de datos malformados o tipos inesperados durante la carga de métricas, garantizando que el asistente siempre trabaje con valores numéricos válidos incluso si las fuentes externas fallan.
 - `2026-08-11T15:03:05` **startup.py** (rendimiento): Optimicé el rendimiento de `entries_from_folders` al reemplazar la iteración total por una comprensión de lista filtrada que aprovecha la evaluación perezosa y reduce el número de objetos intermedios creados, además de consolidar la validación de seguridad para evitar múltiples llamadas `is_protected_path` sobre el mismo objeto `Path`.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-11T14:22:05` **browser.py** (rendimiento): Optimicé el rendimiento de `_sum_directory_recursive` evitando llamadas repetitivas a `os.path.realpath` y `is_protected_path` dentro del loop profundo, y reduciendo la creación de objetos `Path` innecesarios.
 - `2026-08-11T14:21:40` **branding.py** (rendimiento): Optimicé el rendimiento de `gradient_colors` eliminando la creación innecesaria de listas intermedias y reduciendo la complejidad del bucle mediante una pre-calculación de los segmentos, lo cual es más eficiente para el renderizado repetitivo en el canvas de la UI.
 - `2026-08-11T14:12:12` **startup.py** (legibilidad y documentación): Documenté con docstrings claros y detallados la lógica de resolución de rutas en `StartupEntry` para explicar el porqué de la validación perezosa y los criterios de seguridad aplicados, facilitando el mantenimiento futuro del código.
-- `2026-08-11T14:11:08` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación de los chequeos heurísticos mediante la estandarización de docstrings y la inclusión de type hints explícitos, facilitando la comprensión del flujo de datos en el motor de escaneo.

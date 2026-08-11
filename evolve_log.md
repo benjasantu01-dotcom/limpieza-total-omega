@@ -1440,3 +1440,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_ex
 - `2026-08-11T15:03:56` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se ha robustecido el método `save_logo_svg` añadiendo una verificación de escritura mediante `os.access` y `os.W_OK` antes de intentar realizar la operación, asegurando que el proceso pueda fallar de forma controlada si el directorio de destino es de solo lectura o inaccesible, evitando excepciones no manejadas durante la escritura.
 - `2026-08-11T15:03:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-11T15:03:56` Corrida terminada. Total usado hoy: 348.
+- `2026-08-11T15:12:26` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-11T15:12:36` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-11T15:13:03` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-08-11T15:13:28` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se fortalece la robustez ante errores de acceso a disco en `walk_files` y `summarize` capturando excepciones específicas (`OSError`, `PermissionError`, `FileNotFoundError`) de forma más granular para evitar que un solo archivo inaccesible o un enlace simbólico roto aborten un escaneo completo.
+- `2026-08-11T15:13:28` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-08-11T15:13:28` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-11T15:13:28` Corrida terminada. Total usado hoy: 350.
