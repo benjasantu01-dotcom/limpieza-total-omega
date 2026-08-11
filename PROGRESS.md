@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **238** (47.2% de aceptación)
+- Mejoras aceptadas: **237** (47.0% de aceptación)
 - Rechazadas por tests: 9
 - Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-10 | 118 | 2 | 14 | 9 | 117 |
-| 2026-08-11 | 120 | 7 | 17 | 8 | 92 |
+| 2026-08-10 | 115 | 2 | 13 | 9 | 117 |
+| 2026-08-11 | 122 | 7 | 18 | 8 | 93 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **63**
 - manejo de errores y validación de entradas: **51**
-- robustez ante casos límite: **43**
+- robustez ante casos límite: **45**
 - rendimiento: **41**
-- seguridad defensiva: **40**
+- seguridad defensiva: **37**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **22**
 - `settings.py`: **21**
+- `quarantine.py`: **21**
 - `assistant.py`: **20**
 - `branding.py`: **20**
-- `diskreport.py`: **19**
+- `diskreport.py`: **20**
 - `duplicates.py`: **19**
-- `scanner.py`: **18**
-- `healthscore.py`: **18**
+- `healthscore.py`: **19**
 - `memory.py`: **18**
+- `scanner.py`: **17**
 - `browser.py`: **16**
 - `main.py`: **14**
 - `startup.py`: **12**
 - `organizer.py`: **11**
-- `safety.py`: **10**
+- `safety.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-11T10:37:15` **healthscore.py** (robustez ante casos límite): Reforcé la robustez del módulo `healthscore.py` ante casos límite en la generación de recomendaciones, evitando que el sistema falle silenciosamente o produzca errores si `SystemMetrics` tiene valores extremos o inesperados (como divisiones por cero en el cálculo de ratios).
+- `2026-08-11T10:36:28` **diskreport.py** (robustez ante casos límite): Se ha robustecido el manejo de errores en `summarize` y `walk_files` para asegurar que la app no colapse ante nombres de archivos extremadamente largos (límite de `MAX_PATH` en Windows) o errores de acceso inesperados durante la generación del informe, garantizando que el análisis pueda completarse parcialmente en lugar de abortar.
 - `2026-08-11T10:27:16` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante rutas de destino mal formadas o inexistentes, asegurando que el manejo de errores no silencie fallos críticos de acceso al sistema de archivos mediante una validación estricta y pre-verificación de la ruta.
 - `2026-08-11T10:26:46` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_safe_assign` y `build_context` ante valores `NaN` o `inf` (que pueden ocurrir en cálculos de porcentaje o división por cero) para evitar que el estado interno quede en un estado numéricamente inválido.
 - `2026-08-11T10:16:54` **settings.py** (rendimiento): Se implementó un sistema de "dirty checking" más robusto en `load` y `save` eliminando llamadas redundantes a `os.stat()` y `load()` dentro de los métodos de acceso, optimizando el rendimiento mediante el uso eficiente de la caché (`_cached_settings`) y evitando operaciones de disco innecesarias.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-11T09:46:32` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` convirtiendo el `_KEYWORD_MAP` en un diccionario de acceso directo por tokens, eliminando la operación `set.intersection` y el uso de `next(iter(...))` en cada consulta, lo que reduce la complejidad de búsqueda de O(N) a O(1) promedio.
 - `2026-08-11T09:45:48` **startup.py** (legibilidad y documentación): Mejoré la documentación interna de `StartupEntry` y sus métodos de resolución mediante docstrings normalizados (siguiendo estándares de Google), clarificando la lógica de "resolución perezosa" (lazy loading) y validación de seguridad para facilitar futuras auditorías del flujo de datos.
 - `2026-08-11T09:45:23` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo type hints precisos y docstrings explicativos en las funciones de validación, clarificando la lógica de saneamiento de datos para facilitar el mantenimiento.
-- `2026-08-11T09:36:41` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la inclusión de docstrings detallados en las funciones de escaneo heurístico, especificando claramente el propósito de los parámetros y el valor de retorno para facilitar la auditabilidad y el mantenimiento del código.
-- `2026-08-11T09:36:32` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación y la robustez del código mediante la adición de docstrings técnicos detallados en las funciones de validación, clarificando el propósito de cada guardia y facilitando el mantenimiento futuro.

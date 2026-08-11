@@ -205,7 +205,7 @@ def _generate_recommendations(m: SystemMetrics, ratios: ScoreMap) -> List[str]:
     )
 
     for key, threshold, msg in checks:
-        if ratios.get(key, 1.0) < threshold:
+        if ratios.get(key, 0.0) < threshold:
             recs.append(msg)
     
     if m.quarantined_count > 0:

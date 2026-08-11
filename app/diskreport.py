@@ -373,18 +373,21 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
     total_bytes, total_files = 0, 0
     
     for path, size in walk_files(path_obj, skip_protected):
-        total_bytes += size
-        total_files += 1
-        
-        ext = path.suffix.lower() or "(sin extensión)"
-        ext_size[ext] += size
-        ext_count[ext] += 1
-        
-        # Mantiene un heap de los 8 archivos más pesados vistos hasta ahora
-        if len(top_files_heap) < 8:
-            heapq.heappush(top_files_heap, (size, str(path)))
-        else:
-            heapq.heappushpop(top_files_heap, (size, str(path)))
+        try:
+            total_bytes += size
+            total_files += 1
+            
+            ext = path.suffix.lower() or "(sin extensión)"
+            ext_size[ext] += size
+            ext_count[ext] += 1
+            
+            path_str = str(path)
+            if len(top_files_heap) < 8:
+                heapq.heappush(top_files_heap, (size, path_str))
+            else:
+                heapq.heappushpop(top_files_heap, (size, path_str))
+        except (AttributeError, TypeError, OSError):
+            continue
 
     lines = [f"Carpeta analizada: {path_obj}", f"Total: {format_size(total_bytes)} en {total_files} archivos", "", "Por tipo de archivo:"]
     
