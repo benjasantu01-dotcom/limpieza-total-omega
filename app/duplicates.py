@@ -88,6 +88,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
             return None
 
         stat_initial = file_path.stat()
+        # 0x400 (FILE_ATTRIBUTE_REPARSE_POINT) evita seguir junctions o enlaces simbólicos a directorios
         if stat_initial.st_size <= 0 or (getattr(stat_initial, 'st_file_attributes', 0) & 0x400):
             return None
             
@@ -158,11 +159,7 @@ def _collect_candidates(
     """
     Realiza un recorrido recursivo del sistema de archivos para identificar archivos candidatos.
     
-    Usa un diccionario de inodos (dev, ino) para evitar ciclos en enlaces simbólicos o
-    puntos de reparse. Filtra por tamaño mínimo y validaciones de seguridad de safety.py.
-    
-    Returns:
-        Diccionario {tamaño_bytes: [lista_rutas]} conteniendo solo grupos de al menos 2 archivos.
+    Usa un diccionario de inodos (dev, ino) para evitar ciclos en enlaces simbólicos.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: Dict[Tuple[int, int], bool] = {}
@@ -177,6 +174,7 @@ def _collect_candidates(
                     
                     try:
                         entry_stat = entry.stat(follow_symlinks=False)
+                        # Ignorar puntos de reparse (junctions)
                         if getattr(entry_stat, 'st_file_attributes', 0) & 0x400:
                             continue
                         
@@ -215,9 +213,6 @@ def _refine_by_hash(
 ) -> Dict[str, List[Path]]:
     """
     Reduce un grupo de rutas agrupándolas según el resultado de una función de hash.
-    
-    Aplica 'hash_func' a cada ruta y reagrupa por el hash resultante. Solo conserva
-    entradas donde la colisión de hash implica al menos dos archivos.
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     if paths is None: return groups_by_digest
@@ -239,13 +234,9 @@ def find_duplicates(
     """
     Ejecuta el pipeline jerárquico de detección de duplicados.
     
-    Flujo:
-    1. Escaneo inicial por tamaño.
-    2. Refinamiento mediante hash parcial (primeros 64KB).
-    3. Refinamiento final mediante hash SHA256 completo.
-    
-    Returns:
-        Lista de objetos DuplicateGroup ordenados por bytes desperdiciados descendentes.
+    1. Escaneo por tamaño.
+    2. Refinamiento por hash parcial.
+    3. Refinamiento por hash SHA256 completo.
     """
     if directories is None or min_size < 0: return []
     
@@ -281,12 +272,10 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
         if not isinstance(p, Path):
             continue
         try:
-            # Validar existencia antes de stat para evitar excepciones innecesarias
             if p.exists():
                 stat_info = p.stat()
                 keepers.append((float(stat_info.st_mtime), len(str(p)), p))
         except (OSError, PermissionError, AttributeError):
-            # Ignoramos archivos que no pudimos acceder para estadísticos
             continue
             
     return min(keepers, key=lambda x: (x[0], x[1]))[2] if keepers else None

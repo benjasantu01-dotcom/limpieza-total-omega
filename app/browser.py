@@ -165,16 +165,20 @@ def _sum_directory_recursive(
     depth: int = 0
 ) -> int:
     """
-    Realiza un recorrido DFS para calcular el peso total (bytes) de una carpeta.
-    Implementa control de ciclos mediante 'visited' y memoización de resultados.
+    Calcula el peso total de una carpeta mediante un recorrido DFS.
+    
+    Args:
+        root_dir: Ruta absoluta del directorio.
+        is_junction_fn: Callback para detectar puntos de reparse (junctions).
+        visited: Set para rastrear rutas procesadas y evitar ciclos infinitos.
+        cache: Diccionario para memoizar resultados de subdirectorios.
+        depth: Profundidad actual para limitar la recursión.
     """
     if depth > 20 or not root_dir:
         return 0
         
-    if visited is None:
-        visited = set()
-    if cache is None:
-        cache = {}
+    visited = visited if visited is not None else set()
+    cache = cache if cache is not None else {}
     
     try:
         real_path = os.path.realpath(root_dir)
@@ -192,15 +196,14 @@ def _sum_directory_recursive(
     try:
         with os.scandir(root_dir) as it:
             for entry in it:
+                if _should_skip_entry(entry, kernel32, is_junction_fn):
+                    continue
+                
                 try:
-                    if _should_skip_entry(entry, kernel32, is_junction_fn):
-                        continue
-                    
                     if entry.is_dir():
                         total_size += _sum_directory_recursive(entry.path, is_junction_fn, visited, cache, depth + 1)
                     elif entry.is_file():
-                        st = entry.stat()
-                        total_size += max(0, st.st_size)
+                        total_size += max(0, entry.stat().st_size)
                 except (PermissionError, OSError):
                     continue
     except (PermissionError, OSError):

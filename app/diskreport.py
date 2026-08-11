@@ -146,6 +146,12 @@ def format_size(num: Union[int, float, None]) -> str:
 def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     """
     Obtiene el estado de uso de una unidad de disco mediante `shutil.disk_usage`.
+    
+    Args:
+        mount: Ruta de la unidad o punto de montaje.
+        
+    Returns:
+        Objeto DriveUsage si la ruta es válida y accesible, None en caso contrario.
     """
     if not mount:
         return None
@@ -171,7 +177,11 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
     """
     Lista el uso de las unidades detectadas.
     
-    Si `mounts` es None, autodetecta unidades: letras en Windows o '/' en POSIX.
+    Args:
+        mounts: Iterable opcional de rutas a analizar. Si es None, autodetecta unidades.
+        
+    Returns:
+        Lista de objetos DriveUsage con el estado de cada unidad válida.
     """
     if mounts is None:
         if os.name == "nt":
@@ -191,7 +201,14 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Generador eficiente que recorre archivos usando una pila (stack) en lugar de recursión.
+    Recorre un directorio de forma iterativa (no recursiva) para listar archivos.
+    
+    Args:
+        directory: Ruta raíz a recorrer.
+        skip_protected: Si es True, ignora rutas bloqueadas por seguridad.
+        
+    Yields:
+        Tuplas conteniendo el objeto Path del archivo y su tamaño en bytes.
     """
     if not directory:
         return
@@ -239,7 +256,14 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 
 
 def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_protected: bool = True) -> List[FileEntry]:
-    """Retorna los N archivos más grandes encontrados en el directorio base."""
+    """
+    Encuentra los N archivos de mayor peso en la jerarquía dada.
+    
+    Args:
+        directory: Directorio base.
+        limit: Cantidad máxima de archivos a retornar.
+        skip_protected: Si es True, evita rutas protegidas.
+    """
     if not directory or limit <= 0:
         return []
     return heapq.nlargest(
@@ -250,7 +274,13 @@ def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_prot
 
 
 def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip_protected: bool = True) -> List[ExtensionUsage]:
-    """Calcula el peso total ocupado por cada extensión de archivo encontrada."""
+    """
+    Agrupa el uso de espacio por extensión de archivo.
+    
+    Args:
+        directory: Directorio base.
+        limit: Máximo de extensiones a retornar ordenadas por peso.
+    """
     if not directory or limit <= 0:
         return []
     
@@ -271,7 +301,13 @@ def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip
 
 
 def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
-    """Agrupa el peso de subcarpetas de primer nivel bajo el directorio base dado."""
+    """
+    Agrupa el uso de espacio de las subcarpetas inmediatas del directorio dado.
+    
+    Args:
+        directory: Directorio base desde el cual analizar las subcarpetas.
+        limit: Cantidad de carpetas pesadas a retornar.
+    """
     if not directory or limit <= 0:
         return []
     
@@ -312,7 +348,18 @@ def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 
 
 def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -> List[str]:
-    """Genera un informe textual unificado del uso de disco con un solo recorrido."""
+    """
+    Genera un informe textual unificado del uso de disco.
+    
+    Realiza una única pasada por el árbol de archivos para recopilar estadísticas,
+    evitando la sobrecarga de múltiples recorridos.
+    
+    Args:
+        directory: Carpeta a analizar.
+        
+    Returns:
+        Lista de strings formateados listos para visualización.
+    """
     if not directory: 
         return ["Error: Ruta no proporcionada."]
     
@@ -336,6 +383,7 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
         ext_size[ext] += size
         ext_count[ext] += 1
         
+        # Mantiene un heap de los 8 archivos más pesados vistos hasta ahora
         if len(top_files_heap) < 8:
             heapq.heappush(top_files_heap, (size, str(path)))
         else:

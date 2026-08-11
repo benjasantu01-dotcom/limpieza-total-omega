@@ -221,7 +221,7 @@ def bar(percent: Union[float, int, None], width: int = 24,
 
 @lru_cache(maxsize=128)
 def _hex_to_rgb(value: HexColor) -> RGBTuple:
-    """Decodifica un color hexadecimal de formato '#RRGGBB' a una tupla RGB."""
+    """Decodifica el formato '#RRGGBB' a tupla (R, G, B) para cálculos de mezcla."""
     if not isinstance(value, str) or len(value) != 7 or not value.startswith("#"):
         return (0, 0, 0)
     try:
@@ -238,7 +238,10 @@ def _hex_to_rgb(value: HexColor) -> RGBTuple:
 
 @lru_cache(maxsize=64)
 def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
-    """Realiza una interpolación lineal entre dos colores hexadecimales."""
+    """
+    Interpolación lineal (LERP) entre dos colores. 
+    'ratio' de 0.0 retorna 'start', 1.0 retorna 'end'.
+    """
     ratio = max(0.0, min(1.0, float(ratio)))
     r1, g1, b1 = _hex_to_rgb(start)
     r2, g2, b2 = _hex_to_rgb(end)
@@ -251,7 +254,7 @@ def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
 
 @lru_cache(maxsize=16)
 def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> List[HexColor]:
-    """Genera una secuencia de colores interpolados basada en puntos de control (stops)."""
+    """Crea una rampa de colores continua entre múltiples puntos de control."""
     try:
         steps = max(1, int(steps))
     except (TypeError, ValueError):
@@ -268,7 +271,7 @@ def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) ->
     return res
 
 def _get_grouped_segments(colors: List[HexColor]) -> List[Tuple[HexColor, int, int]]:
-    """Optimiza una lista de colores consecutivos en segmentos de colores idénticos."""
+    """Comprime una lista de colores en bloques contiguos para optimizar llamadas al canvas."""
     segments = []
     if not colors: return segments
     start = 0
@@ -282,14 +285,14 @@ def _get_grouped_segments(colors: List[HexColor]) -> List[Tuple[HexColor, int, i
 
 @lru_cache(maxsize=8)
 def _get_shield_coords(s: float) -> List[float]:
-    """Calcula vértices base escalados; memoizado para evitar recalcular en cada frame."""
+    """Calcula vértices geométricos del escudo base multiplicados por el factor de escala 's'."""
     base = [64, 18, 100, 31, 100, 67, 90, 90, 64, 110, 38, 90, 28, 67, 28, 31]
     return [v * float(s) for v in base]
 
 
 @lru_cache(maxsize=4)
 def logo_svg(size: int = 128) -> str:
-    """Genera el contenido XML del logo como SVG escalable."""
+    """Genera la estructura XML (SVG) para exportar el isotipo de la marca."""
     s = max(1, min(4096, int(size)))
     return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{s}" height="{s}" viewBox="0 0 128 128">
   <defs>
@@ -342,7 +345,7 @@ def logo_ascii() -> str:
 
 
 def _draw_shield_stripes(canvas: Any, canvas_x: float, canvas_y: float, scale: float) -> None:
-    """Renderiza las franjas degradadas del cuerpo del escudo en el canvas."""
+    """Renderiza el sombreado degradado interior del escudo en el canvas (Tkinter)."""
     if scale <= 0: return
     franjas_count = max(6, int(28 * scale))
     colores = gradient_colors(franjas_count)
@@ -356,7 +359,7 @@ def _draw_shield_stripes(canvas: Any, canvas_x: float, canvas_y: float, scale: f
 
 def draw_logo(canvas: Any, size: int = 56, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
     """
-    Renderiza el logo vectorial en un canvas de Tkinter.
+    Renderiza el logo vectorial en un canvas de Tkinter aplicando escala y transformación.
     """
     if not hasattr(canvas, "create_polygon"): return
     try:
@@ -387,7 +390,7 @@ def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
                       canvas_x: float = 0.0, canvas_y: float = 0.0,
                       stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
     """
-    Dibuja una franja horizontal degradada utilizando segmentos optimizados.
+    Dibuja una franja horizontal decorativa con gradiente interpolado en coordenadas locales.
     """
     if not hasattr(canvas, "create_line"): return
     try:
@@ -403,7 +406,7 @@ def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
               track: Optional[HexColor] = None,
               fill: Optional[HexColor] = None) -> None:
     """
-    Renderiza un medidor circular de estado para métricas de salud (0-100%).
+    Dibuja un medidor circular (donut chart) para representar porcentajes de salud.
     """
     if not hasattr(canvas, "create_arc"): return
     try:
