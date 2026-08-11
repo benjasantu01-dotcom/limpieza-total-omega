@@ -109,15 +109,12 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
         real_base = base_path.resolve(strict=True)
         real_target = target_path.resolve(strict=True)
         
-        # Validar contra lista negra de seguridad antes de cualquier otra comprobación
         if is_protected_path(real_target) or is_protected_path(real_base):
             return False
 
-        # Prevenir Path Traversal: asegurar que real_target sea subdirectorio de real_base
         if os.path.commonpath([real_base, real_target]) != str(real_base):
             return False
 
-        # Detectar caracteres no imprimibles o RTL en el path (evita ocultamiento visual)
         if any(ord(char) < 32 or ord(char) in (0x200E, 0x200F, 0x202A, 0x202E) for char in str(target_path)):
             return False
 
@@ -143,7 +140,6 @@ def _is_system_hidden(entry_path: str, kernel32: ctypes.WinDLL | None) -> bool:
         return False
     try:
         attrs = kernel32.GetFileAttributesW(entry_path)
-        # 0x04: SYSTEM, 0x02: HIDDEN, 0xFFFFFFFF (-1): error
         return attrs != -1 and bool(attrs & 0x04 or attrs & 0x02)
     except (OSError, AttributeError, TypeError):
         return False
@@ -160,16 +156,18 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: ctypes.WinDLL | None, is_ju
     return False
 
 
-def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool], visited: Optional[Set[str]] = None, cache: Optional[Dict[str, int]] = None, depth: int = 0) -> int:
+def _sum_directory_recursive(
+    root_dir: str, 
+    is_junction_fn: Callable[[str], bool], 
+    visited: Set[str] | None = None, 
+    cache: Dict[str, int] | None = None, 
+    depth: int = 0
+) -> int:
     """
     Realiza un recorrido DFS para calcular el peso total (bytes) de una carpeta.
-    Implementa control de ciclos mediante 'visited' y caché de resultados.
+    Implementa control de ciclos mediante 'visited' y memoización de resultados.
     """
     if depth > 20 or not root_dir or not os.path.exists(root_dir):
-        return 0
-    
-    # Seguridad defensiva adicional: re-verificar protección en cada nivel de recursión
-    if is_protected_path(Path(root_dir)):
         return 0
         
     if visited is None:

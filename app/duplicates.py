@@ -156,7 +156,13 @@ def _collect_candidates(
     skip_protected: bool
 ) -> Dict[int, List[Path]]:
     """
-    Escaneo recursivo evitando ciclos de inodes y reparse points (Junctions).
+    Realiza un recorrido recursivo del sistema de archivos para identificar archivos candidatos.
+    
+    Usa un diccionario de inodos (dev, ino) para evitar ciclos en enlaces simbólicos o
+    puntos de reparse. Filtra por tamaño mínimo y validaciones de seguridad de safety.py.
+    
+    Returns:
+        Diccionario {tamaño_bytes: [lista_rutas]} conteniendo solo grupos de al menos 2 archivos.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: Dict[Tuple[int, int], bool] = {}
@@ -175,7 +181,6 @@ def _collect_candidates(
                             continue
                         
                         path_obj = Path(entry.path)
-                        # Validar seguridad antes de seguir recursando o procesando
                         if skip_protected and is_protected_path(path_obj.resolve()):
                             continue
                         
@@ -209,7 +214,10 @@ def _refine_by_hash(
     hash_func: Callable[[Path], Optional[str]]
 ) -> Dict[str, List[Path]]:
     """
-    Refina grupos de archivos mediante una función de hash dada.
+    Reduce un grupo de rutas agrupándolas según el resultado de una función de hash.
+    
+    Aplica 'hash_func' a cada ruta y reagrupa por el hash resultante. Solo conserva
+    entradas donde la colisión de hash implica al menos dos archivos.
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     if paths is None: return groups_by_digest
@@ -229,7 +237,15 @@ def find_duplicates(
     skip_protected: bool = True,
 ) -> List[DuplicateGroup]:
     """
-    Pipeline principal: size_map -> partial_hash -> full_hash.
+    Ejecuta el pipeline jerárquico de detección de duplicados.
+    
+    Flujo:
+    1. Escaneo inicial por tamaño.
+    2. Refinamiento mediante hash parcial (primeros 64KB).
+    3. Refinamiento final mediante hash SHA256 completo.
+    
+    Returns:
+        Lista de objetos DuplicateGroup ordenados por bytes desperdiciados descendentes.
     """
     if directories is None or min_size < 0: return []
     

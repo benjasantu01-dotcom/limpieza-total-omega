@@ -147,14 +147,13 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     """
     Obtiene el estado de uso de una unidad de disco mediante `shutil.disk_usage`.
     
-    Verifica que la ruta sea absoluta, existente y no protegida. Ignora rutas UNC
-    para evitar bloqueos de red.
-    
-    Args:
-        mount: Ruta de la unidad (ej: 'C:\\').
+    Validaciones:
+        - Verifica existencia y permisos de lectura.
+        - Descarta rutas UNC (servidores remotos) para evitar latencia/bloqueo.
+        - Ignora rutas protegidas según política de seguridad.
         
     Returns:
-        Objeto DriveUsage si la ruta es válida y accesible, None en caso contrario.
+        DriveUsage si es accesible, None si la ruta es inválida, protegida o inaccesible.
     """
     if not mount:
         return None
@@ -180,13 +179,7 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
     """
     Lista el uso de las unidades detectadas.
     
-    Si `mounts` es None, intenta autodetectar unidades en Windows usando letras o '/' en POSIX.
-    
-    Args:
-        mounts: Opcional, iterable con rutas de montaje.
-        
-    Returns:
-        Lista de objetos DriveUsage con las unidades accesibles.
+    Si `mounts` es None, autodetecta unidades: letras en Windows o '/' en POSIX.
     """
     if mounts is None:
         if os.name == "nt":
@@ -206,10 +199,14 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Generador que recorre archivos bajo un directorio usando una pila (stack) para evitar recursión.
+    Generador eficiente que recorre archivos usando una pila (stack) en lugar de recursión.
     
-    Implementa un límite de profundidad (100) y detección de ciclos mediante inodos para 
-    evitar bucles infinitos en sistemas con enlaces simbólicos complejos.
+    Args:
+        directory: Directorio raíz a escanear.
+        skip_protected: Si True, ignora rutas que violen políticas de seguridad.
+        
+    Yields:
+        Tupla (ruta_del_archivo, tamaño_en_bytes).
     """
     if not directory:
         return
@@ -251,7 +248,6 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                                 visited_inodes.add(inode)
                                 stack.append((path_obj, depth + 1))
                         else:
-                            # Captura errores de lectura de metadatos de archivos individuales
                             yield path_obj, entry.stat().st_size
                     except (OSError, PermissionError):
                         continue
@@ -310,7 +306,6 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
                 if not relative.parts: continue
                 top_level = base / relative.parts[0]
                 
-                # Defensa extra: validar que la subcarpeta raíz no sea protegida
                 if skip_protected and is_protected_path(top_level): continue
                 
                 sums[top_level] += size
@@ -364,7 +359,6 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
             else:
                 heapq.heappushpop(top_files_heap, (size, str(path)))
     except (OSError, PermissionError):
-        # El informe será parcial si falla la lectura durante la marcha
         pass
 
     lines = [f"Carpeta analizada: {path_obj}", f"Total: {format_size(total_bytes)} en {total_files} archivos", "", "Por tipo de archivo:"]
