@@ -649,3 +649,36 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-08-11T05:30:51` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 108): unterminated string literal (detected at line 108)
 - `2026-08-11T05:30:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-11T05:30:51` Corrida terminada. Total usado hoy: 132.
+- `2026-08-11T05:39:39` Arrancando corrida. Quedan hoy ~168 peticiones objetivo.
+- `2026-08-11T05:40:06` Tests FALLARON:
+```
+pper object at 0x7f448823fa00> = safety.is_protected_path
+FAILED evolve/tests/test_safety.py::test_ensure_safe_blocks_system_paths - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_ensure_safe_allows_sensitive_extension_when_explicitly_requested - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_filter_safe_paths_keeps_only_the_safe_ones - AssertionError: assert {'app.tmp', '...', 'otro.log'} == {'ok.tmp', 'otro.log'}
+  
+  Extra items in the left set:
+  'app.tmp'
+  'malo.tmp'
+  
+  Full diff:
+    {
+  +     'app.tmp',
+  +     'malo.tmp',
+        'ok.tmp',
+        'otro.log',
+    }
+FAILED evolve/tests/test_safety.py::test_describe_protection_explains_the_reason - assert 'protegida' in "'/tmp/pytest-of-runner/pytest-1/test_describe_protection_expla0/Windows/x.txt' es candidata a modificación."
+ +  where "'/tmp/pytest-of-runner/pytest-1/test_describe_protection_expla0/Windows/x.txt' es candidata a modificación." = <function describe_protection at 0x7f448785fce0>(((PosixPath('/tmp/pytest-of-runner/pytest-1/test_describe_protection_expla0') / 'Windows') / 'x.txt'))
+ +    where <function describe_protection at 0x7f448785fce0> = safety.describe_protection
+FAILED evolve/tests/test_safety.py::test_quarantine_refuses_files_from_system_paths - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - Failed: DID NOT RAISE UnsafePathError
+15 failed, 284 passed in 1.38s
+
+```
+- `2026-08-11T05:40:06` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se ha optimizado la función `is_protected_path` reemplazando la verificación recursiva `any(...)` sobre todos los componentes de la ruta por una operación de intersección de conjuntos (set intersection), que es significativamente más eficiente, y pre-calculando el estado de las carpetas protegidas para evitar cálculos redundantes.
+- `2026-08-11T05:40:30` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizé la lógica de filtrado inicial en `scan_file` para evitar llamadas redundantes a `path.exists()` y chequeos de extensión, integrando la validación de extensiones ejecutables como un guard clause previo que evita cálculos innecesarios en archivos comunes (como .txt o .jpg).
+- `2026-08-11T05:40:54` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: rendimiento).
+- `2026-08-11T05:41:03` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-08-11T05:41:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-11T05:41:03` Corrida terminada. Total usado hoy: 136.

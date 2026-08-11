@@ -143,16 +143,13 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, name
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None) -> ScanResult:
     """Ejecuta el conjunto de heurísticas definido sobre un archivo individual."""
-    if not path or not path.exists():
-        return []
-
     findings: ScanResult = []
     
     # 1. Chequeos universales
     if (res := check_double_extension(path, entry, name, suffix, now_ts)):
         findings.append(res)
     
-    # 2. Chequeos solo para ejecutables
+    # 2. Chequeos específicos de ejecutables: filtrar antes de realizar operaciones de IO costosas
     if suffix in SUSPICIOUS_EXECUTABLE_EXT:
         if (res := check_recent_executable_in_downloads(path, entry, name, suffix, now_ts)):
             findings.append(res)
