@@ -224,23 +224,20 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     if not metrics.is_finite() or not _validate_weights():
         return HealthResult(0, "F", {}, ["Error: Datos o configuración inestables."])
 
-    try:
-        ratios: ScoreMap = {
-            "seguridad": score_security(metrics.suspicious_count, metrics.suspicious_warnings),
-            "disco": score_disk(metrics.disk_free_percent),
-            "memoria": score_memory(metrics.memory_available_percent),
-            "basura": score_junk(metrics.junk_mb),
-            "duplicados": score_duplicates(metrics.duplicate_mb),
-            "arranque": score_startup(metrics.startup_count)
-        }
-    except Exception:
-        return HealthResult(0, "F", {}, ["Error interno al calcular puntajes."])
+    ratios: ScoreMap = {
+        "seguridad": score_security(metrics.suspicious_count, metrics.suspicious_warnings),
+        "disco": score_disk(metrics.disk_free_percent),
+        "memoria": score_memory(metrics.memory_available_percent),
+        "basura": score_junk(metrics.junk_mb),
+        "duplicados": score_duplicates(metrics.duplicate_mb),
+        "arranque": score_startup(metrics.startup_count)
+    }
     
     breakdown: Dict[str, int] = {}
     total_raw: float = 0.0
     
     for area, factor in _WEIGHT_FACTORS.items():
-        score_val = ratios[area] * factor
+        score_val = ratios.get(area, 0.0) * factor
         breakdown[area] = int(round(score_val))
         total_raw += score_val
 

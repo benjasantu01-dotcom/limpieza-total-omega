@@ -281,10 +281,12 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
         if not isinstance(p, Path):
             continue
         try:
+            # Validar existencia antes de stat para evitar excepciones innecesarias
             if p.exists():
                 stat_info = p.stat()
                 keepers.append((float(stat_info.st_mtime), len(str(p)), p))
         except (OSError, PermissionError, AttributeError):
+            # Ignoramos archivos que no pudimos acceder para estadísticos
             continue
             
     return min(keepers, key=lambda x: (x[0], x[1]))[2] if keepers else None

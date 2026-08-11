@@ -318,7 +318,12 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if _is_system_process(target_pid) or target_pid == os.getpid():
         return False, "Operación denegada: PID fuera de rango o protegido."
     
-    kernel32, psapi = ctypes.windll.kernel32, ctypes.windll.psapi
+    kernel32 = ctypes.windll.kernel32
+    psapi = getattr(ctypes.windll, "psapi", None)
+    
+    if psapi is None:
+        return False, "Error de sistema: PSAPI no disponible."
+
     handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
     
     if not handle:
@@ -343,7 +348,6 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
             except (OSError, PermissionError):
                 return False, "Operación denegada: ejecutable bloqueado por el sistema."
         elif size == 0:
-            # Algunas apps protegidas devuelven 0 bytes de nombre de módulo pero son válidas
             pass
             
         if not psapi.EmptyWorkingSet(handle):
