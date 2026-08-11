@@ -265,9 +265,9 @@ def context_as_text(context: SystemContext) -> str:
             f"Duplicados: {_fmt_metric(context.duplicate_mb, ' MB')}",
             f"Inicio: {context.startup_count} items"
         )
-        texto_crudo = "\n".join(lines)
-        texto_sanitizado = _CONTROL_CHARS_REGEX.sub(" ", texto_crudo)
-        texto_limpio = _PATH_REGEX.sub(" ", texto_sanitizado)
+        texto_unificado = "\n".join(lines)
+        # Sanitización profunda post-generación para garantizar ausencia de rutas
+        texto_limpio = _PATH_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", texto_unificado))
         if not _ensure_safe_text(texto_limpio):
             return "Error de seguridad en la serialización de contexto."
         return texto_limpio

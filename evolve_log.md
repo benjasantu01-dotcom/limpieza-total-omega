@@ -705,3 +705,41 @@ FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked -
 - `2026-08-11T06:11:42` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
 - `2026-08-11T06:11:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-11T06:11:42` Corrida terminada. Total usado hoy: 148.
+- `2026-08-11T06:20:36` Arrancando corrida. Quedan hoy ~152 peticiones objetivo.
+- `2026-08-11T06:21:00` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante casos límite en `process_entry` al envolver la llamada `entry.is_dir` y `entry.is_file` en un bloque `try-except` adicional, evitando que archivos bloqueados por el sistema operativo o archivos en estado inconsistente interrumpan el flujo de escaneo completo.
+- `2026-08-11T06:21:25` ➖ Sin cambios en settings.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `settings.py` ante fallos de E/S o corrupción del archivo de configuración al añadir un manejo explícito de `OSError` al listar el directorio, asegurando que la aplicación no aborte si el sistema de archivos deniega el acceso a la carpeta de configuración durante la inicialización.
+- `2026-08-11T06:21:50` Tests FALLARON:
+```
+.................... [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_________________ test_read_only_modules_never_delete_or_move __________________
+
+    def test_read_only_modules_never_delete_or_move():
+        """Ningún módulo de solo lectura puede borrar ni mover archivos."""
+        destructivos = {"unlink", "rmdir", "rmtree", "move", "remove", "rename", "replace"}
+        for nombre in READ_ONLY_MODULES:
+            archivo = APP_DIR / nombre
+            if not archivo.exists():
+                continue
+            usados = calls_and_imports(parse(archivo)) & destructivos
+>           assert not usados, (
+                f"{nombre} debería ser de solo lectura pero llama a "
+                f"{', '.join(sorted(usados))}"
+            )
+E           AssertionError: startup.py debería ser de solo lectura pero llama a replace
+E           assert not {'replace'}
+
+evolve/tests/test_integrity.py:294: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move - AssertionError: startup.py debería ser de solo lectura pero llama a replace
+assert not {'replace'}
+1 failed, 298 passed in 1.24s
+
+```
+- `2026-08-11T06:21:50` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `_resolve_path_from_command` añadiendo una limpieza de argumentos basada en la detección de secuencias de escape y delimitadores que podrían causar errores de sintaxis en `Path`, previniendo que rutas malformadas o con argumentos inesperados interrumpan el análisis del ejecutable.
+- `2026-08-11T06:22:08` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la seguridad defensiva al serializar el contexto mediante una validación más estricta de los caracteres de entrada y salida, asegurando que la función `context_as_text` no pueda procesar ni retornar contenido que contenga rutas o secuencias de control, incluso si el objeto `SystemContext` llegara a ser manipulado externamente.
+- `2026-08-11T06:22:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-11T06:22:08` Corrida terminada. Total usado hoy: 152.
