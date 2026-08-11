@@ -251,6 +251,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                                 visited_inodes.add(inode)
                                 stack.append((path_obj, depth + 1))
                         else:
+                            # Captura errores de lectura de metadatos de archivos individuales
                             yield path_obj, entry.stat().st_size
                     except (OSError, PermissionError):
                         continue
@@ -349,18 +350,22 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
     top_files_heap: List[Tuple[int, str]] = []
     total_bytes, total_files = 0, 0
     
-    for path, size in walk_files(path_obj, skip_protected):
-        total_bytes += size
-        total_files += 1
-        
-        ext = path.suffix.lower() or "(sin extensión)"
-        ext_size[ext] += size
-        ext_count[ext] += 1
-        
-        if len(top_files_heap) < 8:
-            heapq.heappush(top_files_heap, (size, str(path)))
-        else:
-            heapq.heappushpop(top_files_heap, (size, str(path)))
+    try:
+        for path, size in walk_files(path_obj, skip_protected):
+            total_bytes += size
+            total_files += 1
+            
+            ext = path.suffix.lower() or "(sin extensión)"
+            ext_size[ext] += size
+            ext_count[ext] += 1
+            
+            if len(top_files_heap) < 8:
+                heapq.heappush(top_files_heap, (size, str(path)))
+            else:
+                heapq.heappushpop(top_files_heap, (size, str(path)))
+    except (OSError, PermissionError):
+        # El informe será parcial si falla la lectura durante la marcha
+        pass
 
     lines = [f"Carpeta analizada: {path_obj}", f"Total: {format_size(total_bytes)} en {total_files} archivos", "", "Por tipo de archivo:"]
     

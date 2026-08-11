@@ -200,7 +200,8 @@ def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool
                     if entry.is_dir():
                         total_size += _sum_directory_recursive(entry.path, is_junction_fn, visited, cache, depth + 1)
                     elif entry.is_file():
-                        total_size += entry.stat().st_size
+                        st = entry.stat()
+                        total_size += max(0, st.st_size)
                 except (OSError, PermissionError):
                     continue
     except (OSError, PermissionError):
@@ -227,7 +228,7 @@ def directory_size(path: str | os.PathLike | None) -> int:
             return 0
         
         is_junction: Callable[[str], bool] = getattr(os.path, 'isjunction', lambda _: False)
-        return _sum_directory_recursive(str(root_path), is_junction)
+        return max(0, _sum_directory_recursive(str(root_path), is_junction))
     except (OSError, PermissionError, RuntimeError, ValueError):
         return 0
 
@@ -274,9 +275,9 @@ def detect_profiles(
                 candidate = real_base.joinpath(*relative_path_str.split("\\"))
                 if _is_valid_cache_path(candidate, real_base):
                     size: int = _sum_directory_recursive(str(candidate.resolve()), is_junction, cache=perf_cache)
-                    if size >= 0:
+                    if size > 0:
                         found.append(BrowserCache(
-                            browser=browser_name,
+                            browser=str(browser_name),
                             path=candidate.resolve(),
                             size_bytes=size,
                         ))

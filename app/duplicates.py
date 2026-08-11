@@ -262,11 +262,12 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
 
     keepers: List[Tuple[float, int, Path]] = []
     for p in group.paths:
-        if not isinstance(p, Path): continue
+        if not isinstance(p, Path) or not p.exists():
+            continue
         try:
             stat_info = p.stat()
             keepers.append((float(stat_info.st_mtime), len(str(p)), p))
-        except (OSError, PermissionError, AttributeError, FileNotFoundError):
+        except (OSError, PermissionError, AttributeError):
             continue
             
     return min(keepers, key=lambda x: (x[0], x[1]))[2] if keepers else None
@@ -276,14 +277,17 @@ def format_group(group: DuplicateGroup) -> List[str]:
     """
     Genera representación textual de un grupo para la UI.
     """
-    if not isinstance(group, DuplicateGroup): return []
+    if not isinstance(group, DuplicateGroup): 
+        return []
+        
     keeper = suggest_keeper(group)
     mb_total = round(group.size_bytes / (1024 * 1024), 2)
     mb_wasted = round(group.wasted_bytes / (1024 * 1024), 2)
     
     lines = [f"{group.count} copias de {mb_total} MB (recuperable: {mb_wasted} MB)"]
     for path in group.paths:
-        if not isinstance(path, Path): continue
+        if not isinstance(path, Path): 
+            continue
         marca = "conservar" if (keeper and path == keeper) else "duplicado"
         lines.append(f"   [{marca}] {path}")
     return lines
