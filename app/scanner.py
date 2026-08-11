@@ -63,14 +63,14 @@ class Scanner:
     def __init__(self, base_root: Path) -> None:
         self.results: ScanResult = []
         self.seen: set[str] = set()
-        self.base_root = base_root
+        self.base_root = base_root.resolve()
         self.now_ts = datetime.now().timestamp()
 
     def _is_safe_entry(self, entry_path: Path) -> bool:
         """Verifica que la entrada esté dentro del base_root definido para evitar escapes del directorio raíz."""
         try:
             resolved = entry_path.resolve()
-            return self.base_root in resolved.parents or resolved == self.base_root
+            return self.base_root == resolved or self.base_root in resolved.parents
         except (RuntimeError, ValueError, OSError):
             return False
 

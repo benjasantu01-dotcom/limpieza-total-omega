@@ -781,3 +781,10 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-08-11T06:43:02` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
 - `2026-08-11T06:43:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-11T06:43:02` Corrida terminada. Total usado hoy: 160.
+- `2026-08-11T06:51:24` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-08-11T06:51:55` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: seguridad defensiva).
+- `2026-08-11T06:52:13` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-11T06:52:37` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-08-11T06:52:44` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `_is_safe_entry` añadiendo una normalización explícita de rutas mediante `resolve()` a la comparación del `base_root`, asegurando que los enlaces simbólicos o rutas relativas no permitan escapar del directorio base, reforzando la seguridad defensiva contra ataques de salto de directorio (directory traversal).
+- `2026-08-11T06:52:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-11T06:52:44` Corrida terminada. Total usado hoy: 164.
