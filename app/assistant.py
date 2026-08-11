@@ -214,8 +214,11 @@ def _fmt_metric(val: Any, unit: str = "", decimal: int = 0) -> str:
 def _get_metric_val(source: Any, key: str, default: Any) -> Any:
     """Extrae de forma segura un valor numérico de una fuente de datos (dict u objeto)."""
     try:
-        val = source.get(key, default) if isinstance(source, dict) else getattr(source, key, default)
-        return val if isinstance(val, (int, float)) and math.isfinite(val) else default
+        if isinstance(source, dict):
+            val = source.get(key, default)
+        else:
+            val = getattr(source, key, default)
+        return val if isinstance(val, (int, float, type(None))) and (val is None or math.isfinite(val)) else default
     except Exception: return default
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
@@ -246,8 +249,10 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         ctx.analyzed = True
 
     for k, v in extra.items():
-        if hasattr(ctx, k) and isinstance(v, (int, float)) and math.isfinite(v):
-            _safe_assign(ctx, k, v, cast=type(getattr(ctx, k)))
+        if hasattr(ctx, k):
+            attr_type = type(getattr(ctx, k))
+            if isinstance(v, (int, float)) and math.isfinite(v):
+                _safe_assign(ctx, k, v, cast=attr_type)
     return ctx
 
 def context_as_text(context: SystemContext) -> str:

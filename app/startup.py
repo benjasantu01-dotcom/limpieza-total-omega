@@ -199,23 +199,15 @@ def startup_folders() -> List[Path]:
 
 def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[StartupEntry]:
     """Escanea directorios Startup del SO y mapea archivos ejecutables a StartupEntry."""
-    if folders is None:
-        folders = startup_folders()
-    
     found_entries: List[StartupEntry] = []
-
-    for folder in folders:
+    for folder in (folders or startup_folders()):
         try:
-            for item in folder.iterdir():
-                if item.is_file() and item.suffix.lower() in EXECUTABLE_EXTS and not item.is_symlink():
-                    if is_protected_path(item):
-                        continue
-                    try:
-                        name: str = item.stem
-                        if name:
-                            found_entries.append(StartupEntry(name=name, command=str(item), source="carpeta"))
-                    except OSError:
-                        continue
+            found_entries.extend(
+                StartupEntry(name=item.stem, command=str(item), source="carpeta")
+                for item in folder.iterdir()
+                if item.is_file() and item.stem and not is_protected_path(item) 
+                and item.suffix.lower() in EXECUTABLE_EXTS and not item.is_symlink()
+            )
         except (OSError, PermissionError):
             continue
     return found_entries

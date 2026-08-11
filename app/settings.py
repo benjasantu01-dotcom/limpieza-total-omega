@@ -29,7 +29,6 @@ from __future__ import annotations
 
 import json
 import os
-import time
 from pathlib import Path
 from typing import Any, Final, TypeAlias, Callable, TypedDict
 
@@ -73,7 +72,7 @@ VALID_ACCENTS: Final[tuple[str, ...]] = ("menta", "violeta", "magenta", "cian", 
 
 _cached_settings: AppSettings | None = None
 _current_path: Path | None = None
-_last_mtime: float = 0.0
+_last_mtime: float = -1.0
 _path_cache: dict[str, Path] = {}
 
 DEFAULTS: Final[AppSettings] = {
@@ -219,7 +218,9 @@ def load(path_or_base: PathLike | None = None) -> AppSettings:
     ruta = settings_path(path_or_base)
     
     try:
-        if not ruta.exists(): return DEFAULTS.copy()
+        if not ruta.exists(): 
+            return DEFAULTS.copy()
+        
         stats = ruta.stat()
         if _cached_settings is not None and _current_path == ruta and _last_mtime == stats.st_mtime:
             return _cached_settings.copy()

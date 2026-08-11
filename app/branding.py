@@ -22,6 +22,7 @@ from pathlib import Path
 from typing import Any, Final, TypeAlias, Literal, Mapping, Tuple, List, Optional, Union, TypedDict
 from types import MappingProxyType
 from functools import lru_cache
+import os
 from safety import is_safe_to_modify
 
 # Type Aliases para mejorar la legibilidad de la semántica de datos
@@ -330,7 +331,13 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         if not is_safe_to_modify(p):
             return None
         target: Path = p.resolve()
-        target.parent.mkdir(parents=True, exist_ok=True)
+        
+        # Verificar permisos de escritura en el directorio padre
+        parent_dir = target.parent
+        if parent_dir.exists() and not os.access(parent_dir, os.W_OK):
+            return None
+            
+        parent_dir.mkdir(parents=True, exist_ok=True)
         target.write_text(logo_svg(), encoding="utf-8")
         return target
     except (OSError, PermissionError, ValueError, RuntimeError, IOError, AttributeError, TypeError):
