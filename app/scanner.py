@@ -134,6 +134,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     if entry is None:
         return None
     try:
+        # entry.stat() es una llamada al sistema; se invoca solo si es necesario por el flujo de scan_file
         if (now_ts - entry.stat().st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
             return Suspicion(path, f"Ejecutable reciente detectado (modificado hace menos de {RECENT_FILE_THRESHOLD_HOURS}h)", "info")
     except (OSError, AttributeError, OverflowError):
@@ -150,19 +151,20 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, name
     return None
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None) -> ScanResult:
-    """Ejecuta el conjunto de heurísticas definido sobre un archivo individual, optimizando las llamadas costosas."""
+    """Ejecuta heurísticas. Prioriza chequeos de cadena (O(1)) antes de realizar I/O con os.stat()."""
     findings: ScanResult = []
     
-    # 1. Chequeos universales (bajo costo)
+    # 1. Chequeos basados en nombre (String-only)
     if (res := check_double_extension(path, entry, name, suffix, now_ts)):
         findings.append(res)
     
-    # 2. Chequeos específicos de ejecutables: filtrar primero por extensión (costo O(1))
+    # 2. Chequeos específicos de ejecutables
     if suffix in SUSPICIOUS_EXECUTABLE_EXT:
-        # Check de lookalike (string comparison, bajo costo)
+        # Check de lookalike (String comparison, bajo costo)
         if (res := check_system_lookalike(path, entry, name, suffix, now_ts)):
             findings.append(res)
-        # Check de reciente (invoca OS.stat, costo alto)
+        
+        # Check de reciente (Involucra syscall os.stat, costo alto: se pospone al final)
         if (res := check_recent_executable_in_downloads(path, entry, name, suffix, now_ts)):
             findings.append(res)
                 

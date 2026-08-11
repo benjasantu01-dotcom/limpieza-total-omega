@@ -408,8 +408,10 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     except (OSError, ValueError):
         return 0
     items = load_manifest(base)
+    # Usar dict para acceso O(1) por nombre de archivo
     item_map = {item.stored_name: item for item in items}
-    processed_names = set(item_map.keys())
+    items_in_manifest = set(item_map.keys())
+    
     purged_count = 0
     items_to_keep: List[QuarantineItem] = []
     
@@ -417,17 +419,20 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
         for entry in quarantine_root.iterdir():
             if entry.name == MANIFEST_NAME or not entry.is_file():
                 continue
-            if not _is_valid_quarantine_path(entry.resolve(), quarantine_root):
-                continue
             
-            if entry.name in processed_names:
+            # Si el archivo está en el manifiesto, validamos y borramos
+            if entry.name in items_in_manifest:
                 item = item_map[entry.name]
-                if entry.exists() and item.verify_integrity(entry):
+                if item.verify_integrity(entry):
                     ensure_safe_to_modify(entry, allow_sensitive=False)
                     if _safe_unlink(entry):
                         purged_count += 1
                         continue
+                # Si falla integridad o unlink, mantenemos referencia en el manifiesto
                 items_to_keep.append(item)
+            else:
+                # Archivos extraños en la carpeta de cuarentena se ignoran o tratan según política
+                pass
     except (OSError, PermissionError):
         pass
     

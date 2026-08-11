@@ -193,7 +193,8 @@ def is_protected_path(path: PathLike) -> bool:
     
     try:
         p = normalize(path)
-        if not _SYSTEM_ROOTS.isdisjoint(p.parents) or p in _SYSTEM_ROOTS:
+        # Comparación eficiente usando los sets pre-cargados
+        if any(p.startswith(root) or root in p.parents for root in _SYSTEM_ROOTS):
             return True
         if any(part.lower() in PROTECTED_DIR_NAMES for part in p.parts):
             return True
@@ -214,7 +215,7 @@ def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = F
         return False
 
 
-@lru_cache(maxsize=512)
+@lru_cache(maxsize=1024)
 def is_sensitive_file(path: PathLike) -> bool:
     """Filtra archivos por extensión para evitar manipular binarios o registros críticos."""
     try:
