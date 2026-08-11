@@ -161,6 +161,10 @@ class _Validators:
         if val is None: return None
         if not isinstance(val, (str, Path)): return None
         text = str(val).strip()
+        
+        # Prevenir inyección de rutas y caracteres de control
+        if any(c < ' ' for c in text) or ".." in text: return None
+        
         if key == "ultima_carpeta": return _Validators.path(text)
         if not text: return "" if key == "asistente_clave_api" else None
         if key == "tema": return text.lower() if text.lower() in VALID_THEMES else None

@@ -6,34 +6,34 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **245** (48.6% de aceptación)
+- Mejoras aceptadas: **246** (48.8% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 196
+- Sin respuesta de la IA (error o límite): 195
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-10 | 162 | 6 | 19 | 11 | 142 |
-| 2026-08-11 | 83 | 7 | 14 | 6 | 54 |
+| 2026-08-10 | 162 | 6 | 19 | 11 | 138 |
+| 2026-08-11 | 84 | 7 | 14 | 6 | 57 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **58**
 - manejo de errores y validación de entradas: **49**
 - robustez ante casos límite: **48**
-- seguridad defensiva: **47**
+- seguridad defensiva: **48**
 - rendimiento: **43**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **23**
 - `assistant.py`: **21**
+- `settings.py`: **21**
 - `branding.py`: **20**
 - `diskreport.py`: **20**
-- `settings.py`: **20**
 - `duplicates.py`: **20**
 - `healthscore.py`: **19**
 - `browser.py`: **17**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-11T07:02:01` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_Validators.str` para prevenir la inyección de rutas en campos de texto generales mediante la validación explícita de `ultima_carpeta` y una restricción de caracteres peligrosos (`..`, `NUL`, o caracteres de control) en todas las cadenas.
 - `2026-08-11T06:52:44` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_safe_entry` añadiendo una normalización explícita de rutas mediante `resolve()` a la comparación del `base_root`, asegurando que los enlaces simbólicos o rutas relativas no permitan escapar del directorio base, reforzando la seguridad defensiva contra ataques de salto de directorio (directory traversal).
 - `2026-08-11T06:42:55` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `trim_working_set` añadiendo una validación explícita de la ruta del ejecutable mediante `is_protected_path` combinada con una normalización de ruta más estricta, asegurando que la operación solo se realice sobre procesos cuyos ejecutables no residan en ubicaciones críticas del sistema o rutas relativas sospechosas.
 - `2026-08-11T06:32:33` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` y `group_by_size` asegurando que las rutas se resuelvan (con `resolve()`) antes de cualquier validación de seguridad, previniendo así posibles ataques por rutas relativas o "path traversal" al inspeccionar el sistema de archivos.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-11T06:00:28` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `suggest_keeper` y `hash_file` ante condiciones de carrera y sistemas de archivos volátiles, asegurando que el acceso a metadatos (stat) y la existencia de archivos estén protegidos contra cambios concurrentes o errores de sistema inesperados mediante validaciones adicionales de existencia.
 - `2026-08-11T05:51:28` **diskreport.py** (robustez ante casos límite): Se reforzó `walk_files` y `drive_usage` para manejar la posible falta de disponibilidad de archivos durante el escaneo (race conditions) y evitar errores de `ValueError` al resolver rutas con caracteres especiales o puntos de reparse, mejorando la estabilidad ante entornos de disco volátiles.
 - `2026-08-11T05:51:19` **browser.py** (robustez ante casos límite): Se reforzó la robustez de `_is_safe_path` y `_sum_directory_recursive` ante nombres de ruta malformados o excesivamente largos, asegurando que `resolve()` no levante excepciones críticas y que las comparaciones de `commonpath` sean consistentes incluso cuando el sistema operativo devuelve rutas con distinta normalización de caja (case-insensitivity).
-- `2026-08-11T05:50:55` **branding.py** (robustez ante casos límite): Se reforzó `save_logo_svg` y `_hex_to_rgb` para prevenir errores en tiempo de ejecución ante rutas malformadas, tipos de datos inesperados y desbordamientos en cálculos matemáticos, asegurando una ejecución robusta ante casos límite.
