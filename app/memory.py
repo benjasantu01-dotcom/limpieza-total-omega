@@ -304,14 +304,15 @@ def _is_system_process(pid: int) -> bool:
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
-    Intenta reducir el working set del proceso, realizando validaciones de seguridad
-    previas sobre el handle y la ubicación del ejecutable.
+    Intenta reducir el working set de un proceso específico, realizando 
+    validaciones de seguridad sobre el handle del proceso y la ubicación 
+    del ejecutable antes de ejecutar la acción Win32.
     """
     if os.name != "nt":
         return False, "Solo disponible en Windows."
     
     try:
-        target_pid = int(pid)
+        target_pid: int = int(pid)
     except (ValueError, TypeError):
         return False, "El PID debe ser un número entero válido."
     
@@ -324,38 +325,38 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if psapi is None:
         return False, "Error de sistema: PSAPI no disponible."
 
-    handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
+    # Obtener handle con permisos mínimos necesarios (Query + SetQuota)
+    proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
     
-    if not handle:
+    if not proc_handle:
         if kernel32.GetLastError() == ERROR_ACCESS_DENIED:
             return False, "Acceso denegado: requiere privilegios de administrador."
         return False, "Acceso denegado o proceso no encontrado."
         
     try:
         exit_code = ctypes.c_ulong()
-        if not kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)) or exit_code.value != STILL_ACTIVE_EXIT_CODE:
+        if not kernel32.GetExitCodeProcess(proc_handle, ctypes.byref(exit_code)) or exit_code.value != STILL_ACTIVE_EXIT_CODE:
             return False, "El proceso seleccionado ya no está activo."
             
         buf = ctypes.create_unicode_buffer(2048)
-        size = psapi.GetModuleFileNameExW(handle, 0, buf, 2048)
+        size: int = psapi.GetModuleFileNameExW(proc_handle, 0, buf, 2048)
+        
         if size > 0:
-            exe_path = os.path.abspath(os.path.normpath(buf.value))
+            exe_path: str = os.path.abspath(os.path.normpath(buf.value))
             if is_protected_path(exe_path) or not os.path.isabs(exe_path):
                 return False, "Operación denegada: ruta de ejecutable no segura."
             try:
-                # Comprobación de lectura no destructiva
+                # Comprobación de lectura no destructiva para verificar acceso al binario
                 with open(exe_path, "rb"): pass
             except (OSError, PermissionError):
                 return False, "Operación denegada: ejecutable bloqueado por el sistema."
-        elif size == 0:
-            pass
             
-        if not psapi.EmptyWorkingSet(handle):
+        if not psapi.EmptyWorkingSet(proc_handle):
             return False, f"Error al intentar liberar memoria (código {kernel32.GetLastError()})."
             
         return True, f"Working set liberado. {TRIM_WARNING}"
     except Exception:
         return False, "Ocurrió un error técnico al gestionar el proceso."
     finally:
-        if handle:
-            kernel32.CloseHandle(handle)
+        if proc_handle:
+            kernel32.CloseHandle(proc_handle)

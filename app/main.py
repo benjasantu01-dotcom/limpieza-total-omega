@@ -201,7 +201,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         if not self._closing:
             self._debounces[key] = self.after(delay, callback)
 
-    def _create_styled_label(self, parent: Any, text: str, style: str, **kwargs) -> ctk.CTkLabel:
+    def _create_styled_label(self, parent: Any, text: str, style: str, **kwargs: Any) -> ctk.CTkLabel:
         """Crea etiquetas con fuentes y colores normalizados según branding.py."""
         font_config = {"size": branding.font_size(style)}
         if style == "title": font_config["weight"] = "bold"

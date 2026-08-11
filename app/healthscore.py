@@ -36,6 +36,7 @@ __all__ = [
 ]
 
 # --- UMBRALES DE NORMALIZACIÓN (referencias constantes para cálculo) ---
+# Valores que representan el límite superior donde un parámetro se considera óptimo (score 1.0)
 _LIMIT_JUNK_MB: Final[float] = 5000.0          
 _LIMIT_DUPLICATE_MB: Final[float] = 2000.0     
 _LIMIT_STARTUP_COUNT: Final[int] = 20          
@@ -48,6 +49,7 @@ WARN_THRESHOLD_MED: Final[float] = 0.8
 WARN_THRESHOLD_LOW: Final[float] = 0.6
 
 # --- PESOS DE CALIFICACIÓN (base para cálculo de puntaje) ---
+# Pesos relativos que definen qué impacto tiene cada área en el score total de 100
 WEIGHTS: Final[Dict[str, int]] = {
     "seguridad": 30,
     "disco": 20,
@@ -58,6 +60,8 @@ WEIGHTS: Final[Dict[str, int]] = {
 }
 
 _TOTAL_WEIGHTS: Final[float] = float(sum(WEIGHTS.values()))
+
+# Factores normalizados que transforman cada peso en un valor proporcional a 100
 _WEIGHT_FACTORS: Final[Dict[str, float]] = {
     k: (w * 100.0 / _TOTAL_WEIGHTS) if _TOTAL_WEIGHTS > 0 else 0.0 
     for k, w in WEIGHTS.items()

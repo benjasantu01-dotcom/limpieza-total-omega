@@ -135,7 +135,6 @@ def _is_allowed_directory(name: str) -> bool:
 def _is_file_accessible(path: Path) -> bool:
     """
     Verifica si el archivo es accesible intentando abrirlo en lectura binaria.
-    Se utiliza como chequeo previo para evitar excepciones durante el proceso de escaneo.
     """
     try:
         with open(path, "rb") as f:
@@ -146,10 +145,7 @@ def _is_file_accessible(path: Path) -> bool:
 
 def _is_file_locked(path: Path) -> bool:
     """
-    Verifica si el archivo está bloqueado por otro proceso intentando abrirlo en modo append.
-    
-    Returns:
-        True si el archivo está en uso exclusivo, False si se puede abrir.
+    Verifica si el archivo está bloqueado por otro proceso mediante apertura en modo append.
     """
     try:
         with open(path, "a+b"):
@@ -158,22 +154,16 @@ def _is_file_locked(path: Path) -> bool:
         return True
 
 
-def _is_safe_for_move(path: Path) -> bool:
-    """
-    Validación de seguridad combinada: verifica reglas globales y legibilidad del archivo.
-    """
-    return is_safe_to_modify(path) and _is_file_accessible(path)
-
-
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     """
-    Escaneo recursivo buscando archivos temporales.
+    Realiza un escaneo recursivo en los directorios especificados para identificar archivos basura.
+    Utiliza medidas de seguridad para evitar seguir enlaces simbólicos y carpetas del sistema.
     """
     dirs: List[str] = directories if directories is not None else DEFAULT_SCAN_DIRS
     found: List[JunkFile] = []
 
     def _walk_dir(base_path: str) -> None:
-        """Recorrido en profundidad que evita recursión en junctions y carpetas de sistema."""
+        """Recorrido profundo seguro: ignora reparse points y archivos protegidos."""
         try:
             with os.scandir(base_path) as it:
                 for entry in it:
@@ -184,19 +174,19 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
                         if _is_allowed_directory(entry.name):
                             _walk_dir(entry.path)
                     else:
-                        _, ext = os.path.splitext(entry.name)
-                        if ext.lower() in _LOWER_JUNK_EXTS:
-                            try:
-                                path_obj = Path(entry.path)
-                                if is_safe_to_modify(path_obj) and _is_file_accessible(path_obj):
+                        if _is_junk_path(Path(entry.name)):
+                            path_obj = Path(entry.path)
+                            # Verificación estricta: cumple reglas de seguridad y legibilidad
+                            if is_safe_to_modify(path_obj) and _is_file_accessible(path_obj):
+                                try:
                                     stat = path_obj.stat()
                                     found.append(JunkFile(
                                         path=path_obj,
                                         size_bytes=stat.st_size,
                                         modified=datetime.fromtimestamp(stat.st_mtime)
                                     ))
-                            except (PermissionError, OSError, UnicodeEncodeError):
-                                continue
+                                except OSError:
+                                    continue
         except (PermissionError, OSError):
             pass
 
@@ -230,7 +220,7 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Path:
     """
-    Mueve archivos candidatos a una carpeta de revisión segura.
+    Mueve los archivos basura identificados a un directorio de cuarentena/revisión.
     """
     if not files:
         raise ValueError("La lista de archivos a procesar no puede estar vacía.")
@@ -241,8 +231,6 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 
     for jf in files:
         try:
-            if not isinstance(jf, JunkFile) or not jf.path:
-                continue
             current_abs: Path = jf.path.resolve()
             
             if not current_abs.exists() or not current_abs.is_file():
@@ -251,13 +239,10 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             if dest == current_abs or dest in current_abs.parents:
                 continue
             
+            # Verificación de seguridad antes de mover
             ensure_safe_to_modify(current_abs)
             
-            if _is_file_locked(current_abs):
-                continue
-            
-            # Prevenir error de 'Cross-device link' moviendo solo si están en misma partición
-            if current_abs.anchor != dest.anchor:
+            if _is_file_locked(current_abs) or current_abs.anchor != dest.anchor:
                 continue
 
             target: Path = _generate_unique_target(dest / f"{current_abs.stem}_{int(jf.modified.timestamp())}{current_abs.suffix}")
@@ -269,7 +254,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
     """
-    Elimina archivos de la carpeta de revisión tras validación.
+    Elimina archivos de forma permanente de la carpeta de revisión.
     """
     if not isinstance(review_dir, str) or not review_dir.strip():
         return 0
