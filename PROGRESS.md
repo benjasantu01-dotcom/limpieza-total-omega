@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **239** (47.4% de aceptación)
-- Rechazadas por tests: 10
-- Rechazadas por guardia de seguridad: 31
+- Mejoras aceptadas: **241** (47.8% de aceptación)
+- Rechazadas por tests: 9
+- Rechazadas por guardia de seguridad: 30
 - Sin cambios (nada sustancial que mejorar): 17
 - Sin respuesta de la IA (error o límite): 207
 
@@ -16,29 +16,29 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-10 | 128 | 3 | 15 | 10 | 120 |
-| 2026-08-11 | 111 | 7 | 16 | 7 | 87 |
+| 2026-08-10 | 127 | 2 | 14 | 10 | 119 |
+| 2026-08-11 | 114 | 7 | 16 | 7 | 88 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **63**
 - manejo de errores y validación de entradas: **51**
 - seguridad defensiva: **48**
-- robustez ante casos límite: **43**
-- rendimiento: **34**
+- robustez ante casos límite: **42**
+- rendimiento: **37**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **22**
 - `settings.py`: **21**
+- `quarantine.py`: **21**
 - `assistant.py`: **20**
 - `branding.py`: **20**
+- `diskreport.py`: **20**
 - `duplicates.py`: **20**
-- `diskreport.py`: **19**
-- `healthscore.py`: **18**
+- `healthscore.py`: **19**
 - `memory.py`: **18**
+- `browser.py`: **17**
 - `scanner.py`: **17**
-- `browser.py`: **16**
 - `main.py`: **15**
 - `startup.py`: **12**
 - `organizer.py`: **11**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-11T09:56:35` **healthscore.py** (rendimiento): Se pre-calculan las recomendaciones innecesarias utilizando un diccionario de mapeo de funciones y umbrales para eliminar el `if/else` encadenado, optimizando la construcción del reporte mediante un bucle eficiente.
+- `2026-08-11T09:55:58` **diskreport.py** (rendimiento): Optimicé `walk_files` eliminando la creación repetitiva de objetos `Path` a partir de `entry.path` dentro del bucle, procesando el string directamente cuando es posible para reducir la presión sobre el recolector de basura y mejorar la velocidad de procesamiento en directorios extensos.
+- `2026-08-11T09:55:33` **browser.py** (rendimiento): Optimizé la recursión en `_sum_directory_recursive` pasando un `kernel32` ya instanciado y una referencia `is_junction` fija, evitando la creación repetida de objetos y búsquedas de atributos innecesarias dentro del bucle de escaneo.
 - `2026-08-11T09:46:46` **branding.py** (rendimiento): Se implementó un almacenamiento en caché a nivel de módulo (`_memoized_gradients`) para `gradient_colors`, evitando la ejecución redundante de cálculos de interpolación lineal (LERP) y generación de listas, una operación costosa cuando se redibuja la interfaz frecuentemente.
 - `2026-08-11T09:46:32` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` convirtiendo el `_KEYWORD_MAP` en un diccionario de acceso directo por tokens, eliminando la operación `set.intersection` y el uso de `next(iter(...))` en cada consulta, lo que reduce la complejidad de búsqueda de O(N) a O(1) promedio.
 - `2026-08-11T09:45:48` **startup.py** (legibilidad y documentación): Mejoré la documentación interna de `StartupEntry` y sus métodos de resolución mediante docstrings normalizados (siguiendo estándares de Google), clarificando la lógica de "resolución perezosa" (lazy loading) y validación de seguridad para facilitar futuras auditorías del flujo de datos.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-11T09:25:59` **main.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de la clase `LimpiezaTotalOmegaApp` mediante la aplicación de type hints faltantes en los métodos de construcción de la interfaz y la adición de docstrings técnicos que clarifican la responsabilidad de las funciones de layout.
 - `2026-08-11T09:24:54` **healthscore.py** (legibilidad y documentación): Se han incluido type hints más precisos y docstrings explicativos para los umbrales de normalización y los factores de peso, facilitando la comprensión de la lógica matemática del cálculo de salud.
 - `2026-08-11T09:15:47` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de docstrings y se ha reforzado la integridad del código añadiendo type hints en funciones internas, además de clarificar la lógica de filtrado de reparse points mediante comentarios explicativos.
-- `2026-08-11T09:15:37` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos a los parámetros y retornos de las funciones públicas, eliminando ambigüedades en `walk_files` y `summarize`, y explicitando la lógica de manejo de errores.
-- `2026-08-11T09:15:12` **browser.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `_sum_directory_recursive` separando la lógica de cálculo de tamaño de la gestión de recursividad, integrando mejor los type hints y documentando el propósito de cada parámetro para facilitar futuras auditorías del código.
-- `2026-08-11T09:14:47` **branding.py** (legibilidad y documentación): Documenté con precisión técnica el propósito de los métodos de renderizado y las utilidades cromáticas para mejorar la mantenibilidad del código gráfico, facilitando la comprensión de la lógica de escalado y los espacios de coordenadas sin alterar la funcionalidad.

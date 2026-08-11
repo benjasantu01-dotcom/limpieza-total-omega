@@ -36,7 +36,6 @@ __all__ = [
 ]
 
 # --- UMBRALES DE NORMALIZACIÓN (referencias constantes para cálculo) ---
-# Valores que representan el límite superior donde un parámetro se considera óptimo (score 1.0)
 _LIMIT_JUNK_MB: Final[float] = 5000.0          
 _LIMIT_DUPLICATE_MB: Final[float] = 2000.0     
 _LIMIT_STARTUP_COUNT: Final[int] = 20          
@@ -49,7 +48,6 @@ WARN_THRESHOLD_MED: Final[float] = 0.8
 WARN_THRESHOLD_LOW: Final[float] = 0.6
 
 # --- PESOS DE CALIFICACIÓN (base para cálculo de puntaje) ---
-# Pesos relativos que definen qué impacto tiene cada área en el score total de 100
 WEIGHTS: Final[Dict[str, int]] = {
     "seguridad": 30,
     "disco": 20,
@@ -60,8 +58,6 @@ WEIGHTS: Final[Dict[str, int]] = {
 }
 
 _TOTAL_WEIGHTS: Final[float] = float(sum(WEIGHTS.values()))
-
-# Factores normalizados que transforman cada peso en un valor proporcional a 100
 _WEIGHT_FACTORS: Final[Dict[str, float]] = {
     k: (w * 100.0 / _TOTAL_WEIGHTS) if _TOTAL_WEIGHTS > 0 else 0.0 
     for k, w in WEIGHTS.items()
@@ -199,19 +195,18 @@ def _generate_recommendations(m: SystemMetrics, ratios: ScoreMap) -> List[str]:
         return ["No es posible generar recomendaciones debido a datos incompletos."]
         
     recs: List[str] = []
-    if ratios.get("seguridad", 1.0) < WARN_THRESHOLD_HIGH:
-        recs.append(f"Revisá los {int(m.suspicious_count)} hallazgo(s) de seguridad; podés aislarlos en cuarentena.")
-    if ratios.get("disco", 1.0) < WARN_THRESHOLD_LOW:
-        val = _to_float(m.disk_free_percent)
-        recs.append(f"Queda {val:.1f}% de disco libre.")
-    if ratios.get("memoria", 1.0) < WARN_THRESHOLD_LOW:
-        recs.append("Memoria disponible baja: cerrá procesos innecesarios.")
-    if ratios.get("basura", 1.0) < WARN_THRESHOLD_MED:
-        recs.append(f"Hay {int(m.junk_mb)} MB de archivos temporales.")
-    if ratios.get("duplicados", 1.0) < WARN_THRESHOLD_MED:
-        recs.append(f"Podrías recuperar {int(m.duplicate_mb)} MB eliminando duplicados.")
-    if ratios.get("arranque", 1.0) < WARN_THRESHOLD_LOW:
-        recs.append(f"{int(m.startup_count)} programas arrancan con Windows.")
+    checks = (
+        ("seguridad", WARN_THRESHOLD_HIGH, f"Revisá los {int(m.suspicious_count)} hallazgo(s) de seguridad; podés aislarlos en cuarentena."),
+        ("disco", WARN_THRESHOLD_LOW, f"Queda {float(m.disk_free_percent):.1f}% de disco libre."),
+        ("memoria", WARN_THRESHOLD_LOW, "Memoria disponible baja: cerrá procesos innecesarios."),
+        ("basura", WARN_THRESHOLD_MED, f"Hay {int(m.junk_mb)} MB de archivos temporales."),
+        ("duplicados", WARN_THRESHOLD_MED, f"Podrías recuperar {int(m.duplicate_mb)} MB eliminando duplicados."),
+        ("arranque", WARN_THRESHOLD_LOW, f"{int(m.startup_count)} programas arrancan con Windows."),
+    )
+
+    for key, threshold, msg in checks:
+        if ratios.get(key, 1.0) < threshold:
+            recs.append(msg)
     
     if m.quarantined_count > 0:
         recs.append(f"Tenés {int(m.quarantined_count)} archivo(s) en cuarentena.")
