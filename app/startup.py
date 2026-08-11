@@ -92,8 +92,7 @@ class StartupEntry:
 
     def _extract_quoted_path(self, raw_cmd: str) -> str:
         """
-        Extrae la ruta contenida entre comillas dobles en un comando.
-        Valida que no existan caracteres de escape o ilegales en rutas de Windows.
+        Extracts a quoted path from a command string with basic validation.
         """
         if not isinstance(raw_cmd, str) or len(raw_cmd) < 2:
             return ""
@@ -116,10 +115,6 @@ class StartupEntry:
     def _resolve_and_cache_path(self, path_str: str) -> str:
         """
         Valida la existencia física y la seguridad de la ruta en disco.
-        
-        El proceso sigue un orden estricto: 
-        1. Cache local -> 2. Validación de seguridad (safety.py) -> 3. Existencia -> 4. Resolución real.
-        Retorna la ruta absoluta si es segura y existe, o la cadena original en caso contrario.
         """
         if not isinstance(path_str, str) or not path_str:
             return ""
@@ -144,7 +139,12 @@ class StartupEntry:
                 _EXISTS_CACHE[path_str] = False
                 return path_str
                 
-            p_abs: Path = p.resolve(strict=True)
+            # Resolver la ruta real para normalizar, manejando permisos denegados
+            try:
+                p_abs: Path = p.resolve(strict=True)
+            except (OSError, PermissionError):
+                return path_str
+                
             if is_protected_path(p_abs):
                 _EXISTS_CACHE[path_str] = False
                 return ""
@@ -233,7 +233,6 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
 def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry]:
     """
     Parsea la salida CSV de PowerShell usando el módulo csv estándar.
-    Filtra entradas basadas en nombres reservados y valida seguridad.
     """
     if not isinstance(text, str) or not text.strip():
         return []
@@ -283,7 +282,6 @@ def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[Start
     if _REGISTRY_CACHE is not None:
         return _REGISTRY_CACHE
     
-    # Optimizamos consolidando las consultas en una única llamada a Get-ItemProperty.
     targets = ", ".join(f"'{k}'" for k in keys)
     ps_cmd = f"Get-ItemProperty {targets} -ErrorAction SilentlyContinue | Select-Object * -ExcludeProperty PS* | ConvertTo-Csv -NoTypeInformation"
     

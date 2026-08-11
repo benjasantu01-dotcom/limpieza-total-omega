@@ -29,7 +29,6 @@ from __future__ import annotations
 
 import json
 import os
-import tempfile
 import time
 from pathlib import Path
 from typing import Any, Final, TypeAlias, Callable, TypedDict
@@ -206,24 +205,28 @@ def validate(values: Any) -> AppSettings:
     return config
 
 def load(path_or_base: PathLike | None = None) -> AppSettings:
-    """Carga configuración desde disco con caché y validación de mtime."""
+    """Carga configuración desde disco con caché, reintento y validación."""
     global _cached_settings, _current_path, _last_mtime
     ruta = settings_path(path_or_base)
     
-    try:
-        stats = ruta.stat()
-        if _cached_settings is not None and _current_path == ruta and _last_mtime == stats.st_mtime:
-            return _cached_settings.copy()
-        
-        if 0 < stats.st_size <= MAX_SETTINGS_SIZE:
-            with open(ruta, "r", encoding="utf-8") as f:
-                data = json.load(f)
-            if isinstance(data, dict):
-                _cached_settings = validate(data)
-                _current_path, _last_mtime = ruta, stats.st_mtime
+    for attempt in range(3):
+        try:
+            if not ruta.exists(): return DEFAULTS.copy()
+            stats = ruta.stat()
+            if _cached_settings is not None and _current_path == ruta and _last_mtime == stats.st_mtime:
                 return _cached_settings.copy()
-    except (OSError, PermissionError, json.JSONDecodeError, UnicodeDecodeError, KeyError):
-        pass
+            
+            if 0 < stats.st_size <= MAX_SETTINGS_SIZE:
+                with open(ruta, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                if isinstance(data, dict):
+                    _cached_settings = validate(data)
+                    _current_path, _last_mtime = ruta, stats.st_mtime
+                    return _cached_settings.copy()
+            break
+        except (OSError, PermissionError, json.JSONDecodeError, UnicodeDecodeError):
+            if attempt < 2: time.sleep(0.05)
+            continue
     
     _cached_settings = DEFAULTS.copy()
     _current_path, _last_mtime = ruta, 0.0

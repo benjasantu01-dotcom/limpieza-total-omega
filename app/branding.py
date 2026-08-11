@@ -315,6 +315,7 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         return None
     try:
         target = Path(destination).resolve()
+        # Verificación de seguridad: no permitir rutas fuera de límites definidos
         if not is_safe_to_modify(target):
             return None
             

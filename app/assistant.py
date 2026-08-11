@@ -484,7 +484,11 @@ def _call_gemini(
     safe_q: str = _sanitize_query(question)
     safe_ctx: str = context_text[:_MAX_TEXT_LENGTH]
     
-    if not _ensure_safe_text(safe_q) or not _ensure_safe_text(safe_ctx) or is_protected_path(safe_ctx):
+    # Guardia de seguridad: no procesar nada que sea ruta del sistema
+    if is_protected_path(safe_q) or is_protected_path(safe_ctx):
+        return None
+    
+    if not _ensure_safe_text(safe_q) or not _ensure_safe_text(safe_ctx):
         return None
         
     try:
@@ -517,6 +521,7 @@ def _call_gemini(
         text = "".join(str(p.get("text", "")) for p in parts if isinstance(p, dict))
         
         final_text = text.strip()[:_MAX_TEXT_LENGTH]
+        # Validar la respuesta recibida antes de mostrarla
         if not _ensure_safe_text(final_text) or is_protected_path(final_text):
             return None
         return final_text
@@ -531,6 +536,10 @@ def ask(question: str, context: Optional[SystemContext] = None,
     respaldo: Answer = local_answer(question, ctx)
 
     if not available(base):
+        return respaldo
+
+    # Validar la consulta de entrada contra rutas sensibles antes de hacer nada
+    if is_protected_path(question):
         return respaldo
 
     try:
