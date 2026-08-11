@@ -574,3 +574,10 @@ assert not ['memory.py']
 - `2026-08-11T04:50:56` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). He mejorado la documentación interna y la claridad del código añadiendo *docstrings* detallados y consistentes, y estructurando mejor las validaciones en `_validate_isolation_request` para que la intención técnica sea evidente sin necesidad de leer la implementación completa.
 - `2026-08-11T04:50:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-11T04:50:56` Corrida terminada. Total usado hoy: 116.
+- `2026-08-11T04:58:54` Arrancando corrida. Quedan hoy ~184 peticiones objetivo.
+- `2026-08-11T04:59:14` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-08-11T04:59:39` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad de `safety.py` mediante la refactorización de `_check_file_integrity` para utilizar un diccionario de validación más claro, documentando explícitamente el "porqué" de cada restricción mediante docstrings y comentarios detallados en los puntos de decisión críticos.
+- `2026-08-11T05:00:01` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación técnica del módulo `scanner.py` mediante la normalización de docstrings (siguiendo estándares de estilo) y la adición de explicaciones sobre el propósito de los chequeos heurísticos, facilitando la comprensión del mantenimiento futuro sin alterar la lógica de escaneo.
+- `2026-08-11T05:00:14` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _Validators._is_safe_path
+- `2026-08-11T05:00:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-11T05:00:14` Corrida terminada. Total usado hoy: 120.

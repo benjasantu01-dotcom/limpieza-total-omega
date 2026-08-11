@@ -79,7 +79,7 @@ def _is_reserved_device_name(name: str) -> bool:
 
 @lru_cache(maxsize=1024)
 def _is_system_or_hidden(path: Path) -> bool:
-    """Verifica atributos de sistema u oculto mediante la API Win32 (solo Windows)."""
+    """Verifica atributos de sistema u oculto mediante la API Win32."""
     if os.name != 'nt':
         return False
     try:
@@ -96,14 +96,14 @@ def _is_reparse_point(path: Path) -> bool:
         return path.is_symlink()
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
-        # 0x400 = FILE_ATTRIBUTE_REPARSE_POINT
+        # 0x400 = FILE_ATTRIBUTE_REPARSE_POINT (evita bucles infinitos en escaneos)
         return attrs != -1 and bool(attrs & 0x400)
     except (OSError, AttributeError, TypeError):
         return False
 
 
 def _is_file_in_use(path: Path) -> bool:
-    """Valida si el archivo está bloqueado por otro proceso intentando obtener acceso exclusivo."""
+    """Intenta abrir el archivo con acceso exclusivo para detectar si está bloqueado por otro proceso."""
     if not path.exists() or not path.is_file():
         return False
     try:
@@ -118,32 +118,35 @@ def _is_file_in_use(path: Path) -> bool:
 
 def _check_file_integrity(p: Path) -> None:
     """
-    Ejecuta una serie de validaciones de estado sobre el archivo.
-    Si cualquier predicado de seguridad falla, levanta UnsafePathError.
+    Valida la integridad del archivo antes de cualquier operación destructiva.
+    Si se detecta un atributo de riesgo, se aborta la operación para proteger el estado del sistema.
     """
     if not p.exists():
         raise UnsafePathError(f"El archivo {p.name} ya no existe.")
 
+    # Prevenir ataques de buffer overflow en rutas extremadamente largas
     if len(p.parts) > 32:
         raise UnsafePathError("Ruta demasiado profunda: posible ataque de evasión.")
 
-    validation_rules = {
-        lambda: not os.access(p, os.W_OK): "inaccesible (sin permisos de escritura)",
-        lambda: _is_reparse_point(p): "punto de reparse detectado",
-        lambda: _is_readonly(p): "atributo de solo lectura",
-        lambda: _is_file_in_use(p): "archivo en uso por otro proceso",
-        lambda: _is_system_or_hidden(p): "atributo de sistema u oculto",
-        lambda: p.is_file() and p.stat().st_nlink > 1: "múltiples enlaces (hard link)"
+    # Diccionario de reglas: el orden de evaluación es implícito. 
+    # Cada entrada mapea un predicado de riesgo a su descripción.
+    integrity_rules = {
+        "inaccesible (sin permisos de escritura)": lambda: not os.access(p, os.W_OK),
+        "punto de reparse detectado": lambda: _is_reparse_point(p),
+        "atributo de solo lectura": lambda: _is_readonly(p),
+        "archivo en uso por otro proceso": lambda: _is_file_in_use(p),
+        "atributo de sistema u oculto": lambda: _is_system_or_hidden(p),
+        "múltiples enlaces (hard link)": lambda: p.is_file() and p.stat().st_nlink > 1
     }
 
-    for is_unsafe, error_msg in validation_rules.items():
+    for reason, is_unsafe in integrity_rules.items():
         if is_unsafe():
-            raise UnsafePathError(f"Operación bloqueada para {p.name}: {error_msg}.")
+            raise UnsafePathError(f"Operación bloqueada para {p.name}: {reason}.")
 
 
 @lru_cache(maxsize=1024)
 def _is_readonly(path: Path) -> bool:
-    """Verifica si el archivo carece del permiso de escritura S_IWRITE."""
+    """Verifica si el archivo carece del bit de escritura (S_IWRITE)."""
     try:
         return not bool(path.stat().st_mode & stat.S_IWRITE)
     except (OSError, PermissionError):
@@ -152,7 +155,7 @@ def _is_readonly(path: Path) -> bool:
 
 @lru_cache(maxsize=2048)
 def normalize(path: PathLike) -> Path:
-    """Resuelve rutas relativas y normaliza strings, imponiendo límites de longitud del sistema."""
+    """Resuelve rutas relativas y normaliza strings, imponiendo límites de seguridad del sistema."""
     if not path or not isinstance(path, (str, os.PathLike)) or not str(path).strip():
         raise ValueError("Entrada de ruta vacía o tipo inválido.")
     
@@ -183,9 +186,10 @@ def is_protected_path(path: PathLike) -> bool:
     
     try:
         p = normalize(path)
+        # Bloqueo estricto de directorios raíz del sistema
         if not _SYSTEM_ROOTS.isdisjoint(p.parents) or p in _SYSTEM_ROOTS:
             return True
-            
+        # Bloqueo por nombres de directorios protegidos comunes
         if any(part.lower() in PROTECTED_DIR_NAMES for part in p.parts):
             return True
         

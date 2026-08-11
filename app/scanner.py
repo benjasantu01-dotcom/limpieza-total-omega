@@ -67,7 +67,7 @@ class Scanner:
         self.now_ts = datetime.now().timestamp()
 
     def _is_safe_entry(self, entry_path: Path) -> bool:
-        """Verifica que la entrada esté dentro del base_root definido."""
+        """Verifica que la entrada esté dentro del base_root definido para evitar escapes del directorio raíz."""
         try:
             resolved = entry_path.resolve()
             return self.base_root in resolved.parents or resolved == self.base_root
@@ -75,7 +75,7 @@ class Scanner:
             return False
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
-        """Determina si una entrada es un punto de reanálisis (Junction o Symlink)."""
+        """Determina si una entrada es un punto de reanálisis (Junction o Symlink) para evitar ciclos infinitos."""
         try:
             # 0x400 es FILE_ATTRIBUTE_REPARSE_POINT
             return bool(entry.stat(follow_symlinks=False).st_file_attributes & 0x400)
@@ -84,7 +84,7 @@ class Scanner:
 
     def process_entry(self, entry: os.DirEntry, stack: List[str]) -> None:
         """
-        Valida y procesa una entrada del sistema de archivos.
+        Valida y procesa una entrada del sistema de archivos, decidiendo si continuar la recursión o analizar el archivo.
         """
         if entry is None or stack is None or not hasattr(entry, 'path'):
             return
@@ -114,7 +114,7 @@ class Scanner:
 
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Identifica archivos con extensiones dobles engañosas."""
+    """Identifica archivos que usan extensiones dobles para ocultar extensiones ejecutables peligrosas."""
     target = name or path.name
     if target and DOUBLE_EXTENSION_RE.search(target):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
@@ -122,7 +122,7 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, name
 
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Detecta ejecutables modificados recientemente según umbral de tiempo."""
+    """Detecta ejecutables que fueron creados recientemente, lo cual puede indicar descarga de malware."""
     if entry is None:
         return None
     try:
@@ -134,7 +134,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Busca ejecutables que usurpan nombres de procesos críticos del sistema."""
+    """Busca ejecutables que usurpan nombres de procesos críticos de sistema para engañar al usuario."""
     target = (name or path.name).lower()
     if target in SYSTEM_LOOKALIKES:
         if SYSTEM32_LOWER not in str(path.parent).lower():
@@ -142,7 +142,7 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, name
     return None
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None) -> ScanResult:
-    """Ejecuta el conjunto de heurísticas sobre un archivo."""
+    """Ejecuta el conjunto de heurísticas definido sobre un archivo individual."""
     if not path or not path.exists():
         return []
 
@@ -163,7 +163,10 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, na
 
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
-    """Inicia el escaneo recursivo de directorios."""
+    """
+    Inicializa y ejecuta el proceso de escaneo recursivo en el directorio proporcionado.
+    Retorna una lista consolidada de todas las sospechas encontradas.
+    """
     if not directory:
         return []
         
@@ -192,7 +195,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
 
 
 def run_windows_defender_quick_scan() -> str:
-    """Interfaz con las herramientas de seguridad nativas de Windows (Defender)."""
+    """Interactúa con Windows Defender vía PowerShell para realizar un análisis rápido del sistema."""
     try:
         status = subprocess.run(
             ["powershell", "-Command", "Get-MpComputerStatus | Select-Object -ExpandProperty RealTimeProtectionEnabled"],
