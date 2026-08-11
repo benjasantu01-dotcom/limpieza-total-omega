@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **239** (47.4% de aceptación)
+- Mejoras aceptadas: **238** (47.2% de aceptación)
 - Rechazadas por tests: 9
 - Rechazadas por guardia de seguridad: 31
-- Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 207
+- Sin cambios (nada sustancial que mejorar): 17
+- Sin respuesta de la IA (error o límite): 209
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-10 | 121 | 2 | 14 | 10 | 117 |
-| 2026-08-11 | 118 | 7 | 17 | 8 | 90 |
+| 2026-08-10 | 118 | 2 | 14 | 9 | 117 |
+| 2026-08-11 | 120 | 7 | 17 | 8 | 92 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **63**
 - manejo de errores y validación de entradas: **51**
-- seguridad defensiva: **43**
+- robustez ante casos límite: **43**
 - rendimiento: **41**
-- robustez ante casos límite: **41**
+- seguridad defensiva: **40**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **22**
 - `settings.py`: **21**
-- `healthscore.py`: **19**
-- `assistant.py`: **19**
-- `branding.py`: **19**
+- `assistant.py`: **20**
+- `branding.py`: **20**
 - `diskreport.py`: **19**
 - `duplicates.py`: **19**
 - `scanner.py`: **18**
+- `healthscore.py`: **18**
 - `memory.py`: **18**
 - `browser.py`: **16**
-- `main.py`: **15**
-- `organizer.py`: **12**
+- `main.py`: **14**
 - `startup.py`: **12**
+- `organizer.py`: **11**
 - `safety.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-11T10:27:16` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante rutas de destino mal formadas o inexistentes, asegurando que el manejo de errores no silencie fallos críticos de acceso al sistema de archivos mediante una validación estricta y pre-verificación de la ruta.
+- `2026-08-11T10:26:46` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_safe_assign` y `build_context` ante valores `NaN` o `inf` (que pueden ocurrir en cálculos de porcentaje o división por cero) para evitar que el estado interno quede en un estado numéricamente inválido.
 - `2026-08-11T10:16:54` **settings.py** (rendimiento): Se implementó un sistema de "dirty checking" más robusto en `load` y `save` eliminando llamadas redundantes a `os.stat()` y `load()` dentro de los métodos de acceso, optimizando el rendimiento mediante el uso eficiente de la caché (`_cached_settings`) y evitando operaciones de disco innecesarias.
 - `2026-08-11T10:16:43` **scanner.py** (rendimiento): Optimizé la lógica de escaneo en `scan_file` moviendo la validación de la extensión hacia adelante, asegurando que las llamadas a funciones costosas o redundantes (como `check_recent_executable_in_downloads` que invoca `os.stat`) solo ocurran cuando realmente sea necesario, minimizando el impacto de IO.
 - `2026-08-11T10:07:28` **quarantine.py** (rendimiento): Optimizamos `purge_all` para evitar búsquedas lineales costosas dentro del bucle principal, utilizando un `set` y una estructura de datos más eficiente para procesar la lista de archivos, lo cual reduce la complejidad algorítmica de O(N*M) a O(N+M).
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-11T09:45:23` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo type hints precisos y docstrings explicativos en las funciones de validación, clarificando la lógica de saneamiento de datos para facilitar el mantenimiento.
 - `2026-08-11T09:36:41` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la inclusión de docstrings detallados en las funciones de escaneo heurístico, especificando claramente el propósito de los parámetros y el valor de retorno para facilitar la auditabilidad y el mantenimiento del código.
 - `2026-08-11T09:36:32` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación y la robustez del código mediante la adición de docstrings técnicos detallados en las funciones de validación, clarificando el propósito de cada guardia y facilitando el mantenimiento futuro.
-- `2026-08-11T09:35:47` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento añadiendo type hints faltantes en funciones internas, convirtiendo validaciones de seguridad en un bloque de docstrings más estructurado y utilizando `Path` explícitamente para asegurar la consistencia del tipo en operaciones de disco.
-- `2026-08-11T09:26:34` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación y robustez del código mediante la adición de Type Hints más precisos, docstrings detallados en las funciones de escaneo, y la clarificación de la intención en las verificaciones de seguridad dentro del bucle `_walk_dir`.

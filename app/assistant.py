@@ -220,8 +220,8 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     
     def _get_val(source: Any, key: str, default: Any) -> Any:
         try:
-            if isinstance(source, dict): return source.get(key, default)
-            return getattr(source, key, default)
+            val = source.get(key, default) if isinstance(source, dict) else getattr(source, key, default)
+            return val if isinstance(val, (int, float)) and math.isfinite(val) else default
         except Exception: return default
 
     if metrics is not None:

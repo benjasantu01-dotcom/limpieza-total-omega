@@ -1071,3 +1071,10 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-08-11T10:16:54` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se implementó un sistema de "dirty checking" más robusto en `load` y `save` eliminando llamadas redundantes a `os.stat()` y `load()` dentro de los métodos de acceso, optimizando el rendimiento mediante el uso eficiente de la caché (`_cached_settings`) y evitando operaciones de disco innecesarias.
 - `2026-08-11T10:16:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-11T10:16:54` Corrida terminada. Total usado hoy: 240.
+- `2026-08-11T10:25:47` Arrancando corrida. Quedan hoy ~60 peticiones objetivo.
+- `2026-08-11T10:26:13` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-08-11T10:26:46` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_safe_assign` y `build_context` ante valores `NaN` o `inf` (que pueden ocurrir en cálculos de porcentaje o división por cero) para evitar que el estado interno quede en un estado numéricamente inválido.
+- `2026-08-11T10:27:16` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `save_logo_svg` ante rutas de destino mal formadas o inexistentes, asegurando que el manejo de errores no silencie fallos críticos de acceso al sistema de archivos mediante una validación estricta y pre-verificación de la ruta.
+- `2026-08-11T10:27:31` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-08-11T10:27:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-11T10:27:31` Corrida terminada. Total usado hoy: 244.
