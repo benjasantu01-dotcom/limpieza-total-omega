@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-10 | 89 | 2 | 11 | 7 | 79 |
-| 2026-08-11 | 146 | 8 | 21 | 8 | 133 |
+| 2026-08-10 | 86 | 2 | 11 | 7 | 78 |
+| 2026-08-11 | 149 | 8 | 21 | 8 | 134 |
 
 ## Mejoras aceptadas por enfoque
 
+- legibilidad y documentación: **53**
 - manejo de errores y validación de entradas: **51**
-- legibilidad y documentación: **50**
 - robustez ante casos límite: **49**
 - seguridad defensiva: **45**
-- rendimiento: **40**
+- rendimiento: **37**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **21**
 - `settings.py`: **21**
-- `memory.py`: **20**
-- `assistant.py`: **19**
-- `branding.py`: **19**
-- `diskreport.py`: **19**
+- `assistant.py`: **20**
+- `branding.py`: **20**
+- `diskreport.py`: **20**
+- `quarantine.py`: **20**
 - `healthscore.py`: **19**
+- `memory.py`: **19**
 - `duplicates.py`: **18**
 - `browser.py`: **17**
 - `scanner.py`: **16**
-- `main.py`: **14**
+- `main.py`: **13**
 - `startup.py`: **12**
 - `organizer.py`: **11**
 - `safety.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-11T13:41:39` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `diskreport.py` incluyendo tipado preciso en las constantes de iteración y clarificando las docstrings de las funciones recursivas y generadores para explicar mejor la lógica de seguridad y exclusión.
+- `2026-08-11T13:40:58` **branding.py** (legibilidad y documentación): Mejora la legibilidad del código y la calidad de la documentación al estandarizar los `docstrings` en todo el archivo, garantizando que sigan las convenciones PEP 257 y añadiendo `type hints` explícitos en lugares donde la inferencia podría causar ambigüedad, facilitando el mantenimiento a largo plazo.
+- `2026-08-11T13:40:27` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la aplicación de *type hints* faltantes, la estandarización de docstrings y la simplificación de estructuras de decisión complejas mediante la extracción de funciones, asegurando mayor claridad en la lógica de procesamiento de contexto sin alterar la funcionalidad.
 - `2026-08-11T13:31:09` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo una validación explícita para la estructura de la fila antes de procesarla, asegurando que `DictReader` devuelva los campos esperados y evitando posibles errores de acceso por índices o claves inexistentes ante datos mal formados del registro.
 - `2026-08-11T13:30:59` **settings.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de errores en `_Validators.path` y `_Validators.int` para evitar excepciones no capturadas al procesar entradas malformadas o tipos inesperados, garantizando la estabilidad del bucle de configuración ante datos corruptos.
 - `2026-08-11T13:30:03` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado `ensure_safe_to_modify` para incluir una validación estricta de la existencia y tipo del padre de la ruta antes de operar, evitando posibles errores de resolución en rutas inexistentes o malformadas, además de asegurar que los errores en las comprobaciones de integridad no queden silenciados.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-11T13:01:12` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` añadiendo un manejo explícito de errores para `mkdir` y `write_text`, asegurando que cualquier fallo en la escritura al disco no deje el estado interno inconsistente y retorne correctamente `None` ante cualquier anomalía de I/O.
 - `2026-08-11T11:38:06` **settings.py** (seguridad defensiva): Se reforzó `_Validators.path` para incluir un chequeo de existencia física real antes de resolver rutas, previniendo que rutas relativas o mal formadas sean aceptadas erróneamente mediante `Path.resolve(strict=False)`.
 - `2026-08-11T11:37:39` **scanner.py** (seguridad defensiva): Se implementó un bloqueo explícito de rutas UNC en `process_entry` mediante la verificación de `is_absolute` y una inspección de formato de prefijo para evitar que el escáner intente recorrer recursos de red (que pueden causar bloqueos por latencia o problemas de seguridad).
-- `2026-08-11T11:28:25` **safety.py** (seguridad defensiva): Se ha mejorado la protección contra ataques de "Time-of-Check to Time-of-Use" (TOCTOU) y validación de rutas mediante la inclusión de un chequeo de existencia de "streams" alternativos (ADS) de NTFS, que pueden ocultar contenido malicioso o engañar a los escáneres básicos.
-- `2026-08-11T11:27:57` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva al aplicar `ensure_safe_to_modify` en `purge_all` antes de la eliminación masiva y reforzando la validación del path en el `iterdir` mediante `is_within_directory` para prevenir posibles ataques de path traversal dentro del directorio de cuarentena.
-- `2026-08-11T11:18:54` **memory.py** (seguridad defensiva): Se ha mejorado `trim_working_set` para prevenir la manipulación de procesos arbitrarios mediante una validación estricta de la ruta del ejecutable usando `is_protected_path` sobre el handle abierto, asegurando que solo se aplique a procesos cuyas rutas residan fuera de directorios críticos del sistema.
