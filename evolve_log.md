@@ -546,3 +546,10 @@ assert not ['memory.py']
 - `2026-08-11T04:09:50` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
 - `2026-08-11T04:09:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-11T04:09:50` Corrida terminada. Total usado hoy: 100.
+- `2026-08-11T04:18:03` Arrancando corrida. Quedan hoy ~200 peticiones objetivo.
+- `2026-08-11T04:18:34` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `load_manifest` mediante la captura explícita de `json.JSONDecodeError` y `ValueError` durante el parseo, además de implementar una validación temprana contra archivos corruptos que podrían hacer que `QuarantineItem.from_dict` retorne `None`, evitando así que el sistema intente procesar datos inconsistentes.
+- `2026-08-11T04:18:53` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 110): unterminated string literal (detected at line 110)
+- `2026-08-11T04:19:16` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-11T04:19:23` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-11T04:19:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-11T04:19:23` Corrida terminada. Total usado hoy: 104.
