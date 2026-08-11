@@ -212,6 +212,8 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
             attrs = ctypes.windll.kernel32.GetFileAttributesW(str(source_path))
             if attrs != -1 and (attrs & 0x02 or attrs & 0x04): 
                 raise UnsafePathError("No se permite procesar archivos con atributos de sistema/ocultos.")
+            if attrs != -1 and (attrs & 0x01): # FILE_ATTRIBUTE_READONLY
+                raise UnsafePathError("Archivo protegido contra escritura (solo lectura).")
     except (OSError, AttributeError):
         pass
 

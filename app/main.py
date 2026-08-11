@@ -828,8 +828,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def set_status(self, text: str) -> None:
         """Actualiza el texto descriptivo del pie de página."""
-        if not self._closing:
-            self.after_idle(lambda: self.status.configure(text=text) if self.status.winfo_exists() else None)
+        if not self._closing and hasattr(self, 'status') and self.status.winfo_exists():
+            self.after_idle(lambda: self.status.configure(text=text))
 
     def log_lines(self, lines: List[str], tab: str) -> None:
         """Renderiza una lista de líneas en el log de la pestaña dada."""
@@ -1029,16 +1029,18 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             }
             
             for clave, label in self.cards.items():
-                label.configure(text=valores[clave], text_color=colores[clave])
+                if label.winfo_exists():
+                    label.configure(text=valores[clave], text_color=colores[clave])
 
             for clave, (barra, label) in self.area_bars.items():
-                puntos = resultado.breakdown.get(clave, 0)
-                maximo = healthscore.WEIGHTS.get(clave, 1)
-                proporcion = puntos / maximo if maximo else 0
-                c = branding.score_color(proporcion * 100)
-                barra.configure(progress_color=c)
-                barra.set(proporcion)
-                label.configure(text=f"{puntos:.0f}/{maximo}", text_color=c)
+                if barra.winfo_exists():
+                    puntos = resultado.breakdown.get(clave, 0)
+                    maximo = healthscore.WEIGHTS.get(clave, 1)
+                    proporcion = puntos / maximo if maximo else 0
+                    c = branding.score_color(proporcion * 100)
+                    barra.configure(progress_color=c)
+                    barra.set(proporcion)
+                    label.configure(text=f"{puntos:.0f}/{maximo}", text_color=c)
 
         self.after_idle(actualizar)
 
@@ -1341,7 +1343,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         def task():
-            # Seguridad: volver a verificar existencia en el hilo de ejecución (evitar carrera)
+            # Seguridad: verificar existencia en el hilo de ejecución para evitar carrera
             if not memory_mod.process_exists(pid):
                 self.log(f"Error: El proceso {pid} ya no está activo.", "Memoria")
                 return

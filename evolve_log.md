@@ -1317,3 +1317,40 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-08-11T02:06:17` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: SystemMetrics.is_finite
 - `2026-08-11T02:06:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-11T02:06:17` Corrida terminada. Total usado hoy: 52.
+- `2026-08-11T02:15:00` Arrancando corrida. Quedan hoy ~248 peticiones objetivo.
+- `2026-08-11T02:16:01` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Se ha refactorizado la validación de rutas en `on_trim_process` para asegurar que el PID se valide inmediatamente antes de cualquier acción en el hilo de ejecución, y se añadieron controles defensivos (`winfo_exists`) en todas las actualizaciones de UI asíncronas para evitar errores de referencia cuando los widgets ya han sido destruidos durante el cierre.
+- `2026-08-11T02:16:38` Tests FALLARON:
+```
+astroso para leer: el escáner
+        heurístico abortaba al encontrar el primer ejecutable (justo lo que tiene
+        que revisar), y la pestaña de Inicio no funcionaba nunca en Windows,
+        porque la carpeta de arranque vive debajo de un directorio "Windows".
+        """
+        culpables = []
+        for nombre in READ_ONLY_MODULES:
+            archivo = APP_DIR / nombre
+            if not archivo.exists():
+                continue
+            if "ensure_safe_to_modify" in calls_and_imports(parse(archivo)):
+                culpables.append(nombre)
+    
+>       assert not culpables, (
+            f"Estos módulos son de solo lectura y usan el chequeo de escritura: "
+            f"{', '.join(culpables)}. Para saber si algo es de sistema sin "
+            "bloquear la lectura, usá `is_protected_path`."
+        )
+E       AssertionError: Estos módulos son de solo lectura y usan el chequeo de escritura: memory.py. Para saber si algo es de sistema sin bloquear la lectura, usá `is_protected_path`.
+E       assert not ['memory.py']
+
+evolve/tests/test_integrity.py:279: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check - AssertionError: Estos módulos son de solo lectura y usan el chequeo de escritura: memory.py. Para saber si algo es de sistema sin bloquear la lectura, usá `is_protected_path`.
+assert not ['memory.py']
+1 failed, 298 passed in 1.36s
+
+```
+- `2026-08-11T02:16:38` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Mejoré la seguridad de `trim_working_set` añadiendo una validación explícita mediante `ensure_safe_to_modify` antes de interactuar con el ejecutable, asegurando que la ruta del proceso no se encuentre en un directorio protegido o bloqueado, siguiendo el patrón de seguridad defensiva requerido.
+- `2026-08-11T02:17:01` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-08-11T02:17:23` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `quarantine_file` añadiendo una comprobación explícita para evitar que archivos con el bit de solo lectura (`stat.st_file_attributes` en Windows) o permisos restrictivos sean movidos, evitando errores de acceso denegado a mitad de la operación (TOCTOU/Fallas parciales).
+- `2026-08-11T02:17:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-11T02:17:23` Corrida terminada. Total usado hoy: 56.
