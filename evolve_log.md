@@ -1404,3 +1404,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_ex
 - `2026-08-11T14:02:09` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: legibilidad y documentación).
 - `2026-08-11T14:02:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-11T14:02:09` Corrida terminada. Total usado hoy: 328.
+- `2026-08-11T14:10:43` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-11T14:11:08` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación de los chequeos heurísticos mediante la estandarización de docstrings y la inclusión de type hints explícitos, facilitando la comprensión del flujo de datos en el motor de escaneo.
+- `2026-08-11T14:11:46` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _Validators._is_safe_path, _Validators.bool, _Validators.int, _Validators.path, _Validators.str
+- `2026-08-11T14:12:12` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Documenté con docstrings claros y detallados la lógica de resolución de rutas en `StartupEntry` para explicar el porqué de la validación perezosa y los criterios de seguridad aplicados, facilitando el mantenimiento futuro del código.
+- `2026-08-11T14:12:28` ➖ Sin cambios en assistant.py (enfoque: rendimiento). Motivo: Se precomputó `SUGGESTED_QUESTIONS_LIST` y se reemplazó el uso repetitivo de `list(SUGGESTED_QUESTIONS)` en los métodos `local_answer` y `ask` para evitar la creación innecesaria de nuevos objetos `list` en cada ejecución, optimizando el uso de memoria y ciclos de CPU.
+- `2026-08-11T14:12:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-11T14:12:28` Corrida terminada. Total usado hoy: 332.

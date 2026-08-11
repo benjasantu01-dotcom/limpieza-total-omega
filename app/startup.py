@@ -84,13 +84,14 @@ class StartupEntry:
             return False
 
     def _sanitize_command(self, raw_cmd: str) -> str:
-        """Elimina caracteres de control y espacios en blanco de la cadena bruta."""
+        """Limpia caracteres de control o no imprimibles de la cadena de comando."""
         if not isinstance(raw_cmd, str):
             return ""
         return "".join(c for c in raw_cmd.strip() if ord(c) >= 32)
 
     def _extract_quoted_path(self, raw_cmd: str) -> str:
-        """Extrae rutas de comandos encerradas en comillas dobles, validando seguridad."""
+        """Extrae rutas de comandos encerradas en comillas, validando que no contengan
+        caracteres maliciosos ni apunten a ubicaciones protegidas por safety.py."""
         if not isinstance(raw_cmd, str) or len(raw_cmd) < 2:
             return ""
         end_quote: int = raw_cmd.find('"', 1)
@@ -110,7 +111,11 @@ class StartupEntry:
             return ""
 
     def _resolve_and_cache_path(self, path_str: str) -> str:
-        """Valida que la ruta sea absoluta, no protegida y exista realmente en el disco."""
+        """Realiza la validación profunda de la ruta:
+        1. Normaliza con resolve() para evitar trucos de rutas relativas.
+        2. Verifica que la ruta final no esté en la lista negra de safety.py.
+        3. Persiste el resultado en `_EXISTS_CACHE` para evitar llamadas de sistema redundantes.
+        """
         if not isinstance(path_str, str) or not path_str or any(c in path_str for c in '<>|?*'):
             return ""
         
@@ -148,7 +153,8 @@ class StartupEntry:
             return path_str
 
     def _resolve_path_from_command(self, cmd: str) -> str:
-        """Determina la ruta del binario analizando el comando (ruta directa vs argumentos)."""
+        """Parsea un comando de inicio, manejando tanto rutas directas como comandos con argumentos.
+        Detecta y bloquea comandos sospechosos que incluyan operadores de shell."""
         if any(char in cmd for char in ('&', '|', ';', '>', '<', '$', '`', '(', ')')):
             return ""
 

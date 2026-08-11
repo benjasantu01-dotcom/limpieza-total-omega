@@ -122,9 +122,7 @@ class Scanner:
 
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """
-    Analiza si el nombre del archivo contiene una extensión secundaria que oculta un ejecutable.
-    """
+    """Valida el nombre del archivo mediante regex para detectar extensiones encadenadas sospechosas."""
     target = name or path.name
     if target and DOUBLE_EXTENSION_RE.search(target):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
@@ -132,9 +130,7 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, name
 
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """
-    Detecta ejecutables modificados recientemente mediante el timestamp de sistema.
-    """
+    """Calcula si el tiempo de modificación del ejecutable es inferior al umbral de frescura definido."""
     if entry is None:
         return None
     try:
@@ -146,9 +142,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """
-    Busca ejecutables que usurpan nombres de procesos críticos de sistema.
-    """
+    """Compara el nombre del ejecutable contra una lista blanca de procesos de sistema para detectar suplantación."""
     target = (name or path.name).lower()
     if target in SYSTEM_LOOKALIKES:
         if SYSTEM32_LOWER not in str(path.parent).lower():
