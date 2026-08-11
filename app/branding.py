@@ -350,7 +350,15 @@ def _draw_shield_stripes(canvas: Any, canvas_x: float, canvas_y: float, scale: f
 
 
 def draw_logo(canvas: Any, size: int = 56, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
-    """Renderiza el logo vectorial en un canvas de Tkinter usando coordenadas transformadas."""
+    """
+    Renderiza el logo vectorial en un canvas de Tkinter.
+    
+    Args:
+        canvas: Widget Tkinter compatible con métodos de dibujo (create_polygon, create_oval, etc).
+        size: Tamaño base del logo en píxeles.
+        canvas_x: Offset horizontal inicial sobre el canvas.
+        canvas_y: Offset vertical inicial sobre el canvas.
+    """
     if not hasattr(canvas, "create_polygon"): return
     try:
         scale = float(size) / 128
@@ -379,7 +387,16 @@ def draw_logo(canvas: Any, size: int = 56, canvas_x: float = 0.0, canvas_y: floa
 def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
                       canvas_x: float = 0.0, canvas_y: float = 0.0,
                       stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
-    """Dibuja una franja horizontal degradada utilizando segmentos optimizados."""
+    """
+    Dibuja una franja horizontal degradada utilizando segmentos optimizados.
+    
+    Args:
+        canvas: Widget Tkinter compatible.
+        width: Longitud total de la barra en píxeles.
+        height: Altura del trazo del degradado.
+        canvas_x, canvas_y: Posición absoluta en el canvas.
+        stops: Tupla de colores para la interpolación lineal.
+    """
     if not hasattr(canvas, "create_line"): return
     try:
         ancho = max(1, int(width))
@@ -393,7 +410,18 @@ def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
               canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14,
               track: Optional[HexColor] = None,
               fill: Optional[HexColor] = None) -> None:
-    """Renderiza un medidor circular de estado para métricas de salud."""
+    """
+    Renderiza un medidor circular de estado para métricas de salud (0-100%).
+    
+    Args:
+        canvas: Widget Tkinter compatible.
+        percent: Valor numérico a representar (0.0 a 100.0).
+        size: Diámetro total del medidor.
+        canvas_x, canvas_y: Coordenadas de posición.
+        thickness: Grosor del trazo circular.
+        track: Color del fondo (inactivo).
+        fill: Color del arco activo (opcional, por defecto usa score_color).
+    """
     if not hasattr(canvas, "create_arc"): return
     try:
         val_f = float(percent)

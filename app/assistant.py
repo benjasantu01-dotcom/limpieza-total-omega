@@ -68,21 +68,18 @@ __all__ = [
     "explain_area",
 ]
 
-# Definición de esquema para la configuración cargada desde settings
 class AssistantConfig(TypedDict):
+    """Esquema de configuración cargado desde el archivo de ajustes."""
     asistente_api_key: str
     asistente_modelo: str
     asistente_enviar_metricas: bool
 
-# Aliases de tipos para facilitar la lectura del flujo de datos
 MetricSource: TypeAlias = Any
 ScoreSource: TypeAlias = Any
 
 _MAX_TEXT_LENGTH: Final[int] = 1000
 _MAX_RESPONSE_BYTES: Final[int] = 32768
 
-# Documentación ejecutable de lo que nunca sale del equipo. El test de
-# privacidad recorre esta lista, así que agregar algo acá lo protege de verdad.
 SENSITIVE_KEYS_NEVER_SENT: Final[tuple[str, ...]] = (
     "rutas de archivos",
     "nombres de archivos",
@@ -172,7 +169,7 @@ class SystemContext:
 
 @dataclass
 class Answer:
-    """Respuesta del asistente, incluyendo metadatos de origen y sugerencias."""
+    """Respuesta generada por el asistente con metadatos de origen."""
     text: str
     source: str = "local"
     notice: str = ""
@@ -185,8 +182,8 @@ class Answer:
 
 def _ensure_safe_text(text: Any) -> bool:
     """
-    Verifica que el texto no contenga caracteres de control, secuencias de escape
-    o patrones que sugieran rutas de archivo, protegiendo contra inyección.
+    Valida la integridad del texto contra caracteres de control y posibles
+    inyecciones de rutas, garantizando que el asistente no procese contenido malicioso.
     """
     if not isinstance(text, str) or not text:
         return False
@@ -200,7 +197,7 @@ def _ensure_safe_text(text: Any) -> bool:
     return True
 
 def _safe_assign(obj: SystemContext, attr: str, val: Any, cast: Callable = float, min_val: float = 0.0, max_val: float = float('inf')) -> None:
-    """Asigna un valor a un atributo de SystemContext tras validar tipo, rango y finitud."""
+    """Aplica una asignación segura de métricas a SystemContext con validación de tipo y rango."""
     if val is None:
         return
     try:
@@ -211,13 +208,14 @@ def _safe_assign(obj: SystemContext, attr: str, val: Any, cast: Callable = float
         pass
 
 def _fmt_metric(val: Any, unit: str = "", decimal: int = 0) -> str:
-    """Formatea una métrica para visualización, manejando casos N/A."""
+    """Formatea métricas numéricas para su presentación, devolviendo 'N/A' ante errores."""
     if val is None or not isinstance(val, (int, float)) or not math.isfinite(val): return "N/A"
     return f"{val:.{decimal}f}{unit}"
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
     """
-    Transforma fuentes de datos crudas (objetos genéricos) en un SystemContext validado.
+    Transforma fuentes de datos genéricas en una estructura SystemContext validada,
+    asegurando que solo los campos numéricos autorizados sean procesados.
     """
     ctx = SystemContext()
     
@@ -259,9 +257,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
 
 
 def context_as_text(context: SystemContext) -> str:
-    """
-    Serializa el estado del sistema en un formato de texto compacto y neutral.
-    """
+    """Serializa SystemContext a un formato de texto compacto adecuado para el prompt del motor remoto."""
     if not isinstance(context, SystemContext) or not context.analyzed:
         return "No hay métricas disponibles todavía."
 
@@ -287,7 +283,7 @@ def context_as_text(context: SystemContext) -> str:
 
 
 def explain_area(area: Any) -> str:
-    """Devuelve una explicación pedagógica sobre qué mide una categoría específica del sistema."""
+    """Devuelve una explicación educativa sobre el significado de las métricas de un área específica."""
     explicaciones: Final[dict[str, str]] = {
         "basura": "Archivos temporales y restos de instaladores. Ocupan espacio "
                   "sin dar nada a cambio, y son lo más seguro de limpiar.",
@@ -310,11 +306,11 @@ def explain_area(area: Any) -> str:
 
 
 def _format_critical_warning(condition: bool, text: str) -> str:
-    """Auxiliar para formatear alertas críticas de disco."""
+    """Helper para formatear advertencias de sistema condicionales."""
     return text if condition else ""
 
 def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
-    """Genera respuesta contextual sobre la memoria RAM (estado y causas de lentitud)."""
+    """Genera respuesta sobre el estado de la RAM."""
     partes = [
         f"Tenés {ctx.memory_available_percent:.0f}% de RAM disponible"
         f"{f' de {ctx.memory_total_gb:.0f} GB' if ctx.memory_total_gb > 0 else ''}.",
@@ -335,7 +331,7 @@ def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
                     suggestions=["¿Conviene desactivar programas de inicio?"])
 
 def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
-    """Genera respuesta sobre almacenamiento, espacio recuperable y alertas críticas."""
+    """Genera respuesta sobre el almacenamiento y espacio recuperable."""
     recuperable = ctx.junk_mb + ctx.duplicate_mb + ctx.browser_cache_mb
     
     mensaje = (
@@ -356,7 +352,7 @@ def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
     return Answer(mensaje + warning + sugerencia, notice=OFFLINE_NOTICE)
 
 def handle_security(ctx: SystemContext, user_query: str) -> Answer:
-    """Genera respuesta sobre archivos sospechosos y el proceso de cuarentena."""
+    """Genera respuesta sobre hallazgos de seguridad."""
     if ctx.suspicious_count == 0:
         cuerpo = ("No hay archivos sospechosos en tus Descargas. Sobre borrar: la "
                     "app nunca borra sola. La limpieza mueve todo a una carpeta de "
@@ -370,7 +366,7 @@ def handle_security(ctx: SystemContext, user_query: str) -> Answer:
     return Answer(cuerpo, notice=OFFLINE_NOTICE)
 
 def handle_score(ctx: SystemContext, user_query: str) -> Answer:
-    """Genera explicación pedagógica del puntaje de salud global."""
+    """Genera explicación pedagógica del score de salud."""
     detalle = (f"Tu puntaje es {ctx.score if ctx.score is not None else 'N/A'}/100"
                 f"{f' (nota {ctx.grade})' if ctx.grade else ''}. ")
     problemas = list(islice(_gen_problems(ctx), 3))
@@ -383,7 +379,7 @@ def handle_score(ctx: SystemContext, user_query: str) -> Answer:
     return Answer(detalle, notice=OFFLINE_NOTICE)
 
 def handle_startup(ctx: SystemContext, user_query: str) -> Answer:
-    """Genera respuesta sobre el impacto de programas configurados al inicio."""
+    """Genera respuesta sobre el impacto en el inicio del sistema."""
     cuerpo = f"Tenés {ctx.startup_count} programas que arrancan con Windows. "
     if ctx.startup_count > 15:
         cuerpo += "Son bastantes, y cada uno suma tiempo de encendido. Vale la pena revisarlos. "
@@ -404,11 +400,11 @@ _HANDLERS: Final[dict[str, Callable[[SystemContext, str], Answer]]] = {
 }
 
 def _sanitize_query(question: str) -> str:
-    """Elimina caracteres de control y recorta la consulta para evitar desbordamiento."""
+    """Limpia la consulta del usuario de caracteres no permitidos."""
     return re.sub(r'[\x00-\x1f\x7f]', '', (question or "").strip())[:100].lower()
 
 def local_answer(question: str, context: SystemContext) -> Answer:
-    """Procesa la pregunta del usuario utilizando reglas de negocio estáticas."""
+    """Determina la respuesta mediante heurísticas locales basadas en keywords."""
     if not isinstance(context, SystemContext) or not context.analyzed:
         return Answer(
             text="Todavía no corriste ningún análisis. Andá a la pestaña Salud "
@@ -420,10 +416,8 @@ def local_answer(question: str, context: SystemContext) -> Answer:
     clean_text = _sanitize_query(question)
     tokens = set(_TOKEN_REGEX.findall(clean_text))
     
-    # Intersección de conjuntos es O(min(len(tokens), len(keys)))
     matches = tokens.intersection(_KEYWORD_MAP.keys())
     if matches:
-        # Resolvemos el primer match relevante encontrado
         target_key = _KEYWORD_MAP[next(iter(matches))]
         return _HANDLERS[target_key](context, clean_text)
 
@@ -440,14 +434,9 @@ def local_answer(question: str, context: SystemContext) -> Answer:
 
 
 def _gen_problems(ctx: SystemContext) -> Generator[str, None, None]:
-    """
-    Genera un flujo de descripciones de problemas detectados de forma perezosa,
-    priorizando siempre las métricas críticas primero.
-    """
+    """Generador de problemas detectados priorizados por criticidad."""
     if ctx is None: return
     
-    # Prioridades pre-calculadas como tupla para evitar crear listas en cada llamada
-    # Se evalúan las condiciones dinámicamente mediante lógica directa
     if ctx.disk_free_percent < 10.0:
         yield f"queda solo {ctx.disk_free_percent:.0f}% de disco libre"
     if ctx.suspicious_warnings > 0:
@@ -463,7 +452,7 @@ def _gen_problems(ctx: SystemContext) -> Generator[str, None, None]:
 
 
 def available(base: Union[str, Path, None] = None) -> bool:
-    """Verifica si el asistente en línea está configurado y habilitado."""
+    """Verifica si la configuración del sistema permite el uso del asistente en línea."""
     try:
         return settings.assistant_enabled(base)
     except Exception:
@@ -476,7 +465,7 @@ def _call_gemini(
     api_key: str, 
     model: str
 ) -> Optional[str]:
-    """Envía métricas agregadas a Gemini mediante la librería estándar urllib."""
+    """Ejecuta una solicitud POST al endpoint de Gemini protegiendo los datos enviados."""
     if not isinstance(api_key, str) or not isinstance(model, str): return None
     if not api_key or not _API_KEY_REGEX.match(api_key) or _CONTROL_CHARS_REGEX.search(api_key): return None
     if not model or not _MODEL_NAME_REGEX.match(model): return None
@@ -484,7 +473,6 @@ def _call_gemini(
     safe_q: str = _sanitize_query(question)
     safe_ctx: str = context_text[:_MAX_TEXT_LENGTH]
     
-    # Guardia de seguridad: no procesar nada que sea ruta del sistema
     if is_protected_path(safe_q) or is_protected_path(safe_ctx):
         return None
     
@@ -507,7 +495,6 @@ def _call_gemini(
         
         with urllib.request.urlopen(req, timeout=_TIMEOUT_SECONDS) as res:
             if res.status != 200: return None
-            # Limitamos la lectura de bytes para evitar desbordamiento de memoria
             raw_res = res.read(_MAX_RESPONSE_BYTES)
             if not raw_res: return None
             
@@ -521,7 +508,6 @@ def _call_gemini(
         text = "".join(str(p.get("text", "")) for p in parts if isinstance(p, dict))
         
         final_text = text.strip()[:_MAX_TEXT_LENGTH]
-        # Validar la respuesta recibida antes de mostrarla
         if not _ensure_safe_text(final_text) or is_protected_path(final_text):
             return None
         return final_text
@@ -531,14 +517,13 @@ def _call_gemini(
 
 def ask(question: str, context: Optional[SystemContext] = None,
         base: Union[str, Path, None] = None) -> Answer:
-    """Coordina la resolución de la consulta buscando la mejor respuesta disponible."""
+    """Orquestador de alto nivel para determinar si responder localmente o via API."""
     ctx: SystemContext = context if isinstance(context, SystemContext) else SystemContext()
     respaldo: Answer = local_answer(question, ctx)
 
     if not available(base):
         return respaldo
 
-    # Validar la consulta de entrada contra rutas sensibles antes de hacer nada
     if is_protected_path(question):
         return respaldo
 
@@ -547,7 +532,6 @@ def ask(question: str, context: Optional[SystemContext] = None,
         if not isinstance(configuracion, dict):
             return respaldo
         
-        # Extracción segura de valores: validamos que cada campo esperado exista y sea del tipo correcto
         cfg: AssistantConfig = {
             "asistente_api_key": str(configuracion.get("asistente_api_key", "")),
             "asistente_modelo": str(configuracion.get("asistente_modelo", "gemini-3.1-flash-lite")),
@@ -567,5 +551,4 @@ def ask(question: str, context: Optional[SystemContext] = None,
 
         return Answer(remoto, source="gemini", notice=PRIVACY_NOTICE)
     except (Exception, TypeError, ValueError):
-        # Ante cualquier fallo en la carga o validación de settings, garantizamos devolver respaldo local
         return respaldo

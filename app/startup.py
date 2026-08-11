@@ -243,14 +243,16 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
     try:
         reader = csv.DictReader(io.StringIO(text))
         for row in reader:
+            if not isinstance(row, dict):
+                continue
             keys = list(row.keys())
             if len(keys) < 2:
                 continue
                 
-            name_raw = row[keys[0]]
-            cmd_raw = row[keys[1]]
+            name_raw = row.get(keys[0])
+            cmd_raw = row.get(keys[1])
             
-            if not name_raw or not cmd_raw:
+            if not isinstance(name_raw, str) or not isinstance(cmd_raw, str):
                 continue
                 
             name = "".join(c for c in name_raw if ord(c) >= 32).strip()

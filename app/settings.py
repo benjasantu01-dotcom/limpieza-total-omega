@@ -110,12 +110,15 @@ class _Validators:
         if not path_obj.is_absolute(): return False
         if len(path_obj.parts) < 2: return False
         if any(part in ('.', '..', '..\\', '../') for part in path_obj.parts): return False
-        resolved = path_obj.resolve(strict=False)
-        if resolved.is_symlink() or (resolved.exists() and hasattr(resolved, 'is_junction') and resolved.is_junction()):
+        try:
+            resolved = path_obj.resolve(strict=False)
+            if resolved.is_symlink() or (resolved.exists() and hasattr(resolved, 'is_junction') and resolved.is_junction()):
+                return False
+            if is_protected_path(str(resolved)): return False
+            target = resolved if resolved.exists() else resolved.parent
+            return is_safe_to_modify(str(target))
+        except (OSError, RuntimeError):
             return False
-        if is_protected_path(str(resolved)): return False
-        target = resolved if resolved.exists() else resolved.parent
-        return is_safe_to_modify(str(target))
 
     @staticmethod
     def bool(key: str, val: Any) -> bool | None:
@@ -230,9 +233,7 @@ def load(path_or_base: PathLike | None = None) -> AppSettings:
             if attempt < 2: time.sleep(0.05)
             continue
     
-    _cached_settings = DEFAULTS.copy()
-    _current_path, _last_mtime = ruta, 0.0
-    return _cached_settings.copy()
+    return DEFAULTS.copy()
 
 def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     """Guarda configuración de forma atómica validando permisos de escritura."""
@@ -252,20 +253,15 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
 
     try:
         ruta.parent.mkdir(parents=True, exist_ok=True)
-        for attempt in range(3):
-            try:
-                temp = ruta.with_suffix(".tmp")
-                with open(temp, "w", encoding="utf-8") as f:
-                    json.dump(cleaned_settings, f, indent=2, ensure_ascii=False)
-                    f.flush()
-                    os.fsync(f.fileno())
-                os.replace(temp, ruta)
-                _cached_settings, _current_path = cleaned_settings, ruta
-                _last_mtime = ruta.stat().st_mtime
-                return ruta
-            except OSError:
-                if attempt == 2: raise
-                time.sleep(0.1)
+        temp = ruta.with_suffix(".tmp")
+        with open(temp, "w", encoding="utf-8") as f:
+            json.dump(cleaned_settings, f, indent=2, ensure_ascii=False)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(temp, ruta)
+        _cached_settings, _current_path = cleaned_settings, ruta
+        _last_mtime = ruta.stat().st_mtime
+        return ruta
     except (OSError, IOError, PermissionError, RuntimeError):
         return None
 
