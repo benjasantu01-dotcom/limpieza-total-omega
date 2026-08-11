@@ -117,7 +117,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     tareas intensivas en E/S a un pool de hilos de ejecución.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.tabs: Dict[str, ctk.CTkFrame] = {}
         self._executor: Optional[concurrent.futures.ThreadPoolExecutor] = None
@@ -380,7 +380,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                            highlightthickness=0, bd=0)
         franja.pack(fill="x", padx=18, pady=(12, 6))
 
-        def on_resize(event):
+        def on_resize(event: tk.Event) -> None:
             self._debounce_action("resize", 100, lambda: (franja.delete("all"), branding.draw_gradient_bar(franja, event.width, 3)))
 
         franja.bind("<Configure>", on_resize)
@@ -481,18 +481,17 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _render_gauge(self, score: int, grade: str) -> None:
         """Dibuja la geometría del medidor circular de salud en el Canvas."""
-        if not hasattr(self, 'gauge') or not self.gauge.winfo_exists() or self._closing: return
+        if not hasattr(self, 'gauge') or not self.gauge.winfo_exists() or self._closing:
+            return
+        
         self.gauge.delete("all")
         branding.draw_ring(self.gauge, score, size=176, thickness=15)
+        
         color_nota = branding.grade_color(grade) if grade != "-" else branding.color("text_dim")
-        self.gauge.create_text(
-            88, 78, text=str(score), fill=branding.score_color(score),
-            font=("Segoe UI", branding.font_size("display"), "bold"),
-        )
-        self.gauge.create_text(
-            88, 116, text=f"nota {grade}", fill=color_nota,
-            font=("Segoe UI", branding.font_size("body"), "bold"),
-        )
+        self.gauge.create_text(88, 78, text=str(score), fill=branding.score_color(score),
+                               font=("Segoe UI", branding.font_size("display"), "bold"))
+        self.gauge.create_text(88, 116, text=f"nota {grade}", fill=color_nota,
+                               font=("Segoe UI", branding.font_size("body"), "bold"))
 
     def _build_tab_limpieza(self) -> None:
         """Construye la interfaz de escaneo, revisión y eliminación de archivos basura."""
@@ -841,7 +840,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _set_busy(self, busy: bool) -> None:
         """Gestiona la visibilidad y estado de la barra de progreso."""
-        def actualizar():
+        def actualizar() -> None:
             if self._closing or not self.activity.winfo_exists(): return
             if busy:
                 self._tasks_running += 1
@@ -893,7 +892,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._set_busy(True)
         tab = self._current_tab()
         
-        def wrapper():
+        def wrapper() -> None:
             with self._task_lock:
                 try:
                     self._safe_run(fn, tab)
@@ -976,7 +975,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def on_full_analysis(self) -> None:
         """Dispara el cálculo de salud global y notifica al asistente."""
-        def task():
+        def task() -> None:
             self.set_status("Analizando el sistema...")
             self.clear("Salud")
             self.log("Analizando... esto no modifica nada.", "Salud")
@@ -1011,7 +1010,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
         self._last_health_state = state_key
 
-        def actualizar():
+        def actualizar() -> None:
             if self._closing: return
             self._draw_gauge(resultado.score, resultado.grade)
 
@@ -1070,7 +1069,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def on_scan_junk(self) -> None:
         """Dispara escaneo de basura con persistencia en caché."""
-        def task():
+        def task() -> None:
             destino = self.scan_target or "carpetas por defecto (Temp/Descargas)"
             self.set_status(f"Buscando basura en {destino}...")
             self.clear("Limpieza")
@@ -1118,7 +1117,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         ):
             return
 
-        def task():
+        def task() -> None:
             self.set_status("Moviendo a revisión...")
             dest = stage_for_review(aptos)
             self.log(f"Movidos {len(aptos)} archivos a: {dest}", "Limpieza")
@@ -1135,7 +1134,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         ):
             return
 
-        def task():
+        def task() -> None:
             self.set_status("Vaciando la carpeta de revisión...")
             n = delete_reviewed()
             self.log(f"Borrados {n} archivos de la carpeta de revisión.", "Limpieza")
@@ -1144,7 +1143,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _run_heuristic_scan(self, folder: str) -> None:
         """Ejecuta un escaneo heurístico de seguridad en una carpeta."""
-        def task():
+        def task() -> None:
             if not self._is_valid_dir(folder):
                 self.log(f"Error: La carpeta {folder} no es accesible.", "Seguridad")
                 return
@@ -1212,7 +1211,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         ):
             return
 
-        def task():
+        def task() -> None:
             self.set_status("Aislando archivos...")
             aislados = 0
             for item_s in aptos:
@@ -1226,7 +1225,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def on_defender_scan(self) -> None:
         """Dispara un escaneo rápido vía Windows Defender."""
-        def task():
+        def task() -> None:
             self.set_status("Windows Defender en curso...")
             self.log("Iniciando escaneo rápido de Windows Defender (puede tardar)...", "Seguridad")
             output = run_windows_defender_quick_scan()
@@ -1236,7 +1235,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def on_list_quarantine(self) -> None:
         """Lista el contenido actual de la cuarentena."""
-        def task():
+        def task() -> None:
             self.log_lines(quarantine.summarize(), "Cuarentena")
 
         self.run_async(task)
@@ -1248,7 +1247,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             messagebox.showinfo("Falta el ID", "Pegá el ID del archivo que querés restaurar.")
             return
 
-        def task():
+        def task() -> None:
             if not quarantine.item_exists(raw_id):
                 self.log(f"Error: El ID '{raw_id}' no existe en la cuarentena.", "Cuarentena")
                 return
@@ -1283,7 +1282,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         ):
             return
 
-        def task():
+        def task() -> None:
             borrados = quarantine.purge_all()
             self.log(f"Borrados {borrados} archivo(s) de la cuarentena.", "Cuarentena")
 
@@ -1291,7 +1290,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def on_memory_report(self) -> None:
         """Realiza y reporta el diagnóstico de memoria RAM."""
-        def task():
+        def task() -> None:
             snapshot = memory_mod.read_snapshot()
             procesos = memory_mod.top_memory_processes(limit=5)
             lineas = memory_mod.diagnose(snapshot, procesos)
@@ -1307,7 +1306,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def on_memory_processes(self) -> None:
         """Reporta la lista de procesos con mayor consumo de RAM."""
-        def task():
+        def task() -> None:
             procesos = memory_mod.top_memory_processes(limit=15)
             if not procesos:
                 self.log_lines(["No se pudo obtener la lista de procesos en este sistema."],
@@ -1342,7 +1341,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         if not self._confirm("Liberar working set", memory_mod.TRIM_WARNING + "\n\n¿Seguimos?"):
             return
 
-        def task():
+        def task() -> None:
             # Seguridad: verificar existencia en el hilo de ejecución para evitar carrera
             if not memory_mod.process_exists(pid):
                 self.log(f"Error: El proceso {pid} ya no está activo.", "Memoria")
@@ -1357,7 +1356,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def on_drives_report(self) -> None:
         """Reporta el estado y uso de espacio de todas las unidades de disco."""
-        def task():
+        def task() -> None:
             unidades = diskreport.all_drives_usage()
             if not unidades:
                 self.log_lines(["No se detectaron unidades."], "Disco")
@@ -1385,7 +1384,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
         self.analysis_folder = folder
 
-        def task():
+        def task() -> None:
             if not self._is_valid_dir(folder):
                 self.log("Error: La carpeta seleccionada ya no existe.", "Disco")
                 return
@@ -1402,7 +1401,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         if not folder:
             return
 
-        def task():
+        def task() -> None:
             if not self._is_valid_dir(folder):
                 self.log("Error: La carpeta seleccionada ya no existe.", "Duplicados")
                 return
@@ -1457,7 +1456,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         ):
             return
 
-        def task():
+        def task() -> None:
             self.set_status("Aislando copias duplicadas...")
             movidos = 0
             for ruta in aptos:
@@ -1470,7 +1469,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def on_browser_report(self) -> None:
         """Reporta la caché de navegadores detectados."""
-        def task():
+        def task() -> None:
             self.set_status("Midiendo caché de navegadores...")
             self.log_lines(browser.summarize(), "Navegadores")
 
@@ -1478,7 +1477,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def on_startup_report(self) -> None:
         """Reporta los programas de inicio y tareas programadas."""
-        def task():
+        def task() -> None:
             self.set_status("Leyendo programas de inicio...")
             self._invalidate_cache("startup")
             self._get_cached("startup", startup_mod.list_startup_entries)
@@ -1488,7 +1487,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def on_build_report(self) -> None:
         """Construye un reporte unificado de la sesión actual."""
-        def task():
+        def task() -> None:
             if not self.report_data:
                 self.log_lines(["Todavía no corriste ningún análisis. "
                                 "Empezá por la pestaña Salud."], "Informe")
@@ -1515,7 +1514,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         if not destino:
             return
 
-        def task():
+        def task() -> None:
             ruta = reporting.save_report(self.report_data, destino, as_markdown=as_markdown)
             self.log(f"Informe guardado en: {ruta}", "Informe")
 
@@ -1533,7 +1532,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         if question is None:
             self.question_entry.delete(0, "end")
 
-        def task():
+        def task() -> None:
             self.set_status("Consultando al asistente...")
             self.log(f"\n> {texto}", "Asistente")
             respuesta = assistant.ask(texto, self.assistant_context)
@@ -1594,7 +1593,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 self.setting_vars["asistente_activado"].set(False)
                 return
 
-        def task():
+        def task() -> None:
             self.settings = settings_mod.update(propuestos)
             ruta = settings_mod.settings_path()
             self.log_lines(
@@ -1607,7 +1606,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def on_show_settings(self) -> None:
         """Muestra en pantalla la configuración actual."""
-        def task():
+        def task() -> None:
             self.log_lines(settings_mod.describe(), "Ajustes")
 
         self.run_async(task)
@@ -1621,7 +1620,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         ):
             return
 
-        def task():
+        def task() -> None:
             self.settings = settings_mod.reset()
             for clave, variable in self.setting_vars.items():
                 try:
