@@ -1534,7 +1534,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _validate_numeric_setting(self, value: Optional[str], default: int) -> int:
         """Valida que un campo de configuración sea numérico y positivo."""
-        if not isinstance(value, str):
+        if not value:
             return default
         try:
             val = int(value.strip())

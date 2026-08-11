@@ -157,7 +157,7 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
         return None
     try:
         path_str = os.fspath(mount)
-        if path_str.startswith(("\\\\", "//")):
+        if not path_str or path_str.startswith(("\\\\", "//")):
             return None
         p = Path(path_str).expanduser().resolve(strict=False)
         
@@ -191,11 +191,12 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
         else:
             mounts = ["/"]
     results: List[DriveUsage] = []
-    for mount in mounts:
-        if mount:
-            usage = drive_usage(mount)
-            if usage is not None:
-                results.append(usage)
+    if mounts:
+        for mount in mounts:
+            if mount:
+                usage = drive_usage(mount)
+                if usage is not None:
+                    results.append(usage)
     return results
 
 

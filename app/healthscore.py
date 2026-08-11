@@ -67,7 +67,7 @@ _WEIGHT_ITEMS: Final[List[Tuple[str, int]]] = list(WEIGHTS.items())
 
 def _validate_weights() -> bool:
     """Verifica que la suma total de pesos sea positiva y sus valores válidos."""
-    if _TOTAL_WEIGHTS <= 0: return False
+    if not math.isfinite(_TOTAL_WEIGHTS) or _TOTAL_WEIGHTS <= 0: return False
     return all(isinstance(w, int) and w >= 0 for w in WEIGHTS.values())
 
 
@@ -206,7 +206,8 @@ def _generate_recommendations(m: SystemMetrics, ratios: ScoreMap) -> List[str]:
     )
 
     for key, threshold, msg in checks:
-        if ratios.get(key, 0.0) < threshold:
+        ratio = ratios.get(key, 0.0)
+        if math.isfinite(ratio) and ratio < threshold:
             recs.append(msg)
     
     if m.quarantined_count > 0:
@@ -221,8 +222,8 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         return HealthResult(0, "F", {}, ["Error: Instancia de métricas inválida."])
     
     metrics.validate()
-    # Verificación de seguridad defensiva: no procesar si los estados no son consistentes
-    if not metrics.is_finite() or not _validate_weights() or not math.isfinite(_TOTAL_WEIGHTS):
+    
+    if not metrics.is_finite() or not _validate_weights():
         return HealthResult(0, "F", {}, ["Error: Datos o configuración inestables."])
 
     ratios: ScoreMap = {
@@ -238,11 +239,11 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     total_raw: float = 0.0
     
     for area, factor in _WEIGHT_FACTORS.items():
-        score_val = ratios.get(area, 0.0) * factor
+        ratio = ratios.get(area, 0.0)
+        score_val = (ratio if math.isfinite(ratio) else 0.0) * factor
         breakdown[area] = int(round(score_val))
         total_raw += score_val
 
-    # Clamp final defensivo antes de retornar resultado
     final_score = int(round(_clamp(total_raw, 0.0, 100.0)))
     return HealthResult(
         score=final_score,

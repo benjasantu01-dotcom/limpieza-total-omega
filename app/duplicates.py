@@ -285,7 +285,7 @@ def format_group(group: DuplicateGroup) -> List[str]:
     """
     Genera representación textual de un grupo para la UI.
     """
-    if not isinstance(group, DuplicateGroup): 
+    if not isinstance(group, DuplicateGroup) or not group.paths: 
         return []
         
     keeper = suggest_keeper(group)
