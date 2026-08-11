@@ -119,7 +119,13 @@ class Scanner:
 
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Identifica archivos que usan extensiones dobles para ocultar extensiones ejecutables peligrosas."""
+    """
+    Analiza si el nombre del archivo contiene una extensión secundaria que oculta un ejecutable.
+    Args:
+        path: Objeto Path del archivo.
+        name: Nombre del archivo a evaluar.
+    Returns: Objeto Suspicion si se detecta el patrón, None en caso contrario.
+    """
     target = name or path.name
     if target and DOUBLE_EXTENSION_RE.search(target):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
@@ -127,7 +133,13 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, name
 
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Detecta ejecutables que fueron creados recientemente, lo cual puede indicar descarga de malware."""
+    """
+    Detecta ejecutables modificados recientemente mediante el timestamp de sistema.
+    Args:
+        entry: Referencia de DirEntry para obtener metadatos de acceso rápido.
+        now_ts: Timestamp actual para calcular la diferencia de tiempo.
+    Returns: Objeto Suspicion si el archivo es reciente, None en caso contrario.
+    """
     if entry is None:
         return None
     try:
@@ -139,7 +151,13 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Busca ejecutables que usurpan nombres de procesos críticos de sistema para engañar al usuario."""
+    """
+    Busca ejecutables que usurpan nombres de procesos críticos de sistema.
+    Args:
+        path: Ruta completa para verificar que el archivo NO resida en System32.
+        name: Nombre del ejecutable.
+    Returns: Objeto Suspicion si el nombre es conflictivo y está fuera de su carpeta nativa.
+    """
     target = (name or path.name).lower()
     if target in SYSTEM_LOOKALIKES:
         if SYSTEM32_LOWER not in str(path.parent).lower():
