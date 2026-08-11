@@ -133,9 +133,7 @@ def _is_allowed_directory(name: str) -> bool:
 
 
 def _is_file_accessible(path: Path) -> bool:
-    """
-    Verifica si el archivo es accesible intentando abrirlo en lectura binaria.
-    """
+    """Verifica si el archivo es accesible intentando abrirlo en lectura binaria."""
     try:
         with open(path, "rb") as f:
             return True
@@ -144,14 +142,28 @@ def _is_file_accessible(path: Path) -> bool:
 
 
 def _is_file_locked(path: Path) -> bool:
-    """
-    Verifica si el archivo está bloqueado por otro proceso mediante apertura en modo append.
-    """
+    """Verifica si el archivo está bloqueado por otro proceso mediante apertura en modo append."""
     try:
         with open(path, "a+b"):
             return False
     except (OSError, PermissionError):
         return True
+
+def _is_safe_to_move(jf: JunkFile, dest: Path) -> bool:
+    """
+    Valida si un archivo es candidato seguro para ser movido a la carpeta de revisión.
+    Verifica existencia, bloqueos y restricciones de volúmenes cruzados.
+    """
+    current_abs = jf.path.resolve()
+    if not current_abs.exists() or not current_abs.is_file():
+        return False
+    # Impedir movimiento recursivo o sobre sí mismo
+    if dest == current_abs or dest in current_abs.parents:
+        return False
+    # Verificar bloqueos activos y restricción de mover entre volúmenes distintos
+    if _is_file_locked(current_abs) or current_abs.anchor != dest.anchor:
+        return False
+    return True
 
 
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
@@ -176,10 +188,8 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
                     elif entry.is_file():
                         path_obj = Path(entry.path)
                         if _is_junk_path(path_obj):
-                            # Verificación estricta: cumple reglas de seguridad y legibilidad
                             if is_safe_to_modify(path_obj) and _is_file_accessible(path_obj):
                                 try:
-                                    # Aprovechamos el stat cacheado en entry
                                     stat = entry.stat()
                                     found.append(JunkFile(
                                         path=path_obj,
@@ -233,26 +243,13 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 
     for jf in files:
         try:
-            current_abs: Path = jf.path.resolve()
+            ensure_safe_to_modify(jf.path)
             
-            # Validación de estado del archivo
-            if not current_abs.exists() or not current_abs.is_file():
-                continue
-            
-            # Impedir movimiento recursivo o sobre sí mismo
-            if dest == current_abs or dest in current_abs.parents:
-                continue
-            
-            # Verificación de seguridad y bloqueos
-            ensure_safe_to_modify(current_abs)
-            
-            if _is_file_locked(current_abs) or current_abs.anchor != dest.anchor:
-                continue
-
-            # Validación final de espacio y permisos de escritura en destino
-            if os.access(dest, os.W_OK) and shutil.disk_usage(dest).free > jf.size_bytes:
-                target: Path = _generate_unique_target(dest / f"{current_abs.stem}_{int(jf.modified.timestamp())}{current_abs.suffix}")
-                shutil.move(str(current_abs), str(target))
+            if _is_safe_to_move(jf, dest):
+                # Validación final de espacio y permisos de escritura en destino
+                if os.access(dest, os.W_OK) and shutil.disk_usage(dest).free > jf.size_bytes:
+                    target = _generate_unique_target(dest / f"{jf.path.stem}_{int(jf.modified.timestamp())}{jf.path.suffix}")
+                    shutil.move(str(jf.path), str(target))
         except (PermissionError, OSError, shutil.Error, RuntimeError):
             continue
     return dest
