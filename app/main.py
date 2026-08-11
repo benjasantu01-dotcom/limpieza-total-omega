@@ -799,7 +799,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         if not self._log_queue or self._closing:
             return
         
-        # Agrupamos por pestaña para reducir operaciones de inserción y redibujo
         pendientes = list(self._log_queue)
         self._log_queue.clear()
         

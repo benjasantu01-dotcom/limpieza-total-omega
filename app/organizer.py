@@ -171,10 +171,21 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     Realiza un escaneo recursivo en los directorios especificados para identificar archivos basura.
     Utiliza medidas de seguridad para evitar seguir enlaces simbólicos y carpetas del sistema.
     """
-    dirs: List[str] = directories if directories is not None else DEFAULT_SCAN_DIRS
+    raw_dirs = directories if directories is not None else DEFAULT_SCAN_DIRS
     found: List[JunkFile] = []
+    
+    # Pre-normalizar rutas únicas para evitar redundancia
+    unique_dirs: set[Path] = set()
+    for d in raw_dirs:
+        if d and isinstance(d, str):
+            try:
+                p = Path(d).expanduser().resolve()
+                if p.exists() and p.is_dir() and is_safe_to_modify(p):
+                    unique_dirs.add(p)
+            except (RuntimeError, OSError, ValueError):
+                continue
 
-    def _walk_dir(base_path: str) -> None:
+    def _walk_dir(base_path: Path) -> None:
         """Recorrido profundo seguro: ignora reparse points y archivos protegidos."""
         try:
             with os.scandir(base_path) as it:
@@ -184,7 +195,7 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
                     
                     if entry.is_dir():
                         if _is_allowed_directory(entry.name):
-                            _walk_dir(entry.path)
+                            _walk_dir(Path(entry.path))
                     elif entry.is_file():
                         path_obj = Path(entry.path)
                         if _is_junk_path(path_obj):
@@ -201,15 +212,8 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
         except (PermissionError, OSError):
             pass
 
-    for d in dirs:
-        if d is None or not isinstance(d, str):
-            continue
-        try:
-            p = Path(d).expanduser().resolve()
-            if p.exists() and p.is_dir() and is_safe_to_modify(p):
-                _walk_dir(str(p))
-        except (RuntimeError, OSError, ValueError):
-            continue
+    for d in unique_dirs:
+        _walk_dir(d)
     return found
 
 

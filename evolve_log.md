@@ -1418,3 +1418,11 @@ FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_ex
 - `2026-08-11T14:22:40` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé la función `partial_hash` para evitar el uso innecesario de `Path.resolve()` —que implica consultas al sistema de archivos adicionales—, utilizando la ruta ya normalizada por `_collect_candidates` y reduciendo el overhead de llamadas al sistema en el bucle principal de comparación.
 - `2026-08-11T14:22:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-11T14:22:40` Corrida terminada. Total usado hoy: 336.
+- `2026-08-11T14:31:26` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-11T14:31:53` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
+- `2026-08-11T14:32:53` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-11T14:34:03` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Optimicé el método `_flush_logs` para evitar múltiples llamadas a `insert` y `see` en la interfaz gráfica, acumulando los mensajes en un solo string por pestaña y actualizando el widget una única vez por cada ejecución, reduciendo drásticamente el consumo de CPU durante operaciones con logueo masivo.
+- `2026-08-11T14:34:34` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: rendimiento).
+- `2026-08-11T14:34:44` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimicé el rendimiento de `scan_for_junk` sustituyendo el uso repetido de `os.path.expandvars` y `resolve()` dentro de los bucles por un pre-filtrado de rutas únicas mediante un `set`, evitando el procesamiento redundante de directorios duplicados en la lista de escaneo.
+- `2026-08-11T14:34:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-11T14:34:44` Corrida terminada. Total usado hoy: 340.

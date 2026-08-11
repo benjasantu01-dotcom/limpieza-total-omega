@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **233** (46.2% de aceptación)
+- Mejoras aceptadas: **234** (46.4% de aceptación)
 - Rechazadas por tests: 10
 - Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 212
+- Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-10 | 73 | 2 | 9 | 7 | 77 |
-| 2026-08-11 | 160 | 8 | 23 | 10 | 135 |
+| 2026-08-10 | 72 | 2 | 9 | 7 | 74 |
+| 2026-08-11 | 162 | 8 | 23 | 10 | 137 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **60**
 - manejo de errores y validación de entradas: **51**
 - seguridad defensiva: **45**
-- robustez ante casos límite: **39**
-- rendimiento: **38**
+- rendimiento: **40**
+- robustez ante casos límite: **38**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **20**
 - `branding.py`: **20**
 - `diskreport.py`: **20**
 - `quarantine.py`: **20**
 - `healthscore.py`: **19**
 - `memory.py`: **19**
+- `settings.py`: **19**
 - `assistant.py`: **19**
 - `duplicates.py`: **19**
 - `browser.py`: **17**
 - `scanner.py`: **16**
+- `main.py`: **13**
 - `startup.py`: **13**
-- `main.py`: **12**
-- `organizer.py`: **11**
+- `organizer.py`: **12**
 - `safety.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-11T14:34:44` **organizer.py** (rendimiento): Optimicé el rendimiento de `scan_for_junk` sustituyendo el uso repetido de `os.path.expandvars` y `resolve()` dentro de los bucles por un pre-filtrado de rutas únicas mediante un `set`, evitando el procesamiento redundante de directorios duplicados en la lista de escaneo.
+- `2026-08-11T14:34:03` **main.py** (rendimiento): Optimicé el método `_flush_logs` para evitar múltiples llamadas a `insert` y `see` en la interfaz gráfica, acumulando los mensajes en un solo string por pestaña y actualizando el widget una única vez por cada ejecución, reduciendo drásticamente el consumo de CPU durante operaciones con logueo masivo.
 - `2026-08-11T14:22:40` **duplicates.py** (rendimiento): Optimizé la función `partial_hash` para evitar el uso innecesario de `Path.resolve()` —que implica consultas al sistema de archivos adicionales—, utilizando la ruta ya normalizada por `_collect_candidates` y reduciendo el overhead de llamadas al sistema en el bucle principal de comparación.
 - `2026-08-11T14:22:30` **diskreport.py** (rendimiento): Optimicé el rendimiento de `summarize` reemplazando la creación y gestión de estructuras de datos intermedias por un contador unificado durante el recorrido del árbol, y mejoré la eficiencia de `walk_files` evitando la creación innecesaria de objetos `Path` mediante el uso de strings directos en las comparaciones de seguridad y el filtrado.
 - `2026-08-11T14:22:05` **browser.py** (rendimiento): Optimicé el rendimiento de `_sum_directory_recursive` evitando llamadas repetitivas a `os.path.realpath` y `is_protected_path` dentro del loop profundo, y reduciendo la creación de objetos `Path` innecesarios.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-11T13:50:37` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del pipeline de `find_duplicates` mediante type hints explícitos, estandarización de docstrings y la clarificación del propósito de cada etapa, facilitando la comprensión del flujo para futuros colaboradores.
 - `2026-08-11T13:41:39` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `diskreport.py` incluyendo tipado preciso en las constantes de iteración y clarificando las docstrings de las funciones recursivas y generadores para explicar mejor la lógica de seguridad y exclusión.
 - `2026-08-11T13:40:58` **branding.py** (legibilidad y documentación): Mejora la legibilidad del código y la calidad de la documentación al estandarizar los `docstrings` en todo el archivo, garantizando que sigan las convenciones PEP 257 y añadiendo `type hints` explícitos en lugares donde la inferencia podría causar ambigüedad, facilitando el mantenimiento a largo plazo.
-- `2026-08-11T13:40:27` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la aplicación de *type hints* faltantes, la estandarización de docstrings y la simplificación de estructuras de decisión complejas mediante la extracción de funciones, asegurando mayor claridad en la lógica de procesamiento de contexto sin alterar la funcionalidad.
-- `2026-08-11T13:31:09` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo una validación explícita para la estructura de la fila antes de procesarla, asegurando que `DictReader` devuelva los campos esperados y evitando posibles errores de acceso por índices o claves inexistentes ante datos mal formados del registro.
