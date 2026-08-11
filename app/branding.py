@@ -246,7 +246,7 @@ def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
     )
 
 
-@lru_cache(maxsize=32)
+@lru_cache(maxsize=16)
 def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> List[HexColor]:
     """Genera una secuencia de colores interpolados basada en puntos de control (stops)."""
     steps = max(1, int(steps))

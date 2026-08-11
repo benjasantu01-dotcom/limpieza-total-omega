@@ -233,7 +233,13 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
 
 def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry]:
     """
-    Parsea la salida CSV de PowerShell usando el módulo csv estándar.
+    Procesa un string con formato CSV (salida de PowerShell) para extraer entradas.
+
+    Args:
+        text: Datos crudos del CSV (incluyendo encabezados).
+        source: Identificador de la fuente (usado para metadatos).
+    Returns:
+        Lista de objetos StartupEntry validados contra rutas protegidas.
     """
     if not isinstance(text, str) or not text.strip():
         return []
@@ -241,28 +247,28 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
     parsed_entries: List[StartupEntry] = []
     
     try:
-        reader = csv.DictReader(io.StringIO(text))
+        reader: csv.DictReader = csv.DictReader(io.StringIO(text))
         for row in reader:
             if not isinstance(row, dict):
                 continue
-            keys = list(row.keys())
+            keys: List[str] = list(row.keys())
             if len(keys) < 2:
                 continue
                 
-            name_raw = row.get(keys[0])
-            cmd_raw = row.get(keys[1])
+            name_raw: Optional[str] = row.get(keys[0])
+            cmd_raw: Optional[str] = row.get(keys[1])
             
             if not isinstance(name_raw, str) or not isinstance(cmd_raw, str):
                 continue
                 
-            name = "".join(c for c in name_raw if ord(c) >= 32).strip()
-            cmd = "".join(c for c in cmd_raw if ord(c) >= 32).strip()
+            name: str = "".join(c for c in name_raw if ord(c) >= 32).strip()
+            cmd: str = "".join(c for c in cmd_raw if ord(c) >= 32).strip()
             
             if not name or name.lower() in ("name", "pscustomobject") or name.upper().startswith("PS"):
                 continue
             
             try:
-                p = Path(cmd)
+                p: Path = Path(cmd)
                 if is_protected_path(p):
                     continue
             except (ValueError, TypeError):
@@ -285,8 +291,8 @@ def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[Start
     if _REGISTRY_CACHE is not None:
         return _REGISTRY_CACHE
     
-    targets = ", ".join(f"'{k}'" for k in keys)
-    ps_cmd = f"Get-ItemProperty {targets} -ErrorAction SilentlyContinue | Select-Object * -ExcludeProperty PS* | ConvertTo-Csv -NoTypeInformation"
+    targets: str = ", ".join(f"'{k}'" for k in keys)
+    ps_cmd: str = f"Get-ItemProperty {targets} -ErrorAction SilentlyContinue | Select-Object * -ExcludeProperty PS* | ConvertTo-Csv -NoTypeInformation"
     
     try:
         result: subprocess.CompletedProcess = subprocess.run(

@@ -146,6 +146,8 @@ _KEYWORD_MAP: Final[dict[str, str]] = {
     "inicio": "startup", "arranque": "startup", "arranca": "startup", "encender": "startup"
 }
 
+_KEYWORD_SET: Final[set[str]] = set(_KEYWORD_MAP.keys())
+
 @dataclass
 class SystemContext:
     """
@@ -416,9 +418,9 @@ def local_answer(question: str, context: SystemContext) -> Answer:
     clean_text = _sanitize_query(question)
     tokens = set(_TOKEN_REGEX.findall(clean_text))
     
-    matches = tokens.intersection(_KEYWORD_MAP.keys())
-    if matches:
-        target_key = _KEYWORD_MAP[next(iter(matches))]
+    match = tokens.intersection(_KEYWORD_SET)
+    if match:
+        target_key = _KEYWORD_MAP[next(iter(match))]
         return _HANDLERS[target_key](context, clean_text)
 
     problemas = list(islice(_gen_problems(context), 3))
