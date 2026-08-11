@@ -149,6 +149,17 @@ def _is_system_hidden(entry_path: str, kernel32: ctypes.WinDLL | None) -> bool:
         return False
 
 
+def _should_skip_entry(entry: os.DirEntry, kernel32: ctypes.WinDLL | None, is_junction_fn: Callable[[str], bool]) -> bool:
+    """Valida si una entrada del sistema de archivos debe omitirse durante el escaneo."""
+    if _is_system_hidden(entry.path, kernel32):
+        return True
+    if entry.is_symlink() or is_junction_fn(entry.path):
+        return True
+    if entry.is_file() and _is_excluded_file(entry.name):
+        return True
+    return False
+
+
 def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool], visited: Optional[Set[str]] = None, cache: Optional[Dict[str, int]] = None, depth: int = 0) -> int:
     """
     Realiza un recorrido DFS para calcular el peso total (bytes) de una carpeta.
@@ -182,12 +193,12 @@ def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool
         with os.scandir(root_dir) as it:
             for entry in it:
                 try:
-                    if _is_system_hidden(entry.path, kernel32) or entry.is_symlink() or is_junction_fn(entry.path):
+                    if _should_skip_entry(entry, kernel32, is_junction_fn):
                         continue
                     
                     if entry.is_dir():
                         total_size += _sum_directory_recursive(entry.path, is_junction_fn, visited, cache, depth + 1)
-                    elif entry.is_file() and not _is_excluded_file(entry.name):
+                    elif entry.is_file():
                         total_size += entry.stat().st_size
                 except (OSError, PermissionError):
                     continue

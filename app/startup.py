@@ -18,6 +18,8 @@ testearlo en CI sobre Linux, sin registro de Windows.
 from __future__ import annotations
 import os
 import subprocess
+import csv
+import io
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Iterable, Optional, Iterator, List, Tuple, Dict, Sequence, Set
@@ -210,7 +212,6 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
     for folder in folders:
         try:
             for item in folder.iterdir():
-                # Primero filtramos por tipo y extensión para minimizar llamadas costosas a is_protected_path
                 if item.is_file() and item.suffix.lower() in EXECUTABLE_EXTS and not item.is_symlink():
                     if is_protected_path(item):
                         continue
@@ -227,47 +228,47 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
 
 def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry]:
     """
-    Parsea la salida CSV de PowerShell.
-    Limpia caracteres de control, filtra metadatos del sistema y valida integridad.
+    Parsea la salida CSV de PowerShell usando el módulo csv estándar para robustez.
+    Filtra entradas basadas en metadatos y valida seguridad.
     """
     if not isinstance(text, str) or not text.strip():
         return []
         
     parsed_entries: List[StartupEntry] = []
-    lines: List[str] = text.splitlines()
     
-    if len(lines) < 2:
-        return []
-        
-    for line in lines[1:]:
-        stripped_line: str = line.strip()
-        if not stripped_line:
-            continue
-        
-        parts: List[str] = [p.strip().strip('"') for p in stripped_line.split(",")]
-        if len(parts) < 2:
-            continue
-            
-        try:
-            name_raw: str = parts[0]
-            cmd_raw: str = parts[1]
+    try:
+        reader = csv.DictReader(io.StringIO(text))
+        for row in reader:
+            # Obtener el nombre (primera columna) y el comando (segunda columna)
+            keys = list(row.keys())
+            if len(keys) < 2:
+                continue
+                
+            name_raw = row[keys[0]]
+            cmd_raw = row[keys[1]]
             
             if not name_raw or not cmd_raw:
                 continue
                 
-            name: str = "".join(c for c in name_raw if ord(c) >= 32)
-            cmd: str = "".join(c for c in cmd_raw if ord(c) >= 32)
+            # Limpieza básica
+            name = "".join(c for c in name_raw if ord(c) >= 32).strip()
+            cmd = "".join(c for c in cmd_raw if ord(c) >= 32).strip()
             
             if not name or name.lower() in ("name", "pscustomobject") or name.upper().startswith("PS"):
                 continue
             
-            p = Path(cmd)
-            if is_protected_path(p):
+            # Validación de seguridad
+            try:
+                p = Path(cmd)
+                if is_protected_path(p):
+                    continue
+            except (ValueError, TypeError):
                 continue
                 
             parsed_entries.append(StartupEntry(name=name, command=cmd, source=source))
-        except (OSError, ValueError, TypeError):
-            continue
+            
+    except (csv.Error, OSError, ValueError, TypeError):
+        return []
             
     return parsed_entries
 
@@ -281,8 +282,9 @@ def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[Start
     if _REGISTRY_CACHE is not None:
         return _REGISTRY_CACHE
     
+    # Se añade -ErrorAction Stop para asegurar que fallos en una clave no silencien resultados válidos
     ps_cmd: str = "; ".join(f"Get-ItemProperty '{k}' -ErrorAction SilentlyContinue | Select-Object * -ExcludeProperty PS*" for k in keys)
-    ps_cmd = f"$data = {ps_cmd}; $data | ConvertTo-Csv -NoTypeInformation"
+    ps_cmd = f"$data = {ps_cmd}; if ($data) {{ $data | ConvertTo-Csv -NoTypeInformation }}"
     
     try:
         result: subprocess.CompletedProcess = subprocess.run(

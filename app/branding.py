@@ -373,7 +373,15 @@ def _draw_shield_stripes(canvas: Any, canvas_x: float, canvas_y: float, scale: f
 
 
 def draw_logo(canvas: Any, size: int = 56, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
-    """Renderiza el logo vectorial en un canvas de Tkinter usando coordenadas transformadas."""
+    """
+    Renderiza el logo vectorial en un canvas de Tkinter usando coordenadas transformadas.
+    
+    Args:
+        canvas: Objeto Tkinter Canvas donde dibujar.
+        size: Tamaño total del logo (128 unidades base).
+        canvas_x: Offset horizontal en el canvas.
+        canvas_y: Offset vertical en el canvas.
+    """
     if not hasattr(canvas, "create_polygon"): return
     try:
         scale = float(size) / 128
@@ -401,7 +409,15 @@ def draw_logo(canvas: Any, size: int = 56, canvas_x: float = 0.0, canvas_y: floa
 def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
                       canvas_x: float = 0.0, canvas_y: float = 0.0,
                       stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
-    """Dibuja una franja horizontal degradada utilizando segmentos optimizados."""
+    """
+    Dibuja una franja horizontal degradada utilizando segmentos optimizados.
+    
+    Args:
+        canvas: Canvas de destino.
+        width: Longitud de la barra en píxeles.
+        height: Grosor de la línea/franja.
+        canvas_x, canvas_y: Posicionamiento en el canvas.
+    """
     if not hasattr(canvas, "create_line"): return
     try:
         ancho = max(1, int(width))
@@ -415,7 +431,17 @@ def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
               canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14,
               track: Optional[HexColor] = None,
               fill: Optional[HexColor] = None) -> None:
-    """Renderiza un medidor circular de estado para métricas de salud."""
+    """
+    Renderiza un medidor circular de estado para métricas de salud.
+    
+    Args:
+        canvas: Canvas de destino.
+        percent: Valor 0-100 a graficar.
+        size: Diámetro total del anillo.
+        thickness: Grosor del trazo circular.
+        track: Color de fondo del anillo (opcional).
+        fill: Color de progreso (opcional, por defecto basado en score).
+    """
     if not hasattr(canvas, "create_arc"): return
     try:
         val_f = float(percent)

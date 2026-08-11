@@ -1168,3 +1168,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-10T23:31:51` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-08-10T23:42:01` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-08-10T23:52:14` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-08-11T00:02:27` Arrancando corrida. Quedan hoy ~300 peticiones objetivo.
+- `2026-08-11T00:02:54` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `parse_registry_csv` y `entries_from_registry` implementando una validación estricta contra entradas nulas o malformadas, evitando que errores de parseo en líneas inesperadas del CSV interrumpan el flujo de datos.
+- `2026-08-11T00:03:26` ➖ Sin cambios en assistant.py (enfoque: legibilidad y documentación). Motivo: Introduje docstrings normalizados y type hints explícitos en los métodos de `handle_*`, mejorando la legibilidad técnica y la documentación de las interfaces de respuesta sin alterar su lógica funcional.
+- `2026-08-11T00:03:57` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo `branding.py` incluyendo docstrings detallados en las funciones de renderizado gráfico (`draw_logo`, `draw_gradient_bar`, `draw_ring`) para clarificar el propósito de los parámetros de coordenadas y escalado, facilitando el mantenimiento futuro de la interfaz.
+- `2026-08-11T00:04:07` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `_sum_directory_recursive` refactorizando la lógica de cálculo de tamaño y el filtrado de entradas, extrayendo las comprobaciones de exclusión a una función con nombre explícito para clarificar la intención del flujo de control.
+- `2026-08-11T00:04:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-11T00:04:07` Corrida terminada. Total usado hoy: 4.
