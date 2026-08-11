@@ -242,7 +242,11 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     if not isinstance(values, dict): return None
     ruta = settings_path(path_or_base)
     
-    if is_protected_path(str(ruta)) or not is_safe_to_modify(str(ruta.parent)):
+    # Prevenir escritura si es un link o ruta protegida
+    if is_protected_path(str(ruta)) or (ruta.exists() and (ruta.is_symlink() or (hasattr(ruta, 'is_junction') and ruta.is_junction()))):
+        return None
+        
+    if not is_safe_to_modify(str(ruta.parent)):
         return None
     
     cleaned_settings = validate(values)

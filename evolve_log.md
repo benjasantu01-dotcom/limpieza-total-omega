@@ -1092,3 +1092,10 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-08-11T10:47:53` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
 - `2026-08-11T10:47:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-11T10:47:53` Corrida terminada. Total usado hoy: 252.
+- `2026-08-11T10:56:29` Arrancando corrida. Quedan hoy ~48 peticiones objetivo.
+- `2026-08-11T10:56:55` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
+- `2026-08-11T10:57:24` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-08-11T10:57:50` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `save()` implementando una verificación de integridad ante archivos existentes que podrían ser enlaces simbólicos o puntos de reparse, asegurando que `os.replace` no sea engañado para sobreescribir destinos peligrosos.
+- `2026-08-11T10:57:59` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-08-11T10:57:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-11T10:57:59` Corrida terminada. Total usado hoy: 256.
