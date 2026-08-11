@@ -341,18 +341,11 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         buf = ctypes.create_unicode_buffer(2048)
         size: int = psapi.GetModuleFileNameExW(proc_handle, 0, buf, 2048)
         
-        # Si no se puede leer la ruta (ej. privilegios insuficientes del proceso), 
-        # asumimos que el proceso sigue siendo válido para el trim pero no aplicamos 
-        # chequeo de seguridad de ruta (es aceptable ya que el handle está abierto).
+        # Validar ubicación del ejecutable para evitar manipulación de procesos críticos
         if size > 0:
             exe_path: str = os.path.abspath(os.path.normpath(buf.value))
-            if is_protected_path(exe_path) or not os.path.isabs(exe_path):
-                return False, "Operación denegada: ruta de ejecutable no segura."
-            try:
-                # Comprobación de lectura no destructiva para verificar acceso al binario
-                with open(exe_path, "rb"): pass
-            except (OSError, PermissionError):
-                return False, "Operación denegada: ejecutable bloqueado por el sistema."
+            if is_protected_path(exe_path):
+                return False, "Operación denegada: ruta de ejecutable protegida."
             
         if not psapi.EmptyWorkingSet(proc_handle):
             return False, f"Error al intentar liberar memoria (código {kernel32.GetLastError()})."

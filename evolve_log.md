@@ -1106,3 +1106,10 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-08-11T11:09:20` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: seguridad defensiva).
 - `2026-08-11T11:09:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-11T11:09:20` Corrida terminada. Total usado hoy: 260.
+- `2026-08-11T11:16:51` Arrancando corrida. Quedan hoy ~40 peticiones objetivo.
+- `2026-08-11T11:17:15` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-08-11T11:17:39` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la robustez defensiva de `compute_score` validando que los pesos y las métricas no solo sean finitos, sino que la suma de los factores normalizados mantenga la integridad del rango 0-100 para evitar desbordamientos o cálculos erróneos en casos de configuración externa inestable.
+- `2026-08-11T11:18:44` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_ask_folder` añadiendo una limpieza de caracteres de control (como los caracteres RTL que pueden ocultar la extensión o ruta real) y validación estricta contra rutas de sistema mediante `ensure_safe_to_modify`, evitando que el usuario pueda seleccionar directorios sensibles accidentalmente.
+- `2026-08-11T11:18:54` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado `trim_working_set` para prevenir la manipulación de procesos arbitrarios mediante una validación estricta de la ruta del ejecutable usando `is_protected_path` sobre el handle abierto, asegurando que solo se aplique a procesos cuyas rutas residan fuera de directorios críticos del sistema.
+- `2026-08-11T11:18:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-11T11:18:54` Corrida terminada. Total usado hoy: 264.

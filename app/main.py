@@ -916,23 +916,22 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         if not folder or not isinstance(folder, str):
             return None
         
-        # Normalizar y prevenir caracteres ilegales
-        norm_folder = os.path.normpath(folder)
-        if any(ord(c) < 32 for c in norm_folder) or "\u202e" in norm_folder:
-            messagebox.showerror("Ruta sospechosa", "La ruta seleccionada contiene caracteres ilegales.")
-            return None
+        # Filtrar caracteres de control, incluyendo caracteres RTL (Right-to-Left)
+        # para evitar el ataque de suplantación de extensión/ruta.
+        norm_folder = "".join(c for c in os.path.normpath(folder) if ord(c) >= 32 and c != '\u202e')
         
-        # Validar que no sea ruta de sistema antes de retornar
+        # Validar la seguridad de la ruta final tras normalización
         try:
-            if safety.is_protected_path(Path(norm_folder)):
+            p = Path(norm_folder).resolve()
+            if safety.is_protected_path(p):
                 messagebox.showwarning("Ruta no segura", "Esa ruta está protegida por el sistema.")
                 return None
-            safety.ensure_safe_to_modify(norm_folder)
-        except safety.UnsafePathError:
-            messagebox.showwarning("Ruta no segura", "Esa ruta está protegida por el sistema.")
+            safety.ensure_safe_to_modify(p)
+        except (safety.UnsafePathError, OSError):
+            messagebox.showwarning("Ruta no segura", "Operación no permitida en esta ruta.")
             return None
             
-        return norm_folder
+        return str(p)
 
     def _confirm(self, title: str, message: str) -> bool:
         """Solicita confirmación explícita para acciones destructivas."""

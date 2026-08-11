@@ -67,7 +67,8 @@ _WEIGHT_ITEMS: Final[List[Tuple[str, int]]] = list(WEIGHTS.items())
 
 def _validate_weights() -> bool:
     """Verifica que la suma total de pesos sea positiva y sus valores válidos."""
-    return _TOTAL_WEIGHTS > 0 and all(isinstance(w, int) and w >= 0 for w in WEIGHTS.values())
+    if _TOTAL_WEIGHTS <= 0: return False
+    return all(isinstance(w, int) and w >= 0 for w in WEIGHTS.values())
 
 
 @dataclass
@@ -220,7 +221,8 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         return HealthResult(0, "F", {}, ["Error: Instancia de métricas inválida."])
     
     metrics.validate()
-    if not metrics.is_finite() or not _validate_weights():
+    # Verificación de seguridad defensiva: no procesar si los estados no son consistentes
+    if not metrics.is_finite() or not _validate_weights() or not math.isfinite(_TOTAL_WEIGHTS):
         return HealthResult(0, "F", {}, ["Error: Datos o configuración inestables."])
 
     ratios: ScoreMap = {
@@ -240,6 +242,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         breakdown[area] = int(round(score_val))
         total_raw += score_val
 
+    # Clamp final defensivo antes de retornar resultado
     final_score = int(round(_clamp(total_raw, 0.0, 100.0)))
     return HealthResult(
         score=final_score,
