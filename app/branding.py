@@ -127,6 +127,7 @@ ICONS: Final[Mapping[str, str]] = MappingProxyType({
 
 GRADIENT_STOPS: Final[Tuple[HexColor, ...]] = ("#00f0c0", "#7c5cff", "#ff2d78")
 
+_memoized_gradients: dict[tuple, List[HexColor]] = {}
 
 def app_title() -> str:
     """Retorna el nombre completo de la aplicación concatenado con su versión."""
@@ -252,22 +253,28 @@ def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
     )
 
 
-@lru_cache(maxsize=16)
 def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> List[HexColor]:
-    """Crea una rampa de colores continua entre múltiples puntos de control."""
+    """Crea una rampa de colores continua entre múltiples puntos de control con memoización."""
     try:
         steps = max(1, int(steps))
     except (TypeError, ValueError):
         steps = 1
-    if not stops: return [PALETTE["accent"]] * steps
-    if len(stops) < 2: return [stops[0]] * steps
     
-    tramos = len(stops) - 1
-    res: List[HexColor] = []
-    for i in range(steps):
-        pos = (i / max(1, steps - 1)) * tramos
-        idx = min(tramos - 1, int(pos))
-        res.append(blend(stops[idx], stops[idx + 1], pos - idx))
+    key = (steps, stops)
+    if key in _memoized_gradients:
+        return _memoized_gradients[key]
+
+    if not stops: res = [PALETTE["accent"]] * steps
+    elif len(stops) < 2: res = [stops[0]] * steps
+    else:
+        tramos = len(stops) - 1
+        res = []
+        for i in range(steps):
+            pos = (i / max(1, steps - 1)) * tramos
+            idx = min(tramos - 1, int(pos))
+            res.append(blend(stops[idx], stops[idx + 1], pos - idx))
+    
+    _memoized_gradients[key] = res
     return res
 
 def _get_grouped_segments(colors: List[HexColor]) -> List[Tuple[HexColor, int, int]]:

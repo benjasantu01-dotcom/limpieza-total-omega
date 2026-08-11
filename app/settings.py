@@ -106,7 +106,7 @@ class _Validators:
     
     @staticmethod
     def _is_safe_path(path_obj: Path) -> bool:
-        """Valida que una ruta no sea sistema, símbolo o reparse point y sea válida."""
+        """Verifica restricciones de seguridad para rutas configurables por el usuario."""
         if not path_obj.is_absolute(): return False
         if len(path_obj.parts) < 2: return False
         if any(part in ('.', '..', '..\\', '../') for part in path_obj.parts): return False
@@ -122,7 +122,7 @@ class _Validators:
 
     @staticmethod
     def bool(key: str, val: Any) -> bool | None:
-        """Normaliza entradas de texto o booleano a un valor booleano puro."""
+        """Convierte entradas laxas (ej. "si", 1) a booleanos estrictos. Retorna None si falla."""
         if val is None: return None
         if isinstance(val, bool): return val
         if not isinstance(val, str): return None
@@ -133,7 +133,7 @@ class _Validators:
 
     @staticmethod
     def int(key: str, val: Any) -> int | None:
-        """Intenta parsear un entero y lo recorta según los límites definidos."""
+        """Parseo de enteros con cota impuesta por _NUMERIC_LIMITS."""
         if val is None or isinstance(val, bool): return None
         try:
             parsed_value = int(val)
@@ -144,7 +144,7 @@ class _Validators:
 
     @staticmethod
     def path(val: Any) -> str | None:
-        """Valida una ruta contra `safety` y retorna ruta absoluta o None."""
+        """Valida una ruta string contra `safety` y retorna ruta absoluta normalizada o None."""
         if val is None or not isinstance(val, (str, Path)): return None
         path_string = str(val).strip()
         if not path_string: return ""
@@ -158,7 +158,7 @@ class _Validators:
 
     @staticmethod
     def str(key: str, val: Any) -> str | None:
-        """Valida cadenas, aplicando reglas específicas de esquema y límites de tamaño."""
+        """Validación de cadenas con control de inyección y límites de esquema."""
         if val is None or not isinstance(val, (str, Path)): return None
         text = str(val).strip()
         

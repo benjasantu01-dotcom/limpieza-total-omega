@@ -6,46 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **237** (47.0% de aceptación)
+- Mejoras aceptadas: **239** (47.4% de aceptación)
 - Rechazadas por tests: 10
 - Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-10 | 130 | 3 | 15 | 10 | 122 |
-| 2026-08-11 | 107 | 7 | 16 | 7 | 87 |
+| 2026-08-10 | 128 | 3 | 15 | 10 | 120 |
+| 2026-08-11 | 111 | 7 | 16 | 7 | 87 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **61**
+- legibilidad y documentación: **63**
 - manejo de errores y validación de entradas: **51**
 - seguridad defensiva: **48**
-- robustez ante casos límite: **45**
-- rendimiento: **32**
+- robustez ante casos límite: **43**
+- rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **22**
-- `settings.py`: **20**
+- `settings.py`: **21**
+- `assistant.py`: **20**
+- `branding.py`: **20**
 - `duplicates.py`: **20**
-- `healthscore.py`: **19**
-- `assistant.py`: **19**
-- `branding.py`: **19**
 - `diskreport.py`: **19**
+- `healthscore.py`: **18**
 - `memory.py`: **18**
 - `scanner.py`: **17**
-- `main.py`: **16**
 - `browser.py`: **16**
+- `main.py`: **15**
+- `startup.py`: **12**
 - `organizer.py`: **11**
-- `startup.py`: **11**
 - `safety.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-11T09:46:46` **branding.py** (rendimiento): Se implementó un almacenamiento en caché a nivel de módulo (`_memoized_gradients`) para `gradient_colors`, evitando la ejecución redundante de cálculos de interpolación lineal (LERP) y generación de listas, una operación costosa cuando se redibuja la interfaz frecuentemente.
+- `2026-08-11T09:46:32` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` convirtiendo el `_KEYWORD_MAP` en un diccionario de acceso directo por tokens, eliminando la operación `set.intersection` y el uso de `next(iter(...))` en cada consulta, lo que reduce la complejidad de búsqueda de O(N) a O(1) promedio.
+- `2026-08-11T09:45:48` **startup.py** (legibilidad y documentación): Mejoré la documentación interna de `StartupEntry` y sus métodos de resolución mediante docstrings normalizados (siguiendo estándares de Google), clarificando la lógica de "resolución perezosa" (lazy loading) y validación de seguridad para facilitar futuras auditorías del flujo de datos.
+- `2026-08-11T09:45:23` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo type hints precisos y docstrings explicativos en las funciones de validación, clarificando la lógica de saneamiento de datos para facilitar el mantenimiento.
 - `2026-08-11T09:36:41` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la inclusión de docstrings detallados en las funciones de escaneo heurístico, especificando claramente el propósito de los parámetros y el valor de retorno para facilitar la auditabilidad y el mantenimiento del código.
 - `2026-08-11T09:36:32` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación y la robustez del código mediante la adición de docstrings técnicos detallados en las funciones de validación, clarificando el propósito de cada guardia y facilitando el mantenimiento futuro.
 - `2026-08-11T09:35:47` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento añadiendo type hints faltantes en funciones internas, convirtiendo validaciones de seguridad en un bloque de docstrings más estructurado y utilizando `Path` explícitamente para asegurar la consistencia del tipo en operaciones de disco.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-11T09:15:37` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos a los parámetros y retornos de las funciones públicas, eliminando ambigüedades en `walk_files` y `summarize`, y explicitando la lógica de manejo de errores.
 - `2026-08-11T09:15:12` **browser.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `_sum_directory_recursive` separando la lógica de cálculo de tamaño de la gestión de recursividad, integrando mejor los type hints y documentando el propósito de cada parámetro para facilitar futuras auditorías del código.
 - `2026-08-11T09:14:47` **branding.py** (legibilidad y documentación): Documenté con precisión técnica el propósito de los métodos de renderizado y las utilidades cromáticas para mejorar la mantenibilidad del código gráfico, facilitando la comprensión de la lógica de escalado y los espacios de coordenadas sin alterar la funcionalidad.
-- `2026-08-11T09:05:31` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y mantenimiento mediante la adición de Type Hints detallados en las funciones de manejo (`handle_ram`, `handle_disk`, etc.) y la estandarización de los `docstrings`, facilitando la comprensión del flujo de datos en el asistente local.
-- `2026-08-11T09:05:14` **startup.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `parse_registry_csv` añadiendo una validación explícita para evitar errores al intentar instanciar `Path` con valores de comandos inválidos o mal formateados, protegiendo así el bucle de procesamiento de excepciones imprevistas.
-- `2026-08-11T09:04:47` **settings.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las validaciones en `_Validators` añadiendo chequeos de tipo explícitos y condiciones de contorno para los valores `None`, evitando así que `None` se filtre accidentalmente a través de las funciones de normalización.
-- `2026-08-11T09:04:21` **scanner.py** (manejo de errores y validación de entradas): Reforcé la robustez de `scan_directory` validando la existencia y naturaleza de la entrada mediante `Path.exists()` antes de procesarla, y encapsulé los chequeos en `process_entry` con una captura de errores más granular, asegurando que fallos en una sola subcarpeta no interrumpan el escaneo completo ni dejen el estado en inconsistencia.
