@@ -155,6 +155,7 @@ def parse_linux_meminfo(text: str) -> MemorySnapshot:
         match = re.match(r"^(\w+):\s+(\d+)", line)
         if match:
             try:
+                # MemTotal y otros están en kB en /proc/meminfo
                 values[match.group(1)] = int(match.group(2)) * 1024
             except (ValueError, OverflowError):
                 continue
@@ -191,7 +192,7 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
         if _is_valid_process_row(parts):
             try:
                 processes.append(ProcessMemory(
-                    name=parts[0] or "Unknown", 
+                    name=parts[0] if parts[0] else "Unknown", 
                     pid=int(parts[1]), 
                     working_set=int(parts[2])
                 ))

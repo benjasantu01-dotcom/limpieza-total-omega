@@ -1365,3 +1365,12 @@ FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_ex
 - `2026-08-11T13:11:17` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Se introdujo una validación robusta y centralizada en `_validate_numeric_setting` dentro de `_collect_settings`, garantizando que la aplicación capture errores de conversión de texto a número (vía `ValueError`) o entradas vacías sin colapsar el hilo de UI, usando `try/except` explícitos.
 - `2026-08-11T13:11:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-11T13:11:17` Corrida terminada. Total usado hoy: 308.
+- `2026-08-11T13:19:23` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-11T13:20:24` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-11T13:21:39` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `parse_windows_process_csv` y `parse_linux_meminfo` mediante la validación estricta de sus entradas y el manejo controlado de errores de conversión de tipos, evitando que valores inesperados o malformados detengan el flujo del programa.
+- `2026-08-11T13:21:47` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-11T13:22:12` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-11T13:23:09` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-11T13:23:14` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
+- `2026-08-11T13:23:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-11T13:23:14` Corrida terminada. Total usado hoy: 312.
