@@ -161,7 +161,8 @@ class StartupEntry:
         Determina la ruta del binario analizando si el comando es una ruta directa 
         o un comando con argumentos (formato con o sin comillas).
         """
-        if any(char in cmd for char in ('&', '|', ';', '>', '<')):
+        # Seguridad: Bloquea comandos que parecen invocar shells o redirecciones
+        if any(char in cmd for char in ('&', '|', ';', '>', '<', '$', '`', '(', ')')):
             return ""
 
         if cmd.startswith('"'):

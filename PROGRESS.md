@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **247** (49.0% de aceptación)
+- Mejoras aceptadas: **248** (49.2% de aceptación)
 - Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 198
+- Sin respuesta de la IA (error o límite): 197
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-09 | 48 | 3 | 5 | 3 | 35 |
+| 2026-08-09 | 48 | 3 | 5 | 3 | 31 |
 | 2026-08-10 | 162 | 6 | 19 | 11 | 152 |
-| 2026-08-11 | 37 | 3 | 7 | 2 | 11 |
+| 2026-08-11 | 38 | 3 | 7 | 2 | 14 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - manejo de errores y validación de entradas: **52**
-- seguridad defensiva: **51**
+- seguridad defensiva: **52**
 - rendimiento: **45**
 - robustez ante casos límite: **42**
 
@@ -42,11 +42,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **17**
 - `scanner.py`: **16**
 - `organizer.py`: **15**
-- `startup.py`: **10**
+- `startup.py`: **11**
 - `safety.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-11T02:36:12` **startup.py** (seguridad defensiva): Mejoré la seguridad defensiva en `StartupEntry._resolve_path_from_command` añadiendo una validación explícita contra la ejecución de argumentos malintencionados al restringir el manejo de rutas con caracteres especiales, previniendo inyecciones de comandos en la fase de resolución de rutas.
 - `2026-08-11T02:26:47` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_path` al incluir una verificación explícita de `path_obj.is_absolute()` y una restricción de profundidad mediante `len(path_obj.parts)` para prevenir ataques de traversal o configuraciones en rutas raíz críticas.
 - `2026-08-11T02:26:36` **scanner.py** (seguridad defensiva): Se ha robustecido `Scanner.process_entry` añadiendo un filtro explícito mediante `is_protected_path` al inicio de cada iteración, garantizando que el escaneo no pueda acceder a rutas críticas incluso si la lógica de navegación (stack) llegara a corromperse, siguiendo estrictamente el principio de defensa en profundidad.
 - `2026-08-11T02:17:23` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad de `quarantine_file` añadiendo una comprobación explícita para evitar que archivos con el bit de solo lectura (`stat.st_file_attributes` en Windows) o permisos restrictivos sean movidos, evitando errores de acceso denegado a mitad de la operación (TOCTOU/Fallas parciales).
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-11T01:45:52` **scanner.py** (robustez ante casos límite): Mejoré la robustez de `scanner.py` ante errores de entrada y concurrencia del sistema de archivos al añadir una validación de `path_obj` y `entry` en `scan_file`, asegurando que los chequeos heurísticos no operen sobre objetos nulos o malformados si la entrada desaparece durante la iteración.
 - `2026-08-11T01:36:14` **memory.py** (robustez ante casos límite): Mejora la robustez de `trim_working_set` al verificar si el ejecutable está bloqueado o en uso antes de intentar la operación, manejando excepciones de acceso a archivos y garantizando que el `handle` se cierre correctamente incluso ante errores inesperados.
 - `2026-08-11T01:35:49` **main.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `run_async` y `_safe_run` para detectar si el hilo de ejecución está intentando operar sobre un objeto de interfaz de usuario que ya ha sido destruido durante el cierre de la aplicación, evitando errores de `TclError` y mejorando la robustez ante la concurrencia.
-- `2026-08-11T01:34:39` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `score_security` y `score_startup` frente a valores de entrada potencialmente negativos o inesperados, y añadí una validación explícita para asegurar que el cálculo final no dependa de estados inconsistentes, reforzando la tolerancia a fallos en casos límite.
