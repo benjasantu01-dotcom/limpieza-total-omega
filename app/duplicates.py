@@ -167,14 +167,14 @@ def _collect_candidates(
             with os.scandir(root_path) as dir_iterator:
                 for entry in dir_iterator:
                     if entry is None: continue
-                    path_obj = Path(entry.path)
                     
-                    if skip_protected and is_protected_path(path_obj):
-                        continue
-                            
                     try:
                         entry_stat = entry.stat(follow_symlinks=False)
                         if getattr(entry_stat, 'st_file_attributes', 0) & 0x400:
+                            continue
+                        
+                        path_obj = Path(entry.path)
+                        if skip_protected and is_protected_path(path_obj):
                             continue
                         
                         if entry.is_dir(follow_symlinks=False):
@@ -194,9 +194,9 @@ def _collect_candidates(
     for directory in directories:
         if directory is None: continue
         try:
-            path_obj = Path(directory)
-            if path_obj.exists() and path_obj.is_dir():
-                _scan(path_obj)
+            p = Path(directory)
+            if p.is_dir():
+                _scan(p)
         except (OSError, PermissionError, ValueError, TypeError): continue
             
     return {size: paths for size, paths in temp_groups.items() if len(paths) > 1}

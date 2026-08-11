@@ -1260,3 +1260,10 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-08-11T00:44:51` ➖ Sin cambios en diskreport.py (enfoque: rendimiento). Motivo: Optimizé la función `summarize` para realizar un único recorrido sobre el disco, evitando el re-escaneo costoso que ocurría al llamar individualmente a `total_size`, `usage_by_extension` y `largest_files`, reduciendo así la carga de E/S.
 - `2026-08-11T00:44:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-11T00:44:51` Corrida terminada. Total usado hoy: 20.
+- `2026-08-11T00:53:24` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-08-11T00:53:54` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Se optimizó el proceso de recolección en `_collect_candidates` para evitar realizar `path.exists()` y `path.is_dir()` innecesarios tras haber obtenido información del objeto `DirEntry`, reduciendo significativamente las llamadas al sistema operativo (syscalls) al recorrer directorios.
+- `2026-08-11T00:54:19` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
+- `2026-08-11T00:55:22` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._get_cached_or_run
+- `2026-08-11T00:55:31` 🛑 Propuesta bloqueada por la guardia en memory.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: parse_windows_process_csv
+- `2026-08-11T00:55:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-11T00:55:31` Corrida terminada. Total usado hoy: 24.
