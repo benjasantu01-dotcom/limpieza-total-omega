@@ -212,9 +212,9 @@ def bar(percent: Union[float, int, None], width: int = 24,
     """Genera una representación visual de barra de progreso en texto."""
     try:
         valor = max(0.0, min(100.0, float(percent) if percent is not None else 0.0))
+        ancho = max(1, int(width))
     except (TypeError, ValueError):
-        valor = 0.0
-    ancho = max(1, int(width))
+        return empty * max(1, int(width))
     llenos = int(round(valor / 100 * ancho))
     return filled * llenos + empty * (ancho - llenos)
 
@@ -225,7 +225,6 @@ def _hex_to_rgb(value: HexColor) -> RGBTuple:
     if not isinstance(value, str) or len(value) != 7 or not value.startswith("#"):
         return (0, 0, 0)
     try:
-        # Validación estricta para evitar errores de conversión y overflow
         hex_data = value[1:]
         if all(c in "0123456789abcdefABCDEF" for c in hex_data):
             r = int(hex_data[0:2], 16)
@@ -253,7 +252,10 @@ def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
 @lru_cache(maxsize=16)
 def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> List[HexColor]:
     """Genera una secuencia de colores interpolados basada en puntos de control (stops)."""
-    steps = max(1, int(steps))
+    try:
+        steps = max(1, int(steps))
+    except (TypeError, ValueError):
+        steps = 1
     if not stops: return [PALETTE["accent"]] * steps
     if len(stops) < 2: return [stops[0]] * steps
     
@@ -282,7 +284,7 @@ def _get_grouped_segments(colors: List[HexColor]) -> List[Tuple[HexColor, int, i
 def _get_shield_coords(s: float) -> List[float]:
     """Calcula vértices base escalados; memoizado para evitar recalcular en cada frame."""
     base = [64, 18, 100, 31, 100, 67, 90, 90, 64, 110, 38, 90, 28, 67, 28, 31]
-    return [v * s for v in base]
+    return [v * float(s) for v in base]
 
 
 @lru_cache(maxsize=4)
@@ -319,10 +321,8 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         return None
     try:
         target = Path(destination).resolve()
-        # Verificación explícita de seguridad antes de cualquier operación de disco
         if not is_safe_to_modify(target):
             return None
-            
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(logo_svg(), encoding="utf-8")
         return target
@@ -343,6 +343,7 @@ def logo_ascii() -> str:
 
 def _draw_shield_stripes(canvas: Any, canvas_x: float, canvas_y: float, scale: float) -> None:
     """Renderiza las franjas degradadas del cuerpo del escudo en el canvas."""
+    if scale <= 0: return
     franjas_count = max(6, int(28 * scale))
     colores = gradient_colors(franjas_count)
     for color_hex, start, end in _get_grouped_segments(colores):
@@ -356,16 +357,10 @@ def _draw_shield_stripes(canvas: Any, canvas_x: float, canvas_y: float, scale: f
 def draw_logo(canvas: Any, size: int = 56, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
     """
     Renderiza el logo vectorial en un canvas de Tkinter.
-    
-    Args:
-        canvas: Widget Tkinter compatible con métodos de dibujo (create_polygon, create_oval, etc).
-        size: Tamaño base del logo en píxeles.
-        canvas_x: Offset horizontal inicial sobre el canvas.
-        canvas_y: Offset vertical inicial sobre el canvas.
     """
     if not hasattr(canvas, "create_polygon"): return
     try:
-        scale = float(size) / 128
+        scale = max(0.1, float(size) / 128)
         base_coords = _get_shield_coords(scale)
         contorno = [canvas_x + base_coords[i] if i % 2 == 0 else canvas_y + base_coords[i] for i in range(len(base_coords))]
         
@@ -393,13 +388,6 @@ def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
                       stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
     """
     Dibuja una franja horizontal degradada utilizando segmentos optimizados.
-    
-    Args:
-        canvas: Widget Tkinter compatible.
-        width: Longitud total de la barra en píxeles.
-        height: Altura del trazo del degradado.
-        canvas_x, canvas_y: Posición absoluta en el canvas.
-        stops: Tupla de colores para la interpolación lineal.
     """
     if not hasattr(canvas, "create_line"): return
     try:
@@ -416,15 +404,6 @@ def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
               fill: Optional[HexColor] = None) -> None:
     """
     Renderiza un medidor circular de estado para métricas de salud (0-100%).
-    
-    Args:
-        canvas: Widget Tkinter compatible.
-        percent: Valor numérico a representar (0.0 a 100.0).
-        size: Diámetro total del medidor.
-        canvas_x, canvas_y: Coordenadas de posición.
-        thickness: Grosor del trazo circular.
-        track: Color del fondo (inactivo).
-        fill: Color del arco activo (opcional, por defecto usa score_color).
     """
     if not hasattr(canvas, "create_arc"): return
     try:

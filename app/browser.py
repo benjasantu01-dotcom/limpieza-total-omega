@@ -201,10 +201,10 @@ def _sum_directory_recursive(
                     elif entry.is_file():
                         st = entry.stat()
                         total_size += max(0, st.st_size)
-                except (OSError, PermissionError):
+                except (PermissionError, OSError):
                     continue
-    except (OSError, PermissionError):
-        pass
+    except (PermissionError, OSError):
+        return 0
     
     cache[real_path] = total_size
     return total_size

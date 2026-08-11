@@ -224,9 +224,9 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         try:
             if isinstance(source, dict): return source.get(key, default)
             return getattr(source, key, default)
-        except (AttributeError, TypeError): return default
+        except Exception: return default
 
-    if metrics is not None and (hasattr(metrics, "__dict__") or isinstance(metrics, dict)):
+    if metrics is not None:
         _safe_assign(ctx, "junk_mb", _get_val(metrics, "junk_mb", 0.0))
         _safe_assign(ctx, "suspicious_count", _get_val(metrics, "suspicious_count", 0), int)
         _safe_assign(ctx, "suspicious_warnings", _get_val(metrics, "suspicious_warnings", 0), int)
@@ -239,7 +239,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         _safe_assign(ctx, "browser_cache_mb", _get_val(metrics, "browser_cache_mb", 0.0))
         ctx.analyzed = True
 
-    if health is not None and (hasattr(health, "__dict__") or isinstance(health, dict)):
+    if health is not None:
         raw_score = _get_val(health, "score", None)
         if raw_score is not None: _safe_assign(ctx, "score", raw_score, int, max_val=100)
         grade = _get_val(health, "grade", "")
@@ -266,12 +266,11 @@ def context_as_text(context: SystemContext) -> str:
             f"Inicio: {context.startup_count} items"
         )
         texto_unificado = "\n".join(lines)
-        # Sanitización profunda post-generación para garantizar ausencia de rutas
         texto_limpio = _PATH_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", texto_unificado))
         if not _ensure_safe_text(texto_limpio):
             return "Error de seguridad en la serialización de contexto."
         return texto_limpio
-    except (ValueError, TypeError, AttributeError):
+    except Exception:
         return "Error al procesar métricas para el asistente."
 
 def explain_area(area: Any) -> str:
@@ -446,19 +445,20 @@ def _call_gemini(
     model: str
 ) -> Optional[str]:
     """Ejecuta una solicitud POST al endpoint de Gemini protegiendo los datos enviados."""
-    if not isinstance(api_key, str) or not isinstance(model, str): return None
-    if not api_key or not _API_KEY_REGEX.match(api_key) or _CONTROL_CHARS_REGEX.search(api_key): return None
-    if not model or not _MODEL_NAME_REGEX.match(model): return None
-    safe_q: str = _sanitize_query(question)
-    safe_ctx: str = context_text[:_MAX_TEXT_LENGTH]
-    if is_protected_path(safe_q) or is_protected_path(safe_ctx): return None
+    if not isinstance(api_key, str) or not isinstance(model, str) or not api_key: return None
+    if not _API_KEY_REGEX.match(api_key) or not _MODEL_NAME_REGEX.match(model): return None
+    
+    safe_q = _sanitize_query(question)
+    safe_ctx = context_text[:_MAX_TEXT_LENGTH]
     if not _ensure_safe_text(safe_q) or not _ensure_safe_text(safe_ctx): return None
+    
     try:
         payload = json.dumps({
             "contents": [{
                 "parts": [{"text": f"{SYSTEM_PROMPT}\n\nMétricas del sistema:\n{safe_ctx}\n\nPregunta del usuario: {safe_q}"}]
             }]
         }).encode("utf-8")
+        
         req = urllib.request.Request(
             _ENDPOINT.format(model=model) + f"?key={api_key}", 
             data=payload, 
@@ -471,14 +471,15 @@ def _call_gemini(
             if not raw_res: return None
             data = json.loads(raw_res.decode("utf-8"))
             if not isinstance(data, dict): return None
+            
         candidates = data.get("candidates", [])
         if not isinstance(candidates, list) or not candidates: return None
         parts = candidates[0].get("content", {}).get("parts", [])
         text = "".join(str(p.get("text", "")) for p in parts if isinstance(p, dict))
         final_text = text.strip()[:_MAX_TEXT_LENGTH]
-        if not _ensure_safe_text(final_text) or is_protected_path(final_text): return None
-        return final_text
-    except (json.JSONDecodeError, urllib.error.URLError, TypeError, KeyError, ValueError, OSError):
+        
+        return final_text if _ensure_safe_text(final_text) else None
+    except Exception:
         return None
 
 def ask(question: str, context: Optional[SystemContext] = None,
@@ -488,9 +489,11 @@ def ask(question: str, context: Optional[SystemContext] = None,
     respaldo: Answer = local_answer(question, ctx)
     if not available(base): return respaldo
     if is_protected_path(question): return respaldo
+    
     try:
         configuracion = settings.load(base)
         if not isinstance(configuracion, dict): return respaldo
+        
         cfg: AssistantConfig = {
             "asistente_api_key": str(configuracion.get("asistente_api_key", "")),
             "asistente_modelo": str(configuracion.get("asistente_modelo", "gemini-3.1-flash-lite")),
@@ -498,10 +501,11 @@ def ask(question: str, context: Optional[SystemContext] = None,
         }
         texto_contexto = context_as_text(ctx) if cfg["asistente_enviar_metricas"] else "El usuario no autorizó enviar métricas."
         if not _ensure_safe_text(texto_contexto): return respaldo
+        
         remoto = _call_gemini(question, texto_contexto, cfg["asistente_api_key"], cfg["asistente_modelo"])
         if not remoto:
             respaldo.notice = "No se pudo consultar al asistente en línea, respondí con el motor local."
             return respaldo
         return Answer(remoto, source="gemini", notice=PRIVACY_NOTICE)
-    except (Exception, TypeError, ValueError):
+    except Exception:
         return respaldo
