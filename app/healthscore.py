@@ -232,14 +232,13 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
             "arranque": score_startup(metrics.startup_count)
         }
     except Exception:
-        # Si el cálculo de un ratio falla, tratamos el sistema como no saludable
         return HealthResult(0, "F", {}, ["Error interno al calcular puntajes."])
     
     breakdown: Dict[str, int] = {}
     total_raw: float = 0.0
     
     for area, factor in _WEIGHT_FACTORS.items():
-        score_val = ratios.get(area, 0.0) * factor
+        score_val = ratios[area] * factor
         breakdown[area] = int(round(score_val))
         total_raw += score_val
 

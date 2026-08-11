@@ -221,14 +221,12 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
         return
 
     visited_inodes: set[Tuple[int, int]] = set()
-    stack: List[Tuple[Path, int]] = [(root, 0)]
+    stack: List[Path] = [root]
     MAX_DEPTH = 100
 
     while stack:
-        current_dir, depth = stack.pop()
-        if depth > MAX_DEPTH:
-            continue
-            
+        current_dir = stack.pop()
+        
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
@@ -236,9 +234,9 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                         if entry.is_symlink():
                             continue
                         
-                        path_obj = Path(entry.path).resolve()
+                        entry_path = Path(entry.path)
                         
-                        if skip_protected and is_protected_path(path_obj):
+                        if skip_protected and is_protected_path(entry_path):
                             continue
 
                         if entry.is_dir():
@@ -246,9 +244,9 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                             inode = (st.st_dev, st.st_ino)
                             if inode not in visited_inodes:
                                 visited_inodes.add(inode)
-                                stack.append((path_obj, depth + 1))
+                                stack.append(entry_path)
                         else:
-                            yield path_obj, entry.stat().st_size
+                            yield entry_path, entry.stat().st_size
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError, FileNotFoundError):

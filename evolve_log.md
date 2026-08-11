@@ -588,3 +588,10 @@ assert not ['memory.py']
 - `2026-08-11T05:10:56` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
 - `2026-08-11T05:10:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-11T05:10:56` Corrida terminada. Total usado hoy: 124.
+- `2026-08-11T05:19:17` Arrancando corrida. Quedan hoy ~176 peticiones objetivo.
+- `2026-08-11T05:19:44` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé `walk_files` para evitar el costo computacional de llamar a `Path.resolve()` dentro del bucle principal, utilizando la ruta absoluta calculada mediante `os.scandir` y la estructura de directorios ya validada, reduciendo significativamente las llamadas a sistema y mejorando la performance en escaneos profundos.
+- `2026-08-11T05:20:08` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el rendimiento de `_collect_candidates` eliminando llamadas redundantes a `is_protected_path(path.resolve())` dentro del bucle interno, reemplazándolo por una verificación directa sobre la ruta ya obtenida, evitando la resolución costosa de rutas (I/O y cálculo) para cada archivo escaneado.
+- `2026-08-11T05:20:32` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Se optimizó el cálculo en `compute_score` sustituyendo la creación de listas intermedias y el acceso repetido a diccionarios por una iteración directa sobre los datos precalculados, reduciendo la carga de memoria y CPU.
+- `2026-08-11T05:21:18` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Se ha optimizado la gestión de caché de `main.py` sustituyendo la búsqueda lineal en una `deque` (operación `remove` en O(n)) por una estructura de datos `OrderedDict` que permite acceso, actualización y eliminación en tiempo constante (O(1)), garantizando mayor eficiencia en sesiones prolongadas.
+- `2026-08-11T05:21:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-11T05:21:18` Corrida terminada. Total usado hoy: 128.

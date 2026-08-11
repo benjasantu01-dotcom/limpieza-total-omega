@@ -181,7 +181,7 @@ def _collect_candidates(
                             continue
                         
                         path_obj = Path(entry.path)
-                        if skip_protected and is_protected_path(path_obj.resolve()):
+                        if skip_protected and is_protected_path(path_obj):
                             continue
                         
                         if entry.is_dir(follow_symlinks=False):
