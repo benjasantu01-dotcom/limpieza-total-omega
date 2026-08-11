@@ -440,9 +440,15 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
         for entry in quarantine_root.iterdir():
             if entry.name == MANIFEST_NAME or not entry.is_file():
                 continue
+            # Validación estricta para evitar path traversal dentro del sandbox
+            if not _is_valid_quarantine_path(entry.resolve(), quarantine_root):
+                continue
+            
             if entry.name in processed_names:
                 item = item_map[entry.name]
                 if entry.exists() and item.verify_integrity(entry):
+                    # Chequeo de seguridad final antes de la destrucción
+                    ensure_safe_to_modify(entry, allow_sensitive=False)
                     if _safe_unlink(entry):
                         purged_count += 1
                         continue

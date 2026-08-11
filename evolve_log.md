@@ -1113,3 +1113,10 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-08-11T11:18:54` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado `trim_working_set` para prevenir la manipulación de procesos arbitrarios mediante una validación estricta de la ruta del ejecutable usando `is_protected_path` sobre el handle abierto, asegurando que solo se aplique a procesos cuyas rutas residan fuera de directorios críticos del sistema.
 - `2026-08-11T11:18:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-11T11:18:54` Corrida terminada. Total usado hoy: 264.
+- `2026-08-11T11:27:02` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-08-11T11:27:26` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-08-11T11:27:57` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva al aplicar `ensure_safe_to_modify` en `purge_all` antes de la eliminación masiva y reforzando la validación del path en el `iterdir` mediante `is_within_directory` para prevenir posibles ataques de path traversal dentro del directorio de cuarentena.
+- `2026-08-11T11:28:15` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-11T11:28:25` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha mejorado la protección contra ataques de "Time-of-Check to Time-of-Use" (TOCTOU) y validación de rutas mediante la inclusión de un chequeo de existencia de "streams" alternativos (ADS) de NTFS, que pueden ocultar contenido malicioso o engañar a los escáneres básicos.
+- `2026-08-11T11:28:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-11T11:28:25` Corrida terminada. Total usado hoy: 268.

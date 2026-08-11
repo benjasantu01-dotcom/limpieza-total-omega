@@ -77,6 +77,11 @@ def _is_reserved_device_name(name: str) -> bool:
     return bool(_RESERVED_NAMES_PATTERN.fullmatch(name))
 
 
+def _has_alternate_data_stream(path: Path) -> bool:
+    """Detecta la presencia de NTFS Alternate Data Streams (ej: archivo:stream)."""
+    return ":" in path.name and len(path.name.split(":")) > 2
+
+
 @lru_cache(maxsize=1024)
 def _is_system_or_hidden(path: Path) -> bool:
     """Verifica atributos de sistema/oculto vía Win32 API. No es disruptivo, solo lectura."""
@@ -132,7 +137,8 @@ def _check_file_integrity(p: Path) -> None:
         "atributo de solo lectura": lambda: _is_readonly(p),
         "archivo en uso por otro proceso": lambda: _is_file_in_use(p),
         "atributo de sistema u oculto": lambda: _is_system_or_hidden(p),
-        "múltiples enlaces (hard link)": lambda: p.is_file() and p.stat().st_nlink > 1
+        "múltiples enlaces (hard link)": lambda: p.is_file() and p.stat().st_nlink > 1,
+        "flujos de datos alternativos (ADS) detectados": lambda: _has_alternate_data_stream(p)
     }
 
     for reason, is_unsafe in integrity_rules.items():
@@ -300,6 +306,8 @@ def describe_protection(path: PathLike) -> str:
                 return f"'{p}' está en uso por otro proceso."
             if _is_system_or_hidden(p):
                 return f"'{p}' archivo de sistema o oculto."
+            if _has_alternate_data_stream(p):
+                return f"'{p}' contiene flujos de datos alternativos (ADS)."
         except (OSError, PermissionError):
             return f"'{p}' error al verificar permisos."
     if is_sensitive_file(p):
