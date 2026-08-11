@@ -1099,3 +1099,10 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-08-11T10:57:59` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
 - `2026-08-11T10:57:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-11T10:57:59` Corrida terminada. Total usado hoy: 256.
+- `2026-08-11T11:06:41` Arrancando corrida. Quedan hoy ~44 peticiones objetivo.
+- `2026-08-11T11:07:44` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se endureció la seguridad de `_call_gemini` para prevenir la propagación de errores de red o excepciones maliciosas hacia el resto de la aplicación, encapsulando la validación del contenido remoto antes de cualquier procesamiento y asegurando que la API key no se procese si no cumple el regex estricto definido.
+- `2026-08-11T11:08:14` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad en `save_logo_svg` reemplazando la validación implícita por una verificación explícita mediante `is_safe_to_modify` previa a la resolución de la ruta y se ha robustecido el manejo de excepciones para evitar cualquier posible escritura en rutas bloqueadas.
+- `2026-08-11T11:09:10` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Reforcé la seguridad defensiva en `_sum_directory_recursive` mediante la implementación de una validación de rutas mediante `is_protected_path` en cada nivel de recursión, garantizando que el escáner no profundice accidentalmente en rutas prohibidas incluso si la estructura de carpetas contiene enlaces simbólicos o puntos de reparse complejos que hubieran escapado de las verificaciones iniciales.
+- `2026-08-11T11:09:20` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: seguridad defensiva).
+- `2026-08-11T11:09:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-11T11:09:20` Corrida terminada. Total usado hoy: 260.

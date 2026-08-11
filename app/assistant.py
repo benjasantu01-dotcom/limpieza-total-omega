@@ -475,7 +475,7 @@ def _call_gemini(
         final_text = text.strip()[:_MAX_TEXT_LENGTH]
         
         return final_text if _ensure_safe_text(final_text) else None
-    except Exception:
+    except (urllib.error.URLError, json.JSONDecodeError, KeyError, TypeError, ValueError):
         return None
 
 def ask(question: str, context: Optional[SystemContext] = None,
