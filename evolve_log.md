@@ -1057,3 +1057,10 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-08-11T09:56:35` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Se pre-calculan las recomendaciones innecesarias utilizando un diccionario de mapeo de funciones y umbrales para eliminar el `if/else` encadenado, optimizando la construcción del reporte mediante un bucle eficiente.
 - `2026-08-11T09:56:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-11T09:56:35` Corrida terminada. Total usado hoy: 232.
+- `2026-08-11T10:05:21` Arrancando corrida. Quedan hoy ~68 peticiones objetivo.
+- `2026-08-11T10:06:24` ➖ Sin cambios en main.py (enfoque: rendimiento). Motivo: Se ha optimizado la gestión de logs en `main.py` sustituyendo la renderización línea a línea (que disparaba múltiples eventos de actualización de UI) por una cola de eventos procesada mediante `after_idle`, lo cual reduce drásticamente el overhead del hilo principal durante tareas de escaneo intensivo.
+- `2026-08-11T10:06:49` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: rendimiento).
+- `2026-08-11T10:07:13` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimicé el escaneo de archivos reemplazando el uso de `pathlib.Path.stat()` dentro del loop por `os.DirEntry.stat()`, lo cual evita realizar llamadas al sistema adicionales (syscalls) al aprovechar la información que el sistema operativo ya obtuvo durante el `scandir`.
+- `2026-08-11T10:07:28` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimizamos `purge_all` para evitar búsquedas lineales costosas dentro del bucle principal, utilizando un `set` y una estructura de datos más eficiente para procesar la lista de archivos, lo cual reduce la complejidad algorítmica de O(N*M) a O(N+M).
+- `2026-08-11T10:07:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-11T10:07:28` Corrida terminada. Total usado hoy: 236.

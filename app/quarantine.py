@@ -434,10 +434,13 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     except (OSError, ValueError):
         return 0
     items = load_manifest(base)
+    # Usamos un dict para lookup O(1) en el loop
     item_map = {item.stored_name: item for item in items}
     processed_names = set(item_map.keys())
     purged_count = 0
+    # Guardamos los ítems que NO se borran (o no existen)
     items_to_keep: List[QuarantineItem] = []
+    
     try:
         for entry in quarantine_root.iterdir():
             if entry.name == MANIFEST_NAME or not entry.is_file():
@@ -449,10 +452,14 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
                         purged_count += 1
                         continue
                 items_to_keep.append(item)
-        if purged_count > 0:
-            save_manifest(items_to_keep, base)
+            else:
+                # Archivo extraño en cuarentena, no lo tocamos pero no es un ítem registrado
+                pass
     except (OSError, PermissionError):
         pass
+    
+    if purged_count > 0:
+        save_manifest(items_to_keep, base)
     return purged_count
 
 
