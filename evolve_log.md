@@ -1274,3 +1274,10 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-08-11T01:04:56` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
 - `2026-08-11T01:04:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-11T01:04:56` Corrida terminada. Total usado hoy: 28.
+- `2026-08-11T01:13:44` Arrancando corrida. Quedan hoy ~272 peticiones objetivo.
+- `2026-08-11T01:14:08` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: rendimiento).
+- `2026-08-11T01:14:35` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de `load()` evitando lecturas redundantes del sistema de archivos mediante una comparación directa de `mtime` y reduje la carga de trabajo en el `_Validators` usando un acceso más directo al mapeo de validación.
+- `2026-08-11T01:15:01` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Optimizé la carga de datos del registro mediante una consulta única de PowerShell utilizando `Get-Item` con un filtro condicional de existencia, reduciendo el I/O y la sobrecarga del proceso hijo.
+- `2026-08-11T01:15:19` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Reforcé la robustez del módulo ante configuraciones corruptas o valores inesperados en `settings.py` dentro de `ask()`, evitando que un error de carga de ajustes o una estructura de configuración inválida silencien el motor local.
+- `2026-08-11T01:15:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-11T01:15:19` Corrida terminada. Total usado hoy: 32.

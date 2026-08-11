@@ -538,6 +538,7 @@ def ask(question: str, context: Optional[SystemContext] = None,
         if not isinstance(configuracion, dict):
             return respaldo
         
+        # Extracción segura de valores: validamos que cada campo esperado exista y sea del tipo correcto
         cfg: AssistantConfig = {
             "asistente_api_key": str(configuracion.get("asistente_api_key", "")),
             "asistente_modelo": str(configuracion.get("asistente_modelo", "gemini-3.1-flash-lite")),
@@ -556,5 +557,6 @@ def ask(question: str, context: Optional[SystemContext] = None,
             return respaldo
 
         return Answer(remoto, source="gemini", notice=PRIVACY_NOTICE)
-    except Exception:
+    except (Exception, TypeError, ValueError):
+        # Ante cualquier fallo en la carga o validación de settings, garantizamos devolver respaldo local
         return respaldo

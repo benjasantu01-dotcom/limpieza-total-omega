@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **234** (46.4% de aceptación)
+- Mejoras aceptadas: **233** (46.2% de aceptación)
 - Rechazadas por tests: 11
 - Rechazadas por guardia de seguridad: 29
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 213
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-09 | 55 | 3 | 6 | 4 | 58 |
+| 2026-08-09 | 51 | 3 | 6 | 4 | 58 |
 | 2026-08-10 | 162 | 6 | 19 | 11 | 152 |
-| 2026-08-11 | 17 | 2 | 4 | 2 | 3 |
+| 2026-08-11 | 20 | 2 | 4 | 2 | 4 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - manejo de errores y validación de entradas: **52**
-- seguridad defensiva: **49**
-- rendimiento: **43**
-- robustez ante casos límite: **33**
+- seguridad defensiva: **45**
+- rendimiento: **45**
+- robustez ante casos límite: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **23**
-- `settings.py`: **22**
-- `duplicates.py`: **19**
-- `healthscore.py`: **19**
-- `diskreport.py`: **18**
+- `settings.py`: **23**
+- `assistant.py`: **19**
 - `branding.py`: **18**
-- `assistant.py`: **18**
-- `main.py`: **17**
+- `duplicates.py`: **18**
+- `healthscore.py`: **18**
+- `diskreport.py`: **17**
 - `organizer.py`: **16**
 - `browser.py`: **16**
+- `main.py`: **16**
 - `memory.py`: **16**
 - `scanner.py`: **14**
 - `safety.py`: **10**
-- `startup.py`: **8**
+- `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-11T01:15:19` **assistant.py** (robustez ante casos límite): Reforcé la robustez del módulo ante configuraciones corruptas o valores inesperados en `settings.py` dentro de `ask()`, evitando que un error de carga de ajustes o una estructura de configuración inválida silencien el motor local.
+- `2026-08-11T01:15:01` **startup.py** (rendimiento): Optimizé la carga de datos del registro mediante una consulta única de PowerShell utilizando `Get-Item` con un filtro condicional de existencia, reduciendo el I/O y la sobrecarga del proceso hijo.
+- `2026-08-11T01:14:35` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` evitando lecturas redundantes del sistema de archivos mediante una comparación directa de `mtime` y reduje la carga de trabajo en el `_Validators` usando un acceso más directo al mapeo de validación.
 - `2026-08-11T01:04:28` **quarantine.py** (rendimiento): Se optimizó la carga y manipulación del manifiesto mediante el uso de un diccionario (hash map) en lugar de listas para búsquedas por `item_id`, evitando búsquedas lineales `O(N)` en funciones críticas como `restore_item` y `purge_item`.
 - `2026-08-11T00:53:54` **duplicates.py** (rendimiento): Se optimizó el proceso de recolección en `_collect_candidates` para evitar realizar `path.exists()` y `path.is_dir()` innecesarios tras haber obtenido información del objeto `DirEntry`, reduciendo significativamente las llamadas al sistema operativo (syscalls) al recorrer directorios.
 - `2026-08-11T00:44:18` **branding.py** (rendimiento): Se optimizó el renderizado del logo (`draw_logo`) reemplazando el cálculo repetitivo de coordenadas y atributos en cada frame por una estrategia de memoización parcial, reduciendo la carga de CPU durante las operaciones de dibujo.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-11T00:23:17` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones clave y la sustitución de nombres de variables ambiguas por términos más precisos, cumpliendo con el objetivo de legibilidad y mantenibilidad.
 - `2026-08-11T00:14:43` **main.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `main.py` extrayendo el complejo constructor de pestañas `_tab_factory` hacia un método más limpio, delegando la construcción visual a métodos privados específicos que siguen una convención de nombres consistente, facilitando futuras expansiones del dashboard sin saturar la lógica central de la clase.
 - `2026-08-11T00:13:54` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `healthscore.py` añadiendo docstrings descriptivos a las funciones de puntuación y definiendo claramente el dominio de los parámetros para facilitar el mantenimiento y la comprensión de las fórmulas heurísticas.
-- `2026-08-11T00:13:27` **duplicates.py** (legibilidad y documentación): Se introdujeron type hints más específicos en las firmas de funciones clave y se añadió documentación técnica (docstrings) detallando las precondiciones y el manejo de excepciones, cumpliendo con el enfoque de legibilidad y robustez de la API interna.
-- `2026-08-11T00:13:03` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la adición de docstrings detallados en las funciones de recorrido de archivos y utilidades de reporte, aclarando el propósito, las precondiciones y el comportamiento esperado ante errores.
-- `2026-08-11T00:04:07` **browser.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `_sum_directory_recursive` refactorizando la lógica de cálculo de tamaño y el filtrado de entradas, extrayendo las comprobaciones de exclusión a una función con nombre explícito para clarificar la intención del flujo de control.

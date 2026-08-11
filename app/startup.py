@@ -283,9 +283,9 @@ def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[Start
     if _REGISTRY_CACHE is not None:
         return _REGISTRY_CACHE
     
-    # Se añade -ErrorAction Stop para asegurar que fallos en una clave no silencien resultados válidos
-    ps_cmd: str = "; ".join(f"Get-ItemProperty '{k}' -ErrorAction SilentlyContinue | Select-Object * -ExcludeProperty PS*" for k in keys)
-    ps_cmd = f"$data = {ps_cmd}; if ($data) {{ $data | ConvertTo-Csv -NoTypeInformation }}"
+    # Optimizamos consolidando las consultas en una única llamada a Get-ItemProperty.
+    targets = ", ".join(f"'{k}'" for k in keys)
+    ps_cmd = f"Get-ItemProperty {targets} -ErrorAction SilentlyContinue | Select-Object * -ExcludeProperty PS* | ConvertTo-Csv -NoTypeInformation"
     
     try:
         result: subprocess.CompletedProcess = subprocess.run(
