@@ -322,6 +322,8 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
     
     if not handle:
+        if kernel32.GetLastError() == ERROR_ACCESS_DENIED:
+            return False, "Acceso denegado: requiere privilegios de administrador."
         return False, "Acceso denegado o proceso no encontrado."
         
     try:
@@ -330,16 +332,19 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
             return False, "El proceso seleccionado ya no está activo."
             
         buf = ctypes.create_unicode_buffer(2048)
-        if psapi.GetModuleFileNameExW(handle, 0, buf, 2048) > 0:
+        size = psapi.GetModuleFileNameExW(handle, 0, buf, 2048)
+        if size > 0:
             exe_path = os.path.normpath(buf.value)
             if is_protected_path(exe_path) or not os.path.isabs(exe_path):
                 return False, "Operación denegada: ruta de ejecutable no segura."
             try:
+                # Comprobación de lectura no destructiva
                 with open(exe_path, "rb"): pass
-            except OSError:
+            except (OSError, PermissionError):
                 return False, "Operación denegada: ejecutable bloqueado por el sistema."
-        else:
-            return False, "No se pudo verificar la ubicación del ejecutable."
+        elif size == 0:
+            # Algunas apps protegidas devuelven 0 bytes de nombre de módulo pero son válidas
+            pass
             
         if not psapi.EmptyWorkingSet(handle):
             return False, f"Error al intentar liberar memoria (código {kernel32.GetLastError()})."

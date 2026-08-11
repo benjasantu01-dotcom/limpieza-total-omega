@@ -99,8 +99,8 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
                     break
                 digest.update(buffer)
         
-        # Validar consistencia tras lectura
-        if file_path.stat().st_size != stat_initial.st_size:
+        # Validar consistencia tras lectura final
+        if file_path.exists() and file_path.stat().st_size != stat_initial.st_size:
             return None
             
         return digest.hexdigest()
@@ -278,11 +278,12 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
 
     keepers: List[Tuple[float, int, Path]] = []
     for p in group.paths:
-        if not isinstance(p, Path) or not p.exists():
+        if not isinstance(p, Path):
             continue
         try:
-            stat_info = p.stat()
-            keepers.append((float(stat_info.st_mtime), len(str(p)), p))
+            if p.exists():
+                stat_info = p.stat()
+                keepers.append((float(stat_info.st_mtime), len(str(p)), p))
         except (OSError, PermissionError, AttributeError):
             continue
             

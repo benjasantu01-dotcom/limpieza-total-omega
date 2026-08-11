@@ -480,17 +480,20 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _render_gauge(self, score: int, grade: str) -> None:
         """Dibuja la geometría del medidor circular de salud en el Canvas."""
-        if not hasattr(self, 'gauge') or not self.gauge.winfo_exists() or self._closing:
+        if self._closing or not hasattr(self, 'gauge') or not self.gauge.winfo_exists():
             return
         
-        self.gauge.delete("all")
-        branding.draw_ring(self.gauge, score, size=176, thickness=15)
-        
-        color_nota = branding.grade_color(grade) if grade != "-" else branding.color("text_dim")
-        self.gauge.create_text(88, 78, text=str(score), fill=branding.score_color(score),
-                               font=("Segoe UI", branding.font_size("display"), "bold"))
-        self.gauge.create_text(88, 116, text=f"nota {grade}", fill=color_nota,
-                               font=("Segoe UI", branding.font_size("body"), "bold"))
+        try:
+            self.gauge.delete("all")
+            branding.draw_ring(self.gauge, score, size=176, thickness=15)
+            
+            color_nota = branding.grade_color(grade) if grade != "-" else branding.color("text_dim")
+            self.gauge.create_text(88, 78, text=str(score), fill=branding.score_color(score),
+                                   font=("Segoe UI", branding.font_size("display"), "bold"))
+            self.gauge.create_text(88, 116, text=f"nota {grade}", fill=color_nota,
+                                   font=("Segoe UI", branding.font_size("body"), "bold"))
+        except Exception as e:
+            logging.error("Error al renderizar gauge: %s", e)
 
     def _build_tab_limpieza(self) -> None:
         """Construye la interfaz de escaneo, revisión y eliminación de archivos basura."""
