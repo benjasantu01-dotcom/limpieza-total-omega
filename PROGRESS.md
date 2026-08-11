@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **234** (46.4% de aceptación)
-- Rechazadas por tests: 9
+- Mejoras aceptadas: **232** (46.0% de aceptación)
+- Rechazadas por tests: 10
 - Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 213
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-10 | 98 | 2 | 12 | 8 | 84 |
-| 2026-08-11 | 136 | 7 | 20 | 8 | 129 |
+| 2026-08-10 | 94 | 2 | 12 | 8 | 84 |
+| 2026-08-11 | 138 | 8 | 20 | 8 | 130 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **58**
+- legibilidad y documentación: **54**
 - robustez ante casos límite: **49**
 - seguridad defensiva: **45**
+- manejo de errores y validación de entradas: **43**
 - rendimiento: **41**
-- manejo de errores y validación de entradas: **41**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **22**
 - `settings.py`: **21**
-- `memory.py`: **20**
-- `healthscore.py`: **19**
-- `branding.py`: **19**
+- `branding.py`: **20**
+- `memory.py`: **19**
 - `assistant.py`: **19**
 - `diskreport.py`: **18**
+- `healthscore.py`: **18**
 - `scanner.py`: **17**
+- `browser.py`: **17**
 - `duplicates.py`: **17**
-- `browser.py`: **16**
-- `main.py`: **14**
-- `organizer.py`: **12**
+- `main.py`: **13**
+- `organizer.py`: **11**
 - `startup.py`: **11**
 - `safety.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-11T13:01:32` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_safe_path` integrando el manejo de rutas que contienen caracteres no legibles o de control (RTL/LRE) antes de realizar operaciones de resolución de rutas, protegiendo contra posibles inyecciones de rutas malformadas.
+- `2026-08-11T13:01:12` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` añadiendo un manejo explícito de errores para `mkdir` y `write_text`, asegurando que cualquier fallo en la escritura al disco no deje el estado interno inconsistente y retorne correctamente `None` ante cualquier anomalía de I/O.
 - `2026-08-11T11:38:06` **settings.py** (seguridad defensiva): Se reforzó `_Validators.path` para incluir un chequeo de existencia física real antes de resolver rutas, previniendo que rutas relativas o mal formadas sean aceptadas erróneamente mediante `Path.resolve(strict=False)`.
 - `2026-08-11T11:37:39` **scanner.py** (seguridad defensiva): Se implementó un bloqueo explícito de rutas UNC en `process_entry` mediante la verificación de `is_absolute` y una inspección de formato de prefijo para evitar que el escáner intente recorrer recursos de red (que pueden causar bloqueos por latencia o problemas de seguridad).
 - `2026-08-11T11:28:25` **safety.py** (seguridad defensiva): Se ha mejorado la protección contra ataques de "Time-of-Check to Time-of-Use" (TOCTOU) y validación de rutas mediante la inclusión de un chequeo de existencia de "streams" alternativos (ADS) de NTFS, que pueden ocultar contenido malicioso o engañar a los escáneres básicos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-11T10:57:50` **settings.py** (robustez ante casos límite): Mejoré la robustez de `save()` implementando una verificación de integridad ante archivos existentes que podrían ser enlaces simbólicos o puntos de reparse, asegurando que `os.replace` no sea engañado para sobreescribir destinos peligrosos.
 - `2026-08-11T10:47:49` **quarantine.py** (robustez ante casos límite): He mejorado `_validate_isolation_request` para asegurar la robustez ante la ausencia de una unidad lógica (por ejemplo, en sistemas con volúmenes montados o rutas relativas extrañas) antes de acceder a la propiedad `.drive`, evitando `AttributeError` o `ValueError` inesperados en entornos restringidos.
 - `2026-08-11T10:47:19` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de `stage_for_review` implementando una validación previa de integridad para los directorios origen y destino, asegurando que no se intente mover archivos si el sistema de archivos del destino está lleno o si la ruta de destino es inválida tras su resolución, evitando errores de E/S silenciosos en casos límite.
-- `2026-08-11T10:46:56` **memory.py** (robustez ante casos límite): Se reforzó la robustez de `trim_working_set` ante condiciones de carrera y estados inconsistentes del sistema, asegurando que la validación del ejecutable (`GetModuleFileNameExW`) sea tratada como un caso límite posible donde el retorno de la API podría fallar aunque el proceso esté activo, evitando así abortos innecesarios en procesos con permisos restringidos de acceso a la ruta.
-- `2026-08-11T10:37:15` **healthscore.py** (robustez ante casos límite): Reforcé la robustez del módulo `healthscore.py` ante casos límite en la generación de recomendaciones, evitando que el sistema falle silenciosamente o produzca errores si `SystemMetrics` tiene valores extremos o inesperados (como divisiones por cero en el cálculo de ratios).

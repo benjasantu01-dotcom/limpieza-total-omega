@@ -104,6 +104,11 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
     """
     if not isinstance(target_path, Path) or not isinstance(base_path, Path):
         return False
+    
+    # Validar caracteres prohibidos antes de resolver rutas
+    path_str = str(target_path)
+    if any(ord(char) < 32 or ord(char) in (0x200E, 0x200F, 0x202A, 0x202E) for char in path_str):
+        return False
         
     try:
         real_base = base_path.resolve(strict=True)
@@ -114,9 +119,6 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
 
         # Uso de casefold para comparar rutas de manera agnóstica a mayúsculas/minúsculas en Windows
         if os.path.commonpath([real_base, real_target]).casefold() != str(real_base).casefold():
-            return False
-
-        if any(ord(char) < 32 or ord(char) in (0x200E, 0x200F, 0x202A, 0x202E) for char in str(target_path)):
             return False
 
         is_junction = getattr(os.path, 'isjunction', lambda _: False)

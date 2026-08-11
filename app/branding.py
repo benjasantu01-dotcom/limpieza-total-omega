@@ -331,7 +331,6 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         return None
     try:
         p = Path(destination)
-        # Verificamos primero la seguridad de la ruta antes de resolverla
         if not is_safe_to_modify(p):
             return None
         target = p.resolve()
