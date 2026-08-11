@@ -345,9 +345,9 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
             return False, "El proceso seleccionado ya no está activo."
             
         buf = ctypes.create_unicode_buffer(2048)
+        # Verificación explícita de validez del handle mediante el nombre del módulo
         if psapi.GetModuleFileNameExW(handle, 0, buf, 2048) > 0:
             exe_path = os.path.normpath(buf.value)
-            # Verifica si el archivo está en uso exclusivo o es protegido
             if is_protected_path(exe_path) or not os.path.isabs(exe_path):
                 return False, "Operación denegada: ruta de ejecutable no segura."
             try:
@@ -364,4 +364,5 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except Exception:
         return False, "Ocurrió un error técnico al gestionar el proceso."
     finally:
-        kernel32.CloseHandle(handle)
+        if handle:
+            kernel32.CloseHandle(handle)

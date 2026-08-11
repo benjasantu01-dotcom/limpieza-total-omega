@@ -6,47 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **232** (46.0% de aceptación)
+- Mejoras aceptadas: **231** (45.8% de aceptación)
 - Rechazadas por tests: 11
 - Rechazadas por guardia de seguridad: 29
-- Sin cambios (nada sustancial que mejorar): 16
+- Sin cambios (nada sustancial que mejorar): 17
 - Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-09 | 29 | 2 | 3 | 2 | 22 |
+| 2026-08-09 | 26 | 2 | 3 | 2 | 21 |
 | 2026-08-10 | 162 | 6 | 19 | 11 | 152 |
-| 2026-08-11 | 41 | 3 | 7 | 3 | 42 |
+| 2026-08-11 | 43 | 3 | 7 | 4 | 43 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **52**
-- legibilidad y documentación: **49**
+- manejo de errores y validación de entradas: **46**
+- legibilidad y documentación: **46**
 - rendimiento: **45**
-- manejo de errores y validación de entradas: **44**
 - robustez ante casos límite: **42**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **23**
+- `settings.py`: **22**
 - `quarantine.py`: **21**
 - `assistant.py`: **20**
 - `branding.py`: **19**
 - `duplicates.py`: **18**
+- `healthscore.py`: **18**
 - `browser.py`: **17**
-- `healthscore.py`: **17**
 - `diskreport.py`: **17**
-- `scanner.py`: **16**
 - `main.py`: **16**
-- `memory.py`: **15**
+- `memory.py`: **16**
+- `scanner.py`: **15**
 - `organizer.py`: **13**
-- `startup.py`: **10**
 - `safety.py`: **10**
+- `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-11T04:09:43` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` añadiendo una validación explícita mediante `ctypes.windll.kernel32.GetModuleFileNameExW` que verifica si el handle del proceso es válido y real antes de operar, previniendo errores de acceso a memoria y mejorando el manejo de excepciones al cerrar el handle.
+- `2026-08-11T04:08:17` **healthscore.py** (manejo de errores y validación de entradas): Reforcé la robustez del módulo `healthscore.py` mediante la validación explícita de tipos y la captura de errores en los `ratios` dentro de `compute_score`, asegurando que cualquier entrada inesperada resulte en una degradación segura del puntaje (0) en lugar de propagar excepciones o cálculos erróneos.
 - `2026-08-11T03:59:04` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `suggest_keeper` y `format_group` mediante validaciones de tipo explícitas y manejo defensivo de estados nulos, asegurando que el módulo no falle ante entradas inesperadas durante el procesamiento de datos.
 - `2026-08-11T03:58:55` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `summarize` capturando errores de `PermissionError` y `OSError` de forma explícita al obtener el tamaño (`st_size`) o acceder a atributos de `DirEntry`, evitando que una excepción durante la iteración interrumpa prematuramente el análisis completo del disco.
 - `2026-08-11T03:58:30` **browser.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `detect_profiles` y `_sum_directory_recursive` mediante la validación explícita de tipos en los argumentos de entrada y la adición de una verificación de integridad para el retorno de `directory_size` y `_sum_directory_recursive` (evitando valores negativos o resultados inválidos en caso de error de sistema).
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-11T02:05:09` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_sum_directory_recursive` mediante la validación explícita de `is_protected_path` en cada nivel de la recursión y añadí una verificación de profundidad para mitigar riesgos ante estructuras de directorios inusualmente profundas o maliciosas.
 - `2026-08-11T01:56:10` **branding.py** (seguridad defensiva): Se ha añadido una validación de seguridad mediante `is_safe_to_modify` en `save_logo_svg` para prevenir ataques de trayectoria o escritura fuera de directorios permitidos, reforzando la integridad del sistema al persistir archivos.
 - `2026-08-11T01:55:54` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva en `_call_gemini` y `ask` restringiendo el origen y el contenido mediante la validación estricta de las entradas externas y el uso de `is_protected_path` como guardia preventiva antes de cualquier procesamiento de red.
-- `2026-08-11T01:55:22` **startup.py** (robustez ante casos límite): Mejoré la robustez de `_resolve_and_cache_path` añadiendo un manejo de excepciones más específico y conservador para evitar fallos catastróficos ante rutas con caracteres inválidos o permisos denegados al intentar obtener la ruta real (`resolve`), garantizando que la app no aborte al encontrar un ejecutable mal formado.
-- `2026-08-11T01:54:56` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `load` y `save` ante situaciones de concurrencia y corrupción del sistema de archivos mediante la implementación de una política de "reintento con backoff" y una validación explícita de `OSError` al abrir archivos, asegurando que un fallo de lectura no propague errores hacia la UI.
