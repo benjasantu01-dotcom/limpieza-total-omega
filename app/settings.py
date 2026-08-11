@@ -111,8 +111,9 @@ class _Validators:
         if len(path_obj.parts) < 2: return False
         if any(part in ('.', '..', '..\\', '../') for part in path_obj.parts): return False
         try:
-            resolved = path_obj.resolve(strict=False)
-            if resolved.is_symlink() or (resolved.exists() and hasattr(resolved, 'is_junction') and resolved.is_junction()):
+            # Forzar resolución estricta solo para validar existencia física y evitar trampas de symlink
+            resolved = path_obj.resolve() if path_obj.exists() else path_obj.absolute()
+            if resolved.is_symlink() or (hasattr(resolved, 'is_junction') and resolved.is_junction()):
                 return False
             if is_protected_path(str(resolved)): return False
             target = resolved if resolved.exists() else resolved.parent
@@ -151,7 +152,7 @@ class _Validators:
         try:
             path_obj = Path(path_string).expanduser()
             if _Validators._is_safe_path(path_obj):
-                return str(path_obj.resolve(strict=False))
+                return str(path_obj.absolute())
             return None
         except (OSError, RuntimeError, ValueError, TypeError, PermissionError, AttributeError):
             return None

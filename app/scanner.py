@@ -96,7 +96,10 @@ class Scanner:
 
             path_obj = Path(entry.path)
             
-            # Defensa en profundidad: bloqueo estricto de rutas protegidas
+            # Defensa en profundidad: bloqueo de rutas UNC y rutas protegidas/fuera de rango
+            if path_obj.parts[0].startswith("\\\\"):
+                return
+                
             if is_protected_path(path_obj) or not self._is_safe_entry(path_obj):
                 return
 
@@ -182,6 +185,9 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         
     try:
         path_input = Path(directory).resolve()
+        # Rechazo de rutas UNC al inicio
+        if path_input.parts[0].startswith("\\\\"):
+            return []
         if not path_input.exists() or not path_input.is_dir() or is_protected_path(path_input):
             return []
     except (OSError, RuntimeError, TypeError, ValueError):
