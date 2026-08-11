@@ -300,8 +300,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._build_footer()
 
     def _tab_factory(self, name: str) -> None:
-        """Inyecta el contenido específico de cada pestaña mediante un mapeo de constructores."""
-        constructors: Dict[str, Callable] = {
+        """Inyecta el contenido específico de cada pestaña mediante un mapeo."""
+        constructors = {
             "Salud": self._build_tab_salud,
             "Limpieza": self._build_tab_limpieza,
             "Seguridad": self._build_tab_seguridad,
@@ -322,7 +322,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             except Exception as e:
                 logging.error("Fallo crítico en el constructor de la pestaña %s: %s", name, e)
                 if name in self.tabs:
-                    self._create_styled_label(self.tabs[name], f"Error al cargar módulo: {type(e).__name__}", "caption").pack()
+                    self._create_styled_label(self.tabs[name], f"Error al cargar: {type(e).__name__}", "caption").pack()
 
     def _build_tabs_container(self) -> None:
         """Configura el widget de pestañas y recorre la factoría para construir cada una."""
@@ -348,8 +348,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 if frame:
                     self.tabs[name] = frame
                     self._tab_factory(name)
-                else:
-                    logging.warning("Frame no disponible para pestaña: %s", name)
             except Exception as e:
                 logging.error("Error al construir la pestaña %s: %s", name, e)
 

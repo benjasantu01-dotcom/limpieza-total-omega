@@ -140,13 +140,13 @@ def _to_int(value: Any, default: int = 0) -> int:
 
 
 def score_junk(junk_mb: Any) -> float:
-    """Calcula score (0.0-1.0) normalizando la basura contra _LIMIT_JUNK_MB."""
+    """Calcula score [0.0, 1.0] penalizando linealmente el tamaño de basura contra el límite."""
     val = _to_float(junk_mb)
     return 1.0 if _LIMIT_JUNK_MB <= 0.0 else _clamp(1.0 - (val / _LIMIT_JUNK_MB))
 
 
 def score_security(suspicious_count: Any, warnings: Any = 0) -> float:
-    """Calcula score (0.0-1.0) mediante penalizaciones directas."""
+    """Calcula score [0.0, 1.0] basado en penalizaciones fijas por cada amenaza o advertencia."""
     count = _to_int(suspicious_count)
     warns = _to_int(warnings)
     penalty = (count * 0.05) + (warns * 0.25)
@@ -154,25 +154,25 @@ def score_security(suspicious_count: Any, warnings: Any = 0) -> float:
 
 
 def score_memory(available_percent: Any) -> float:
-    """Calcula score (0.0-1.0) basándose en la disponibilidad porcentual."""
+    """Calcula score [0.0, 1.0] evaluando el % de memoria libre actual frente al umbral crítico."""
     val = _to_float(available_percent)
     return 1.0 if _LIMIT_RAM_PERCENT <= 0.0 else _clamp(val / _LIMIT_RAM_PERCENT, 0.0, 1.0)
 
 
 def score_disk(free_percent: Any) -> float:
-    """Calcula score (0.0-1.0) basándose en el espacio libre."""
+    """Calcula score [0.0, 1.0] evaluando el % de espacio libre actual frente al umbral crítico."""
     val = _to_float(free_percent)
     return 1.0 if _LIMIT_DISK_PERCENT <= 0.0 else _clamp(val / _LIMIT_DISK_PERCENT, 0.0, 1.0)
 
 
 def score_duplicates(duplicate_mb: Any) -> float:
-    """Calcula score (0.0-1.0) normalizando duplicados contra _LIMIT_DUPLICATE_MB."""
+    """Calcula score [0.0, 1.0] penalizando linealmente el tamaño de duplicados contra el límite."""
     val = _to_float(duplicate_mb)
     return 1.0 if _LIMIT_DUPLICATE_MB <= 0.0 else _clamp(1.0 - (val / _LIMIT_DUPLICATE_MB))
 
 
 def score_startup(startup_count: Any) -> float:
-    """Calcula score (0.0-1.0) inversamente a la cantidad de apps en inicio."""
+    """Calcula score [0.0, 1.0] penalizando linealmente el exceso de aplicaciones configuradas para iniciar."""
     val = _to_int(startup_count)
     return 1.0 if _LIMIT_STARTUP_COUNT <= 0 else _clamp(1.0 - (val / _LIMIT_STARTUP_COUNT))
 
