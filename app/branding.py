@@ -321,7 +321,7 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(logo_svg(), encoding="utf-8")
         return target
-    except (OSError, PermissionError, ValueError, RuntimeError, IOError, AttributeError):
+    except (OSError, PermissionError, ValueError, RuntimeError, IOError, AttributeError, TypeError):
         return None
 
 

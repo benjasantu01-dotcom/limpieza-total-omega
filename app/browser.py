@@ -201,8 +201,10 @@ def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool
                     elif entry.is_file():
                         total_size += entry.stat().st_size
                 except (OSError, PermissionError):
+                    # Archivo bloqueado por otro proceso: lo saltamos sin abortar la cuenta total
                     continue
     except (OSError, PermissionError):
+        # Directorio sin permisos de lectura
         pass
     
     cache[real_path] = total_size
@@ -273,7 +275,7 @@ def detect_profiles(
                 candidate = real_base.joinpath(*relative_path_str.split("\\"))
                 if _is_valid_cache_path(candidate, real_base):
                     size: int = _sum_directory_recursive(str(candidate.resolve()), is_junction, cache=perf_cache)
-                    if size > 0:
+                    if size >= 0: # Incluir aunque sea 0, pero descartar si hubo error en resolución
                         found.append(BrowserCache(
                             browser=browser_name,
                             path=candidate.resolve(),

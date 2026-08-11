@@ -1281,3 +1281,10 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-08-11T01:15:19` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Reforcé la robustez del módulo ante configuraciones corruptas o valores inesperados en `settings.py` dentro de `ask()`, evitando que un error de carga de ajustes o una estructura de configuración inválida silencien el motor local.
 - `2026-08-11T01:15:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-11T01:15:19` Corrida terminada. Total usado hoy: 32.
+- `2026-08-11T01:23:55` Arrancando corrida. Quedan hoy ~268 peticiones objetivo.
+- `2026-08-11T01:24:30` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `save_logo_svg` ante errores de entrada, garantizando que si `Path(destination).resolve()` falla debido a una ruta inválida o malformada (caso límite común en sistemas de archivos), la función retorne `None` de forma segura en lugar de propagar una excepción.
+- `2026-08-11T01:24:56` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `detect_profiles` y `_sum_directory_recursive` ante archivos bloqueados o en uso (casos comunes de `PermissionError`) implementando un manejo explícito de excepciones y validación de tipos, evitando que fallos parciales interrumpan el escaneo de otras rutas válidas.
+- `2026-08-11T01:25:21` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: robustez ante casos límite).
+- `2026-08-11T01:25:29` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-08-11T01:25:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-11T01:25:29` Corrida terminada. Total usado hoy: 36.
