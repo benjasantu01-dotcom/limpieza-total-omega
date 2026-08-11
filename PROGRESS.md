@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **235** (46.6% de aceptación)
+- Mejoras aceptadas: **234** (46.4% de aceptación)
 - Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-10 | 144 | 5 | 17 | 10 | 124 |
-| 2026-08-11 | 91 | 7 | 14 | 7 | 85 |
+| 2026-08-10 | 142 | 5 | 16 | 10 | 123 |
+| 2026-08-11 | 92 | 7 | 15 | 7 | 87 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **49**
 - robustez ante casos límite: **48**
 - seguridad defensiva: **48**
-- manejo de errores y validación de entradas: **47**
-- rendimiento: **43**
+- manejo de errores y validación de entradas: **48**
+- rendimiento: **41**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **21**
-- `assistant.py`: **20**
+- `quarantine.py`: **22**
 - `diskreport.py`: **20**
 - `duplicates.py`: **20**
 - `settings.py`: **20**
 - `healthscore.py`: **19**
+- `assistant.py`: **19**
 - `branding.py`: **19**
 - `memory.py`: **17**
-- `browser.py`: **16**
 - `main.py`: **16**
 - `scanner.py`: **16**
+- `browser.py`: **15**
 - `organizer.py`: **11**
 - `safety.py`: **10**
 - `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-11T08:54:40` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` agregando una validación explícita de `dest_dir` para evitar el uso accidental de rutas relativas o mal formadas, y encapsulé la lógica de creación del nombre seguro en un bloque más limpio, asegurando que los nombres reservados de Windows se manejen antes de cualquier operación de sistema, evitando colisiones innecesarias.
 - `2026-08-11T08:45:50` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` añadiendo una validación explícita mediante `ctypes.wintypes` y un chequeo de `None` para `psapi`, asegurando que la función no falle ante errores de carga de librerías del sistema y validando el tipo de retorno antes de operar.
 - `2026-08-11T08:44:23` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` asegurando que el desglose siempre contenga todas las claves definidas en `WEIGHTS`, incluso si ocurriera un error inesperado al calcular un ratio individual, y añadí una validación explícita para prevenir una división por cero si la lista de pesos estuviera vacía.
 - `2026-08-11T08:43:58` **duplicates.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `suggest_keeper` ante fallos en `p.stat()` o estados de archivo inconsistentes (ej. archivos eliminados mientras se procesa la lista) mediante un manejo de excepciones más granular y una validación explícita de `p.exists()` dentro del bucle de selección, evitando errores silenciosos o valores inesperados.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-11T06:32:22` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `drive_usage` y `walk_files` implementando una validación estricta de rutas mediante `is_protected_path` antes de cualquier resolución de sistema, previniendo el seguimiento accidental de puntos de reparse (reparse points/junctions) mediante `os.path.isjunction` (vía `path.is_junction()` en Python 3.12+ o `stat` en versiones anteriores).
 - `2026-08-11T06:22:08` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva al serializar el contexto mediante una validación más estricta de los caracteres de entrada y salida, asegurando que la función `context_as_text` no pueda procesar ni retornar contenido que contenga rutas o secuencias de control, incluso si el objeto `SystemContext` llegara a ser manipulado externamente.
 - `2026-08-11T06:21:00` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en `process_entry` al envolver la llamada `entry.is_dir` y `entry.is_file` en un bloque `try-except` adicional, evitando que archivos bloqueados por el sistema operativo o archivos en estado inconsistente interrumpan el flujo de escaneo completo.
-- `2026-08-11T06:11:15` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` ante situaciones de concurrencia y fallos parciales, implementando una limpieza más estricta del archivo temporal y asegurando que la integridad sea validada antes de cualquier operación de `os.replace`.

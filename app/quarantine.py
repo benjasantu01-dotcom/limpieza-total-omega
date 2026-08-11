@@ -346,12 +346,16 @@ def quarantine_file(
         raise RuntimeError("Espacio insuficiente en disco para realizar la cuarentena.")
         
     item_id = uuid.uuid4().hex[:12]
-    safe_name = "".join(c for c in source_path.name if c.isalnum() or c in "._-")
     
-    # Prevenir nombres reservados en Windows
-    if safe_name.upper().split('.')[0] in ("CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"):
-        safe_name = f"q_{safe_name}"
-
+    # Sanitización de nombre de archivo
+    safe_chars = "".join(c for c in source_path.name if c.isalnum() or c in "._-")
+    parts = safe_chars.split('.')
+    name_base = parts[0] if parts[0] else "q_file"
+    
+    if name_base.upper() in ("CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"):
+        name_base = f"q_{name_base}"
+    
+    safe_name = f"{name_base}.{parts[-1]}" if len(parts) > 1 else name_base
     stored_name = f"{item_id}__{safe_name}"[:250] 
     destination = dest_dir / stored_name
 
