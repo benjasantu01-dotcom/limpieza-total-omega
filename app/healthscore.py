@@ -147,8 +147,8 @@ def score_junk(junk_mb: Any) -> float:
 
 def score_security(suspicious_count: Any, warnings: Any = 0) -> float:
     """Calcula score [0.0, 1.0] basado en penalizaciones fijas por cada amenaza o advertencia."""
-    count = _to_int(suspicious_count)
-    warns = _to_int(warnings)
+    count = max(0, _to_int(suspicious_count))
+    warns = max(0, _to_int(warnings))
     penalty = (count * 0.05) + (warns * 0.25)
     return _clamp(1.0 - penalty, 0.0, 1.0)
 
@@ -173,7 +173,7 @@ def score_duplicates(duplicate_mb: Any) -> float:
 
 def score_startup(startup_count: Any) -> float:
     """Calcula score [0.0, 1.0] penalizando linealmente el exceso de aplicaciones configuradas para iniciar."""
-    val = _to_int(startup_count)
+    val = max(0, _to_int(startup_count))
     return 1.0 if _LIMIT_STARTUP_COUNT <= 0 else _clamp(1.0 - (val / _LIMIT_STARTUP_COUNT))
 
 

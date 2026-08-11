@@ -325,9 +325,6 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if os.name != "nt":
         return False, "Solo disponible en Windows."
     
-    if pid is None:
-        return False, "PID no definido."
-    
     try:
         target_pid = int(pid)
     except (ValueError, TypeError):
@@ -340,31 +337,31 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     handle = kernel32.OpenProcess(SAFE_ACCESS, False, target_pid)
     
     if not handle:
-        reason = "Acceso denegado: requiere privilegios elevados." if kernel32.GetLastError() == ERROR_ACCESS_DENIED else "No se pudo abrir el proceso."
-        return False, reason
+        return False, "Acceso denegado o proceso no encontrado."
         
     try:
         exit_code = ctypes.c_ulong()
         if not kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)) or exit_code.value != STILL_ACTIVE:
             return False, "El proceso seleccionado ya no está activo."
             
-        # Validación de integridad: aseguramos que el ejecutable es un archivo real en disco y no protegido.
         buf = ctypes.create_unicode_buffer(2048)
-        try:
-            if psapi.GetModuleFileNameExW(handle, 0, buf, 2048) > 0:
-                exe_path = os.path.normpath(buf.value)
-                if is_protected_path(exe_path) or not os.path.isabs(exe_path):
-                    return False, "Operación denegada: ruta de ejecutable no segura."
-            else:
-                return False, "Operación denegada: no se pudo verificar la ubicación del ejecutable."
-        except Exception:
-            return False, "Error al validar la ruta del proceso."
+        if psapi.GetModuleFileNameExW(handle, 0, buf, 2048) > 0:
+            exe_path = os.path.normpath(buf.value)
+            # Verifica si el archivo está en uso exclusivo o es protegido
+            if is_protected_path(exe_path) or not os.path.isabs(exe_path):
+                return False, "Operación denegada: ruta de ejecutable no segura."
+            try:
+                with open(exe_path, "rb"): pass
+            except OSError:
+                return False, "Operación denegada: ejecutable bloqueado por el sistema."
+        else:
+            return False, "No se pudo verificar la ubicación del ejecutable."
             
         if not psapi.EmptyWorkingSet(handle):
             return False, f"Error al intentar liberar memoria (código {kernel32.GetLastError()})."
             
         return True, f"Working set liberado. {TRIM_WARNING}"
-    except (ctypes.ArgumentError, Exception):
+    except Exception:
         return False, "Ocurrió un error técnico al gestionar el proceso."
     finally:
         kernel32.CloseHandle(handle)

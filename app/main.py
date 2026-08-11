@@ -873,13 +873,17 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _safe_run(self, fn: Callable, tab: str) -> None:
         """Ejecuta una tarea controlando excepciones para evitar el cierre de la UI."""
+        if self._closing: return
         try:
             fn()
         except Exception as e:
-            self._validate_and_log_error(e, tab)
+            if not self._closing:
+                self._validate_and_log_error(e, tab)
 
     def run_async(self, fn: Callable, check_safety: bool = False) -> None:
         """Envía tarea al pool de hilos y garantiza el manejo de bloqueos y seguridad."""
+        if self._closing: return
+        
         if check_safety:
             # Validación pre-ejecución: si la ruta de escaneo es inválida/insegura, aborta.
             if self.scan_target and not self._is_safe_target_dir(self.scan_target):
@@ -894,8 +898,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 try:
                     self._safe_run(fn, tab)
                 finally:
-                    self._set_busy(False)
-                    self.set_status("Listo.")
+                    if not self._closing:
+                        self._set_busy(False)
+                        self.set_status("Listo.")
 
         if not self._closing and self._executor:
             self._executor.submit(wrapper)

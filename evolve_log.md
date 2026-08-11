@@ -1288,3 +1288,10 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-08-11T01:25:29` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
 - `2026-08-11T01:25:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-11T01:25:29` Corrida terminada. Total usado hoy: 36.
+- `2026-08-11T01:34:13` Arrancando corrida. Quedan hoy ~264 peticiones objetivo.
+- `2026-08-11T01:34:39` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `score_security` y `score_startup` frente a valores de entrada potencialmente negativos o inesperados, y añadí una validación explícita para asegurar que el cálculo final no dependa de estados inconsistentes, reforzando la tolerancia a fallos en casos límite.
+- `2026-08-11T01:35:49` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de integridad en `run_async` y `_safe_run` para detectar si el hilo de ejecución está intentando operar sobre un objeto de interfaz de usuario que ya ha sido destruido durante el cierre de la aplicación, evitando errores de `TclError` y mejorando la robustez ante la concurrencia.
+- `2026-08-11T01:36:14` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Mejora la robustez de `trim_working_set` al verificar si el ejecutable está bloqueado o en uso antes de intentar la operación, manejando excepciones de acceso a archivos y garantizando que el `handle` se cierre correctamente incluso ante errores inesperados.
+- `2026-08-11T01:36:21` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-08-11T01:36:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-11T01:36:21` Corrida terminada. Total usado hoy: 40.
