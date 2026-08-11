@@ -142,6 +142,9 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, name
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None) -> ScanResult:
     """Ejecuta el conjunto de heurísticas sobre un archivo."""
+    if not path or not path.exists():
+        return []
+
     findings: ScanResult = []
     
     # 1. Chequeos universales

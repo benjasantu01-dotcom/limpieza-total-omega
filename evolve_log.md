@@ -1295,3 +1295,10 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-08-11T01:36:21` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
 - `2026-08-11T01:36:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-11T01:36:21` Corrida terminada. Total usado hoy: 40.
+- `2026-08-11T01:44:19` Arrancando corrida. Quedan hoy ~260 peticiones objetivo.
+- `2026-08-11T01:44:58` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: robustez ante casos límite).
+- `2026-08-11T01:45:17` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-11T01:45:44` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
+- `2026-08-11T01:45:52` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Mejoré la robustez de `scanner.py` ante errores de entrada y concurrencia del sistema de archivos al añadir una validación de `path_obj` y `entry` en `scan_file`, asegurando que los chequeos heurísticos no operen sobre objetos nulos o malformados si la entrada desaparece durante la iteración.
+- `2026-08-11T01:45:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-11T01:45:52` Corrida terminada. Total usado hoy: 44.

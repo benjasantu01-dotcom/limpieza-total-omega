@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **235** (46.6% de aceptación)
+- Mejoras aceptadas: **236** (46.8% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 28
+- Rechazadas por guardia de seguridad: 29
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 214
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-09 | 48 | 3 | 5 | 3 | 55 |
+| 2026-08-09 | 48 | 3 | 5 | 3 | 51 |
 | 2026-08-10 | 162 | 6 | 19 | 11 | 152 |
-| 2026-08-11 | 25 | 2 | 4 | 2 | 7 |
+| 2026-08-11 | 26 | 2 | 5 | 2 | 9 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,7 +26,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **52**
 - rendimiento: **45**
 - seguridad defensiva: **42**
-- robustez ante casos límite: **39**
+- robustez ante casos límite: **40**
 
 ## Mejoras aceptadas por archivo
 
@@ -41,12 +41,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - `main.py`: **17**
 - `memory.py`: **17**
 - `organizer.py`: **15**
-- `scanner.py`: **14**
+- `scanner.py`: **15**
 - `safety.py`: **10**
 - `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-11T01:45:52` **scanner.py** (robustez ante casos límite): Mejoré la robustez de `scanner.py` ante errores de entrada y concurrencia del sistema de archivos al añadir una validación de `path_obj` y `entry` en `scan_file`, asegurando que los chequeos heurísticos no operen sobre objetos nulos o malformados si la entrada desaparece durante la iteración.
 - `2026-08-11T01:36:14` **memory.py** (robustez ante casos límite): Mejora la robustez de `trim_working_set` al verificar si el ejecutable está bloqueado o en uso antes de intentar la operación, manejando excepciones de acceso a archivos y garantizando que el `handle` se cierre correctamente incluso ante errores inesperados.
 - `2026-08-11T01:35:49` **main.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `run_async` y `_safe_run` para detectar si el hilo de ejecución está intentando operar sobre un objeto de interfaz de usuario que ya ha sido destruido durante el cierre de la aplicación, evitando errores de `TclError` y mejorando la robustez ante la concurrencia.
 - `2026-08-11T01:34:39` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `score_security` y `score_startup` frente a valores de entrada potencialmente negativos o inesperados, y añadí una validación explícita para asegurar que el cálculo final no dependa de estados inconsistentes, reforzando la tolerancia a fallos en casos límite.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-11T00:43:46` **assistant.py** (rendimiento): Optimizé la generación de respuestas mediante la pre-compilación de la lista de prioridades (`_PRIORITIES_TUPLE`) y la sustitución de la generación por tupla en `_gen_problems` por un acceso directo, eliminando la creación de objetos innecesarios y redundantes en cada iteración del bucle.
 - `2026-08-11T00:34:23` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación de los métodos de resolución de rutas en `StartupEntry` y se han aclarado las responsabilidades de los métodos privados, facilitando la comprensión del flujo de datos y validaciones de seguridad.
 - `2026-08-11T00:34:13` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación técnica interna mediante la adición de docstrings precisos en las funciones principales y la explicitación de la lógica de negocio en el namespace de validadores, facilitando el mantenimiento y la comprensión de las restricciones de seguridad aplicadas.
-- `2026-08-11T00:33:24` **safety.py** (legibilidad y documentación): Documenté con precisión técnica el propósito y las restricciones de cada función crítica en `safety.py` mediante docstrings enriquecidos, facilitando la comprensión del "porqué" de las validaciones para futuras auditorías de código.
