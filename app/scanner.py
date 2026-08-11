@@ -121,10 +121,6 @@ class Scanner:
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
     Analiza si el nombre del archivo contiene una extensión secundaria que oculta un ejecutable.
-    Args:
-        path: Objeto Path del archivo.
-        name: Nombre del archivo a evaluar.
-    Returns: Objeto Suspicion si se detecta el patrón, None en caso contrario.
     """
     target = name or path.name
     if target and DOUBLE_EXTENSION_RE.search(target):
@@ -135,10 +131,6 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, name
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
     Detecta ejecutables modificados recientemente mediante el timestamp de sistema.
-    Args:
-        entry: Referencia de DirEntry para obtener metadatos de acceso rápido.
-        now_ts: Timestamp actual para calcular la diferencia de tiempo.
-    Returns: Objeto Suspicion si el archivo es reciente, None en caso contrario.
     """
     if entry is None:
         return None
@@ -153,10 +145,6 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
     Busca ejecutables que usurpan nombres de procesos críticos de sistema.
-    Args:
-        path: Ruta completa para verificar que el archivo NO resida en System32.
-        name: Nombre del ejecutable.
-    Returns: Objeto Suspicion si el nombre es conflictivo y está fuera de su carpeta nativa.
     """
     target = (name or path.name).lower()
     if target in SYSTEM_LOOKALIKES:
@@ -165,18 +153,20 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, name
     return None
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None) -> ScanResult:
-    """Ejecuta el conjunto de heurísticas definido sobre un archivo individual."""
+    """Ejecuta el conjunto de heurísticas definido sobre un archivo individual, optimizando las llamadas costosas."""
     findings: ScanResult = []
     
-    # 1. Chequeos universales
+    # 1. Chequeos universales (bajo costo)
     if (res := check_double_extension(path, entry, name, suffix, now_ts)):
         findings.append(res)
     
-    # 2. Chequeos específicos de ejecutables: filtrar antes de realizar operaciones de IO costosas
+    # 2. Chequeos específicos de ejecutables: filtrar primero por extensión (costo O(1))
     if suffix in SUSPICIOUS_EXECUTABLE_EXT:
-        if (res := check_recent_executable_in_downloads(path, entry, name, suffix, now_ts)):
-            findings.append(res)
+        # Check de lookalike (string comparison, bajo costo)
         if (res := check_system_lookalike(path, entry, name, suffix, now_ts)):
+            findings.append(res)
+        # Check de reciente (invoca OS.stat, costo alto)
+        if (res := check_recent_executable_in_downloads(path, entry, name, suffix, now_ts)):
             findings.append(res)
                 
     return findings

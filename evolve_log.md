@@ -1064,3 +1064,10 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-08-11T10:07:28` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimizamos `purge_all` para evitar búsquedas lineales costosas dentro del bucle principal, utilizando un `set` y una estructura de datos más eficiente para procesar la lista de archivos, lo cual reduce la complejidad algorítmica de O(N*M) a O(N+M).
 - `2026-08-11T10:07:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-11T10:07:28` Corrida terminada. Total usado hoy: 236.
+- `2026-08-11T10:15:36` Arrancando corrida. Quedan hoy ~64 peticiones objetivo.
+- `2026-08-11T10:15:56` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 101): unterminated string literal (detected at line 101)
+- `2026-08-11T10:16:20` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
+- `2026-08-11T10:16:43` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizé la lógica de escaneo en `scan_file` moviendo la validación de la extensión hacia adelante, asegurando que las llamadas a funciones costosas o redundantes (como `check_recent_executable_in_downloads` que invoca `os.stat`) solo ocurran cuando realmente sea necesario, minimizando el impacto de IO.
+- `2026-08-11T10:16:54` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se implementó un sistema de "dirty checking" más robusto en `load` y `save` eliminando llamadas redundantes a `os.stat()` y `load()` dentro de los métodos de acceso, optimizando el rendimiento mediante el uso eficiente de la caché (`_cached_settings`) y evitando operaciones de disco innecesarias.
+- `2026-08-11T10:16:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-11T10:16:54` Corrida terminada. Total usado hoy: 240.

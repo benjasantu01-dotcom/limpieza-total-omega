@@ -218,24 +218,21 @@ def load(path_or_base: PathLike | None = None) -> AppSettings:
     global _cached_settings, _current_path, _last_mtime
     ruta = settings_path(path_or_base)
     
-    for attempt in range(3):
-        try:
-            if not ruta.exists(): return DEFAULTS.copy()
-            stats = ruta.stat()
-            if _cached_settings is not None and _current_path == ruta and _last_mtime == stats.st_mtime:
+    try:
+        if not ruta.exists(): return DEFAULTS.copy()
+        stats = ruta.stat()
+        if _cached_settings is not None and _current_path == ruta and _last_mtime == stats.st_mtime:
+            return _cached_settings.copy()
+        
+        if 0 < stats.st_size <= MAX_SETTINGS_SIZE:
+            with open(ruta, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            if isinstance(data, dict):
+                _cached_settings = validate(data)
+                _current_path, _last_mtime = ruta, stats.st_mtime
                 return _cached_settings.copy()
-            
-            if 0 < stats.st_size <= MAX_SETTINGS_SIZE:
-                with open(ruta, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-                if isinstance(data, dict):
-                    _cached_settings = validate(data)
-                    _current_path, _last_mtime = ruta, stats.st_mtime
-                    return _cached_settings.copy()
-            break
-        except (OSError, PermissionError, json.JSONDecodeError, UnicodeDecodeError):
-            if attempt < 2: time.sleep(0.05)
-            continue
+    except (OSError, PermissionError, json.JSONDecodeError, UnicodeDecodeError):
+        pass
     
     return DEFAULTS.copy()
 
