@@ -185,13 +185,6 @@ def _is_valid_quarantine_path(path: Path, root: Path) -> TypeGuard[Path]:
 def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
     """
     Ejecuta todas las comprobaciones de seguridad antes de mover archivos al sandbox.
-    
-    1. Estructural: Valida longitud de path, caracteres prohibidos, profundidad (límite 32)
-       y evita colisiones mediante navegación de directorios (..).
-    2. Integridad: Prohibición explícita de symlinks y junctions.
-    3. Atributos: En Windows, rechaza archivos de sistema, ocultos o solo lectura.
-    4. Lógica: Verifica protección de rutas y consistencia de unidad física.
-    5. Estado: Verifica que el archivo no esté en uso exclusivo.
     """
     if len(source_path.parts) > 32:
         raise UnsafePathError("Profundidad de ruta excesiva: riesgo de desbordamiento.")
@@ -224,7 +217,9 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
         raise UnsafePathError("El archivo ya reside en el sandbox de cuarentena.")
     
     try:
-        if source_path.drive != dest_dir.drive:
+        source_drive = source_path.drive
+        dest_drive = dest_dir.drive
+        if source_drive and dest_drive and source_drive.lower() != dest_drive.lower():
             raise UnsafePathError("Operación prohibida entre dispositivos distintos.")
         if os.path.exists(dest_dir) and os.path.exists(source_path):
             if os.path.samefile(source_path, dest_dir):

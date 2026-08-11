@@ -222,6 +222,7 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Path:
     """
     Mueve los archivos basura identificados a un directorio de cuarentena/revisión.
+    Valida la disponibilidad de espacio y permisos antes de procesar cada archivo.
     """
     if not files:
         raise ValueError("La lista de archivos a procesar no puede estar vacía.")
@@ -234,20 +235,24 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         try:
             current_abs: Path = jf.path.resolve()
             
+            # Validación de estado del archivo
             if not current_abs.exists() or not current_abs.is_file():
                 continue
             
+            # Impedir movimiento recursivo o sobre sí mismo
             if dest == current_abs or dest in current_abs.parents:
                 continue
             
-            # Verificación de seguridad antes de mover
+            # Verificación de seguridad y bloqueos
             ensure_safe_to_modify(current_abs)
             
             if _is_file_locked(current_abs) or current_abs.anchor != dest.anchor:
                 continue
 
-            target: Path = _generate_unique_target(dest / f"{current_abs.stem}_{int(jf.modified.timestamp())}{current_abs.suffix}")
-            shutil.move(str(current_abs), str(target))
+            # Validación final de espacio y permisos de escritura en destino
+            if os.access(dest, os.W_OK) and shutil.disk_usage(dest).free > jf.size_bytes:
+                target: Path = _generate_unique_target(dest / f"{current_abs.stem}_{int(jf.modified.timestamp())}{current_abs.suffix}")
+                shutil.move(str(current_abs), str(target))
         except (PermissionError, OSError, shutil.Error, RuntimeError):
             continue
     return dest
