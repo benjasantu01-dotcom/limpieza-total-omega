@@ -1309,3 +1309,11 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-08-11T01:56:10` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se ha añadido una validación de seguridad mediante `is_safe_to_modify` en `save_logo_svg` para prevenir ataques de trayectoria o escritura fuera de directorios permitidos, reforzando la integridad del sistema al persistir archivos.
 - `2026-08-11T01:56:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-11T01:56:10` Corrida terminada. Total usado hoy: 48.
+- `2026-08-11T02:04:39` Arrancando corrida. Quedan hoy ~252 peticiones objetivo.
+- `2026-08-11T02:05:09` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_sum_directory_recursive` mediante la validación explícita de `is_protected_path` en cada nivel de la recursión y añadí una verificación de profundidad para mitigar riesgos ante estructuras de directorios inusualmente profundas o maliciosas.
+- `2026-08-11T02:05:37` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `walk_files` y `largest_folders` añadiendo una validación explícita mediante `is_protected_path` sobre el nodo padre antes de procesar su contenido, mitigando el riesgo de seguir enlaces simbólicos o navegar hacia rutas protegidas que podrían haberse resuelto fuera de los límites esperados.
+- `2026-08-11T02:06:00` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha implementado una validación de seguridad defensiva en `_collect_candidates` para verificar la propiedad del archivo antes de procesarlo, utilizando `is_protected_path` sobre la ruta resuelta para prevenir accesos a rutas que pudieran haber sido manipuladas mediante enlaces simbólicos o puntos de reparse durante la ejecución del escáner.
+- `2026-08-11T02:06:05` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-11T02:06:17` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: SystemMetrics.is_finite
+- `2026-08-11T02:06:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-11T02:06:17` Corrida terminada. Total usado hoy: 52.

@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **240** (47.6% de aceptación)
+- Mejoras aceptadas: **243** (48.2% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 29
+- Rechazadas por guardia de seguridad: 30
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 208
+- Sin respuesta de la IA (error o límite): 204
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-09 | 48 | 3 | 5 | 3 | 47 |
+| 2026-08-09 | 48 | 3 | 5 | 3 | 43 |
 | 2026-08-10 | 162 | 6 | 19 | 11 | 152 |
-| 2026-08-11 | 30 | 2 | 5 | 2 | 9 |
+| 2026-08-11 | 33 | 2 | 6 | 2 | 9 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - manejo de errores y validación de entradas: **52**
+- seguridad defensiva: **47**
 - rendimiento: **45**
-- seguridad defensiva: **44**
 - robustez ante casos límite: **42**
 
 ## Mejoras aceptadas por archivo
@@ -34,10 +34,10 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **22**
 - `branding.py`: **20**
 - `assistant.py`: **20**
+- `duplicates.py`: **19**
 - `healthscore.py`: **19**
-- `duplicates.py`: **18**
-- `browser.py`: **17**
-- `diskreport.py`: **17**
+- `browser.py`: **18**
+- `diskreport.py`: **18**
 - `main.py`: **17**
 - `memory.py`: **17**
 - `organizer.py`: **15**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-11T02:06:00` **duplicates.py** (seguridad defensiva): Se ha implementado una validación de seguridad defensiva en `_collect_candidates` para verificar la propiedad del archivo antes de procesarlo, utilizando `is_protected_path` sobre la ruta resuelta para prevenir accesos a rutas que pudieran haber sido manipuladas mediante enlaces simbólicos o puntos de reparse durante la ejecución del escáner.
+- `2026-08-11T02:05:37` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `walk_files` y `largest_folders` añadiendo una validación explícita mediante `is_protected_path` sobre el nodo padre antes de procesar su contenido, mitigando el riesgo de seguir enlaces simbólicos o navegar hacia rutas protegidas que podrían haberse resuelto fuera de los límites esperados.
+- `2026-08-11T02:05:09` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_sum_directory_recursive` mediante la validación explícita de `is_protected_path` en cada nivel de la recursión y añadí una verificación de profundidad para mitigar riesgos ante estructuras de directorios inusualmente profundas o maliciosas.
 - `2026-08-11T01:56:10` **branding.py** (seguridad defensiva): Se ha añadido una validación de seguridad mediante `is_safe_to_modify` en `save_logo_svg` para prevenir ataques de trayectoria o escritura fuera de directorios permitidos, reforzando la integridad del sistema al persistir archivos.
 - `2026-08-11T01:55:54` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva en `_call_gemini` y `ask` restringiendo el origen y el contenido mediante la validación estricta de las entradas externas y el uso de `is_protected_path` como guardia preventiva antes de cualquier procesamiento de red.
 - `2026-08-11T01:55:22` **startup.py** (robustez ante casos límite): Mejoré la robustez de `_resolve_and_cache_path` añadiendo un manejo de excepciones más específico y conservador para evitar fallos catastróficos ante rutas con caracteres inválidos o permisos denegados al intentar obtener la ruta real (`resolve`), garantizando que la app no aborte al encontrar un ejecutable mal formado.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-11T01:24:30` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de entrada, garantizando que si `Path(destination).resolve()` falla debido a una ruta inválida o malformada (caso límite común en sistemas de archivos), la función retorne `None` de forma segura en lugar de propagar una excepción.
 - `2026-08-11T01:15:19` **assistant.py** (robustez ante casos límite): Reforcé la robustez del módulo ante configuraciones corruptas o valores inesperados en `settings.py` dentro de `ask()`, evitando que un error de carga de ajustes o una estructura de configuración inválida silencien el motor local.
 - `2026-08-11T01:15:01` **startup.py** (rendimiento): Optimizé la carga de datos del registro mediante una consulta única de PowerShell utilizando `Get-Item` con un filtro condicional de existencia, reduciendo el I/O y la sobrecarga del proceso hijo.
-- `2026-08-11T01:14:35` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` evitando lecturas redundantes del sistema de archivos mediante una comparación directa de `mtime` y reduje la carga de trabajo en el `_Validators` usando un acceso más directo al mapeo de validación.
-- `2026-08-11T01:04:28` **quarantine.py** (rendimiento): Se optimizó la carga y manipulación del manifiesto mediante el uso de un diccionario (hash map) en lugar de listas para búsquedas por `item_id`, evitando búsquedas lineales `O(N)` en funciones críticas como `restore_item` y `purge_item`.
-- `2026-08-11T00:53:54` **duplicates.py** (rendimiento): Se optimizó el proceso de recolección en `_collect_candidates` para evitar realizar `path.exists()` y `path.is_dir()` innecesarios tras haber obtenido información del objeto `DirEntry`, reduciendo significativamente las llamadas al sistema operativo (syscalls) al recorrer directorios.

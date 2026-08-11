@@ -83,7 +83,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
         return None
         
     try:
-        file_path = Path(path)
+        file_path = Path(path).resolve()
         if not file_path.is_file() or is_protected_path(file_path):
             return None
 
@@ -116,7 +116,7 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
         return None
         
     try:
-        file_path = Path(path)
+        file_path = Path(path).resolve()
         if not file_path.is_file() or is_protected_path(file_path):
             return None
             
@@ -142,8 +142,9 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     for p in paths:
         if not isinstance(p, Path): continue
         try:
-            if p.is_file() and not is_protected_path(p):
-                groups[p.stat().st_size].append(p)
+            p_res = p.resolve()
+            if p_res.is_file() and not is_protected_path(p_res):
+                groups[p_res.stat().st_size].append(p_res)
         except (OSError, PermissionError, FileNotFoundError):
             continue
     return groups
@@ -174,7 +175,8 @@ def _collect_candidates(
                             continue
                         
                         path_obj = Path(entry.path)
-                        if skip_protected and is_protected_path(path_obj):
+                        # Validar seguridad antes de seguir recursando o procesando
+                        if skip_protected and is_protected_path(path_obj.resolve()):
                             continue
                         
                         if entry.is_dir(follow_symlinks=False):

@@ -165,9 +165,10 @@ def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool
     Realiza un recorrido DFS para calcular el peso total (bytes) de una carpeta.
     Implementa control de ciclos mediante 'visited' y caché de resultados.
     """
-    if depth > 10 or not root_dir or not os.path.exists(root_dir):
+    if depth > 20 or not root_dir or not os.path.exists(root_dir):
         return 0
     
+    # Seguridad defensiva adicional: re-verificar protección en cada nivel de recursión
     if is_protected_path(Path(root_dir)):
         return 0
         
@@ -201,10 +202,8 @@ def _sum_directory_recursive(root_dir: str, is_junction_fn: Callable[[str], bool
                     elif entry.is_file():
                         total_size += entry.stat().st_size
                 except (OSError, PermissionError):
-                    # Archivo bloqueado por otro proceso: lo saltamos sin abortar la cuenta total
                     continue
     except (OSError, PermissionError):
-        # Directorio sin permisos de lectura
         pass
     
     cache[real_path] = total_size
@@ -275,7 +274,7 @@ def detect_profiles(
                 candidate = real_base.joinpath(*relative_path_str.split("\\"))
                 if _is_valid_cache_path(candidate, real_base):
                     size: int = _sum_directory_recursive(str(candidate.resolve()), is_junction, cache=perf_cache)
-                    if size >= 0: # Incluir aunque sea 0, pero descartar si hubo error en resolución
+                    if size >= 0:
                         found.append(BrowserCache(
                             browser=browser_name,
                             path=candidate.resolve(),

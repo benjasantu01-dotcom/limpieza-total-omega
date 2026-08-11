@@ -210,13 +210,6 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     
     Implementa un límite de profundidad (100) y detección de ciclos mediante inodos para 
     evitar bucles infinitos en sistemas con enlaces simbólicos complejos.
-    
-    Args:
-        directory: Directorio base de inicio.
-        skip_protected: Si es True, ignora rutas marcadas por safety.py.
-        
-    Yields:
-        Tupla con la ruta del archivo (Path) y su tamaño en bytes.
     """
     if not directory:
         return
@@ -266,12 +259,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 
 
 def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_protected: bool = True) -> List[FileEntry]:
-    """
-    Retorna los N archivos más grandes encontrados en el directorio base.
-    
-    Utiliza un heap (min-heap de tamaño limit) para optimizar el consumo de memoria al procesar
-    estructuras de directorios masivas.
-    """
+    """Retorna los N archivos más grandes encontrados en el directorio base."""
     if not directory or limit <= 0:
         return []
     return heapq.nlargest(
@@ -282,12 +270,7 @@ def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_prot
 
 
 def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip_protected: bool = True) -> List[ExtensionUsage]:
-    """
-    Calcula el peso total ocupado por cada extensión de archivo encontrada.
-    
-    Agrupa los archivos en un diccionario y retorna una lista ordenada descendente
-    por espacio ocupado total.
-    """
+    """Calcula el peso total ocupado por cada extensión de archivo encontrada."""
     if not directory or limit <= 0:
         return []
     
@@ -308,11 +291,7 @@ def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip
 
 
 def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
-    """
-    Agrupa el peso de subcarpetas de primer nivel bajo el directorio base dado.
-    
-    Cada subcarpeta incluye el tamaño acumulado de todos sus hijos recursivamente.
-    """
+    """Agrupa el peso de subcarpetas de primer nivel bajo el directorio base dado."""
     if not directory or limit <= 0:
         return []
     
@@ -329,7 +308,10 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
                 relative = path.relative_to(base)
                 if not relative.parts: continue
                 top_level = base / relative.parts[0]
+                
+                # Defensa extra: validar que la subcarpeta raíz no sea protegida
                 if skip_protected and is_protected_path(top_level): continue
+                
                 sums[top_level] += size
                 counts[top_level] += 1
             except (OSError, ValueError, RuntimeError, PermissionError): 
@@ -342,12 +324,7 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
 
 
 def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Tuple[int, int]:
-    """
-    Calcula el tamaño total en bytes y la cantidad de archivos accesibles.
-    
-    Retorna:
-        Tupla (bytes_totales, total_archivos).
-    """
+    """Calcula el tamaño total en bytes y la cantidad de archivos accesibles."""
     total_bytes, file_count = 0, 0
     for _, size in walk_files(directory, skip_protected):
         total_bytes += size
@@ -356,12 +333,7 @@ def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 
 
 def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -> List[str]:
-    """
-    Genera un informe textual unificado del uso de disco con un solo recorrido.
-    
-    Compila en un formato de lista de strings: el espacio total, la distribución por
-    extensiones y los archivos de mayor tamaño encontrados.
-    """
+    """Genera un informe textual unificado del uso de disco con un solo recorrido."""
     if not directory: 
         return ["Error: Ruta no proporcionada."]
     
