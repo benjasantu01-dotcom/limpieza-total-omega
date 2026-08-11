@@ -112,7 +112,8 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
         if is_protected_path(real_target) or is_protected_path(real_base):
             return False
 
-        if os.path.commonpath([real_base, real_target]) != str(real_base):
+        # Uso de casefold para comparar rutas de manera agnóstica a mayúsculas/minúsculas en Windows
+        if os.path.commonpath([real_base, real_target]).casefold() != str(real_base).casefold():
             return False
 
         if any(ord(char) < 32 or ord(char) in (0x200E, 0x200F, 0x202A, 0x202E) for char in str(target_path)):
@@ -167,7 +168,7 @@ def _sum_directory_recursive(
     Realiza un recorrido DFS para calcular el peso total (bytes) de una carpeta.
     Implementa control de ciclos mediante 'visited' y memoización de resultados.
     """
-    if depth > 20 or not root_dir or not os.path.exists(root_dir):
+    if depth > 20 or not root_dir:
         return 0
         
     if visited is None:

@@ -225,11 +225,15 @@ def _hex_to_rgb(value: HexColor) -> RGBTuple:
     if not isinstance(value, str) or len(value) != 7 or not value.startswith("#"):
         return (0, 0, 0)
     try:
+        # Validación estricta para evitar errores de conversión y overflow
         hex_data = value[1:]
         if all(c in "0123456789abcdefABCDEF" for c in hex_data):
-            return (int(hex_data[0:2], 16), int(hex_data[2:4], 16), int(hex_data[4:6], 16))
+            r = int(hex_data[0:2], 16)
+            g = int(hex_data[2:4], 16)
+            b = int(hex_data[4:6], 16)
+            return (r, g, b)
         return (0, 0, 0)
-    except ValueError:
+    except (ValueError, TypeError):
         return (0, 0, 0)
 
 
@@ -315,7 +319,7 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         return None
     try:
         target = Path(destination).resolve()
-        # Verificación de seguridad: no permitir rutas fuera de límites definidos
+        # Verificación explícita de seguridad antes de cualquier operación de disco
         if not is_safe_to_modify(target):
             return None
             

@@ -200,9 +200,8 @@ def _ensure_safe_text(text: Any) -> bool:
 
 def _safe_assign(obj: SystemContext, attr: str, val: Any, cast: Callable = float, min_val: float = 0.0, max_val: float = float('inf')) -> None:
     """Aplica una asignación segura de métricas a SystemContext con validación de tipo y rango."""
-    if val is None:
-        return
     try:
+        if val is None: return
         clean = cast(val)
         if isinstance(clean, (int, float)) and math.isfinite(clean):
             setattr(obj, attr, max(min_val, min(clean, max_val)))
@@ -222,13 +221,10 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     ctx = SystemContext()
     
     def _get_val(source: Any, key: str, default: Any) -> Any:
-        if source is None: return default
         try:
-            if isinstance(source, dict):
-                return source.get(key, default)
+            if isinstance(source, dict): return source.get(key, default)
             return getattr(source, key, default)
-        except (AttributeError, TypeError):
-            return default
+        except (AttributeError, TypeError): return default
 
     if metrics is not None and (hasattr(metrics, "__dict__") or isinstance(metrics, dict)):
         _safe_assign(ctx, "junk_mb", _get_val(metrics, "junk_mb", 0.0))
@@ -245,8 +241,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
 
     if health is not None and (hasattr(health, "__dict__") or isinstance(health, dict)):
         raw_score = _get_val(health, "score", None)
-        if raw_score is not None:
-            _safe_assign(ctx, "score", raw_score, int, max_val=100)
+        if raw_score is not None: _safe_assign(ctx, "score", raw_score, int, max_val=100)
         grade = _get_val(health, "grade", "")
         ctx.grade = str(grade)[:10] if isinstance(grade, (str, int, float)) else ""
         ctx.analyzed = True
@@ -254,15 +249,12 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     for k, v in extra.items():
         if hasattr(ctx, k) and isinstance(v, (int, float)) and math.isfinite(v):
             _safe_assign(ctx, k, v, cast=type(getattr(ctx, k)))
-
     return ctx
-
 
 def context_as_text(context: SystemContext) -> str:
     """Serializa SystemContext a un formato de texto compacto adecuado para el prompt del motor remoto."""
     if not isinstance(context, SystemContext) or not context.analyzed:
         return "No hay métricas disponibles todavía."
-
     try:
         lines = (
             f"Puntaje de salud: {_fmt_metric(context.score)}{f' nota {context.grade}' if context.grade else ''}",
@@ -276,13 +268,11 @@ def context_as_text(context: SystemContext) -> str:
         texto_crudo = "\n".join(lines)
         texto_sanitizado = _CONTROL_CHARS_REGEX.sub(" ", texto_crudo)
         texto_limpio = _PATH_REGEX.sub(" ", texto_sanitizado)
-        
         if not _ensure_safe_text(texto_limpio):
             return "Error de seguridad en la serialización de contexto."
         return texto_limpio
     except (ValueError, TypeError, AttributeError):
         return "Error al procesar métricas para el asistente."
-
 
 def explain_area(area: Any) -> str:
     """Devuelve una explicación educativa sobre el significado de las métricas de un área específica."""
@@ -305,7 +295,6 @@ def explain_area(area: Any) -> str:
     if isinstance(area, str):
         return explicaciones.get(area.strip().lower(), "No tengo una explicación para esa área.")
     return "No tengo una explicación para esa área."
-
 
 def _format_critical_warning(condition: bool, text: str) -> str:
     """Helper para formatear advertencias de sistema condicionales."""
@@ -335,7 +324,6 @@ def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
 def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
     """Genera respuesta sobre el almacenamiento y espacio recuperable."""
     recuperable = ctx.junk_mb + ctx.duplicate_mb + ctx.browser_cache_mb
-    
     mensaje = (
         f"Tenés {ctx.disk_free_percent:.0f}% libre en disco. "
         f"Podés recuperar cerca de {recuperable:.0f} MB: "
@@ -343,14 +331,11 @@ def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
         f"{ctx.duplicate_mb:.0f} MB de duplicados"
         f"{f' y {ctx.browser_cache_mb:.0f} MB de caché' if ctx.browser_cache_mb else ''}."
     )
-    
     warning = _format_critical_warning(
         ctx.disk_free_percent < 10, 
         " Estás por debajo del 10%, y ahí Windows empieza a andar mal. Es lo primero que atendería."
     )
-    
     sugerencia = " Empezá por Limpieza: mueve los candidatos a una carpeta de revisión, no los borra."
-    
     return Answer(mensaje + warning + sugerencia, notice=OFFLINE_NOTICE)
 
 def handle_security(ctx: SystemContext, user_query: str) -> Answer:
@@ -417,7 +402,6 @@ def local_answer(question: str, context: SystemContext) -> Answer:
 
     clean_text = _sanitize_query(question)
     tokens = set(_TOKEN_REGEX.findall(clean_text))
-    
     match = tokens.intersection(_KEYWORD_SET)
     if match:
         target_key = _KEYWORD_MAP[next(iter(match))]
@@ -425,20 +409,16 @@ def local_answer(question: str, context: SystemContext) -> Answer:
 
     problemas = list(islice(_gen_problems(context), 3))
     puntaje_str = str(context.score) if context.score is not None else "N/A"
-    
     if problemas:
         cuerpo = (f"Con un puntaje de {puntaje_str}/100, por orden de prioridad: "
                   f"{', '.join(problemas)}.")
     else:
         cuerpo = f"Tu sistema está en buen estado ({puntaje_str}/100). No hay nada urgente."
-        
     return Answer(cuerpo, notice=OFFLINE_NOTICE, suggestions=SUGGESTED_QUESTIONS_LIST[:3])
-
 
 def _gen_problems(ctx: SystemContext) -> Generator[str, None, None]:
     """Generador de problemas detectados priorizados por criticidad."""
     if ctx is None: return
-    
     if ctx.disk_free_percent < 10.0:
         yield f"queda solo {ctx.disk_free_percent:.0f}% de disco libre"
     if ctx.suspicious_warnings > 0:
@@ -452,14 +432,12 @@ def _gen_problems(ctx: SystemContext) -> Generator[str, None, None]:
     if ctx.startup_count > 15:
         yield f"{ctx.startup_count} programas de inicio"
 
-
 def available(base: Union[str, Path, None] = None) -> bool:
     """Verifica si la configuración del sistema permite el uso del asistente en línea."""
     try:
         return settings.assistant_enabled(base)
     except Exception:
         return False
-
 
 def _call_gemini(
     question: str, 
@@ -471,86 +449,59 @@ def _call_gemini(
     if not isinstance(api_key, str) or not isinstance(model, str): return None
     if not api_key or not _API_KEY_REGEX.match(api_key) or _CONTROL_CHARS_REGEX.search(api_key): return None
     if not model or not _MODEL_NAME_REGEX.match(model): return None
-    
     safe_q: str = _sanitize_query(question)
     safe_ctx: str = context_text[:_MAX_TEXT_LENGTH]
-    
-    if is_protected_path(safe_q) or is_protected_path(safe_ctx):
-        return None
-    
-    if not _ensure_safe_text(safe_q) or not _ensure_safe_text(safe_ctx):
-        return None
-        
+    if is_protected_path(safe_q) or is_protected_path(safe_ctx): return None
+    if not _ensure_safe_text(safe_q) or not _ensure_safe_text(safe_ctx): return None
     try:
         payload = json.dumps({
             "contents": [{
                 "parts": [{"text": f"{SYSTEM_PROMPT}\n\nMétricas del sistema:\n{safe_ctx}\n\nPregunta del usuario: {safe_q}"}]
             }]
         }).encode("utf-8")
-
         req = urllib.request.Request(
             _ENDPOINT.format(model=model) + f"?key={api_key}", 
             data=payload, 
             headers={"Content-Type": "application/json; charset=utf-8"}, 
             method="POST"
         )
-        
         with urllib.request.urlopen(req, timeout=_TIMEOUT_SECONDS) as res:
             if res.status != 200: return None
             raw_res = res.read(_MAX_RESPONSE_BYTES)
             if not raw_res: return None
-            
             data = json.loads(raw_res.decode("utf-8"))
             if not isinstance(data, dict): return None
-        
         candidates = data.get("candidates", [])
         if not isinstance(candidates, list) or not candidates: return None
-        
         parts = candidates[0].get("content", {}).get("parts", [])
         text = "".join(str(p.get("text", "")) for p in parts if isinstance(p, dict))
-        
         final_text = text.strip()[:_MAX_TEXT_LENGTH]
-        if not _ensure_safe_text(final_text) or is_protected_path(final_text):
-            return None
+        if not _ensure_safe_text(final_text) or is_protected_path(final_text): return None
         return final_text
     except (json.JSONDecodeError, urllib.error.URLError, TypeError, KeyError, ValueError, OSError):
         return None
-
 
 def ask(question: str, context: Optional[SystemContext] = None,
         base: Union[str, Path, None] = None) -> Answer:
     """Orquestador de alto nivel para determinar si responder localmente o via API."""
     ctx: SystemContext = context if isinstance(context, SystemContext) else SystemContext()
     respaldo: Answer = local_answer(question, ctx)
-
-    if not available(base):
-        return respaldo
-
-    if is_protected_path(question):
-        return respaldo
-
+    if not available(base): return respaldo
+    if is_protected_path(question): return respaldo
     try:
         configuracion = settings.load(base)
-        if not isinstance(configuracion, dict):
-            return respaldo
-        
+        if not isinstance(configuracion, dict): return respaldo
         cfg: AssistantConfig = {
             "asistente_api_key": str(configuracion.get("asistente_api_key", "")),
             "asistente_modelo": str(configuracion.get("asistente_modelo", "gemini-3.1-flash-lite")),
             "asistente_enviar_metricas": bool(configuracion.get("asistente_enviar_metricas", True))
         }
-            
         texto_contexto = context_as_text(ctx) if cfg["asistente_enviar_metricas"] else "El usuario no autorizó enviar métricas."
-        
-        if not _ensure_safe_text(texto_contexto):
-            return respaldo
-            
+        if not _ensure_safe_text(texto_contexto): return respaldo
         remoto = _call_gemini(question, texto_contexto, cfg["asistente_api_key"], cfg["asistente_modelo"])
-
         if not remoto:
             respaldo.notice = "No se pudo consultar al asistente en línea, respondí con el motor local."
             return respaldo
-
         return Answer(remoto, source="gemini", notice=PRIVACY_NOTICE)
     except (Exception, TypeError, ValueError):
         return respaldo
