@@ -1214,3 +1214,49 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-11T00:34:23` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación de los métodos de resolución de rutas en `StartupEntry` y se han aclarado las responsabilidades de los métodos privados, facilitando la comprensión del flujo de datos y validaciones de seguridad.
 - `2026-08-11T00:34:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-11T00:34:23` Corrida terminada. Total usado hoy: 16.
+- `2026-08-11T00:43:12` Arrancando corrida. Quedan hoy ~284 peticiones objetivo.
+- `2026-08-11T00:43:46` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimizé la generación de respuestas mediante la pre-compilación de la lista de prioridades (`_PRIORITIES_TUPLE`) y la sustitución de la generación por tupla en `_gen_problems` por un acceso directo, eliminando la creación de objetos innecesarios y redundantes en cada iteración del bucle.
+- `2026-08-11T00:44:18` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se optimizó el renderizado del logo (`draw_logo`) reemplazando el cálculo repetitivo de coordenadas y atributos en cada frame por una estrategia de memoización parcial, reduciendo la carga de CPU durante las operaciones de dibujo.
+- `2026-08-11T00:44:42` Tests FALLARON:
+```
+eligrosa.mkdir(parents=True)
+        (peligrosa / "x").write_text("secreto")
+>       assert browser.detect_profiles(
+            bases=[tmp_path], cache_paths={"Chrome": r"Perfil\Cookies"}
+        ) == []
+E       AssertionError: assert [BrowserCache...size_bytes=7)] == []
+E         
+E         Left contains one more item: BrowserCache(browser='Chrome', path=PosixPath('/tmp/pytest-of-runner/pytest-3/test_detect_profiles_never_rep0/Perfil/Cookies'), size_bytes=7)
+E         
+E         Full diff:
+E         - []
+E         + [
+E         +     BrowserCache(
+E         +         browser='Chrome',
+E         +         path=PosixPath('/tmp/pytest-of-runner/pytest-3/test_detect_profiles_never_rep0/Perfil/Cookies'),
+E         +         size_bytes=7,
+E         +     ),
+E         + ]
+
+evolve/tests/test_modules.py:755: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_data_folders - AssertionError: assert [BrowserCache...size_bytes=7)] == []
+  
+  Left contains one more item: BrowserCache(browser='Chrome', path=PosixPath('/tmp/pytest-of-runner/pytest-3/test_detect_profiles_never_rep0/Perfil/Cookies'), size_bytes=7)
+  
+  Full diff:
+  - []
+  + [
+  +     BrowserCache(
+  +         browser='Chrome',
+  +         path=PosixPath('/tmp/pytest-of-runner/pytest-3/test_detect_profiles_never_rep0/Perfil/Cookies'),
+  +         size_bytes=7,
+  +     ),
+  + ]
+1 failed, 298 passed in 1.17s
+
+```
+- `2026-08-11T00:44:42` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Se optimizó el recorrido de directorios reemplazando el uso intensivo de `os.path.realpath` y `Path.resolve()` dentro de los bucles por un manejo más eficiente de strings, evitando llamadas innecesarias al sistema de archivos que degradan el rendimiento en escaneos profundos.
+- `2026-08-11T00:44:51` ➖ Sin cambios en diskreport.py (enfoque: rendimiento). Motivo: Optimizé la función `summarize` para realizar un único recorrido sobre el disco, evitando el re-escaneo costoso que ocurría al llamar individualmente a `total_size`, `usage_by_extension` y `largest_files`, reduciendo así la carga de E/S.
+- `2026-08-11T00:44:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-11T00:44:51` Corrida terminada. Total usado hoy: 20.

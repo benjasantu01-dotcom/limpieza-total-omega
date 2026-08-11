@@ -221,15 +221,7 @@ def bar(percent: Union[float, int, None], width: int = 24,
 
 @lru_cache(maxsize=128)
 def _hex_to_rgb(value: HexColor) -> RGBTuple:
-    """
-    Decodifica un color hexadecimal de formato '#RRGGBB' a una tupla RGB.
-    
-    Args:
-        value: Cadena hexadecimal (ej: '#FF5733').
-        
-    Returns:
-        Tupla de enteros (r, g, b). Retorna (0,0,0) ante formatos inválidos.
-    """
+    """Decodifica un color hexadecimal de formato '#RRGGBB' a una tupla RGB."""
     if not isinstance(value, str) or len(value) != 7 or not value.startswith("#"):
         return (0, 0, 0)
     try:
@@ -243,17 +235,7 @@ def _hex_to_rgb(value: HexColor) -> RGBTuple:
 
 @lru_cache(maxsize=64)
 def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
-    """
-    Realiza una interpolación lineal entre dos colores hexadecimales.
-    
-    Args:
-        start: Color de origen.
-        end: Color de destino.
-        ratio: Factor de mezcla entre 0.0 y 1.0.
-        
-    Returns:
-        Cadena hexadecimal resultante del blend.
-    """
+    """Realiza una interpolación lineal entre dos colores hexadecimales."""
     ratio = max(0.0, min(1.0, float(ratio)))
     r1, g1, b1 = _hex_to_rgb(start)
     r2, g2, b2 = _hex_to_rgb(end)
@@ -273,7 +255,6 @@ def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) ->
     
     tramos = len(stops) - 1
     res: List[HexColor] = []
-    # Usamos pre-cálculo de índices para reducir overhead en el loop
     for i in range(steps):
         pos = (i / max(1, steps - 1)) * tramos
         idx = min(tramos - 1, int(pos))
@@ -281,12 +262,7 @@ def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) ->
     return res
 
 def _get_grouped_segments(colors: List[HexColor]) -> List[Tuple[HexColor, int, int]]:
-    """
-    Optimiza una lista de colores consecutivos en segmentos de colores idénticos.
-    
-    Utilizado para reducir la cantidad de llamadas a APIs gráficas que renderizan 
-    cada segmento de color individualmente en el canvas.
-    """
+    """Optimiza una lista de colores consecutivos en segmentos de colores idénticos."""
     segments = []
     if not colors: return segments
     start = 0
@@ -298,10 +274,11 @@ def _get_grouped_segments(colors: List[HexColor]) -> List[Tuple[HexColor, int, i
     return segments
 
 
-def _get_shield_coords(sx: float, sy: float, s: float) -> PointCoords:
-    """Calcula las coordenadas de los vértices base del escudo escalados y desplazados."""
+@lru_cache(maxsize=8)
+def _get_shield_coords(s: float) -> List[float]:
+    """Calcula vértices base escalados; memoizado para evitar recalcular en cada frame."""
     base = [64, 18, 100, 31, 100, 67, 90, 90, 64, 110, 38, 90, 28, 67, 28, 31]
-    return [sx + v * s if i % 2 == 0 else sy + v * s for i, v in enumerate(base)]
+    return [v * s for v in base]
 
 
 @lru_cache(maxsize=4)
@@ -338,7 +315,6 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         return None
     try:
         target = Path(destination).resolve()
-        # Se asegura que la ruta final esté dentro de los directorios permitidos antes de tocar disco.
         if not is_safe_to_modify(target):
             return None
             
@@ -373,19 +349,12 @@ def _draw_shield_stripes(canvas: Any, canvas_x: float, canvas_y: float, scale: f
 
 
 def draw_logo(canvas: Any, size: int = 56, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
-    """
-    Renderiza el logo vectorial en un canvas de Tkinter usando coordenadas transformadas.
-    
-    Args:
-        canvas: Objeto Tkinter Canvas donde dibujar.
-        size: Tamaño total del logo (128 unidades base).
-        canvas_x: Offset horizontal en el canvas.
-        canvas_y: Offset vertical en el canvas.
-    """
+    """Renderiza el logo vectorial en un canvas de Tkinter usando coordenadas transformadas."""
     if not hasattr(canvas, "create_polygon"): return
     try:
         scale = float(size) / 128
-        contorno = _get_shield_coords(canvas_x, canvas_y, scale)
+        base_coords = _get_shield_coords(scale)
+        contorno = [canvas_x + base_coords[i] if i % 2 == 0 else canvas_y + base_coords[i] for i in range(len(base_coords))]
         
         for paso in range(4, 0, -1):
             r = 56 * scale * (0.6 + paso * 0.12)
@@ -409,15 +378,7 @@ def draw_logo(canvas: Any, size: int = 56, canvas_x: float = 0.0, canvas_y: floa
 def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
                       canvas_x: float = 0.0, canvas_y: float = 0.0,
                       stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
-    """
-    Dibuja una franja horizontal degradada utilizando segmentos optimizados.
-    
-    Args:
-        canvas: Canvas de destino.
-        width: Longitud de la barra en píxeles.
-        height: Grosor de la línea/franja.
-        canvas_x, canvas_y: Posicionamiento en el canvas.
-    """
+    """Dibuja una franja horizontal degradada utilizando segmentos optimizados."""
     if not hasattr(canvas, "create_line"): return
     try:
         ancho = max(1, int(width))
@@ -431,17 +392,7 @@ def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
               canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14,
               track: Optional[HexColor] = None,
               fill: Optional[HexColor] = None) -> None:
-    """
-    Renderiza un medidor circular de estado para métricas de salud.
-    
-    Args:
-        canvas: Canvas de destino.
-        percent: Valor 0-100 a graficar.
-        size: Diámetro total del anillo.
-        thickness: Grosor del trazo circular.
-        track: Color de fondo del anillo (opcional).
-        fill: Color de progreso (opcional, por defecto basado en score).
-    """
+    """Renderiza un medidor circular de estado para métricas de salud."""
     if not hasattr(canvas, "create_arc"): return
     try:
         val_f = float(percent)

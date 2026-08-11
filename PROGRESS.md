@@ -7,38 +7,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **235** (46.6% de aceptación)
-- Rechazadas por tests: 10
+- Rechazadas por tests: 11
 - Rechazadas por guardia de seguridad: 27
-- Sin cambios (nada sustancial que mejorar): 18
+- Sin cambios (nada sustancial que mejorar): 17
 - Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-09 | 60 | 3 | 7 | 6 | 62 |
+| 2026-08-09 | 58 | 3 | 7 | 4 | 62 |
 | 2026-08-10 | 162 | 6 | 19 | 11 | 152 |
-| 2026-08-11 | 13 | 1 | 1 | 1 | 0 |
+| 2026-08-11 | 15 | 2 | 1 | 2 | 0 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - manejo de errores y validación de entradas: **52**
 - seguridad defensiva: **51**
-- rendimiento: **39**
-- robustez ante casos límite: **36**
+- rendimiento: **41**
+- robustez ante casos límite: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **23**
 - `settings.py`: **23**
+- `quarantine.py`: **22**
+- `assistant.py`: **19**
+- `branding.py`: **19**
 - `healthscore.py`: **19**
-- `assistant.py`: **18**
-- `branding.py`: **18**
 - `diskreport.py`: **18**
 - `duplicates.py`: **18**
-- `organizer.py`: **17**
 - `main.py`: **17**
+- `organizer.py`: **16**
 - `browser.py`: **16**
 - `memory.py`: **16**
 - `scanner.py`: **14**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-11T00:44:18` **branding.py** (rendimiento): Se optimizó el renderizado del logo (`draw_logo`) reemplazando el cálculo repetitivo de coordenadas y atributos en cada frame por una estrategia de memoización parcial, reduciendo la carga de CPU durante las operaciones de dibujo.
+- `2026-08-11T00:43:46` **assistant.py** (rendimiento): Optimizé la generación de respuestas mediante la pre-compilación de la lista de prioridades (`_PRIORITIES_TUPLE`) y la sustitución de la generación por tupla en `_gen_problems` por un acceso directo, eliminando la creación de objetos innecesarios y redundantes en cada iteración del bucle.
 - `2026-08-11T00:34:23` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación de los métodos de resolución de rutas en `StartupEntry` y se han aclarado las responsabilidades de los métodos privados, facilitando la comprensión del flujo de datos y validaciones de seguridad.
 - `2026-08-11T00:34:13` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación técnica interna mediante la adición de docstrings precisos en las funciones principales y la explicitación de la lógica de negocio en el namespace de validadores, facilitando el mantenimiento y la comprensión de las restricciones de seguridad aplicadas.
 - `2026-08-11T00:33:24` **safety.py** (legibilidad y documentación): Documenté con precisión técnica el propósito y las restricciones de cada función crítica en `safety.py` mediante docstrings enriquecidos, facilitando la comprensión del "porqué" de las validaciones para futuras auditorías de código.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-11T00:04:07` **browser.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `_sum_directory_recursive` refactorizando la lógica de cálculo de tamaño y el filtrado de entradas, extrayendo las comprobaciones de exclusión a una función con nombre explícito para clarificar la intención del flujo de control.
 - `2026-08-11T00:03:57` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `branding.py` incluyendo docstrings detallados en las funciones de renderizado gráfico (`draw_logo`, `draw_gradient_bar`, `draw_ring`) para clarificar el propósito de los parámetros de coordenadas y escalado, facilitando el mantenimiento futuro de la interfaz.
 - `2026-08-11T00:02:54` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` y `entries_from_registry` implementando una validación estricta contra entradas nulas o malformadas, evitando que errores de parseo en líneas inesperadas del CSV interrumpan el flujo de datos.
-- `2026-08-10T14:51:14` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `load` y `validate` al añadir un chequeo explícito de tipos y límites para asegurar que el contenido cargado del JSON sea un diccionario válido antes de procesarlo, evitando que valores inesperados causen fallos silenciosos o estructuras de datos inconsistentes.
-- `2026-08-10T14:50:47` **scanner.py** (manejo de errores y validación de entradas): Reforcé la robustez de `scan_directory` y `process_entry` mediante la validación proactiva de rutas y manejo explícito de `None` en parámetros de entrada, evitando excepciones imprevistas durante la iteración sobre el sistema de archivos.

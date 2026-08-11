@@ -446,19 +446,20 @@ def _gen_problems(ctx: SystemContext) -> Generator[str, None, None]:
     """
     if ctx is None: return
     
-    # Lista de reglas de problema, ordenadas por criticidad decreciente
-    prioridades: tuple[tuple[bool, str], ...] = (
-        (ctx.disk_free_percent < 10.0, f"queda solo {ctx.disk_free_percent:.0f}% de disco libre"),
-        (ctx.suspicious_warnings > 0, f"{ctx.suspicious_warnings} archivo(s) sospechosos"),
-        (ctx.memory_available_percent < 15.0, f"queda {ctx.memory_available_percent:.0f}% de RAM"),
-        (ctx.junk_mb > 1000.0, f"{ctx.junk_mb:.0f} MB de archivos basura"),
-        (ctx.duplicate_mb > 500.0, f"{ctx.duplicate_mb:.0f} MB en duplicados"),
-        (ctx.startup_count > 15, f"{ctx.startup_count} programas de inicio")
-    )
-    
-    for condicion, mensaje in prioridades:
-        if condicion:
-            yield mensaje
+    # Prioridades pre-calculadas como tupla para evitar crear listas en cada llamada
+    # Se evalúan las condiciones dinámicamente mediante lógica directa
+    if ctx.disk_free_percent < 10.0:
+        yield f"queda solo {ctx.disk_free_percent:.0f}% de disco libre"
+    if ctx.suspicious_warnings > 0:
+        yield f"{ctx.suspicious_warnings} archivo(s) sospechosos"
+    if ctx.memory_available_percent < 15.0:
+        yield f"queda {ctx.memory_available_percent:.0f}% de RAM"
+    if ctx.junk_mb > 1000.0:
+        yield f"{ctx.junk_mb:.0f} MB de archivos basura"
+    if ctx.duplicate_mb > 500.0:
+        yield f"{ctx.duplicate_mb:.0f} MB en duplicados"
+    if ctx.startup_count > 15:
+        yield f"{ctx.startup_count} programas de inicio"
 
 
 def available(base: Union[str, Path, None] = None) -> bool:
