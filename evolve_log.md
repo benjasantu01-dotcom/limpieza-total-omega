@@ -1189,3 +1189,28 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-11T00:24:16` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 110): unterminated string literal (detected at line 110)
 - `2026-08-11T00:24:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-11T00:24:16` Corrida terminada. Total usado hoy: 12.
+- `2026-08-11T00:32:58` Arrancando corrida. Quedan hoy ~288 peticiones objetivo.
+- `2026-08-11T00:33:24` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Documenté con precisión técnica el propósito y las restricciones de cada función crítica en `safety.py` mediante docstrings enriquecidos, facilitando la comprensión del "porqué" de las validaciones para futuras auditorías de código.
+- `2026-08-11T00:33:47` Tests FALLARON:
+```
+      # La misma heurística tiene que valer con rutas estilo POSIX, para que el
+        # resultado no dependa de en qué sistema corran los tests.
+>       flagged = scanner.check_system_lookalike(PurePosixPath("/home/user/Downloads/svchost.exe"))
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: check_system_lookalike() missing 2 required positional arguments: 'entry' and 'now_ts'
+
+evolve/tests/test_basic.py:212: TypeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_scanner_double_extension_detection - TypeError: check_double_extension() missing 2 required positional arguments: 'entry' and 'now_ts'
+FAILED evolve/tests/test_basic.py::test_scanner_normal_file_is_clean - TypeError: check_double_extension() missing 2 required positional arguments: 'entry' and 'now_ts'
+FAILED evolve/tests/test_basic.py::test_scanner_flags_system_lookalike_outside_system32 - TypeError: check_system_lookalike() missing 2 required positional arguments: 'entry' and 'now_ts'
+FAILED evolve/tests/test_basic.py::test_scanner_does_not_flag_real_system_file - TypeError: check_system_lookalike() missing 2 required positional arguments: 'entry' and 'now_ts'
+FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independent - TypeError: check_system_lookalike() missing 2 required positional arguments: 'entry' and 'now_ts'
+5 failed, 294 passed in 1.13s
+
+```
+- `2026-08-11T00:33:47` ❌ Mejora descartada en scanner.py (no pasó los tests), se revirtió. Intento: Mejoré la documentación técnica del módulo mediante la adición de docstrings precisos y el uso de anotaciones de tipo más estrictas en las funciones de heurística, además de simplificar la firma de las funciones de chequeo para evitar parámetros redundantes y aclarar su propósito como predicados de análisis.
+- `2026-08-11T00:34:13` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación técnica interna mediante la adición de docstrings precisos en las funciones principales y la explicitación de la lógica de negocio en el namespace de validadores, facilitando el mantenimiento y la comprensión de las restricciones de seguridad aplicadas.
+- `2026-08-11T00:34:23` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación de los métodos de resolución de rutas en `StartupEntry` y se han aclarado las responsabilidades de los métodos privados, facilitando la comprensión del flujo de datos y validaciones de seguridad.
+- `2026-08-11T00:34:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-11T00:34:23` Corrida terminada. Total usado hoy: 16.

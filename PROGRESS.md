@@ -7,46 +7,49 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **235** (46.6% de aceptación)
-- Rechazadas por tests: 9
+- Rechazadas por tests: 10
 - Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 215
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-09 | 63 | 3 | 7 | 6 | 63 |
+| 2026-08-09 | 60 | 3 | 7 | 6 | 62 |
 | 2026-08-10 | 162 | 6 | 19 | 11 | 152 |
-| 2026-08-11 | 10 | 0 | 1 | 1 | 0 |
+| 2026-08-11 | 13 | 1 | 1 | 1 | 0 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **54**
+- legibilidad y documentación: **57**
 - manejo de errores y validación de entradas: **52**
 - seguridad defensiva: **51**
-- robustez ante casos límite: **39**
 - rendimiento: **39**
+- robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **23**
-- `settings.py`: **22**
-- `healthscore.py`: **20**
-- `diskreport.py`: **19**
+- `settings.py`: **23**
+- `healthscore.py`: **19**
 - `assistant.py`: **18**
 - `branding.py`: **18**
+- `diskreport.py`: **18**
 - `duplicates.py`: **18**
-- `browser.py`: **17**
 - `organizer.py`: **17**
 - `main.py`: **17**
+- `browser.py`: **16**
 - `memory.py`: **16**
 - `scanner.py`: **14**
-- `safety.py`: **9**
-- `startup.py`: **7**
+- `safety.py`: **10**
+- `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-11T00:34:23` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación de los métodos de resolución de rutas en `StartupEntry` y se han aclarado las responsabilidades de los métodos privados, facilitando la comprensión del flujo de datos y validaciones de seguridad.
+- `2026-08-11T00:34:13` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación técnica interna mediante la adición de docstrings precisos en las funciones principales y la explicitación de la lógica de negocio en el namespace de validadores, facilitando el mantenimiento y la comprensión de las restricciones de seguridad aplicadas.
+- `2026-08-11T00:33:24` **safety.py** (legibilidad y documentación): Documenté con precisión técnica el propósito y las restricciones de cada función crítica en `safety.py` mediante docstrings enriquecidos, facilitando la comprensión del "porqué" de las validaciones para futuras auditorías de código.
 - `2026-08-11T00:24:12` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la adición de docstrings estructurados, type hints explícitos y la refactorización de `_validate_isolation_request` para documentar la lógica de seguridad con comentarios claros sobre el "porqué" de cada restricción.
 - `2026-08-11T00:23:41` **organizer.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la inclusión de type hints precisos, la estandarización de docstrings (siguiendo el estilo Google para parámetros y retornos) y la clarificación de la intención lógica en funciones clave de seguridad y escaneo para cumplir con el enfoque de legibilidad.
 - `2026-08-11T00:23:17` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones clave y la sustitución de nombres de variables ambiguas por términos más precisos, cumpliendo con el objetivo de legibilidad y mantenibilidad.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-11T00:02:54` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` y `entries_from_registry` implementando una validación estricta contra entradas nulas o malformadas, evitando que errores de parseo en líneas inesperadas del CSV interrumpan el flujo de datos.
 - `2026-08-10T14:51:14` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `load` y `validate` al añadir un chequeo explícito de tipos y límites para asegurar que el contenido cargado del JSON sea un diccionario válido antes de procesarlo, evitando que valores inesperados causen fallos silenciosos o estructuras de datos inconsistentes.
 - `2026-08-10T14:50:47` **scanner.py** (manejo de errores y validación de entradas): Reforcé la robustez de `scan_directory` y `process_entry` mediante la validación proactiva de rutas y manejo explícito de `None` en parámetros de entrada, evitando excepciones imprevistas durante la iteración sobre el sistema de archivos.
-- `2026-08-10T14:41:34` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `ensure_safe_to_modify` implementando validación de entrada temprana y manejo explícito de errores, evitando que la función opere sobre rutas ambiguas, nulas o mal formadas antes de procesarlas.
-- `2026-08-10T14:41:05` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `load_manifest` mediante el manejo explícito de errores durante la deserialización y la implementación de una validación más estricta de la estructura del JSON, evitando así posibles estados corruptos que interrumpan el flujo de la aplicación.
-- `2026-08-10T14:40:35` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `sort_junk` ante entradas inválidas y protegí `scan_for_junk` contra excepciones de sistema al convertir rutas, asegurando que el bucle principal no se interrumpa silenciosamente por errores de validación de path.
