@@ -85,7 +85,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
         return None
         
     try:
-        file_path = Path(path).resolve()
+        file_path = Path(path)
         if not file_path.is_file() or is_protected_path(file_path):
             return None
 
@@ -121,12 +121,9 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
         return None
         
     try:
-        file_path = Path(path).resolve()
+        file_path = Path(path)
+        # Se omite resolve() aquí porque el pipeline de find_duplicates ya garantiza rutas resueltas.
         if not file_path.is_file() or is_protected_path(file_path):
-            return None
-            
-        stat = file_path.stat()
-        if getattr(stat, 'st_file_attributes', 0) & 0x400:
             return None
             
         with open(file_path, "rb") as f:

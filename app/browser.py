@@ -170,7 +170,7 @@ def _sum_directory_recursive(
     """
     Calcula el peso total de una carpeta mediante un recorrido DFS optimizado.
     """
-    if depth > 20 or not root_dir or is_protected_path(Path(root_dir)):
+    if depth > 20:
         return 0
         
     visited = visited if visited is not None else set()
@@ -178,7 +178,7 @@ def _sum_directory_recursive(
     
     try:
         real_path = os.path.realpath(root_dir)
-        if real_path in visited:
+        if real_path in visited or is_protected_path(Path(real_path)):
             return 0
         if real_path in cache:
             return cache[real_path]
@@ -187,18 +187,16 @@ def _sum_directory_recursive(
         return 0
         
     total_size: int = 0
-    
     try:
         with os.scandir(root_dir) as it:
             for entry in it:
                 if _should_skip_entry(entry, kernel32, is_junction_fn):
                     continue
-                
                 try:
                     if entry.is_dir():
                         total_size += _sum_directory_recursive(entry.path, is_junction_fn, kernel32, visited, cache, depth + 1)
                     elif entry.is_file():
-                        total_size += max(0, entry.stat().st_size)
+                        total_size += entry.stat().st_size
                 except (PermissionError, OSError):
                     continue
     except (PermissionError, OSError):

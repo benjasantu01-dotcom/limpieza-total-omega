@@ -203,13 +203,6 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Recorre un directorio de forma iterativa (evita recursión profunda) para listar archivos.
-    
-    Args:
-        directory: Ruta raíz a recorrer.
-        skip_protected: Si es True, usa `safety.is_protected_path` para ignorar rutas críticas.
-        
-    Yields:
-        Tuplas conteniendo el objeto Path del archivo y su tamaño en bytes (st_size).
     """
     if not directory:
         return
@@ -223,22 +216,18 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     except (OSError, RuntimeError, TypeError):
         return
 
-    # Inode tracking para evitar ciclos infinitos en enlaces simbólicos de directorios
     visited_inodes: set[Tuple[int, int]] = set()
     stack: List[str] = [str(root)]
 
     while stack:
         current_dir = stack.pop()
-        
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        # Saltar enlaces simbólicos/junctions para prevenir duplicación o bucles
                         if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
                             continue
                         
-                        # Filtrado de seguridad previo a procesar el nodo
                         if skip_protected and is_protected_path(Path(entry.path)):
                             continue
 
@@ -259,11 +248,6 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_protected: bool = True) -> List[FileEntry]:
     """
     Encuentra los N archivos de mayor peso en la jerarquía dada usando una estructura de heap.
-    
-    Args:
-        directory: Directorio base.
-        limit: Cantidad máxima de archivos a retornar (usando heapq para eficiencia O(n log k)).
-        skip_protected: Si es True, evita rutas protegidas.
     """
     if not directory or limit <= 0:
         return []
@@ -277,10 +261,6 @@ def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_prot
 def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip_protected: bool = True) -> List[ExtensionUsage]:
     """
     Agrupa el uso de espacio por extensión de archivo.
-    
-    Args:
-        directory: Directorio base.
-        limit: Máximo de grupos de extensiones a retornar ordenadas por peso acumulado.
     """
     if not directory or limit <= 0:
         return []
@@ -304,10 +284,6 @@ def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip
 def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
     """
     Agrupa el uso de espacio de las subcarpetas inmediatas del directorio dado.
-    
-    Args:
-        directory: Directorio base desde el cual analizar las subcarpetas.
-        limit: Cantidad de carpetas pesadas a retornar basándose en el acumulado de archivos hijos.
     """
     if not directory or limit <= 0:
         return []
@@ -322,7 +298,6 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
         
         for path, size in walk_files(base, skip_protected):
             try:
-                # Mapeo de archivos hijos a su directorio de nivel superior inmediato
                 relative = path.relative_to(base)
                 if not relative.parts: continue
                 top_level = base / relative.parts[0]
@@ -351,16 +326,7 @@ def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 
 def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -> List[str]:
     """
-    Genera un informe textual unificado del uso de disco.
-    
-    Realiza una única pasada por el árbol de archivos para recopilar estadísticas,
-    minimizando las llamadas al sistema operativo (syscalls) al procesar métricas en memoria.
-    
-    Args:
-        directory: Carpeta a analizar.
-        
-    Returns:
-        Lista de strings formateados listos para visualización (UI).
+    Genera un informe textual unificado del uso de disco con una sola pasada eficiente.
     """
     if not directory: 
         return ["Error: Ruta no proporcionada."]
@@ -372,34 +338,29 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
     except (OSError, TypeError, RuntimeError):
         return ["Error: Ruta inválida o inaccesible."]
         
-    ext_size: Dict[str, int] = defaultdict(int)
-    ext_count: Dict[str, int] = defaultdict(int)
-    # Heap de tamaño fijo (8) para mantener el top de archivos más pesados con baja huella de memoria
+    ext_data: Dict[str, List[int]] = defaultdict(lambda: [0, 0]) # [size, count]
     top_files_heap: List[Tuple[int, str]] = []
     total_bytes, total_files = 0, 0
     
     for path, size in walk_files(path_obj, skip_protected):
-        try:
-            total_bytes += size
-            total_files += 1
-            
-            ext = path.suffix.lower() or "(sin extensión)"
-            ext_size[ext] += size
-            ext_count[ext] += 1
-            
-            path_str = str(path)
-            if len(top_files_heap) < 8:
-                heapq.heappush(top_files_heap, (size, path_str))
-            else:
-                heapq.heappushpop(top_files_heap, (size, path_str))
-        except (AttributeError, TypeError, OSError):
-            continue
+        total_bytes += size
+        total_files += 1
+        
+        ext = path.suffix.lower() or "(sin extensión)"
+        d = ext_data[ext]
+        d[0] += size
+        d[1] += 1
+        
+        if len(top_files_heap) < 8:
+            heapq.heappush(top_files_heap, (size, str(path)))
+        elif size > top_files_heap[0][0]:
+            heapq.heapreplace(top_files_heap, (size, str(path)))
 
     lines = [f"Carpeta analizada: {path_obj}", f"Total: {format_size(total_bytes)} en {total_files} archivos", "", "Por tipo de archivo:"]
     
-    sorted_exts = heapq.nlargest(8, ext_size.items(), key=lambda item: item[1])
-    for ext, size in sorted_exts:
-        lines.append(f"  {ext:<18} {format_size(size):>10}  ({ext_count[ext]} archivos)")
+    sorted_exts = heapq.nlargest(8, ext_data.items(), key=lambda item: item[1][0])
+    for ext, data in sorted_exts:
+        lines.append(f"  {ext:<18} {format_size(data[0]):>10}  ({data[1]} archivos)")
         
     lines.extend(["", "Archivos más grandes:"])
     for size, path in sorted(top_files_heap, key=lambda x: x[0], reverse=True):

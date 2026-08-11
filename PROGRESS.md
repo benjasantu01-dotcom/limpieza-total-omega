@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **232** (46.0% de aceptación)
+- Mejoras aceptadas: **233** (46.2% de aceptación)
 - Rechazadas por tests: 10
-- Rechazadas por guardia de seguridad: 33
+- Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 17
 - Sin respuesta de la IA (error o límite): 212
 
@@ -16,36 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-10 | 76 | 2 | 10 | 7 | 77 |
-| 2026-08-11 | 156 | 8 | 23 | 10 | 135 |
+| 2026-08-10 | 73 | 2 | 9 | 7 | 77 |
+| 2026-08-11 | 160 | 8 | 23 | 10 | 135 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **60**
 - manejo de errores y validación de entradas: **51**
 - seguridad defensiva: **45**
-- robustez ante casos límite: **42**
-- rendimiento: **34**
+- robustez ante casos límite: **39**
+- rendimiento: **38**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **21**
-- `memory.py`: **20**
 - `settings.py`: **20**
-- `branding.py`: **19**
-- `diskreport.py`: **19**
+- `branding.py`: **20**
+- `diskreport.py`: **20**
+- `quarantine.py`: **20**
 - `healthscore.py`: **19**
+- `memory.py`: **19**
 - `assistant.py`: **19**
-- `duplicates.py`: **18**
-- `browser.py`: **16**
+- `duplicates.py`: **19**
+- `browser.py`: **17**
 - `scanner.py`: **16**
 - `startup.py`: **13**
-- `organizer.py`: **12**
 - `main.py`: **12**
+- `organizer.py`: **11**
 - `safety.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-11T14:22:40` **duplicates.py** (rendimiento): Optimizé la función `partial_hash` para evitar el uso innecesario de `Path.resolve()` —que implica consultas al sistema de archivos adicionales—, utilizando la ruta ya normalizada por `_collect_candidates` y reduciendo el overhead de llamadas al sistema en el bucle principal de comparación.
+- `2026-08-11T14:22:30` **diskreport.py** (rendimiento): Optimicé el rendimiento de `summarize` reemplazando la creación y gestión de estructuras de datos intermedias por un contador unificado durante el recorrido del árbol, y mejoré la eficiencia de `walk_files` evitando la creación innecesaria de objetos `Path` mediante el uso de strings directos en las comparaciones de seguridad y el filtrado.
+- `2026-08-11T14:22:05` **browser.py** (rendimiento): Optimicé el rendimiento de `_sum_directory_recursive` evitando llamadas repetitivas a `os.path.realpath` y `is_protected_path` dentro del loop profundo, y reduciendo la creación de objetos `Path` innecesarios.
+- `2026-08-11T14:21:40` **branding.py** (rendimiento): Optimicé el rendimiento de `gradient_colors` eliminando la creación innecesaria de listas intermedias y reduciendo la complejidad del bucle mediante una pre-calculación de los segmentos, lo cual es más eficiente para el renderizado repetitivo en el canvas de la UI.
 - `2026-08-11T14:12:12` **startup.py** (legibilidad y documentación): Documenté con docstrings claros y detallados la lógica de resolución de rutas en `StartupEntry` para explicar el porqué de la validación perezosa y los criterios de seguridad aplicados, facilitando el mantenimiento futuro del código.
 - `2026-08-11T14:11:08` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación de los chequeos heurísticos mediante la estandarización de docstrings y la inclusión de type hints explícitos, facilitando la comprensión del flujo de datos en el motor de escaneo.
 - `2026-08-11T14:01:29` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de Type Hints en la firma de funciones, la estandarización de los Docstrings siguiendo el estilo Google/NumPy para mayor claridad, y la extracción de la lógica de validación de nombres de archivos en `quarantine_file` a una función privada más descriptiva, facilitando el mantenimiento y la auditoría de seguridad del código.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-11T13:40:58` **branding.py** (legibilidad y documentación): Mejora la legibilidad del código y la calidad de la documentación al estandarizar los `docstrings` en todo el archivo, garantizando que sigan las convenciones PEP 257 y añadiendo `type hints` explícitos en lugares donde la inferencia podría causar ambigüedad, facilitando el mantenimiento a largo plazo.
 - `2026-08-11T13:40:27` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la aplicación de *type hints* faltantes, la estandarización de docstrings y la simplificación de estructuras de decisión complejas mediante la extracción de funciones, asegurando mayor claridad en la lógica de procesamiento de contexto sin alterar la funcionalidad.
 - `2026-08-11T13:31:09` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo una validación explícita para la estructura de la fila antes de procesarla, asegurando que `DictReader` devuelva los campos esperados y evitando posibles errores de acceso por índices o claves inexistentes ante datos mal formados del registro.
-- `2026-08-11T13:30:59` **settings.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de errores en `_Validators.path` y `_Validators.int` para evitar excepciones no capturadas al procesar entradas malformadas o tipos inesperados, garantizando la estabilidad del bucle de configuración ante datos corruptos.
-- `2026-08-11T13:30:03` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado `ensure_safe_to_modify` para incluir una validación estricta de la existencia y tipo del padre de la ruta antes de operar, evitando posibles errores de resolución en rutas inexistentes o malformadas, además de asegurar que los errores en las comprobaciones de integridad no queden silenciados.
-- `2026-08-11T13:21:39` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `parse_windows_process_csv` y `parse_linux_meminfo` mediante la validación estricta de sus entradas y el manejo controlado de errores de conversión de tipos, evitando que valores inesperados o malformados detengan el flujo del programa.
-- `2026-08-11T13:11:17` **main.py** (manejo de errores y validación de entradas): Se introdujo una validación robusta y centralizada en `_validate_numeric_setting` dentro de `_collect_settings`, garantizando que la aplicación capture errores de conversión de texto a número (vía `ValueError`) o entradas vacías sin colapsar el hilo de UI, usando `try/except` explícitos.

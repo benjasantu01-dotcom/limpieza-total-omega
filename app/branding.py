@@ -252,24 +252,21 @@ def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
 
 def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> List[HexColor]:
     """Genera una lista de colores interpolados entre puntos de control (stops)."""
-    try:
-        num_steps: int = max(1, int(steps))
-    except (TypeError, ValueError):
-        num_steps = 1
-    
-    key: tuple = (num_steps, stops)
+    num_steps = max(1, int(steps))
+    key = (num_steps, stops)
     if key in _memoized_gradients:
         return _memoized_gradients[key]
 
-    if not stops: res: List[HexColor] = [PALETTE["accent"]] * num_steps
+    if not stops: res = [PALETTE["accent"]] * num_steps
     elif len(stops) < 2: res = [stops[0]] * num_steps
     else:
-        tramos: int = len(stops) - 1
         res = []
+        tramos = len(stops) - 1
         for i in range(num_steps):
-            pos: float = (i / max(1, num_steps - 1)) * tramos
-            idx: int = min(tramos - 1, int(pos))
-            res.append(blend(stops[idx], stops[idx + 1], pos - idx))
+            pos = (i / (num_steps - 1)) * tramos if num_steps > 1 else 0
+            idx = int(pos)
+            if idx >= tramos: res.append(stops[-1])
+            else: res.append(blend(stops[idx], stops[idx + 1], pos - idx))
     
     _memoized_gradients[key] = res
     return res
@@ -278,12 +275,14 @@ def _get_grouped_segments(colors: List[HexColor]) -> List[Tuple[HexColor, int, i
     """Comprime secuencias de colores iguales en segmentos de rango [inicio, fin)."""
     segments: List[Tuple[HexColor, int, int]] = []
     if not colors: return segments
-    start: int = 0
+    start = 0
+    curr = colors[0]
     for i in range(1, len(colors)):
-        if colors[i] != colors[start]:
-            segments.append((colors[start], start, i))
+        if colors[i] != curr:
+            segments.append((curr, start, i))
+            curr = colors[i]
             start = i
-    segments.append((colors[start], start, len(colors)))
+    segments.append((curr, start, len(colors)))
     return segments
 
 
@@ -352,11 +351,11 @@ def logo_ascii() -> str:
 def _draw_shield_stripes(canvas: Any, canvas_x: float, canvas_y: float, scale: float) -> None:
     """Renderiza el sombreado interno del escudo dentro de un canvas Tkinter."""
     if scale <= 0: return
-    franjas_count: int = max(6, int(28 * scale))
-    colores: List[HexColor] = gradient_colors(franjas_count)
+    franjas_count = max(6, int(28 * scale))
+    colores = gradient_colors(franjas_count)
     for color_hex, start, end in _get_grouped_segments(colores):
-        mid: float = (start + end) / 2
-        w: float = 36 * scale * (1.0 if mid / (franjas_count - 1) < 0.55 else 1.0 - (mid / (franjas_count - 1) - 0.55) * 1.9)
+        mid = (start + end) / 2
+        w = 36 * scale * (1.0 if mid / (franjas_count - 1) < 0.55 else 1.0 - (mid / (franjas_count - 1) - 0.55) * 1.9)
         canvas.create_rectangle(canvas_x + 64*scale - w, canvas_y + 18*scale + start*(92*scale/franjas_count), 
                                 canvas_x + 64*scale + w, canvas_y + 18*scale + end*(92*scale/franjas_count) + 1, 
                                 fill=color_hex, outline="")
@@ -366,12 +365,12 @@ def draw_logo(canvas: Any, size: int = 56, canvas_x: float = 0.0, canvas_y: floa
     """Dibuja el escudo de la marca en un canvas de Tkinter aplicando escala y estilo."""
     if not hasattr(canvas, "create_polygon"): return
     try:
-        scale: float = max(0.1, float(size) / 128)
-        base_coords: List[float] = _get_shield_coords(scale)
-        contorno: List[float] = [canvas_x + base_coords[i] if i % 2 == 0 else canvas_y + base_coords[i] for i in range(len(base_coords))]
+        scale = max(0.1, float(size) / 128)
+        base_coords = _get_shield_coords(scale)
+        contorno = [canvas_x + base_coords[i] if i % 2 == 0 else canvas_y + base_coords[i] for i in range(len(base_coords))]
         
         for paso in range(4, 0, -1):
-            r: float = 56 * scale * (0.6 + paso * 0.12)
+            r = 56 * scale * (0.6 + paso * 0.12)
             canvas.create_oval(canvas_x + 64*scale - r, canvas_y + 58*scale - r, 
                                canvas_x + 64*scale + r, canvas_y + 58*scale + r, 
                                fill=blend(PALETTE["surface"], PALETTE["glow"], 0.04 * paso), outline="")
@@ -395,8 +394,8 @@ def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
     """Dibuja una línea horizontal decorativa con gradiente en el canvas."""
     if not hasattr(canvas, "create_line"): return
     try:
-        ancho: int = max(1, int(width))
-        colores: List[HexColor] = gradient_colors(ancho, stops)
+        ancho = max(1, int(width))
+        colores = gradient_colors(ancho, stops)
         for color_hex, start, end in _get_grouped_segments(colores):
             canvas.create_line(canvas_x + start, canvas_y, canvas_x + end, canvas_y, fill=color_hex, width=max(1, int(height)))
     except (ValueError, TypeError, AttributeError): pass
@@ -409,16 +408,16 @@ def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
     """Dibuja un medidor circular tipo anillo para representar porcentajes de salud."""
     if not hasattr(canvas, "create_arc"): return
     try:
-        val_f: float = float(percent)
-        valor: float = max(0.0, min(100.0, val_f))
-        diametro: int = max(20, int(size))
-        grosor: int = max(2, min(int(thickness), diametro // 2 - 1))
+        val_f = float(percent)
+        valor = max(0.0, min(100.0, val_f))
+        diametro = max(20, int(size))
+        grosor = max(2, min(int(thickness), diametro // 2 - 1))
     except (TypeError, ValueError, ZeroDivisionError): return
     
-    color_fondo: HexColor = track or PALETTE["surface_alt"]
-    color_avance: HexColor = fill or score_color(valor)
-    borde: float = grosor / 2
-    caja: Tuple[float, float, float, float] = (canvas_x + borde, canvas_y + borde, canvas_x + diametro - borde, canvas_y + diametro - borde)
+    color_fondo = track or PALETTE["surface_alt"]
+    color_avance = fill or score_color(valor)
+    borde = grosor / 2
+    caja = (canvas_x + borde, canvas_y + borde, canvas_x + diametro - borde, canvas_y + diametro - borde)
     
     canvas.create_arc(*caja, start=0, extent=359.9, style="arc", outline=color_fondo, width=grosor)
     if valor > 0:
