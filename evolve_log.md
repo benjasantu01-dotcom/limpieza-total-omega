@@ -790,3 +790,28 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-12T05:07:44` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `walk_files` y `largest_folders` añadiendo una validación explícita de `is_protected_path` al inicio de cada iteración y al procesar subcarpetas, garantizando que el recolector de datos sea incapaz de acceder a rutas protegidas incluso ante cambios en la estructura de directorios durante el escaneo.
 - `2026-08-12T05:07:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-12T05:07:44` Corrida terminada. Total usado hoy: 120.
+- `2026-08-12T05:15:14` Arrancando corrida. Quedan hoy ~180 peticiones objetivo.
+- `2026-08-12T05:15:40` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-08-12T05:16:10` Tests FALLARON:
+```
+ntes. El sistema se encuentra estable.' = <built-in method join of str object at 0x7f2127c2bb40>(['No hay acciones urgentes. El sistema se encuentra estable.'])
+E        +    where <built-in method join of str object at 0x7f2127c2bb40> = ' '.join
+E        +    and   ['No hay acciones urgentes. El sistema se encuentra estable.'] = HealthResult(score=100, grade='A', breakdown={'seguridad': 30, 'disco': 20, 'memoria': 18, 'basura': 14, 'duplicados': 10, 'arranque': 8}, recommendations=['No hay acciones urgentes. El sistema se encuentra estable.']).recommendations
+
+evolve/tests/test_modules.py:899: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_a_healthy_system_still_gets_a_recommendation - AssertionError: assert 'buen estado' in 'No hay acciones urgentes. El sistema se encuentra estable.'
+ +  where 'No hay acciones urgentes. El sistema se encuentra estable.' = <built-in method join of str object at 0x7f2127c2bb40>(['No hay acciones urgentes. El sistema se encuentra estable.'])
+ +    where <built-in method join of str object at 0x7f2127c2bb40> = ' '.join
+ +    and   ['No hay acciones urgentes. El sistema se encuentra estable.'] = HealthResult(score=100, grade='A', breakdown={'seguridad': 30, 'disco': 20, 'memoria': 18, 'basura': 14, 'duplicados': 10, 'arranque': 8}, recommendations=['No hay acciones urgentes. El sistema se encuentra estable.']).recommendations
+1 failed, 298 passed in 1.15s
+
+```
+- `2026-08-12T05:16:10` ❌ Mejora descartada en healthscore.py (no pasó los tests), se revirtió. Intento: Mejoré la seguridad defensiva de `healthscore.py` restringiendo la exposición de datos sensibles en las recomendaciones, asegurando que las cadenas generadas no revelen rutas del sistema o nombres de archivos, protegiendo así la privacidad ante logs externos o exportaciones.
+- `2026-08-12T05:17:10` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-12T05:17:19` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-08-12T05:18:02` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-08-12T05:19:14` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-08-12T05:20:11` ➖ Sin cambios en memory.py (enfoque: seguridad defensiva). Motivo: Mejoré la seguridad defensiva de `trim_working_set` implementando una validación previa de la integridad del proceso mediante su ruta, asegurando que no se pueda realizar ninguna operación si el proceso reside en rutas protegidas, utilizando `is_protected_path` antes de cualquier interacción significativa con el manejador abierto.
+- `2026-08-12T05:20:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-12T05:20:11` Corrida terminada. Total usado hoy: 124.
