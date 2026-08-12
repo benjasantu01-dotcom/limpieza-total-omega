@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **229** (45.4% de aceptación)
+- Mejoras aceptadas: **228** (45.2% de aceptación)
 - Rechazadas por tests: 8
 - Rechazadas por guardia de seguridad: 31
-- Sin cambios (nada sustancial que mejorar): 15
+- Sin cambios (nada sustancial que mejorar): 16
 - Sin respuesta de la IA (error o límite): 221
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-11 | 135 | 5 | 17 | 8 | 127 |
-| 2026-08-12 | 94 | 3 | 14 | 7 | 94 |
+| 2026-08-11 | 132 | 5 | 17 | 8 | 126 |
+| 2026-08-12 | 96 | 3 | 14 | 8 | 95 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **61**
 - manejo de errores y validación de entradas: **48**
 - rendimiento: **45**
-- robustez ante casos límite: **38**
-- seguridad defensiva: **37**
+- robustez ante casos límite: **40**
+- seguridad defensiva: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **21**
 - `quarantine.py`: **21**
-- `settings.py`: **20**
 - `diskreport.py`: **20**
 - `assistant.py`: **20**
 - `branding.py`: **20**
-- `scanner.py`: **18**
+- `settings.py`: **19**
 - `duplicates.py`: **17**
+- `memory.py`: **17**
+- `scanner.py`: **17**
 - `browser.py`: **16**
-- `memory.py`: **16**
+- `organizer.py`: **13**
 - `main.py`: **12**
-- `organizer.py`: **12**
-- `startup.py`: **10**
+- `startup.py`: **9**
 - `safety.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-12T09:14:21` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de `stage_for_review` al añadir validaciones de estado de los archivos antes de intentar moverlos, asegurando que el origen y el destino sean distintos y que la operación no falle ante archivos bloqueados o inconsistentes.
+- `2026-08-12T09:13:58` **memory.py** (robustez ante casos límite): Mejoré la robustez de `parse_windows_process_csv` para manejar correctamente procesos con nombres que contienen comas o caracteres inusuales, utilizando una lógica de parseo más segura que previene errores de índice y fallos al procesar líneas malformadas o inesperadas.
 - `2026-08-12T09:01:31` **healthscore.py** (robustez ante casos límite): Reforcé la robustez del módulo `healthscore.py` ante casos límite en la generación de recomendaciones, evitando accesos a claves inexistentes en el diccionario de `ratios` y asegurando que `_generate_recommendations` maneje correctamente las entradas faltantes o mal formadas.
 - `2026-08-12T09:01:20` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez de `suggest_keeper` y `hash_file` frente a archivos que desaparecen o se corrompen durante el proceso de análisis, evitando excepciones inesperadas mediante chequeos de existencia y manejo de errores de estado más granular, alineándose con el enfoque de robustez ante casos límite.
 - `2026-08-12T08:51:12` **assistant.py** (robustez ante casos límite): Mejora la robustez ante datos corruptos o inesperados en `SystemContext` dentro de `context_as_text`, asegurando que la serialización sea siempre segura y no propague errores hacia el asistente.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-12T08:19:36` **branding.py** (rendimiento): Se introdujo una caché de diccionario (lru_cache) en `tab_label` y se optimizó la lógica de `icon` para evitar la concatenación redundante y el procesamiento de strings innecesario, mejorando el rendimiento en el renderizado de la interfaz.
 - `2026-08-12T08:09:38` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo docstrings específicos a los métodos públicos y delegados de validación, explicando las restricciones de seguridad y el comportamiento de las funciones en caso de error.
 - `2026-08-12T08:09:11` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo `scanner.py` mediante la normalización de docstrings, la inclusión de explicaciones detalladas sobre el propósito de cada heurística y la estandarización de los contratos de tipo para clarificar la lógica de las funciones `check_`.
-- `2026-08-12T08:00:09` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `_check_file_integrity` extrayendo la lógica de validación a un diccionario de funciones lambda auto-explicativas, lo que permite que el bucle de validación sea más limpio y fácil de auditar bajo las reglas de seguridad.
-- `2026-08-12T07:59:40` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_validate_isolation_request` para reducir su complejidad ciclomática, extrayendo las validaciones de atributos de Windows y rutas a métodos auxiliares con nombres descriptivos.

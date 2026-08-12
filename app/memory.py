@@ -171,9 +171,13 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
     def process_lines():
         for line in (l for l in text.splitlines() if l.strip()):
             parts = [p.strip().strip("'\"") for p in line.split(",")]
-            if len(parts) == 3 and parts[1].isdigit() and parts[2].isdigit():
+            if len(parts) >= 3:
                 try:
-                    yield ProcessMemory(parts[0] or "Unknown", int(parts[1]), int(parts[2]))
+                    # Buscamos PID y WorkingSet al final para mayor resiliencia
+                    ws = int(parts[-1])
+                    pid = int(parts[-2])
+                    name = ",".join(parts[:-2])
+                    yield ProcessMemory(name or "Unknown", pid, ws)
                 except (ValueError, TypeError):
                     continue
 

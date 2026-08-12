@@ -1147,3 +1147,12 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-12T09:01:31` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Reforcé la robustez del módulo `healthscore.py` ante casos límite en la generación de recomendaciones, evitando accesos a claves inexistentes en el diccionario de `ratios` y asegurando que `_generate_recommendations` maneje correctamente las entradas faltantes o mal formadas.
 - `2026-08-12T09:01:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-12T09:01:31` Corrida terminada. Total usado hoy: 212.
+- `2026-08-12T09:10:17` Arrancando corrida. Quedan hoy ~88 peticiones objetivo.
+- `2026-08-12T09:11:18` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-12T09:12:21` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-08-12T09:13:32` ➖ Sin cambios en main.py (enfoque: robustez ante casos límite). Motivo: Se introdujo una comprobación robusta mediante `is_safe_target_dir` al seleccionar carpetas personalizadas y en el método `run_async`, asegurando que cualquier operación sobre el disco se bloquee preventivamente si el directorio seleccionado (o su resolución) ha sido marcado como protegido o inaccesible, evitando excepciones de E/S en tiempo de ejecución.
+- `2026-08-12T09:13:58` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Mejoré la robustez de `parse_windows_process_csv` para manejar correctamente procesos con nombres que contienen comas o caracteres inusuales, utilizando una lógica de parseo más segura que previene errores de índice y fallos al procesar líneas malformadas o inesperadas.
+- `2026-08-12T09:14:21` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `stage_for_review` al añadir validaciones de estado de los archivos antes de intentar moverlos, asegurando que el origen y el destino sean distintos y que la operación no falle ante archivos bloqueados o inconsistentes.
+- `2026-08-12T09:14:35` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: robustez ante casos límite).
+- `2026-08-12T09:14:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-12T09:14:35` Corrida terminada. Total usado hoy: 216.

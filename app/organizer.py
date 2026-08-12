@@ -152,16 +152,19 @@ def _is_safe_to_move(jf: JunkFile, dest: Path) -> bool:
     Valida si un archivo es candidato seguro para ser movido.
     Comprueba: existencia, permisos, recursión y paridad de volumen (necesario para shutil.move).
     """
-    current_abs = jf.path.resolve()
-    if not current_abs.exists() or not current_abs.is_file():
+    try:
+        current_abs = jf.path.resolve()
+        if not current_abs.exists() or not current_abs.is_file():
+            return False
+        # Impedir movimiento recursivo o sobre sí mismo
+        if dest == current_abs or dest in current_abs.parents:
+            return False
+        # Verificar bloqueos activos y restricción de mover entre volúmenes distintos
+        if _is_file_locked(current_abs) or current_abs.anchor != dest.anchor:
+            return False
+        return True
+    except (OSError, RuntimeError):
         return False
-    # Impedir movimiento recursivo o sobre sí mismo
-    if dest == current_abs or dest in current_abs.parents:
-        return False
-    # Verificar bloqueos activos y restricción de mover entre volúmenes distintos
-    if _is_file_locked(current_abs) or current_abs.anchor != dest.anchor:
-        return False
-    return True
 
 
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
@@ -251,8 +254,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             if _is_safe_to_move(jf, dest):
                 if os.access(dest, os.W_OK) and shutil.disk_usage(dest).free > jf.size_bytes:
                     target = _generate_unique_target(dest / f"{jf.path.stem}_{int(jf.modified.timestamp())}{jf.path.suffix}")
-                    if dest in target.resolve().parents:
-                        shutil.move(str(jf.path), str(target))
+                    shutil.move(str(jf.path), str(target))
         except (PermissionError, OSError, shutil.Error, RuntimeError):
             continue
     return dest
