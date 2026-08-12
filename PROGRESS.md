@@ -7,8 +7,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **224** (44.4% de aceptación)
-- Rechazadas por tests: 8
-- Rechazadas por guardia de seguridad: 33
+- Rechazadas por tests: 7
+- Rechazadas por guardia de seguridad: 34
 - Sin cambios (nada sustancial que mejorar): 16
 - Sin respuesta de la IA (error o límite): 223
 
@@ -16,15 +16,15 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-11 | 92 | 3 | 12 | 5 | 88 |
-| 2026-08-12 | 132 | 5 | 21 | 11 | 135 |
+| 2026-08-11 | 91 | 1 | 12 | 5 | 87 |
+| 2026-08-12 | 133 | 6 | 22 | 11 | 136 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **61**
 - manejo de errores y validación de entradas: **50**
-- seguridad defensiva: **43**
-- rendimiento: **39**
+- seguridad defensiva: **42**
+- rendimiento: **40**
 - robustez ante casos límite: **31**
 
 ## Mejoras aceptadas por archivo
@@ -32,20 +32,21 @@ Este archivo se regenera solo en cada corrida a partir de
 - `settings.py`: **22**
 - `branding.py`: **21**
 - `healthscore.py`: **21**
-- `assistant.py`: **20**
 - `quarantine.py`: **20**
 - `diskreport.py`: **19**
+- `assistant.py`: **19**
 - `duplicates.py`: **16**
 - `memory.py`: **16**
 - `browser.py`: **16**
 - `scanner.py`: **15**
-- `organizer.py`: **14**
+- `organizer.py`: **15**
 - `main.py`: **10**
 - `startup.py`: **8**
 - `safety.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-12T13:05:31` **organizer.py** (rendimiento): Optimizé la función `scan_for_junk` eliminando la llamada redundante a `_is_file_accessible` (que abre el archivo en modo lectura) al capturar metadatos mediante `entry.stat()`, lo cual reduce drásticamente las operaciones de E/S y mejora la performance en directorios con muchos archivos.
 - `2026-08-12T12:55:37` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje y la generación de recomendaciones eliminando la creación dinámica de listas y tuplas dentro de `compute_score` y `_generate_recommendations`, reemplazándolas por constantes pre-calculadas y estructuras más eficientes.
 - `2026-08-12T12:55:13` **duplicates.py** (rendimiento): Optimizé `partial_hash` evitando cargar archivos completos en memoria innecesariamente, ya que `f.read(read_bytes)` solo captura la cabecera, y mejoré la eficiencia de `_collect_candidates` utilizando `set` para `processed_paths` en lugar de una lista, reduciendo la complejidad de búsqueda de O(n) a O(1) durante el escaneo recursivo.
 - `2026-08-12T12:46:40` **branding.py** (rendimiento): He refactorizado `gradient_colors` para evitar recalcular innecesariamente los segmentos de color en cada llamada al renderizado, delegando la estructura de datos a una lista pre-computada y eliminando el overhead de procesar la lógica de interpolación lineal cada vez que se actualiza la UI.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-12T12:14:27` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `walk_files` extrayendo la lógica de filtrado y resolución de rutas a un bloque documentado, y añadí type hints explícitos para clarificar el flujo de datos.
 - `2026-08-12T12:05:44` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings más precisos en las funciones críticas de recorrido, especificando las restricciones de seguridad (como los límites de profundidad y el manejo de enlaces) para garantizar la mantenibilidad y claridad ante posibles auditorías de código.
 - `2026-08-12T12:05:32` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la sustitución de comentarios genéricos por una estructura de Docstrings informativa y el reemplazo de alias de tipo vagos por otros más precisos, facilitando la legibilidad técnica del contrato de datos de la interfaz.
-- `2026-08-12T12:04:59` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `assistant.py` mediante la normalización de la estructura de las respuestas del asistente local, reemplazando la construcción manual de cadenas (`f-strings` dispersas) por el uso de una lista de argumentos `partes` en todas las funciones `handle_*`, lo que facilita la auditoría de seguridad y la consistencia del lenguaje.

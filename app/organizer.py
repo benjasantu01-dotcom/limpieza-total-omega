@@ -131,15 +131,6 @@ def _is_allowed_directory(name: str) -> bool:
     return name.lower() not in SYSTEM_FOLDER_BLOCKLIST
 
 
-def _is_file_accessible(path: Path) -> bool:
-    """Comprueba si el archivo es legible mediante un intento de apertura en modo lectura."""
-    try:
-        with open(path, "rb") as f:
-            return True
-    except (OSError, PermissionError):
-        return False
-
-
 def _is_file_locked(path: Path) -> bool:
     """
     Verifica si un archivo está en uso exclusivo mediante un intento de apertura.
@@ -206,17 +197,16 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
                             _walk_dir(Path(entry.path))
                     elif entry.is_file():
                         path_obj = Path(entry.path)
-                        if _is_junk_path(path_obj):
-                            if is_safe_to_modify(path_obj) and _is_file_accessible(path_obj):
-                                try:
-                                    stat = entry.stat()
-                                    found.append(JunkFile(
-                                        path=path_obj,
-                                        size_bytes=stat.st_size,
-                                        modified=datetime.fromtimestamp(stat.st_mtime)
-                                    ))
-                                except OSError:
-                                    continue
+                        if _is_junk_path(path_obj) and is_safe_to_modify(path_obj):
+                            try:
+                                stat = entry.stat()
+                                found.append(JunkFile(
+                                    path=path_obj,
+                                    size_bytes=stat.st_size,
+                                    modified=datetime.fromtimestamp(stat.st_mtime)
+                                ))
+                            except OSError:
+                                continue
         except (PermissionError, OSError):
             pass
 

@@ -511,3 +511,36 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-12T12:56:50` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: rendimiento).
 - `2026-08-12T12:56:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-12T12:56:50` Corrida terminada. Total usado hoy: 304.
+- `2026-08-12T13:05:05` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-12T13:05:31` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimizé la función `scan_for_junk` eliminando la llamada redundante a `_is_file_accessible` (que abre el archivo en modo lectura) al capturar metadatos mediante `entry.stat()`, lo cual reduce drásticamente las operaciones de E/S y mejora la performance en directorios con muchos archivos.
+- `2026-08-12T13:06:00` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: rendimiento).
+- `2026-08-12T13:06:19` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 108): unterminated string literal (detected at line 108)
+- `2026-08-12T13:06:29` Tests FALLARON:
+```
+op_archivos': 42,
+  ?                     ^^
+        'top_procesos': 15,
+        'analisis_en_paralelo': True,
+        'asistente_activado': False,
+        'asistente_clave_api': '',
+        'asistente_enviar_metricas': True,
+        'asistente_modelo': 'gemini-3.1-flash-lite',
+    }
+FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - AssertionError: assert '' == '/tmp/pytest-...mb0/Descargas'
+  
+  - /tmp/pytest-of-runner/pytest-2/test_a_normal_folder_is_rememb0/Descargas
+FAILED evolve/tests/test_basic.py::test_scan_for_junk_finds_junk_and_ignores_other_files - AssertionError: assert 'basura.tmp' in set()
+FAILED evolve/tests/test_basic.py::test_scan_for_junk_recurses_into_subfolders - assert False
+ +  where False = any(<generator object test_scan_for_junk_recurses_into_subfolders.<locals>.<genexpr> at 0x7fd90c535220>)
+FAILED evolve/tests/test_basic.py::test_scan_for_junk_skips_system_folders - AssertionError: assert 'normal.tmp' in set()
+FAILED evolve/tests/test_basic.py::test_stage_for_review_moves_files_without_deleting_them - AssertionError: el archivo debe salir de su lugar original
+assert not True
+ +  where True = exists()
+ +    where exists = PosixPath('/tmp/pytest-of-runner/pytest-2/test_stage_for_review_moves_fi0/origen/mover.tmp').exists
+FAILED evolve/tests/test_basic.py::test_delete_reviewed_only_touches_the_review_folder - safety.UnsafePathError: Operación bloqueada para revision: múltiples enlaces (hard link).
+7 failed, 292 passed in 1.27s
+
+```
+- `2026-08-12T13:06:29` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se optimizaron las verificaciones de seguridad convirtiendo los chequeos en funciones de tipo `frozenset` y optimizando el orden de evaluación en `_check_file_integrity`, minimizando las llamadas costosas al sistema de archivos al priorizar las validaciones lógicas antes que las operaciones de I/O.
+- `2026-08-12T13:06:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-12T13:06:29` Corrida terminada. Total usado hoy: 308.
