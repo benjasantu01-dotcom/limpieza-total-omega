@@ -106,7 +106,10 @@ class _Validators:
     
     @staticmethod
     def _is_safe_path(path_obj: Path) -> bool:
-        """Verifica que una ruta sea absoluta, no un enlace simbólico y pase las reglas de safety."""
+        """
+        Verifica seguridad de una ruta contra reparse points y carpetas protegidas.
+        Aplica validación de existencia y permisos vía safety.py.
+        """
         if not path_obj.is_absolute(): return False
         if len(path_obj.parts) < 2: return False
         if any(part in ('.', '..', '..\\', '../') for part in path_obj.parts): return False
@@ -122,7 +125,10 @@ class _Validators:
 
     @staticmethod
     def bool(key: str, val: Any) -> bool | None:
-        """Normaliza tipos mixtos (string/int/bool) a booleano, o None si es inválido."""
+        """
+        Normaliza valores truthy/falsy definidos a tipo booleano de Python.
+        Retorna None si la entrada no es interpretable como booleano.
+        """
         cache_key = (key, val)
         if cache_key in _val_cache: return _val_cache[cache_key]
         
@@ -136,7 +142,10 @@ class _Validators:
 
     @staticmethod
     def int(key: str, val: Any) -> int | None:
-        """Parsea a entero y aplica límites definidos en _NUMERIC_LIMITS."""
+        """
+        Convierte a entero y asegura que el valor se mantenga dentro de _NUMERIC_LIMITS.
+        Evita desbordamientos y tipos no compatibles.
+        """
         cache_key = (key, val)
         if cache_key in _val_cache: return _val_cache[cache_key]
         
@@ -152,7 +161,10 @@ class _Validators:
 
     @staticmethod
     def path(val: Any) -> str | None:
-        """Valida y normaliza una ruta, retornando su versión absoluta o None si es insegura."""
+        """
+        Limpia y valida rutas de sistema. Retorna la ruta absoluta normalizada 
+        o None si la ruta es potencialmente peligrosa o inaccesible.
+        """
         if val is None or not isinstance(val, (str, Path)): return None
         path_string = str(val).strip()
         if not path_string: return ""
@@ -174,7 +186,10 @@ class _Validators:
 
     @staticmethod
     def str(key: str, val: Any) -> str | None:
-        """Valida strings asegurando no caracteres de control ni rutas inseguras."""
+        """
+        Valida cadenas asegurando ausencia de caracteres de control.
+        Aplica reglas de dominio para temas, acentos o longitudes máximas.
+        """
         if val is None or not isinstance(val, (str, Path)): return None
         text = str(val).strip()
         if any(c < ' ' for c in text) or ".." in text: return None

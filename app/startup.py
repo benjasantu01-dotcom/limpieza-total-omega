@@ -66,9 +66,9 @@ HOW_TO_DISABLE: str = (
 class StartupEntry:
     """Representa una entrada de inicio detectada.
     
-    Implementa resolución perezosa (lazy loading) para la propiedad `executable`:
-    la validación de existencia en disco y los chequeos de `safety.py` solo se
-    ejecutan la primera vez que se accede a la propiedad para optimizar I/O.
+    Utiliza resolución perezosa para el campo `executable`: la validación de 
+    existencia real en disco y el chequeo contra `safety.py` ocurren solo 
+    al invocar la propiedad `executable`.
     """
     name: str
     command: str
@@ -77,21 +77,20 @@ class StartupEntry:
     _checked_exists: bool = field(default=False, init=False)
 
     def _is_valid_executable(self, path: Path) -> bool:
-        """Verifica si la extensión es ejecutable y descarta enlaces simbólicos."""
+        """Valida si un path es ejecutable verificando extensión y evitando enlaces simbólicos."""
         try:
             return path.suffix.lower() in EXECUTABLE_EXTS and not path.is_symlink()
         except (OSError, ValueError, RuntimeError, TypeError):
             return False
 
     def _sanitize_command(self, raw_cmd: str) -> str:
-        """Limpia caracteres de control o no imprimibles de la cadena de comando."""
+        """Elimina caracteres de control y espacios en blanco extremos del comando."""
         if not isinstance(raw_cmd, str):
             return ""
         return "".join(c for c in raw_cmd.strip() if ord(c) >= 32)
 
     def _extract_quoted_path(self, raw_cmd: str) -> str:
-        """Extrae rutas de comandos encerradas en comillas, validando que no contengan
-        caracteres maliciosos ni apunten a ubicaciones protegidas por safety.py."""
+        """Extrae el contenido de una ruta entre comillas y valida su integridad."""
         if not isinstance(raw_cmd, str) or len(raw_cmd) < 2:
             return ""
         end_quote: int = raw_cmd.find('"', 1)
@@ -111,11 +110,7 @@ class StartupEntry:
             return ""
 
     def _resolve_and_cache_path(self, path_str: str) -> str:
-        """Realiza la validación profunda de la ruta:
-        1. Normaliza con resolve() para evitar trucos de rutas relativas.
-        2. Verifica que la ruta final no esté en la lista negra de safety.py.
-        3. Persiste el resultado en `_EXISTS_CACHE` para evitar llamadas de sistema redundantes.
-        """
+        """Valida y normaliza la ruta, consultando `_EXISTS_CACHE` para evitar I/O redundante."""
         if not isinstance(path_str, str) or not path_str or any(c in path_str for c in '<>|?*'):
             return ""
         
@@ -124,7 +119,6 @@ class StartupEntry:
         
         try:
             p: Path = Path(path_str)
-            # Validar si p es nulo o inválido tras conversión a Path
             if not p.parts:
                 return ""
 
@@ -157,15 +151,7 @@ class StartupEntry:
             return path_str
 
     def _resolve_path_from_command(self, cmd: str) -> str:
-        """
-        Analiza el comando de inicio para extraer una ruta de archivo ejecutable válida.
-        
-        El proceso sigue un esquema de seguridad estricto:
-        1. Filtra comandos que contienen operadores de shell que podrían permitir inyección.
-        2. Si el comando está entre comillas, extrae la ruta del interior preservando el formato.
-        3. Caso contrario, normaliza el primer argumento como ruta potencial y valida su 
-           existencia y seguridad contra `safety.py`.
-        """
+        """Extrae y valida la ruta ejecutable presente en una cadena de comando."""
         if not cmd:
             return ""
         if any(char in cmd for char in ('&', '|', ';', '>', '<', '$', '`', '(', ')')):
@@ -179,7 +165,7 @@ class StartupEntry:
         
     @property
     def executable(self) -> str:
-        """Devuelve la ruta absoluta del ejecutable tras resolución perezosa."""
+        """Devuelve la ruta absoluta del ejecutable tras realizar la resolución perezosa."""
         if self._checked_exists:
             return self._exec_cache or ""
             
@@ -211,7 +197,7 @@ def startup_folders() -> List[Path]:
 
 
 def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[StartupEntry]:
-    """Escanea directorios Startup del SO y mapea archivos ejecutables a StartupEntry."""
+    """Escanea directorios Startup del SO y retorna objetos StartupEntry."""
     found_entries: List[StartupEntry] = []
     scan_folders = folders if folders is not None else startup_folders()
     
@@ -231,7 +217,7 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
 
 
 def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry]:
-    """Procesa el CSV exportado desde PowerShell para crear objetos StartupEntry."""
+    """Procesa el CSV de PowerShell en una lista de objetos StartupEntry."""
     if not isinstance(text, str) or not text.strip():
         return []
         
@@ -275,7 +261,7 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
 
 
 def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[StartupEntry]:
-    """Consulta las claves del registro de Windows mediante PowerShell y caché global."""
+    """Consulta claves del registro de Windows mediante PowerShell."""
     global _REGISTRY_CACHE
     if os.name != "nt":
         return []
@@ -326,7 +312,7 @@ def estimate_impact(entries: Sequence[StartupEntry]) -> str:
 
 
 def summarize(entries: Optional[Sequence[StartupEntry]] = None) -> List[str]:
-    """Genera una representación textual legible del reporte para la interfaz."""
+    """Genera una representación textual legible para la interfaz."""
     entries_list: Sequence[StartupEntry] = entries if entries is not None else list_startup_entries()
     total_count: int = len(entries_list)
         

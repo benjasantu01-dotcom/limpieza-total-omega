@@ -121,17 +121,13 @@ def _is_file_in_use(path: Path) -> bool:
 
 
 def _check_file_integrity(p: Path) -> None:
-    """
-    Evalúa la integridad de un archivo bajo una matriz de reglas de seguridad.
-    Si alguna condición de riesgo se cumple, interrumpe el proceso mediante excepción.
-    """
+    """Evalúa la integridad de un archivo bajo una matriz de reglas de seguridad."""
     if not p.exists():
         raise UnsafePathError(f"El archivo {p.name} ya no existe.")
 
     if len(p.parts) > 32:
         raise UnsafePathError("Ruta demasiado profunda: posible ataque de evasión.")
 
-    # Mapeo de riesgos para facilitar auditoría de seguridad
     violation_checks = {
         "inaccesible (sin permisos de escritura)": lambda: not os.access(p, os.W_OK),
         "punto de reparse detectado": lambda: _is_reparse_point(p),
@@ -222,11 +218,35 @@ def is_sensitive_file(path: PathLike) -> bool:
         return True 
 
 
+def _validate_basic_path_safety(p: Path, path_str: str) -> None:
+    """Verifica restricciones de estructura básica y recorrido de directorios."""
+    if p.exists() and p.parent and not p.parent.exists():
+        raise UnsafePathError("El directorio padre de la ruta no es accesible o no existe.")
+
+    if any(part in ("..", "...") for part in path_str.replace("/", os.sep).split(os.sep)):
+        raise UnsafePathError("Operación bloqueada: posible intento de path traversal.")
+
+    if _has_invalid_chars(path_str) or _is_reserved_device_name(p.name):
+        raise UnsafePathError("Ruta inválida o formato de dispositivo bloqueado.")
+    
+    if path_str.startswith(("\\\\", "//")):
+        raise UnsafePathError("Operación bloqueada: rutas UNC/red no permitidas.")
+
+
+def _validate_boundary_conditions(p: Path, base_dir: PathLike | None) -> None:
+    """Valida límites de alcance (base_dir) y protección de sistema."""
+    if base_dir and not is_within_directory(p, base_dir, allow_equal=True):
+        raise UnsafePathError("Operación bloqueada: fuera del directorio base permitido.")
+    
+    if is_within_directory(p, Path.cwd(), allow_equal=True):
+        raise UnsafePathError("Operación bloqueada: el archivo reside en el directorio de ejecución.")
+
+    if is_drive_root(p) or is_protected_path(p):
+        raise UnsafePathError("Operación bloqueada: ruta de sistema protegida.")
+
+
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: PathLike | None = None) -> Path:
-    """
-    Guardia de acceso centralizada. Valida integridad, límites de alcance (base_dir)
-    y protección de sistema. Lanza UnsafePathError en caso de riesgo detectado.
-    """
+    """Guardia de acceso centralizada que delega la validación en chequeos modulares."""
     if path is None:
         raise UnsafePathError("Ruta nula recibida.")
 
@@ -236,28 +256,9 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     except (ValueError, TypeError) as e:
         raise UnsafePathError(f"Ruta mal formada: {e}")
 
-    if p.exists() and p.parent and not p.parent.exists():
-        raise UnsafePathError("El directorio padre de la ruta no es accesible o no existe.")
-
-    if any(part in ("..", "...") for part in path_str.replace("/", os.sep).split(os.sep)):
-        raise UnsafePathError("Operación bloqueada: posible intento de path traversal.")
-
-    if base_dir:
-        if not is_within_directory(p, base_dir, allow_equal=True):
-            raise UnsafePathError("Operación bloqueada: fuera del directorio base permitido.")
+    _validate_basic_path_safety(p, path_str)
+    _validate_boundary_conditions(p, base_dir)
     
-    if is_within_directory(p, Path.cwd(), allow_equal=True):
-        raise UnsafePathError("Operación bloqueada: el archivo reside en el directorio de ejecución.")
-
-    if _has_invalid_chars(path_str) or _is_reserved_device_name(p.name):
-        raise UnsafePathError("Ruta inválida o formato de dispositivo bloqueado.")
-    
-    if path_str.startswith(("\\\\", "//")):
-        raise UnsafePathError("Operación bloqueada: rutas UNC/red no permitidas.")
-    
-    if is_drive_root(p) or is_protected_path(p):
-        raise UnsafePathError("Operación bloqueada: ruta de sistema protegida.")
-        
     if p.exists():
         _check_file_integrity(p)
         if _is_reparse_point(p):

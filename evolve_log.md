@@ -463,3 +463,37 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-08-12T12:25:42` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 122): unterminated string literal (detected at line 122)
 - `2026-08-12T12:25:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-12T12:25:42` Corrida terminada. Total usado hoy: 292.
+- `2026-08-12T12:34:26` Arrancando corrida. Quedan hoy ~8 peticiones objetivo.
+- `2026-08-12T12:34:53` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se ha mejorado la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `ensure_safe_to_modify` para delegar sus validaciones en una serie de pequeñas funciones privadas con nombres descriptivos, eliminando la complejidad ciclomática de la función principal.
+- `2026-08-12T12:35:15` Tests FALLARON:
+```
+ POSIX, para que el
+        # resultado no dependa de en qué sistema corran los tests.
+>       flagged = scanner.check_system_lookalike(PurePosixPath("/home/user/Downloads/svchost.exe"))
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+evolve/tests/test_basic.py:212: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+ctx = PurePosixPath('/home/user/Downloads/svchost.exe')
+
+    def check_system_lookalike(ctx: FileContext) -> Optional[Suspicion]:
+        if ctx.name.lower() in SYSTEM_LOOKALIKES:
+>           if ctx.path.parent and SYSTEM32_LOWER not in str(ctx.path.parent).lower():
+               ^^^^^^^^
+E           AttributeError: 'PurePosixPath' object has no attribute 'path'
+
+app/scanner.py:139: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_scanner_double_extension_detection - AttributeError: 'PosixPath' object has no attribute 'path'
+FAILED evolve/tests/test_basic.py::test_scanner_flags_system_lookalike_outside_system32 - AttributeError: 'PureWindowsPath' object has no attribute 'path'
+FAILED evolve/tests/test_basic.py::test_scanner_does_not_flag_real_system_file - AttributeError: 'PureWindowsPath' object has no attribute 'path'
+FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independent - AttributeError: 'PurePosixPath' object has no attribute 'path'
+4 failed, 295 passed in 1.20s
+
+```
+- `2026-08-12T12:35:15` ❌ Mejora descartada en scanner.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la legibilidad y mantenibilidad del flujo de escaneo eliminando parámetros redundantes y tipado inconsistente en las funciones de inspección, centralizando la lógica de extracción de metadatos en un objeto de contexto ligero.
+- `2026-08-12T12:35:43` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y mantenibilidad agregando docstrings descriptivos a los métodos del validador y refinando la estructura de las constantes, facilitando la comprensión de las restricciones de seguridad sin alterar la lógica de validación existente.
+- `2026-08-12T12:35:53` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Mejoré la documentación interna y la claridad del flujo de `StartupEntry` añadiendo type hints más precisos y clarificando las docstrings de las técnicas de resolución perezosa para evitar confusiones sobre la persistencia en caché.
+- `2026-08-12T12:35:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-12T12:35:53` Corrida terminada. Total usado hoy: 296.
