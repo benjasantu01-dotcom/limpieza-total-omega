@@ -233,8 +233,10 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     if _cached_settings == cleaned_settings and _current_path == ruta: return ruta
     temp = ruta.with_suffix(".tmp")
     try:
-        if not ruta.parent.exists(): ruta.parent.mkdir(parents=True, exist_ok=True)
-        if not os.access(ruta.parent, os.W_OK): return None
+        if not ruta.parent.exists():
+            ruta.parent.mkdir(parents=True, exist_ok=True)
+        if not os.access(ruta.parent, os.W_OK):
+            return None
         with open(temp, "w", encoding="utf-8") as f:
             f.write(json_data)
             f.flush()
@@ -246,9 +248,9 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     except (OSError, IOError, PermissionError, RuntimeError):
         return None
     finally:
-        if temp.exists():
-            try: temp.unlink()
-            except OSError: pass
+        try:
+            if temp.exists(): temp.unlink()
+        except OSError: pass
 
 def update(changes: dict[str, Any], path_or_base: PathLike | None = None) -> AppSettings:
     current = load(path_or_base)

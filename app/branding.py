@@ -332,11 +332,12 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     try:
         p = Path(destination).expanduser().resolve()
         
-        # Validar permisos y restricciones de seguridad antes de escritura
+        # Validar permisos y restricciones de seguridad antes de cualquier acción
         if not is_safe_to_modify(p) or not is_safe_to_modify(p.parent):
             return None
             
         parent_dir = p.parent
+        # Validar existencia/creación segura
         if not parent_dir.exists():
             parent_dir.mkdir(parents=True, exist_ok=True)
         elif not parent_dir.is_dir():

@@ -136,7 +136,8 @@ class StartupEntry:
                 
             try:
                 p_abs: Path = p.resolve(strict=True)
-            except (OSError, PermissionError):
+            except (OSError, PermissionError, RuntimeError):
+                # Si no podemos resolver la ruta (ej. archivo bloqueado), no cacheamos un 'False' definitivo
                 return path_str
                 
             if is_protected_path(p_abs):
