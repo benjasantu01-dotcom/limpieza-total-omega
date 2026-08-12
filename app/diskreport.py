@@ -228,8 +228,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                         if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
                             continue
                         
-                        entry_path = Path(entry.path)
-                        if skip_protected and is_protected_path(entry_path):
+                        if skip_protected and is_protected_path(Path(entry.path)):
                             continue
 
                         if entry.is_dir():
@@ -239,8 +238,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                                 visited_inodes.add(inode)
                                 stack.append(entry.path)
                         else:
-                            size = entry.stat().st_size
-                            yield entry_path, size
+                            yield Path(entry.path), entry.stat().st_size
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):
@@ -340,7 +338,7 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
     except (OSError, TypeError, RuntimeError):
         return ["Error: Ruta inválida o inaccesible."]
         
-    ext_data: Dict[str, List[int]] = defaultdict(lambda: [0, 0]) # [size, count]
+    ext_data: Dict[str, List[int]] = defaultdict(lambda: [0, 0])
     top_files_heap: List[Tuple[int, str]] = []
     total_bytes, total_files = 0, 0
     

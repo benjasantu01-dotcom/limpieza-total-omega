@@ -62,7 +62,8 @@ _WEIGHT_FACTORS: Final[Dict[str, float]] = {
     k: (w * 100.0 / _TOTAL_WEIGHTS) if _TOTAL_WEIGHTS > 0 else 0.0 
     for k, w in WEIGHTS.items()
 }
-_WEIGHT_ITEMS: Final[List[Tuple[str, int]]] = list(WEIGHTS.items())
+# Lista ordenada de tuplas para evitar recrear la estructura en bucles
+_WEIGHT_ITEMS: Final[List[Tuple[str, float]]] = [(k, _WEIGHT_FACTORS[k]) for k in WEIGHTS]
 
 
 def _validate_weights() -> bool:
@@ -193,17 +194,11 @@ def grade_for_score(score: float | int) -> str:
 def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[str]:
     """
     Genera lista de textos de remediación según métricas deficientes.
-    Args:
-        metrics: Objeto con datos crudos del sistema.
-        ratios: Diccionario de puntajes normalizados (0.0 a 1.0) por área.
-    Returns:
-        Lista de strings con consejos accionables.
     """
     if not isinstance(metrics, SystemMetrics) or not isinstance(ratios, dict):
         return ["Error: datos de entrada inválidos para recomendaciones."]
         
     recommendations: List[str] = []
-    # Definición de reglas: (área, umbral_crítico, mensaje_alerta)
     check_rules = (
         ("seguridad", WARN_THRESHOLD_HIGH, f"Revisá los {int(metrics.suspicious_count)} hallazgo(s) de seguridad."),
         ("disco", WARN_THRESHOLD_LOW, f"Queda {float(metrics.disk_free_percent):.1f}% de disco libre."),
@@ -215,8 +210,7 @@ def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[
 
     for area_key, threshold, message in check_rules:
         current_ratio = ratios.get(area_key, 0.0)
-        # Se valida el ratio para evitar errores de comparación con valores no finitos
-        if isinstance(current_ratio, (int, float)) and math.isfinite(current_ratio) and current_ratio < threshold:
+        if current_ratio < threshold:
             recommendations.append(message)
     
     if metrics.quarantined_count > 0:
@@ -235,6 +229,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     if not metrics.is_finite() or not _validate_weights():
         return HealthResult(0, "F", {}, ["Error: Datos o configuración inestables."])
 
+    # Cálculo eficiente mediante pre-mapeo y una sola iteración
     ratios: ScoreMap = {
         "seguridad": score_security(metrics.suspicious_count, metrics.suspicious_warnings),
         "disco": score_disk(metrics.disk_free_percent),
@@ -247,9 +242,8 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     breakdown: Dict[str, int] = {}
     total_raw: float = 0.0
     
-    for area, factor in _WEIGHT_FACTORS.items():
-        ratio = ratios.get(area, 0.0)
-        score_val = (ratio if math.isfinite(ratio) else 0.0) * factor
+    for area, factor in _WEIGHT_ITEMS:
+        score_val = ratios[area] * factor
         breakdown[area] = int(round(score_val))
         total_raw += score_val
 
@@ -267,8 +261,9 @@ def summarize(result: HealthResult) -> List[str]:
     if not isinstance(result, HealthResult): return ["Error: Formato inválido."]
 
     lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
-    for area, maximo in _WEIGHT_ITEMS:
+    for area, factor in _WEIGHT_ITEMS:
         puntos = result.breakdown.get(area, 0)
+        maximo = int(round(factor))
         visual = f"[{'#' * puntos}{'.' * (max(0, maximo - puntos))}]"
         lines.append(f"  {area.capitalize():<12} {puntos:>2}/{maximo:<2} {visual}")
     

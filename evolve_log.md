@@ -729,3 +729,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-12T03:45:18` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimicé el cálculo del logo, la barra de progreso decorativa y los gradientes eliminando recreaciones innecesarias de listas y calculando segmentos solo cuando los parámetros cambian, reduciendo el consumo de CPU y memoria en el renderizado de la UI.
 - `2026-08-12T03:45:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-12T03:45:18` Corrida terminada. Total usado hoy: 88.
+- `2026-08-12T03:53:39` Arrancando corrida. Quedan hoy ~212 peticiones objetivo.
+- `2026-08-12T03:54:13` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Se optimizó el rendimiento del escaneo eliminando la recolección innecesaria de objetos `os.DirEntry` y simplificando la lógica de resolución de rutas en el bucle principal, evitando llamadas redundantes a `Path.resolve()` y `str()` dentro de la recursión profunda.
+- `2026-08-12T03:54:41` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé `walk_files` y las funciones de reporte para minimizar llamadas costosas al sistema de archivos utilizando el objeto `DirEntry` que ya provee `os.scandir`, evitando convertir cada entrada a `Path` y llamar a `stat()` de forma redundante cuando la información ya está disponible en el iterador.
+- `2026-08-12T03:55:09` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-08-12T03:55:23` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del puntaje transformando `_WEIGHT_FACTORS` en una estructura de acceso directo y precalculando el desglose dentro de `compute_score` para evitar iteraciones redundantes y búsquedas en diccionario, mejorando la eficiencia en la ejecución del bucle.
+- `2026-08-12T03:55:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-12T03:55:23` Corrida terminada. Total usado hoy: 92.

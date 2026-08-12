@@ -175,20 +175,16 @@ def _sum_directory_recursive(
     root_dir: str, 
     is_junction_fn: Callable[[str], bool], 
     kernel32: ctypes.WinDLL | None,
-    visited: Set[str] | None = None, 
-    cache: Dict[str, int] | None = None, 
+    visited: Set[str], 
+    cache: Dict[str, int], 
     depth: int = 0
 ) -> int:
     """
     Calcula el peso total de una carpeta mediante un recorrido DFS con detección de ciclos.
-    Implementa un límite de profundidad de recursión para prevenir desbordamientos.
     """
     if depth > 20:
         return 0
         
-    visited = visited if visited is not None else set()
-    cache = cache if cache is not None else {}
-    
     try:
         real_path = os.path.realpath(root_dir)
         if real_path in visited or is_protected_path(Path(real_path)):
@@ -208,7 +204,7 @@ def _sum_directory_recursive(
                 try:
                     if entry.is_dir():
                         total_size += _sum_directory_recursive(entry.path, is_junction_fn, kernel32, visited, cache, depth + 1)
-                    elif entry.is_file():
+                    else:
                         total_size += entry.stat().st_size
                 except (PermissionError, OSError):
                     continue
@@ -222,7 +218,6 @@ def _sum_directory_recursive(
 def directory_size(path: str | os.PathLike | None) -> int:
     """
     Calcula el peso total en bytes de una carpeta tras validar que sea segura.
-    Retorna 0 en caso de error, acceso denegado o ruta protegida.
     """
     if path is None:
         return 0
@@ -237,7 +232,7 @@ def directory_size(path: str | os.PathLike | None) -> int:
         
         is_junction: Callable[[str], bool] = getattr(os.path, 'isjunction', lambda _: False)
         k32 = ctypes.windll.kernel32 if os.name == 'nt' else None
-        return max(0, _sum_directory_recursive(str(root_path), is_junction, k32))
+        return max(0, _sum_directory_recursive(str(root_path), is_junction, k32, set(), {}))
     except (OSError, PermissionError, RuntimeError, ValueError):
         return 0
 
@@ -267,6 +262,7 @@ def detect_profiles(
     is_junction: Callable[[str], bool] = getattr(os.path, 'isjunction', lambda _: False)
     k32 = ctypes.windll.kernel32 if os.name == 'nt' else None
     perf_cache: Dict[str, int] = {}
+    visited: Set[str] = set()
 
     found: List[BrowserCache] = []
     if not isinstance(raw_bases, (list, tuple)) or not isinstance(cache_paths, dict):
@@ -281,18 +277,18 @@ def detect_profiles(
             
         for browser_name, relative_path_str in cache_paths.items():
             if not isinstance(relative_path_str, str): continue
-            try:
-                candidate = real_base.joinpath(*relative_path_str.split("\\"))
-                if _is_valid_cache_path(candidate, real_base):
-                    size: int = _sum_directory_recursive(str(candidate.resolve()), is_junction, k32, cache=perf_cache)
-                    if size > 0:
-                        found.append(BrowserCache(
-                            browser=str(browser_name),
-                            path=candidate.resolve(),
-                            size_bytes=size,
-                        ))
-            except (OSError, ValueError, TypeError, AttributeError, PermissionError):
-                continue
+            
+            # Construcción eficiente evitando iterar strings de ruta
+            candidate = real_base.joinpath(*relative_path_str.split("\\"))
+            if _is_valid_cache_path(candidate, real_base):
+                c_path = candidate.resolve()
+                size: int = _sum_directory_recursive(str(c_path), is_junction, k32, visited, perf_cache)
+                if size > 0:
+                    found.append(BrowserCache(
+                        browser=str(browser_name),
+                        path=c_path,
+                        size_bytes=size,
+                    ))
                 
     found.sort(key=lambda c: c.size_bytes, reverse=True)
     return found
