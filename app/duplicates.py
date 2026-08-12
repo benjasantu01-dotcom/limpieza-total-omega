@@ -180,28 +180,27 @@ def _collect_candidates(
                     if entry is None: continue
                     
                     try:
-                        entry_path = Path(entry.path)
                         entry_stat = entry.stat(follow_symlinks=False)
                         
                         if getattr(entry_stat, 'st_file_attributes', 0) & 0x400:
                             continue
                         
-                        path_obj = entry_path.resolve()
-                        if path_obj in processed_paths: continue
-                        processed_paths.add(path_obj)
+                        entry_path = Path(entry.path).resolve()
+                        if entry_path in processed_paths: continue
+                        processed_paths.add(entry_path)
                         
-                        if skip_protected and is_protected_path(path_obj):
+                        if skip_protected and is_protected_path(entry_path):
                             continue
                         
                         if entry.is_dir(follow_symlinks=False):
                             key = (entry_stat.st_dev, entry_stat.st_ino)
                             if key not in visited_inodes:
                                 visited_inodes[key] = True
-                                _scan(path_obj)
+                                _scan(entry_path)
                         
                         elif entry.is_file(follow_symlinks=False):
                             if entry_stat.st_size >= min_size:
-                                temp_groups[entry_stat.st_size].append(path_obj)
+                                temp_groups[entry_stat.st_size].append(entry_path)
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):

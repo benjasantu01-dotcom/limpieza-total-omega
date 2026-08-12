@@ -504,3 +504,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-12T12:47:16` ➖ Sin cambios en diskreport.py (enfoque: rendimiento). Motivo: Optimicé `summarize` para evitar múltiples recorridos innecesarios del sistema de archivos, centralizando la lógica de agregación en una sola iteración y reduciendo la complejidad algorítmica de la función.
 - `2026-08-12T12:47:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-12T12:47:16` Corrida terminada. Total usado hoy: 300.
+- `2026-08-12T12:54:47` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-12T12:55:13` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé `partial_hash` evitando cargar archivos completos en memoria innecesariamente, ya que `f.read(read_bytes)` solo captura la cabecera, y mejoré la eficiencia de `_collect_candidates` utilizando `set` para `processed_paths` en lugar de una lista, reduciendo la complejidad de búsqueda de O(n) a O(1) durante el escaneo recursivo.
+- `2026-08-12T12:55:37` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del puntaje y la generación de recomendaciones eliminando la creación dinámica de listas y tuplas dentro de `compute_score` y `_generate_recommendations`, reemplazándolas por constantes pre-calculadas y estructuras más eficientes.
+- `2026-08-12T12:56:40` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._draw_gauge, LimpiezaTotalOmegaApp._get_cached_data, LimpiezaTotalOmegaApp._get_cached_or_run
+- `2026-08-12T12:56:50` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: rendimiento).
+- `2026-08-12T12:56:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-12T12:56:50` Corrida terminada. Total usado hoy: 304.
