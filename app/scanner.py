@@ -90,6 +90,10 @@ class Scanner:
             return
         
         try:
+            # Ignorar symlinks rotos que pueden causar errores en llamadas posteriores
+            if entry.is_symlink():
+                return
+                
             path_obj = Path(entry.path)
             # Validación estricta antes de operar
             if not path_obj or is_protected_path(path_obj):

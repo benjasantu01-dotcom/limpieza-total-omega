@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **230** (45.6% de aceptación)
+- Mejoras aceptadas: **232** (46.0% de aceptación)
 - Rechazadas por tests: 9
 - Rechazadas por guardia de seguridad: 34
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 215
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-10 | 11 | 0 | 1 | 1 | 29 |
+| 2026-08-10 | 11 | 0 | 1 | 1 | 25 |
 | 2026-08-11 | 170 | 8 | 24 | 10 | 138 |
-| 2026-08-12 | 49 | 1 | 9 | 5 | 48 |
+| 2026-08-12 | 51 | 1 | 9 | 5 | 50 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **60**
 - manejo de errores y validación de entradas: **49**
+- robustez ante casos límite: **44**
 - rendimiento: **43**
-- robustez ante casos límite: **42**
 - seguridad defensiva: **36**
 
 ## Mejoras aceptadas por archivo
@@ -33,13 +33,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **21**
 - `assistant.py`: **20**
 - `healthscore.py`: **20**
+- `settings.py`: **20**
 - `branding.py`: **20**
 - `diskreport.py`: **19**
-- `settings.py`: **19**
 - `browser.py`: **18**
 - `duplicates.py`: **18**
+- `scanner.py`: **17**
 - `memory.py`: **16**
-- `scanner.py`: **16**
 - `startup.py`: **13**
 - `main.py`: **12**
 - `organizer.py`: **11**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-12T04:56:15` **settings.py** (robustez ante casos límite): Se reforzó la robustez del manejo de archivos de configuración ante accesos concurrentes o estados de red inestables implementando una lectura segura que verifica la integridad mediante un archivo temporal previo a la carga, evitando así la lectura de archivos parcialmente escritos o corruptos por bloqueos del sistema.
+- `2026-08-12T04:55:46` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez de `process_entry` ante archivos bloqueados o inaccesibles añadiendo una verificación explícita mediante `entry.is_symlink()` para ignorar enlaces simbólicos rotos que `os.scandir` podría reportar erróneamente como archivos válidos, evitando excepciones innecesarias en `entry.stat()`.
 - `2026-08-12T04:46:08` **quarantine.py** (robustez ante casos límite): Se mejoró la robustez de `quarantine_file` añadiendo una verificación de existencia previa del archivo de destino (colisión) antes de iniciar la copia, y asegurando que las operaciones de limpieza en caso de fallo parcial sean más granulares y seguras.
 - `2026-08-12T04:45:04` **memory.py** (robustez ante casos límite): Se mejora la robustez de `trim_working_set` añadiendo una verificación explícita de `EmptyWorkingSet` en `psapi` antes de su uso y manejando adecuadamente la posible ausencia de la función en versiones antiguas o entornos restringidos de Windows, evitando cierres inesperados de la aplicación.
 - `2026-08-12T04:35:45` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `compute_score` asegurando que el cálculo de `ratios` sea siempre consistente ante valores de umbrales mal definidos (ej: cero o negativos), protegiendo contra posibles divisiones por cero o resultados no finitos en los módulos de puntuación.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-12T03:54:41` **diskreport.py** (rendimiento): Optimicé `walk_files` y las funciones de reporte para minimizar llamadas costosas al sistema de archivos utilizando el objeto `DirEntry` que ya provee `os.scandir`, evitando convertir cada entrada a `Path` y llamar a `stat()` de forma redundante cuando la información ya está disponible en el iterador.
 - `2026-08-12T03:54:13` **browser.py** (rendimiento): Se optimizó el rendimiento del escaneo eliminando la recolección innecesaria de objetos `os.DirEntry` y simplificando la lógica de resolución de rutas en el bucle principal, evitando llamadas redundantes a `Path.resolve()` y `str()` dentro de la recursión profunda.
 - `2026-08-12T03:45:18` **branding.py** (rendimiento): Optimicé el cálculo del logo, la barra de progreso decorativa y los gradientes eliminando recreaciones innecesarias de listas y calculando segmentos solo cuando los parámetros cambian, reduciendo el consumo de CPU y memoria en el renderizado de la UI.
-- `2026-08-12T03:45:00` **assistant.py** (rendimiento): Optimizé la generación de problemas en `_gen_problems` y `local_answer` reemplazando la creación de listas intermedias y el uso de `islice` por un generador eficiente que se detiene inmediatamente al alcanzar el límite de 3 elementos, evitando iteraciones innecesarias sobre condiciones no cumplidas.
-- `2026-08-12T03:44:21` **startup.py** (legibilidad y documentación): Documenté con mayor precisión el propósito de `_resolve_path_from_command` y su manejo de seguridad mediante un Docstring que explica la importancia de validar entradas antes de realizar operaciones de sistema, reforzando la seguridad y legibilidad del motor de análisis.

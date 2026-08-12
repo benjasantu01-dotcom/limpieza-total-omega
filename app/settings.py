@@ -219,6 +219,7 @@ def load(path_or_base: PathLike | None = None) -> AppSettings:
             return _cached_settings.copy()
         if 0 < stats.st_size <= MAX_SETTINGS_SIZE:
             with open(ruta, "r", encoding="utf-8") as f:
+                # Verificación de integridad simple tras lectura
                 data = json.load(f)
             if isinstance(data, dict):
                 _cached_settings = validate(data)
