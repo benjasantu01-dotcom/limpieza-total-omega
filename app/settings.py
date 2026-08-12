@@ -105,9 +105,6 @@ class _Validators:
     
     @staticmethod
     def _is_safe_path(path_obj: Path) -> bool:
-        if not path_obj.is_absolute(): return False
-        if len(path_obj.parts) < 2: return False
-        if any(part in ('.', '..', '..\\', '../') for part in path_obj.parts): return False
         try:
             resolved = path_obj.resolve()
             if resolved.is_symlink() or (hasattr(resolved, 'is_junction') and resolved.is_junction()):
@@ -143,9 +140,12 @@ class _Validators:
         if val is None or not isinstance(val, (str, Path)): return None
         path_string = str(val).strip()
         if not path_string: return ""
+        # Impedir secuencias de escape o paths sospechosos
+        if any(c in path_string for c in ("\0", "\n", "\r")) or ".." in path_string: return None
         try:
             path_obj = Path(path_string).expanduser()
-            return str(path_obj.absolute()) if _Validators._is_safe_path(path_obj) else None
+            if not path_obj.is_absolute(): return None
+            return str(path_obj) if _Validators._is_safe_path(path_obj) else None
         except (OSError, RuntimeError, ValueError, TypeError, PermissionError, AttributeError):
             return None
 
@@ -153,7 +153,8 @@ class _Validators:
     def str(key: str, val: Any) -> str | None:
         if val is None or not isinstance(val, (str, Path)): return None
         text = str(val).strip()
-        if any(c < ' ' for c in text) or ".." in text: return None
+        # Rechazar caracteres de control y secuencias de travesía
+        if any(ord(c) < 32 for c in text) or ".." in text: return None
         if key == "ultima_carpeta": return _Validators.path(text)
         if not text: return "" if key == "asistente_clave_api" else None
         if key == "tema": return text.lower() if text.lower() in VALID_THEMES else None

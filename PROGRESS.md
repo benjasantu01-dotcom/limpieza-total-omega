@@ -6,31 +6,31 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **236** (46.8% de aceptación)
+- Mejoras aceptadas: **237** (47.0% de aceptación)
 - Rechazadas por tests: 7
-- Rechazadas por guardia de seguridad: 33
+- Rechazadas por guardia de seguridad: 34
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 211
+- Sin respuesta de la IA (error o límite): 209
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-11 | 86 | 1 | 10 | 4 | 67 |
-| 2026-08-12 | 150 | 6 | 23 | 13 | 144 |
+| 2026-08-11 | 86 | 1 | 10 | 4 | 63 |
+| 2026-08-12 | 151 | 6 | 24 | 13 | 146 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **61**
 - manejo de errores y validación de entradas: **50**
-- seguridad defensiva: **44**
+- seguridad defensiva: **45**
 - rendimiento: **42**
 - robustez ante casos límite: **39**
 
 ## Mejoras aceptadas por archivo
 
+- `settings.py`: **24**
 - `branding.py`: **23**
-- `settings.py`: **23**
 - `healthscore.py`: **22**
 - `quarantine.py`: **22**
 - `assistant.py`: **20**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-12T14:28:14` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_Validators.path` y `_Validators.str` implementando una validación estricta que impide que la configuración acepte rutas maliciosas o caracteres de control que podrían ser usados para inyección o escape de directorios, reforzando la integridad de los datos antes de persistirlos.
 - `2026-08-12T14:18:44` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva en `quarantine.py` integrando una validación estricta del estado de "solo lectura" y "archivo oculto" mediante atributos de Windows para los archivos que se pretenden restaurar, asegurando que la restauración no modifique archivos del sistema protegidos accidentalmente y manteniendo consistencia con las guardas aplicadas al aislar.
 - `2026-08-12T14:18:25` **organizer.py** (seguridad defensiva): Se ha restringido el ámbito de `delete_reviewed` para asegurar que el borrado solo ocurra sobre archivos que residen estrictamente dentro del directorio de cuarentena, evitando cualquier posibilidad de escalada de borrado mediante el uso de `pathlib.Path.is_relative_to` (o equivalentes) y validando que el archivo no sea un enlace simbólico que apunte fuera de la zona segura.
 - `2026-08-12T14:18:00` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `trim_working_set` validando la integridad del proceso mediante `QueryFullProcessImageNameW` (API más robusta y moderna) antes de realizar cualquier acción, asegurando que el ejecutable esté bajo control y no sea un proceso del sistema crítico que pudiera haber sido suplantado o malidentificado.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-12T13:37:11` **main.py** (robustez ante casos límite): Mejoré la robustez de `on_trim_process` y `on_restore_quarantine` mediante el uso de una validación de existencia previa en el hilo de trabajo, evitando errores de carrera donde el proceso o archivo desaparece entre el clic del usuario y la ejecución real.
 - `2026-08-12T13:36:07` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `score_disk` y `score_memory` ante configuraciones inválidas o extremas, evitando divisiones por cero o resultados fuera de rango mediante el uso de constantes de seguridad y validación explícita de divisores.
 - `2026-08-12T13:26:03` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de entrada y fallos de E/S mediante el uso de `pathlib.Path.resolve` seguro y un filtrado explícito de rutas que garantiza que solo se escriba en directorios válidos, evitando excepciones no controladas durante operaciones de disco.
-- `2026-08-12T13:17:07` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` ante entradas malformadas o inesperadas, añadiendo una validación explícita para asegurar que los valores sean finitos y del tipo correcto, evitando así que datos corruptos en el origen propaguen errores al motor del asistente.

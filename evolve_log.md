@@ -594,3 +594,10 @@ FAILED evolve/tests/test_basic.py::test_delete_reviewed_only_touches_the_review_
 - `2026-08-12T14:18:44` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `quarantine.py` integrando una validación estricta del estado de "solo lectura" y "archivo oculto" mediante atributos de Windows para los archivos que se pretenden restaurar, asegurando que la restauración no modifique archivos del sistema protegidos accidentalmente y manteniendo consistencia con las guardas aplicadas al aislar.
 - `2026-08-12T14:18:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-12T14:18:44` Corrida terminada. Total usado hoy: 336.
+- `2026-08-12T14:26:41` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-12T14:27:04` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-08-12T14:27:35` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-08-12T14:27:58` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-08-12T14:28:14` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `_Validators.path` y `_Validators.str` implementando una validación estricta que impide que la configuración acepte rutas maliciosas o caracteres de control que podrían ser usados para inyección o escape de directorios, reforzando la integridad de los datos antes de persistirlos.
+- `2026-08-12T14:28:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-12T14:28:14` Corrida terminada. Total usado hoy: 340.
