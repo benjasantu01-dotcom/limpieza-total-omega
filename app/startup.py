@@ -124,6 +124,10 @@ class StartupEntry:
         
         try:
             p: Path = Path(path_str)
+            # Validar si p es nulo o inválido tras conversión a Path
+            if not p.parts:
+                return ""
+
             if not p.is_absolute():
                 _EXISTS_CACHE[path_str] = False
                 return path_str
@@ -162,6 +166,8 @@ class StartupEntry:
         3. Caso contrario, normaliza el primer argumento como ruta potencial y valida su 
            existencia y seguridad contra `safety.py`.
         """
+        if not cmd:
+            return ""
         if any(char in cmd for char in ('&', '|', ';', '>', '<', '$', '`', '(', ')')):
             return ""
 
@@ -201,13 +207,17 @@ def startup_folders() -> List[Path]:
             candidates.append(Path(programdata) / r"Microsoft\Windows\Start Menu\Programs\Startup")
     except (ValueError, TypeError, OSError):
         pass
-    return [c for c in candidates if c.is_dir() and not is_protected_path(c)]
+    return [c for c in candidates if c and c.is_dir() and not is_protected_path(c)]
 
 
 def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[StartupEntry]:
     """Escanea directorios Startup del SO y mapea archivos ejecutables a StartupEntry."""
     found_entries: List[StartupEntry] = []
-    for folder in (folders or startup_folders()):
+    scan_folders = folders if folders is not None else startup_folders()
+    
+    for folder in scan_folders:
+        if not folder or not folder.is_dir():
+            continue
         try:
             found_entries.extend(
                 StartupEntry(name=item.stem, command=str(item), source="carpeta")

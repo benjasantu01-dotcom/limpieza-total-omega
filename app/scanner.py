@@ -171,10 +171,16 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, name
         path: Ruta completa del archivo para validar el directorio padre (System32).
         name: Nombre del archivo para comparar contra la lista de procesos críticos.
     """
-    target = (name or (path.name if path else "")).lower()
-    if target in SYSTEM_LOOKALIKES:
-        if SYSTEM32_LOWER not in str(path.parent).lower():
-            return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
+    if path is None:
+        return None
+    try:
+        target = (name or path.name).lower()
+        if target in SYSTEM_LOOKALIKES:
+            # Uso de parent de forma segura
+            if path.parent and SYSTEM32_LOWER not in str(path.parent).lower():
+                return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
+    except Exception:
+        return None
     return None
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None) -> ScanResult:

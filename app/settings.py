@@ -224,7 +224,8 @@ def load(path_or_base: PathLike | None = None) -> AppSettings:
                 _cached_settings = validate(data)
                 _current_path, _last_mtime = ruta, stats.st_mtime
                 return _cached_settings.copy()
-    except (OSError, PermissionError, json.JSONDecodeError, UnicodeDecodeError): pass
+    except (OSError, PermissionError, json.JSONDecodeError, UnicodeDecodeError, ValueError):
+        pass
     return DEFAULTS.copy()
 
 def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:

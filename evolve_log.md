@@ -1049,3 +1049,10 @@ FAILED evolve/tests/test_modules.py::test_a_healthy_system_still_gets_a_recommen
 - `2026-08-12T07:19:06` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
 - `2026-08-12T07:19:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-12T07:19:06` Corrida terminada. Total usado hoy: 172.
+- `2026-08-12T07:27:55` Arrancando corrida. Quedan hoy ~128 peticiones objetivo.
+- `2026-08-12T07:28:21` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-12T07:28:45` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se reforzó la validación de parámetros y el manejo de excepciones en `check_system_lookalike` y `scan_file` para evitar errores en caso de rutas malformadas o entradas nulas, garantizando robustez ante llamadas con datos incompletos.
+- `2026-08-12T07:29:09` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de la carga de archivos de configuración capturando el caso específico de archivos JSON vacíos o con estructura inválida mediante un manejo de excepciones explícito en `load`, evitando que el sistema falle silenciosamente o devuelva diccionarios malformados.
+- `2026-08-12T07:29:19` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_resolve_and_cache_path` y `entries_from_folders` agregando validaciones preventivas contra valores `None` o rutas vacías antes de procesarlas, asegurando que el bucle de escaneo no falle ante entradas inesperadas.
+- `2026-08-12T07:29:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-12T07:29:19` Corrida terminada. Total usado hoy: 176.
