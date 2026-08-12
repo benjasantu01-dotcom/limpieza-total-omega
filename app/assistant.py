@@ -251,6 +251,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     for k, v in extra.items():
         if hasattr(ctx, k):
             attr_type = type(getattr(ctx, k))
+            # Solo asignar tipos numéricos conocidos para mantener integridad
             if isinstance(v, (int, float)) and math.isfinite(v):
                 _safe_assign(ctx, k, v, cast=attr_type)
     return ctx

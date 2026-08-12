@@ -241,9 +241,9 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                         else:
                             size = entry.stat().st_size
                             yield entry_path, size
-                    except (OSError, PermissionError, FileNotFoundError):
+                    except (OSError, PermissionError):
                         continue
-        except (OSError, PermissionError, FileNotFoundError):
+        except (OSError, PermissionError):
             continue
 
 

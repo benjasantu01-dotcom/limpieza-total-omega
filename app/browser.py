@@ -132,16 +132,16 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
         return False
 
 
-def _is_excluded_file(name: str) -> bool:
+def _is_excluded_file(name: str | None) -> bool:
     """Filtro de nombres de archivo protegidos (sesiones, cookies, etc)."""
-    if not isinstance(name, str):
+    if not isinstance(name, str) or not name:
         return True
     return name.lower() in NEVER_TOUCH
 
 
-def _is_system_hidden(entry_path: str, kernel32: ctypes.WinDLL | None) -> bool:
+def _is_system_hidden(entry_path: str | None, kernel32: ctypes.WinDLL | None) -> bool:
     """Usa la API de Windows para verificar si un archivo tiene atributos de sistema u oculto."""
-    if not kernel32 or not isinstance(entry_path, str):
+    if not kernel32 or not isinstance(entry_path, str) or not entry_path:
         return False
     try:
         attrs = kernel32.GetFileAttributesW(entry_path)

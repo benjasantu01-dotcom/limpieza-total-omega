@@ -670,3 +670,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-12T02:25:56` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-08-12T02:25:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-12T02:25:56` Corrida terminada. Total usado hoy: 56.
+- `2026-08-12T02:31:59` Arrancando corrida. Quedan hoy ~244 peticiones objetivo.
+- `2026-08-12T02:32:39` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `build_context` añadiendo validaciones explícitas de tipo y rango para los campos de `SystemContext` usando un enfoque de "fallar silenciosamente" para evitar errores de ejecución ante entradas inesperadas.
+- `2026-08-12T02:33:14` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-12T02:33:46` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_system_hidden` y `_is_excluded_file` mediante la validación estricta de tipos y estados, asegurando que cualquier entrada malformada o inesperada en el sistema de archivos sea ignorada de forma segura en lugar de propagar excepciones hacia el bucle principal.
+- `2026-08-12T02:34:01` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `summarize` capturando excepciones específicas (`OSError`, `PermissionError`) durante la iteración y validación de rutas, asegurando que el bucle no se interrumpa inesperadamente ante archivos bloqueados por el sistema o permisos denegados.
+- `2026-08-12T02:34:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-12T02:34:01` Corrida terminada. Total usado hoy: 60.

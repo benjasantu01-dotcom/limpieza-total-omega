@@ -8,45 +8,48 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **231** (45.8% de aceptación)
 - Rechazadas por tests: 10
-- Rechazadas por guardia de seguridad: 33
+- Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 213
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-10 | 46 | 1 | 6 | 6 | 39 |
+| 2026-08-10 | 43 | 1 | 5 | 6 | 39 |
 | 2026-08-11 | 170 | 8 | 24 | 10 | 138 |
-| 2026-08-12 | 15 | 1 | 3 | 1 | 36 |
+| 2026-08-12 | 18 | 1 | 3 | 1 | 37 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **54**
+- legibilidad y documentación: **51**
 - robustez ante casos límite: **46**
 - rendimiento: **45**
 - seguridad defensiva: **45**
-- manejo de errores y validación de entradas: **41**
+- manejo de errores y validación de entradas: **44**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **21**
 - `settings.py`: **20**
+- `assistant.py`: **20**
 - `branding.py`: **20**
-- `assistant.py`: **19**
-- `diskreport.py`: **19**
+- `diskreport.py`: **20**
+- `quarantine.py`: **20**
 - `duplicates.py`: **19**
 - `healthscore.py`: **18**
-- `memory.py`: **17**
+- `browser.py`: **17**
 - `scanner.py`: **17**
-- `browser.py`: **16**
+- `memory.py`: **16**
 - `startup.py`: **13**
-- `organizer.py`: **12**
 - `main.py`: **12**
+- `organizer.py`: **11**
 - `safety.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-12T02:34:01` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `summarize` capturando excepciones específicas (`OSError`, `PermissionError`) durante la iteración y validación de rutas, asegurando que el bucle no se interrumpa inesperadamente ante archivos bloqueados por el sistema o permisos denegados.
+- `2026-08-12T02:33:46` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_system_hidden` y `_is_excluded_file` mediante la validación estricta de tipos y estados, asegurando que cualquier entrada malformada o inesperada en el sistema de archivos sea ignorada de forma segura en lugar de propagar excepciones hacia el bucle principal.
+- `2026-08-12T02:32:39` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `build_context` añadiendo validaciones explícitas de tipo y rango para los campos de `SystemContext` usando un enfoque de "fallar silenciosamente" para evitar errores de ejecución ante entradas inesperadas.
 - `2026-08-12T01:10:55` **settings.py** (seguridad defensiva): He endurecido la seguridad en `save` y `_is_safe_path` al validar que las rutas no solo sean seguras para modificar, sino que no sean links simbólicos o junctions de sistema, utilizando una comprobación explícita de `is_protected_path` sobre la ruta resuelta antes de cualquier operación de escritura o validación de configuración.
 - `2026-08-12T01:02:04` **scanner.py** (seguridad defensiva): Se ha añadido una validación explícita mediante `is_protected_path` dentro de `process_entry` antes de realizar `entry.stat()` o cualquier otra operación de acceso, asegurando que los enlaces simbólicos o puntos de reanálisis hacia rutas protegidas no sean seguidos ni inspeccionados, reforzando la seguridad defensiva contra el escape de directorios.
 - `2026-08-12T01:00:58` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad en `purge_all` implementando una validación estricta de "sandbox" para cada archivo antes de cualquier operación, asegurando que no se pueda manipular el sistema de archivos fuera del directorio de cuarentena definido, incluso si hay archivos huérfanos presentes.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-12T00:31:22` **assistant.py** (seguridad defensiva): Reforcé la validación de seguridad en `ask()` y `_call_gemini` para asegurar que el input del usuario sea validado explícitamente mediante `_ensure_safe_text` antes de cualquier procesamiento, eliminando la posibilidad de que consultas maliciosas (con caracteres de control o rutas) lleguen a los parsers o al motor remoto.
 - `2026-08-12T00:30:29` **settings.py** (robustez ante casos límite): Se ha añadido una validación de escritura robusta en `save` utilizando un bloque `try-except` más específico y la verificación explícita de `os.access(ruta.parent, os.W_OK)` para prevenir fallos silenciosos al intentar escribir en directorios sin permisos antes de crear el archivo temporal.
 - `2026-08-12T00:20:20` **quarantine.py** (robustez ante casos límite): Mejoré la resiliencia ante errores de concurrencia y permisos en el bucle de purga (`purge_all`) implementando un manejo robusto de excepciones por archivo, asegurando que un fallo de E/S en un ítem individual no interrumpa el procesamiento del resto del lote.
-- `2026-08-12T00:11:32` **main.py** (robustez ante casos límite): Se mejora la robustez del componente de entrada `_ask_folder` añadiendo una validación explícita mediante `pathlib.Path.exists()` previa a la resolución de la ruta y se encapsula el acceso a `self.scan_target` dentro de `run_async` para evitar condiciones de carrera donde el objetivo podría invalidarse entre la selección del usuario y el inicio real de la tarea.
-- `2026-08-12T00:10:26` **healthscore.py** (robustez ante casos límite): Reforcé la robustez del módulo `healthscore.py` ante datos de entrada corruptos o extremos (ej. divisiones por cero si los umbrales configurables llegan a cero o valores infinitos/NaN) mediante la implementación de chequeos explícitos y preventivos en las funciones de cálculo, asegurando que la app nunca falle al procesar métricas inusuales.
-- `2026-08-12T00:09:37` **duplicates.py** (robustez ante casos límite): Se ha mejorado `hash_file` y `partial_hash` para gestionar correctamente los casos límite de archivos bloqueados por el sistema operativo, utilizando un bloque `try-except` más específico y validando la existencia tras la apertura, asegurando que la app no aborte ante procesos que bloquean el acceso a archivos temporales.
