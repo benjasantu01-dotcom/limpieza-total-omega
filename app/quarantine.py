@@ -179,11 +179,14 @@ def _is_valid_quarantine_path(path: Path, root: Path) -> TypeGuard[Path]:
 
 def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
     """Realiza chequeos de seguridad antes de mover un archivo al sandbox."""
+    path_str = str(source_path)
+    if any(ord(c) < 32 for c in path_str):
+        raise UnsafePathError("Ruta con caracteres de control prohibida.")
     if len(source_path.parts) > 32:
         raise UnsafePathError("Profundidad de ruta excesiva: riesgo de desbordamiento.")
     if ":" in source_path.name.replace(source_path.drive, ""):
         raise UnsafePathError("Ruta con flujos de datos alternos no permitida.")
-    if ".." in source_path.parts or "\0" in str(source_path) or any(c in str(source_path.name) for c in "<>\"|?*"):
+    if ".." in source_path.parts or any(c in str(source_path.name) for c in "<>\"|?*"):
         raise UnsafePathError("Ruta con caracteres prohibidos o navegación no permitida.")
     
     if source_path.is_symlink() or (hasattr(source_path, 'is_junction') and source_path.is_junction()):
@@ -192,7 +195,7 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
     try:
         if os.name == 'nt':
             import ctypes
-            attrs = ctypes.windll.kernel32.GetFileAttributesW(str(source_path))
+            attrs = ctypes.windll.kernel32.GetFileAttributesW(path_str)
             if attrs != -1 and (attrs & 0x02 or attrs & 0x04): 
                 raise UnsafePathError("No se permite procesar archivos con atributos de sistema/ocultos.")
             if attrs != -1 and (attrs & 0x01):
@@ -200,28 +203,26 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
     except (OSError, AttributeError):
         pass
 
-    if not source_path.is_file():
+    resolved_source = source_path.resolve()
+    if not resolved_source.is_file():
         raise UnsafePathError("Solo se aceptan archivos regulares.")
-    if is_protected_path(source_path):
+    if is_protected_path(resolved_source):
         raise UnsafePathError("Operación prohibida: la ruta está protegida por el sistema.")
     if is_protected_path(dest_dir):
         raise UnsafePathError("Destino inválido: directorio de cuarentena protegido.")
-    if _is_valid_quarantine_path(source_path, dest_dir):
+    if _is_valid_quarantine_path(resolved_source, dest_dir):
         raise UnsafePathError("El archivo ya reside en el sandbox de cuarentena.")
     
     try:
-        source_drive = source_path.drive
+        source_drive = resolved_source.drive
         dest_drive = dest_dir.drive
         if source_drive and dest_drive and source_drive.lower() != dest_drive.lower():
             raise UnsafePathError("Operación prohibida entre dispositivos distintos.")
-        if os.path.exists(dest_dir) and os.path.exists(source_path):
-            if os.path.samefile(source_path, dest_dir):
-                raise UnsafePathError("Colisión de rutas mediante alias del sistema.")
     except OSError:
         pass
 
-    ensure_safe_to_modify(source_path, allow_sensitive=True)
-    if _is_file_locked(source_path):
+    ensure_safe_to_modify(resolved_source, allow_sensitive=True)
+    if _is_file_locked(resolved_source):
         raise IOError("El archivo está en uso por otro proceso y no puede moverse.")
 
 

@@ -815,3 +815,10 @@ FAILED evolve/tests/test_modules.py::test_a_healthy_system_still_gets_a_recommen
 - `2026-08-12T05:20:11` ➖ Sin cambios en memory.py (enfoque: seguridad defensiva). Motivo: Mejoré la seguridad defensiva de `trim_working_set` implementando una validación previa de la integridad del proceso mediante su ruta, asegurando que no se pueda realizar ninguna operación si el proceso reside en rutas protegidas, utilizando `is_protected_path` antes de cualquier interacción significativa con el manejador abierto.
 - `2026-08-12T05:20:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-12T05:20:11` Corrida terminada. Total usado hoy: 124.
+- `2026-08-12T05:25:34` Arrancando corrida. Quedan hoy ~176 peticiones objetivo.
+- `2026-08-12T05:26:04` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad en `stage_for_review` y `delete_reviewed` implementando una validación estricta de jerarquía (anclaje de directorio), asegurando que ninguna operación de movimiento o eliminación pueda escapar del ámbito de `review_dir` incluso ante intentos de manipulación de rutas (`..`), garantizando el cumplimiento estricto del enfoque de seguridad defensiva.
+- `2026-08-12T05:26:37` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó `_validate_isolation_request` para impedir explícitamente el uso de rutas que contengan caracteres de control o secuencias de escape (vía `\x00` - `\x1f`), y se añadió una validación adicional mediante `resolve()` para prevenir ataques de *path traversal* antes de realizar cualquier operación de E/S.
+- `2026-08-12T05:27:03` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-12T05:27:16` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-08-12T05:27:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-12T05:27:16` Corrida terminada. Total usado hoy: 128.

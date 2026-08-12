@@ -252,7 +252,9 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             if _is_safe_to_move(jf, dest):
                 if os.access(dest, os.W_OK) and shutil.disk_usage(dest).free > jf.size_bytes:
                     target = _generate_unique_target(dest / f"{jf.path.stem}_{int(jf.modified.timestamp())}{jf.path.suffix}")
-                    shutil.move(str(jf.path), str(target))
+                    # Validar que el target final se mantenga bajo el directorio de revisión
+                    if dest in target.resolve().parents:
+                        shutil.move(str(jf.path), str(target))
         except (PermissionError, OSError, shutil.Error, RuntimeError):
             continue
     return dest
