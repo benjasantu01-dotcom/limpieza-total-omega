@@ -200,7 +200,7 @@ def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[
         Lista de strings con consejos accionables.
     """
     if not isinstance(metrics, SystemMetrics) or not isinstance(ratios, dict):
-        return ["No es posible generar recomendaciones debido a datos incompletos."]
+        return ["Error: datos de entrada inválidos para recomendaciones."]
         
     recommendations: List[str] = []
     # Definición de reglas: (área, umbral_crítico, mensaje_alerta)
@@ -215,7 +215,8 @@ def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[
 
     for area_key, threshold, message in check_rules:
         current_ratio = ratios.get(area_key, 0.0)
-        if math.isfinite(current_ratio) and current_ratio < threshold:
+        # Se valida el ratio para evitar errores de comparación con valores no finitos
+        if isinstance(current_ratio, (int, float)) and math.isfinite(current_ratio) and current_ratio < threshold:
             recommendations.append(message)
     
     if metrics.quarantined_count > 0:

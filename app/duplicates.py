@@ -277,9 +277,10 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
         if not isinstance(p, Path):
             continue
         try:
-            if p.exists():
-                stat_info = p.stat()
-                keepers.append((float(stat_info.st_mtime), len(str(p)), p))
+            stat_info = p.stat()
+            # st_mtime puede ser None en algunos sistemas de archivos exóticos
+            mtime = float(getattr(stat_info, 'st_mtime', 0))
+            keepers.append((mtime, len(str(p)), p))
         except (OSError, PermissionError, AttributeError):
             continue
             
@@ -301,6 +302,8 @@ def format_group(group: DuplicateGroup) -> List[str]:
     for path in group.paths:
         if not isinstance(path, Path): 
             continue
-        marca = "conservar" if (keeper and path == keeper) else "duplicado"
+        # Se verifica igualdad de ruta de forma segura tras validación de suggest_keeper
+        is_keeper = (keeper is not None and path == keeper)
+        marca = "conservar" if is_keeper else "duplicado"
         lines.append(f"   [{marca}] {path}")
     return lines

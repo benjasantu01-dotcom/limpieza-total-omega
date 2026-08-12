@@ -7,46 +7,48 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **231** (45.8% de aceptación)
-- Rechazadas por tests: 10
-- Rechazadas por guardia de seguridad: 32
-- Sin cambios (nada sustancial que mejorar): 17
+- Rechazadas por tests: 9
+- Rechazadas por guardia de seguridad: 31
+- Sin cambios (nada sustancial que mejorar): 19
 - Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-10 | 43 | 1 | 5 | 6 | 39 |
+| 2026-08-10 | 41 | 0 | 4 | 6 | 39 |
 | 2026-08-11 | 170 | 8 | 24 | 10 | 138 |
-| 2026-08-12 | 18 | 1 | 3 | 1 | 37 |
+| 2026-08-12 | 20 | 1 | 3 | 3 | 37 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **51**
+- legibilidad y documentación: **49**
 - robustez ante casos límite: **46**
+- manejo de errores y validación de entradas: **46**
 - rendimiento: **45**
 - seguridad defensiva: **45**
-- manejo de errores y validación de entradas: **44**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **20**
 - `assistant.py`: **20**
 - `branding.py`: **20**
 - `diskreport.py`: **20**
+- `duplicates.py`: **20**
 - `quarantine.py`: **20**
-- `duplicates.py`: **19**
-- `healthscore.py`: **18**
+- `healthscore.py`: **19**
+- `settings.py`: **19**
 - `browser.py`: **17**
 - `scanner.py`: **17**
 - `memory.py`: **16**
 - `startup.py`: **13**
 - `main.py`: **12**
 - `organizer.py`: **11**
-- `safety.py`: **8**
+- `safety.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-12T02:43:24` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` y `_generate_recommendations` mediante validaciones defensivas de tipos y estados, asegurando que el sistema maneje entradas mal formadas sin interrumpir el flujo de la aplicación.
+- `2026-08-12T02:42:55` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `suggest_keeper` y `format_group` eliminando su dependencia implícita de que las rutas siempre sean accesibles y agregando validaciones explícitas antes de procesar atributos, evitando posibles `AttributeError` o valores de tiempo inesperados en archivos bloqueados.
 - `2026-08-12T02:34:01` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `summarize` capturando excepciones específicas (`OSError`, `PermissionError`) durante la iteración y validación de rutas, asegurando que el bucle no se interrumpa inesperadamente ante archivos bloqueados por el sistema o permisos denegados.
 - `2026-08-12T02:33:46` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_system_hidden` y `_is_excluded_file` mediante la validación estricta de tipos y estados, asegurando que cualquier entrada malformada o inesperada en el sistema de archivos sea ignorada de forma segura en lugar de propagar excepciones hacia el bucle principal.
 - `2026-08-12T02:32:39` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `build_context` añadiendo validaciones explícitas de tipo y rango para los campos de `SystemContext` usando un enfoque de "fallar silenciosamente" para evitar errores de ejecución ante entradas inesperadas.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-12T00:41:02` **browser.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_safe_path` reforzando la validación del punto de montaje y evitando que la comparación de rutas sea engañada por el uso de nombres cortos (8.3) o diferencias de case en sistemas de archivos Case-Insensitive, asegurando que la ruta destino sea efectivamente un descendiente real de la base.
 - `2026-08-12T00:40:34` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad en `save_logo_svg` reemplazando la verificación manual de permisos (`os.access`) —que es propensa a condiciones de carrera (TOCTOU)— por un bloque `try-except` más robusto durante la creación del archivo, manteniendo la llamada obligatoria a `is_safe_to_modify` para cumplir con las reglas de arquitectura.
 - `2026-08-12T00:31:22` **assistant.py** (seguridad defensiva): Reforcé la validación de seguridad en `ask()` y `_call_gemini` para asegurar que el input del usuario sea validado explícitamente mediante `_ensure_safe_text` antes de cualquier procesamiento, eliminando la posibilidad de que consultas maliciosas (con caracteres de control o rutas) lleguen a los parsers o al motor remoto.
-- `2026-08-12T00:30:29` **settings.py** (robustez ante casos límite): Se ha añadido una validación de escritura robusta en `save` utilizando un bloque `try-except` más específico y la verificación explícita de `os.access(ruta.parent, os.W_OK)` para prevenir fallos silenciosos al intentar escribir en directorios sin permisos antes de crear el archivo temporal.
-- `2026-08-12T00:20:20` **quarantine.py** (robustez ante casos límite): Mejoré la resiliencia ante errores de concurrencia y permisos en el bucle de purga (`purge_all`) implementando un manejo robusto de excepciones por archivo, asegurando que un fallo de E/S en un ítem individual no interrumpa el procesamiento del resto del lote.
