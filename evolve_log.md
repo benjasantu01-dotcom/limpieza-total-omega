@@ -768,3 +768,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-12T04:36:32` ➖ Sin cambios en main.py (enfoque: robustez ante casos límite). Motivo: Se mejora la robustez ante estados inconsistentes o eliminaciones de widgets al validar la existencia de los componentes `winfo_exists()` antes de actualizar el estado de la UI (barra de progreso y estados), evitando errores de referencia `None` o `TclError` si las tareas asíncronas finalizan después de que el usuario cerró o cambió pestañas.
 - `2026-08-12T04:36:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-12T04:36:32` Corrida terminada. Total usado hoy: 108.
+- `2026-08-12T04:44:32` Arrancando corrida. Quedan hoy ~192 peticiones objetivo.
+- `2026-08-12T04:45:04` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se mejora la robustez de `trim_working_set` añadiendo una verificación explícita de `EmptyWorkingSet` en `psapi` antes de su uso y manejando adecuadamente la posible ausencia de la función en versiones antiguas o entornos restringidos de Windows, evitando cierres inesperados de la aplicación.
+- `2026-08-12T04:45:31` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-08-12T04:46:08` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se mejoró la robustez de `quarantine_file` añadiendo una verificación de existencia previa del archivo de destino (colisión) antes de iniciar la copia, y asegurando que las operaciones de limpieza en caso de fallo parcial sean más granulares y seguras.
+- `2026-08-12T04:46:16` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-08-12T04:46:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-12T04:46:16` Corrida terminada. Total usado hoy: 112.

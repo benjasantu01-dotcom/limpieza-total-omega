@@ -285,8 +285,8 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     kernel32 = ctypes.windll.kernel32
     psapi = getattr(ctypes.windll, "psapi", None)
     
-    if psapi is None:
-        return False, "Error de sistema: PSAPI no disponible."
+    if psapi is None or not hasattr(psapi, "EmptyWorkingSet"):
+        return False, "Error de sistema: PSAPI no disponible o incompatible."
 
     proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
     

@@ -308,7 +308,8 @@ def quarantine_file(
     
     if destination.exists():
         raise UnsafePathError("Colisión de nombres: el destino ya existe.")
-    temp_dest = dest_dir / f"{item_id}.tmp"
+    
+    temp_dest = dest_dir / f"{item_id}_{os.getpid()}.tmp"
     try:
         shutil.copy2(source_path, temp_dest)
         file_hash = _get_sha256(temp_dest)
