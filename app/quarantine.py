@@ -419,7 +419,7 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     items_to_keep: List[QuarantineItem] = []
     
     for entry in quarantine_root.iterdir():
-        if entry.name == MANIFEST_NAME or not entry.is_file():
+        if entry is None or entry.name == MANIFEST_NAME or not entry.is_file():
             continue
         
         # Validar confinamiento antes de cualquier operación
@@ -442,7 +442,8 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
                 _safe_unlink(entry)
         except (OSError, PermissionError, UnsafePathError):
             if entry.name in items_in_manifest:
-                items_to_keep.append(item_map[entry.name])
+                item = item_map.get(entry.name)
+                if item: items_to_keep.append(item)
     
     if purged_count > 0:
         save_manifest(items_to_keep, base)

@@ -309,7 +309,8 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
                 return False, "Operación denegada: ruta de ejecutable protegida."
             
         if not psapi.EmptyWorkingSet(proc_handle):
-            return False, f"Error al intentar liberar memoria (código {kernel32.GetLastError()})."
+            err_code = kernel32.GetLastError()
+            return False, f"Error al intentar liberar memoria (código {err_code})."
             
         return True, f"Working set liberado. {TRIM_WARNING}"
     except Exception:

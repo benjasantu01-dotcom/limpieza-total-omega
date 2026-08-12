@@ -237,14 +237,16 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
     Mueve los archivos basura identificados a un directorio de cuarentena/revisión.
     Valida la disponibilidad de espacio y permisos antes de procesar cada archivo.
     """
-    if not files:
-        raise ValueError("La lista de archivos a procesar no puede estar vacía.")
+    if not files or not isinstance(files, list) or not isinstance(review_dir, str):
+        return Path(review_dir).expanduser().resolve()
 
     dest: Path = Path(review_dir).expanduser().resolve()
     ensure_safe_to_modify(dest)
     dest.mkdir(parents=True, exist_ok=True)
 
     for jf in files:
+        if not isinstance(jf, JunkFile):
+            continue
         try:
             # Validar que el archivo fuente aún sea seguro antes de cada operación
             ensure_safe_to_modify(jf.path)
