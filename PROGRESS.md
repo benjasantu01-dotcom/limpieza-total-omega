@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **236** (46.8% de aceptación)
+- Mejoras aceptadas: **238** (47.2% de aceptación)
 - Rechazadas por tests: 8
-- Rechazadas por guardia de seguridad: 32
+- Rechazadas por guardia de seguridad: 34
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 212
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-11 | 132 | 5 | 17 | 8 | 114 |
-| 2026-08-12 | 104 | 3 | 15 | 8 | 98 |
+| 2026-08-11 | 132 | 5 | 17 | 8 | 110 |
+| 2026-08-12 | 106 | 3 | 17 | 8 | 98 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,13 +25,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **48**
 - rendimiento: **45**
 - robustez ante casos límite: **42**
-- seguridad defensiva: **40**
+- seguridad defensiva: **42**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **22**
+- `quarantine.py`: **22**
 - `diskreport.py`: **21**
-- `quarantine.py`: **21**
 - `assistant.py`: **21**
 - `branding.py`: **21**
 - `settings.py`: **20**
@@ -39,13 +39,15 @@ Este archivo se regenera solo en cada corrida a partir de
 - `browser.py`: **17**
 - `duplicates.py`: **17**
 - `memory.py`: **17**
+- `organizer.py`: **14**
 - `main.py`: **13**
-- `organizer.py`: **13**
 - `startup.py`: **9**
 - `safety.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-12T09:52:23` **quarantine.py** (seguridad defensiva): Se implementó un bloqueo de seguridad en `purge_all` y `purge_item` para asegurar que el archivo a borrar sea explícitamente un archivo regular y no un link simbólico, evitando vulnerabilidades de escalada de privilegios o borrado accidental de objetivos fuera de la cuarentena.
+- `2026-08-12T09:51:54` **organizer.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `delete_reviewed` para evitar el borrado de archivos fuera de la carpeta de destino y se añadió un chequeo explícito de integridad antes de la ejecución de `os.remove`, asegurando que `ensure_safe_to_modify` actúe como filtro preventivo.
 - `2026-08-12T09:43:00` **main.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_ask_folder` añadiendo una normalización más robusta frente a caracteres especiales y una validación de seguridad proactiva mediante `safety.ensure_safe_to_modify` antes de retornar cualquier ruta, evitando que el usuario seleccione rutas prohibidas accidentalmente.
 - `2026-08-12T09:42:10` **healthscore.py** (seguridad defensiva): Se endureció la validación de entrada en `compute_score` y `_generate_recommendations` mediante el uso de `getattr` para acceder a las métricas, evitando el riesgo de que una versión futura de `SystemMetrics` con campos inesperados o un objeto mal formado cause comportamientos impredecibles durante el procesamiento de datos.
 - `2026-08-12T09:41:21` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `walk_files` y `largest_folders` añadiendo una validación explícita de `is_protected_path` al inicio de cada iteración y al procesar subcarpetas, garantizando que el escáner no profundice en ninguna ruta sensible incluso ante errores de resolución de enlaces simbólicos o de acceso.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-12T09:01:31` **healthscore.py** (robustez ante casos límite): Reforcé la robustez del módulo `healthscore.py` ante casos límite en la generación de recomendaciones, evitando accesos a claves inexistentes en el diccionario de `ratios` y asegurando que `_generate_recommendations` maneje correctamente las entradas faltantes o mal formadas.
 - `2026-08-12T09:01:20` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez de `suggest_keeper` y `hash_file` frente a archivos que desaparecen o se corrompen durante el proceso de análisis, evitando excepciones inesperadas mediante chequeos de existencia y manejo de errores de estado más granular, alineándose con el enfoque de robustez ante casos límite.
 - `2026-08-12T08:51:12` **assistant.py** (robustez ante casos límite): Mejora la robustez ante datos corruptos o inesperados en `SystemContext` dentro de `context_as_text`, asegurando que la serialización sea siempre segura y no propague errores hacia el asistente.
-- `2026-08-12T08:50:14` **settings.py** (rendimiento): Se implementó un mecanismo de caché en memoria para los validadores de configuración para evitar la re-validación costosa y recursiva de tipos básicos en llamadas frecuentes a `get` y `load`.
-- `2026-08-12T08:39:58` **quarantine.py** (rendimiento): Optimicé el acceso al manifiesto de cuarentena implementando una caché de tipo `lru_cache` para `load_manifest`, evitando múltiples lecturas de disco y parseos de JSON redundantes en operaciones que consultan frecuentemente el estado del sandbox.

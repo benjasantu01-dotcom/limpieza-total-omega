@@ -278,7 +278,8 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
                 try:
                     if entry.is_file() and not _is_junction(entry):
                         path_to_delete = Path(entry.path).resolve()
-                        if dest == path_to_delete.parent:
+                        # Verificación estricta: asegurar que el archivo esté bajo la carpeta de destino
+                        if dest in path_to_delete.parents:
                             ensure_safe_to_modify(path_to_delete)
                             os.remove(path_to_delete)
                             count += 1

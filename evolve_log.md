@@ -1177,3 +1177,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-12T09:43:00` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_ask_folder` añadiendo una normalización más robusta frente a caracteres especiales y una validación de seguridad proactiva mediante `safety.ensure_safe_to_modify` antes de retornar cualquier ruta, evitando que el usuario seleccione rutas prohibidas accidentalmente.
 - `2026-08-12T09:43:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-12T09:43:00` Corrida terminada. Total usado hoy: 228.
+- `2026-08-12T09:51:04` Arrancando corrida. Quedan hoy ~72 peticiones objetivo.
+- `2026-08-12T09:51:30` 🛑 Propuesta bloqueada por la guardia en memory.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 213): positional argument follows keyword argument
+- `2026-08-12T09:51:54` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `delete_reviewed` para evitar el borrado de archivos fuera de la carpeta de destino y se añadió un chequeo explícito de integridad antes de la ejecución de `os.remove`, asegurando que `ensure_safe_to_modify` actúe como filtro preventivo.
+- `2026-08-12T09:52:23` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se implementó un bloqueo de seguridad en `purge_all` y `purge_item` para asegurar que el archivo a borrar sea explícitamente un archivo regular y no un link simbólico, evitando vulnerabilidades de escalada de privilegios o borrado accidental de objetivos fuera de la cuarentena.
+- `2026-08-12T09:52:26` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-12T09:52:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-12T09:52:26` Corrida terminada. Total usado hoy: 232.

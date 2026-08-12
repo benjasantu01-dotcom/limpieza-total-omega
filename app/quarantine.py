@@ -103,7 +103,7 @@ class QuarantineItem:
 
     def verify_integrity(self, stored_path: Path) -> bool:
         """Verifica que el archivo actual en disco coincida con el registro del manifiesto."""
-        if not stored_path or not stored_path.is_file():
+        if not stored_path or not stored_path.is_file() or stored_path.is_symlink():
             return False
         try:
             stats = stored_path.stat()
@@ -138,7 +138,7 @@ def _is_file_locked(path: Path) -> bool:
 
 def _safe_unlink(path: Path) -> bool:
     try:
-        if path.is_file():
+        if path.is_file() and not path.is_symlink():
             path.unlink()
             return True
         return False
@@ -386,8 +386,8 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
         return False
     quarantine_root = quarantine_dir(base)
     stored_file = (quarantine_root / match.stored_name).resolve()
-    if not _is_valid_quarantine_path(stored_file, quarantine_root):
-        raise UnsafePathError("Borrado de seguridad fallido: ruta fuera de sandbox.")
+    if not _is_valid_quarantine_path(stored_file, quarantine_root) or stored_file.is_symlink():
+        raise UnsafePathError("Borrado de seguridad fallido: ruta fuera de sandbox o tipo inválido.")
     if not stored_file.exists() or not match.verify_integrity(stored_file):
         raise UnsafePathError("Integridad comprometida: no se borra un archivo sospechoso inestable.")
     ensure_safe_to_modify(stored_file, allow_sensitive=False)
@@ -412,7 +412,7 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     items_to_keep: List[QuarantineItem] = []
     
     for entry in quarantine_root.iterdir():
-        if entry is None or entry.name == MANIFEST_NAME or not entry.is_file():
+        if entry is None or entry.name == MANIFEST_NAME or not entry.is_file() or entry.is_symlink():
             continue
         
         # Validar confinamiento antes de cualquier operación
