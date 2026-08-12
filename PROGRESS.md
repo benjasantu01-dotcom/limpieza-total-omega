@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **228** (45.2% de aceptación)
+- Mejoras aceptadas: **229** (45.4% de aceptación)
 - Rechazadas por tests: 9
-- Rechazadas por guardia de seguridad: 32
+- Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 18
 - Sin respuesta de la IA (error o límite): 217
 
@@ -16,30 +16,30 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-10 | 34 | 0 | 4 | 5 | 39 |
+| 2026-08-10 | 32 | 0 | 3 | 5 | 38 |
 | 2026-08-11 | 170 | 8 | 24 | 10 | 138 |
-| 2026-08-12 | 24 | 1 | 4 | 3 | 40 |
+| 2026-08-12 | 27 | 1 | 4 | 3 | 41 |
 
 ## Mejoras aceptadas por enfoque
 
+- legibilidad y documentación: **52**
 - manejo de errores y validación de entradas: **49**
-- legibilidad y documentación: **49**
 - robustez ante casos límite: **46**
 - seguridad defensiva: **45**
-- rendimiento: **39**
+- rendimiento: **37**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **21**
 - `settings.py`: **20**
 - `assistant.py`: **20**
-- `branding.py`: **19**
+- `branding.py`: **20**
+- `duplicates.py`: **20**
+- `quarantine.py`: **20**
 - `diskreport.py`: **19**
-- `duplicates.py`: **19**
 - `scanner.py`: **18**
 - `healthscore.py`: **18**
-- `memory.py`: **16**
-- `browser.py`: **16**
+- `browser.py`: **17**
+- `memory.py`: **15**
 - `main.py`: **12**
 - `startup.py`: **12**
 - `organizer.py`: **11**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-12T03:14:59` **duplicates.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints consistentes en las funciones internas (`_collect_candidates`, `_refine_by_hash`) y se clarificaron los criterios de desempate en `suggest_keeper` mediante documentación explícita, mejorando la mantenibilidad sin alterar la lógica de detección.
+- `2026-08-12T03:14:14` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `browser.py` añadiendo docstrings descriptivos a las funciones de utilidad interna (`_is_safe_path`, `_is_excluded_file`, `_is_system_hidden`) para clarificar el propósito de cada capa de filtrado, cumpliendo con el enfoque de legibilidad y documentación sin alterar la funcionalidad.
+- `2026-08-12T03:13:41` **branding.py** (legibilidad y documentación): Se introdujo una `TypedDict` para la estructura de `FONT_SIZES` y se documentó explícitamente el origen de los puntos vectoriales del escudo en `_get_shield_coords`, mejorando la mantenibilidad y claridad del código para futuros colaboradores.
 - `2026-08-12T03:04:54` **assistant.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en funciones clave y la estandarización de la estructura de las explicaciones en `explain_area` para facilitar su mantenimiento, asegurando que cada área de salud sea auto-explicativa para el usuario final.
 - `2026-08-12T03:03:47` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` capturando explícitamente posibles errores de `os.replace` y `os.fsync` (como fallos de acceso en sistemas de archivos bloqueados), y añadí una validación de integridad en `load()` que verifica si el JSON cargado contiene todas las claves requeridas antes de procesarlo, evitando errores de `KeyError` en partes posteriores de la aplicación.
 - `2026-08-12T03:03:13` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `scanner.py` implementando una validación de parámetros de entrada más estricta en las funciones de chequeo y en `process_entry`, asegurando que el manejo de rutas y atributos sea defensivo ante entradas nulas o malformadas, previniendo excepciones no capturadas durante la recursión.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-12T01:10:55` **settings.py** (seguridad defensiva): He endurecido la seguridad en `save` y `_is_safe_path` al validar que las rutas no solo sean seguras para modificar, sino que no sean links simbólicos o junctions de sistema, utilizando una comprobación explícita de `is_protected_path` sobre la ruta resuelta antes de cualquier operación de escritura o validación de configuración.
 - `2026-08-12T01:02:04` **scanner.py** (seguridad defensiva): Se ha añadido una validación explícita mediante `is_protected_path` dentro de `process_entry` antes de realizar `entry.stat()` o cualquier otra operación de acceso, asegurando que los enlaces simbólicos o puntos de reanálisis hacia rutas protegidas no sean seguidos ni inspeccionados, reforzando la seguridad defensiva contra el escape de directorios.
 - `2026-08-12T01:00:58` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad en `purge_all` implementando una validación estricta de "sandbox" para cada archivo antes de cualquier operación, asegurando que no se pueda manipular el sistema de archivos fuera del directorio de cuarentena definido, incluso si hay archivos huérfanos presentes.
-- `2026-08-12T00:53:27` **organizer.py** (seguridad defensiva): Mejoré la seguridad defensiva en `stage_for_review` y `delete_reviewed` para garantizar que las rutas de los archivos procesados estén estrictamente contenidas dentro de sus carpetas origen o destino, evitando cualquier riesgo de "path traversal" o manipulación de rutas relativas mediante el uso de `path.resolve()` y validaciones de parentesco.
-- `2026-08-12T00:50:32` **healthscore.py** (seguridad defensiva): Mejoré la robustez de `score_security` y `score_memory`/`score_disk` añadiendo validaciones explícitas contra valores negativos o estados de error antes de aplicar aritmética, evitando que entradas malformadas corrompan el puntaje total.
-- `2026-08-12T00:41:48` **duplicates.py** (seguridad defensiva): Se reforzó `_collect_candidates` para evitar condiciones de carrera y ataques de desbordamiento de rutas mediante el uso de `entry.path` absoluto y validaciones estrictas antes de resolver la ruta, asegurando que el escaneo solo proceda tras confirmar la seguridad del objeto.

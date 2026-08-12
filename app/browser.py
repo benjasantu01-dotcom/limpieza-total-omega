@@ -99,13 +99,14 @@ def base_directories() -> List[Path]:
 
 def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> bool:
     """
-    Verificación de seguridad para prevenir Path Traversal y ataques de enlace.
-    Valida que 'target_path' pertenezca físicamente a 'base_path'.
+    Valida la integridad de la ruta para evitar Path Traversal y enlaces simbólicos.
+    Comprueba que 'target_path' resida físicamente dentro de 'base_path' y que no
+    sea un punto de reparse (Junction/Symlink) que escape de la jerarquía permitida.
     """
     if not isinstance(target_path, Path) or not isinstance(base_path, Path):
         return False
     
-    # Validar caracteres prohibidos antes de resolver rutas
+    # Validar caracteres prohibidos que podrían evadir filtros en Windows
     path_str = str(target_path)
     if any(ord(char) < 32 or ord(char) in (0x200E, 0x200F, 0x202A, 0x202E) for char in path_str):
         return False
@@ -133,14 +134,20 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
 
 
 def _is_excluded_file(name: str | None) -> bool:
-    """Filtro de nombres de archivo protegidos (sesiones, cookies, etc)."""
+    """
+    Comprueba si un nombre de archivo o carpeta está en la lista de exclusión (NEVER_TOUCH).
+    Dicha lista contiene elementos críticos del perfil del navegador que nunca deben ser reportados.
+    """
     if not isinstance(name, str) or not name:
         return True
     return name.lower() in NEVER_TOUCH
 
 
 def _is_system_hidden(entry_path: str | None, kernel32: ctypes.WinDLL | None) -> bool:
-    """Usa la API de Windows para verificar si un archivo tiene atributos de sistema u oculto."""
+    """
+    Consulta los atributos de archivo de Windows para detectar flags de 'oculto' o 'sistema'.
+    Utiliza GetFileAttributesW para evitar excepciones en rutas con caracteres especiales.
+    """
     if not kernel32 or not isinstance(entry_path, str) or not entry_path:
         return False
     try:
@@ -151,7 +158,10 @@ def _is_system_hidden(entry_path: str | None, kernel32: ctypes.WinDLL | None) ->
 
 
 def _should_skip_entry(entry: os.DirEntry, kernel32: ctypes.WinDLL | None, is_junction_fn: Callable[[str], bool]) -> bool:
-    """Valida si una entrada del sistema de archivos debe omitirse durante el escaneo."""
+    """
+    Filtro lógico principal para el escaneo de directorios. Determina si una entrada (archivo o carpeta)
+    debe ser ignorada basándose en sus atributos, tipo de enlace o si es un componente sensible.
+    """
     if _is_system_hidden(entry.path, kernel32):
         return True
     if entry.is_symlink() or is_junction_fn(entry.path):
@@ -170,7 +180,8 @@ def _sum_directory_recursive(
     depth: int = 0
 ) -> int:
     """
-    Calcula el peso total de una carpeta mediante un recorrido DFS optimizado.
+    Calcula el peso total de una carpeta mediante un recorrido DFS con detección de ciclos.
+    Implementa un límite de profundidad de recursión para prevenir desbordamientos.
     """
     if depth > 20:
         return 0

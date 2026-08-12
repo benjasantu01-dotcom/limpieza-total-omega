@@ -157,10 +157,10 @@ def _collect_candidates(
     skip_protected: bool
 ) -> Dict[int, List[Path]]:
     """
-    Realiza un recorrido recursivo de directorios para identificar candidatos.
+    Escanea el sistema de archivos buscando archivos candidatos a duplicados.
     
-    Utiliza un diccionario de inodos (dev, ino) para prevenir el procesamiento
-    redundante en caso de enlaces simbólicos circulares.
+    Utiliza un registro de inodos para evitar ciclos en enlaces simbólicos y
+    aplica filtros de seguridad de 'safety.py' para evitar rutas bloqueadas.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: Dict[Tuple[int, int], bool] = {}
@@ -175,10 +175,10 @@ def _collect_candidates(
                     
                     try:
                         entry_stat = entry.stat(follow_symlinks=False)
+                        # Detectar reparse points (0x400) para evitar recursión circular
                         if getattr(entry_stat, 'st_file_attributes', 0) & 0x400:
                             continue
                         
-                        # Usar path absoluto directamente del entry para evitar ambigüedad de resolución
                         path_obj = Path(os.path.abspath(entry.path))
                         if skip_protected and is_protected_path(path_obj):
                             continue
@@ -213,8 +213,9 @@ def _refine_by_hash(
     hash_func: Callable[[Path], Optional[str]]
 ) -> Dict[str, List[Path]]:
     """
-    Filtra una lista de archivos agrupándolos por el hash calculado mediante hash_func.
-    Solo retorna grupos que contienen al menos dos archivos coincidentes.
+    Aplica una función de hash a un conjunto de archivos para agrupar coincidencias.
+    
+    Solo devuelve grupos que contienen al menos un duplicado (longitud > 1).
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     if paths is None: return groups_by_digest
@@ -264,10 +265,11 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     """
-    Selecciona la ruta de menor antigüedad y menor longitud de nombre como 'keeper'.
+    Selecciona la ruta del 'archivo original' para preservar dentro de un grupo.
     
-    La estrategia favorece la conservación del archivo original más antiguo,
-    utilizando la longitud del path como desempate determinista.
+    Criterios de selección (orden jerárquico):
+    1. Antigüedad: Se prioriza el archivo creado/modificado hace más tiempo (menor st_mtime).
+    2. Longitud de ruta: En caso de empate, se elige la ruta más corta.
     """
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None

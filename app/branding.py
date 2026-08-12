@@ -57,6 +57,16 @@ class PaletteDict(TypedDict):
     border: HexColor
     glow: HexColor
 
+class FontSizesDict(TypedDict):
+    """Mapeo estricto de claves tipográficas para asegurar consistencia en la UI."""
+    display: int
+    title: int
+    subtitle: int
+    heading: int
+    body: int
+    mono: int
+    caption: int
+
 APP_NAME: Final[str] = "Limpieza Total Omega"
 APP_SHORT_NAME: Final[str] = "Omega"
 APP_TAGLINE: Final[str] = "Limpieza y seguridad, en un solo lugar"
@@ -86,7 +96,7 @@ PALETTE: Final[Mapping[str, HexColor]] = MappingProxyType({
     "glow": "#00f0c0",
 })
 
-FONT_SIZES: Final[Mapping[str, int]] = MappingProxyType({
+FONT_SIZES: Final[FontSizesDict] = {
     "display": 46,
     "title": 26,
     "subtitle": 13,
@@ -94,7 +104,7 @@ FONT_SIZES: Final[Mapping[str, int]] = MappingProxyType({
     "body": 12,
     "mono": 11,
     "caption": 10,
-})
+}
 
 SEVERITY_STYLES: Final[Mapping[SeverityLevel, SeverityStyle]] = MappingProxyType({
     "ok": ("#22e39a", "Correcto"),
@@ -289,7 +299,9 @@ def _get_grouped_segments(colors: List[HexColor]) -> List[Tuple[HexColor, int, i
 
 @lru_cache(maxsize=8)
 def _get_shield_coords(s: float) -> List[float]:
-    """Retorna los puntos vectoriales del escudo base escalados por 's'."""
+    """Retorna los puntos vectoriales del escudo normalizado, escalados por 's'.
+    La forma se basa en una estructura pentagonal superior con base curva para simular 
+    seguridad y robustez (viewBox 128x128)."""
     base: List[float] = [64, 18, 100, 31, 100, 67, 90, 90, 64, 110, 38, 90, 28, 67, 28, 31]
     return [v * float(s) for v in base]
 
