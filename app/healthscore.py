@@ -143,7 +143,7 @@ def _to_int(value: Any, default: int = 0) -> int:
 def score_junk(junk_mb: float | int) -> float:
     """Calcula score [0.0, 1.0] penalizando linealmente el tamaño de basura."""
     val = _to_float(junk_mb)
-    return 1.0 if _LIMIT_JUNK_MB <= 0.0 else _clamp(1.0 - (val / _LIMIT_JUNK_MB))
+    return 0.0 if _LIMIT_JUNK_MB <= 0.0 else _clamp(1.0 - (val / _LIMIT_JUNK_MB))
 
 
 def score_security(suspicious_count: int, warnings: int = 0) -> float:
@@ -157,27 +157,27 @@ def score_security(suspicious_count: int, warnings: int = 0) -> float:
 def score_memory(available_percent: float | int) -> float:
     """Calcula score [0.0, 1.0] evaluando el % de memoria libre."""
     val = _clamp(_to_float(available_percent), 0.0, 100.0)
-    if _LIMIT_RAM_PERCENT <= 0.0: return 1.0
+    if _LIMIT_RAM_PERCENT <= 0.0: return 0.0
     return _clamp(val / _LIMIT_RAM_PERCENT, 0.0, 1.0)
 
 
 def score_disk(free_percent: float | int) -> float:
     """Calcula score [0.0, 1.0] evaluando el % de espacio libre."""
     val = _clamp(_to_float(free_percent), 0.0, 100.0)
-    if _LIMIT_DISK_PERCENT <= 0.0: return 1.0
+    if _LIMIT_DISK_PERCENT <= 0.0: return 0.0
     return _clamp(val / _LIMIT_DISK_PERCENT, 0.0, 1.0)
 
 
 def score_duplicates(duplicate_mb: float | int) -> float:
     """Calcula score [0.0, 1.0] penalizando linealmente el tamaño de duplicados."""
     val = _to_float(duplicate_mb)
-    return 1.0 if _LIMIT_DUPLICATE_MB <= 0.0 else _clamp(1.0 - (val / _LIMIT_DUPLICATE_MB))
+    return 0.0 if _LIMIT_DUPLICATE_MB <= 0.0 else _clamp(1.0 - (val / _LIMIT_DUPLICATE_MB))
 
 
 def score_startup(startup_count: int) -> float:
     """Calcula score [0.0, 1.0] penalizando programas en arranque."""
     val = max(0, _to_int(startup_count))
-    return 1.0 if _LIMIT_STARTUP_COUNT <= 0 else _clamp(1.0 - (val / _LIMIT_STARTUP_COUNT))
+    return 0.0 if _LIMIT_STARTUP_COUNT <= 0 else _clamp(1.0 - (val / _LIMIT_STARTUP_COUNT))
 
 
 def grade_for_score(score: float | int) -> str:

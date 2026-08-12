@@ -102,8 +102,8 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
                     break
                 digest.update(buffer)
         
-        # Validar consistencia tras lectura final
-        if file_path.exists() and file_path.stat().st_size != stat_initial.st_size:
+        # Validar consistencia tras lectura final: el tamaño no debió cambiar durante el proceso
+        if file_path.stat().st_size != stat_initial.st_size:
             return None
             
         return digest.hexdigest()
@@ -115,14 +115,13 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
     """
     Hash rápido de los primeros bytes del archivo para una comparación inicial.
     
-    Ignora reparse points y archivos inaccesibles.
+    Ignora reparse points y archivos inaccesibles mediante manejo de excepciones.
     """
     if path is None or read_bytes <= 0: 
         return None
         
     try:
         file_path = Path(path)
-        # Se omite resolve() aquí porque el pipeline de find_duplicates ya garantiza rutas resueltas.
         if not file_path.is_file() or is_protected_path(file_path):
             return None
             

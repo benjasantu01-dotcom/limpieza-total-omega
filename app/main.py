@@ -872,15 +872,15 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             if not self._closing:
                 self._validate_and_log_error(e, tab)
 
-    def run_async(self, fn: Callable, check_safety: bool = False) -> None:
+    def run_async(self, fn: Callable, check_safety: bool = False, target: Optional[str] = None) -> None:
         """Envía tarea al pool de hilos y garantiza el manejo de bloqueos y seguridad."""
         if self._closing: return
         
-        if check_safety:
-            # Validación pre-ejecución: si la ruta de escaneo es inválida/insegura, aborta.
-            if self.scan_target and not self._is_safe_target_dir(self.scan_target):
-                self.log(f"Abortado: La ruta de destino {self.scan_target} no es segura.", self._current_tab())
-                return
+        # Validación tardía del objetivo para evitar condiciones de carrera
+        target_path = target or self.scan_target
+        if check_safety and target_path and not self._is_safe_target_dir(target_path):
+            self.log(f"Abortado: La ruta de destino {target_path} no es segura.", self._current_tab())
+            return
             
         self._set_busy(True)
         tab = self._current_tab()
@@ -915,13 +915,14 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         if not folder or not isinstance(folder, str):
             return None
         
-        # Filtrar caracteres de control, incluyendo caracteres RTL (Right-to-Left)
-        # para evitar el ataque de suplantación de extensión/ruta.
+        # Limpieza básica de la ruta
         norm_folder = "".join(c for c in os.path.normpath(folder) if ord(c) >= 32 and c != '\u202e')
         
-        # Validar la seguridad de la ruta final tras normalización
         try:
-            p = Path(norm_folder).resolve()
+            p = Path(norm_folder)
+            if not p.exists():
+                return None
+            p = p.resolve()
             if safety.is_protected_path(p):
                 messagebox.showwarning("Ruta no segura", "Esa ruta está protegida por el sistema.")
                 return None
@@ -1162,7 +1163,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.log("Recordá: son señales, no una condena. Usá 'Aislar hallazgos' "
                      "para moverlos a cuarentena sin borrarlos.", "Seguridad")
 
-        self.run_async(task, check_safety=True)
+        self.run_async(task, check_safety=True, target=folder)
 
     def on_heuristic_scan(self) -> None:
         """Escaneo heurístico de la carpeta predeterminada (Descargas)."""
@@ -1382,7 +1383,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.log(f"Analizando {folder} (solo lectura, puede tardar)...", "Disco")
             self.log_lines(diskreport.summarize(folder), "Disco")
 
-        self.run_async(task, check_safety=True)
+        self.run_async(task, check_safety=True, target=folder)
 
     def on_find_duplicates(self) -> None:
         """Busca y reporta duplicados dentro de la carpeta elegida."""
@@ -1417,7 +1418,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 lineas.append("")
             self.log_lines(lineas, "Duplicados")
 
-        self.run_async(task, check_safety=True)
+        self.run_async(task, check_safety=True, target=folder)
 
     def on_quarantine_duplicates(self) -> None:
         """Mueve archivos duplicados extra a cuarentena."""
