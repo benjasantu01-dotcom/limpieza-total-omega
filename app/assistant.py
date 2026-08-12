@@ -190,9 +190,8 @@ def _ensure_safe_text(text: Any) -> bool:
         return False
     if _CONTROL_CHARS_REGEX.search(text):
         return False
-    if _PATH_REGEX.search(text) or any(sep in text for sep in (":\\", "/", "\\")):
-        if is_protected_path(text):
-            return False
+    if is_protected_path(text) or _PATH_REGEX.search(text):
+        return False
     return True
 
 def _safe_assign(obj: SystemContext, attr: str, val: Any, cast: Callable = float, min_val: float = 0.0, max_val: float = float('inf')) -> None:
@@ -506,8 +505,8 @@ def ask(question: str, context: Optional[SystemContext] = None,
     ctx: SystemContext = context if isinstance(context, SystemContext) else SystemContext()
     respaldo: Answer = local_answer(question, ctx)
     
-    # Validación estricta de seguridad inicial
-    if not _ensure_safe_text(question) or is_protected_path(question): 
+    # Validación estricta de seguridad: denegar si la entrada es ruta protegida
+    if not _ensure_safe_text(question): 
         return respaldo
         
     if not available(base): return respaldo

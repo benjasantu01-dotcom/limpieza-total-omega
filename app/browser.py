@@ -90,7 +90,7 @@ def base_directories() -> List[Path]:
     
     try:
         path_local = Path(local).resolve()
-        if path_local.is_absolute() and path_local.is_dir():
+        if path_local.is_absolute() and path_local.is_dir() and not is_protected_path(path_local):
             return [path_local]
         return []
     except (OSError, RuntimeError, ValueError):
@@ -247,6 +247,7 @@ def _is_valid_cache_path(candidate: Optional[Path], base_path: Path) -> bool:
         return (
             candidate.exists() and 
             candidate.is_dir() and 
+            not is_protected_path(candidate) and
             _is_safe_path(candidate, base_path) and
             not _is_excluded_file(candidate.name)
         )
