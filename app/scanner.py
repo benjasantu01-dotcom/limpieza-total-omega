@@ -143,14 +143,17 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, name
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
-    Calcula si el tiempo de modificación del ejecutable es inferior al umbral de frescura definido.
-    
-    Args:
-        entry: Objeto DirEntry para acceder a metadatos de sistema (st_mtime).
-        now_ts: Timestamp actual de referencia para el cálculo de antigüedad.
+    Calcula si el tiempo de modificación del ejecutable es inferior al umbral de frescura definido,
+    limitado a directorios donde el usuario suele descargar contenido.
     """
-    if entry is None:
+    if entry is None or is_protected_path(path):
         return None
+    
+    # Restringir heurística solo a carpetas comunes de usuario para evitar falsos positivos
+    path_str = str(path).lower()
+    if not any(folder in path_str for folder in ["downloads", "temp", "desktop"]):
+        return None
+
     try:
         stat_info = entry.stat()
         if (now_ts - stat_info.st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):

@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **238** (47.2% de aceptación)
+- Mejoras aceptadas: **240** (47.6% de aceptación)
 - Rechazadas por tests: 10
 - Rechazadas por guardia de seguridad: 35
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 204
+- Sin respuesta de la IA (error o límite): 202
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-10 | 11 | 0 | 1 | 1 | 13 |
+| 2026-08-10 | 11 | 0 | 1 | 1 | 9 |
 | 2026-08-11 | 170 | 8 | 24 | 10 | 138 |
-| 2026-08-12 | 57 | 2 | 10 | 6 | 53 |
+| 2026-08-12 | 59 | 2 | 10 | 6 | 55 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **60**
 - manejo de errores y validación de entradas: **49**
 - robustez ante casos límite: **44**
+- seguridad defensiva: **44**
 - rendimiento: **43**
-- seguridad defensiva: **42**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **22**
 - `assistant.py`: **21**
+- `settings.py`: **21**
 - `branding.py`: **21**
 - `diskreport.py`: **20**
 - `healthscore.py`: **20**
-- `settings.py`: **20**
 - `browser.py`: **19**
 - `duplicates.py`: **18**
-- `scanner.py`: **17**
+- `scanner.py`: **18**
 - `memory.py`: **16**
 - `startup.py`: **13**
 - `organizer.py`: **12**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-12T05:36:42` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save()` aplicando una validación de ruta estricta usando `is_safe_to_modify` sobre el archivo final antes de la escritura, previniendo que una configuración manipulada intente sobrescribir archivos protegidos del sistema.
+- `2026-08-12T05:36:16` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva al validar que `check_recent_executable_in_downloads` solo aplique a directorios con contexto de "descargas" o temporales, evitando falsos positivos y ruido innecesario en carpetas críticas donde la creación de ejecutables es esperada, y se incluyó la verificación de `is_protected_path` en `check_recent_executable_in_downloads` para asegurar que el escáner no reporte archivos que el sistema ya protege.
 - `2026-08-12T05:26:37` **quarantine.py** (seguridad defensiva): Se reforzó `_validate_isolation_request` para impedir explícitamente el uso de rutas que contengan caracteres de control o secuencias de escape (vía `\x00` - `\x1f`), y se añadió una validación adicional mediante `resolve()` para prevenir ataques de *path traversal* antes de realizar cualquier operación de E/S.
 - `2026-08-12T05:26:04` **organizer.py** (seguridad defensiva): Se ha mejorado la seguridad en `stage_for_review` y `delete_reviewed` implementando una validación estricta de jerarquía (anclaje de directorio), asegurando que ninguna operación de movimiento o eliminación pueda escapar del ámbito de `review_dir` incluso ante intentos de manipulación de rutas (`..`), garantizando el cumplimiento estricto del enfoque de seguridad defensiva.
 - `2026-08-12T05:07:44` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `walk_files` y `largest_folders` añadiendo una validación explícita de `is_protected_path` al inicio de cada iteración y al procesar subcarpetas, garantizando que el recolector de datos sea incapaz de acceder a rutas protegidas incluso ante cambios en la estructura de directorios durante el escaneo.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-12T04:35:45` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `compute_score` asegurando que el cálculo de `ratios` sea siempre consistente ante valores de umbrales mal definidos (ej: cero o negativos), protegiendo contra posibles divisiones por cero o resultados no finitos en los módulos de puntuación.
 - `2026-08-12T04:28:20` **browser.py** (robustez ante casos límite): Se ha robustecido el escaneo recursivo de directorios ante la posible interrupción por "file locking" o accesos denegados mediante la adición de un chequeo explícito de accesibilidad y una gestión más resiliente de `OSError` en `_sum_directory_recursive`.
 - `2026-08-12T04:28:07` **branding.py** (robustez ante casos límite): Se ha mejorado la resiliencia de la función `save_logo_svg` ante rutas mal formadas, entornos sin permisos de escritura o sistemas con rutas inválidas, asegurando que el acceso al sistema de archivos sea siempre seguro y controlado sin interrumpir el flujo de la aplicación.
-- `2026-08-12T04:26:51` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` agregando un manejo defensivo ante objetos de entrada que podrían ser `None` o contener datos malformados, asegurando que las métricas del sistema siempre tengan valores válidos antes de ser procesadas, previniendo errores en tiempo de ejecución.
-- `2026-08-12T04:15:37` **settings.py** (rendimiento): Optimicé el rendimiento del módulo implementando un mecanismo de caché para los validadores de rutas (que realizan operaciones de I/O costosas como `resolve()` y `exists()`) y evitando la re-validación innecesaria al actualizar valores.

@@ -219,7 +219,6 @@ def load(path_or_base: PathLike | None = None) -> AppSettings:
             return _cached_settings.copy()
         if 0 < stats.st_size <= MAX_SETTINGS_SIZE:
             with open(ruta, "r", encoding="utf-8") as f:
-                # Verificación de integridad simple tras lectura
                 data = json.load(f)
             if isinstance(data, dict):
                 _cached_settings = validate(data)
@@ -232,9 +231,8 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     global _cached_settings, _current_path, _last_mtime
     if not isinstance(values, dict): return None
     ruta = settings_path(path_or_base)
-    if is_protected_path(str(ruta)) or (ruta.exists() and (ruta.is_symlink() or (hasattr(ruta, 'is_junction') and ruta.is_junction()))):
+    if is_protected_path(str(ruta)) or not is_safe_to_modify(str(ruta)):
         return None
-    if not is_safe_to_modify(str(ruta.parent)): return None
     cleaned_settings = validate(values)
     if cleaned_settings.get("asistente_activado") and not (cleaned_settings.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)):
         cleaned_settings["asistente_activado"] = False
