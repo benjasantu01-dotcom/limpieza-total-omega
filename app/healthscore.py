@@ -142,7 +142,7 @@ def _to_int(value: Any, default: int = 0) -> int:
 
 def score_junk(junk_mb: float | int) -> float:
     """Calcula score [0.0, 1.0] penalizando linealmente el tamaño de basura."""
-    val = _to_float(junk_mb)
+    val = max(0.0, _to_float(junk_mb))
     return 0.0 if _LIMIT_JUNK_MB <= 0.0 else _clamp(1.0 - (val / _LIMIT_JUNK_MB))
 
 
@@ -170,7 +170,7 @@ def score_disk(free_percent: float | int) -> float:
 
 def score_duplicates(duplicate_mb: float | int) -> float:
     """Calcula score [0.0, 1.0] penalizando linealmente el tamaño de duplicados."""
-    val = _to_float(duplicate_mb)
+    val = max(0.0, _to_float(duplicate_mb))
     return 0.0 if _LIMIT_DUPLICATE_MB <= 0.0 else _clamp(1.0 - (val / _LIMIT_DUPLICATE_MB))
 
 

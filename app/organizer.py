@@ -247,10 +247,10 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 
     for jf in files:
         try:
+            # Validar que el archivo fuente aún sea seguro y pertenezca a la estructura esperada
             ensure_safe_to_modify(jf.path)
             
             if _is_safe_to_move(jf, dest):
-                # Validación final de espacio y permisos de escritura en destino
                 if os.access(dest, os.W_OK) and shutil.disk_usage(dest).free > jf.size_bytes:
                     target = _generate_unique_target(dest / f"{jf.path.stem}_{int(jf.modified.timestamp())}{jf.path.suffix}")
                     shutil.move(str(jf.path), str(target))
@@ -276,7 +276,9 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
                 try:
                     if entry.is_file() and not _is_junction(entry):
                         path_to_delete = Path(entry.path).resolve()
+                        # Verificar que el archivo a borrar esté estrictamente en dest
                         if dest == path_to_delete.parent:
+                            ensure_safe_to_modify(path_to_delete)
                             os.remove(path_to_delete)
                             count += 1
                 except (PermissionError, OSError):

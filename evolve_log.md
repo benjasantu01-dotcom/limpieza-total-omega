@@ -424,3 +424,11 @@ FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_ex
 - `2026-08-12T00:41:48` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se reforzó `_collect_candidates` para evitar condiciones de carrera y ataques de desbordamiento de rutas mediante el uso de `entry.path` absoluto y validaciones estrictas antes de resolver la ruta, asegurando que el escaneo solo proceda tras confirmar la seguridad del objeto.
 - `2026-08-12T00:41:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-12T00:41:48` Corrida terminada. Total usado hoy: 16.
+- `2026-08-12T00:49:57` Arrancando corrida. Quedan hoy ~284 peticiones objetivo.
+- `2026-08-12T00:50:32` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Mejoré la robustez de `score_security` y `score_memory`/`score_disk` añadiendo validaciones explícitas contra valores negativos o estados de error antes de aplicar aritmética, evitando que entradas malformadas corrompan el puntaje total.
+- `2026-08-12T00:51:32` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-12T00:52:41` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 470): positional argument follows keyword argument
+- `2026-08-12T00:53:13` ➖ Sin cambios en memory.py (enfoque: seguridad defensiva). Motivo: Se reforzó la seguridad de `trim_working_set` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta del ejecutable para prevenir intentos de manipulación sobre procesos del sistema detectados por su ubicación en disco, asegurando que solo se interactúe con procesos permitidos incluso si el PID no está en la lista negra.
+- `2026-08-12T00:53:27` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `stage_for_review` y `delete_reviewed` para garantizar que las rutas de los archivos procesados estén estrictamente contenidas dentro de sus carpetas origen o destino, evitando cualquier riesgo de "path traversal" o manipulación de rutas relativas mediante el uso de `path.resolve()` y validaciones de parentesco.
+- `2026-08-12T00:53:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-12T00:53:27` Corrida terminada. Total usado hoy: 20.
