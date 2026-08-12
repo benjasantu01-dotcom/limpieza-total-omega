@@ -451,13 +451,12 @@ def _call_gemini(
     if not _API_KEY_REGEX.match(api_key) or not _MODEL_NAME_REGEX.match(model): return None
     
     safe_q = _sanitize_query(question)
-    safe_ctx = context_text[:_MAX_TEXT_LENGTH]
-    if not _ensure_safe_text(safe_q) or not _ensure_safe_text(safe_ctx): return None
+    if not _ensure_safe_text(safe_q) or not _ensure_safe_text(context_text): return None
     
     try:
         payload = json.dumps({
             "contents": [{
-                "parts": [{"text": f"{SYSTEM_PROMPT}\n\nMétricas del sistema:\n{safe_ctx}\n\nPregunta del usuario: {safe_q}"}]
+                "parts": [{"text": f"{SYSTEM_PROMPT}\n\nMétricas del sistema:\n{context_text}\n\nPregunta del usuario: {safe_q}"}]
             }]
         }).encode("utf-8")
         
@@ -489,8 +488,12 @@ def ask(question: str, context: Optional[SystemContext] = None,
     """Orquestador de alto nivel para determinar si responder localmente o via API."""
     ctx: SystemContext = context if isinstance(context, SystemContext) else SystemContext()
     respaldo: Answer = local_answer(question, ctx)
+    
+    # Validación estricta de seguridad inicial
+    if not _ensure_safe_text(question) or is_protected_path(question): 
+        return respaldo
+        
     if not available(base): return respaldo
-    if is_protected_path(question): return respaldo
     
     try:
         configuracion = settings.load(base)
@@ -502,7 +505,6 @@ def ask(question: str, context: Optional[SystemContext] = None,
             "asistente_enviar_metricas": bool(configuracion.get("asistente_enviar_metricas", True))
         }
         texto_contexto = context_as_text(ctx) if cfg["asistente_enviar_metricas"] else "El usuario no autorizó enviar métricas."
-        if not _ensure_safe_text(texto_contexto): return respaldo
         
         remoto = _call_gemini(question, texto_contexto, cfg["asistente_api_key"], cfg["asistente_modelo"])
         if not remoto:

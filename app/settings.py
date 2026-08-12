@@ -258,7 +258,12 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
         return ruta
 
     try:
-        ruta.parent.mkdir(parents=True, exist_ok=True)
+        if not ruta.parent.exists():
+            ruta.parent.mkdir(parents=True, exist_ok=True)
+        
+        if not os.access(ruta.parent, os.W_OK):
+            return None
+
         temp = ruta.with_suffix(".tmp")
         with open(temp, "w", encoding="utf-8") as f:
             json.dump(cleaned_settings, f, indent=2, ensure_ascii=False)

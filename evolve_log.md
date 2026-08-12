@@ -409,3 +409,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_ex
 - `2026-08-12T00:21:08` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
 - `2026-08-12T00:21:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-12T00:21:09` Corrida terminada. Total usado hoy: 8.
+- `2026-08-12T00:29:29` Arrancando corrida. Quedan hoy ~292 peticiones objetivo.
+- `2026-08-12T00:29:57` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-08-12T00:30:29` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se ha añadido una validación de escritura robusta en `save` utilizando un bloque `try-except` más específico y la verificación explícita de `os.access(ruta.parent, os.W_OK)` para prevenir fallos silenciosos al intentar escribir en directorios sin permisos antes de crear el archivo temporal.
+- `2026-08-12T00:30:59` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-08-12T00:31:22` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la validación de seguridad en `ask()` y `_call_gemini` para asegurar que el input del usuario sea validado explícitamente mediante `_ensure_safe_text` antes de cualquier procesamiento, eliminando la posibilidad de que consultas maliciosas (con caracteres de control o rutas) lleguen a los parsers o al motor remoto.
+- `2026-08-12T00:31:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-12T00:31:22` Corrida terminada. Total usado hoy: 12.

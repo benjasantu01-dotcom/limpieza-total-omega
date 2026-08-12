@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **236** (46.8% de aceptación)
+- Mejoras aceptadas: **238** (47.2% de aceptación)
 - Rechazadas por tests: 9
 - Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 211
+- Sin respuesta de la IA (error o límite): 209
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-10 | 62 | 1 | 7 | 6 | 70 |
+| 2026-08-10 | 62 | 1 | 7 | 6 | 66 |
 | 2026-08-11 | 170 | 8 | 24 | 10 | 138 |
-| 2026-08-12 | 4 | 0 | 1 | 0 | 3 |
+| 2026-08-12 | 6 | 0 | 1 | 0 | 5 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **60**
 - manejo de errores y validación de entradas: **51**
+- robustez ante casos límite: **46**
 - rendimiento: **45**
-- robustez ante casos límite: **45**
-- seguridad defensiva: **35**
+- seguridad defensiva: **36**
 
 ## Mejoras aceptadas por archivo
 
+- `assistant.py`: **21**
 - `quarantine.py`: **21**
-- `assistant.py`: **20**
 - `diskreport.py`: **20**
 - `duplicates.py`: **20**
+- `settings.py`: **20**
 - `branding.py`: **20**
 - `healthscore.py`: **19**
-- `settings.py`: **19**
 - `memory.py`: **18**
 - `scanner.py`: **17**
 - `browser.py`: **16**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-12T00:31:22` **assistant.py** (seguridad defensiva): Reforcé la validación de seguridad en `ask()` y `_call_gemini` para asegurar que el input del usuario sea validado explícitamente mediante `_ensure_safe_text` antes de cualquier procesamiento, eliminando la posibilidad de que consultas maliciosas (con caracteres de control o rutas) lleguen a los parsers o al motor remoto.
+- `2026-08-12T00:30:29` **settings.py** (robustez ante casos límite): Se ha añadido una validación de escritura robusta en `save` utilizando un bloque `try-except` más específico y la verificación explícita de `os.access(ruta.parent, os.W_OK)` para prevenir fallos silenciosos al intentar escribir en directorios sin permisos antes de crear el archivo temporal.
 - `2026-08-12T00:20:20` **quarantine.py** (robustez ante casos límite): Mejoré la resiliencia ante errores de concurrencia y permisos en el bucle de purga (`purge_all`) implementando un manejo robusto de excepciones por archivo, asegurando que un fallo de E/S en un ítem individual no interrumpa el procesamiento del resto del lote.
 - `2026-08-12T00:11:32` **main.py** (robustez ante casos límite): Se mejora la robustez del componente de entrada `_ask_folder` añadiendo una validación explícita mediante `pathlib.Path.exists()` previa a la resolución de la ruta y se encapsula el acceso a `self.scan_target` dentro de `run_async` para evitar condiciones de carrera donde el objetivo podría invalidarse entre la selección del usuario y el inicio real de la tarea.
 - `2026-08-12T00:10:26` **healthscore.py** (robustez ante casos límite): Reforcé la robustez del módulo `healthscore.py` ante datos de entrada corruptos o extremos (ej. divisiones por cero si los umbrales configurables llegan a cero o valores infinitos/NaN) mediante la implementación de chequeos explícitos y preventivos en las funciones de cálculo, asegurando que la app nunca falle al procesar métricas inusuales.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-11T14:43:16` **safety.py** (rendimiento): Se ha optimizado el rendimiento de las guardas de seguridad mediante la implementación de `lru_cache` en `is_protected_path` y `is_sensitive_file` (que ya tenían caché, pero con tamaños insuficientes o redundantes), y se han consolidado las verificaciones de sistema dentro de `is_protected_path` para evitar recalculaciones costosas al iterar sobre directorios.
 - `2026-08-11T14:42:26` **quarantine.py** (rendimiento): Optimicé el rendimiento de `purge_all` transformando la búsqueda en el sistema de archivos de una iteración sobre ítems a una única pasada sobre el directorio, utilizando un `set` para verificar la existencia de archivos, evitando así llamadas repetitivas y redundantes a `load_manifest` y validaciones innecesarias dentro de loops.
 - `2026-08-11T14:34:44` **organizer.py** (rendimiento): Optimicé el rendimiento de `scan_for_junk` sustituyendo el uso repetido de `os.path.expandvars` y `resolve()` dentro de los bucles por un pre-filtrado de rutas únicas mediante un `set`, evitando el procesamiento redundante de directorios duplicados en la lista de escaneo.
-- `2026-08-11T14:34:03` **main.py** (rendimiento): Optimicé el método `_flush_logs` para evitar múltiples llamadas a `insert` y `see` en la interfaz gráfica, acumulando los mensajes en un solo string por pestaña y actualizando el widget una única vez por cada ejecución, reduciendo drásticamente el consumo de CPU durante operaciones con logueo masivo.
-- `2026-08-11T14:22:40` **duplicates.py** (rendimiento): Optimizé la función `partial_hash` para evitar el uso innecesario de `Path.resolve()` —que implica consultas al sistema de archivos adicionales—, utilizando la ruta ya normalizada por `_collect_candidates` y reduciendo el overhead de llamadas al sistema en el bucle principal de comparación.
