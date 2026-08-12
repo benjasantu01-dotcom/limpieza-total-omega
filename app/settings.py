@@ -277,8 +277,8 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
         _last_mtime = ruta.stat().st_mtime
         return ruta
     except (OSError, IOError, PermissionError, RuntimeError):
-        if 'temp' in locals() and temp.exists():
-            try: temp.unlink()
+        if 'temp' in locals():
+            try: os.remove(temp)
             except OSError: pass
         return None
 

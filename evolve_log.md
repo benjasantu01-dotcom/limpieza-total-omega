@@ -1156,3 +1156,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-12T09:14:35` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: robustez ante casos límite).
 - `2026-08-12T09:14:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-12T09:14:35` Corrida terminada. Total usado hoy: 216.
+- `2026-08-12T09:20:34` Arrancando corrida. Quedan hoy ~84 peticiones objetivo.
+- `2026-08-12T09:20:55` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 114): unterminated string literal (detected at line 114)
+- `2026-08-12T09:21:19` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
+- `2026-08-12T09:21:44` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha robustecido el escaneo frente a archivos o directorios cuya metadata es inaccesible, añadiendo manejo de `OSError` al obtener el nombre (`entry.name`) y validaciones de tipo `None` en `scan_file`, asegurando que el proceso no se interrumpa ante entradas volátiles o bloqueadas.
+- `2026-08-12T09:21:55` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se reforzó la robustez del guardado atómico en `save()` ante fallos parciales del sistema de archivos mediante una gestión más estricta del descriptor de archivo y el manejo de excepciones durante la sincronización a disco, garantizando la atomicidad incluso si el sistema reporta éxito pero falla al vaciar buffers.
+- `2026-08-12T09:21:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-12T09:21:55` Corrida terminada. Total usado hoy: 220.

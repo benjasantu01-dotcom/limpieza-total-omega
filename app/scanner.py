@@ -93,8 +93,11 @@ class Scanner:
             # Ignorar symlinks rotos que pueden causar errores en llamadas posteriores
             if entry.is_symlink():
                 return
-                
-            path_obj = Path(entry.path)
+            
+            # Intentar obtener el path de forma segura
+            entry_path_str = entry.path
+            path_obj = Path(entry_path_str)
+            
             # Validación estricta antes de operar
             if not path_obj or is_protected_path(path_obj):
                 return
@@ -113,10 +116,11 @@ class Scanner:
                 return
 
             if entry.is_dir(follow_symlinks=False):
-                if entry.path not in self.seen:
-                    self.seen.add(entry.path)
-                    stack.append(entry.path)
+                if entry_path_str not in self.seen:
+                    self.seen.add(entry_path_str)
+                    stack.append(entry_path_str)
             elif entry.is_file(follow_symlinks=False):
+                # Usar el nombre del objeto para evitar errores de codificación si falla entry.name
                 name = entry.name
                 ext = path_obj.suffix.lower() if path_obj.suffix else ""
                 self.results.extend(scan_file(path_obj, self.now_ts, entry=entry, name=name, suffix=ext))
@@ -192,17 +196,20 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, na
     
     if path is None:
         return findings
+    
+    # Asegurar que suffix sea válido si no se proveyó
+    safe_suffix = suffix if suffix is not None else (path.suffix.lower() if path.suffix else "")
 
     # 1. Chequeos basados en nombre (String-only)
-    if (res := check_double_extension(path, entry, name, suffix, now_ts)):
+    if (res := check_double_extension(path, entry, name, safe_suffix, now_ts)):
         findings.append(res)
     
     # 2. Chequeos específicos de ejecutables
-    if suffix in SUSPICIOUS_EXECUTABLE_EXT:
-        if (res := check_system_lookalike(path, entry, name, suffix, now_ts)):
+    if safe_suffix in SUSPICIOUS_EXECUTABLE_EXT:
+        if (res := check_system_lookalike(path, entry, name, safe_suffix, now_ts)):
             findings.append(res)
         
-        if (res := check_recent_executable_in_downloads(path, entry, name, suffix, now_ts)):
+        if (res := check_recent_executable_in_downloads(path, entry, name, safe_suffix, now_ts)):
             findings.append(res)
                 
     return findings
