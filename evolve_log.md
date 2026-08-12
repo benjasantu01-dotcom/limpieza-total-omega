@@ -679,3 +679,4 @@ FAILED evolve/tests/test_basic.py::test_delete_reviewed_only_touches_the_review_
 - `2026-08-12T16:51:14` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-08-12T17:01:33` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-08-12T17:11:47` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-08-12T17:22:02` Presupuesto diario agotado (350 usados). Corte hasta mañana.
