@@ -9,35 +9,35 @@ Este archivo se regenera solo en cada corrida a partir de
 - Mejoras aceptadas: **228** (45.2% de aceptación)
 - Rechazadas por tests: 9
 - Rechazadas por guardia de seguridad: 32
-- Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 216
+- Sin cambios (nada sustancial que mejorar): 18
+- Sin respuesta de la IA (error o límite): 217
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-10 | 37 | 0 | 4 | 6 | 39 |
+| 2026-08-10 | 34 | 0 | 4 | 5 | 39 |
 | 2026-08-11 | 170 | 8 | 24 | 10 | 138 |
-| 2026-08-12 | 21 | 1 | 4 | 3 | 39 |
+| 2026-08-12 | 24 | 1 | 4 | 3 | 40 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **48**
-- manejo de errores y validación de entradas: **47**
+- manejo de errores y validación de entradas: **49**
+- legibilidad y documentación: **49**
 - robustez ante casos límite: **46**
 - seguridad defensiva: **45**
-- rendimiento: **42**
+- rendimiento: **39**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **21**
-- `diskreport.py`: **20**
-- `duplicates.py`: **20**
-- `healthscore.py`: **19**
-- `settings.py`: **19**
-- `assistant.py`: **19**
+- `settings.py`: **20**
+- `assistant.py`: **20**
 - `branding.py`: **19**
-- `scanner.py`: **17**
+- `diskreport.py`: **19**
+- `duplicates.py`: **19**
+- `scanner.py`: **18**
+- `healthscore.py`: **18**
 - `memory.py`: **16**
 - `browser.py`: **16**
 - `main.py`: **12**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-12T03:04:54` **assistant.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en funciones clave y la estandarización de la estructura de las explicaciones en `explain_area` para facilitar su mantenimiento, asegurando que cada área de salud sea auto-explicativa para el usuario final.
+- `2026-08-12T03:03:47` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` capturando explícitamente posibles errores de `os.replace` y `os.fsync` (como fallos de acceso en sistemas de archivos bloqueados), y añadí una validación de integridad en `load()` que verifica si el JSON cargado contiene todas las claves requeridas antes de procesarlo, evitando errores de `KeyError` en partes posteriores de la aplicación.
+- `2026-08-12T03:03:13` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `scanner.py` implementando una validación de parámetros de entrada más estricta en las funciones de chequeo y en `process_entry`, asegurando que el manejo de rutas y atributos sea defensivo ante entradas nulas o malformadas, previniendo excepciones no capturadas durante la recursión.
 - `2026-08-12T02:53:56` **quarantine.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `purge_all` mediante la centralización de la validación de rutas y una gestión de errores más granular, asegurando que el estado del manifiesto y los archivos en disco se mantengan sincronizados incluso si un solo borrado falla.
 - `2026-08-12T02:43:24` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` y `_generate_recommendations` mediante validaciones defensivas de tipos y estados, asegurando que el sistema maneje entradas mal formadas sin interrumpir el flujo de la aplicación.
 - `2026-08-12T02:42:55` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `suggest_keeper` y `format_group` eliminando su dependencia implícita de que las rutas siempre sean accesibles y agregando validaciones explícitas antes de procesar atributos, evitando posibles `AttributeError` o valores de tiempo inesperados en archivos bloqueados.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-12T00:53:27` **organizer.py** (seguridad defensiva): Mejoré la seguridad defensiva en `stage_for_review` y `delete_reviewed` para garantizar que las rutas de los archivos procesados estén estrictamente contenidas dentro de sus carpetas origen o destino, evitando cualquier riesgo de "path traversal" o manipulación de rutas relativas mediante el uso de `path.resolve()` y validaciones de parentesco.
 - `2026-08-12T00:50:32` **healthscore.py** (seguridad defensiva): Mejoré la robustez de `score_security` y `score_memory`/`score_disk` añadiendo validaciones explícitas contra valores negativos o estados de error antes de aplicar aritmética, evitando que entradas malformadas corrompan el puntaje total.
 - `2026-08-12T00:41:48` **duplicates.py** (seguridad defensiva): Se reforzó `_collect_candidates` para evitar condiciones de carrera y ataques de desbordamiento de rutas mediante el uso de `entry.path` absoluto y validaciones estrictas antes de resolver la ruta, asegurando que el escaneo solo proceda tras confirmar la seguridad del objeto.
-- `2026-08-12T00:41:34` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `walk_files` y `largest_folders` añadiendo una validación explícita mediante `is_protected_path` al procesar directorios durante la expansión del stack, evitando así que el escáner intente entrar en rutas protegidas que podrían ser subcarpetas de un directorio permitido.
-- `2026-08-12T00:41:02` **browser.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_safe_path` reforzando la validación del punto de montaje y evitando que la comparación de rutas sea engañada por el uso de nombres cortos (8.3) o diferencias de case en sistemas de archivos Case-Insensitive, asegurando que la ruta destino sea efectivamente un descendiente real de la base.
-- `2026-08-12T00:40:34` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad en `save_logo_svg` reemplazando la verificación manual de permisos (`os.access`) —que es propensa a condiciones de carrera (TOCTOU)— por un bloque `try-except` más robusto durante la creación del archivo, manteniendo la llamada obligatoria a `is_safe_to_modify` para cumplir con las reglas de arquitectura.

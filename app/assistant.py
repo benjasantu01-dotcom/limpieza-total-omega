@@ -197,7 +197,10 @@ def _ensure_safe_text(text: Any) -> bool:
     return True
 
 def _safe_assign(obj: SystemContext, attr: str, val: Any, cast: Callable = float, min_val: float = 0.0, max_val: float = float('inf')) -> None:
-    """Aplica una asignación segura de métricas a SystemContext con validación de tipo y rango."""
+    """
+    Aplica una asignación segura de métricas a un objeto SystemContext.
+    Verifica que el valor sea numérico, finito y esté dentro de los rangos esperados.
+    """
     try:
         if val is None: return
         clean = cast(val)
@@ -207,12 +210,18 @@ def _safe_assign(obj: SystemContext, attr: str, val: Any, cast: Callable = float
         pass
 
 def _fmt_metric(val: Any, unit: str = "", decimal: int = 0) -> str:
-    """Formatea métricas numéricas para su presentación, devolviendo 'N/A' ante errores."""
+    """
+    Formatea métricas numéricas para su presentación en el UI o contexto.
+    Retorna 'N/A' si el valor es inválido o no numérico.
+    """
     if val is None or not isinstance(val, (int, float)) or not math.isfinite(val): return "N/A"
     return f"{val:.{decimal}f}{unit}"
 
 def _get_metric_val(source: Any, key: str, default: Any) -> Any:
-    """Extrae de forma segura un valor numérico de una fuente de datos (dict u objeto)."""
+    """
+    Extrae de forma defensiva un valor numérico de una fuente de datos (diccionario u objeto).
+    Valida que el resultado sea numérico antes de retornarlo para evitar inyecciones.
+    """
     try:
         if isinstance(source, dict):
             val = source.get(key, default)
@@ -223,8 +232,8 @@ def _get_metric_val(source: Any, key: str, default: Any) -> Any:
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
     """
-    Transforma fuentes de datos genéricas en una estructura SystemContext validada,
-    asegurando que solo los campos numéricos autorizados sean procesados.
+    Construye un objeto SystemContext a partir de datos externos.
+    Realiza saneamiento estricto sobre cada campo para asegurar la inmutabilidad de la estructura.
     """
     ctx = SystemContext()
     
@@ -251,13 +260,15 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     for k, v in extra.items():
         if hasattr(ctx, k):
             attr_type = type(getattr(ctx, k))
-            # Solo asignar tipos numéricos conocidos para mantener integridad
             if isinstance(v, (int, float)) and math.isfinite(v):
                 _safe_assign(ctx, k, v, cast=attr_type)
     return ctx
 
 def context_as_text(context: SystemContext) -> str:
-    """Serializa SystemContext a un formato de texto compacto adecuado para el prompt del motor remoto."""
+    """
+    Serializa SystemContext a un string plano y seguro.
+    Este texto se envía al motor Gemini, por lo que se verifica que no contenga rutas.
+    """
     if not isinstance(context, SystemContext) or not context.analyzed:
         return "No hay métricas disponibles todavía."
     try:
@@ -279,22 +290,17 @@ def context_as_text(context: SystemContext) -> str:
         return "Error al procesar métricas para el asistente."
 
 def explain_area(area: Any) -> str:
-    """Devuelve una explicación educativa sobre el significado de las métricas de un área específica."""
+    """
+    Proporciona una explicación educativa sobre los conceptos clave de la aplicación.
+    Ayuda al usuario a entender el 'porqué' detrás de las métricas.
+    """
     explicaciones: Final[dict[str, str]] = {
-        "basura": "Archivos temporales y restos de instaladores. Ocupan espacio "
-                  "sin dar nada a cambio, y son lo más seguro de limpiar.",
-        "seguridad": "Señales sospechosas en tus Descargas: doble extensión, "
-                     "ejecutables recién bajados, nombres que imitan al sistema. "
-                     "Son señales, no una condena.",
-        "memoria": "Cuánta RAM queda disponible. Tener poca hace que Windows use "
-                   "el disco como memoria, y ahí se siente la lentitud. Ojo: RAM "
-                   "ocupada como caché es buena, no es un problema.",
-        "disco": "Espacio libre en la unidad del sistema. Por debajo del 10% "
-                 "Windows empieza a andar mal, no solo a quedarse sin lugar.",
-        "duplicados": "Copias idénticas del mismo archivo. Espacio recuperable "
-                      "sin perder nada, porque siempre se conserva una.",
-        "inicio": "Programas que arrancan con Windows. Cada uno suma tiempo de "
-                  "encendido y consume memoria desde el minuto cero.",
+        "basura": "Archivos temporales y restos de instaladores: ocupan espacio innecesario sin aportar valor operativo.",
+        "seguridad": "Archivos con señales de riesgo: extensiones inusuales o ejecutables sin firma, requieren revisión manual.",
+        "memoria": "Recursos de acceso rápido: si la memoria disponible es baja, Windows utiliza el disco duro, ralentizando todo.",
+        "disco": "Almacenamiento disponible: niveles inferiores al 10% afectan la estabilidad y velocidad de escritura de Windows.",
+        "duplicados": "Copias idénticas del mismo archivo: se pueden eliminar de forma segura ya que el archivo original permanece.",
+        "inicio": "Programas que arrancan con Windows: cada entrada incrementa el tiempo de inicio y el consumo base de memoria.",
     }
     if isinstance(area, str):
         return explicaciones.get(area.strip().lower(), "No tengo una explicación para esa área.")
@@ -395,7 +401,10 @@ def _sanitize_query(question: str) -> str:
     return re.sub(r'[\x00-\x1f\x7f]', '', (question or "").strip())[:100].lower()
 
 def local_answer(question: str, context: SystemContext) -> Answer:
-    """Determina la respuesta mediante heurísticas locales basadas en keywords."""
+    """
+    Determina la respuesta mediante heurísticas locales basadas en keywords.
+    Si no hay un área clara, ofrece un resumen de salud priorizado.
+    """
     if not isinstance(context, SystemContext) or not context.analyzed:
         return Answer(
             text="Todavía no corriste ningún análisis. Andá a la pestaña Salud "

@@ -228,6 +228,7 @@ def load(path_or_base: PathLike | None = None) -> AppSettings:
         if 0 < stats.st_size <= MAX_SETTINGS_SIZE:
             with open(ruta, "r", encoding="utf-8") as f:
                 data = json.load(f)
+            # Asegurar que data es dict y tiene integridad mínima
             if isinstance(data, dict):
                 _cached_settings = validate(data)
                 _current_path, _last_mtime = ruta, stats.st_mtime
@@ -243,7 +244,6 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     if not isinstance(values, dict): return None
     ruta = settings_path(path_or_base)
     
-    # Prevenir escritura si es un link o ruta protegida
     if is_protected_path(str(ruta)) or (ruta.exists() and (ruta.is_symlink() or (hasattr(ruta, 'is_junction') and ruta.is_junction()))):
         return None
         
@@ -274,6 +274,9 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
         _last_mtime = ruta.stat().st_mtime
         return ruta
     except (OSError, IOError, PermissionError, RuntimeError):
+        if 'temp' in locals() and temp.exists():
+            try: temp.unlink()
+            except OSError: pass
         return None
 
 def update(changes: dict[str, Any], path_or_base: PathLike | None = None) -> AppSettings:
