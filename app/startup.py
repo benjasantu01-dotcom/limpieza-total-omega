@@ -290,9 +290,12 @@ def list_startup_entries() -> List[StartupEntry]:
     seen_names: Set[str] = set()
     unique_entries: List[StartupEntry] = []
     
-    all_raw_entries: List[StartupEntry] = entries_from_folders() + entries_from_registry()
+    # Usar un generador encadenado para evitar crear listas intermedias completas
+    def _generator() -> Iterator[StartupEntry]:
+        yield from entries_from_folders()
+        yield from entries_from_registry()
     
-    for entry in all_raw_entries:
+    for entry in _generator():
         name_normalized: str = entry.name.lower()
         if name_normalized not in seen_names:
             seen_names.add(name_normalized)
