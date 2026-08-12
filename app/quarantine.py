@@ -177,31 +177,38 @@ def _is_valid_quarantine_path(path: Path, root: Path) -> TypeGuard[Path]:
     return is_within_directory(path, root)
 
 
-def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
-    """Realiza chequeos de seguridad antes de mover un archivo al sandbox."""
-    path_str = str(source_path)
+def _check_windows_file_attributes(path_str: str) -> None:
+    """Verifica atributos de sistema o solo lectura específicos de Windows."""
+    if os.name != 'nt':
+        return
+    import ctypes
+    attrs = ctypes.windll.kernel32.GetFileAttributesW(path_str)
+    if attrs != -1:
+        if attrs & 0x02 or attrs & 0x04:
+            raise UnsafePathError("No se permite procesar archivos con atributos de sistema/ocultos.")
+        if attrs & 0x01:
+            raise UnsafePathError("Archivo protegido contra escritura (solo lectura).")
+
+
+def _check_path_syntax_integrity(path: Path) -> None:
+    """Valida la sintaxis de la ruta contra caracteres prohibidos o navegación de directorios."""
+    path_str = str(path)
     if any(ord(c) < 32 for c in path_str):
         raise UnsafePathError("Ruta con caracteres de control prohibida.")
-    if len(source_path.parts) > 32:
+    if len(path.parts) > 32:
         raise UnsafePathError("Profundidad de ruta excesiva: riesgo de desbordamiento.")
-    if ":" in source_path.name.replace(source_path.drive, ""):
+    if ":" in path.name.replace(path.drive, ""):
         raise UnsafePathError("Ruta con flujos de datos alternos no permitida.")
-    if ".." in source_path.parts or any(c in str(source_path.name) for c in "<>\"|?*"):
+    if ".." in path.parts or any(c in str(path.name) for c in "<>\"|?*"):
         raise UnsafePathError("Ruta con caracteres prohibidos o navegación no permitida.")
-    
-    if source_path.is_symlink() or (hasattr(source_path, 'is_junction') and source_path.is_junction()):
+    if path.is_symlink() or (hasattr(path, 'is_junction') and path.is_junction()):
         raise UnsafePathError("Operación denegada en enlace o punto de reparse.")
 
-    try:
-        if os.name == 'nt':
-            import ctypes
-            attrs = ctypes.windll.kernel32.GetFileAttributesW(path_str)
-            if attrs != -1 and (attrs & 0x02 or attrs & 0x04): 
-                raise UnsafePathError("No se permite procesar archivos con atributos de sistema/ocultos.")
-            if attrs != -1 and (attrs & 0x01):
-                raise UnsafePathError("Archivo protegido contra escritura (solo lectura).")
-    except (OSError, AttributeError):
-        pass
+
+def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
+    """Realiza chequeos de seguridad antes de mover un archivo al sandbox."""
+    _check_path_syntax_integrity(source_path)
+    _check_windows_file_attributes(str(source_path))
 
     resolved_source = source_path.resolve()
     if not resolved_source.is_file():

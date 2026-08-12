@@ -122,8 +122,8 @@ def _is_file_in_use(path: Path) -> bool:
 
 def _check_file_integrity(p: Path) -> None:
     """
-    Realiza una batería de comprobaciones de estado antes de permitir modificaciones.
-    Lanza UnsafePathError ante cualquier condición que comprometa la integridad.
+    Evalúa la integridad de un archivo bajo una matriz de reglas de seguridad.
+    Si alguna condición de riesgo se cumple, interrumpe el proceso mediante excepción.
     """
     if not p.exists():
         raise UnsafePathError(f"El archivo {p.name} ya no existe.")
@@ -131,24 +131,23 @@ def _check_file_integrity(p: Path) -> None:
     if len(p.parts) > 32:
         raise UnsafePathError("Ruta demasiado profunda: posible ataque de evasión.")
 
-    integrity_rules = {
+    # Mapeo de riesgos para facilitar auditoría de seguridad
+    violation_checks = {
         "inaccesible (sin permisos de escritura)": lambda: not os.access(p, os.W_OK),
         "punto de reparse detectado": lambda: _is_reparse_point(p),
         "atributo de solo lectura": lambda: _is_readonly(p),
         "archivo en uso por otro proceso": lambda: _is_file_in_use(p),
         "atributo de sistema u oculto": lambda: _is_system_or_hidden(p),
         "múltiples enlaces (hard link)": lambda: p.is_file() and p.stat().st_nlink > 1,
-        "flujos de datos alternativos (ADS) detectados": lambda: _has_alternate_data_stream(p)
+        "flujos de datos alternativos (ADS)": lambda: _has_alternate_data_stream(p)
     }
 
-    for reason, is_unsafe in integrity_rules.items():
+    for description, check_func in violation_checks.items():
         try:
-            if is_unsafe():
-                raise UnsafePathError(f"Operación bloqueada para {p.name}: {reason}.")
-        except Exception as e:
-            if isinstance(e, UnsafePathError):
-                raise
-            raise UnsafePathError(f"Error verificando integridad de {p.name}: {e}")
+            if check_func():
+                raise UnsafePathError(f"Operación bloqueada para {p.name}: {description}.")
+        except (PermissionError, OSError) as e:
+            raise UnsafePathError(f"Error al verificar integridad de {p.name}: {e}")
 
 
 @lru_cache(maxsize=1024)
@@ -193,7 +192,6 @@ def is_protected_path(path: PathLike) -> bool:
     
     try:
         p = normalize(path)
-        # Comparación eficiente usando los sets pre-cargados
         if any(p.startswith(root) or root in p.parents for root in _SYSTEM_ROOTS):
             return True
         if any(part.lower() in PROTECTED_DIR_NAMES for part in p.parts):
@@ -238,7 +236,6 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     except (ValueError, TypeError) as e:
         raise UnsafePathError(f"Ruta mal formada: {e}")
 
-    # Verificar existencia del padre si es una ruta existente
     if p.exists() and p.parent and not p.parent.exists():
         raise UnsafePathError("El directorio padre de la ruta no es accesible o no existe.")
 
