@@ -328,10 +328,12 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     """Guarda el logo vectorial en la ruta especificada tras validar seguridad del directorio."""
     if not destination: return None
     try:
-        p: Path = Path(destination)
+        p: Path = Path(destination).expanduser()
         if not is_safe_to_modify(p): return None
         target: Path = p.resolve()
-        target.parent.mkdir(parents=True, exist_ok=True)
+        # Verificar si la carpeta existe o es posible crearla
+        if not target.parent.exists():
+            target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(logo_svg(), encoding="utf-8")
         return target
     except (OSError, PermissionError, ValueError, RuntimeError, IOError, AttributeError, TypeError):

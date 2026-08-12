@@ -224,8 +224,10 @@ def _get_metric_val(source: Any, key: str, default: Any) -> Any:
     try:
         if isinstance(source, dict):
             val = source.get(key, default)
-        else:
+        elif hasattr(source, "__dict__") or isinstance(source, object):
             val = getattr(source, key, default)
+        else:
+            return default
         return val if isinstance(val, (int, float, type(None))) and (val is None or math.isfinite(val)) else default
     except Exception: return default
 
@@ -236,7 +238,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     """
     ctx = SystemContext()
     
-    if metrics is not None:
+    if metrics is not None and (isinstance(metrics, dict) or hasattr(metrics, "__dict__")):
         _safe_assign(ctx, "junk_mb", _get_metric_val(metrics, "junk_mb", 0.0))
         _safe_assign(ctx, "suspicious_count", _get_metric_val(metrics, "suspicious_count", 0), int)
         _safe_assign(ctx, "suspicious_warnings", _get_metric_val(metrics, "suspicious_warnings", 0), int)
@@ -249,7 +251,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         _safe_assign(ctx, "browser_cache_mb", _get_metric_val(metrics, "browser_cache_mb", 0.0))
         ctx.analyzed = True
 
-    if health is not None:
+    if health is not None and (isinstance(health, dict) or hasattr(health, "__dict__")):
         raw_score = _get_metric_val(health, "score", None)
         if raw_score is not None: _safe_assign(ctx, "score", raw_score, int, max_val=100)
         grade = _get_metric_val(health, "grade", "")

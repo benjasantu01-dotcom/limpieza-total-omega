@@ -191,6 +191,8 @@ def _sum_directory_recursive(
             return 0
         if real_path in cache:
             return cache[real_path]
+        if not os.access(real_path, os.R_OK):
+            return 0
         visited.add(real_path)
     except (OSError, PermissionError):
         return 0
