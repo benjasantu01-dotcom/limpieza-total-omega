@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **230** (45.6% de aceptación)
+- Mejoras aceptadas: **229** (45.4% de aceptación)
 - Rechazadas por tests: 9
-- Rechazadas por guardia de seguridad: 34
-- Sin cambios (nada sustancial que mejorar): 14
+- Rechazadas por guardia de seguridad: 33
+- Sin cambios (nada sustancial que mejorar): 16
 - Sin respuesta de la IA (error o límite): 217
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-10 | 14 | 0 | 2 | 1 | 33 |
+| 2026-08-10 | 12 | 0 | 1 | 1 | 32 |
 | 2026-08-11 | 170 | 8 | 24 | 10 | 138 |
-| 2026-08-12 | 46 | 1 | 8 | 3 | 46 |
+| 2026-08-12 | 47 | 1 | 8 | 5 | 47 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **60**
 - manejo de errores y validación de entradas: **49**
 - rendimiento: **43**
-- seguridad defensiva: **39**
-- robustez ante casos límite: **39**
+- robustez ante casos límite: **40**
+- seguridad defensiva: **37**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **21**
 - `settings.py`: **20**
 - `assistant.py`: **20**
+- `healthscore.py`: **20**
+- `quarantine.py`: **20**
 - `branding.py`: **20**
 - `diskreport.py`: **19**
-- `healthscore.py`: **19**
 - `browser.py`: **18**
 - `duplicates.py`: **18**
-- `scanner.py`: **17**
+- `scanner.py`: **16**
 - `memory.py`: **15**
 - `startup.py`: **13**
 - `main.py`: **12**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-12T04:35:45` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `compute_score` asegurando que el cálculo de `ratios` sea siempre consistente ante valores de umbrales mal definidos (ej: cero o negativos), protegiendo contra posibles divisiones por cero o resultados no finitos en los módulos de puntuación.
 - `2026-08-12T04:28:20` **browser.py** (robustez ante casos límite): Se ha robustecido el escaneo recursivo de directorios ante la posible interrupción por "file locking" o accesos denegados mediante la adición de un chequeo explícito de accesibilidad y una gestión más resiliente de `OSError` en `_sum_directory_recursive`.
 - `2026-08-12T04:28:07` **branding.py** (robustez ante casos límite): Se ha mejorado la resiliencia de la función `save_logo_svg` ante rutas mal formadas, entornos sin permisos de escritura o sistemas con rutas inválidas, asegurando que el acceso al sistema de archivos sea siempre seguro y controlado sin interrumpir el flujo de la aplicación.
 - `2026-08-12T04:26:51` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` agregando un manejo defensivo ante objetos de entrada que podrían ser `None` o contener datos malformados, asegurando que las métricas del sistema siempre tengan valores válidos antes de ser procesadas, previniendo errores en tiempo de ejecución.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-12T03:44:21` **startup.py** (legibilidad y documentación): Documenté con mayor precisión el propósito de `_resolve_path_from_command` y su manejo de seguridad mediante un Docstring que explica la importancia de validar entradas antes de realizar operaciones de sistema, reforzando la seguridad y legibilidad del motor de análisis.
 - `2026-08-12T03:43:51` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en los métodos de `_Validators` y la clarificación del flujo de validación en `save`, facilitando el mantenimiento y la auditoría de seguridad del módulo.
 - `2026-08-12T03:34:52` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos a los parámetros de las funciones de chequeo y se ha normalizado la firma de estas, asegurando que todos los parámetros sean opcionales para evitar errores en llamadas parciales, mejorando así la claridad del API interno.
-- `2026-08-12T03:33:47` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `purge_all` para separar la lógica de validación de seguridad de la lógica de limpieza, además de añadir type hints y docstrings explicativos en funciones críticas para clarificar el flujo de control.

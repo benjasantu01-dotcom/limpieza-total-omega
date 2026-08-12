@@ -144,7 +144,7 @@ def _to_int(value: Any, default: int = 0) -> int:
 def score_junk(junk_mb: float | int) -> float:
     """Calcula score [0.0, 1.0] penalizando linealmente según el tamaño de archivos basura."""
     val = max(0.0, _to_float(junk_mb))
-    return 0.0 if _LIMIT_JUNK_MB <= 0.0 else _clamp(1.0 - (val / _LIMIT_JUNK_MB))
+    return 0.0 if _LIMIT_JUNK_MB <= 0.0 else _clamp(1.0 - (val / _LIMIT_JUNK_MB), 0.0, 1.0)
 
 
 def score_security(suspicious_count: int, warnings: int = 0) -> float:
@@ -158,27 +158,25 @@ def score_security(suspicious_count: int, warnings: int = 0) -> float:
 def score_memory(available_percent: float | int) -> float:
     """Calcula score [0.0, 1.0] basado en el porcentaje de RAM disponible."""
     val = _clamp(_to_float(available_percent), 0.0, 100.0)
-    if _LIMIT_RAM_PERCENT <= 0.0: return 0.0
-    return _clamp(val / _LIMIT_RAM_PERCENT, 0.0, 1.0)
+    return 0.0 if _LIMIT_RAM_PERCENT <= 0.0 else _clamp(val / _LIMIT_RAM_PERCENT, 0.0, 1.0)
 
 
 def score_disk(free_percent: float | int) -> float:
     """Calcula score [0.0, 1.0] basado en el porcentaje de espacio libre en disco."""
     val = _clamp(_to_float(free_percent), 0.0, 100.0)
-    if _LIMIT_DISK_PERCENT <= 0.0: return 0.0
-    return _clamp(val / _LIMIT_DISK_PERCENT, 0.0, 1.0)
+    return 0.0 if _LIMIT_DISK_PERCENT <= 0.0 else _clamp(val / _LIMIT_DISK_PERCENT, 0.0, 1.0)
 
 
 def score_duplicates(duplicate_mb: float | int) -> float:
     """Calcula score [0.0, 1.0] penalizando el volumen de archivos duplicados."""
     val = max(0.0, _to_float(duplicate_mb))
-    return 0.0 if _LIMIT_DUPLICATE_MB <= 0.0 else _clamp(1.0 - (val / _LIMIT_DUPLICATE_MB))
+    return 0.0 if _LIMIT_DUPLICATE_MB <= 0.0 else _clamp(1.0 - (val / _LIMIT_DUPLICATE_MB), 0.0, 1.0)
 
 
 def score_startup(startup_count: int) -> float:
     """Calcula score [0.0, 1.0] penalizando la cantidad de programas en el arranque."""
     val = max(0, _to_int(startup_count))
-    return 0.0 if _LIMIT_STARTUP_COUNT <= 0 else _clamp(1.0 - (val / _LIMIT_STARTUP_COUNT))
+    return 0.0 if _LIMIT_STARTUP_COUNT <= 0 else _clamp(1.0 - (val / _LIMIT_STARTUP_COUNT), 0.0, 1.0)
 
 
 def grade_for_score(score: float | int) -> str:
@@ -231,12 +229,12 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
 
     # Cálculo eficiente mediante pre-mapeo y una sola iteración
     ratios: ScoreMap = {
-        "seguridad": score_security(metrics.suspicious_count, metrics.suspicious_warnings),
-        "disco": score_disk(metrics.disk_free_percent),
-        "memoria": score_memory(metrics.memory_available_percent),
-        "basura": score_junk(metrics.junk_mb),
-        "duplicados": score_duplicates(metrics.duplicate_mb),
-        "arranque": score_startup(metrics.startup_count)
+        "seguridad": _clamp(score_security(metrics.suspicious_count, metrics.suspicious_warnings), 0.0, 1.0),
+        "disco": _clamp(score_disk(metrics.disk_free_percent), 0.0, 1.0),
+        "memoria": _clamp(score_memory(metrics.memory_available_percent), 0.0, 1.0),
+        "basura": _clamp(score_junk(metrics.junk_mb), 0.0, 1.0),
+        "duplicados": _clamp(score_duplicates(metrics.duplicate_mb), 0.0, 1.0),
+        "arranque": _clamp(score_startup(metrics.startup_count), 0.0, 1.0)
     }
     
     breakdown: Dict[str, int] = {}
