@@ -317,79 +317,76 @@ def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
     """Responde preguntas sobre el estado actual de la memoria RAM."""
     partes = [
         f"Tenés {ctx.memory_available_percent:.0f}% de RAM disponible"
-        f"{f' de {ctx.memory_total_gb:.0f} GB' if ctx.memory_total_gb > 0 else ''}.",
+        f"{f' de {ctx.memory_total_gb:.0f} GB' if ctx.memory_total_gb > 0 else ''}."
     ]
     if ctx.memory_available_percent < 15:
-        partes.append("Eso es poco: Windows está usando el disco como memoria y "
-                        "ahí se siente la lentitud. Cerrá lo que no usos; en la "
-                        "pestaña Memoria tenés qué consume más.")
+        partes.append("Eso es poco: Windows está usando el disco como memoria y ahí se siente la lentitud. Cerrá lo que no uses; en la pestaña Memoria tenés qué consume más.")
     else:
-        partes.append("Eso está bien. Si la PC va lenta, el problema seguramente "
-                        "no es la RAM.")
-    partes.append("No busques un 'liberador de RAM': suben el número de memoria "
-                    "libre pero la PC queda más lenta.")
+        partes.append("Eso está bien. Si la PC va lenta, el problema seguramente no es la RAM.")
+    
+    partes.append("No busques un 'liberador de RAM': suben el número de memoria libre pero la PC queda más lenta.")
+    
     if ctx.startup_count > 12:
-        partes.append(f"Sí te conviene mirar los {ctx.startup_count} programas "
-                        "de inicio: cada uno arranca con Windows.")
-    return Answer(" ".join(partes), notice=OFFLINE_NOTICE,
-                    suggestions=["¿Conviene desactivar programas de inicio?"])
+        partes.append(f"Sí te conviene mirar los {ctx.startup_count} programas de inicio: cada uno arranca con Windows.")
+        
+    return Answer(" ".join(partes), notice=OFFLINE_NOTICE, suggestions=["¿Conviene desactivar programas de inicio?"])
 
 def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
     """Responde preguntas sobre el uso del almacenamiento y espacio recuperable."""
     recuperable = ctx.junk_mb + ctx.duplicate_mb + ctx.browser_cache_mb
-    mensaje = (
-        f"Tenés {ctx.disk_free_percent:.0f}% libre en disco. "
-        f"Podés recuperar cerca de {recuperable:.0f} MB: "
-        f"{ctx.junk_mb:.0f} MB de basura, "
-        f"{ctx.duplicate_mb:.0f} MB de duplicados"
+    partes = [
+        f"Tenés {ctx.disk_free_percent:.0f}% libre en disco.",
+        f"Podés recuperar cerca de {recuperable:.0f} MB:",
+        f"{ctx.junk_mb:.0f} MB de basura, {ctx.duplicate_mb:.0f} MB de duplicados"
         f"{f' y {ctx.browser_cache_mb:.0f} MB de caché' if ctx.browser_cache_mb else ''}."
-    )
-    warning = _format_critical_warning(
-        ctx.disk_free_percent < 10, 
-        " Estás por debajo del 10%, y ahí Windows empieza a andar mal. Es lo primero que atendería."
-    )
-    sugerencia = " Empezá por Limpieza: mueve los candidatos a una carpeta de revisión, no los borra."
-    return Answer(mensaje + warning + sugerencia, notice=OFFLINE_NOTICE)
+    ]
+    if ctx.disk_free_percent < 10:
+        partes.append("Estás por debajo del 10%, y ahí Windows empieza a andar mal. Es lo primero que atendería.")
+    
+    partes.append("Empezá por Limpieza: mueve los candidatos a una carpeta de revisión, no los borra.")
+    
+    return Answer(" ".join(partes), notice=OFFLINE_NOTICE)
 
 def handle_security(ctx: SystemContext, user_query: str) -> Answer:
     """Responde preguntas sobre archivos sospechosos encontrados."""
+    partes = []
     if ctx.suspicious_count == 0:
-        cuerpo = ("No hay archivos sospechosos en tus Descargas. Sobre borrar: la "
-                    "app nunca borra sola. La limpieza mueve todo a una carpeta de "
-                    "revisión, y el borrado real es un botón aparte que pide "
-                    "confirmación.")
+        partes.append("No hay archivos sospechosos en tus Descargas.")
     else:
-        cuerpo = (f"Hay {ctx.suspicious_count} archivo(s) marcados, "
-                    f"{ctx.suspicious_warnings} con advertencia. Son señales, no "
-                    "una condena: puede ser un instalador legítimo. Si no reconocés "
-                    "alguno, usá 'Aislar hallazgos' para mandarlo a cuarentena.")
-    return Answer(cuerpo, notice=OFFLINE_NOTICE)
+        partes.append(f"Hay {ctx.suspicious_count} archivo(s) marcados, {ctx.suspicious_warnings} con advertencia.")
+        partes.append("Son señales, no una condena: puede ser un instalador legítimo. Si no reconocés alguno, usá 'Aislar hallazgos' para mandarlo a cuarentena.")
+    
+    partes.append("La app nunca borra sola. La limpieza mueve todo a una carpeta de revisión, y el borrado real es un botón aparte que pide confirmación.")
+    
+    return Answer(" ".join(partes), notice=OFFLINE_NOTICE)
 
 def handle_score(ctx: SystemContext, user_query: str) -> Answer:
     """Responde preguntas sobre el puntaje de salud del sistema."""
-    detalle = (f"Tu puntaje es {ctx.score if ctx.score is not None else 'N/A'}/100"
-                f"{f' (nota {ctx.grade})' if ctx.grade else ''}. ")
+    partes = [f"Tu puntaje es {ctx.score if ctx.score is not None else 'N/A'}/100{f' (nota {ctx.grade})' if ctx.grade else ''}."]
     problemas = [p for p in _gen_problems(ctx)]
+    
     if problemas:
-        detalle += "Lo que más te está restando: " + ", ".join(problemas) + "."
+        partes.append("Lo que más te está restando: " + ", ".join(problemas) + ".")
     else:
-        detalle += "No hay nada urgente para arreglar."
-    detalle += (" El puntaje combina basura, seguridad, memoria, disco, duplicados "
-                "y programas de inicio, con la seguridad pesando más.")
-    return Answer(detalle, notice=OFFLINE_NOTICE)
+        partes.append("No hay nada urgente para arreglar.")
+        
+    partes.append("El puntaje combina basura, seguridad, memoria, disco, duplicados y programas de inicio, con la seguridad pesando más.")
+    
+    return Answer(" ".join(partes), notice=OFFLINE_NOTICE)
 
 def handle_startup(ctx: SystemContext, user_query: str) -> Answer:
     """Responde preguntas sobre programas que arrancan con el sistema."""
-    cuerpo = f"Tenés {ctx.startup_count} programas que arrancan con Windows. "
+    partes = [f"Tenés {ctx.startup_count} programas que arrancan con Windows."]
     if ctx.startup_count > 15:
-        cuerpo += "Son bastantes, y cada uno suma tiempo de encendido. Vale la pena revisarlos. "
+        partes.append("Son bastantes, y cada uno suma tiempo de encendido. Vale la pena revisarlos.")
     elif ctx.startup_count > 8:
-        cuerpo += "Es una cantidad normal, aunque se puede recortar. "
+        partes.append("Es una cantidad normal, aunque se puede recortar.")
     else:
-        cuerpo += "Está bien así. "
-    cuerpo += ("La app te los lista pero no los desactiva a propósito: hacelo desde "
-                "el Administrador de tareas de Windows.")
-    return Answer(cuerpo, notice=OFFLINE_NOTICE)
+        partes.append("Está bien así.")
+    
+    partes.append("La app te los lista pero no los desactiva a propósito: hacelo desde el Administrador de tareas de Windows.")
+    
+    return Answer(" ".join(partes), notice=OFFLINE_NOTICE)
 
 _HANDLERS: Final[dict[str, Callable[[SystemContext, str], Answer]]] = {
     "ram": handle_ram,

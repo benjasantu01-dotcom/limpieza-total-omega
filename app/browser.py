@@ -99,14 +99,11 @@ def base_directories() -> List[Path]:
 
 def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> bool:
     """
-    Valida la integridad de la ruta para evitar Path Traversal y enlaces simbólicos.
-
-    Args:
-        target_path: Ruta candidata a verificar.
-        base_path: Directorio raíz esperado de la jerarquía.
-
-    Returns:
-        True si la ruta es segura, existe, está dentro de la base y no es un vínculo simbólico.
+    Valida la integridad de la ruta para prevenir ataques de Path Traversal.
+    
+    Verifica que la ruta sea absoluta, no apunte a directorios protegidos
+    por el sistema, sea un directorio real y esté contenida dentro de 
+    la jerarquía definida por base_path.
     """
     if not isinstance(target_path, Path) or not isinstance(base_path, Path):
         return False
@@ -164,8 +161,10 @@ def _is_system_hidden(entry_path: str | None, kernel32: ctypes.WinDLL | None) ->
 
 def _should_skip_entry(entry: os.DirEntry, kernel32: ctypes.WinDLL | None, is_junction_fn: Callable[[str], bool]) -> bool:
     """
-    Filtro lógico principal para el escaneo de directorios. Determina si una entrada (archivo o carpeta)
-    debe ser ignorada basándose en sus atributos, tipo de enlace o si es un componente sensible.
+    Determina si una entrada del sistema de archivos debe omitirse durante el escaneo.
+    
+    Ignora archivos ocultos/sistema, enlaces simbólicos, junctions de Windows y 
+    archivos definidos en la constante global NEVER_TOUCH.
     """
     if not entry or not hasattr(entry, 'path'):
         return True
@@ -191,7 +190,13 @@ def _sum_directory_recursive(
     depth: int = 0
 ) -> int:
     """
-    Calcula el peso total de una carpeta mediante un recorrido DFS con detección de ciclos y límites de alcance.
+    Calcula el peso en bytes de una carpeta mediante un recorrido DFS limitado.
+
+    Args:
+        root_dir: Carpeta actual bajo análisis.
+        base_dir: Raíz restringida para evitar escapes de directorio.
+        visited: Set de rutas ya procesadas para evitar ciclos.
+        depth: Control de profundidad (máximo 20) para evitar recursión infinita.
     """
     if depth > 20:
         return 0
@@ -201,7 +206,6 @@ def _sum_directory_recursive(
         if real_path in visited or is_protected_path(real_path):
             return 0
         
-        # Validar que no se salga de la base (defensa contra links externos)
         try:
             real_path.relative_to(base_dir)
         except ValueError:
@@ -238,6 +242,9 @@ def _sum_directory_recursive(
 def directory_size(path: str | os.PathLike | None) -> int:
     """
     Calcula el peso total en bytes de una carpeta tras validar que sea segura.
+    
+    Realiza una verificación inicial de seguridad mediante is_protected_path
+    antes de invocar el escáner recursivo.
     """
     if path is None:
         return 0
@@ -252,7 +259,6 @@ def directory_size(path: str | os.PathLike | None) -> int:
         
         is_junction: Callable[[str], bool] = getattr(os.path, 'isjunction', lambda _: False)
         k32 = ctypes.windll.kernel32 if os.name == 'nt' else None
-        # Usamos root_path como base para restringir la recursión
         return max(0, _sum_directory_recursive(str(root_path), root_path, is_junction, k32, set(), {}))
     except (OSError, PermissionError, RuntimeError, ValueError):
         return 0
