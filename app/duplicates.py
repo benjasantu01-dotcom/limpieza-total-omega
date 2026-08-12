@@ -163,9 +163,6 @@ def _collect_candidates(
 ) -> Dict[int, List[Path]]:
     """
     Escanea recursivamente directorios buscando archivos candidatos a duplicados.
-    
-    Utiliza una tabla 'visited_inodes' (dev, ino) para prevenir bucles infinitos 
-    producidos por enlaces simbólicos cíclicos.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: Dict[Tuple[int, int], bool] = {}
@@ -177,14 +174,17 @@ def _collect_candidates(
         try:
             with os.scandir(root_path) as dir_iterator:
                 for entry in dir_iterator:
-                    if entry is None or not os.path.exists(entry.path): continue
+                    if entry is None: continue
                     
                     try:
+                        # Validar si el path existe antes de operar
+                        entry_path = Path(entry.path)
                         entry_stat = entry.stat(follow_symlinks=False)
+                        
                         if getattr(entry_stat, 'st_file_attributes', 0) & 0x400:
                             continue
                         
-                        path_obj = Path(entry.path).resolve()
+                        path_obj = entry_path.resolve()
                         if path_obj in processed_paths: continue
                         processed_paths.add(path_obj)
                         
@@ -206,7 +206,7 @@ def _collect_candidates(
             pass
 
     for directory in directories:
-        if directory is None: continue
+        if not directory: continue
         try:
             p = Path(directory).resolve()
             if p.is_dir():
@@ -222,9 +222,6 @@ def _refine_by_hash(
 ) -> Dict[str, List[Path]]:
     """
     Aplica la estrategia de partición de hash sobre un conjunto dado.
-    
-    Solo preserva aquellos grupos de archivos que resultan en la misma huella,
-    permitiendo el refinamiento iterativo de los candidatos.
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     if paths is None: return groups_by_digest
@@ -245,9 +242,6 @@ def find_duplicates(
 ) -> List[DuplicateGroup]:
     """
     Ejecuta el pipeline jerárquico de detección de duplicados (Talla -> Parcial -> Full).
-    
-    Ordena los grupos resultantes por 'wasted_bytes' en orden descendente para 
-    que la UI priorice las ganancias de espacio más significativas.
     """
     if directories is None or min_size < 0: return []
     
@@ -274,21 +268,16 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     """
     Heurística para seleccionar el archivo 'original' (a conservar).
-    
-    Criterios:
-    1. Tiempo de modificación (st_mtime): Se prioriza el archivo más antiguo.
-    2. Longitud de ruta: En empate, se prefiere la ruta más corta (suele ser la raíz).
     """
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None
 
     keepers: List[Tuple[float, int, Path]] = []
     for p in group.paths:
-        if not isinstance(p, Path) or not p.exists():
+        if not isinstance(p, Path):
             continue
         try:
             stat_info = p.stat()
-            # st_mtime puede ser None en algunos sistemas de archivos exóticos
             mtime = float(getattr(stat_info, 'st_mtime', 0))
             keepers.append((mtime, len(str(p)), p))
         except (OSError, PermissionError, AttributeError):

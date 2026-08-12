@@ -247,7 +247,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                                 stack.append(entry.path)
                         else:
                             yield entry_path, entry.stat().st_size
-                    except (OSError, PermissionError):
+                    except (OSError, PermissionError, ValueError):
                         continue
         except (OSError, PermissionError):
             continue
@@ -265,7 +265,7 @@ def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_prot
     Returns:
         Lista de objetos FileEntry ordenados de mayor a menor peso.
     """
-    if not directory or limit <= 0:
+    if not directory or not isinstance(limit, int) or limit <= 0:
         return []
     return heapq.nlargest(
         limit, 
@@ -286,7 +286,7 @@ def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip
     Returns:
         Lista de objetos ExtensionUsage ordenados por peso total ocupado.
     """
-    if not directory or limit <= 0:
+    if not directory or not isinstance(limit, int) or limit <= 0:
         return []
     
     size_map: Dict[str, int] = defaultdict(int)
@@ -317,7 +317,7 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
     Returns:
         Lista de objetos FolderUsage ordenados por peso total.
     """
-    if not directory or limit <= 0:
+    if not directory or not isinstance(limit, int) or limit <= 0:
         return []
     
     try:

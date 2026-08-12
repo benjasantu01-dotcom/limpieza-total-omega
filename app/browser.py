@@ -155,8 +155,10 @@ def _is_system_hidden(entry_path: str | None, kernel32: ctypes.WinDLL | None) ->
         return False
     try:
         attrs = kernel32.GetFileAttributesW(entry_path)
-        return attrs != -1 and bool(attrs & 0x04 or attrs & 0x02)
-    except (OSError, AttributeError, TypeError):
+        if attrs == 0xFFFFFFFF:
+            return False
+        return bool(attrs & 0x04 or attrs & 0x02)
+    except (OSError, AttributeError, TypeError, ValueError):
         return False
 
 
@@ -165,11 +167,16 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: ctypes.WinDLL | None, is_ju
     Filtro lógico principal para el escaneo de directorios. Determina si una entrada (archivo o carpeta)
     debe ser ignorada basándose en sus atributos, tipo de enlace o si es un componente sensible.
     """
+    if not entry or not hasattr(entry, 'path'):
+        return True
     if _is_system_hidden(entry.path, kernel32):
         return True
-    if entry.is_symlink() or is_junction_fn(entry.path):
-        return True
-    if entry.is_file() and _is_excluded_file(entry.name):
+    try:
+        if entry.is_symlink() or is_junction_fn(entry.path):
+            return True
+        if entry.is_file() and _is_excluded_file(entry.name):
+            return True
+    except (OSError, PermissionError):
         return True
     return False
 

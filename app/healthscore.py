@@ -196,23 +196,25 @@ def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[
     if not isinstance(metrics, SystemMetrics) or not isinstance(ratios, dict):
         return ["Error: datos de entrada inválidos para recomendaciones."]
         
+    if not metrics.is_finite():
+        return ["Error: Datos de entrada corruptos, análisis no disponible."]
+        
     recommendations: List[str] = []
     check_rules = (
-        ("seguridad", WARN_THRESHOLD_HIGH, f"Revisá los {getattr(metrics, 'suspicious_count', 0)} hallazgo(s) de seguridad."),
-        ("disco", WARN_THRESHOLD_LOW, f"Queda {getattr(metrics, 'disk_free_percent', 0.0):.1f}% de disco libre."),
+        ("seguridad", WARN_THRESHOLD_HIGH, f"Revisá los {metrics.suspicious_count} hallazgo(s) de seguridad."),
+        ("disco", WARN_THRESHOLD_LOW, f"Queda {metrics.disk_free_percent:.1f}% de disco libre."),
         ("memoria", WARN_THRESHOLD_LOW, "Memoria disponible baja: cerrá procesos innecesarios."),
-        ("basura", WARN_THRESHOLD_MED, f"Hay {getattr(metrics, 'junk_mb', 0.0):.0f} MB de archivos temporales."),
-        ("duplicados", WARN_THRESHOLD_MED, f"Podrías recuperar {getattr(metrics, 'duplicate_mb', 0.0):.0f} MB eliminando duplicados."),
-        ("arranque", WARN_THRESHOLD_LOW, f"{getattr(metrics, 'startup_count', 0)} programas arrancan con Windows."),
+        ("basura", WARN_THRESHOLD_MED, f"Hay {metrics.junk_mb:.0f} MB de archivos temporales."),
+        ("duplicados", WARN_THRESHOLD_MED, f"Podrías recuperar {metrics.duplicate_mb:.0f} MB eliminando duplicados."),
+        ("arranque", WARN_THRESHOLD_LOW, f"{metrics.startup_count} programas arrancan con Windows."),
     )
 
     for area_key, threshold, message in check_rules:
         if ratios.get(area_key, 1.0) < threshold:
             recommendations.append(message)
     
-    q_count = getattr(metrics, 'quarantined_count', 0)
-    if q_count > 0:
-        recommendations.append(f"Tenés {q_count} archivo(s) en cuarentena.")
+    if metrics.quarantined_count > 0:
+        recommendations.append(f"Tenés {metrics.quarantined_count} archivo(s) en cuarentena.")
     
     return recommendations if recommendations else ["No hay nada urgente para hacer. El sistema está en buen estado."]
 
