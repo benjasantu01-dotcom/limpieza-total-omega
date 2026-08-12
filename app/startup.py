@@ -153,8 +153,15 @@ class StartupEntry:
             return path_str
 
     def _resolve_path_from_command(self, cmd: str) -> str:
-        """Parsea un comando de inicio, manejando tanto rutas directas como comandos con argumentos.
-        Detecta y bloquea comandos sospechosos que incluyan operadores de shell."""
+        """
+        Analiza el comando de inicio para extraer una ruta de archivo ejecutable válida.
+        
+        El proceso sigue un esquema de seguridad estricto:
+        1. Filtra comandos que contienen operadores de shell que podrían permitir inyección.
+        2. Si el comando está entre comillas, extrae la ruta del interior preservando el formato.
+        3. Caso contrario, normaliza el primer argumento como ruta potencial y valida su 
+           existencia y seguridad contra `safety.py`.
+        """
         if any(char in cmd for char in ('&', '|', ';', '>', '<', '$', '`', '(', ')')):
             return ""
 
@@ -226,7 +233,6 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
             if not isinstance(row, dict) or len(row) < 2:
                 continue
             
-            # Obtiene los valores usando las claves reales detectadas por DictReader
             values = list(row.values())
             name_raw = values[0]
             cmd_raw = values[1]

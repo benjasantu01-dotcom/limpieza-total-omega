@@ -138,8 +138,6 @@ ICONS: Final[Mapping[str, str]] = MappingProxyType({
 
 GRADIENT_STOPS: Final[Tuple[HexColor, ...]] = ("#00f0c0", "#7c5cff", "#ff2d78")
 
-_memoized_gradients: dict[tuple, List[HexColor]] = {}
-
 def app_title() -> str:
     """Retorna el nombre completo de la aplicación concatenado con su versión."""
     return f"{APP_NAME} v{APP_VERSION}"
@@ -239,10 +237,7 @@ def _hex_to_rgb(value: HexColor) -> RGBTuple:
     try:
         hex_data: str = value[1:]
         if all(c in "0123456789abcdefABCDEF" for c in hex_data):
-            r: int = int(hex_data[0:2], 16)
-            g: int = int(hex_data[2:4], 16)
-            b: int = int(hex_data[4:6], 16)
-            return (r, g, b)
+            return (int(hex_data[0:2], 16), int(hex_data[2:4], 16), int(hex_data[4:6], 16))
         return (0, 0, 0)
     except (ValueError, TypeError):
         return (0, 0, 0)
@@ -261,31 +256,28 @@ def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
     )
 
 
+@lru_cache(maxsize=16)
 def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> List[HexColor]:
     """Genera una lista de colores interpolados entre puntos de control (stops)."""
     num_steps = max(1, int(steps))
-    key = (num_steps, stops)
-    if key in _memoized_gradients:
-        return _memoized_gradients[key]
-
-    if not stops: res = [PALETTE["accent"]] * num_steps
-    elif len(stops) < 2: res = [stops[0]] * num_steps
-    else:
-        res = []
-        tramos = len(stops) - 1
-        for i in range(num_steps):
-            pos = (i / (num_steps - 1)) * tramos if num_steps > 1 else 0
-            idx = int(pos)
-            if idx >= tramos: res.append(stops[-1])
-            else: res.append(blend(stops[idx], stops[idx + 1], pos - idx))
+    if not stops: return [PALETTE["accent"]] * num_steps
+    if len(stops) < 2: return [stops[0]] * num_steps
     
-    _memoized_gradients[key] = res
+    res = []
+    tramos = len(stops) - 1
+    for i in range(num_steps):
+        pos = (i / (num_steps - 1)) * tramos if num_steps > 1 else 0
+        idx = int(pos)
+        if idx >= tramos: res.append(stops[-1])
+        else: res.append(blend(stops[idx], stops[idx + 1], pos - idx))
     return res
 
-def _get_grouped_segments(colors: List[HexColor]) -> List[Tuple[HexColor, int, int]]:
+
+@lru_cache(maxsize=8)
+def _get_grouped_segments(colors: Tuple[HexColor, ...]) -> Tuple[Tuple[HexColor, int, int], ...]:
     """Comprime secuencias de colores iguales en segmentos de rango [inicio, fin)."""
-    segments: List[Tuple[HexColor, int, int]] = []
-    if not colors: return segments
+    segments = []
+    if not colors: return tuple(segments)
     start = 0
     curr = colors[0]
     for i in range(1, len(colors)):
@@ -294,14 +286,12 @@ def _get_grouped_segments(colors: List[HexColor]) -> List[Tuple[HexColor, int, i
             curr = colors[i]
             start = i
     segments.append((curr, start, len(colors)))
-    return segments
+    return tuple(segments)
 
 
 @lru_cache(maxsize=8)
 def _get_shield_coords(s: float) -> List[float]:
-    """Retorna los puntos vectoriales del escudo normalizado, escalados por 's'.
-    La forma se basa en una estructura pentagonal superior con base curva para simular 
-    seguridad y robustez (viewBox 128x128)."""
+    """Retorna los puntos vectoriales del escudo normalizado, escalados por 's'."""
     base: List[float] = [64, 18, 100, 31, 100, 67, 90, 90, 64, 110, 38, 90, 28, 67, 28, 31]
     return [v * float(s) for v in base]
 
@@ -336,13 +326,10 @@ def logo_svg(size: int = 128) -> str:
 
 def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     """Guarda el logo vectorial en la ruta especificada tras validar seguridad del directorio."""
-    if not destination: 
-        return None
+    if not destination: return None
     try:
         p: Path = Path(destination)
-        if not is_safe_to_modify(p):
-            return None
-        
+        if not is_safe_to_modify(p): return None
         target: Path = p.resolve()
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(logo_svg(), encoding="utf-8")
@@ -366,7 +353,7 @@ def _draw_shield_stripes(canvas: Any, canvas_x: float, canvas_y: float, scale: f
     """Renderiza el sombreado interno del escudo dentro de un canvas Tkinter."""
     if scale <= 0: return
     franjas_count = max(6, int(28 * scale))
-    colores = gradient_colors(franjas_count)
+    colores = tuple(gradient_colors(franjas_count))
     for color_hex, start, end in _get_grouped_segments(colores):
         mid = (start + end) / 2
         w = 36 * scale * (1.0 if mid / (franjas_count - 1) < 0.55 else 1.0 - (mid / (franjas_count - 1) - 0.55) * 1.9)
@@ -382,16 +369,13 @@ def draw_logo(canvas: Any, size: int = 56, canvas_x: float = 0.0, canvas_y: floa
         scale = max(0.1, float(size) / 128)
         base_coords = _get_shield_coords(scale)
         contorno = [canvas_x + base_coords[i] if i % 2 == 0 else canvas_y + base_coords[i] for i in range(len(base_coords))]
-        
         for paso in range(4, 0, -1):
             r = 56 * scale * (0.6 + paso * 0.12)
             canvas.create_oval(canvas_x + 64*scale - r, canvas_y + 58*scale - r, 
                                canvas_x + 64*scale + r, canvas_y + 58*scale + r, 
                                fill=blend(PALETTE["surface"], PALETTE["glow"], 0.04 * paso), outline="")
-
         canvas.create_polygon(contorno, fill=GRADIENT_STOPS[1], outline="")
         _draw_shield_stripes(canvas, canvas_x, canvas_y, scale)
-
         canvas.create_line(canvas_x + 41*scale, canvas_y + 75*scale, canvas_x + 75*scale, canvas_y + 41*scale, 
                            fill=PALETTE["background"], width=max(2, int(8*scale)), capstyle="round")
         canvas.create_polygon(canvas_x + 75*scale, canvas_y + 41*scale, canvas_x + 89*scale, canvas_y + 38*scale, 
@@ -409,7 +393,7 @@ def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
     if not hasattr(canvas, "create_line"): return
     try:
         ancho = max(1, int(width))
-        colores = gradient_colors(ancho, stops)
+        colores = tuple(gradient_colors(ancho, stops))
         for color_hex, start, end in _get_grouped_segments(colores):
             canvas.create_line(canvas_x + start, canvas_y, canvas_x + end, canvas_y, fill=color_hex, width=max(1, int(height)))
     except (ValueError, TypeError, AttributeError): pass
@@ -422,8 +406,7 @@ def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
     """Dibuja un medidor circular tipo anillo para representar porcentajes de salud."""
     if not hasattr(canvas, "create_arc"): return
     try:
-        val_f = float(percent)
-        valor = max(0.0, min(100.0, val_f))
+        valor = max(0.0, min(100.0, float(percent)))
         diametro = max(20, int(size))
         grosor = max(2, min(int(thickness), diametro // 2 - 1))
     except (TypeError, ValueError, ZeroDivisionError): return
@@ -432,7 +415,6 @@ def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
     color_avance = fill or score_color(valor)
     borde = grosor / 2
     caja = (canvas_x + borde, canvas_y + borde, canvas_x + diametro - borde, canvas_y + diametro - borde)
-    
     canvas.create_arc(*caja, start=0, extent=359.9, style="arc", outline=color_fondo, width=grosor)
     if valor > 0:
         canvas.create_arc(*caja, start=90, extent=-(valor / 100 * 359.9),

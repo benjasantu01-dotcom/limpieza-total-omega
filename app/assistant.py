@@ -44,7 +44,6 @@ import urllib.error
 import urllib.request
 import re
 import math
-from itertools import islice
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Final, TypeAlias, Callable, Optional, Union, Generator, TypedDict
@@ -366,7 +365,7 @@ def handle_score(ctx: SystemContext, user_query: str) -> Answer:
     """Responde preguntas sobre el puntaje de salud del sistema."""
     detalle = (f"Tu puntaje es {ctx.score if ctx.score is not None else 'N/A'}/100"
                 f"{f' (nota {ctx.grade})' if ctx.grade else ''}. ")
-    problemas = list(islice(_gen_problems(ctx), 3))
+    problemas = [p for p in _gen_problems(ctx)]
     if problemas:
         detalle += "Lo que más te está restando: " + ", ".join(problemas) + "."
     else:
@@ -418,7 +417,7 @@ def local_answer(question: str, context: SystemContext) -> Answer:
         if token in _KEYWORD_MAP:
             return _HANDLERS[_KEYWORD_MAP[token]](context, clean_text)
 
-    problemas = list(islice(_gen_problems(context), 3))
+    problemas = [p for p in _gen_problems(context)]
     puntaje_str = str(context.score) if context.score is not None else "N/A"
     if problemas:
         cuerpo = (f"Con un puntaje de {puntaje_str}/100, por orden de prioridad: "
@@ -428,19 +427,25 @@ def local_answer(question: str, context: SystemContext) -> Answer:
     return Answer(cuerpo, notice=OFFLINE_NOTICE, suggestions=SUGGESTED_QUESTIONS_LIST[:3])
 
 def _gen_problems(ctx: SystemContext) -> Generator[str, None, None]:
-    """Generador de problemas detectados priorizados por criticidad."""
+    """Generador de problemas detectados priorizados por criticidad (max 3)."""
     if ctx is None: return
+    count = 0
     if ctx.disk_free_percent < 10.0:
         yield f"queda solo {ctx.disk_free_percent:.0f}% de disco libre"
-    if ctx.suspicious_warnings > 0:
+        count += 1
+    if count < 3 and ctx.suspicious_warnings > 0:
         yield f"{ctx.suspicious_warnings} archivo(s) sospechosos"
-    if ctx.memory_available_percent < 15.0:
+        count += 1
+    if count < 3 and ctx.memory_available_percent < 15.0:
         yield f"queda {ctx.memory_available_percent:.0f}% de RAM"
-    if ctx.junk_mb > 1000.0:
+        count += 1
+    if count < 3 and ctx.junk_mb > 1000.0:
         yield f"{ctx.junk_mb:.0f} MB de archivos basura"
-    if ctx.duplicate_mb > 500.0:
+        count += 1
+    if count < 3 and ctx.duplicate_mb > 500.0:
         yield f"{ctx.duplicate_mb:.0f} MB en duplicados"
-    if ctx.startup_count > 15:
+        count += 1
+    if count < 3 and ctx.startup_count > 15:
         yield f"{ctx.startup_count} programas de inicio"
 
 def available(base: Union[str, Path, None] = None) -> bool:

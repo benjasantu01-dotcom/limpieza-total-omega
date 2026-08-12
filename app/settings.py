@@ -105,7 +105,10 @@ class _Validators:
     
     @staticmethod
     def _is_safe_path(path_obj: Path) -> bool:
-        """Verifica restricciones de seguridad para rutas configurables por el usuario."""
+        """
+        Verifica restricciones de seguridad para rutas configurables por el usuario.
+        Evita travesía de directorios, enlaces simbólicos/junctions y rutas protegidas.
+        """
         if not path_obj.is_absolute(): return False
         if len(path_obj.parts) < 2: return False
         if any(part in ('.', '..', '..\\', '../') for part in path_obj.parts): return False
@@ -121,7 +124,10 @@ class _Validators:
 
     @staticmethod
     def bool(key: str, val: Any) -> bool | None:
-        """Convierte entradas laxas (ej. "si", 1) a booleanos estrictos. Retorna None si falla."""
+        """
+        Convierte entradas laxas (ej. "si", 1, True) a booleanos estrictos.
+        Retorna None si la entrada no representa un booleano válido.
+        """
         if val is None: return None
         if isinstance(val, bool): return val
         if not isinstance(val, str): return None
@@ -132,7 +138,10 @@ class _Validators:
 
     @staticmethod
     def int(key: str, val: Any) -> int | None:
-        """Parseo de enteros con cota impuesta por _NUMERIC_LIMITS."""
+        """
+        Parseo seguro de enteros aplicando los límites definidos en _NUMERIC_LIMITS.
+        Evita desbordamientos y valores fuera de rango de operación.
+        """
         if val is None or isinstance(val, bool): return None
         try:
             parsed_value = int(val)
@@ -143,7 +152,10 @@ class _Validators:
 
     @staticmethod
     def path(val: Any) -> str | None:
-        """Valida una ruta string contra `safety` y retorna ruta absoluta normalizada o None."""
+        """
+        Valida una ruta string contra `safety` y retorna ruta absoluta normalizada o None.
+        Utilizado principalmente para `ultima_carpeta`.
+        """
         if val is None or not isinstance(val, (str, Path)): return None
         path_string = str(val).strip()
         if not path_string: return ""
@@ -157,7 +169,10 @@ class _Validators:
 
     @staticmethod
     def str(key: str, val: Any) -> str | None:
-        """Validación de cadenas con control de inyección y límites de esquema."""
+        """
+        Validación de cadenas con control de inyección y límites de esquema.
+        Aplica validaciones específicas para temas, acentos y limpieza de rutas.
+        """
         if val is None or not isinstance(val, (str, Path)): return None
         text = str(val).strip()
         
@@ -228,7 +243,6 @@ def load(path_or_base: PathLike | None = None) -> AppSettings:
         if 0 < stats.st_size <= MAX_SETTINGS_SIZE:
             with open(ruta, "r", encoding="utf-8") as f:
                 data = json.load(f)
-            # Asegurar que data es dict y tiene integridad mínima
             if isinstance(data, dict):
                 _cached_settings = validate(data)
                 _current_path, _last_mtime = ruta, stats.st_mtime
@@ -239,18 +253,26 @@ def load(path_or_base: PathLike | None = None) -> AppSettings:
     return DEFAULTS.copy()
 
 def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
-    """Guarda configuración de forma atómica validando permisos de escritura."""
+    """
+    Guarda la configuración de forma atómica.
+    Realiza validaciones de seguridad previas, limpia los datos de entrada
+    y asegura la integridad mediante un archivo temporal y reemplazo fsync.
+    """
     global _cached_settings, _current_path, _last_mtime
     if not isinstance(values, dict): return None
     ruta = settings_path(path_or_base)
     
+    # 1. Validar que la ruta de destino sea segura
     if is_protected_path(str(ruta)) or (ruta.exists() and (ruta.is_symlink() or (hasattr(ruta, 'is_junction') and ruta.is_junction()))):
         return None
         
     if not is_safe_to_modify(str(ruta.parent)):
         return None
     
+    # 2. Normalizar y validar valores antes de persistir
     cleaned_settings = validate(values)
+    
+    # 3. Regla de negocio: Desactivar asistente si no hay credenciales (seguridad)
     if cleaned_settings.get("asistente_activado") and not (cleaned_settings.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)):
         cleaned_settings["asistente_activado"] = False
     
@@ -264,6 +286,7 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
         if not os.access(ruta.parent, os.W_OK):
             return None
 
+        # 4. Escritura atómica vía archivo temporal
         temp = ruta.with_suffix(".tmp")
         with open(temp, "w", encoding="utf-8") as f:
             json.dump(cleaned_settings, f, indent=2, ensure_ascii=False)
