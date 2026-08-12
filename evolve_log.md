@@ -736,3 +736,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-12T03:55:23` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del puntaje transformando `_WEIGHT_FACTORS` en una estructura de acceso directo y precalculando el desglose dentro de `compute_score` para evitar iteraciones redundantes y búsquedas en diccionario, mejorando la eficiencia en la ejecución del bucle.
 - `2026-08-12T03:55:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-12T03:55:23` Corrida terminada. Total usado hoy: 92.
+- `2026-08-12T04:03:44` Arrancando corrida. Quedan hoy ~208 peticiones objetivo.
+- `2026-08-12T04:03:56` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-12T04:05:07` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._get_cached_or_run
+- `2026-08-12T04:05:35` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimizé la función `top_memory_processes` reemplazando la ejecución costosa de PowerShell por un filtrado de datos pre-cargados cuando la caché está activa, y simplifiqué el parsing mediante el uso de `str.splitlines()` dentro de un generador para evitar listas intermedias innecesarias.
+- `2026-08-12T04:06:04` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-08-12T04:06:24` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el acceso al manifiesto en `restore_item` y `purge_item` reemplazando la recreación innecesaria de diccionarios por una búsqueda directa en la lista cacheada, mejorando la eficiencia en operaciones recurrentes.
+- `2026-08-12T04:06:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-12T04:06:24` Corrida terminada. Total usado hoy: 96.

@@ -67,7 +67,6 @@ TRIM_WARNING: str = (
 
 BYTE_UNITS: Tuple[str, ...] = ("B", "KB", "MB", "GB", "TB")
 
-# Permisos requeridos para consultar métricas y gestionar WorkingSet vía Win32 API
 PROCESS_QUERY_LIMITED_INFORMATION: int = 0x1000
 PROCESS_SET_QUOTA: int = 0x0100
 SAFE_ACCESS_MASK: int = PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_SET_QUOTA
@@ -75,13 +74,11 @@ SAFE_ACCESS_MASK: int = PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_SET_QUOTA
 STILL_ACTIVE_EXIT_CODE: int = 259
 ERROR_ACCESS_DENIED: int = 5
 
-# PIDs de servicios internos de Windows que no deben ser manipulados
 SYSTEM_CRITICAL_PIDS: Tuple[int, ...] = (0, 4)
 
 _PROCESS_CACHE: Dict[str, Tuple[float, List[ProcessMemory]]] = {"data": (0.0, [])}
 
 class MEMORYSTATUSEX(ctypes.Structure):
-    """Estructura para el mapeo de la función GlobalMemoryStatusEx de la API Win32."""
     _fields_ = [
         ("dwLength", ctypes.c_ulong),
         ("dwMemoryLoad", ctypes.c_ulong),
@@ -96,26 +93,22 @@ class MEMORYSTATUSEX(ctypes.Structure):
 
 @dataclass
 class MemorySnapshot:
-    """Instantánea de memoria física en bytes para cálculos precisos."""
     total: BytesValue
     available: BytesValue
     cached: BytesValue = 0
 
     @property
     def used(self) -> BytesValue:
-        """Espacio de RAM actualmente en uso por el sistema o procesos."""
         return max(0, self.total - self.available)
 
     @property
     def used_percent(self) -> float:
-        """Porcentaje de uso para indicadores visuales en la interfaz."""
         if self.total <= 0:
             return 0.0
         return round((self.used / self.total) * 100, 1)
 
     @property
     def available_percent(self) -> float:
-        """Porcentaje de disponibilidad para lógica de diagnóstico."""
         if self.total <= 0:
             return 0.0
         return round((self.available / self.total) * 100, 1)
@@ -123,7 +116,6 @@ class MemorySnapshot:
 
 @dataclass
 class ProcessMemory:
-    """Registro de memoria residente (Working Set) de un proceso específico."""
     name: str
     pid: int
     working_set: BytesValue
@@ -131,12 +123,10 @@ class ProcessMemory:
 
     @property
     def working_set_mb(self) -> MegabytesValue:
-        """Retorna el Working Set normalizado a MB para visualización humana."""
         return round(self.working_set / BYTES_IN_MB, 1)
 
 
 def format_bytes(num: Optional[int | float]) -> str:
-    """Convierte bytes a string legible (ej: 1.5 GB)."""
     if not isinstance(num, (int, float)) or num <= 0:
         return "0 B"
     idx: int = min(int(math.log(num, 1024)), len(BYTE_UNITS) - 1)
@@ -146,7 +136,6 @@ def format_bytes(num: Optional[int | float]) -> str:
 
 @lru_cache(maxsize=4)
 def parse_linux_meminfo(text: str) -> MemorySnapshot:
-    """Interpreta el contenido crudo de /proc/meminfo en un objeto MemorySnapshot."""
     if not isinstance(text, str) or not text:
         return MemorySnapshot(0, 0)
     
@@ -155,7 +144,6 @@ def parse_linux_meminfo(text: str) -> MemorySnapshot:
         match = re.match(r"^(\w+):\s+(\d+)", line)
         if match:
             try:
-                # Los valores en /proc/meminfo están en kB
                 values[match.group(1)] = int(match.group(2)) * 1024
             except (ValueError, OverflowError):
                 continue
@@ -174,29 +162,16 @@ def parse_linux_meminfo(text: str) -> MemorySnapshot:
     )
 
 
-def _is_csv_row_format_valid(parts: List[str]) -> bool:
-    """Verifica si los campos de una fila CSV de proceso tienen el formato esperado."""
-    # Espera: [Nombre, PID, WorkingSet]
-    return len(parts) == 3 and parts[1].isdigit() and parts[2].isdigit()
-
-
 def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]:
-    """Transforma la salida de Get-Process en una lista de objetos ProcessMemory."""
     if not isinstance(text, str) or not text:
         return []
     
     processes: List[ProcessMemory] = []
-    for line in text.splitlines():
-        if not line.strip():
-            continue
-        parts: List[str] = [p.strip().strip("'\"") for p in line.split(",")]
-        if _is_csv_row_format_valid(parts):
+    for line in (l for l in text.splitlines() if l.strip()):
+        parts = [p.strip().strip("'\"") for p in line.split(",")]
+        if len(parts) == 3 and parts[1].isdigit() and parts[2].isdigit():
             try:
-                processes.append(ProcessMemory(
-                    name=parts[0] if parts[0] else "Unknown", 
-                    pid=int(parts[1]), 
-                    working_set=int(parts[2])
-                ))
+                processes.append(ProcessMemory(parts[0] or "Unknown", int(parts[1]), int(parts[2])))
             except (ValueError, TypeError):
                 continue
     
@@ -205,7 +180,6 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
 
 
 def _read_windows_snapshot() -> MemorySnapshot:
-    """Accede a la API nativa GlobalMemoryStatusEx para obtener el estado real de RAM."""
     stat = MEMORYSTATUSEX()
     stat.dwLength = ctypes.sizeof(MEMORYSTATUSEX)
     kernel32 = ctypes.windll.kernel32
@@ -215,7 +189,6 @@ def _read_windows_snapshot() -> MemorySnapshot:
 
 
 def read_snapshot() -> MemorySnapshot:
-    """Punto de entrada unificado para leer el estado de RAM según la plataforma."""
     if os.name == "nt":
         try:
             return _read_windows_snapshot()
@@ -234,7 +207,6 @@ def read_snapshot() -> MemorySnapshot:
 
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
-    """Obtiene los procesos más pesados usando una caché temporal de 5 segundos."""
     if os.name != "nt":
         return []
     
@@ -244,10 +216,7 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     if now - ts < 5.0 and cached_processes:
         return cached_processes[:limit]
     
-    command: str = (
-        "Get-Process | Sort-Object WorkingSet -Descending | "
-        "ForEach-Object { \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }"
-    )
+    command: str = "Get-Process | Sort-Object WorkingSet -Descending | ForEach-Object { \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }"
     try:
         proc = subprocess.run(["powershell", "-NoProfile", "-Command", command], capture_output=True, text=True, timeout=5)
         if proc.returncode == 0 and proc.stdout:
@@ -260,7 +229,6 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
 
 
 def pressure_level(snapshot: MemorySnapshot) -> str:
-    """Determina heurísticamente el nivel de presión de la memoria RAM."""
     if not isinstance(snapshot, MemorySnapshot) or snapshot.total <= 0:
         return "info"
     
@@ -272,7 +240,6 @@ def pressure_level(snapshot: MemorySnapshot) -> str:
 
 
 def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] = None) -> List[str]:
-    """Genera un diagnóstico textual del estado de memoria del sistema."""
     if not isinstance(snapshot, MemorySnapshot) or snapshot.total <= 0:
         return ["No se pudo leer el estado de la memoria en este sistema."]
     
@@ -300,19 +267,10 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
 
 
 def _is_system_process(pid: int) -> bool:
-    """Verifica si el PID corresponde a un proceso del sistema restringido o crítico."""
     return pid in SYSTEM_CRITICAL_PIDS or pid <= 100
 
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """
-    Intenta reducir el working set de un proceso específico.
-    
-    Realiza validaciones de seguridad: 
-    1. Verifica que el PID no sea crítico/del sistema.
-    2. Valida mediante `is_protected_path` que el ejecutable no pertenezca 
-       a rutas críticas (protección contra manipulación externa).
-    """
     if os.name != "nt":
         return False, "Solo disponible en Windows."
     
@@ -330,7 +288,6 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if psapi is None:
         return False, "Error de sistema: PSAPI no disponible."
 
-    # Obtener handle con permisos mínimos necesarios (Query + SetQuota)
     proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
     
     if not proc_handle:
@@ -346,7 +303,6 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         buf = ctypes.create_unicode_buffer(2048)
         size: int = psapi.GetModuleFileNameExW(proc_handle, 0, buf, 2048)
         
-        # Validar ubicación del ejecutable para evitar manipulación de procesos críticos
         if size > 0:
             exe_path: str = os.path.abspath(os.path.normpath(buf.value))
             if is_protected_path(exe_path):

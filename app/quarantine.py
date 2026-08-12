@@ -350,8 +350,7 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
     if not item_id or not isinstance(item_id, str):
         raise ValueError("ID de ítem inválido.")
     items = load_manifest(base)
-    item_map = {i.item_id: i for i in items}
-    match = item_map.get(item_id)
+    match = next((i for i in items if i.item_id == item_id), None)
     if not match:
         raise KeyError(f"No se encontró el ítem: {item_id}")
     try:
@@ -387,8 +386,7 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
     if not item_id or not isinstance(item_id, str):
         return False
     items = load_manifest(base)
-    item_map = {i.item_id: i for i in items}
-    match = item_map.get(item_id)
+    match = next((i for i in items if i.item_id == item_id), None)
     if not match:
         return False
     quarantine_root = quarantine_dir(base)
