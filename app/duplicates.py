@@ -78,9 +78,9 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
     """
     Calcula el hash SHA256 completo del archivo mediante lectura por bloques.
     
-    Precondiciones: El archivo debe ser legible y no estar protegido.
-    Postcondiciones: Valida que el archivo no haya sido modificado durante la lectura
-    (comparando el tamaño final contra el inicial). Retorna None en fallos de E/S.
+    Precondiciones: El archivo debe ser legible, no estar protegido y no ser un punto de reparse.
+    Postcondiciones: Valida la integridad del archivo tras la lectura comparando 
+    el tamaño final con el inicial. Retorna None en errores de E/S.
     """
     if path is None or chunk_size <= 0: 
         return None
@@ -163,10 +163,13 @@ def _collect_candidates(
 ) -> Dict[int, List[Path]]:
     """
     Escanea recursivamente directorios buscando archivos candidatos a duplicados.
+    
+    Utiliza un mapa de inodos (st_dev, st_ino) para evitar el procesamiento
+    repetido de hardlinks o ciclos en el árbol de archivos.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: Dict[Tuple[int, int], bool] = {}
-    processed_paths = set()
+    processed_paths: set[Path] = set()
     
     if directories is None: return temp_groups
     
@@ -177,7 +180,6 @@ def _collect_candidates(
                     if entry is None: continue
                     
                     try:
-                        # Validar si el path existe antes de operar
                         entry_path = Path(entry.path)
                         entry_stat = entry.stat(follow_symlinks=False)
                         
@@ -222,6 +224,8 @@ def _refine_by_hash(
 ) -> Dict[str, List[Path]]:
     """
     Aplica la estrategia de partición de hash sobre un conjunto dado.
+    
+    Solo agrupa aquellos elementos que comparten el mismo resultado de hash.
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     if paths is None: return groups_by_digest
@@ -268,6 +272,10 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     """
     Heurística para seleccionar el archivo 'original' (a conservar).
+    
+    Selecciona el archivo con la fecha de modificación más antigua. En caso de 
+    empate, prefiere la ruta más corta (usualmente archivos en la raíz o 
+    carpetas superiores).
     """
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None

@@ -447,3 +447,12 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-08-12T12:05:44` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante docstrings más precisos en las funciones críticas de recorrido, especificando las restricciones de seguridad (como los límites de profundidad y el manejo de enlaces) para garantizar la mantenibilidad y claridad ante posibles auditorías de código.
 - `2026-08-12T12:05:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-12T12:05:44` Corrida terminada. Total usado hoy: 284.
+- `2026-08-12T12:14:00` Arrancando corrida. Quedan hoy ~16 peticiones objetivo.
+- `2026-08-12T12:14:27` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `walk_files` extrayendo la lógica de filtrado y resolución de rutas a un bloque documentado, y añadí type hints explícitos para clarificar el flujo de datos.
+- `2026-08-12T12:15:11` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación técnica del módulo mediante la inclusión de Type Hints explícitos para las funciones internas, la clarificación de las precondiciones y restricciones de E/S en los docstrings, y la adición de una breve explicación sobre la lógica de selección de archivos (heurística de antigüedad y longitud de ruta) para mejorar la mantenibilidad.
+- `2026-08-12T12:15:37` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad del módulo añadiendo docstrings técnicos claros a las constantes, especificando la intención de cada función de cálculo, y documentando formalmente las unidades y rangos esperados en `SystemMetrics` mediante anotaciones.
+- `2026-08-12T12:16:37` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-12T12:17:04` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-08-12T12:18:05` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._build_single_health_bar, LimpiezaTotalOmegaApp._metric_card
+- `2026-08-12T12:18:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-12T12:18:05` Corrida terminada. Total usado hoy: 288.

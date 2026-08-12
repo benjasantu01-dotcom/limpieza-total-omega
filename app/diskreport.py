@@ -214,8 +214,9 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     if not directory:
         return
 
+    # Preparación de la ruta base con validación de acceso
     try:
-        root = Path(directory).expanduser().resolve(strict=False)
+        root: Path = Path(directory).expanduser().resolve(strict=False)
         if not root.exists() or not root.is_dir() or not os.access(root, os.R_OK):
             return
         if skip_protected and is_protected_path(root):
@@ -227,21 +228,22 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     stack: List[str] = [str(root)]
 
     while stack:
-        current_dir = stack.pop()
+        current_dir: str = stack.pop()
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        entry_path = Path(entry.path)
+                        entry_path: Path = Path(entry.path)
                         if skip_protected and is_protected_path(entry_path):
                             continue
 
+                        # Evitar seguir enlaces simbólicos o junctions para prevenir ciclos infinitos
                         if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
                             continue
 
                         if entry.is_dir():
-                            st = entry.stat()
-                            inode = (st.st_dev, st.st_ino)
+                            st: os.stat_result = entry.stat()
+                            inode: Tuple[int, int] = (st.st_dev, st.st_ino)
                             if inode not in visited_inodes:
                                 visited_inodes.add(inode)
                                 stack.append(entry.path)

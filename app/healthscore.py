@@ -36,18 +36,21 @@ __all__ = [
 ]
 
 # --- UMBRALES DE NORMALIZACIÓN (referencias constantes para cálculo) ---
-_LIMIT_JUNK_MB: Final[float] = 5000.0          # Límite superior de basura aceptable antes de score 0
-_LIMIT_DUPLICATE_MB: Final[float] = 2000.0     # Límite superior de duplicados aceptable antes de score 0
-_LIMIT_STARTUP_COUNT: Final[int] = 20          # Cantidad máxima tolerable de procesos al inicio
-_LIMIT_RAM_PERCENT: Final[float] = 35.0        # Porcentaje de RAM libre objetivo
-_LIMIT_DISK_PERCENT: Final[float] = 25.0       # Porcentaje de espacio en disco libre objetivo
+# Valores que representan el punto de saturación o estado crítico (score 0)
+_LIMIT_JUNK_MB: Final[float] = 5000.0          
+_LIMIT_DUPLICATE_MB: Final[float] = 2000.0     
+_LIMIT_STARTUP_COUNT: Final[int] = 20          
+_LIMIT_RAM_PERCENT: Final[float] = 35.0        
+_LIMIT_DISK_PERCENT: Final[float] = 25.0       
 
 # --- UMBRALES DE ADVERTENCIA (ratios de 0.0 a 1.0) ---
+# Nivel de score debajo del cual se considera que el área requiere atención
 WARN_THRESHOLD_HIGH: Final[float] = 0.9
 WARN_THRESHOLD_MED: Final[float] = 0.8
 WARN_THRESHOLD_LOW: Final[float] = 0.6
 
 # --- PESOS DE CALIFICACIÓN (base para cálculo de puntaje) ---
+# Define la relevancia relativa de cada subsistema sobre el score total
 WEIGHTS: Final[Dict[str, int]] = {
     "seguridad": 30,
     "disco": 20,
@@ -67,14 +70,26 @@ _WEIGHT_ITEMS: Final[List[Tuple[str, float]]] = [(k, _WEIGHT_FACTORS[k]) for k i
 
 
 def _validate_weights() -> bool:
-    """Verifica que la suma total de pesos sea positiva y sus valores válidos."""
+    """Verifica la consistencia matemática de la configuración de pesos."""
     if not math.isfinite(_TOTAL_WEIGHTS) or _TOTAL_WEIGHTS <= 0: return False
     return all(isinstance(w, int) and w >= 0 for w in WEIGHTS.values())
 
 
 @dataclass
 class SystemMetrics:
-    """Contenedor de datos crudos (métricas) provenientes de los diversos módulos."""
+    """
+    Contenedor de datos crudos (métricas) provenientes de los diversos módulos.
+    
+    Attributes:
+        junk_mb: Tamaño total de archivos temporales en Megabytes.
+        suspicious_count: Cantidad de archivos detectados como sospechosos.
+        suspicious_warnings: Cantidad de advertencias de configuración/sistema.
+        memory_available_percent: Porcentaje de RAM física disponible.
+        disk_free_percent: Porcentaje de espacio libre en unidad principal.
+        duplicate_mb: Tamaño acumulado de archivos duplicados en Megabytes.
+        startup_count: Número de aplicaciones configuradas para iniciar con el SO.
+        quarantined_count: Cantidad de elementos aislados en cuarentena.
+    """
     junk_mb: float = 0.0
     suspicious_count: int = 0
     suspicious_warnings: int = 0
@@ -96,7 +111,7 @@ class SystemMetrics:
         self.quarantined_count = max(0, _to_int(self.quarantined_count))
 
     def is_finite(self) -> bool:
-        """Valida que todos los campos numéricos contengan valores reales finitos."""
+        """Valida la integridad numérica de todos los campos del objeto."""
         return all(math.isfinite(v) for v in (
             self.junk_mb, self.suspicious_count, self.suspicious_warnings,
             self.memory_available_percent, self.disk_free_percent, 
@@ -119,13 +134,13 @@ class HealthResult:
 
 
 def _clamp(value: float, low: float = 0.0, high: float = 1.0) -> float:
-    """Asegura que un valor se mantenga dentro del rango [low, high]."""
+    """Limita un valor numérico dentro de un rango cerrado [low, high]."""
     if not isinstance(value, (int, float)) or not math.isfinite(value): return low
     return max(low, min(high, value))
 
 
 def _to_float(value: Any, default: float = 0.0) -> float:
-    """Convierte un valor a float o retorna default si no es representable."""
+    """Coerción segura a float, capturando errores de tipo."""
     try:
         if value is None: return default
         val = float(value)
@@ -134,7 +149,7 @@ def _to_float(value: Any, default: float = 0.0) -> float:
 
 
 def _to_int(value: Any, default: int = 0) -> int:
-    """Convierte un valor a int o retorna default ante error de tipo/valor."""
+    """Coerción segura a int, capturando errores de tipo."""
     try:
         if value is None: return default
         return int(float(value))
@@ -142,13 +157,13 @@ def _to_int(value: Any, default: int = 0) -> int:
 
 
 def score_junk(junk_mb: float | int) -> float:
-    """Calcula score [0.0, 1.0] penalizando linealmente según el tamaño de archivos basura."""
+    """Calcula score [0.0, 1.0] penalizando linealmente el exceso de basura."""
     val = max(0.0, _to_float(junk_mb))
     return 0.0 if _LIMIT_JUNK_MB <= 0.0 else _clamp(1.0 - (val / _LIMIT_JUNK_MB), 0.0, 1.0)
 
 
 def score_security(suspicious_count: int, warnings: int = 0) -> float:
-    """Calcula score [0.0, 1.0] penalizando hallazgos y advertencias de seguridad."""
+    """Calcula score [0.0, 1.0] penalizando hallazgos y alertas de seguridad."""
     count = max(0, _to_int(suspicious_count))
     warns = max(0, _to_int(warnings))
     penalty = (count * 0.05) + (warns * 0.25)
@@ -156,31 +171,31 @@ def score_security(suspicious_count: int, warnings: int = 0) -> float:
 
 
 def score_memory(available_percent: float | int) -> float:
-    """Calcula score [0.0, 1.0] basado en el porcentaje de RAM disponible."""
+    """Calcula score [0.0, 1.0] basado en la disponibilidad de RAM."""
     val = _clamp(_to_float(available_percent), 0.0, 100.0)
     return 0.0 if _LIMIT_RAM_PERCENT <= 0.0 else _clamp(val / _LIMIT_RAM_PERCENT, 0.0, 1.0)
 
 
 def score_disk(free_percent: float | int) -> float:
-    """Calcula score [0.0, 1.0] basado en el porcentaje de espacio libre en disco."""
+    """Calcula score [0.0, 1.0] basado en el espacio libre en disco."""
     val = _clamp(_to_float(free_percent), 0.0, 100.0)
     return 0.0 if _LIMIT_DISK_PERCENT <= 0.0 else _clamp(val / _LIMIT_DISK_PERCENT, 0.0, 1.0)
 
 
 def score_duplicates(duplicate_mb: float | int) -> float:
-    """Calcula score [0.0, 1.0] penalizando el volumen de archivos duplicados."""
+    """Calcula score [0.0, 1.0] penalizando el volumen total de duplicados."""
     val = max(0.0, _to_float(duplicate_mb))
     return 0.0 if _LIMIT_DUPLICATE_MB <= 0.0 else _clamp(1.0 - (val / _LIMIT_DUPLICATE_MB), 0.0, 1.0)
 
 
 def score_startup(startup_count: int) -> float:
-    """Calcula score [0.0, 1.0] penalizando la cantidad de programas en el arranque."""
+    """Calcula score [0.0, 1.0] penalizando la carga innecesaria en el inicio."""
     val = max(0, _to_int(startup_count))
     return 0.0 if _LIMIT_STARTUP_COUNT <= 0 else _clamp(1.0 - (val / _LIMIT_STARTUP_COUNT), 0.0, 1.0)
 
 
 def grade_for_score(score: float | int) -> str:
-    """Mapea un puntaje numérico (0-100) a una categoría cualitativa (A-F)."""
+    """Mapea puntaje [0-100] a una calificación cualitativa."""
     s = _clamp(_to_float(score), 0.0, 100.0)
     if s >= 90: return "A"
     if s >= 80: return "B"
@@ -190,9 +205,7 @@ def grade_for_score(score: float | int) -> str:
 
 
 def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[str]:
-    """
-    Genera lista de textos de remediación según métricas deficientes.
-    """
+    """Genera sugerencias basadas en las áreas con peor rendimiento relativo."""
     if not isinstance(metrics, SystemMetrics) or not isinstance(ratios, dict):
         return ["Error: datos de entrada inválidos para recomendaciones."]
         
@@ -220,7 +233,7 @@ def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[
 
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
-    """Ejecuta el cálculo ponderado de salud integral del sistema."""
+    """Procesa todas las métricas para generar un puntaje integral ponderado."""
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Instancia de métricas inválida."])
     
@@ -249,7 +262,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
 
 
 def summarize(result: HealthResult) -> List[str]:
-    """Retorna una representación textual formateada para informe del usuario."""
+    """Genera una representación visual y textual del estado del sistema."""
     if not isinstance(result, HealthResult): return ["Error: Formato inválido."]
 
     lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
