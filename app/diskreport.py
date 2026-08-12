@@ -228,7 +228,8 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                         if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
                             continue
                         
-                        if skip_protected and is_protected_path(Path(entry.path)):
+                        entry_path = Path(entry.path)
+                        if skip_protected and is_protected_path(entry_path):
                             continue
 
                         if entry.is_dir():
@@ -239,7 +240,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                                 stack.append(entry.path)
                         else:
                             size = entry.stat().st_size
-                            yield Path(entry.path), size
+                            yield entry_path, size
                     except (OSError, PermissionError, FileNotFoundError):
                         continue
         except (OSError, PermissionError, FileNotFoundError):

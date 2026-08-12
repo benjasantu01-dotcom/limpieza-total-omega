@@ -117,8 +117,10 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
         if is_protected_path(real_target) or is_protected_path(real_base):
             return False
 
-        # Uso de casefold para comparar rutas de manera agnóstica a mayúsculas/minúsculas en Windows
-        if os.path.commonpath([real_base, real_target]).casefold() != str(real_base).casefold():
+        # Verifica que la ruta base sea un prefijo real de la ruta objetivo tras normalización
+        try:
+            real_target.relative_to(real_base)
+        except ValueError:
             return False
 
         is_junction = getattr(os.path, 'isjunction', lambda _: False)

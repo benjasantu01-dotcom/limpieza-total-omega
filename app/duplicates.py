@@ -178,7 +178,8 @@ def _collect_candidates(
                         if getattr(entry_stat, 'st_file_attributes', 0) & 0x400:
                             continue
                         
-                        path_obj = Path(entry.path).resolve()
+                        # Usar path absoluto directamente del entry para evitar ambigüedad de resolución
+                        path_obj = Path(os.path.abspath(entry.path))
                         if skip_protected and is_protected_path(path_obj):
                             continue
                         
