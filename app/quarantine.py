@@ -103,6 +103,7 @@ class QuarantineItem:
             return None
 
     def verify_integrity(self, stored_path: Path) -> bool:
+        """Verifica que el archivo actual en disco coincida con el registro del manifiesto."""
         if not stored_path or not stored_path.is_file():
             return False
         try:
@@ -172,10 +173,12 @@ def _manifest_path(base_dir: Path) -> Path:
 
 
 def _is_valid_quarantine_path(path: Path, root: Path) -> TypeGuard[Path]:
+    """Valida que una ruta resida estrictamente dentro de la carpeta de cuarentena."""
     return is_within_directory(path, root)
 
 
 def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
+    """Realiza chequeos de seguridad antes de mover un archivo al sandbox."""
     if len(source_path.parts) > 32:
         raise UnsafePathError("Profundidad de ruta excesiva: riesgo de desbordamiento.")
     if ":" in source_path.name.replace(source_path.drive, ""):
@@ -403,14 +406,15 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
 
 
 def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
+    """Vacía la cuarentena eliminando archivos, manteniendo la integridad del manifiesto."""
     try:
         quarantine_root = quarantine_dir(base)
     except (OSError, ValueError):
         return 0
-    items = load_manifest(base)
-    item_map = {item.stored_name: item for item in items}
-    items_in_manifest = set(item_map.keys())
     
+    items = load_manifest(base)
+    item_map: Dict[str, QuarantineItem] = {i.stored_name: i for i in items}
+    items_in_manifest = set(item_map.keys())
     purged_count = 0
     items_to_keep: List[QuarantineItem] = []
     
@@ -423,6 +427,7 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
             continue
 
         try:
+            # Si el archivo está en el manifiesto, verificar integridad antes de borrar
             if entry.name in items_in_manifest:
                 item = item_map[entry.name]
                 if item.verify_integrity(entry):
@@ -432,7 +437,7 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
                         continue
                 items_to_keep.append(item)
             else:
-                # Limpiar huérfanos solo si pasan validación de seguridad
+                # Limpiar huérfanos solo si pasan validación de seguridad (prevención de borrado accidental)
                 ensure_safe_to_modify(entry, allow_sensitive=False)
                 _safe_unlink(entry)
         except (OSError, PermissionError, UnsafePathError):

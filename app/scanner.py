@@ -124,7 +124,13 @@ class Scanner:
 
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Valida el nombre del archivo mediante regex para detectar extensiones encadenadas sospechosas."""
+    """
+    Valida el nombre del archivo mediante regex para detectar extensiones encadenadas sospechosas.
+    
+    Args:
+        path: Path del archivo a validar.
+        name: Nombre opcional del archivo (override).
+    """
     target = name or (path.name if path else None)
     if target and DOUBLE_EXTENSION_RE.search(target):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
@@ -132,7 +138,13 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, name
 
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Calcula si el tiempo de modificación del ejecutable es inferior al umbral de frescura definido."""
+    """
+    Calcula si el tiempo de modificación del ejecutable es inferior al umbral de frescura definido.
+    
+    Args:
+        entry: Objeto DirEntry para acceder a metadatos de sistema (st_mtime).
+        now_ts: Timestamp actual de referencia para el cálculo de antigüedad.
+    """
     if entry is None:
         return None
     try:
@@ -145,7 +157,13 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Compara el nombre del ejecutable contra una lista blanca de procesos de sistema para detectar suplantación."""
+    """
+    Compara el nombre del ejecutable contra una lista blanca de procesos de sistema para detectar suplantación.
+    
+    Args:
+        path: Ruta completa del archivo para validar el directorio padre (System32).
+        name: Nombre del archivo para comparar contra la lista de procesos críticos.
+    """
     target = (name or (path.name if path else "")).lower()
     if target in SYSTEM_LOOKALIKES:
         if SYSTEM32_LOWER not in str(path.parent).lower():
