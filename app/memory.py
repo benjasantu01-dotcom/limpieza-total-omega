@@ -286,7 +286,7 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
 
 def _is_system_process(pid: int) -> bool:
     """Verifica si un PID pertenece a servicios críticos protegidos."""
-    return pid in SYSTEM_CRITICAL_PIDS or pid <= 100
+    return pid <= 0 or pid in SYSTEM_CRITICAL_PIDS or pid <= 100
 
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
@@ -341,5 +341,4 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except Exception:
         return False, "Ocurrió un error técnico al gestionar el proceso."
     finally:
-        if proc_handle:
-            kernel32.CloseHandle(proc_handle)
+        kernel32.CloseHandle(proc_handle)

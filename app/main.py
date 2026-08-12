@@ -1236,6 +1236,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         def task() -> None:
+            # Verificación de existencia en tiempo de ejecución
             if not quarantine.item_exists(raw_id):
                 self.log(f"Error: El ID '{raw_id}' no existe en la cuarentena.", "Cuarentena")
                 return
@@ -1330,7 +1331,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         def task() -> None:
-            # Seguridad: verificar existencia en el hilo de ejecución para evitar carrera
+            # Verificación de existencia del proceso en el hilo de ejecución para evitar carrera
             if not memory_mod.process_exists(pid):
                 self.log(f"Error: El proceso {pid} ya no está activo.", "Memoria")
                 return

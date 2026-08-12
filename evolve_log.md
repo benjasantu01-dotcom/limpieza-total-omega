@@ -559,3 +559,10 @@ FAILED evolve/tests/test_basic.py::test_delete_reviewed_only_touches_the_review_
 - `2026-08-12T13:27:02` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
 - `2026-08-12T13:27:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-12T13:27:02` Corrida terminada. Total usado hoy: 316.
+- `2026-08-12T13:35:40` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-12T13:36:07` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `score_disk` y `score_memory` ante configuraciones inválidas o extremas, evitando divisiones por cero o resultados fuera de rango mediante el uso de constantes de seguridad y validación explícita de divisores.
+- `2026-08-12T13:37:11` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Mejoré la robustez de `on_trim_process` y `on_restore_quarantine` mediante el uso de una validación de existencia previa en el hilo de trabajo, evitando errores de carrera donde el proceso o archivo desaparece entre el clic del usuario y la ejecución real.
+- `2026-08-12T13:37:37` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Mejoré la robustez de `trim_working_set` añadiendo una validación explícita para evitar intentar manipular procesos con PIDs negativos o cero, y asegurando el cierre del handle del proceso mediante `kernel32.CloseHandle` dentro de un bloque `finally` incluso ante excepciones inesperadas.
+- `2026-08-12T13:37:44` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-08-12T13:37:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-12T13:37:44` Corrida terminada. Total usado hoy: 320.
