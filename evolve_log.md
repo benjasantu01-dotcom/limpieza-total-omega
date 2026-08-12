@@ -1140,3 +1140,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-12T08:51:27` ➖ Sin cambios en branding.py (enfoque: robustez ante casos límite). Motivo: Se reforzó la robustez de `save_logo_svg` ante rutas mal formadas, archivos bloqueados o falta de permisos mediante una verificación explícita de `is_safe_to_modify` y un manejo de errores más específico, evitando operaciones silenciosas sobre directorios no existentes.
 - `2026-08-12T08:51:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-12T08:51:27` Corrida terminada. Total usado hoy: 208.
+- `2026-08-12T09:00:06` Arrancando corrida. Quedan hoy ~92 peticiones objetivo.
+- `2026-08-12T09:00:31` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-08-12T09:00:56` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: robustez ante casos límite).
+- `2026-08-12T09:01:20` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `suggest_keeper` y `hash_file` frente a archivos que desaparecen o se corrompen durante el proceso de análisis, evitando excepciones inesperadas mediante chequeos de existencia y manejo de errores de estado más granular, alineándose con el enfoque de robustez ante casos límite.
+- `2026-08-12T09:01:31` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Reforcé la robustez del módulo `healthscore.py` ante casos límite en la generación de recomendaciones, evitando accesos a claves inexistentes en el diccionario de `ratios` y asegurando que `_generate_recommendations` maneje correctamente las entradas faltantes o mal formadas.
+- `2026-08-12T09:01:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-12T09:01:31` Corrida terminada. Total usado hoy: 212.

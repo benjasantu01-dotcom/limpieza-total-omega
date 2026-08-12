@@ -207,6 +207,7 @@ def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[
     )
 
     for area_key, threshold, message in check_rules:
+        # Usamos 1.0 como valor por defecto si la métrica no existe para evitar errores
         if ratios.get(area_key, 1.0) < threshold:
             recommendations.append(message)
     
@@ -234,7 +235,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         "arranque": score_startup(metrics.startup_count)
     }
     
-    breakdown = {area: int(round(ratios[area] * factor)) for area, factor in _WEIGHT_ITEMS}
+    breakdown = {area: int(round(ratios.get(area, 0.0) * factor)) for area, factor in _WEIGHT_ITEMS}
     final_score = int(round(_clamp(sum(breakdown.values()), 0.0, 100.0)))
     
     return HealthResult(
