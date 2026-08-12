@@ -36,11 +36,11 @@ __all__ = [
 ]
 
 # --- UMBRALES DE NORMALIZACIÓN (referencias constantes para cálculo) ---
-_LIMIT_JUNK_MB: Final[float] = 5000.0          
-_LIMIT_DUPLICATE_MB: Final[float] = 2000.0     
-_LIMIT_STARTUP_COUNT: Final[int] = 20          
-_LIMIT_RAM_PERCENT: Final[float] = 35.0        
-_LIMIT_DISK_PERCENT: Final[float] = 25.0       
+_LIMIT_JUNK_MB: Final[float] = 5000.0          # Límite superior de basura aceptable antes de score 0
+_LIMIT_DUPLICATE_MB: Final[float] = 2000.0     # Límite superior de duplicados aceptable antes de score 0
+_LIMIT_STARTUP_COUNT: Final[int] = 20          # Cantidad máxima tolerable de procesos al inicio
+_LIMIT_RAM_PERCENT: Final[float] = 35.0        # Porcentaje de RAM libre objetivo
+_LIMIT_DISK_PERCENT: Final[float] = 25.0       # Porcentaje de espacio en disco libre objetivo
 
 # --- UMBRALES DE ADVERTENCIA (ratios de 0.0 a 1.0) ---
 WARN_THRESHOLD_HIGH: Final[float] = 0.9

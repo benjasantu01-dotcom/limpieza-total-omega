@@ -191,7 +191,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._executor = concurrent.futures.ThreadPoolExecutor(max_workers=5)
         self._debounces: Dict[str, str] = {}
         
-    def _debounce_action(self, key: str, delay: int, callback: Callable) -> None:
+    def _debounce_action(self, key: str, delay: int, callback: Callable[[], Any]) -> None:
         """Cancela y reprograma una tarea (debounce) para evitar ejecuciones redundantes."""
         if key in self._debounces:
             try:
@@ -239,7 +239,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         row.pack(fill="x", padx=12, pady=(12, 0))
         return row
 
-    def _action(self, parent: ctk.CTk, text: str, command: Callable, 
+    def _action(self, parent: ctk.CTk, text: str, command: Callable[[], Any], 
                 danger: bool = False, column: int = 0, secondary: bool = False) -> ctk.CTkButton:
         """Crea un botón con colores semánticos (peligro/acción/secundario) según el riesgo."""
         if danger:
@@ -268,7 +268,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         ).pack(fill="x", padx=14, pady=(10, 0))
 
     def _menu(self, parent: ctk.CTk, values: List[str], variable: tk.StringVar, 
-              command: Optional[Callable] = None, width: int = 190) -> ctk.CTkOptionMenu:
+              command: Optional[Callable[[str], Any]] = None, width: int = 190) -> ctk.CTkOptionMenu:
         """Crea menús desplegables integrados con la paleta visual global."""
         return ctk.CTkOptionMenu(
             parent, values=values, variable=variable, command=command, width=width,
@@ -749,7 +749,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """Wrapper de conveniencia para recuperar datos del caché."""
         return self._get_cached(key)
 
-    def _get_cached(self, key: str, provider: Optional[Callable] = None, force: bool = False) -> Any:
+    def _get_cached(self, key: str, provider: Optional[Callable[[], Any]] = None, force: bool = False) -> Any:
         """Gestiona el caché LRU: verifica TTL y delega a un provider si es necesario."""
         now = time.time()
         if not force and key in self._cache:
@@ -771,7 +771,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 logging.error("Error al obtener datos para caché %s: %s", key, e)
         return None
 
-    def _get_cached_or_run(self, key: str, provider: Callable, on_complete: Callable) -> None:
+    def _get_cached_or_run(self, key: str, provider: Callable[[], Any], on_complete: Callable[[Any], None]) -> None:
         """Lógica de persistencia temporal: recupera caché o dispara tarea async."""
         cached = self._get_cached(key)
         if cached is not None:
@@ -863,7 +863,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             logging.exception("Error inesperado en tarea asíncrona: %s", e)
             self.log(f"Error inesperado: {type(e).__name__}", tab)
 
-    def _safe_run(self, fn: Callable, tab: str) -> None:
+    def _safe_run(self, fn: Callable[[], Any], tab: str) -> None:
         """Ejecuta una tarea controlando excepciones para evitar el cierre de la UI."""
         if self._closing: return
         try:
@@ -872,7 +872,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             if not self._closing:
                 self._validate_and_log_error(e, tab)
 
-    def run_async(self, fn: Callable, check_safety: bool = False, target: Optional[str] = None) -> None:
+    def run_async(self, fn: Callable[[], Any], check_safety: bool = False, target: Optional[str] = None) -> None:
         """Envía tarea al pool de hilos y garantiza el manejo de bloqueos y seguridad."""
         if self._closing: return
         

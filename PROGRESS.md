@@ -6,46 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **227** (45.0% de aceptación)
+- Mejoras aceptadas: **230** (45.6% de aceptación)
 - Rechazadas por tests: 8
-- Rechazadas por guardia de seguridad: 32
+- Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 223
+- Sin respuesta de la IA (error o límite): 221
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-11 | 153 | 6 | 21 | 8 | 136 |
-| 2026-08-12 | 74 | 2 | 11 | 6 | 87 |
+| 2026-08-11 | 152 | 6 | 20 | 8 | 134 |
+| 2026-08-12 | 78 | 2 | 11 | 6 | 87 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **52**
+- legibilidad y documentación: **56**
 - manejo de errores y validación de entradas: **48**
 - robustez ante casos límite: **44**
 - seguridad defensiva: **44**
-- rendimiento: **39**
+- rendimiento: **38**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **21**
 - `branding.py`: **21**
-- `settings.py`: **20**
+- `healthscore.py`: **20**
 - `diskreport.py`: **20**
 - `quarantine.py`: **20**
-- `healthscore.py`: **19**
+- `settings.py`: **19**
 - `browser.py`: **18**
 - `scanner.py`: **18**
-- `memory.py`: **15**
-- `duplicates.py`: **15**
+- `memory.py`: **16**
+- `duplicates.py`: **16**
+- `main.py`: **13**
 - `startup.py`: **12**
-- `main.py`: **12**
 - `organizer.py`: **11**
 - `safety.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-12T07:50:25` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings estructurados en funciones críticas, la clarificación de tipos en `trim_working_set` para prevenir errores de contexto, y la adición de una breve explicación sobre la lógica de selección de procesos, manteniendo la integridad del código.
+- `2026-08-12T07:50:15` **main.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en los métodos de construcción de la interfaz y gestión de estados, mejorando la legibilidad técnica y facilitando el mantenimiento para futuros colaboradores sin alterar el comportamiento de la aplicación.
+- `2026-08-12T07:49:11` **healthscore.py** (legibilidad y documentación): Mejora la legibilidad y mantenimiento añadiendo Type Hints faltantes en los parámetros de las funciones de scoring y documentando con docstrings el propósito de los umbrales constantes para clarificar la lógica de negocio.
+- `2026-08-12T07:48:45` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `duplicates.py` mediante docstrings detallados en las funciones internas y utilitarias, clarificando las precondiciones y el manejo de excepciones para facilitar el mantenimiento y la auditoría de seguridad.
 - `2026-08-12T07:39:53` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `diskreport.py` añadiendo docstrings detallados con tipos, parámetros y lógica de retorno en las funciones clave para cumplir con el enfoque de legibilidad, asegurando que cada componente exponga claramente su propósito sin cambios funcionales.
 - `2026-08-12T07:39:42` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados (con secciones `Args` y `Returns`) en las funciones críticas de escaneo y validación, clarificando el propósito, el manejo de excepciones y las restricciones de seguridad.
 - `2026-08-12T07:39:16` **branding.py** (legibilidad y documentación): Se introdujeron docstrings explicativos y se mejoró la precisión del tipado en funciones de dibujo y utilidades de color para clarificar el flujo de datos geométricos y cromáticos.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-12T07:18:32` **organizer.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `stage_for_review` ante entradas inválidas o nulas, sustituyendo el `raise ValueError` (que interrumpiría el flujo de la UI) por una validación defensiva que retorna silenciosamente, y se añadieron chequeos de tipo explícitos para prevenir excepciones por tipos de datos inesperados en los parámetros.
 - `2026-08-12T07:18:08` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` añadiendo validaciones preventivas sobre el handle del proceso y el entorno de ejecución, evitando errores de puntero nulo y asegurando que las llamadas a la API de Windows se gestionen de manera segura tras la apertura del handle.
 - `2026-08-12T07:09:31` **main.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_ask_folder` al incorporar un manejo más estricto de rutas de entrada (invalidación de caracteres no imprimibles y normalización) junto con una validación explícita de `exists()` antes de invocar los chequeos de `safety.py`, evitando así excepciones no controladas en rutas inexistentes o mal formadas seleccionadas por el usuario.
-- `2026-08-12T07:08:44` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_generate_recommendations` mediante la validación proactiva de claves en el diccionario `ratios` y la sanitización de los valores numéricos inyectados en las cadenas de texto para evitar fallos de formato si los datos de las métricas llegaran a ser atípicos o no numéricos.
-- `2026-08-12T07:07:56` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `summarize` y `walk_files` implementando validaciones de entrada más estrictas y capturando excepciones específicas en las operaciones de `Path` para evitar bloqueos por rutas mal formadas o inaccesibles, alineándome con el enfoque de manejo de errores y validación.
-- `2026-08-12T06:59:28` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y `_hex_to_rgb` reemplazando chequeos implícitos por validaciones explícitas de entrada, asegurando que ante valores mal formados o rutas inválidas la función retorne un valor predeterminado seguro en lugar de propagar excepciones o comportamientos inesperados.
-- `2026-08-12T06:58:57` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `build_context` implementando una validación de tipos más estricta mediante `isinstance` para evitar que objetos inesperados o malformados inyecten atributos ajenos al `SystemContext` durante la fase de carga.
