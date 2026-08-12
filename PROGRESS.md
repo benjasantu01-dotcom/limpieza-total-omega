@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **222** (44.0% de aceptación)
-- Rechazadas por tests: 10
-- Rechazadas por guardia de seguridad: 34
+- Mejoras aceptadas: **223** (44.2% de aceptación)
+- Rechazadas por tests: 9
+- Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 223
+- Sin respuesta de la IA (error o límite): 224
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-11 | 161 | 8 | 24 | 9 | 138 |
-| 2026-08-12 | 61 | 2 | 10 | 6 | 85 |
+| 2026-08-11 | 159 | 7 | 23 | 9 | 138 |
+| 2026-08-12 | 64 | 2 | 10 | 6 | 86 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **52**
+- legibilidad y documentación: **50**
 - robustez ante casos límite: **44**
 - seguridad defensiva: **44**
 - rendimiento: **43**
-- manejo de errores y validación de entradas: **39**
+- manejo de errores y validación de entradas: **42**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **21**
 - `assistant.py`: **21**
 - `branding.py`: **21**
 - `settings.py`: **20**
-- `healthscore.py`: **18**
-- `diskreport.py`: **18**
+- `quarantine.py`: **20**
+- `healthscore.py`: **19**
+- `diskreport.py`: **19**
 - `browser.py`: **17**
 - `scanner.py`: **17**
 - `duplicates.py`: **16**
 - `memory.py`: **14**
 - `startup.py`: **12**
-- `main.py`: **11**
+- `main.py`: **12**
 - `organizer.py`: **10**
-- `safety.py`: **6**
+- `safety.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-12T07:09:31` **main.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_ask_folder` al incorporar un manejo más estricto de rutas de entrada (invalidación de caracteres no imprimibles y normalización) junto con una validación explícita de `exists()` antes de invocar los chequeos de `safety.py`, evitando así excepciones no controladas en rutas inexistentes o mal formadas seleccionadas por el usuario.
+- `2026-08-12T07:08:44` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_generate_recommendations` mediante la validación proactiva de claves en el diccionario `ratios` y la sanitización de los valores numéricos inyectados en las cadenas de texto para evitar fallos de formato si los datos de las métricas llegaran a ser atípicos o no numéricos.
+- `2026-08-12T07:07:56` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `summarize` y `walk_files` implementando validaciones de entrada más estrictas y capturando excepciones específicas en las operaciones de `Path` para evitar bloqueos por rutas mal formadas o inaccesibles, alineándome con el enfoque de manejo de errores y validación.
 - `2026-08-12T06:59:28` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y `_hex_to_rgb` reemplazando chequeos implícitos por validaciones explícitas de entrada, asegurando que ante valores mal formados o rutas inválidas la función retorne un valor predeterminado seguro en lugar de propagar excepciones o comportamientos inesperados.
 - `2026-08-12T06:58:57` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `build_context` implementando una validación de tipos más estricta mediante `isinstance` para evitar que objetos inesperados o malformados inyecten atributos ajenos al `SystemContext` durante la fase de carga.
 - `2026-08-12T05:36:42` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save()` aplicando una validación de ruta estricta usando `is_safe_to_modify` sobre el archivo final antes de la escritura, previniendo que una configuración manipulada intente sobrescribir archivos protegidos del sistema.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-12T05:05:44` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_ensure_safe_text` y `ask` integrando `is_protected_path` como una barrera de denegación anticipada antes de cualquier procesamiento de texto, evitando que rutas del sistema sean inadvertidamente filtradas por regex en lugar de ser rechazadas explícitamente.
 - `2026-08-12T04:56:15` **settings.py** (robustez ante casos límite): Se reforzó la robustez del manejo de archivos de configuración ante accesos concurrentes o estados de red inestables implementando una lectura segura que verifica la integridad mediante un archivo temporal previo a la carga, evitando así la lectura de archivos parcialmente escritos o corruptos por bloqueos del sistema.
 - `2026-08-12T04:55:46` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez de `process_entry` ante archivos bloqueados o inaccesibles añadiendo una verificación explícita mediante `entry.is_symlink()` para ignorar enlaces simbólicos rotos que `os.scandir` podría reportar erróneamente como archivos válidos, evitando excepciones innecesarias en `entry.stat()`.
-- `2026-08-12T04:46:08` **quarantine.py** (robustez ante casos límite): Se mejoró la robustez de `quarantine_file` añadiendo una verificación de existencia previa del archivo de destino (colisión) antes de iniciar la copia, y asegurando que las operaciones de limpieza en caso de fallo parcial sean más granulares y seguras.
-- `2026-08-12T04:45:04` **memory.py** (robustez ante casos límite): Se mejora la robustez de `trim_working_set` añadiendo una verificación explícita de `EmptyWorkingSet` en `psapi` antes de su uso y manejando adecuadamente la posible ausencia de la función en versiones antiguas o entornos restringidos de Windows, evitando cierres inesperados de la aplicación.
-- `2026-08-12T04:35:45` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `compute_score` asegurando que el cálculo de `ratios` sea siempre consistente ante valores de umbrales mal definidos (ej: cero o negativos), protegiendo contra posibles divisiones por cero o resultados no finitos en los módulos de puntuación.

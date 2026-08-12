@@ -1035,3 +1035,10 @@ FAILED evolve/tests/test_modules.py::test_a_healthy_system_still_gets_a_recommen
 - `2026-08-12T06:59:37` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
 - `2026-08-12T06:59:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-12T06:59:37` Corrida terminada. Total usado hoy: 164.
+- `2026-08-12T07:07:29` Arrancando corrida. Quedan hoy ~136 peticiones objetivo.
+- `2026-08-12T07:07:56` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `summarize` y `walk_files` implementando validaciones de entrada más estrictas y capturando excepciones específicas en las operaciones de `Path` para evitar bloqueos por rutas mal formadas o inaccesibles, alineándome con el enfoque de manejo de errores y validación.
+- `2026-08-12T07:08:19` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-12T07:08:44` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_generate_recommendations` mediante la validación proactiva de claves en el diccionario `ratios` y la sanitización de los valores numéricos inyectados en las cadenas de texto para evitar fallos de formato si los datos de las métricas llegaran a ser atípicos o no numéricos.
+- `2026-08-12T07:09:31` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_ask_folder` al incorporar un manejo más estricto de rutas de entrada (invalidación de caracteres no imprimibles y normalización) junto con una validación explícita de `exists()` antes de invocar los chequeos de `safety.py`, evitando así excepciones no controladas en rutas inexistentes o mal formadas seleccionadas por el usuario.
+- `2026-08-12T07:09:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-12T07:09:31` Corrida terminada. Total usado hoy: 168.

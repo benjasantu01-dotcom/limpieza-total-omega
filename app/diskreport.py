@@ -213,7 +213,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
             return
         if skip_protected and is_protected_path(root):
             return
-    except (OSError, RuntimeError, TypeError):
+    except (OSError, RuntimeError, TypeError, ValueError):
         return
 
     visited_inodes: set[Tuple[int, int]] = set()
@@ -312,7 +312,7 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
 
         results: List[FolderUsage] = [FolderUsage(p, sums[p], counts[p]) for p in sums]
         return heapq.nlargest(limit, results, key=lambda f: f.size_bytes)
-    except (OSError, RuntimeError, TypeError):
+    except (OSError, RuntimeError, TypeError, ValueError):
         return []
 
 
@@ -336,7 +336,7 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
         path_obj = Path(directory).expanduser().resolve(strict=False)
         if not path_obj.exists() or not path_obj.is_dir(): 
             return [f"Error: Ruta no encontrada o no es directorio: {path_obj}"]
-    except (OSError, TypeError, RuntimeError):
+    except (OSError, TypeError, RuntimeError, ValueError):
         return ["Error: Ruta inválida o inaccesible."]
         
     ext_data: Dict[str, List[int]] = defaultdict(lambda: [0, 0])

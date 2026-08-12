@@ -197,22 +197,22 @@ def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[
         return ["Error: datos de entrada inválidos para recomendaciones."]
         
     recommendations: List[str] = []
+    # Usamos valores sanitizados y verificados para prevenir excepciones en el formato
     check_rules = (
-        ("seguridad", WARN_THRESHOLD_HIGH, f"Revisá los {int(metrics.suspicious_count)} hallazgo(s) de seguridad."),
-        ("disco", WARN_THRESHOLD_LOW, f"Queda {float(metrics.disk_free_percent):.1f}% de disco libre."),
+        ("seguridad", WARN_THRESHOLD_HIGH, f"Revisá los {_to_int(metrics.suspicious_count)} hallazgo(s) de seguridad."),
+        ("disco", WARN_THRESHOLD_LOW, f"Queda {_to_float(metrics.disk_free_percent):.1f}% de disco libre."),
         ("memoria", WARN_THRESHOLD_LOW, "Memoria disponible baja: cerrá procesos innecesarios."),
-        ("basura", WARN_THRESHOLD_MED, f"Hay {int(metrics.junk_mb)} MB de archivos temporales."),
-        ("duplicados", WARN_THRESHOLD_MED, f"Podrías recuperar {int(metrics.duplicate_mb)} MB eliminando duplicados."),
-        ("arranque", WARN_THRESHOLD_LOW, f"{int(metrics.startup_count)} programas arrancan con Windows."),
+        ("basura", WARN_THRESHOLD_MED, f"Hay {_to_int(metrics.junk_mb)} MB de archivos temporales."),
+        ("duplicados", WARN_THRESHOLD_MED, f"Podrías recuperar {_to_int(metrics.duplicate_mb)} MB eliminando duplicados."),
+        ("arranque", WARN_THRESHOLD_LOW, f"{_to_int(metrics.startup_count)} programas arrancan con Windows."),
     )
 
     for area_key, threshold, message in check_rules:
-        current_ratio = ratios.get(area_key, 0.0)
-        if current_ratio < threshold:
+        if area_key in ratios and ratios[area_key] < threshold:
             recommendations.append(message)
     
     if metrics.quarantined_count > 0:
-        recommendations.append(f"Tenés {int(metrics.quarantined_count)} archivo(s) en cuarentena.")
+        recommendations.append(f"Tenés {_to_int(metrics.quarantined_count)} archivo(s) en cuarentena.")
     
     return recommendations if recommendations else ["No hay nada urgente para hacer. El sistema está en buen estado."]
 

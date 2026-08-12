@@ -915,19 +915,19 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         if not folder or not isinstance(folder, str):
             return None
         
-        # Limpieza básica de la ruta
+        # Limpieza básica de la ruta y normalización estricta
         norm_folder = "".join(c for c in os.path.normpath(folder) if ord(c) >= 32 and c != '\u202e')
         
         try:
             p = Path(norm_folder)
             if not p.exists():
                 return None
-            p = p.resolve()
+            p = p.resolve(strict=True)
             if safety.is_protected_path(p):
                 messagebox.showwarning("Ruta no segura", "Esa ruta está protegida por el sistema.")
                 return None
             safety.ensure_safe_to_modify(p)
-        except (safety.UnsafePathError, OSError):
+        except (safety.UnsafePathError, OSError, PermissionError):
             messagebox.showwarning("Ruta no segura", "Operación no permitida en esta ruta.")
             return None
             
