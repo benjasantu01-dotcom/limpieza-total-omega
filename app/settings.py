@@ -270,10 +270,11 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     if cleaned_settings.get("asistente_activado") and not (cleaned_settings.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)):
         cleaned_settings["asistente_activado"] = False
     if _cached_settings == cleaned_settings and _current_path == ruta: return ruta
+    
+    temp = ruta.with_suffix(".tmp")
     try:
         if not ruta.parent.exists(): ruta.parent.mkdir(parents=True, exist_ok=True)
         if not os.access(ruta.parent, os.W_OK): return None
-        temp = ruta.with_suffix(".tmp")
         with open(temp, "w", encoding="utf-8") as f:
             f.write(json_data)
             f.flush()
@@ -283,10 +284,11 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
         _last_mtime = ruta.stat().st_mtime
         return ruta
     except (OSError, IOError, PermissionError, RuntimeError):
-        if 'temp' in locals():
-            try: os.remove(temp)
-            except OSError: pass
         return None
+    finally:
+        if temp.exists():
+            try: temp.unlink()
+            except OSError: pass
 
 def update(changes: dict[str, Any], path_or_base: PathLike | None = None) -> AppSettings:
     """Actualiza solo claves específicas en el archivo de configuración."""

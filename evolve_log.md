@@ -433,3 +433,10 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-08-12T11:45:36` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `quarantine_file` agregando una validación explícita para asegurar que la ruta de origen no sea igual al destino (evitando auto-aniquilación) y centralizando el manejo de errores mediante el chequeo de la existencia del archivo en el sistema de archivos antes de cualquier operación destructiva.
 - `2026-08-12T11:45:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-12T11:45:36` Corrida terminada. Total usado hoy: 276.
+- `2026-08-12T11:53:44` Arrancando corrida. Quedan hoy ~24 peticiones objetivo.
+- `2026-08-12T11:54:07` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-08-12T11:54:32` ➖ Sin cambios en safety.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré `_check_file_integrity` encapsulando la llamada a `_is_reparse_point` dentro de un bloque `try-except` para evitar que fallos inesperados de acceso a atributos de archivo detengan la validación completa.
+- `2026-08-12T11:55:02` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-12T11:55:15` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `settings.save` añadiendo un bloque `try-finally` para asegurar que el archivo temporal sea eliminado incluso si ocurre un error inesperado (como un fallo en `os.fsync`) durante la escritura, evitando archivos basura.
+- `2026-08-12T11:55:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-12T11:55:15` Corrida terminada. Total usado hoy: 280.
