@@ -6,34 +6,34 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **235** (46.6% de aceptación)
+- Mejoras aceptadas: **236** (46.8% de aceptación)
 - Rechazadas por tests: 9
-- Rechazadas por guardia de seguridad: 31
+- Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 213
+- Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-10 | 62 | 1 | 7 | 6 | 74 |
+| 2026-08-10 | 62 | 1 | 7 | 6 | 70 |
 | 2026-08-11 | 170 | 8 | 24 | 10 | 138 |
-| 2026-08-12 | 3 | 0 | 0 | 0 | 1 |
+| 2026-08-12 | 4 | 0 | 1 | 0 | 3 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **60**
 - manejo de errores y validación de entradas: **51**
 - rendimiento: **45**
-- robustez ante casos límite: **44**
+- robustez ante casos límite: **45**
 - seguridad defensiva: **35**
 
 ## Mejoras aceptadas por archivo
 
+- `quarantine.py`: **21**
 - `assistant.py`: **20**
 - `diskreport.py`: **20**
 - `duplicates.py`: **20**
-- `quarantine.py`: **20**
 - `branding.py`: **20**
 - `healthscore.py`: **19**
 - `settings.py`: **19**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-12T00:20:20` **quarantine.py** (robustez ante casos límite): Mejoré la resiliencia ante errores de concurrencia y permisos en el bucle de purga (`purge_all`) implementando un manejo robusto de excepciones por archivo, asegurando que un fallo de E/S en un ítem individual no interrumpa el procesamiento del resto del lote.
 - `2026-08-12T00:11:32` **main.py** (robustez ante casos límite): Se mejora la robustez del componente de entrada `_ask_folder` añadiendo una validación explícita mediante `pathlib.Path.exists()` previa a la resolución de la ruta y se encapsula el acceso a `self.scan_target` dentro de `run_async` para evitar condiciones de carrera donde el objetivo podría invalidarse entre la selección del usuario y el inicio real de la tarea.
 - `2026-08-12T00:10:26` **healthscore.py** (robustez ante casos límite): Reforcé la robustez del módulo `healthscore.py` ante datos de entrada corruptos o extremos (ej. divisiones por cero si los umbrales configurables llegan a cero o valores infinitos/NaN) mediante la implementación de chequeos explícitos y preventivos en las funciones de cálculo, asegurando que la app nunca falle al procesar métricas inusuales.
 - `2026-08-12T00:09:37` **duplicates.py** (robustez ante casos límite): Se ha mejorado `hash_file` y `partial_hash` para gestionar correctamente los casos límite de archivos bloqueados por el sistema operativo, utilizando un bloque `try-except` más específico y validando la existencia tras la apertura, asegurando que la app no aborte ante procesos que bloquean el acceso a archivos temporales.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-11T14:34:44` **organizer.py** (rendimiento): Optimicé el rendimiento de `scan_for_junk` sustituyendo el uso repetido de `os.path.expandvars` y `resolve()` dentro de los bucles por un pre-filtrado de rutas únicas mediante un `set`, evitando el procesamiento redundante de directorios duplicados en la lista de escaneo.
 - `2026-08-11T14:34:03` **main.py** (rendimiento): Optimicé el método `_flush_logs` para evitar múltiples llamadas a `insert` y `see` en la interfaz gráfica, acumulando los mensajes en un solo string por pestaña y actualizando el widget una única vez por cada ejecución, reduciendo drásticamente el consumo de CPU durante operaciones con logueo masivo.
 - `2026-08-11T14:22:40` **duplicates.py** (rendimiento): Optimizé la función `partial_hash` para evitar el uso innecesario de `Path.resolve()` —que implica consultas al sistema de archivos adicionales—, utilizando la ruta ya normalizada por `_collect_candidates` y reduciendo el overhead de llamadas al sistema en el bucle principal de comparación.
-- `2026-08-11T14:22:30` **diskreport.py** (rendimiento): Optimicé el rendimiento de `summarize` reemplazando la creación y gestión de estructuras de datos intermedias por un contador unificado durante el recorrido del árbol, y mejoré la eficiencia de `walk_files` evitando la creación innecesaria de objetos `Path` mediante el uso de strings directos en las comparaciones de seguridad y el filtrado.
