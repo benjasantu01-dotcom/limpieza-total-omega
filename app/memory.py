@@ -173,16 +173,20 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
             parts = [p.strip().strip("'\"") for p in line.split(",")]
             if len(parts) >= 3:
                 try:
-                    # Buscamos PID y WorkingSet al final para mayor resiliencia
                     ws = int(parts[-1])
                     pid = int(parts[-2])
+                    if ws < 0 or pid < 0:
+                        continue
                     name = ",".join(parts[:-2])
                     yield ProcessMemory(name or "Unknown", pid, ws)
                 except (ValueError, TypeError):
                     continue
 
-    processes = sorted(process_lines(), key=lambda p: p.working_set, reverse=True)
-    return processes[:limit]
+    try:
+        processes = sorted(process_lines(), key=lambda p: p.working_set, reverse=True)
+        return processes[:limit]
+    except Exception:
+        return []
 
 
 def _read_windows_snapshot() -> MemorySnapshot:

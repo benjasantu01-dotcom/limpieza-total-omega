@@ -282,15 +282,21 @@ def quarantine_file(
     if not source:
         raise ValueError("La ruta de origen no puede estar vacía.")
     source_path = Path(source).resolve()
-    if not source_path.is_file():
+    if not source_path.exists() or not source_path.is_file():
         raise FileNotFoundError(f"Archivo no encontrado: {source_path}")
+    
     ensure_safe_to_modify(source_path, allow_sensitive=True)
     if str(source_path).startswith(("\\\\", "//")):
         raise UnsafePathError("No se permite cuarentena en recursos compartidos de red.")
+    
     dest_dir = quarantine_dir(base)
+    if dest_dir == source_path.parent:
+        raise UnsafePathError("Operación denegada: el archivo ya está en el destino.")
+        
     _validate_isolation_request(source_path, dest_dir)
     if not os.access(dest_dir, os.W_OK):
         raise PermissionError("Sin permisos de escritura en la carpeta de cuarentena.")
+    
     file_size = source_path.stat().st_size
     usage = shutil.disk_usage(dest_dir)
     if usage.free < (file_size * 1.05):
