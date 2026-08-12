@@ -6,34 +6,34 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **226** (44.8% de aceptación)
+- Mejoras aceptadas: **227** (45.0% de aceptación)
 - Rechazadas por tests: 7
-- Rechazadas por guardia de seguridad: 32
+- Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 224
+- Sin respuesta de la IA (error o límite): 222
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-11 | 86 | 1 | 10 | 4 | 83 |
-| 2026-08-12 | 140 | 6 | 22 | 11 | 141 |
+| 2026-08-11 | 86 | 1 | 10 | 4 | 79 |
+| 2026-08-12 | 141 | 6 | 23 | 11 | 143 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **61**
 - manejo de errores y validación de entradas: **50**
 - rendimiento: **42**
+- robustez ante casos límite: **37**
 - seguridad defensiva: **37**
-- robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `branding.py`: **22**
 - `healthscore.py`: **22**
 - `settings.py`: **22**
+- `quarantine.py`: **21**
 - `assistant.py`: **20**
-- `quarantine.py`: **20**
 - `diskreport.py`: **18**
 - `browser.py`: **16**
 - `memory.py`: **16**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-12T13:46:23` **quarantine.py** (robustez ante casos límite): Se reforzó la robustez de `purge_all` ante archivos bloqueados o inconsistentes y se añadió una verificación de integridad en `quarantine_file` para evitar la pérdida de datos si el archivo original cambia durante el proceso de copia.
 - `2026-08-12T13:37:37` **memory.py** (robustez ante casos límite): Mejoré la robustez de `trim_working_set` añadiendo una validación explícita para evitar intentar manipular procesos con PIDs negativos o cero, y asegurando el cierre del handle del proceso mediante `kernel32.CloseHandle` dentro de un bloque `finally` incluso ante excepciones inesperadas.
 - `2026-08-12T13:37:11` **main.py** (robustez ante casos límite): Mejoré la robustez de `on_trim_process` y `on_restore_quarantine` mediante el uso de una validación de existencia previa en el hilo de trabajo, evitando errores de carrera donde el proceso o archivo desaparece entre el clic del usuario y la ejecución real.
 - `2026-08-12T13:36:07` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `score_disk` y `score_memory` ante configuraciones inválidas o extremas, evitando divisiones por cero o resultados fuera de rango mediante el uso de constantes de seguridad y validación explícita de divisores.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-12T12:35:53` **startup.py** (legibilidad y documentación): Mejoré la documentación interna y la claridad del flujo de `StartupEntry` añadiendo type hints más precisos y clarificando las docstrings de las técnicas de resolución perezosa para evitar confusiones sobre la persistencia en caché.
 - `2026-08-12T12:35:43` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna y mantenibilidad agregando docstrings descriptivos a los métodos del validador y refinando la estructura de las constantes, facilitando la comprensión de las restricciones de seguridad sin alterar la lógica de validación existente.
 - `2026-08-12T12:34:53` **safety.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `ensure_safe_to_modify` para delegar sus validaciones en una serie de pequeñas funciones privadas con nombres descriptivos, eliminando la complejidad ciclomática de la función principal.
-- `2026-08-12T12:25:38` **quarantine.py** (legibilidad y documentación): Se mejoró la legibilidad y mantenibilidad del archivo documentando las precondiciones de seguridad en las funciones críticas y extrayendo la lógica de validación de rutas dentro de `purge_all` para reducir el anidamiento y clarificar la intención de cada bloque.

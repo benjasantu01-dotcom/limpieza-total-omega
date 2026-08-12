@@ -313,9 +313,11 @@ def quarantine_file(
     temp_dest = dest_dir / f"{item_id}_{os.getpid()}.tmp"
     try:
         shutil.copy2(source_path, temp_dest)
+        if temp_dest.stat().st_size != file_size:
+            raise RuntimeError("Corrupción durante copia: tamaño mismatch.")
         file_hash = _get_sha256(temp_dest)
-        if not file_hash or temp_dest.stat().st_size != file_size:
-            raise RuntimeError("Falla de integridad: el archivo en sandbox no coincide con el original.")
+        if not file_hash:
+            raise RuntimeError("Falla de integridad: no se pudo calcular hash.")
         os.replace(temp_dest, destination)
         os.remove(source_path)
     except (OSError, PermissionError) as e:
@@ -410,7 +412,6 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
 def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     """Vacía la cuarentena eliminando archivos, manteniendo la integridad del manifiesto."""
     def _is_safe_to_purge(entry: Path, root: Path) -> bool:
-        """Helper local para centralizar validaciones antes del borrado."""
         if entry is None or entry.name == MANIFEST_NAME or not entry.is_file() or entry.is_symlink():
             return False
         return _is_valid_quarantine_path(entry.resolve(), root)
@@ -431,19 +432,18 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
             continue
 
         try:
-            # Si el archivo está en el manifiesto, verificar integridad antes de borrar
             if entry.name in items_in_manifest:
                 item = item_map[entry.name]
-                if item.verify_integrity(entry):
+                if item.verify_integrity(entry) and not _is_file_locked(entry):
                     ensure_safe_to_modify(entry, allow_sensitive=False)
                     if _safe_unlink(entry):
                         purged_count += 1
                         continue
                 items_to_keep.append(item)
             else:
-                # Limpiar huérfanos solo si pasan validación de seguridad (prevención de borrado accidental)
-                ensure_safe_to_modify(entry, allow_sensitive=False)
-                _safe_unlink(entry)
+                if not _is_file_locked(entry):
+                    ensure_safe_to_modify(entry, allow_sensitive=False)
+                    _safe_unlink(entry)
         except (OSError, PermissionError, UnsafePathError):
             if entry.name in items_in_manifest:
                 item = item_map.get(entry.name)

@@ -566,3 +566,10 @@ FAILED evolve/tests/test_basic.py::test_delete_reviewed_only_touches_the_review_
 - `2026-08-12T13:37:44` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
 - `2026-08-12T13:37:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-12T13:37:44` Corrida terminada. Total usado hoy: 320.
+- `2026-08-12T13:45:50` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-12T13:46:23` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `purge_all` ante archivos bloqueados o inconsistentes y se añadió una verificación de integridad en `quarantine_file` para evitar la pérdida de datos si el archivo original cambia durante el proceso de copia.
+- `2026-08-12T13:46:41` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-12T13:47:06` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
+- `2026-08-12T13:47:14` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-08-12T13:47:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-12T13:47:14` Corrida terminada. Total usado hoy: 324.
