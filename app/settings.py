@@ -74,7 +74,7 @@ _cached_settings: AppSettings | None = None
 _current_path: Path | None = None
 _last_mtime: float = -1.0
 _path_cache: dict[str, Path] = {}
-_val_cache: dict[str, str | None] = {}
+_val_cache: dict[tuple[str, Any], Any] = {}
 
 DEFAULTS: Final[AppSettings] = {
     "tema": "oscuro",
@@ -123,22 +123,30 @@ class _Validators:
     @staticmethod
     def bool(key: str, val: Any) -> bool | None:
         """Normaliza tipos mixtos (string/int/bool) a booleano, o None si es inválido."""
+        cache_key = (key, val)
+        if cache_key in _val_cache: return _val_cache[cache_key]
+        
         if val is None: return None
         if isinstance(val, bool): return val
         if not isinstance(val, str): return None
         normalized = val.strip().lower()
-        if normalized in ("1", "true", "si", "sí", "yes"): return True
-        if normalized in ("0", "false", "no", "none"): return False
-        return None
+        res = True if normalized in ("1", "true", "si", "sí", "yes") else (False if normalized in ("0", "false", "no", "none") else None)
+        _val_cache[cache_key] = res
+        return res
 
     @staticmethod
     def int(key: str, val: Any) -> int | None:
         """Parsea a entero y aplica límites definidos en _NUMERIC_LIMITS."""
+        cache_key = (key, val)
+        if cache_key in _val_cache: return _val_cache[cache_key]
+        
         if val is None or isinstance(val, bool): return None
         try:
             parsed_value = int(val)
             min_limit, max_limit = _NUMERIC_LIMITS.get(key, (0, 10**9))
-            return max(min_limit, min(max_limit, parsed_value))
+            res = max(min_limit, min(max_limit, parsed_value))
+            _val_cache[cache_key] = res
+            return res
         except (TypeError, ValueError, OverflowError): 
             return None
 
@@ -148,18 +156,20 @@ class _Validators:
         if val is None or not isinstance(val, (str, Path)): return None
         path_string = str(val).strip()
         if not path_string: return ""
-        if path_string in _val_cache: return _val_cache[path_string]
+        
+        cache_key = ("path_str", path_string)
+        if cache_key in _val_cache: return _val_cache[cache_key]
         
         try:
             path_obj = Path(path_string).expanduser()
             if _Validators._is_safe_path(path_obj):
                 res = str(path_obj.absolute())
-                _val_cache[path_string] = res
+                _val_cache[cache_key] = res
                 return res
-            _val_cache[path_string] = None
+            _val_cache[cache_key] = None
             return None
         except (OSError, RuntimeError, ValueError, TypeError, PermissionError, AttributeError):
-            _val_cache[path_string] = None
+            _val_cache[cache_key] = None
             return None
 
     @staticmethod
@@ -171,9 +181,16 @@ class _Validators:
         
         if key == "ultima_carpeta": return _Validators.path(text)
         if not text: return "" if key == "asistente_clave_api" else None
-        if key == "tema": return text.lower() if text.lower() in VALID_THEMES else None
-        if key == "acento": return text.lower() if text.lower() in VALID_ACCENTS else None
-        return text if len(text) <= 512 else None
+        
+        cache_key = (key, text)
+        if cache_key in _val_cache: return _val_cache[cache_key]
+        
+        if key == "tema": res = text.lower() if text.lower() in VALID_THEMES else None
+        elif key == "acento": res = text.lower() if text.lower() in VALID_ACCENTS else None
+        else: res = text if len(text) <= 512 else None
+        
+        _val_cache[cache_key] = res
+        return res
 
 _VALIDATOR_MAP: Final[dict[str, Callable[[str, Any], Any]]] = {
     "tema": _Validators.str,

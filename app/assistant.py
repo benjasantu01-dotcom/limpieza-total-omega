@@ -276,8 +276,11 @@ def context_as_text(context: SystemContext) -> str:
     if not isinstance(context, SystemContext) or not context.analyzed:
         return "No hay métricas disponibles todavía."
     try:
+        # Sanitización agresiva de inputs dentro del objeto para evitar errores de formato
+        score_val = _fmt_metric(context.score)
+        grade_val = str(context.grade)[:5] if isinstance(context.grade, str) else ""
         lines = (
-            f"Puntaje de salud: {_fmt_metric(context.score)}{f' nota {context.grade}' if context.grade else ''}",
+            f"Puntaje de salud: {score_val}{f' nota {grade_val}' if grade_val else ''}",
             f"Basura: {_fmt_metric(context.junk_mb, ' MB')}",
             f"Sospechosos: {context.suspicious_count}",
             f"RAM disponible: {_fmt_metric(context.memory_available_percent, ' percent')}",

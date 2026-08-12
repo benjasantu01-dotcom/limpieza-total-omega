@@ -1133,3 +1133,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-12T08:40:48` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: rendimiento).
 - `2026-08-12T08:40:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-12T08:40:48` Corrida terminada. Total usado hoy: 204.
+- `2026-08-12T08:49:46` Arrancando corrida. Quedan hoy ~96 peticiones objetivo.
+- `2026-08-12T08:50:14` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se implementó un mecanismo de caché en memoria para los validadores de configuración para evitar la re-validación costosa y recursiva de tipos básicos en llamadas frecuentes a `get` y `load`.
+- `2026-08-12T08:50:38` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-08-12T08:51:12` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejora la robustez ante datos corruptos o inesperados en `SystemContext` dentro de `context_as_text`, asegurando que la serialización sea siempre segura y no propague errores hacia el asistente.
+- `2026-08-12T08:51:27` ➖ Sin cambios en branding.py (enfoque: robustez ante casos límite). Motivo: Se reforzó la robustez de `save_logo_svg` ante rutas mal formadas, archivos bloqueados o falta de permisos mediante una verificación explícita de `is_safe_to_modify` y un manejo de errores más específico, evitando operaciones silenciosas sobre directorios no existentes.
+- `2026-08-12T08:51:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-12T08:51:27` Corrida terminada. Total usado hoy: 208.
