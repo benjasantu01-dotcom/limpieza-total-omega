@@ -74,6 +74,7 @@ _cached_settings: AppSettings | None = None
 _current_path: Path | None = None
 _last_mtime: float = -1.0
 _path_cache: dict[str, Path] = {}
+_val_cache: dict[str, str | None] = {}
 
 DEFAULTS: Final[AppSettings] = {
     "tema": "oscuro",
@@ -105,10 +106,6 @@ class _Validators:
     
     @staticmethod
     def _is_safe_path(path_obj: Path) -> bool:
-        """
-        Verifica restricciones de seguridad para rutas configurables por el usuario.
-        Evita travesía de directorios, enlaces simbólicos/junctions y rutas protegidas.
-        """
         if not path_obj.is_absolute(): return False
         if len(path_obj.parts) < 2: return False
         if any(part in ('.', '..', '..\\', '../') for part in path_obj.parts): return False
@@ -124,10 +121,6 @@ class _Validators:
 
     @staticmethod
     def bool(key: str, val: Any) -> bool | None:
-        """
-        Convierte entradas laxas (ej. "si", 1, True) a booleanos estrictos.
-        Retorna None si la entrada no representa un booleano válido.
-        """
         if val is None: return None
         if isinstance(val, bool): return val
         if not isinstance(val, str): return None
@@ -138,10 +131,6 @@ class _Validators:
 
     @staticmethod
     def int(key: str, val: Any) -> int | None:
-        """
-        Parseo seguro de enteros aplicando los límites definidos en _NUMERIC_LIMITS.
-        Evita desbordamientos y valores fuera de rango de operación.
-        """
         if val is None or isinstance(val, bool): return None
         try:
             parsed_value = int(val)
@@ -152,31 +141,27 @@ class _Validators:
 
     @staticmethod
     def path(val: Any) -> str | None:
-        """
-        Valida una ruta string contra `safety` y retorna ruta absoluta normalizada o None.
-        Utilizado principalmente para `ultima_carpeta`.
-        """
         if val is None or not isinstance(val, (str, Path)): return None
         path_string = str(val).strip()
         if not path_string: return ""
+        if path_string in _val_cache: return _val_cache[path_string]
+        
         try:
             path_obj = Path(path_string).expanduser()
             if _Validators._is_safe_path(path_obj):
-                return str(path_obj.absolute())
+                res = str(path_obj.absolute())
+                _val_cache[path_string] = res
+                return res
+            _val_cache[path_string] = None
             return None
         except (OSError, RuntimeError, ValueError, TypeError, PermissionError, AttributeError):
+            _val_cache[path_string] = None
             return None
 
     @staticmethod
     def str(key: str, val: Any) -> str | None:
-        """
-        Validación de cadenas con control de inyección y límites de esquema.
-        Aplica validaciones específicas para temas, acentos y limpieza de rutas.
-        """
         if val is None or not isinstance(val, (str, Path)): return None
         text = str(val).strip()
-        
-        # Prevenir inyección de rutas y caracteres de control
         if any(c < ' ' for c in text) or ".." in text: return None
         
         if key == "ultima_carpeta": return _Validators.path(text)
@@ -205,7 +190,6 @@ _VALIDATOR_MAP: Final[dict[str, Callable[[str, Any], Any]]] = {
 }
 
 def settings_path(path_or_base: PathLike | None = None) -> Path:
-    """Resuelve la ruta definitiva del archivo de configuración, priorizando ubicaciones seguras."""
     if path_or_base is None: return SETTINGS_DIR / SETTINGS_FILE
     key = str(path_or_base)
     if key not in _path_cache:
@@ -217,9 +201,7 @@ def settings_path(path_or_base: PathLike | None = None) -> Path:
     return _path_cache[key]
 
 def validate(values: Any) -> AppSettings:
-    """Aplica el esquema de validación sobre un diccionario arbitrario de entrada."""
-    if not isinstance(values, dict):
-        return DEFAULTS.copy()
+    if not isinstance(values, dict): return DEFAULTS.copy()
     config = DEFAULTS.copy()
     for key, validator in _VALIDATOR_MAP.items():
         if key in values:
@@ -228,18 +210,13 @@ def validate(values: Any) -> AppSettings:
     return config
 
 def load(path_or_base: PathLike | None = None) -> AppSettings:
-    """Carga configuración desde disco con caché, reintento y validación."""
     global _cached_settings, _current_path, _last_mtime
     ruta = settings_path(path_or_base)
-    
     try:
-        if not ruta.exists(): 
-            return DEFAULTS.copy()
-        
+        if not ruta.exists(): return DEFAULTS.copy()
         stats = ruta.stat()
         if _cached_settings is not None and _current_path == ruta and _last_mtime == stats.st_mtime:
             return _cached_settings.copy()
-        
         if 0 < stats.st_size <= MAX_SETTINGS_SIZE:
             with open(ruta, "r", encoding="utf-8") as f:
                 data = json.load(f)
@@ -247,46 +224,23 @@ def load(path_or_base: PathLike | None = None) -> AppSettings:
                 _cached_settings = validate(data)
                 _current_path, _last_mtime = ruta, stats.st_mtime
                 return _cached_settings.copy()
-    except (OSError, PermissionError, json.JSONDecodeError, UnicodeDecodeError):
-        pass
-    
+    except (OSError, PermissionError, json.JSONDecodeError, UnicodeDecodeError): pass
     return DEFAULTS.copy()
 
 def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
-    """
-    Guarda la configuración de forma atómica.
-    Realiza validaciones de seguridad previas, limpia los datos de entrada
-    y asegura la integridad mediante un archivo temporal y reemplazo fsync.
-    """
     global _cached_settings, _current_path, _last_mtime
     if not isinstance(values, dict): return None
     ruta = settings_path(path_or_base)
-    
-    # 1. Validar que la ruta de destino sea segura
     if is_protected_path(str(ruta)) or (ruta.exists() and (ruta.is_symlink() or (hasattr(ruta, 'is_junction') and ruta.is_junction()))):
         return None
-        
-    if not is_safe_to_modify(str(ruta.parent)):
-        return None
-    
-    # 2. Normalizar y validar valores antes de persistir
+    if not is_safe_to_modify(str(ruta.parent)): return None
     cleaned_settings = validate(values)
-    
-    # 3. Regla de negocio: Desactivar asistente si no hay credenciales (seguridad)
     if cleaned_settings.get("asistente_activado") and not (cleaned_settings.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)):
         cleaned_settings["asistente_activado"] = False
-    
-    if _cached_settings == cleaned_settings and _current_path == ruta: 
-        return ruta
-
+    if _cached_settings == cleaned_settings and _current_path == ruta: return ruta
     try:
-        if not ruta.parent.exists():
-            ruta.parent.mkdir(parents=True, exist_ok=True)
-        
-        if not os.access(ruta.parent, os.W_OK):
-            return None
-
-        # 4. Escritura atómica vía archivo temporal
+        if not ruta.parent.exists(): ruta.parent.mkdir(parents=True, exist_ok=True)
+        if not os.access(ruta.parent, os.W_OK): return None
         temp = ruta.with_suffix(".tmp")
         with open(temp, "w", encoding="utf-8") as f:
             json.dump(cleaned_settings, f, indent=2, ensure_ascii=False)
@@ -303,33 +257,31 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
         return None
 
 def update(changes: dict[str, Any], path_or_base: PathLike | None = None) -> AppSettings:
-    """Aplica cambios parciales y guarda la nueva configuración."""
     current = load(path_or_base)
-    current.update(changes)
-    save(current, path_or_base)
+    needs_save = False
+    for k, v in changes.items():
+        if k in _VALIDATOR_MAP and current.get(k) != v:
+            current[k] = v
+            needs_save = True
+    if needs_save: save(current, path_or_base)
     return current
 
 def reset(path_or_base: PathLike | None = None) -> AppSettings:
-    """Restablece los valores a los definidos en `DEFAULTS`."""
     save(DEFAULTS, path_or_base)
     return DEFAULTS.copy()
 
 def get(key: str, path_or_base: PathLike | None = None) -> Any:
-    """Accesor rápido para una clave específica de la configuración."""
     return load(path_or_base).get(key, DEFAULTS.get(key))
 
 def assistant_api_key(path_or_base: PathLike | None = None) -> str:
-    """Obtiene la clave de API, priorizando la variable de entorno sobre el archivo."""
     env_key = os.environ.get(API_KEY_ENV_VAR, "").strip()
     return env_key if env_key else load(path_or_base).get("asistente_clave_api", "").strip()
 
 def assistant_enabled(path_or_base: PathLike | None = None) -> bool:
-    """Verifica si el asistente tiene permiso de activación y clave válida."""
     settings = load(path_or_base)
     return bool(settings.get("asistente_activado") and (os.environ.get(API_KEY_ENV_VAR) or settings.get("asistente_clave_api")))
 
 def describe(path_or_base: PathLike | None = None) -> list[str]:
-    """Genera un reporte legible de la configuración actual para depuración o reporte."""
     current = load(path_or_base)
     key = assistant_api_key(path_or_base)
     origin = f"variable de entorno {API_KEY_ENV_VAR}" if os.environ.get(API_KEY_ENV_VAR) else ("archivo de configuración" if key else "no configurada")
