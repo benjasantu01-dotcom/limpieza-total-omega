@@ -341,6 +341,9 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
             parent_dir.mkdir(parents=True, exist_ok=True)
         elif not parent_dir.is_dir():
             return None
+        
+        # Validación extra: asegurar que el destino final sea seguro
+        if not is_safe_to_modify(target): return None
             
         target.write_text(logo_svg(), encoding="utf-8")
         return target

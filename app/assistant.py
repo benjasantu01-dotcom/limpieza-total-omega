@@ -505,6 +505,7 @@ def _call_gemini(
         text = "".join(str(p.get("text", "")) for p in parts if isinstance(p, dict))
         final_text = text.strip()[:_MAX_TEXT_LENGTH]
         
+        # Validar la respuesta remota antes de aceptarla
         return final_text if _ensure_safe_text(final_text) else None
     except (urllib.error.URLError, json.JSONDecodeError, KeyError, TypeError, ValueError):
         return None
