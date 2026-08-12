@@ -686,3 +686,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-12T02:45:36` ➖ Sin cambios en memory.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `trim_working_set` añadiendo una validación explícita `if not proc_handle` tras la llamada a `OpenProcess` para capturar errores de sistema y mejoré la gestión de recursos usando el bloque `finally` para asegurar el cierre del handle del proceso ante cualquier excepción durante la ejecución de la API de Windows.
 - `2026-08-12T02:45:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-12T02:45:36` Corrida terminada. Total usado hoy: 64.
+- `2026-08-12T02:52:21` Arrancando corrida. Quedan hoy ~236 peticiones objetivo.
+- `2026-08-12T02:52:39` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-12T02:53:13` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-12T02:53:56` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `purge_all` mediante la centralización de la validación de rutas y una gestión de errores más granular, asegurando que el estado del manifiesto y los archivos en disco se mantengan sincronizados incluso si un solo borrado falla.
+- `2026-08-12T02:54:21` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-08-12T02:54:37` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-12T02:54:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-12T02:54:37` Corrida terminada. Total usado hoy: 68.

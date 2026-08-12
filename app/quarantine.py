@@ -418,7 +418,7 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
         if entry.name == MANIFEST_NAME or not entry.is_file():
             continue
         
-        # Validar siempre que el archivo esté confinado en la raíz de cuarentena
+        # Validar confinamiento antes de cualquier operación
         if not _is_valid_quarantine_path(entry.resolve(), quarantine_root):
             continue
 
@@ -432,8 +432,7 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
                         continue
                 items_to_keep.append(item)
             else:
-                # Archivo en directorio de cuarentena no listado en manifiesto: 
-                # Solo borrar si pasa verificación de seguridad de ruta.
+                # Limpiar huérfanos solo si pasan validación de seguridad
                 ensure_safe_to_modify(entry, allow_sensitive=False)
                 _safe_unlink(entry)
         except (OSError, PermissionError, UnsafePathError):
