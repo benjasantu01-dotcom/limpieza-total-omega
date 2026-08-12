@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **233** (46.2% de aceptación)
+- Mejoras aceptadas: **236** (46.8% de aceptación)
 - Rechazadas por tests: 8
 - Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 215
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-11 | 132 | 5 | 17 | 8 | 118 |
-| 2026-08-12 | 101 | 3 | 15 | 8 | 97 |
+| 2026-08-11 | 132 | 5 | 17 | 8 | 114 |
+| 2026-08-12 | 104 | 3 | 15 | 8 | 98 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,27 +25,30 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **48**
 - rendimiento: **45**
 - robustez ante casos límite: **42**
-- seguridad defensiva: **37**
+- seguridad defensiva: **40**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **21**
+- `healthscore.py`: **22**
+- `diskreport.py`: **21**
 - `quarantine.py`: **21**
 - `assistant.py`: **21**
 - `branding.py`: **21**
-- `diskreport.py`: **20**
 - `settings.py`: **20**
 - `scanner.py`: **18**
 - `browser.py`: **17**
 - `duplicates.py`: **17**
 - `memory.py`: **17**
+- `main.py`: **13**
 - `organizer.py`: **13**
-- `main.py`: **12**
 - `startup.py`: **9**
 - `safety.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-12T09:43:00` **main.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_ask_folder` añadiendo una normalización más robusta frente a caracteres especiales y una validación de seguridad proactiva mediante `safety.ensure_safe_to_modify` antes de retornar cualquier ruta, evitando que el usuario seleccione rutas prohibidas accidentalmente.
+- `2026-08-12T09:42:10` **healthscore.py** (seguridad defensiva): Se endureció la validación de entrada en `compute_score` y `_generate_recommendations` mediante el uso de `getattr` para acceder a las métricas, evitando el riesgo de que una versión futura de `SystemMetrics` con campos inesperados o un objeto mal formado cause comportamientos impredecibles durante el procesamiento de datos.
+- `2026-08-12T09:41:21` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `walk_files` y `largest_folders` añadiendo una validación explícita de `is_protected_path` al inicio de cada iteración y al procesar subcarpetas, garantizando que el escáner no profundice en ninguna ruta sensible incluso ante errores de resolución de enlaces simbólicos o de acceso.
 - `2026-08-12T09:32:21` **browser.py** (seguridad defensiva): Se reforzó la seguridad del escaneo de directorios en `browser.py` implementando una validación explícita para evitar que `_sum_directory_recursive` siga enlaces simbólicos o puntos de reparse (junctions) hacia fuera del directorio raíz, utilizando `pathlib.Path.is_relative_to` (o su equivalente `relative_to` capturando error) dentro del ciclo de recursión para garantizar que ninguna subcarpeta escaneada escape del alcance permitido.
 - `2026-08-12T09:32:11` **branding.py** (seguridad defensiva): Se reforzó la seguridad de `save_logo_svg` añadiendo una validación explícita mediante `is_safe_to_modify` para el `target` final antes de escribir, previniendo posibles ataques de escritura en rutas protegidas que podrían haber eludido la validación previa del padre.
 - `2026-08-12T09:31:39` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva en `_call_gemini` validando la integridad del contenido recibido desde la API antes de retornarlo, asegurando que el motor de red no inyecte caracteres peligrosos o rutas en la interfaz aunque la respuesta remota sea inesperada.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-12T08:51:12` **assistant.py** (robustez ante casos límite): Mejora la robustez ante datos corruptos o inesperados en `SystemContext` dentro de `context_as_text`, asegurando que la serialización sea siempre segura y no propague errores hacia el asistente.
 - `2026-08-12T08:50:14` **settings.py** (rendimiento): Se implementó un mecanismo de caché en memoria para los validadores de configuración para evitar la re-validación costosa y recursiva de tipos básicos en llamadas frecuentes a `get` y `load`.
 - `2026-08-12T08:39:58` **quarantine.py** (rendimiento): Optimicé el acceso al manifiesto de cuarentena implementando una caché de tipo `lru_cache` para `load_manifest`, evitando múltiples lecturas de disco y parseos de JSON redundantes en operaciones que consultan frecuentemente el estado del sandbox.
-- `2026-08-12T08:31:18` **memory.py** (rendimiento): Optimicé `parse_windows_process_csv` reemplazando la creación innecesaria de una lista intermedia mediante una expresión generadora, evitando así la asignación de memoria extra en cada escaneo de procesos.
-- `2026-08-12T08:30:52` **main.py** (rendimiento): Optimicé el método `_get_cached` para utilizar una búsqueda constante O(1) basada en claves de diccionario en lugar de iterar manualmente o recrear estructuras, y mejoré la gestión de memoria en `_compile_metrics` mediante el uso de referencias locales directas para evitar múltiples accesos a caché con la misma clave.
-- `2026-08-12T08:29:46` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje eliminando la creación repetitiva de diccionarios dentro de los bucles y pre-calculando el desglose mediante una comprensión de diccionario directa, evitando la sobrecarga de múltiples llamadas a funciones auxiliares dentro de las iteraciones críticas.

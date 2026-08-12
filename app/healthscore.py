@@ -198,21 +198,21 @@ def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[
         
     recommendations: List[str] = []
     check_rules = (
-        ("seguridad", WARN_THRESHOLD_HIGH, f"Revisá los {_to_int(metrics.suspicious_count)} hallazgo(s) de seguridad."),
-        ("disco", WARN_THRESHOLD_LOW, f"Queda {_to_float(metrics.disk_free_percent):.1f}% de disco libre."),
+        ("seguridad", WARN_THRESHOLD_HIGH, f"Revisá los {getattr(metrics, 'suspicious_count', 0)} hallazgo(s) de seguridad."),
+        ("disco", WARN_THRESHOLD_LOW, f"Queda {getattr(metrics, 'disk_free_percent', 0.0):.1f}% de disco libre."),
         ("memoria", WARN_THRESHOLD_LOW, "Memoria disponible baja: cerrá procesos innecesarios."),
-        ("basura", WARN_THRESHOLD_MED, f"Hay {_to_int(metrics.junk_mb)} MB de archivos temporales."),
-        ("duplicados", WARN_THRESHOLD_MED, f"Podrías recuperar {_to_int(metrics.duplicate_mb)} MB eliminando duplicados."),
-        ("arranque", WARN_THRESHOLD_LOW, f"{_to_int(metrics.startup_count)} programas arrancan con Windows."),
+        ("basura", WARN_THRESHOLD_MED, f"Hay {getattr(metrics, 'junk_mb', 0.0):.0f} MB de archivos temporales."),
+        ("duplicados", WARN_THRESHOLD_MED, f"Podrías recuperar {getattr(metrics, 'duplicate_mb', 0.0):.0f} MB eliminando duplicados."),
+        ("arranque", WARN_THRESHOLD_LOW, f"{getattr(metrics, 'startup_count', 0)} programas arrancan con Windows."),
     )
 
     for area_key, threshold, message in check_rules:
-        # Usamos 1.0 como valor por defecto si la métrica no existe para evitar errores
         if ratios.get(area_key, 1.0) < threshold:
             recommendations.append(message)
     
-    if metrics.quarantined_count > 0:
-        recommendations.append(f"Tenés {_to_int(metrics.quarantined_count)} archivo(s) en cuarentena.")
+    q_count = getattr(metrics, 'quarantined_count', 0)
+    if q_count > 0:
+        recommendations.append(f"Tenés {q_count} archivo(s) en cuarentena.")
     
     return recommendations if recommendations else ["No hay nada urgente para hacer. El sistema está en buen estado."]
 

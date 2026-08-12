@@ -232,7 +232,8 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        if skip_protected and is_protected_path(Path(entry.path)):
+                        entry_path = Path(entry.path)
+                        if skip_protected and is_protected_path(entry_path):
                             continue
 
                         if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
@@ -245,7 +246,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                                 visited_inodes.add(inode)
                                 stack.append(entry.path)
                         else:
-                            yield Path(entry.path), entry.stat().st_size
+                            yield entry_path, entry.stat().st_size
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):
