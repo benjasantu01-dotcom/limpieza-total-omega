@@ -1112,3 +1112,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-12T08:10:17` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `build_context` evitando iteraciones y chequeos de tipo redundantes sobre atributos inexistentes mediante un acceso directo y estructurado, y reduje la carga de memoria al pre-calcular la lista de sugerencias en lugar de instanciarla en cada llamada.
 - `2026-08-12T08:10:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-12T08:10:17` Corrida terminada. Total usado hoy: 192.
+- `2026-08-12T08:19:02` Arrancando corrida. Quedan hoy ~108 peticiones objetivo.
+- `2026-08-12T08:19:36` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se introdujo una caché de diccionario (lru_cache) en `tab_label` y se optimizó la lógica de `icon` para evitar la concatenación redundante y el procesamiento de strings innecesario, mejorando el rendimiento en el renderizado de la interfaz.
+- `2026-08-12T08:19:59` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
+- `2026-08-12T08:20:26` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé la función `summarize` para reducir las llamadas repetidas a `Path.suffix` y mejorar la localidad de datos, consolidando el procesamiento en un único bucle para evitar el costo de re-recorrer el disco en operaciones estadísticas relacionadas.
+- `2026-08-12T08:20:36` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el rendimiento de `_collect_candidates` utilizando un set de `Path` ya resueltas para evitar el costo de resolución repetida durante la recursión y añadí un pre-filtro de existencia usando `os.path.exists` en el `scandir` para reducir llamadas innecesarias a `stat` en archivos que ya no existen, mejorando la velocidad en directorios con alta volatilidad.
+- `2026-08-12T08:20:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-12T08:20:36` Corrida terminada. Total usado hoy: 196.

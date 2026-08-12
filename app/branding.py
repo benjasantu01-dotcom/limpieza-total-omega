@@ -155,6 +155,7 @@ def font_size(name: str) -> int:
     return FONT_SIZES.get(name, FONT_SIZES["body"])
 
 
+@lru_cache(maxsize=32)
 def icon(section: Optional[str]) -> str:
     """Retorna el glifo Unicode asignado a una sección funcional; devuelve un punto por defecto."""
     if not isinstance(section, str):
@@ -162,6 +163,7 @@ def icon(section: Optional[str]) -> str:
     return ICONS.get(section.strip(), "\u2022")
 
 
+@lru_cache(maxsize=32)
 def tab_label(section: str) -> str:
     """Combina el glifo y el nombre de la sección para el etiquetado de pestañas."""
     return f"{icon(section)}  {section}"

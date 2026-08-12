@@ -169,6 +169,7 @@ def _collect_candidates(
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: Dict[Tuple[int, int], bool] = {}
+    processed_paths = set()
     
     if directories is None: return temp_groups
     
@@ -176,15 +177,17 @@ def _collect_candidates(
         try:
             with os.scandir(root_path) as dir_iterator:
                 for entry in dir_iterator:
-                    if entry is None: continue
+                    if entry is None or not os.path.exists(entry.path): continue
                     
                     try:
                         entry_stat = entry.stat(follow_symlinks=False)
-                        # Detectar reparse points (0x400) para evitar recursión circular
                         if getattr(entry_stat, 'st_file_attributes', 0) & 0x400:
                             continue
                         
-                        path_obj = Path(os.path.abspath(entry.path))
+                        path_obj = Path(entry.path).resolve()
+                        if path_obj in processed_paths: continue
+                        processed_paths.add(path_obj)
+                        
                         if skip_protected and is_protected_path(path_obj):
                             continue
                         

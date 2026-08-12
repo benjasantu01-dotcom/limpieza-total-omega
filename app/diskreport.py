@@ -232,8 +232,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        p_entry = Path(entry.path)
-                        if skip_protected and is_protected_path(p_entry):
+                        if skip_protected and is_protected_path(Path(entry.path)):
                             continue
 
                         if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
@@ -246,7 +245,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                                 visited_inodes.add(inode)
                                 stack.append(entry.path)
                         else:
-                            yield p_entry, entry.stat().st_size
+                            yield Path(entry.path), entry.stat().st_size
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):
@@ -391,9 +390,9 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
         total_files += 1
         
         ext = path.suffix.lower() or "(sin extensión)"
-        d = ext_data[ext]
-        d[0] += size
-        d[1] += 1
+        data_ext = ext_data[ext]
+        data_ext[0] += size
+        data_ext[1] += 1
         
         if len(top_files_heap) < 8:
             heapq.heappush(top_files_heap, (size, str(path)))
