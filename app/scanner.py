@@ -90,17 +90,19 @@ class Scanner:
             return
         
         try:
-            # Verificar existencia antes de cualquier operación
-            if not entry.exists():
+            # Defensa: validación temprana contra paths protegidos incluso antes de resolver
+            path_obj = Path(entry.path)
+            if is_protected_path(path_obj):
                 return
 
-            path_obj = Path(entry.path)
+            if not entry.exists(follow_symlinks=False):
+                return
             
-            # Defensa en profundidad: bloqueo de rutas UNC y rutas protegidas/fuera de rango
+            # Defensa en profundidad: bloqueo de rutas UNC y rutas fuera de rango
             if path_obj.parts[0].startswith("\\\\"):
                 return
                 
-            if is_protected_path(path_obj) or not self._is_safe_entry(path_obj):
+            if not self._is_safe_entry(path_obj):
                 return
 
             if self._is_reparse_point(entry):
