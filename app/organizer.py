@@ -91,12 +91,7 @@ class JunkFile:
 def _is_junction(entry: os.DirEntry) -> bool:
     """
     Detecta si una entrada de directorio es un punto de reparse (junction o symlink).
-    
-    Args:
-        entry: La entrada de directorio proporcionada por os.scandir.
-        
-    Returns:
-        True si es un enlace simbólico o junction, False en caso contrario.
+    Evita que el escáner entre en bucles infinitos o salga de las carpetas de usuario.
     """
     try:
         return entry.is_symlink() or (os.name == "nt" and "reparse" in os.stat(entry.path).st_file_attributes)
@@ -112,7 +107,7 @@ def _is_junk_path(path: Path) -> bool:
 def _generate_unique_target(target: Path) -> Path:
     """
     Resuelve colisiones de nombres mediante sufijos numéricos incrementales.
-    Asegura que el archivo movido no sobrescriba archivos existentes en destino.
+    Previene la sobreescritura accidental al consolidar archivos de distintas rutas.
     """
     if not target.exists():
         return target
@@ -142,7 +137,10 @@ def _is_file_accessible(path: Path) -> bool:
 
 
 def _is_file_locked(path: Path) -> bool:
-    """Verifica si el archivo está bloqueado por otro proceso mediante apertura en modo append."""
+    """
+    Verifica si el archivo está bloqueado por otro proceso.
+    Intenta abrirlo en modo append (A+) para testear permisos de escritura exclusivos.
+    """
     try:
         with open(path, "a+b"):
             return False
@@ -151,8 +149,9 @@ def _is_file_locked(path: Path) -> bool:
 
 def _is_safe_to_move(jf: JunkFile, dest: Path) -> bool:
     """
-    Valida si un archivo es candidato seguro para ser movido a la carpeta de revisión.
-    Verifica existencia, bloqueos y restricciones de volúmenes cruzados.
+    Valida si un archivo es candidato seguro para ser movido.
+    Verifica: existencia, accesibilidad, no ser recursivo y que ambos puntos residan 
+    en el mismo volumen (evita errores de I/O por mover entre discos).
     """
     current_abs = jf.path.resolve()
     if not current_abs.exists() or not current_abs.is_file():
@@ -222,13 +221,13 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
     if not isinstance(files, list):
         return []
         
-    configs: Dict[str, SortConfig] = {
+    registry: Dict[str, SortConfig] = {
         "size": SortConfig("size", lambda f: f.size_bytes),
         "date": SortConfig("date", lambda f: f.modified)
     }
         
     criterio = by.lower() if isinstance(by, str) else "size"
-    config = configs.get(criterio, configs["size"])
+    config = registry.get(criterio, registry["size"])
         
     return sorted(files, key=config.key_func, reverse=not bool(ascending))
 
@@ -247,7 +246,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 
     for jf in files:
         try:
-            # Validar que el archivo fuente aún sea seguro y pertenezca a la estructura esperada
+            # Validar que el archivo fuente aún sea seguro antes de cada operación
             ensure_safe_to_modify(jf.path)
             
             if _is_safe_to_move(jf, dest):
@@ -261,7 +260,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
     """
-    Elimina archivos de forma permanente de la carpeta de revisión.
+    Elimina archivos de forma permanente de la carpeta de revisión tras verificación.
     """
     if not isinstance(review_dir, str) or not review_dir.strip():
         return 0
@@ -276,7 +275,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
                 try:
                     if entry.is_file() and not _is_junction(entry):
                         path_to_delete = Path(entry.path).resolve()
-                        # Verificar que el archivo a borrar esté estrictamente en dest
+                        # Verificar que el archivo a borrar esté estrictamente en la carpeta autorizada
                         if dest == path_to_delete.parent:
                             ensure_safe_to_modify(path_to_delete)
                             os.remove(path_to_delete)

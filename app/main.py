@@ -431,11 +431,24 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _build_health_metrics_row(self, container: ctk.CTkFrame) -> None:
         """Genera tarjetas de resumen numérico (Basura, Sospechosos, RAM, Disco)."""
-        metrics_definitions = (("basura", "Basura"), ("sospechosos", "Sospechosos"),
-                               ("ram", "RAM libre"), ("disco", "Disco libre"))
-        for i, (clave, titulo) in enumerate(metrics_definitions):
+        metrics = (("basura", "Basura"), ("sospechosos", "Sospechosos"),
+                   ("ram", "RAM libre"), ("disco", "Disco libre"))
+        for i, (clave, titulo) in enumerate(metrics):
             container.grid_columnconfigure(i, weight=1)
             self.cards[clave] = self._metric_card(container, titulo, i)
+
+    def _metric_card(self, parent: ctk.CTk, title: str, column_idx: int) -> ctk.CTkLabel:
+        """Genera un componente de tarjeta visual para métricas destacadas."""
+        tarjeta = ctk.CTkFrame(
+            parent, fg_color=branding.color("card"), corner_radius=12,
+            border_width=1, border_color=branding.color("border"),
+        )
+        tarjeta.grid(row=0, column=column_idx, padx=6, sticky="ew")
+
+        valor_label = self._create_styled_label(tarjeta, "-", "accent")
+        valor_label.pack(pady=(14, 0))
+        self._create_styled_label(tarjeta, title.upper(), "caption").pack(pady=(0, 14))
+        return valor_label
 
     def _build_health_area_bars(self, parent: ctk.CTk) -> None:
         """Crea el layout de las barras de progreso por cada área de salud."""
@@ -460,19 +473,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         valor_label = self._create_styled_label(container, "-", "caption", width=64, anchor="e")
         valor_label.grid(row=row_idx, column=2, sticky="e", pady=4)
         self.area_bars[clave] = (barra, valor_label)
-
-    def _metric_card(self, parent: ctk.CTk, title: str, column_idx: int) -> ctk.CTkLabel:
-        """Genera un componente de tarjeta visual para métricas destacadas."""
-        tarjeta = ctk.CTkFrame(
-            parent, fg_color=branding.color("card"), corner_radius=12,
-            border_width=1, border_color=branding.color("border"),
-        )
-        tarjeta.grid(row=0, column=column_idx, padx=6, sticky="ew")
-
-        valor_label = self._create_styled_label(tarjeta, "-", "accent")
-        valor_label.pack(pady=(14, 0))
-        self._create_styled_label(tarjeta, title.upper(), "caption").pack(pady=(0, 14))
-        return valor_label
 
     def _draw_gauge(self, score: int, grade: str) -> None:
         """Solicita el redibujo del medidor central usando un timer debounce."""

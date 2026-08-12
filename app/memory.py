@@ -300,15 +300,18 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
 
 
 def _is_system_process(pid: int) -> bool:
-    """Verifica si el PID corresponde a un proceso del sistema restringido."""
+    """Verifica si el PID corresponde a un proceso del sistema restringido o crítico."""
     return pid in SYSTEM_CRITICAL_PIDS or pid <= 100
 
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
-    Intenta reducir el working set de un proceso específico, realizando 
-    validaciones de seguridad sobre el handle del proceso y la ubicación 
-    del ejecutable antes de ejecutar la acción Win32.
+    Intenta reducir el working set de un proceso específico.
+    
+    Realiza validaciones de seguridad: 
+    1. Verifica que el PID no sea crítico/del sistema.
+    2. Valida mediante `is_protected_path` que el ejecutable no pertenezca 
+       a rutas críticas (protección contra manipulación externa).
     """
     if os.name != "nt":
         return False, "Solo disponible en Windows."

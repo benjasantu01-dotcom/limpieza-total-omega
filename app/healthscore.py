@@ -141,13 +141,13 @@ def _to_int(value: Any, default: int = 0) -> int:
 
 
 def score_junk(junk_mb: float | int) -> float:
-    """Calcula score [0.0, 1.0] penalizando linealmente el tamaño de basura."""
+    """Calcula score [0.0, 1.0] penalizando linealmente según el tamaño de archivos basura."""
     val = max(0.0, _to_float(junk_mb))
     return 0.0 if _LIMIT_JUNK_MB <= 0.0 else _clamp(1.0 - (val / _LIMIT_JUNK_MB))
 
 
 def score_security(suspicious_count: int, warnings: int = 0) -> float:
-    """Calcula score [0.0, 1.0] basado en penalizaciones por amenazas detectadas."""
+    """Calcula score [0.0, 1.0] penalizando hallazgos y advertencias de seguridad."""
     count = max(0, _to_int(suspicious_count))
     warns = max(0, _to_int(warnings))
     penalty = (count * 0.05) + (warns * 0.25)
@@ -155,27 +155,27 @@ def score_security(suspicious_count: int, warnings: int = 0) -> float:
 
 
 def score_memory(available_percent: float | int) -> float:
-    """Calcula score [0.0, 1.0] evaluando el % de memoria libre."""
+    """Calcula score [0.0, 1.0] basado en el porcentaje de RAM disponible."""
     val = _clamp(_to_float(available_percent), 0.0, 100.0)
     if _LIMIT_RAM_PERCENT <= 0.0: return 0.0
     return _clamp(val / _LIMIT_RAM_PERCENT, 0.0, 1.0)
 
 
 def score_disk(free_percent: float | int) -> float:
-    """Calcula score [0.0, 1.0] evaluando el % de espacio libre."""
+    """Calcula score [0.0, 1.0] basado en el porcentaje de espacio libre en disco."""
     val = _clamp(_to_float(free_percent), 0.0, 100.0)
     if _LIMIT_DISK_PERCENT <= 0.0: return 0.0
     return _clamp(val / _LIMIT_DISK_PERCENT, 0.0, 1.0)
 
 
 def score_duplicates(duplicate_mb: float | int) -> float:
-    """Calcula score [0.0, 1.0] penalizando linealmente el tamaño de duplicados."""
+    """Calcula score [0.0, 1.0] penalizando el volumen de archivos duplicados."""
     val = max(0.0, _to_float(duplicate_mb))
     return 0.0 if _LIMIT_DUPLICATE_MB <= 0.0 else _clamp(1.0 - (val / _LIMIT_DUPLICATE_MB))
 
 
 def score_startup(startup_count: int) -> float:
-    """Calcula score [0.0, 1.0] penalizando programas en arranque."""
+    """Calcula score [0.0, 1.0] penalizando la cantidad de programas en el arranque."""
     val = max(0, _to_int(startup_count))
     return 0.0 if _LIMIT_STARTUP_COUNT <= 0 else _clamp(1.0 - (val / _LIMIT_STARTUP_COUNT))
 
