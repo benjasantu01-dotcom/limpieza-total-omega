@@ -1119,3 +1119,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-12T08:20:36` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el rendimiento de `_collect_candidates` utilizando un set de `Path` ya resueltas para evitar el costo de resolución repetida durante la recursión y añadí un pre-filtro de existencia usando `os.path.exists` en el `scandir` para reducir llamadas innecesarias a `stat` en archivos que ya no existen, mejorando la velocidad en directorios con alta volatilidad.
 - `2026-08-12T08:20:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-12T08:20:36` Corrida terminada. Total usado hoy: 196.
+- `2026-08-12T08:29:18` Arrancando corrida. Quedan hoy ~104 peticiones objetivo.
+- `2026-08-12T08:29:46` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del puntaje eliminando la creación repetitiva de diccionarios dentro de los bucles y pre-calculando el desglose mediante una comprensión de diccionario directa, evitando la sobrecarga de múltiples llamadas a funciones auxiliares dentro de las iteraciones críticas.
+- `2026-08-12T08:30:52` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Optimicé el método `_get_cached` para utilizar una búsqueda constante O(1) basada en claves de diccionario en lugar de iterar manualmente o recrear estructuras, y mejoré la gestión de memoria en `_compile_metrics` mediante el uso de referencias locales directas para evitar múltiples accesos a caché con la misma clave.
+- `2026-08-12T08:31:18` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé `parse_windows_process_csv` reemplazando la creación innecesaria de una lista intermedia mediante una expresión generadora, evitando así la asignación de memoria extra en cada escaneo de procesos.
+- `2026-08-12T08:31:25` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-08-12T08:31:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-12T08:31:25` Corrida terminada. Total usado hoy: 200.

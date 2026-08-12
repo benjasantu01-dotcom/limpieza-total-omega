@@ -755,7 +755,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         if not force and key in self._cache:
             data, timestamp = self._cache[key]
             if now - timestamp < self._cache_ttl:
-                self._cache.move_to_end(key)
                 return data
             del self._cache[key]
         
@@ -939,10 +938,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _compile_metrics(self) -> Tuple[healthscore.SystemMetrics, memory_mod.Snapshot, diskreport.DriveInfo]:
         """Agrupa métricas de todos los módulos para calcular el puntaje global."""
-        hallazgos = self._get_cached_data("suspicions") or []
-        arranque = self._get_cached_data("startup") or []
-        junk = self._get_cached_data("junk") or []
-        dups = self._get_cached_data("dups") or []
+        hallazgos = self._get_cached("suspicions") or []
+        arranque = self._get_cached("startup") or []
+        junk = self._get_cached("junk") or []
+        dups = self._get_cached("dups") or []
 
         snapshot = memory_mod.read_snapshot()
         home = os.path.expanduser("~")
@@ -986,7 +985,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             )
 
             lineas = healthscore.summarize(resultado)
-            if not self._get_cached_data("dups"):
+            if not self._get_cached("dups"):
                 lineas += ["", "Nota: los duplicados no se contaron todavía. "
                                "Corré la pestaña Duplicados para incluirlos."]
             self.log_lines(lineas, "Salud")
@@ -1080,7 +1079,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def refresh_list(self) -> None:
         """Actualiza el listado visual de basura basándose en los filtros aplicados."""
-        junk = self._get_cached_data("junk") or []
+        junk = self._get_cached("junk") or []
         ordered = sort_junk(junk, by=self.sort_by.get())
         lines = [f"{jf.size_mb:>8} MB  |  {jf.modified:%Y-%m-%d}  |  {jf.path}" for jf in ordered]
         self.report_data["limpieza"] = lines
@@ -1090,7 +1089,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def on_stage(self) -> None:
         """Mueve candidatos de basura a la zona de revisión."""
-        junk = self._get_cached_data("junk") or []
+        junk = self._get_cached("junk") or []
         if not junk:
             messagebox.showinfo("Sin candidatos", "Primero usá 'Buscar basura'.")
             return
@@ -1182,7 +1181,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def on_quarantine_findings(self) -> None:
         """Aísla archivos sospechosos encontrados en cuarentena."""
-        suspicions = self._get_cached_data("suspicions") or []
+        suspicions = self._get_cached("suspicions") or []
         if not suspicions:
             messagebox.showinfo("Sin hallazgos", "Primero corré un escaneo heurístico.")
             return
@@ -1422,7 +1421,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def on_quarantine_duplicates(self) -> None:
         """Mueve archivos duplicados extra a cuarentena."""
-        dups = self._get_cached_data("dups") or []
+        dups = self._get_cached("dups") or []
         if not dups:
             messagebox.showinfo("Sin duplicados", "Primero usá 'Buscar duplicados'.")
             return

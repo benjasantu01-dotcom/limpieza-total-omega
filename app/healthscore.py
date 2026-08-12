@@ -197,7 +197,6 @@ def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[
         return ["Error: datos de entrada inválidos para recomendaciones."]
         
     recommendations: List[str] = []
-    # Usamos valores sanitizados y verificados para prevenir excepciones en el formato
     check_rules = (
         ("seguridad", WARN_THRESHOLD_HIGH, f"Revisá los {_to_int(metrics.suspicious_count)} hallazgo(s) de seguridad."),
         ("disco", WARN_THRESHOLD_LOW, f"Queda {_to_float(metrics.disk_free_percent):.1f}% de disco libre."),
@@ -208,7 +207,7 @@ def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[
     )
 
     for area_key, threshold, message in check_rules:
-        if area_key in ratios and ratios[area_key] < threshold:
+        if ratios.get(area_key, 1.0) < threshold:
             recommendations.append(message)
     
     if metrics.quarantined_count > 0:
@@ -223,29 +222,21 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         return HealthResult(0, "F", {}, ["Error: Instancia de métricas inválida."])
     
     metrics.validate()
-    
     if not metrics.is_finite() or not _validate_weights():
         return HealthResult(0, "F", {}, ["Error: Datos o configuración inestables."])
 
-    # Cálculo eficiente mediante pre-mapeo y una sola iteración
     ratios: ScoreMap = {
-        "seguridad": _clamp(score_security(metrics.suspicious_count, metrics.suspicious_warnings), 0.0, 1.0),
-        "disco": _clamp(score_disk(metrics.disk_free_percent), 0.0, 1.0),
-        "memoria": _clamp(score_memory(metrics.memory_available_percent), 0.0, 1.0),
-        "basura": _clamp(score_junk(metrics.junk_mb), 0.0, 1.0),
-        "duplicados": _clamp(score_duplicates(metrics.duplicate_mb), 0.0, 1.0),
-        "arranque": _clamp(score_startup(metrics.startup_count), 0.0, 1.0)
+        "seguridad": score_security(metrics.suspicious_count, metrics.suspicious_warnings),
+        "disco": score_disk(metrics.disk_free_percent),
+        "memoria": score_memory(metrics.memory_available_percent),
+        "basura": score_junk(metrics.junk_mb),
+        "duplicados": score_duplicates(metrics.duplicate_mb),
+        "arranque": score_startup(metrics.startup_count)
     }
     
-    breakdown: Dict[str, int] = {}
-    total_raw: float = 0.0
+    breakdown = {area: int(round(ratios[area] * factor)) for area, factor in _WEIGHT_ITEMS}
+    final_score = int(round(_clamp(sum(breakdown.values()), 0.0, 100.0)))
     
-    for area, factor in _WEIGHT_ITEMS:
-        score_val = ratios[area] * factor
-        breakdown[area] = int(round(score_val))
-        total_raw += score_val
-
-    final_score = int(round(_clamp(total_raw, 0.0, 100.0)))
     return HealthResult(
         score=final_score,
         grade=grade_for_score(final_score),

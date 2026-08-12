@@ -168,16 +168,16 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
     if not isinstance(text, str) or not text:
         return []
     
-    processes: List[ProcessMemory] = []
-    for line in (l for l in text.splitlines() if l.strip()):
-        parts = [p.strip().strip("'\"") for p in line.split(",")]
-        if len(parts) == 3 and parts[1].isdigit() and parts[2].isdigit():
-            try:
-                processes.append(ProcessMemory(parts[0] or "Unknown", int(parts[1]), int(parts[2])))
-            except (ValueError, TypeError):
-                continue
-    
-    processes.sort(key=lambda p: p.working_set, reverse=True)
+    def process_lines():
+        for line in (l for l in text.splitlines() if l.strip()):
+            parts = [p.strip().strip("'\"") for p in line.split(",")]
+            if len(parts) == 3 and parts[1].isdigit() and parts[2].isdigit():
+                try:
+                    yield ProcessMemory(parts[0] or "Unknown", int(parts[1]), int(parts[2]))
+                except (ValueError, TypeError):
+                    continue
+
+    processes = sorted(process_lines(), key=lambda p: p.working_set, reverse=True)
     return processes[:limit]
 
 

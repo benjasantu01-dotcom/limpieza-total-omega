@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-11 | 145 | 6 | 19 | 8 | 130 |
-| 2026-08-12 | 86 | 3 | 13 | 6 | 88 |
+| 2026-08-11 | 142 | 6 | 19 | 8 | 129 |
+| 2026-08-12 | 89 | 3 | 13 | 6 | 89 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **61**
 - manejo de errores y validación de entradas: **48**
 - seguridad defensiva: **44**
-- rendimiento: **40**
-- robustez ante casos límite: **38**
+- rendimiento: **43**
+- robustez ante casos límite: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `branding.py`: **21**
 - `diskreport.py`: **21**
 - `quarantine.py`: **21**
-- `settings.py`: **20**
 - `assistant.py`: **20**
-- `scanner.py`: **19**
-- `healthscore.py`: **19**
+- `healthscore.py`: **20**
+- `settings.py`: **19**
+- `scanner.py`: **18**
 - `browser.py`: **17**
 - `duplicates.py`: **17**
-- `memory.py`: **15**
-- `main.py`: **12**
+- `memory.py`: **16**
+- `main.py`: **13**
 - `organizer.py`: **12**
-- `startup.py`: **11**
+- `startup.py`: **10**
 - `safety.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-12T08:31:18` **memory.py** (rendimiento): Optimicé `parse_windows_process_csv` reemplazando la creación innecesaria de una lista intermedia mediante una expresión generadora, evitando así la asignación de memoria extra en cada escaneo de procesos.
+- `2026-08-12T08:30:52` **main.py** (rendimiento): Optimicé el método `_get_cached` para utilizar una búsqueda constante O(1) basada en claves de diccionario en lugar de iterar manualmente o recrear estructuras, y mejoré la gestión de memoria en `_compile_metrics` mediante el uso de referencias locales directas para evitar múltiples accesos a caché con la misma clave.
+- `2026-08-12T08:29:46` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje eliminando la creación repetitiva de diccionarios dentro de los bucles y pre-calculando el desglose mediante una comprensión de diccionario directa, evitando la sobrecarga de múltiples llamadas a funciones auxiliares dentro de las iteraciones críticas.
 - `2026-08-12T08:20:36` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` utilizando un set de `Path` ya resueltas para evitar el costo de resolución repetida durante la recursión y añadí un pre-filtro de existencia usando `os.path.exists` en el `scandir` para reducir llamadas innecesarias a `stat` en archivos que ya no existen, mejorando la velocidad en directorios con alta volatilidad.
 - `2026-08-12T08:20:26` **diskreport.py** (rendimiento): Optimizé la función `summarize` para reducir las llamadas repetidas a `Path.suffix` y mejorar la localidad de datos, consolidando el procesamiento en un único bucle para evitar el costo de re-recorrer el disco en operaciones estadísticas relacionadas.
 - `2026-08-12T08:19:36` **branding.py** (rendimiento): Se introdujo una caché de diccionario (lru_cache) en `tab_label` y se optimizó la lógica de `icon` para evitar la concatenación redundante y el procesamiento de strings innecesario, mejorando el rendimiento en el renderizado de la interfaz.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-12T07:50:15` **main.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en los métodos de construcción de la interfaz y gestión de estados, mejorando la legibilidad técnica y facilitando el mantenimiento para futuros colaboradores sin alterar el comportamiento de la aplicación.
 - `2026-08-12T07:49:11` **healthscore.py** (legibilidad y documentación): Mejora la legibilidad y mantenimiento añadiendo Type Hints faltantes en los parámetros de las funciones de scoring y documentando con docstrings el propósito de los umbrales constantes para clarificar la lógica de negocio.
 - `2026-08-12T07:48:45` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `duplicates.py` mediante docstrings detallados en las funciones internas y utilitarias, clarificando las precondiciones y el manejo de excepciones para facilitar el mantenimiento y la auditoría de seguridad.
-- `2026-08-12T07:39:53` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `diskreport.py` añadiendo docstrings detallados con tipos, parámetros y lógica de retorno en las funciones clave para cumplir con el enfoque de legibilidad, asegurando que cada componente exponga claramente su propósito sin cambios funcionales.
-- `2026-08-12T07:39:42` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados (con secciones `Args` y `Returns`) en las funciones críticas de escaneo y validación, clarificando el propósito, el manejo de excepciones y las restricciones de seguridad.
-- `2026-08-12T07:39:16` **branding.py** (legibilidad y documentación): Se introdujeron docstrings explicativos y se mejoró la precisión del tipado en funciones de dibujo y utilidades de color para clarificar el flujo de datos geométricos y cromáticos.
