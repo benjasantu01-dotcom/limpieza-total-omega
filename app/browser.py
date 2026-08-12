@@ -116,6 +116,7 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
         real_base = base_path.resolve(strict=True)
         real_target = target_path.resolve(strict=True)
         
+        # Validación de jerarquía y seguridad combinada
         if is_protected_path(real_target) or is_protected_path(real_base):
             return False
 
@@ -203,6 +204,7 @@ def _sum_directory_recursive(
         
     try:
         real_path = Path(os.path.realpath(root_dir))
+        # Validación de seguridad defensiva en cada nivel del recorrido
         if real_path in visited or is_protected_path(real_path):
             return 0
         

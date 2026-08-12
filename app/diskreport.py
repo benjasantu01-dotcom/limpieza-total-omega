@@ -214,9 +214,11 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     if not directory:
         return
 
-    # Preparación de la ruta base con validación de acceso
     try:
         root: Path = Path(directory).expanduser().resolve(strict=False)
+        # Bloquear rutas UNC o inválidas para el contexto de escaneo local
+        if str(root).startswith(("\\\\", "//")):
+            return
         if not root.exists() or not root.is_dir() or not os.access(root, os.R_OK):
             return
         if skip_protected and is_protected_path(root):
@@ -332,6 +334,10 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
         
         for path, size in walk_files(base, skip_protected):
             try:
+                # Validar seguridad: path debe estar estrictamente dentro de base
+                if base not in path.parents and path != base:
+                    continue
+                
                 relative = path.relative_to(base)
                 if not relative.parts: continue
                 top_level = base / relative.parts[0]

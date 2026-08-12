@@ -115,9 +115,6 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
 def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """
     Hash rápido de los primeros bytes del archivo (head) para comparación inicial.
-    
-    Esta función reduce drásticamente la carga de E/S al evitar procesar 
-    archivos grandes que difieren en su cabecera.
     """
     if path is None or read_bytes <= 0: 
         return None
@@ -137,9 +134,6 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
 def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     """
     Agrupa rutas por tamaño exacto en bytes, descartando rutas protegidas.
-    
-    Filtra entradas inaccesibles o protegidas de forma silenciosa para mantener
-    la robustez del escaneo frente a errores de permisos del SO.
     """
     groups: Dict[int, List[Path]] = defaultdict(list)
     if paths is None: 
@@ -163,9 +157,6 @@ def _collect_candidates(
 ) -> Dict[int, List[Path]]:
     """
     Escanea recursivamente directorios buscando archivos candidatos a duplicados.
-    
-    Utiliza un mapa de inodos (st_dev, st_ino) para evitar el procesamiento
-    repetido de hardlinks o ciclos en el árbol de archivos.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: Dict[Tuple[int, int], bool] = {}
@@ -223,8 +214,6 @@ def _refine_by_hash(
 ) -> Dict[str, List[Path]]:
     """
     Aplica la estrategia de partición de hash sobre un conjunto dado.
-    
-    Solo agrupa aquellos elementos que comparten el mismo resultado de hash.
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     if paths is None: return groups_by_digest
@@ -271,10 +260,6 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     """
     Heurística para seleccionar el archivo 'original' (a conservar).
-    
-    Selecciona el archivo con la fecha de modificación más antigua. En caso de 
-    empate, prefiere la ruta más corta (usualmente archivos en la raíz o 
-    carpetas superiores).
     """
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None
