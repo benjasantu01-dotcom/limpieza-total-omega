@@ -376,7 +376,10 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
         raise UnsafePathError("Restauración denegada: destino protegido.")
     if destination.exists():
         raise FileExistsError(f"Error: el destino {destination} ya existe.")
+    
+    _check_windows_file_attributes(str(destination.parent))
     ensure_safe_to_modify(destination, allow_sensitive=False)
+    
     try:
         destination.parent.mkdir(parents=True, exist_ok=True)
         os.replace(str(stored_file), str(destination))

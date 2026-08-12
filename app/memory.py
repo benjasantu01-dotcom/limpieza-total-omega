@@ -325,17 +325,16 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         if not kernel32.GetExitCodeProcess(proc_handle, ctypes.byref(exit_code)) or exit_code.value != STILL_ACTIVE_EXIT_CODE:
             return False, "El proceso seleccionado ya no está activo."
             
-        buf = ctypes.create_unicode_buffer(2048)
-        size: int = psapi.GetModuleFileNameExW(proc_handle, 0, buf, 2048)
-        
-        if size > 0:
+        buf = ctypes.create_unicode_buffer(4096)
+        size = ctypes.c_ulong(4096)
+        # Usamos QueryFullProcessImageNameW para obtener la ruta absoluta real
+        if kernel32.QueryFullProcessImageNameW(proc_handle, 0, buf, ctypes.byref(size)):
             exe_path: str = os.path.abspath(os.path.normpath(buf.value))
             if is_protected_path(exe_path):
                 return False, "Operación denegada: ruta de ejecutable protegida."
             
         if not psapi.EmptyWorkingSet(proc_handle):
-            err_code = kernel32.GetLastError()
-            return False, f"Error al intentar liberar memoria (código {err_code})."
+            return False, "Error al intentar liberar memoria (código interno)."
             
         return True, f"Working set liberado. {TRIM_WARNING}"
     except Exception:

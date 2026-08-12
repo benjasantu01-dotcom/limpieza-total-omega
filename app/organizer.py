@@ -264,8 +264,8 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     """
     Elimina permanentemente los archivos contenidos en el directorio de revisión.
     
-    Aplica una comprobación estricta de la ruta para asegurar que solo se operen
-    archivos contenidos dentro de la carpeta designada.
+    Aplica una comprobación estricta para asegurar que solo se operen archivos
+    físicos dentro de la ruta designada, bloqueando enlaces simbólicos.
     """
     if not isinstance(review_dir, str) or not review_dir.strip():
         return 0
@@ -275,17 +275,17 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
 
     count: int = 0
     try:
-        with os.scandir(dest) as it:
-            for entry in it:
-                try:
-                    if entry.is_file() and not _is_junction(entry):
-                        path_to_delete = Path(entry.path).resolve()
-                        if dest in path_to_delete.parents:
-                            ensure_safe_to_modify(path_to_delete)
-                            os.remove(path_to_delete)
-                            count += 1
-                except (PermissionError, OSError):
-                    continue
+        for item in dest.iterdir():
+            try:
+                # Verificación estricta: debe ser archivo, no enlace y estar bajo el padre
+                if item.is_file() and not item.is_symlink():
+                    path_to_delete = item.resolve()
+                    if dest in path_to_delete.parents:
+                        ensure_safe_to_modify(path_to_delete)
+                        path_to_delete.unlink()
+                        count += 1
+            except (PermissionError, OSError):
+                continue
     except (PermissionError, OSError):
         pass
     return count
