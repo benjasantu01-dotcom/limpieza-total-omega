@@ -163,30 +163,33 @@ def parse_linux_meminfo(text: str) -> MemorySnapshot:
     )
 
 
+def _parse_csv_row(line: str) -> Optional[ProcessMemory]:
+    """Helper interno para procesar una línea de la salida de PowerShell."""
+    parts = [p.strip().strip("'\"") for p in line.split(",")]
+    if len(parts) < 3:
+        return None
+    try:
+        ws, pid = int(parts[-1]), int(parts[-2])
+        if ws < 0 or pid < 0:
+            return None
+        name = ",".join(parts[:-2])
+        return ProcessMemory(name or "Unknown", pid, ws)
+    except (ValueError, TypeError):
+        return None
+
+
 def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]:
     """Convierte la salida CSV de PowerShell a una lista ordenada de objetos ProcessMemory."""
     if not isinstance(text, str) or not text:
         return []
     
-    def process_lines():
-        for line in (l for l in text.splitlines() if l.strip()):
-            parts = [p.strip().strip("'\"") for p in line.split(",")]
-            if len(parts) >= 3:
-                try:
-                    ws = int(parts[-1])
-                    pid = int(parts[-2])
-                    if ws < 0 or pid < 0:
-                        continue
-                    name = ",".join(parts[:-2])
-                    yield ProcessMemory(name or "Unknown", pid, ws)
-                except (ValueError, TypeError):
-                    continue
+    processes = []
+    for line in (l for l in text.splitlines() if l.strip()):
+        parsed = _parse_csv_row(line)
+        if parsed:
+            processes.append(parsed)
 
-    try:
-        processes = sorted(process_lines(), key=lambda p: p.working_set, reverse=True)
-        return processes[:limit]
-    except Exception:
-        return []
+    return sorted(processes, key=lambda p: p.working_set, reverse=True)[:limit]
 
 
 def _read_windows_snapshot() -> MemorySnapshot:
@@ -290,10 +293,8 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
     Intenta liberar el 'working set' de un proceso específico (solo en Windows).
     
-    Realiza validaciones de seguridad previas:
-    - Comprueba que el PID sea un entero válido.
-    - Verifica que no sea un proceso del sistema ni el propio proceso actual.
-    - Valida que el ejecutable no resida en una ruta protegida mediante `is_protected_path`.
+    Retorna:
+        Tuple[bool, str]: (Éxito de la operación, Mensaje de estado).
     """
     if os.name != "nt":
         return False, "Solo disponible en Windows."

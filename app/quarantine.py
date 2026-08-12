@@ -279,6 +279,7 @@ def quarantine_file(
     reason: str = "Marcado como sospechoso",
     base: Union[str, Path] = DEFAULT_QUARANTINE_DIR,
 ) -> QuarantineItem:
+    """Aísla un archivo en la zona de cuarentena tras validar su seguridad."""
     if not source:
         raise ValueError("La ruta de origen no puede estar vacía.")
     source_path = Path(source).resolve()
@@ -348,6 +349,7 @@ def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[Quaranti
 
 
 def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
+    """Restaura un ítem desde la cuarentena validando que el destino sea seguro."""
     if not item_id or not isinstance(item_id, str):
         raise ValueError("ID de ítem inválido.")
     items = load_manifest(base)
@@ -384,6 +386,7 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
 
 
 def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> bool:
+    """Borra un ítem específico de la cuarentena tras validar su integridad."""
     if not item_id or not isinstance(item_id, str):
         return False
     items = load_manifest(base)
@@ -406,6 +409,12 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
 
 def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     """Vacía la cuarentena eliminando archivos, manteniendo la integridad del manifiesto."""
+    def _is_safe_to_purge(entry: Path, root: Path) -> bool:
+        """Helper local para centralizar validaciones antes del borrado."""
+        if entry is None or entry.name == MANIFEST_NAME or not entry.is_file() or entry.is_symlink():
+            return False
+        return _is_valid_quarantine_path(entry.resolve(), root)
+
     try:
         quarantine_root = quarantine_dir(base)
     except (OSError, ValueError):
@@ -418,11 +427,7 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     items_to_keep: List[QuarantineItem] = []
     
     for entry in quarantine_root.iterdir():
-        if entry is None or entry.name == MANIFEST_NAME or not entry.is_file() or entry.is_symlink():
-            continue
-        
-        # Validar confinamiento antes de cualquier operación
-        if not _is_valid_quarantine_path(entry.resolve(), quarantine_root):
+        if not _is_safe_to_purge(entry, quarantine_root):
             continue
 
         try:

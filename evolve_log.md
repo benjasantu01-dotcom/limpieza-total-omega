@@ -456,3 +456,10 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-08-12T12:18:05` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._build_single_health_bar, LimpiezaTotalOmegaApp._metric_card
 - `2026-08-12T12:18:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-12T12:18:05` Corrida terminada. Total usado hoy: 288.
+- `2026-08-12T12:24:16` Arrancando corrida. Quedan hoy ~12 peticiones objetivo.
+- `2026-08-12T12:24:44` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación de los tipos de retorno en las funciones principales y se ha extraído la lógica compleja de parseo de CSV en `parse_windows_process_csv` a un método privado más legible, facilitando la comprensión del flujo de datos sin alterar el comportamiento.
+- `2026-08-12T12:25:08` ✅ Mejora aceptada en organizer.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante docstrings detallados en las funciones de utilidad internas y se han añadido type hints más precisos para mejorar la legibilidad y mantenibilidad del módulo.
+- `2026-08-12T12:25:38` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Se mejoró la legibilidad y mantenibilidad del archivo documentando las precondiciones de seguridad en las funciones críticas y extrayendo la lógica de validación de rutas dentro de `purge_all` para reducir el anidamiento y clarificar la intención de cada bloque.
+- `2026-08-12T12:25:42` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 122): unterminated string literal (detected at line 122)
+- `2026-08-12T12:25:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-12T12:25:42` Corrida terminada. Total usado hoy: 292.
