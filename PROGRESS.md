@@ -8,37 +8,37 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **225** (44.6% de aceptación)
 - Rechazadas por tests: 7
-- Rechazadas por guardia de seguridad: 33
+- Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 224
+- Sin respuesta de la IA (error o límite): 225
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-11 | 89 | 1 | 11 | 4 | 87 |
-| 2026-08-12 | 136 | 6 | 22 | 11 | 137 |
+| 2026-08-11 | 88 | 1 | 10 | 4 | 85 |
+| 2026-08-12 | 137 | 6 | 22 | 11 | 140 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **61**
 - manejo de errores y validación de entradas: **50**
 - rendimiento: **42**
-- seguridad defensiva: **40**
-- robustez ante casos límite: **32**
+- seguridad defensiva: **39**
+- robustez ante casos límite: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **23**
-- `branding.py`: **21**
+- `branding.py`: **22**
 - `healthscore.py`: **21**
 - `assistant.py`: **20**
 - `quarantine.py`: **20**
 - `diskreport.py`: **18**
-- `memory.py`: **16**
 - `browser.py`: **16**
 - `scanner.py`: **15**
 - `duplicates.py`: **15**
+- `memory.py`: **15**
 - `organizer.py`: **15**
 - `main.py`: **10**
 - `startup.py`: **9**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-12T13:26:03` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de entrada y fallos de E/S mediante el uso de `pathlib.Path.resolve` seguro y un filtrado explícito de rutas que garantiza que solo se escriba en directorios válidos, evitando excepciones no controladas durante operaciones de disco.
 - `2026-08-12T13:17:07` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` ante entradas malformadas o inesperadas, añadiendo una validación explícita para asegurar que los valores sean finitos y del tipo correcto, evitando así que datos corruptos en el origen propaguen errores al motor del asistente.
 - `2026-08-12T13:16:49` **startup.py** (rendimiento): Optimicé el rendimiento de `list_startup_entries` sustituyendo la concatenación de listas completas por un generador eficiente que evita el procesamiento redundante y reduce el consumo de memoria al iterar.
 - `2026-08-12T13:16:13` **settings.py** (rendimiento): Se optimizó el acceso a las configuraciones centralizando la carga en `load()`, reduciendo las llamadas redundantes a disco y el uso de caché, asegurando que `_cached_settings` sea la única fuente de verdad durante la ejecución y evitando re-validaciones innecesarias.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-12T12:25:08` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en las funciones de utilidad internas y se han añadido type hints más precisos para mejorar la legibilidad y mantenibilidad del módulo.
 - `2026-08-12T12:24:44` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación de los tipos de retorno en las funciones principales y se ha extraído la lógica compleja de parseo de CSV en `parse_windows_process_csv` a un método privado más legible, facilitando la comprensión del flujo de datos sin alterar el comportamiento.
 - `2026-08-12T12:15:37` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo añadiendo docstrings técnicos claros a las constantes, especificando la intención de cada función de cálculo, y documentando formalmente las unidades y rangos esperados en `SystemMetrics` mediante anotaciones.
-- `2026-08-12T12:15:11` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la inclusión de Type Hints explícitos para las funciones internas, la clarificación de las precondiciones y restricciones de E/S en los docstrings, y la adición de una breve explicación sobre la lógica de selección de archivos (heurística de antigüedad y longitud de ruta) para mejorar la mantenibilidad.

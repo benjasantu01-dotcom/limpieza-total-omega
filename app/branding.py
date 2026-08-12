@@ -330,22 +330,20 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     """Guarda el logo en disco previa validación de seguridad de la ruta."""
     if destination is None: return None
     try:
-        p = Path(destination).expanduser()
+        p = Path(destination).expanduser().resolve()
         
         # Validar permisos y restricciones de seguridad antes de escritura
         if not is_safe_to_modify(p) or not is_safe_to_modify(p.parent):
             return None
-        
-        target = p.resolve()
-        parent_dir = target.parent
-        
+            
+        parent_dir = p.parent
         if not parent_dir.exists():
             parent_dir.mkdir(parents=True, exist_ok=True)
         elif not parent_dir.is_dir():
             return None
             
-        target.write_text(logo_svg(), encoding="utf-8")
-        return target
+        p.write_text(logo_svg(), encoding="utf-8")
+        return p
     except (OSError, PermissionError, ValueError, RuntimeError, IOError, AttributeError, TypeError):
         return None
 

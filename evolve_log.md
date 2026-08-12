@@ -552,3 +552,10 @@ FAILED evolve/tests/test_basic.py::test_delete_reviewed_only_touches_the_review_
 - `2026-08-12T13:17:07` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `build_context` ante entradas malformadas o inesperadas, añadiendo una validación explícita para asegurar que los valores sean finitos y del tipo correcto, evitando así que datos corruptos en el origen propaguen errores al motor del asistente.
 - `2026-08-12T13:17:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-12T13:17:07` Corrida terminada. Total usado hoy: 312.
+- `2026-08-12T13:25:30` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-12T13:26:03` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `save_logo_svg` ante errores de entrada y fallos de E/S mediante el uso de `pathlib.Path.resolve` seguro y un filtrado explícito de rutas que garantiza que solo se escriba en directorios válidos, evitando excepciones no controladas durante operaciones de disco.
+- `2026-08-12T13:26:27` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-08-12T13:26:53` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: robustez ante casos límite).
+- `2026-08-12T13:27:02` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-08-12T13:27:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-12T13:27:02` Corrida terminada. Total usado hoy: 316.
