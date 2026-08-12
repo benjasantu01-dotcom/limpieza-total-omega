@@ -100,13 +100,17 @@ def base_directories() -> List[Path]:
 def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> bool:
     """
     Valida la integridad de la ruta para evitar Path Traversal y enlaces simbólicos.
-    Comprueba que 'target_path' resida físicamente dentro de 'base_path' y que no
-    sea un punto de reparse (Junction/Symlink) que escape de la jerarquía permitida.
+
+    Args:
+        target_path: Ruta candidata a verificar.
+        base_path: Directorio raíz esperado de la jerarquía.
+
+    Returns:
+        True si la ruta es segura, existe, está dentro de la base y no es un vínculo simbólico.
     """
     if not isinstance(target_path, Path) or not isinstance(base_path, Path):
         return False
     
-    # Validar caracteres prohibidos que podrían evadir filtros en Windows
     path_str = str(target_path)
     if any(ord(char) < 32 or ord(char) in (0x200E, 0x200F, 0x202A, 0x202E) for char in path_str):
         return False
@@ -118,7 +122,6 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
         if is_protected_path(real_target) or is_protected_path(real_base):
             return False
 
-        # Verifica que la ruta base sea un prefijo real de la ruta objetivo tras normalización
         try:
             real_target.relative_to(real_base)
         except ValueError:
@@ -181,6 +184,14 @@ def _sum_directory_recursive(
 ) -> int:
     """
     Calcula el peso total de una carpeta mediante un recorrido DFS con detección de ciclos.
+
+    Args:
+        root_dir: Ruta absoluta a la carpeta a escanear.
+        visited: Conjunto de rutas reales visitadas para prevenir ciclos.
+        depth: Profundidad actual de recursión (limitada a 20).
+
+    Returns:
+        Suma total de bytes de los archivos encontrados, retornando 0 en caso de error.
     """
     if depth > 20:
         return 0
@@ -281,7 +292,6 @@ def detect_profiles(
         for browser_name, relative_path_str in cache_paths.items():
             if not isinstance(relative_path_str, str): continue
             
-            # Construcción eficiente evitando iterar strings de ruta
             candidate = real_base.joinpath(*relative_path_str.split("\\"))
             if _is_valid_cache_path(candidate, real_base):
                 c_path = candidate.resolve()

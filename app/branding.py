@@ -200,7 +200,7 @@ def grade_color(grade: Optional[str]) -> HexColor:
 
 @lru_cache(maxsize=128)
 def score_color(score: Union[float, int, None]) -> HexColor:
-    """Calcula el color semántico (del éxito al peligro) basado en un puntaje numérico."""
+    """Calcula el color semántico basado en un puntaje numérico (0-100)."""
     if score is None:
         return PALETTE["text_muted"]
     try:
@@ -275,7 +275,7 @@ def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) ->
 
 @lru_cache(maxsize=8)
 def _get_grouped_segments(colors: Tuple[HexColor, ...]) -> Tuple[Tuple[HexColor, int, int], ...]:
-    """Comprime secuencias de colores iguales en segmentos de rango [inicio, fin)."""
+    """Comprime secuencias consecutivas de colores idénticos en segmentos para optimizar el dibujo."""
     segments = []
     if not colors: return tuple(segments)
     start = 0
@@ -291,7 +291,7 @@ def _get_grouped_segments(colors: Tuple[HexColor, ...]) -> Tuple[Tuple[HexColor,
 
 @lru_cache(maxsize=8)
 def _get_shield_coords(s: float) -> List[float]:
-    """Retorna los puntos vectoriales del escudo normalizado, escalados por 's'."""
+    """Retorna los puntos normalizados del escudo, escalados por el factor 's'."""
     base: List[float] = [64, 18, 100, 31, 100, 67, 90, 90, 64, 110, 38, 90, 28, 67, 28, 31]
     return [v * float(s) for v in base]
 

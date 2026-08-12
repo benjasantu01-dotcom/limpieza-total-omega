@@ -432,7 +432,10 @@ def local_answer(question: str, context: SystemContext) -> Answer:
     return Answer(cuerpo, notice=OFFLINE_NOTICE, suggestions=SUGGESTED_QUESTIONS_LIST[:3])
 
 def _gen_problems(ctx: SystemContext) -> Generator[str, None, None]:
-    """Generador de problemas detectados priorizados por criticidad (max 3)."""
+    """
+    Genera un listado de problemas detectados priorizados por criticidad.
+    Se limita a un máximo de 3 elementos para mantener la respuesta concisa.
+    """
     if ctx is None: return
     count = 0
     if ctx.disk_free_percent < 10.0:
