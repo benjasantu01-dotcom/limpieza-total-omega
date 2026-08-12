@@ -129,11 +129,10 @@ class Scanner:
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
-    Valida el nombre del archivo mediante regex para detectar extensiones encadenadas sospechosas.
+    Identifica archivos con doble extensión que intentan ocultar un ejecutable tras una extensión inofensiva.
     
-    Args:
-        path: Path del archivo a validar.
-        name: Nombre opcional del archivo (override).
+    Returns:
+        Suspicion object si el nombre coincide con el patrón DOUBLE_EXTENSION_RE, None en otro caso.
     """
     target = name or (path.name if path else None)
     if target and DOUBLE_EXTENSION_RE.search(target):
@@ -143,8 +142,9 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, name
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
-    Calcula si el tiempo de modificación del ejecutable es inferior al umbral de frescura definido,
-    limitado a directorios donde el usuario suele descargar contenido.
+    Detecta ejecutables modificados recientemente en directorios de usuario de alta exposición.
+    
+    Esta heurística reduce el riesgo de ejecución involuntaria de binarios descargados recientemente.
     """
     if entry is None or is_protected_path(path):
         return None
@@ -165,11 +165,9 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
-    Compara el nombre del ejecutable contra una lista blanca de procesos de sistema para detectar suplantación.
+    Detecta binarios legítimos del sistema (ej. svchost.exe) localizados fuera del directorio System32.
     
-    Args:
-        path: Ruta completa del archivo para validar el directorio padre (System32).
-        name: Nombre del archivo para comparar contra la lista de procesos críticos.
+    La presencia de estos nombres en directorios de usuario suele ser un indicador de suplantación maliciosa.
     """
     if path is None:
         return None
@@ -184,7 +182,12 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, name
     return None
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None) -> ScanResult:
-    """Ejecuta heurísticas. Prioriza chequeos de cadena (O(1)) antes de realizar I/O con os.stat()."""
+    """
+    Ejecuta el pipeline de heurísticas sobre un archivo dado.
+    
+    La estrategia de escaneo prioriza chequeos de cadena (O(1)) antes de realizar I/O con os.stat()
+    para minimizar el impacto en el rendimiento.
+    """
     findings: ScanResult = []
     
     if path is None:
@@ -208,7 +211,12 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, na
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     """
     Inicializa y ejecuta el proceso de escaneo recursivo en el directorio proporcionado.
-    Retorna una lista consolidada de todas las sospechas encontradas.
+    
+    Implementa un mecanismo de exclusión de rutas mediante el módulo 'safety' y evita ciclos
+    detectando puntos de reanálisis (reparse points).
+    
+    Returns:
+        Lista consolidada de objetos Suspicion encontrados.
     """
     if not directory:
         return []

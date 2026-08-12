@@ -1077,3 +1077,38 @@ FAILED evolve/tests/test_modules.py::test_a_healthy_system_still_gets_a_recommen
 - `2026-08-12T08:00:09` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad de `_check_file_integrity` extrayendo la lógica de validación a un diccionario de funciones lambda auto-explicativas, lo que permite que el bucle de validación sea más limpio y fácil de auditar bajo las reglas de seguridad.
 - `2026-08-12T08:00:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-12T08:00:09` Corrida terminada. Total usado hoy: 188.
+- `2026-08-12T08:08:45` Arrancando corrida. Quedan hoy ~112 peticiones objetivo.
+- `2026-08-12T08:09:11` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación del módulo `scanner.py` mediante la normalización de docstrings, la inclusión de explicaciones detalladas sobre el propósito de cada heurística y la estandarización de los contratos de tipo para clarificar la lógica de las funciones `check_`.
+- `2026-08-12T08:09:38` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad añadiendo docstrings específicos a los métodos públicos y delegados de validación, explicando las restricciones de seguridad y el comportamiento de las funciones en caso de error.
+- `2026-08-12T08:10:01` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-08-12T08:10:17` Tests FALLARON:
+```
+ def test_metrics_are_withheld_when_the_user_says_no(tmp_path, monkeypatch):
+        """Se puede usar el asistente sin mandar ni una métrica."""
+        monkeypatch.setenv(settings.API_KEY_ENV_VAR, "clave")
+        settings.save({**settings.DEFAULTS, "asistente_activado": True,
+                       "asistente_enviar_metricas": False}, tmp_path)
+    
+        enviado = {}
+    
+        def espia(question, context_text, api_key, model):
+            enviado["texto"] = context_text
+            return "ok"
+    
+        monkeypatch.setattr(assistant, "_call_gemini", espia)
+        assistant.ask("¿qué hago?", _contexto_lleno(), tmp_path)
+        assert "2400" not in enviado["texto"]
+>       assert "no autorizó" in enviado["texto"]
+E       AssertionError: assert 'no autorizó' in 'No autorizado'
+
+evolve/tests/test_assistant.py:419: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_extras - AssertionError: assert 0.0 == 8.0
+ +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).memory_total_gb
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - AssertionError: assert 'no autorizó' in 'No autorizado'
+2 failed, 297 passed in 0.99s
+
+```
+- `2026-08-12T08:10:17` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `build_context` evitando iteraciones y chequeos de tipo redundantes sobre atributos inexistentes mediante un acceso directo y estructurado, y reduje la carga de memoria al pre-calcular la lista de sugerencias en lugar de instanciarla en cada llamada.
+- `2026-08-12T08:10:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-12T08:10:17` Corrida terminada. Total usado hoy: 192.
