@@ -261,6 +261,12 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     if is_protected_path(str(ruta)) or not is_safe_to_modify(str(ruta)):
         return None
     cleaned_settings = validate(values)
+    
+    # Pre-serialización para verificar tamaño y prevenir DoS por escritura
+    json_data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
+    if len(json_data.encode("utf-8")) > MAX_SETTINGS_SIZE:
+        return None
+
     if cleaned_settings.get("asistente_activado") and not (cleaned_settings.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)):
         cleaned_settings["asistente_activado"] = False
     if _cached_settings == cleaned_settings and _current_path == ruta: return ruta
@@ -269,7 +275,7 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
         if not os.access(ruta.parent, os.W_OK): return None
         temp = ruta.with_suffix(".tmp")
         with open(temp, "w", encoding="utf-8") as f:
-            json.dump(cleaned_settings, f, indent=2, ensure_ascii=False)
+            f.write(json_data)
             f.flush()
             os.fsync(f.fileno())
         os.replace(temp, ruta)

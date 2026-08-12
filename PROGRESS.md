@@ -6,35 +6,35 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **238** (47.2% de aceptación)
-- Rechazadas por tests: 8
+- Mejoras aceptadas: **239** (47.4% de aceptación)
+- Rechazadas por tests: 9
 - Rechazadas por guardia de seguridad: 34
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 208
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-11 | 132 | 5 | 17 | 8 | 110 |
-| 2026-08-12 | 106 | 3 | 17 | 8 | 98 |
+| 2026-08-11 | 132 | 5 | 17 | 8 | 106 |
+| 2026-08-12 | 107 | 4 | 17 | 8 | 100 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **61**
 - manejo de errores y validación de entradas: **48**
 - rendimiento: **45**
+- seguridad defensiva: **43**
 - robustez ante casos límite: **42**
-- seguridad defensiva: **42**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **22**
 - `quarantine.py`: **22**
 - `diskreport.py`: **21**
+- `settings.py`: **21**
 - `assistant.py`: **21**
 - `branding.py`: **21**
-- `settings.py`: **20**
 - `scanner.py`: **18**
 - `browser.py`: **17**
 - `duplicates.py`: **17**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-12T10:02:33` **settings.py** (seguridad defensiva): Se reforzó la seguridad de `save()` añadiendo una verificación de tamaño de archivo (máximo 64KB) antes de escribir, evitando posibles ataques de denegación de servicio por agotamiento de disco mediante archivos de configuración maliciosamente grandes.
 - `2026-08-12T09:52:23` **quarantine.py** (seguridad defensiva): Se implementó un bloqueo de seguridad en `purge_all` y `purge_item` para asegurar que el archivo a borrar sea explícitamente un archivo regular y no un link simbólico, evitando vulnerabilidades de escalada de privilegios o borrado accidental de objetivos fuera de la cuarentena.
 - `2026-08-12T09:51:54` **organizer.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `delete_reviewed` para evitar el borrado de archivos fuera de la carpeta de destino y se añadió un chequeo explícito de integridad antes de la ejecución de `os.remove`, asegurando que `ensure_safe_to_modify` actúe como filtro preventivo.
 - `2026-08-12T09:43:00` **main.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_ask_folder` añadiendo una normalización más robusta frente a caracteres especiales y una validación de seguridad proactiva mediante `safety.ensure_safe_to_modify` antes de retornar cualquier ruta, evitando que el usuario seleccione rutas prohibidas accidentalmente.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-12T09:13:58` **memory.py** (robustez ante casos límite): Mejoré la robustez de `parse_windows_process_csv` para manejar correctamente procesos con nombres que contienen comas o caracteres inusuales, utilizando una lógica de parseo más segura que previene errores de índice y fallos al procesar líneas malformadas o inesperadas.
 - `2026-08-12T09:01:31` **healthscore.py** (robustez ante casos límite): Reforcé la robustez del módulo `healthscore.py` ante casos límite en la generación de recomendaciones, evitando accesos a claves inexistentes en el diccionario de `ratios` y asegurando que `_generate_recommendations` maneje correctamente las entradas faltantes o mal formadas.
 - `2026-08-12T09:01:20` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez de `suggest_keeper` y `hash_file` frente a archivos que desaparecen o se corrompen durante el proceso de análisis, evitando excepciones inesperadas mediante chequeos de existencia y manejo de errores de estado más granular, alineándose con el enfoque de robustez ante casos límite.
-- `2026-08-12T08:51:12` **assistant.py** (robustez ante casos límite): Mejora la robustez ante datos corruptos o inesperados en `SystemContext` dentro de `context_as_text`, asegurando que la serialización sea siempre segura y no propague errores hacia el asistente.

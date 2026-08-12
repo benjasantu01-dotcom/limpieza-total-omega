@@ -1184,3 +1184,65 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-12T09:52:26` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-08-12T09:52:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-12T09:52:26` Corrida terminada. Total usado hoy: 232.
+- `2026-08-12T10:01:16` Arrancando corrida. Quedan hoy ~68 peticiones objetivo.
+- `2026-08-12T10:01:43` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-08-12T10:02:06` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-08-12T10:02:33` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `save()` añadiendo una verificación de tamaño de archivo (máximo 64KB) antes de escribir, evitando posibles ataques de denegación de servicio por agotamiento de disco mediante archivos de configuración maliciosamente grandes.
+- `2026-08-12T10:02:44` Tests FALLARON:
+```
+e="HKCU")
+>       assert [e.name for e in entradas] == ["MiApp", "Otra"]
+E       AssertionError: assert [] == ['MiApp', 'Otra']
+E         
+E         Right contains 2 more items, first extra item: 'MiApp'
+E         
+E         Full diff:
+E         + []
+E         - [
+E         -     'MiApp',
+E         -     'Otra',
+E         - ]
+
+evolve/tests/test_modules.py:645: AssertionError
+________________ test_parse_registry_csv_skips_powershell_noise ________________
+
+    def test_parse_registry_csv_skips_powershell_noise():
+        csv = '"Name","Value"\n"PSPath","algo"\n"Real","C:\\\\r.exe"\n'
+>       assert [e.name for e in startup.parse_registry_csv(csv)] == ["Real"]
+E       AssertionError: assert [] == ['Real']
+E         
+E         Right contains one more item: 'Real'
+E         
+E         Full diff:
+E         + []
+E         - [
+E         -     'Real',
+E         - ]
+
+evolve/tests/test_modules.py:651: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_registry_csv_reads_entries - AssertionError: assert [] == ['MiApp', 'Otra']
+  
+  Right contains 2 more items, first extra item: 'MiApp'
+  
+  Full diff:
+  + []
+  - [
+  -     'MiApp',
+  -     'Otra',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_noise - AssertionError: assert [] == ['Real']
+  
+  Right contains one more item: 'Real'
+  
+  Full diff:
+  + []
+  - [
+  -     'Real',
+  - ]
+2 failed, 297 passed in 1.21s
+
+```
+- `2026-08-12T10:02:44` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha añadido un filtro de seguridad en `parse_registry_csv` para validar explícitamente que los comandos leídos no sean rutas relativas ni contengan caracteres de redirección/inyección, asegurando que solo se procesen rutas absolutas validadas por `is_protected_path` antes de instanciar `StartupEntry`.
+- `2026-08-12T10:02:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-12T10:02:44` Corrida terminada. Total usado hoy: 236.
