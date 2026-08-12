@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **246** (48.8% de aceptación)
-- Rechazadas por tests: 9
+- Mejoras aceptadas: **247** (49.0% de aceptación)
+- Rechazadas por tests: 10
 - Rechazadas por guardia de seguridad: 34
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 198
+- Sin respuesta de la IA (error o límite): 196
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-10 | 62 | 1 | 7 | 6 | 54 |
+| 2026-08-10 | 62 | 1 | 7 | 6 | 50 |
 | 2026-08-11 | 170 | 8 | 24 | 10 | 138 |
-| 2026-08-12 | 14 | 0 | 3 | 1 | 6 |
+| 2026-08-12 | 15 | 1 | 3 | 1 | 8 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,7 +26,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **51**
 - robustez ante casos límite: **46**
 - rendimiento: **45**
-- seguridad defensiva: **44**
+- seguridad defensiva: **45**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,9 +34,9 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **21**
 - `diskreport.py`: **21**
 - `duplicates.py`: **21**
+- `settings.py`: **21**
 - `branding.py`: **21**
 - `healthscore.py`: **20**
-- `settings.py`: **20**
 - `memory.py`: **18**
 - `scanner.py`: **18**
 - `browser.py`: **17**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-12T01:10:55` **settings.py** (seguridad defensiva): He endurecido la seguridad en `save` y `_is_safe_path` al validar que las rutas no solo sean seguras para modificar, sino que no sean links simbólicos o junctions de sistema, utilizando una comprobación explícita de `is_protected_path` sobre la ruta resuelta antes de cualquier operación de escritura o validación de configuración.
 - `2026-08-12T01:02:04` **scanner.py** (seguridad defensiva): Se ha añadido una validación explícita mediante `is_protected_path` dentro de `process_entry` antes de realizar `entry.stat()` o cualquier otra operación de acceso, asegurando que los enlaces simbólicos o puntos de reanálisis hacia rutas protegidas no sean seguidos ni inspeccionados, reforzando la seguridad defensiva contra el escape de directorios.
 - `2026-08-12T01:00:58` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad en `purge_all` implementando una validación estricta de "sandbox" para cada archivo antes de cualquier operación, asegurando que no se pueda manipular el sistema de archivos fuera del directorio de cuarentena definido, incluso si hay archivos huérfanos presentes.
 - `2026-08-12T00:53:27` **organizer.py** (seguridad defensiva): Mejoré la seguridad defensiva en `stage_for_review` y `delete_reviewed` para garantizar que las rutas de los archivos procesados estén estrictamente contenidas dentro de sus carpetas origen o destino, evitando cualquier riesgo de "path traversal" o manipulación de rutas relativas mediante el uso de `path.resolve()` y validaciones de parentesco.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-12T00:11:32` **main.py** (robustez ante casos límite): Se mejora la robustez del componente de entrada `_ask_folder` añadiendo una validación explícita mediante `pathlib.Path.exists()` previa a la resolución de la ruta y se encapsula el acceso a `self.scan_target` dentro de `run_async` para evitar condiciones de carrera donde el objetivo podría invalidarse entre la selección del usuario y el inicio real de la tarea.
 - `2026-08-12T00:10:26` **healthscore.py** (robustez ante casos límite): Reforcé la robustez del módulo `healthscore.py` ante datos de entrada corruptos o extremos (ej. divisiones por cero si los umbrales configurables llegan a cero o valores infinitos/NaN) mediante la implementación de chequeos explícitos y preventivos en las funciones de cálculo, asegurando que la app nunca falle al procesar métricas inusuales.
 - `2026-08-12T00:09:37` **duplicates.py** (robustez ante casos límite): Se ha mejorado `hash_file` y `partial_hash` para gestionar correctamente los casos límite de archivos bloqueados por el sistema operativo, utilizando un bloque `try-except` más específico y validando la existencia tras la apertura, asegurando que la app no aborte ante procesos que bloquean el acceso a archivos temporales.
-- `2026-08-11T15:13:28` **diskreport.py** (robustez ante casos límite): Se fortalece la robustez ante errores de acceso a disco en `walk_files` y `summarize` capturando excepciones específicas (`OSError`, `PermissionError`, `FileNotFoundError`) de forma más granular para evitar que un solo archivo inaccesible o un enlace simbólico roto aborten un escaneo completo.

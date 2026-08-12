@@ -110,7 +110,7 @@ class _Validators:
         if len(path_obj.parts) < 2: return False
         if any(part in ('.', '..', '..\\', '../') for part in path_obj.parts): return False
         try:
-            resolved = path_obj.resolve() if path_obj.exists() else path_obj.absolute()
+            resolved = path_obj.resolve()
             if resolved.is_symlink() or (hasattr(resolved, 'is_junction') and resolved.is_junction()):
                 return False
             if is_protected_path(str(resolved)): return False
@@ -196,7 +196,7 @@ def settings_path(path_or_base: PathLike | None = None) -> Path:
     if key not in _path_cache:
         try:
             base = Path(key).expanduser().resolve(strict=False)
-            _path_cache[key] = (base / SETTINGS_FILE) if is_safe_to_modify(str(base)) else (SETTINGS_DIR / SETTINGS_FILE)
+            _path_cache[key] = (base / SETTINGS_FILE) if _Validators._is_safe_path(base) else (SETTINGS_DIR / SETTINGS_FILE)
         except (OSError, RuntimeError, PermissionError):
             return SETTINGS_DIR / SETTINGS_FILE
     return _path_cache[key]
