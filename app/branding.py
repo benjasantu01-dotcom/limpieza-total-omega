@@ -258,12 +258,12 @@ def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
     )
 
 
-@lru_cache(maxsize=16)
-def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> List[HexColor]:
+@lru_cache(maxsize=32)
+def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> Tuple[HexColor, ...]:
     """Calcula una secuencia de colores interpolados a lo largo de varios puntos de control."""
     num_steps = max(1, int(steps))
-    if not stops: return [PALETTE["accent"]] * num_steps
-    if len(stops) < 2: return [stops[0]] * num_steps
+    if not stops: return (PALETTE["accent"],) * num_steps
+    if len(stops) < 2: return (stops[0],) * num_steps
     
     res = []
     tramos = len(stops) - 1
@@ -272,7 +272,7 @@ def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) ->
         idx = int(pos)
         if idx >= tramos: res.append(stops[-1])
         else: res.append(blend(stops[idx], stops[idx + 1], pos - idx))
-    return res
+    return tuple(res)
 
 
 @lru_cache(maxsize=8)
@@ -365,7 +365,7 @@ def _draw_shield_stripes(canvas: Any, canvas_x: float, canvas_y: float, scale: f
     """Renderiza el sombreado interno del escudo dentro de un canvas Tkinter."""
     if scale <= 0: return
     franjas_count = max(6, int(28 * scale))
-    colores = tuple(gradient_colors(franjas_count))
+    colores = gradient_colors(franjas_count)
     for color_hex, start, end in _get_grouped_segments(colores):
         mid = (start + end) / 2
         w = 36 * scale * (1.0 if mid / (franjas_count - 1) < 0.55 else 1.0 - (mid / (franjas_count - 1) - 0.55) * 1.9)
@@ -405,7 +405,7 @@ def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
     if not hasattr(canvas, "create_line"): return
     try:
         ancho = max(1, int(width))
-        colores = tuple(gradient_colors(ancho, stops))
+        colores = gradient_colors(ancho, stops)
         for color_hex, start, end in _get_grouped_segments(colores):
             canvas.create_line(canvas_x + start, canvas_y, canvas_x + end, canvas_y, fill=color_hex, width=max(1, int(height)))
     except (ValueError, TypeError, AttributeError): pass

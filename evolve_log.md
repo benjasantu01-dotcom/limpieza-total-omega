@@ -497,3 +497,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-12T12:35:53` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Mejoré la documentación interna y la claridad del flujo de `StartupEntry` añadiendo type hints más precisos y clarificando las docstrings de las técnicas de resolución perezosa para evitar confusiones sobre la persistencia en caché.
 - `2026-08-12T12:35:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-12T12:35:53` Corrida terminada. Total usado hoy: 296.
+- `2026-08-12T12:44:34` Arrancando corrida. Quedan hoy ~4 peticiones objetivo.
+- `2026-08-12T12:45:39` Gemini no devolvió un bloque de archivo válido para assistant.py (enfoque: rendimiento).
+- `2026-08-12T12:46:40` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). He refactorizado `gradient_colors` para evitar recalcular innecesariamente los segmentos de color en cada llamada al renderizado, delegando la estructura de datos a una lista pre-computada y eliminando el overhead de procesar la lógica de interpolación lineal cada vez que se actualiza la UI.
+- `2026-08-12T12:47:05` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
+- `2026-08-12T12:47:16` ➖ Sin cambios en diskreport.py (enfoque: rendimiento). Motivo: Optimicé `summarize` para evitar múltiples recorridos innecesarios del sistema de archivos, centralizando la lógica de agregación en una sola iteración y reduciendo la complejidad algorítmica de la función.
+- `2026-08-12T12:47:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-12T12:47:16` Corrida terminada. Total usado hoy: 300.

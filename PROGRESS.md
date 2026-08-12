@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **226** (44.8% de aceptación)
+- Mejoras aceptadas: **223** (44.2% de aceptación)
 - Rechazadas por tests: 8
 - Rechazadas por guardia de seguridad: 33
-- Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 221
+- Sin cambios (nada sustancial que mejorar): 17
+- Sin respuesta de la IA (error o límite): 223
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-11 | 97 | 3 | 13 | 6 | 89 |
-| 2026-08-12 | 129 | 5 | 20 | 10 | 132 |
+| 2026-08-11 | 93 | 3 | 13 | 6 | 89 |
+| 2026-08-12 | 130 | 5 | 20 | 11 | 134 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **61**
 - manejo de errores y validación de entradas: **50**
 - seguridad defensiva: **43**
-- robustez ante casos límite: **36**
-- rendimiento: **36**
+- rendimiento: **37**
+- robustez ante casos límite: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **22**
-- `quarantine.py`: **21**
+- `branding.py`: **21**
 - `assistant.py`: **20**
-- `branding.py`: **20**
 - `healthscore.py`: **20**
+- `quarantine.py`: **20**
 - `diskreport.py`: **19**
-- `memory.py`: **17**
 - `scanner.py`: **16**
+- `memory.py`: **16**
 - `browser.py`: **16**
-- `organizer.py`: **15**
 - `duplicates.py`: **15**
-- `main.py`: **11**
+- `organizer.py`: **14**
+- `main.py`: **10**
 - `startup.py`: **8**
 - `safety.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-12T12:46:40` **branding.py** (rendimiento): He refactorizado `gradient_colors` para evitar recalcular innecesariamente los segmentos de color en cada llamada al renderizado, delegando la estructura de datos a una lista pre-computada y eliminando el overhead de procesar la lógica de interpolación lineal cada vez que se actualiza la UI.
 - `2026-08-12T12:35:53` **startup.py** (legibilidad y documentación): Mejoré la documentación interna y la claridad del flujo de `StartupEntry` añadiendo type hints más precisos y clarificando las docstrings de las técnicas de resolución perezosa para evitar confusiones sobre la persistencia en caché.
 - `2026-08-12T12:35:43` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna y mantenibilidad agregando docstrings descriptivos a los métodos del validador y refinando la estructura de las constantes, facilitando la comprensión de las restricciones de seguridad sin alterar la lógica de validación existente.
 - `2026-08-12T12:34:53` **safety.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `ensure_safe_to_modify` para delegar sus validaciones en una serie de pequeñas funciones privadas con nombres descriptivos, eliminando la complejidad ciclomática de la función principal.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-12T12:04:59` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `assistant.py` mediante la normalización de la estructura de las respuestas del asistente local, reemplazando la construcción manual de cadenas (`f-strings` dispersas) por el uso de una lista de argumentos `partes` en todas las funciones `handle_*`, lo que facilita la auditoría de seguridad y la consistencia del lenguaje.
 - `2026-08-12T11:55:15` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `settings.save` añadiendo un bloque `try-finally` para asegurar que el archivo temporal sea eliminado incluso si ocurre un error inesperado (como un fallo en `os.fsync`) durante la escritura, evitando archivos basura.
 - `2026-08-12T11:45:36` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` agregando una validación explícita para asegurar que la ruta de origen no sea igual al destino (evitando auto-aniquilación) y centralizando el manejo de errores mediante el chequeo de la existencia del archivo en el sistema de archivos antes de cualquier operación destructiva.
-- `2026-08-12T11:45:22` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` implementando una validación de paridad de volúmenes mediante `path.anchor` y verificando la disponibilidad de espacio en disco de forma defensiva antes de la operación de movimiento, evitando excepciones de E/S innecesarias.
