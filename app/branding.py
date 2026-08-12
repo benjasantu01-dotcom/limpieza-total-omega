@@ -238,9 +238,9 @@ def _hex_to_rgb(value: HexColor) -> RGBTuple:
         hex_data: str = value[1:]
         if all(c in "0123456789abcdefABCDEF" for c in hex_data):
             return (int(hex_data[0:2], 16), int(hex_data[2:4], 16), int(hex_data[4:6], 16))
-        return (0, 0, 0)
     except (ValueError, TypeError):
-        return (0, 0, 0)
+        pass
+    return (0, 0, 0)
 
 
 @lru_cache(maxsize=64)
@@ -326,13 +326,14 @@ def logo_svg(size: int = 128) -> str:
 
 def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     """Guarda el logo vectorial en la ruta especificada tras validar seguridad del directorio."""
-    if not destination: return None
+    if destination is None: return None
     try:
-        p: Path = Path(destination).expanduser()
+        p = Path(destination).expanduser()
         if not is_safe_to_modify(p): return None
-        target: Path = p.resolve()
-        parent_dir: Path = target.parent
-        # Validar existencia de directorio padre y asegurar que es seguro modificar
+        
+        target = p.resolve()
+        parent_dir = target.parent
+        
         if not parent_dir.exists():
             if not is_safe_to_modify(parent_dir): return None
             parent_dir.mkdir(parents=True, exist_ok=True)

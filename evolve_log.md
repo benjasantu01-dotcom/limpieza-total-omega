@@ -1023,3 +1023,15 @@ FAILED evolve/tests/test_modules.py::test_a_healthy_system_still_gets_a_recommen
 - `2026-08-12T06:51:10` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-08-12T06:51:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-12T06:51:10` Corrida terminada. Total usado hoy: 160.
+- `2026-08-12T06:57:15` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-08-12T06:57:17` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-08-12T06:57:17` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-08-12T06:57:38` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-08-12T06:57:38` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-08-12T06:58:08` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-08-12T06:58:08` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-08-12T06:58:57` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `build_context` implementando una validación de tipos más estricta mediante `isinstance` para evitar que objetos inesperados o malformados inyecten atributos ajenos al `SystemContext` durante la fase de carga.
+- `2026-08-12T06:59:28` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save_logo_svg` y `_hex_to_rgb` reemplazando chequeos implícitos por validaciones explícitas de entrada, asegurando que ante valores mal formados o rutas inválidas la función retorne un valor predeterminado seguro en lugar de propagar excepciones o comportamientos inesperados.
+- `2026-08-12T06:59:37` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-12T06:59:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-12T06:59:37` Corrida terminada. Total usado hoy: 164.

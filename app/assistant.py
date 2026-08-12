@@ -237,7 +237,9 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     """
     ctx = SystemContext()
     
-    if metrics is not None and (isinstance(metrics, dict) or hasattr(metrics, "__dict__")):
+    # Validamos entradas externas solo si son estructuras de datos esperadas
+    is_valid_metrics = isinstance(metrics, dict) or (metrics is not None and hasattr(metrics, "__dict__"))
+    if is_valid_metrics:
         _safe_assign(ctx, "junk_mb", _get_metric_val(metrics, "junk_mb", 0.0))
         _safe_assign(ctx, "suspicious_count", _get_metric_val(metrics, "suspicious_count", 0), int)
         _safe_assign(ctx, "suspicious_warnings", _get_metric_val(metrics, "suspicious_warnings", 0), int)
@@ -250,13 +252,15 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         _safe_assign(ctx, "browser_cache_mb", _get_metric_val(metrics, "browser_cache_mb", 0.0))
         ctx.analyzed = True
 
-    if health is not None and (isinstance(health, dict) or hasattr(health, "__dict__")):
+    is_valid_health = isinstance(health, dict) or (health is not None and hasattr(health, "__dict__"))
+    if is_valid_health:
         raw_score = _get_metric_val(health, "score", None)
         if raw_score is not None: _safe_assign(ctx, "score", raw_score, int, max_val=100)
         grade = _get_metric_val(health, "grade", "")
         ctx.grade = str(grade)[:10] if isinstance(grade, (str, int, float)) else ""
         ctx.analyzed = True
 
+    # Solo permitimos pasar parámetros que ya existan en la clase, evitando inyecciones de atributos
     for k, v in extra.items():
         if hasattr(ctx, k):
             attr_type = type(getattr(ctx, k))

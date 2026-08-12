@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **224** (44.4% de aceptación)
+- Mejoras aceptadas: **222** (44.0% de aceptación)
 - Rechazadas por tests: 10
 - Rechazadas por guardia de seguridad: 34
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 221
+- Sin respuesta de la IA (error o límite): 223
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-11 | 165 | 8 | 24 | 9 | 138 |
-| 2026-08-12 | 59 | 2 | 10 | 6 | 83 |
+| 2026-08-11 | 161 | 8 | 24 | 9 | 138 |
+| 2026-08-12 | 61 | 2 | 10 | 6 | 85 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **56**
+- legibilidad y documentación: **52**
 - robustez ante casos límite: **44**
 - seguridad defensiva: **44**
 - rendimiento: **43**
-- manejo de errores y validación de entradas: **37**
+- manejo de errores y validación de entradas: **39**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **21**
+- `assistant.py`: **21**
+- `branding.py`: **21**
 - `settings.py`: **20**
-- `assistant.py`: **20**
-- `branding.py`: **20**
-- `healthscore.py`: **19**
+- `healthscore.py`: **18**
 - `diskreport.py`: **18**
 - `browser.py`: **17**
 - `scanner.py`: **17**
 - `duplicates.py`: **16**
-- `memory.py`: **15**
-- `main.py`: **12**
+- `memory.py`: **14**
 - `startup.py`: **12**
-- `organizer.py`: **11**
+- `main.py`: **11**
+- `organizer.py`: **10**
 - `safety.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-12T06:59:28` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y `_hex_to_rgb` reemplazando chequeos implícitos por validaciones explícitas de entrada, asegurando que ante valores mal formados o rutas inválidas la función retorne un valor predeterminado seguro en lugar de propagar excepciones o comportamientos inesperados.
+- `2026-08-12T06:58:57` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `build_context` implementando una validación de tipos más estricta mediante `isinstance` para evitar que objetos inesperados o malformados inyecten atributos ajenos al `SystemContext` durante la fase de carga.
 - `2026-08-12T05:36:42` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save()` aplicando una validación de ruta estricta usando `is_safe_to_modify` sobre el archivo final antes de la escritura, previniendo que una configuración manipulada intente sobrescribir archivos protegidos del sistema.
 - `2026-08-12T05:36:16` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva al validar que `check_recent_executable_in_downloads` solo aplique a directorios con contexto de "descargas" o temporales, evitando falsos positivos y ruido innecesario en carpetas críticas donde la creación de ejecutables es esperada, y se incluyó la verificación de `is_protected_path` en `check_recent_executable_in_downloads` para asegurar que el escáner no reporte archivos que el sistema ya protege.
 - `2026-08-12T05:26:37` **quarantine.py** (seguridad defensiva): Se reforzó `_validate_isolation_request` para impedir explícitamente el uso de rutas que contengan caracteres de control o secuencias de escape (vía `\x00` - `\x1f`), y se añadió una validación adicional mediante `resolve()` para prevenir ataques de *path traversal* antes de realizar cualquier operación de E/S.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-12T04:46:08` **quarantine.py** (robustez ante casos límite): Se mejoró la robustez de `quarantine_file` añadiendo una verificación de existencia previa del archivo de destino (colisión) antes de iniciar la copia, y asegurando que las operaciones de limpieza en caso de fallo parcial sean más granulares y seguras.
 - `2026-08-12T04:45:04` **memory.py** (robustez ante casos límite): Se mejora la robustez de `trim_working_set` añadiendo una verificación explícita de `EmptyWorkingSet` en `psapi` antes de su uso y manejando adecuadamente la posible ausencia de la función en versiones antiguas o entornos restringidos de Windows, evitando cierres inesperados de la aplicación.
 - `2026-08-12T04:35:45` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `compute_score` asegurando que el cálculo de `ratios` sea siempre consistente ante valores de umbrales mal definidos (ej: cero o negativos), protegiendo contra posibles divisiones por cero o resultados no finitos en los módulos de puntuación.
-- `2026-08-12T04:28:20` **browser.py** (robustez ante casos límite): Se ha robustecido el escaneo recursivo de directorios ante la posible interrupción por "file locking" o accesos denegados mediante la adición de un chequeo explícito de accesibilidad y una gestión más resiliente de `OSError` en `_sum_directory_recursive`.
-- `2026-08-12T04:28:07` **branding.py** (robustez ante casos límite): Se ha mejorado la resiliencia de la función `save_logo_svg` ante rutas mal formadas, entornos sin permisos de escritura o sistemas con rutas inválidas, asegurando que el acceso al sistema de archivos sea siempre seguro y controlado sin interrumpir el flujo de la aplicación.
