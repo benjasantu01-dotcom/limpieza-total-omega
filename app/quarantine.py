@@ -27,6 +27,7 @@ import tempfile
 from dataclasses import dataclass, asdict
 from datetime import datetime
 from pathlib import Path
+from functools import lru_cache
 from typing import List, Union, Dict, Tuple, Optional, Any, TypeGuard
 
 from safety import (
@@ -55,8 +56,6 @@ __all__ = [
 
 DEFAULT_QUARANTINE_DIR = "~/LimpiezaTotalOmega/_Cuarentena"
 MANIFEST_NAME = "manifest.json"
-
-_manifest_cache: Dict[str, Tuple[float, List[QuarantineItem]]] = {}
 
 @dataclass
 class QuarantineItem:
@@ -232,41 +231,28 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
     if _is_file_locked(resolved_source):
         raise IOError("El archivo está en uso por otro proceso y no puede moverse.")
 
-
-def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload: bool = False) -> List[QuarantineItem]:
-    try:
-        base_path = quarantine_dir(base)
-        path = _manifest_path(base_path)
-    except (OSError, ValueError):
-        return []
-
-    base_str = str(base_path)
-    try:
-        current_mtime = path.stat().st_mtime if path.exists() else 0.0
-    except OSError:
-        current_mtime = 0.0
-
-    if not force_reload and base_str in _manifest_cache:
-        cached_mtime, cached_data = _manifest_cache[base_str]
-        if cached_mtime == current_mtime:
-            return cached_data
-        
+@lru_cache(maxsize=1)
+def _load_manifest_internal(base_str: str) -> List[QuarantineItem]:
+    """Carga interna usando la ruta absoluta como llave de caché."""
+    base_path = Path(base_str)
+    path = _manifest_path(base_path)
     if not path.exists():
-        _manifest_cache[base_str] = (0.0, [])
         return []
-
     try:
         with open(path, "r", encoding="utf-8") as f:
             raw_data = json.load(f)
         if not isinstance(raw_data, list):
-            _manifest_cache[base_str] = (current_mtime, [])
             return []
-        items = [item for entry in raw_data if (item := QuarantineItem.from_dict(entry))]
-        _manifest_cache[base_str] = (current_mtime, items)
-        return items
+        return [item for entry in raw_data if (item := QuarantineItem.from_dict(entry))]
     except (json.JSONDecodeError, OSError, PermissionError, ValueError):
-        _manifest_cache[base_str] = (current_mtime, [])
         return []
+
+def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload: bool = False) -> List[QuarantineItem]:
+    base_path = quarantine_dir(base)
+    base_str = str(base_path)
+    if force_reload:
+        _load_manifest_internal.cache_clear()
+    return _load_manifest_internal(base_str)
 
 
 def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
@@ -279,7 +265,7 @@ def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_
         with os.fdopen(temp_fd, 'w', encoding='utf-8') as f:
             json.dump([item.to_dict() for item in items], f, indent=2, ensure_ascii=False)
         os.replace(temp_path, target_path)
-        _manifest_cache[str(base_path)] = (target_path.stat().st_mtime, items)
+        _load_manifest_internal.cache_clear()
     except (OSError, PermissionError, TypeError, IOError) as e:
         if os.path.exists(temp_path):
             try: os.remove(temp_path)

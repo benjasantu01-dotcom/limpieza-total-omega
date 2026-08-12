@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **231** (45.8% de aceptación)
+- Mejoras aceptadas: **228** (45.2% de aceptación)
 - Rechazadas por tests: 9
-- Rechazadas por guardia de seguridad: 32
+- Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 218
+- Sin respuesta de la IA (error o límite): 220
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-11 | 142 | 6 | 19 | 8 | 129 |
-| 2026-08-12 | 89 | 3 | 13 | 6 | 89 |
+| 2026-08-11 | 138 | 6 | 19 | 8 | 129 |
+| 2026-08-12 | 90 | 3 | 14 | 6 | 91 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **61**
 - manejo de errores y validación de entradas: **48**
-- seguridad defensiva: **44**
-- rendimiento: **43**
+- rendimiento: **44**
+- seguridad defensiva: **40**
 - robustez ante casos límite: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `branding.py`: **21**
-- `diskreport.py`: **21**
-- `quarantine.py`: **21**
-- `assistant.py`: **20**
+- `quarantine.py`: **22**
+- `diskreport.py`: **20**
 - `healthscore.py`: **20**
+- `branding.py`: **20**
 - `settings.py`: **19**
+- `assistant.py`: **19**
 - `scanner.py`: **18**
-- `browser.py`: **17**
 - `duplicates.py`: **17**
+- `browser.py`: **16**
 - `memory.py`: **16**
 - `main.py`: **13**
 - `organizer.py`: **12**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-12T08:39:58` **quarantine.py** (rendimiento): Optimicé el acceso al manifiesto de cuarentena implementando una caché de tipo `lru_cache` para `load_manifest`, evitando múltiples lecturas de disco y parseos de JSON redundantes en operaciones que consultan frecuentemente el estado del sandbox.
 - `2026-08-12T08:31:18` **memory.py** (rendimiento): Optimicé `parse_windows_process_csv` reemplazando la creación innecesaria de una lista intermedia mediante una expresión generadora, evitando así la asignación de memoria extra en cada escaneo de procesos.
 - `2026-08-12T08:30:52` **main.py** (rendimiento): Optimicé el método `_get_cached` para utilizar una búsqueda constante O(1) basada en claves de diccionario en lugar de iterar manualmente o recrear estructuras, y mejoré la gestión de memoria en `_compile_metrics` mediante el uso de referencias locales directas para evitar múltiples accesos a caché con la misma clave.
 - `2026-08-12T08:29:46` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje eliminando la creación repetitiva de diccionarios dentro de los bucles y pre-calculando el desglose mediante una comprensión de diccionario directa, evitando la sobrecarga de múltiples llamadas a funciones auxiliares dentro de las iteraciones críticas.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-12T07:50:25` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings estructurados en funciones críticas, la clarificación de tipos en `trim_working_set` para prevenir errores de contexto, y la adición de una breve explicación sobre la lógica de selección de procesos, manteniendo la integridad del código.
 - `2026-08-12T07:50:15` **main.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en los métodos de construcción de la interfaz y gestión de estados, mejorando la legibilidad técnica y facilitando el mantenimiento para futuros colaboradores sin alterar el comportamiento de la aplicación.
 - `2026-08-12T07:49:11` **healthscore.py** (legibilidad y documentación): Mejora la legibilidad y mantenimiento añadiendo Type Hints faltantes en los parámetros de las funciones de scoring y documentando con docstrings el propósito de los umbrales constantes para clarificar la lógica de negocio.
-- `2026-08-12T07:48:45` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `duplicates.py` mediante docstrings detallados en las funciones internas y utilitarias, clarificando las precondiciones y el manejo de excepciones para facilitar el mantenimiento y la auditoría de seguridad.
