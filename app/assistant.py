@@ -217,17 +217,19 @@ def _fmt_metric(val: Any, unit: str = "", decimal: int = 0) -> str:
 
 def _get_metric_val(source: Any, key: str, default: Any) -> Any:
     """
-    Extrae de forma defensiva un valor numérico de una fuente de datos (diccionario u objeto).
-    Valida que el resultado sea numérico antes de retornarlo para evitar inyecciones.
+    Extrae de forma defensiva un valor numérico de una fuente de datos.
+    Valida que sea numérico y no nulo antes de retornarlo para evitar errores.
     """
     try:
+        val = None
         if isinstance(source, dict):
-            val = source.get(key, default)
-        elif hasattr(source, "__dict__") or isinstance(source, object):
-            val = getattr(source, key, default)
-        else:
+            val = source.get(key)
+        elif hasattr(source, key):
+            val = getattr(source, key)
+        
+        if val is None or not isinstance(val, (int, float)) or not math.isfinite(val):
             return default
-        return val if isinstance(val, (int, float, type(None))) and (val is None or math.isfinite(val)) else default
+        return val
     except Exception: return default
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
@@ -237,9 +239,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     """
     ctx = SystemContext()
     
-    # Validamos entradas externas solo si son estructuras de datos esperadas
-    is_valid_metrics = isinstance(metrics, dict) or (metrics is not None and hasattr(metrics, "__dict__"))
-    if is_valid_metrics:
+    if metrics is not None:
         _safe_assign(ctx, "junk_mb", _get_metric_val(metrics, "junk_mb", 0.0))
         _safe_assign(ctx, "suspicious_count", _get_metric_val(metrics, "suspicious_count", 0), int)
         _safe_assign(ctx, "suspicious_warnings", _get_metric_val(metrics, "suspicious_warnings", 0), int)
@@ -252,20 +252,17 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         _safe_assign(ctx, "browser_cache_mb", _get_metric_val(metrics, "browser_cache_mb", 0.0))
         ctx.analyzed = True
 
-    is_valid_health = isinstance(health, dict) or (health is not None and hasattr(health, "__dict__"))
-    if is_valid_health:
+    if health is not None:
         raw_score = _get_metric_val(health, "score", None)
         if raw_score is not None: _safe_assign(ctx, "score", raw_score, int, max_val=100)
         grade = _get_metric_val(health, "grade", "")
         ctx.grade = str(grade)[:10] if isinstance(grade, (str, int, float)) else ""
         ctx.analyzed = True
 
-    # Solo permitimos pasar parámetros que ya existan en la clase, evitando inyecciones de atributos
     for k, v in extra.items():
         if hasattr(ctx, k):
             attr_type = type(getattr(ctx, k))
-            if isinstance(v, (int, float)) and math.isfinite(v):
-                _safe_assign(ctx, k, v, cast=attr_type)
+            _safe_assign(ctx, k, v, cast=attr_type)
     return ctx
 
 def context_as_text(context: SystemContext) -> str:
@@ -276,7 +273,6 @@ def context_as_text(context: SystemContext) -> str:
     if not isinstance(context, SystemContext) or not context.analyzed:
         return "No hay métricas disponibles todavía."
     try:
-        # Sanitización agresiva de inputs dentro del objeto para evitar errores de formato
         score_val = _fmt_metric(context.score)
         grade_val = str(context.grade)[:5] if isinstance(context.grade, str) else ""
         lines = (
@@ -505,7 +501,6 @@ def _call_gemini(
         text = "".join(str(p.get("text", "")) for p in parts if isinstance(p, dict))
         final_text = text.strip()[:_MAX_TEXT_LENGTH]
         
-        # Validar la respuesta remota antes de aceptarla
         return final_text if _ensure_safe_text(final_text) else None
     except (urllib.error.URLError, json.JSONDecodeError, KeyError, TypeError, ValueError):
         return None
@@ -516,7 +511,6 @@ def ask(question: str, context: Optional[SystemContext] = None,
     ctx: SystemContext = context if isinstance(context, SystemContext) else SystemContext()
     respaldo: Answer = local_answer(question, ctx)
     
-    # Validación estricta de seguridad: denegar si la entrada es ruta protegida
     if not _ensure_safe_text(question): 
         return respaldo
         
