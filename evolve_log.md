@@ -1063,3 +1063,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-08-13T03:43:50` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
 - `2026-08-13T03:43:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-13T03:43:50` Corrida terminada. Total usado hoy: 88.
+- `2026-08-13T03:45:09` Arrancando corrida. Quedan hoy ~212 peticiones objetivo.
+- `2026-08-13T03:45:40` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `trim_working_set` validando la integridad del proceso mediante `GetProcessImageFileNameW` (más robusta en el contexto de la API de Windows que `QueryFullProcessImageNameW`) y verificando explícitamente que la ruta resuelta no sea un punto de reparse o enlace simbólico antes de validar su protección, asegurando que no se manipulen procesos mediante rutas maliciosas.
+- `2026-08-13T03:46:42` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `stage_for_review` implementando una validación explícita mediante `is_safe_to_modify` antes de intentar el movimiento, garantizando que tanto el origen como el destino cumplan las políticas de seguridad incluso en el caso de rutas inexistentes o mal formadas tras el `expanduser()`.
+- `2026-08-13T03:47:14` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `purge_all` al incluir una validación explícita mediante `is_protected_path` para garantizar que, incluso ante un fallo lógico en la lógica de filtrado del directorio, nunca se intente operar sobre una ruta del sistema.
+- `2026-08-13T03:47:18` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-13T03:47:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-13T03:47:18` Corrida terminada. Total usado hoy: 92.

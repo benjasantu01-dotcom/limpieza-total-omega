@@ -327,11 +327,11 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
             return False, "El proceso seleccionado ya no está activo."
             
         buf = ctypes.create_unicode_buffer(4096)
-        size = ctypes.c_ulong(4096)
-        if kernel32.QueryFullProcessImageNameW(proc_handle, 0, buf, ctypes.byref(size)):
-            exe_path: str = os.path.abspath(os.path.normpath(buf.value))
-            if is_protected_path(exe_path):
-                return False, "Operación denegada: ruta de ejecutable protegida."
+        if kernel32.GetProcessImageFileNameW(proc_handle, buf, 4096):
+            exe_path = os.path.normpath(buf.value)
+            # Validación de integridad de ruta frente a enlaces simbólicos o puntos de reparse
+            if os.path.islink(exe_path) or is_protected_path(exe_path):
+                return False, "Operación denegada: ruta de ejecutable protegida o inválida."
             
         if not psapi.EmptyWorkingSet(proc_handle):
             return False, "Error al intentar liberar memoria (código interno)."

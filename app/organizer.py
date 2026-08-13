@@ -159,7 +159,7 @@ def _is_safe_to_move(jf: JunkFile, dest: Path) -> bool:
             return False
         if _is_file_locked(current_abs) or current_abs.anchor != dest.anchor:
             return False
-        return True
+        return is_safe_to_modify(current_abs) and is_safe_to_modify(dest)
     except (OSError, RuntimeError):
         return False
 
@@ -252,15 +252,15 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         return Path(review_dir).expanduser().resolve()
 
     dest: Path = Path(review_dir).expanduser().resolve()
-    ensure_safe_to_modify(dest)
+    if not is_safe_to_modify(dest):
+        return dest
+        
     dest.mkdir(parents=True, exist_ok=True)
 
     for jf in files:
         if not isinstance(jf, JunkFile):
             continue
         try:
-            ensure_safe_to_modify(jf.path)
-            
             if _is_safe_to_move(jf, dest):
                 if shutil.disk_usage(dest).free > jf.size_bytes:
                     target = _generate_unique_target(dest / f"{jf.path.stem}_{int(jf.modified.timestamp())}{jf.path.suffix}")
@@ -284,7 +284,8 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         return 0
 
     dest: Path = Path(review_dir).expanduser().resolve()
-    ensure_safe_to_modify(dest)
+    if not is_safe_to_modify(dest):
+        return 0
 
     count: int = 0
     try:
@@ -293,8 +294,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
                 # Verificación estricta: debe ser archivo, no enlace y estar bajo el padre
                 if item.is_file() and not item.is_symlink():
                     path_to_delete = item.resolve()
-                    if dest in path_to_delete.parents:
-                        ensure_safe_to_modify(path_to_delete)
+                    if dest in path_to_delete.parents and is_safe_to_modify(path_to_delete):
                         path_to_delete.unlink()
                         count += 1
             except (PermissionError, OSError):

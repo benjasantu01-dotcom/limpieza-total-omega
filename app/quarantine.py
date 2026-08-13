@@ -434,6 +434,8 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     def _is_safe_to_purge(entry: Path, root: Path) -> bool:
         if entry is None or entry.name == MANIFEST_NAME or not entry.is_file() or entry.is_symlink():
             return False
+        if is_protected_path(entry):
+            return False
         return _is_valid_quarantine_path(entry.resolve(), root)
 
     try:
