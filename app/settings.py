@@ -266,10 +266,11 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
         
         if _cached_settings == cleaned_settings and _current_path == ruta: return ruta
         
-        temp = ruta.with_suffix(f".{os.getpid()}.tmp")
         if not ruta.parent.exists():
+            if not _Validators._is_safe_path(ruta.parent): return None
             ruta.parent.mkdir(parents=True, exist_ok=True)
             
+        temp = ruta.with_suffix(f".{os.getpid()}.tmp")
         with open(temp, "wb") as f:
             f.write(json_data)
             f.flush()
