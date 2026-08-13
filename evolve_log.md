@@ -569,3 +569,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-08-13T09:56:35` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-08-13T09:56:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-13T09:56:35` Corrida terminada. Total usado hoy: 236.
+- `2026-08-13T10:02:43` Arrancando corrida. Quedan hoy ~64 peticiones objetivo.
+- `2026-08-13T10:03:13` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_generate_recommendations` mediante una validación de formato más estricta que evita excepciones ante datos inesperados y agregué un chequeo de tipos defensivo en `_RECOMMENDATION_RULES` para garantizar que la lógica de renderizado nunca falle en tiempo de ejecución.
+- `2026-08-13T10:04:22` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez en la manipulación de entradas de usuario en `on_trim_process` y `on_restore_quarantine` mediante validaciones adicionales y el uso de bloques `try-except` más precisos para evitar que entradas malformadas o estados de carrera provoquen errores silenciosos o cierres inesperados de la interfaz.
+- `2026-08-13T10:04:52` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-13T10:05:04` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `sort_junk` y `stage_for_review` mediante validaciones de tipo y estructura defensivas para evitar errores en tiempo de ejecución ante entradas malformadas o inesperadas.
+- `2026-08-13T10:05:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-13T10:05:04` Corrida terminada. Total usado hoy: 240.

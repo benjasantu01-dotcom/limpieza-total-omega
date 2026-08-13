@@ -225,16 +225,8 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
 def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -> List[JunkFile]:
     """
     Ordena una lista de objetos JunkFile según el criterio especificado.
-    
-    Args:
-        files: Lista de objetos JunkFile a ordenar.
-        by: Atributo por el cual ordenar ("size" o "date").
-        ascending: Booleano para orden ascendente (True) o descendente (False).
-        
-    Returns:
-        Lista ordenada de JunkFile.
     """
-    if not isinstance(files, list):
+    if not isinstance(files, list) or not all(isinstance(f, JunkFile) for f in files):
         return []
         
     registry: Dict[str, SortConfig] = {
@@ -251,9 +243,6 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Path:
     """
     Mueve los archivos candidatos a un directorio seguro para revisión manual.
-    
-    Realiza validaciones de integridad y seguridad sobre el destino antes de iniciar
-    la transferencia. Los archivos se renombran usando marcas de tiempo para evitar colisiones.
     """
     if not files or not isinstance(files, list) or not isinstance(review_dir, str):
         return Path(review_dir).expanduser().resolve()
@@ -296,6 +285,8 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
 
     count: int = 0
     try:
+        if not dest.exists():
+            return 0
         for item in dest.iterdir():
             try:
                 # Verificación estricta: debe ser archivo, no enlace y estar bajo el padre

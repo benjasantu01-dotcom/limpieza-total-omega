@@ -1225,14 +1225,15 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         def task() -> None:
-            if not quarantine.item_exists(raw_id):
-                self.log(f"Error: El ID '{raw_id}' no existe en la cuarentena.", "Cuarentena")
-                return
-            
             try:
+                if not quarantine.item_exists(raw_id):
+                    self.log(f"Error: El ID '{raw_id}' no existe en la cuarentena.", "Cuarentena")
+                    return
+                
                 item = quarantine.get_item(raw_id)
                 if not item or not hasattr(item, 'original_path'):
-                    raise AttributeError("Manifiesto de cuarentena corrupto")
+                    self.log("Error: Manifiesto de cuarentena corrupto.", "Cuarentena")
+                    return
                 
                 # Seguridad defensiva: verificar que la ruta original es aún válida
                 if not self._is_safe_path(item.original_path):
@@ -1320,11 +1321,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         def task() -> None:
-            # Verificación de existencia del proceso en el hilo de ejecución para evitar carrera
-            if not memory_mod.process_exists(pid):
-                self.log(f"Error: El proceso {pid} ya no está activo.", "Memoria")
-                return
             try:
+                # Verificación de existencia del proceso en el hilo de ejecución para evitar carrera
+                if not memory_mod.process_exists(pid):
+                    self.log(f"Error: El proceso {pid} ya no está activo.", "Memoria")
+                    return
                 ok, mensaje = memory_mod.trim_working_set(pid)
                 self.log(("OK: " if ok else "Sin efecto: ") + mensaje, "Memoria")
             except Exception as e:

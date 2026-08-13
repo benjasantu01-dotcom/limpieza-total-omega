@@ -24,6 +24,7 @@ class RecommendationRule(NamedTuple):
     area: str
     threshold: float
     message_format: str
+    expected_args: int = 1
 
 __all__ = [
     "SystemMetrics",
@@ -72,12 +73,12 @@ _WEIGHT_ITEMS: Final[List[Tuple[str, float]]] = [(k, _WEIGHT_FACTORS[k]) for k i
 
 # Pre-computo de metadatos para optimizar recomendaciones
 _RECOMMENDATION_RULES: Final[Tuple[RecommendationRule, ...]] = (
-    RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, "Revisá los {} hallazgo(s) de seguridad."),
-    RecommendationRule("disco", WARN_THRESHOLD_LOW, "Queda {:.1f}% de disco libre."),
-    RecommendationRule("memoria", WARN_THRESHOLD_LOW, "Memoria disponible baja: cerrá procesos innecesarios."),
-    RecommendationRule("basura", WARN_THRESHOLD_MED, "Hay {:.0f} MB de archivos temporales."),
-    RecommendationRule("duplicados", WARN_THRESHOLD_MED, "Podrías recuperar {:.0f} MB eliminando duplicados."),
-    RecommendationRule("arranque", WARN_THRESHOLD_LOW, "{} programas arrancan con Windows."),
+    RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, "Revisá los {} hallazgo(s) de seguridad.", 1),
+    RecommendationRule("disco", WARN_THRESHOLD_LOW, "Queda {:.1f}% de disco libre.", 1),
+    RecommendationRule("memoria", WARN_THRESHOLD_LOW, "Memoria disponible baja: cerrá procesos innecesarios.", 0),
+    RecommendationRule("basura", WARN_THRESHOLD_MED, "Hay {:.0f} MB de archivos temporales.", 1),
+    RecommendationRule("duplicados", WARN_THRESHOLD_MED, "Podrías recuperar {:.0f} MB eliminando duplicados.", 1),
+    RecommendationRule("arranque", WARN_THRESHOLD_LOW, "{} programas arrancan con Windows.", 1),
 )
 
 def _validate_weights() -> bool:
@@ -201,7 +202,6 @@ def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[
         return ["Error: Datos de entrada corruptos, análisis no disponible."]
         
     recommendations: List[str] = []
-    # Mapeo de métricas crudas para formateo de strings en reglas
     vals = {
         "seguridad": metrics.suspicious_count,
         "disco": metrics.disk_free_percent,
@@ -211,15 +211,18 @@ def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[
         "arranque": metrics.startup_count
     }
 
-    # Aplica reglas de umbral para sugerir acciones basadas en los ratios calculados
     for rule in _RECOMMENDATION_RULES:
-        if rule.area in ratios and rule.area in vals:
-            # Validar que el ratio sea un número finito antes de comparar
-            if math.isfinite(ratios[rule.area]) and ratios[rule.area] < rule.threshold:
+        ratio = ratios.get(rule.area)
+        val = vals.get(rule.area)
+        
+        if ratio is not None and val is not None and math.isfinite(ratio):
+            if ratio < rule.threshold:
                 try:
-                    # Se asegura de que la cantidad de argumentos sea compatible con el formato
-                    recommendations.append(rule.message_format.format(vals[rule.area]))
-                except (ValueError, KeyError, IndexError):
+                    if rule.expected_args == 0:
+                        recommendations.append(rule.message_format)
+                    else:
+                        recommendations.append(rule.message_format.format(val))
+                except (ValueError, IndexError, KeyError):
                     continue
     
     if metrics.quarantined_count > 0:
@@ -245,7 +248,6 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         "arranque": score_startup(metrics.startup_count)
     }
     
-    # Asegurar que los componentes de breakdown sean finitos antes de redondear
     breakdown = {}
     for area, factor in _WEIGHT_ITEMS:
         val = ratios.get(area, 0.0)
