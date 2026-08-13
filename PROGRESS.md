@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **225** (44.6% de aceptación)
+- Mejoras aceptadas: **227** (45.0% de aceptación)
 - Rechazadas por tests: 9
 - Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 219
+- Sin respuesta de la IA (error o límite): 217
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-11 | 34 | 1 | 4 | 2 | 33 |
+| 2026-08-11 | 34 | 1 | 4 | 2 | 29 |
 | 2026-08-12 | 151 | 6 | 24 | 13 | 156 |
-| 2026-08-13 | 40 | 2 | 5 | 3 | 30 |
+| 2026-08-13 | 42 | 2 | 5 | 3 | 32 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,18 +26,18 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **49**
 - rendimiento: **41**
 - robustez ante casos límite: **40**
-- seguridad defensiva: **35**
+- seguridad defensiva: **37**
 
 ## Mejoras aceptadas por archivo
 
+- `branding.py`: **22**
 - `settings.py`: **22**
-- `branding.py`: **21**
 - `healthscore.py`: **20**
 - `quarantine.py`: **20**
 - `diskreport.py`: **19**
 - `assistant.py`: **19**
 - `duplicates.py`: **18**
-- `browser.py`: **15**
+- `browser.py`: **16**
 - `memory.py`: **15**
 - `organizer.py`: **14**
 - `scanner.py`: **14**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-13T03:26:26` **browser.py** (seguridad defensiva): Se ha endurecido el proceso de escaneo recursivo en `_sum_directory_recursive` agregando una validación de `st_nlink` para prevenir el seguimiento involuntario de hard links, lo cual complementa la protección existente contra symlinks y junctions, manteniendo la seguridad defensiva ante estructuras de archivos complejas.
+- `2026-08-13T03:26:10` **branding.py** (seguridad defensiva): Mejoré la seguridad de `save_logo_svg` implementando `ensure_safe_to_modify` para el archivo de destino, garantizando así el cumplimiento estricto con los requisitos de seguridad de la arquitectura del proyecto frente a una escritura en disco.
 - `2026-08-13T03:15:53` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `save()` implementando una verificación de integridad post-escritura (comparación de tamaño y contenido antes de confirmar), evitando que fallos de disco o interrupciones de escritura silenciosas dejen un archivo de configuración corrupto o vacío.
 - `2026-08-13T03:15:42` **scanner.py** (robustez ante casos límite): Se introdujo una gestión robusta de `OSError` en las llamadas a `os.scandir` y `entry.stat()` para evitar que el escaneo colapse ante archivos bloqueados por el sistema o errores de acceso denegado en directorios protegidos/inaccesibles, mejorando la resiliencia ante casos límite de E/S.
 - `2026-08-13T03:15:19` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la manipulación de rutas añadiendo una validación explícita para evitar la manipulación de dispositivos de hardware inexistentes o desbordamientos de `MAX_PATH` que no fueron capturados por la normalización inicial, fortaleciendo `ensure_safe_to_modify` antes de cualquier interacción con el sistema de archivos.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-13T02:35:00` **scanner.py** (rendimiento): Optimicé el método `process_entry` moviendo los chequeos de seguridad más económicos (como `is_protected_path` y el filtro de rutas UNC) al inicio, y reduciendo llamadas redundantes al sistema de archivos al cachear atributos críticos en las comprobaciones de heurística.
 - `2026-08-13T02:34:52` **safety.py** (rendimiento): Se ha optimizado el rendimiento de `is_protected_path` al convertir la comprobación de `_SYSTEM_ROOTS` (una operación costosa de resolución de rutas en cada llamada) en una búsqueda de prefijos sobre las partes de la ruta, aprovechando la estructura de `path.parts` y evitando llamadas repetitivas a `resolve()` dentro de la lógica crítica.
 - `2026-08-13T02:14:51` **duplicates.py** (rendimiento): Optimizé `_collect_candidates` utilizando `os.scandir` para obtener el tamaño de archivo directamente desde el objeto `DirEntry` (evitando llamadas extra a `stat()` o `Path.stat()`) y reduje el impacto de las validaciones innecesarias mediante una pre-filtración más eficiente de las rutas, mejorando el rendimiento en discos con gran cantidad de archivos.
-- `2026-08-13T02:14:42` **diskreport.py** (rendimiento): Optimizé la función `walk_files` para reducir drásticamente el número de llamadas a `path.resolve()` y `path.exists()` dentro del bucle principal, reutilizando la información de `os.scandir` para evitar chequeos redundantes al procesar archivos individuales.
-- `2026-08-13T02:14:15` **browser.py** (rendimiento): Optimizé la función `_sum_directory_recursive` implementando un chequeo de existencia en `visited` antes de realizar llamadas costosas al sistema de archivos y eliminé la redundancia de resolución de rutas, reduciendo significativamente la cantidad de syscalls por iteración durante el escaneo.

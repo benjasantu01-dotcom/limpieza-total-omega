@@ -23,7 +23,7 @@ from typing import Any, Final, TypeAlias, Literal, Mapping, Tuple, List, Optiona
 from types import MappingProxyType
 from functools import lru_cache
 import os
-from safety import is_safe_to_modify
+from safety import is_safe_to_modify, ensure_safe_to_modify
 
 # Type Aliases semánticos para el sistema de diseño
 HexColor: TypeAlias = str  # Formato: "#RRGGBB"
@@ -336,8 +336,7 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         p = Path(destination).expanduser().resolve()
         
         # Validar permisos y restricciones de seguridad antes de cualquier acción
-        if not is_safe_to_modify(p) or not is_safe_to_modify(p.parent):
-            return None
+        ensure_safe_to_modify(p)
             
         parent_dir = p.parent
         # Validar existencia/creación segura

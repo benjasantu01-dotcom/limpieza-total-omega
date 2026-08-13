@@ -211,18 +211,17 @@ def _sum_directory_recursive(
     if depth > 20:
         return 0
         
-    if root_dir in visited:
+    try:
+        st = os.stat(root_dir)
+        # Prevenir seguimiento de hard links que puedan crear bucles lógicos
+        if st.st_nlink > 1 and root_dir in visited:
+            return 0
+        visited.add(root_dir)
+    except (OSError, PermissionError):
         return 0
-    visited.add(root_dir)
 
     if root_dir in cache:
         return cache[root_dir]
-        
-    try:
-        if not os.access(root_dir, os.R_OK):
-            return 0
-    except (OSError, PermissionError):
-        return 0
         
     total_size: int = 0
     try:
