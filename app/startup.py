@@ -137,7 +137,6 @@ class StartupEntry:
             try:
                 p_abs: Path = p.resolve(strict=True)
             except (OSError, PermissionError, RuntimeError):
-                # Si no podemos resolver la ruta (ej. archivo bloqueado), no cacheamos un 'False' definitivo
                 return path_str
                 
             if is_protected_path(p_abs):
@@ -230,9 +229,10 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
             if not isinstance(row, dict) or len(row) < 2:
                 continue
             
-            values = list(row.values())
-            name_raw = values[0]
-            cmd_raw = values[1]
+            # Obtener claves de forma segura por índice
+            vals = list(row.values())
+            name_raw = vals[0] if len(vals) > 0 else None
+            cmd_raw = vals[1] if len(vals) > 1 else None
             
             if not isinstance(name_raw, str) or not isinstance(cmd_raw, str):
                 continue
@@ -291,7 +291,6 @@ def list_startup_entries() -> List[StartupEntry]:
     seen_names: Set[str] = set()
     unique_entries: List[StartupEntry] = []
     
-    # Usar un generador encadenado para evitar crear listas intermedias completas
     def _generator() -> Iterator[StartupEntry]:
         yield from entries_from_folders()
         yield from entries_from_registry()

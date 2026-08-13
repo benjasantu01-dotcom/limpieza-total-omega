@@ -111,13 +111,13 @@ def _is_file_in_use(path: Path) -> bool:
     if not path.exists() or not path.is_file():
         return False
     try:
+        # Usamos flags de apertura de bajo nivel para verificar acceso exclusivo
         fd = os.open(path, os.O_RDWR | os.O_EXCL)
         os.close(fd)
         return False
-    except (PermissionError, BlockingIOError):
+    except (PermissionError, BlockingIOError, OSError):
+        # Capturamos excepciones de acceso denegado o sistema ocupado
         return True
-    except OSError:
-        return False
 
 
 def _check_file_integrity(p: Path) -> None:

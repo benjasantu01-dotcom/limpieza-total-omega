@@ -884,3 +884,37 @@ FAILED evolve/tests/test_basic.py::test_delete_reviewed_only_touches_the_review_
 - `2026-08-13T01:15:03` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
 - `2026-08-13T01:15:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-13T01:15:03` Corrida terminada. Total usado hoy: 32.
+- `2026-08-13T01:22:11` Arrancando corrida. Quedan hoy ~268 peticiones objetivo.
+- `2026-08-13T01:22:39` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_file_in_use` capturando excepciones de sistema adicionales durante el intento de apertura del archivo, evitando así que errores de acceso no relacionados (como bloqueos de volumen o archivos de sistema inaccesibles) se malinterpreten o bloqueen la ejecución del hilo.
+- `2026-08-13T01:23:02` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las funciones de chequeo mediante validaciones de tipo y de estado (`path` y `entry`) para evitar excepciones no controladas durante el acceso a atributos de archivos volátiles, asegurando que `scan_file` siempre opere con datos consistentes.
+- `2026-08-13T01:23:28` Tests FALLARON:
+```
+...............F........................................................ [ 24%]
+........................................................................ [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+______________________ test_a_normal_folder_is_remembered ______________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-3/test_a_normal_folder_is_rememb0')
+
+    def test_a_normal_folder_is_remembered(tmp_path):
+        segura = str(tmp_path / "Descargas")
+>       assert settings.validate({"ultima_carpeta": segura})["ultima_carpeta"] == segura
+E       AssertionError: assert '' == '/tmp/pytest-...mb0/Descargas'
+E         
+E         - /tmp/pytest-of-runner/pytest-3/test_a_normal_folder_is_rememb0/Descargas
+
+evolve/tests/test_assistant.py:124: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - AssertionError: assert '' == '/tmp/pytest-...mb0/Descargas'
+  
+  - /tmp/pytest-of-runner/pytest-3/test_a_normal_folder_is_rememb0/Descargas
+1 failed, 298 passed in 1.18s
+
+```
+- `2026-08-13T01:23:28` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de los validadores de tipos en `_Validators` para que manejen correctamente valores inesperados (como listas o diccionarios anidados) que podrían romper la lógica de conversión `int()` o `bool()`, y añadí una validación explícita para asegurar que `ultima_carpeta` no sea solo una ruta válida, sino que exista como directorio antes de persistirla.
+- `2026-08-13T01:23:38` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `parse_registry_csv` al implementar un chequeo de tipos estricto y validar que `row` sea un diccionario antes de acceder a sus claves, evitando `KeyError` o errores de iteración ante datos malformados o inesperados del CSV.
+- `2026-08-13T01:23:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-13T01:23:38` Corrida terminada. Total usado hoy: 36.

@@ -132,12 +132,7 @@ class Scanner:
 
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """
-    Identifica archivos con doble extensión que intentan ocultar un ejecutable tras una extensión inofensiva.
-    
-    Returns:
-        Suspicion object si el nombre coincide con el patrón DOUBLE_EXTENSION_RE, None en otro caso.
-    """
+    """Identifica archivos con doble extensión que intentan ocultar un ejecutable."""
     target = name or (path.name if path else None)
     if target and DOUBLE_EXTENSION_RE.search(target):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
@@ -145,15 +140,10 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, name
 
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """
-    Detecta ejecutables modificados recientemente en directorios de usuario de alta exposición.
-    
-    Esta heurística reduce el riesgo de ejecución involuntaria de binarios descargados recientemente.
-    """
+    """Detecta ejecutables modificados recientemente en directorios de usuario de alta exposición."""
     if entry is None or is_protected_path(path):
         return None
     
-    # Restringir heurística solo a carpetas comunes de usuario para evitar falsos positivos
     path_str = str(path).lower()
     if not any(folder in path_str for folder in ["downloads", "temp", "desktop"]):
         return None
@@ -168,36 +158,27 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """
-    Detecta binarios legítimos del sistema (ej. svchost.exe) localizados fuera del directorio System32.
-    
-    La presencia de estos nombres en directorios de usuario suele ser un indicador de suplantación maliciosa.
-    """
+    """Detecta binarios legítimos del sistema localizados fuera del directorio System32."""
     if path is None:
         return None
     try:
         target = (name or path.name).lower()
         if target in SYSTEM_LOOKALIKES:
-            # Uso de parent de forma segura
-            if path.parent and SYSTEM32_LOWER not in str(path.parent).lower():
+            # Validar existencia de parent antes de consultar
+            parent = path.parent
+            if parent and SYSTEM32_LOWER not in str(parent).lower():
                 return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
     except Exception:
         return None
     return None
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None) -> ScanResult:
-    """
-    Ejecuta el pipeline de heurísticas sobre un archivo dado.
-    
-    La estrategia de escaneo prioriza chequeos de cadena (O(1)) antes de realizar I/O con os.stat()
-    para minimizar el impacto en el rendimiento.
-    """
+    """Ejecuta el pipeline de heurísticas sobre un archivo dado."""
     findings: ScanResult = []
     
-    if path is None:
+    if not path or not path.exists():
         return findings
     
-    # Asegurar que suffix sea válido si no se proveyó
     safe_suffix = suffix if suffix is not None else (path.suffix.lower() if path.suffix else "")
 
     # 1. Chequeos basados en nombre (String-only)
@@ -216,21 +197,12 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, na
 
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
-    """
-    Inicializa y ejecuta el proceso de escaneo recursivo en el directorio proporcionado.
-    
-    Implementa un mecanismo de exclusión de rutas mediante el módulo 'safety' y evita ciclos
-    detectando puntos de reanálisis (reparse points).
-    
-    Returns:
-        Lista consolidada de objetos Suspicion encontrados.
-    """
+    """Inicializa y ejecuta el proceso de escaneo recursivo en el directorio proporcionado."""
     if not directory:
         return []
         
     try:
         path_input = Path(directory).resolve()
-        # Rechazo de rutas UNC y validación de existencia al inicio
         if not path_input.parts or path_input.parts[0].startswith("\\\\"):
             return []
         if not path_input.exists() or not path_input.is_dir() or is_protected_path(path_input):
