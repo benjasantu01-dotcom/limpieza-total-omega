@@ -21,7 +21,7 @@ import os
 import ctypes
 from dataclasses import dataclass
 from pathlib import Path, PurePath
-from typing import Iterable, Sequence, Dict, List, Optional, Callable, Set
+from typing import Iterable, Sequence, Dict, List, Optional, Callable, Set, Union
 from safety import is_protected_path
 
 __all__ = [
@@ -72,19 +72,16 @@ class BrowserCache:
 
     @property
     def size_mb(self) -> float:
-        """Retorna el tamaño en MB. Precisión de 2 decimales para reportes."""
+        """Retorna el tamaño en MB con precisión de 2 decimales."""
         return round(self.size_bytes / (1024 * 1024), 2)
 
 
 def base_directories() -> List[Path]:
-    """
-    Obtiene los directorios raíz donde se alojan perfiles (LOCALAPPDATA).
-    
-    Verifica la existencia de la variable de entorno LOCALAPPDATA y valida
-    que la ruta resultante no esté protegida por la política de seguridad.
-    
+    """Obtiene el directorio raíz LOCALAPPDATA si es una ruta válida y no protegida.
+
     Returns:
-        Lista conteniendo el path de LOCALAPPDATA si es válido, sino lista vacía.
+        Lista que contiene el Path de LOCALAPPDATA, o una lista vacía si no existe
+        o está restringido por la política de seguridad.
     """
     if os.name != "nt":
         return []
@@ -103,15 +100,9 @@ def base_directories() -> List[Path]:
 
 
 def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> bool:
-    """
-    Valida la integridad de una ruta para prevenir ataques de Path Traversal.
-
-    Args:
-        target_path: Ruta a evaluar.
-        base_path: Raíz de confinamiento permitida.
-
-    Returns:
-        True si la ruta es segura, absoluta, no protegida y está bajo base_path.
+    """Valida que la ruta sea absoluta, no protegida y contenida en base_path.
+    
+    Previene Path Traversal y el seguimiento de enlaces simbólicos o junctions.
     """
     if not isinstance(target_path, Path) or not isinstance(base_path, Path):
         return False
@@ -143,20 +134,14 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
 
 
 def _is_excluded_file(name: str | None) -> bool:
-    """Comprueba si el nombre de un archivo o carpeta figura en la lista NEVER_TOUCH."""
+    """Verifica si un nombre de archivo o carpeta está en la lista de NO tocar."""
     if not isinstance(name, str) or not name:
         return True
     return name.lower() in NEVER_TOUCH
 
 
 def _is_system_hidden(entry_path: str | None, kernel32: ctypes.WinDLL | None) -> bool:
-    """
-    Consulta atributos de archivo en Windows para detectar flags de 'oculto' o 'sistema'.
-    
-    Args:
-        entry_path: Ruta absoluta al archivo.
-        kernel32: Instancia de ctypes cargada o None si no es Windows.
-    """
+    """Consulta atributos de Windows para detectar flags de 'oculto' o 'sistema'."""
     if not kernel32 or not isinstance(entry_path, str) or not entry_path:
         return False
     try:
@@ -169,12 +154,7 @@ def _is_system_hidden(entry_path: str | None, kernel32: ctypes.WinDLL | None) ->
 
 
 def _should_skip_entry(entry: os.DirEntry, kernel32: ctypes.WinDLL | None, is_junction_fn: Callable[[str], bool]) -> bool:
-    """
-    Determina si una entrada del sistema de archivos debe omitirse durante el escaneo.
-    
-    Aplica filtros de seguridad: omite archivos ocultos, de sistema, enlaces simbólicos,
-    junctions de Windows y archivos críticos definidos en NEVER_TOUCH.
-    """
+    """Determina si omitir una entrada según políticas de seguridad y flags."""
     if not entry or not hasattr(entry, 'path'):
         return True
     if _is_system_hidden(entry.path, kernel32):
@@ -198,22 +178,12 @@ def _sum_directory_recursive(
     cache: Dict[str, int], 
     depth: int = 0
 ) -> int:
-    """
-    Calcula el peso en bytes de una carpeta mediante un recorrido DFS limitado.
-
-    Args:
-        root_dir: Carpeta actual bajo análisis.
-        base_dir: Raíz restringida para evitar escapes de directorio.
-        visited: Set de rutas ya procesadas para evitar ciclos de enlaces.
-        cache: Diccionario para memoización de pesos calculados.
-        depth: Control de profundidad (max 20) para prevenir desbordamientos.
-    """
+    """Calcula el peso en bytes mediante recorrido DFS limitado a 20 niveles."""
     if depth > 20:
         return 0
         
     try:
         st = os.stat(root_dir)
-        # Prevenir seguimiento de hard links que puedan crear bucles lógicos
         if st.st_nlink > 1 and root_dir in visited:
             return 0
         visited.add(root_dir)
@@ -243,12 +213,14 @@ def _sum_directory_recursive(
     return total_size
 
 
-def directory_size(path: str | os.PathLike | None) -> int:
-    """
-    Calcula el peso total en bytes de una carpeta tras validar que sea segura.
-    
-    Realiza una verificación de seguridad inicial y limita el acceso a directorios
-    del sistema mediante `is_protected_path`.
+def directory_size(path: Union[str, os.PathLike, None]) -> int:
+    """Calcula el peso en bytes de una carpeta tras validar su seguridad.
+
+    Args:
+        path: Ruta a medir. Se normaliza a Path antes de validación.
+
+    Returns:
+        Peso en bytes (int), o 0 si la ruta es inválida o está protegida.
     """
     if path is None:
         return 0
@@ -269,7 +241,7 @@ def directory_size(path: str | os.PathLike | None) -> int:
 
 
 def _is_valid_cache_path(candidate: Optional[Path], base_path: Path) -> bool:
-    """Valida la integridad de una ruta de caché candidata antes de escanear su contenido."""
+    """Valida la integridad de una ruta de caché antes de escanear su contenido."""
     if not isinstance(candidate, Path) or not isinstance(base_path, Path):
         return False
     try:
@@ -288,11 +260,14 @@ def detect_profiles(
     bases: Optional[Sequence[Path]] = None, 
     cache_paths: Optional[Dict[str, str]] = None
 ) -> List[BrowserCache]:
-    """
-    Detecta cachés de navegadores instaladas combinando rutas base y subrutas conocidas.
+    """Detecta cachés de navegadores combinando rutas base y subrutas conocidas.
 
-    Itera sobre las rutas base provistas, construye las rutas de caché según 
-    `BROWSER_CACHE_PATHS` y filtra resultados inválidos o protegidos.
+    Args:
+        bases: Opcional, lista de rutas base para buscar perfiles.
+        cache_paths: Opcional, mapa de {nombre: ruta_relativa} a buscar.
+
+    Returns:
+        Lista de objetos BrowserCache con la información de tamaño encontrada.
     """
     raw_bases = bases if bases is not None else base_directories()
     cache_paths = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
@@ -331,16 +306,12 @@ def detect_profiles(
 
 
 def total_cache_bytes(caches: Iterable[BrowserCache] | None = None) -> int:
-    """Calcula el peso total en bytes acumulado de una colección de cachés detectadas."""
+    """Calcula el peso total en bytes acumulado de una colección de cachés."""
     return sum(cache.size_bytes for cache in (caches or []))
 
 
 def summarize(caches: Optional[List[BrowserCache]] = None) -> List[str]:
-    """
-    Genera un informe textual del estado de las cachés encontradas.
-    
-    Si no se provee una lista, ejecuta una detección completa antes de resumir.
-    """
+    """Genera un informe textual del estado de las cachés encontradas."""
     current_caches: List[BrowserCache] = caches if caches is not None else detect_profiles()
     
     if not current_caches:

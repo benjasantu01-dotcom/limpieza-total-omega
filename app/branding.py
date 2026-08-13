@@ -221,7 +221,14 @@ def score_color(score: Union[float, int, None]) -> HexColor:
 
 def bar(percent: Union[float, int, None], width: int = 24,
         filled: str = "\u2588", empty: str = "\u2591") -> str:
-    """Genera una representación visual de progreso en formato texto (ASCII/Unicode)."""
+    """
+    Genera una representación visual de progreso en formato texto.
+    :param percent: Valor numérico [0-100] de progreso.
+    :param width: Ancho total de caracteres de la barra.
+    :param filled: Caracter para representar la parte completada.
+    :param empty: Caracter para representar la parte pendiente.
+    :return: String con la barra renderizada.
+    """
     try:
         valor: float = max(0.0, min(100.0, float(percent) if percent is not None else 0.0))
         ancho: int = max(1, int(width))
@@ -247,7 +254,7 @@ def _hex_to_rgb(value: HexColor) -> RGBTuple:
 
 @lru_cache(maxsize=64)
 def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
-    """Realiza una interpolación lineal (lerp) entre dos colores hex."""
+    """Realiza una interpolación lineal (lerp) entre dos colores hex. Ratio: [0.0, 1.0]."""
     ratio_clamped = max(0.0, min(1.0, float(ratio)))
     r1, g1, b1 = _hex_to_rgb(start)
     r2, g2, b2 = _hex_to_rgb(end)
@@ -279,7 +286,7 @@ def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) ->
 
 @lru_cache(maxsize=8)
 def _get_grouped_segments(colors: Tuple[HexColor, ...]) -> Tuple[Tuple[HexColor, int, int], ...]:
-    """Optimiza la serie de colores agrupando segmentos consecutivos idénticos."""
+    """Optimiza la serie de colores agrupando segmentos consecutivos idénticos para reducir llamadas de dibujo."""
     segments = []
     if not colors: return tuple(segments)
     start = 0
@@ -414,7 +421,15 @@ def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
               canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14,
               track: Optional[HexColor] = None,
               fill: Optional[HexColor] = None) -> None:
-    """Dibuja un medidor circular tipo anillo para representar porcentajes de salud."""
+    """
+    Dibuja un medidor circular tipo anillo para representar porcentajes de salud.
+    :param canvas: Objeto Canvas de tkinter.
+    :param percent: Valor porcentual (0-100).
+    :param size: Diámetro del anillo.
+    :param thickness: Grosor del trazo del anillo.
+    :param track: Color opcional para el fondo (track) del anillo.
+    :param fill: Color opcional para el arco de progreso.
+    """
     if not hasattr(canvas, "create_arc"): return
     try:
         valor = max(0.0, min(100.0, float(percent)))

@@ -432,13 +432,13 @@ def local_answer(question: str, context: SystemContext) -> Answer:
         cuerpo = f"Tu sistema está en buen estado ({puntaje_str}/100). No hay nada urgente."
     return Answer(cuerpo, notice=OFFLINE_NOTICE, suggestions=SUGGESTED_QUESTIONS_LIST[:3])
 
-_PRIORITIES_TEMPLATE: Final[tuple[tuple[bool, str], ...]] = (
-    (False, "queda solo {disk_free_percent:.0f}% de disco libre"),
-    (False, "{suspicious_warnings} archivo(s) sospechosos"),
-    (False, "queda {memory_available_percent:.0f}% de RAM"),
-    (False, "{junk_mb:.0f} MB de archivos basura"),
-    (False, "{duplicate_mb:.0f} MB en duplicados"),
-    (False, "{startup_count} programas de inicio")
+_PRIORITIES_TEMPLATE: Final[tuple[tuple[str, ...], ...]] = (
+    ("{disk_free_percent:.0f}% de disco libre",),
+    ("{suspicious_warnings} archivo(s) sospechosos",),
+    ("{memory_available_percent:.0f}% de RAM",),
+    ("{junk_mb:.0f} MB de basura",),
+    ("{duplicate_mb:.0f} MB en duplicados",),
+    ("{startup_count} programas de inicio",)
 )
 
 def _gen_problems(ctx: SystemContext) -> Generator[str, None, None]:
@@ -446,21 +446,22 @@ def _gen_problems(ctx: SystemContext) -> Generator[str, None, None]:
     Genera un listado de problemas detectados priorizados por criticidad.
     Se limita a un máximo de 3 elementos para mantener la respuesta concisa.
     """
-    if ctx is None: return
+    if not ctx: return
     
-    conditions = (
-        ctx.disk_free_percent < 10.0,
-        ctx.suspicious_warnings > 0,
-        ctx.memory_available_percent < 15.0,
-        ctx.junk_mb > 1000.0,
-        ctx.duplicate_mb > 500.0,
-        ctx.startup_count > 15
-    )
+    # Mapeo de condiciones lógicas a descripciones de usuario
+    evaluators: list[tuple[bool, str]] = [
+        (ctx.disk_free_percent < 10.0, _PRIORITIES_TEMPLATE[0][0]),
+        (ctx.suspicious_warnings > 0, _PRIORITIES_TEMPLATE[1][0]),
+        (ctx.memory_available_percent < 15.0, _PRIORITIES_TEMPLATE[2][0]),
+        (ctx.junk_mb > 1000.0, _PRIORITIES_TEMPLATE[3][0]),
+        (ctx.duplicate_mb > 500.0, _PRIORITIES_TEMPLATE[4][0]),
+        (ctx.startup_count > 15, _PRIORITIES_TEMPLATE[5][0])
+    ]
     
-    count = 0
-    for i, condition in enumerate(conditions):
+    found = 0
+    for condition, msg in evaluators:
         if condition:
-            yield _PRIORITIES_TEMPLATE[i][1].format(
+            yield msg.format(
                 disk_free_percent=ctx.disk_free_percent,
                 suspicious_warnings=ctx.suspicious_warnings,
                 memory_available_percent=ctx.memory_available_percent,
@@ -468,8 +469,8 @@ def _gen_problems(ctx: SystemContext) -> Generator[str, None, None]:
                 duplicate_mb=ctx.duplicate_mb,
                 startup_count=ctx.startup_count
             )
-            count += 1
-        if count >= 3:
+            found += 1
+        if found >= 3:
             break
 
 def available(base: Union[str, Path, None] = None) -> bool:
