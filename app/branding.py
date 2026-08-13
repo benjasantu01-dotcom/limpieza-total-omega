@@ -270,6 +270,7 @@ def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) ->
     """Calcula una secuencia de colores interpolados a lo largo de varios puntos de control."""
     try:
         n = max(1, int(steps))
+        if not stops: return (PALETTE["accent"],) * n
         if len(stops) < 2: return (stops[0],) * n
         
         res = [stops[0]] * n
@@ -341,9 +342,7 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         return None
     try:
         p = Path(destination).expanduser().resolve()
-        # Validar permisos y restricciones de seguridad antes de cualquier acción
         ensure_safe_to_modify(p)
-            
         parent_dir = p.parent
         if not parent_dir.exists():
             parent_dir.mkdir(parents=True, exist_ok=True)

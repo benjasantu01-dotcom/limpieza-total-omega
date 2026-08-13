@@ -108,8 +108,8 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
         return False
     
     path_str = str(target_path)
-    # Detecta posibles ataques de ofuscación de nombres con caracteres especiales
-    if any(ord(char) < 32 or ord(char) in (0x200E, 0x200F, 0x202A, 0x202E) for char in path_str):
+    # Detecta posibles ataques de ofuscación o caracteres nulos en Windows
+    if "\0" in path_str or any(ord(char) < 32 or ord(char) in (0x200E, 0x200F, 0x202A, 0x202E) for char in path_str):
         return False
         
     try:

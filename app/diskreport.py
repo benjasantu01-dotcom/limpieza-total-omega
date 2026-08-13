@@ -242,10 +242,10 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        if skip_protected and is_protected_path(Path(entry.path)):
+                        p_entry = Path(entry.path)
+                        if skip_protected and is_protected_path(p_entry):
                             continue
 
-                        # Se evitan enlaces simbólicos y junctions de Windows para prevenir ciclos
                         if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
                             continue
 
@@ -254,9 +254,9 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                             inode = (st.st_dev, st.st_ino)
                             if inode not in visited_inodes:
                                 visited_inodes.add(inode)
-                                stack.append((Path(entry.path), depth + 1))
+                                stack.append((p_entry, depth + 1))
                         else:
-                            yield Path(entry.path), entry.stat().st_size
+                            yield p_entry, entry.stat().st_size
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):
@@ -303,9 +303,12 @@ def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip
     count_map: Dict[str, int] = defaultdict(int)
     
     for path, size in walk_files(directory, skip_protected):
-        ext = path.suffix.lower() or "(sin extensión)"
-        size_map[ext] += size
-        count_map[ext] += 1
+        try:
+            ext = path.suffix.lower() or "(sin extensión)"
+            size_map[ext] += size
+            count_map[ext] += 1
+        except Exception:
+            continue
     
     usage_list: List[ExtensionUsage] = [
         ExtensionUsage(extension=ext, size_bytes=size, count=count_map[ext])
@@ -340,13 +343,13 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
         
         for path, size in walk_files(base, skip_protected):
             try:
-                # Se utiliza el ancestro inmediato para categorizar la profundidad
                 relative = path.relative_to(base)
+                if not relative.parts:
+                    continue
                 top_level = base / relative.parts[0]
-                
                 sums[top_level] += size
                 counts[top_level] += 1
-            except (OSError, ValueError, RuntimeError, PermissionError, IndexError): 
+            except (ValueError, IndexError): 
                 continue
 
         results: List[FolderUsage] = [FolderUsage(p, sums[p], counts[p]) for p in sums]
@@ -404,13 +407,11 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
         total_bytes += size
         total_files += 1
         
-        # Agrupación de extensión
         ext = path.suffix.lower() or "(sin extensión)"
         data_ext = ext_data[ext]
         data_ext[0] += size
         data_ext[1] += 1
         
-        # Mantenimiento de top 8 vía heap sin ordenar toda la colección
         if len(top_files_heap) < 8:
             heapq.heappush(top_files_heap, (size, str(path)))
         elif size > top_files_heap[0][0]:
