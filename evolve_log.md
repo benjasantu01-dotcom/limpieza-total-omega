@@ -875,3 +875,12 @@ FAILED evolve/tests/test_basic.py::test_delete_reviewed_only_touches_the_review_
 - `2026-08-13T01:04:50` ➖ Sin cambios en main.py (enfoque: manejo de errores y validación de entradas). Motivo: Se reforzó la robustez del manejo de errores en `on_trim_process` y `on_restore_quarantine` mediante validaciones de estado más exhaustivas en el hilo asíncrono para evitar excepciones inesperadas al interactuar con el sistema operativo.
 - `2026-08-13T01:04:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-13T01:04:50` Corrida terminada. Total usado hoy: 28.
+- `2026-08-13T01:11:53` Arrancando corrida. Quedan hoy ~272 peticiones objetivo.
+- `2026-08-13T01:12:20` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `trim_working_set` añadiendo validaciones estrictas de los tipos de datos y los resultados de las llamadas a la API, asegurando que el cierre del manejador de proceso esté garantizado incluso ante errores inesperados.
+- `2026-08-13T01:12:42` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-13T01:13:42` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-13T01:14:06` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-08-13T01:14:45` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `quarantine_file` validando explícitamente que la ruta de origen sea absoluta y normalizada antes de cualquier chequeo de seguridad, evitando ambigüedades en la validación de rutas y posibles errores al calcular `parent`.
+- `2026-08-13T01:15:03` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-08-13T01:15:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-13T01:15:03` Corrida terminada. Total usado hoy: 32.

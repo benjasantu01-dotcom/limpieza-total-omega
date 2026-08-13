@@ -300,7 +300,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "Solo disponible en Windows."
     
     try:
-        target_pid: int = int(pid)
+        target_pid = int(pid)
     except (ValueError, TypeError):
         return False, "El PID debe ser un número entero válido."
     
@@ -327,7 +327,6 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
             
         buf = ctypes.create_unicode_buffer(4096)
         size = ctypes.c_ulong(4096)
-        # Usamos QueryFullProcessImageNameW para obtener la ruta absoluta real
         if kernel32.QueryFullProcessImageNameW(proc_handle, 0, buf, ctypes.byref(size)):
             exe_path: str = os.path.abspath(os.path.normpath(buf.value))
             if is_protected_path(exe_path):
@@ -340,4 +339,5 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except Exception:
         return False, "Ocurrió un error técnico al gestionar el proceso."
     finally:
-        kernel32.CloseHandle(proc_handle)
+        if proc_handle:
+            kernel32.CloseHandle(proc_handle)

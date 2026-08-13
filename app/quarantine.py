@@ -282,7 +282,10 @@ def quarantine_file(
     """Aísla un archivo en la zona de cuarentena tras validar su seguridad."""
     if not source:
         raise ValueError("La ruta de origen no puede estar vacía.")
-    source_path = Path(source).resolve()
+    
+    # Normalización estricta antes de operar
+    source_path = Path(source).expanduser().resolve()
+    
     if not source_path.exists() or not source_path.is_file():
         raise FileNotFoundError(f"Archivo no encontrado: {source_path}")
     
