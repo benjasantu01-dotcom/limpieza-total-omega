@@ -219,7 +219,6 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
         return
 
     visited_inodes: set[Tuple[int, int]] = set()
-    # Tupla de (Path, nivel_actual)
     stack: List[Tuple[Path, int]] = [(root, 0)]
     max_depth = 100 
 
@@ -382,10 +381,11 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
         return ["Error: Ruta no proporcionada."]
     
     try:
-        p_input = Path(directory)
-        path_obj = p_input.expanduser().resolve(strict=False)
-        if not path_obj.exists() or not path_obj.is_dir(): 
-            return [f"Error: Ruta no encontrada o no es directorio: {path_obj}"]
+        p_input = Path(directory).expanduser().resolve(strict=False)
+        if not p_input.exists() or not p_input.is_dir(): 
+            return [f"Error: Ruta no encontrada o no es directorio: {p_input}"]
+        if skip_protected and is_protected_path(p_input):
+            return [f"Error: Ruta protegida no permitida: {p_input}"]
     except (OSError, TypeError, RuntimeError, ValueError):
         return ["Error: Ruta inválida o inaccesible."]
         
@@ -393,7 +393,7 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
     top_files_heap: List[Tuple[int, str]] = []
     total_bytes, total_files = 0, 0
     
-    for path, size in walk_files(path_obj, skip_protected):
+    for path, size in walk_files(p_input, skip_protected):
         total_bytes += size
         total_files += 1
         
@@ -411,7 +411,7 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
         elif size > top_files_heap[0][0]:
             heapq.heapreplace(top_files_heap, (size, str(path)))
 
-    lines = [f"Carpeta analizada: {path_obj}", f"Total: {format_size(total_bytes)} en {total_files} archivos", "", "Por tipo de archivo:"]
+    lines = [f"Carpeta analizada: {p_input}", f"Total: {format_size(total_bytes)} en {total_files} archivos", "", "Por tipo de archivo:"]
     
     sorted_exts = heapq.nlargest(8, ext_data.items(), key=lambda item: item[1][0])
     for ext, data in sorted_exts:

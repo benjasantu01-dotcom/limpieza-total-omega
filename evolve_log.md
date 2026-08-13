@@ -1283,3 +1283,13 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-08-13T05:20:10` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save_logo_svg` y `draw_logo` validando parámetros y capturando errores específicos para evitar fallos silenciosos en la UI, alineándolo con las mejores prácticas de manejo de excepciones y validación de entradas.
 - `2026-08-13T05:20:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-13T05:20:10` Corrida terminada. Total usado hoy: 128.
+- `2026-08-13T05:27:17` Arrancando corrida. Quedan hoy ~172 peticiones objetivo.
+- `2026-08-13T05:27:44` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-13T05:28:18` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `summarize` implementando una validación temprana de `directory` contra `is_protected_path`, previniendo que la lógica de escaneo intente operar sobre rutas prohibidas antes de comenzar la recursión, y refiné el manejo de errores al obtener estadísticas de archivos (`entry.stat()`) para evitar fallos catastróficos ante archivos bloqueados por el sistema durante la iteración.
+- `2026-08-13T05:29:18` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-13T05:30:21` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-08-13T05:30:44` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-08-13T05:31:13` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-08-13T05:31:37` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-13T05:31:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-13T05:31:37` Corrida terminada. Total usado hoy: 132.
