@@ -145,6 +145,9 @@ def _is_system_hidden(entry_path: str | None, kernel32: ctypes.WinDLL | None) ->
     """Consulta atributos de Windows para detectar flags de 'oculto' o 'sistema'."""
     if not kernel32 or not isinstance(entry_path, str) or not entry_path:
         return False
+    # Validar que la ruta existe antes de llamar a la API para evitar excepciones innecesarias
+    if not os.path.exists(entry_path):
+        return False
     try:
         attrs = kernel32.GetFileAttributesW(entry_path)
         if attrs == 0xFFFFFFFF:
@@ -156,14 +159,15 @@ def _is_system_hidden(entry_path: str | None, kernel32: ctypes.WinDLL | None) ->
 
 def _should_skip_entry(entry: os.DirEntry, kernel32: ctypes.WinDLL | None, is_junction_fn: Callable[[str], bool]) -> bool:
     """Determina si omitir una entrada según políticas de seguridad y flags."""
-    if not entry or not hasattr(entry, 'path'):
+    if not isinstance(entry, os.DirEntry) or not hasattr(entry, 'path'):
         return True
-    if _is_system_hidden(entry.path, kernel32):
-        return True
+    # Primero chequeo nombres excluidos antes de llamadas costosas a la API de Windows
     try:
-        if entry.is_symlink() or is_junction_fn(entry.path):
+        if _is_excluded_file(entry.name):
             return True
-        if entry.is_file() and _is_excluded_file(entry.name):
+        if _is_system_hidden(entry.path, kernel32):
+            return True
+        if entry.is_symlink() or is_junction_fn(entry.path):
             return True
     except (OSError, PermissionError):
         return True

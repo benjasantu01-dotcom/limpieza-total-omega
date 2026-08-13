@@ -979,3 +979,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-13T14:12:07` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-08-13T14:12:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-13T14:12:07` Corrida terminada. Total usado hoy: 336.
+- `2026-08-13T14:18:19` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-13T14:19:04` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejora el manejo de errores en `build_context` al añadir validaciones defensivas ante tipos de datos inesperados en los diccionarios de entrada, asegurando que si una métrica es maliciosa o inválida, se descarte silenciosamente en lugar de propagar errores o corromper el `SystemContext`.
+- `2026-08-13T14:20:01` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `save_logo_svg` y `draw_ring` validando explícitamente sus parámetros de entrada para evitar excepciones imprevistas en tiempo de ejecución, alineado con las buenas prácticas de manejo de errores del proyecto.
+- `2026-08-13T14:20:28` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_system_hidden` y `_should_skip_entry` añadiendo validaciones de tipo y estructura frente a entradas malformadas o inesperadas que podrían provocar excepciones no capturadas durante el recorrido del sistema de archivos.
+- `2026-08-13T14:20:53` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y las funciones de consulta integrando validaciones de entrada tempranas y capturas de excepciones específicas para evitar el desplome ante archivos bloqueados o con metadatos inaccesibles (stat fallidos), asegurando que el bucle de procesamiento sea resiliente sin sacrificar rendimiento.
+- `2026-08-13T14:20:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-13T14:20:53` Corrida terminada. Total usado hoy: 340.

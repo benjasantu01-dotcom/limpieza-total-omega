@@ -157,7 +157,6 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
         return None
     try:
         p = Path(mount).expanduser()
-        # Defensa: Las rutas UNC (\\servidor) no deben procesarse como discos locales
         if str(p).startswith(("\\\\", "//")):
             return None
         if not p.exists() or is_protected_path(p.resolve()):
@@ -199,20 +198,12 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Recorre el sistema de archivos de forma iterativa y segura.
-
-    Args:
-        directory: Directorio raíz para comenzar el recorrido.
-        skip_protected: Si es True, omite rutas bloqueadas por seguridad.
-
-    Yields:
-        Tuplas conteniendo el Path del archivo y su tamaño en bytes.
     """
     if not directory:
         return
 
     try:
         root = Path(directory).expanduser()
-        # Defensa: No procesar rutas de red/UNC
         if str(root).startswith(("\\\\", "//")):
             return
         if not root.exists() or not root.is_dir() or (skip_protected and is_protected_path(root.resolve())):
@@ -242,7 +233,8 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                                 visited_inodes.add(inode)
                                 stack.append(Path(entry.path))
                         else:
-                            yield Path(entry.path), entry.stat().st_size
+                            st = entry.stat()
+                            yield Path(entry.path), st.st_size
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):

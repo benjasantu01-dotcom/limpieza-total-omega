@@ -232,7 +232,7 @@ def _get_metric_val(source: Any, key: str, default: Any) -> Any:
         elif hasattr(source, key):
             val = getattr(source, key)
         
-        if val is None or not isinstance(val, (int, float)) or not math.isfinite(val):
+        if val is None or not isinstance(val, (int, float, str)) or (isinstance(val, (int, float)) and not math.isfinite(val)):
             return default
         return val
     except Exception: return default
@@ -272,7 +272,6 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     for k, v in extra.items():
         # Verificación estricta de atributos permitidos y tipos antes de asignar
         if hasattr(ctx, k) and v is not None:
-            # Solo permitir actualizar métricas numéricas vía extra para evitar inyección de estado
             attr_val = getattr(ctx, k)
             if isinstance(attr_val, (int, float)):
                 _safe_assign(ctx, k, v, cast=type(attr_val))

@@ -16,36 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-12 | 75 | 4 | 13 | 7 | 69 |
-| 2026-08-13 | 135 | 9 | 20 | 6 | 166 |
+| 2026-08-12 | 71 | 4 | 13 | 7 | 69 |
+| 2026-08-13 | 139 | 9 | 20 | 6 | 166 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **56**
+- legibilidad y documentación: **52**
 - seguridad defensiva: **44**
 - robustez ante casos límite: **42**
-- manejo de errores y validación de entradas: **35**
+- manejo de errores y validación de entradas: **39**
 - rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **21**
-- `diskreport.py`: **19**
-- `quarantine.py`: **18**
-- `branding.py`: **18**
-- `memory.py`: **17**
-- `assistant.py`: **17**
+- `diskreport.py`: **20**
+- `branding.py`: **19**
+- `assistant.py`: **18**
+- `quarantine.py`: **17**
 - `healthscore.py`: **16**
-- `organizer.py`: **15**
+- `memory.py`: **16**
 - `duplicates.py`: **15**
-- `main.py`: **13**
+- `organizer.py`: **14**
+- `browser.py`: **14**
 - `scanner.py`: **13**
-- `browser.py`: **13**
+- `main.py`: **12**
 - `safety.py`: **10**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-13T14:20:53` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y las funciones de consulta integrando validaciones de entrada tempranas y capturas de excepciones específicas para evitar el desplome ante archivos bloqueados o con metadatos inaccesibles (stat fallidos), asegurando que el bucle de procesamiento sea resiliente sin sacrificar rendimiento.
+- `2026-08-13T14:20:28` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_system_hidden` y `_should_skip_entry` añadiendo validaciones de tipo y estructura frente a entradas malformadas o inesperadas que podrían provocar excepciones no capturadas durante el recorrido del sistema de archivos.
+- `2026-08-13T14:20:01` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` y `draw_ring` validando explícitamente sus parámetros de entrada para evitar excepciones imprevistas en tiempo de ejecución, alineado con las buenas prácticas de manejo de errores del proyecto.
+- `2026-08-13T14:19:04` **assistant.py** (manejo de errores y validación de entradas): Mejora el manejo de errores en `build_context` al añadir validaciones defensivas ante tipos de datos inesperados en los diccionarios de entrada, asegurando que si una métrica es maliciosa o inválida, se descarte silenciosamente en lugar de propagar errores o corromper el `SystemContext`.
 - `2026-08-13T12:57:01` **settings.py** (seguridad defensiva): Se ha mejorado la robustez de `save()` implementando una comprobación de seguridad adicional antes de crear el directorio, evitando errores potenciales al intentar expandir o crear rutas que no pasaron la validación de `_is_safe_path`.
 - `2026-08-13T12:46:52` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_validate_isolation_request` al implementar la verificación de existencia de un archivo antes de intentar moverlo mediante una comparación de sus identificadores únicos (Device ID y File Index en Windows), evitando ataques de tipo "TOCTOU" (Time-of-Check to Time-of-Use) mediante enlaces simbólicos.
 - `2026-08-13T12:38:29` **organizer.py** (seguridad defensiva): Se ha mejorado `_is_safe_to_move` añadiendo una comprobación explícita para detectar archivos de sistema ocultos (mediante atributos de archivo) y asegurar que el origen no sea un punto de montaje o unidad raíz, fortaleciendo la defensa contra manipulaciones accidentales de estructuras críticas del sistema.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-13T12:26:57` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_sum_directory_recursive` mediante la verificación explícita de `is_protected_path` en cada nivel de la recursión para evitar el acceso a rutas que pudieran haber sido alteradas o enlazadas dinámicamente hacia directorios protegidos durante el recorrido.
 - `2026-08-13T12:17:39` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva en `_call_gemini` integrando `ensure_safe_to_modify` (vía `filter_safe_paths`) para validar la configuración de la clave API y el modelo, asegurando que los parámetros de red provengan de fuentes validadas antes de realizar la petición HTTP.
 - `2026-08-13T12:16:22` **scanner.py** (robustez ante casos límite): Mejoré la robustez de `scanner.py` implementando una validación exhaustiva de los metadatos de los archivos (gestionando excepciones de permisos y estados de archivo bloqueado) y asegurando que las funciones de escaneo no fallen ante nombres de archivos o rutas malformadas.
-- `2026-08-13T12:07:17` **safety.py** (robustez ante casos límite): Se ha mejorado `_check_file_integrity` para manejar la condición de carrera donde un archivo desaparece entre su comprobación inicial y la validación de integridad (`OSError` en `p.stat()`), asegurando que la función sea resiliente frente a cambios concurrentes en el sistema de archivos.
-- `2026-08-13T12:06:36` **quarantine.py** (robustez ante casos límite): Se implementó un mecanismo de verificación de "archivo en uso" mediante `_is_file_locked` antes de iniciar el proceso crítico de `quarantine_file` para evitar interrupciones en mitad de la operación de copia, mejorando la robustez ante estados transitorios del sistema.
-- `2026-08-13T12:06:03` **organizer.py** (robustez ante casos límite): Se introdujo una comprobación de existencia y acceso de solo lectura dentro de `stage_for_review` para evitar errores en tiempo de ejecución si un archivo se elimina, renombra o pierde permisos entre la fase de escaneo y la de movimiento (condición de carrera típica).
-- `2026-08-13T11:58:26` **memory.py** (robustez ante casos límite): Se reforzó la robustez de `parse_windows_process_csv` y `_parse_csv_row` añadiendo validación estricta ante entradas mal formadas o valores numéricos imposibles, evitando errores de ejecución si `powershell` devuelve una salida inesperada o corrupta.

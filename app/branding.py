@@ -339,11 +339,9 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         return None
     try:
         p = Path(destination).expanduser().resolve()
-        # Verificación previa sin excepciones
+        # Validación estricta usando is_safe_to_modify antes de proceder
         if not is_safe_to_modify(p):
             return None
-        # Validación estricta antes de operar
-        ensure_safe_to_modify(p)
         
         parent_dir = p.parent
         if not parent_dir.exists():
@@ -435,9 +433,14 @@ def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
     """
     if not hasattr(canvas, "create_arc"): return
     try:
-        valor = max(0.0, min(100.0, float(percent)))
-        diametro = max(20, int(size))
-        grosor = max(2, min(int(thickness), diametro // 2 - 1))
+        # Validación explícita de entradas
+        valor = float(percent)
+        diametro = int(size)
+        grosor = int(thickness)
+        
+        valor = max(0.0, min(100.0, valor))
+        diametro = max(20, diametro)
+        grosor = max(2, min(grosor, diametro // 2 - 1))
         
         color_fondo = track or PALETTE["surface_alt"]
         color_avance = fill or score_color(valor)
