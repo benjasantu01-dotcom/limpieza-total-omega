@@ -202,6 +202,8 @@ def _safe_assign(obj: SystemContext, attr: str, val: Any, cast: Callable = float
     if val is None or not hasattr(obj, attr):
         return
     try:
+        if not isinstance(val, (int, float, str)):
+            return
         clean = cast(val)
         if isinstance(clean, (int, float)) and math.isfinite(clean):
             setattr(obj, attr, max(min_val, min(clean, max_val)))
