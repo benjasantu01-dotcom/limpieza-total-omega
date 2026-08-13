@@ -94,7 +94,6 @@ _cached_settings: AppSettings | None = None
 _current_path: Path | None = None
 _last_mtime: float = -1.0
 _path_cache: dict[str, Path] = {}
-_validator_cache: dict[str, Any] = {}
 
 DEFAULTS: Final[AppSettings] = {
     ConfigKey.TEMA.value: "oscuro",
@@ -220,7 +219,7 @@ def validate(raw_values: Any) -> AppSettings:
                 enum_key = ConfigKey(key)
                 val = validator(enum_key, raw_values.get(key))
                 if val is not None: config[key] = val
-            except (Exception):
+            except (ValueError, TypeError, AttributeError):
                 continue
     return config
 
@@ -291,17 +290,17 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
     current = load(custom_base)
     needs_save = False
+    if not isinstance(changes, dict): return current
     for k, v in changes.items():
         if k in _VALIDATOR_MAP and current.get(k) != v:
             try:
-                # Usa caché de validación para evitar recomputar validadores lambda
                 validator = _VALIDATOR_MAP[k]
                 enum_key = ConfigKey(k)
                 val = validator(enum_key, v)
                 if val is not None and val != current.get(k):
                     current[k] = val
                     needs_save = True
-            except (ValueError, KeyError):
+            except (ValueError, TypeError, KeyError):
                 continue
     if needs_save: save(current, custom_base)
     return current

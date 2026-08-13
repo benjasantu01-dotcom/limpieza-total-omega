@@ -1007,3 +1007,9 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-13T14:44:22` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: manejo de errores y validación de entradas).
 - `2026-08-13T14:44:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-13T14:44:22` Corrida terminada. Total usado hoy: 348.
+- `2026-08-13T14:48:50` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-13T14:49:16` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `scanner.py` al añadir validaciones defensivas en `check_system_lookalike` y `scan_file`, asegurando que el manejo de rutas y atributos de archivos sea tolerante a errores inesperados durante el acceso al disco, siguiendo las mejores prácticas de validación de entradas.
+- `2026-08-13T14:49:43` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `validate` y `update` capturando excepciones específicas en lugar de una genérica, y añadí una verificación de tipo explícita para evitar errores de ejecución en la iteración sobre `raw_values`.
+- `2026-08-13T14:49:43` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-08-13T14:49:43` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-13T14:49:43` Corrida terminada. Total usado hoy: 350.

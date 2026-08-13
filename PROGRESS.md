@@ -5,8 +5,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **504**
-- Mejoras aceptadas: **212** (42.1% de aceptación)
+- Iteraciones totales: **502**
+- Mejoras aceptadas: **210** (41.8% de aceptación)
 - Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 13
@@ -16,36 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-12 | 67 | 3 | 11 | 7 | 68 |
-| 2026-08-13 | 145 | 9 | 21 | 6 | 167 |
+| 2026-08-12 | 63 | 3 | 11 | 7 | 68 |
+| 2026-08-13 | 147 | 9 | 21 | 6 | 167 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **49**
-- manejo de errores y validación de entradas: **45**
+- manejo de errores y validación de entradas: **47**
 - seguridad defensiva: **44**
 - robustez ante casos límite: **42**
-- rendimiento: **32**
+- rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **20**
-- `settings.py`: **20**
+- `settings.py`: **21**
+- `diskreport.py`: **19**
 - `quarantine.py`: **18**
 - `assistant.py`: **18**
 - `branding.py`: **18**
-- `healthscore.py`: **17**
 - `memory.py`: **17**
-- `duplicates.py`: **16**
+- `healthscore.py`: **16**
+- `duplicates.py`: **15**
 - `organizer.py`: **15**
 - `browser.py`: **14**
-- `main.py`: **13**
-- `scanner.py`: **12**
+- `scanner.py`: **13**
+- `main.py`: **12**
 - `safety.py`: **9**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-13T14:49:43` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `validate` y `update` capturando excepciones específicas en lugar de una genérica, y añadí una verificación de tipo explícita para evitar errores de ejecución en la iteración sobre `raw_values`.
+- `2026-08-13T14:49:16` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `scanner.py` al añadir validaciones defensivas en `check_system_lookalike` y `scan_file`, asegurando que el manejo de rutas y atributos de archivos sea tolerante a errores inesperados durante el acceso al disco, siguiendo las mejores prácticas de validación de entradas.
 - `2026-08-13T14:41:42` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `purge_all` y `restore_item` agregando validaciones de estado y manejo de excepciones específicas para evitar que operaciones de I/O interrumpidas o archivos inaccesibles bloqueen el flujo completo del sistema.
 - `2026-08-13T14:41:07` **organizer.py** (manejo de errores y validación de entradas): Mejora la robustez de `sort_junk` y `stage_for_review` mediante validaciones de tipo explícitas y manejo defensivo de parámetros, asegurando que las operaciones críticas no fallen silenciosamente o por entradas mal formadas.
 - `2026-08-13T14:30:59` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` añadiendo una validación explícita para asegurar que el valor devuelto por `QueryFullProcessImageNameW` sea procesado correctamente, evitando posibles errores de acceso a memoria al manejar el buffer de caracteres.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-13T12:57:01` **settings.py** (seguridad defensiva): Se ha mejorado la robustez de `save()` implementando una comprobación de seguridad adicional antes de crear el directorio, evitando errores potenciales al intentar expandir o crear rutas que no pasaron la validación de `_is_safe_path`.
 - `2026-08-13T12:46:52` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_validate_isolation_request` al implementar la verificación de existencia de un archivo antes de intentar moverlo mediante una comparación de sus identificadores únicos (Device ID y File Index en Windows), evitando ataques de tipo "TOCTOU" (Time-of-Check to Time-of-Use) mediante enlaces simbólicos.
 - `2026-08-13T12:38:29` **organizer.py** (seguridad defensiva): Se ha mejorado `_is_safe_to_move` añadiendo una comprobación explícita para detectar archivos de sistema ocultos (mediante atributos de archivo) y asegurar que el origen no sea un punto de montaje o unidad raíz, fortaleciendo la defensa contra manipulaciones accidentales de estructuras críticas del sistema.
-- `2026-08-13T12:38:20` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `trim_working_set` validando explícitamente el estado del `proc_handle` y asegurando que las llamadas a la API de Windows se realicen únicamente tras verificar la integridad de la ruta del ejecutable contra `is_protected_path`, previniendo la manipulación de procesos del sistema incluso si el PID parece válido.
-- `2026-08-13T12:37:52` **main.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `main.py` mediante la validación estricta de rutas en la entrada `_ask_folder`, asegurando que no se pueda interactuar con rutas que contengan caracteres de control o de reordenamiento bidireccional (RTL/LTR) antes de procesarlas, previniendo posibles ataques de spoofing en la interfaz.

@@ -139,10 +139,14 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Detecta binarios que imitan procesos críticos del sistema ubicados fuera de System32."""
+    if not path or not path.name:
+        return None
+        
     try:
         if path.name.lower() in SYSTEM_LOOKALIKES:
             # Comprobación de ruta segura ante fallos de string o ausencia de parent
-            if SYSTEM32_LOWER not in str(path.parent).lower():
+            parent_path = path.parent
+            if parent_path and SYSTEM32_LOWER not in str(parent_path).lower():
                 return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
     except (OSError, AttributeError):
         pass
@@ -152,7 +156,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     """
     Ejecuta el pipeline de heurísticas sobre un archivo dado y retorna la lista de hallazgos.
     """
-    if not path:
+    if not isinstance(path, Path):
         return []
 
     findings: ScanResult = []
@@ -164,8 +168,8 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     
     # 2. Chequeos específicos de ejecutables
     try:
-        suffix = path.suffix.lower()
-    except (OSError, AttributeError):
+        suffix = path.suffix.lower() if path.suffix else ""
+    except Exception:
         return findings
 
     if suffix in SUSPICIOUS_EXECUTABLE_EXT:
