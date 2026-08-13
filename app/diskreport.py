@@ -202,14 +202,7 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Recorre un directorio de forma iterativa y segura.
-    
-    Args:
-        directory: Ruta raíz a recorrer.
-        skip_protected: Si es True, ignora directorios protegidos vía `is_protected_path`.
-        
-    Yields:
-        Tupla (Path, tamaño_en_bytes) por cada archivo encontrado.
+    Recorre un directorio de forma iterativa y segura con límite de profundidad.
     """
     if not directory:
         return
@@ -226,10 +219,15 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
         return
 
     visited_inodes: set[Tuple[int, int]] = set()
-    stack: List[Path] = [root]
+    # Tupla de (Path, nivel_actual)
+    stack: List[Tuple[Path, int]] = [(root, 0)]
+    max_depth = 100 
 
     while stack:
-        current_dir = stack.pop()
+        current_dir, depth = stack.pop()
+        if depth > max_depth:
+            continue
+
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
@@ -245,7 +243,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                             inode = (st.st_dev, st.st_ino)
                             if inode not in visited_inodes:
                                 visited_inodes.add(inode)
-                                stack.append(Path(entry.path))
+                                stack.append((Path(entry.path), depth + 1))
                         else:
                             yield Path(entry.path), entry.stat().st_size
                     except (OSError, PermissionError):

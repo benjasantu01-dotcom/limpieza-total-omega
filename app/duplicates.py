@@ -144,9 +144,8 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     for p in paths:
         if not isinstance(p, Path): continue
         try:
-            p_res = p.resolve(strict=True)
-            if p_res.is_file() and not is_protected_path(p_res):
-                groups[p_res.stat().st_size].append(p_res)
+            if p.is_file() and not is_protected_path(p):
+                groups[p.stat().st_size].append(p)
         except (OSError, PermissionError, FileNotFoundError):
             continue
     return groups
@@ -177,11 +176,14 @@ def _collect_candidates(
                         if getattr(entry.stat(follow_symlinks=False), 'st_file_attributes', 0) & 0x400:
                             continue
                         
-                        entry_path = Path(entry.path).resolve()
-                        if entry_path in processed_paths: continue
+                        entry_path = Path(entry.path)
                         
+                        # Primero validar seguridad, luego resolver para control de inodos
                         if skip_protected and is_protected_path(entry_path):
                             continue
+                            
+                        resolved_path = entry_path.resolve()
+                        if resolved_path in processed_paths: continue
                         
                         if entry.is_dir():
                             key = (entry.stat().st_dev, entry.stat().st_ino)
@@ -192,8 +194,8 @@ def _collect_candidates(
                         elif entry.is_file():
                             size = entry.stat().st_size
                             if size >= min_size:
-                                processed_paths.add(entry_path)
-                                temp_groups[size].append(entry_path)
+                                processed_paths.add(resolved_path)
+                                temp_groups[size].append(resolved_path)
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):
