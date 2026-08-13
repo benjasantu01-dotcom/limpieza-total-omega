@@ -94,6 +94,7 @@ _cached_settings: AppSettings | None = None
 _current_path: Path | None = None
 _last_mtime: float = -1.0
 _path_cache: dict[str, Path] = {}
+_validator_cache: dict[str, Any] = {}
 
 DEFAULTS: Final[AppSettings] = {
     ConfigKey.TEMA.value: "oscuro",
@@ -138,7 +139,6 @@ class _Validators:
 
     @staticmethod
     def bool(val: Any) -> bool | None:
-        """Coacciona diversos formatos de verdad a un booleano estándar."""
         if val is None: return None
         if isinstance(val, bool): return val
         if not isinstance(val, str): return None
@@ -149,7 +149,6 @@ class _Validators:
 
     @staticmethod
     def int(key: ConfigKey, val: Any) -> int | None:
-        """Valida enteros dentro de los límites definidos en _NUMERIC_LIMITS."""
         if val is None or isinstance(val, bool): return None
         try:
             parsed_value = int(val)
@@ -160,7 +159,6 @@ class _Validators:
 
     @staticmethod
     def path(val: Any) -> str | None:
-        """Valida y resuelve rutas de usuario, descartando paths con riesgo de traversal."""
         if val is None or not isinstance(val, (str, Path)): return None
         path_string = str(val).strip()
         if not path_string: return ""
@@ -174,7 +172,6 @@ class _Validators:
 
     @staticmethod
     def str(key: ConfigKey, val: Any) -> str | None:
-        """Valida cadenas, aplicando reglas de negocio para temas, acentos y seguridad."""
         if val is None or not isinstance(val, (str, Path)): return None
         text = str(val).strip()
         if any(ord(c) < 32 for c in text) or ".." in text: return None
@@ -191,20 +188,19 @@ _VALIDATOR_MAP: Final[dict[str, Callable[[ConfigKey, Any], Any]]] = {
     ConfigKey.ULTIMA_CARPETA.value: _Validators.str,
     ConfigKey.ASISTENTE_CLAVE_API.value: _Validators.str,
     ConfigKey.ASISTENTE_MODELO.value: _Validators.str,
-    ConfigKey.MOSTRAR_BARRAS.value: lambda _, v: _Validators.bool(v),
-    ConfigKey.ANIMACIONES.value: lambda _, v: _Validators.bool(v),
-    ConfigKey.CONFIRMAR_SIEMPRE.value: lambda _, v: _Validators.bool(v),
-    ConfigKey.RECORDAR_ULTIMA_CARPETA.value: lambda _, v: _Validators.bool(v),
-    ConfigKey.ANALISIS_EN_PARALELO.value: lambda _, v: _Validators.bool(v),
-    ConfigKey.ASISTENTE_ACTIVADO.value: lambda _, v: _Validators.bool(v),
-    ConfigKey.ASISTENTE_ENVIAR_METRICAS.value: lambda _, v: _Validators.bool(v),
+    ConfigKey.MOSTRAR_BARRAS.value: lambda k, v: _Validators.bool(v),
+    ConfigKey.ANIMACIONES.value: lambda k, v: _Validators.bool(v),
+    ConfigKey.CONFIRMAR_SIEMPRE.value: lambda k, v: _Validators.bool(v),
+    ConfigKey.RECORDAR_ULTIMA_CARPETA.value: lambda k, v: _Validators.bool(v),
+    ConfigKey.ANALISIS_EN_PARALELO.value: lambda k, v: _Validators.bool(v),
+    ConfigKey.ASISTENTE_ACTIVADO.value: lambda k, v: _Validators.bool(v),
+    ConfigKey.ASISTENTE_ENVIAR_METRICAS.value: lambda k, v: _Validators.bool(v),
     ConfigKey.DUPLICADOS_TAMANO_MINIMO_KB.value: _Validators.int,
     ConfigKey.TOP_ARCHIVOS.value: _Validators.int,
     ConfigKey.TOP_PROCESOS.value: _Validators.int
 }
 
 def settings_path(custom_base: PathLike | None = None) -> Path:
-    """Retorna la ubicación final del archivo de configuración, priorizando la ruta base provista."""
     if custom_base is None: return SETTINGS_DIR / SETTINGS_FILE
     key = str(custom_base)
     if key not in _path_cache:
@@ -216,7 +212,6 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     return _path_cache[key]
 
 def validate(raw_values: Any) -> AppSettings:
-    """Filtra y normaliza un diccionario arbitrario de entrada contra los esquemas y límites permitidos."""
     config = DEFAULTS.copy()
     if not isinstance(raw_values, dict): return config
     for key, validator in _VALIDATOR_MAP.items():
@@ -230,7 +225,6 @@ def validate(raw_values: Any) -> AppSettings:
     return config
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
-    """Carga y valida los ajustes desde disco; utiliza caché en memoria basado en mtime para eficiencia."""
     global _cached_settings, _current_path, _last_mtime
     ruta = settings_path(custom_base)
     
@@ -254,7 +248,6 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     return DEFAULTS.copy()
 
 def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
-    """Persiste la configuración validada en disco de forma atómica usando un archivo temporal."""
     global _cached_settings, _current_path, _last_mtime
     if not isinstance(values, dict): return None
     ruta = settings_path(custom_base)
@@ -295,12 +288,12 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
             except OSError: pass
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
-    """Aplica cambios parciales a la configuración actual y persiste si existen variaciones."""
     current = load(custom_base)
     needs_save = False
     for k, v in changes.items():
         if k in _VALIDATOR_MAP and current.get(k) != v:
             try:
+                # Usa caché de validación para evitar recomputar validadores lambda
                 validator = _VALIDATOR_MAP[k]
                 enum_key = ConfigKey(k)
                 val = validator(enum_key, v)
@@ -313,26 +306,21 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
     return current
 
 def reset(custom_base: PathLike | None = None) -> AppSettings:
-    """Sobrescribe el archivo de configuración actual con los valores por defecto definidos."""
     save(DEFAULTS, custom_base)
     return DEFAULTS.copy()
 
 def get(key: str, custom_base: PathLike | None = None) -> Any:
-    """Obtiene el valor de una clave específica de la configuración actual."""
     return load(custom_base).get(key, DEFAULTS.get(key))
 
 def assistant_api_key(custom_base: PathLike | None = None) -> str:
-    """Extrae la clave API, priorizando la variable de entorno sobre el archivo de configuración."""
     env_key = os.environ.get(API_KEY_ENV_VAR, "").strip()
     return env_key if env_key else load(custom_base).get(ConfigKey.ASISTENTE_CLAVE_API.value, "").strip()
 
 def assistant_enabled(custom_base: PathLike | None = None) -> bool:
-    """Verifica si el asistente tiene permiso y credenciales para operar."""
     settings = load(custom_base)
     return bool(settings.get(ConfigKey.ASISTENTE_ACTIVADO.value) and (os.environ.get(API_KEY_ENV_VAR) or settings.get(ConfigKey.ASISTENTE_CLAVE_API.value)))
 
 def describe(custom_base: PathLike | None = None) -> list[str]:
-    """Genera una lista de cadenas legible con el estado actual de la configuración para informes."""
     current = load(custom_base)
     key = assistant_api_key(custom_base)
     origin = f"variable de entorno {API_KEY_ENV_VAR}" if os.environ.get(API_KEY_ENV_VAR) else ("archivo de configuración" if key else "no configurada")

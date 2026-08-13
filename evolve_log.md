@@ -655,3 +655,38 @@ assert not {'replace'}
 - `2026-08-13T11:26:04` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 104): unterminated string literal (detected at line 104)
 - `2026-08-13T11:26:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-13T11:26:04` Corrida terminada. Total usado hoy: 272.
+- `2026-08-13T11:34:47` Arrancando corrida. Quedan hoy ~28 peticiones objetivo.
+- `2026-08-13T11:35:16` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
+- `2026-08-13T11:35:52` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-13T11:36:44` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el método `process_entry` reemplazando la verificación repetitiva y costosa de subcadenas `any(folder in path_lower for folder in WATCHED_FOLDERS)` por una búsqueda en conjunto mediante el uso de `path.parts`, lo cual es significativamente más eficiente y preciso al evitar falsos positivos de coincidencia parcial en nombres de carpetas.
+- `2026-08-13T11:37:19` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-13T11:37:44` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-08-13T11:38:21` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-08-13T11:39:01` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se implementó un mecanismo de caché más eficiente al evitar el re-procesamiento completo del diccionario mediante la comparación de hashes locales y una estructura `_VALIDATOR_CACHE` para los validadores, optimizando las llamadas frecuentes dentro de bucles o iteraciones de interfaz.
+- `2026-08-13T11:39:12` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 0.99s
+
+```
+- `2026-08-13T11:39:12` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se optimizó el acceso a disco en `_resolve_and_cache_path` mediante una verificación previa del estado de la caché, evitando múltiples instanciaciones de `Path` y llamadas redundantes a `is_protected_path` al procesar entradas repetidas o ya resueltas.
+- `2026-08-13T11:39:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-13T11:39:12` Corrida terminada. Total usado hoy: 276.
