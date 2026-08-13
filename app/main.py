@@ -919,10 +919,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         norm_folder = "".join(c for c in os.path.normpath(folder) if ord(c) >= 32 and c != '\u202e')
         
         try:
-            p = Path(norm_folder)
-            if not p.exists():
+            p = Path(norm_folder).resolve(strict=True)
+            # Validación de existencia y permisos de lectura
+            if not p.exists() or not os.access(p, os.R_OK):
+                messagebox.showwarning("Ruta inaccesible", "La ruta seleccionada no existe o no se puede leer.")
                 return None
-            p = p.resolve(strict=True)
             # Validación proactiva contra rutas de sistema protegidas
             safety.ensure_safe_to_modify(p)
         except (safety.UnsafePathError, OSError, PermissionError):

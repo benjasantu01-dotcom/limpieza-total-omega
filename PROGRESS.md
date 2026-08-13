@@ -16,37 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-11 | 36 | 1 | 4 | 2 | 39 |
+| 2026-08-11 | 34 | 1 | 4 | 2 | 37 |
 | 2026-08-12 | 151 | 6 | 24 | 13 | 156 |
-| 2026-08-13 | 35 | 2 | 4 | 3 | 28 |
+| 2026-08-13 | 37 | 2 | 4 | 3 | 30 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **60**
 - manejo de errores y validación de entradas: **49**
 - rendimiento: **41**
-- seguridad defensiva: **37**
-- robustez ante casos límite: **35**
+- robustez ante casos límite: **37**
+- seguridad defensiva: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **22**
 - `branding.py`: **21**
+- `settings.py`: **21**
 - `healthscore.py`: **20**
+- `quarantine.py`: **20**
 - `diskreport.py`: **19**
 - `assistant.py`: **19**
-- `quarantine.py`: **19**
 - `duplicates.py`: **18**
 - `browser.py`: **15**
 - `memory.py`: **15**
-- `scanner.py`: **14**
 - `organizer.py`: **14**
+- `scanner.py`: **13**
+- `main.py`: **10**
 - `startup.py`: **10**
-- `main.py`: **9**
 - `safety.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-13T03:06:24` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de existencia de directorio de destino antes de intentar mover archivos en `quarantine_file` para evitar fallos cuando el sistema de archivos ha cambiado de estado, y se añadió `exists()` en la limpieza de archivos temporales dentro del `finally` para evitar `FileNotFoundError` si la operación de copia falló parcialmente.
+- `2026-08-13T03:05:19` **main.py** (robustez ante casos límite): Se introdujo una comprobación de existencia y legibilidad en `_ask_folder` usando `pathlib` y `os.access` antes de realizar cualquier operación sobre la ruta seleccionada, previniendo errores de concurrencia y acceso denegado comunes en los diálogos de selección de archivos.
 - `2026-08-13T02:55:37` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez de `_generate_recommendations` ante valores de `metrics` que podrían causar un error de formato en el `message_format` (ej. pasar un entero donde se espera un float), asegurando que el sistema sea capaz de recuperarse de datos inconsistentes sin abortar el cálculo.
 - `2026-08-13T02:55:26` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `hash_file` y `partial_hash` ante archivos que cambian o son bloqueados durante la lectura mediante la implementación de una verificación de integridad post-lectura más estricta y un mejor manejo de excepciones, evitando retornos nulos engañosos.
 - `2026-08-13T02:54:59` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `summarize` para manejar casos límite donde el sistema operativo bloquea el acceso a metadatos o las rutas resultan en excepciones de `OSError` o `PermissionError` durante la iteración, asegurando que el proceso no se interrumpa ante archivos o subdirectorios inaccesibles.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-13T02:13:49` **branding.py** (rendimiento): Se optimizó el rendimiento de `gradient_colors` eliminando la recreación innecesaria de objetos `tuple` y cálculos redundantes dentro del bucle principal al utilizar pre-cálculo de segmentos y acceso directo por índice.
 - `2026-08-13T02:04:45` **assistant.py** (rendimiento): Optimicé el rendimiento de `_gen_problems` convirtiendo la lista `prioridades` en una tupla constante fuera de la función para evitar su recreación en cada llamada, y reemplacé el uso de `list(generator)` por una lógica de iteración directa para ahorrar memoria y ciclos de procesamiento.
 - `2026-08-13T02:04:27` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings de nivel de módulo y función, estandarizando la nomenclatura en los parámetros para reflejar mejor su intención, y clarificando la lógica de resolución de rutas dentro de la clase `StartupEntry` para facilitar su mantenimiento.
-- `2026-08-13T02:04:01` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo docstrings específicos a las funciones críticas y clarificando mediante comentarios los criterios de validación, facilitando el mantenimiento futuro sin alterar la lógica de negocio.
-- `2026-08-13T02:03:33` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de los `docstrings` en las funciones de chequeo (`SuspicionCheck`) y se añadió un `TypeAlias` explícito para la firma de estas funciones, mejorando la legibilidad y la claridad sobre qué parámetros son opcionales según el contrato de ejecución.

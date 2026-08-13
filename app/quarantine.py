@@ -305,6 +305,8 @@ def quarantine_file(
         raise UnsafePathError("No se permite cuarentena en recursos compartidos de red.")
     
     dest_dir = quarantine_dir(base)
+    if not dest_dir.exists():
+        raise RuntimeError("Directorio de cuarentena inaccesible o no creado.")
     if dest_dir == source_path.parent:
         raise UnsafePathError("Operación denegada: el archivo ya está en el destino.")
         
@@ -338,7 +340,7 @@ def quarantine_file(
         if temp_dest.exists(): _safe_unlink(temp_dest)
         raise RuntimeError(f"Error crítico durante el aislamiento: {e}")
     finally:
-        if temp_dest.exists(): _safe_unlink(temp_dest)
+        if 'temp_dest' in locals() and temp_dest.exists(): _safe_unlink(temp_dest)
     try:
         item = QuarantineItem(
             item_id=item_id,

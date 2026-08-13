@@ -1029,3 +1029,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-08-13T02:55:37` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `_generate_recommendations` ante valores de `metrics` que podrían causar un error de formato en el `message_format` (ej. pasar un entero donde se espera un float), asegurando que el sistema sea capaz de recuperarse de datos inconsistentes sin abortar el cálculo.
 - `2026-08-13T02:55:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-13T02:55:37` Corrida terminada. Total usado hoy: 72.
+- `2026-08-13T03:04:13` Arrancando corrida. Quedan hoy ~228 peticiones objetivo.
+- `2026-08-13T03:05:19` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se introdujo una comprobación de existencia y legibilidad en `_ask_folder` usando `pathlib` y `os.access` antes de realizar cualquier operación sobre la ruta seleccionada, previniendo errores de concurrencia y acceso denegado comunes en los diálogos de selección de archivos.
+- `2026-08-13T03:05:44` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-08-13T03:06:07` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-08-13T03:06:24` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se introdujo una validación de existencia de directorio de destino antes de intentar mover archivos en `quarantine_file` para evitar fallos cuando el sistema de archivos ha cambiado de estado, y se añadió `exists()` en la limpieza de archivos temporales dentro del `finally` para evitar `FileNotFoundError` si la operación de copia falló parcialmente.
+- `2026-08-13T03:06:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-13T03:06:24` Corrida terminada. Total usado hoy: 76.
