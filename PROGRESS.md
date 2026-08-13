@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **214** (42.5% de aceptación)
+- Mejoras aceptadas: **212** (42.1% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 31
-- Sin cambios (nada sustancial que mejorar): 12
+- Rechazadas por guardia de seguridad: 32
+- Sin cambios (nada sustancial que mejorar): 13
 - Sin respuesta de la IA (error o límite): 235
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-12 | 101 | 5 | 15 | 8 | 107 |
-| 2026-08-13 | 113 | 7 | 16 | 4 | 128 |
+| 2026-08-12 | 98 | 5 | 15 | 8 | 106 |
+| 2026-08-13 | 114 | 7 | 17 | 5 | 129 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **62**
 - manejo de errores y validación de entradas: **46**
-- seguridad defensiva: **42**
-- robustez ante casos límite: **34**
-- rendimiento: **30**
+- seguridad defensiva: **40**
+- robustez ante casos límite: **33**
+- rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **22**
-- `branding.py`: **20**
+- `settings.py`: **21**
 - `diskreport.py`: **20**
-- `assistant.py`: **18**
+- `branding.py`: **19**
 - `quarantine.py`: **18**
+- `assistant.py`: **17**
 - `healthscore.py`: **16**
+- `memory.py`: **16**
 - `organizer.py`: **15**
-- `memory.py`: **15**
 - `duplicates.py`: **15**
 - `browser.py`: **14**
 - `scanner.py`: **13**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-13T11:25:07` **memory.py** (rendimiento): Optimizé `top_memory_processes` reemplazando la ejecución de PowerShell por una lógica de filtrado más eficiente que evita procesar líneas malformadas prematuramente, y mejoré la gestión de caché al usar una referencia local para minimizar accesos al diccionario global.
 - `2026-08-13T11:16:28` **main.py** (rendimiento): Se ha optimizado la gestión de caché para el cálculo de métricas en `_compile_metrics` mediante el uso de `self._get_cached` con un proveedor, evitando llamadas redundantes a funciones costosas como `diskreport.drive_usage` y permitiendo una invalidación más eficiente.
 - `2026-08-13T11:15:16` **duplicates.py** (rendimiento): Optimicé `_collect_candidates` utilizando un set local `processed_paths` para detectar duplicados de inodos en tiempo real, evitando que el recolector de candidatos procese innecesariamente el mismo archivo físico múltiples veces bajo rutas distintas (hard links o enlaces simbólicos a archivos).
 - `2026-08-13T11:05:56` **browser.py** (rendimiento): Optimicé el rendimiento de `_sum_directory_recursive` evitando el re-procesamiento innecesario mediante el uso del diccionario `cache` compartido y moviendo la validación de `visited` para reducir llamadas costosas a `os.scandir` en subdirectorios ya calculados o en bucles detectados.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-13T10:34:55` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica mediante docstrings explicativos y añadí type hints explícitos para clarificar la lógica de las funciones de alto nivel, facilitando la comprensión del pipeline de procesamiento de duplicados sin alterar la funcionalidad.
 - `2026-08-13T10:34:31` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `diskreport.py` mediante type hints explícitos, la corrección de una inconsistencia en el docstring de `walk_files` y la clarificación del propósito del stack de recorrido.
 - `2026-08-13T10:34:03` **browser.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos y type hints consistentes en las funciones internas, además de aclarar la lógica de las constantes y los filtros de seguridad mediante la extracción de un docstring explicativo en la constante `BROWSER_CACHE_PATHS`.
-- `2026-08-13T10:25:04` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación técnica agregando descripciones de parámetros y retornos (estilo Google/NumPy) en funciones clave que carecían de detalle, facilitando la comprensión del flujo de datos visuales sin alterar la lógica.

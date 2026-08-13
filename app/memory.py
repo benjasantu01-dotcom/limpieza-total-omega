@@ -195,8 +195,13 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
     if not isinstance(text, str) or not text:
         return []
     
-    processes = [p for line in text.splitlines() if (p := _parse_csv_row(line))]
-    return sorted(processes, key=lambda p: p.working_set, reverse=True)[:limit]
+    processes = []
+    for line in text.splitlines():
+        if p := _parse_csv_row(line):
+            processes.append(p)
+            
+    processes.sort(key=lambda p: p.working_set, reverse=True)
+    return processes[:limit]
 
 
 def _read_windows_snapshot() -> MemorySnapshot:
@@ -234,12 +239,12 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
         return []
     
     now: float = time.time()
-    ts, cached_processes = _PROCESS_CACHE["data"]
+    cache_ref = _PROCESS_CACHE["data"]
     
-    if now - ts < 5.0 and cached_processes:
-        return cached_processes[:limit]
+    if now - cache_ref[0] < 5.0 and cache_ref[1]:
+        return cache_ref[1][:limit]
     
-    command: str = "Get-Process | Sort-Object WorkingSet -Descending | ForEach-Object { \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }"
+    command: str = "Get-Process | Select-Object Name,Id,WorkingSet | ConvertTo-Csv -NoTypeInformation"
     try:
         proc = subprocess.run(["powershell", "-NoProfile", "-Command", command], capture_output=True, text=True, timeout=5)
         if proc.returncode == 0 and proc.stdout:

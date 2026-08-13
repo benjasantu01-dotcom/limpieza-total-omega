@@ -648,3 +648,10 @@ assert not {'replace'}
 - `2026-08-13T11:16:28` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Se ha optimizado la gestión de caché para el cálculo de métricas en `_compile_metrics` mediante el uso de `self._get_cached` con un proveedor, evitando llamadas redundantes a funciones costosas como `diskreport.drive_usage` y permitiendo una invalidación más eficiente.
 - `2026-08-13T11:16:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-13T11:16:28` Corrida terminada. Total usado hoy: 268.
+- `2026-08-13T11:24:39` Arrancando corrida. Quedan hoy ~32 peticiones objetivo.
+- `2026-08-13T11:25:07` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimizé `top_memory_processes` reemplazando la ejecución de PowerShell por una lógica de filtrado más eficiente que evita procesar líneas malformadas prematuramente, y mejoré la gestión de caché al usar una referencia local para minimizar accesos al diccionario global.
+- `2026-08-13T11:25:30` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-08-13T11:26:01` ➖ Sin cambios en quarantine.py (enfoque: rendimiento). Motivo: Optimicé el rendimiento de `purge_all` transformando la búsqueda en el manifiesto de una operación lineal $O(N)$ a una búsqueda constante $O(1)$ mediante el uso de un diccionario de mapeo por nombre de archivo, evitando el costo de iteración redundante sobre la lista.
+- `2026-08-13T11:26:04` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 104): unterminated string literal (detected at line 104)
+- `2026-08-13T11:26:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-13T11:26:04` Corrida terminada. Total usado hoy: 272.
