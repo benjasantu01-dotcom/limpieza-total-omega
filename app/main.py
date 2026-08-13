@@ -906,14 +906,15 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         norm_folder = "".join(c for c in os.path.normpath(folder) if ord(c) >= 32 and c != '\u202e')
         
         try:
+            # Validar existencia absoluta y permisos de lectura
             p = Path(norm_folder).resolve(strict=True)
-            # Validación de existencia y permisos de lectura
-            if not p.exists() or not os.access(p, os.R_OK):
+            if not p.is_dir() or not os.access(p, os.R_OK):
                 messagebox.showwarning("Ruta inaccesible", "La ruta seleccionada no existe o no se puede leer.")
                 return None
+            
             # Validación proactiva contra rutas de sistema protegidas
             safety.ensure_safe_to_modify(p)
-        except (safety.UnsafePathError, OSError, PermissionError):
+        except (safety.UnsafePathError, OSError, PermissionError, FileNotFoundError):
             messagebox.showwarning("Ruta no segura", "Operación no permitida en esta ruta.")
             return None
             
@@ -1036,6 +1037,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.scan_target = None
             self.target_label.configure(text="")
         else:
+            # Validar que sea un disco válido y seguro
             if self._is_safe_target_dir(choice):
                 self.scan_target = choice
                 self.target_label.configure(text=f"Unidad completa: {choice}")

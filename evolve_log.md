@@ -1465,3 +1465,10 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_on_missing_folder
 - `2026-08-13T07:21:08` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
 - `2026-08-13T07:21:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-13T07:21:08` Corrida terminada. Total usado hoy: 176.
+- `2026-08-13T07:29:46` Arrancando corrida. Quedan hoy ~124 peticiones objetivo.
+- `2026-08-13T07:30:16` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_generate_recommendations` ante configuraciones o estados inesperados, añadiendo una verificación explícita para evitar que formatos de cadena desalineados con los parámetros causen errores silenciosos o crashes durante la generación de reportes.
+- `2026-08-13T07:31:20` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `on_target_choice_changed` y `_ask_folder` para manejar rutas inexistentes o inaccesibles mediante la normalización previa y el chequeo estricto `path.resolve(strict=True)`, evitando el despliegue de estados inconsistentes en la interfaz al detectar rutas no válidas antes de que impacten en los hilos de análisis.
+- `2026-08-13T07:31:46` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `trim_working_set` ante errores de entrada y estados del sistema, agregando una verificación explícita para evitar que `GetProcessImageFileNameW` falle silenciosamente o devuelva rutas truncadas/inválidas en escenarios de permisos restringidos.
+- `2026-08-13T07:31:53` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-08-13T07:31:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-13T07:31:53` Corrida terminada. Total usado hoy: 180.

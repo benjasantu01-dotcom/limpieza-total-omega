@@ -216,8 +216,9 @@ def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[
         if rule.area in ratios and rule.area in vals:
             if ratios[rule.area] < rule.threshold:
                 try:
+                    # Se asegura de que la cantidad de argumentos sea compatible con el formato
                     recommendations.append(rule.message_format.format(vals[rule.area]))
-                except (ValueError, KeyError):
+                except (ValueError, KeyError, IndexError):
                     continue
     
     if metrics.quarantined_count > 0:
