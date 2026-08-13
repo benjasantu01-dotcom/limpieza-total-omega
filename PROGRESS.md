@@ -8,44 +8,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **214** (42.5% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 32
+- Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 234
+- Sin respuesta de la IA (error o límite): 235
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-12 | 103 | 5 | 16 | 8 | 108 |
-| 2026-08-13 | 111 | 7 | 16 | 4 | 126 |
+| 2026-08-12 | 101 | 5 | 15 | 8 | 107 |
+| 2026-08-13 | 113 | 7 | 16 | 4 | 128 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **62**
 - manejo de errores y validación de entradas: **46**
 - seguridad defensiva: **42**
-- robustez ante casos límite: **36**
-- rendimiento: **28**
+- robustez ante casos límite: **34**
+- rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **22**
 - `branding.py`: **20**
 - `diskreport.py`: **20**
-- `quarantine.py`: **19**
 - `assistant.py`: **18**
+- `quarantine.py`: **18**
 - `healthscore.py`: **16**
 - `organizer.py`: **15**
 - `memory.py`: **15**
-- `scanner.py`: **14**
+- `duplicates.py`: **15**
 - `browser.py`: **14**
-- `duplicates.py`: **14**
-- `main.py`: **12**
+- `scanner.py`: **13**
+- `main.py`: **13**
 - `safety.py`: **9**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-13T11:16:28` **main.py** (rendimiento): Se ha optimizado la gestión de caché para el cálculo de métricas en `_compile_metrics` mediante el uso de `self._get_cached` con un proveedor, evitando llamadas redundantes a funciones costosas como `diskreport.drive_usage` y permitiendo una invalidación más eficiente.
+- `2026-08-13T11:15:16` **duplicates.py** (rendimiento): Optimicé `_collect_candidates` utilizando un set local `processed_paths` para detectar duplicados de inodos en tiempo real, evitando que el recolector de candidatos procese innecesariamente el mismo archivo físico múltiples veces bajo rutas distintas (hard links o enlaces simbólicos a archivos).
 - `2026-08-13T11:05:56` **browser.py** (rendimiento): Optimicé el rendimiento de `_sum_directory_recursive` evitando el re-procesamiento innecesario mediante el uso del diccionario `cache` compartido y moviendo la validación de `visited` para reducir llamadas costosas a `os.scandir` en subdirectorios ya calculados o en bucles detectados.
 - `2026-08-13T11:05:42` **branding.py** (rendimiento): Se implementó un `lru_cache` adicional en `bar` y `severity_label` para evitar el re-procesamiento de strings de formato común en cada llamada, optimizando el rendimiento de renderizado en la interfaz.
 - `2026-08-13T10:55:32` **settings.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos en las funciones de acceso público y se estandarizó la nomenclatura de los argumentos de configuración para mejorar la legibilidad del contrato de interfaz del módulo.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-13T10:34:31` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `diskreport.py` mediante type hints explícitos, la corrección de una inconsistencia en el docstring de `walk_files` y la clarificación del propósito del stack de recorrido.
 - `2026-08-13T10:34:03` **browser.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos y type hints consistentes en las funciones internas, además de aclarar la lógica de las constantes y los filtros de seguridad mediante la extracción de un docstring explicativo en la constante `BROWSER_CACHE_PATHS`.
 - `2026-08-13T10:25:04` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación técnica agregando descripciones de parámetros y retornos (estilo Google/NumPy) en funciones clave que carecían de detalle, facilitando la comprensión del flujo de datos visuales sin alterar la lógica.
-- `2026-08-13T10:24:46` **assistant.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados y Type Hints detallados, además de refactorizar la lógica de `_gen_problems` para separar la definición de reglas de su ejecución, mejorando la legibilidad y mantenibilidad del flujo de diagnóstico.
-- `2026-08-13T10:23:47` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` y `validate()` capturando explícitamente posibles errores de tipado o corrupción en las claves del diccionario de entrada, evitando que un JSON malformado (con claves inesperadas o tipos incorrectos) propague errores o bloquee el guardado.

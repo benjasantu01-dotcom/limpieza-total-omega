@@ -929,11 +929,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         snapshot = memory_mod.read_snapshot()
         home = os.path.expanduser("~")
         
-        disk_info = self._get_cached(f"disk_info_{home}")
-        if not disk_info and os.path.exists(home):
-            disk_info = diskreport.drive_usage(home)
-            if disk_info:
-                self._cache[f"disk_info_{home}"] = (disk_info, time.time())
+        disk_info = self._get_cached(f"disk_info_{home}", provider=lambda: diskreport.drive_usage(home) if os.path.exists(home) else None)
         
         metrics = healthscore.SystemMetrics(
             junk_mb=sum(j.size_bytes for j in junk) / (1024 * 1024),
@@ -1452,7 +1448,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         def task() -> None:
             self.set_status("Leyendo programas de inicio...")
             self._invalidate_cache("startup")
-            self._get_cached("startup", startup_mod.list_startup_entries)
+            self._get_cached("startup", provider=startup_mod.list_startup_entries)
             self.log_lines(startup_mod.summarize(), "Inicio")
 
         self.run_async(task)

@@ -641,3 +641,10 @@ assert not {'replace'}
 - `2026-08-13T11:05:56` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el rendimiento de `_sum_directory_recursive` evitando el re-procesamiento innecesario mediante el uso del diccionario `cache` compartido y moviendo la validación de `visited` para reducir llamadas costosas a `os.scandir` en subdirectorios ya calculados o en bucles detectados.
 - `2026-08-13T11:05:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-13T11:05:56` Corrida terminada. Total usado hoy: 264.
+- `2026-08-13T11:14:25` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-08-13T11:14:51` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-08-13T11:15:16` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé `_collect_candidates` utilizando un set local `processed_paths` para detectar duplicados de inodos en tiempo real, evitando que el recolector de candidatos procese innecesariamente el mismo archivo físico múltiples veces bajo rutas distintas (hard links o enlaces simbólicos a archivos).
+- `2026-08-13T11:15:41` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
+- `2026-08-13T11:16:28` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Se ha optimizado la gestión de caché para el cálculo de métricas en `_compile_metrics` mediante el uso de `self._get_cached` con un proveedor, evitando llamadas redundantes a funciones costosas como `diskreport.drive_usage` y permitiendo una invalidación más eficiente.
+- `2026-08-13T11:16:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-13T11:16:28` Corrida terminada. Total usado hoy: 268.

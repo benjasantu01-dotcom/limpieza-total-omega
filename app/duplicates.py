@@ -163,7 +163,7 @@ def _collect_candidates(
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: Dict[Tuple[int, int], bool] = {}
-    processed_paths: set[Path] = set()
+    processed_files: set[Tuple[int, int]] = set()
     
     if directories is None: return temp_groups
     
@@ -174,28 +174,28 @@ def _collect_candidates(
                     try:
                         if entry.is_symlink(): continue
                         
-                        if getattr(entry.stat(follow_symlinks=False), 'st_file_attributes', 0) & 0x400:
+                        st = entry.stat(follow_symlinks=False)
+                        if getattr(st, 'st_file_attributes', 0) & 0x400:
                             continue
                         
                         entry_path = Path(entry.path)
-                        
                         if skip_protected and is_protected_path(entry_path):
                             continue
-                            
-                        resolved_path = entry_path.resolve()
-                        if resolved_path in processed_paths: continue
                         
                         if entry.is_dir():
-                            key = (entry.stat().st_dev, entry.stat().st_ino)
+                            key = (st.st_dev, st.st_ino)
                             if key not in visited_inodes:
                                 visited_inodes[key] = True
                                 _scan(entry_path)
                         
                         elif entry.is_file():
-                            size = entry.stat().st_size
+                            file_id = (st.st_dev, st.st_ino)
+                            if file_id in processed_files: continue
+                            
+                            size = st.st_size
                             if size >= min_size:
-                                processed_paths.add(resolved_path)
-                                temp_groups[size].append(resolved_path)
+                                processed_files.add(file_id)
+                                temp_groups[size].append(entry_path)
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):
