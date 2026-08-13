@@ -1022,3 +1022,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-08-13T02:45:30` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
 - `2026-08-13T02:45:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-13T02:45:30` Corrida terminada. Total usado hoy: 68.
+- `2026-08-13T02:54:02` Arrancando corrida. Quedan hoy ~232 peticiones objetivo.
+- `2026-08-13T02:54:32` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-08-13T02:54:59` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la robustez de `walk_files` y `summarize` para manejar casos límite donde el sistema operativo bloquea el acceso a metadatos o las rutas resultan en excepciones de `OSError` o `PermissionError` durante la iteración, asegurando que el proceso no se interrumpa ante archivos o subdirectorios inaccesibles.
+- `2026-08-13T02:55:26` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Mejoré la robustez de `hash_file` y `partial_hash` ante archivos que cambian o son bloqueados durante la lectura mediante la implementación de una verificación de integridad post-lectura más estricta y un mejor manejo de excepciones, evitando retornos nulos engañosos.
+- `2026-08-13T02:55:37` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `_generate_recommendations` ante valores de `metrics` que podrían causar un error de formato en el `message_format` (ej. pasar un entero donde se espera un float), asegurando que el sistema sea capaz de recuperarse de datos inconsistentes sin abortar el cálculo.
+- `2026-08-13T02:55:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-13T02:55:37` Corrida terminada. Total usado hoy: 72.

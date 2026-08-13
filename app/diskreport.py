@@ -234,7 +234,6 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        # Usamos la entrada directa para evitar llamadas adicionales a Path/stat
                         if skip_protected and is_protected_path(Path(entry.path)):
                             continue
 
@@ -400,7 +399,11 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
         total_bytes += size
         total_files += 1
         
-        ext = path.suffix.lower() or "(sin extensión)"
+        try:
+            ext = path.suffix.lower() or "(sin extensión)"
+        except Exception:
+            ext = "(error)"
+            
         data_ext = ext_data[ext]
         data_ext[0] += size
         data_ext[1] += 1

@@ -98,8 +98,8 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
                     break
                 digest.update(buffer)
         
-        # Validar consistencia tras lectura
-        if not file_path.exists() or file_path.stat().st_size != stat_initial.st_size:
+        # Validar consistencia final: el tamaño no debe haber cambiado durante la lectura
+        if file_path.stat().st_size != stat_initial.st_size:
             return None
             
         return digest.hexdigest()
@@ -119,9 +119,14 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
         if not file_path.is_file() or is_protected_path(file_path):
             return None
             
+        stat_initial = file_path.stat()
         with open(file_path, "rb") as f:
             content = f.read(read_bytes)
             if not content:
+                return None
+            
+            # Verificación de integridad simple
+            if file_path.stat().st_size != stat_initial.st_size:
                 return None
             return hashlib.sha256(content).hexdigest()
     except (OSError, PermissionError, ValueError, TypeError, RuntimeError, IOError, AttributeError):
@@ -167,10 +172,8 @@ def _collect_candidates(
             with os.scandir(root_path) as dir_iterator:
                 for entry in dir_iterator:
                     try:
-                        # Usar atributos ya obtenidos por os.scandir (evita stat extra)
                         if entry.is_symlink(): continue
                         
-                        # Atributo 0x400 (sistema) disponible en Windows
                         if getattr(entry.stat(follow_symlinks=False), 'st_file_attributes', 0) & 0x400:
                             continue
                         

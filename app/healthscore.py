@@ -206,7 +206,10 @@ def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[
     for rule in _RECOMMENDATION_RULES:
         if rule.area in ratios and rule.area in vals:
             if ratios[rule.area] < rule.threshold:
-                recommendations.append(rule.message_format.format(vals[rule.area]))
+                try:
+                    recommendations.append(rule.message_format.format(vals[rule.area]))
+                except (ValueError, KeyError):
+                    continue
     
     if metrics.quarantined_count > 0:
         recommendations.append(f"Tenés {metrics.quarantined_count} archivo(s) en cuarentena.")
