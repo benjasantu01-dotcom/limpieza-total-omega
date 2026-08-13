@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **215** (42.7% de aceptación)
+- Mejoras aceptadas: **216** (42.9% de aceptación)
 - Rechazadas por tests: 9
-- Rechazadas por guardia de seguridad: 32
+- Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 232
+- Sin respuesta de la IA (error o límite): 230
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-12 | 136 | 5 | 21 | 12 | 150 |
-| 2026-08-13 | 79 | 4 | 11 | 4 | 82 |
+| 2026-08-12 | 136 | 5 | 21 | 12 | 146 |
+| 2026-08-13 | 80 | 4 | 12 | 4 | 84 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **62**
 - manejo de errores y validación de entradas: **47**
-- robustez ante casos límite: **39**
+- robustez ante casos límite: **40**
 - rendimiento: **34**
 - seguridad defensiva: **33**
 
@@ -41,11 +41,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - `scanner.py`: **14**
 - `organizer.py`: **13**
 - `main.py`: **10**
+- `safety.py`: **8**
 - `startup.py`: **7**
-- `safety.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-13T07:41:14` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez de `is_protected_path` incorporando un manejo defensivo ante accesos negados y estados de archivos inexistentes, evitando que la normalización o resolución de rutas fallidas bloqueen prematuramente el flujo de la aplicación.
 - `2026-08-13T07:31:46` **memory.py** (robustez ante casos límite): Se reforzó la robustez de `trim_working_set` ante errores de entrada y estados del sistema, agregando una verificación explícita para evitar que `GetProcessImageFileNameW` falle silenciosamente o devuelva rutas truncadas/inválidas en escenarios de permisos restringidos.
 - `2026-08-13T07:31:20` **main.py** (robustez ante casos límite): Se ha mejorado la robustez de `on_target_choice_changed` y `_ask_folder` para manejar rutas inexistentes o inaccesibles mediante la normalización previa y el chequeo estricto `path.resolve(strict=True)`, evitando el despliegue de estados inconsistentes en la interfaz al detectar rutas no válidas antes de que impacten en los hilos de análisis.
 - `2026-08-13T07:30:16` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `_generate_recommendations` ante configuraciones o estados inesperados, añadiendo una verificación explícita para evitar que formatos de cadena desalineados con los parámetros causen errores silenciosos o crashes durante la generación de reportes.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-13T06:29:49` **settings.py** (legibilidad y documentación): Se introdujo un `Enum` interno para las claves de configuración (`ConfigKey`) con el fin de eliminar strings hardcodeados, mejorando la seguridad de tipos, la mantenibilidad y la legibilidad en el mapeo de validadores.
 - `2026-08-13T06:29:21` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad añadiendo docstrings descriptivos con parámetros y retornos (estilo Google) en las funciones de heurística y escaneo, además de unificar la lógica de obtención de metadatos en `scan_file` para clarificar el flujo de datos.
 - `2026-08-13T06:19:48` **quarantine.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados (usando formato Google Style) en las funciones críticas y clarifiqué la lógica de validación de `QuarantineItem` para asegurar que el contrato de tipos sea explícito y fácil de mantener.
-- `2026-08-13T06:19:17` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación técnica interna de `organizer.py` mediante la adición de docstrings detallados en las funciones críticas y se han añadido anotaciones de tipo más precisas para eliminar ambigüedades, facilitando el mantenimiento y la auditoría de seguridad del módulo.

@@ -1472,3 +1472,10 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_on_missing_folder
 - `2026-08-13T07:31:53` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
 - `2026-08-13T07:31:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-13T07:31:53` Corrida terminada. Total usado hoy: 180.
+- `2026-08-13T07:39:58` Arrancando corrida. Quedan hoy ~120 peticiones objetivo.
+- `2026-08-13T07:40:30` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: robustez ante casos límite).
+- `2026-08-13T07:40:49` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 110): unterminated string literal (detected at line 110)
+- `2026-08-13T07:41:14` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `is_protected_path` incorporando un manejo defensivo ante accesos negados y estados de archivos inexistentes, evitando que la normalización o resolución de rutas fallidas bloqueen prematuramente el flujo de la aplicación.
+- `2026-08-13T07:41:20` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-08-13T07:41:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-13T07:41:20` Corrida terminada. Total usado hoy: 184.
