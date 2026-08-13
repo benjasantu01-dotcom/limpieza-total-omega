@@ -259,7 +259,8 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     if not isinstance(values, dict): return None
     ruta = settings_path(path_or_base)
     
-    if not is_safe_to_modify(str(ruta.parent)) or is_protected_path(str(ruta)):
+    # Validar estrictamente la ubicación de destino antes de operar
+    if not _Validators._is_safe_path(ruta.parent) or is_protected_path(str(ruta)):
         return None
 
     cleaned_settings = validate(values)
