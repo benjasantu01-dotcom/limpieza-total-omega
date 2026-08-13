@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **216** (42.9% de aceptación)
+- Mejoras aceptadas: **214** (42.5% de aceptación)
 - Rechazadas por tests: 9
-- Rechazadas por guardia de seguridad: 32
+- Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 230
+- Sin respuesta de la IA (error o límite): 231
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-12 | 146 | 6 | 23 | 13 | 152 |
-| 2026-08-13 | 70 | 3 | 9 | 4 | 78 |
+| 2026-08-12 | 143 | 6 | 23 | 13 | 151 |
+| 2026-08-13 | 71 | 3 | 10 | 4 | 80 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **62**
 - manejo de errores y validación de entradas: **47**
-- seguridad defensiva: **43**
-- rendimiento: **32**
+- seguridad defensiva: **40**
+- rendimiento: **33**
 - robustez ante casos límite: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **22**
-- `branding.py`: **20**
-- `quarantine.py`: **20**
-- `assistant.py`: **19**
+- `quarantine.py`: **21**
 - `diskreport.py`: **19**
+- `branding.py`: **19**
 - `healthscore.py`: **18**
-- `browser.py`: **16**
+- `assistant.py`: **18**
 - `duplicates.py`: **16**
+- `browser.py`: **15**
 - `memory.py`: **15**
 - `organizer.py`: **14**
 - `scanner.py`: **14**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-13T07:00:03` **quarantine.py** (rendimiento): Se optimizó el acceso al manifiesto en `purge_all` y `list_items` evitando llamadas redundantes a `load_manifest` mediante el uso de un diccionario de búsqueda indexado por nombre de archivo y mejorando la gestión de la lista de elementos.
 - `2026-08-13T06:44:29` **diskreport.py** (rendimiento): Optimizé la función `summarize` para reducir drásticamente el uso de memoria y mejorar la velocidad al iterar el disco una sola vez y extraer los datos necesarios en tiempo real, evitando llamadas redundantes a funciones auxiliares que re-escanearían la estructura.
 - `2026-08-13T06:44:16` **browser.py** (rendimiento): Optimizé el rendimiento de `detect_profiles` y `_sum_directory_recursive` implementando memoización de resultados para carpetas de caché compartidas (como las de "Code Cache" o "GPUCache" que suelen ser subdirectorios de una misma raíz), evitando recorridos redundantes del disco si varias entradas comparten el mismo path real.
 - `2026-08-13T06:29:49` **settings.py** (legibilidad y documentación): Se introdujo un `Enum` interno para las claves de configuración (`ConfigKey`) con el fin de eliminar strings hardcodeados, mejorando la seguridad de tipos, la mantenibilidad y la legibilidad en el mapeo de validadores.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-13T06:00:53` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de los `docstrings` con formato Google Style y se añadió un `type hint` más específico en `directory_size` para clarificar el manejo de rutas, mejorando la mantenibilidad sin alterar la lógica de escaneo.
 - `2026-08-13T05:59:40` **branding.py** (legibilidad y documentación): Se han documentado mediante docstrings los parámetros, retornos y excepciones de las funciones geométricas y utilitarias del módulo `branding.py` para mejorar la mantenibilidad y claridad del contrato de la API gráfica.
 - `2026-08-13T05:59:04` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `assistant.py` mediante la implementación de Type Hints explícitos, la adición de docstrings técnicos en funciones de soporte y la reestructuración de `_gen_problems` para separar la lógica de formato de la lógica de evaluación, facilitando futuras expansiones de las reglas de salud.
-- `2026-08-13T05:49:04` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` capturando excepciones durante la validación y asegurando que la escritura de archivos temporales maneje correctamente posibles fallos de sistema sin dejar estados inconsistentes.

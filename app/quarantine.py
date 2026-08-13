@@ -462,35 +462,29 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
         return 0
     
     items = load_manifest(base)
-    item_map: Dict[str, QuarantineItem] = {i.stored_name: i for i in items}
-    items_in_manifest = set(item_map.keys())
+    item_map = {i.stored_name: i for i in items}
     purged_count = 0
-    items_to_keep: List[QuarantineItem] = []
     
     for entry in quarantine_root.iterdir():
         if not _is_safe_to_purge(entry, quarantine_root):
             continue
-
         try:
-            if entry.name in items_in_manifest:
-                item = item_map[entry.name]
+            item = item_map.get(entry.name)
+            # Solo borramos si el ítem es verificado o si es un archivo huérfano
+            if item:
                 if item.verify_integrity(entry) and not _is_file_locked(entry):
                     ensure_safe_to_modify(entry, allow_sensitive=False)
                     if _safe_unlink(entry):
+                        items.remove(item)
                         purged_count += 1
-                        continue
-                items_to_keep.append(item)
-            else:
-                if not _is_file_locked(entry):
-                    ensure_safe_to_modify(entry, allow_sensitive=False)
-                    _safe_unlink(entry)
+            elif not _is_file_locked(entry):
+                ensure_safe_to_modify(entry, allow_sensitive=False)
+                _safe_unlink(entry)
         except (OSError, PermissionError, UnsafePathError):
-            if entry.name in items_in_manifest:
-                item = item_map.get(entry.name)
-                if item: items_to_keep.append(item)
+            continue
     
     if purged_count > 0:
-        save_manifest(items_to_keep, base)
+        save_manifest(items, base)
     return purged_count
 
 
