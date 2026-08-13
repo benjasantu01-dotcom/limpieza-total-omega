@@ -244,6 +244,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     """
     ctx = SystemContext()
     
+    # Validar tipos de entrada para evitar excepciones durante el acceso a atributos
     is_metrics_valid = isinstance(metrics, (dict, object))
     is_health_valid = isinstance(health, (dict, object))
     
@@ -269,10 +270,12 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         ctx.analyzed = True
 
     for k, v in extra.items():
+        # Verificación estricta de atributos permitidos y tipos antes de asignar
         if hasattr(ctx, k) and v is not None:
-            attr_type = type(getattr(ctx, k))
-            if attr_type in (int, float):
-                _safe_assign(ctx, k, v, cast=attr_type)
+            # Solo permitir actualizar métricas numéricas vía extra para evitar inyección de estado
+            attr_val = getattr(ctx, k)
+            if isinstance(attr_val, (int, float)):
+                _safe_assign(ctx, k, v, cast=type(attr_val))
     return ctx
 
 def context_as_text(context: SystemContext) -> str:

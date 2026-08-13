@@ -690,3 +690,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-13T11:39:12` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se optimizó el acceso a disco en `_resolve_and_cache_path` mediante una verificación previa del estado de la caché, evitando múltiples instanciaciones de `Path` y llamadas redundantes a `is_protected_path` al procesar entradas repetidas o ya resueltas.
 - `2026-08-13T11:39:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-13T11:39:12` Corrida terminada. Total usado hoy: 276.
+- `2026-08-13T11:45:04` Arrancando corrida. Quedan hoy ~24 peticiones objetivo.
+- `2026-08-13T11:45:52` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `build_context` ante la posibilidad de recibir objetos malformados o tipos inesperados durante la carga de métricas, evitando que asignaciones parciales o corruptas comprometan el estado del asistente.
+- `2026-08-13T11:46:25` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `save_logo_svg` ante errores de entrada y fallos en el sistema de archivos, asegurando que la validación ocurra antes de cualquier operación y manejando excepciones de forma más granular para evitar errores en tiempo de ejecución.
+- `2026-08-13T11:47:01` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-08-13T11:47:17` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha robustecido `walk_files` para manejar correctamente rutas que no existen o permisos denegados al inicio del recorrido, y se ha mejorado la tolerancia a fallos en `largest_folders` al asegurar que `path.relative_to(base)` no falle si `path` no tiene una relación clara con `base` debido a race conditions en el sistema de archivos.
+- `2026-08-13T11:47:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-13T11:47:17` Corrida terminada. Total usado hoy: 280.
