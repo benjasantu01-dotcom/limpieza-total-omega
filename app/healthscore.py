@@ -215,7 +215,8 @@ def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[
         ratio = ratios.get(rule.area)
         val = vals.get(rule.area)
         
-        if ratio is not None and val is not None and isinstance(ratio, (int, float)) and math.isfinite(ratio):
+        # Validar existencia y tipo de los datos antes de evaluar
+        if isinstance(ratio, (int, float)) and math.isfinite(ratio) and val is not None:
             if ratio < rule.threshold:
                 try:
                     if rule.expected_args == 0:
@@ -225,7 +226,7 @@ def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[
                 except (ValueError, IndexError, KeyError, TypeError):
                     continue
     
-    if metrics.quarantined_count > 0:
+    if isinstance(metrics.quarantined_count, int) and metrics.quarantined_count > 0:
         recommendations.append(f"Tenés {metrics.quarantined_count} archivo(s) en cuarentena.")
     
     return recommendations or ["No hay nada urgente para hacer. El sistema está en buen estado."]

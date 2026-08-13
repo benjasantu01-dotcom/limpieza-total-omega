@@ -210,7 +210,7 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
 
 
 def _read_windows_snapshot() -> MemorySnapshot:
-    """Ejecuta API de Windows (GlobalMemoryStatusEx) para obtener estado de memoria actual."""
+    """Ejecuta API de Windows (GlobalMemoryStatusEx) para obtener estado de memoria global."""
     stat = MEMORYSTATUSEX()
     stat.dwLength = ctypes.sizeof(MEMORYSTATUSEX)
     kernel32 = ctypes.windll.kernel32
@@ -328,10 +328,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "Error de sistema: PSAPI no disponible o incompatible."
 
     proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
-    
     if not proc_handle:
-        if kernel32.GetLastError() == ERROR_ACCESS_DENIED:
-            return False, "Acceso denegado: requiere privilegios de administrador."
         return False, "Acceso denegado o proceso no encontrado."
         
     try:
@@ -340,6 +337,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
             return False, "El proceso seleccionado ya no está activo."
             
         buf = ctypes.create_unicode_buffer(4096)
+        # Verifica la ruta antes de aplicar cualquier acción de memoria
         if kernel32.QueryFullProcessImageNameW(proc_handle, 0, buf, ctypes.byref(ctypes.c_ulong(4096))) > 0:
             exe_path = os.path.normpath(buf.value)
             if is_protected_path(exe_path):

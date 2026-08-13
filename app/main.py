@@ -900,6 +900,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         if not folder or not isinstance(folder, str):
             return None
         
+        # Filtro de seguridad: remover caracteres de control y bidireccionales ocultos (RTL/LTR)
         clean_path = "".join(c for c in os.path.normpath(folder) if ord(c) >= 32 and c not in ('\u202e', '\u202d', '\u202c'))
         
         try:

@@ -148,23 +148,33 @@ def _is_safe_to_move(jf: JunkFile, dest: Path) -> bool:
     """
     Valida si una instancia de JunkFile puede ser movida de forma segura.
     
-    Verifica que el archivo no esté bloqueado por procesos, que se mantenga dentro
-    de la misma unidad lógica para asegurar la atomicidad de la operación,
-    y que ambas rutas (origen/destino) sean validadas por `safety.py`.
+    Verifica que el archivo no sea crítico, no esté bloqueado por procesos y que
+    la operación sea intra-unidad para garantizar atomicidad.
     """
     try:
         current_abs = jf.path.resolve()
         dest_abs = dest.resolve()
         
-        if not current_abs.exists() or not current_abs.is_file():
+        # Validar existencia y no ser ruta raíz (evita mover C:\)
+        if not current_abs.exists() or not current_abs.is_file() or current_abs.parent == current_abs:
             return False
-        # Evitar que el archivo esté en la carpeta de destino o sea subdirectorio
+        
+        # Comprobar atributos ocultos o de sistema si es Windows
+        if os.name == "nt":
+            attrs = current_abs.stat().st_file_attributes
+            if attrs & 0x02 or attrs & 0x04: # FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM
+                return False
+
+        # Evitar ciclos o jerarquías no válidas
         if current_abs == dest_abs or dest_abs in current_abs.parents or current_abs.parent == dest_abs:
             return False
+        
+        # Validar bloqueos y consistencia de unidad
         if _is_file_locked(current_abs) or current_abs.anchor != dest_abs.anchor:
             return False
+            
         return is_safe_to_modify(current_abs) and is_safe_to_modify(dest_abs)
-    except (OSError, RuntimeError):
+    except (OSError, RuntimeError, AttributeError):
         return False
 
 
