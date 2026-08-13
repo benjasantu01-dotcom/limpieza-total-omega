@@ -437,13 +437,19 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
     stored_file = (quarantine_root / match.stored_name).resolve()
     if not _is_valid_quarantine_path(stored_file, quarantine_root) or stored_file.is_symlink():
         raise UnsafePathError("Borrado de seguridad fallido: ruta fuera de sandbox o tipo inválido.")
+    
+    # Validamos integridad antes de intentar borrar
     if not stored_file.exists() or not match.verify_integrity(stored_file):
-        raise UnsafePathError("Integridad comprometida: no se borra un archivo sospechoso inestable.")
+        raise UnsafePathError("Integridad comprometida: no se puede procesar el archivo.")
+    
     ensure_safe_to_modify(stored_file, allow_sensitive=False)
     if _safe_unlink(stored_file):
-        items.remove(match)
-        save_manifest(items, base)
-        return True
+        try:
+            items.remove(match)
+            save_manifest(items, base)
+            return True
+        except (OSError, PermissionError, ValueError):
+            return False
     return False
 
 
@@ -464,18 +470,18 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     items = load_manifest(base)
     item_map = {i.stored_name: i for i in items}
     purged_count = 0
+    items_to_remove: List[QuarantineItem] = []
     
     for entry in quarantine_root.iterdir():
         if not _is_safe_to_purge(entry, quarantine_root):
             continue
         try:
             item = item_map.get(entry.name)
-            # Solo borramos si el ítem es verificado o si es un archivo huérfano
             if item:
                 if item.verify_integrity(entry) and not _is_file_locked(entry):
                     ensure_safe_to_modify(entry, allow_sensitive=False)
                     if _safe_unlink(entry):
-                        items.remove(item)
+                        items_to_remove.append(item)
                         purged_count += 1
             elif not _is_file_locked(entry):
                 ensure_safe_to_modify(entry, allow_sensitive=False)
@@ -484,7 +490,13 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
             continue
     
     if purged_count > 0:
-        save_manifest(items, base)
+        for item in items_to_remove:
+            if item in items:
+                items.remove(item)
+        try:
+            save_manifest(items, base)
+        except RuntimeError:
+            pass # El manifiesto es crítico, pero el borrado ya ocurrió
     return purged_count
 
 

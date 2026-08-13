@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **211** (41.9% de aceptación)
+- Mejoras aceptadas: **208** (41.3% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 32
+- Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 236
+- Sin respuesta de la IA (error o límite): 238
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-12 | 116 | 5 | 19 | 10 | 114 |
-| 2026-08-13 | 95 | 6 | 13 | 4 | 122 |
+| 2026-08-12 | 112 | 5 | 19 | 10 | 114 |
+| 2026-08-13 | 96 | 6 | 14 | 4 | 124 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **50**
-- manejo de errores y validación de entradas: **44**
+- manejo de errores y validación de entradas: **45**
 - seguridad defensiva: **42**
 - robustez ante casos límite: **41**
-- rendimiento: **34**
+- rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **21**
-- `branding.py`: **20**
-- `diskreport.py`: **20**
-- `assistant.py`: **19**
+- `quarantine.py`: **19**
+- `branding.py`: **19**
+- `diskreport.py`: **19**
 - `healthscore.py`: **18**
-- `quarantine.py`: **18**
+- `assistant.py`: **18**
 - `memory.py`: **16**
-- `browser.py`: **14**
 - `organizer.py`: **14**
+- `browser.py`: **13**
 - `scanner.py`: **13**
 - `duplicates.py`: **13**
 - `main.py`: **11**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-13T10:13:39` **quarantine.py** (manejo de errores y validación de entradas): Se introdujo una gestión de errores robusta en `purge_all` y `purge_item` para asegurar que el manifiesto se sincronice correctamente incluso ante fallos parciales de I/O, mejorando la fiabilidad de las operaciones destructivas de limpieza.
 - `2026-08-13T10:05:04` **organizer.py** (manejo de errores y validación de entradas): Mejora la robustez de `sort_junk` y `stage_for_review` mediante validaciones de tipo y estructura defensivas para evitar errores en tiempo de ejecución ante entradas malformadas o inesperadas.
 - `2026-08-13T10:04:22` **main.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez en la manipulación de entradas de usuario en `on_trim_process` y `on_restore_quarantine` mediante validaciones adicionales y el uso de bloques `try-except` más precisos para evitar que entradas malformadas o estados de carrera provoquen errores silenciosos o cierres inesperados de la interfaz.
 - `2026-08-13T10:03:13` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_generate_recommendations` mediante una validación de formato más estricta que evita excepciones ante datos inesperados y agregué un chequeo de tipos defensivo en `_RECOMMENDATION_RULES` para garantizar que la lógica de renderizado nunca falle en tiempo de ejecución.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-13T08:01:29` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `drive_usage` y `walk_files` para evitar el seguimiento de rutas mediante enlaces simbólicos o puntos de reparse (junctions) antes de acceder a sus atributos, asegurando que las validaciones de seguridad actúen sobre la ruta real antes de realizar cualquier operación de I/O.
 - `2026-08-13T07:52:00` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad en `save_logo_svg` utilizando `is_safe_to_modify` para realizar una validación preventiva antes de intentar la resolución de rutas, evitando así posibles excepciones bloqueantes durante el procesamiento de la ruta de destino.
 - `2026-08-13T07:51:45` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva en `_call_gemini` integrando un chequeo de integridad en el cuerpo de la respuesta recibida, asegurando que el contenido retornado por el servicio externo pase por el mismo filtro `_ensure_safe_text` que el resto de las entradas del asistente, evitando así que una respuesta inesperada pueda inyectar caracteres de control o rutas.
-- `2026-08-13T07:50:49` **settings.py** (robustez ante casos límite): Se reforzó `settings.py` ante fallos de disco o permisos al realizar una carga de configuración, asegurando que si el archivo es ilegible o está corrupto, la aplicación recupere los valores de fábrica de forma robusta y sin excepciones residuales.
