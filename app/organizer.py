@@ -260,7 +260,8 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         if not isinstance(jf, JunkFile):
             continue
         try:
-            if _is_safe_to_move(jf, dest):
+            # Comprobación de existencia y permisos antes de proceder
+            if jf.path.exists() and os.access(jf.path, os.R_OK) and _is_safe_to_move(jf, dest):
                 if shutil.disk_usage(dest).free > jf.size_bytes:
                     target = _generate_unique_target(dest / f"{jf.path.stem}_{int(jf.modified.timestamp())}{jf.path.suffix}")
                     shutil.move(str(jf.path), str(target))

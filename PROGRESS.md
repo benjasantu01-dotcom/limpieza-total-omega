@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **213** (42.3% de aceptación)
+- Mejoras aceptadas: **216** (42.9% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 32
+- Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 234
+- Sin respuesta de la IA (error o límite): 230
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-12 | 92 | 4 | 14 | 7 | 103 |
-| 2026-08-13 | 121 | 8 | 18 | 6 | 131 |
+| 2026-08-12 | 92 | 4 | 14 | 7 | 99 |
+| 2026-08-13 | 124 | 8 | 19 | 6 | 131 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **62**
 - manejo de errores y validación de entradas: **46**
-- robustez ante casos límite: **38**
+- robustez ante casos límite: **41**
 - seguridad defensiva: **34**
 - rendimiento: **33**
 
@@ -33,19 +33,22 @@ Este archivo se regenera solo en cada corrida a partir de
 - `branding.py`: **20**
 - `diskreport.py`: **20**
 - `assistant.py`: **18**
+- `quarantine.py`: **18**
 - `healthscore.py`: **17**
 - `memory.py`: **17**
-- `quarantine.py`: **17**
+- `organizer.py`: **15**
 - `duplicates.py`: **15**
-- `organizer.py`: **14**
 - `main.py`: **13**
 - `scanner.py`: **13**
 - `browser.py`: **13**
-- `safety.py`: **9**
+- `safety.py`: **10**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-13T12:07:17` **safety.py** (robustez ante casos límite): Se ha mejorado `_check_file_integrity` para manejar la condición de carrera donde un archivo desaparece entre su comprobación inicial y la validación de integridad (`OSError` en `p.stat()`), asegurando que la función sea resiliente frente a cambios concurrentes en el sistema de archivos.
+- `2026-08-13T12:06:36` **quarantine.py** (robustez ante casos límite): Se implementó un mecanismo de verificación de "archivo en uso" mediante `_is_file_locked` antes de iniciar el proceso crítico de `quarantine_file` para evitar interrupciones en mitad de la operación de copia, mejorando la robustez ante estados transitorios del sistema.
+- `2026-08-13T12:06:03` **organizer.py** (robustez ante casos límite): Se introdujo una comprobación de existencia y acceso de solo lectura dentro de `stage_for_review` para evitar errores en tiempo de ejecución si un archivo se elimina, renombra o pierde permisos entre la fase de escaneo y la de movimiento (condición de carrera típica).
 - `2026-08-13T11:58:26` **memory.py** (robustez ante casos límite): Se reforzó la robustez de `parse_windows_process_csv` y `_parse_csv_row` añadiendo validación estricta ante entradas mal formadas o valores numéricos imposibles, evitando errores de ejecución si `powershell` devuelve una salida inesperada o corrupta.
 - `2026-08-13T11:56:14` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `_generate_recommendations` añadiendo un chequeo explícito de tipos y valores nulos para evitar errores en tiempo de ejecución (`IndexError` o `ValueError`) ante entradas inesperadas, además de asegurar que las recomendaciones no dependan de una evaluación exitosa de ratios si los valores base son críticos.
 - `2026-08-13T11:47:17` **diskreport.py** (robustez ante casos límite): Se ha robustecido `walk_files` para manejar correctamente rutas que no existen o permisos denegados al inicio del recorrido, y se ha mejorado la tolerancia a fallos en `largest_folders` al asegurar que `path.relative_to(base)` no falle si `path` no tiene una relación clara con `base` debido a race conditions en el sistema de archivos.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-13T11:15:16` **duplicates.py** (rendimiento): Optimicé `_collect_candidates` utilizando un set local `processed_paths` para detectar duplicados de inodos en tiempo real, evitando que el recolector de candidatos procese innecesariamente el mismo archivo físico múltiples veces bajo rutas distintas (hard links o enlaces simbólicos a archivos).
 - `2026-08-13T11:05:56` **browser.py** (rendimiento): Optimicé el rendimiento de `_sum_directory_recursive` evitando el re-procesamiento innecesario mediante el uso del diccionario `cache` compartido y moviendo la validación de `visited` para reducir llamadas costosas a `os.scandir` en subdirectorios ya calculados o en bucles detectados.
 - `2026-08-13T11:05:42` **branding.py** (rendimiento): Se implementó un `lru_cache` adicional en `bar` y `severity_label` para evitar el re-procesamiento de strings de formato común en cada llamada, optimizando el rendimiento de renderizado en la interfaz.
-- `2026-08-13T10:55:32` **settings.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos en las funciones de acceso público y se estandarizó la nomenclatura de los argumentos de configuración para mejorar la legibilidad del contrato de interfaz del módulo.
-- `2026-08-13T10:55:16` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la inclusión de type hints en los retornos de las funciones de chequeo heurístico y se han clarificado los nombres de las variables internas en `scan_file` y `process_entry` para mejorar la mantenibilidad del pipeline de escaneo.
-- `2026-08-13T10:54:50` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna de `_check_file_integrity` mediante un docstring detallado y la conversión del diccionario `violation_checks` a un listado de tuplas nombrado, clarificando el propósito de cada regla de seguridad para futuras auditorías.

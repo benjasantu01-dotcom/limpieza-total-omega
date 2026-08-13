@@ -128,10 +128,6 @@ def _is_file_in_use(path: Path) -> bool:
 def _check_file_integrity(p: Path) -> None:
     """
     Realiza una auditoría exhaustiva de un archivo existente para asegurar que es seguro modificarlo.
-    
-    Aplica una serie de chequeos heurísticos y de estado del sistema (bloqueos, atributos,
-    enlaces lógicos). Si alguna validación falla, se interrumpe la operación lanzando
-    UnsafePathError para prevenir corrupción o daños en el SO.
     """
     if not p.exists():
         raise UnsafePathError(f"El archivo {p.name} ya no existe.")
@@ -139,15 +135,18 @@ def _check_file_integrity(p: Path) -> None:
     if len(p.parts) > 32:
         raise UnsafePathError("Ruta demasiado profunda: posible ataque de evasión.")
 
-    violation_checks = [
-        _IntegrityCheck("inaccesible", lambda: not os.access(p, os.W_OK)),
-        _IntegrityCheck("punto de reparse", lambda: _is_reparse_point(p)),
-        _IntegrityCheck("solo lectura", lambda: _is_readonly(p)),
-        _IntegrityCheck("en uso", lambda: _is_file_in_use(p)),
-        _IntegrityCheck("sistema/oculto", lambda: _is_system_or_hidden(p)),
-        _IntegrityCheck("hard link detectado", lambda: p.is_file() and p.stat().st_nlink > 1),
-        _IntegrityCheck("ADS (flujos alternativos)", lambda: _has_alternate_data_stream(p))
-    ]
+    try:
+        violation_checks = [
+            _IntegrityCheck("inaccesible", lambda: not os.access(p, os.W_OK)),
+            _IntegrityCheck("punto de reparse", lambda: _is_reparse_point(p)),
+            _IntegrityCheck("solo lectura", lambda: _is_readonly(p)),
+            _IntegrityCheck("en uso", lambda: _is_file_in_use(p)),
+            _IntegrityCheck("sistema/oculto", lambda: _is_system_or_hidden(p)),
+            _IntegrityCheck("hard link detectado", lambda: p.is_file() and p.stat().st_nlink > 1),
+            _IntegrityCheck("ADS (flujos alternativos)", lambda: _has_alternate_data_stream(p))
+        ]
+    except OSError:
+        raise UnsafePathError(f"Error de E/S al auditar {p.name}: archivo posiblemente eliminado.")
 
     for check in violation_checks:
         if check.predicate():

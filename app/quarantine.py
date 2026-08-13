@@ -315,6 +315,10 @@ def quarantine_file(
     if not source_path.exists() or not source_path.is_file():
         raise FileNotFoundError(f"Archivo no encontrado: {source_path}")
     
+    # Verificación preventiva de bloqueo antes de cualquier manipulación
+    if _is_file_locked(source_path):
+        raise IOError("El archivo está en uso y no puede ser movido a cuarentena.")
+        
     ensure_safe_to_modify(source_path, allow_sensitive=True)
     if str(source_path).startswith(("\\\\", "//")):
         raise UnsafePathError("No se permite cuarentena en recursos compartidos de red.")
