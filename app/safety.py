@@ -231,6 +231,10 @@ def _validate_basic_path_safety(p: Path, path_str: str) -> None:
     if path_str.startswith(("\\\\", "//")):
         raise UnsafePathError("Rutas de red (UNC) no permitidas.")
 
+    # Validar que no estemos intentando operar sobre unidades inexistentes o rutas fuera de alcance global
+    if not p.anchor or not os.path.exists(p.anchor):
+        raise UnsafePathError("Unidad o punto de montaje no disponible.")
+
 
 def _validate_boundary_conditions(p: Path, base_dir: PathLike | None) -> None:
     """Verifica que la operación esté dentro de los límites de alcance y fuera de carpetas críticas."""

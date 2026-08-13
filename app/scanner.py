@@ -112,7 +112,7 @@ class Scanner:
                 self.results.extend(scan_file(entry_path, self.now_ts, entry=entry, name=name, suffix=ext))
                 
         except (PermissionError, OSError) as e:
-            logger.debug(f"Acceso denegado: {entry.path} - {e}")
+            logger.debug(f"Acceso denegado o error de sistema: {entry.path} - {e}")
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Heurística: detecta nombres con múltiples extensiones que ocultan un ejecutable (ej: .pdf.exe)."""
@@ -190,7 +190,8 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     scanner.process_entry(entry, stack)
-        except (PermissionError, OSError, ValueError, RuntimeError):
+        except (PermissionError, OSError, ValueError, RuntimeError) as e:
+            logger.debug(f"Error procesando directorio {current_dir}: {e}")
             continue
             
     return scanner.results

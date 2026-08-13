@@ -252,10 +252,13 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
             f.write(json_data)
             f.flush()
             os.fsync(f.fileno())
-        os.replace(temp, ruta)
-        _cached_settings, _current_path = cleaned_settings, ruta
-        _last_mtime = ruta.stat().st_mtime
-        return ruta
+        # Verificación post-escritura: verificar integridad antes de reemplazar
+        if temp.stat().st_size == len(json_data.encode("utf-8")):
+            os.replace(temp, ruta)
+            _cached_settings, _current_path = cleaned_settings, ruta
+            _last_mtime = ruta.stat().st_mtime
+            return ruta
+        return None
     except (OSError, IOError, PermissionError, RuntimeError):
         return None
     finally:
