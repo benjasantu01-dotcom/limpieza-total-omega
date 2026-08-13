@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **218** (43.3% de aceptación)
+- Mejoras aceptadas: **221** (43.8% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 227
+- Sin respuesta de la IA (error o límite): 224
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-12 | 92 | 4 | 14 | 7 | 95 |
-| 2026-08-13 | 126 | 9 | 19 | 6 | 132 |
+| 2026-08-12 | 92 | 4 | 14 | 7 | 91 |
+| 2026-08-13 | 129 | 9 | 19 | 6 | 133 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **62**
 - manejo de errores y validación de entradas: **46**
 - robustez ante casos límite: **42**
-- seguridad defensiva: **35**
+- seguridad defensiva: **38**
 - rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
 
+- `diskreport.py`: **21**
 - `settings.py`: **21**
 - `branding.py`: **20**
-- `diskreport.py`: **20**
 - `assistant.py`: **19**
 - `quarantine.py`: **18**
 - `healthscore.py`: **17**
 - `memory.py`: **17**
+- `duplicates.py`: **16**
 - `organizer.py`: **15**
-- `duplicates.py`: **15**
 - `scanner.py`: **14**
+- `browser.py`: **14**
 - `main.py`: **13**
-- `browser.py`: **13**
 - `safety.py`: **10**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-13T12:27:37` **duplicates.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_collect_candidates` agregando una validación explícita mediante `is_protected_path` sobre los directorios base antes de iniciar el escaneo recursivo, evitando que la app intente procesar o entrar en rutas bloqueadas desde el inicio.
+- `2026-08-13T12:27:25` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva al validar que las rutas proporcionadas a `diskreport.py` estén efectivamente dentro de las unidades locales antes de procesarlas, evitando el seguimiento accidental de rutas UNC (servidor/recurso) que podrían causar bloqueos de red o errores de I/O en un reporte de uso de disco.
+- `2026-08-13T12:26:57` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_sum_directory_recursive` mediante la verificación explícita de `is_protected_path` en cada nivel de la recursión para evitar el acceso a rutas que pudieran haber sido alteradas o enlazadas dinámicamente hacia directorios protegidos durante el recorrido.
 - `2026-08-13T12:17:39` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva en `_call_gemini` integrando `ensure_safe_to_modify` (vía `filter_safe_paths`) para validar la configuración de la clave API y el modelo, asegurando que los parámetros de red provengan de fuentes validadas antes de realizar la petición HTTP.
 - `2026-08-13T12:16:22` **scanner.py** (robustez ante casos límite): Mejoré la robustez de `scanner.py` implementando una validación exhaustiva de los metadatos de los archivos (gestionando excepciones de permisos y estados de archivo bloqueado) y asegurando que las funciones de escaneo no fallen ante nombres de archivos o rutas malformadas.
 - `2026-08-13T12:07:17` **safety.py** (robustez ante casos límite): Se ha mejorado `_check_file_integrity` para manejar la condición de carrera donde un archivo desaparece entre su comprobación inicial y la validación de integridad (`OSError` en `p.stat()`), asegurando que la función sea resiliente frente a cambios concurrentes en el sistema de archivos.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-13T11:45:52` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` ante la posibilidad de recibir objetos malformados o tipos inesperados durante la carga de métricas, evitando que asignaciones parciales o corruptas comprometan el estado del asistente.
 - `2026-08-13T11:39:01` **settings.py** (rendimiento): Se implementó un mecanismo de caché más eficiente al evitar el re-procesamiento completo del diccionario mediante la comparación de hashes locales y una estructura `_VALIDATOR_CACHE` para los validadores, optimizando las llamadas frecuentes dentro de bucles o iteraciones de interfaz.
 - `2026-08-13T11:36:44` **scanner.py** (rendimiento): Optimicé el método `process_entry` reemplazando la verificación repetitiva y costosa de subcadenas `any(folder in path_lower for folder in WATCHED_FOLDERS)` por una búsqueda en conjunto mediante el uso de `path.parts`, lo cual es significativamente más eficiente y preciso al evitar falsos positivos de coincidencia parcial en nombres de carpetas.
-- `2026-08-13T11:25:07` **memory.py** (rendimiento): Optimizé `top_memory_processes` reemplazando la ejecución de PowerShell por una lógica de filtrado más eficiente que evita procesar líneas malformadas prematuramente, y mejoré la gestión de caché al usar una referencia local para minimizar accesos al diccionario global.
-- `2026-08-13T11:16:28` **main.py** (rendimiento): Se ha optimizado la gestión de caché para el cálculo de métricas en `_compile_metrics` mediante el uso de `self._get_cached` con un proveedor, evitando llamadas redundantes a funciones costosas como `diskreport.drive_usage` y permitiendo una invalidación más eficiente.
-- `2026-08-13T11:15:16` **duplicates.py** (rendimiento): Optimicé `_collect_candidates` utilizando un set local `processed_paths` para detectar duplicados de inodos en tiempo real, evitando que el recolector de candidatos procese innecesariamente el mismo archivo físico múltiples veces bajo rutas distintas (hard links o enlaces simbólicos a archivos).

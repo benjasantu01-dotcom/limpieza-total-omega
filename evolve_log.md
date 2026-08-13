@@ -752,3 +752,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-13T12:17:39` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la seguridad defensiva en `_call_gemini` integrando `ensure_safe_to_modify` (vía `filter_safe_paths`) para validar la configuración de la clave API y el modelo, asegurando que los parámetros de red provengan de fuentes validadas antes de realizar la petición HTTP.
 - `2026-08-13T12:17:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-13T12:17:39` Corrida terminada. Total usado hoy: 292.
+- `2026-08-13T12:25:54` Arrancando corrida. Quedan hoy ~8 peticiones objetivo.
+- `2026-08-13T12:26:30` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-08-13T12:26:57` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_sum_directory_recursive` mediante la verificación explícita de `is_protected_path` en cada nivel de la recursión para evitar el acceso a rutas que pudieran haber sido alteradas o enlazadas dinámicamente hacia directorios protegidos durante el recorrido.
+- `2026-08-13T12:27:25` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva al validar que las rutas proporcionadas a `diskreport.py` estén efectivamente dentro de las unidades locales antes de procesarlas, evitando el seguimiento accidental de rutas UNC (servidor/recurso) que podrían causar bloqueos de red o errores de I/O en un reporte de uso de disco.
+- `2026-08-13T12:27:37` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_collect_candidates` agregando una validación explícita mediante `is_protected_path` sobre los directorios base antes de iniciar el escaneo recursivo, evitando que la app intente procesar o entrar en rutas bloqueadas desde el inicio.
+- `2026-08-13T12:27:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-13T12:27:37` Corrida terminada. Total usado hoy: 296.

@@ -205,7 +205,8 @@ def _collect_candidates(
         if not directory: continue
         try:
             p = Path(directory).resolve()
-            if p.is_dir():
+            # Validación defensiva adicional antes de procesar el directorio base
+            if p.is_dir() and (not skip_protected or not is_protected_path(p)):
                 _scan(p)
         except (OSError, PermissionError, ValueError, TypeError): continue
             
