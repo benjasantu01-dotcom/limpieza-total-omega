@@ -79,6 +79,7 @@ SYSTEM_CRITICAL_PIDS: Tuple[int, ...] = (0, 4)
 _PROCESS_CACHE: Dict[str, Tuple[float, List[ProcessMemory]]] = {"data": (0.0, [])}
 
 class MEMORYSTATUSEX(ctypes.Structure):
+    """Estructura de Windows para reportar el estado de memoria global."""
     _fields_ = [
         ("dwLength", ctypes.c_ulong),
         ("dwMemoryLoad", ctypes.c_ulong),
@@ -171,7 +172,7 @@ def parse_linux_meminfo(text: str) -> MemorySnapshot:
 
 
 def _parse_csv_row(line: str) -> Optional[ProcessMemory]:
-    """Helper interno para procesar una línea de la salida CSV de PowerShell."""
+    """Helper interno para procesar una línea CSV de PowerShell (Name, ID, WorkingSet)."""
     parts = [p.strip().strip("'\"") for p in line.split(",")]
     if len(parts) < 3:
         return None
@@ -200,7 +201,7 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
 
 
 def _read_windows_snapshot() -> MemorySnapshot:
-    """Ejecuta API de Windows para obtener estado de memoria actual."""
+    """Ejecuta API de Windows (GlobalMemoryStatusEx) para obtener estado de memoria actual."""
     stat = MEMORYSTATUSEX()
     stat.dwLength = ctypes.sizeof(MEMORYSTATUSEX)
     kernel32 = ctypes.windll.kernel32
@@ -210,7 +211,7 @@ def _read_windows_snapshot() -> MemorySnapshot:
 
 
 def read_snapshot() -> MemorySnapshot:
-    """Captura una instantánea de memoria adaptada al sistema operativo."""
+    """Captura una instantánea de memoria adaptada al sistema operativo (Windows/Linux)."""
     if os.name == "nt":
         try:
             return _read_windows_snapshot()
@@ -252,7 +253,7 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
 
 
 def pressure_level(snapshot: MemorySnapshot) -> str:
-    """Mapea el porcentaje disponible a una etiqueta de severidad."""
+    """Mapea el porcentaje de memoria disponible a una etiqueta de severidad (ok/info/warning/danger)."""
     if not isinstance(snapshot, MemorySnapshot) or snapshot.total <= 0:
         return "info"
     
@@ -291,12 +292,15 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
 
 
 def _is_system_process(pid: int) -> bool:
-    """Verifica si un PID pertenece a servicios críticos protegidos."""
+    """Verifica si un PID pertenece a servicios críticos protegidos del SO."""
     return pid <= 0 or pid in SYSTEM_CRITICAL_PIDS or pid <= 100
 
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """Intenta liberar el 'working set' de un proceso. Solo Windows."""
+    """
+    Intenta liberar el 'working set' de un proceso. 
+    ADVERTENCIA: Acción destructiva sobre el rendimiento de caché de memoria.
+    """
     if os.name != "nt":
         return False, "Solo disponible en Windows."
     

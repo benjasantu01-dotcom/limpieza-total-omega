@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **219** (43.5% de aceptación)
+- Mejoras aceptadas: **218** (43.3% de aceptación)
 - Rechazadas por tests: 8
-- Rechazadas por guardia de seguridad: 31
+- Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 16
 - Sin respuesta de la IA (error o límite): 230
 
@@ -16,37 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-11 | 5 | 0 | 0 | 0 | 1 |
+| 2026-08-11 | 1 | 0 | 0 | 0 | 1 |
 | 2026-08-12 | 151 | 6 | 24 | 13 | 156 |
-| 2026-08-13 | 63 | 2 | 7 | 3 | 73 |
+| 2026-08-13 | 66 | 2 | 8 | 3 | 73 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **57**
+- legibilidad y documentación: **60**
 - manejo de errores y validación de entradas: **47**
 - seguridad defensiva: **43**
-- robustez ante casos límite: **40**
-- rendimiento: **32**
+- robustez ante casos límite: **38**
+- rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **23**
-- `branding.py`: **21**
-- `assistant.py`: **20**
-- `quarantine.py`: **20**
+- `settings.py`: **22**
+- `quarantine.py`: **21**
+- `branding.py`: **20**
 - `diskreport.py`: **19**
 - `healthscore.py`: **19**
+- `assistant.py`: **19**
 - `duplicates.py`: **17**
 - `browser.py`: **15**
-- `memory.py`: **14**
-- `organizer.py`: **13**
+- `memory.py`: **15**
+- `organizer.py`: **14**
 - `scanner.py`: **13**
 - `main.py`: **10**
-- `startup.py`: **8**
+- `startup.py`: **7**
 - `safety.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-13T06:19:48` **quarantine.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados (usando formato Google Style) en las funciones críticas y clarifiqué la lógica de validación de `QuarantineItem` para asegurar que el contrato de tipos sea explícito y fácil de mantener.
+- `2026-08-13T06:19:17` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación técnica interna de `organizer.py` mediante la adición de docstrings detallados en las funciones críticas y se han añadido anotaciones de tipo más precisas para eliminar ambigüedades, facilitando el mantenimiento y la auditoría de seguridad del módulo.
+- `2026-08-13T06:18:54` **memory.py** (legibilidad y documentación): Mejoré la documentación interna incluyendo type hints en parámetros críticos y añadiendo docstrings que clarifican el propósito técnico y las limitaciones de las funciones que interactúan con APIs de bajo nivel, facilitando el mantenimiento y la auditoría.
 - `2026-08-13T06:10:14` **main.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de la interfaz reemplazando el método `_tab_factory` (basado en un diccionario gigante de métodos) por una estructura dinámica (`getattr`), facilitando la adición de nuevas pestañas y reduciendo el acoplamiento visual.
 - `2026-08-13T06:09:30` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna y claridad del código mediante docstrings descriptivos en las funciones de cálculo (`score_*`) y se refinó la estructura de `_generate_recommendations` para hacer explícito el significado de los umbrales de advertencia.
 - `2026-08-13T06:09:06` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `duplicates.py` mediante docstrings detallados en las funciones internas (`_collect_candidates`, `_refine_by_hash`) para esclarecer su propósito en el pipeline jerárquico y se han añadido anotaciones de tipo más precisas para mejorar la legibilidad y el mantenimiento del código.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-13T05:48:30` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_file_in_use` capturando la excepción específica `OSError` con el código de error `ERROR_SHARING_VIOLATION` (32), evitando falsos positivos por otros errores de sistema que no implican necesariamente que el archivo esté en uso.
 - `2026-08-13T05:39:36` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` encapsulando la lógica de escritura y validación en un bloque `try...except` más preciso, y añadiendo una validación explícita para evitar que `source_path` y `destination` sean idénticos (previendo problemas de resolución de rutas en sistemas de archivos con enlaces o minúsculas/mayúsculas), lo cual evita errores de copia en falso positivo.
 - `2026-08-13T05:38:36` **main.py** (manejo de errores y validación de entradas): Se mejora la robustez de `on_restore_quarantine` y `on_trim_process` implementando validaciones previas de estado mediante `hasattr` y comprobaciones de existencia de procesos/archivos antes de operar, evitando excepciones no controladas durante la ejecución de tareas asíncronas.
-- `2026-08-13T05:28:18` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `summarize` implementando una validación temprana de `directory` contra `is_protected_path`, previniendo que la lógica de escaneo intente operar sobre rutas prohibidas antes de comenzar la recursión, y refiné el manejo de errores al obtener estadísticas de archivos (`entry.stat()`) para evitar fallos catastróficos ante archivos bloqueados por el sistema durante la iteración.
-- `2026-08-13T05:20:10` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y `draw_logo` validando parámetros y capturando errores específicos para evitar fallos silenciosos en la UI, alineándolo con las mejores prácticas de manejo de excepciones y validación de entradas.
-- `2026-08-13T05:19:54` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_safe_assign` y `_get_metric_val` agregando validaciones explícitas contra valores `None` y tipos inesperados, evitando que asignaciones parciales o datos corruptos en la configuración afecten la integridad del contexto del sistema.

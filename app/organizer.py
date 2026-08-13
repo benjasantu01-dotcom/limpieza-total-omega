@@ -135,8 +135,8 @@ def _is_file_locked(path: Path) -> bool:
     """
     Verifica si un archivo está en uso exclusivo mediante un intento de apertura.
     
-    Si el archivo no permite apertura en modo escritura compartida, se considera
-    bloqueado por otro proceso del sistema.
+    Intenta abrir el archivo en modo append binario; si falla (OSError/PermissionError),
+    el archivo se considera bloqueado por otro proceso del sistema.
     """
     try:
         with open(path, "a+b"):
@@ -148,8 +148,12 @@ def _is_safe_to_move(jf: JunkFile, dest: Path) -> bool:
     """
     Valida si una instancia de JunkFile puede ser movida de forma segura.
     
-    Verifica accesibilidad, bloqueos, rutas recursivas y que la operación 
-    no implique un cambio de volumen (que impediría el uso de os.replace/move).
+    Verifica:
+    1. Existencia y tipo de archivo.
+    2. Evita mover el archivo sobre sí mismo o dentro de sus propios subdirectorios.
+    3. Verifica bloqueos de archivo.
+    4. Verifica que origen y destino compartan el mismo volumen (evita cruce de volúmenes).
+    5. Valida rutas bajo la política de seguridad estricta (safety.py).
     """
     try:
         current_abs = jf.path.resolve()
@@ -169,7 +173,7 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     Realiza un escaneo recursivo en los directorios especificados buscando archivos basura.
     
     Ignora reparse points, carpetas protegidas y archivos bloqueados según la política
-    de seguridad definida en safety.py.
+    de seguridad definida en safety.py. Retorna una lista de objetos JunkFile encontrados.
     """
     raw_dirs = directories if directories is not None else DEFAULT_SCAN_DIRS
     found: List[JunkFile] = []
@@ -246,7 +250,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
     Mueve los archivos candidatos a un directorio seguro para revisión manual.
     
     Realiza validaciones de integridad y seguridad sobre el destino antes de iniciar
-    la transferencia de archivos.
+    la transferencia. Los archivos se renombran usando marcas de tiempo para evitar colisiones.
     """
     if not files or not isinstance(files, list) or not isinstance(review_dir, str):
         return Path(review_dir).expanduser().resolve()
@@ -275,10 +279,10 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     Elimina permanentemente los archivos contenidos en el directorio de revisión.
     
     Esta operación es destructiva y se aplica únicamente a archivos planos (sin symlinks)
-    dentro del directorio de revisión validado.
+    dentro del directorio de revisión previamente validado por safety.py.
     
     Returns:
-        Cantidad de archivos eliminados exitosamente.
+        int: Cantidad de archivos eliminados exitosamente.
     """
     if not isinstance(review_dir, str) or not review_dir.strip():
         return 0

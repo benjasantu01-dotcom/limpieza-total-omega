@@ -92,6 +92,10 @@ class QuarantineItem:
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> Optional[QuarantineItem]:
+        """
+        Crea una instancia de QuarantineItem desde un diccionario, validando la presencia 
+        de campos obligatorios. Retorna None si el formato es inválido.
+        """
         required = {"item_id", "original_path", "stored_name", "size_bytes", "reason", "quarantined_at"}
         if not isinstance(data, dict) or not required.issubset(data.keys()):
             return None
@@ -109,7 +113,15 @@ class QuarantineItem:
             return None
 
     def verify_integrity(self, stored_path: Path) -> bool:
-        """Verifica que el archivo actual en disco coincida con el hash y tamaño registrados."""
+        """
+        Verifica que el archivo actual en disco coincida con el hash y tamaño registrados.
+        
+        Args:
+            stored_path: Ruta del archivo dentro de la cuarentena.
+            
+        Returns:
+            bool: True si la integridad es verificable y correcta, False en caso contrario.
+        """
         if not stored_path or not stored_path.is_file() or stored_path.is_symlink():
             return False
         try:
@@ -125,6 +137,7 @@ class QuarantineItem:
 
 
 def _get_sha256(path: Path) -> str:
+    """Calcula el hash SHA256 de un archivo en bloques de 64KB para optimizar memoria."""
     sha256_hash = hashlib.sha256()
     try:
         with open(path, "rb") as f:
@@ -178,6 +191,7 @@ def quarantine_dir(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
 
 
 def _manifest_path(base_dir: Path) -> Path:
+    """Retorna la ruta absoluta del manifiesto dentro de un directorio de cuarentena."""
     return (base_dir / MANIFEST_NAME).resolve()
 
 
