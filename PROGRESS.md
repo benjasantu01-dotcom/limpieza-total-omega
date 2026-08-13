@@ -6,47 +6,51 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **221** (43.8% de aceptación)
+- Mejoras aceptadas: **223** (44.2% de aceptación)
 - Rechazadas por tests: 8
-- Rechazadas por guardia de seguridad: 34
+- Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 225
+- Sin respuesta de la IA (error o límite): 224
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-11 | 50 | 1 | 7 | 2 | 46 |
+| 2026-08-11 | 48 | 1 | 6 | 2 | 45 |
 | 2026-08-12 | 151 | 6 | 24 | 13 | 156 |
-| 2026-08-13 | 20 | 1 | 3 | 1 | 23 |
+| 2026-08-13 | 24 | 1 | 3 | 1 | 23 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **57**
+- legibilidad y documentación: **60**
 - manejo de errores y validación de entradas: **49**
 - seguridad defensiva: **45**
-- robustez ante casos límite: **37**
-- rendimiento: **33**
+- robustez ante casos límite: **35**
+- rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **21**
+- `settings.py`: **22**
 - `quarantine.py`: **21**
-- `settings.py`: **21**
 - `branding.py`: **21**
-- `diskreport.py`: **18**
-- `assistant.py`: **18**
+- `healthscore.py`: **20**
+- `assistant.py`: **19**
 - `memory.py`: **17**
+- `diskreport.py`: **17**
 - `duplicates.py`: **16**
 - `organizer.py`: **15**
 - `browser.py`: **15**
-- `scanner.py`: **12**
+- `scanner.py`: **13**
 - `main.py`: **10**
-- `startup.py`: **9**
+- `startup.py`: **10**
 - `safety.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-13T02:04:45` **assistant.py** (rendimiento): Optimicé el rendimiento de `_gen_problems` convirtiendo la lista `prioridades` en una tupla constante fuera de la función para evitar su recreación en cada llamada, y reemplacé el uso de `list(generator)` por una lógica de iteración directa para ahorrar memoria y ciclos de procesamiento.
+- `2026-08-13T02:04:27` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings de nivel de módulo y función, estandarizando la nomenclatura en los parámetros para reflejar mejor su intención, y clarificando la lógica de resolución de rutas dentro de la clase `StartupEntry` para facilitar su mantenimiento.
+- `2026-08-13T02:04:01` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo docstrings específicos a las funciones críticas y clarificando mediante comentarios los criterios de validación, facilitando el mantenimiento futuro sin alterar la lógica de negocio.
+- `2026-08-13T02:03:33` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de los `docstrings` en las funciones de chequeo (`SuspicionCheck`) y se añadió un `TypeAlias` explícito para la firma de estas funciones, mejorando la legibilidad y la claridad sobre qué parámetros son opcionales según el contrato de ejecución.
 - `2026-08-13T01:54:36` **safety.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y se centralizó la lógica de chequeo de integridad para eliminar redundancias, mejorando la legibilidad técnica y el mantenimiento de las reglas de seguridad.
 - `2026-08-13T01:54:06` **quarantine.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `quarantine.py` mediante la implementación de type hints más precisos, la extracción de lógica compleja de validación de nombres a una constante, y la adición de docstrings técnicos que justifican las restricciones de seguridad implementadas.
 - `2026-08-13T01:53:35` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en funciones críticas y se han añadido anotaciones de tipo (type hints) más precisas y legibles para facilitar el mantenimiento y la comprensión de las firmas de funciones complejas.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-13T01:33:32` **branding.py** (legibilidad y documentación): Mejora la robustez y legibilidad de `branding.py` mediante la normalización de inputs en funciones de color y el uso de `try-except` más granulares en el cálculo de gradientes, asegurando que ante valores inesperados se mantenga la integridad visual sin fallar silenciosamente.
 - `2026-08-13T01:33:01` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `assistant.py` mediante la aplicación de docstrings descriptivos, la estandarización de type hints y la simplificación de la lógica de priorización en `_gen_problems` para facilitar su futura expansión, cumpliendo con el enfoque de legibilidad.
 - `2026-08-13T01:23:38` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` al implementar un chequeo de tipos estricto y validar que `row` sea un diccionario antes de acceder a sus claves, evitando `KeyError` o errores de iteración ante datos malformados o inesperados del CSV.
-- `2026-08-13T01:23:02` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de chequeo mediante validaciones de tipo y de estado (`path` y `entry`) para evitar excepciones no controladas durante el acceso a atributos de archivos volátiles, asegurando que `scan_file` siempre opere con datos consistentes.
-- `2026-08-13T01:22:39` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_file_in_use` capturando excepciones de sistema adicionales durante el intento de apertura del archivo, evitando así que errores de acceso no relacionados (como bloqueos de volumen o archivos de sistema inaccesibles) se malinterpreten o bloqueen la ejecución del hilo.
-- `2026-08-13T01:14:45` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` validando explícitamente que la ruta de origen sea absoluta y normalizada antes de cualquier chequeo de seguridad, evitando ambigüedades en la validación de rutas y posibles errores al calcular `parent`.
-- `2026-08-13T01:12:20` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` añadiendo validaciones estrictas de los tipos de datos y los resultados de las llamadas a la API, asegurando que el cierre del manejador de proceso esté garantizado incluso ante errores inesperados.

@@ -39,8 +39,9 @@ class Suspicion:
     reason: str
     severity: str
 
-# Alias de tipos para mejorar la legibilidad y mantenibilidad de la lógica de escaneo.
-# Las funciones de chequeo deben ser puras: reciben contexto y devuelven una Suspicion si detectan algo.
+# Alias para funciones de chequeo heurístico.
+# Reciben el path, la entrada de directorio (opcional), el nombre, el sufijo y el timestamp actual.
+# Devuelven un objeto Suspicion si se detecta riesgo, o None en caso contrario.
 SuspicionCheck: TypeAlias = Callable[[Path, Optional[os.DirEntry], Optional[str], Optional[str], float], Optional[Suspicion]]
 ScanResult: TypeAlias = List[Suspicion]
 
@@ -132,7 +133,7 @@ class Scanner:
 
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Identifica archivos con doble extensión que intentan ocultar un ejecutable."""
+    """Heurística: detecta nombres con múltiples extensiones que ocultan un ejecutable (ej: .pdf.exe)."""
     target = name or (path.name if path else None)
     if target and DOUBLE_EXTENSION_RE.search(target):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
@@ -140,7 +141,7 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, name
 
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Detecta ejecutables modificados recientemente en directorios de usuario de alta exposición."""
+    """Heurística: señala ejecutables modificados hace menos de 24h en carpetas de alta descarga/temp."""
     if entry is None or is_protected_path(path):
         return None
     
@@ -158,7 +159,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Detecta binarios legítimos del sistema localizados fuera del directorio System32."""
+    """Heurística: detecta binarios que imitan procesos críticos del sistema ubicados fuera de System32."""
     if path is None:
         return None
     try:
