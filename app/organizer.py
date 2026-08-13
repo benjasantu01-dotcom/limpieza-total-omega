@@ -236,7 +236,7 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
     Permite ordenar por tamaño de archivo (`size`) o fecha de última modificación (`date`).
     Devuelve una nueva lista ordenada, manteniendo el orden original para elementos iguales.
     """
-    if not isinstance(files, list) or not all(isinstance(f, JunkFile) for f in files):
+    if not isinstance(files, list):
         return []
         
     registry: Dict[str, SortConfig] = {
@@ -247,7 +247,9 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
     criterio = by.lower() if isinstance(by, str) else "size"
     config = registry.get(criterio, registry["size"])
         
-    return sorted(files, key=config.key_func, reverse=not bool(ascending))
+    # Filtrado preventivo para asegurar que solo ordenamos instancias de JunkFile
+    valid_files = [f for f in files if isinstance(f, JunkFile)]
+    return sorted(valid_files, key=config.key_func, reverse=not bool(ascending))
 
 
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Path:
@@ -257,14 +259,18 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
     Verifica el espacio en disco disponible en el volumen de destino antes de intentar el movimiento
     y utiliza la lógica de colisiones de `_generate_unique_target` para preservar archivos.
     """
-    if not files or not isinstance(files, list) or not isinstance(review_dir, str):
-        return Path(review_dir).expanduser().resolve()
+    # Validación estricta de parámetros
+    if not isinstance(files, list) or not isinstance(review_dir, str) or not review_dir.strip():
+        return Path(review_dir).expanduser() if isinstance(review_dir, str) else Path(".")
 
     dest: Path = Path(review_dir).expanduser().resolve()
     if not is_safe_to_modify(dest):
         return dest
         
-    dest.mkdir(parents=True, exist_ok=True)
+    try:
+        dest.mkdir(parents=True, exist_ok=True)
+    except (OSError, PermissionError):
+        return dest
 
     for jf in files:
         if not isinstance(jf, JunkFile):

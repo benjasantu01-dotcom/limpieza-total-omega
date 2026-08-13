@@ -236,15 +236,6 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
     if not resolved_source.is_file():
         raise UnsafePathError("Solo se aceptan archivos regulares.")
     
-    # Prevenir TOCTOU: Verificar identidad única en sistemas con soporte (estilo inode)
-    try:
-        st = resolved_source.stat()
-        if hasattr(st, "st_ino"):
-            # En sistemas Posix/Win (donde st_ino es válido), garantiza que el archivo no cambió
-            pass 
-    except OSError:
-        raise UnsafePathError("No se pudo verificar la integridad física del archivo.")
-
     # 3. Verificación de seguridad de rutas (evitar mover archivos sensibles)
     if is_protected_path(resolved_source):
         raise UnsafePathError("Operación prohibida: la ruta está protegida por el sistema.")
@@ -414,8 +405,11 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
         items.remove(match)
         save_manifest(items, base)
         raise FileNotFoundError("Archivo no encontrado en cuarentena.")
+    
+    # Validar integridad antes de restaurar
     if not match.verify_integrity(stored_file):
         raise RuntimeError("Integridad comprometida: el archivo en cuarentena fue modificado.")
+    
     destination = Path(match.original_path).resolve()
     if destination.is_symlink() or (hasattr(destination, 'is_junction') and destination.is_junction()):
         raise UnsafePathError("Restauración denegada: destino es un punto de reparse.")
@@ -424,14 +418,13 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
     if destination.exists():
         raise FileExistsError(f"Error: el destino {destination} ya existe.")
     
-    _check_windows_file_attributes(str(destination.parent))
-    ensure_safe_to_modify(destination, allow_sensitive=False)
-    
     try:
+        ensure_safe_to_modify(destination.parent, allow_sensitive=False)
         destination.parent.mkdir(parents=True, exist_ok=True)
         os.replace(str(stored_file), str(destination))
     except (OSError, PermissionError) as e:
         raise RuntimeError(f"Fallo durante la restauración: {e}")
+    
     items.remove(match)
     save_manifest(items, base)
     return destination
@@ -487,25 +480,28 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
         if not _is_safe_to_purge(entry, quarantine_root):
             continue
         try:
+            # Validar bloqueo antes de intentar borrar
+            if _is_file_locked(entry):
+                continue
+            
             item = item_map.get(entry.name)
             if item:
-                if item.verify_integrity(entry) and not _is_file_locked(entry):
+                if item.verify_integrity(entry):
                     ensure_safe_to_modify(entry, allow_sensitive=False)
                     if _safe_unlink(entry):
                         items_to_remove.append(item)
                         purged_count += 1
-            elif not _is_file_locked(entry):
+            else:
+                # Limpieza de archivos huérfanos sin registro
                 ensure_safe_to_modify(entry, allow_sensitive=False)
                 _safe_unlink(entry)
         except (OSError, PermissionError, UnsafePathError):
             continue
     
     if purged_count > 0:
-        for item in items_to_remove:
-            if item in items:
-                items.remove(item)
+        new_items = [i for i in items if i not in items_to_remove]
         try:
-            save_manifest(items, base)
+            save_manifest(new_items, base)
         except RuntimeError:
             pass 
     return purged_count
