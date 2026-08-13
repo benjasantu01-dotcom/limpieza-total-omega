@@ -144,26 +144,24 @@ def format_bytes(num: Optional[int | float]) -> str:
 
 @lru_cache(maxsize=4)
 def parse_linux_meminfo(text: str) -> MemorySnapshot:
-    """Analiza el contenido de /proc/meminfo crudo para extraer métricas."""
-    if not isinstance(text, str) or not text:
+    """
+    Parsea la salida de /proc/meminfo extrayendo métricas clave.
+    Utiliza un patrón de búsqueda simple sobre el texto para mapear valores a KB.
+    """
+    if not text:
         return MemorySnapshot(0, 0)
     
-    values: Dict[str, int] = {}
+    metrics: Dict[str, int] = {}
     for line in text.splitlines():
-        match = re.match(r"^(\w+):\s+(\d+)", line)
-        if match:
-            try:
-                values[match.group(1)] = int(match.group(2)) * 1024
-            except (ValueError, OverflowError):
-                continue
+        if match := re.match(r"^(\w+):\s+(\d+)", line):
+            key, value = match.groups()
+            metrics[key] = int(value) * 1024
     
-    total: int = values.get("MemTotal", 0)
-    available: int = values.get("MemAvailable", values.get("MemFree", 0))
-    cached: int = values.get("Cached", 0)
+    total = metrics.get("MemTotal", 0)
+    # MemAvailable es preferido, seguido de MemFree como fallback
+    available = metrics.get("MemAvailable", metrics.get("MemFree", 0))
+    cached = metrics.get("Cached", 0)
     
-    if total <= 0:
-        return MemorySnapshot(0, 0)
-        
     return MemorySnapshot(
         total=total,
         available=max(0, min(available, total)),
@@ -172,7 +170,10 @@ def parse_linux_meminfo(text: str) -> MemorySnapshot:
 
 
 def _parse_csv_row(line: str) -> Optional[ProcessMemory]:
-    """Helper interno para procesar una línea CSV de PowerShell (Name, ID, WorkingSet)."""
+    """
+    Helper para deserializar una línea CSV proveniente de PowerShell: 'Nombre,PID,WorkingSet'.
+    Retorna un objeto ProcessMemory si la línea tiene el formato y valores válidos.
+    """
     parts = [p.strip().strip("'\"") for p in line.split(",")]
     if len(parts) < 3:
         return None
@@ -187,16 +188,14 @@ def _parse_csv_row(line: str) -> Optional[ProcessMemory]:
 
 
 def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]:
-    """Convierte la salida CSV de PowerShell a una lista de objetos ProcessMemory."""
+    """
+    Convierte la salida cruda de PowerShell (CSV) a una lista ordenada de ProcessMemory.
+    Filtra líneas inválidas y aplica un límite de cantidad a los resultados.
+    """
     if not isinstance(text, str) or not text:
         return []
     
-    processes = []
-    for line in (l for l in text.splitlines() if l.strip()):
-        parsed = _parse_csv_row(line)
-        if parsed:
-            processes.append(parsed)
-
+    processes = [p for line in text.splitlines() if (p := _parse_csv_row(line))]
     return sorted(processes, key=lambda p: p.working_set, reverse=True)[:limit]
 
 

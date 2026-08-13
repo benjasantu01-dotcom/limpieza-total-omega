@@ -115,12 +115,6 @@ class QuarantineItem:
     def verify_integrity(self, stored_path: Path) -> bool:
         """
         Verifica que el archivo actual en disco coincida con el hash y tamaño registrados.
-        
-        Args:
-            stored_path: Ruta del archivo dentro de la cuarentena.
-            
-        Returns:
-            bool: True si la integridad es verificable y correcta, False en caso contrario.
         """
         if not stored_path or not stored_path.is_file() or stored_path.is_symlink():
             return False
@@ -229,13 +223,20 @@ def _check_path_syntax_integrity(path: Path) -> None:
 
 
 def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
-    """Ejecuta chequeos de seguridad previos antes de mover un archivo al sandbox."""
+    """
+    Ejecuta chequeos de seguridad antes de mover un archivo al sandbox.
+    Verifica sintaxis, atributos de archivo y protege contra colisiones/traversal.
+    """
+    # 1. Validaciones sintácticas y de sistema (bloqueos de Windows)
     _check_path_syntax_integrity(source_path)
     _check_windows_file_attributes(str(source_path))
 
+    # 2. Validaciones de estado del archivo
     resolved_source = source_path.resolve()
     if not resolved_source.is_file():
         raise UnsafePathError("Solo se aceptan archivos regulares.")
+    
+    # 3. Verificación de seguridad de rutas (evitar mover archivos sensibles)
     if is_protected_path(resolved_source):
         raise UnsafePathError("Operación prohibida: la ruta está protegida por el sistema.")
     if is_protected_path(dest_dir):
@@ -243,14 +244,14 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
     if _is_valid_quarantine_path(resolved_source, dest_dir):
         raise UnsafePathError("El archivo ya reside en el sandbox de cuarentena.")
     
+    # 4. Validaciones de infraestructura de disco
     try:
-        source_drive = resolved_source.drive
-        dest_drive = dest_dir.drive
-        if source_drive and dest_drive and source_drive.lower() != dest_drive.lower():
+        if resolved_source.drive and dest_dir.drive and resolved_source.drive.lower() != dest_dir.drive.lower():
             raise UnsafePathError("Operación prohibida entre dispositivos distintos.")
     except OSError:
         pass
 
+    # 5. Verificación final de permisos de escritura y estado de bloqueo
     ensure_safe_to_modify(resolved_source, allow_sensitive=True)
     if _is_file_locked(resolved_source):
         raise IOError("El archivo está en uso por otro proceso y no puede moverse.")
@@ -322,7 +323,6 @@ def quarantine_file(
     if not dest_dir.exists():
         raise RuntimeError("Directorio de cuarentena inaccesible o no creado.")
     
-    # Prevenir que el origen sea el mismo destino resuelto
     if source_path.parent.resolve() == dest_dir.resolve():
         raise UnsafePathError("Operación denegada: el archivo ya está en el destino.")
         
@@ -373,7 +373,6 @@ def quarantine_file(
         save_manifest(items, base)
         return item
     except Exception as e:
-        # Revertir movimiento si la actualización del manifiesto falla
         if destination.exists():
             try: shutil.move(str(destination), str(source_path))
             except Exception: pass
@@ -438,7 +437,6 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
     if not _is_valid_quarantine_path(stored_file, quarantine_root) or stored_file.is_symlink():
         raise UnsafePathError("Borrado de seguridad fallido: ruta fuera de sandbox o tipo inválido.")
     
-    # Validamos integridad antes de intentar borrar
     if not stored_file.exists() or not match.verify_integrity(stored_file):
         raise UnsafePathError("Integridad comprometida: no se puede procesar el archivo.")
     
@@ -496,7 +494,7 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
         try:
             save_manifest(items, base)
         except RuntimeError:
-            pass # El manifiesto es crítico, pero el borrado ya ocurrió
+            pass 
     return purged_count
 
 

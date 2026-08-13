@@ -148,12 +148,9 @@ def _is_safe_to_move(jf: JunkFile, dest: Path) -> bool:
     """
     Valida si una instancia de JunkFile puede ser movida de forma segura.
     
-    Verifica:
-    1. Existencia y tipo de archivo.
-    2. Evita mover el archivo sobre sí mismo o dentro de sus propios subdirectorios.
-    3. Verifica bloqueos de archivo.
-    4. Verifica que origen y destino compartan el mismo volumen (evita cruce de volúmenes).
-    5. Valida rutas bajo la política de seguridad estricta (safety.py).
+    Verifica que el archivo no esté bloqueado por procesos, que se mantenga dentro
+    de la misma unidad lógica para asegurar la atomicidad de la operación,
+    y que ambas rutas (origen/destino) sean validadas por `safety.py`.
     """
     try:
         current_abs = jf.path.resolve()
@@ -173,10 +170,10 @@ def _is_safe_to_move(jf: JunkFile, dest: Path) -> bool:
 
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     """
-    Realiza un escaneo recursivo en los directorios especificados buscando archivos basura.
+    Escanea rutas de disco en busca de archivos que coincidan con los criterios de limpieza.
     
-    Ignora reparse points, carpetas protegidas y archivos bloqueados según la política
-    de seguridad definida en safety.py. Retorna una lista de objetos JunkFile encontrados.
+    El proceso normaliza rutas, filtra directorios bloqueados, ignora puntos de reparse
+    y valida cada hallazgo mediante `is_safe_to_modify` antes de agregarlo al reporte.
     """
     raw_dirs = directories if directories is not None else DEFAULT_SCAN_DIRS
     found: List[JunkFile] = []
@@ -224,7 +221,10 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
 
 def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -> List[JunkFile]:
     """
-    Ordena una lista de objetos JunkFile según el criterio especificado.
+    Ordena una lista de archivos basura basándose en metadatos específicos.
+    
+    Permite ordenar por tamaño de archivo (`size`) o fecha de última modificación (`date`).
+    Devuelve una nueva lista ordenada, manteniendo el orden original para elementos iguales.
     """
     if not isinstance(files, list) or not all(isinstance(f, JunkFile) for f in files):
         return []
@@ -242,7 +242,10 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Path:
     """
-    Mueve los archivos candidatos a un directorio seguro para revisión manual.
+    Traslada los archivos detectados a una carpeta designada para revisión humana.
+    
+    Verifica el espacio en disco disponible en el volumen de destino antes de intentar el movimiento
+    y utiliza la lógica de colisiones de `_generate_unique_target` para preservar archivos.
     """
     if not files or not isinstance(files, list) or not isinstance(review_dir, str):
         return Path(review_dir).expanduser().resolve()
@@ -271,7 +274,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     Elimina permanentemente los archivos contenidos en el directorio de revisión.
     
     Esta operación es destructiva y se aplica únicamente a archivos planos (sin symlinks)
-    dentro del directorio de revisión previamente validado por safety.py.
+    dentro del directorio de revisión previamente validado por `safety.py`.
     
     Returns:
         int: Cantidad de archivos eliminados exitosamente.
