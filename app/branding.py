@@ -177,6 +177,7 @@ def severity_color(severity: Optional[str]) -> HexColor:
     return PALETTE["text_muted"]
 
 
+@lru_cache(maxsize=16)
 def severity_label(severity: Optional[str]) -> str:
     """Traduce un código de severidad a texto legible para el usuario final."""
     if severity and (style := SEVERITY_STYLES.get(severity.lower())):
@@ -219,19 +220,11 @@ def score_color(score: Union[float, int, None]) -> HexColor:
         return PALETTE["text_muted"]
 
 
+@lru_cache(maxsize=64)
 def bar(percent: Union[float, int, None], width: int = 24,
         filled: str = "\u2588", empty: str = "\u2591") -> str:
     """
     Genera una representación visual de progreso en formato texto.
-    
-    Args:
-        percent: Valor numérico [0-100] de progreso.
-        width: Ancho total en caracteres.
-        filled: Caracter para representar la parte completada.
-        empty: Caracter para representar la parte pendiente.
-        
-    Returns:
-        String con la barra renderizada.
     """
     try:
         valor: float = max(0.0, min(100.0, float(percent) if percent is not None else 0.0))

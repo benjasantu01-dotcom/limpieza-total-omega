@@ -7,45 +7,47 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **214** (42.5% de aceptación)
-- Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 31
-- Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 235
+- Rechazadas por tests: 12
+- Rechazadas por guardia de seguridad: 32
+- Sin cambios (nada sustancial que mejorar): 12
+- Sin respuesta de la IA (error o límite): 234
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-12 | 105 | 5 | 16 | 9 | 109 |
-| 2026-08-13 | 109 | 6 | 15 | 4 | 126 |
+| 2026-08-12 | 103 | 5 | 16 | 8 | 108 |
+| 2026-08-13 | 111 | 7 | 16 | 4 | 126 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **62**
 - manejo de errores y validación de entradas: **46**
 - seguridad defensiva: **42**
-- robustez ante casos límite: **38**
-- rendimiento: **26**
+- robustez ante casos límite: **36**
+- rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **22**
+- `branding.py`: **20**
 - `diskreport.py`: **20**
 - `quarantine.py`: **19**
-- `branding.py`: **19**
 - `assistant.py`: **18**
-- `healthscore.py`: **17**
-- `memory.py`: **16**
+- `healthscore.py`: **16**
 - `organizer.py`: **15**
+- `memory.py`: **15**
 - `scanner.py`: **14**
+- `browser.py`: **14**
 - `duplicates.py`: **14**
-- `browser.py`: **13**
 - `main.py`: **12**
 - `safety.py`: **9**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-13T11:05:56` **browser.py** (rendimiento): Optimicé el rendimiento de `_sum_directory_recursive` evitando el re-procesamiento innecesario mediante el uso del diccionario `cache` compartido y moviendo la validación de `visited` para reducir llamadas costosas a `os.scandir` en subdirectorios ya calculados o en bucles detectados.
+- `2026-08-13T11:05:42` **branding.py** (rendimiento): Se implementó un `lru_cache` adicional en `bar` y `severity_label` para evitar el re-procesamiento de strings de formato común en cada llamada, optimizando el rendimiento de renderizado en la interfaz.
 - `2026-08-13T10:55:32` **settings.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos en las funciones de acceso público y se estandarizó la nomenclatura de los argumentos de configuración para mejorar la legibilidad del contrato de interfaz del módulo.
 - `2026-08-13T10:55:16` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la inclusión de type hints en los retornos de las funciones de chequeo heurístico y se han clarificado los nombres de las variables internas en `scan_file` y `process_entry` para mejorar la mantenibilidad del pipeline de escaneo.
 - `2026-08-13T10:54:50` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna de `_check_file_integrity` mediante un docstring detallado y la conversión del diccionario `violation_checks` a un listado de tuplas nombrado, clarificando el propósito de cada regla de seguridad para futuras auditorías.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-13T10:25:04` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación técnica agregando descripciones de parámetros y retornos (estilo Google/NumPy) en funciones clave que carecían de detalle, facilitando la comprensión del flujo de datos visuales sin alterar la lógica.
 - `2026-08-13T10:24:46` **assistant.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados y Type Hints detallados, además de refactorizar la lógica de `_gen_problems` para separar la definición de reglas de su ejecución, mejorando la legibilidad y mantenibilidad del flujo de diagnóstico.
 - `2026-08-13T10:23:47` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` y `validate()` capturando explícitamente posibles errores de tipado o corrupción en las claves del diccionario de entrada, evitando que un JSON malformado (con claves inesperadas o tipos incorrectos) propague errores o bloquee el guardado.
-- `2026-08-13T10:13:39` **quarantine.py** (manejo de errores y validación de entradas): Se introdujo una gestión de errores robusta en `purge_all` y `purge_item` para asegurar que el manifiesto se sincronice correctamente incluso ante fallos parciales de I/O, mejorando la fiabilidad de las operaciones destructivas de limpieza.
-- `2026-08-13T10:05:04` **organizer.py** (manejo de errores y validación de entradas): Mejora la robustez de `sort_junk` y `stage_for_review` mediante validaciones de tipo y estructura defensivas para evitar errores en tiempo de ejecución ante entradas malformadas o inesperadas.

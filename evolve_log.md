@@ -616,3 +616,28 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-08-13T10:55:32` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se introdujeron docstrings descriptivos en las funciones de acceso público y se estandarizó la nomenclatura de los argumentos de configuración para mejorar la legibilidad del contrato de interfaz del módulo.
 - `2026-08-13T10:55:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-13T10:55:32` Corrida terminada. Total usado hoy: 260.
+- `2026-08-13T11:04:11` Arrancando corrida. Quedan hoy ~40 peticiones objetivo.
+- `2026-08-13T11:04:36` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-08-13T11:05:10` Tests FALLARON:
+```
+======================= short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_assistant_module_cannot_delete_or_move_anything - AssertionError: el asistente solo aconseja, no ejecuta: {'replace'}
+assert not ({'Answer', 'Request', 'SystemContext', '_call_gemini', '_ensure_safe_text', '_fmt_metric', ...} & {'delete_reviewed', 'move', 'purge_all', 'purge_item', 'quarantine_file', 'remove', ...})
+FAILED evolve/tests/test_assistant.py::test_answers_are_never_empty - KeyError: 'percent'
+FAILED evolve/tests/test_assistant.py::test_garbage_questions_still_get_an_answer - KeyError: 'percent'
+FAILED evolve/tests/test_assistant.py::test_low_disk_is_reported_as_the_top_priority - KeyError: 'percent'
+FAILED evolve/tests/test_assistant.py::test_local_answer_always_says_it_did_not_send_anything - KeyError: 'percent'
+FAILED evolve/tests/test_assistant.py::test_ask_stays_local_when_the_assistant_is_off - KeyError: 'percent'
+FAILED evolve/tests/test_assistant.py::test_ask_uses_the_online_engine_when_authorized - KeyError: 'percent'
+FAILED evolve/tests/test_assistant.py::test_online_failure_falls_back_to_local - KeyError: 'percent'
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - KeyError: 'percent'
+FAILED evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move - AssertionError: assistant.py debería ser de solo lectura pero llama a replace
+assert not {'replace'}
+10 failed, 289 passed in 1.42s
+
+```
+- `2026-08-13T11:05:10` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `_gen_problems` convirtiendo la lista de tuplas `evaluators` en un `tuple` constante definido fuera de la función, evitando así la reasignación y el costo de memoria de crear esa estructura de datos en cada llamada de análisis o conversación.
+- `2026-08-13T11:05:42` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se implementó un `lru_cache` adicional en `bar` y `severity_label` para evitar el re-procesamiento de strings de formato común en cada llamada, optimizando el rendimiento de renderizado en la interfaz.
+- `2026-08-13T11:05:56` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el rendimiento de `_sum_directory_recursive` evitando el re-procesamiento innecesario mediante el uso del diccionario `cache` compartido y moviendo la validación de `visited` para reducir llamadas costosas a `os.scandir` en subdirectorios ya calculados o en bucles detectados.
+- `2026-08-13T11:05:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-13T11:05:56` Corrida terminada. Total usado hoy: 264.

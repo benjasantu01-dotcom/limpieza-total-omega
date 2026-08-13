@@ -180,19 +180,12 @@ def _sum_directory_recursive(
     depth: int = 0
 ) -> int:
     """Calcula el peso en bytes mediante recorrido DFS limitado a 20 niveles con cacheo de resultados."""
-    if depth > 20:
+    if depth > 20 or root_dir in visited:
         return 0
-        
     if root_dir in cache:
         return cache[root_dir]
         
-    try:
-        if root_dir in visited:
-            return 0
-        visited.add(root_dir)
-    except (OSError, PermissionError):
-        return 0
-        
+    visited.add(root_dir)
     total_size: int = 0
     try:
         with os.scandir(root_dir) as it:
