@@ -29,12 +29,32 @@ from __future__ import annotations
 
 import json
 import os
+from enum import Enum
 from pathlib import Path
 from typing import Any, Final, TypeAlias, Callable, TypedDict
 
 from safety import is_safe_to_modify, is_protected_path
 
 PathLike: TypeAlias = str | Path
+
+class ConfigKey(Enum):
+    """Enumeración de claves permitidas en el diccionario de configuración."""
+    TEMA = "tema"
+    ACENTO = "acento"
+    MOSTRAR_BARRAS = "mostrar_barras"
+    ANIMACIONES = "animaciones"
+    CONFIRMAR_SIEMPRE = "confirmar_siempre"
+    ABRIR_EN = "abrir_en"
+    RECORDAR_ULTIMA_CARPETA = "recordar_ultima_carpeta"
+    ULTIMA_CARPETA = "ultima_carpeta"
+    DUPLICADOS_TAMANO_MINIMO_KB = "duplicados_tamano_minimo_kb"
+    TOP_ARCHIVOS = "top_archivos"
+    TOP_PROCESOS = "top_procesos"
+    ANALISIS_EN_PARALELO = "analisis_en_paralelo"
+    ASISTENTE_ACTIVADO = "asistente_activado"
+    ASISTENTE_CLAVE_API = "asistente_clave_api"
+    ASISTENTE_ENVIAR_METRICAS = "asistente_enviar_metricas"
+    ASISTENTE_MODELO = "asistente_modelo"
 
 class AppSettings(TypedDict):
     """Estructura esperada de la configuración de la aplicación."""
@@ -76,28 +96,28 @@ _last_mtime: float = -1.0
 _path_cache: dict[str, Path] = {}
 
 DEFAULTS: Final[AppSettings] = {
-    "tema": "oscuro",
-    "acento": "menta",
-    "mostrar_barras": True,
-    "animaciones": True,
-    "confirmar_siempre": True,
-    "abrir_en": "Salud",
-    "recordar_ultima_carpeta": True,
-    "ultima_carpeta": "",
-    "duplicados_tamano_minimo_kb": 64,
-    "top_archivos": 15,
-    "top_procesos": 15,
-    "analisis_en_paralelo": True,
-    "asistente_activado": False,
-    "asistente_clave_api": "",
-    "asistente_enviar_metricas": True,
-    "asistente_modelo": "gemini-3.1-flash-lite",
+    ConfigKey.TEMA.value: "oscuro",
+    ConfigKey.ACENTO.value: "menta",
+    ConfigKey.MOSTRAR_BARRAS.value: True,
+    ConfigKey.ANIMACIONES.value: True,
+    ConfigKey.CONFIRMAR_SIEMPRE.value: True,
+    ConfigKey.ABRIR_EN.value: "Salud",
+    ConfigKey.RECORDAR_ULTIMA_CARPETA.value: True,
+    ConfigKey.ULTIMA_CARPETA.value: "",
+    ConfigKey.DUPLICADOS_TAMANO_MINIMO_KB.value: 64,
+    ConfigKey.TOP_ARCHIVOS.value: 15,
+    ConfigKey.TOP_PROCESOS.value: 15,
+    ConfigKey.ANALISIS_EN_PARALELO.value: True,
+    ConfigKey.ASISTENTE_ACTIVADO.value: False,
+    ConfigKey.ASISTENTE_CLAVE_API.value: "",
+    ConfigKey.ASISTENTE_ENVIAR_METRICAS.value: True,
+    ConfigKey.ASISTENTE_MODELO.value: "gemini-3.1-flash-lite",
 }
 
-_NUMERIC_LIMITS: Final[dict[str, tuple[int, int]]] = {
-    "duplicados_tamano_minimo_kb": (0, 1024 * 1024),
-    "top_archivos": (1, 500),
-    "top_procesos": (1, 500),
+_NUMERIC_LIMITS: Final[dict[ConfigKey, tuple[int, int]]] = {
+    ConfigKey.DUPLICADOS_TAMANO_MINIMO_KB: (0, 1024 * 1024),
+    ConfigKey.TOP_ARCHIVOS: (1, 500),
+    ConfigKey.TOP_PROCESOS: (1, 500),
 }
 
 class _Validators:
@@ -128,7 +148,7 @@ class _Validators:
         return None
 
     @staticmethod
-    def int(key: str, val: Any) -> int | None:
+    def int(key: ConfigKey, val: Any) -> int | None:
         """Valida enteros dentro de los límites definidos en _NUMERIC_LIMITS."""
         if val is None or isinstance(val, bool): return None
         try:
@@ -153,34 +173,34 @@ class _Validators:
             return None
 
     @staticmethod
-    def str(key: str, val: Any) -> str | None:
+    def str(key: ConfigKey, val: Any) -> str | None:
         """Valida cadenas, aplicando reglas de negocio para temas, acentos y seguridad."""
         if val is None or not isinstance(val, (str, Path)): return None
         text = str(val).strip()
         if any(ord(c) < 32 for c in text) or ".." in text: return None
-        if key == "ultima_carpeta": return _Validators.path(text)
-        if not text: return "" if key == "asistente_clave_api" else None
-        if key == "tema": return text.lower() if text.lower() in VALID_THEMES else None
-        if key == "acento": return text.lower() if text.lower() in VALID_ACCENTS else None
+        if key == ConfigKey.ULTIMA_CARPETA: return _Validators.path(text)
+        if not text: return "" if key == ConfigKey.ASISTENTE_CLAVE_API else None
+        if key == ConfigKey.TEMA: return text.lower() if text.lower() in VALID_THEMES else None
+        if key == ConfigKey.ACENTO: return text.lower() if text.lower() in VALID_ACCENTS else None
         return text if len(text) <= 512 else None
 
-_VALIDATOR_MAP: Final[dict[str, Callable[[str, Any], Any]]] = {
-    "tema": _Validators.str,
-    "acento": _Validators.str,
-    "abrir_en": _Validators.str,
-    "ultima_carpeta": _Validators.str,
-    "asistente_clave_api": _Validators.str,
-    "asistente_modelo": _Validators.str,
-    "mostrar_barras": lambda _, v: _Validators.bool(v),
-    "animaciones": lambda _, v: _Validators.bool(v),
-    "confirmar_siempre": lambda _, v: _Validators.bool(v),
-    "recordar_ultima_carpeta": lambda _, v: _Validators.bool(v),
-    "analisis_en_paralelo": lambda _, v: _Validators.bool(v),
-    "asistente_activado": lambda _, v: _Validators.bool(v),
-    "asistente_enviar_metricas": lambda _, v: _Validators.bool(v),
-    "duplicados_tamano_minimo_kb": _Validators.int,
-    "top_archivos": _Validators.int,
-    "top_procesos": _Validators.int
+_VALIDATOR_MAP: Final[dict[str, Callable[[ConfigKey, Any], Any]]] = {
+    ConfigKey.TEMA.value: _Validators.str,
+    ConfigKey.ACENTO.value: _Validators.str,
+    ConfigKey.ABRIR_EN.value: _Validators.str,
+    ConfigKey.ULTIMA_CARPETA.value: _Validators.str,
+    ConfigKey.ASISTENTE_CLAVE_API.value: _Validators.str,
+    ConfigKey.ASISTENTE_MODELO.value: _Validators.str,
+    ConfigKey.MOSTRAR_BARRAS.value: lambda _, v: _Validators.bool(v),
+    ConfigKey.ANIMACIONES.value: lambda _, v: _Validators.bool(v),
+    ConfigKey.CONFIRMAR_SIEMPRE.value: lambda _, v: _Validators.bool(v),
+    ConfigKey.RECORDAR_ULTIMA_CARPETA.value: lambda _, v: _Validators.bool(v),
+    ConfigKey.ANALISIS_EN_PARALELO.value: lambda _, v: _Validators.bool(v),
+    ConfigKey.ASISTENTE_ACTIVADO.value: lambda _, v: _Validators.bool(v),
+    ConfigKey.ASISTENTE_ENVIAR_METRICAS.value: lambda _, v: _Validators.bool(v),
+    ConfigKey.DUPLICADOS_TAMANO_MINIMO_KB.value: _Validators.int,
+    ConfigKey.TOP_ARCHIVOS.value: _Validators.int,
+    ConfigKey.TOP_PROCESOS.value: _Validators.int
 }
 
 def settings_path(path_or_base: PathLike | None = None) -> Path:
@@ -202,9 +222,11 @@ def validate(values: Any) -> AppSettings:
     for key, validator in _VALIDATOR_MAP.items():
         if key in values:
             try:
-                val = validator(key, values.get(key))
+                # Convertir string de clave JSON a Enum para validación
+                enum_key = ConfigKey(key)
+                val = validator(enum_key, values.get(key))
                 if val is not None: config[key] = val
-            except Exception:
+            except (Exception, ValueError):
                 continue
     return config
 
@@ -242,8 +264,8 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
 
     cleaned_settings = validate(values)
     
-    if cleaned_settings.get("asistente_activado") and not (cleaned_settings.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)):
-        cleaned_settings["asistente_activado"] = False
+    if cleaned_settings.get(ConfigKey.ASISTENTE_ACTIVADO.value) and not (cleaned_settings.get(ConfigKey.ASISTENTE_CLAVE_API.value) or os.environ.get(API_KEY_ENV_VAR)):
+        cleaned_settings[ConfigKey.ASISTENTE_ACTIVADO.value] = False
         
     try:
         json_data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
@@ -279,10 +301,14 @@ def update(changes: dict[str, Any], path_or_base: PathLike | None = None) -> App
     for k, v in changes.items():
         if k in _VALIDATOR_MAP and current.get(k) != v:
             validator = _VALIDATOR_MAP[k]
-            val = validator(k, v)
-            if val is not None and val != current.get(k):
-                current[k] = val
-                needs_save = True
+            # Convertir clave string a Enum
+            try:
+                val = validator(ConfigKey(k), v)
+                if val is not None and val != current.get(k):
+                    current[k] = val
+                    needs_save = True
+            except ValueError:
+                continue
     if needs_save: save(current, path_or_base)
     return current
 
@@ -298,12 +324,12 @@ def get(key: str, path_or_base: PathLike | None = None) -> Any:
 def assistant_api_key(path_or_base: PathLike | None = None) -> str:
     """Prioriza variables de entorno para la clave de API frente al JSON."""
     env_key = os.environ.get(API_KEY_ENV_VAR, "").strip()
-    return env_key if env_key else load(path_or_base).get("asistente_clave_api", "").strip()
+    return env_key if env_key else load(path_or_base).get(ConfigKey.ASISTENTE_CLAVE_API.value, "").strip()
 
 def assistant_enabled(path_or_base: PathLike | None = None) -> bool:
     """Evalúa si el asistente es operativo basándose en configuración y clave disponible."""
     settings = load(path_or_base)
-    return bool(settings.get("asistente_activado") and (os.environ.get(API_KEY_ENV_VAR) or settings.get("asistente_clave_api")))
+    return bool(settings.get(ConfigKey.ASISTENTE_ACTIVADO.value) and (os.environ.get(API_KEY_ENV_VAR) or settings.get(ConfigKey.ASISTENTE_CLAVE_API.value)))
 
 def describe(path_or_base: PathLike | None = None) -> list[str]:
     """Retorna una representación legible de los ajustes actuales para el reporte."""
@@ -312,12 +338,12 @@ def describe(path_or_base: PathLike | None = None) -> list[str]:
     origin = f"variable de entorno {API_KEY_ENV_VAR}" if os.environ.get(API_KEY_ENV_VAR) else ("archivo de configuración" if key else "no configurada")
     return [
         "Configuración actual", "", f"  Archivo: {settings_path(path_or_base)}", "",
-        "  Apariencia", f"    Tema: {current['tema']}", f"    Acento: {current['acento']}",
-        f"    Barras visuales: {'sí' if current['mostrar_barras'] else 'no'}", "",
-        "  Comportamiento", f"    Confirmar siempre: {'sí' if current['confirmar_siempre'] else 'no'}",
-        f"    Pestaña inicial: {current['abrir_en']}", f"    Recordar carpeta: {'sí' if current['recordar_ultima_carpeta'] else 'no'}", "",
-        "  Rendimiento", f"    Duplicados desde: {current['duplicados_tamano_minimo_kb']} KB",
-        f"    Top de archivos: {current['top_archivos']}", f"    Análisis en paralelo: {'sí' if current['analisis_en_paralelo'] else 'no'}", "",
-        "  Asistente IA", f"    Activado: {'sí' if current['asistente_activado'] else 'no'}",
-        f"    Clave: {origin}", f"    Modelo: {current['asistente_modelo']}", ""
+        "  Apariencia", f"    Tema: {current[ConfigKey.TEMA.value]}", f"    Acento: {current[ConfigKey.ACENTO.value]}",
+        f"    Barras visuales: {'sí' if current[ConfigKey.MOSTRAR_BARRAS.value] else 'no'}", "",
+        "  Comportamiento", f"    Confirmar siempre: {'sí' if current[ConfigKey.CONFIRMAR_SIEMPRE.value] else 'no'}",
+        f"    Pestaña inicial: {current[ConfigKey.ABRIR_EN.value]}", f"    Recordar carpeta: {'sí' if current[ConfigKey.RECORDAR_ULTIMA_CARPETA.value] else 'no'}", "",
+        "  Rendimiento", f"    Duplicados desde: {current[ConfigKey.DUPLICADOS_TAMANO_MINIMO_KB.value]} KB",
+        f"    Top de archivos: {current[ConfigKey.TOP_ARCHIVOS.value]}", f"    Análisis en paralelo: {'sí' if current[ConfigKey.ANALISIS_EN_PARALELO.value] else 'no'}", "",
+        "  Asistente IA", f"    Activado: {'sí' if current[ConfigKey.ASISTENTE_ACTIVADO.value] else 'no'}",
+        f"    Clave: {origin}", f"    Modelo: {current[ConfigKey.ASISTENTE_MODELO.value]}", ""
     ]

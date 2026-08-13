@@ -107,24 +107,21 @@ class Scanner:
                     self.seen.add(entry.path)
                     stack.append(entry.path)
             elif entry.is_file(follow_symlinks=False):
-                name = entry.name
-                ext = entry_path.suffix.lower()
-                self.results.extend(scan_file(entry_path, self.now_ts, entry=entry, name=name, suffix=ext))
+                self.results.extend(scan_file(entry_path, self.now_ts, entry=entry))
                 
         except (PermissionError, OSError) as e:
             logger.debug(f"Acceso denegado o error de sistema: {entry.path} - {e}")
 
-def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Heurística: detecta nombres con múltiples extensiones que ocultan un ejecutable (ej: .pdf.exe)."""
-    target = name or (path.name if path else "")
-    if target and DOUBLE_EXTENSION_RE.search(target):
+def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
+    """Detecta nombres con múltiples extensiones que ocultan un ejecutable (ej: .pdf.exe)."""
+    if DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
     return None
 
 
-def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Heurística: señala ejecutables modificados hace menos de 24h en carpetas de alta descarga/temp."""
-    if entry is None or path is None:
+def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
+    """Señala ejecutables modificados hace menos de 24h en carpetas de alta descarga/temp."""
+    if not entry:
         return None
     
     path_lower = str(path).lower()
@@ -139,35 +136,41 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     return None
 
 
-def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Heurística: detecta binarios que imitan procesos críticos del sistema ubicados fuera de System32."""
-    if path is None:
-        return None
-    target = (name or path.name).lower()
-    if target in SYSTEM_LOOKALIKES:
+def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
+    """Detecta binarios que imitan procesos críticos del sistema ubicados fuera de System32."""
+    if path.name.lower() in SYSTEM_LOOKALIKES:
         if SYSTEM32_LOWER not in str(path.parent).lower():
             return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
     return None
 
-def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None) -> ScanResult:
-    """Ejecuta el pipeline de heurísticas sobre un archivo dado."""
+def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
+    """
+    Ejecuta el pipeline de heurísticas sobre un archivo dado.
+    
+    Args:
+        path: Ruta del archivo.
+        now_ts: Timestamp actual para cálculos de antigüedad.
+        entry: Objeto DirEntry opcional para evitar syscalls innecesarias.
+        
+    Returns:
+        Lista de objetos Suspicion encontrados.
+    """
     if not path:
         return []
 
     findings: ScanResult = []
-    
-    safe_suffix = suffix or (path.suffix.lower() if path.suffix else "")
+    suffix = path.suffix.lower()
 
-    # 1. Chequeos basados en nombre (String-only, muy rápidos)
-    if (res := check_double_extension(path, entry, name, safe_suffix, now_ts)):
+    # 1. Chequeos basados en nombre (String-only)
+    if (res := check_double_extension(path, entry, now_ts)):
         findings.append(res)
     
     # 2. Chequeos específicos de ejecutables
-    if safe_suffix in SUSPICIOUS_EXECUTABLE_EXT:
-        if (res := check_system_lookalike(path, entry, name, safe_suffix, now_ts)):
+    if suffix in SUSPICIOUS_EXECUTABLE_EXT:
+        if (res := check_system_lookalike(path, entry, now_ts)):
             findings.append(res)
         
-        if (res := check_recent_executable_in_downloads(path, entry, name, safe_suffix, now_ts)):
+        if (res := check_recent_executable_in_downloads(path, entry, now_ts)):
             findings.append(res)
                 
     return findings
