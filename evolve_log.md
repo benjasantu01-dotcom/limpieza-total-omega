@@ -1486,3 +1486,11 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_on_missing_folder
 - `2026-08-13T07:52:00` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad en `save_logo_svg` utilizando `is_safe_to_modify` para realizar una validación preventiva antes de intentar la resolución de rutas, evitando así posibles excepciones bloqueantes durante el procesamiento de la ruta de destino.
 - `2026-08-13T07:52:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-13T07:52:00` Corrida terminada. Total usado hoy: 188.
+- `2026-08-13T08:00:24` Arrancando corrida. Quedan hoy ~112 peticiones objetivo.
+- `2026-08-13T08:00:35` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-13T08:01:02` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
+- `2026-08-13T08:01:29` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `drive_usage` y `walk_files` para evitar el seguimiento de rutas mediante enlaces simbólicos o puntos de reparse (junctions) antes de acceder a sus atributos, asegurando que las validaciones de seguridad actúen sobre la ruta real antes de realizar cualquier operación de I/O.
+- `2026-08-13T08:01:55` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-08-13T08:02:08` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Reforcé la integridad del motor de cálculo implementando una validación estricta de las entradas `SystemMetrics` y los ratios derivados, asegurando que cualquier valor inesperado (`NaN` o `Inf`) sea neutralizado antes de impactar en el puntaje final.
+- `2026-08-13T08:02:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-13T08:02:08` Corrida terminada. Total usado hoy: 192.

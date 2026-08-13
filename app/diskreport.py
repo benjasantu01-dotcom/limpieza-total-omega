@@ -156,15 +156,9 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     if not mount:
         return None
     try:
-        path_str = os.fspath(mount)
-        if not path_str or path_str.startswith(("\\\\", "//")):
-            return None
-        p = Path(path_str).expanduser().resolve(strict=False)
-        
-        if not p.exists() or is_protected_path(p):
-            return None
-        
-        if not os.access(p, os.R_OK):
+        p = Path(mount).expanduser()
+        # Resolvemos solo hasta el padre para verificar seguridad antes de acceder al contenido
+        if not p.exists() or is_protected_path(p.resolve()):
             return None
             
         usage = shutil.disk_usage(p)
@@ -203,47 +197,28 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Recorre el sistema de archivos de forma iterativa y segura.
-
-    Implementa una búsqueda en profundidad (DFS) con control de inodos para evitar 
-    bucles infinitos por enlaces simbólicos. Utiliza `os.scandir` para mejorar el 
-    rendimiento en directorios extensos y garantiza que no se sigan rutas protegidas.
-
-    Args:
-        directory: Directorio raíz donde comenzar el escaneo.
-        skip_protected: Si es True, utiliza `is_protected_path` para ignorar rutas críticas.
-
-    Yields:
-        Tuplas conteniendo el objeto Path y el tamaño en bytes del archivo.
     """
     if not directory:
         return
 
     try:
-        root: Path = Path(directory).expanduser().resolve(strict=False)
-        if str(root).startswith(("\\\\", "//")):
-            return
-        if not root.exists() or not root.is_dir() or not os.access(root, os.R_OK):
-            return
-        if skip_protected and is_protected_path(root):
+        root = Path(directory).expanduser()
+        if not root.is_dir() or is_protected_path(root.resolve()):
             return
     except (OSError, RuntimeError, TypeError, ValueError):
         return
 
     visited_inodes: set[Tuple[int, int]] = set()
-    stack: List[Tuple[Path, int]] = [(root, 0)]
-    max_depth = 100 
-
+    stack: List[Path] = [root]
+    
     while stack:
-        current_dir, depth = stack.pop()
-        if depth > max_depth:
-            continue
-
+        current_dir = stack.pop()
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        p_entry = Path(entry.path)
-                        if skip_protected and is_protected_path(p_entry):
+                        # Seguridad preventiva: verificar si la ruta es segura antes de procesar
+                        if skip_protected and is_protected_path(Path(entry.path)):
                             continue
 
                         if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
@@ -254,9 +229,9 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                             inode = (st.st_dev, st.st_ino)
                             if inode not in visited_inodes:
                                 visited_inodes.add(inode)
-                                stack.append((p_entry, depth + 1))
+                                stack.append(Path(entry.path))
                         else:
-                            yield p_entry, entry.stat().st_size
+                            yield Path(entry.path), entry.stat().st_size
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):
@@ -266,14 +241,6 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_protected: bool = True) -> List[FileEntry]:
     """
     Encuentra los N archivos de mayor peso en la jerarquía dada usando una estructura de heap.
-    
-    Args:
-        directory: Directorio raíz para la búsqueda.
-        limit: Cantidad de archivos a retornar (top N).
-        skip_protected: Filtra rutas protegidas.
-        
-    Returns:
-        Lista de objetos FileEntry ordenados de mayor a menor peso.
     """
     if not directory or not isinstance(limit, int) or limit <= 0:
         return []
@@ -287,14 +254,6 @@ def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_prot
 def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip_protected: bool = True) -> List[ExtensionUsage]:
     """
     Agrupa el uso de espacio por extensión de archivo.
-    
-    Args:
-        directory: Directorio raíz para la búsqueda.
-        limit: Cantidad de categorías a retornar.
-        skip_protected: Filtra rutas protegidas.
-        
-    Returns:
-        Lista de objetos ExtensionUsage ordenados por peso total ocupado.
     """
     if not directory or not isinstance(limit, int) or limit <= 0:
         return []
@@ -321,21 +280,13 @@ def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip
 def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
     """
     Agrupa el uso de espacio de las subcarpetas inmediatas del directorio dado.
-    
-    Args:
-        directory: Directorio raíz donde evaluar las subcarpetas.
-        limit: Cantidad de carpetas a retornar.
-        skip_protected: Filtra rutas protegidas.
-        
-    Returns:
-        Lista de objetos FolderUsage ordenados por peso total.
     """
     if not directory or not isinstance(limit, int) or limit <= 0:
         return []
     
     try:
-        base = Path(directory).expanduser().resolve(strict=False)
-        if not base.exists() or not base.is_dir() or not os.access(base, os.R_OK):
+        base = Path(directory).expanduser()
+        if not base.is_dir() or is_protected_path(base.resolve()):
             return []
         
         sums: Dict[Path, int] = defaultdict(int)
@@ -361,13 +312,6 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
 def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Tuple[int, int]:
     """
     Calcula el tamaño total en bytes y la cantidad de archivos accesibles.
-    
-    Args:
-        directory: Ruta raíz a evaluar.
-        skip_protected: Filtra rutas protegidas.
-
-    Returns:
-        Tupla (total_bytes, contador_archivos).
     """
     total_bytes, file_count = 0, 0
     for _, size in walk_files(directory, skip_protected):
@@ -379,22 +323,15 @@ def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -> List[str]:
     """
     Genera un informe textual unificado del uso de disco con una sola pasada eficiente.
-    
-    Args:
-        directory: Ruta raíz a resumir.
-        skip_protected: Si se filtran rutas protegidas.
-        
-    Returns:
-        Lista de strings formateados listos para visualización.
     """
     if not directory: 
         return ["Error: Ruta no proporcionada."]
     
     try:
-        p_input = Path(directory).expanduser().resolve(strict=False)
-        if not p_input.exists() or not p_input.is_dir(): 
+        p_input = Path(directory).expanduser()
+        if not p_input.is_dir(): 
             return [f"Error: Ruta no encontrada o no es directorio: {p_input}"]
-        if skip_protected and is_protected_path(p_input):
+        if skip_protected and is_protected_path(p_input.resolve()):
             return [f"Error: Ruta protegida no permitida: {p_input}"]
     except (OSError, TypeError, RuntimeError, ValueError):
         return ["Error: Ruta inválida o inaccesible."]

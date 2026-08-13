@@ -214,7 +214,8 @@ def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[
     # Aplica reglas de umbral para sugerir acciones basadas en los ratios calculados
     for rule in _RECOMMENDATION_RULES:
         if rule.area in ratios and rule.area in vals:
-            if ratios[rule.area] < rule.threshold:
+            # Validar que el ratio sea un número finito antes de comparar
+            if math.isfinite(ratios[rule.area]) and ratios[rule.area] < rule.threshold:
                 try:
                     # Se asegura de que la cantidad de argumentos sea compatible con el formato
                     recommendations.append(rule.message_format.format(vals[rule.area]))
@@ -244,7 +245,12 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         "arranque": score_startup(metrics.startup_count)
     }
     
-    breakdown = {area: int(round(ratios[area] * factor)) for area, factor in _WEIGHT_ITEMS}
+    # Asegurar que los componentes de breakdown sean finitos antes de redondear
+    breakdown = {}
+    for area, factor in _WEIGHT_ITEMS:
+        val = ratios.get(area, 0.0)
+        breakdown[area] = int(round(_clamp(val, 0.0, 1.0) * factor))
+        
     final_score = int(round(_clamp(sum(breakdown.values()), 0.0, 100.0)))
     
     return HealthResult(
