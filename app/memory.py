@@ -174,10 +174,15 @@ def _parse_csv_row(line: str) -> Optional[ProcessMemory]:
     Helper para deserializar una línea CSV proveniente de PowerShell: 'Nombre,PID,WorkingSet'.
     Retorna un objeto ProcessMemory si la línea tiene el formato y valores válidos.
     """
+    if not line or line.strip().lower().startswith("name"):
+        return None
     parts = [p.strip().strip("'\"") for p in line.split(",")]
     if len(parts) < 3:
         return None
     try:
+        # Se asegura que la cadena de PID y WorkingSet no sea vacía antes de convertir
+        if not parts[-1] or not parts[-2]:
+            return None
         ws, pid = int(parts[-1]), int(parts[-2])
         if ws < 0 or pid < 0:
             return None

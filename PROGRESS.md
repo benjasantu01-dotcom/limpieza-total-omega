@@ -9,43 +9,45 @@ Este archivo se regenera solo en cada corrida a partir de
 - Mejoras aceptadas: **213** (42.3% de aceptación)
 - Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 32
-- Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 235
+- Sin cambios (nada sustancial que mejorar): 13
+- Sin respuesta de la IA (error o límite): 234
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-12 | 94 | 4 | 15 | 7 | 104 |
-| 2026-08-13 | 119 | 8 | 17 | 5 | 131 |
+| 2026-08-12 | 92 | 4 | 14 | 7 | 103 |
+| 2026-08-13 | 121 | 8 | 18 | 6 | 131 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **62**
 - manejo de errores y validación de entradas: **46**
-- seguridad defensiva: **36**
-- robustez ante casos límite: **36**
+- robustez ante casos límite: **38**
+- seguridad defensiva: **34**
 - rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **22**
+- `settings.py`: **21**
 - `branding.py`: **20**
 - `diskreport.py`: **20**
 - `assistant.py`: **18**
+- `healthscore.py`: **17**
+- `memory.py`: **17**
 - `quarantine.py`: **17**
-- `healthscore.py`: **16**
-- `memory.py`: **16**
 - `duplicates.py`: **15**
-- `scanner.py`: **14**
 - `organizer.py`: **14**
 - `main.py`: **13**
+- `scanner.py`: **13**
 - `browser.py`: **13**
 - `safety.py`: **9**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-13T11:58:26` **memory.py** (robustez ante casos límite): Se reforzó la robustez de `parse_windows_process_csv` y `_parse_csv_row` añadiendo validación estricta ante entradas mal formadas o valores numéricos imposibles, evitando errores de ejecución si `powershell` devuelve una salida inesperada o corrupta.
+- `2026-08-13T11:56:14` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `_generate_recommendations` añadiendo un chequeo explícito de tipos y valores nulos para evitar errores en tiempo de ejecución (`IndexError` o `ValueError`) ante entradas inesperadas, además de asegurar que las recomendaciones no dependan de una evaluación exitosa de ratios si los valores base son críticos.
 - `2026-08-13T11:47:17` **diskreport.py** (robustez ante casos límite): Se ha robustecido `walk_files` para manejar correctamente rutas que no existen o permisos denegados al inicio del recorrido, y se ha mejorado la tolerancia a fallos en `largest_folders` al asegurar que `path.relative_to(base)` no falle si `path` no tiene una relación clara con `base` debido a race conditions en el sistema de archivos.
 - `2026-08-13T11:46:25` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de entrada y fallos en el sistema de archivos, asegurando que la validación ocurra antes de cualquier operación y manejando excepciones de forma más granular para evitar errores en tiempo de ejecución.
 - `2026-08-13T11:45:52` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` ante la posibilidad de recibir objetos malformados o tipos inesperados durante la carga de métricas, evitando que asignaciones parciales o corruptas comprometan el estado del asistente.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-13T10:55:32` **settings.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos en las funciones de acceso público y se estandarizó la nomenclatura de los argumentos de configuración para mejorar la legibilidad del contrato de interfaz del módulo.
 - `2026-08-13T10:55:16` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la inclusión de type hints en los retornos de las funciones de chequeo heurístico y se han clarificado los nombres de las variables internas en `scan_file` y `process_entry` para mejorar la mantenibilidad del pipeline de escaneo.
 - `2026-08-13T10:54:50` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna de `_check_file_integrity` mediante un docstring detallado y la conversión del diccionario `violation_checks` a un listado de tuplas nombrado, clarificando el propósito de cada regla de seguridad para futuras auditorías.
-- `2026-08-13T10:46:11` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_validate_isolation_request` para separar las validaciones de seguridad de la lógica de negocio, documentando explícitamente el propósito de cada chequeo crítico.
-- `2026-08-13T10:45:55` **organizer.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings detallados en las funciones de escaneo y ordenamiento, aclarando las responsabilidades de cada etapa, los criterios de exclusión y la lógica de resolución de rutas para asegurar la mantenibilidad del código.

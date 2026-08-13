@@ -215,14 +215,14 @@ def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[
         ratio = ratios.get(rule.area)
         val = vals.get(rule.area)
         
-        if ratio is not None and val is not None and math.isfinite(ratio):
+        if ratio is not None and val is not None and isinstance(ratio, (int, float)) and math.isfinite(ratio):
             if ratio < rule.threshold:
                 try:
                     if rule.expected_args == 0:
                         recommendations.append(rule.message_format)
                     else:
                         recommendations.append(rule.message_format.format(val))
-                except (ValueError, IndexError, KeyError):
+                except (ValueError, IndexError, KeyError, TypeError):
                     continue
     
     if metrics.quarantined_count > 0:
