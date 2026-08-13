@@ -12,7 +12,7 @@ import stat
 import re
 import ctypes
 from pathlib import Path
-from typing import Union, Iterable, TypeAlias, Final
+from typing import Union, Iterable, TypeAlias, Final, NamedTuple, Callable
 from functools import lru_cache
 
 PathLike: TypeAlias = Union[str, os.PathLike]
@@ -65,6 +65,11 @@ _RESERVED_NAMES_PATTERN: Final[re.Pattern] = re.compile(
 )
 
 
+class _IntegrityCheck(NamedTuple):
+    reason: str
+    predicate: Callable[[], bool]
+
+
 def _has_invalid_chars(path_str: str) -> bool:
     """Valida la presencia de caracteres no permitidos o rutas reservadas (Windows)."""
     norm = os.path.normpath(path_str)
@@ -115,7 +120,6 @@ def _is_file_in_use(path: Path) -> bool:
         os.close(fd)
         return False
     except OSError as e:
-        # ERROR_SHARING_VIOLATION (32) en Windows indica que el archivo está en uso
         if hasattr(e, 'winerror') and e.winerror == 32:
             return True
         return False
@@ -123,8 +127,11 @@ def _is_file_in_use(path: Path) -> bool:
 
 def _check_file_integrity(p: Path) -> None:
     """
-    Realiza una auditoría exhaustiva del archivo.
-    Lanza UnsafePathError ante cualquier señal de riesgo o bloqueo.
+    Realiza una auditoría exhaustiva de un archivo existente para asegurar que es seguro modificarlo.
+    
+    Aplica una serie de chequeos heurísticos y de estado del sistema (bloqueos, atributos,
+    enlaces lógicos). Si alguna validación falla, se interrumpe la operación lanzando
+    UnsafePathError para prevenir corrupción o daños en el SO.
     """
     if not p.exists():
         raise UnsafePathError(f"El archivo {p.name} ya no existe.")
@@ -132,20 +139,19 @@ def _check_file_integrity(p: Path) -> None:
     if len(p.parts) > 32:
         raise UnsafePathError("Ruta demasiado profunda: posible ataque de evasión.")
 
-    # Mapeo de validaciones: clave (motivo) -> predicado (bool)
-    violation_checks = {
-        "inaccesible": lambda: not os.access(p, os.W_OK),
-        "punto de reparse": lambda: _is_reparse_point(p),
-        "solo lectura": lambda: _is_readonly(p),
-        "en uso": lambda: _is_file_in_use(p),
-        "sistema/oculto": lambda: _is_system_or_hidden(p),
-        "hard link detectado": lambda: p.is_file() and p.stat().st_nlink > 1,
-        "ADS (flujos alternativos)": lambda: _has_alternate_data_stream(p)
-    }
+    violation_checks = [
+        _IntegrityCheck("inaccesible", lambda: not os.access(p, os.W_OK)),
+        _IntegrityCheck("punto de reparse", lambda: _is_reparse_point(p)),
+        _IntegrityCheck("solo lectura", lambda: _is_readonly(p)),
+        _IntegrityCheck("en uso", lambda: _is_file_in_use(p)),
+        _IntegrityCheck("sistema/oculto", lambda: _is_system_or_hidden(p)),
+        _IntegrityCheck("hard link detectado", lambda: p.is_file() and p.stat().st_nlink > 1),
+        _IntegrityCheck("ADS (flujos alternativos)", lambda: _has_alternate_data_stream(p))
+    ]
 
-    for reason, check in violation_checks.items():
-        if check():
-            raise UnsafePathError(f"Operación denegada en {p.name}: {reason}.")
+    for check in violation_checks:
+        if check.predicate():
+            raise UnsafePathError(f"Operación denegada en {p.name}: {check.reason}.")
 
 
 @lru_cache(maxsize=1024)
@@ -190,12 +196,10 @@ def is_protected_path(path: PathLike) -> bool:
     
     try:
         p = normalize(path)
-        # Eficiencia: comparar prefijos de partes evita resolver rutas en cada llamada
         if any(p.parts[:len(root)] == root for root in _SYSTEM_ROOT_PARTS):
             return True
         if any(part.lower() in PROTECTED_DIR_NAMES for part in p.parts):
             return True
-        # Solo comprobar reparse point si la ruta existe para evitar estados inconsistentes
         return p == Path(p.anchor) or (p.exists() and _is_reparse_point(p))
     except (PermissionError, OSError, ValueError, TypeError, RuntimeError):
         return True 
@@ -235,7 +239,6 @@ def _validate_basic_path_safety(p: Path, path_str: str) -> None:
     if path_str.startswith(("\\\\", "//")):
         raise UnsafePathError("Rutas de red (UNC) no permitidas.")
 
-    # Validar que no estemos intentando operar sobre unidades inexistentes o rutas fuera de alcance global
     if not p.anchor or not os.path.exists(p.anchor):
         raise UnsafePathError("Unidad o punto de montaje no disponible.")
 

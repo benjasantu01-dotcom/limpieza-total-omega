@@ -93,12 +93,12 @@ class Scanner:
         if entry.is_symlink() or self._is_reparse_point(entry):
             return
 
-        entry_path = Path(entry.path)
+        target_path = Path(entry.path)
         
-        if is_protected_path(entry_path) or entry_path.parts[0].startswith("\\\\"):
+        if is_protected_path(target_path) or target_path.parts[0].startswith("\\\\"):
             return
 
-        if not self._is_safe_entry(entry_path):
+        if not self._is_safe_entry(target_path):
             return
 
         try:
@@ -107,7 +107,7 @@ class Scanner:
                     self.seen.add(entry.path)
                     stack.append(entry.path)
             elif entry.is_file(follow_symlinks=False):
-                self.results.extend(scan_file(entry_path, self.now_ts, entry=entry))
+                self.results.extend(scan_file(target_path, self.now_ts, entry=entry))
                 
         except (PermissionError, OSError) as e:
             logger.debug(f"Acceso denegado o error de sistema: {entry.path} - {e}")
@@ -145,7 +145,7 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """
-    Ejecuta el pipeline de heurísticas sobre un archivo dado.
+    Ejecuta el pipeline de heurísticas sobre un archivo dado y retorna la lista de hallazgos.
     """
     if not path:
         return []
@@ -153,16 +153,19 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     findings: ScanResult = []
     
     # 1. Chequeos genéricos independientes de la extensión
-    if (res := check_double_extension(path, entry, now_ts)):
-        findings.append(res)
+    check_result = check_double_extension(path, entry, now_ts)
+    if check_result:
+        findings.append(check_result)
     
     # 2. Chequeos específicos de ejecutables
     if path.suffix.lower() in SUSPICIOUS_EXECUTABLE_EXT:
-        if (res := check_system_lookalike(path, entry, now_ts)):
-            findings.append(res)
+        lookalike_result = check_system_lookalike(path, entry, now_ts)
+        if lookalike_result:
+            findings.append(lookalike_result)
         
-        if (res := check_recent_executable_in_downloads(path, entry, now_ts)):
-            findings.append(res)
+        recent_result = check_recent_executable_in_downloads(path, entry, now_ts)
+        if recent_result:
+            findings.append(recent_result)
                 
     return findings
 

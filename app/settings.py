@@ -203,10 +203,10 @@ _VALIDATOR_MAP: Final[dict[str, Callable[[ConfigKey, Any], Any]]] = {
     ConfigKey.TOP_PROCESOS.value: _Validators.int
 }
 
-def settings_path(path_or_base: PathLike | None = None) -> Path:
-    """Calcula y cachea la ubicación del archivo de configuración, validando seguridad."""
-    if path_or_base is None: return SETTINGS_DIR / SETTINGS_FILE
-    key = str(path_or_base)
+def settings_path(custom_base: PathLike | None = None) -> Path:
+    """Retorna la ubicación final del archivo de configuración, priorizando la ruta base provista."""
+    if custom_base is None: return SETTINGS_DIR / SETTINGS_FILE
+    key = str(custom_base)
     if key not in _path_cache:
         try:
             base = Path(key).expanduser().resolve(strict=False)
@@ -215,28 +215,24 @@ def settings_path(path_or_base: PathLike | None = None) -> Path:
             return SETTINGS_DIR / SETTINGS_FILE
     return _path_cache[key]
 
-def validate(values: Any) -> AppSettings:
-    """Aplica el mapa de validadores a un diccionario de entrada; ignora errores silenciosamente."""
+def validate(raw_values: Any) -> AppSettings:
+    """Filtra y normaliza un diccionario arbitrario de entrada contra los esquemas y límites permitidos."""
     config = DEFAULTS.copy()
-    if not isinstance(values, dict): return config
+    if not isinstance(raw_values, dict): return config
     for key, validator in _VALIDATOR_MAP.items():
-        if key in values:
+        if key in raw_values:
             try:
-                # Verificamos si la clave existe en el Enum antes de validar
-                try:
-                    enum_key = ConfigKey(key)
-                except ValueError:
-                    continue
-                val = validator(enum_key, values.get(key))
+                enum_key = ConfigKey(key)
+                val = validator(enum_key, raw_values.get(key))
                 if val is not None: config[key] = val
             except (Exception):
                 continue
     return config
 
-def load(path_or_base: PathLike | None = None) -> AppSettings:
-    """Carga configuraciones desde disco con cacheo de estado basado en mtime."""
+def load(custom_base: PathLike | None = None) -> AppSettings:
+    """Carga y valida los ajustes desde disco; utiliza caché en memoria basado en mtime para eficiencia."""
     global _cached_settings, _current_path, _last_mtime
-    ruta = settings_path(path_or_base)
+    ruta = settings_path(custom_base)
     
     if not ruta.exists(): return DEFAULTS.copy()
     
@@ -257,19 +253,17 @@ def load(path_or_base: PathLike | None = None) -> AppSettings:
         pass
     return DEFAULTS.copy()
 
-def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
-    """Persiste los ajustes en un archivo temporal antes de reemplazar el original."""
+def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
+    """Persiste la configuración validada en disco de forma atómica usando un archivo temporal."""
     global _cached_settings, _current_path, _last_mtime
     if not isinstance(values, dict): return None
-    ruta = settings_path(path_or_base)
+    ruta = settings_path(custom_base)
     
-    # Validar estrictamente la ubicación de destino antes de operar
     if not _Validators._is_safe_path(ruta.parent) or is_protected_path(str(ruta)):
         return None
 
     cleaned_settings = validate(values)
     
-    # Validación de seguridad del estado lógico del asistente
     if cleaned_settings.get(ConfigKey.ASISTENTE_ACTIVADO.value) and not (cleaned_settings.get(ConfigKey.ASISTENTE_CLAVE_API.value) or os.environ.get(API_KEY_ENV_VAR)):
         cleaned_settings[ConfigKey.ASISTENTE_ACTIVADO.value] = False
         
@@ -300,9 +294,9 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
             try: temp.unlink()
             except OSError: pass
 
-def update(changes: dict[str, Any], path_or_base: PathLike | None = None) -> AppSettings:
-    """Actualiza una o varias claves y dispara un guardado si hubo cambios."""
-    current = load(path_or_base)
+def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
+    """Aplica cambios parciales a la configuración actual y persiste si existen variaciones."""
+    current = load(custom_base)
     needs_save = False
     for k, v in changes.items():
         if k in _VALIDATOR_MAP and current.get(k) != v:
@@ -315,35 +309,35 @@ def update(changes: dict[str, Any], path_or_base: PathLike | None = None) -> App
                     needs_save = True
             except (ValueError, KeyError):
                 continue
-    if needs_save: save(current, path_or_base)
+    if needs_save: save(current, custom_base)
     return current
 
-def reset(path_or_base: PathLike | None = None) -> AppSettings:
-    """Resetea el archivo de configuración a sus valores de fábrica."""
-    save(DEFAULTS, path_or_base)
+def reset(custom_base: PathLike | None = None) -> AppSettings:
+    """Sobrescribe el archivo de configuración actual con los valores por defecto definidos."""
+    save(DEFAULTS, custom_base)
     return DEFAULTS.copy()
 
-def get(key: str, path_or_base: PathLike | None = None) -> Any:
-    """Getter simplificado para obtener una clave de configuración individual."""
-    return load(path_or_base).get(key, DEFAULTS.get(key))
+def get(key: str, custom_base: PathLike | None = None) -> Any:
+    """Obtiene el valor de una clave específica de la configuración actual."""
+    return load(custom_base).get(key, DEFAULTS.get(key))
 
-def assistant_api_key(path_or_base: PathLike | None = None) -> str:
-    """Prioriza variables de entorno para la clave de API frente al JSON."""
+def assistant_api_key(custom_base: PathLike | None = None) -> str:
+    """Extrae la clave API, priorizando la variable de entorno sobre el archivo de configuración."""
     env_key = os.environ.get(API_KEY_ENV_VAR, "").strip()
-    return env_key if env_key else load(path_or_base).get(ConfigKey.ASISTENTE_CLAVE_API.value, "").strip()
+    return env_key if env_key else load(custom_base).get(ConfigKey.ASISTENTE_CLAVE_API.value, "").strip()
 
-def assistant_enabled(path_or_base: PathLike | None = None) -> bool:
-    """Evalúa si el asistente es operativo basándose en configuración y clave disponible."""
-    settings = load(path_or_base)
+def assistant_enabled(custom_base: PathLike | None = None) -> bool:
+    """Verifica si el asistente tiene permiso y credenciales para operar."""
+    settings = load(custom_base)
     return bool(settings.get(ConfigKey.ASISTENTE_ACTIVADO.value) and (os.environ.get(API_KEY_ENV_VAR) or settings.get(ConfigKey.ASISTENTE_CLAVE_API.value)))
 
-def describe(path_or_base: PathLike | None = None) -> list[str]:
-    """Retorna una representación legible de los ajustes actuales para el reporte."""
-    current = load(path_or_base)
-    key = assistant_api_key(path_or_base)
+def describe(custom_base: PathLike | None = None) -> list[str]:
+    """Genera una lista de cadenas legible con el estado actual de la configuración para informes."""
+    current = load(custom_base)
+    key = assistant_api_key(custom_base)
     origin = f"variable de entorno {API_KEY_ENV_VAR}" if os.environ.get(API_KEY_ENV_VAR) else ("archivo de configuración" if key else "no configurada")
     return [
-        "Configuración actual", "", f"  Archivo: {settings_path(path_or_base)}", "",
+        "Configuración actual", "", f"  Archivo: {settings_path(custom_base)}", "",
         "  Apariencia", f"    Tema: {current[ConfigKey.TEMA.value]}", f"    Acento: {current[ConfigKey.ACENTO.value]}",
         f"    Barras visuales: {'sí' if current[ConfigKey.MOSTRAR_BARRAS.value] else 'no'}", "",
         "  Comportamiento", f"    Confirmar siempre: {'sí' if current[ConfigKey.CONFIRMAR_SIEMPRE.value] else 'no'}",
