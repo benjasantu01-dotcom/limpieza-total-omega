@@ -359,6 +359,10 @@ def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     """
     Calcula el tamaño total en bytes y la cantidad de archivos accesibles.
     
+    Args:
+        directory: Ruta raíz a evaluar.
+        skip_protected: Filtra rutas protegidas.
+
     Returns:
         Tupla (total_bytes, contador_archivos).
     """

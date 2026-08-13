@@ -365,7 +365,7 @@ def handle_security(ctx: SystemContext, user_query: str) -> Answer:
 def handle_score(ctx: SystemContext, user_query: str) -> Answer:
     """Responde preguntas sobre el puntaje de salud del sistema."""
     partes = [f"Tu puntaje es {ctx.score if ctx.score is not None else 'N/A'}/100{f' (nota {ctx.grade})' if ctx.grade else ''}."]
-    problemas = [p for p in _gen_problems(ctx)]
+    problemas = list(_gen_problems(ctx))
     
     if problemas:
         partes.append("Lo que más te está restando: " + ", ".join(problemas) + ".")
@@ -420,7 +420,7 @@ def local_answer(question: str, context: SystemContext) -> Answer:
         if token in _KEYWORD_MAP:
             return _HANDLERS[_KEYWORD_MAP[token]](context, clean_text)
 
-    problemas = [p for p in _gen_problems(context)]
+    problemas = list(_gen_problems(context))
     puntaje_str = str(context.score) if context.score is not None else "N/A"
     if problemas:
         cuerpo = (f"Con un puntaje de {puntaje_str}/100, por orden de prioridad: "
@@ -435,24 +435,23 @@ def _gen_problems(ctx: SystemContext) -> Generator[str, None, None]:
     Se limita a un máximo de 3 elementos para mantener la respuesta concisa.
     """
     if ctx is None: return
+    
+    prioridades = [
+        (ctx.disk_free_percent < 10.0, f"queda solo {ctx.disk_free_percent:.0f}% de disco libre"),
+        (ctx.suspicious_warnings > 0, f"{ctx.suspicious_warnings} archivo(s) sospechosos"),
+        (ctx.memory_available_percent < 15.0, f"queda {ctx.memory_available_percent:.0f}% de RAM"),
+        (ctx.junk_mb > 1000.0, f"{ctx.junk_mb:.0f} MB de archivos basura"),
+        (ctx.duplicate_mb > 500.0, f"{ctx.duplicate_mb:.0f} MB en duplicados"),
+        (ctx.startup_count > 15, f"{ctx.startup_count} programas de inicio")
+    ]
+    
     count = 0
-    if ctx.disk_free_percent < 10.0:
-        yield f"queda solo {ctx.disk_free_percent:.0f}% de disco libre"
-        count += 1
-    if count < 3 and ctx.suspicious_warnings > 0:
-        yield f"{ctx.suspicious_warnings} archivo(s) sospechosos"
-        count += 1
-    if count < 3 and ctx.memory_available_percent < 15.0:
-        yield f"queda {ctx.memory_available_percent:.0f}% de RAM"
-        count += 1
-    if count < 3 and ctx.junk_mb > 1000.0:
-        yield f"{ctx.junk_mb:.0f} MB de archivos basura"
-        count += 1
-    if count < 3 and ctx.duplicate_mb > 500.0:
-        yield f"{ctx.duplicate_mb:.0f} MB en duplicados"
-        count += 1
-    if count < 3 and ctx.startup_count > 15:
-        yield f"{ctx.startup_count} programas de inicio"
+    for condition, message in prioridades:
+        if condition:
+            yield message
+            count += 1
+        if count >= 3:
+            break
 
 def available(base: Union[str, Path, None] = None) -> bool:
     """Verifica si la configuración del sistema permite el uso del asistente en línea."""

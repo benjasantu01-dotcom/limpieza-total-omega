@@ -209,14 +209,14 @@ def score_color(score: Union[float, int, None]) -> HexColor:
         valor: float = float(score)
         if not (0.0 <= valor <= 100.0):
             return PALETTE["text_muted"]
+        
+        if valor >= 90: return PALETTE["success"]
+        if valor >= 80: return PALETTE["info"]
+        if valor >= 65: return PALETTE["warning"]
+        if valor >= 50: return "#ff7b39"
+        return PALETTE["danger"]
     except (TypeError, ValueError):
         return PALETTE["text_muted"]
-    
-    if valor >= 90: return PALETTE["success"]
-    if valor >= 80: return PALETTE["info"]
-    if valor >= 65: return PALETTE["warning"]
-    if valor >= 50: return "#ff7b39"
-    return PALETTE["danger"]
 
 
 def bar(percent: Union[float, int, None], width: int = 24,
@@ -225,10 +225,10 @@ def bar(percent: Union[float, int, None], width: int = 24,
     try:
         valor: float = max(0.0, min(100.0, float(percent) if percent is not None else 0.0))
         ancho: int = max(1, int(width))
+        llenos: int = int(round(valor / 100 * ancho))
+        return filled * llenos + empty * (ancho - llenos)
     except (TypeError, ValueError):
         return empty * max(1, int(width))
-    llenos: int = int(round(valor / 100 * ancho))
-    return filled * llenos + empty * (ancho - llenos)
 
 
 @lru_cache(maxsize=128)
@@ -248,31 +248,34 @@ def _hex_to_rgb(value: HexColor) -> RGBTuple:
 @lru_cache(maxsize=64)
 def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
     """Realiza una interpolación lineal (lerp) entre dos colores hex."""
-    ratio = max(0.0, min(1.0, float(ratio)))
+    ratio_clamped = max(0.0, min(1.0, float(ratio)))
     r1, g1, b1 = _hex_to_rgb(start)
     r2, g2, b2 = _hex_to_rgb(end)
     return "#{:02x}{:02x}{:02x}".format(
-        int(r1 + (r2 - r1) * ratio),
-        int(g1 + (g2 - g1) * ratio),
-        int(b1 + (b2 - b1) * ratio),
+        int(r1 + (r2 - r1) * ratio_clamped),
+        int(g1 + (g2 - g1) * ratio_clamped),
+        int(b1 + (b2 - b1) * ratio_clamped),
     )
 
 
 @lru_cache(maxsize=32)
 def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> Tuple[HexColor, ...]:
     """Calcula una secuencia de colores interpolados a lo largo de varios puntos de control."""
-    num_steps = max(1, int(steps))
-    if not stops: return (PALETTE["accent"],) * num_steps
-    if len(stops) < 2: return (stops[0],) * num_steps
-    
-    res = []
-    tramos = len(stops) - 1
-    for i in range(num_steps):
-        pos = (i / (num_steps - 1)) * tramos if num_steps > 1 else 0
-        idx = int(pos)
-        if idx >= tramos: res.append(stops[-1])
-        else: res.append(blend(stops[idx], stops[idx + 1], pos - idx))
-    return tuple(res)
+    try:
+        num_steps = max(1, int(steps))
+        if not stops: return (PALETTE["accent"],) * num_steps
+        if len(stops) < 2: return (stops[0],) * num_steps
+        
+        res = []
+        tramos = len(stops) - 1
+        for i in range(num_steps):
+            pos = (i / (num_steps - 1)) * tramos if num_steps > 1 else 0
+            idx = int(pos)
+            if idx >= tramos: res.append(stops[-1])
+            else: res.append(blend(stops[idx], stops[idx + 1], pos - idx))
+        return tuple(res)
+    except (ValueError, TypeError, ZeroDivisionError):
+        return (PALETTE["accent"],) * max(1, int(steps))
 
 
 @lru_cache(maxsize=8)
@@ -421,13 +424,14 @@ def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
         valor = max(0.0, min(100.0, float(percent)))
         diametro = max(20, int(size))
         grosor = max(2, min(int(thickness), diametro // 2 - 1))
-    except (TypeError, ValueError, ZeroDivisionError): return
-    
-    color_fondo = track or PALETTE["surface_alt"]
-    color_avance = fill or score_color(valor)
-    borde = grosor / 2
-    caja = (canvas_x + borde, canvas_y + borde, canvas_x + diametro - borde, canvas_y + diametro - borde)
-    canvas.create_arc(*caja, start=0, extent=359.9, style="arc", outline=color_fondo, width=grosor)
-    if valor > 0:
-        canvas.create_arc(*caja, start=90, extent=-(valor / 100 * 359.9),
-                          style="arc", outline=color_avance, width=grosor)
+        
+        color_fondo = track or PALETTE["surface_alt"]
+        color_avance = fill or score_color(valor)
+        borde = grosor / 2
+        caja = (canvas_x + borde, canvas_y + borde, canvas_x + diametro - borde, canvas_y + diametro - borde)
+        canvas.create_arc(*caja, start=0, extent=359.9, style="arc", outline=color_fondo, width=grosor)
+        if valor > 0:
+            canvas.create_arc(*caja, start=90, extent=-(valor / 100 * 359.9),
+                              style="arc", outline=color_avance, width=grosor)
+    except (TypeError, ValueError, ZeroDivisionError): 
+        return
