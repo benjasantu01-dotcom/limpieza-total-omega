@@ -1231,13 +1231,13 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def on_restore_quarantine(self) -> None:
         """Restaura un ítem de la cuarentena basado en su identificador único."""
+        if not hasattr(self, 'quarantine_id'): return
         raw_id = self.quarantine_id.get().strip()
         if not raw_id:
             messagebox.showinfo("Falta el ID", "Pegá el ID del archivo que querés restaurar.")
             return
 
         def task() -> None:
-            # Verificación de existencia en tiempo de ejecución
             if not quarantine.item_exists(raw_id):
                 self.log(f"Error: El ID '{raw_id}' no existe en la cuarentena.", "Cuarentena")
                 return
@@ -1318,6 +1318,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def on_trim_process(self) -> None:
         """Libera la memoria de trabajo (working set) del proceso especificado."""
+        if not hasattr(self, 'pid_entry'): return
         raw = self.pid_entry.get().strip()
         if not raw.isdigit():
             messagebox.showwarning("Error", "Ingresá un PID numérico válido.")
@@ -1511,14 +1512,14 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def on_ask_assistant(self, question: Optional[str] = None) -> None:
         """Enruta la consulta del usuario al motor del asistente IA."""
-        texto = (question or self.question_entry.get()).strip()
+        texto = (question or (self.question_entry.get() if hasattr(self, 'question_entry') else "")).strip()
         texto = "".join(c for c in texto if c.isprintable())[:500]
         
         if not texto:
             self.log("Escribí una pregunta válida.", "Asistente")
             return
         
-        if question is None:
+        if question is None and hasattr(self, 'question_entry'):
             self.question_entry.delete(0, "end")
 
         def task() -> None:

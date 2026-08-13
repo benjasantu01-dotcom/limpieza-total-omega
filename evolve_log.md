@@ -1293,3 +1293,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-08-13T05:31:37` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: manejo de errores y validación de entradas).
 - `2026-08-13T05:31:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-13T05:31:37` Corrida terminada. Total usado hoy: 132.
+- `2026-08-13T05:37:35` Arrancando corrida. Quedan hoy ~168 peticiones objetivo.
+- `2026-08-13T05:38:36` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Se mejora la robustez de `on_restore_quarantine` y `on_trim_process` implementando validaciones previas de estado mediante `hasattr` y comprobaciones de existencia de procesos/archivos antes de operar, evitando excepciones no controladas durante la ejecución de tareas asíncronas.
+- `2026-08-13T05:39:00` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-13T05:39:21` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-13T05:39:36` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `quarantine_file` encapsulando la lógica de escritura y validación en un bloque `try...except` más preciso, y añadiendo una validación explícita para evitar que `source_path` y `destination` sean idénticos (previendo problemas de resolución de rutas en sistemas de archivos con enlaces o minúsculas/mayúsculas), lo cual evita errores de copia en falso positivo.
+- `2026-08-13T05:39:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-13T05:39:36` Corrida terminada. Total usado hoy: 136.

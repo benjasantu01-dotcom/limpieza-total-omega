@@ -307,7 +307,9 @@ def quarantine_file(
     dest_dir = quarantine_dir(base)
     if not dest_dir.exists():
         raise RuntimeError("Directorio de cuarentena inaccesible o no creado.")
-    if dest_dir == source_path.parent:
+    
+    # Prevenir que el origen sea el mismo destino resuelto
+    if source_path.parent.resolve() == dest_dir.resolve():
         raise UnsafePathError("Operación denegada: el archivo ya está en el destino.")
         
     _validate_isolation_request(source_path, dest_dir)
@@ -341,6 +343,7 @@ def quarantine_file(
         raise RuntimeError(f"Error crítico durante el aislamiento: {e}")
     finally:
         if 'temp_dest' in locals() and temp_dest.exists(): _safe_unlink(temp_dest)
+    
     try:
         item = QuarantineItem(
             item_id=item_id,
@@ -356,6 +359,7 @@ def quarantine_file(
         save_manifest(items, base)
         return item
     except Exception as e:
+        # Revertir movimiento si la actualización del manifiesto falla
         if destination.exists():
             try: shutil.move(str(destination), str(source_path))
             except Exception: pass
