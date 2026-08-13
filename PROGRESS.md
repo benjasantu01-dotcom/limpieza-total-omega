@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **209** (41.5% de aceptación)
+- Mejoras aceptadas: **211** (41.9% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 32
+- Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 238
+- Sin respuesta de la IA (error o límite): 237
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-12 | 110 | 5 | 18 | 10 | 113 |
-| 2026-08-13 | 99 | 6 | 14 | 4 | 125 |
+| 2026-08-12 | 109 | 5 | 17 | 10 | 111 |
+| 2026-08-13 | 102 | 6 | 14 | 4 | 126 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **52**
+- legibilidad y documentación: **55**
 - manejo de errores y validación de entradas: **46**
 - seguridad defensiva: **42**
 - robustez ante casos límite: **41**
-- rendimiento: **28**
+- rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **22**
 - `branding.py`: **20**
-- `quarantine.py`: **19**
+- `diskreport.py`: **20**
 - `assistant.py`: **19**
-- `diskreport.py`: **19**
+- `quarantine.py`: **18**
 - `healthscore.py`: **17**
 - `memory.py`: **15**
+- `browser.py`: **14**
 - `organizer.py`: **14**
-- `browser.py`: **13**
+- `duplicates.py`: **14**
 - `scanner.py`: **13**
-- `duplicates.py`: **13**
 - `main.py`: **11**
 - `safety.py`: **8**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-13T10:34:55` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica mediante docstrings explicativos y añadí type hints explícitos para clarificar la lógica de las funciones de alto nivel, facilitando la comprensión del pipeline de procesamiento de duplicados sin alterar la funcionalidad.
+- `2026-08-13T10:34:31` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `diskreport.py` mediante type hints explícitos, la corrección de una inconsistencia en el docstring de `walk_files` y la clarificación del propósito del stack de recorrido.
+- `2026-08-13T10:34:03` **browser.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos y type hints consistentes en las funciones internas, además de aclarar la lógica de las constantes y los filtros de seguridad mediante la extracción de un docstring explicativo en la constante `BROWSER_CACHE_PATHS`.
 - `2026-08-13T10:25:04` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación técnica agregando descripciones de parámetros y retornos (estilo Google/NumPy) en funciones clave que carecían de detalle, facilitando la comprensión del flujo de datos visuales sin alterar la lógica.
 - `2026-08-13T10:24:46` **assistant.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados y Type Hints detallados, además de refactorizar la lógica de `_gen_problems` para separar la definición de reglas de su ejecución, mejorando la legibilidad y mantenibilidad del flujo de diagnóstico.
 - `2026-08-13T10:23:47` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` y `validate()` capturando explícitamente posibles errores de tipado o corrupción en las claves del diccionario de entrada, evitando que un JSON malformado (con claves inesperadas o tipos incorrectos) propague errores o bloquee el guardado.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-13T08:22:08` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save()` añadiendo una validación explícita para asegurar que el directorio padre de la configuración sea tratable, evitando escrituras en ubicaciones inesperadas o protegidas que podrían surgir si `SETTINGS_DIR` fuera alterado por errores de configuración.
 - `2026-08-13T08:21:55` **scanner.py** (seguridad defensiva): Se ha robustecido el escaneo defensivo en `scanner.py` añadiendo la detección y validación de puntos de reanálisis (reparse points) mediante la comprobación explícita de `st_file_attributes` y bloqueando el seguimiento de cualquier enlace simbólico, previniendo así posibles bucles infinitos o escapes de entorno fuera del `base_root` controlado.
 - `2026-08-13T08:12:28` **organizer.py** (seguridad defensiva): Se ha mejorado `_is_safe_to_move` añadiendo una validación explícita para asegurar que el archivo de origen no resida dentro del directorio de destino, previniendo así posibles bucles de lógica o movimientos recursivos peligrosos durante la fase de staging.
-- `2026-08-13T08:12:04` **memory.py** (seguridad defensiva): Se añadió una validación explícita mediante `is_protected_path` sobre la ruta del ejecutable del proceso antes de realizar cualquier manipulación, garantizando que el módulo cumpla estrictamente con la seguridad defensiva requerida al interactuar con procesos del sistema.
-- `2026-08-13T08:11:38` **main.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_ask_folder` eliminando caracteres potencialmente peligrosos de la ruta (como secuencias RTL) antes de su validación y procesamiento, evitando posibles inyecciones de rutas o confusiones en el sistema de archivos.
-- `2026-08-13T08:02:08` **healthscore.py** (seguridad defensiva): Reforcé la integridad del motor de cálculo implementando una validación estricta de las entradas `SystemMetrics` y los ratios derivados, asegurando que cualquier valor inesperado (`NaN` o `Inf`) sea neutralizado antes de impactar en el puntaje final.

@@ -36,8 +36,9 @@ __all__ = [
     "SAFETY_NOTE",
 ]
 
-# Rutas de caché relativas a LOCALAPPDATA (Windows). Solo datos
-# regenerables: si se borran, el navegador los vuelve a crear.
+# Mapa de navegadores soportados a sus rutas relativas dentro de LOCALAPPDATA.
+# Estas rutas fueron validadas para contener solo datos regenerables. 
+# Si el navegador no encuentra estos archivos, los recrea automáticamente al iniciar.
 BROWSER_CACHE_PATHS: Dict[str, str] = {
     "Google Chrome": r"Google\Chrome\User Data\Default\Cache",
     "Microsoft Edge": r"Microsoft\Edge\User Data\Default\Cache",
@@ -49,8 +50,8 @@ BROWSER_CACHE_PATHS: Dict[str, str] = {
     "Chrome (GPU)": r"Microsoft\Edge\User Data\Default\GPUCache",
 }
 
-# Nombres que este módulo nunca reporta ni toca, aunque estén dentro del
-# perfil: son datos del usuario, no caché.
+# Conjunto de nombres de archivo/directorio que representan datos persistentes
+# del usuario. Cualquier ruta que contenga estos nombres debe ser ignorada.
 NEVER_TOUCH: frozenset[str] = frozenset({
     "login data", "cookies", "web data", "bookmarks", "history",
     "preferences", "local state", "extensions", "profile",

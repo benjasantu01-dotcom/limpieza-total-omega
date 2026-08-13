@@ -196,6 +196,13 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Recorre el sistema de archivos de forma iterativa y segura.
+
+    Args:
+        directory: Directorio raíz para comenzar el recorrido.
+        skip_protected: Si es True, omite rutas bloqueadas por seguridad.
+
+    Yields:
+        Tuplas conteniendo el Path del archivo y su tamaño en bytes.
     """
     if not directory:
         return
