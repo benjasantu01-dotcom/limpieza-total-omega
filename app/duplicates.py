@@ -153,7 +153,8 @@ def _collect_candidates(
     skip_protected: bool
 ) -> Dict[int, List[Path]]:
     """
-    Escanea recursivamente directorios buscando archivos candidatos a duplicados.
+    Recorre recursivamente directorios para obtener archivos candidatos.
+    Evita ciclos mediante control de inodos y descarta archivos protegidos.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: Dict[Tuple[int, int], bool] = {}
@@ -170,6 +171,7 @@ def _collect_candidates(
                     try:
                         entry_stat = entry.stat(follow_symlinks=False)
                         
+                        # Saltar archivos de sistema (atributo 0x400)
                         if getattr(entry_stat, 'st_file_attributes', 0) & 0x400:
                             continue
                         
@@ -210,7 +212,8 @@ def _refine_by_hash(
     hash_func: Callable[[Path], Optional[str]]
 ) -> Dict[str, List[Path]]:
     """
-    Aplica la estrategia de partición de hash sobre un conjunto dado.
+    Aplica una función de hash a una lista de rutas y agrupa los colisionadores.
+    Utilizado para reducir candidatos mediante hash parcial o total.
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     if paths is None: return groups_by_digest
@@ -257,6 +260,7 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     """
     Heurística para seleccionar el archivo 'original' (a conservar).
+    Se prioriza fecha de modificación más antigua y longitud de ruta corta.
     """
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None

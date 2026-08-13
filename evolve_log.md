@@ -925,3 +925,11 @@ FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - Asse
 - `2026-08-13T01:34:09` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Mejora de la legibilidad y mantenimiento mediante la adición de Type Hints detallados, normalización de docstrings y la extracción de la lógica de "conversión de unidad" para asegurar consistencia en todo el módulo.
 - `2026-08-13T01:34:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-13T01:34:09` Corrida terminada. Total usado hoy: 40.
+- `2026-08-13T01:42:34` Arrancando corrida. Quedan hoy ~260 peticiones objetivo.
+- `2026-08-13T01:43:00` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo `duplicates.py` mediante docstrings detallados en las funciones internas (`_collect_candidates`, `_refine_by_hash`) y añadiendo type hints faltantes para asegurar la integridad del contrato de datos.
+- `2026-08-13T01:43:24` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints en las funciones de puntuación y una estructura de datos más explícita para las reglas de recomendación, facilitando la comprensión del flujo de normalización de datos.
+- `2026-08-13T01:44:24` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-13T01:45:24` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._build_health_area_bars, LimpiezaTotalOmegaApp._build_health_metrics_row
+- `2026-08-13T01:45:34` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante docstrings que explican el propósito de las funciones y los tipos de retorno, además de refactorizar la lógica de diagnóstico para separar la construcción del reporte de la lógica de evaluación, mejorando así la legibilidad y mantenibilidad del código.
+- `2026-08-13T01:45:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-13T01:45:34` Corrida terminada. Total usado hoy: 44.

@@ -14,11 +14,16 @@ vive en los otros módulos; acá solo se puntúa.
 
 from __future__ import annotations
 from dataclasses import dataclass, field
-from typing import Dict, List, Any, Final, Tuple, TypeAlias
+from typing import Dict, List, Any, Final, Tuple, TypeAlias, NamedTuple
 import math
 
 # Tipos para mejorar la claridad en el flujo de datos
 ScoreMap: TypeAlias = Dict[str, float]
+
+class RecommendationRule(NamedTuple):
+    area: str
+    threshold: float
+    message_format: str
 
 __all__ = [
     "SystemMetrics",
@@ -65,13 +70,13 @@ _WEIGHT_FACTORS: Final[Dict[str, float]] = {
 _WEIGHT_ITEMS: Final[List[Tuple[str, float]]] = [(k, _WEIGHT_FACTORS[k]) for k in WEIGHTS]
 
 # Pre-computo de metadatos para optimizar recomendaciones
-_RECOMMENDATION_RULES: Final[Tuple[Tuple[str, float, str], ...]] = (
-    ("seguridad", WARN_THRESHOLD_HIGH, "Revisá los {} hallazgo(s) de seguridad."),
-    ("disco", WARN_THRESHOLD_LOW, "Queda {:.1f}% de disco libre."),
-    ("memoria", WARN_THRESHOLD_LOW, "Memoria disponible baja: cerrá procesos innecesarios."),
-    ("basura", WARN_THRESHOLD_MED, "Hay {:.0f} MB de archivos temporales."),
-    ("duplicados", WARN_THRESHOLD_MED, "Podrías recuperar {:.0f} MB eliminando duplicados."),
-    ("arranque", WARN_THRESHOLD_LOW, "{} programas arrancan con Windows."),
+_RECOMMENDATION_RULES: Final[Tuple[RecommendationRule, ...]] = (
+    RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, "Revisá los {} hallazgo(s) de seguridad."),
+    RecommendationRule("disco", WARN_THRESHOLD_LOW, "Queda {:.1f}% de disco libre."),
+    RecommendationRule("memoria", WARN_THRESHOLD_LOW, "Memoria disponible baja: cerrá procesos innecesarios."),
+    RecommendationRule("basura", WARN_THRESHOLD_MED, "Hay {:.0f} MB de archivos temporales."),
+    RecommendationRule("duplicados", WARN_THRESHOLD_MED, "Podrías recuperar {:.0f} MB eliminando duplicados."),
+    RecommendationRule("arranque", WARN_THRESHOLD_LOW, "{} programas arrancan con Windows."),
 )
 
 def _validate_weights() -> bool:
@@ -198,10 +203,10 @@ def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[
         "arranque": metrics.startup_count
     }
 
-    for area, threshold, fmt in _RECOMMENDATION_RULES:
-        if area in ratios and area in vals:
-            if ratios[area] < threshold:
-                recommendations.append(fmt.format(vals[area]))
+    for rule in _RECOMMENDATION_RULES:
+        if rule.area in ratios and rule.area in vals:
+            if ratios[rule.area] < rule.threshold:
+                recommendations.append(rule.message_format.format(vals[rule.area]))
     
     if metrics.quarantined_count > 0:
         recommendations.append(f"Tenés {metrics.quarantined_count} archivo(s) en cuarentena.")
