@@ -1525,3 +1525,50 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-08-13T08:22:08` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `save()` añadiendo una validación explícita para asegurar que el directorio padre de la configuración sea tratable, evitando escrituras en ubicaciones inesperadas o protegidas que podrían surgir si `SETTINGS_DIR` fuera alterado por errores de configuración.
 - `2026-08-13T08:22:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-13T08:22:08` Corrida terminada. Total usado hoy: 200.
+- `2026-08-13T08:30:58` Arrancando corrida. Quedan hoy ~100 peticiones objetivo.
+- `2026-08-13T08:31:26` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+........................................F............................... [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+1 failed, 298 passed in 1.16s
+
+```
+- `2026-08-13T08:31:26` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la seguridad defensiva en `_extract_quoted_path` y `_resolve_and_cache_path` mediante la validación proactiva de rutas relativas peligrosas, garantizando que solo se procesen rutas que realmente apunten a archivos y bloqueando el seguimiento de enlaces simbólicos mediante `is_file()` después de la resolución, mitigando riesgos de paths malintencionados.
+- `2026-08-13T08:31:26` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-08-13T08:31:26` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-08-13T08:31:46` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-08-13T08:31:46` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-08-13T08:32:16` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-08-13T08:32:16` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-08-13T08:32:31` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-08-13T08:32:31` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-08-13T08:32:51` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-08-13T08:32:51` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-08-13T08:33:21` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-08-13T08:33:21` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-08-13T08:33:37` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-08-13T08:33:37` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-08-13T08:33:57` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-08-13T08:33:57` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-08-13T08:34:27` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-08-13T08:34:27` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-08-13T08:34:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-13T08:34:27` Corrida terminada. Total usado hoy: 204.
