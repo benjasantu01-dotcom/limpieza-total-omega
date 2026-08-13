@@ -244,7 +244,6 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     """
     ctx = SystemContext()
     
-    # Validar que las fuentes sean iterables o mapeables si no son None
     is_metrics_valid = isinstance(metrics, (dict, object))
     is_health_valid = isinstance(health, (dict, object))
     
@@ -319,10 +318,6 @@ def explain_area(area: Any) -> str:
     if isinstance(area, str):
         return explicaciones.get(area.strip().lower(), "No tengo una explicación para esa área.")
     return "No tengo una explicación para esa área."
-
-def _format_critical_warning(condition: bool, text: str) -> str:
-    """Helper para formatear advertencias de sistema condicionales."""
-    return text if condition else ""
 
 def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
     """Responde preguntas sobre el estado actual de la memoria RAM."""
@@ -438,15 +433,6 @@ def local_answer(question: str, context: SystemContext) -> Answer:
         cuerpo = f"Tu sistema está en buen estado ({puntaje_str}/100). No hay nada urgente."
     return Answer(cuerpo, notice=OFFLINE_NOTICE, suggestions=SUGGESTED_QUESTIONS_LIST[:3])
 
-_PRIORITIES_TEMPLATE: Final[tuple[tuple[str, ...], ...]] = (
-    ("{disk_free_percent:.0f}% de disco libre",),
-    ("{suspicious_warnings} archivo(s) sospechosos",),
-    ("{memory_available_percent:.0f}% de RAM",),
-    ("{junk_mb:.0f} MB de basura",),
-    ("{duplicate_mb:.0f} MB en duplicados",),
-    ("{startup_count} programas de inicio",)
-)
-
 def _gen_problems(ctx: SystemContext) -> Generator[str, None, None]:
     """
     Genera un listado de problemas detectados priorizados por criticidad.
@@ -454,27 +440,19 @@ def _gen_problems(ctx: SystemContext) -> Generator[str, None, None]:
     """
     if not ctx: return
     
-    # Mapeo de condiciones lógicas a descripciones de usuario
-    evaluators: list[tuple[bool, str]] = [
-        (ctx.disk_free_percent < 10.0, _PRIORITIES_TEMPLATE[0][0]),
-        (ctx.suspicious_warnings > 0, _PRIORITIES_TEMPLATE[1][0]),
-        (ctx.memory_available_percent < 15.0, _PRIORITIES_TEMPLATE[2][0]),
-        (ctx.junk_mb > 1000.0, _PRIORITIES_TEMPLATE[3][0]),
-        (ctx.duplicate_mb > 500.0, _PRIORITIES_TEMPLATE[4][0]),
-        (ctx.startup_count > 15, _PRIORITIES_TEMPLATE[5][0])
+    evaluators: list[tuple[bool, str, dict[str, Any]]] = [
+        (ctx.disk_free_percent < 10.0, "{percent:.0f}% de disco libre", {"percent": ctx.disk_free_percent}),
+        (ctx.suspicious_warnings > 0, "{count} archivo(s) sospechosos", {"count": ctx.suspicious_warnings}),
+        (ctx.memory_available_percent < 15.0, "{percent:.0f}% de RAM", {"percent": ctx.memory_available_percent}),
+        (ctx.junk_mb > 1000.0, "{mb:.0f} MB de basura", {"mb": ctx.junk_mb}),
+        (ctx.duplicate_mb > 500.0, "{mb:.0f} MB en duplicados", {"mb": ctx.duplicate_mb}),
+        (ctx.startup_count > 15, "{count} programas de inicio", {"count": ctx.startup_count})
     ]
     
     found = 0
-    for condition, msg in evaluators:
+    for condition, msg, args in evaluators:
         if condition:
-            yield msg.format(
-                disk_free_percent=ctx.disk_free_percent,
-                suspicious_warnings=ctx.suspicious_warnings,
-                memory_available_percent=ctx.memory_available_percent,
-                junk_mb=ctx.junk_mb,
-                duplicate_mb=ctx.duplicate_mb,
-                startup_count=ctx.startup_count
-            )
+            yield msg.format(**args)
             found += 1
         if found >= 3:
             break
@@ -525,7 +503,6 @@ def _call_gemini(
         text = "".join(str(p.get("text", "")) for p in parts if isinstance(p, dict))
         final_text = text.strip()[:_MAX_TEXT_LENGTH]
         
-        # Validar la respuesta recibida antes de retornarla para evitar inyecciones
         return final_text if _ensure_safe_text(final_text) else None
     except (urllib.error.URLError, json.JSONDecodeError, KeyError, TypeError, ValueError):
         return None

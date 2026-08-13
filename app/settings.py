@@ -222,10 +222,14 @@ def validate(values: Any) -> AppSettings:
     for key, validator in _VALIDATOR_MAP.items():
         if key in values:
             try:
-                enum_key = ConfigKey(key)
+                # Verificamos si la clave existe en el Enum antes de validar
+                try:
+                    enum_key = ConfigKey(key)
+                except ValueError:
+                    continue
                 val = validator(enum_key, values.get(key))
                 if val is not None: config[key] = val
-            except (Exception, ValueError):
+            except (Exception):
                 continue
     return config
 
@@ -265,6 +269,7 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
 
     cleaned_settings = validate(values)
     
+    # Validación de seguridad del estado lógico del asistente
     if cleaned_settings.get(ConfigKey.ASISTENTE_ACTIVADO.value) and not (cleaned_settings.get(ConfigKey.ASISTENTE_CLAVE_API.value) or os.environ.get(API_KEY_ENV_VAR)):
         cleaned_settings[ConfigKey.ASISTENTE_ACTIVADO.value] = False
         
@@ -301,9 +306,10 @@ def update(changes: dict[str, Any], path_or_base: PathLike | None = None) -> App
     needs_save = False
     for k, v in changes.items():
         if k in _VALIDATOR_MAP and current.get(k) != v:
-            validator = _VALIDATOR_MAP[k]
             try:
-                val = validator(ConfigKey(k), v)
+                validator = _VALIDATOR_MAP[k]
+                enum_key = ConfigKey(k)
+                val = validator(enum_key, v)
                 if val is not None and val != current.get(k):
                     current[k] = val
                     needs_save = True

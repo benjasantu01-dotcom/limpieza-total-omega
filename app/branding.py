@@ -223,11 +223,15 @@ def bar(percent: Union[float, int, None], width: int = 24,
         filled: str = "\u2588", empty: str = "\u2591") -> str:
     """
     Genera una representación visual de progreso en formato texto.
-    :param percent: Valor numérico [0-100] de progreso.
-    :param width: Ancho total de caracteres de la barra.
-    :param filled: Caracter para representar la parte completada.
-    :param empty: Caracter para representar la parte pendiente.
-    :return: String con la barra renderizada.
+    
+    Args:
+        percent: Valor numérico [0-100] de progreso.
+        width: Ancho total en caracteres.
+        filled: Caracter para representar la parte completada.
+        empty: Caracter para representar la parte pendiente.
+        
+    Returns:
+        String con la barra renderizada.
     """
     try:
         valor: float = max(0.0, min(100.0, float(percent) if percent is not None else 0.0))
@@ -424,12 +428,14 @@ def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
               fill: Optional[HexColor] = None) -> None:
     """
     Dibuja un medidor circular tipo anillo para representar porcentajes de salud.
-    :param canvas: Objeto Canvas de tkinter.
-    :param percent: Valor porcentual (0-100).
-    :param size: Diámetro del anillo.
-    :param thickness: Grosor del trazo del anillo.
-    :param track: Color opcional para el fondo (track) del anillo.
-    :param fill: Color opcional para el arco de progreso.
+    
+    Args:
+        canvas: Objeto Canvas de tkinter.
+        percent: Valor porcentual (0-100).
+        size: Diámetro del anillo.
+        thickness: Grosor del trazo.
+        track: Color opcional para el fondo.
+        fill: Color opcional para el arco de progreso.
     """
     if not hasattr(canvas, "create_arc"): return
     try:
