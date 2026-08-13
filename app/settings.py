@@ -233,8 +233,11 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     global _cached_settings, _current_path, _last_mtime
     if not isinstance(values, dict): return None
     ruta = settings_path(path_or_base)
-    if is_protected_path(str(ruta)) or not is_safe_to_modify(str(ruta)):
+    
+    # Verificación estricta de seguridad sobre la ruta padre antes de proceder
+    if not is_safe_to_modify(str(ruta.parent)) or is_protected_path(str(ruta)):
         return None
+
     cleaned_settings = validate(values)
     json_data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
     if len(json_data.encode("utf-8")) > MAX_SETTINGS_SIZE:
@@ -252,7 +255,6 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
             f.write(json_data)
             f.flush()
             os.fsync(f.fileno())
-        # Verificación post-escritura: verificar integridad antes de reemplazar
         if temp.stat().st_size == len(json_data.encode("utf-8")):
             os.replace(temp, ruta)
             _cached_settings, _current_path = cleaned_settings, ruta

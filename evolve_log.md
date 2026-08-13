@@ -1070,3 +1070,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-08-13T03:47:18` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-08-13T03:47:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-13T03:47:18` Corrida terminada. Total usado hoy: 92.
+- `2026-08-13T03:55:20` Arrancando corrida. Quedan hoy ~208 peticiones objetivo.
+- `2026-08-13T03:55:46` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-08-13T03:56:07` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-08-13T03:56:35` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `save()` implementando una comprobación explícita de `is_safe_to_modify` sobre el directorio padre antes de realizar cualquier escritura, asegurando que la configuración no pueda ser forzada hacia rutas protegidas mediante inyección de parámetros.
+- `2026-08-13T03:56:44` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: seguridad defensiva).
+- `2026-08-13T03:56:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-13T03:56:44` Corrida terminada. Total usado hoy: 96.
