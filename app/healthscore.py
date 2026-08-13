@@ -215,7 +215,7 @@ def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[
         ratio = ratios.get(rule.area)
         val = vals.get(rule.area)
         
-        # Validar existencia y tipo de los datos antes de evaluar
+        # Validar existencia de datos y tipos antes de evaluar
         if isinstance(ratio, (int, float)) and math.isfinite(ratio) and val is not None:
             if ratio < rule.threshold:
                 try:

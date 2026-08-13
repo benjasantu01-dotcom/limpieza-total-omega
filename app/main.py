@@ -1211,7 +1211,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def on_restore_quarantine(self) -> None:
         """Restaura un archivo aislado mediante su identificador único."""
-        if not hasattr(self, 'quarantine_id'): return
+        if not hasattr(self, 'quarantine_id') or not self.quarantine_id.winfo_exists():
+            return
+        
         raw_id = self.quarantine_id.get().strip()
         if not raw_id:
             messagebox.showinfo("Falta el ID", "Pegá el ID del archivo que querés restaurar.")
@@ -1298,7 +1300,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def on_trim_process(self) -> None:
         """Intenta liberar el Working Set del proceso seleccionado."""
-        if not hasattr(self, 'pid_entry'): return
+        if not hasattr(self, 'pid_entry') or not self.pid_entry.winfo_exists():
+            return
+            
         raw = self.pid_entry.get().strip()
         if not raw.isdigit():
             messagebox.showwarning("Error", "Ingresá un PID numérico válido.")

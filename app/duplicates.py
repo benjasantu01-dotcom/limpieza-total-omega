@@ -126,7 +126,7 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
             if not content:
                 return None
             
-            # Verificación de integridad simple
+            # Verificación de integridad: el archivo no debe haber sido truncado o modificado
             if file_path.stat().st_size != stat_initial.st_size:
                 return None
             return hashlib.sha256(content).hexdigest()
@@ -205,7 +205,6 @@ def _collect_candidates(
         if not directory: continue
         try:
             p = Path(directory).resolve()
-            # Validación defensiva adicional antes de procesar el directorio base
             if p.is_dir() and (not skip_protected or not is_protected_path(p)):
                 _scan(p)
         except (OSError, PermissionError, ValueError, TypeError): continue

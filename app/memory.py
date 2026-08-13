@@ -337,8 +337,9 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
             return False, "El proceso seleccionado ya no está activo."
             
         buf = ctypes.create_unicode_buffer(4096)
+        size = ctypes.c_ulong(4096)
         # Verifica la ruta antes de aplicar cualquier acción de memoria
-        if kernel32.QueryFullProcessImageNameW(proc_handle, 0, buf, ctypes.byref(ctypes.c_ulong(4096))) > 0:
+        if kernel32.QueryFullProcessImageNameW(proc_handle, 0, buf, ctypes.byref(size)) > 0:
             exe_path = os.path.normpath(buf.value)
             if is_protected_path(exe_path):
                 return False, "Operación denegada: ruta de ejecutable protegida."
