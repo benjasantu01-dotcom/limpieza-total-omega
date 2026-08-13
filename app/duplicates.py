@@ -157,8 +157,11 @@ def _collect_candidates(
     skip_protected: bool
 ) -> Dict[int, List[Path]]:
     """
-    Recorre recursivamente directorios para obtener archivos candidatos.
-    Evita ciclos mediante control de inodos y descarta archivos protegidos.
+    Escaneo recursivo del sistema de archivos para agrupar archivos por tamaño.
+    
+    Implementa control de inodos para evitar seguir ciclos en enlaces simbólicos 
+    o puntos de reparse (Junctions), ignorando automáticamente rutas protegidas 
+    según la política de seguridad del proyecto.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: Dict[Tuple[int, int], bool] = {}
@@ -217,8 +220,10 @@ def _refine_by_hash(
     hash_func: Callable[[Path], Optional[str]]
 ) -> Dict[str, List[Path]]:
     """
-    Aplica una función de hash a una lista de rutas y agrupa los colisionadores.
-    Utilizado para reducir candidatos mediante hash parcial o total.
+    Refina un subgrupo de candidatos aplicando una función de hash específica.
+    
+    Agrupa los archivos por el resultado de hash_func, manteniendo solo aquellos
+    que efectivamente colisionan (i.e., son duplicados confirmados por el algoritmo).
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     if paths is None: return groups_by_digest

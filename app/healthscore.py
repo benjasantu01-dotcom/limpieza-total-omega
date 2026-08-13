@@ -48,6 +48,7 @@ _LIMIT_RAM_PERCENT: Final[float] = 35.0
 _LIMIT_DISK_PERCENT: Final[float] = 25.0       
 
 # --- UMBRALES DE ADVERTENCIA (ratios de 0.0 a 1.0) ---
+# Indican qué tan "lejos" del estado óptimo (1.0) activamos recomendaciones.
 WARN_THRESHOLD_HIGH: Final[float] = 0.9
 WARN_THRESHOLD_MED: Final[float] = 0.8
 WARN_THRESHOLD_LOW: Final[float] = 0.6
@@ -147,11 +148,13 @@ def _to_int(value: Any, default: int = 0) -> int:
 
 
 def score_junk(junk_mb: float | int) -> float:
+    """Calcula salud de archivos basura normalizando respecto al límite definido."""
     val = max(0.0, _to_float(junk_mb))
     return 0.0 if _LIMIT_JUNK_MB <= 0.0 else _clamp(1.0 - (val / _LIMIT_JUNK_MB), 0.0, 1.0)
 
 
 def score_security(suspicious_count: int, warnings: int = 0) -> float:
+    """Puntúa seguridad castigando hallazgos sospechosos y advertencias de Defender."""
     count = max(0, _to_int(suspicious_count))
     warns = max(0, _to_int(warnings))
     penalty = (count * 0.05) + (warns * 0.25)
@@ -159,23 +162,27 @@ def score_security(suspicious_count: int, warnings: int = 0) -> float:
 
 
 def score_memory(available_percent: float | int) -> float:
+    """Evalúa presión de memoria basándose en el porcentaje libre disponible."""
     val = _clamp(_to_float(available_percent), 0.0, 100.0)
     if _LIMIT_RAM_PERCENT <= 0.0: return 0.0
     return _clamp(val / _LIMIT_RAM_PERCENT, 0.0, 1.0)
 
 
 def score_disk(free_percent: float | int) -> float:
+    """Calcula salud de disco basándose en el porcentaje de espacio libre restante."""
     val = _clamp(_to_float(free_percent), 0.0, 100.0)
     if _LIMIT_DISK_PERCENT <= 0.0: return 0.0
     return _clamp(val / _LIMIT_DISK_PERCENT, 0.0, 1.0)
 
 
 def score_duplicates(duplicate_mb: float | int) -> float:
+    """Evalúa el volumen de duplicados, normalizando por el límite de tolerancia."""
     val = max(0.0, _to_float(duplicate_mb))
     return 0.0 if _LIMIT_DUPLICATE_MB <= 0.0 else _clamp(1.0 - (val / _LIMIT_DUPLICATE_MB), 0.0, 1.0)
 
 
 def score_startup(startup_count: int) -> float:
+    """Puntúa cantidad de procesos al arranque comparando contra el límite de eficiencia."""
     val = max(0, _to_int(startup_count))
     return 0.0 if _LIMIT_STARTUP_COUNT <= 0 else _clamp(1.0 - (val / _LIMIT_STARTUP_COUNT), 0.0, 1.0)
 
@@ -194,6 +201,7 @@ def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[
         return ["Error: Datos de entrada corruptos, análisis no disponible."]
         
     recommendations: List[str] = []
+    # Mapeo de métricas crudas para formateo de strings en reglas
     vals = {
         "seguridad": metrics.suspicious_count,
         "disco": metrics.disk_free_percent,
@@ -203,6 +211,7 @@ def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[
         "arranque": metrics.startup_count
     }
 
+    # Aplica reglas de umbral para sugerir acciones basadas en los ratios calculados
     for rule in _RECOMMENDATION_RULES:
         if rule.area in ratios and rule.area in vals:
             if ratios[rule.area] < rule.threshold:

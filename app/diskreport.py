@@ -202,7 +202,18 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Recorre un directorio de forma iterativa y segura con límite de profundidad.
+    Recorre el sistema de archivos de forma iterativa y segura.
+
+    Implementa una búsqueda en profundidad (DFS) con control de inodos para evitar 
+    bucles infinitos por enlaces simbólicos. Utiliza `os.scandir` para mejorar el 
+    rendimiento en directorios extensos y garantiza que no se sigan rutas protegidas.
+
+    Args:
+        directory: Directorio raíz donde comenzar el escaneo.
+        skip_protected: Si es True, utiliza `is_protected_path` para ignorar rutas críticas.
+
+    Yields:
+        Tuplas conteniendo el objeto Path y el tamaño en bytes del archivo.
     """
     if not directory:
         return
@@ -234,6 +245,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                         if skip_protected and is_protected_path(Path(entry.path)):
                             continue
 
+                        # Se evitan enlaces simbólicos y junctions de Windows para prevenir ciclos
                         if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
                             continue
 
