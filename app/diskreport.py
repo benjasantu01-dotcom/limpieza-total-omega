@@ -384,7 +384,9 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
         return ["Error: Ruta no proporcionada."]
     
     try:
-        path_obj = Path(directory).expanduser().resolve(strict=False)
+        # Validación robusta de ruta y accesibilidad inicial
+        p_input = Path(directory)
+        path_obj = p_input.expanduser().resolve(strict=False)
         if not path_obj.exists() or not path_obj.is_dir(): 
             return [f"Error: Ruta no encontrada o no es directorio: {path_obj}"]
     except (OSError, TypeError, RuntimeError, ValueError):

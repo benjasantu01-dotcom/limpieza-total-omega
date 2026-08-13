@@ -77,10 +77,6 @@ class DuplicateGroup:
 def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
     Calcula el hash SHA256 completo del archivo mediante lectura por bloques.
-    
-    Precondiciones: El archivo debe ser legible, no estar protegido y no ser un punto de reparse.
-    Postcondiciones: Valida la integridad del archivo tras la lectura comparando 
-    el tamaño final con el inicial. Retorna None en errores de E/S.
     """
     if path is None or chunk_size <= 0: 
         return None
@@ -91,7 +87,6 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
             return None
 
         stat_initial = file_path.stat()
-        # 0x400 (FILE_ATTRIBUTE_REPARSE_POINT) evita seguir junctions o enlaces simbólicos a directorios
         if stat_initial.st_size <= 0 or (getattr(stat_initial, 'st_file_attributes', 0) & 0x400):
             return None
             
@@ -103,12 +98,12 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
                     break
                 digest.update(buffer)
         
-        # Validar consistencia tras lectura final: el tamaño no debió cambiar durante el proceso
+        # Validar consistencia tras lectura
         if not file_path.exists() or file_path.stat().st_size != stat_initial.st_size:
             return None
             
         return digest.hexdigest()
-    except (OSError, PermissionError, ValueError, TypeError, RuntimeError, IOError):
+    except (OSError, PermissionError, ValueError, TypeError, RuntimeError, IOError, AttributeError):
         return None
 
 
@@ -126,8 +121,10 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
             
         with open(file_path, "rb") as f:
             content = f.read(read_bytes)
-            return hashlib.sha256(content).hexdigest() if content else None
-    except (OSError, PermissionError, ValueError, TypeError, RuntimeError, IOError):
+            if not content:
+                return None
+            return hashlib.sha256(content).hexdigest()
+    except (OSError, PermissionError, ValueError, TypeError, RuntimeError, IOError, AttributeError):
         return None
 
 

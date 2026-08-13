@@ -867,3 +867,11 @@ FAILED evolve/tests/test_basic.py::test_delete_reviewed_only_touches_the_review_
 - `2026-08-13T00:55:11` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
 - `2026-08-13T00:55:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-13T00:55:11` Corrida terminada. Total usado hoy: 24.
+- `2026-08-13T01:01:42` Arrancando corrida. Quedan hoy ~276 peticiones objetivo.
+- `2026-08-13T01:02:11` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré el manejo de errores en `summarize` y `walk_files` mediante la validación proactiva de tipos de entrada y la captura explícita de excepciones al interactuar con rutas, asegurando que fallos en la resolución de `Path` no propaguen errores inesperados.
+- `2026-08-13T01:02:35` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `hash_file` y `partial_hash` ante errores inesperados durante el acceso a archivos, asegurando que las excepciones de sistema (como bloqueos de lectura) sean manejadas de forma más consistente antes de intentar procesar el contenido.
+- `2026-08-13T01:02:59` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_generate_recommendations` validando la existencia de claves en `ratios` y asegurando que `_RECOMMENDATION_RULES` no cause `KeyError` ante configuraciones parciales o inconsistentes.
+- `2026-08-13T01:03:59` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-13T01:04:50` ➖ Sin cambios en main.py (enfoque: manejo de errores y validación de entradas). Motivo: Se reforzó la robustez del manejo de errores en `on_trim_process` y `on_restore_quarantine` mediante validaciones de estado más exhaustivas en el hilo asíncrono para evitar excepciones inesperadas al interactuar con el sistema operativo.
+- `2026-08-13T01:04:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-13T01:04:50` Corrida terminada. Total usado hoy: 28.
