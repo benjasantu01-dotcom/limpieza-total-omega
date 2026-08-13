@@ -114,8 +114,11 @@ def _is_file_in_use(path: Path) -> bool:
         fd = os.open(path, os.O_RDWR | os.O_EXCL)
         os.close(fd)
         return False
-    except (PermissionError, BlockingIOError, OSError):
-        return True
+    except OSError as e:
+        # ERROR_SHARING_VIOLATION (32) en Windows indica que el archivo está en uso
+        if hasattr(e, 'winerror') and e.winerror == 32:
+            return True
+        return False
 
 
 def _check_file_integrity(p: Path) -> None:

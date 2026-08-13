@@ -116,7 +116,7 @@ class Scanner:
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Heurística: detecta nombres con múltiples extensiones que ocultan un ejecutable (ej: .pdf.exe)."""
-    target = name or path.name
+    target = name or (path.name if path else "")
     if target and DOUBLE_EXTENSION_RE.search(target):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
     return None
@@ -124,7 +124,7 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, name
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Heurística: señala ejecutables modificados hace menos de 24h en carpetas de alta descarga/temp."""
-    if entry is None:
+    if entry is None or path is None:
         return None
     
     path_lower = str(path).lower()
@@ -141,6 +141,8 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Heurística: detecta binarios que imitan procesos críticos del sistema ubicados fuera de System32."""
+    if path is None:
+        return None
     target = (name or path.name).lower()
     if target in SYSTEM_LOOKALIKES:
         if SYSTEM32_LOWER not in str(path.parent).lower():
@@ -149,6 +151,9 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, name
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, name: Optional[str] = None, suffix: Optional[str] = None) -> ScanResult:
     """Ejecuta el pipeline de heurísticas sobre un archivo dado."""
+    if not path:
+        return []
+
     findings: ScanResult = []
     
     safe_suffix = suffix or (path.suffix.lower() if path.suffix else "")

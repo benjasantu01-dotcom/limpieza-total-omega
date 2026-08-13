@@ -201,8 +201,11 @@ def validate(values: Any) -> AppSettings:
     if not isinstance(values, dict): return config
     for key, validator in _VALIDATOR_MAP.items():
         if key in values:
-            val = validator(key, values.get(key))
-            if val is not None: config[key] = val
+            try:
+                val = validator(key, values.get(key))
+                if val is not None: config[key] = val
+            except Exception:
+                continue
     return config
 
 def load(path_or_base: PathLike | None = None) -> AppSettings:
@@ -234,39 +237,40 @@ def save(values: Any, path_or_base: PathLike | None = None) -> Path | None:
     if not isinstance(values, dict): return None
     ruta = settings_path(path_or_base)
     
-    # Verificación estricta de seguridad sobre la ruta padre antes de proceder
     if not is_safe_to_modify(str(ruta.parent)) or is_protected_path(str(ruta)):
         return None
 
     cleaned_settings = validate(values)
-    json_data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
-    if len(json_data.encode("utf-8")) > MAX_SETTINGS_SIZE:
-        return None
+    
     if cleaned_settings.get("asistente_activado") and not (cleaned_settings.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)):
         cleaned_settings["asistente_activado"] = False
-    if _cached_settings == cleaned_settings and _current_path == ruta: return ruta
-    temp = ruta.with_suffix(".tmp")
+        
     try:
+        json_data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
+        if len(json_data) > MAX_SETTINGS_SIZE: return None
+        
+        if _cached_settings == cleaned_settings and _current_path == ruta: return ruta
+        
+        temp = ruta.with_suffix(f".{os.getpid()}.tmp")
         if not ruta.parent.exists():
             ruta.parent.mkdir(parents=True, exist_ok=True)
-        if not os.access(ruta.parent, os.W_OK):
-            return None
-        with open(temp, "w", encoding="utf-8") as f:
+            
+        with open(temp, "wb") as f:
             f.write(json_data)
             f.flush()
             os.fsync(f.fileno())
-        if temp.stat().st_size == len(json_data.encode("utf-8")):
-            os.replace(temp, ruta)
-            _cached_settings, _current_path = cleaned_settings, ruta
-            _last_mtime = ruta.stat().st_mtime
-            return ruta
-        return None
+            
+        os.replace(temp, ruta)
+        _cached_settings, _current_path = cleaned_settings, ruta
+        _last_mtime = ruta.stat().st_mtime
+        return ruta
+        
     except (OSError, IOError, PermissionError, RuntimeError):
         return None
     finally:
-        try:
-            if temp.exists(): temp.unlink()
-        except OSError: pass
+        if "temp" in locals() and temp.exists():
+            try: temp.unlink()
+            except OSError: pass
 
 def update(changes: dict[str, Any], path_or_base: PathLike | None = None) -> AppSettings:
     """Actualiza una o varias claves y dispara un guardado si hubo cambios."""
