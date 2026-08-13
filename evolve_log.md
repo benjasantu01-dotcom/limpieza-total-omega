@@ -1015,3 +1015,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-08-13T02:35:00` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el método `process_entry` moviendo los chequeos de seguridad más económicos (como `is_protected_path` y el filtro de rutas UNC) al inicio, y reduciendo llamadas redundantes al sistema de archivos al cachear atributos críticos en las comprobaciones de heurística.
 - `2026-08-13T02:35:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-13T02:35:00` Corrida terminada. Total usado hoy: 64.
+- `2026-08-13T02:43:50` Arrancando corrida. Quedan hoy ~236 peticiones objetivo.
+- `2026-08-13T02:44:18` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de `load()` al evitar el acceso innecesario a disco cuando el archivo de configuración no existe o no ha cambiado, y reduje la carga de trabajo en la validación al mover el diccionario de fábrica a un método que evita copias redundantes.
+- `2026-08-13T02:44:42` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-08-13T02:45:15` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se introdujo una validación defensiva en la función `_call_gemini` para asegurar que el contenido de la respuesta recibida del servidor sea sanitizado antes de su procesamiento, previniendo inyecciones de control o caracteres maliciosos incluso si el origen es externo.
+- `2026-08-13T02:45:30` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-08-13T02:45:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-13T02:45:30` Corrida terminada. Total usado hoy: 68.

@@ -197,8 +197,8 @@ def settings_path(path_or_base: PathLike | None = None) -> Path:
 
 def validate(values: Any) -> AppSettings:
     """Aplica el mapa de validadores a un diccionario de entrada; ignora errores silenciosamente."""
-    if not isinstance(values, dict): return DEFAULTS.copy()
     config = DEFAULTS.copy()
+    if not isinstance(values, dict): return config
     for key, validator in _VALIDATOR_MAP.items():
         if key in values:
             val = validator(key, values.get(key))
@@ -209,11 +209,14 @@ def load(path_or_base: PathLike | None = None) -> AppSettings:
     """Carga configuraciones desde disco con cacheo de estado basado en mtime."""
     global _cached_settings, _current_path, _last_mtime
     ruta = settings_path(path_or_base)
+    
+    if not ruta.exists(): return DEFAULTS.copy()
+    
     try:
-        if not ruta.exists(): return DEFAULTS.copy()
         stats = ruta.stat()
         if _cached_settings is not None and _current_path == ruta and _last_mtime == stats.st_mtime:
             return _cached_settings.copy()
+        
         if 0 < stats.st_size <= MAX_SETTINGS_SIZE:
             with open(ruta, "r", encoding="utf-8") as f:
                 data = json.load(f)
