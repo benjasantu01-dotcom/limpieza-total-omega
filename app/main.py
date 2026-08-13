@@ -901,13 +901,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         if not folder or not isinstance(folder, str):
             return None
         
-        # Limpieza básica de la ruta y normalización estricta
-        # Filtramos caracteres de control y bidireccionales maliciosos
-        norm_folder = "".join(c for c in os.path.normpath(folder) if ord(c) >= 32 and c != '\u202e')
+        # Limpieza de caracteres de control, bidireccionales y normalización
+        clean_path = "".join(c for c in os.path.normpath(folder) if ord(c) >= 32 and c not in ('\u202e', '\u202d', '\u202c'))
         
         try:
-            # Validar existencia absoluta y permisos de lectura
-            p = Path(norm_folder).resolve(strict=True)
+            p = Path(clean_path).resolve(strict=True)
             if not p.is_dir() or not os.access(p, os.R_OK):
                 messagebox.showwarning("Ruta inaccesible", "La ruta seleccionada no existe o no se puede leer.")
                 return None

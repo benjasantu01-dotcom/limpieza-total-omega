@@ -157,13 +157,16 @@ def _is_safe_to_move(jf: JunkFile, dest: Path) -> bool:
     """
     try:
         current_abs = jf.path.resolve()
+        dest_abs = dest.resolve()
+        
         if not current_abs.exists() or not current_abs.is_file():
             return False
-        if dest == current_abs or dest in current_abs.parents:
+        # Evitar que el archivo esté en la carpeta de destino o sea subdirectorio
+        if current_abs == dest_abs or dest_abs in current_abs.parents or current_abs.parent == dest_abs:
             return False
-        if _is_file_locked(current_abs) or current_abs.anchor != dest.anchor:
+        if _is_file_locked(current_abs) or current_abs.anchor != dest_abs.anchor:
             return False
-        return is_safe_to_modify(current_abs) and is_safe_to_modify(dest)
+        return is_safe_to_modify(current_abs) and is_safe_to_modify(dest_abs)
     except (OSError, RuntimeError):
         return False
 

@@ -1494,3 +1494,27 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_on_missing_folder
 - `2026-08-13T08:02:08` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Reforcé la integridad del motor de cálculo implementando una validación estricta de las entradas `SystemMetrics` y los ratios derivados, asegurando que cualquier valor inesperado (`NaN` o `Inf`) sea neutralizado antes de impactar en el puntaje final.
 - `2026-08-13T08:02:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-13T08:02:08` Corrida terminada. Total usado hoy: 192.
+- `2026-08-13T08:10:34` Arrancando corrida. Quedan hoy ~108 peticiones objetivo.
+- `2026-08-13T08:11:38` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_ask_folder` eliminando caracteres potencialmente peligrosos de la ruta (como secuencias RTL) antes de su validación y procesamiento, evitando posibles inyecciones de rutas o confusiones en el sistema de archivos.
+- `2026-08-13T08:12:04` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se añadió una validación explícita mediante `is_protected_path` sobre la ruta del ejecutable del proceso antes de realizar cualquier manipulación, garantizando que el módulo cumpla estrictamente con la seguridad defensiva requerida al interactuar con procesos del sistema.
+- `2026-08-13T08:12:28` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se ha mejorado `_is_safe_to_move` añadiendo una validación explícita para asegurar que el archivo de origen no resida dentro del directorio de destino, previniendo así posibles bucles de lógica o movimientos recursivos peligrosos durante la fase de staging.
+- `2026-08-13T08:12:44` Tests FALLARON:
+```
+stino inválido: padre de cuarentena protegido.
+
+app/quarantine.py:250: UnsafePathError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_deleting_it - safety.UnsafePathError: Destino inválido: padre de cuarentena protegido.
+FAILED evolve/tests/test_safety.py::test_quarantine_records_the_original_path_for_restoring - safety.UnsafePathError: Destino inválido: padre de cuarentena protegido.
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - safety.UnsafePathError: Destino inválido: padre de cuarentena protegido.
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - safety.UnsafePathError: Destino inválido: padre de cuarentena protegido.
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - safety.UnsafePathError: Destino inválido: padre de cuarentena protegido.
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - safety.UnsafePathError: Destino inválido: padre de cuarentena protegido.
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - safety.UnsafePathError: Destino inválido: padre de cuarentena protegido.
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - safety.UnsafePathError: Destino inválido: padre de cuarentena protegido.
+8 failed, 291 passed in 1.27s
+
+```
+- `2026-08-13T08:12:44` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Mejoré la seguridad defensiva en `quarantine_file` añadiendo una validación explícita mediante `is_protected_path` sobre el directorio destino y sus padres, además de reforzar la protección contra ataques de "Time-of-check to time-of-use" (TOCTOU) verificando la existencia y naturaleza del archivo inmediatamente antes de la copia, asegurando que `ensure_safe_to_modify` se invoque justo antes de cada operación crítica.
+- `2026-08-13T08:12:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-13T08:12:44` Corrida terminada. Total usado hoy: 196.
