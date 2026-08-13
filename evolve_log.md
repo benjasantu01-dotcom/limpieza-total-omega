@@ -954,3 +954,57 @@ FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - Asse
 - `2026-08-13T02:14:51` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé `_collect_candidates` utilizando `os.scandir` para obtener el tamaño de archivo directamente desde el objeto `DirEntry` (evitando llamadas extra a `stat()` o `Path.stat()`) y reduje el impacto de las validaciones innecesarias mediante una pre-filtración más eficiente de las rutas, mejorando el rendimiento en discos con gran cantidad de archivos.
 - `2026-08-13T02:14:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-13T02:14:51` Corrida terminada. Total usado hoy: 56.
+- `2026-08-13T02:23:33` Arrancando corrida. Quedan hoy ~244 peticiones objetivo.
+- `2026-08-13T02:23:59` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
+- `2026-08-13T02:25:01` ➖ Sin cambios en main.py (enfoque: rendimiento). Motivo: Optimizé el rendimiento de la interfaz al reemplazar el redibujo completo de las barras de salud por actualizaciones selectivas basadas en un estado `_last_health_state`, evitando ciclos de CPU y renderizado de Tkinter innecesarios cuando los datos no han cambiado.
+- `2026-08-13T02:25:27` Tests FALLARON:
+```
+          '"grande","11","104857600"\n'
+            '"medio","12","10485760"\n'
+        )
+        procesos = memory.parse_windows_process_csv(csv)
+>       assert [p.name for p in procesos] == ["grande", "medio", "chico"]
+E       AssertionError: assert [] == ['grande', 'medio', 'chico']
+E         
+E         Right contains 3 more items, first extra item: 'grande'
+E         
+E         Full diff:
+E         + []
+E         - [
+E         -     'grande',
+E         -     'medio',
+E         -     'chico',
+E         - ]
+
+evolve/tests/test_modules.py:346: AssertionError
+__________________ test_parse_process_csv_skips_broken_lines ___________________
+
+    def test_parse_process_csv_skips_broken_lines():
+        csv = '"Name","Id","WorkingSet"\n"ok","1","1024"\nlinea basura\n"malo","x","y"\n'
+        procesos = memory.parse_windows_process_csv(csv)
+>       assert len(procesos) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+evolve/tests/test_modules.py:353: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption - AssertionError: assert [] == ['grande', 'medio', 'chico']
+  
+  Right contains 3 more items, first extra item: 'grande'
+  
+  Full diff:
+  + []
+  - [
+  -     'grande',
+  -     'medio',
+  -     'chico',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines - assert 0 == 1
+ +  where 0 = len([])
+2 failed, 297 passed in 0.82s
+
+```
+- `2026-08-13T02:25:27` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `parse_windows_process_csv` mediante un generador por comprensión para evitar la creación de una lista intermedia de strings, y reduje drásticamente la carga de `top_memory_processes` al pre-filtrar procesos irrelevantes y ordenar mediante una clave eficiente, evitando procesar datos innecesarios en el pipeline de PowerShell.
+- `2026-08-13T02:25:35` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-08-13T02:25:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-13T02:25:35` Corrida terminada. Total usado hoy: 60.
