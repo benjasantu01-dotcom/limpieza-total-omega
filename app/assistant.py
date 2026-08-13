@@ -256,12 +256,12 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         raw_score = _get_metric_val(health, "score", None)
         if raw_score is not None: _safe_assign(ctx, "score", raw_score, int, max_val=100)
         grade = _get_metric_val(health, "grade", "")
-        if isinstance(grade, (str, int, float)):
+        if grade is not None:
             ctx.grade = str(grade)[:10]
         ctx.analyzed = True
 
     for k, v in extra.items():
-        if hasattr(ctx, k):
+        if hasattr(ctx, k) and v is not None:
             attr_type = type(getattr(ctx, k))
             if attr_type in (int, float):
                 _safe_assign(ctx, k, v, cast=attr_type)
