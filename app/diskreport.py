@@ -340,18 +340,13 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
         
         for path, size in walk_files(base, skip_protected):
             try:
-                if base not in path.parents and path != base:
-                    continue
-                
+                # Se utiliza el ancestro inmediato para categorizar la profundidad
                 relative = path.relative_to(base)
-                if not relative.parts: continue
                 top_level = base / relative.parts[0]
-                
-                if skip_protected and is_protected_path(top_level): continue
                 
                 sums[top_level] += size
                 counts[top_level] += 1
-            except (OSError, ValueError, RuntimeError, PermissionError): 
+            except (OSError, ValueError, RuntimeError, PermissionError, IndexError): 
                 continue
 
         results: List[FolderUsage] = [FolderUsage(p, sums[p], counts[p]) for p in sums]
@@ -409,15 +404,13 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
         total_bytes += size
         total_files += 1
         
-        try:
-            ext = path.suffix.lower() or "(sin extensión)"
-        except Exception:
-            ext = "(error)"
-            
+        # Agrupación de extensión
+        ext = path.suffix.lower() or "(sin extensión)"
         data_ext = ext_data[ext]
         data_ext[0] += size
         data_ext[1] += 1
         
+        # Mantenimiento de top 8 vía heap sin ordenar toda la colección
         if len(top_files_heap) < 8:
             heapq.heappush(top_files_heap, (size, str(path)))
         elif size > top_files_heap[0][0]:
@@ -425,8 +418,7 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
 
     lines = [f"Carpeta analizada: {p_input}", f"Total: {format_size(total_bytes)} en {total_files} archivos", "", "Por tipo de archivo:"]
     
-    sorted_exts = heapq.nlargest(8, ext_data.items(), key=lambda item: item[1][0])
-    for ext, data in sorted_exts:
+    for ext, data in heapq.nlargest(8, ext_data.items(), key=lambda item: item[1][0]):
         lines.append(f"  {ext:<18} {format_size(data[0]):>10}  ({data[1]} archivos)")
         
     lines.extend(["", "Archivos más grandes:"])

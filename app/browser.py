@@ -178,20 +178,19 @@ def _sum_directory_recursive(
     cache: Dict[str, int], 
     depth: int = 0
 ) -> int:
-    """Calcula el peso en bytes mediante recorrido DFS limitado a 20 niveles."""
+    """Calcula el peso en bytes mediante recorrido DFS limitado a 20 niveles con cacheo de resultados."""
     if depth > 20:
         return 0
         
+    if root_dir in cache:
+        return cache[root_dir]
+        
     try:
-        st = os.stat(root_dir)
-        if st.st_nlink > 1 and root_dir in visited:
+        if root_dir in visited:
             return 0
         visited.add(root_dir)
     except (OSError, PermissionError):
         return 0
-
-    if root_dir in cache:
-        return cache[root_dir]
         
     total_size: int = 0
     try:
@@ -273,10 +272,11 @@ def detect_profiles(
     cache_paths = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
     is_junction: Callable[[str], bool] = getattr(os.path, 'isjunction', lambda _: False)
     k32 = ctypes.windll.kernel32 if os.name == 'nt' else None
+    
     perf_cache: Dict[str, int] = {}
     visited: Set[str] = set()
-
     found: List[BrowserCache] = []
+    
     if not isinstance(raw_bases, (list, tuple)) or not isinstance(cache_paths, dict):
         return found
         
@@ -293,7 +293,9 @@ def detect_profiles(
             candidate = real_base.joinpath(*relative_path_str.split("\\"))
             if _is_valid_cache_path(candidate, real_base):
                 c_path = candidate.resolve()
-                size: int = _sum_directory_recursive(str(c_path), c_path, is_junction, k32, visited, perf_cache)
+                c_path_str = str(c_path)
+                
+                size: int = _sum_directory_recursive(c_path_str, c_path, is_junction, k32, visited, perf_cache)
                 if size > 0:
                     found.append(BrowserCache(
                         browser=str(browser_name),

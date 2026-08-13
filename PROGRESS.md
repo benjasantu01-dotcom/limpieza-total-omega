@@ -16,36 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-12 | 149 | 6 | 24 | 13 | 156 |
-| 2026-08-13 | 68 | 2 | 9 | 3 | 74 |
+| 2026-08-12 | 147 | 6 | 24 | 13 | 154 |
+| 2026-08-13 | 70 | 2 | 9 | 3 | 76 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **62**
 - manejo de errores y validación de entradas: **47**
 - seguridad defensiva: **43**
-- robustez ante casos límite: **35**
-- rendimiento: **30**
+- robustez ante casos límite: **33**
+- rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **23**
-- `quarantine.py`: **21**
 - `branding.py`: **20**
+- `quarantine.py`: **20**
 - `assistant.py`: **19**
-- `diskreport.py`: **18**
+- `diskreport.py`: **19**
 - `healthscore.py`: **18**
+- `browser.py`: **16**
 - `duplicates.py`: **16**
-- `browser.py`: **15**
 - `memory.py`: **15**
 - `organizer.py`: **14**
 - `scanner.py`: **14**
-- `main.py`: **10**
+- `main.py`: **9**
 - `startup.py`: **7**
 - `safety.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-13T06:44:29` **diskreport.py** (rendimiento): Optimizé la función `summarize` para reducir drásticamente el uso de memoria y mejorar la velocidad al iterar el disco una sola vez y extraer los datos necesarios en tiempo real, evitando llamadas redundantes a funciones auxiliares que re-escanearían la estructura.
+- `2026-08-13T06:44:16` **browser.py** (rendimiento): Optimizé el rendimiento de `detect_profiles` y `_sum_directory_recursive` implementando memoización de resultados para carpetas de caché compartidas (como las de "Code Cache" o "GPUCache" que suelen ser subdirectorios de una misma raíz), evitando recorridos redundantes del disco si varias entradas comparten el mismo path real.
 - `2026-08-13T06:29:49` **settings.py** (legibilidad y documentación): Se introdujo un `Enum` interno para las claves de configuración (`ConfigKey`) con el fin de eliminar strings hardcodeados, mejorando la seguridad de tipos, la mantenibilidad y la legibilidad en el mapeo de validadores.
 - `2026-08-13T06:29:21` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad añadiendo docstrings descriptivos con parámetros y retornos (estilo Google) en las funciones de heurística y escaneo, además de unificar la lógica de obtención de metadatos en `scan_file` para clarificar el flujo de datos.
 - `2026-08-13T06:19:48` **quarantine.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados (usando formato Google Style) en las funciones críticas y clarifiqué la lógica de validación de `QuarantineItem` para asegurar que el contrato de tipos sea explícito y fácil de mantener.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-13T05:59:40` **branding.py** (legibilidad y documentación): Se han documentado mediante docstrings los parámetros, retornos y excepciones de las funciones geométricas y utilitarias del módulo `branding.py` para mejorar la mantenibilidad y claridad del contrato de la API gráfica.
 - `2026-08-13T05:59:04` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `assistant.py` mediante la implementación de Type Hints explícitos, la adición de docstrings técnicos en funciones de soporte y la reestructuración de `_gen_problems` para separar la lógica de formato de la lógica de evaluación, facilitando futuras expansiones de las reglas de salud.
 - `2026-08-13T05:49:04` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` capturando excepciones durante la validación y asegurando que la escritura de archivos temporales maneje correctamente posibles fallos de sistema sin dejar estados inconsistentes.
-- `2026-08-13T05:48:53` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la validación de los parámetros `entry` y `path` en `scan_file` y sus funciones auxiliares, asegurando un manejo robusto ante entradas nulas o rutas inválidas, evitando posibles `AttributeError` o comportamientos inesperados durante el escaneo.
-- `2026-08-13T05:48:30` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_file_in_use` capturando la excepción específica `OSError` con el código de error `ERROR_SHARING_VIOLATION` (32), evitando falsos positivos por otros errores de sistema que no implican necesariamente que el archivo esté en uso.

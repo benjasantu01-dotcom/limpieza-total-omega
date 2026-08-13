@@ -1336,3 +1336,14 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-08-13T06:29:57` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
 - `2026-08-13T06:29:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-13T06:29:57` Corrida terminada. Total usado hoy: 156.
+- `2026-08-13T06:38:47` Arrancando corrida. Quedan hoy ~144 peticiones objetivo.
+- `2026-08-13T06:39:22` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-13T06:40:25` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-08-13T06:41:31` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-08-13T06:42:17` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-08-13T06:43:06` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-13T06:43:50` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-08-13T06:44:16` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimizé el rendimiento de `detect_profiles` y `_sum_directory_recursive` implementando memoización de resultados para carpetas de caché compartidas (como las de "Code Cache" o "GPUCache" que suelen ser subdirectorios de una misma raíz), evitando recorridos redundantes del disco si varias entradas comparten el mismo path real.
+- `2026-08-13T06:44:29` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé la función `summarize` para reducir drásticamente el uso de memoria y mejorar la velocidad al iterar el disco una sola vez y extraer los datos necesarios en tiempo real, evitando llamadas redundantes a funciones auxiliares que re-escanearían la estructura.
+- `2026-08-13T06:44:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-13T06:44:29` Corrida terminada. Total usado hoy: 160.
