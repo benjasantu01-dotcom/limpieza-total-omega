@@ -55,8 +55,8 @@ SENSITIVE_EXTENSIONS: Final[frozenset[str]] = frozenset({
     ".reg", ".pol", ".key", ".pem", ".pfx", ".p12", ".crt", ".cer",
 })
 
-_SYSTEM_ROOTS: Final[frozenset[Path]] = frozenset(
-    Path(os.environ[v]).resolve() for v in ("SystemRoot", "ProgramFiles", "ProgramFiles(x86)", "ProgramData")
+_SYSTEM_ROOT_PARTS: Final[frozenset[tuple[str, ...]]] = frozenset(
+    Path(os.environ[v]).parts for v in ("SystemRoot", "ProgramFiles", "ProgramFiles(x86)", "ProgramData")
     if os.environ.get(v)
 )
 
@@ -187,7 +187,8 @@ def is_protected_path(path: PathLike) -> bool:
     
     try:
         p = normalize(path)
-        if any(p.startswith(root) or root in p.parents for root in _SYSTEM_ROOTS):
+        # Eficiencia: comparar prefijos de partes evita resolver rutas en cada llamada
+        if any(p.parts[:len(root)] == root for root in _SYSTEM_ROOT_PARTS):
             return True
         if any(part.lower() in PROTECTED_DIR_NAMES for part in p.parts):
             return True
