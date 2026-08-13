@@ -166,31 +166,31 @@ def _collect_candidates(
         try:
             with os.scandir(root_path) as dir_iterator:
                 for entry in dir_iterator:
-                    if entry is None: continue
-                    
                     try:
-                        entry_stat = entry.stat(follow_symlinks=False)
+                        # Usar atributos ya obtenidos por os.scandir (evita stat extra)
+                        if entry.is_symlink(): continue
                         
-                        # Saltar archivos de sistema (atributo 0x400)
-                        if getattr(entry_stat, 'st_file_attributes', 0) & 0x400:
+                        # Atributo 0x400 (sistema) disponible en Windows
+                        if getattr(entry.stat(follow_symlinks=False), 'st_file_attributes', 0) & 0x400:
                             continue
                         
                         entry_path = Path(entry.path).resolve()
                         if entry_path in processed_paths: continue
-                        processed_paths.add(entry_path)
                         
                         if skip_protected and is_protected_path(entry_path):
                             continue
                         
-                        if entry.is_dir(follow_symlinks=False):
-                            key = (entry_stat.st_dev, entry_stat.st_ino)
+                        if entry.is_dir():
+                            key = (entry.stat().st_dev, entry.stat().st_ino)
                             if key not in visited_inodes:
                                 visited_inodes[key] = True
                                 _scan(entry_path)
                         
-                        elif entry.is_file(follow_symlinks=False):
-                            if entry_stat.st_size >= min_size:
-                                temp_groups[entry_stat.st_size].append(entry_path)
+                        elif entry.is_file():
+                            size = entry.stat().st_size
+                            if size >= min_size:
+                                processed_paths.add(entry_path)
+                                temp_groups[size].append(entry_path)
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):

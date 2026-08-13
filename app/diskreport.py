@@ -216,7 +216,6 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 
     try:
         root: Path = Path(directory).expanduser().resolve(strict=False)
-        # Bloquear rutas UNC o inválidas para el contexto de escaneo local
         if str(root).startswith(("\\\\", "//")):
             return
         if not root.exists() or not root.is_dir() or not os.access(root, os.R_OK):
@@ -227,31 +226,30 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
         return
 
     visited_inodes: set[Tuple[int, int]] = set()
-    stack: List[str] = [str(root)]
+    stack: List[Path] = [root]
 
     while stack:
-        current_dir: str = stack.pop()
+        current_dir = stack.pop()
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        entry_path: Path = Path(entry.path)
-                        if skip_protected and is_protected_path(entry_path):
+                        # Usamos la entrada directa para evitar llamadas adicionales a Path/stat
+                        if skip_protected and is_protected_path(Path(entry.path)):
                             continue
 
-                        # Evitar seguir enlaces simbólicos o junctions para prevenir ciclos infinitos
                         if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
                             continue
 
                         if entry.is_dir():
-                            st: os.stat_result = entry.stat()
-                            inode: Tuple[int, int] = (st.st_dev, st.st_ino)
+                            st = entry.stat()
+                            inode = (st.st_dev, st.st_ino)
                             if inode not in visited_inodes:
                                 visited_inodes.add(inode)
-                                stack.append(entry.path)
+                                stack.append(Path(entry.path))
                         else:
-                            yield entry_path, entry.stat().st_size
-                    except (OSError, PermissionError, ValueError):
+                            yield Path(entry.path), entry.stat().st_size
+                    except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):
             continue
@@ -334,7 +332,6 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
         
         for path, size in walk_files(base, skip_protected):
             try:
-                # Validar seguridad: path debe estar estrictamente dentro de base
                 if base not in path.parents and path != base:
                     continue
                 
@@ -388,7 +385,6 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
         return ["Error: Ruta no proporcionada."]
     
     try:
-        # Validación robusta de ruta y accesibilidad inicial
         p_input = Path(directory)
         path_obj = p_input.expanduser().resolve(strict=False)
         if not path_obj.exists() or not path_obj.is_dir(): 

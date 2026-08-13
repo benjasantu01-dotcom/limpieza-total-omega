@@ -211,21 +211,16 @@ def _sum_directory_recursive(
     if depth > 20:
         return 0
         
-    try:
-        real_path = Path(os.path.realpath(root_dir))
-        if real_path in visited or is_protected_path(real_path):
-            return 0
-        
-        try:
-            real_path.relative_to(base_dir)
-        except ValueError:
-            return 0
+    if root_dir in visited:
+        return 0
+    visited.add(root_dir)
 
-        if str(real_path) in cache:
-            return cache[str(real_path)]
-        if not os.access(real_path, os.R_OK):
+    if root_dir in cache:
+        return cache[root_dir]
+        
+    try:
+        if not os.access(root_dir, os.R_OK):
             return 0
-        visited.add(str(real_path))
     except (OSError, PermissionError):
         return 0
         
@@ -245,7 +240,7 @@ def _sum_directory_recursive(
     except (PermissionError, OSError):
         return 0
     
-    cache[str(real_path)] = total_size
+    cache[root_dir] = total_size
     return total_size
 
 

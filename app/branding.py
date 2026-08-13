@@ -262,17 +262,16 @@ def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
 def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> Tuple[HexColor, ...]:
     """Calcula una secuencia de colores interpolados a lo largo de varios puntos de control."""
     try:
-        num_steps = max(1, int(steps))
-        if not stops: return (PALETTE["accent"],) * num_steps
-        if len(stops) < 2: return (stops[0],) * num_steps
+        n = max(1, int(steps))
+        if len(stops) < 2: return (stops[0],) * n
         
-        res = []
+        res = [stops[0]] * n
         tramos = len(stops) - 1
-        for i in range(num_steps):
-            pos = (i / (num_steps - 1)) * tramos if num_steps > 1 else 0
+        for i in range(1, n - 1):
+            pos = (i / (n - 1)) * tramos
             idx = int(pos)
-            if idx >= tramos: res.append(stops[-1])
-            else: res.append(blend(stops[idx], stops[idx + 1], pos - idx))
+            res[i] = blend(stops[idx], stops[idx + 1], pos - idx)
+        res[-1] = stops[-1]
         return tuple(res)
     except (ValueError, TypeError, ZeroDivisionError):
         return (PALETTE["accent"],) * max(1, int(steps))
