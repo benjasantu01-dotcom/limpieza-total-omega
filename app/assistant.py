@@ -199,8 +199,9 @@ def _safe_assign(obj: SystemContext, attr: str, val: Any, cast: Callable = float
     Aplica una asignación segura de métricas a un objeto SystemContext.
     Verifica que el valor sea numérico, finito y esté dentro de los rangos esperados.
     """
+    if val is None or not hasattr(obj, attr):
+        return
     try:
-        if val is None: return
         clean = cast(val)
         if isinstance(clean, (int, float)) and math.isfinite(clean):
             setattr(obj, attr, max(min_val, min(clean, max_val)))
@@ -220,6 +221,8 @@ def _get_metric_val(source: Any, key: str, default: Any) -> Any:
     Extrae de forma defensiva un valor numérico de una fuente de datos.
     Valida que sea numérico y no nulo antes de retornarlo para evitar errores.
     """
+    if source is None:
+        return default
     try:
         val = None
         if isinstance(source, dict):
