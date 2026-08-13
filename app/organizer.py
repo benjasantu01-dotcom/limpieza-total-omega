@@ -216,7 +216,17 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
 
 
 def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -> List[JunkFile]:
-    """Ordena una lista de archivos basura según el criterio especificado (size o date)."""
+    """
+    Ordena una lista de objetos JunkFile según el criterio especificado.
+    
+    Args:
+        files: Lista de objetos JunkFile a ordenar.
+        by: Atributo por el cual ordenar ("size" o "date").
+        ascending: Booleano para orden ascendente (True) o descendente (False).
+        
+    Returns:
+        Lista ordenada de JunkFile.
+    """
     if not isinstance(files, list):
         return []
         
@@ -264,8 +274,11 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     """
     Elimina permanentemente los archivos contenidos en el directorio de revisión.
     
-    Aplica una comprobación estricta para asegurar que solo se operen archivos
-    físicos dentro de la ruta designada, bloqueando enlaces simbólicos.
+    Esta operación es destructiva y se aplica únicamente a archivos planos (sin symlinks)
+    dentro del directorio de revisión validado.
+    
+    Returns:
+        Cantidad de archivos eliminados exitosamente.
     """
     if not isinstance(review_dir, str) or not review_dir.strip():
         return 0
