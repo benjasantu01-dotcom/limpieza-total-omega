@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **213** (42.3% de aceptación)
+- Mejoras aceptadas: **211** (41.9% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 33
+- Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 233
+- Sin respuesta de la IA (error o límite): 236
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-12 | 122 | 5 | 20 | 10 | 115 |
-| 2026-08-13 | 91 | 6 | 13 | 4 | 118 |
+| 2026-08-12 | 119 | 5 | 19 | 10 | 115 |
+| 2026-08-13 | 92 | 6 | 13 | 4 | 121 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **56**
+- legibilidad y documentación: **53**
 - seguridad defensiva: **42**
 - robustez ante casos límite: **41**
-- manejo de errores y validación de entradas: **40**
+- manejo de errores y validación de entradas: **41**
 - rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **22**
 - `branding.py`: **20**
-- `quarantine.py`: **19**
+- `diskreport.py`: **20**
 - `assistant.py`: **19**
-- `diskreport.py`: **19**
-- `memory.py`: **17**
+- `quarantine.py`: **18**
 - `healthscore.py`: **17**
-- `organizer.py`: **14**
+- `memory.py`: **16**
 - `scanner.py`: **14**
 - `browser.py`: **14**
+- `organizer.py`: **13**
 - `duplicates.py`: **13**
 - `main.py`: **10**
 - `safety.py`: **8**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-13T09:54:32` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de entrada validando específicamente la existencia y el tipo de ruta, y estandarizando el manejo de excepciones para evitar fallos silenciosos al procesar entradas de usuario potencialmente malformadas.
 - `2026-08-13T09:45:57` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `build_context` implementando una validación de tipos explícita en `_safe_assign` para asegurar que solo se asignen valores numéricos válidos a `SystemContext`, protegiendo la integridad de las métricas antes de cualquier procesamiento o envío.
 - `2026-08-13T08:22:08` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save()` añadiendo una validación explícita para asegurar que el directorio padre de la configuración sea tratable, evitando escrituras en ubicaciones inesperadas o protegidas que podrían surgir si `SETTINGS_DIR` fuera alterado por errores de configuración.
 - `2026-08-13T08:21:55` **scanner.py** (seguridad defensiva): Se ha robustecido el escaneo defensivo en `scanner.py` añadiendo la detección y validación de puntos de reanálisis (reparse points) mediante la comprobación explícita de `st_file_attributes` y bloqueando el seguimiento de cualquier enlace simbólico, previniendo así posibles bucles infinitos o escapes de entorno fuera del `base_root` controlado.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-13T07:41:14` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez de `is_protected_path` incorporando un manejo defensivo ante accesos negados y estados de archivos inexistentes, evitando que la normalización o resolución de rutas fallidas bloqueen prematuramente el flujo de la aplicación.
 - `2026-08-13T07:31:46` **memory.py** (robustez ante casos límite): Se reforzó la robustez de `trim_working_set` ante errores de entrada y estados del sistema, agregando una verificación explícita para evitar que `GetProcessImageFileNameW` falle silenciosamente o devuelva rutas truncadas/inválidas en escenarios de permisos restringidos.
 - `2026-08-13T07:31:20` **main.py** (robustez ante casos límite): Se ha mejorado la robustez de `on_target_choice_changed` y `_ask_folder` para manejar rutas inexistentes o inaccesibles mediante la normalización previa y el chequeo estricto `path.resolve(strict=True)`, evitando el despliegue de estados inconsistentes en la interfaz al detectar rutas no válidas antes de que impacten en los hilos de análisis.
-- `2026-08-13T07:30:16` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `_generate_recommendations` ante configuraciones o estados inesperados, añadiendo una verificación explícita para evitar que formatos de cadena desalineados con los parámetros causen errores silenciosos o crashes durante la generación de reportes.

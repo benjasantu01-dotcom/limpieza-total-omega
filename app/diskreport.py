@@ -157,7 +157,6 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
         return None
     try:
         p = Path(mount).expanduser()
-        # Resolvemos solo hasta el padre para verificar seguridad antes de acceder al contenido
         if not p.exists() or is_protected_path(p.resolve()):
             return None
             
@@ -203,7 +202,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 
     try:
         root = Path(directory).expanduser()
-        if not root.is_dir() or is_protected_path(root.resolve()):
+        if not root.is_dir() or (skip_protected and is_protected_path(root.resolve())):
             return
     except (OSError, RuntimeError, TypeError, ValueError):
         return
@@ -217,7 +216,6 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        # Seguridad preventiva: verificar si la ruta es segura antes de procesar
                         if skip_protected and is_protected_path(Path(entry.path)):
                             continue
 
@@ -286,7 +284,7 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
     
     try:
         base = Path(directory).expanduser()
-        if not base.is_dir() or is_protected_path(base.resolve()):
+        if not base.is_dir() or (skip_protected and is_protected_path(base.resolve())):
             return []
         
         sums: Dict[Path, int] = defaultdict(int)
@@ -329,8 +327,10 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
     
     try:
         p_input = Path(directory).expanduser()
+        if not p_input.exists():
+            return [f"Error: La ruta no existe: {p_input}"]
         if not p_input.is_dir(): 
-            return [f"Error: Ruta no encontrada o no es directorio: {p_input}"]
+            return [f"Error: No es un directorio: {p_input}"]
         if skip_protected and is_protected_path(p_input.resolve()):
             return [f"Error: Ruta protegida no permitida: {p_input}"]
     except (OSError, TypeError, RuntimeError, ValueError):

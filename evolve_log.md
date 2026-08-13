@@ -559,3 +559,13 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-08-13T09:45:57` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `build_context` implementando una validación de tipos explícita en `_safe_assign` para asegurar que solo se asignen valores numéricos válidos a `SystemContext`, protegiendo la integridad de las métricas antes de cualquier procesamiento o envío.
 - `2026-08-13T09:45:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-13T09:45:57` Corrida terminada. Total usado hoy: 232.
+- `2026-08-13T09:52:31` Arrancando corrida. Quedan hoy ~68 peticiones objetivo.
+- `2026-08-13T09:53:37` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-13T09:54:02` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-13T09:54:32` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las funciones de entrada validando específicamente la existencia y el tipo de ruta, y estandarizando el manejo de excepciones para evitar fallos silenciosos al procesar entradas de usuario potencialmente malformadas.
+- `2026-08-13T09:54:51` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-13T09:55:17` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-08-13T09:55:52` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-08-13T09:56:35` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-08-13T09:56:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-13T09:56:35` Corrida terminada. Total usado hoy: 236.
