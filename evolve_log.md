@@ -1479,3 +1479,10 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_on_missing_folder
 - `2026-08-13T07:41:20` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
 - `2026-08-13T07:41:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-13T07:41:20` Corrida terminada. Total usado hoy: 184.
+- `2026-08-13T07:50:10` Arrancando corrida. Quedan hoy ~116 peticiones objetivo.
+- `2026-08-13T07:50:49` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se reforzó `settings.py` ante fallos de disco o permisos al realizar una carga de configuración, asegurando que si el archivo es ilegible o está corrupto, la aplicación recupere los valores de fábrica de forma robusta y sin excepciones residuales.
+- `2026-08-13T07:51:12` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-08-13T07:51:45` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la seguridad defensiva en `_call_gemini` integrando un chequeo de integridad en el cuerpo de la respuesta recibida, asegurando que el contenido retornado por el servicio externo pase por el mismo filtro `_ensure_safe_text` que el resto de las entradas del asistente, evitando así que una respuesta inesperada pueda inyectar caracteres de control o rutas.
+- `2026-08-13T07:52:00` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad en `save_logo_svg` utilizando `is_safe_to_modify` para realizar una validación preventiva antes de intentar la resolución de rutas, evitando así posibles excepciones bloqueantes durante el procesamiento de la ruta de destino.
+- `2026-08-13T07:52:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-13T07:52:00` Corrida terminada. Total usado hoy: 188.

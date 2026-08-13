@@ -222,7 +222,6 @@ def validate(values: Any) -> AppSettings:
     for key, validator in _VALIDATOR_MAP.items():
         if key in values:
             try:
-                # Convertir string de clave JSON a Enum para validación
                 enum_key = ConfigKey(key)
                 val = validator(enum_key, values.get(key))
                 if val is not None: config[key] = val
@@ -246,9 +245,10 @@ def load(path_or_base: PathLike | None = None) -> AppSettings:
             with open(ruta, "r", encoding="utf-8") as f:
                 data = json.load(f)
             if isinstance(data, dict):
-                _cached_settings = validate(data)
+                config = validate(data)
+                _cached_settings = config
                 _current_path, _last_mtime = ruta, stats.st_mtime
-                return _cached_settings.copy()
+                return config.copy()
     except (OSError, PermissionError, json.JSONDecodeError, UnicodeDecodeError, ValueError):
         pass
     return DEFAULTS.copy()
@@ -301,13 +301,12 @@ def update(changes: dict[str, Any], path_or_base: PathLike | None = None) -> App
     for k, v in changes.items():
         if k in _VALIDATOR_MAP and current.get(k) != v:
             validator = _VALIDATOR_MAP[k]
-            # Convertir clave string a Enum
             try:
                 val = validator(ConfigKey(k), v)
                 if val is not None and val != current.get(k):
                     current[k] = val
                     needs_save = True
-            except ValueError:
+            except (ValueError, KeyError):
                 continue
     if needs_save: save(current, path_or_base)
     return current
