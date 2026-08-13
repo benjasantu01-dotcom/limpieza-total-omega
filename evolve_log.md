@@ -1347,3 +1347,56 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-08-13T06:44:29` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé la función `summarize` para reducir drásticamente el uso de memoria y mejorar la velocidad al iterar el disco una sola vez y extraer los datos necesarios en tiempo real, evitando llamadas redundantes a funciones auxiliares que re-escanearían la estructura.
 - `2026-08-13T06:44:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-13T06:44:29` Corrida terminada. Total usado hoy: 160.
+- `2026-08-13T06:49:01` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-08-13T06:49:25` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-08-13T06:50:25` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-13T06:50:53` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
+- `2026-08-13T06:51:52` ➖ Sin cambios en main.py (enfoque: rendimiento). Motivo: Optimicé el redibujo de las tarjetas de métricas en el dashboard de Salud eliminando el procesamiento innecesario de labels que ya no existen o que no cambiaron, y centralizando la lógica de actualización para evitar redibujos redundantes del hilo principal.
+- `2026-08-13T06:52:04` Tests FALLARON:
+```
+esos] == ["grande", "medio", "chico"]
+E       AssertionError: assert [] == ['grande', 'medio', 'chico']
+E         
+E         Right contains 3 more items, first extra item: 'grande'
+E         
+E         Full diff:
+E         + []
+E         - [
+E         -     'grande',
+E         -     'medio',
+E         -     'chico',
+E         - ]
+
+evolve/tests/test_modules.py:346: AssertionError
+__________________ test_parse_process_csv_skips_broken_lines ___________________
+
+    def test_parse_process_csv_skips_broken_lines():
+        csv = '"Name","Id","WorkingSet"\n"ok","1","1024"\nlinea basura\n"malo","x","y"\n'
+        procesos = memory.parse_windows_process_csv(csv)
+>       assert len(procesos) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+evolve/tests/test_modules.py:353: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move - AssertionError: memory.py debería ser de solo lectura pero llama a replace
+assert not {'replace'}
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption - AssertionError: assert [] == ['grande', 'medio', 'chico']
+  
+  Right contains 3 more items, first extra item: 'grande'
+  
+  Full diff:
+  + []
+  - [
+  -     'grande',
+  -     'medio',
+  -     'chico',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines - assert 0 == 1
+ +  where 0 = len([])
+3 failed, 296 passed in 1.25s
+
+```
+- `2026-08-13T06:52:04` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `top_memory_processes` reemplazando la ejecución completa de PowerShell (que es lenta al instanciar el motor de ejecución) por una consulta mediante `tasklist` con formato CSV, reduciendo drásticamente el tiempo de respuesta y el uso de CPU.
+- `2026-08-13T06:52:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-13T06:52:04` Corrida terminada. Total usado hoy: 164.
