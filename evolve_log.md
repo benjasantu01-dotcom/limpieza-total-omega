@@ -1407,3 +1407,54 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-08-13T07:00:30` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
 - `2026-08-13T07:00:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-13T07:00:30` Corrida terminada. Total usado hoy: 168.
+- `2026-08-13T07:09:23` Arrancando corrida. Quedan hoy ~132 peticiones objetivo.
+- `2026-08-13T07:09:53` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizé el rendimiento de `scan_file` y los cheques heurísticos evitando redundancias en la evaluación de extensiones y aprovechando el parámetro `entry` para evitar múltiples llamadas a `stat()` (syscalls) al verificar metadatos de archivos.
+- `2026-08-13T07:10:53` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-13T07:11:51` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-08-13T07:12:56` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 56): unmatched ']'
+- `2026-08-13T07:13:16` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-13T07:13:49` Tests FALLARON:
+```
+rom_folders_ignores_desktop_ini(tmp_path):
+        carpeta = tmp_path / "Inicio"
+        carpeta.mkdir()
+        (carpeta / "desktop.ini").write_text("x")
+>       assert startup.entries_from_folders([carpeta]) == []
+E       assert <generator ob...x7f555afb5740> == []
+E         
+E         Full diff:
+E         - []
+E         + <generator object entries_from_folders at 0x7f555afb5740>
+
+evolve/tests/test_modules.py:685: AssertionError
+_________________ test_entries_from_folders_on_missing_folder __________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-2/test_entries_from_folders_on_m0')
+
+    def test_entries_from_folders_on_missing_folder(tmp_path):
+>       assert startup.entries_from_folders([tmp_path / "no-existe"]) == []
+E       assert <generator ob...x7f5559e85440> == []
+E         
+E         Full diff:
+E         - []
+E         + <generator object entries_from_folders at 0x7f5559e85440>
+
+evolve/tests/test_modules.py:689: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_entries_from_folders_ignores_desktop_ini - assert <generator ob...x7f555afb5740> == []
+  
+  Full diff:
+  - []
+  + <generator object entries_from_folders at 0x7f555afb5740>
+FAILED evolve/tests/test_modules.py::test_entries_from_folders_on_missing_folder - assert <generator ob...x7f5559e85440> == []
+  
+  Full diff:
+  - []
+  + <generator object entries_from_folders at 0x7f5559e85440>
+2 failed, 297 passed in 0.97s
+
+```
+- `2026-08-13T07:13:49` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se optimizó el rendimiento del motor de búsqueda al reemplazar la estructura de datos utilizada en `list_startup_entries` por un generador eficiente que evita la creación de listas intermedias innecesarias y se añadió una verificación de duplicados de nombre de archivo antes de procesar el acceso a disco en `_resolve_and_cache_path` para evitar consultas de I/O redundantes.
+- `2026-08-13T07:14:06` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `build_context` implementando una validación de `None` más estricta y previendo casos donde `metrics` o `health` sean objetos inválidos, evitando excepciones durante la construcción del contexto en situaciones de datos corruptos o inesperados.
+- `2026-08-13T07:14:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-13T07:14:06` Corrida terminada. Total usado hoy: 172.

@@ -40,7 +40,7 @@ class Suspicion:
     severity: str
 
 # Alias para funciones de chequeo heurístico.
-SuspicionCheck: TypeAlias = Callable[[Path, Optional[os.DirEntry], Optional[str], Optional[str], float], Optional[Suspicion]]
+SuspicionCheck: TypeAlias = Callable[[Path, Optional[os.DirEntry], float], Optional[Suspicion]]
 ScanResult: TypeAlias = List[Suspicion]
 
 # REGEX para detectar extensiones dobles donde la última es ejecutable
@@ -88,13 +88,11 @@ class Scanner:
         if not entry:
             return
         
-        # Filtros rápidos previos a llamadas costosas
         if entry.is_symlink():
             return
 
         entry_path = Path(entry.path)
         
-        # Validación de seguridad antes de cualquier otra lógica
         if is_protected_path(entry_path) or entry_path.parts[0].startswith("\\\\"):
             return
 
@@ -146,27 +144,18 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """
     Ejecuta el pipeline de heurísticas sobre un archivo dado.
-    
-    Args:
-        path: Ruta del archivo.
-        now_ts: Timestamp actual para cálculos de antigüedad.
-        entry: Objeto DirEntry opcional para evitar syscalls innecesarias.
-        
-    Returns:
-        Lista de objetos Suspicion encontrados.
     """
     if not path:
         return []
 
     findings: ScanResult = []
-    suffix = path.suffix.lower()
-
-    # 1. Chequeos basados en nombre (String-only)
+    
+    # 1. Chequeos genéricos independientes de la extensión
     if (res := check_double_extension(path, entry, now_ts)):
         findings.append(res)
     
     # 2. Chequeos específicos de ejecutables
-    if suffix in SUSPICIOUS_EXECUTABLE_EXT:
+    if path.suffix.lower() in SUSPICIOUS_EXECUTABLE_EXT:
         if (res := check_system_lookalike(path, entry, now_ts)):
             findings.append(res)
         
