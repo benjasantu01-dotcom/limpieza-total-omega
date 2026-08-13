@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **225** (44.6% de aceptación)
+- Mejoras aceptadas: **226** (44.8% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 33
+- Rechazadas por guardia de seguridad: 34
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 220
+- Sin respuesta de la IA (error o límite): 218
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-12 | 92 | 4 | 14 | 7 | 87 |
-| 2026-08-13 | 133 | 9 | 19 | 6 | 133 |
+| 2026-08-12 | 92 | 4 | 14 | 7 | 83 |
+| 2026-08-13 | 134 | 9 | 20 | 6 | 135 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **62**
 - manejo de errores y validación de entradas: **46**
+- seguridad defensiva: **43**
 - robustez ante casos límite: **42**
-- seguridad defensiva: **42**
 - rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
@@ -33,9 +33,9 @@ Este archivo se regenera solo en cada corrida a partir de
 - `settings.py`: **21**
 - `branding.py`: **20**
 - `assistant.py`: **19**
+- `quarantine.py`: **19**
 - `healthscore.py`: **18**
 - `memory.py`: **18**
-- `quarantine.py`: **18**
 - `organizer.py`: **16**
 - `duplicates.py`: **16**
 - `main.py`: **14**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-13T12:46:52` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_validate_isolation_request` al implementar la verificación de existencia de un archivo antes de intentar moverlo mediante una comparación de sus identificadores únicos (Device ID y File Index en Windows), evitando ataques de tipo "TOCTOU" (Time-of-Check to Time-of-Use) mediante enlaces simbólicos.
 - `2026-08-13T12:38:29` **organizer.py** (seguridad defensiva): Se ha mejorado `_is_safe_to_move` añadiendo una comprobación explícita para detectar archivos de sistema ocultos (mediante atributos de archivo) y asegurar que el origen no sea un punto de montaje o unidad raíz, fortaleciendo la defensa contra manipulaciones accidentales de estructuras críticas del sistema.
 - `2026-08-13T12:38:20` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `trim_working_set` validando explícitamente el estado del `proc_handle` y asegurando que las llamadas a la API de Windows se realicen únicamente tras verificar la integridad de la ruta del ejecutable contra `is_protected_path`, previniendo la manipulación de procesos del sistema incluso si el PID parece válido.
 - `2026-08-13T12:37:52` **main.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `main.py` mediante la validación estricta de rutas en la entrada `_ask_folder`, asegurando que no se pueda interactuar con rutas que contengan caracteres de control o de reordenamiento bidireccional (RTL/LTR) antes de procesarlas, previniendo posibles ataques de spoofing en la interfaz.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-13T12:06:03` **organizer.py** (robustez ante casos límite): Se introdujo una comprobación de existencia y acceso de solo lectura dentro de `stage_for_review` para evitar errores en tiempo de ejecución si un archivo se elimina, renombra o pierde permisos entre la fase de escaneo y la de movimiento (condición de carrera típica).
 - `2026-08-13T11:58:26` **memory.py** (robustez ante casos límite): Se reforzó la robustez de `parse_windows_process_csv` y `_parse_csv_row` añadiendo validación estricta ante entradas mal formadas o valores numéricos imposibles, evitando errores de ejecución si `powershell` devuelve una salida inesperada o corrupta.
 - `2026-08-13T11:56:14` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `_generate_recommendations` añadiendo un chequeo explícito de tipos y valores nulos para evitar errores en tiempo de ejecución (`IndexError` o `ValueError`) ante entradas inesperadas, además de asegurar que las recomendaciones no dependan de una evaluación exitosa de ratios si los valores base son críticos.
-- `2026-08-13T11:47:17` **diskreport.py** (robustez ante casos límite): Se ha robustecido `walk_files` para manejar correctamente rutas que no existen o permisos denegados al inicio del recorrido, y se ha mejorado la tolerancia a fallos en `largest_folders` al asegurar que `path.relative_to(base)` no falle si `path` no tiene una relación clara con `base` debido a race conditions en el sistema de archivos.

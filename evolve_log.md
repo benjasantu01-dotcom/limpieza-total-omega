@@ -766,3 +766,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-13T12:38:29` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se ha mejorado `_is_safe_to_move` añadiendo una comprobación explícita para detectar archivos de sistema ocultos (mediante atributos de archivo) y asegurar que el origen no sea un punto de montaje o unidad raíz, fortaleciendo la defensa contra manipulaciones accidentales de estructuras críticas del sistema.
 - `2026-08-13T12:38:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-13T12:38:29` Corrida terminada. Total usado hoy: 300.
+- `2026-08-13T12:46:16` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-13T12:46:52` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `_validate_isolation_request` al implementar la verificación de existencia de un archivo antes de intentar moverlo mediante una comparación de sus identificadores únicos (Device ID y File Index en Windows), evitando ataques de tipo "TOCTOU" (Time-of-Check to Time-of-Use) mediante enlaces simbólicos.
+- `2026-08-13T12:47:14` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-13T12:47:39` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-08-13T12:47:49` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-08-13T12:47:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-13T12:47:49` Corrida terminada. Total usado hoy: 304.

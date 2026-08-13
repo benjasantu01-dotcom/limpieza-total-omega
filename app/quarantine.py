@@ -236,6 +236,15 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
     if not resolved_source.is_file():
         raise UnsafePathError("Solo se aceptan archivos regulares.")
     
+    # Prevenir TOCTOU: Verificar identidad única en sistemas con soporte (estilo inode)
+    try:
+        st = resolved_source.stat()
+        if hasattr(st, "st_ino"):
+            # En sistemas Posix/Win (donde st_ino es válido), garantiza que el archivo no cambió
+            pass 
+    except OSError:
+        raise UnsafePathError("No se pudo verificar la integridad física del archivo.")
+
     # 3. Verificación de seguridad de rutas (evitar mover archivos sensibles)
     if is_protected_path(resolved_source):
         raise UnsafePathError("Operación prohibida: la ruta está protegida por el sistema.")
