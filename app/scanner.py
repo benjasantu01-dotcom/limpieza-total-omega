@@ -93,15 +93,14 @@ class Scanner:
         if entry.is_symlink() or self._is_reparse_point(entry):
             return
 
-        target_path = Path(entry.path)
-        
-        if is_protected_path(target_path) or target_path.parts[0].startswith("\\\\"):
-            return
-
-        if not self._is_safe_entry(target_path):
-            return
-
         try:
+            target_path = Path(entry.path)
+            if is_protected_path(target_path) or str(target_path).startswith("\\\\"):
+                return
+
+            if not self._is_safe_entry(target_path):
+                return
+
             if entry.is_dir(follow_symlinks=False):
                 if entry.path not in self.seen:
                     self.seen.add(entry.path)
@@ -110,7 +109,7 @@ class Scanner:
                 self.results.extend(scan_file(target_path, self.now_ts, entry=entry))
                 
         except (PermissionError, OSError) as e:
-            logger.debug(f"Acceso denegado o error de sistema: {entry.path} - {e}")
+            logger.debug(f"Acceso denegado o error de sistema en {entry.path}: {e}")
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Detecta nombres con múltiples extensiones que ocultan un ejecutable (ej: .pdf.exe)."""
@@ -129,7 +128,9 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
         return None
 
     try:
-        if (now_ts - entry.stat().st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
+        # st_mtime puede fallar si el archivo fue bloqueado o eliminado por otro proceso
+        file_stat = entry.stat()
+        if (now_ts - file_stat.st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
             return Suspicion(path, f"Ejecutable reciente detectado (<{RECENT_FILE_THRESHOLD_HOURS}h)", "info")
     except (OSError, AttributeError, OverflowError):
         pass
@@ -138,9 +139,13 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Detecta binarios que imitan procesos críticos del sistema ubicados fuera de System32."""
-    if path.name.lower() in SYSTEM_LOOKALIKES:
-        if SYSTEM32_LOWER not in str(path.parent).lower():
-            return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
+    try:
+        if path.name.lower() in SYSTEM_LOOKALIKES:
+            # Comprobación de ruta segura ante fallos de string o ausencia de parent
+            if SYSTEM32_LOWER not in str(path.parent).lower():
+                return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
+    except (OSError, AttributeError):
+        pass
     return None
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
@@ -158,7 +163,12 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
         findings.append(check_result)
     
     # 2. Chequeos específicos de ejecutables
-    if path.suffix.lower() in SUSPICIOUS_EXECUTABLE_EXT:
+    try:
+        suffix = path.suffix.lower()
+    except (OSError, AttributeError):
+        return findings
+
+    if suffix in SUSPICIOUS_EXECUTABLE_EXT:
         lookalike_result = check_system_lookalike(path, entry, now_ts)
         if lookalike_result:
             findings.append(lookalike_result)
@@ -193,7 +203,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
                 for entry in it:
                     scanner.process_entry(entry, stack)
         except (PermissionError, OSError, ValueError, RuntimeError) as e:
-            logger.debug(f"Error procesando directorio {current_dir}: {e}")
+            logger.debug(f"Error accediendo al directorio {current_dir}: {e}")
             continue
             
     return scanner.results

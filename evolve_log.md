@@ -712,3 +712,43 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-13T12:07:17` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha mejorado `_check_file_integrity` para manejar la condición de carrera donde un archivo desaparece entre su comprobación inicial y la validación de integridad (`OSError` en `p.stat()`), asegurando que la función sea resiliente frente a cambios concurrentes en el sistema de archivos.
 - `2026-08-13T12:07:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-13T12:07:17` Corrida terminada. Total usado hoy: 288.
+- `2026-08-13T12:15:41` Arrancando corrida. Quedan hoy ~12 peticiones objetivo.
+- `2026-08-13T12:16:22` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Mejoré la robustez de `scanner.py` implementando una validación exhaustiva de los metadatos de los archivos (gestionando excepciones de permisos y estados de archivo bloqueado) y asegurando que las funciones de escaneo no fallen ante nombres de archivos o rutas malformadas.
+- `2026-08-13T12:16:53` Tests FALLARON:
+```
+th, monkeypatch):
+        """Se puede usar el asistente sin mandar ni una métrica."""
+        monkeypatch.setenv(settings.API_KEY_ENV_VAR, "clave")
+        settings.save({**settings.DEFAULTS, "asistente_activado": True,
+                       "asistente_enviar_metricas": False}, tmp_path)
+    
+        enviado = {}
+    
+        def espia(question, context_text, api_key, model):
+            enviado["texto"] = context_text
+            return "ok"
+    
+        monkeypatch.setattr(assistant, "_call_gemini", espia)
+        assistant.ask("¿qué hago?", _contexto_lleno(), tmp_path)
+>       assert "2400" not in enviado["texto"]
+E       AssertionError: assert '2400' not in 'Puntaje de ...io: 19 items'
+E         
+E         '2400' is contained here:
+E           Puntaje de salud: 61 nota C Basura: 2400 MB Sospechosos: 3 RAM disponible: 11 percent Disco libre: 6 percent Duplicados: 900 MB Inicio: 19 items
+E         ?                                     ++++
+
+evolve/tests/test_assistant.py:418: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - AssertionError: assert '2400' not in 'Puntaje de ...io: 19 items'
+  
+  '2400' is contained here:
+    Puntaje de salud: 61 nota C Basura: 2400 MB Sospechosos: 3 RAM disponible: 11 percent Disco libre: 6 percent Duplicados: 900 MB Inicio: 19 items
+  ?                                     ++++
+1 failed, 298 passed in 1.14s
+
+```
+- `2026-08-13T12:16:53` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `save()` ante condiciones de carrera y fallos en el sistema de archivos, implementando un chequeo previo de integridad de la ruta padre y asegurando que las operaciones críticas de escritura sean atómicas mediante el uso de `os.replace` combinado con la sincronización forzada a disco (`os.fsync`) en un archivo temporal.
+- `2026-08-13T12:17:18` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-08-13T12:17:39` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la seguridad defensiva en `_call_gemini` integrando `ensure_safe_to_modify` (vía `filter_safe_paths`) para validar la configuración de la clave API y el modelo, asegurando que los parámetros de red provengan de fuentes validadas antes de realizar la petición HTTP.
+- `2026-08-13T12:17:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-13T12:17:39` Corrida terminada. Total usado hoy: 292.

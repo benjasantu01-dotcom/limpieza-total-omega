@@ -49,7 +49,7 @@ from pathlib import Path
 from typing import Any, Final, TypeAlias, Callable, Optional, Union, Generator, TypedDict
 
 import settings
-from safety import is_protected_path
+from safety import is_protected_path, filter_safe_paths
 
 __all__ = [
     "SystemContext",
@@ -476,6 +476,9 @@ def _call_gemini(
     """Ejecuta una solicitud POST al endpoint de Gemini protegiendo los datos enviados."""
     if not isinstance(api_key, str) or not isinstance(model, str) or not api_key: return None
     if not _API_KEY_REGEX.match(api_key) or not _MODEL_NAME_REGEX.match(model): return None
+    
+    # Validar que los parámetros no sean rutas disfrazadas o archivos protegidos
+    if not filter_safe_paths([api_key, model]): return None
     
     safe_q = _sanitize_query(question)
     if not _ensure_safe_text(safe_q) or not _ensure_safe_text(context_text): return None
