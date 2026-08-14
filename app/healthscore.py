@@ -42,7 +42,6 @@ __all__ = [
 ]
 
 # --- UMBRALES DE NORMALIZACIÓN (referencias constantes para cálculo) ---
-# Valores de referencia utilizados para mapear unidades físicas (MB, count) a ratios de salud 0.0-1.0
 _LIMIT_JUNK_MB: Final[float] = 5000.0          
 _LIMIT_DUPLICATE_MB: Final[float] = 2000.0     
 _LIMIT_STARTUP_COUNT: Final[int] = 20          
@@ -50,7 +49,6 @@ _LIMIT_RAM_PERCENT: Final[float] = 35.0
 _LIMIT_DISK_PERCENT: Final[float] = 25.0       
 
 # --- UMBRALES DE ADVERTENCIA (ratios de 0.0 a 1.0) ---
-# Indican el punto de corte por debajo del cual se dispara una recomendación
 WARN_THRESHOLD_HIGH: Final[float] = 0.9
 WARN_THRESHOLD_MED: Final[float] = 0.8
 WARN_THRESHOLD_LOW: Final[float] = 0.6
@@ -188,6 +186,7 @@ def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[
         return ["Error: Datos de entrada corruptos, análisis no disponible."]
         
     recommendations: List[str] = []
+    # Mapeo directo para evitar llamadas a .get() repetitivas
     vals = {
         "seguridad": metrics.suspicious_count, 
         "disco": metrics.disk_free_percent, 
@@ -199,11 +198,8 @@ def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[
 
     for rule in _RECOMMENDATION_RULES:
         ratio = ratios.get(rule.area)
-        if ratio is None or not math.isfinite(ratio):
-            continue
-            
-        if ratio < rule.threshold:
-            val = vals.get(rule.area, 0.0)
+        if ratio is not None and math.isfinite(ratio) and ratio < rule.threshold:
+            val = vals[rule.area]
             try:
                 msg = rule.message_format.format(val) if rule.expected_args > 0 else rule.message_format
                 recommendations.append(msg)
@@ -238,8 +234,8 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     }
     
     # Calcular desglose ponderado redondeado al entero más cercano
-    breakdown = {area: int(round(_clamp(ratios.get(area, 0.0), 0.0, 1.0) * factor)) for area, factor in _WEIGHT_ITEMS}
-    final_score = int(round(_clamp(sum(breakdown.values()), 0.0, 100.0)))
+    breakdown = {area: int(round(_clamp(ratios[area], 0.0, 1.0) * factor)) for area, factor in _WEIGHT_ITEMS}
+    final_score = int(round(_clamp(float(sum(breakdown.values())), 0.0, 100.0)))
     
     return HealthResult(final_score, grade_for_score(final_score), breakdown, _generate_recommendations(metrics, ratios))
 

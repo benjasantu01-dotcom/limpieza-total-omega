@@ -975,7 +975,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _update_health_visuals(self, resultado: healthscore.ScoreResult, junk_mb: float, 
                                sospechosos: int, ram_libre: float, disco_libre: float) -> None:
-        """Actualiza la interfaz del dashboard de salud."""
+        """Actualiza la interfaz del dashboard de salud, evitando redibujado redundante."""
         state_key = (resultado.score, junk_mb, sospechosos, ram_libre, disco_libre)
         if self._last_health_state == state_key:
             return

@@ -409,3 +409,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-08-14T05:08:29` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
 - `2026-08-14T05:08:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-14T05:08:29` Corrida terminada. Total usado hoy: 124.
+- `2026-08-14T05:16:30` Arrancando corrida. Quedan hoy ~176 peticiones objetivo.
+- `2026-08-14T05:17:13` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé la función `walk_files` para evitar el costo computacional repetitivo de `entry.path` y `Path(entry.path).resolve()` dentro del bucle, realizando la resolución de rutas solo cuando es estrictamente necesario.
+- `2026-08-14T05:17:48` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé el proceso de hashing al cerrar los manejadores de archivo inmediatamente después de la lectura, eliminando la necesidad de re-invocar `stat()` para verificar cambios en archivos grandes, y sustituí llamadas redundantes a `Path.is_file()` por el uso de los atributos de `os.DirEntry` ya obtenidos durante el recorrido inicial, reduciendo drásticamente las llamadas al sistema operativo (syscalls) innecesarias.
+- `2026-08-14T05:18:14` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del puntaje en `compute_score` eliminando la recreación innecesaria de diccionarios y listas dentro de los bucles, y reemplazando el acceso repetitivo por búsqueda directa, mejorando la eficiencia de procesamiento al evitar asignaciones de memoria redundantes en cada llamada.
+- `2026-08-14T05:19:01` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Optimicé el renderizado del dashboard de salud implementando un `self._last_health_state` que evita cálculos de redibujo y configuraciones de widgets innecesarias si los datos de entrada (puntaje, basura, sospechosos, RAM, disco) no han cambiado entre llamadas.
+- `2026-08-14T05:19:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-14T05:19:01` Corrida terminada. Total usado hoy: 128.

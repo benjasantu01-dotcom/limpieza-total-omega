@@ -77,21 +77,16 @@ class DuplicateGroup:
 def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
     Calcula el hash SHA256 completo del archivo leyendo en bloques.
-    
-    Esta función verifica la integridad mediante comparación de metadatos antes 
-    y después de la lectura para detectar si el archivo fue modificado durante 
-    el proceso, en cuyo caso retorna None.
     """
     if path is None or chunk_size <= 0: 
         return None
         
     try:
         file_path = Path(path)
-        if not file_path.is_file() or is_protected_path(file_path):
+        if is_protected_path(file_path):
             return None
 
         stat_initial = file_path.stat()
-        # 0x400 corresponde a FILE_ATTRIBUTE_REPARSE_POINT (Junctions)
         if stat_initial.st_size <= 0 or (getattr(stat_initial, 'st_file_attributes', 0) & 0x400):
             return None
             
@@ -103,10 +98,6 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
                     break
                 digest.update(buffer)
         
-        # Validar consistencia final: el tamaño debe ser idéntico al de inicio
-        if file_path.stat().st_size != stat_initial.st_size:
-            return None
-            
         return digest.hexdigest()
     except (OSError, PermissionError, ValueError, TypeError, RuntimeError, IOError, AttributeError):
         return None
@@ -115,28 +106,18 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
 def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """
     Hash rápido de los primeros bytes (64KB) para una comparación heurística.
-    
-    Retorna None si el acceso es denegado o si el archivo cambia de tamaño
-    durante la lectura, asegurando que la comparación inicial sea confiable.
     """
     if path is None or read_bytes <= 0: 
         return None
         
     try:
         file_path = Path(path)
-        if not file_path.is_file() or is_protected_path(file_path):
+        if is_protected_path(file_path):
             return None
             
-        stat_initial = file_path.stat()
         with open(file_path, "rb") as f:
             content = f.read(read_bytes)
-            if not content:
-                return None
-            
-            # Verificación de integridad: el archivo no debe haber sido truncado
-            if file_path.stat().st_size != stat_initial.st_size:
-                return None
-            return hashlib.sha256(content).hexdigest()
+            return hashlib.sha256(content).hexdigest() if content else None
     except (OSError, PermissionError, ValueError, TypeError, RuntimeError, IOError, AttributeError):
         return None
 
@@ -150,9 +131,9 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
         return groups
         
     for p in paths:
-        if not isinstance(p, Path): continue
+        if not isinstance(p, Path) or is_protected_path(p): continue
         try:
-            if p.is_file() and not is_protected_path(p):
+            if p.is_file():
                 groups[p.stat().st_size].append(p)
         except (OSError, PermissionError, FileNotFoundError):
             continue
@@ -166,9 +147,6 @@ def _collect_candidates(
 ) -> Dict[int, List[Path]]:
     """
     Realiza un recorrido recursivo en profundidad (DFS) capturando archivos.
-    
-    Usa el par (dispositivo, inodo) para evitar el procesamiento redundante de 
-    hardlinks o múltiples entradas que apunten al mismo contenido físico.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: Dict[Tuple[int, int], bool] = {}
@@ -179,24 +157,21 @@ def _collect_candidates(
             with os.scandir(root_path) as dir_iterator:
                 for entry in dir_iterator:
                     try:
-                        # 0x400: FILE_ATTRIBUTE_REPARSE_POINT (Junctions/Symlinks)
                         st = entry.stat(follow_symlinks=False)
                         if getattr(st, 'st_file_attributes', 0) & 0x400: continue
-                        
-                        entry_path = Path(entry.path)
-                        if skip_protected and is_protected_path(entry_path): continue
                         
                         if entry.is_dir():
                             key = (st.st_dev, st.st_ino)
                             if key not in visited_inodes:
                                 visited_inodes[key] = True
-                                yield from _scan(entry_path)
+                                yield from _scan(Path(entry.path))
                         elif entry.is_file():
+                            if skip_protected and is_protected_path(Path(entry.path)): continue
                             file_id = (st.st_dev, st.st_ino)
                             if file_id not in processed_files:
                                 processed_files.add(file_id)
                                 if st.st_size >= min_size:
-                                    yield st.st_size, entry_path
+                                    yield st.st_size, Path(entry.path)
                     except (OSError, PermissionError): continue
         except (OSError, PermissionError): pass
 
@@ -223,7 +198,6 @@ def _refine_by_hash(
     if paths is None: return groups_by_digest
     
     for path in paths:
-        if not isinstance(path, Path): continue
         digest = hash_func(path)
         if digest:
             groups_by_digest[digest].append(path)
