@@ -314,6 +314,7 @@ def context_as_text(context: SystemContext) -> str:
             f"Inicio: {context.startup_count} items"
         )
         texto_unificado = "\n".join(lines)
+        # Limpieza defensiva final antes de enviar al asistente
         texto_limpio = _PATH_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", texto_unificado))
         if not _ensure_safe_text(texto_limpio):
             return "Error de seguridad en la serialización de contexto."

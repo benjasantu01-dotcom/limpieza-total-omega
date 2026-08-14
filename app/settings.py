@@ -231,6 +231,9 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     if not ruta.exists(): return DEFAULTS.copy()
     
     try:
+        # Chequeo preventivo de seguridad antes de leer
+        if not _Validators._is_safe_path(ruta.parent): return DEFAULTS.copy()
+        
         if _cached_settings is not None and _current_path == ruta:
             return _cached_settings.copy()
         
@@ -279,6 +282,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
         _cached_settings, _current_path, _cached_hash = cleaned_settings, ruta, new_hash
         return ruta
     except (OSError, IOError, PermissionError, RuntimeError):
+        # Fallback silencioso para no romper la app si la escritura falla
         return None
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:

@@ -6,34 +6,34 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **217** (43.1% de aceptación)
+- Mejoras aceptadas: **220** (43.7% de aceptación)
 - Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 226
+- Sin respuesta de la IA (error o límite): 223
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-12 | 44 | 2 | 7 | 5 | 52 |
+| 2026-08-12 | 44 | 2 | 7 | 5 | 48 |
 | 2026-08-13 | 147 | 9 | 21 | 6 | 167 |
-| 2026-08-14 | 26 | 3 | 5 | 3 | 7 |
+| 2026-08-14 | 29 | 3 | 5 | 3 | 8 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **59**
 - manejo de errores y validación de entradas: **47**
-- robustez ante casos límite: **42**
-- seguridad defensiva: **35**
+- robustez ante casos límite: **43**
+- seguridad defensiva: **37**
 - rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
-- `settings.py`: **20**
-- `assistant.py`: **19**
-- `branding.py`: **18**
+- `settings.py`: **21**
+- `assistant.py`: **20**
+- `branding.py`: **19**
 - `healthscore.py`: **17**
 - `memory.py`: **17**
 - `quarantine.py`: **17**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-14T01:54:22` **branding.py** (seguridad defensiva): Se ha mejorado `save_logo_svg` para prevenir el desbordamiento de rutas (`Path Traversal`) mediante `ensure_safe_to_modify`, transformando la validación de un booleano (`is_safe_to_modify`) a un chequeo que garantiza la integridad de la ruta antes de cualquier operación de escritura, alineándose con las directrices de seguridad defensiva para evitar la escritura en carpetas restringidas.
+- `2026-08-14T01:53:56` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva al serializar el contexto, asegurando que `context_as_text` valide la ausencia de datos sensibles antes de enviarlos, y evitando cualquier posible inyección de caracteres en el pipeline de datos del asistente mediante `_ensure_safe_text`.
+- `2026-08-14T01:52:58` **settings.py** (robustez ante casos límite): He robustecido la carga de archivos añadiendo un chequeo preventivo de `is_safe_to_modify` sobre el directorio padre antes de intentar cualquier operación de I/O en `load`, y he forzado una gestión de permisos más estricta en el método `save` mediante un `try-except` encapsulado que garantiza la integridad del estado si el disco se bloquea o el permiso es denegado durante la escritura.
 - `2026-08-14T01:43:43` **scanner.py** (robustez ante casos límite): Se mejora la robustez ante archivos inexistentes o bloqueados durante el acceso a sus atributos, encapsulando las llamadas a `path.suffix` y `path.parts` dentro de bloques `try-except` para prevenir que una excepción inesperada (como un error de codificación en el nombre del archivo) interrumpa el escaneo completo.
 - `2026-08-14T01:43:35` **safety.py** (robustez ante casos límite): Se introdujo una comprobación explícita para archivos con tamaño cero (vacíos) en `_check_file_integrity` para prevenir la manipulación accidental de archivos de configuración o marcadores de sistema que, aunque no están protegidos por nombre, suelen ser críticos cuando su tamaño es nulo, mejorando la robustez ante casos límite.
 - `2026-08-14T01:33:54` **memory.py** (robustez ante casos límite): Se mejora `parse_windows_process_csv` para ser robusto ante casos límite como líneas vacías, formatos de CSV inesperados o valores PID/WorkingSet no numéricos, garantizando que el bucle de procesamiento no falle ante datos parciales del sistema.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-14T01:12:07` **scanner.py** (rendimiento): Optimizamos `check_recent_executable_in_downloads` para usar una intersección de conjuntos (`set.isdisjoint`) en lugar de `any()` con un generador, reduciendo la carga computacional en cada iteración de archivos.
 - `2026-08-14T01:02:29` **quarantine.py** (rendimiento): Optimicé `list_items` y `load_manifest` reemplazando la carga redundante y el filtrado por lista con una estructura de mapeo (`dict`) en `purge_all`, reduciendo la complejidad algorítmica de O(N*M) a O(N+M) al procesar la purga de archivos.
 - `2026-08-14T00:52:28` **healthscore.py** (rendimiento): Optimicé el cálculo del score evitando la creación repetitiva de diccionarios dentro de los bucles y consolidando la lógica de validación de métricas para reducir el número de llamadas a funciones auxiliares.
-- `2026-08-14T00:52:00` **duplicates.py** (rendimiento): Optimicé `_collect_candidates` utilizando un generador y evitando recrear listas intermedias mediante `yield`, reduciendo el uso de memoria durante el recorrido inicial del disco.
-- `2026-08-14T00:43:14` **diskreport.py** (rendimiento): Optimizé la función `walk_files` evitando la creación innecesaria de objetos `Path` dentro del bucle de iteración (`os.scandir` ya provee objetos `DirEntry` que contienen la ruta y los metadatos necesarios), reduciendo drásticamente la carga sobre el recolector de basura y mejorando la velocidad de escaneo.
-- `2026-08-14T00:42:59` **browser.py** (rendimiento): Se optimizó el rendimiento del escaneo recursivo integrando el chequeo de `is_protected_path` directamente dentro del bucle de `os.scandir` en `_sum_directory_recursive` para evitar llamadas redundantes a `Path.resolve()` y `is_protected_path()` sobre archivos individuales que ya fueron validados al entrar en su directorio padre.
