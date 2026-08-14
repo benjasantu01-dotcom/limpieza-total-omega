@@ -21,7 +21,7 @@ import os
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, Callable, Dict, List, Optional, Union, Tuple, Sequence, Generator
+from typing import Iterable, Callable, Dict, List, Optional, Union, Tuple, Sequence
 
 from safety import is_protected_path
 
@@ -67,7 +67,7 @@ class DuplicateGroup:
         Calcula el espacio total recuperable excluyendo una copia (n-1).
         
         Returns:
-            Total de bytes redundantes o 0 si el grupo es inválido o unitario.
+            Total de bytes redundantes o 0 si el grupo es inválido.
         """
         if not self.paths or self.count <= 1 or self.size_bytes < 0:
             return 0
@@ -78,8 +78,13 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
     """
     Calcula el hash SHA256 completo del archivo.
     
-    Ignora rutas protegidas, archivos vacíos o marcados con atributos de sistema
-    (FILE_ATTRIBUTE_SYSTEM = 0x400) para evitar colisiones o bloqueos.
+    Args:
+        path: Ruta del archivo a procesar.
+        chunk_size: Tamaño del bloque de lectura en bytes (defecto 1MB).
+        
+    Returns:
+        String hexadecimal del hash SHA256 o None si el archivo es inaccesible
+        o protegido (sistema/symlink).
     """
     if path is None or chunk_size <= 0: 
         return None
@@ -108,8 +113,11 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
 
 def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """
-    Hash rápido de los primeros bytes (64KB) para una comparación heurística eficiente.
-    Retorna None si el archivo es inaccesible o si la ruta es protegida.
+    Hash rápido de los primeros bytes (64KB) para comparación heurística.
+    
+    Args:
+        path: Ruta del archivo.
+        read_bytes: Cantidad de bytes a leer desde el inicio.
     """
     if path is None or read_bytes <= 0: 
         return None
@@ -151,8 +159,10 @@ def _collect_candidates(
     skip_protected: bool
 ) -> Dict[int, List[Path]]:
     """
-    Realiza un recorrido recursivo capturando candidatos.
-    Optimizado mediante cache de inodos para evitar redundancia y minimizar syscalls.
+    Realiza un recorrido recursivo capturando candidatos mediante os.scandir.
+    
+    Usa el par (st_dev, st_ino) como clave de caché para evitar el procesamiento
+    de enlaces duros duplicados en la misma jerarquía.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: set[Tuple[int, int]] = set()
@@ -165,6 +175,7 @@ def _collect_candidates(
                         if entry.is_symlink(): continue
                         
                         st = entry.stat(follow_symlinks=False)
+                        # Ignorar archivos con atributo de sistema
                         if getattr(st, 'st_file_attributes', 0) & 0x400: continue
                         
                         inode = (st.st_dev, st.st_ino)
@@ -195,7 +206,6 @@ def _refine_by_hash(
 ) -> Dict[str, List[Path]]:
     """
     Reduce un conjunto de archivos candidatos aplicando una función de hashing.
-    Solo retorna grupos que mantengan colisiones (len > 1).
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     if paths is None: return groups_by_digest
@@ -242,7 +252,7 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     """
     Heurística: selecciona el archivo a conservar (más antiguo, ruta más corta).
-    Valida la existencia de cada ruta para evitar excepciones.
+    Valida la existencia de cada ruta para evitar excepciones durante el proceso.
     """
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None
@@ -264,7 +274,6 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
 def format_group(group: DuplicateGroup) -> List[str]:
     """
     Genera representación textual de un grupo para la interfaz.
-    Maneja grupos sin archivos válidos o con keeper inexistente.
     """
     if not isinstance(group, DuplicateGroup) or not group.paths: 
         return []

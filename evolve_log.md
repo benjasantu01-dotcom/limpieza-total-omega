@@ -1249,3 +1249,13 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-14T13:28:35` 🛑 Propuesta bloqueada por la guardia en diskreport.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: ExtensionUsage.size_mb, FileEntry.size_mb, FolderUsage.size_mb
 - `2026-08-14T13:28:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-14T13:28:35` Corrida terminada. Total usado hoy: 320.
+- `2026-08-14T13:36:34` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-14T13:37:00` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante docstrings detallados que explican el contrato de los parámetros y el comportamiento ante errores, y se han clarificado las excepciones en `_collect_candidates` para separar fallos de acceso de errores de tipo.
+- `2026-08-14T13:37:27` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Documenté el propósito de los métodos de normalización y mejoré la legibilidad de `_generate_recommendations` mediante la creación de un mapeo centralizado entre reglas y valores para asegurar que la lógica de generación de mensajes sea clara y robusta.
+- `2026-08-14T13:38:27` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-14T13:39:30` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-08-14T13:40:36` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-08-14T13:41:57` ➖ Sin cambios en main.py (enfoque: legibilidad y documentación). Motivo: Mejoré la legibilidad y mantenibilidad de `main.py` mediante la implementación de `Docstrings` explicativos en métodos públicos clave y la adición de `type hints` faltantes, clarificando el propósito y los tipos de retorno de las interacciones con el pool de hilos y la lógica de estado, facilitando así la auditoría de seguridad del código.
+- `2026-08-14T13:42:12` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y legibilidad de `memory.py` mediante la adición de Type Hints en la estructura `MEMORYSTATUSEX` y la clarificación de los docstrings en las funciones `top_memory_processes` y `trim_working_set`, haciendo explícito el comportamiento de las dependencias externas (Win32 API) y los riesgos operativos.
+- `2026-08-14T13:42:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-14T13:42:12` Corrida terminada. Total usado hoy: 324.

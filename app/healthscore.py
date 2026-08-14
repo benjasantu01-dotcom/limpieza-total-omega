@@ -153,27 +153,27 @@ def score_junk(junk_mb: float | int) -> float:
 
 
 def score_security(suspicious_count: int, warnings: int = 0) -> float:
-    """Calcula el ratio de seguridad penalizando amenazas (fuerte) y advertencias (leve)."""
+    """Normaliza el nivel de seguridad considerando conteo de amenazas y advertencias."""
     return _clamp(1.0 - ((max(0, _to_int(suspicious_count)) * 0.05) + (max(0, _to_int(warnings)) * 0.25)), 0.0, 1.0)
 
 
 def score_memory(available_percent: float | int) -> float:
-    """Normaliza la disponibilidad de RAM basándose en el límite definido."""
+    """Normaliza la RAM disponible: ratio respecto al umbral crítico definido."""
     return _clamp(_to_float(available_percent) / _LIMIT_RAM_PERCENT, 0.0, 1.0) if _LIMIT_RAM_PERCENT > 0 else 0.0
 
 
 def score_disk(free_percent: float | int) -> float:
-    """Normaliza el espacio en disco libre relativo al umbral mínimo deseado."""
+    """Normaliza el espacio libre en disco: ratio respecto al umbral mínimo recomendado."""
     return _clamp(_to_float(free_percent) / _LIMIT_DISK_PERCENT, 0.0, 1.0) if _LIMIT_DISK_PERCENT > 0 else 0.0
 
 
 def score_duplicates(duplicate_mb: float | int) -> float:
-    """Calcula el ratio de salud referente a archivos duplicados."""
+    """Normaliza el impacto de archivos duplicados respecto al límite tolerable."""
     return 0.0 if _LIMIT_DUPLICATE_MB <= 0.0 else _clamp(1.0 - (max(0.0, _to_float(duplicate_mb)) / _LIMIT_DUPLICATE_MB), 0.0, 1.0)
 
 
 def score_startup(startup_count: int) -> float:
-    """Calcula el ratio de salud de los elementos en inicio automático."""
+    """Normaliza el impacto de programas de inicio automático respecto al límite máximo."""
     return 0.0 if _LIMIT_STARTUP_COUNT <= 0 else _clamp(1.0 - (max(0, _to_int(startup_count)) / _LIMIT_STARTUP_COUNT), 0.0, 1.0)
 
 
@@ -193,6 +193,8 @@ def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[
         return ["Error: Datos de entrada corruptos, análisis no disponible."]
         
     recommendations: List[str] = []
+    
+    # Mapeo explicito para desacoplar el origen del dato de la lógica de reglas
     valor_metricas: Dict[str, float | int] = {
         "seguridad": metrics.suspicious_count, 
         "disco": metrics.disk_free_percent, 

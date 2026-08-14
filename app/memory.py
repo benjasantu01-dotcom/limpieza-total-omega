@@ -79,7 +79,7 @@ SYSTEM_CRITICAL_PIDS: Tuple[int, ...] = (0, 4)
 _PROCESS_CACHE: Dict[str, Tuple[float, List[ProcessMemory]]] = {"data": (0.0, [])}
 
 class MEMORYSTATUSEX(ctypes.Structure):
-    """Estructura de Windows para reportar el estado de memoria global."""
+    """Estructura de Windows (GlobalMemoryStatusEx) para reportar estado global."""
     _fields_ = [
         ("dwLength", ctypes.c_ulong),
         ("dwMemoryLoad", ctypes.c_ulong),
@@ -146,9 +146,6 @@ def format_bytes(num: Optional[int | float]) -> str:
 def parse_linux_meminfo(text: str) -> MemorySnapshot:
     """
     Parsea la salida de /proc/meminfo extrayendo métricas clave.
-    
-    Args:
-        text: Contenido crudo del archivo /proc/meminfo.
     """
     if not text:
         return MemorySnapshot(0, 0)
@@ -231,7 +228,10 @@ def read_snapshot() -> MemorySnapshot:
 
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
-    """Retorna los procesos con mayor consumo usando caché de 5 segundos."""
+    """
+    Consulta procesos de mayor consumo mediante PowerShell con caché temporal (5s).
+    Nota: Solo implementado para entornos Windows.
+    """
     if os.name != "nt":
         return []
     
@@ -298,7 +298,11 @@ def _is_system_process(pid: int) -> bool:
 
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """Intenta liberar el 'working set' de un proceso mediante llamadas a la API de Windows."""
+    """
+    Intenta liberar el 'working set' de un proceso vía EmptyWorkingSet de la API de Windows.
+    Realiza validaciones de seguridad: bloquea procesos del sistema y rutas protegidas
+    antes de interactuar con el handle.
+    """
     if os.name != "nt":
         return False, "Solo disponible en Windows."
     
