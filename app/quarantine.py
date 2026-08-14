@@ -115,6 +115,7 @@ class QuarantineItem:
     def verify_integrity(self, stored_path: Path) -> bool:
         """
         Verifica que el archivo actual en disco coincida con el hash y tamaño registrados.
+        Requiere que 'stored_path' sea una ruta absoluta y existente.
         """
         if not stored_path or not stored_path.is_file() or stored_path.is_symlink():
             return False
@@ -143,7 +144,10 @@ def _get_sha256(path: Path) -> str:
 
 
 def _is_file_locked(path: Path) -> bool:
-    """Intenta abrir el archivo en modo escritura para detectar si está bloqueado por otro proceso."""
+    """
+    Intenta abrir el archivo en modo lectura/escritura (rb+) para detectar bloqueos.
+    Retorna True si el archivo está en uso por otro proceso (Windows).
+    """
     try:
         with open(path, "rb+") as f:
             return False
@@ -152,7 +156,10 @@ def _is_file_locked(path: Path) -> bool:
 
 
 def _safe_unlink(path: Path) -> bool:
-    """Elimina un archivo solo si es un archivo regular y no un enlace simbólico."""
+    """
+    Elimina un archivo tras verificar que es regular y no un enlace simbólico.
+    Es una operación destructiva; solo debe llamarse desde funciones de purga.
+    """
     try:
         if path.is_file() and not path.is_symlink():
             path.unlink()
@@ -307,7 +314,10 @@ def quarantine_file(
     reason: str = "Marcado como sospechoso",
     base: Union[str, Path] = DEFAULT_QUARANTINE_DIR,
 ) -> QuarantineItem:
-    """Aísla un archivo en la zona de cuarentena tras validar su seguridad."""
+    """
+    Aísla un archivo en la zona de cuarentena. 
+    1. Valida el origen. 2. Realiza copia atómica. 3. Borra el origen tras verificar integridad.
+    """
     if not source:
         raise ValueError("La ruta de origen no puede estar vacía.")
     
@@ -393,7 +403,10 @@ def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[Quaranti
 
 
 def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
-    """Restaura un ítem desde la cuarentena validando que el destino sea seguro."""
+    """
+    Restaura un archivo desde la cuarentena a su ruta original.
+    Valida: 1. Integridad SHA256. 2. Seguridad del destino. 3. Existencia en manifiesto.
+    """
     if not item_id or not isinstance(item_id, str):
         raise ValueError("ID de ítem inválido.")
     items = load_manifest(base)

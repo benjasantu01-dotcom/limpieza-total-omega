@@ -787,3 +787,10 @@ FAILED evolve/tests/test_assistant.py::test_numbers_are_clamped_to_their_range -
 - `2026-08-14T09:13:15` ✅ Mejora aceptada en organizer.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados que explican las precondiciones, excepciones manejadas y los efectos laterales de las funciones críticas, facilitando el mantenimiento y la comprensión de las restricciones de seguridad.
 - `2026-08-14T09:13:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-14T09:13:15` Corrida terminada. Total usado hoy: 220.
+- `2026-08-14T09:21:16` Arrancando corrida. Quedan hoy ~80 peticiones objetivo.
+- `2026-08-14T09:21:55` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica mediante la adición de docstrings detallados en las funciones de manipulación de archivos para aclarar las precondiciones de seguridad y el comportamiento ante errores.
+- `2026-08-14T09:22:15` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 119): unterminated string literal (detected at line 119)
+- `2026-08-14T09:22:41` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _IntegrityCheck
+- `2026-08-14T09:22:53` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Documenté con docstrings detallados las funciones de escaneo heurístico y refiné las anotaciones de tipo y estructura en `scan_file` para clarificar la lógica de ejecución del pipeline, facilitando la comprensión del flujo sin alterar el comportamiento.
+- `2026-08-14T09:22:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-14T09:22:53` Corrida terminada. Total usado hoy: 224.

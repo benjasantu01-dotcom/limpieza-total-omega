@@ -116,6 +116,7 @@ class Scanner:
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
     Analiza si el nombre del archivo contiene una doble extensión que sugiere una intención de ocultamiento.
+    Retorna un objeto Suspicion si se detecta un patrón coincidente.
     """
     if DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
@@ -124,7 +125,8 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
-    Verifica si un ejecutable ha sido creado/modificado recientemente en directorios de alta exposición.
+    Verifica si un ejecutable ha sido modificado recientemente en directorios de alta exposición.
+    Usa el timestamp de inicio 'now_ts' para calcular la ventana temporal de riesgo.
     """
     if not entry or is_protected_path(path):
         return None
@@ -146,6 +148,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
     Identifica archivos cuyo nombre coincide con procesos críticos de Windows pero residen fuera de System32.
+    Previene la ejecución accidental de binarios falsificados en rutas de usuario.
     """
     if path.name.lower() in SYSTEM_LOOKALIKES:
         parent_path = path.parent
@@ -155,21 +158,25 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """
-    Ejecuta el pipeline de heurísticas sobre un archivo dado y retorna la lista de hallazgos.
+    Ejecuta el pipeline de heurísticas sobre un archivo dado.
+    
+    Estrategia de análisis:
+    1. Reglas universales: aplican a cualquier tipo de archivo (ej. doble extensión).
+    2. Reglas condicionales: aplican solo si la extensión sugiere un ejecutable, 
+       minimizando el costo computacional de las verificaciones.
     """
     findings: ScanResult = []
     
-    # 1. Chequeos genéricos (ej. doble extensión)
-    res = check_double_extension(path, entry, now_ts)
-    if res:
-        findings.append(res)
+    # 1. Chequeos genéricos
+    if (gen_res := check_double_extension(path, entry, now_ts)):
+        findings.append(gen_res)
     
-    # 2. Chequeos específicos de ejecutables (optimizado mediante pre-cálculo de extensión)
+    # 2. Chequeos de contexto: solo para ejecutables potenciales
     suffix = path.suffix.lower()
     if suffix in SUSPICIOUS_EXECUTABLE_EXT:
-        for check in (check_system_lookalike, check_recent_executable_in_downloads):
-            res = check(path, entry, now_ts)
-            if res:
+        checks: List[SuspicionCheck] = [check_system_lookalike, check_recent_executable_in_downloads]
+        for check in checks:
+            if (res := check(path, entry, now_ts)):
                 findings.append(res)
                 
     return findings
