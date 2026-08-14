@@ -211,7 +211,8 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
             # Usar scandir es más eficiente que iterdir en directorios con muchos archivos
             with os.scandir(folder) as it:
                 for entry in it:
-                    if entry.is_file(follow_symlinks=False):
+                    # Seguridad: no seguir enlaces simbólicos o junctions para evitar escapes de ruta
+                    if entry.is_file(follow_symlinks=False) and not entry.is_symlink():
                         ext = os.path.splitext(entry.name)[1].lower()
                         if ext in EXECUTABLE_EXTS and not is_protected_path(Path(entry.path)):
                             found_entries.append(StartupEntry(

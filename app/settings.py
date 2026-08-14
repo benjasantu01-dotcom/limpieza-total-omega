@@ -207,7 +207,8 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     """Retorna la ruta absoluta al archivo de configuración, validando el directorio base."""
     if custom_base is None: return SETTINGS_DIR / SETTINGS_FILE
     base = Path(custom_base).expanduser().resolve(strict=False)
-    return (base / SETTINGS_FILE) if _Validators._is_safe_path(base) else (SETTINGS_DIR / SETTINGS_FILE)
+    if not _Validators._is_safe_path(base): return SETTINGS_DIR / SETTINGS_FILE
+    return base / SETTINGS_FILE
 
 def validate(raw_values: Any) -> AppSettings:
     """Aplica validadores a un diccionario crudo, retornando defaults ante discrepancias."""
@@ -268,8 +269,8 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     if _cached_hash == new_hash and _current_path == ruta: return ruta
         
     try:
-        if not ruta.parent.exists():
-            ruta.parent.mkdir(parents=True, exist_ok=True)
+        ruta.parent.mkdir(parents=True, exist_ok=True)
+        if not _Validators._is_safe_path(ruta.parent): return None
             
         temp = ruta.with_suffix(f".{os.getpid()}.tmp")
         with open(temp, "wb") as f:
