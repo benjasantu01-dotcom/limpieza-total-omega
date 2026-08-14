@@ -431,7 +431,7 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
 
 
 def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> bool:
-    """Borra un ítem específico de la cuarentena tras validar su integridad."""
+    """Borra un ítem específico de la cuarentena tras validar su integridad y sandbox."""
     if not item_id or not isinstance(item_id, str):
         return False
     items = load_manifest(base)
@@ -440,8 +440,9 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
         return False
     quarantine_root = quarantine_dir(base)
     stored_file = (quarantine_root / match.stored_name).resolve()
-    if not _is_valid_quarantine_path(stored_file, quarantine_root) or stored_file.is_symlink():
-        raise UnsafePathError("Borrado de seguridad fallido: ruta fuera de sandbox o tipo inválido.")
+    
+    if not _is_valid_quarantine_path(stored_file, quarantine_root):
+        raise UnsafePathError("Borrado de seguridad fallido: ruta fuera de sandbox.")
     
     if not stored_file.exists() or not match.verify_integrity(stored_file):
         raise UnsafePathError("Integridad comprometida: no se puede procesar el archivo.")
@@ -459,13 +460,6 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
 
 def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     """Vacía la cuarentena eliminando archivos, manteniendo la integridad del manifiesto."""
-    def _is_safe_to_purge(entry: Path, root: Path) -> bool:
-        if entry is None or entry.name == MANIFEST_NAME or not entry.is_file() or entry.is_symlink():
-            return False
-        if is_protected_path(entry):
-            return False
-        return _is_valid_quarantine_path(entry.resolve(), root)
-
     try:
         quarantine_root = quarantine_dir(base)
     except (OSError, ValueError):
@@ -477,9 +471,14 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     items_to_remove = []
     
     for entry in quarantine_root.iterdir():
-        if not _is_safe_to_purge(entry, quarantine_root):
+        # Validar que sea archivo, no sea manifiesto y esté en el sandbox real
+        if entry.name == MANIFEST_NAME or not entry.is_file():
             continue
-        
+            
+        real_entry = entry.resolve()
+        if not _is_valid_quarantine_path(real_entry, quarantine_root):
+            continue
+            
         # SEGURIDAD: Solo purgar si el archivo figura en el manifiesto
         item = item_map.get(entry.name)
         if not item:
@@ -489,9 +488,9 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
             if _is_file_locked(entry):
                 continue
             
-            if item.verify_integrity(entry):
-                ensure_safe_to_modify(entry, allow_sensitive=False)
-                if _safe_unlink(entry):
+            if item.verify_integrity(real_entry):
+                ensure_safe_to_modify(real_entry, allow_sensitive=False)
+                if _safe_unlink(real_entry):
                     items_to_remove.append(item)
                     purged_count += 1
         except (OSError, PermissionError, UnsafePathError):

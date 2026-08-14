@@ -126,7 +126,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     """
     Verifica si un ejecutable ha sido creado/modificado recientemente en directorios de alta exposición.
     """
-    if not entry:
+    if not entry or is_protected_path(path):
         return None
     
     try:

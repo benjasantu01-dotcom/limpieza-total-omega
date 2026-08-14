@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **233** (46.2% de aceptación)
+- Mejoras aceptadas: **236** (46.8% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 31
+- Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 212
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-13 | 147 | 9 | 21 | 6 | 161 |
-| 2026-08-14 | 86 | 6 | 10 | 7 | 51 |
+| 2026-08-13 | 147 | 9 | 21 | 6 | 157 |
+| 2026-08-14 | 89 | 6 | 11 | 7 | 51 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **58**
+- seguridad defensiva: **50**
 - manejo de errores y validación de entradas: **47**
-- seguridad defensiva: **47**
 - robustez ante casos límite: **43**
 - rendimiento: **38**
 
@@ -31,21 +31,24 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `diskreport.py`: **24**
 - `assistant.py`: **21**
-- `scanner.py`: **19**
+- `scanner.py`: **20**
 - `settings.py`: **19**
 - `healthscore.py`: **18**
+- `quarantine.py`: **18**
 - `duplicates.py`: **17**
 - `memory.py`: **17**
-- `quarantine.py`: **17**
 - `browser.py`: **17**
 - `branding.py`: **15**
 - `organizer.py`: **15**
+- `safety.py`: **14**
 - `main.py`: **14**
-- `safety.py`: **13**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-14T06:49:53` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `check_recent_executable_in_downloads` mediante la validación estricta de la ruta usando `is_protected_path` antes de procesar el archivo, evitando cualquier posible acceso a directorios protegidos incluso si el `base_root` fuera malintencionado.
+- `2026-08-14T06:49:44` **safety.py** (seguridad defensiva): Se ha añadido una validación explícita para prevenir la eliminación o modificación de archivos críticos mediante el chequeo de sus atributos de sistema en el sistema de archivos (bloqueo contra archivos marcados como `FILE_ATTRIBUTE_SYSTEM` o `FILE_ATTRIBUTE_HIDDEN`) en `_check_file_integrity` usando las APIs nativas, reforzando la protección ante archivos de configuración ocultos o de sistema operativo.
+- `2026-08-14T06:48:55` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad en `purge_all` y `purge_item` implementando una validación estricta de la ruta base del archivo contra `quarantine_dir` mediante una resolución de ruta completa antes de realizar cualquier operación destructiva, asegurando que la función no pueda ser engañada por enlaces simbólicos o ataques de salto de directorio incluso si el manifiesto fuera manipulado.
 - `2026-08-14T06:41:33` **organizer.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `stage_for_review` y `delete_reviewed` implementando validaciones explícitas de pertenencia de rutas mediante `.is_relative_to()` (o su equivalente lógico), asegurando que ninguna operación de movimiento o eliminación pueda escapar del directorio de destino previsto, previniendo así posibles ataques de "Path Traversal".
 - `2026-08-14T06:40:49` **main.py** (seguridad defensiva): Se ha añadido un filtro de seguridad en `on_trim_process` para asegurar que el PID sea tratado como una entrada controlada y se valide contra rangos de sistema, reforzando la protección contra inyección de argumentos o manipulación de procesos críticos antes de invocar la lógica de memoria.
 - `2026-08-14T06:38:36` **healthscore.py** (seguridad defensiva): Mejoré la robustez de `_generate_recommendations` añadiendo un chequeo explícito de integridad para los valores de entrada, evitando que una métrica atípica (infinito o NaN) pueda generar errores en el formato de mensajes de usuario.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-14T06:08:33` **quarantine.py** (robustez ante casos límite): Se introdujo una comprobación de existencia y accesibilidad en `restore_item` para prevenir excepciones críticas en caso de que un archivo de cuarentena haya sido eliminado o bloqueado externamente entre la carga del manifiesto y la operación de restauración.
 - `2026-08-14T06:08:03` **organizer.py** (robustez ante casos límite): Se reforzó la robustez de `stage_for_review` ante condiciones de carrera y archivos inconsistentes, añadiendo una validación explícita de que la ruta de origen sigue siendo un archivo válido justo antes de la operación de movimiento (`shutil.move`), evitando errores en escenarios donde el archivo desaparece o cambia de estado durante la iteración.
 - `2026-08-14T05:59:19` **main.py** (robustez ante casos límite): Se ha mejorado la resiliencia de la interfaz ante errores de inicialización de componentes visuales (widgets) en hilos asíncronos mediante el uso de verificadores de existencia (`winfo_exists`) y cierres de sesión (`_closing`), evitando que excepciones en la UI detengan el flujo de ejecución o generen estados inconsistentes.
-- `2026-08-14T05:49:04` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y las funciones de análisis ante casos límite donde los permisos de acceso o estructuras de archivos bloquean la ejecución, envolviendo las llamadas críticas en bloques `try...except` más granulares y asegurando que `Path` no falle ante rutas inválidas o nombres de archivo extremos que podrían lanzar `ValueError` durante el procesamiento de `relative_to`.
-- `2026-08-14T05:48:53` **browser.py** (robustez ante casos límite): Se reforzó la robustez de `_is_system_hidden` y `_sum_directory_recursive` añadiendo validaciones explícitas contra rutas inexistentes y estados de error intermitentes (como `FileNotFoundError`), asegurando que el escaneo no aborte ante cambios de estado del sistema de archivos durante la iteración.
-- `2026-08-14T05:47:52` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` al añadir una validación de `math.isfinite` a todos los campos numéricos procesados, previniendo que valores `NaN` o `Inf` (producidos por divisiones por cero en otros módulos) corrompan el estado del asistente.

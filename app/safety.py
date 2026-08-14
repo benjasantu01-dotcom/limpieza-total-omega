@@ -101,6 +101,7 @@ def _is_system_or_hidden(path: Path) -> bool:
         return False
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
+        # 0x02 = FILE_ATTRIBUTE_HIDDEN, 0x04 = FILE_ATTRIBUTE_SYSTEM
         return attrs != -1 and bool(attrs & (0x02 | 0x04))
     except (OSError, AttributeError, TypeError):
         return False
@@ -113,6 +114,7 @@ def _is_reparse_point(path: Path) -> bool:
         return path.is_symlink()
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
+        # 0x400 = FILE_ATTRIBUTE_REPARSE_POINT
         return attrs != -1 and bool(attrs & 0x400)
     except (OSError, AttributeError, TypeError):
         return False
