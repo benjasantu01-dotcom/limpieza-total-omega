@@ -160,7 +160,6 @@ def parse_linux_meminfo(text: str) -> MemorySnapshot:
             metrics[key] = int(value) * 1024
     
     total = metrics.get("MemTotal", 0)
-    # MemAvailable es preferido, seguido de MemFree como fallback
     available = metrics.get("MemAvailable", metrics.get("MemFree", 0))
     cached = metrics.get("Cached", 0)
     
@@ -173,33 +172,18 @@ def parse_linux_meminfo(text: str) -> MemorySnapshot:
 
 def _parse_csv_row(line: str) -> Optional[ProcessMemory]:
     """
-    Deserializa una línea CSV (formato: Name, Id, WorkingSet) proveniente de PowerShell.
-    
-    Args:
-        line: Una línea única de texto CSV sin procesar.
-    Returns:
-        Un objeto ProcessMemory si la línea es válida, None en caso contrario.
+    Deserializa una línea CSV (Name,Id,WorkingSet) proveniente de PowerShell.
     """
     if not line or not line.strip():
         return None
     
     parts = [p.strip().strip("'\"") for p in line.split(",")]
-    
-    # Header check or malformed
     if len(parts) < 3 or parts[0].lower() == "name":
         return None
         
     try:
-        # Se asume formato Name,Id,WorkingSet
-        ws_str, pid_str = parts[-1], parts[-2]
-        ws, pid = int(ws_str), int(pid_str)
-        
-        if ws < 0 or pid < 0:
-            return None
-            
-        # El nombre podría contener comas, reconstruir si es necesario
-        name = ",".join(parts[:-2])
-        return ProcessMemory(name if name else "Unknown", pid, ws)
+        ws, pid = int(parts[-1]), int(parts[-2])
+        return ProcessMemory(",".join(parts[:-2]), pid, ws)
     except (ValueError, TypeError):
         return None
 
@@ -207,19 +191,12 @@ def _parse_csv_row(line: str) -> Optional[ProcessMemory]:
 def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]:
     """
     Convierte la salida cruda de PowerShell (CSV) a una lista ordenada de ProcessMemory.
-    
-    Args:
-        text: Salida completa del comando PowerShell Get-Process convertido a CSV.
-        limit: Número máximo de procesos a retornar.
     """
     if not isinstance(text, str) or not text:
         return []
     
-    processes: List[ProcessMemory] = []
-    for line in text.splitlines():
-        if p := _parse_csv_row(line):
-            processes.append(p)
-            
+    lines = text.splitlines()
+    processes = [p for line in lines if (p := _parse_csv_row(line))]
     processes.sort(key=lambda p: p.working_set, reverse=True)
     return processes[:limit]
 
@@ -258,15 +235,15 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     if os.name != "nt":
         return []
     
-    now: float = time.time()
+    now: float = time.monotonic()
     cache_ref = _PROCESS_CACHE["data"]
     
     if now - cache_ref[0] < 5.0 and cache_ref[1]:
         return cache_ref[1][:limit]
     
-    command: str = "Get-Process | Select-Object Name,Id,WorkingSet | ConvertTo-Csv -NoTypeInformation"
+    cmd = "Get-CimInstance Win32_PerfFormattedData_PerfProc_Process | Select-Object Name,IDProcess,WorkingSetPrivate | ConvertTo-Csv -NoTypeInformation"
     try:
-        proc = subprocess.run(["powershell", "-NoProfile", "-Command", command], capture_output=True, text=True, timeout=5)
+        proc = subprocess.run(["powershell", "-NoProfile", "-Command", cmd], capture_output=True, text=True, timeout=5)
         if proc.returncode == 0 and proc.stdout:
             new_processes = parse_windows_process_csv(proc.stdout, limit=limit)
             _PROCESS_CACHE["data"] = (now, new_processes)
@@ -277,7 +254,7 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
 
 
 def pressure_level(snapshot: MemorySnapshot) -> str:
-    """Mapea el porcentaje de memoria disponible a una etiqueta de severidad (ok/info/warning/danger)."""
+    """Mapea el porcentaje de memoria disponible a una etiqueta de severidad."""
     if not isinstance(snapshot, MemorySnapshot) or snapshot.total <= 0:
         return "info"
     
@@ -321,14 +298,7 @@ def _is_system_process(pid: int) -> bool:
 
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """
-    Intenta liberar el 'working set' de un proceso específico mediante llamadas a la API de Windows.
-    
-    Args:
-        pid: Identificador de proceso (PID) a intervenir.
-    Returns:
-        Tupla (éxito: bool, mensaje: str).
-    """
+    """Intenta liberar el 'working set' de un proceso mediante llamadas a la API de Windows."""
     if os.name != "nt":
         return False, "Solo disponible en Windows."
     
@@ -346,18 +316,15 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if psapi is None or not hasattr(psapi, "EmptyWorkingSet"):
         return False, "Error de sistema: PSAPI no disponible."
 
-    # Obtención de handle con permisos de consulta y cambio de cuota
     proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
     if not proc_handle:
         return False, "Acceso denegado: no se pudo obtener control sobre el proceso."
         
     try:
-        # 1. Verificación de estado vivo
         exit_code = ctypes.c_ulong()
         if not kernel32.GetExitCodeProcess(proc_handle, ctypes.byref(exit_code)) or exit_code.value != STILL_ACTIVE_EXIT_CODE:
             return False, "El proceso seleccionado ya no está activo."
             
-        # 2. Verificación de ruta (Seguridad)
         buf = ctypes.create_unicode_buffer(4096)
         size = ctypes.c_ulong(4096)
         if kernel32.QueryFullProcessImageNameW(proc_handle, 0, buf, ctypes.byref(size)) > 0:
@@ -366,7 +333,6 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         else:
             return False, "Error interno: no se pudo verificar la identidad del proceso."
             
-        # 3. Ejecución del comando de limpieza
         if not psapi.EmptyWorkingSet(proc_handle):
             err = kernel32.GetLastError()
             return False, f"Acceso denegado: privilegios insuficientes (error {err})." if err == ERROR_ACCESS_DENIED else f"Error al intentar liberar memoria (código {err})."

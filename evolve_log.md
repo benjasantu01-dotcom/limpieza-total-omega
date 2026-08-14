@@ -810,3 +810,12 @@ FAILED evolve/tests/test_assistant.py::test_numbers_are_clamped_to_their_range -
 - `2026-08-14T09:43:26` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
 - `2026-08-14T09:43:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-14T09:43:26` Corrida terminada. Total usado hoy: 232.
+- `2026-08-14T09:52:00` Arrancando corrida. Quedan hoy ~68 peticiones objetivo.
+- `2026-08-14T09:53:13` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._get_cached_data, LimpiezaTotalOmegaApp._get_cached_or_run
+- `2026-08-14T09:53:45` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó el proceso de recolección de memoria de procesos mediante el uso de `Set-CimInstance` (a través de `Get-CimInstance`) para evitar el parseo manual de texto CSV complejo y reducir el costo computacional del filtrado, además de reemplazar `time.time()` por `time.monotonic()` para una medición de intervalos de caché más robusta y eficiente.
+- `2026-08-14T09:54:16` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-14T09:54:44` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimicé el rendimiento de `scan_for_junk` y `_walk_dir` al reemplazar el uso de `os.path.splitext(entry.name)` (que realiza una nueva llamada y normalización en cada iteración) por la validación directa de `entry.name.lower().endswith(tuple(_LOWER_JUNK_EXTS))`, eliminando la creación innecesaria de objetos `Path` antes de confirmar que el archivo es basura.
+- `2026-08-14T09:55:06` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-14T09:55:26` ➖ Sin cambios en quarantine.py (enfoque: rendimiento). Motivo: Se optimizó `load_manifest` mediante el uso de un diccionario en lugar de una lista para el mapeo de ítems en `purge_all`, evitando una complejidad de búsqueda O(N²) que ralentizaba la purga masiva de archivos.
+- `2026-08-14T09:55:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-14T09:55:26` Corrida terminada. Total usado hoy: 236.

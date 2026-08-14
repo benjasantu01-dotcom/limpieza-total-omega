@@ -39,6 +39,7 @@ JUNK_EXTENSIONS: Final[set[str]] = {
 }
 # Pre-calculado para eficiencia en loops
 _LOWER_JUNK_EXTS: Final[set[str]] = {ext.lower() for ext in JUNK_EXTENSIONS}
+_JUNK_EXT_TUPLE: Final[tuple[str, ...]] = tuple(_LOWER_JUNK_EXTS)
 
 # Carpetas típicas donde se acumula basura
 DEFAULT_SCAN_DIRS: Final[List[str]] = [
@@ -205,20 +206,18 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
                     if entry.is_dir():
                         if _is_allowed_directory(entry.name):
                             _walk_dir(Path(entry.path))
-                    elif entry.is_file():
-                        ext = os.path.splitext(entry.name)[1].lower()
-                        if ext in _LOWER_JUNK_EXTS:
-                            path_obj = Path(entry.path)
-                            if is_safe_to_modify(path_obj):
-                                try:
-                                    stat = entry.stat()
-                                    found.append(JunkFile(
-                                        path=path_obj,
-                                        size_bytes=stat.st_size,
-                                        modified=datetime.fromtimestamp(stat.st_mtime)
-                                    ))
-                                except OSError:
-                                    continue
+                    elif entry.is_file() and entry.name.lower().endswith(_JUNK_EXT_TUPLE):
+                        path_obj = Path(entry.path)
+                        if is_safe_to_modify(path_obj):
+                            try:
+                                stat = entry.stat()
+                                found.append(JunkFile(
+                                    path=path_obj,
+                                    size_bytes=stat.st_size,
+                                    modified=datetime.fromtimestamp(stat.st_mtime)
+                                ))
+                            except OSError:
+                                continue
         except (PermissionError, OSError):
             pass
 
