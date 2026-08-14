@@ -208,12 +208,17 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
         if not folder or not folder.is_dir() or is_protected_path(folder):
             continue
         try:
-            found_entries.extend(
-                StartupEntry(name=item.stem, command=str(item), source="carpeta")
-                for item in folder.iterdir()
-                if item.is_file() and item.stem and not is_protected_path(item) 
-                and item.suffix.lower() in EXECUTABLE_EXTS and not item.is_symlink()
-            )
+            # Usar scandir es más eficiente que iterdir en directorios con muchos archivos
+            with os.scandir(folder) as it:
+                for entry in it:
+                    if entry.is_file(follow_symlinks=False):
+                        ext = os.path.splitext(entry.name)[1].lower()
+                        if ext in EXECUTABLE_EXTS and not is_protected_path(Path(entry.path)):
+                            found_entries.append(StartupEntry(
+                                name=os.path.splitext(entry.name)[0],
+                                command=entry.path,
+                                source="carpeta"
+                            ))
         except (OSError, PermissionError):
             continue
     return found_entries

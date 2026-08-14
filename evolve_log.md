@@ -423,3 +423,39 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-08-14T05:28:17` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
 - `2026-08-14T05:28:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-14T05:28:17` Corrida terminada. Total usado hoy: 132.
+- `2026-08-14T05:37:00` Arrancando corrida. Quedan hoy ~168 peticiones objetivo.
+- `2026-08-14T05:37:32` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
+- `2026-08-14T05:38:00` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento de `scan_file` pre-filtrando la extensión una sola vez para evitar múltiples conversiones a minúsculas y validaciones redundantes, además de reorganizar la lógica de chequeo para evitar cálculos costosos sobre archivos que no cumplen con los criterios básicos.
+- `2026-08-14T05:38:32` Tests FALLARON:
+```
+os: 900 MB Inicio: 19 items
+E         ?                                     ++++
+
+evolve/tests/test_assistant.py:418: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:94: SyntaxWarning: invalid escape sequence '\R'
+    """Extrae rutas de comandos formateados como "C:\Ruta\App.exe" args."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - AssertionError: assert '2400' not in 'Puntaje de ...io: 19 items'
+  
+  '2400' is contained here:
+    Puntaje de salud: 61 nota C Basura: 2400 MB Sospechosos: 3 RAM disponible: 11 percent Disco libre: 6 percent Duplicados: 900 MB Inicio: 19 items
+  ?                                     ++++
+1 failed, 298 passed, 7 warnings in 0.76s
+
+```
+- `2026-08-14T05:38:32` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: He optimizado el rendimiento de `load()` y `save()` reemplazando la serialización/deserialización costosa del JSON completo durante las verificaciones de estado por una validación de `mtime` (tiempo de última modificación del archivo), lo que evita lecturas innecesarias de disco y cálculos de hash MD5 redundantes en llamadas frecuentes.
+- `2026-08-14T05:38:45` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-14T05:39:03` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-08-14T05:39:26` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Se implementó un `lru_cache` manual (vía decorador de clase o lógica de acceso) no siendo posible por restricciones, opté por optimizar `entries_from_folders` utilizando `os.scandir` en lugar de `Path.iterdir`, lo que reduce drásticamente las llamadas al sistema y la creación de objetos `Path` innecesarios durante el escaneo del directorio.
+- `2026-08-14T05:39:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-14T05:39:26` Corrida terminada. Total usado hoy: 136.

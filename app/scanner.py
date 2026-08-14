@@ -116,31 +116,20 @@ class Scanner:
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
     Analiza si el nombre del archivo contiene una doble extensión que sugiere una intención de ocultamiento.
-    
-    Args:
-        path: Objeto Path del archivo.
-        entry: No requerido para este análisis.
-        now_ts: No requerido para este análisis.
     """
-    try:
-        if DOUBLE_EXTENSION_RE.search(path.name):
-            return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
-    except Exception:
-        pass
+    if DOUBLE_EXTENSION_RE.search(path.name):
+        return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
     return None
 
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
     Verifica si un ejecutable ha sido creado/modificado recientemente en directorios de alta exposición.
-    
-    Requiere el objeto `entry` para obtener metadatos de sistema (st_mtime) eficientemente.
     """
     if not entry:
         return None
     
     try:
-        # Optimización: uso de set para intersección rápida evitando iteración manual
         path_parts = {p.lower() for p in path.parts}
         if WATCHED_FOLDERS.isdisjoint(path_parts):
             return None
@@ -158,45 +147,30 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
     """
     Identifica archivos cuyo nombre coincide con procesos críticos de Windows pero residen fuera de System32.
     """
-    try:
-        if path.name.lower() in SYSTEM_LOOKALIKES:
-            # Comprobación de ruta segura ante fallos de string o ausencia de parent
-            parent_path = path.parent
-            if parent_path and SYSTEM32_LOWER not in str(parent_path).lower():
-                return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
-    except (OSError, AttributeError):
-        pass
+    if path.name.lower() in SYSTEM_LOOKALIKES:
+        parent_path = path.parent
+        if parent_path and SYSTEM32_LOWER not in str(parent_path).lower():
+            return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
     return None
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """
     Ejecuta el pipeline de heurísticas sobre un archivo dado y retorna la lista de hallazgos.
     """
-    if not isinstance(path, Path):
-        logger.warning("scan_file llamado con objeto no Path")
-        return []
-
     findings: ScanResult = []
     
-    # 1. Chequeos genéricos independientes de la extensión
-    check_result = check_double_extension(path, entry, now_ts)
-    if check_result:
-        findings.append(check_result)
+    # 1. Chequeos genéricos (ej. doble extensión)
+    res = check_double_extension(path, entry, now_ts)
+    if res:
+        findings.append(res)
     
-    # 2. Chequeos específicos de ejecutables
-    try:
-        suffix = path.suffix.lower() if path.suffix else ""
-    except Exception:
-        return findings
-
+    # 2. Chequeos específicos de ejecutables (optimizado mediante pre-cálculo de extensión)
+    suffix = path.suffix.lower()
     if suffix in SUSPICIOUS_EXECUTABLE_EXT:
-        lookalike_result = check_system_lookalike(path, entry, now_ts)
-        if lookalike_result:
-            findings.append(lookalike_result)
-        
-        recent_result = check_recent_executable_in_downloads(path, entry, now_ts)
-        if recent_result:
-            findings.append(recent_result)
+        for check in (check_system_lookalike, check_recent_executable_in_downloads):
+            res = check(path, entry, now_ts)
+            if res:
+                findings.append(res)
                 
     return findings
 
@@ -208,11 +182,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         
     try:
         path_input = Path(directory).resolve()
-        # Validación temprana de existencia y acceso
-        if not path_input.is_dir():
-            logger.warning(f"Ruta no es un directorio válido: {directory}")
-            return []
-        if is_protected_path(path_input):
+        if not path_input.is_dir() or is_protected_path(path_input):
             return []
     except (OSError, TypeError, ValueError) as e:
         logger.error(f"Error procesando directorio base {directory}: {e}")

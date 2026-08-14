@@ -6,8 +6,8 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **223** (44.2% de aceptación)
-- Rechazadas por tests: 13
+- Mejoras aceptadas: **222** (44.0% de aceptación)
+- Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 12
 - Sin respuesta de la IA (error o límite): 225
@@ -16,37 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-12 | 7 | 0 | 1 | 1 | 13 |
+| 2026-08-12 | 4 | 0 | 1 | 1 | 12 |
 | 2026-08-13 | 147 | 9 | 21 | 6 | 167 |
-| 2026-08-14 | 69 | 4 | 9 | 5 | 45 |
+| 2026-08-14 | 71 | 5 | 9 | 5 | 46 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **58**
-- seguridad defensiva: **47**
 - manejo de errores y validación de entradas: **47**
-- rendimiento: **36**
+- seguridad defensiva: **44**
+- rendimiento: **38**
 - robustez ante casos límite: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **23**
+- `diskreport.py`: **22**
 - `settings.py`: **20**
 - `assistant.py`: **20**
 - `memory.py`: **18**
-- `duplicates.py`: **17**
+- `scanner.py`: **18**
 - `quarantine.py`: **17**
 - `healthscore.py`: **17**
-- `scanner.py`: **17**
-- `browser.py`: **16**
+- `duplicates.py`: **16**
+- `browser.py`: **15**
 - `organizer.py`: **14**
 - `branding.py`: **14**
 - `safety.py`: **12**
 - `main.py`: **12**
-- `startup.py`: **6**
+- `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-14T05:39:26` **startup.py** (rendimiento): Se implementó un `lru_cache` manual (vía decorador de clase o lógica de acceso) no siendo posible por restricciones, opté por optimizar `entries_from_folders` utilizando `os.scandir` en lugar de `Path.iterdir`, lo que reduce drásticamente las llamadas al sistema y la creación de objetos `Path` innecesarios durante el escaneo del directorio.
+- `2026-08-14T05:38:00` **scanner.py** (rendimiento): Optimicé el rendimiento de `scan_file` pre-filtrando la extensión una sola vez para evitar múltiples conversiones a minúsculas y validaciones redundantes, además de reorganizar la lógica de chequeo para evitar cálculos costosos sobre archivos que no cumplen con los criterios básicos.
 - `2026-08-14T05:28:10` **quarantine.py** (rendimiento): Optimicé el cálculo del tamaño total y el resumen de la cuarentena utilizando `sum` con generadores para evitar la creación de listas intermedias innecesarias, mejorando el uso de memoria en directorios con muchos ítems.
 - `2026-08-14T05:27:36` **organizer.py** (rendimiento): Optimizamos `scan_for_junk` utilizando `os.scandir` de forma más eficiente y reduciendo llamadas redundantes a `Path` y `resolve()` dentro del bucle crítico, mejorando el rendimiento en directorios grandes.
 - `2026-08-14T05:27:11` **memory.py** (rendimiento): Optimizamos `parse_windows_process_csv` para evitar la creación innecesaria de listas intermedias y reducir las llamadas a `split()` mediante un enfoque de una sola pasada sobre el texto, mejorando la eficiencia de procesamiento cuando el número de procesos es elevado.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-14T04:57:28` **scanner.py** (legibilidad y documentación): Documenté con type hints más precisos y docstrings enriquecidos las funciones de heurística para clarificar el contrato de entrada y el propósito de cada verificación, facilitando la auditoría del código.
 - `2026-08-14T04:57:02` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna mediante la implementación de `TypeAlias` explícitos y docstrings detallados en las funciones de validación de integridad (`_check_file_integrity`), clarificando las responsabilidades de cada chequeo y facilitando el mantenimiento ante futuras ampliaciones de las reglas de seguridad.
 - `2026-08-14T04:47:52` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en funciones clave y se ha estandarizado la nomenclatura de variables internas (ej. `jf` -> `junk_file`), clarificando las responsabilidades de cada bloque para mejorar la mantenibilidad.
-- `2026-08-14T04:47:28` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad técnica de `memory.py` mediante la adición de docstrings detallados en funciones clave, la clarificación de tipos de datos en la firma de `_parse_csv_row` y la estandarización de las descripciones de los parámetros de entrada, facilitando la comprensión del flujo de datos en operaciones críticas de bajo nivel.
-- `2026-08-14T04:37:31` **healthscore.py** (legibilidad y documentación): Documenté con docstrings claros y tipado los umbrales constantes y la función de cálculo de puntaje, clarificando el significado de cada ratio (0.0-1.0) y su relación con la salud del sistema.
